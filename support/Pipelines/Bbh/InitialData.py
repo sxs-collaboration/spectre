@@ -29,6 +29,8 @@ def id_parameters(
     mass_b: float,
     dimensionless_spin_a: Sequence[float],
     dimensionless_spin_b: Sequence[float],
+    center_of_mass_offset: Sequence[float],
+    linear_velocity: Sequence[float],
     separation: float,
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
@@ -44,6 +46,8 @@ def id_parameters(
       mass_b: Mass of the smaller black hole.
       dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
       dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
+      center_of_mass_offset: Offset from the Newtonian center of mass.
+      linear_velocity: Velocity added to the shift boundary condition.
       separation: Coordinate separation D of the black holes.
       orbital_angular_velocity: Omega_0.
       radial_expansion_velocity: adot_0.
@@ -51,24 +55,20 @@ def id_parameters(
       polynomial_order: p-refinement level.
     """
 
-    mass_ratio = max(mass_a, mass_b) / min(mass_a, mass_b)
-
-    # Determine initial data parameters from options
-    M_A = mass_a
-    M_B = mass_b
-    x_A = separation / (1.0 + mass_ratio)
+    x_A = mass_b / (mass_a + mass_b) * separation + center_of_mass_offset[0]
     x_B = x_A - separation
+
     # Spins
     chi_A = np.asarray(dimensionless_spin_a)
-    r_plus_A = M_A * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
+    r_plus_A = mass_a * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
     Omega_A = -0.5 * chi_A / r_plus_A
     Omega_A[2] += orbital_angular_velocity
     chi_B = np.asarray(dimensionless_spin_b)
-    r_plus_B = M_B * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
+    r_plus_B = mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
     Omega_B = -0.5 * chi_B / r_plus_B
     Omega_B[2] += orbital_angular_velocity
     # Falloff widths of superposition
-    L1_dist_A = L1_distance(M_A, M_B, separation)
+    L1_dist_A = L1_distance(mass_a, mass_b, separation)
     L1_dist_B = separation - L1_dist_A
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
@@ -77,6 +77,11 @@ def id_parameters(
         "MassLeft": mass_b,
         "XRight": x_A,
         "XLeft": x_B,
+        "CenterOfMassOffset_y": center_of_mass_offset[1],
+        "CenterOfMassOffset_z": center_of_mass_offset[2],
+        "LinearVelocity_x": linear_velocity[0],
+        "LinearVelocity_y": linear_velocity[1],
+        "LinearVelocity_z": linear_velocity[2],
         "ExcisionRadiusRight": 0.93 * r_plus_A,
         "ExcisionRadiusLeft": 0.93 * r_plus_B,
         "OrbitalAngularVelocity": orbital_angular_velocity,
@@ -110,6 +115,9 @@ def generate_id(
     separation: float,
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
+    # Control parameters
+    center_of_mass_offset: Sequence[float] = [0.0, 0.0, 0.0],
+    linear_velocity: Sequence[float] = [0.0, 0.0, 0.0],
     # Resolution
     refinement_level: int = 1,
     polynomial_order: int = 6,
@@ -142,6 +150,12 @@ def generate_id(
       separation: Coordinate separation D of the black holes.
       orbital_angular_velocity: Omega_0.
       radial_expansion_velocity: adot_0.
+
+    Control parameters:
+      center_of_mass_offset: Offset from the Newtonian center of mass.
+        (default: [0., 0., 0.])
+      linear_velocity: Velocity added to the shift boundary condition.
+        (default: [0., 0., 0.])
 
     Scheduling options:
       id_input_file_template: Input file template where parameters are inserted.
@@ -192,6 +206,8 @@ def generate_id(
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,
+        center_of_mass_offset=center_of_mass_offset,
+        linear_velocity=linear_velocity,
         refinement_level=refinement_level,
         polynomial_order=polynomial_order,
     )

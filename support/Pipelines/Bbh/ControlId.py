@@ -3,7 +3,7 @@
 
 import logging
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Literal, Optional, Sequence, Union
 
 import h5py
 import numpy as np
@@ -18,9 +18,37 @@ logger = logging.getLogger(__name__)
 DEFAULT_RESIDUAL_TOLERANCE = 1.0e-6
 DEFAULT_MAX_ITERATIONS = 30
 
+# Initial data physical parameters that are supported in this control scheme
+SupportedParams = Literal[
+    "mass_A",
+    "mass_B",
+    "spin_A",
+    "spin_B",
+    "center_of_mass",
+    "linear_momentum",
+]
+
+# Free data choices associated with each physical parameter
+# Note 1: the values below need to match the argument names of `generate_id`.
+# Note 2: mass_a/b and dimensionless_spin_a/b refer to the Kerr masses and spins
+#         used in the background.
+FreeDataFromParams: Dict[SupportedParams, str] = {
+    "mass_A": "mass_a",
+    "mass_B": "mass_b",
+    "spin_A": "dimensionless_spin_a",
+    "spin_B": "dimensionless_spin_b",
+    "center_of_mass": "center_of_mass_offset",
+    "linear_momentum": "linear_velocity",
+}
+
+# Quantites (free data or parameters) that are scalars
+# Note: this is useful for switching between dictionaries and arrays below.
+ScalarQuantities = ["mass_a", "mass_b", "mass_A", "mass_B"]
+
 
 def control_id(
     id_input_file_path: Union[str, Path],
+    control_params: Dict[SupportedParams, Union[float, Sequence[float]]],
     id_run_dir: Optional[Union[str, Path]] = None,
     residual_tolerance: float = DEFAULT_RESIDUAL_TOLERANCE,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
@@ -45,7 +73,31 @@ def control_id(
     - Measure the difference between the horizon quantities and the desired
       values.
 
+    Suported control parameters (specified as keys of control_params):
+      mass_A: Mass of the larger black hole.
+      mass_B: Mass of the smaller black hole.
+      spin_A: Dimensionless spin of the larger black hole.
+      spin_B: Dimensionless spin of the smaller black hole.
+      center_of_mass: Center of mass integral in general relativity.
+      linear_momentum: ADM linear momentum.
+
+    Example of control_params for an equal-mass non-spinning run with minimal
+    drift of the center of mass:
+      ```py
+        control_params = dict(
+          mass_A = 0.5,
+          mass_B = 0.5,
+          spin_A = [0., 0., 0.],
+          spin_B = [0., 0., 0.],
+          center_of_mass = [0., 0., 0.],
+          linear_momentum = [0., 0., 0.],
+        )
+      ```
+
     Arguments:
+      control_params: Dictionary used to customize control. The keys determine
+        which physical parameters are controlled and the values determine their
+        target result.
       id_input_file_path: Path to the input file of the first initial data run.
       id_run_dir: Directory of the first initial data run. If not provided, the
         directory of the input file is used.
@@ -58,18 +110,39 @@ def control_id(
       polynomial_order: p-refinement used in control loop.
     """
 
+    assert (
+        len(control_params) > 0
+    ), "At least one control parameter must be specified."
+
     # Read input file
     if id_run_dir is None:
         id_run_dir = Path(id_input_file_path).resolve().parent
     with open(id_input_file_path, "r") as open_input_file:
         _, id_input_file = yaml.safe_load_all(open_input_file)
     binary_data = id_input_file["Background"]["Binary"]
-    M_target_A = binary_data["ObjectRight"]["KerrSchild"]["Mass"]
-    M_target_B = binary_data["ObjectLeft"]["KerrSchild"]["Mass"]
-    chi_target_A = binary_data["ObjectRight"]["KerrSchild"]["Spin"]
-    chi_target_B = binary_data["ObjectLeft"]["KerrSchild"]["Spin"]
+
+    # Get initial xyz offset
+    # Note: CenterOfMassOffset contains only the yz offsets, so we need to get
+    # the x offset from XCoords
+    mass_Kerr_A = binary_data["ObjectRight"]["KerrSchild"]["Mass"]
+    mass_Kerr_B = binary_data["ObjectLeft"]["KerrSchild"]["Mass"]
+    mass_ratio = mass_Kerr_A / mass_Kerr_B
     x_B, x_A = binary_data["XCoords"]
     separation = x_A - x_B
+    x_offset = x_A - 1.0 / (1.0 + mass_ratio) * separation
+    y_offset, z_offset = binary_data["CenterOfMassOffset"]
+
+    # Combine initial choices of free data in a dictionary
+    initial_free_data = dict(
+        mass_a=mass_Kerr_A,
+        mass_b=mass_Kerr_B,
+        dimensionless_spin_a=binary_data["ObjectRight"]["KerrSchild"]["Spin"],
+        dimensionless_spin_b=binary_data["ObjectLeft"]["KerrSchild"]["Spin"],
+        center_of_mass_offset=[x_offset, y_offset, z_offset],
+        linear_velocity=binary_data["LinearVelocity"],
+    )
+
+    # Get orbital velocities
     orbital_angular_velocity = binary_data["AngularVelocity"]
     radial_expansion_velocity = binary_data["Expansion"]
 
@@ -80,16 +153,7 @@ def control_id(
     control_run_dir = id_run_dir
 
     # Function to be minimized
-    def Residual(
-        M_Kerr_A: float,
-        M_Kerr_B: float,
-        chi_Kerr_A_x: float,
-        chi_Kerr_A_y: float,
-        chi_Kerr_A_z: float,
-        chi_Kerr_B_x: float,
-        chi_Kerr_B_y: float,
-        chi_Kerr_B_z: float,
-    ):
+    def Residual(u):
         nonlocal iteration
         nonlocal control_run_dir
 
@@ -102,12 +166,21 @@ def control_id(
             )
             control_run_dir = f"{id_run_dir}/ControlParams{iteration:02}"
 
+            # Start with initial free data choices and update the ones being
+            # controlled in `control_params` with the numeric value from `u`
+            free_data = initial_free_data.copy()
+            u_iterator = iter(u)
+            for key in [
+                FreeDataFromParams[param] for param in control_params.keys()
+            ]:
+                if key in ScalarQuantities:
+                    free_data[key] = next(u_iterator)
+                else:
+                    free_data[key] = [next(u_iterator) for _ in range(3)]
+
             # Run ID and find horizons
             generate_id(
-                mass_a=M_Kerr_A,
-                mass_b=M_Kerr_B,
-                dimensionless_spin_a=[chi_Kerr_A_x, chi_Kerr_A_y, chi_Kerr_A_z],
-                dimensionless_spin_b=[chi_Kerr_B_x, chi_Kerr_B_y, chi_Kerr_B_z],
+                **free_data,
                 separation=separation,
                 orbital_angular_velocity=orbital_angular_velocity,
                 radial_expansion_velocity=radial_expansion_velocity,
@@ -119,6 +192,11 @@ def control_id(
                 polynomial_order=polynomial_order,
             )
 
+        # Initialize dictionary to hold the measured physical parameters
+        measured_params: Dict[
+            SupportedParams, Union[float, Sequence[float]]
+        ] = {}
+
         # Get black hole physical parameters
         with spectre_h5.H5File(
             f"{control_run_dir}/Horizons.h5", "r"
@@ -127,56 +205,85 @@ def control_id(
                 horizons_file.get_dat("AhA.dat")
             ).iloc[-1]
 
-            M_A = AhA_quantities["ChristodoulouMass"]
-            chi_A_x = AhA_quantities["DimensionlessSpinVector_x"]
-            chi_A_y = AhA_quantities["DimensionlessSpinVector_y"]
-            chi_A_z = AhA_quantities["DimensionlessSpinVector_z"]
+            if "mass_A" in control_params:
+                measured_params["mass_A"] = AhA_quantities["ChristodoulouMass"]
+            if "spin_A" in control_params:
+                measured_params["spin_A"] = np.array(
+                    [
+                        AhA_quantities["DimensionlessSpinVector_x"],
+                        AhA_quantities["DimensionlessSpinVector_y"],
+                        AhA_quantities["DimensionlessSpinVector_z"],
+                    ]
+                )
 
             horizons_file.close_current_object()
             AhB_quantities = to_dataframe(
                 horizons_file.get_dat("AhB.dat")
             ).iloc[-1]
 
-            M_B = AhB_quantities["ChristodoulouMass"]
-            chi_B_x = AhB_quantities["DimensionlessSpinVector_x"]
-            chi_B_y = AhB_quantities["DimensionlessSpinVector_y"]
-            chi_B_z = AhB_quantities["DimensionlessSpinVector_z"]
+            if "mass_B" in control_params:
+                measured_params["mass_B"] = AhB_quantities["ChristodoulouMass"]
+            if "spin_B" in control_params:
+                measured_params["spin_B"] = np.array(
+                    [
+                        AhB_quantities["DimensionlessSpinVector_x"],
+                        AhB_quantities["DimensionlessSpinVector_y"],
+                        AhB_quantities["DimensionlessSpinVector_z"],
+                    ]
+                )
 
-        residual = np.array(
-            [
-                M_A - M_target_A,
-                M_B - M_target_B,
-                chi_A_x - chi_target_A[0],
-                chi_A_y - chi_target_A[1],
-                chi_A_z - chi_target_A[2],
-                chi_B_x - chi_target_B[0],
-                chi_B_y - chi_target_B[1],
-                chi_B_z - chi_target_B[2],
-            ]
-        )
+        # Get ADM integrals
+        with spectre_h5.H5File(
+            f"{control_run_dir}/BbhReductions.h5", "r"
+        ) as reductions_file:
+            adm_integrals = to_dataframe(
+                reductions_file.get_dat("AdmIntegrals.dat")
+            ).iloc[-1]
+
+            if "center_of_mass" in control_params:
+                measured_params["center_of_mass"] = np.array(
+                    [
+                        adm_integrals["CenterOfMass_x"],
+                        adm_integrals["CenterOfMass_y"],
+                        adm_integrals["CenterOfMass_z"],
+                    ]
+                )
+            if "linear_momentum" in control_params:
+                measured_params["linear_momentum"] = np.array(
+                    [
+                        adm_integrals["AdmLinearMomentum_x"],
+                        adm_integrals["AdmLinearMomentum_y"],
+                        adm_integrals["AdmLinearMomentum_z"],
+                    ]
+                )
+
+        # Compute residual of physical parameters
+        residual = np.array([])
+        for key, target in control_params.items():
+            if key in ScalarQuantities:
+                residual = np.append(residual, [measured_params[key] - target])
+            else:
+                residual = np.append(residual, measured_params[key] - target)
         logger.info(f"Control Residual = {np.max(np.abs(residual)):e}")
-
         data_file.write(
-            f" {iteration},"
-            f" {M_A}, {M_B},"
-            f" {chi_A_x}, {chi_A_y}, {chi_A_z},"
-            f" {chi_B_x}, {chi_B_y}, {chi_B_z},"
-            f" {residual[0]}, {residual[1]},"
-            f" {residual[2]}, {residual[3]}, {residual[4]},"
-            f" {residual[5]}, {residual[6]}, {residual[7]}"
-            " \n"
+            f" {iteration}, " + ", ".join(map(str, residual)) + " \n"
         )
         data_file.flush()
 
         return residual
 
-    # Initial guess
-    u = np.array([M_target_A, M_target_B, *chi_target_A, *chi_target_B])
+    # Initial guess for free data
+    u = np.array([])
+    for key in [FreeDataFromParams[param] for param in control_params.keys()]:
+        if key in ScalarQuantities:
+            u = np.append(u, [initial_free_data[key]])
+        else:
+            u = np.append(u, initial_free_data[key])
 
     # Initial residual
-    F = Residual(*u)
+    F = Residual(u)
 
-    # Initial Jacobian (identity matrix)
+    # Initialize Jacobian as an identity matrix
     J = np.identity(len(u))
 
     while iteration < max_iterations and np.max(np.abs(F)) > residual_tolerance:
@@ -186,7 +293,7 @@ def control_id(
         Delta_u = -np.dot(np.linalg.inv(J), F)
         u += Delta_u
 
-        F = Residual(*u)
+        F = Residual(u)
 
         # Update the Jacobian using Broyden's method
         J += np.outer(F, Delta_u) / np.dot(Delta_u, Delta_u)

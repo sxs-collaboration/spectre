@@ -4,7 +4,7 @@
 import glob
 import logging
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Sequence, Union
 
 import click
 import yaml
@@ -12,6 +12,7 @@ import yaml
 from spectre.Pipelines.Bbh.ControlId import (
     DEFAULT_MAX_ITERATIONS,
     DEFAULT_RESIDUAL_TOLERANCE,
+    SupportedParams,
     control_id,
 )
 from spectre.Pipelines.Bbh.FindHorizon import find_horizon, vec_to_string
@@ -34,6 +35,7 @@ def postprocess_id(
     control_max_iterations: int = DEFAULT_MAX_ITERATIONS,
     control_refinement_level: int = 1,
     control_polynomial_order: int = 6,
+    control_params: Dict[SupportedParams, Union[float, Sequence[float]]] = {},
     evolve: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     **scheduler_kwargs,
@@ -68,11 +70,13 @@ def postprocess_id(
       horizon_l_max: Maximum l-mode for the horizon search.
       horizons_file: Path to the file where the horizon data is written to.
         Default is 'Horizons.h5' in the 'id_run_dir'.
-      control: Control BBH physical parameters (default: False).
+      control: Control BBH physical parameters (default: True).
       control_residual_tolerance: Residual tolerance used for control.
       control_max_iterations: Maximum of iterations allowed for control.
       control_refinement_level: h-refinement used for control.
       control_polynomial_order: p-refinement used for control.
+      control_params: Dictionary used to customize control. See ControlId.py
+        for details.
       evolve: Evolve the initial data after postprocessing (default: False).
       pipeline_dir: Directory where steps in the pipeline are created.
         Required if 'evolve' is set to True.
@@ -81,6 +85,9 @@ def postprocess_id(
     with open(id_input_file_path, "r") as open_input_file:
         _, id_input_file = yaml.safe_load_all(open_input_file)
     x_B, x_A = id_input_file["Background"]["Binary"]["XCoords"]
+    y_offset, z_offset = id_input_file["Background"]["Binary"][
+        "CenterOfMassOffset"
+    ]
     id_domain = id_input_file["DomainCreator"]["BinaryCompactObject"]
     excision_radius_A = id_domain[f"ObjectA"]["InnerRadius"]
     excision_radius_B = id_domain[f"ObjectB"]["InnerRadius"]
@@ -109,7 +116,7 @@ def postprocess_id(
             initial_guess=Strahlkorper(
                 l_max=horizon_l_max,
                 radius=excision_radius * 1.5,
-                center=[xcoord, 0.0, 0.0],
+                center=[xcoord, y_offset, z_offset],
             ),
             output_surfaces_file=horizons_file,
             output_coeffs_subfile=f"{object_label}/Coefficients",
@@ -126,7 +133,8 @@ def postprocess_id(
 
     if control:
         last_control_run_dir = control_id(
-            id_input_file_path,
+            id_input_file_path=id_input_file_path,
+            control_params=control_params,
             id_run_dir=id_run_dir,
             residual_tolerance=control_residual_tolerance,
             max_iterations=control_max_iterations,

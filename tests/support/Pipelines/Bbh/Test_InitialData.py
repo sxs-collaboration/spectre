@@ -33,6 +33,8 @@ class TestInitialData(unittest.TestCase):
             mass_b=0.4,
             dimensionless_spin_a=[0.1, 0.2, 0.3],
             dimensionless_spin_b=[0.4, 0.5, 0.6],
+            center_of_mass_offset=[0.1, 0.2, 0.3],
+            linear_velocity=[0.1, 0.2, 0.3],
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,
@@ -41,8 +43,16 @@ class TestInitialData(unittest.TestCase):
         )
         self.assertEqual(params["MassRight"], 0.6)
         self.assertEqual(params["MassLeft"], 0.4)
-        self.assertEqual(params["XRight"], 8.0)
-        self.assertEqual(params["XLeft"], -12.0)
+        self.assertEqual(params["XRight"], 8.0 + 0.1)
+        self.assertEqual(params["XLeft"], -12.0 + 0.1)
+        self.assertEqual(
+            [params[f"CenterOfMassOffset_{yz}"] for yz in "yz"],
+            [0.2, 0.3],
+        )
+        self.assertEqual(
+            [params[f"LinearVelocity_{xyz}"] for xyz in "xyz"],
+            [0.1, 0.2, 0.3],
+        )
         self.assertAlmostEqual(params["ExcisionRadiusRight"], 1.07546791205)
         self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.5504049327)
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
@@ -67,10 +77,10 @@ class TestInitialData(unittest.TestCase):
         self.assertAlmostEqual(params["FalloffWidthLeft"], 5.520327410332324)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
-        # COM is zero
+        # Newtonian center of mass (without offset) is zero
         self.assertAlmostEqual(
-            params["MassRight"] * params["XRight"]
-            + params["MassLeft"] * params["XLeft"],
+            params["MassRight"] * (params["XRight"] - 0.1)
+            + params["MassLeft"] * (params["XLeft"] - 0.1),
             0.0,
         )
 
@@ -142,6 +152,12 @@ class TestInitialData(unittest.TestCase):
                     "control": True,
                     "control_refinement_level": 1,
                     "control_polynomial_order": 5,
+                    "control_params": {
+                        "mass_A": 0.6,
+                        "mass_B": 0.4,
+                        "spin_A": [0.1, 0.2, 0.3],
+                        "spin_B": [0.4, 0.5, 0.6],
+                    },
                     "evolve": True,
                     "scheduler": "None",
                     "copy_executable": "None",

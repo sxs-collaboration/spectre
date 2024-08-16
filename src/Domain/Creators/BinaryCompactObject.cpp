@@ -27,7 +27,6 @@
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
-#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
@@ -71,7 +70,8 @@ bool BinaryCompactObject::Object::is_excised() const {
 
 BinaryCompactObject::BinaryCompactObject(
     typename ObjectA::type object_A, typename ObjectB::type object_B,
-    const double envelope_radius, const double outer_radius,
+    std::array<double, 2> center_of_mass_offset, const double envelope_radius,
+    const double outer_radius,
     const typename InitialRefinement::type& initial_refinement,
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map,
@@ -84,6 +84,7 @@ BinaryCompactObject::BinaryCompactObject(
     const Options::Context& context)
     : object_A_(std::move(object_A)),
       object_B_(std::move(object_B)),
+      center_of_mass_offset_(center_of_mass_offset),
       envelope_radius_(envelope_radius),
       outer_radius_(outer_radius),
       use_equiangular_map_(use_equiangular_map),
@@ -215,8 +216,11 @@ BinaryCompactObject::BinaryCompactObject(
   }
 
   // Create grid anchors
-  grid_anchors_ = bco::create_grid_anchors(std::array{x_coord_a_, 0.0, 0.0},
-                                           std::array{x_coord_b_, 0.0, 0.0});
+  grid_anchors_ =
+      bco::create_grid_anchors(std::array{x_coord_a_, center_of_mass_offset_[0],
+                                          center_of_mass_offset_[1]},
+                               std::array{x_coord_b_, center_of_mass_offset_[0],
+                                          center_of_mass_offset_[1]});
 
   // Create block names and groups
   static std::array<std::string, 6> wedge_directions{
@@ -324,8 +328,10 @@ BinaryCompactObject::BinaryCompactObject(
 
   if (time_dependent_options_.has_value()) {
     time_dependent_options_->build_maps(
-        std::array{std::array{x_coord_a_, 0.0, 0.0},
-                   std::array{x_coord_b_, 0.0, 0.0}},
+        std::array{std::array{x_coord_a_, center_of_mass_offset_[0],
+                              center_of_mass_offset_[1]},
+                   std::array{x_coord_b_, center_of_mass_offset_[0],
+                              center_of_mass_offset_[1]}},
         radii_A, radii_B, envelope_radius_, outer_radius_);
   }
 }
@@ -354,21 +360,31 @@ Domain<3> BinaryCompactObject::create_domain() const {
   Maps maps{};
 
   // ObjectA/B is on the right/left, respectively.
-  const Translation translation_A{
-      Affine{-1.0, 1.0, -1.0 + x_coord_a_, 1.0 + x_coord_a_}, Identity2D{}};
-  const Translation translation_B{
-      Affine{-1.0, 1.0, -1.0 + x_coord_b_, 1.0 + x_coord_b_}, Identity2D{}};
+  const Affine3D translation_A{
+      Affine{-1.0, 1.0, -1.0 + x_coord_a_, 1.0 + x_coord_a_},
+      Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[0],
+             1.0 + center_of_mass_offset_[0]},
+      Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[1],
+             1.0 + center_of_mass_offset_[1]}};
+  const Affine3D translation_B{
+      Affine{-1.0, 1.0, -1.0 + x_coord_b_, 1.0 + x_coord_b_},
+      Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[0],
+             1.0 + center_of_mass_offset_[0]},
+      Affine{-1.0, 1.0, -1.0 + center_of_mass_offset_[1],
+             1.0 + center_of_mass_offset_[1]}};
 
   // Two blocks covering the compact objects and their immediate neighborhood
   if (use_single_block_a_) {
     maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-            Affine3D{Affine(-1.0, 1.0, -0.5 * length_inner_cube_ + x_coord_a_,
-                            0.5 * length_inner_cube_ + x_coord_a_),
-                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
-                            0.5 * length_inner_cube_),
-                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
-                            0.5 * length_inner_cube_)}));
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(Affine3D{
+            Affine(-1.0, 1.0, -0.5 * length_inner_cube_ + x_coord_a_,
+                   0.5 * length_inner_cube_ + x_coord_a_),
+            Affine(-1.0, 1.0,
+                   -0.5 * length_inner_cube_ + center_of_mass_offset_[0],
+                   0.5 * length_inner_cube_ + center_of_mass_offset_[0]),
+            Affine(-1.0, 1.0,
+                   -0.5 * length_inner_cube_ + center_of_mass_offset_[1],
+                   0.5 * length_inner_cube_ + center_of_mass_offset_[1])}));
   } else {
     // --- Blocks enclosing each object (12 blocks per object) ---
     //
@@ -397,13 +413,15 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
   if (use_single_block_b_) {
     maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-            Affine3D{Affine(-1.0, 1.0, -0.5 * length_inner_cube_ + x_coord_b_,
-                            0.5 * length_inner_cube_ + x_coord_b_),
-                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
-                            0.5 * length_inner_cube_),
-                     Affine(-1.0, 1.0, -0.5 * length_inner_cube_,
-                            0.5 * length_inner_cube_)}));
+        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(Affine3D{
+            Affine(-1.0, 1.0, -0.5 * length_inner_cube_ + x_coord_b_,
+                   0.5 * length_inner_cube_ + x_coord_b_),
+            Affine(-1.0, 1.0,
+                   -0.5 * length_inner_cube_ + center_of_mass_offset_[0],
+                   0.5 * length_inner_cube_ + center_of_mass_offset_[0]),
+            Affine(-1.0, 1.0,
+                   -0.5 * length_inner_cube_ + center_of_mass_offset_[1],
+                   0.5 * length_inner_cube_ + center_of_mass_offset_[1])}));
   } else {
     // --- Blocks enclosing each object (12 blocks per object) ---
     //
@@ -439,7 +457,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
   Maps maps_frustums = domain::make_vector_coordinate_map_base<
       Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
       length_inner_cube_, length_outer_cube_, use_equiangular_map_,
-      {{-translation_, 0.0, 0.0}}, radial_distribution_envelope_,
+      {{-translation_, -center_of_mass_offset_[0], -center_of_mass_offset_[1]}},
+      radial_distribution_envelope_,
       radial_distribution_envelope_ ==
               domain::CoordinateMaps::Distribution::Projective
           ? std::optional<double>(length_inner_cube_ / length_outer_cube_)
@@ -494,15 +513,16 @@ Domain<3> BinaryCompactObject::create_domain() const {
     else {
       excision_spheres.emplace(
           "ExcisionSphereA",
-          ExcisionSphere<3>{
-              std::get<Object>(object_A_).inner_radius,
-              tnsr::I<double, 3, Frame::Grid>{{x_coord_a_, 0.0, 0.0}},
-              {{0, Direction<3>::lower_zeta()},
-               {1, Direction<3>::lower_zeta()},
-               {2, Direction<3>::lower_zeta()},
-               {3, Direction<3>::lower_zeta()},
-               {4, Direction<3>::lower_zeta()},
-               {5, Direction<3>::lower_zeta()}}});
+          ExcisionSphere<3>{std::get<Object>(object_A_).inner_radius,
+                            tnsr::I<double, 3, Frame::Grid>{
+                                {x_coord_a_, center_of_mass_offset_[0],
+                                 center_of_mass_offset_[1]}},
+                            {{0, Direction<3>::lower_zeta()},
+                             {1, Direction<3>::lower_zeta()},
+                             {2, Direction<3>::lower_zeta()},
+                             {3, Direction<3>::lower_zeta()},
+                             {4, Direction<3>::lower_zeta()},
+                             {5, Direction<3>::lower_zeta()}}});
     }
   }
   if (not use_single_block_b_) {
@@ -536,15 +556,16 @@ Domain<3> BinaryCompactObject::create_domain() const {
     else {
       excision_spheres.emplace(
           "ExcisionSphereB",
-          ExcisionSphere<3>{
-              std::get<Object>(object_B_).inner_radius,
-              tnsr::I<double, 3, Frame::Grid>{{x_coord_b_, 0.0, 0.0}},
-              {{12, Direction<3>::lower_zeta()},
-               {13, Direction<3>::lower_zeta()},
-               {14, Direction<3>::lower_zeta()},
-               {15, Direction<3>::lower_zeta()},
-               {16, Direction<3>::lower_zeta()},
-               {17, Direction<3>::lower_zeta()}}});
+          ExcisionSphere<3>{std::get<Object>(object_B_).inner_radius,
+                            tnsr::I<double, 3, Frame::Grid>{
+                                {x_coord_b_, center_of_mass_offset_[0],
+                                 center_of_mass_offset_[1]}},
+                            {{12, Direction<3>::lower_zeta()},
+                             {13, Direction<3>::lower_zeta()},
+                             {14, Direction<3>::lower_zeta()},
+                             {15, Direction<3>::lower_zeta()},
+                             {16, Direction<3>::lower_zeta()},
+                             {17, Direction<3>::lower_zeta()}}});
     }
   }
 

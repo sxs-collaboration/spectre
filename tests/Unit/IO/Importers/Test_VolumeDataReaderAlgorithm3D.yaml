@@ -18,6 +18,7 @@ SourceDomainCreator:
       XCoord: &x_left -7.683
       ExciseInterior: True
       UseLogarithmicMap: True
+    CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 60.
       RadialDistribution: Projective
@@ -44,6 +45,7 @@ TargetDomainCreator:
       XCoord: *x_left
       ExciseInterior: True
       UseLogarithmicMap: true
+    CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.
       RadialDistribution: Projective

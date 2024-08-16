@@ -41,6 +41,7 @@ DomainCreator:
       CartesianCubeAtXCoord: &XCoordA 20
     ObjectB:
       CartesianCubeAtXCoord: &XCoordB -20
+    CenterOfMassOffset: [0., 0.]
     Envelope:
       Radius: 100.0
       RadialDistribution: Linear

@@ -100,6 +100,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     const domain::creators::BinaryCompactObject domain_creator{
         Object{1., 4., 8., true, true},
         Object{0.8, 2.5, -6., true, true},
+        std::array<double, 2>{{0., 0.}},
         60.,
         300.,
         0_st,

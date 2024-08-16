@@ -63,6 +63,9 @@ DomainCreator:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
+    CenterOfMassOffset:
+      - &YOffset {{ CenterOfMassOffset_y }}
+      - &ZOffset {{ CenterOfMassOffset_z }}
     Envelope:
       Radius: 100.0
       # Radial distribution is logarithmic to transition from grid point
@@ -180,11 +183,11 @@ EvolutionSystem:
         Gaussian1:
           Amplitude: {{ Gamma0LeftAmplitude }}
           Width: {{ Gamma0LeftWidth }}
-          Center: [*XCoordA, 0.0, 0.0]
+          Center: [*XCoordA, *YOffset, *ZOffset]
         Gaussian2:
           Amplitude: {{ Gamma0RightAmplitude }}
           Width:  {{ Gamma0RightWidth }}
-          Center: [*XCoordB, 0.0, 0.0]
+          Center: [*XCoordB, *YOffset, *ZOffset]
         Gaussian3:
           Amplitude: {{ Gamma0OriginAmplitude }}
           Width: {{ Gamma0OriginWidth }}
@@ -346,7 +349,7 @@ ApparentHorizons:
     InitialGuess:
       LMax: *LMax
       Radius: {{ ExcisionRadiusA * 1.5 }}
-      Center: [*XCoordA, 0.0, 0.0]
+      Center: [*XCoordA, *YOffset, *ZOffset]
     FastFlow: &DefaultFastFlow
       Flow: Fast
       Alpha: 1.0
@@ -361,7 +364,7 @@ ApparentHorizons:
     InitialGuess:
       LMax: *LMax
       Radius: {{ ExcisionRadiusB * 1.5 }}
-      Center: [*XCoordB, 0.0, 0.0]
+      Center: [*XCoordB, *YOffset, *ZOffset]
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
   ObservationAhC:
@@ -384,12 +387,12 @@ InterpolationTargets:
     AngularOrdering: Cce
   ObservationExcisionBoundaryA: &ExBdryA
     LMax: *LMax
-    Center: [*XCoordA, 0., 0.]
+    Center: [*XCoordA, *YOffset, *ZOffset]
     Radius: *ExcisionRadiusA
     AngularOrdering: "Strahlkorper"
   ObservationExcisionBoundaryB: &ExBdryB
     LMax: *LMax
-    Center: [*XCoordB, 0., 0.]
+    Center: [*XCoordB, *YOffset, *ZOffset]
     Radius: *ExcisionRadiusB
     AngularOrdering: "Strahlkorper"
   ControlSystemCharSpeedExcisionA: *ExBdryA

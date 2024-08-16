@@ -151,6 +151,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Identity2D = CoordinateMaps::Identity<2>;
+  // The Translation type is no longer needed, but it is kept here for backwards
+  // compatibility with old domains.
   using Translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
@@ -175,6 +177,12 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::Wedge<3>>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>, Translation>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D,
+                            Affine3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Equiangular3D,
+                            Affine3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                            CoordinateMaps::Wedge<3>, Affine3D>,
       bco::TimeDependentMapOptions<false>::maps_list>>;
 
   /// Options for an excision region in the domain
@@ -311,6 +319,15 @@ class BinaryCompactObject : public DomainCreator<3> {
         "x-axis)."};
   };
 
+  struct CenterOfMassOffset {
+    using type = std::array<double, 2>;
+    static constexpr Options::String help = {
+        "Offset in the y and z axes applied to both object A and B in order to "
+        "control the center of mass. This moves the location of the two objects"
+        " in the grid frame but keeps the Envelope and OuterShell centered on "
+        "the origin in the grid frame."};
+  };
+
   struct Envelope {
     static constexpr Options::String help = {
         "Options for the sphere enveloping the two objects."};
@@ -410,10 +427,10 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using options = tmpl::append<
-      tmpl::list<ObjectA, ObjectB, EnvelopeRadius, OuterRadius,
-                 InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 RadialDistributionEnvelope, RadialDistributionOuterShell,
-                 OpeningAngle, TimeDependentMaps>,
+      tmpl::list<ObjectA, ObjectB, CenterOfMassOffset, EnvelopeRadius,
+                 OuterRadius, InitialRefinement, InitialGridPoints,
+                 UseEquiangularMap, RadialDistributionEnvelope,
+                 RadialDistributionOuterShell, OpeningAngle, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -449,7 +466,8 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   BinaryCompactObject(
       typename ObjectA::type object_A, typename ObjectB::type object_B,
-      double envelope_radius, double outer_radius,
+      std::array<double, 2> center_of_mass_offset, double envelope_radius,
+      double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true,
@@ -507,6 +525,7 @@ class BinaryCompactObject : public DomainCreator<3> {
  private:
   typename ObjectA::type object_A_{};
   typename ObjectB::type object_B_{};
+  std::array<double, 2> center_of_mass_offset_{};
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
   std::vector<std::array<size_t, 3>> initial_refinement_{};
