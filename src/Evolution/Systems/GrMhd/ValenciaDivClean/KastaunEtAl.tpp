@@ -140,9 +140,11 @@ class FunctionOfMu {
       eps_min = equation_of_state_.specific_internal_energy_lower_bound(
           rest_mass_density_times_lorentz_factor_ / lorentz_max,
           electron_fraction_);
-    } else {
+    } else if constexpr (EosType::thermodynamic_dim == 2) {
       eps_min = equation_of_state_.specific_internal_energy_lower_bound(
           rest_mass_density_times_lorentz_factor_ / lorentz_max);
+    } else {
+      eps_min = equation_of_state_.specific_internal_energy_lower_bound();
     }
     q_ = tau / rest_mass_density_times_lorentz_factor;
     if constexpr (EnforcePhysicality) {
@@ -295,11 +297,16 @@ Primitives FunctionOfMu<EnforcePhysicality, EosType>::primitives(
                        rho_hat, electron_fraction_),
                    equation_of_state_.specific_internal_energy_upper_bound(
                        rho_hat, electron_fraction_));
-  } else {
+  } else if constexpr (EosType::thermodynamic_dim == 2) {
     epsilon_hat = std::clamp(
         epsilon_hat,
         equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
         equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  } else {
+    epsilon_hat = std::clamp(
+        epsilon_hat,
+        equation_of_state_.specific_internal_energy_lower_bound(),
+        equation_of_state_.specific_internal_energy_upper_bound());
   }
   // Pressure from EOS
   double p_hat = std::numeric_limits<double>::signaling_NaN();

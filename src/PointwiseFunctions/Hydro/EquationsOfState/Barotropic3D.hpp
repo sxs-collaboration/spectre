@@ -147,19 +147,17 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   /// The lower bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$ and electron fraction \f$Y_e\f$
   double specific_internal_energy_lower_bound(
-      const double rest_mass_density,
+      const double /*rest_mass_density*/,
       const double /*electron_fraction*/) const override {
-    return underlying_eos_.specific_internal_energy_lower_bound(
-        rest_mass_density);
+    return underlying_eos_.specific_internal_energy_lower_bound();
   }
 
   /// The upper bound of the specific internal energy that is valid for this EOS
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_upper_bound(
-      const double rest_mass_density,
+      const double /*rest_mass_density*/,
       const double /*electron_fraction*/) const override {
-    return underlying_eos_.specific_internal_energy_upper_bound(
-        rest_mass_density);
+    return underlying_eos_.specific_internal_energy_upper_bound();
   }
 
   /// The lower bound of the specific enthalpy that is valid for this EOS

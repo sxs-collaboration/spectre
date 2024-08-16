@@ -103,7 +103,7 @@ void check_bounds() {
       EquationsOfState::PolytropicFluid<IsRelativistic>>
       eos{cold_eos, 1.5};
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
-  CHECK(0.0 == eos.specific_internal_energy_lower_bound(1.0));
+  CHECK(200.0 == eos.specific_internal_energy_lower_bound(1.0));
   if constexpr (IsRelativistic) {
     CHECK(1.0 == eos.specific_enthalpy_lower_bound());
   } else {

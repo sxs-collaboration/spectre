@@ -100,11 +100,11 @@ void check_exact() {
   }
   // Test bounds
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
-  CHECK(0.0 == eos.specific_internal_energy_lower_bound(1.0));
+  CHECK(0.0 == eos.specific_internal_energy_lower_bound());
   CHECK(1.0 == eos.specific_enthalpy_lower_bound());
   const double max_double = std::numeric_limits<double>::max();
   CHECK(max_double == eos.rest_mass_density_upper_bound());
-  CHECK(max_double == eos.specific_internal_energy_upper_bound(1.0));
+  CHECK(max_double == eos.specific_internal_energy_upper_bound());
   CHECK(eos.baryon_mass() ==
         approx(hydro::units::geometric::default_baryon_mass));
 }

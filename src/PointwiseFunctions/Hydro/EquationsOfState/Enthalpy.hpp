@@ -248,22 +248,16 @@ class Enthalpy : public EquationOfState<true, 1> {
     return std::numeric_limits<double>::max();
   }
 
-  /// The lower bound of the specific internal energy that is valid for this EOS
-  /// at the given rest mass density \f$\rho\f$
-  double specific_internal_energy_lower_bound(
-      const double /* rest_mass_density */) const override {
-    return 0.0;
-  }
-
-  /// The upper bound of the specific internal energy that is valid for this EOS
-  /// at the given rest mass density \f$\rho\f$
-  double specific_internal_energy_upper_bound(
-      const double /* rest_mass_density */) const override {
-    return std::numeric_limits<double>::max();
-  }
-
   /// The lower bound of the specific enthalpy that is valid for this EOS
   double specific_enthalpy_lower_bound() const override { return 1.0; }
+
+  /// The lower bound of the specific internal energy that is valid for this EOS
+  double specific_internal_energy_lower_bound() const override { return 0.0; }
+
+  /// The upper bound of the specific internal energy that is valid for this EOS
+  double specific_internal_energy_upper_bound() const override {
+    return std::numeric_limits<double>::max();
+  }
 
   /// The vacuum baryon mass for this EoS
   double baryon_mass() const override { return low_density_eos_.baryon_mass(); }
