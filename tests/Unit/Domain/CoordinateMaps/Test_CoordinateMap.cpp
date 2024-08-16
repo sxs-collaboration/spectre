@@ -31,6 +31,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -1472,9 +1473,11 @@ void test_coords_frame_velocity_jacobians() {
               cubic_scale_jac.get(2, 1) * velocity_affine_map_frame[1] +
               cubic_scale_jac.get(2, 2) * velocity_affine_map_frame[2]}}};
 
-    CHECK(std::get<3>(composed_map_3d.coords_frame_velocity_jacobians(
-              tnsr::I<double, 3, Frame::BlockLogical>{source_pt}, time,
-              functions_of_time)) == expected_velocity);
+    CHECK_ITERABLE_APPROX(
+        (std::get<3>(composed_map_3d.coords_frame_velocity_jacobians(
+            tnsr::I<double, 3, Frame::BlockLogical>{source_pt}, time,
+            functions_of_time))),
+        expected_velocity);
   }
   {
     MAKE_GENERATOR(generator);
@@ -1522,5 +1525,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_push_back();
   test_jacobian_is_time_dependent();
   test_coords_frame_velocity_jacobians();
+  static_assert(CoordinateMap_detail::has_combined_coords_frame_velocity_jacs_v<
+                3, domain::CoordinateMaps::TimeDependent::Shape>);
+  static_assert(
+      not CoordinateMap_detail::has_combined_coords_frame_velocity_jacs_v<
+          3, domain::CoordinateMaps::TimeDependent::Translation<3>>);
 }
 }  // namespace domain
