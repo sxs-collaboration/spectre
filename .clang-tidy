@@ -13,6 +13,10 @@ Checks: '*,
 # complains about Catch macros having infinite loops,
 -bugprone-infinite-loop,
 -bugprone-macro-parentheses,
+# useless as it triggers on calls to value() which already do a check,
+# and is too aggressive as it requires the check to be immediately before the
+# access.
+-bugprone-unchecked-optional-access,
 # Official justification is not public, unofficial justification has nothing,
 # specific to iterators and is basically "never create mutable temporaries",,
 # which is against standard practice everywhere else.,
