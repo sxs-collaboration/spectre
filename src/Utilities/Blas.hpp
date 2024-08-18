@@ -30,6 +30,12 @@ void dgemm_(const char& TRANSA, const char& TRANSB, const int& M, const int& N,
             const int& K, const double& ALPHA, const double* A, const int& LDA,
             const double* B, const int& LDB, const double& BETA,
             const double* C, const int& LDC, size_t, size_t);
+void zgemm_(const char& TRANSA, const char& TRANSB, const int& M, const int& N,
+            const int& K, const std::complex<double>& ALPHA,
+            const std::complex<double>* A, const int& LDA,
+            const std::complex<double>* B, const int& LDB,
+            const std::complex<double>& BETA, const std::complex<double>* C,
+            const int& LDC, size_t, size_t);
 
 // The final argument is the "hidden" length of the first one.
 // https://gcc.gnu.org/onlinedocs/gfortran/Argument-passing-conventions.html
@@ -149,6 +155,27 @@ inline void dgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
          "TRANSB must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
   blas_detail::dgemm_(
+      TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
+      gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
+      gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC), 1, 1);
+}
+template <bool UseLibXsmm = false>
+inline void zgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
+                   const size_t& N, const size_t& K,
+                   const std::complex<double>& ALPHA,
+                   const std::complex<double>* A, const size_t& LDA,
+                   const std::complex<double>* B, const size_t& LDB,
+                   const std::complex<double>& BETA, std::complex<double>* C,
+                   const size_t& LDC) {
+  ASSERT('N' == TRANSA or 'n' == TRANSA or 'T' == TRANSA or 't' == TRANSA or
+             'C' == TRANSA or 'c' == TRANSA,
+         "TRANSA must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
+  ASSERT('N' == TRANSB or 'n' == TRANSB or 'T' == TRANSB or 't' == TRANSB or
+             'C' == TRANSB or 'c' == TRANSB,
+         "TRANSB must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
+  blas_detail::zgemm_(
       TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
       gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
       gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC), 1, 1);
