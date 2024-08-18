@@ -169,7 +169,8 @@ struct ThrowDarts {
             cache)[array_index];
 
     // Tutorial STEP 2.3: contribute hits to reduction data
-    Parallel::ReductionData<Parallel::ReductionDatum<size_t, funcl::Plus<>>>
+    const Parallel::ReductionData<
+        Parallel::ReductionDatum<size_t, funcl::Plus<>>>
         hits_to_send{hits};
     Parallel::contribute_to_reduction<Actions::ProcessHitsAndThrows>(
         hits_to_send, dart_thrower_element_proxy, pi_estimator_proxy);
@@ -194,7 +195,7 @@ struct ProcessHitsAndThrows {
                     const Parallel::GlobalCache<Metavars>& cache,
                     const ArrayIndex& /*array_index*/, const size_t new_hits) {
     // TUTORIAL STEP 2.4: get number of processors from the cache
-    const size_t num_procs = Parallel::number_of_procs<size_t>(cache);
+    const auto num_procs = Parallel::number_of_procs<size_t>(cache);
 
     // TUTORIAL STEP 2.5: get number of darts thrown each iteration
     // from the DataBox
@@ -266,7 +267,7 @@ struct PiEstimator {
       tmpl::list<Tags::HitsAllProcs, Tags::ThrowsAllProcs,
                  Tags::DartsPerIteration, Tags::AccuracyGoal>;
   static void execute_next_phase(
-      const Parallel::Phase next_phase,
+      Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavars>& global_cache);
 };
 
@@ -309,7 +310,7 @@ struct DartThrower {
   using array_allocation_tags = tmpl::list<>;
 
   static void execute_next_phase(
-      const Parallel::Phase next_phase,
+      Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavars>& global_cache);
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavars>& global_cache,
@@ -358,7 +359,7 @@ void DartThrower<Metavars>::allocate_array(
       Parallel::get_parallel_component<DartThrower<Metavars>>(local_cache);
 
   size_t which_proc = 0;
-  const size_t num_procs = Parallel::number_of_procs<size_t>(local_cache);
+  const auto num_procs = Parallel::number_of_procs<size_t>(local_cache);
   const size_t number_of_elements = num_procs;
 
   for (size_t i = 0; i < number_of_elements; ++i) {
