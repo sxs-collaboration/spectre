@@ -143,10 +143,13 @@ target_compile_definitions(Blaze
   BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
-target_precompile_headers(Blaze
-  INTERFACE
-  ${CMAKE_SOURCE_DIR}/tools/BlazeExceptions.hpp
-  )
+# We need to make sure `BlazeExceptions.hpp` is included. It is included in the
+# PCH (see tools/SpectrePch.hpp). If there's no PCH, we need to include it here.
+if (NOT USE_PCH)
+  target_compile_options(Blaze
+    INTERFACE
+    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include Utilities/BlazeExceptions.hpp>")
+endif()
 
 add_interface_lib_headers(
   TARGET Blaze
