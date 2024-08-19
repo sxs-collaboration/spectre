@@ -169,6 +169,13 @@ struct TimeDependentMapOptions {
     };
     using options = tmpl::list<InitialValues, AsymptoticVelocityOuterBoundary,
                                DecayTimescaleOuterBoundaryVelocity>;
+    ExpansionMapOptions() = default;
+    ExpansionMapOptions(std::array<double, 2> initial_values_in,
+                        double outer_boundary_velocity_in,
+                        double outer_boundary_decay_time_in)
+        : initial_values(initial_values_in),
+          outer_boundary_velocity(outer_boundary_velocity_in),
+          outer_boundary_decay_time(outer_boundary_decay_time_in) {}
 
     std::array<double, 2> initial_values{
         std::numeric_limits<double>::signaling_NaN(),
@@ -193,6 +200,11 @@ struct TimeDependentMapOptions {
 
     using options = tmpl::list<InitialAngularVelocity>;
 
+    RotationMapOptions() = default;
+    explicit RotationMapOptions(
+        std::array<double, 3> initial_angular_velocity_in)
+        : initial_angular_velocity(initial_angular_velocity_in) {}
+
     std::array<double, 3> initial_angular_velocity{};
   };
 
@@ -213,6 +225,10 @@ struct TimeDependentMapOptions {
     };
 
     using options = tmpl::list<InitialValues>;
+    TranslationMapOptions() = default;
+    explicit TranslationMapOptions(
+        std::array<std::array<double, 3>, 3> initial_values_in)
+        : initial_values(initial_values_in) {}
 
     std::array<std::array<double, 3>, 3> initial_values{};
   };

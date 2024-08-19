@@ -577,7 +577,7 @@ void test_errors() {
         TimeDependentMapOptions<IsCylindrical> time_dep_opts{
             1.0,
             ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-            RotMapOptions<IsCylindrical>{0.0},
+            RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
             std::nullopt,
             std::nullopt,
             ShapeMapBOptions<IsCylindrical>{8, {}}};
@@ -593,7 +593,7 @@ void test_errors() {
         TimeDependentMapOptions<IsCylindrical> time_dep_opts{
             1.0,
             ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-            RotMapOptions<IsCylindrical>{0.0},
+            RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
             std::nullopt,
             ShapeMapAOptions<IsCylindrical>{8, {}},
             std::nullopt};

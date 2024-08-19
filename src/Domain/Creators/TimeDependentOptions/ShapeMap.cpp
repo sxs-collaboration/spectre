@@ -19,6 +19,24 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace domain::creators::time_dependent_options {
+KerrSchildFromBoyerLindquist::KerrSchildFromBoyerLindquist() = default;
+KerrSchildFromBoyerLindquist::KerrSchildFromBoyerLindquist(
+    const double mass_in, const std::array<double, 3> spin_in)
+    : mass(mass_in), spin(spin_in) {}
+
+YlmsFromFile::YlmsFromFile() = default;
+YlmsFromFile::YlmsFromFile(std::string h5_filename_in,
+                           std::vector<std::string> subfile_names_in,
+                           double match_time_in,
+                           std::optional<double> match_time_epsilon_in,
+                           bool set_l1_coefs_to_zero_in, bool check_frame_in)
+    : h5_filename(std::move(h5_filename_in)),
+      subfile_names(std::move(subfile_names_in)),
+      match_time(match_time_in),
+      match_time_epsilon(match_time_epsilon_in),
+      set_l1_coefs_to_zero(set_l1_coefs_to_zero_in),
+      check_frame(check_frame_in) {}
+
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
 std::pair<std::array<DataVector, 3>, std::array<DataVector, 4>>
 initial_shape_and_size_funcs(

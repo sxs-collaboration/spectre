@@ -30,6 +30,29 @@
 
 namespace domain::creators::sphere {
 
+TimeDependentMapOptions::RotationMapOptions::RotationMapOptions() = default;
+TimeDependentMapOptions::RotationMapOptions::RotationMapOptions(
+    const std::array<std::array<double, 4>, 3> initial_values_in,
+    const double decay_timescale_in)
+    : initial_values(initial_values_in), decay_timescale(decay_timescale_in) {}
+
+TimeDependentMapOptions::ExpansionMapOptions::ExpansionMapOptions() = default;
+TimeDependentMapOptions::ExpansionMapOptions::ExpansionMapOptions(
+    const std::array<double, 3> initial_values_in,
+    const double decay_timescale_in,
+    const std::array<double, 3> initial_values_outer_boundary_in,
+    const double decay_timescale_outer_boundary_in)
+    : initial_values(initial_values_in),
+      decay_timescale(decay_timescale_in),
+      initial_values_outer_boundary(initial_values_outer_boundary_in),
+      decay_timescale_outer_boundary(decay_timescale_outer_boundary_in) {}
+
+TimeDependentMapOptions::TranslationMapOptions::TranslationMapOptions() =
+    default;
+TimeDependentMapOptions::TranslationMapOptions::TranslationMapOptions(
+    const std::array<std::array<double, 3>, 3> initial_values_in)
+    : initial_values(initial_values_in) {}
+
 TimeDependentMapOptions::TimeDependentMapOptions(
     const double initial_time, std::optional<ShapeMapOptions> shape_map_options,
     std::optional<RotationMapOptions> rotation_map_options,

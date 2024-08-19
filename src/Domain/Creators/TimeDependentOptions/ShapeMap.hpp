@@ -47,6 +47,9 @@ struct KerrSchildFromBoyerLindquist {
       "value of the 'InnerRadius'. To conform to the outer Kerr horizon, "
       "choose an 'InnerRadius' of r_+ = M + sqrt(M^2-a^2)."};
 
+  KerrSchildFromBoyerLindquist();
+  KerrSchildFromBoyerLindquist(double mass_in, std::array<double, 3> spin_in);
+
   double mass{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> spin{std::numeric_limits<double>::signaling_NaN(),
                              std::numeric_limits<double>::signaling_NaN(),
@@ -112,6 +115,11 @@ struct YlmsFromFile {
   static constexpr Options::String help = {
       "Read the Y_lm coefficients of a Strahlkorper from file and use those to "
       "initialize the coefficients of a shape map."};
+  YlmsFromFile();
+  YlmsFromFile(std::string h5_filename_in,
+               std::vector<std::string> subfile_names_in, double match_time_in,
+               std::optional<double> match_time_epsilon_in,
+               bool set_l1_coefs_to_zero_in, bool check_frame_in = true);
 
   std::string h5_filename{};
   std::vector<std::string> subfile_names{};
@@ -176,6 +184,18 @@ struct ShapeMapOptions {
       tmpl::conditional_t<IncludeTransitionEndsAtCube,
                           tmpl::push_back<common_options, TransitionEndsAtCube>,
                           common_options>;
+  ShapeMapOptions() = default;
+  ShapeMapOptions(
+      size_t l_max_in,
+      std::optional<std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile>>
+          initial_values_in,
+      std::optional<std::array<double, 3>> initial_size_values_in =
+          std::nullopt,
+      bool transition_ends_at_cube_in = false)
+      : l_max(l_max_in),
+        initial_values(std::move(initial_values_in)),
+        initial_size_values(initial_size_values_in),
+        transition_ends_at_cube(transition_ends_at_cube_in) {}
 
   size_t l_max{};
   std::optional<std::variant<KerrSchildFromBoyerLindquist, YlmsFromFile>>

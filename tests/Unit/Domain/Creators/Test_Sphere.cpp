@@ -602,9 +602,9 @@ void test_parse_errors() {
                        TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt},
                             std::nullopt, std::nullopt,
                             TDMO::TranslationMapOptions{
-                                std::array<double, 3>{0.0, 0.0, 0.0},
-                                std::array<double, 3>{0.001, -0.003, 0.005},
-                                std::array<double, 3>{0.0, 0.0, 0.0}}},
+                                {std::array<double, 3>{0.0, 0.0, 0.0},
+                                 std::array<double, 3>{0.001, -0.003, 0.005},
+                                 std::array<double, 3>{0.0, 0.0, 0.0}}}},
                        nullptr),
       Catch::Matchers::ContainsSubstring(
           "Currently cannot use hard-coded time dependent maps with an inner "
@@ -712,8 +712,8 @@ void test_sphere(const gsl::not_null<Generator*> gen) {
                 l_max, std::nullopt},
             std::nullopt, std::nullopt,
             creators::sphere::TimeDependentMapOptions::TranslationMapOptions{
-                std::array<double, 3>{0.0, 0.0, 0.0}, translation_velocity,
-                std::array<double, 3>{0.0, 0.0, 0.0}});
+                {std::array<double, 3>{0.0, 0.0, 0.0}, translation_velocity,
+                 std::array<double, 3>{0.0, 0.0, 0.0}}});
       } else {
         time_dependent_options = std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3, 0>>(

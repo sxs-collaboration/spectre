@@ -201,6 +201,11 @@ class BinaryCompactObject : public DomainCreator<3> {
     using options = tmpl::list<BoundaryCondition<
         domain::BoundaryConditions::get_boundary_conditions_base<
             typename Metavariables::system>>>;
+    Excision() = default;
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    Excision(std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+                 boundary_condition_in)
+        : boundary_condition(std::move(boundary_condition_in)) {}
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition;
   };
@@ -301,6 +306,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       static constexpr Options::String help = {"x-coordinate of center."};
     };
     using options = tmpl::list<XCoord>;
+    CartesianCubeAtXCoord() = default;
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    CartesianCubeAtXCoord(const double x_coord_in) : x_coord(x_coord_in) {}
     bool is_excised() const { return false; }
     double x_coord;
   };
