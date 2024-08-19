@@ -22,6 +22,7 @@
 #define PY_ARRAY_UNIQUE_SYMBOL SPECTRE_PY_API
 #endif
 #define NO_IMPORT_ARRAY
+#define NPY_API_SYMBOL_ATTRIBUTE
 // Disable compiler warnings. NumPy ensures API compatibility among different
 // 1.x versions, as features become deprecated in Numpy 1.x will still function
 // but cause a compiler warning
