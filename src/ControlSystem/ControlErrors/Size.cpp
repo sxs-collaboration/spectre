@@ -127,6 +127,25 @@ void Size<DerivOrder, Horizon>::pup(PUP::er& p) {
   p | delta_r_drift_outward_options_;
 }
 
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
+Size<DerivOrder,
+     Horizon>::DeltaRDriftOutwardOptions::DeltaRDriftOutwardOptions() = default;
+
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
+Size<DerivOrder, Horizon>::DeltaRDriftOutwardOptions::DeltaRDriftOutwardOptions(
+    double max_allowed_radial_distance_in, double outward_drift_velocity_in,
+    double outward_drift_timescale_in)
+    : max_allowed_radial_distance(max_allowed_radial_distance_in),
+      outward_drift_velocity(outward_drift_velocity_in),
+      outward_drift_timescale(outward_drift_timescale_in) {}
+
+template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
+void Size<DerivOrder, Horizon>::DeltaRDriftOutwardOptions::pup(PUP::er& p) {
+  p | max_allowed_radial_distance;
+  p | outward_drift_velocity;
+  p | outward_drift_timescale;
+}
+
 #define DERIV_ORDER(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define HORIZON(data) BOOST_PP_TUPLE_ELEM(1, data)
 
