@@ -114,9 +114,12 @@ struct ThrowDarts {
       const ParallelComponent* const /*meta*/
   ) {
     // TUTORIAL STEP 2.0: get how many darts to throw from the DataBox
+    (void)box;  // remove this line
 
     // TUTORIAL STEP 2.1: throw N darts at the unit square, seeing how many
     // hit the quarter circle
+    (void)cache;        // remove this line
+    (void)array_index;  // remove this line
 
     // Get a proxy (an object that might live on another compute node)
     // for each ParallelComponent. The PiEstimator Singleton component
