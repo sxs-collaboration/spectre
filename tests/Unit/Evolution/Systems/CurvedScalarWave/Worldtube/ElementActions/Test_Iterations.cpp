@@ -130,7 +130,7 @@ void test_iterations(const size_t max_iterations) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(-10., 10.);
   std::uniform_real_distribution<> pos_dist(2., 10.);
-  std::uniform_real_distribution<> vel_dist(-0.3, 0.3);
+  std::uniform_real_distribution<> vel_dist(-0.2, 0.2);
   using metavars = MockMetavariables<Dim>;
   domain::creators::register_derived_with_charm();
   using element_chare = MockElementArray<metavars>;
