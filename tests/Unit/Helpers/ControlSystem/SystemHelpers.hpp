@@ -100,49 +100,40 @@ class FakeCreator : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Num of components for function of time"};
   };
-  struct NumberOfExcisions {
-    using type = size_t;
-    static constexpr Options::String help = {"Num of excisions in the domain."};
-  };
 
  public:
-  using options = tmpl::list<NumberOfComponents, NumberOfExcisions>;
+  using options = tmpl::list<NumberOfComponents>;
   static constexpr Options::String help = {
       "Num of components for all functions of time being tested."};
 
   FakeCreator() = default;
 
-  FakeCreator(const std::unordered_map<std::string, size_t>& num_components_map,
-              const size_t number_of_excisions = 0)
-      : num_components_map_(num_components_map),
-        number_of_excisions_(number_of_excisions) {}
+  FakeCreator(const std::unordered_map<std::string, size_t>& num_components_map)
+      : num_components_map_(num_components_map) {}
 
   Domain<3> create_domain() const override {
     std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
-    if (number_of_excisions_ > 0) {
-      excision_spheres.insert(
-          {"ExcisionSphereA",
-           ExcisionSphere<3>{1.3,
-                             tnsr::I<double, 3, Frame::Grid>{{+0.9, 0.0, 0.0}},
-                             {{0, Direction<3>::lower_zeta()},
-                              {1, Direction<3>::lower_zeta()},
-                              {2, Direction<3>::lower_zeta()},
-                              {3, Direction<3>::lower_zeta()},
-                              {4, Direction<3>::lower_zeta()},
-                              {5, Direction<3>::lower_zeta()}}}});
-    }
-    if (number_of_excisions_ > 1) {
-      excision_spheres.insert(
-          {"ExcisionSphereB",
-           ExcisionSphere<3>{0.8,
-                             tnsr::I<double, 3, Frame::Grid>{{-1.1, 0.0, 0.0}},
-                             {{0, Direction<3>::lower_zeta()},
-                              {1, Direction<3>::lower_zeta()},
-                              {2, Direction<3>::lower_zeta()},
-                              {3, Direction<3>::lower_zeta()},
-                              {4, Direction<3>::lower_zeta()},
-                              {5, Direction<3>::lower_zeta()}}}});
-    }
+    excision_spheres.insert(
+        {"ExcisionSphereA",
+         ExcisionSphere<3>{1.3,
+                           tnsr::I<double, 3, Frame::Grid>{{+0.9, 0.0, 0.0}},
+                           {{0, Direction<3>::lower_zeta()},
+                            {1, Direction<3>::lower_zeta()},
+                            {2, Direction<3>::lower_zeta()},
+                            {3, Direction<3>::lower_zeta()},
+                            {4, Direction<3>::lower_zeta()},
+                            {5, Direction<3>::lower_zeta()}}}});
+    excision_spheres.insert(
+        {"ExcisionSphereB",
+         ExcisionSphere<3>{0.8,
+                           tnsr::I<double, 3, Frame::Grid>{{-1.1, 0.0, 0.0}},
+                           {{0, Direction<3>::lower_zeta()},
+                            {1, Direction<3>::lower_zeta()},
+                            {2, Direction<3>::lower_zeta()},
+                            {3, Direction<3>::lower_zeta()},
+                            {4, Direction<3>::lower_zeta()},
+                            {5, Direction<3>::lower_zeta()}}}});
+
     return Domain<3>{{}, std::move(excision_spheres)};
   }
 
@@ -191,7 +182,6 @@ class FakeCreator : public DomainCreator<3> {
 
  private:
   std::unordered_map<std::string, size_t> num_components_map_{};
-  size_t number_of_excisions_;
 };
 
 template <typename Metavariables, typename ControlSystem>

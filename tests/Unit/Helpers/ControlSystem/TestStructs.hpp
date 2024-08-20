@@ -128,9 +128,7 @@ struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
   using submeasurements = tmpl::list<Submeasurement<Label, CallRunCallbacks>>;
 };
 
-template <size_t NumExcisions>
 struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
-  static constexpr size_t expected_number_of_excisions = NumExcisions;
   using object_centers = domain::object_list<>;
   void pup(PUP::er& /*p*/) {}
 
@@ -150,8 +148,7 @@ struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
 static_assert(tt::assert_conforms_to_v<Measurement<TestStructs_detail::LabelA>,
                                        control_system::protocols::Measurement>);
 
-template <size_t DerivOrder, typename Label, typename Measurement,
-          size_t NumExcisions = 0>
+template <size_t DerivOrder, typename Label, typename Measurement>
 struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
   static std::optional<std::string> component_name(
@@ -160,7 +157,7 @@ struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
   }
   using measurement = Measurement;
   using simple_tags = tmpl::list<>;
-  using control_error = ControlError<NumExcisions>;
+  using control_error = ControlError;
   static constexpr size_t deriv_order = DerivOrder;
 
   struct process_measurement {

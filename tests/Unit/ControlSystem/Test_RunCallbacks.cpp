@@ -38,7 +38,7 @@ struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
   }
   using measurement = Measurement;
   using simple_tags = tmpl::list<>;
-  using control_error = control_system::TestHelpers::ControlError<1>;
+  using control_error = control_system::TestHelpers::ControlError;
   static constexpr size_t deriv_order = 2;
 
   struct SubmeasurementQueueTag {
