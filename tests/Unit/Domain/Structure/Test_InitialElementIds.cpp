@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
