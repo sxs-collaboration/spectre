@@ -64,9 +64,15 @@ template <typename ExceptionTypeToThrow, typename F>
 // after it is unreachable, causing warnings (and possibly suboptimal
 // code generation).
 #ifdef __CUDA_ARCH__
+#if defined(__clang__) && defined(__CUDA__)
+#define ERROR(m)                                              \
+  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
+  __builtin_trap();
+#else
 #define ERROR(m)                                              \
   printf("Error in file %s on line %d.", __FILE__, __LINE__); \
   __trap();
+#endif
 #else
 #define ERROR(m)                                                             \
   do {                                                                       \
@@ -92,9 +98,15 @@ template <typename ExceptionTypeToThrow, typename F>
  * instantiation in `Utilities/ErrorHandling/AbortWithErrorMessage.cpp`
  */
 #ifdef __CUDA_ARCH__
+#if defined(__clang__) && defined(__CUDA__)
+#define ERROR_AS(m, EXCEPTION_TYPE)                           \
+  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
+  __builtin_trap();
+#else
 #define ERROR_AS(m, EXCEPTION_TYPE)                           \
   printf("Error in file %s on line %d.", __FILE__, __LINE__); \
   __trap();
+#endif
 #else
 #define ERROR_AS(m, EXCEPTION_TYPE)                                          \
   do {                                                                       \
@@ -117,9 +129,15 @@ template <typename ExceptionTypeToThrow, typename F>
  * user errors, such as incorrect values in an input file.
  */
 #ifdef __CUDA_ARCH__
+#if defined(__clang__) && defined(__CUDA__)
+#define ERROR_NO_TRACE(m)                                     \
+  printf("Error in file %s on line %d.", __FILE__, __LINE__); \
+  __builtin_trap();
+#else
 #define ERROR_NO_TRACE(m)                                     \
   printf("Error in file %s on line %d.", __FILE__, __LINE__); \
   __trap();
+#endif
 #else
 #define ERROR_NO_TRACE(m)                                                    \
   do {                                                                       \
