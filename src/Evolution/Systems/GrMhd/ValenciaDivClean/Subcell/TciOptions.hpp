@@ -96,6 +96,13 @@ struct TciOptions {
   static constexpr Options::String help = {
       "Options for the troubled-cell indicator."};
 
+  TciOptions();
+  TciOptions(double minimum_rest_mass_density_times_lorentz_factor_in,
+             double minimum_ye_in, double minimum_tilde_tau_in,
+             double atmosphere_density_in,
+             double safety_factor_for_magnetic_field_in,
+             std::optional<double> magnetic_field_cutoff_in);
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
