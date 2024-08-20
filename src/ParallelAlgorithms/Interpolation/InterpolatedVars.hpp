@@ -61,6 +61,21 @@ struct Info {
   /// already been done for this `Info`.
   std::unordered_set<ElementId<VolumeDim>>
       interpolation_is_done_for_these_elements{};
+
+  Info() = default;
+  explicit Info(
+      std::vector<BlockLogicalCoords<VolumeDim>> block_coord_holders_in,
+      const size_t iteration_in = 0,
+      std::vector<Variables<TagList>> vars_in = {},
+      std::vector<std::vector<size_t>> global_offsets_in = {},
+      std::unordered_set<ElementId<VolumeDim>>
+          interpolation_is_done_for_these_elements_in = {})
+      : block_coord_holders(std::move(block_coord_holders_in)),
+        iteration(iteration_in),
+        vars(std::move(vars_in)),
+        global_offsets(std::move(global_offsets_in)),
+        interpolation_is_done_for_these_elements(
+            std::move(interpolation_is_done_for_these_elements_in)) {}
 };
 
 template <size_t VolumeDim, typename TagList>
