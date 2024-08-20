@@ -80,7 +80,14 @@ template <class VectorType>
 struct is_resizeable_sfinae<
     VectorType,
     typename boost::enable_if_c<is_derived_of_vector_impl_v<VectorType>>::type>
-    : boost::true_type {};
+    :
+#if BOOST_VERSION >= 108600
+    std::true_type
+#else
+    boost::true_type
+#endif
+{
+};
 
 template <>
 struct algebra_dispatcher<DataVector> {
