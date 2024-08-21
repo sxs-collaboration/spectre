@@ -253,6 +253,7 @@ void internal_mortar_data_impl(
         // Can use the local_mortar_data
         auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
         local_mortar.face_mesh = face_mesh;
+        local_mortar.mortar_mesh = mortar_mesh;
         // If this is the first time, initialize the data. If we don't do this,
         // then the DataVector will be non-owning which we don't want
         if (UNLIKELY(not local_mortar.mortar_data.has_value())) {
@@ -294,6 +295,7 @@ void internal_mortar_data_impl(
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
         local_mortar.face_mesh = face_mesh;
+        local_mortar.mortar_mesh = mortar_mesh;
         // If this is the first time, initialize the data. If we don't do this,
         // then the DataVector will be non-owning which we don't want
         if (UNLIKELY(not local_mortar.mortar_data.has_value())) {

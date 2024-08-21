@@ -306,10 +306,12 @@ bool receive_boundary_data_global_time_stepping(
         make_not_null(&db::as_access(*box)), received_temporal_id_and_data);
   }
 
+  const auto& mortar_meshes =
+      get<evolution::dg::Tags::MortarMesh<volume_dim>>(*box);
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
              evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
              domain::Tags::NeighborMesh<volume_dim>>(
-      [&received_temporal_id_and_data](
+      [&received_temporal_id_and_data, &mortar_meshes](
           const gsl::not_null<DirectionalIdMap<
               volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
               mortar_data,
@@ -338,6 +340,8 @@ bool receive_boundary_data_global_time_stepping(
                   .has_value()) {
             mortar_data->at(mortar_id).neighbor().face_mesh =
                 received_mortar_data.second.interface_mesh;
+            mortar_data->at(mortar_id).neighbor().mortar_mesh =
+                mortar_meshes.at(mortar_id);
             mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
                 received_mortar_data.second.boundary_correction_data.value());
           }
@@ -411,13 +415,14 @@ bool receive_boundary_data_local_time_stepping(
   }
   ASSERT(inbox_ptr != nullptr, "The inbox pointer should not be null.");
   InboxMap& inbox = *inbox_ptr;
+  const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
 
   const bool have_all_intermediate_messages = db::mutate<
       evolution::dg::Tags::MortarDataHistory<Dim,
                                              typename dt_variables_tag::type>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>>(
-      [&inbox, &needed_time](
+      [&inbox, &needed_time, &mortar_meshes](
           const gsl::not_null<DirectionalIdMap<
               Dim,
               TimeSteppers::BoundaryHistory<evolution::dg::MortarData<Dim>,
@@ -464,6 +469,7 @@ bool receive_boundary_data_local_time_stepping(
                 received_mortar_data->second.volume_mesh_ghost_cell_data);
             neighbor_mortar_data.face_mesh =
                 received_mortar_data->second.interface_mesh;
+            neighbor_mortar_data.mortar_mesh = mortar_meshes.at(mortar_id);
             neighbor_mortar_data.mortar_data = std::move(
                 received_mortar_data->second.boundary_correction_data.value());
             boundary_data_history->at(mortar_id).remote().insert(

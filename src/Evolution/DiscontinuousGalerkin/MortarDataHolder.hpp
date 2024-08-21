@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <cstddef>
+#include <iosfwd>
+
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 
 /// \cond
@@ -33,7 +36,19 @@ class MortarDataHolder {
   void pup(PUP::er& p);
 
  private:
-  MortarData<Dim> local_data_;
-  MortarData<Dim> neighbor_data_;
+  MortarData<Dim> local_data_{};
+  MortarData<Dim> neighbor_data_{};
 };
+
+template <size_t Dim>
+bool operator==(const MortarDataHolder<Dim>& lhs,
+                const MortarDataHolder<Dim>& rhs);
+
+template <size_t Dim>
+bool operator!=(const MortarDataHolder<Dim>& lhs,
+                const MortarDataHolder<Dim>& rhs);
+
+template <size_t Dim>
+std::ostream& operator<<(std::ostream& os,
+                         const MortarDataHolder<Dim>& mortar_data_holder);
 }  // namespace evolution::dg

@@ -316,6 +316,30 @@ void orient_each_component(
 }  // namespace
 
 template <size_t VolumeDim>
+Mesh<VolumeDim - 1> orient_mesh_on_slice(
+    const Mesh<VolumeDim - 1>& mesh_on_slice, const size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
+  if constexpr (VolumeDim < 3) {
+    return mesh_on_slice;
+  } else {
+    if (orientation_of_neighbor.is_aligned()) {
+      return mesh_on_slice;
+    }
+    const size_t first_dim_of_slice = sliced_dim == 0 ? 1 : 0;
+    const size_t second_dim_of_slice = sliced_dim == 2 ? 1 : 2;
+    if (orientation_of_neighbor(first_dim_of_slice) >
+        orientation_of_neighbor(second_dim_of_slice)) {
+      return Mesh<2>{
+          {{mesh_on_slice.extents(1), mesh_on_slice.extents(0)}},
+          {{mesh_on_slice.basis(1), mesh_on_slice.basis(0)}},
+          {{mesh_on_slice.quadrature(1), mesh_on_slice.quadrature(0)}}};
+    } else {
+      return mesh_on_slice;
+    }
+  }
+}
+
+template <size_t VolumeDim>
 void orient_variables(
     const gsl::not_null<DataVector*> result, const DataVector& variables,
     const Index<VolumeDim>& extents,
@@ -428,6 +452,9 @@ DataVector orient_variables_on_slice(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                               \
+  template Mesh<DIM(data) - 1> orient_mesh_on_slice(                         \
+      const Mesh<DIM(data) - 1>& mesh_on_slice, const size_t sliced_dim,     \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
   template void orient_variables(                                            \
       const gsl::not_null<DataVector*> result, const DataVector& variables,  \
       const Index<DIM(data)>& extents,                                       \

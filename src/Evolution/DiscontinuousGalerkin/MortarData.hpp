@@ -45,8 +45,10 @@ namespace evolution::dg {
  * In addition, for local time stepping with Gauss points, the determinants of
  * the volume inverse Jacobian and the face Jacobian are stored.
  *
- * In addition to the (type-erased) fields on the mortar, the face mesh is
- * stored
+ * In addition to the (type-erased) fields on the mortar, the appropriate meshes
+ * are stored.  When setting the mortar data and mortar mesh, the face mesh
+ * should also be set as it is used when hybridizing DG with finite difference
+ * or finite volume schemes (DG-subcell).
  *
  * If the element and its neighbor have unaligned logical coordinate
  * systems then the data and meshes are stored in the local logical
@@ -62,11 +64,37 @@ struct MortarData {
   std::optional<Scalar<DataVector>> face_normal_magnitude{std::nullopt};
   std::optional<Scalar<DataVector>> face_det_jacobian{std::nullopt};
   std::optional<Scalar<DataVector>> volume_det_inv_jacobian{std::nullopt};
+  std::optional<Mesh<Dim - 1>> mortar_mesh{std::nullopt};
   std::optional<Mesh<Dim - 1>> face_mesh{std::nullopt};
+  std::optional<Mesh<Dim>> volume_mesh{std::nullopt};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 };
+
+/// \brief Projects the mortar data when p-refined
+///
+/// \details only updates the stored mesh if the corresponding data exists
+///
+/// \note The DG-subcell code stores the face mesh in the MortarData even when
+/// the geometric data are not used.  Currently projection of MortarData is only
+///  needed for local time-stepping which is not yet supported for DG-subcell.
+template <size_t Dim>
+void p_project(gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
+               const Mesh<Dim - 1>& new_mortar_mesh,
+               const Mesh<Dim - 1>& new_face_mesh,
+               const Mesh<Dim>& new_volume_mesh);
+
+/// \brief Projects the mortar data (but not the geometric data) when p-refined
+///
+/// \details Used to re-project mortar data when the mortar mesh changes
+/// reactively after the neighbor face mesh is received.  In this case, the
+/// geometric data does not need to be updated as it already used the correct
+/// face/volume mesh.
+template <size_t Dim>
+void p_project_only_mortar_data(
+    gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
+    const Mesh<Dim - 1>& new_mortar_mesh);
 
 template <size_t Dim>
 bool operator==(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs);
