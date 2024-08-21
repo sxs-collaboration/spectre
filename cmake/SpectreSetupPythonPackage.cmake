@@ -53,6 +53,18 @@ set(PYTHON_EXEC_ENV_VARS "")
 # if(PARAVIEW_PYTHON_ENV_VARS)
 #   string(APPEND PYTHON_EXEC_ENV_VARS " ${PARAVIEW_PYTHON_ENV_VARS}")
 # endif()
+#
+# Place the Julia environment for the `sxs` package in the build directory.
+# The `sxs` package uses Julia for a PN implementation, which can be imported as
+# `from sxs import julia` (see https://moble.github.io/PostNewtonian.jl/dev/interface/python/).
+# This uses [juliapkg](https://github.com/JuliaPy/pyjuliapkg) to manage a Julia
+# environment. On a shared cluster the Julia environment can't be created in the
+# shared Python environment because even just reading/checking the environment
+# causes a permissions error (see issue https://github.com/sxs-collaboration/sxs/issues/155).
+# Therefore we configure juliapkg to create the environment in the build
+# directory.
+string(APPEND PYTHON_EXEC_ENV_VARS
+  " PYTHON_JULIAPKG_PROJECT=${CMAKE_BINARY_DIR}/julia_env")
 configure_file(
   "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
   "${CMAKE_BINARY_DIR}/tmp/spectre")
@@ -319,6 +331,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
   spectre_test_timeout(TIMEOUT PYTHON ${TIMEOUT})
 
   set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
+  string(APPEND _PY_TEST_ENV_VARS " ${PYTHON_EXEC_ENV_VARS}")
 
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.
