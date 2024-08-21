@@ -241,6 +241,41 @@ DataVector Irregular<Dim>::interpolate(const DataVector& input) const {
 }
 
 template <size_t Dim>
+void Irregular<Dim>::interpolate(const gsl::not_null<ComplexDataVector*> result,
+                                 const ComplexDataVector& input) const {
+  const size_t m = interpolation_matrix_.rows();
+  const size_t k = interpolation_matrix_.columns();
+  ASSERT(k == input.size(),
+         "Number of points in 'input', "
+             << input.size()
+             << ",\n disagrees with the size of the source_mesh, " << k
+             << ", that was passed into the constructor");
+  if (result->size() != m) {
+    result->destructive_resize(m);
+  }
+  // Possible performance optimization: can possibly be written as a single
+  // `dgemm` call, or might be faster using `zgemv`.
+  // NOLINTBEGIN
+  dgemv_('n', m, k, 1.0, interpolation_matrix_.data(),
+         interpolation_matrix_.spacing(),
+         reinterpret_cast<const double*>(input.data()), 2, 0.0,
+         reinterpret_cast<double*>(result->data()), 2);
+  dgemv_('n', m, k, 1.0, interpolation_matrix_.data(),
+         interpolation_matrix_.spacing(),
+         reinterpret_cast<const double*>(input.data()) + 1, 2, 0.0,
+         reinterpret_cast<double*>(result->data()) + 1, 2);
+  // NOLINTEND
+}
+
+template <size_t Dim>
+ComplexDataVector Irregular<Dim>::interpolate(
+    const ComplexDataVector& input) const {
+  ComplexDataVector result{input.size()};
+  interpolate(make_not_null(&result), input);
+  return result;
+}
+
+template <size_t Dim>
 void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<double>*> result,
                                  const gsl::span<const double>& input) const {
   const size_t m = interpolation_matrix_.rows();
@@ -256,9 +291,40 @@ void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<double>*> result,
                                        << " but got " << result->size());
   dgemm_<true>('N', 'N', interpolation_matrix_.rows(), number_of_components,
                interpolation_matrix_.columns(), 1.0,
-               interpolation_matrix_.data(), interpolation_matrix_.rows(),
+               interpolation_matrix_.data(), interpolation_matrix_.spacing(),
                input.data(), interpolation_matrix_.columns(), 0.0,
                result->data(), interpolation_matrix_.rows());
+}
+
+template <size_t Dim>
+void Irregular<Dim>::interpolate(
+    const gsl::not_null<gsl::span<std::complex<double>>*> result,
+    const gsl::span<const std::complex<double>>& input) const {
+  const size_t m = interpolation_matrix_.rows();
+  const size_t k = interpolation_matrix_.columns();
+  ASSERT(input.size() % k == 0,
+         "Number of points in 'input', "
+             << input.size()
+             << ",\n must be a multiple of the source grid points, " << k
+             << ", that was passed into the constructor");
+  const size_t number_of_components = input.size() / k;
+  ASSERT(result->size() == number_of_components * m,
+         "The result must be of size " << number_of_components * m
+                                       << " but got " << result->size());
+  // BLAS zgemm operates on complex matrices, so we need to copy the real matrix
+  // to a complex matrix with zero imaginary part before calling zgemm.
+  // Note by Nils Vu (Aug 2024): Profiling of partial derivatives showed that
+  // this zgemm approach with a complex matrix is still faster than transposing
+  // the complex input data and applying the real matrix with dgemm (though
+  // maybe the transpose can be avoided with smarter dgemm strides).
+  // Possible performance optimization: avoid the copy here by caching the
+  // complex matrix.
+  const blaze::DynamicMatrix<std::complex<double>, blaze::columnMajor>
+      matrix_complex{interpolation_matrix_};
+  zgemm_<true>('N', 'N', m, number_of_components, k,
+               std::complex<double>{1.0, 0.0}, matrix_complex.data(),
+               matrix_complex.spacing(), input.data(), k,
+               std::complex<double>{0.0, 0.0}, result->data(), m);
 }
 
 template <size_t Dim>

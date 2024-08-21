@@ -36,7 +36,7 @@
 // code generation).
 #define ASSERT(a, m)                                                           \
   do {                                                                         \
-    if (!(a)) {                                                                \
+    if (!(a)) { /* NOLINT(readability-simplify-boolean-expr) */                \
       const ScopedFpeState disable_fpes_ASSERT(false);                         \
       std::ostringstream avoid_name_collisions_ASSERT;                         \
       /* clang-tidy: macro arg in parentheses */                               \
