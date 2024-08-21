@@ -74,8 +74,11 @@ void apply_boundary_condition(
           elliptic::BoundaryConditions::BoundaryCondition<Dim>,
           BoundaryConditionClasses, DbTagsList>::type;
   call_with_dynamic_type<void, boundary_condition_classes>(
-      &boundary_condition, [&map_keys_to_direction, &box,
-                            &fields_and_fluxes...](const auto* const derived) {
+      &boundary_condition,
+      []<typename... LocalFieldsAndFluxes>(
+          const auto* const derived, const MapKeys& local_map_keys_to_direction,
+          const db::DataBox<DbTagsList>& local_box,
+          const LocalFieldsAndFluxes&... local_fields_and_fluxes) {
         using Derived = std::decay_t<std::remove_pointer_t<decltype(derived)>>;
         using volume_tags =
             tmpl::conditional_t<Linearized,
@@ -97,18 +100,18 @@ void apply_boundary_condition(
                                 tmpl::transform<volume_tags, ArgsTransform>>;
         elliptic::util::apply_at<argument_tags_transformed,
                                  volume_tags_transformed>(
-            [&derived, &fields_and_fluxes...](const auto&... args) {
+            [&](const auto&... args) {
               if constexpr (Linearized) {
                 derived->apply_linearized(
-                    std::forward<FieldsAndFluxes>(fields_and_fluxes)...,
+                    local_fields_and_fluxes...,
                     args...);
               } else {
-                derived->apply(
-                    std::forward<FieldsAndFluxes>(fields_and_fluxes)...,
-                    args...);
+                derived->apply(local_fields_and_fluxes..., args...);
               }
             },
-            box, map_keys_to_direction);
-      });
+            local_box, local_map_keys_to_direction);
+      },
+      map_keys_to_direction, box,
+      std::forward<FieldsAndFluxes>(fields_and_fluxes)...);
 }
 }  // namespace elliptic
