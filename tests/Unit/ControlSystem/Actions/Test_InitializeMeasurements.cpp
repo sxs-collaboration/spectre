@@ -136,7 +136,7 @@ template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = int;
+  using array_index = ElementId<3>;
 
   using simple_tags_from_options = tmpl::list<::Tags::EventsAndDenseTriggers>;
 
@@ -185,6 +185,8 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   using component = Component<Metavariables<LocalTimeStepping>>;
   const component* const component_p = nullptr;
 
+  const ElementId<3> element_id{0};
+
   // Details shouldn't matter
   const double initial_time = 2.0;
   const size_t measurements_per_update = 6;
@@ -227,17 +229,18 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
                            {std::move(functions), std::move(timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
-      ActionTesting::LocalCoreId{0}, 0,
+      ActionTesting::LocalCoreId{0}, element_id,
       {Tags::TimeStepId::type{true, 0, {}}, initial_time, initial_time_step},
       ::Tags::EventsAndDenseTriggers::type{});
 
   // InitializeRunEventsAndDenseTriggers
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), element_id);
   // InitializeMeasurements
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), element_id);
 
-  auto& cache = ActionTesting::cache<component>(runner, 0);
-  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
+  auto& cache = ActionTesting::cache<component>(runner, element_id);
+  auto& box =
+      ActionTesting::get_databox<component>(make_not_null(&runner), element_id);
 
   CHECK(db::get<control_system::Tags::FutureMeasurements<
             tmpl::list<SystemA, SystemB>>>(box)
@@ -277,8 +280,8 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   // This call initializes events_and_dense_triggers internals
   events_and_dense_triggers.next_trigger(box);
   CAPTURE(db::get<Tags::Time>(box));
-  CHECK(events_and_dense_triggers.is_ready(make_not_null(&box), cache, 0,
-                                           component_p) ==
+  CHECK(events_and_dense_triggers.is_ready(make_not_null(&box), cache,
+                                           element_id, component_p) ==
         (ab_active or c_active
              ? EventsAndDenseTriggers::TriggeringState::NeedsEvolvedVariables
              : EventsAndDenseTriggers::TriggeringState::Ready));

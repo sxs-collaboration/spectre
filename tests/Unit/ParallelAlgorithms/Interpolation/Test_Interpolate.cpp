@@ -126,7 +126,7 @@ struct mock_interpolator {
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockGroupChare;
-  using array_index = size_t;
+  using array_index = int;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<::intrp::Actions::InitializeInterpolator<
@@ -272,7 +272,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   const double invalid_time = 0.2;
 
   intrp::interpolate<MockMetavariables::InterpolatorTargetA>(
-      temporal_id, mesh, cache, array_index, get<Tags::Lapse>(vars));
+      temporal_id, mesh, cache, array_index, std::nullopt,
+      get<Tags::Lapse>(vars));
 
   check_results();
 

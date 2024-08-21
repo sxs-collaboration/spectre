@@ -55,7 +55,7 @@ template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = int;
+  using array_index = ElementId<3>;
 
   using simple_tags =
       tmpl::list<Tags::Time,
@@ -95,15 +95,19 @@ void test_trigger_no_replace() {
 
   control_system::FutureMeasurements future_measurements(6, 0.0);
 
+  const ElementId<3> element_id{0};
+
   MockRuntimeSystem runner{{::Verbosity::Silent},
                            {std::move(measurement_timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
-      ActionTesting::LocalCoreId{0}, 0, {0.0, std::move(future_measurements)});
+      ActionTesting::LocalCoreId{0}, element_id,
+      {0.0, std::move(future_measurements)});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
-  auto& cache = ActionTesting::cache<component>(runner, 0);
+  auto& box =
+      ActionTesting::get_databox<component>(make_not_null(&runner), element_id);
+  auto& cache = ActionTesting::cache<component>(runner, element_id);
 
   const auto set_time = [&box](const double time) {
     db::mutate<Tags::Time>(
@@ -116,36 +120,36 @@ void test_trigger_no_replace() {
 
   // At the initial time, the trigger should be triggered and we should know
   // the next check time
-  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{true});
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{0.5});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, element_id,
+                               component_p) == std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{0.5});
 
   set_time(0.25);
 
   // Set the time to sometime before the next check time. Shouldn't be
   // triggered, but should still have the same check time as before
-  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{false});
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{0.5});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, element_id,
+                               component_p) == std::optional{false});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{0.5});
 
   set_time(0.5);
 
   // Now at the previous next check time, we should trigger. We also know the
   // new check time
-  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{true});
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{1.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, element_id,
+                               component_p) == std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{1.0});
 
   set_time(0.75);
 
   // Another intermediate time where we shouldn't trigger.
-  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{false});
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{1.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, element_id,
+                               component_p) == std::optional{false});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{1.0});
 
   // Update the measurement timescales
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
@@ -154,31 +158,33 @@ void test_trigger_no_replace() {
 
   // Now we should be able to calculate the next check time once again and it
   // should be the same as it was before, since the current time hasn't changed.
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{1.0});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{1.0});
 
   set_time(1.0);
 
   // Now the time is at the next trigger time and all measurement timescales
   // are valid so we should be able to determine the next check time
-  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{true});
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{2.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, element_id,
+                               component_p) == std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{2.0});
 
   set_time(2.0);
 
   // At the next trigger time and timescales are valid so we can calculate
   // the next check time.
-  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{true});
-  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, 0, component_p) ==
-          std::optional{3.0});
+  REQUIRE(trigger.is_triggered(make_not_null(&box), cache, element_id,
+                               component_p) == std::optional{true});
+  REQUIRE(trigger.next_check_time(make_not_null(&box), cache, element_id,
+                                  component_p) == std::optional{3.0});
 }
 
 void test_trigger_with_replace() {
   register_classes_with_charm<MeasurementFoT>();
   const component* const component_p = nullptr;
+
+  const ElementId<3> element_id{0};
 
   control_system::Tags::MeasurementTimescales::type measurement_timescales{};
   measurement_timescales["LabelALabelBLabelC"] =
@@ -192,20 +198,22 @@ void test_trigger_with_replace() {
   MockRuntimeSystem runner{{}, {std::move(measurement_timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
-      ActionTesting::LocalCoreId{0}, 0, {0.0, std::move(future_measurements)});
+      ActionTesting::LocalCoreId{0}, element_id,
+      {0.0, std::move(future_measurements)});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
-  auto& cache = ActionTesting::cache<component>(runner, 0);
+  auto& box =
+      ActionTesting::get_databox<component>(make_not_null(&runner), element_id);
+  auto& cache = ActionTesting::cache<component>(runner, element_id);
 
   MeasureTrigger typed_trigger = serialize_and_deserialize(MeasureTrigger{});
   DenseTrigger& trigger = typed_trigger;
 
   const auto is_triggered =
-      trigger.is_triggered(make_not_null(&box), cache, 0, component_p);
+      trigger.is_triggered(make_not_null(&box), cache, element_id, component_p);
   CHECK(is_triggered == std::optional{false});
-  const auto next_check =
-      trigger.next_check_time(make_not_null(&box), cache, 0, component_p);
+  const auto next_check = trigger.next_check_time(make_not_null(&box), cache,
+                                                  element_id, component_p);
   CHECK(next_check == std::optional{std::numeric_limits<double>::infinity()});
 }
 }  // namespace

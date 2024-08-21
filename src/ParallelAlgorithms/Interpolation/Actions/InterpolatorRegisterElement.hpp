@@ -7,10 +7,12 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Protocols/ElementRegistrar.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -111,11 +113,24 @@ struct RegisterElementWithInterpolator
             typename Metavariables, typename ArrayIndex>
   static void register_or_deregister_impl(
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/) {
-    auto& interpolator = *Parallel::local_branch(
-        Parallel::get_parallel_component<::intrp::Interpolator<Metavariables>>(
-            cache));
-    Parallel::simple_action<RegisterOrDeregisterAction>(interpolator);
+      const ArrayIndex& array_index) {
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      const auto core_id = static_cast<int>(
+          Parallel::local_synchronous_action<
+              Parallel::Actions::GetItemFromDistributedOject<
+                  typename ParallelComponent::element_collection_tag>>(
+              Parallel::get_parallel_component<ParallelComponent>(cache))
+              ->at(array_index)
+              .get_core());
+      auto interpolator = Parallel::get_parallel_component<
+          ::intrp::Interpolator<Metavariables>>(cache)[core_id];
+      Parallel::simple_action<RegisterOrDeregisterAction>(interpolator);
+    } else {
+      auto& interpolator =
+          *Parallel::local_branch(Parallel::get_parallel_component<
+                                  ::intrp::Interpolator<Metavariables>>(cache));
+      Parallel::simple_action<RegisterOrDeregisterAction>(interpolator);
+    }
   }
 
  public:  // ElementRegistrar protocol
