@@ -280,11 +280,6 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
   });
 }
 
-namespace {
-template <typename T>
-using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
-}  // namespace
-
 template <typename T, typename U>
 void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   std::uniform_real_distribution<> dist(0.1, 1.0);
@@ -419,7 +414,8 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   // Note: Once we support high-order fluxes with GHMHD we will need to
   // handle this correctly.
   std::optional<Variables<db::wrap_tags_in<
-      Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>
+      ::Tags::Flux, typename grmhd::ValenciaDivClean::System::flux_variables,
+      tmpl::size_t<3>, Frame::Inertial>>>
       cell_centered_ghost_fluxes{std::nullopt};
   // Set to zero since it shouldn't be used
   Scalar<DataVector> interior_specific_internal_energy{};
