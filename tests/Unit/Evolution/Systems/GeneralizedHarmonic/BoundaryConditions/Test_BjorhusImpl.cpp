@@ -111,12 +111,12 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
     for (size_t a = 0; a <= VolumeDim; ++a) {
       spec_bc_dt_v_psi.get(0, a)[i] = 25.4;
     }
-    get<1, 1>(spec_bc_dt_v_psi)[i] = 31.4;
-    get<1, 2>(spec_bc_dt_v_psi)[i] = 31.4;
-    get<1, 3>(spec_bc_dt_v_psi)[i] = 31.4;
-    get<2, 2>(spec_bc_dt_v_psi)[i] = 33.4;
-    get<2, 3>(spec_bc_dt_v_psi)[i] = 33.4;
-    get<3, 3>(spec_bc_dt_v_psi)[i] = 39.4;
+    spec_bc_dt_v_psi.get(1, 1)[i] = 31.4;
+    spec_bc_dt_v_psi.get(1, 2)[i] = 31.4;
+    spec_bc_dt_v_psi.get(1, 3)[i] = 31.4;
+    spec_bc_dt_v_psi.get(2, 2)[i] = 33.4;
+    spec_bc_dt_v_psi.get(2, 3)[i] = 33.4;
+    spec_bc_dt_v_psi.get(3, 3)[i] = 39.4;
   }
 
   // Compare values returned by BC action vs those from SpEC
@@ -126,9 +126,9 @@ void test_constraint_preserving_bjorhus_v_psi_vs_spec_3d(
   {
     // Setting unit_interface_normal_Vector
     for (size_t i = 0; i < slice_grid_points; ++i) {
-      get<0>(local_unit_interface_normal_vector)[i] = -1.;
-      get<1>(local_unit_interface_normal_vector)[i] = 1.;
-      get<2>(local_unit_interface_normal_vector)[i] = 1.;
+      local_unit_interface_normal_vector.get(0)[i] = -1.;
+      local_unit_interface_normal_vector.get(1)[i] = 1.;
+      local_unit_interface_normal_vector.get(2)[i] = 1.;
     }
     // Compute rhs value
     gh::BoundaryConditions::Bjorhus::
@@ -1083,8 +1083,8 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_psi(
         three_index_constraint,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) {
   std::array<DataVector, 4> char_speed_array{
-      {get<0>(char_speeds), get<1>(char_speeds), get<2>(char_speeds),
-       get<3>(char_speeds)}};
+      {char_speeds.get(0), char_speeds.get(1), char_speeds.get(2),
+       char_speeds.get(3)}};
   auto dt_v_psi =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           interface_normal_vector, 0.);
@@ -1113,8 +1113,8 @@ tnsr::iaa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_v_zero(
         four_index_constraint,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) {
   std::array<DataVector, 4> char_speed_array{
-      get<0>(char_speeds), get<1>(char_speeds), get<2>(char_speeds),
-      get<3>(char_speeds)};
+      char_speeds.get(0), char_speeds.get(1), char_speeds.get(2),
+      char_speeds.get(3)};
   auto dt_v_zero =
       make_with_value<tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>>(
           get<0>(interface_normal_vector), 0.);
@@ -1159,8 +1159,8 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cp_v_minus(
         constraint_char_zero_minus,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) {
   std::array<DataVector, 4> char_speed_array{
-      get<0>(char_speeds), get<1>(char_speeds), get<2>(char_speeds),
-      get<3>(char_speeds)};
+      char_speeds.get(0), char_speeds.get(1), char_speeds.get(2),
+      char_speeds.get(3)};
   auto dt_v_minus =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get(gamma2), 0.);
@@ -1216,8 +1216,8 @@ tnsr::aa<DataVector, VolumeDim, Frame::Inertial> wrapper_func_cpp_v_minus(
     const tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>& d_pi,
     const tnsr::a<DataVector, 3, Frame::Inertial>& char_speeds) {
   std::array<DataVector, 4> char_speed_array{
-      get<0>(char_speeds), get<1>(char_speeds), get<2>(char_speeds),
-      get<3>(char_speeds)};
+      char_speeds.get(0), char_speeds.get(1), char_speeds.get(2),
+      char_speeds.get(3)};
   auto dt_v_minus =
       make_with_value<tnsr::aa<DataVector, VolumeDim, Frame::Inertial>>(
           get(gamma2), 0.);
