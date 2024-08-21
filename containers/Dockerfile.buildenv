@@ -124,7 +124,7 @@ ARG TARGETARCH
 # Install add-apt-repository and basic tools
 RUN if [ ${UBUNTU_VERSION} = 18.04 ] && [ "$TARGETARCH" = "arm64" ]; then \
     echo "Cannot use Ubuntu 18.04 with ARM" && exit 1; fi && apt-get update -y \
-    && apt-get install -y software-properties-common wget git file \
+    && apt-get install -y software-properties-common curl wget git file \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     add-apt-repository ppa:ubuntu-toolchain-r/test; fi
 
@@ -173,6 +173,7 @@ RUN apt-get update -y \
         libboost-thread-dev libboost-tools-dev libssl-dev \
         libhdf5-dev hdf5-tools \
         libarpack2-dev \
+        libfftw3-dev \
         libbenchmark-dev \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     wget https://github.com/jbeder/yaml-cpp/archive/refs/tags/0.8.0.tar.gz \
@@ -196,17 +197,10 @@ RUN apt-get update -y \
     apt-get install -y libjemalloc2 libjemalloc-dev libyaml-cpp-dev; \
     fi
 
-# Install Python packages
-# We only install packages that are needed by the build system (e.g. to compile
-# Python bindings or build documentation) or used by Python code that is
-# unit-tested. Any other packages can be installed on-demand.
+# Install Python
 # - We use python-is-python3 because on Ubuntu 20.04 /usr/bin/python was removed
 #   to aid in tracking down anything that depends on python 2. However, many
 #   scripts use `/usr/bin/env python` to find python so restore it.
-# - We install h5py explicitly from binary so that cross compilation is quicker.
-COPY support/Python/requirements.txt requirements.txt
-COPY support/Python/dev_requirements.txt dev_requirements.txt
-ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y \
     && if [ ${UBUNTU_VERSION} = 18.04 ]; then \
     apt-get install -y zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev \
@@ -215,17 +209,42 @@ RUN apt-get update -y \
     && wget https://www.python.org/ftp/python/3.10.1/Python-3.10.1.tgz \
     && tar -xf Python-3.10.1.tgz && cd ./Python-3.10.1 \
     && ./configure --enable-optimizations && make ${PARALLEL_MAKE_ARG} \
-    && make altinstall && cd ../ \
-    && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1 \
-    && python3.10 -m pip install --upgrade pip \
-    && pip3.10 --no-cache-dir install --only-binary=h5py -r requirements.txt \
-    -r dev_requirements.txt; \
+    && make install && cd ../ \
+    && rm -rf ./Python-3.10.1.tgz ./Python-3.10.1; \
     else \
-    apt-get install -y python3-pip python-is-python3 pkg-config \
-    && pip3 --no-cache-dir install --only-binary=h5py -r requirements.txt \
-    -r dev_requirements.txt; \
-    fi \
+    apt-get install -y python3-pip python-is-python3 pkg-config; \
+    fi
+
+# Install Python packages
+# We only install packages that are needed by the build system (e.g. to compile
+# Python bindings or build documentation) or used by Python code that is
+# unit-tested. Any other packages can be installed on-demand.
+# - Install h5py explicitly from binary so that cross compilation is quicker.
+# - Constrain numpy version to make sure it is binary compatible with h5py.
+COPY support/Python/requirements.txt requirements.txt
+COPY support/Python/dev_requirements.txt dev_requirements.txt
+ENV DEBIAN_FRONTEND noninteractive
+RUN python3 -m pip install --upgrade pip \
+    && pip3 --no-cache-dir install --only-binary=h5py \
+      -r requirements.txt -r dev_requirements.txt "numpy<2.0" \
     && rm requirements.txt dev_requirements.txt
+
+# Install Julia for the SXS package
+# This is optional, as the SXS package will download Julia on first use.
+# However, installing Julia explicitly gives more control over the installation.
+# - Set a consistent path for precompiled Julia packages so they are found when
+#   CI runs as a different user
+ENV JULIA_DEPOT_PATH "/usr/local/julia"
+RUN if [ ${UBUNTU_VERSION} = 22.04 ]; then \
+    curl -fsSL https://install.julialang.org | sh -s -- \
+        -y --add-to-path=false \
+    ; fi
+ENV PATH="$PATH:$JULIA_DEPOT_PATH/bin"
+# Call the SXS package so it precompiles Julia packages on first use, see:
+# https://moble.github.io/PostNewtonian.jl/dev/interface/python/
+RUN if [ ${UBUNTU_VERSION} = 22.04 ]; then \
+    python3 -c "from sxs import julia" \
+    ; fi
 
 # Enable bash-completion by installing it and then adding it to the .bashrc file
 RUN apt-get update -y \
@@ -497,9 +516,8 @@ ARG PARALLEL_MAKE_ARG=-j4
 
 # vim and emacs for editing files
 # Also ffmpeg for making movies with paraview output pngs
-# paraview needs curl
 RUN apt-get update -y \
-    && apt-get install -y vim emacs-nox ffmpeg curl
+    && apt-get install -y vim emacs-nox ffmpeg
 
 # Install headless paraview so we can run pvserver in the container
 # Note: there is no arm64 linux binary of paraview available, so don't

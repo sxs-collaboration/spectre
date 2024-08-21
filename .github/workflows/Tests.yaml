@@ -574,6 +574,13 @@ jobs:
           python3 -m pip install -r support/Python/requirements.txt \
             -r support/Python/dev_requirements.txt
           python3 -m pip list -v
+      - name: Precompile Julia packages
+        # This happens the first time the `sxs` package is imported. Do it here
+        # to avoid the delay when running the tests. The CI container should
+        # already have the Julia packages precompiled, so this step should only
+        # take a few seconds.
+        run: |
+          python3 -c "from sxs import julia"
       - name: Install ParaView
         if: matrix.test_3d_rendering == 'ON'
         working-directory: /work
@@ -892,7 +899,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake boost catch2 ccache cmake gsl hdf5 openblas yaml-cpp
+        autoconf automake boost catch2 ccache cmake fftw gsl hdf5 openblas
+        yaml-cpp
       # We install these packages with Spack and cache them. The full specs are
       # listed below. This list is only needed to create the cache.
       SPECTRE_SPACK_DEPS: blaze charmpp libxsmm
@@ -989,6 +997,11 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           source $HOME/spack/share/spack/setup-env.sh
           spack env activate spectre
           pip install -r support/Python/requirements.txt
+      - name: Precompile Julia packages
+        # This happens the first time the `sxs` package is imported. Do it here
+        # to avoid the delay when running the tests.
+        run: |
+          python -c "from sxs import julia"
       # Replace the ccache directory that building the dependencies may have
       # generated with the cached ccache directory.
       - name: Clear ccache from dependencies
