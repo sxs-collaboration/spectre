@@ -274,7 +274,7 @@ def read_config_file(ctx, param, config_file):
     ),
 )
 def cli(log_level, build_dir, profile, output_profile):
-    configure_logging(log_level=log_level)
+    configure_logging(log_level=log_level or logging.INFO)
     # Format tracebacks with rich
     # - Suppress traceback entries from modules that we don't care about
     rich.traceback.install(
