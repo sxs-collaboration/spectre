@@ -6,7 +6,6 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

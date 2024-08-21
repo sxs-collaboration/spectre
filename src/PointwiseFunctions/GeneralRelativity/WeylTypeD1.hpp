@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace gsl {
@@ -41,7 +42,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1(
 
 template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_type_D1(
-    const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_type_D1,
+    gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> weyl_type_D1,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
@@ -61,7 +62,7 @@ void weyl_type_D1(
  */
 template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_type_D1_scalar(
-    const gsl::not_null<Scalar<DataType>*> weyl_type_D1_scalar_result,
+    gsl::not_null<Scalar<DataType>*> weyl_type_D1_scalar_result,
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_type_D1,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric);
 

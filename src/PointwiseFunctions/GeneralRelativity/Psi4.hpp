@@ -3,11 +3,9 @@
 
 #pragma once
 
-#include <cstddef>
-
-#include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 /// \cond
 namespace gsl {
@@ -33,7 +31,7 @@ namespace gr {
  *
  */
 template <typename Frame>
-void psi_4(const gsl::not_null<Scalar<ComplexDataVector>*> psi_4_result,
+void psi_4(gsl::not_null<Scalar<ComplexDataVector>*> psi_4_result,
            const tnsr::ii<DataVector, 3, Frame>& spatial_ricci,
            const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
            const tnsr::ijj<DataVector, 3, Frame>& cov_deriv_extrinsic_curvature,

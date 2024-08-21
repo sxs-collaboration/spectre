@@ -5,8 +5,10 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
@@ -31,7 +33,7 @@ namespace gr {
  */
 template <typename Frame>
 void psi_4_real(
-    const gsl::not_null<Scalar<DataVector>*> psi_4_real_result,
+    gsl::not_null<Scalar<DataVector>*> psi_4_real_result,
     const tnsr::ii<DataVector, 3, Frame>& spatial_ricci,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::ijj<DataVector, 3, Frame>& cov_deriv_extrinsic_curvature,

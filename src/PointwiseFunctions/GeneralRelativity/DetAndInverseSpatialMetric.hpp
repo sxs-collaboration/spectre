@@ -6,18 +6,14 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <utility>
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.

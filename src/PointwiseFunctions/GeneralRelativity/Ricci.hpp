@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -57,7 +58,7 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 void ricci_scalar(
-    const gsl::not_null<Scalar<DataType>*> ricci_scalar_result,
+    gsl::not_null<Scalar<DataType>*> ricci_scalar_result,
     const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric);
 

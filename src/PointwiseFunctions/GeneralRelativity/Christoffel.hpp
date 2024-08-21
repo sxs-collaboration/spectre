@@ -8,13 +8,12 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 /// \cond
@@ -62,8 +61,7 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 void christoffel_second_kind(
-    const gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame, Index>*>
-        christoffel,
+    gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame, Index>*> christoffel,
     const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric,
     const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric);
 

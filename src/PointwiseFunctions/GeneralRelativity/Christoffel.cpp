@@ -3,6 +3,8 @@
 
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 
+#include <cstddef>
+
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

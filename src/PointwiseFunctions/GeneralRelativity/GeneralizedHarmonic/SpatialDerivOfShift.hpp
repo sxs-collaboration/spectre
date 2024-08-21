@@ -7,25 +7,14 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace domain {
-namespace Tags {
-template <size_t Dim, typename Frame>
-struct Coordinates;
-}  // namespace Tags
-}  // namespace domain
 class DataVector;
-template <typename X, typename Symm, typename IndexList>
-class Tensor;
 /// \endcond
 
 namespace gh {

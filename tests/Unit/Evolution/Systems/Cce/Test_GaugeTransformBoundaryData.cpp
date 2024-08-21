@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"

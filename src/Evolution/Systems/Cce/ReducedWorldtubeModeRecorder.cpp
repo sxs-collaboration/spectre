@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/ComplexModalVector.hpp"
+#include "DataStructures/Variables.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"

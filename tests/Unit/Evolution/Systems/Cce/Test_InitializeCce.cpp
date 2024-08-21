@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"

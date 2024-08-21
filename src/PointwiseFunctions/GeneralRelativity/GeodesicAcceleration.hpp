@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace gr {

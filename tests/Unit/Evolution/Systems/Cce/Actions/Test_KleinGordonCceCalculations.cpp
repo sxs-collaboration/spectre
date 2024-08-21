@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/Actions/CharacteristicEvolutionBondiCalculations.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"

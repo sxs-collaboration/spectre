@@ -5,7 +5,6 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -26,7 +25,7 @@ namespace gr {
  */
 template <typename DataType, size_t Dim, typename Frame>
 void deriv_inverse_spatial_metric(
-    const gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
+    gsl::not_null<tnsr::iJJ<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric);
 

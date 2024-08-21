@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Expressions/Evaluate.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ProjectionOperators.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
 #include "Utilities/ContainerHelpers.hpp"

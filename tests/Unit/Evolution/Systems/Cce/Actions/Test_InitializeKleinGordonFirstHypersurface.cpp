@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeKleinGordonFirstHypersurface.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
