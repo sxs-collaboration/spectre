@@ -62,8 +62,10 @@ void test_exact_differentiation_impl(const Function& max_poly_deg) {
           Spectral::differentiation_matrix<BasisType, QuadratureType>(n);
       const auto u = unit_polynomial(p, collocation_pts);
       DataVector numeric_derivative{n};
+      // [matrix_spacing]
       dgemv_('N', n, n, 1., diff_matrix.data(), diff_matrix.spacing(), u.data(),
              1, 0.0, numeric_derivative.data(), 1);
+      // [matrix_spacing]
       const auto analytic_derivative =
           unit_polynomial_derivative(p, collocation_pts);
       if (BasisType == Spectral::Basis::FiniteDifference and n > 20) {

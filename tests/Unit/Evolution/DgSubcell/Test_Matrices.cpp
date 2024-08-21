@@ -221,8 +221,8 @@ void reconstruction_matrix(const double eps) {
 
     DataVector reconstructed_nodal_coeffs(num_pts);
     dgemv_('N', single_recons.rows(), single_recons.columns(), 1.0,
-           single_recons.data(), single_recons.rows(), subcell_values.data(), 1,
-           0.0, reconstructed_nodal_coeffs.data(), 1);
+           single_recons.data(), single_recons.spacing(), subcell_values.data(),
+           1, 0.0, reconstructed_nodal_coeffs.data(), 1);
 
     CHECK_ITERABLE_CUSTOM_APPROX(expected_nodal_coeffs,
                                  reconstructed_nodal_coeffs, local_approx);
