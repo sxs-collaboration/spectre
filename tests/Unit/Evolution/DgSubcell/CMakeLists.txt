@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Test_JacobianCompute.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
+  Test_MeshForGhostData.cpp
   Test_NeighborRdmpAndVolumeData.cpp
   Test_NeighborReconstructedFaceSolution.cpp
   Test_NeighborTciDecision.cpp
