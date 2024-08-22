@@ -13,12 +13,12 @@ spectre_setup_modules() {
 
 spectre_load_modules() {
     module use /central/groups/sxs/modules/
-    module load libraries/spectre-deps/skylake-2024-04
+    module load libraries/spectre-deps/skylake-2024-06
 }
 
 spectre_unload_modules() {
     module use /central/groups/sxs/modules/
-    module unload libraries/spectre-deps/skylake-2024-04
+    module unload libraries/spectre-deps/skylake-2024-06
 }
 
 spectre_run_cmake() {
@@ -40,8 +40,6 @@ spectre_run_cmake() {
     #   of nodes on CaltechHPC. All dependencies were also compiled for skylake.
     #   This means we should be able to run on all types of nodes available on
     #   the cluster.
-    # - We temporarily turn off ParaView until a compatible version is
-    #   installed.
     cmake -D CMAKE_C_COMPILER=gcc \
           -D CMAKE_CXX_COMPILER=g++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
@@ -54,7 +52,7 @@ spectre_run_cmake() {
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=CaltechHpc \
           -D OVERRIDE_ARCH=skylake \
-          -D ENABLE_PARAVIEW=OFF \
+          -D ENABLE_PARAVIEW=ON \
           "$@" \
           $SPECTRE_HOME
 }
