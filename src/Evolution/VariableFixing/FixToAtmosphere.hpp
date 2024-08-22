@@ -143,19 +143,6 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> temperature,
-      const Scalar<DataVector>& electron_fraction,
-      const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
-      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-          equation_of_state) const;
-  template <size_t ThermodynamicDim>
-  void operator()(
-      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          spatial_velocity,
-      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-      gsl::not_null<Scalar<DataVector>*> pressure,
-      gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<Scalar<DataVector>*> electron_fraction,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&

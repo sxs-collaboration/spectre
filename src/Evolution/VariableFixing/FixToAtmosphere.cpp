@@ -64,84 +64,6 @@ void FixToAtmosphere<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> temperature,
-    const Scalar<DataVector>& electron_fraction,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) const {
-  Scalar<DataVector> electron_fraction_copy{electron_fraction};
-  for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
-    if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
-      set_density_to_atmosphere(rest_mass_density, specific_internal_energy,
-                                temperature, pressure, make_not_null(&electron_fraction_copy),
-                                equation_of_state, i);
-      for (size_t d = 0; d < Dim; ++d) {
-        spatial_velocity->get(d)[i] = 0.0;
-      }
-      get(*lorentz_factor)[i] = 1.0;
-    } else if (UNLIKELY(rest_mass_density->get()[i] <
-                        transition_density_cutoff_)) {
-      set_to_magnetic_free_transition(spatial_velocity, lorentz_factor,
-                                      *rest_mass_density, spatial_metric, i);
-    }
-
-    // For 2D & 3D EoS, we also need to limit the temperature / energy
-    if constexpr (ThermodynamicDim > 1) {
-      bool changed_temperature = false;
-      if (const double min_temperature =
-              equation_of_state.temperature_lower_bound();
-          get(*temperature)[i] < min_temperature) {
-        get(*temperature)[i] = min_temperature;
-        changed_temperature = true;
-      }
-
-      // We probably need a better maximum temperature as well, but this is not
-      // as well defined. To be discussed once implementation needs improvement.
-      if (const double max_temperature =
-              equation_of_state.temperature_upper_bound();
-          get(*temperature)[i] > max_temperature) {
-        get(*temperature)[i] = max_temperature;
-        changed_temperature = true;
-      }
-
-      if (changed_temperature) {
-        if constexpr (ThermodynamicDim == 2) {
-          specific_internal_energy->get()[i] =
-              get(equation_of_state
-                      .specific_internal_energy_from_density_and_temperature(
-                          Scalar<double>{rest_mass_density->get()[i]},
-                          Scalar<double>{get(*temperature)[i]}));
-          pressure->get()[i] =
-              get(equation_of_state.pressure_from_density_and_energy(
-                  Scalar<double>{rest_mass_density->get()[i]},
-                  Scalar<double>{specific_internal_energy->get()[i]}));
-        } else {
-          specific_internal_energy->get()[i] =
-              get(equation_of_state
-                      .specific_internal_energy_from_density_and_temperature(
-                          Scalar<double>{rest_mass_density->get()[i]},
-                          Scalar<double>{get(*temperature)[i]},
-                          Scalar<double>{get(electron_fraction)[i]}));
-          pressure->get()[i] =
-              get(equation_of_state.pressure_from_density_and_temperature(
-                  Scalar<double>{rest_mass_density->get()[i]},
-                  Scalar<double>{temperature->get()[i]},
-                  Scalar<double>{get(electron_fraction)[i]}));
-        }
-      }
-    }
-  }
-}
-
-template <size_t Dim>
-template <size_t ThermodynamicDim>
-void FixToAtmosphere<Dim>::operator()(
-    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        spatial_velocity,
-    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> temperature,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -181,11 +103,17 @@ void FixToAtmosphere<Dim>::operator()(
       }
       // For 3D we also need to fix the electron fraction
       if constexpr(ThermodynamicDim == 3)
-       if (get(*electron_fraction)[i] > equation_of_state.electron_fraction_upper_bound() or 
-           get(*electron_fraction)[i] < equation_of_state.electron_fraction_lower_bound()){
-            get(*electron_fraction)[i] = get(equation_of_state.equilibrium_electron_fraction_from_density_temperature(Scalar<double>{get(*rest_mass_density)[i]}, Scalar<double>{get(*temperature)[i]}));
-            recompute_eos_dependent_quantities = true;
-           }
+        if (get(*electron_fraction)[i] >
+                equation_of_state.electron_fraction_upper_bound() or
+            get(*electron_fraction)[i] <
+                equation_of_state.electron_fraction_lower_bound()) {
+          get(*electron_fraction)[i] =
+              get(equation_of_state
+                      .equilibrium_electron_fraction_from_density_temperature(
+                          Scalar<double>{get(*rest_mass_density)[i]},
+                          Scalar<double>{get(*temperature)[i]}));
+          recompute_eos_dependent_quantities = true;
+        }
 
       if (recompute_eos_dependent_quantities) {
         if constexpr (ThermodynamicDim == 2) {
@@ -230,7 +158,9 @@ void FixToAtmosphere<Dim>::set_density_to_atmosphere(
   const Scalar<double> atmosphere_density{density_of_atmosphere_};
   rest_mass_density->get()[grid_index] = get(atmosphere_density);
   get(*temperature)[grid_index] = equation_of_state.temperature_lower_bound();
-  get(*electron_fraction)[grid_index] = get(equation_of_state.equilibrium_electron_fraction_from_density_temperature(atmosphere_density, Scalar<double>{get(*temperature)[grid_index]}));
+  get(*electron_fraction)[grid_index] = get(
+      equation_of_state.equilibrium_electron_fraction_from_density_temperature(
+          atmosphere_density, Scalar<double>{get(*temperature)[grid_index]}));
   if constexpr (ThermodynamicDim == 1) {
     pressure->get()[grid_index] =
         get(equation_of_state.pressure_from_density(atmosphere_density));
@@ -326,22 +256,6 @@ bool operator!=(const FixToAtmosphere<Dim>& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
-
-#define INSTANTIATION(r, data)                                                \
-  template void FixToAtmosphere<DIM(data)>::operator()(                       \
-      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,             \
-      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,      \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
-          spatial_velocity,                                                   \
-      const gsl::not_null<Scalar<DataVector>*> lorentz_factor,                \
-      const gsl::not_null<Scalar<DataVector>*> pressure,                      \
-      const gsl::not_null<Scalar<DataVector>*> temperature,                   \
-      const Scalar<DataVector>& electron_fraction,                            \
-      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>& spatial_metric, \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&        \
-          equation_of_state) const;
-
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2, 3))
 
 #undef INSTANTIATION
 
