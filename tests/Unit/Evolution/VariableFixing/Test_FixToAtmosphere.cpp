@@ -28,8 +28,7 @@ void test_variable_fixer(
   auto specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(density);
   auto temperature = equation_of_state.temperature_from_density(density);
-  const Scalar<DataVector> electron_fraction{
-      DataVector{get(density).size(), 0.5}};
+  Scalar<DataVector> electron_fraction{DataVector{get(density).size(), 0.5}};
 
   Scalar<DataVector> lorentz_factor{
       DataVector{5.0 / 3.0, 7.0710678118654752, 1.8898223650461359}};
@@ -42,7 +41,7 @@ void test_variable_fixer(
     spatial_metric.get(i, i) = 2.0;
   }
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
-                 &lorentz_factor, &pressure, &temperature, electron_fraction,
+                 &lorentz_factor, &pressure, &temperature, &electron_fraction,
                  spatial_metric, equation_of_state);
 
   Scalar<DataVector> expected_density{DataVector{1.e-12, 2.e-11, 4.e-12}};
@@ -84,8 +83,7 @@ void test_variable_fixer(
       density, specific_internal_energy);
   auto temperature = equation_of_state.temperature_from_density_and_energy(
       density, specific_internal_energy);
-  const Scalar<DataVector> electron_fraction{
-      DataVector{get(density).size(), 0.5}};
+  Scalar<DataVector> electron_fraction{DataVector{get(density).size(), 0.5}};
 
   Scalar<DataVector> lorentz_factor{DataVector{
       5. / 3., 7.0710678118654752, 1.8898223650461359, 7.0710678118654752}};
@@ -100,7 +98,7 @@ void test_variable_fixer(
     spatial_metric.get(i, i) = 2.;
   }
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
-                 &lorentz_factor, &pressure, &temperature, electron_fraction,
+                 &lorentz_factor, &pressure, &temperature, &electron_fraction,
                  spatial_metric, equation_of_state);
 
   Scalar<DataVector> expected_density{
@@ -141,6 +139,79 @@ void test_variable_fixer(
 }
 
 template <size_t Dim>
+void test_variable_fixer(
+    const VariableFixing::FixToAtmosphere<Dim>& variable_fixer,
+    const EquationsOfState::EquationOfState<true, 3>& equation_of_state) {
+  Scalar<DataVector> density{DataVector{2.e-12, 2.e-11, 4.e-12, 2.e-11}};
+  Scalar<DataVector> temperature{DataVector{2.0, 1.0, 2.0, 1.0}};
+
+  const Scalar<DataVector> bounded_electron_fraction{
+      DataVector{.3, .2, 1.0, 0.0}};
+  auto pressure = equation_of_state.pressure_from_density_and_temperature(
+      density, temperature, bounded_electron_fraction);
+  auto specific_internal_energy =
+      equation_of_state.specific_internal_energy_from_density_and_temperature(
+          density, temperature, bounded_electron_fraction);
+  Scalar<DataVector> electron_fraction{DataVector{.3, .2, 1.6, -.4}};
+
+  Scalar<DataVector> lorentz_factor{DataVector{
+      5. / 3., 7.0710678118654752, 1.8898223650461359, 7.0710678118654752}};
+  CHECK(get(lorentz_factor).size() == get(density).size());
+  auto spatial_velocity =
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.);
+  spatial_velocity.get(0) = DataVector{0.8, 0.7, 0.6, 0.7};
+  CHECK(spatial_velocity.get(0).size() == get(density).size());
+  auto spatial_metric =
+      make_with_value<tnsr::ii<DataVector, Dim, Frame::Inertial>>(density, 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    spatial_metric.get(i, i) = 2.;
+  }
+  variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
+                 &lorentz_factor, &pressure, &temperature, &electron_fraction,
+                 spatial_metric, equation_of_state);
+
+  Scalar<DataVector> expected_density{
+      DataVector{1.e-12, 2.e-11, 4.e-12, 2.e-11}};
+  // Temperature reset to zero in atmosphere
+  const Scalar<DataVector> expected_temperature{DataVector{0.0, 1.0, 2.0, 1.0}};
+  // The [0] component is atmosphere, value reset to equilibrium
+  // The [2] and [3] components are above and below the allowed values
+  // so are reset to "equalibrium" which in this case is just .1
+  const Scalar<DataVector> expected_electron_fraction{
+      DataVector{.1, .2, .1, .1}};
+  auto expected_pressure = equation_of_state.pressure_from_density_and_energy(
+      expected_density, expected_temperature, expected_electron_fraction);
+  auto expected_specific_internal_energy =
+      equation_of_state.specific_internal_energy_from_density_and_temperature(
+          expected_density, expected_temperature, expected_electron_fraction);
+
+  Scalar<DataVector> expected_lorentz_factor{DataVector{
+      1., 7.0710678118654752, 1.0000000001020408, 7.0710678118654752}};
+  auto expected_spatial_velocity =
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.);
+  expected_spatial_velocity.get(0)[1] = 0.7;
+
+  // The [2] component of the expected velocity is:
+  //     velocity *= max_velocity_magnitude_ * (rho - rho_cut) /
+  //                 (trans_rho - rho_cut) / |v^i|
+  expected_spatial_velocity.get(0)[2] = 0.6 * (4.e-12 - 3.e-12) /
+                                        (1.e-11 - 3.e-12) * 1.e-4 /
+                                        sqrt(0.6 * 0.6 * 2.);
+  // The [3] component is the same as the [1] component
+  expected_spatial_velocity.get(0)[3] = expected_spatial_velocity.get(0)[1];
+
+  CHECK(get(expected_lorentz_factor).size() == get(expected_density).size());
+  CHECK_ITERABLE_APPROX(density, expected_density);
+  CHECK_ITERABLE_APPROX(pressure, expected_pressure);
+  CHECK_ITERABLE_APPROX(temperature, expected_temperature);
+  CHECK_ITERABLE_APPROX(specific_internal_energy,
+                        expected_specific_internal_energy);
+  CHECK_ITERABLE_APPROX(lorentz_factor, expected_lorentz_factor);
+  CHECK_ITERABLE_APPROX(spatial_velocity, expected_spatial_velocity);
+  CHECK_ITERABLE_APPROX(electron_fraction, expected_electron_fraction);
+}
+
+template <size_t Dim>
 void test_variable_fixer() {
   // Test for representative 1-d equation of state
   VariableFixing::FixToAtmosphere<Dim> variable_fixer{1.e-12, 3.e-12, 1.e-11,
@@ -160,6 +231,16 @@ void test_variable_fixer() {
   // Test for representative 2-d equation of state
   EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
   test_variable_fixer<Dim>(variable_fixer, ideal_fluid);
+  test_serialization(variable_fixer);
+
+  test_variable_fixer<Dim>(fixer_from_options, ideal_fluid);
+
+  // Test for not-so representative 3-d equation of state
+  // Replace with a realisitic 3-d EoS when that's easy
+  // enough to do
+  const EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>
+      barotropic_3d_eos{EquationsOfState::PolytropicFluid<true>{100.0, 2.0}};
+  test_variable_fixer<Dim>(variable_fixer, barotropic_3d_eos);
   test_serialization(variable_fixer);
 
   test_variable_fixer<Dim>(fixer_from_options, ideal_fluid);

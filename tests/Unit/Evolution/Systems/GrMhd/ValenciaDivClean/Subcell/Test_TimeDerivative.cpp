@@ -57,6 +57,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/TagsDomain.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -382,6 +384,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
           domain::Tags::Mesh<3>, fd::Tags::Reconstructor,
           evolution::Tags::BoundaryCorrection<grmhd::ValenciaDivClean::System>,
           hydro::Tags::GrmhdEquationOfState,
+          ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>,
           typename System::spacetime_variables_tag,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
@@ -450,6 +453,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
           std::make_unique<
               grmhd::ValenciaDivClean::BoundaryCorrections::Hll>()},
       soln.equation_of_state().promote_to_3d_eos(),
+      VariableFixing::FixToAtmosphere<3>{1.0e-16, 1.1e-16, 1.0e-15, 1.0},
       cell_centered_spacetime_vars, cell_centered_prim_vars,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},

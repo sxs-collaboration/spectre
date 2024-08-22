@@ -18,6 +18,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -98,7 +100,8 @@ class MonotonisedCentralPrim : public Reconstructor {
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
                  hydro::Tags::GrmhdEquationOfState, domain::Tags::Element<dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
-                 evolution::dg::subcell::Tags::Mesh<dim>>;
+                 evolution::dg::subcell::Tags::Mesh<dim>,
+                 ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<dim>>>;
 
   template <size_t ThermodynamicDim>
   void reconstruct(
@@ -111,7 +114,8 @@ class MonotonisedCentralPrim : public Reconstructor {
       const Element<dim>& element,
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
-      const Mesh<dim>& subcell_mesh) const;
+      const Mesh<dim>& subcell_mesh,
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const;
 
   /// Called by an element doing DG when the neighbor is doing subcell.
   template <size_t ThermodynamicDim>
@@ -123,6 +127,7 @@ class MonotonisedCentralPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
       const Direction<dim> direction_to_reconstruct) const;
 };
 
