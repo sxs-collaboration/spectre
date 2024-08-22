@@ -340,13 +340,13 @@ struct EvolutionMetavars {
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The numerical flux is:    UpwindFlux\n"};
 
-  static constexpr auto default_phase_order =
-      std::array{Parallel::Phase::Initialization,
-                 Parallel::Phase::InitializeTimeStepperHistory,
-                 Parallel::Phase::Register,
-                 Parallel::Phase::CheckDomain,
-                 Parallel::Phase::Evolve,
-                 Parallel::Phase::Exit};
+  static constexpr auto default_phase_order = std::array<Parallel::Phase, 6>{
+      Parallel::Phase::Initialization,
+      Parallel::Phase::InitializeTimeStepperHistory,
+      Parallel::Phase::Register,
+      Parallel::Phase::CheckDomain,
+      Parallel::Phase::Evolve,
+      Parallel::Phase::Exit};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
