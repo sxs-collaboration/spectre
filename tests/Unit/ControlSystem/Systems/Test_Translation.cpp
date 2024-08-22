@@ -186,11 +186,10 @@ void test_translation_control_system() {
   const DataVector expected_translation_2nd_deriv{3, 0.0};
   CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[2],
                                expected_translation_2nd_deriv, custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[1],
-                               array_to_datavector(velocity), custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[0],
-                               array_to_datavector(velocity * final_time),
+  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[1], DataVector(velocity),
                                custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      trans_and_2_derivs[0], DataVector(velocity * final_time), custom_approx);
 
   CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_a, grid_position_of_a,
                                custom_approx);
