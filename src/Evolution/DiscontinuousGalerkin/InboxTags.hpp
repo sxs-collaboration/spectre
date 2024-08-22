@@ -41,18 +41,19 @@ namespace evolution::dg::Tags {
  *
  * The stored data consists of the following:
  *
- * 1. the mesh of the ghost cell data we received. This allows eliding
+ * 1. the volume mesh of the element.
+ * 2. the volume mesh corresponding to the ghost cell data. This allows eliding
  *    projection when all neighboring elements are doing DG.
- * 2. the mesh of the neighboring element's face (not the mortar mesh!)
- * 3. the variables at the ghost zone cells for finite difference/volume
+ * 3. the mesh of the neighboring element's face (not the mortar mesh!)
+ * 4. the variables at the ghost zone cells for finite difference/volume
  *    reconstruction
- * 4. the data on the mortar needed for computing the boundary corrections (e.g.
+ * 5. the data on the mortar needed for computing the boundary corrections (e.g.
  *    fluxes, characteristic speeds, conserved variables)
- * 5. the TimeStepId beyond which the boundary terms are no longer valid, when
+ * 6. the TimeStepId beyond which the boundary terms are no longer valid, when
  *    using local time stepping.
- * 6. the troublade cell indicator status using for determining halos around
+ * 7. the troublade cell indicator status using for determining halos around
  *    troubled cells.
- * 7. the integration order of the time-stepper.
+ * 8. the integration order of the time-stepper.
  *
  * The TimeStepId is the neighboring element's next time step. When using local
  * time stepping, the neighbor's boundary data is valid up until this time,
@@ -60,13 +61,13 @@ namespace evolution::dg::Tags {
  * neighbor time step, the local element knows whether or not it should remove
  * boundary data and expect new data to be sent from the neighbor.
  *
- * The ghost cell data (second element of the tuple) will be valid whenever a
- * DG-subcell scheme is being used. Whenever a DG-subcell scheme is being used,
- * elements using DG and not FD/FV always send both the ghost cells and boundary
- * correction data together. Elements using FD/FV send the ghost cells first
- * followed by the boundary correction data once the element has received all
- * neighbor ghost cell data. Note that the second send/receive only modifies the
- * flux and the TimeStepId used for the flux validity range.
+ * The ghost cell data will be valid whenever a DG-subcell scheme is being used.
+ * Whenever a DG-subcell scheme is being used, elements using DG and not FD/FV
+ * always send both the ghost cells and boundary correction data together.
+ * Elements using FD/FV send the ghost cells first followed by the boundary
+ * correction data once the element has received all neighbor ghost cell data.
+ * Note that the second send/receive only modifies the flux and the TimeStepId
+ * used for the flux validity range.
  *
  * When only a DG scheme (not a DG-subcell scheme) is used the ghost cell data
  * will never be valid.
@@ -177,12 +178,12 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                                   ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
-      auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
-             boundary_data, boundary_data_validity_range, boundary_tci_status,
-             integration_order] = data.second;
+      auto& [volume_mesh, volume_mesh_of_ghost_cell_data, face_mesh,
+             ghost_cell_data, boundary_data, boundary_data_validity_range,
+             boundary_tci_status, integration_order] = data.second;
       (void)ghost_cell_data;
-      auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
-             current_ghost_cell_data, current_boundary_data,
+      auto& [current_volume_mesh, current_volume_mesh_of_ghost_cell_data,
+             current_face_mesh, current_ghost_cell_data, current_boundary_data,
              current_boundary_data_validity_range, current_tci_status,
              current_integration_order] = it->second;
       (void)current_volume_mesh_of_ghost_cell_data;  // Need to use when

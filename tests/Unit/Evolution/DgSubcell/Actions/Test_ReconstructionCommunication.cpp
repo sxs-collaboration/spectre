@@ -37,6 +37,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
@@ -101,6 +102,7 @@ struct component {
       evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>,
+      evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>;
@@ -293,15 +295,27 @@ void test(const bool use_cell_centered_flux) {
       ActionTesting::emplace_array_component_and_initialize<comp>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           neighbor_id,
-          {std::make_unique<DummyReconstructor>(), time_step_id,
-           next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{}, active_grid,
-           Element<Dim>{}, NeighborDataMap{},
-           evolution::dg::subcell::RdmpTciData{}, neighbor_tci_decision,
+          {std::make_unique<DummyReconstructor>(),
+           time_step_id,
+           next_time_step_id,
+           Mesh<Dim>{},
+           Mesh<Dim>{},
+           active_grid,
+           Element<Dim>{},
+           NeighborDataMap{},
+           evolution::dg::subcell::RdmpTciData{},
+           neighbor_tci_decision,
            typename evolution::dg::subcell::Tags::NeighborTciDecisions<
                Dim>::type{},
-           Variables<evolved_vars_tags>{}, MortarMesh{}, MortarData{},
-           MortarNextId{}, typename domain::Tags::NeighborMesh<Dim>::type{},
-           cell_centered_flux, Interps{}, Interps{}});
+           Variables<evolved_vars_tags>{},
+           MortarMesh{},
+           MortarData{},
+           MortarNextId{},
+           typename domain::Tags::NeighborMesh<Dim>::type{},
+           typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
+           cell_centered_flux,
+           Interps{},
+           Interps{}});
       ++neighbor_tci_decision;
     }
   }
@@ -317,8 +331,10 @@ void test(const bool use_cell_centered_flux) {
                                            {min(get(get<Var1>(evolved_vars)))}},
        self_tci_decision, neighbor_decision, evolved_vars, mortar_mesh,
        mortar_data, mortar_next_id,
-       typename domain::Tags::NeighborMesh<Dim>::type{}, cell_centered_flux,
-       fd_to_neighbor_fd_interpolants, neighbor_dg_to_fd_interpolants});
+       typename domain::Tags::NeighborMesh<Dim>::type{},
+       typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
+       cell_centered_flux, fd_to_neighbor_fd_interpolants,
+       neighbor_dg_to_fd_interpolants});
 
   using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
@@ -484,7 +500,7 @@ void test(const bool use_cell_centered_flux) {
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
-                      evolution::dg::BoundaryData<Dim>{
+                      evolution::dg::BoundaryData<Dim>{dg_mesh,
                           // subcell_mesh because we are sending the projected
                           // data right now.
                           subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
@@ -506,7 +522,7 @@ void test(const bool use_cell_centered_flux) {
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                      evolution::dg::BoundaryData<Dim>{
+                      evolution::dg::BoundaryData<Dim>{subcell_mesh,
                           // subcell_mesh because we are sending the projected
                           // data right now.
                           subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
@@ -564,14 +580,21 @@ void test(const bool use_cell_centered_flux) {
   size_t total_neighbors = 0;
   const auto& neighbor_meshes =
       get_databox_tag<comp, ::domain::Tags::NeighborMesh<Dim>>(runner, self_id);
+  const auto& meshes_for_ghost_data =
+      get_databox_tag<comp,
+                      evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(
+          runner, self_id);
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction) {
       const auto it =
           neighbor_meshes.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(it != neighbor_meshes.end());
-      // Currently all neighbors are doing subcell. We probably want to
-      // generalize this in the future.
-      CHECK(it->second == subcell_mesh);
+      CHECK(it->second ==
+            (it->first == east_neighbor_id ? dg_mesh : subcell_mesh));
+      const auto ghost_it =
+          meshes_for_ghost_data.find(DirectionalId<Dim>{direction, neighbor});
+      REQUIRE(ghost_it != meshes_for_ghost_data.end());
+      CHECK(ghost_it->second == subcell_mesh);
       ++total_neighbors;
     }
   }

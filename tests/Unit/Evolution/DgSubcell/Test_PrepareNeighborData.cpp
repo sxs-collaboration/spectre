@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <iterator>
+#include <optional>
 #include <unordered_set>
 #include <utility>
 
@@ -256,13 +257,13 @@ void test(const bool all_neighbors_are_doing_dg,
       subcell_options, fd_to_fd_neighbor_interpolants,
       dg_to_fd_neighbor_interpolants);
 
-  Mesh<Dim> ghost_data_mesh{};
+  std::optional<Mesh<Dim>> ghost_data_mesh{std::nullopt};
   DirectionMap<Dim, DataVector> data_for_neighbors{};
   evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
       make_not_null(&data_for_neighbors), make_not_null(&ghost_data_mesh),
       make_not_null(&box), volume_fluxes);
 
-  CHECK(ghost_data_mesh ==
+  CHECK(ghost_data_mesh.value() ==
         (all_neighbors_are_doing_dg ? dg_mesh : subcell_mesh));
 
   const auto& rdmp_tci_data =

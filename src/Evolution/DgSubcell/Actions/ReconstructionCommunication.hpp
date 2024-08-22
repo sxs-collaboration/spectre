@@ -43,6 +43,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
@@ -258,6 +259,7 @@ struct SendDataForReconstruction {
 
         evolution::dg::BoundaryData<Dim> data{
             subcell_mesh,
+            subcell_mesh,
             dg_mesh.slice_away(direction.dimension()),
             std::move(subcell_data_to_send),
             std::nullopt,
@@ -356,6 +358,7 @@ struct ReceiveDataForReconstruction {
                evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
                domain::Tags::NeighborMesh<Dim>,
+               evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
         [&element,
          ghost_zone_size =
@@ -372,11 +375,14 @@ struct ReceiveDataForReconstruction {
                 mortar_next_time_step_id,
             const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
                 neighbor_mesh,
+            const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*>
+                mesh_for_ghost_data,
             const auto neighbor_tci_decisions,
             const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
           // Remove neighbor meshes for neighbors that don't exist anymore
           domain::remove_nonexistent_neighbors(neighbor_mesh, element);
+          domain::remove_nonexistent_neighbors(mesh_for_ghost_data, element);
 
           // Get the next time step id, and also the fluxes data if the neighbor
           // is doing DG.
@@ -402,8 +408,10 @@ struct ReceiveDataForReconstruction {
             }
             // Set new neighbor mesh
             neighbor_mesh->insert_or_assign(
-                mortar_id,
-                received_mortar_data.second.volume_mesh_ghost_cell_data);
+                mortar_id, received_mortar_data.second.volume_mesh);
+            mesh_for_ghost_data->insert_or_assign(
+                mortar_id, received_mortar_data.second
+                               .volume_mesh_ghost_cell_data.value());
           }
 
           ASSERT(ghost_data_ptr->empty(),
@@ -437,7 +445,7 @@ struct ReceiveDataForReconstruction {
                   rdmp_tci_data_ptr, ghost_data_ptr,
                   *received_data[directional_element_id].ghost_cell_data,
                   number_of_rdmp_vars, directional_element_id,
-                  neighbor_mesh->at(directional_element_id), element,
+                  mesh_for_ghost_data->at(directional_element_id), element,
                   subcell_mesh, ghost_zone_size,
                   neighbor_dg_to_fd_interpolants);
               ASSERT(neighbor_tci_decisions->contains(directional_element_id),

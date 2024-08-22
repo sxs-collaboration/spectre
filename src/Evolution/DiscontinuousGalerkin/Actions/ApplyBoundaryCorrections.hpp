@@ -123,14 +123,14 @@ void retrieve_boundary_data_spsc(
         auto& current_inbox = (*boundary_data_ptr)[time_step_id];
         if (auto it = current_inbox.find(directional_element_id);
             it != current_inbox.end()) {
-          auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
-                 boundary_data, boundary_data_validity_range,
+          auto& [volume_mesh, volume_mesh_of_ghost_cell_data, face_mesh,
+                 ghost_cell_data, boundary_data, boundary_data_validity_range,
                  boundary_tci_status, boundary_integration_order] = data;
           (void)ghost_cell_data;
-          auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
-                 current_ghost_cell_data, current_boundary_data,
-                 current_boundary_data_validity_range, current_tci_status,
-                 current_integration_order] = it->second;
+          auto& [current_volume_mesh, current_volume_mesh_of_ghost_cell_data,
+                 current_face_mesh, current_ghost_cell_data,
+                 current_boundary_data, current_boundary_data_validity_range,
+                 current_tci_status, current_integration_order] = it->second;
           // Need to use when optimizing subcell
           (void)current_volume_mesh_of_ghost_cell_data;
           // We have already received some data at this time. Receiving
@@ -326,8 +326,7 @@ bool receive_boundary_data_global_time_stepping(
              received_temporal_id_and_data.second) {
           const auto& mortar_id = received_mortar_data.first;
           neighbor_mesh->insert_or_assign(
-              mortar_id,
-              received_mortar_data.second.volume_mesh_ghost_cell_data);
+              mortar_id, received_mortar_data.second.volume_mesh);
           mortar_next_time_step_id->at(mortar_id) =
               received_mortar_data.second.validity_range;
           ASSERT(using_subcell_v<Metavariables> or
@@ -466,8 +465,7 @@ bool receive_boundary_data_local_time_stepping(
                        << mortar_id
                        << "\nTimeStepId: " << mortar_next_time_step_id);
             neighbor_mesh->insert_or_assign(
-                mortar_id,
-                received_mortar_data->second.volume_mesh_ghost_cell_data);
+                mortar_id, received_mortar_data->second.volume_mesh);
             neighbor_mortar_data.face_mesh =
                 received_mortar_data->second.interface_mesh;
             neighbor_mortar_data.mortar_mesh = mortar_meshes.at(mortar_id);

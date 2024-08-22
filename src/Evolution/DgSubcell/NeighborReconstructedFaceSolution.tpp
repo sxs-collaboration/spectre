@@ -21,6 +21,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
@@ -35,9 +36,11 @@ void neighbor_reconstructed_face_solution(
         TimeStepId,
         DirectionalIdMap<VolumeDim, evolution::dg::BoundaryData<VolumeDim>>>*>
         received_temporal_id_and_data) {
-  db::mutate<subcell::Tags::GhostDataForReconstruction<VolumeDim>,
+  db::mutate<subcell::Tags::MeshForGhostData<VolumeDim>,
+             subcell::Tags::GhostDataForReconstruction<VolumeDim>,
              subcell::Tags::DataForRdmpTci>(
-      [&received_temporal_id_and_data](const auto subcell_ghost_data_ptr,
+      [&received_temporal_id_and_data](const auto mesh_for_ghost_data_ptr,
+                                       const auto subcell_ghost_data_ptr,
                                        const auto rdmp_tci_data_ptr) {
         const size_t number_of_evolved_vars =
             rdmp_tci_data_ptr->max_variables_values.size();
@@ -48,6 +51,9 @@ void neighbor_reconstructed_face_solution(
                  "The subcell mortar data was not sent at TimeStepId "
                      << received_temporal_id_and_data->first
                      << " with mortar id " << mortar_id);
+          mesh_for_ghost_data_ptr->insert_or_assign(
+              mortar_id,
+              received_mortar_data.second.volume_mesh_ghost_cell_data.value());
           const DataVector& neighbor_ghost_and_subcell_data =
               received_mortar_data.second.ghost_cell_data.value();
           // Compute min and max over neighbors

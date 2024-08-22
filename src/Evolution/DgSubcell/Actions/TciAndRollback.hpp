@@ -22,7 +22,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -38,6 +37,7 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -261,7 +261,8 @@ struct TciAndRollback {
           // method, since we need to lift G+D instead of the ingredients
           // that go into G+D, which is what we would be projecting here.
         },
-        make_not_null(&box), db::get<domain::Tags::NeighborMesh<Dim>>(box),
+        make_not_null(&box),
+        db::get<evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(box),
         db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
             .ghost_zone_size(),
         db::get<

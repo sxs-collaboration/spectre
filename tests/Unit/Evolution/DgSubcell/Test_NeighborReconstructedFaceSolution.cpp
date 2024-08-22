@@ -81,22 +81,24 @@ void test() {
   rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
   GhostDataMap<Dim> neighbor_data_map{};
   auto box = db::create<
-      tmpl::list<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+      tmpl::list<evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
-      std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
+      DirectionalIdMap<Dim, Mesh<Dim>>{}, std::move(neighbor_data_map),
+      std::move(rdmp_tci_data), 2.5);
 
   std::pair<TimeStepId, BoundaryDataMap<Dim>> mortar_data_from_neighbors{};
-  for (size_t d = 0; d < Dim; ++d) {
-    const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
+  const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto};
+  const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
+                                 Spectral::Basis::FiniteDifference,
+                                 Spectral::Quadrature::CellCentered};
+  const Mesh<Dim - 1> dg_face_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
                                    Spectral::Quadrature::GaussLobatto};
-    const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
+  const Mesh<Dim - 1> fd_face_mesh{2 + 2 * Dim + 1,
                                    Spectral::Basis::FiniteDifference,
                                    Spectral::Quadrature::CellCentered};
-    const Mesh<Dim - 1> dg_face_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
-                                     Spectral::Quadrature::GaussLobatto};
-    const Mesh<Dim - 1> fd_face_mesh{2 + 2 * Dim + 1,
-                                     Spectral::Basis::FiniteDifference,
-                                     Spectral::Quadrature::CellCentered};
+  for (size_t d = 0; d < Dim; ++d) {
     DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
     DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
     for (size_t i = 0; i < 4; ++i) {
@@ -109,31 +111,49 @@ void test() {
     if (d % 2 == 0) {
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
-          BoundaryData<Dim>{
-              dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
-              dg_flux_data,   {},           1};
+          BoundaryData<Dim>{dg_volume_mesh,
+                            dg_volume_mesh,
+                            dg_face_mesh,
+                            dg_recons_and_rdmp_data,
+                            dg_flux_data,
+                            {},
+                            1};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{
-              fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
-              std::nullopt,   {},           2};
+          BoundaryData<Dim>{fd_volume_mesh,
+                            fd_volume_mesh,
+                            fd_face_mesh,
+                            fd_recons_and_rdmp_data,
+                            std::nullopt,
+                            {},
+                            2};
     } else {
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
-          BoundaryData<Dim>{
-              dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
-              dg_flux_data,   {},           3};
+          BoundaryData<Dim>{dg_volume_mesh,
+                            dg_volume_mesh,
+                            dg_face_mesh,
+                            dg_recons_and_rdmp_data,
+                            dg_flux_data,
+                            {},
+                            3};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{
-              fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
-              std::nullopt,   {},           4};
+          BoundaryData<Dim>{fd_volume_mesh,
+                            fd_volume_mesh,
+                            fd_face_mesh,
+                            fd_recons_and_rdmp_data,
+                            std::nullopt,
+                            {},
+                            4};
     }
   }
   evolution::dg::subcell::neighbor_reconstructed_face_solution<
       Dim,
       typename metavars::SubcellOptions::DgComputeSubcellNeighborPackagedData>(
       make_not_null(&box), make_not_null(&mortar_data_from_neighbors));
+  const auto& ghost_meshes =
+      db::get<evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(box);
   for (size_t d = 0; d < Dim; ++d) {
     CAPTURE(d);
     const bool d_is_odd = (d % 2 != 0);
@@ -152,6 +172,8 @@ void test() {
               mortar_data_from_neighbors.second.at(id).ghost_cell_data->data(),
               mortar_data_from_neighbors.second.at(id).ghost_cell_data->size() -
                   4}));
+    REQUIRE(ghost_meshes.contains(id));
+    CHECK(ghost_meshes.at(id) == fd_volume_mesh);
     if (d_is_odd) {
       CHECK(mortar_data_from_neighbors.second.at(id).tci_status == 4);
     } else {
