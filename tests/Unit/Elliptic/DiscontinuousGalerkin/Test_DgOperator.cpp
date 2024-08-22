@@ -977,6 +977,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       // +-+ |
       // | | |
       // +-+-+
+      const auto dirichlet_bc =
+          elliptic::BoundaryConditions::AnalyticSolution<system>{
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet};
       const domain::creators::AlignedLattice<2> domain_creator{
           // Start with 2 unrefined blocks
           {{{0., 0.25, 0.5}, {0., 0.5}}},
@@ -986,10 +990,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{{{0, 0}}, {{1, 1}}, {{0, 1}}}},
           {},
           {},
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       const ElementId<2> lowerleft_id{0, {{{0, 0}, {1, 0}}}};
       const ElementId<2> upperleft_id{0, {{{0, 0}, {1, 1}}}};
       const ElementId<2> right_id{1, {{{0, 0}, {0, 0}}}};
@@ -1065,6 +1067,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     }
     {
       INFO("Higher-resolution analytic-solution tests");
+      const auto dirichlet_bc =
+          elliptic::BoundaryConditions::AnalyticSolution<system>{
+              analytic_solution.get_clone(),
+              elliptic::BoundaryConditionType::Dirichlet};
       const domain::creators::AlignedLattice<2> domain_creator{
           {{{0., 0.25, 0.5}, {0., 0.5}}},
           {{1, 1}},
@@ -1072,10 +1078,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
           {},
           {},
-          std::make_unique<
-              elliptic::BoundaryConditions::AnalyticSolution<system>>(
-              analytic_solution.get_clone(),
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+            {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
       Approx analytic_solution_aux_approx =
           Approx::custom().epsilon(1.e-11).scale(M_PI);
       Approx analytic_solution_operator_approx =

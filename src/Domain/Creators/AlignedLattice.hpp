@@ -14,6 +14,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Context.hpp"
@@ -39,24 +40,24 @@ class CoordinateMap;
 namespace domain {
 namespace creators {
 
-template <size_t VolumeDim>
+template <size_t Dim>
 struct RefinementRegion {
-  std::array<size_t, VolumeDim> lower_corner_index;
-  std::array<size_t, VolumeDim> upper_corner_index;
-  std::array<size_t, VolumeDim> refinement;
+  std::array<size_t, Dim> lower_corner_index;
+  std::array<size_t, Dim> upper_corner_index;
+  std::array<size_t, Dim> refinement;
 
   struct LowerCornerIndex {
-    using type = std::array<size_t, VolumeDim>;
+    using type = std::array<size_t, Dim>;
     static constexpr Options::String help = {"Lower bound of refined region."};
   };
 
   struct UpperCornerIndex {
-    using type = std::array<size_t, VolumeDim>;
+    using type = std::array<size_t, Dim>;
     static constexpr Options::String help = {"Upper bound of refined region."};
   };
 
   struct Refinement {
-    using type = std::array<size_t, VolumeDim>;
+    using type = std::array<size_t, Dim>;
     static constexpr Options::String help = {"Refinement inside region."};
   };
 
@@ -65,9 +66,9 @@ struct RefinementRegion {
       "The region is a box between the block boundaries indexed by the\n"
       "Lower- and UpperCornerIndex options."};
   using options = tmpl::list<LowerCornerIndex, UpperCornerIndex, Refinement>;
-  RefinementRegion(const std::array<size_t, VolumeDim>& lower_corner_index_in,
-                   const std::array<size_t, VolumeDim>& upper_corner_index_in,
-                   const std::array<size_t, VolumeDim>& refinement_in)
+  RefinementRegion(const std::array<size_t, Dim>& lower_corner_index_in,
+                   const std::array<size_t, Dim>& upper_corner_index_in,
+                   const std::array<size_t, Dim>& refinement_in)
       : lower_corner_index(lower_corner_index_in),
         upper_corner_index(upper_corner_index_in),
         refinement(refinement_in) {}
@@ -78,9 +79,9 @@ struct RefinementRegion {
 // This is needed to print the default value for the RefinedGridPoints
 // option.  Since the default value is an empty vector, this function
 // is never actually called.
-template <size_t VolumeDim>
-[[noreturn]] std::ostream& operator<<(
-    std::ostream& /*s*/, const RefinementRegion<VolumeDim>& /*unused*/);
+template <size_t Dim>
+[[noreturn]] std::ostream& operator<<(std::ostream& /*s*/,
+                                      const RefinementRegion<Dim>& /*unused*/);
 /// \endcond
 
 /// \brief Create a Domain consisting of multiple aligned Blocks arrayed in a
@@ -93,8 +94,8 @@ template <size_t VolumeDim>
 /// \note Adaptive mesh refinement can never join Block%s, so use the fewest
 /// number of Block%s that your problem needs.  More initial Element%s can be
 /// created by specifying a larger `InitialRefinement`.
-template <size_t VolumeDim>
-class AlignedLattice : public DomainCreator<VolumeDim> {
+template <size_t Dim>
+class AlignedLattice : public DomainCreator<Dim> {
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
@@ -109,75 +110,63 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
                                 CoordinateMaps::Affine>>>;
 
   struct BlockBounds {
-    using type = std::array<std::vector<double>, VolumeDim>;
+    using type = std::array<std::vector<double>, Dim>;
     static constexpr Options::String help = {
         "Coordinates of block boundaries in each dimension."};
   };
 
   struct IsPeriodicIn {
-    using type = std::array<bool, VolumeDim>;
+    using type = std::array<bool, Dim>;
     static constexpr Options::String help = {
         "Whether the domain is periodic in each dimension."};
   };
 
   struct InitialLevels {
-    using type = std::array<size_t, VolumeDim>;
+    using type = std::array<size_t, Dim>;
     static constexpr Options::String help = {
         "Initial refinement level in each dimension."};
   };
 
   struct InitialGridPoints {
-    using type = std::array<size_t, VolumeDim>;
+    using type = std::array<size_t, Dim>;
     static constexpr Options::String help = {
         "Initial number of grid points in each dimension."};
   };
 
   struct RefinedLevels {
-    using type = std::vector<RefinementRegion<VolumeDim>>;
+    using type = std::vector<RefinementRegion<Dim>>;
     static constexpr Options::String help = {
         "h-refined regions.  Later entries take priority."};
   };
 
   struct RefinedGridPoints {
-    using type = std::vector<RefinementRegion<VolumeDim>>;
+    using type = std::vector<RefinementRegion<Dim>>;
     static constexpr Options::String help = {
         "p-refined regions.  Later entries take priority."};
   };
 
   struct BlocksToExclude {
-    using type = std::vector<std::array<size_t, VolumeDim>>;
+    using type = std::vector<std::array<size_t, Dim>>;
     static constexpr Options::String help = {
         "List of Block indices to exclude, if any."};
   };
 
-  template <typename BoundaryConditionsBase>
-  struct BoundaryCondition {
-    static std::string name() { return "BoundaryCondition"; }
-    static constexpr Options::String help =
-        "The boundary condition to impose on all sides.";
-    using type = std::unique_ptr<BoundaryConditionsBase>;
-  };
-
-  using common_options =
-      tmpl::list<BlockBounds, InitialLevels, InitialGridPoints, RefinedLevels,
-                 RefinedGridPoints, BlocksToExclude>;
-  using options_periodic = tmpl::list<IsPeriodicIn>;
-
   template <typename Metavariables>
-  using options = tmpl::append<
-      common_options,
+  using options = tmpl::list<
+      BlockBounds, InitialLevels, InitialGridPoints, RefinedLevels,
+      RefinedGridPoints, BlocksToExclude,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
-          tmpl::list<BoundaryCondition<
+          typename Rectilinear<Dim>::template BoundaryConditions<
               domain::BoundaryConditions::get_boundary_conditions_base<
-                  typename Metavariables::system>>>,
-          options_periodic>>;
+                  typename Metavariables::system>>,
+          IsPeriodicIn>>;
 
   static constexpr Options::String help = {
       "AlignedLattice creates a regular lattice of blocks whose corners are\n"
       "given by tensor products of the specified BlockBounds. Each Block in\n"
-      "the lattice is identified by a VolumeDim-tuple of zero-based indices\n"
+      "the lattice is identified by a Dim-tuple of zero-based indices\n"
       "Supplying a list of these tuples to BlocksToExclude will result in\n"
       "the domain having the corresponding Blocks excluded. See the Domain\n"
       "Creation tutorial in the documentation for more information on Block\n"
@@ -186,24 +175,50 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
       "will trigger an error, as periodic boundary\n"
       "conditions for this domain with holes is not supported."};
 
-  AlignedLattice(typename BlockBounds::type block_bounds,
-                 typename InitialLevels::type initial_refinement_levels,
-                 typename InitialGridPoints::type initial_number_of_grid_points,
-                 typename RefinedLevels::type refined_refinement,
-                 typename RefinedGridPoints::type refined_grid_points,
-                 typename BlocksToExclude::type blocks_to_exclude,
-                 typename IsPeriodicIn::type is_periodic_in,
+  AlignedLattice(std::array<std::vector<double>, Dim> block_bounds,
+                 std::array<size_t, Dim> initial_refinement_levels,
+                 std::array<size_t, Dim> initial_number_of_grid_points,
+                 std::vector<RefinementRegion<Dim>> refined_refinement,
+                 std::vector<RefinementRegion<Dim>> refined_grid_points,
+                 std::vector<std::array<size_t, Dim>> blocks_to_exclude,
+                 std::array<bool, Dim> is_periodic_in = make_array<Dim>(false),
                  const Options::Context& context = {});
 
-  AlignedLattice(typename BlockBounds::type block_bounds,
-                 typename InitialLevels::type initial_refinement_levels,
-                 typename InitialGridPoints::type initial_number_of_grid_points,
-                 typename RefinedLevels::type refined_refinement,
-                 typename RefinedGridPoints::type refined_grid_points,
-                 typename BlocksToExclude::type blocks_to_exclude,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-                     boundary_condition = nullptr,
-                 const Options::Context& context = {});
+  AlignedLattice(
+      std::array<std::vector<double>, Dim> block_bounds,
+      std::array<size_t, Dim> initial_refinement_levels,
+      std::array<size_t, Dim> initial_number_of_grid_points,
+      std::vector<RefinementRegion<Dim>> refined_refinement,
+      std::vector<RefinementRegion<Dim>> refined_grid_points,
+      std::vector<std::array<size_t, Dim>> blocks_to_exclude,
+      std::array<std::array<std::unique_ptr<
+                                domain::BoundaryConditions::BoundaryCondition>,
+                            2>,
+                 Dim>
+          boundary_conditions,
+      const Options::Context& context = {});
+
+  template <typename BoundaryConditionsBase>
+  AlignedLattice(
+      std::array<std::vector<double>, Dim> block_bounds,
+      std::array<size_t, Dim> initial_refinement_levels,
+      std::array<size_t, Dim> initial_number_of_grid_points,
+      std::vector<RefinementRegion<Dim>> refined_refinement,
+      std::vector<RefinementRegion<Dim>> refined_grid_points,
+      std::vector<std::array<size_t, Dim>> blocks_to_exclude,
+      std::array<std::variant<std::unique_ptr<BoundaryConditionsBase>,
+                              typename Rectilinear<Dim>::
+                                  template LowerUpperBoundaryCondition<
+                                      BoundaryConditionsBase>>,
+                 Dim>
+          boundary_conditions,
+      const Options::Context& context = {})
+      : AlignedLattice(std::move(block_bounds), initial_refinement_levels,
+                       initial_number_of_grid_points, refined_refinement,
+                       refined_grid_points, blocks_to_exclude,
+                       Rectilinear<Dim>::transform_boundary_conditions(
+                           std::move(boundary_conditions)),
+                       context) {}
 
   AlignedLattice() = default;
   AlignedLattice(const AlignedLattice&) = delete;
@@ -212,32 +227,34 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
   AlignedLattice& operator=(AlignedLattice&&) = default;
   ~AlignedLattice() override = default;
 
-  Domain<VolumeDim> create_domain() const override;
+  Domain<Dim> create_domain() const override;
 
   std::vector<DirectionMap<
-      VolumeDim,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
   external_boundary_conditions() const override;
 
-  std::vector<std::array<size_t, VolumeDim>> initial_extents() const override;
+  std::vector<std::array<size_t, Dim>> initial_extents() const override;
 
-  std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels()
+  std::vector<std::array<size_t, Dim>> initial_refinement_levels()
       const override;
 
  private:
-  typename BlockBounds::type block_bounds_{
-      make_array<VolumeDim, std::vector<double>>({})};
-  typename IsPeriodicIn::type is_periodic_in_{make_array<VolumeDim>(false)};
-  typename InitialLevels::type initial_refinement_levels_{
-      make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
-  typename InitialGridPoints::type initial_number_of_grid_points_{
-      make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
-  typename RefinedLevels::type refined_refinement_{};
-  typename RefinedGridPoints::type refined_grid_points_{};
-  typename BlocksToExclude::type blocks_to_exclude_{};
-  Index<VolumeDim> number_of_blocks_by_dim_{};
-  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition_{};
+  std::array<std::vector<double>, Dim> block_bounds_{
+      make_array<Dim, std::vector<double>>({})};
+  std::array<bool, Dim> is_periodic_in_{make_array<Dim>(false)};
+  std::array<size_t, Dim> initial_refinement_levels_{
+      make_array<Dim>(std::numeric_limits<size_t>::max())};
+  std::array<size_t, Dim> initial_number_of_grid_points_{
+      make_array<Dim>(std::numeric_limits<size_t>::max())};
+  std::vector<RefinementRegion<Dim>> refined_refinement_{};
+  std::vector<RefinementRegion<Dim>> refined_grid_points_{};
+  std::vector<std::array<size_t, Dim>> blocks_to_exclude_{};
+  Index<Dim> number_of_blocks_by_dim_{};
+  std::array<
+      std::array<std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
+                 2>,
+      Dim>
+      boundary_conditions_{};
 };
 }  // namespace creators
 }  // namespace domain
