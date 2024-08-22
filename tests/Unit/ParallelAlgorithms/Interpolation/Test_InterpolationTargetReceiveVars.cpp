@@ -17,7 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -348,9 +348,9 @@ void test_interpolation_target_receive_vars() {
   if constexpr (IsTimeDependent::value) {
     current_temporal_ids.push_back(first_time);
     pending_temporal_ids.push_back(second_time);
-    const auto domain_creator = domain::creators::Brick(
+    const domain::creators::Brick domain_creator(
         {{-1.2, 3.0, 2.5}}, {{0.8, 5.0, 3.0}}, {{1, 1, 1}}, {{5, 4, 3}},
-        {{false, false, false}},
+        {{false, false, false}}, {},
         // Doesn't actually have to move. Just needs to go through the time
         // dependent code
         std::make_unique<

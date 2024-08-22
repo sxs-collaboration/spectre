@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"

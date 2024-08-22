@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <ostream>
 
 /// \cond
@@ -32,6 +33,31 @@ enum class Distribution {
 
 std::ostream& operator<<(std::ostream& os, Distribution distribution);
 
+/*!
+ * \brief A `Distribution` and the corresponding singularity position
+ *
+ * The `singularity_position` is only meaningful for `Distribution::Logarithmic`
+ * and `Distribution::Inverse`.
+ *
+ * This class can be option-created like so:
+ * - Just the name of the distribution for `Linear`, `Equiangular`, and
+ *  `Projective`.
+ * - The name of the distribution and the singularity position for
+ *   `Logarithmic` and `Inverse`:
+ *
+ * ```yaml
+ * Logarithmic:
+ *   SingularityPosition: 0.0
+ * ```
+ */
+struct DistributionAndSingularityPosition {
+  Distribution distribution = Distribution::Linear;
+  std::optional<double> singularity_position = std::nullopt;
+};
+
+bool operator==(const DistributionAndSingularityPosition& lhs,
+                const DistributionAndSingularityPosition& rhs);
+
 }  // namespace domain::CoordinateMaps
 
 template <>
@@ -46,3 +72,18 @@ template <>
 domain::CoordinateMaps::Distribution
 Options::create_from_yaml<domain::CoordinateMaps::Distribution>::create<void>(
     const Options::Option& options);
+
+template <>
+struct Options::create_from_yaml<
+    domain::CoordinateMaps::DistributionAndSingularityPosition> {
+  template <typename Metavariables>
+  static domain::CoordinateMaps::DistributionAndSingularityPosition create(
+      const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+template <>
+domain::CoordinateMaps::DistributionAndSingularityPosition
+Options::create_from_yaml<
+    domain::CoordinateMaps::DistributionAndSingularityPosition>::
+    create<void>(const Options::Option& options);

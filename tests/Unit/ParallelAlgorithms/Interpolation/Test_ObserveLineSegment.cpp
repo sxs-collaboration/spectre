@@ -21,7 +21,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/Disk.hpp"
-#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"

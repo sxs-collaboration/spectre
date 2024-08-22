@@ -11,14 +11,12 @@ spectre_target_sources(
   AlignedLattice.cpp
   BinaryCompactObject.cpp
   BlockGroups.cpp
-  Brick.cpp
   Cylinder.cpp
   CylindricalBinaryCompactObject.cpp
   Disk.cpp
   ExpandOverBlocks.cpp
   FrustalCloak.cpp
-  Interval.cpp
-  Rectangle.cpp
+  Rectilinear.cpp
   RegisterDerivedWithCharm.cpp
   RotatedBricks.cpp
   RotatedIntervals.cpp
@@ -33,7 +31,6 @@ spectre_target_headers(
   AlignedLattice.hpp
   BinaryCompactObject.hpp
   BlockGroups.hpp
-  Brick.hpp
   Cylinder.hpp
   CylindricalBinaryCompactObject.hpp
   Disk.hpp
@@ -45,9 +42,8 @@ spectre_target_headers(
   Factory2D.hpp
   Factory3D.hpp
   FrustalCloak.hpp
-  Interval.hpp
   OptionTags.hpp
-  Rectangle.hpp
+  Rectilinear.hpp
   RegisterDerivedWithCharm.hpp
   RotatedBricks.hpp
   RotatedIntervals.hpp

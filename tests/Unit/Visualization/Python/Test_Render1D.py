@@ -29,11 +29,11 @@ class TestRender1D(unittest.TestCase):
 
         # Generate 1D volume data
         domain = Interval(
-            lower_x=[0.0],
-            upper_x=[1.0],
-            initial_refinement_level_x=[1],
-            initial_number_of_grid_points_in_x=[4],
-            is_periodic_in_x=[False],
+            lower_bounds=[0.0],
+            upper_bounds=[1.0],
+            initial_refinement_levels=[1],
+            initial_num_points=[4],
+            is_periodic=[False],
         ).create_domain()
         serialized_domain = serialize_domain(domain)
         mesh = Mesh[1](4, Basis.Legendre, Quadrature.GaussLobatto)

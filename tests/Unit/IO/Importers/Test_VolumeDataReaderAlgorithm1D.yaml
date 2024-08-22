@@ -8,20 +8,17 @@ SourceDomainCreator:
   Interval:
     LowerBound: [0]
     UpperBound: [4]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     IsPeriodicIn: [False]
     InitialRefinement: [2]
     InitialGridPoints: [8]
-    TimeDependence:
-      None
+    TimeDependence: None
 
 TargetDomainCreator:
   Interval:
     LowerBound: [-1]
     UpperBound: [3]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     IsPeriodicIn: [False]
     InitialRefinement: [1]
     InitialGridPoints: [6]

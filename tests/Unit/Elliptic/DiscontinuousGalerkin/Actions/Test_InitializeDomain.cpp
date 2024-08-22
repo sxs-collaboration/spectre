@@ -13,9 +13,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Creators/Brick.hpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
@@ -76,8 +74,7 @@ void test_initialize_domain(const Spectral::Quadrature quadrature) {
         {{2}},
         {{4}},
         {{false}},
-        domain::CoordinateMaps::Distribution::Linear,
-        std::nullopt,
+        {},
         // Time dependence evaluates to a translation of +1 at t=0
         std::make_unique<
             domain::creators::time_dependence::UniformTranslation<1>>(

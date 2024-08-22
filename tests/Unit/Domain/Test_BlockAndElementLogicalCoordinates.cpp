@@ -19,8 +19,8 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
@@ -369,9 +369,9 @@ void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
   const auto uniform_translation =
       domain::creators::time_dependence::UniformTranslation<3>(
           0.0, {{0.1, 0.2, 0.3}});
-  const auto brick = domain::creators::Brick(
+  const domain::creators::Brick brick(
       {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{0, 0, 0}}, {{3, 3, 3}},
-      {{false, false, false}}, uniform_translation.get_clone());
+      {{false, false, false}}, {}, uniform_translation.get_clone());
   const auto domain = brick.create_domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.
@@ -386,9 +386,9 @@ void fuzzy_test_block_and_element_logical_coordinates_distorted_brick(
   const auto uniform_translation =
       domain::creators::time_dependence::UniformTranslation<3>(
           0.0, {{0.1, 0.2, 0.3}}, {{-0.2, -0.1, -0.2}});
-  const auto brick = domain::creators::Brick(
+  const domain::creators::Brick brick(
       {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{0, 0, 0}}, {{3, 3, 3}},
-      {{false, false, false}}, uniform_translation.get_clone());
+      {{false, false, false}}, {}, uniform_translation.get_clone());
   const auto domain = brick.create_domain();
   const auto functions_of_time = uniform_translation.functions_of_time();
   // Test at two different times.

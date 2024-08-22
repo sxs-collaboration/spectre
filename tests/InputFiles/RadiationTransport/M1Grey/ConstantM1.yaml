@@ -29,12 +29,14 @@ DomainCreator:
   Brick:
     LowerBound: [10.5, 0.0, 0.0]
     UpperBound: [11.5, 1.0, 1.0]
+    Distribution: [Linear, Linear, Linear]
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [5, 5, 5]
     TimeDependence: None
-    BoundaryConditionInX: DirichletAnalytic
-    BoundaryConditionInY: DirichletAnalytic
-    BoundaryConditionInZ: DirichletAnalytic
+    BoundaryConditions:
+      - DirichletAnalytic
+      - DirichletAnalytic
+      - DirichletAnalytic
 
 AnalyticSolution:
   ConstantM1:

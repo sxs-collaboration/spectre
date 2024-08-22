@@ -23,7 +23,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
-#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -91,9 +91,15 @@ void test_rectangle() {
   const std::vector<std::array<size_t, 2>> refinement_level{{{3, 2}}};
   const std::array<double, 2> lower_bound{{-1.2, 3.0}};
   const std::array<double, 2> upper_bound{{0.8, 5.0}};
-  // default OrientationMap is aligned
   const OrientationMap<2> aligned_orientation =
       OrientationMap<2>::create_aligned();
+  const TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>
+      test_bc{Direction<2>::lower_xi(), 0};
+  const TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<
+      2>
+      periodic_bc{};
+  const TestHelpers::domain::BoundaryConditions::TestNoneBoundaryCondition<2>
+      none_bc{};
 
   {
     INFO("Rectangle, non-periodic no boundary conditions");
@@ -115,16 +121,16 @@ void test_rectangle() {
         2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
         expected_boundary_conditions{1};
     for (const auto& direction : Direction<2>::all_directions()) {
-      expected_boundary_conditions[0][direction] = std::make_unique<
-          TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
-          Direction<2>::lower_xi(), 0);
+      expected_boundary_conditions[0][direction] = test_bc.get_clone();
     }
     test_rectangle_construction(
-        {lower_bound, upper_bound, refinement_level[0], grid_points[0],
-         std::make_unique<
-             TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
-             Direction<2>::lower_xi(), 0),
-         nullptr},
+        domain::creators::Rectangle{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{test_bc.get_clone(), test_bc.get_clone()}},
+              {{test_bc.get_clone(), test_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
         std::vector<DirectionMap<2, BlockNeighbor<2>>>{{}},
         std::vector<std::unordered_set<Direction<2>>>{
@@ -138,8 +144,9 @@ void test_rectangle() {
   {
     INFO("Rectangle, periodic in x no boundary conditions");
     test_rectangle_construction(
-        {lower_bound, upper_bound, refinement_level[0], grid_points[0],
-         std::array<bool, 2>{{true, false}}},
+        domain::creators::Rectangle{lower_bound, upper_bound,
+                                    refinement_level[0], grid_points[0],
+                                    std::array<bool, 2>{{true, false}}},
         lower_bound, upper_bound, grid_points, refinement_level,
         std::vector<DirectionMap<2, BlockNeighbor<2>>>{
             {{Direction<2>::lower_xi(), {0, aligned_orientation}},
@@ -151,8 +158,9 @@ void test_rectangle() {
   {
     INFO("Rectangle, periodic in y no boundary conditions");
     test_rectangle_construction(
-        {lower_bound, upper_bound, refinement_level[0], grid_points[0],
-         std::array<bool, 2>{{false, true}}},
+        domain::creators::Rectangle{lower_bound, upper_bound,
+                                    refinement_level[0], grid_points[0],
+                                    std::array<bool, 2>{{false, true}}},
         lower_bound, upper_bound, grid_points, refinement_level,
         std::vector<DirectionMap<2, BlockNeighbor<2>>>{
             {{Direction<2>::lower_eta(), {0, aligned_orientation}},
@@ -164,8 +172,9 @@ void test_rectangle() {
   {
     INFO("Rectangle, periodic in xy no boundary conditions");
     test_rectangle_construction(
-        {lower_bound, upper_bound, refinement_level[0], grid_points[0],
-         std::array<bool, 2>{{true, true}}},
+        domain::creators::Rectangle{lower_bound, upper_bound,
+                                    refinement_level[0], grid_points[0],
+                                    std::array<bool, 2>{{true, true}}},
         lower_bound, upper_bound, grid_points, refinement_level,
         std::vector<DirectionMap<2, BlockNeighbor<2>>>{
             {{Direction<2>::lower_xi(), {0, aligned_orientation}},
@@ -178,11 +187,13 @@ void test_rectangle() {
   {
     INFO("Rectangle, periodic in xy with boundary conditions");
     test_rectangle_construction(
-        {lower_bound, upper_bound, refinement_level[0], grid_points[0],
-         TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<
-             2>{}
-             .get_clone(),
-         nullptr},
+        domain::creators::Rectangle{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
         std::vector<DirectionMap<2, BlockNeighbor<2>>>{
             {{Direction<2>::lower_xi(), {0, aligned_orientation}},
@@ -192,11 +203,11 @@ void test_rectangle() {
         std::vector<std::unordered_set<Direction<2>>>{{}}, {}, {}, true);
   }
   CHECK_THROWS_WITH(
-      creators::Rectangle(
-          lower_bound, upper_bound, refinement_level[0], grid_points[0],
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestNoneBoundaryCondition<3>>(),
-          nullptr, Options::Context{false, {}, 1, 1}),
+      creators::Rectangle(lower_bound, upper_bound, refinement_level[0],
+                          grid_points[0],
+                          {{{{none_bc.get_clone(), none_bc.get_clone()}},
+                            {{test_bc.get_clone(), test_bc.get_clone()}}}},
+                          {}, nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
           "outflow-type boundary condition, you must use that."));
@@ -224,18 +235,19 @@ void test_rectangle_factory() {
 
   {
     INFO("Rectangle factory time independent, no boundary condition");
-    const auto domain_creator = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<2>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<
-                2, domain::creators::Rectangle>>(
-        "Rectangle:\n"
-        "  LowerBound: [0,0]\n"
-        "  UpperBound: [1,2]\n"
-        "  IsPeriodicIn: [True,False]\n"
-        "  InitialGridPoints: [3,4]\n"
-        "  InitialRefinement: [2,3]\n"
-        "  TimeDependence: None\n");
+    const auto domain_creator =
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                     TestHelpers::domain::BoundaryConditions::
+                                         MetavariablesWithoutBoundaryConditions<
+                                             2, domain::creators::Rectangle>>(
+            "Rectangle:\n"
+            "  LowerBound: [0,0]\n"
+            "  UpperBound: [1,2]\n"
+            "  Distribution: [Linear, Linear]\n"
+            "  IsPeriodicIn: [True,False]\n"
+            "  InitialGridPoints: [3,4]\n"
+            "  InitialRefinement: [2,3]\n"
+            "  TimeDependence: None\n");
     const auto* rectangle_creator =
         dynamic_cast<const creators::Rectangle*>(domain_creator.get());
     test_rectangle_construction(
@@ -246,21 +258,25 @@ void test_rectangle_factory() {
   }
   {
     INFO("Rectangle factory time independent, with boundary condition");
-    const auto domain_creator = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<2>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithBoundaryConditions<
-                2, domain::creators::Rectangle>>(
-        "Rectangle:\n"
-        "  LowerBound: [0,0]\n"
-        "  UpperBound: [1,2]\n"
-        "  InitialGridPoints: [3,4]\n"
-        "  InitialRefinement: [2,3]\n"
-        "  TimeDependence: None\n"
-        "  BoundaryCondition:\n"
-        "    TestBoundaryCondition:\n"
-        "      Direction: lower-xi\n"
-        "      BlockId: 0\n");
+    const auto domain_creator =
+        TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<2>,
+                                     TestHelpers::domain::BoundaryConditions::
+                                         MetavariablesWithBoundaryConditions<
+                                             2, domain::creators::Rectangle>>(
+            "Rectangle:\n"
+            "  LowerBound: [0,0]\n"
+            "  UpperBound: [1,2]\n"
+            "  Distribution: [Linear, Linear]\n"
+            "  InitialGridPoints: [3,4]\n"
+            "  InitialRefinement: [2,3]\n"
+            "  TimeDependence: None\n"
+            "  BoundaryConditions:\n"
+            "    - TestBoundaryCondition:\n"
+            "        Direction: lower-xi\n"
+            "        BlockId: 0\n"
+            "    - TestBoundaryCondition:\n"
+            "        Direction: lower-xi\n"
+            "        BlockId: 0\n");
     const auto* rectangle_creator =
         dynamic_cast<const creators::Rectangle*>(domain_creator.get());
     test_rectangle_construction(
@@ -281,6 +297,7 @@ void test_rectangle_factory() {
             "Rectangle:\n"
             "  LowerBound: [0,0]\n"
             "  UpperBound: [1,2]\n"
+            "  Distribution: [Linear, Linear]\n"
             "  IsPeriodicIn: [True,False]\n"
             "  InitialGridPoints: [3,4]\n"
             "  InitialRefinement: [2,3]\n"
@@ -338,16 +355,20 @@ void test_rectangle_factory() {
             "Rectangle:\n"
             "  LowerBound: [0,0]\n"
             "  UpperBound: [1,2]\n"
+            "  Distribution: [Linear, Linear]\n"
             "  InitialGridPoints: [3,4]\n"
             "  InitialRefinement: [2,3]\n"
             "  TimeDependence:\n"
             "    UniformTranslation:\n"
             "      InitialTime: 1.0\n"
             "      Velocity: [2.3, -0.3]\n"
-            "  BoundaryCondition:\n"
-            "    TestBoundaryCondition:\n"
-            "      Direction: lower-xi\n"
-            "      BlockId: 0\n");
+            "  BoundaryConditions:\n"
+            "    - TestBoundaryCondition:\n"
+            "        Direction: lower-xi\n"
+            "        BlockId: 0\n"
+            "    - TestBoundaryCondition:\n"
+            "        Direction: lower-xi\n"
+            "        BlockId: 0\n");
     const auto* rectangle_creator =
         dynamic_cast<const creators::Rectangle*>(domain_creator.get());
     const double initial_time = 1.0;

@@ -7,5 +7,5 @@
 
 namespace domain::creators::py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-void bind_brick(pybind11::module& m);
+void bind_rectilinear(pybind11::module& m);
 }  // namespace domain::creators::py_bindings

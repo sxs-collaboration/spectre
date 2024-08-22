@@ -9,11 +9,9 @@ spectre_python_add_module(
   MODULE_PATH "Domain"
   SOURCES
   Bindings.cpp
-  Brick.cpp
   Cylinder.cpp
   DomainCreator.cpp
-  Interval.cpp
-  Rectangle.cpp
+  Rectilinear.cpp
   Sphere.cpp
   PYTHON_FILES
   __init__.py
@@ -23,11 +21,9 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Brick.hpp
   Cylinder.hpp
   DomainCreator.hpp
-  Interval.hpp
-  Rectangle.hpp
+  Rectilinear.hpp
   Sphere.hpp
   )
 

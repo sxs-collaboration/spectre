@@ -41,18 +41,12 @@ DomainCreator:
   Interval:
     LowerBound: [-0.25]
     UpperBound: [0.75]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     InitialRefinement: [2]
     InitialGridPoints: [6]
     TimeDependence: None
     BoundaryConditions:
-      LowerBoundary:
-        DirichletAnalytic:
-          AnalyticPrescription:
-            *InitialData
-      UpperBoundary:
-        DirichletAnalytic:
+      - DirichletAnalytic:
           AnalyticPrescription:
             *InitialData
 

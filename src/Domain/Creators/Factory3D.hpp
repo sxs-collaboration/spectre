@@ -7,11 +7,11 @@
 
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/CylindricalBinaryCompactObject.hpp"
 #include "Domain/Creators/Factory.hpp"
 #include "Domain/Creators/FrustalCloak.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Utilities/TMPL.hpp"

@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Domain/Amr/Flag.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Elliptic/Systems/Punctures/AmrCriteria/RefineAtPunctures.hpp"

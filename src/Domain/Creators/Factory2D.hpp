@@ -8,7 +8,7 @@
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/Factory.hpp"
-#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedRectangles.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -10,13 +10,11 @@ from spectre.Domain.Creators import DomainCreator1D, Interval
 class TestInterval(unittest.TestCase):
     def test_construction(self):
         interval = Interval(
-            lower_x=[1.0],
-            upper_x=[2.0],
-            distribution=Distribution.Linear,
-            singularity=None,
-            is_periodic_in_x=[False],
-            initial_refinement_level_x=[1],
-            initial_number_of_grid_points_in_x=[3],
+            lower_bounds=[1.0],
+            upper_bounds=[2.0],
+            is_periodic=[False],
+            initial_refinement_levels=[1],
+            initial_num_points=[3],
         )
         self.assertIsInstance(interval, DomainCreator1D)
 
