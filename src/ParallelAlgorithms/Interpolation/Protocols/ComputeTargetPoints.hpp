@@ -22,7 +22,9 @@ namespace intrp::protocols {
  *
  * - a type alias `is_sequential` that is either `std::true_type` or
  *   `std::false_type` which indicates if interpolations depend on previous
- *   interpolations' results
+ *   interpolations' results. It is assumed in the interpolation framework that
+ *   only horizon finds are sequential (e.y. anything that uses the
+ *   `intrp::Interpolator` component is a sequential horizon find).
  *
  * - a type alias `frame` that denotes the frame the target points are computed
  *   in

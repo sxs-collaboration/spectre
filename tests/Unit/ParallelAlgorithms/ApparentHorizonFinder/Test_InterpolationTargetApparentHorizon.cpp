@@ -33,26 +33,13 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct MockMetavariables {
-  struct InterpolationTargetA
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::ApparentHorizon<InterpolationTargetA,
-                                               ::Frame::Inertial>;
-    using post_interpolation_callbacks = tmpl::list<>;
-  };
-  static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-
-  using component_list =
-      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
-                     MockMetavariables, InterpolationTargetA>,
-                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+struct HorizonTag : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::ApparentHorizon<HorizonTag, ::Frame::Inertial>;
+  using post_interpolation_callbacks = tmpl::list<>;
 };
 }  // namespace
 
@@ -131,14 +118,11 @@ SPECTRE_TEST_CASE(
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
 
-  TestHelpers::db::test_simple_tag<intrp::Tags::ApparentHorizon<
-      MockMetavariables::InterpolationTargetA, Frame::Inertial>>(
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
       "ApparentHorizon");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables,
-      intrp::Tags::ApparentHorizon<MockMetavariables::InterpolationTargetA,
-                                   Frame::Inertial>>(
-      domain_creator, std::move(apparent_horizon_opts),
-      expected_block_coord_holders);
+      HorizonTag, 3, intrp::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
+      apparent_horizon_opts, expected_block_coord_holders);
 }

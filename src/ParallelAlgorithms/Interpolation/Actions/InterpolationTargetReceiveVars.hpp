@@ -81,6 +81,10 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars {
+  static_assert(
+      InterpolationTargetTag::compute_target_points::is_sequential::value,
+      "Actions::InterpolationTargetReceiveVars can be used only with "
+      "sequential targets.");
   /// For requirements on Metavariables, see InterpolationTarget
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex, typename TemporalId>
@@ -165,27 +169,24 @@ struct InterpolationTargetReceiveVars {
             Actions::CleanUpInterpolator<InterpolationTargetTag>>(
             interpolator_proxy, temporal_id);
 
-        // If we have a sequential target, and there are further
-        // temporal_ids, begin interpolation for the next one.
-        if (InterpolationTargetTag::compute_target_points::is_sequential::
-                value) {
-          const auto& temporal_ids =
-              db::get<Tags::TemporalIds<TemporalId>>(box);
-          if (not temporal_ids.empty()) {
-            auto& my_proxy = Parallel::get_parallel_component<
-                InterpolationTarget<Metavariables, InterpolationTargetTag>>(
-                cache);
-            Parallel::simple_action<
-                SendPointsToInterpolator<InterpolationTargetTag>>(
-                my_proxy, temporal_ids.front());
-          } else if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box)
-                             .empty()) {
-            auto& my_proxy = Parallel::get_parallel_component<
-                InterpolationTarget<Metavariables, InterpolationTargetTag>>(
-                cache);
-            Parallel::simple_action<Actions::VerifyTemporalIdsAndSendPoints<
-                InterpolationTargetTag>>(my_proxy);
-          }
+        // If there are further temporal_ids, begin interpolation for the next
+        // one.
+        const auto& temporal_ids = db::get<Tags::TemporalIds<TemporalId>>(box);
+        if (not temporal_ids.empty()) {
+          auto& my_proxy = Parallel::get_parallel_component<
+              InterpolationTarget<Metavariables, InterpolationTargetTag>>(
+              cache);
+          Parallel::simple_action<
+              SendPointsToInterpolator<InterpolationTargetTag>>(
+              my_proxy, temporal_ids.front());
+        } else if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box)
+                           .empty()) {
+          auto& my_proxy = Parallel::get_parallel_component<
+              InterpolationTarget<Metavariables, InterpolationTargetTag>>(
+              cache);
+          Parallel::simple_action<
+              Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
+              my_proxy);
         }
       }
     }

@@ -8,12 +8,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace intrp {
@@ -54,56 +54,40 @@ struct AddTemporalIdsToInterpolationTarget {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     std::vector<TemporalId>&& temporal_ids) {
-    if constexpr (InterpolationTargetTag::compute_target_points::is_sequential::
-                      value) {
-      // InterpolationTarget is sequential.
-      // - If Tags::TemporalIds is non-empty, then there is an
-      //   interpolation in progress, so do nothing here.  (If there's
-      //   an interpolation in progress, then a later interpolation
-      //   will be started as soon as the earlier one finishes (in
-      //   InterpolationTargetReceiveVars)).
-      // - If not pending_temporal_ids_was_empty_on_entry, then
-      //   there are pending temporal_ids waiting inside a
-      //   VerifyTemporalIdsAndSendPoints callback, so do nothing here.
-      //   (A later interpolation will be started on the callback).
-      // - If Tags::PendingTemporalIds is empty, then we didn't actually
-      //   add any pending temporal_ids above, so do nothing here.
-      // - Otherwise, there is no interpolation in progress and there
-      //   is no pending_temporal_ids waiting. So initiate waiting and
-      //   interpolation on the pending_temporal_ids.
+    static_assert(
+        InterpolationTargetTag::compute_target_points::is_sequential::value,
+        "Actions::AddTemporalIdsToInterpolationTarget can be used only with "
+        "sequential targets.");
 
-      const bool pending_temporal_ids_was_empty_on_entry =
-          db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty();
+    // - If Tags::TemporalIds is non-empty, then there is an
+    //   interpolation in progress, so do nothing here.  (If there's
+    //   an interpolation in progress, then a later interpolation
+    //   will be started as soon as the earlier one finishes (in
+    //   InterpolationTargetReceiveVars)).
+    // - If not pending_temporal_ids_was_empty_on_entry, then
+    //   there are pending temporal_ids waiting inside a
+    //   VerifyTemporalIdsAndSendPoints callback, so do nothing here.
+    //   (A later interpolation will be started on the callback).
+    // - If Tags::PendingTemporalIds is empty, then we didn't actually
+    //   add any pending temporal_ids above, so do nothing here.
+    // - Otherwise, there is no interpolation in progress and there
+    //   is no pending_temporal_ids waiting. So initiate waiting and
+    //   interpolation on the pending_temporal_ids.
 
-      InterpolationTarget_detail::flag_temporal_ids_as_pending<
-          InterpolationTargetTag>(make_not_null(&box), temporal_ids);
+    const bool pending_temporal_ids_was_empty_on_entry =
+        db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty();
 
-      if (db::get<Tags::TemporalIds<TemporalId>>(box).empty() and
-          pending_temporal_ids_was_empty_on_entry and
-          not db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
-        Parallel::simple_action<
-            Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
-            my_proxy);
-      }
-    } else {
-      // InterpolationTarget is not sequential. So everything in
-      // Tags::TemporalIds should have had interpolation started on it
-      // already.  So begin interpolation on every new pending
-      // temporal_id.
+    InterpolationTarget_detail::flag_temporal_ids_as_pending<
+        InterpolationTargetTag>(make_not_null(&box), temporal_ids);
 
-      const std::vector<TemporalId> new_pending_temporal_ids =
-          InterpolationTarget_detail::flag_temporal_ids_as_pending<
-              InterpolationTargetTag>(make_not_null(&box), temporal_ids);
-
-      if (not new_pending_temporal_ids.empty()) {
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
-        Parallel::simple_action<
-            Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
-            my_proxy);
-      }
+    if (db::get<Tags::TemporalIds<TemporalId>>(box).empty() and
+        pending_temporal_ids_was_empty_on_entry and
+        not db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
+      auto& my_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
+      Parallel::simple_action<
+          Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(
+          my_proxy);
     }
   }
 };

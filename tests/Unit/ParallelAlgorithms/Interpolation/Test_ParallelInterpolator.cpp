@@ -231,6 +231,15 @@ struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
+// This test was originally written with non-sequential targets, but an
+// infrastructure change made the interpolator only work with sequential
+// targets (horizon find). Rather than rewrite the whole test with horizon
+// finds, we just make new targets from the originals that are now sequential
+template <typename OriginalComputeTargetPoints>
+struct MockComputeTargetPoints : public OriginalComputeTargetPoints {
+  using is_sequential = std::true_type;
+};
+
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -239,8 +248,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<InterpolationTargetA, 3,
-                                         Frame::Inertial>;
+        MockComputeTargetPoints<intrp::TargetPoints::LineSegment<
+            InterpolationTargetA, 3, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<TestFunction<InterpolationTargetA, Tags::Square>>;
   };
@@ -251,8 +260,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<Tags::NegateCompute>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<InterpolationTargetB, 3,
-                                         Frame::Inertial>;
+        MockComputeTargetPoints<intrp::TargetPoints::LineSegment<
+            InterpolationTargetB, 3, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<TestFunction<InterpolationTargetB, Tags::Negate>>;
   };
@@ -262,8 +271,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<InterpolationTargetC,
-                                         ::Frame::Inertial>;
+        MockComputeTargetPoints<intrp::TargetPoints::KerrHorizon<
+            InterpolationTargetC, ::Frame::Inertial>>;
     using post_interpolation_callbacks = tmpl::list<TestKerrHorizonIntegral>;
   };
 

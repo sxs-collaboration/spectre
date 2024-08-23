@@ -160,6 +160,15 @@ struct MockInterpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
+// This test was originally written with non-sequential targets, but an
+// infrastructure change made the interpolator only work with sequential
+// targets (horizon find). Rather than rewrite the whole test with horizon
+// finds, we just make new targets from the originals that are now sequential
+template <typename OriginalComputeTargetPoints>
+struct MockComputeTargetPoints : public OriginalComputeTargetPoints {
+  using is_sequential = std::true_type;
+};
+
 template <size_t Dim>
 struct MockMetavariables {
   static constexpr size_t volume_dim = Dim;
@@ -171,8 +180,8 @@ struct MockMetavariables {
                    gr::Tags::SpatialMetric<DataVector, volume_dim>,
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
-    using compute_target_points =
-        intrp::TargetPoints::LineSegment<LineA, volume_dim, Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::LineSegment<LineA, volume_dim, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveLineSegment<
             tmpl::append<vars_to_interpolate_to_target,
@@ -187,8 +196,8 @@ struct MockMetavariables {
                    gr::Tags::SpatialMetric<DataVector, volume_dim>,
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
-    using compute_target_points =
-        intrp::TargetPoints::LineSegment<LineB, volume_dim, Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::LineSegment<LineB, volume_dim, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveLineSegment<
             tmpl::append<vars_to_interpolate_to_target,

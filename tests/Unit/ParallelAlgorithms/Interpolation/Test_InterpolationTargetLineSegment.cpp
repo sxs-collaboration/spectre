@@ -39,25 +39,14 @@ domain::creators::Sphere make_sphere() {
 }
 
 template <typename Frame>
-struct MockMetavariables {
-  struct InterpolationTargetA
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3, Frame>;
-    using post_interpolation_callbacks = tmpl::list<>;
-  };
-  static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-
-  using component_list =
-      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
-                     MockMetavariables, InterpolationTargetA>,
-                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+struct LineSegmentTag
+    : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::LineSegment<LineSegmentTag, 3, Frame>;
+  using post_interpolation_callbacks = tmpl::list<>;
 };
 
 template <InterpTargetTestHelpers::ValidPoints ValidPoints>
@@ -87,24 +76,20 @@ void test() {
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
 
-  TestHelpers::db::test_simple_tag<intrp::Tags::LineSegment<
-      MockMetavariables<Frame::Grid>::InterpolationTargetA, 3>>("LineSegment");
-  TestHelpers::db::test_simple_tag<intrp::Tags::LineSegment<
-      MockMetavariables<Frame::Inertial>::InterpolationTargetA, 3>>(
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::LineSegment<LineSegmentTag<Frame::Grid>, 3>>("LineSegment");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::LineSegment<LineSegmentTag<Frame::Inertial>, 3>>(
       "LineSegment");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables<Frame::Grid>,
-      intrp::Tags::LineSegment<
-          MockMetavariables<Frame::Grid>::InterpolationTargetA, 3>>(
-      domain_creator, std::move(line_segment_opts),
-      expected_block_coord_holders);
+      LineSegmentTag<Frame::Grid>, 3,
+      intrp::Tags::LineSegment<LineSegmentTag<Frame::Grid>, 3>>(
+      line_segment_opts, expected_block_coord_holders);
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables<Frame::Inertial>,
-      intrp::Tags::LineSegment<
-          MockMetavariables<Frame::Inertial>::InterpolationTargetA, 3>>(
-      domain_creator, std::move(line_segment_opts),
-      expected_block_coord_holders);
+      LineSegmentTag<Frame::Inertial>, 3,
+      intrp::Tags::LineSegment<LineSegmentTag<Frame::Inertial>, 3>>(
+      line_segment_opts, expected_block_coord_holders);
 }
 }  // namespace
 

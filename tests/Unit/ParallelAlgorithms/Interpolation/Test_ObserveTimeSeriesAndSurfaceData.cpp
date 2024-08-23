@@ -419,6 +419,15 @@ struct MockInterpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
+// This test was originally written with non-sequential targets, but an
+// infrastructure change made the interpolator only work with sequential
+// targets (horizon find). Rather than rewrite the whole test with horizon
+// finds, we just make new targets from the originals that are now sequential
+template <typename OriginalComputeTargetPoints>
+struct MockComputeTargetPoints : public OriginalComputeTargetPoints {
+  using is_sequential = std::true_type;
+};
+
 struct MockMetavariables {
   struct SurfaceA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
@@ -429,8 +438,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
@@ -448,8 +457,8 @@ struct MockMetavariables {
                                                               Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<Tags::Negate,
                                                               Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
@@ -467,8 +476,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Negate, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Negate,
@@ -485,8 +494,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveSurfaceData<
             tmpl::list<Tags::Square>, SurfaceD, ::Frame::Inertial>>;
@@ -501,8 +510,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceE, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceE, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveSurfaceData<
             tmpl::list<Tags::Square>, SurfaceE, ::Frame::Inertial>>;

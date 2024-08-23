@@ -68,23 +68,12 @@ void verify_temporal_ids_and_send_points_time_independent(
         pending_ids->clear();
       },
       box);
-  if (InterpolationTargetTag::compute_target_points::is_sequential::value) {
-    // Sequential: start interpolation only for the first new_temporal_id.
-    if (not new_temporal_ids.empty()) {
-      auto& my_proxy =
-          Parallel::get_parallel_component<ParallelComponent>(cache);
-      Parallel::simple_action<
-          Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-          my_proxy, new_temporal_ids.front());
-    }
-  } else {
-    // Non-sequential: start interpolation for all new_temporal_ids.
+
+  if (not new_temporal_ids.empty()) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    for (const auto& id : new_temporal_ids) {
-      Parallel::simple_action<
-          Actions::SendPointsToInterpolator<InterpolationTargetTag>>(my_proxy,
-                                                                     id);
-    }
+    Parallel::simple_action<
+        Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
+        my_proxy, new_temporal_ids.front());
   }
 }
 
@@ -209,30 +198,11 @@ void verify_temporal_ids_and_send_points_time_dependent(
       },
       box);
 
-  if (InterpolationTargetTag::compute_target_points::is_sequential::value) {
-    // Sequential: start interpolation only for the first new_temporal_id.
-    if (not new_temporal_ids.empty()) {
-      auto& my_proxy =
-          Parallel::get_parallel_component<ParallelComponent>(cache);
-      Parallel::simple_action<
-          Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-          my_proxy, new_temporal_ids.front());
-    }
-  } else {
-    // Non-sequential: start interpolation for all new_temporal_ids.
+  if (not new_temporal_ids.empty()) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    for (const auto& id : new_temporal_ids) {
-      Parallel::simple_action<
-          Actions::SendPointsToInterpolator<InterpolationTargetTag>>(my_proxy,
-                                                                     id);
-    }
-    // If there are still pending temporal_ids, call
-    // VerifyTemporalIdsAndSendPoints again, so that those pending
-    // temporal_ids can be waited for.
-    if (not db::get<Tags::PendingTemporalIds<TemporalId>>(*box).empty()) {
-      Parallel::simple_action<
-          VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>>(my_proxy);
-    }
+    Parallel::simple_action<
+        Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
+        my_proxy, new_temporal_ids.front());
   }
 }
 }  // namespace detail
@@ -289,6 +259,10 @@ struct VerifyTemporalIdsAndSendPoints {
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
+    static_assert(
+        InterpolationTargetTag::compute_target_points::is_sequential::value,
+        "Actions::VerifyTemporalIdsAndSendPoints can be used only with "
+        "sequential targets.");
     if constexpr (std::is_same_v<typename InterpolationTargetTag::
                                      compute_target_points::frame,
                                  ::Frame::Grid>) {
