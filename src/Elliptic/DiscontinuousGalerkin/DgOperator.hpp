@@ -626,7 +626,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // This is the sign flip that makes the operator _minus_ the Laplacian
         // for a Poisson system
         *operator_applied_to_vars *= -1.;
-      } else {
+      } else if (formulation == ::dg::Formulation::WeakInertial) {
         // Compute weak divergence:
         //   F^i \partial_i \phi = 1/w_p \sum_q
         //     (D^T_\hat{i})_pq (w det(J) J^\hat{i}_i F^i)_q
@@ -635,6 +635,10 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         if (not massive) {
           *operator_applied_to_vars *= get(det_inv_jacobian);
         }
+      } else {
+        ERROR("Unsupported DG formulation: "
+              << formulation
+              << "\nSupported formulations are: StrongInertial, WeakInertial.");
       }
       if constexpr (not std::is_same_v<SourcesComputer, void>) {
         Variables<tmpl::list<OperatorTags...>> sources{num_points, 0.};

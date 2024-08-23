@@ -102,8 +102,6 @@ class CProxy_GlobalCache;
 
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
 
   // To switch which initial data is evolved you only need to change the
   // line `using initial_data = ...;` and include the header file for the

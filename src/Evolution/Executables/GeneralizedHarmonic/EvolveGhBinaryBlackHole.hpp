@@ -239,8 +239,6 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   static constexpr bool use_damped_harmonic_rollon = false;
   using system = gh::System<volume_dim>;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   using TimeStepperBase = LtsTimeStepper;
 

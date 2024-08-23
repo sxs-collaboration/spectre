@@ -12,4 +12,5 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Formulation",
                   "[Unit][NumericalAlgorithms]") {
   CHECK(get_output(dg::Formulation::StrongInertial) == "StrongInertial");
   CHECK(get_output(dg::Formulation::WeakInertial) == "WeakInertial");
+  CHECK(get_output(dg::Formulation::StrongInertial) == "StrongInertial");
 }

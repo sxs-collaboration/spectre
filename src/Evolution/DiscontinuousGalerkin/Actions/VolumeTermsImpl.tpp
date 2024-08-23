@@ -263,7 +263,12 @@ void volume_terms(
              "when using the weak form.");
       (*div_fluxes) *= get(*det_inverse_jacobian);
     } else {
-      ERROR("Unsupported DG formulation: " << dg_formulation);
+      // Note: when adding support for other DG formulations here, also check
+      // that the implementations of `BoundaryCorrection` classes support the
+      // added formulation.
+      ERROR("Unsupported DG formulation: "
+            << dg_formulation
+            << "\nSupported formulations are: StrongInertial, WeakInertial.");
     }
     tmpl::for_each<flux_variables>(
         [&dg_formulation, &dt_vars_ptr, &div_fluxes](auto var_tag_v) {

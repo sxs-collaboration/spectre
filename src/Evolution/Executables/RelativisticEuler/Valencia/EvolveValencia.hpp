@@ -108,8 +108,6 @@ class CProxy_GlobalCache;
 template <size_t Dim, typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
 
   using initial_data = InitialData;
   static_assert(
