@@ -12,7 +12,6 @@ spectre_target_sources(
   ObserveConstantsPerElement.cpp
   ObserveDataBox.cpp
   ObserveNorms.cpp
-  ObserveTimeStepVolume.cpp
   )
 
 spectre_target_headers(
@@ -30,6 +29,7 @@ spectre_target_headers(
   ObserveNorms.hpp
   ObserveTimeStep.hpp
   ObserveTimeStepVolume.hpp
+  ObserveTimeStepVolume.tpp
   Tags.hpp
   )
 

@@ -297,7 +297,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
               Events::Completion, Events::MonitorMemory<volume_dim>,
               typename detail::ObserverTags<volume_dim>::field_observations,
               Events::time_events<system>,
-              dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
+              dg::Events::ObserveTimeStepVolume<system>>>>,
       tmpl::pair<
           gh::BoundaryConditions::BoundaryCondition<volume_dim>,
           gh::BoundaryConditions::standard_boundary_conditions<volume_dim>>,

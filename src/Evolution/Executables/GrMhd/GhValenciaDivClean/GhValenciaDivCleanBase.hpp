@@ -638,7 +638,7 @@ struct GhValenciaDivCleanTemplateBase<
                        Events::ObserveAtExtremum<observe_fields,
                                                  non_tensor_compute_tags>,
                        Events::time_events<system>,
-                       dg::Events::ObserveTimeStepVolume<volume_dim>,
+                       dg::Events::ObserveTimeStepVolume<system>,
                        control_system::metafunctions::control_system_events<
                            control_systems>,
                        intrp::Events::InterpolateWithoutInterpComponent<

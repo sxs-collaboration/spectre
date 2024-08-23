@@ -518,7 +518,7 @@ struct EvolutionMetavars {
                 control_system::metafunctions::control_system_events<
                     control_systems>,
                 Events::time_events<system>,
-                dg::Events::ObserveTimeStepVolume<3>>>>,
+                dg::Events::ObserveTimeStepVolume<system>>>>,
         tmpl::pair<control_system::size::State,
                    control_system::size::States::factory_creatable_states>,
         tmpl::pair<

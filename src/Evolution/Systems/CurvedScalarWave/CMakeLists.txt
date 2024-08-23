@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Constraints.cpp
+  EventInstantiation.cpp
   TimeDerivative.cpp
   VolumeTermsInstantiation.cpp
   )
@@ -37,6 +38,7 @@ target_link_libraries(
   DataStructures
   Domain
   ErrorHandling
+  Events
   LinearOperators
   IO
   Importers

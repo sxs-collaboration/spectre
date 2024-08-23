@@ -213,7 +213,7 @@ struct EvolutionMetavars {
                         volume_dim, SphericalSurface, interpolator_source_vars>,
                     tmpl::list<>>,
                 Events::time_events<system>,
-                dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
+                dg::Events::ObserveTimeStepVolume<system>>>>,
         tmpl::pair<evolution::initial_data::InitialData, solutions_and_data>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,

@@ -360,7 +360,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                      Events::Completion, Events::MonitorMemory<volume_dim>,
                      typename detail::ObserverTags::field_observations,
                      Events::time_events<system>,
-                     dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
+                     dg::Events::ObserveTimeStepVolume<system>>>>,
       tmpl::pair<
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,
