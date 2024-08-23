@@ -96,3 +96,36 @@ void divergence(
   };
   EXPAND_PACK_LEFT_TO_RIGHT(apply_div(FluxTags{}, DivTags{}));
 }
+
+template <typename FluxTags, size_t Dim>
+Variables<db::wrap_tags_in<Tags::div, FluxTags>> logical_divergence(
+    const Variables<FluxTags>& flux, const Mesh<Dim>& mesh) {
+  Variables<db::wrap_tags_in<Tags::div, FluxTags>> div_flux(
+      flux.number_of_grid_points());
+  logical_divergence(make_not_null(&div_flux), flux, mesh);
+  return div_flux;
+}
+
+template <typename... ResultTags, typename... FluxTags, size_t Dim>
+void logical_divergence(
+    const gsl::not_null<Variables<tmpl::list<ResultTags...>>*> div_flux,
+    const Variables<tmpl::list<FluxTags...>>& flux, const Mesh<Dim>& mesh) {
+  static_assert(
+      (... and
+       std::is_same_v<tmpl::front<typename FluxTags::type::index_list>,
+                      SpatialIndex<Dim, UpLo::Up, Frame::ElementLogical>>),
+      "The first index of each flux must be an upper spatial index in "
+      "element-logical coordinates.");
+  static_assert(
+      (... and
+       std::is_same_v<
+           typename ResultTags::type,
+           TensorMetafunctions::remove_first_index<typename FluxTags::type>>),
+      "The result tensors must have the same type as the flux tensors with "
+      "their first index removed.");
+  div_flux->initialize(mesh.number_of_grid_points(), 0.);
+  // Note: This function hasn't been optimized much at all. Feel free to
+  // optimize if needed!
+  EXPAND_PACK_LEFT_TO_RIGHT(logical_divergence(
+      make_not_null(&get<ResultTags>(*div_flux)), get<FluxTags>(flux), mesh));
+}

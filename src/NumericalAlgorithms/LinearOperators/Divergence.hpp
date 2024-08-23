@@ -89,6 +89,29 @@ void divergence(gsl::not_null<Scalar<DataType>*> div_input,
                                       DerivativeFrame>& inverse_jacobian);
 /// @}
 
+/// @{
+/*!
+ * \brief Compute the divergence of fluxes in logical coordinates
+ *
+ * Applies the logical differentiation matrix to the fluxes in each dimension
+ * and sums over dimensions.
+ *
+ * \see divergence
+ */
+template <typename ResultTensor, typename FluxTensor, size_t Dim>
+void logical_divergence(gsl::not_null<ResultTensor*> div_flux,
+                        const FluxTensor& flux, const Mesh<Dim>& mesh);
+
+template <typename FluxTags, size_t Dim>
+auto logical_divergence(const Variables<FluxTags>& flux, const Mesh<Dim>& mesh)
+    -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
+
+template <typename... DivTags, typename... FluxTags, size_t Dim>
+void logical_divergence(
+    gsl::not_null<Variables<tmpl::list<DivTags...>>*> div_flux,
+    const Variables<tmpl::list<FluxTags...>>& flux, const Mesh<Dim>& mesh);
+/// @}
+
 namespace Tags {
 /*!
  * \ingroup DataBoxTagsGroup
