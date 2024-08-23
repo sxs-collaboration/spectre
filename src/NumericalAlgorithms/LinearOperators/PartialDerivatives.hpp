@@ -20,6 +20,7 @@
 
 /// \cond
 class DataVector;
+class Matrix;
 template <size_t Dim>
 class Mesh;
 
@@ -86,6 +87,16 @@ struct spacetime_deriv<Tag, Dim, Frame,
 
 }  // namespace Tags
 
+namespace partial_derivatives_detail {
+void apply_matrix_in_first_dim(double* result, const double* input,
+                               const Matrix& matrix, size_t size,
+                               bool add_to_result = false);
+void apply_matrix_in_first_dim(std::complex<double>* result,
+                               const std::complex<double>* input,
+                               const Matrix& matrix, size_t size,
+                               bool add_to_result = false);
+}  // namespace partial_derivatives_detail
+
 /// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
@@ -125,28 +136,28 @@ auto logical_partial_derivatives(const Variables<VariableTags>& u,
  * should use the `logical_partial_derivatives` function that operates on
  * `Variables` since that'll be more efficient.
  */
-template <typename SymmList, typename IndexList, size_t Dim>
+template <typename DataType, typename SymmList, typename IndexList, size_t Dim>
 void logical_partial_derivative(
     gsl::not_null<TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>*>
         logical_derivative_of_u,
-    gsl::not_null<gsl::span<double>*> buffer,
-    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh);
+    gsl::not_null<gsl::span<typename DataType::value_type>*> buffer,
+    const Tensor<DataType, SymmList, IndexList>& u, const Mesh<Dim>& mesh);
 
-template <typename SymmList, typename IndexList, size_t Dim>
+template <typename DataType, typename SymmList, typename IndexList, size_t Dim>
 void logical_partial_derivative(
     gsl::not_null<TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>*>
         logical_derivative_of_u,
-    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh);
+    const Tensor<DataType, SymmList, IndexList>& u, const Mesh<Dim>& mesh);
 
-template <typename SymmList, typename IndexList, size_t Dim>
-auto logical_partial_derivative(
-    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh)
+template <typename DataType, typename SymmList, typename IndexList, size_t Dim>
+auto logical_partial_derivative(const Tensor<DataType, SymmList, IndexList>& u,
+                                const Mesh<Dim>& mesh)
     -> TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>;
 /// @}
 
@@ -204,39 +215,36 @@ auto partial_derivatives(
 /// If you have a `Variables` with several tensors you need to differentiate,
 /// you should use the `partial_derivatives` function that operates on
 /// `Variables` since that'll be more efficient.
-template <typename SymmList, typename IndexList, size_t Dim,
+template <typename DataType, typename SymmList, typename IndexList, size_t Dim,
           typename DerivativeFrame>
 void partial_derivative(
     const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
-        DerivativeFrame>*>
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo, DerivativeFrame>*>
         du,
     const TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo,
         Frame::ElementLogical>& logical_partial_derivative_of_u,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
 
-template <typename SymmList, typename IndexList, size_t Dim,
+template <typename DataType, typename SymmList, typename IndexList, size_t Dim,
           typename DerivativeFrame>
 void partial_derivative(
     const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
-        DerivativeFrame>*>
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo, DerivativeFrame>*>
         du,
-    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const Tensor<DataType, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
 
-template <typename SymmList, typename IndexList, size_t Dim,
+template <typename DataType, typename SymmList, typename IndexList, size_t Dim,
           typename DerivativeFrame>
 auto partial_derivative(
-    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const Tensor<DataType, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian)
     -> TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
-        DerivativeFrame>;
+        Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo, DerivativeFrame>;
 /// @}
 
 namespace Tags {
@@ -318,9 +326,9 @@ struct DerivTensorCompute
       const Mesh<Dim>&,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             deriv_frame>&) =
-      partial_derivative<typename TensorTag::type::symmetry,
-                         typename TensorTag::type::index_list, Dim,
-                         deriv_frame>;
+      partial_derivative<
+          typename TensorTag::type::type, typename TensorTag::type::symmetry,
+          typename TensorTag::type::index_list, Dim, deriv_frame>;
   using argument_tags =
       tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;
 };

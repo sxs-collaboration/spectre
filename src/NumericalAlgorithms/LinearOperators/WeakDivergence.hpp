@@ -11,6 +11,7 @@
 #include "DataStructures/Transpose.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
@@ -73,32 +74,14 @@ void weak_divergence(
     divergence_of_fluxes->initialize(fluxes.number_of_grid_points());
   }
 
-  const auto apply_matrix_in_first_dim =
-      [](double* result, const double* const input, const Matrix& matrix,
-         const size_t size, const bool add_to_result) {
-        dgemm_<true>(
-            'N', 'N',
-            matrix.rows(),            // rows of matrix and result
-            size / matrix.columns(),  // columns of result and input
-            matrix.columns(),         // columns of matrix and rows of input
-            1.0,                      // overall multiplier
-            matrix.data(),            // matrix
-            matrix.spacing(),         // rows of matrix including padding
-            input,                    // input
-            matrix.columns(),         // rows of input
-            add_to_result
-                ? 1.0
-                : 0.0,  // 1.0 means add to result, 0.0 means overwrite result
-            result,     // result
-            matrix.rows());  // rows of result
-      };
+  using ValueType = typename Variables<tmpl::list<FluxTags...>>::value_type;
 
   if constexpr (Dim == 1) {
     (void)det_jac_times_inverse_jacobian;  // is identically 1.0 in 1d
 
-    apply_matrix_in_first_dim(divergence_of_fluxes->data(), fluxes.data(),
-                              Spectral::weak_flux_differentiation_matrix(mesh),
-                              fluxes.size(), false);
+    partial_derivatives_detail::apply_matrix_in_first_dim(
+        divergence_of_fluxes->data(), fluxes.data(),
+        Spectral::weak_flux_differentiation_matrix(mesh), fluxes.size(), false);
   } else {
     // Multiplies the flux by det_jac_time_inverse_jacobian.
     const auto transform_to_logical_frame =
@@ -164,13 +147,13 @@ void weak_divergence(
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
           tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
           make_not_null(&data_buffer), std::integral_constant<size_t, 1>{}));
-      double* div_ptr = divergence_of_fluxes->data();
+      ValueType* div_ptr = divergence_of_fluxes->data();
       raw_transpose(make_not_null(div_ptr), data_buffer.data(),
                     xi_weak_div_matrix.rows(),
                     divergence_of_fluxes->size() / xi_weak_div_matrix.rows());
-      apply_matrix_in_first_dim(data_buffer.data(),
-                                divergence_of_fluxes->data(),
-                                eta_weak_div_matrix, data_buffer.size(), false);
+      partial_derivatives_detail::apply_matrix_in_first_dim(
+          data_buffer.data(), divergence_of_fluxes->data(), eta_weak_div_matrix,
+          data_buffer.size(), false);
 
       const size_t chunk_size = Variables<tmpl::list<Tags::div<FluxTags>...>>::
                                     number_of_independent_components *
@@ -182,9 +165,9 @@ void weak_divergence(
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
           tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
           make_not_null(&data_buffer), std::integral_constant<size_t, 0>{}));
-      apply_matrix_in_first_dim(divergence_of_fluxes->data(),
-                                data_buffer.data(), xi_weak_div_matrix,
-                                data_buffer.size(), true);
+      partial_derivatives_detail::apply_matrix_in_first_dim(
+          divergence_of_fluxes->data(), data_buffer.data(), xi_weak_div_matrix,
+          data_buffer.size(), true);
     } else if constexpr (Dim == 3) {
       Variables<tmpl::list<ResultTags...>> data_buffer0{
           divergence_of_fluxes->number_of_grid_points()};
@@ -207,12 +190,12 @@ void weak_divergence(
           make_not_null(&data_buffer0), std::integral_constant<size_t, 2>{}));
       size_t chunk_size =
           xi_weak_div_matrix.rows() * eta_weak_div_matrix.rows();
-      double* result_ptr = data_buffer1.data();
+      ValueType* result_ptr = data_buffer1.data();
       raw_transpose(make_not_null(result_ptr), data_buffer0.data(), chunk_size,
                     data_buffer0.size() / chunk_size);
-      apply_matrix_in_first_dim(data_buffer0.data(), data_buffer1.data(),
-                                zeta_weak_div_matrix, data_buffer0.size(),
-                                false);
+      partial_derivatives_detail::apply_matrix_in_first_dim(
+          data_buffer0.data(), data_buffer1.data(), zeta_weak_div_matrix,
+          data_buffer0.size(), false);
       chunk_size =
           number_of_independent_components * zeta_weak_div_matrix.rows();
       result_ptr = divergence_of_fluxes->data();
@@ -228,9 +211,9 @@ void weak_divergence(
       result_ptr = data_buffer1.data();
       raw_transpose(make_not_null(result_ptr), data_buffer0.data(), chunk_size,
                     data_buffer1.size() / chunk_size);
-      apply_matrix_in_first_dim(data_buffer0.data(), data_buffer1.data(),
-                                eta_weak_div_matrix, data_buffer0.size(),
-                                false);
+      partial_derivatives_detail::apply_matrix_in_first_dim(
+          data_buffer0.data(), data_buffer1.data(), eta_weak_div_matrix,
+          data_buffer0.size(), false);
       chunk_size = number_of_independent_components *
                    eta_weak_div_matrix.rows() * zeta_weak_div_matrix.rows();
       result_ptr = data_buffer1.data();
@@ -242,9 +225,9 @@ void weak_divergence(
       EXPAND_PACK_LEFT_TO_RIGHT(transform_to_logical_frame(
           tmpl::type_<FluxTags>{}, tmpl::type_<ResultTags>{},
           make_not_null(&data_buffer0), std::integral_constant<size_t, 0>{}));
-      apply_matrix_in_first_dim(divergence_of_fluxes->data(),
-                                data_buffer0.data(), xi_weak_div_matrix,
-                                data_buffer0.size(), true);
+      partial_derivatives_detail::apply_matrix_in_first_dim(
+          divergence_of_fluxes->data(), data_buffer0.data(), xi_weak_div_matrix,
+          data_buffer0.size(), true);
     } else {
       static_assert(Dim == 1 or Dim == 2 or Dim == 3,
                     "Weak divergence only implemented in 1d, 2d, and 3d.");

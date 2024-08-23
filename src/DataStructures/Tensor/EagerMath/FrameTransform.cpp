@@ -395,6 +395,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
 
 #undef INSTANTIATE
 
+// Maps complex<double> -> double and ComplexDataVector -> DataVector
+// to create real Jacobian types in the instantiations below
+template <typename T>
+using make_real_t = std::conditional_t<
+    std::is_same_v<T, ComplexDataVector>, DataVector,
+    std::conditional_t<std::is_same_v<T, std::complex<double>>, double, T>>;
+
 #define INSTANTIATE(_, data)                                                   \
   template void transform::first_index_to_different_frame(                     \
       const gsl::not_null<TensorMetafunctions::prepend_spatial_index<          \
@@ -404,19 +411,22 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial),
                           DIM(data), UpLo::Up, SRCFRAME(data)>* > result,      \
       const tnsr::TENSOR(data) < DTYPE(data), DIM(data),                       \
       DESTFRAME(data) > &input,                                                \
-      const InverseJacobian<DTYPE(data), DIM(data), SRCFRAME(data),            \
-                            DESTFRAME(data)>& inv_jacobian);                   \
+      const InverseJacobian<make_real_t<DTYPE(data)>, DIM(data),               \
+                            SRCFRAME(data), DESTFRAME(data)>& inv_jacobian);   \
   template auto transform::first_index_to_different_frame(                     \
       const tnsr::TENSOR(data) < DTYPE(data), DIM(data),                       \
       DESTFRAME(data) > &input,                                                \
-      const InverseJacobian<DTYPE(data), DIM(data), SRCFRAME(data),            \
-                            DESTFRAME(data)>& inv_jacobian)                    \
-      ->TensorMetafunctions::prepend_spatial_index<                            \
+      const InverseJacobian<make_real_t<DTYPE(data)>, DIM(data),               \
+                            SRCFRAME(data), DESTFRAME(data)>& inv_jacobian)    \
+      -> TensorMetafunctions::prepend_spatial_index<                           \
           TensorMetafunctions::remove_first_index<                             \
               tnsr::TENSOR(data) < DTYPE(data), DIM(data), DESTFRAME(data)>>,  \
       DIM(data), UpLo::Up, SRCFRAME(data) > ;
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::ElementLogical),
-                        (Frame::Inertial), (double, DataVector), (I, II, Ij))
+                        (Frame::Inertial),
+                        (double, std::complex<double>, DataVector,
+                         ComplexDataVector),
+                        (I, II, Ij, IJ, Iaa))
 
 #undef DIM
 #undef SRCFRAME

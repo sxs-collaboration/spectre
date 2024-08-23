@@ -53,17 +53,19 @@ struct LogicalImpl;
 //
 // - We factor out the `logical_deriv_index == 0` case so that we do not need to
 //   zero the memory in `du` before the computation.
-template <typename ResultTags, size_t Dim, typename DerivativeFrame>
+template <typename ResultTags, size_t Dim, typename DerivativeFrame,
+          typename ValueType = typename Variables<ResultTags>::value_type,
+          typename VectorType = typename Variables<ResultTags>::vector_type>
 void partial_derivatives_impl(
     const gsl::not_null<Variables<ResultTags>*> du,
-    const std::array<const double*, Dim>& logical_partial_derivatives_of_u,
+    const std::array<const ValueType*, Dim>& logical_partial_derivatives_of_u,
     const size_t number_of_independent_components,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
-  double* pdu = du->data();
+  ValueType* pdu = du->data();
   const size_t num_grid_points = du->number_of_grid_points();
-  DataVector lhs{};
-  DataVector logical_du{};
+  VectorType lhs{};
+  VectorType logical_du{};
 
   std::array<std::array<size_t, Dim>, Dim> indices{};
   for (size_t deriv_index = 0; deriv_index < Dim; ++deriv_index) {
@@ -81,7 +83,7 @@ void partial_derivatives_impl(
       // clang-tidy: const cast is fine since we won't modify the data and we
       // need it to easily hook into the expression templates.
       logical_du.set_data_ref(
-          const_cast<double*>(  // NOLINT
+          const_cast<ValueType*>(                              // NOLINT
               gsl::at(logical_partial_derivatives_of_u, 0)) +  // NOLINT
               component_index * num_grid_points,
           num_grid_points);
@@ -91,7 +93,7 @@ void partial_derivatives_impl(
            ++logical_deriv_index) {
         // clang-tidy: const cast is fine since we won't modify the data and we
         // need it to easily hook into the expression templates.
-        logical_du.set_data_ref(const_cast<double*>(  // NOLINT
+        logical_du.set_data_ref(const_cast<ValueType*>(  // NOLINT
                                     gsl::at(logical_partial_derivatives_of_u,
                                             logical_deriv_index)) +  // NOLINT
                                     component_index * num_grid_points,
@@ -113,13 +115,14 @@ void logical_partial_derivatives(
     const gsl::not_null<std::array<Variables<DerivativeTags>, Dim>*>
         logical_partial_derivatives_of_u,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
+  using ValueType = typename Variables<VariableTags>::value_type;
   if (UNLIKELY((*logical_partial_derivatives_of_u)[0].number_of_grid_points() !=
                u.number_of_grid_points())) {
     for (auto& deriv : *logical_partial_derivatives_of_u) {
       deriv.initialize(u.number_of_grid_points());
     }
   }
-  std::array<double*, Dim> deriv_pointers{};
+  std::array<ValueType*, Dim> deriv_pointers{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(deriv_pointers, i) =
         gsl::at(*logical_partial_derivatives_of_u, i).data();
@@ -130,7 +133,7 @@ void logical_partial_derivatives(
         apply(make_not_null(&deriv_pointers), temp, temp, u, mesh);
     return;
   } else {
-    auto buffer = cpp20::make_unique_for_overwrite<double[]>(
+    auto buffer = cpp20::make_unique_for_overwrite<ValueType[]>(
         2 * u.number_of_grid_points() *
         Variables<DerivativeTags>::number_of_independent_components);
     Variables<DerivativeTags> temp0(
@@ -165,6 +168,7 @@ void partial_derivatives(
         logical_partial_derivatives_of_u,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian) {
+  using ValueType = typename Variables<DerivativeTags>::value_type;
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -173,7 +177,7 @@ void partial_derivatives(
         logical_partial_derivatives_of_u[0].number_of_grid_points());
   }
 
-  std::array<const double*, Dim> logical_derivs{};
+  std::array<const ValueType*, Dim> logical_derivs{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(logical_derivs, i) =
         gsl::at(logical_partial_derivatives_of_u, i).data();
@@ -199,6 +203,7 @@ void partial_derivatives(
           tmpl::transform<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                            tmpl::size_t<Dim>, DerivativeFrame>,
                           tmpl::bind<tmpl::type_from, tmpl::_1>>>);
+  using ValueType = typename Variables<VariableTags>::value_type;
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -209,9 +214,10 @@ void partial_derivatives(
   const size_t vars_size =
       u.number_of_grid_points() *
       Variables<DerivativeTags>::number_of_independent_components;
-  const auto logical_derivs_data = cpp20::make_unique_for_overwrite<double[]>(
-      (Dim > 1 ? (Dim + 1) : Dim) * vars_size);
-  std::array<double*, Dim> logical_derivs{};
+  const auto logical_derivs_data =
+      cpp20::make_unique_for_overwrite<ValueType[]>(
+          (Dim > 1 ? (Dim + 1) : Dim) * vars_size);
+  std::array<ValueType*, Dim> logical_derivs{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);
   }
@@ -224,7 +230,7 @@ void partial_derivatives(
                                                 &partial_derivatives_of_u,
                                                 &temp, u, mesh);
 
-  std::array<const double*, Dim> const_logical_derivs{};
+  std::array<const ValueType*, Dim> const_logical_derivs{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(const_logical_derivs, i) = gsl::at(logical_derivs, i);
   }
@@ -254,32 +260,32 @@ namespace partial_derivatives_detail {
 template <typename VariableTags, typename DerivativeTags>
 struct LogicalImpl<1, VariableTags, DerivativeTags> {
   static constexpr const size_t Dim = 1;
-  template <typename T>
-  static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
-                    Variables<T>* /*unused_in_1d*/,
-                    Variables<DerivativeTags>* const /*unused_in_1d*/,
-                    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
+  template <typename T, typename ValueType = typename Variables<T>::value_type>
+  static void apply(
+      const gsl::not_null<std::array<ValueType*, Dim>*> logical_du,
+      Variables<T>* /*unused_in_1d*/,
+      Variables<DerivativeTags>* const /*unused_in_1d*/,
+      const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
     auto& logical_partial_derivatives_of_u = *logical_du;
     const size_t deriv_size =
         Variables<DerivativeTags>::number_of_independent_components *
         u.number_of_grid_points();
     const Matrix& differentiation_matrix_xi =
         Spectral::differentiation_matrix(mesh.slice_through(0));
-    dgemm_<true>('N', 'N', mesh.extents(0), deriv_size / mesh.extents(0),
-                 mesh.extents(0), 1.0, differentiation_matrix_xi.data(),
-                 differentiation_matrix_xi.spacing(), u.data(), mesh.extents(0),
-                 0.0, logical_partial_derivatives_of_u[0], mesh.extents(0));
+    apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
+                              differentiation_matrix_xi, deriv_size);
   }
 };
 
 template <typename VariableTags, typename DerivativeTags>
 struct LogicalImpl<2, VariableTags, DerivativeTags> {
   static constexpr size_t Dim = 2;
-  template <typename T>
-  static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
-                    Variables<T>* const partial_u_wrt_eta,
-                    Variables<DerivativeTags>* const u_eta_fastest,
-                    const Variables<VariableTags>& u, const Mesh<2>& mesh) {
+  template <typename T, typename ValueType = typename Variables<T>::value_type>
+  static void apply(
+      const gsl::not_null<std::array<ValueType*, Dim>*> logical_du,
+      Variables<T>* const partial_u_wrt_eta,
+      Variables<DerivativeTags>* const u_eta_fastest,
+      const Variables<VariableTags>& u, const Mesh<2>& mesh) {
     static_assert(
         Variables<DerivativeTags>::number_of_independent_components <=
             Variables<T>::number_of_independent_components,
@@ -291,22 +297,15 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
     const Matrix& differentiation_matrix_xi =
         Spectral::differentiation_matrix(mesh.slice_through(0));
     const size_t num_components_times_xi_slices = deriv_size / mesh.extents(0);
-    dgemm_<true>('N', 'N', mesh.extents(0), num_components_times_xi_slices,
-                 mesh.extents(0), 1.0, differentiation_matrix_xi.data(),
-                 differentiation_matrix_xi.spacing(), u.data(), mesh.extents(0),
-                 0.0, logical_partial_derivatives_of_u[0], mesh.extents(0));
-
+    apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
+                              differentiation_matrix_xi, deriv_size);
     transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
         make_not_null(u_eta_fastest), u, mesh.extents(0),
         num_components_times_xi_slices);
     const Matrix& differentiation_matrix_eta =
         Spectral::differentiation_matrix(mesh.slice_through(1));
-    const size_t num_components_times_eta_slices = deriv_size / mesh.extents(1);
-    dgemm_<true>('N', 'N', mesh.extents(1), num_components_times_eta_slices,
-                 mesh.extents(1), 1.0, differentiation_matrix_eta.data(),
-                 differentiation_matrix_eta.spacing(), u_eta_fastest->data(),
-                 mesh.extents(1), 0.0, partial_u_wrt_eta->data(),
-                 mesh.extents(1));
+    apply_matrix_in_first_dim(partial_u_wrt_eta->data(), u_eta_fastest->data(),
+                              differentiation_matrix_eta, deriv_size);
     raw_transpose(make_not_null(logical_partial_derivatives_of_u[1]),
                   partial_u_wrt_eta->data(), num_components_times_xi_slices,
                   mesh.extents(0));
@@ -316,11 +315,12 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
 template <typename VariableTags, typename DerivativeTags>
 struct LogicalImpl<3, VariableTags, DerivativeTags> {
   static constexpr size_t Dim = 3;
-  template <class T>
-  static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
-                    Variables<T>* const partial_u_wrt_eta_or_zeta,
-                    Variables<DerivativeTags>* const u_eta_or_zeta_fastest,
-                    const Variables<VariableTags>& u, const Mesh<3>& mesh) {
+  template <class T, typename ValueType = typename Variables<T>::value_type>
+  static void apply(
+      const gsl::not_null<std::array<ValueType*, Dim>*> logical_du,
+      Variables<T>* const partial_u_wrt_eta_or_zeta,
+      Variables<DerivativeTags>* const u_eta_or_zeta_fastest,
+      const Variables<VariableTags>& u, const Mesh<3>& mesh) {
     static_assert(
         Variables<DerivativeTags>::number_of_independent_components <=
             Variables<T>::number_of_independent_components,
@@ -332,22 +332,17 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
         Variables<DerivativeTags>::number_of_independent_components *
         u.number_of_grid_points();
     const size_t num_components_times_xi_slices = deriv_size / mesh.extents(0);
-    dgemm_<true>('N', 'N', mesh.extents(0), num_components_times_xi_slices,
-                 mesh.extents(0), 1.0, differentiation_matrix_xi.data(),
-                 differentiation_matrix_xi.spacing(), u.data(), mesh.extents(0),
-                 0.0, logical_partial_derivatives_of_u[0], mesh.extents(0));
+    apply_matrix_in_first_dim(logical_partial_derivatives_of_u[0], u.data(),
+                              differentiation_matrix_xi, deriv_size);
 
     transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
         make_not_null(u_eta_or_zeta_fastest), u, mesh.extents(0),
         num_components_times_xi_slices);
     const Matrix& differentiation_matrix_eta =
         Spectral::differentiation_matrix(mesh.slice_through(1));
-    const size_t num_components_times_eta_slices = deriv_size / mesh.extents(1);
-    dgemm_<true>('N', 'N', mesh.extents(1), num_components_times_eta_slices,
-                 mesh.extents(1), 1.0, differentiation_matrix_eta.data(),
-                 differentiation_matrix_eta.spacing(),
-                 u_eta_or_zeta_fastest->data(), mesh.extents(1), 0.0,
-                 partial_u_wrt_eta_or_zeta->data(), mesh.extents(1));
+    apply_matrix_in_first_dim(partial_u_wrt_eta_or_zeta->data(),
+                              u_eta_or_zeta_fastest->data(),
+                              differentiation_matrix_eta, deriv_size);
     raw_transpose(make_not_null(logical_partial_derivatives_of_u[1]),
                   partial_u_wrt_eta_or_zeta->data(),
                   num_components_times_xi_slices, mesh.extents(0));
@@ -358,13 +353,9 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
               number_of_chunks);
     const Matrix& differentiation_matrix_zeta =
         Spectral::differentiation_matrix(mesh.slice_through(2));
-    const size_t num_components_times_zeta_slices =
-        deriv_size / mesh.extents(2);
-    dgemm_<true>('N', 'N', mesh.extents(2), num_components_times_zeta_slices,
-                 mesh.extents(2), 1.0, differentiation_matrix_zeta.data(),
-                 differentiation_matrix_zeta.spacing(),
-                 u_eta_or_zeta_fastest->data(), mesh.extents(2), 0.0,
-                 partial_u_wrt_eta_or_zeta->data(), mesh.extents(2));
+    apply_matrix_in_first_dim(partial_u_wrt_eta_or_zeta->data(),
+                              u_eta_or_zeta_fastest->data(),
+                              differentiation_matrix_zeta, deriv_size);
     raw_transpose(make_not_null(logical_partial_derivatives_of_u[2]),
                   partial_u_wrt_eta_or_zeta->data(), number_of_chunks,
                   chunk_size);

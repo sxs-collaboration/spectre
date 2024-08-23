@@ -32,6 +32,7 @@ target_link_libraries(
   DiscontinuousGalerkin
   ErrorHandling
   Interpolation
+  LinearOperators
   Spectral
   Utilities
   )
