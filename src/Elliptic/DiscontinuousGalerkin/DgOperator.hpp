@@ -626,6 +626,17 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         // This is the sign flip that makes the operator _minus_ the Laplacian
         // for a Poisson system
         *operator_applied_to_vars *= -1.;
+      } else if (formulation == ::dg::Formulation::StrongLogical) {
+        // Strong divergence but with the Jacobian moved into the divergence:
+        //   div(F) = 1/J_p \sum_q (D_\hat{i})_pq J_q (J^\hat{i}_i)_q (F^i)_q.
+        const auto logical_fluxes = transform::first_index_to_different_frame(
+            primal_fluxes, det_times_inv_jacobian);
+        logical_divergence(operator_applied_to_vars, logical_fluxes, mesh);
+        if (massive) {
+          *operator_applied_to_vars *= -1.;
+        } else {
+          *operator_applied_to_vars *= -1. * get(det_inv_jacobian);
+        }
       } else if (formulation == ::dg::Formulation::WeakInertial) {
         // Compute weak divergence:
         //   F^i \partial_i \phi = 1/w_p \sum_q
@@ -638,7 +649,8 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       } else {
         ERROR("Unsupported DG formulation: "
               << formulation
-              << "\nSupported formulations are: StrongInertial, WeakInertial.");
+              << "\nSupported formulations are: StrongInertial, WeakInertial, "
+                 "StrongLogical.");
       }
       if constexpr (not std::is_same_v<SourcesComputer, void>) {
         Variables<tmpl::list<OperatorTags...>> sources{num_points, 0.};
@@ -807,10 +819,13 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           lhs[i] += 0.5 * rhs[i];
         }
       };
+      const bool is_strong_formulation =
+          formulation == ::dg::Formulation::StrongInertial or
+          formulation == ::dg::Formulation::StrongLogical;
       EXPAND_PACK_LEFT_TO_RIGHT(add_avg_contribution(
           get<::Tags::NormalDotFlux<PrimalMortarVars>>(local_data.field_data),
           get<::Tags::NormalDotFlux<PrimalMortarVars>>(remote_data.field_data),
-          formulation == ::dg::Formulation::StrongInertial ? 0.5 : -0.5));
+          is_strong_formulation ? 0.5 : -0.5));
 
       // Project from the mortar back down to the face if needed, lift and add
       // to operator. See auxiliary boundary corrections above for details.

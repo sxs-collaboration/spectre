@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_DgOperator.cpp
   Test_Penalty.cpp
   Test_Tags.cpp
+  Test_LargeOuterRadius.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

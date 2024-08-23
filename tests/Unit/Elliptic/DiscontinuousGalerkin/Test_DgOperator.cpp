@@ -266,6 +266,7 @@ template <
 void test_dg_operator(
     const DomainCreator<Dim>& domain_creator, const double penalty_parameter,
     const bool use_massive_dg_operator, const Spectral::Quadrature quadrature,
+    const ::dg::Formulation dg_formulation,
     const AnalyticSolution& analytic_solution,
     // NOLINTNEXTLINE(google-runtime-references)
     Approx& analytic_solution_aux_approx,
@@ -283,6 +284,8 @@ void test_dg_operator(
     const bool test_amr = false) {
   CAPTURE(penalty_parameter);
   CAPTURE(use_massive_dg_operator);
+  CAPTURE(quadrature);
+  CAPTURE(dg_formulation);
 
   using element_array = ElementArray;
   using vars_tag = typename element_array::vars_tag;
@@ -329,8 +332,8 @@ void test_dg_operator(
       logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>{
       std::move(domain), domain_creator.functions_of_time(),
       std::move(boundary_conditions), penalty_parameter,
-      use_massive_dg_operator, quadrature, ::dg::Formulation::StrongInertial,
-      analytic_solution, std::move(amr_criteria),
+      use_massive_dg_operator, quadrature, dg_formulation, analytic_solution,
+      std::move(amr_criteria),
       ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true},
       ::Verbosity::Debug}};
 
@@ -579,7 +582,7 @@ void test_dg_operator(
 
 }  // namespace
 
-// [[TimeOut, 10]]
+// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
   domain::creators::register_derived_with_charm();
   // This is what the tests below check:
@@ -673,6 +676,19 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           expected_operator_vars_rnd_right)) =
           DataVector{-215.34463496424186, -37.924582769790135,
                      2.1993037260176997, 51.85418137198471};
+      const std::vector<
+          std::tuple<std::unordered_map<ElementId<1>, Vars>,
+                     std::unordered_map<ElementId<1>, PrimalFluxes>,
+                     std::unordered_map<ElementId<1>, OperatorVars>>>
+          regression_test_data{
+              {{{left_id, std::move(vars_rnd_left)},
+                {midleft_id, std::move(vars_rnd_midleft)},
+                {midright_id, std::move(vars_rnd_midright)},
+                {right_id, std::move(vars_rnd_right)}},
+               {{left_id, std::move(expected_primal_fluxes_rnd_left)},
+                {right_id, std::move(expected_primal_fluxes_rnd_right)}},
+               {{left_id, std::move(expected_operator_vars_rnd_left)},
+                {right_id, std::move(expected_operator_vars_rnd_right)}}}};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers
@@ -682,18 +698,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(3.e-2).scale(M_PI * penalty_parameter *
                                                 square(4) / 0.5);
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, false,
-          Spectral::Quadrature::GaussLobatto, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx,
-          {{{{left_id, std::move(vars_rnd_left)},
-             {midleft_id, std::move(vars_rnd_midleft)},
-             {midright_id, std::move(vars_rnd_midright)},
-             {right_id, std::move(vars_rnd_right)}},
-            {{left_id, std::move(expected_primal_fluxes_rnd_left)},
-             {right_id, std::move(expected_primal_fluxes_rnd_right)}},
-            {{left_id, std::move(expected_operator_vars_rnd_left)},
-             {right_id, std::move(expected_operator_vars_rnd_right)}}}});
+      // Numbers should be identical for the different formulations on affine
+      // coordinate maps
+      for (const auto dg_formulation :
+           make_array(::dg::Formulation::StrongInertial,
+                      ::dg::Formulation::StrongLogical,
+                      ::dg::Formulation::WeakInertial)) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, false,
+            Spectral::Quadrature::GaussLobatto, dg_formulation,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, regression_test_data);
+      }
     }
     {
       INFO("Higher-resolution analytic-solution tests");
@@ -721,8 +737,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
                                         Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
-            quadrature, analytic_solution, analytic_solution_aux_approx,
-            analytic_solution_operator_approx, {}, true);
+            quadrature, ::dg::Formulation::StrongInertial, analytic_solution,
+            analytic_solution_aux_approx, analytic_solution_operator_approx, {},
+            true);
       }
     }
   }
@@ -787,6 +804,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           expected_operator_vars_rnd)) =
           DataVector{164.82044058319110, 9.68580366789113,  -2.370110768729976,
                      91.310963425225239, 30.31342257245155, 56.03237239864831};
+      const std::vector<
+          std::tuple<std::unordered_map<ElementId<2>, Vars>,
+                     std::unordered_map<ElementId<2>, PrimalFluxes>,
+                     std::unordered_map<ElementId<2>, OperatorVars>>>
+          regression_test_data{
+              {{{northwest_id, std::move(vars_rnd_northwest)},
+                {southwest_id, std::move(vars_rnd_southwest)},
+                {northeast_id, std::move(vars_rnd_northeast)}},
+               {{northwest_id, std::move(expected_primal_fluxes_rnd)}},
+               {{northwest_id, std::move(expected_operator_vars_rnd)}}}};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers
@@ -796,15 +823,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(7.e-1).scale(M_PI * penalty_parameter *
                                                 square(3));
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, false,
-          Spectral::Quadrature::GaussLobatto, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx,
-          {{{{northwest_id, std::move(vars_rnd_northwest)},
-             {southwest_id, std::move(vars_rnd_southwest)},
-             {northeast_id, std::move(vars_rnd_northeast)}},
-            {{northwest_id, std::move(expected_primal_fluxes_rnd)}},
-            {{northwest_id, std::move(expected_operator_vars_rnd)}}}});
+      // Numbers should be identical for the different formulations on affine
+      // coordinate maps
+      for (const auto dg_formulation :
+           make_array(::dg::Formulation::StrongInertial,
+                      ::dg::Formulation::StrongLogical,
+                      ::dg::Formulation::WeakInertial)) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, false,
+            Spectral::Quadrature::GaussLobatto, dg_formulation,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, regression_test_data);
+      }
     }
     {
       INFO("Higher-resolution analytic-solution tests");
@@ -830,8 +860,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
                                         Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
-            quadrature, analytic_solution, analytic_solution_aux_approx,
-            analytic_solution_operator_approx, {}, true);
+            quadrature, ::dg::Formulation::StrongInertial, analytic_solution,
+            analytic_solution_aux_approx, analytic_solution_operator_approx, {},
+            true);
       }
     }
   }
@@ -860,6 +891,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       const ElementId<3> neighbor_id_eta{0, {{{1, 0}, {1, 1}, {1, 0}}}};
       const ElementId<3> neighbor_id_zeta{0, {{{1, 0}, {1, 0}, {1, 1}}}};
       using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
+      using PrimalFluxes = Variables<tmpl::list<Var<::Tags::Flux<
+          Poisson::Tags::Field, tmpl::size_t<3>, Frame::Inertial>>>>;
       using OperatorVars =
           Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
       Vars vars_rnd_self{24};
@@ -913,6 +946,17 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           23.036282532293448, -149.02371403160321, -142.12061361346408,
           314.95846885876898, 329.52673640830761,  46.245499085300622,
           70.51403818198222,  45.264231133848220,  90.061981328724073};
+      const std::vector<
+          std::tuple<std::unordered_map<ElementId<3>, Vars>,
+                     std::unordered_map<ElementId<3>, PrimalFluxes>,
+                     std::unordered_map<ElementId<3>, OperatorVars>>>
+          regression_test_data{
+              {{{self_id, std::move(vars_rnd_self)},
+                {neighbor_id_xi, std::move(vars_rnd_neighbor_xi)},
+                {neighbor_id_eta, std::move(vars_rnd_neighbor_eta)},
+                {neighbor_id_zeta, std::move(vars_rnd_neighbor_zeta)}},
+               {},
+               {{self_id, std::move(expected_operator_vars_rnd)}}}};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers
@@ -922,16 +966,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(8.e-1).scale(M_PI * penalty_parameter *
                                                 square(4) / 2.);
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, false,
-          Spectral::Quadrature::GaussLobatto, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx,
-          {{{{self_id, std::move(vars_rnd_self)},
-             {neighbor_id_xi, std::move(vars_rnd_neighbor_xi)},
-             {neighbor_id_eta, std::move(vars_rnd_neighbor_eta)},
-             {neighbor_id_zeta, std::move(vars_rnd_neighbor_zeta)}},
-            {},
-            {{self_id, std::move(expected_operator_vars_rnd)}}}});
+      // Numbers should be identical for the different formulations on affine
+      // coordinate maps
+      for (const auto dg_formulation :
+           make_array(::dg::Formulation::StrongInertial,
+                      ::dg::Formulation::StrongLogical,
+                      ::dg::Formulation::WeakInertial)) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, false,
+            Spectral::Quadrature::GaussLobatto, dg_formulation,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, regression_test_data);
+      }
     }
     {
       INFO("Higher-resolution analytic-solution tests");
@@ -958,8 +1004,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
                                         Spectral::Quadrature::Gauss))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, use_massive_dg_operator,
-            quadrature, analytic_solution, analytic_solution_aux_approx,
-            analytic_solution_operator_approx, {}, true);
+            quadrature, ::dg::Formulation::StrongInertial, analytic_solution,
+            analytic_solution_aux_approx, analytic_solution_operator_approx, {},
+            true);
       }
     }
   }
@@ -1044,6 +1091,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           expected_operator_vars_rnd_right)) = DataVector{
           1.60618450837350557, 4.71949148249203443, 15.72408761869980509,
           4.06376669069456398, 5.88578668691303086, 15.11012286654655945};
+      const std::vector<
+          std::tuple<std::unordered_map<ElementId<2>, Vars>,
+                     std::unordered_map<ElementId<2>, PrimalFluxes>,
+                     std::unordered_map<ElementId<2>, OperatorVars>>>
+          regression_test_data{
+              {{{lowerleft_id, std::move(vars_rnd_lowerleft)},
+                {upperleft_id, std::move(vars_rnd_upperleft)},
+                {right_id, std::move(vars_rnd_right)}},
+               {{lowerleft_id, std::move(expected_primal_fluxes_rnd_lowerleft)},
+                {right_id, std::move(expected_primal_fluxes_rnd_right)}},
+               {{lowerleft_id, std::move(expected_operator_vars_rnd_lowerleft)},
+                {right_id, std::move(expected_operator_vars_rnd_right)}}}};
       // Large tolerances for the comparison to the analytic solution because
       // this regression test runs at very low resolution. Below is another
       // analytic-solution test at higher resolution. The hard-coded numbers
@@ -1053,17 +1112,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(7.e-1).scale(M_PI * penalty_parameter *
                                                 square(3));
-      test_dg_operator<system, true>(
-          domain_creator, penalty_parameter, true,
-          Spectral::Quadrature::GaussLobatto, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx,
-          {{{{lowerleft_id, std::move(vars_rnd_lowerleft)},
-             {upperleft_id, std::move(vars_rnd_upperleft)},
-             {right_id, std::move(vars_rnd_right)}},
-            {{lowerleft_id, std::move(expected_primal_fluxes_rnd_lowerleft)},
-             {right_id, std::move(expected_primal_fluxes_rnd_right)}},
-            {{lowerleft_id, std::move(expected_operator_vars_rnd_lowerleft)},
-             {right_id, std::move(expected_operator_vars_rnd_right)}}}});
+      // Numbers should be identical for the strong formulations
+      for (const auto dg_formulation :
+           make_array(::dg::Formulation::StrongInertial,
+                      ::dg::Formulation::StrongLogical)) {
+        test_dg_operator<system, true>(
+            domain_creator, penalty_parameter, true,
+            Spectral::Quadrature::GaussLobatto, dg_formulation,
+            analytic_solution, analytic_solution_aux_approx,
+            analytic_solution_operator_approx, regression_test_data);
+      }
     }
     {
       INFO("Higher-resolution analytic-solution tests");
@@ -1085,13 +1143,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-11).scale(M_PI * penalty_parameter *
                                                  square(12));
-      for (const auto& [massive, quadrature] :
+      for (const auto& [massive, quadrature, dg_formulation] :
            cartesian_product(make_array(true, false),
                              make_array(Spectral::Quadrature::GaussLobatto,
-                                        Spectral::Quadrature::Gauss))) {
+                                        Spectral::Quadrature::Gauss),
+                             make_array(::dg::Formulation::StrongInertial,
+                                        ::dg::Formulation::WeakInertial))) {
         test_dg_operator<system, true>(
             domain_creator, penalty_parameter, massive, quadrature,
-            analytic_solution, analytic_solution_aux_approx,
+            dg_formulation, analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {}, true);
       }
     }
@@ -1190,8 +1250,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(0.3).scale(1.);
       test_dg_operator<system, true>(
           domain_creator, penalty_parameter, true,
-          Spectral::Quadrature::GaussLobatto, analytic_solution,
-          analytic_solution_aux_approx, analytic_solution_operator_approx,
+          Spectral::Quadrature::GaussLobatto, ::dg::Formulation::StrongInertial,
+          analytic_solution, analytic_solution_aux_approx,
+          analytic_solution_operator_approx,
           {{{{center_id, std::move(vars_rnd_center)},
              {wedge_id, std::move(vars_rnd_wedge)}},
             {},
@@ -1220,10 +1281,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           Approx::custom().epsilon(1.e-4).scale(1.);
       Approx analytic_solution_operator_approx =
           Approx::custom().epsilon(1.e-4).scale(1.);
-      for (const auto quadrature :
-           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+      for (const auto& [quadrature, dg_formulation] :
+           cartesian_product(make_array(Spectral::Quadrature::GaussLobatto,
+                                        Spectral::Quadrature::Gauss),
+                             make_array(::dg::Formulation::StrongInertial,
+                                        ::dg::Formulation::StrongLogical,
+                                        ::dg::Formulation::WeakInertial))) {
         test_dg_operator<system, true>(
-            domain_creator, penalty_parameter, true, quadrature,
+            domain_creator, penalty_parameter, true, quadrature, dg_formulation,
             analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {}, true);
       }
