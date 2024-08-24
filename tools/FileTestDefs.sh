@@ -369,7 +369,7 @@ standard_checks+=(boost_none)
 
 # Check for files containing tabs
 tabs() {
-    whitelist "$1" '.h5' '.ico' '.png' '.patch' &&
+    whitelist "$1" '.h5' '.ico' '.jpg' '.png' '.patch' &&
     staged_grep -q -F $'\t' "$1"
 }
 tabs_report() {
@@ -384,7 +384,7 @@ standard_checks+=(tabs)
 
 # Check for end-of-line spaces
 trailing_space() {
-    whitelist "$1" '.h5' '.ico' '.png' '.patch' 'eos.*' &&
+    whitelist "$1" '.h5' '.ico' '.jpg' '.png' '.patch' 'eos.*' &&
     staged_grep -q -E ' +$' "$1"
 }
 trailing_space_report() {
@@ -399,7 +399,7 @@ standard_checks+=(trailing_space)
 
 # Check for carriage returns
 carriage_returns() {
-    whitelist "$1" '.h5' '.ico' '.png' &&
+    whitelist "$1" '.h5' '.ico' '.jpg' '.png' &&
     staged_grep -q -F $'\r' "$1"
 }
 carriage_returns_report() {
@@ -423,6 +423,7 @@ license() {
               '.github/PULL_REQUEST_TEMPLATE.md' \
               '.h5' \
               '.ico' \
+              '.jpg' \
               '.json' \
               '.nojekyll' \
               '.png' \
@@ -583,7 +584,7 @@ standard_checks+=(py_return_none)
 
 # Check for a newline at end of file
 final_newline() {
-    whitelist "$1" '.h5' '.ico' '.nojekyll' '.png' '.svg' &&
+    whitelist "$1" '.h5' '.ico' '.jpg' '.nojekyll' '.png' '.svg' &&
     # Bash strips trailing newlines from $() output
     [ "$(tail -c 1 "$1" ; echo x)" != $'\n'x ]
 }

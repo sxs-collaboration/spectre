@@ -273,7 +273,7 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
       } else {
         // These must match the order of orientations_for_sphere_wrappings() in
         // DomainHelpers.hpp
-        const std::array<size_t, 6> axes{2, 2, 1, 1, 0, 0};
+        const std::array<int, 6> axes{3, -3, 2, -2, 1, -1};
 
         const bool transition_ends_at_cube =
             i == 0 ? shape_options_A_->transition_ends_at_cube
@@ -286,11 +286,13 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
         const double outer_radius =
             transition_ends_at_cube ? radii[2] : radii[1];
 
+        using Wedge =
+            domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge;
         for (size_t j = 0; j < axes.size(); j++) {
-          transition_func = std::make_unique<
-              domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge>(
-              inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-              gsl::at(axes, j));
+          transition_func = std::make_unique<Wedge>(
+              gsl::at(centers, i), inner_radius, inner_sphericity,
+              gsl::at(centers, i), outer_radius, outer_sphericity,
+              static_cast<Wedge::Axis>(gsl::at(axes, j)));
 
           gsl::at(gsl::at(shape_maps_, i), j) =
               Shape{gsl::at(centers, i),     initial_l_max,
