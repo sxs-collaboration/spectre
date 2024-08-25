@@ -970,6 +970,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
       //  [oooo|ooo|ooo]-> xi
       //  ^    ^   ^   ^
       // -2    0   1   2
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<1> domain_creator{
           {{{-2., 0., 2.}}},
           {{0}},
@@ -977,8 +979,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{{{1}}, {{2}}, {{1}}}},  // Refine once in block 1
           {{{{0}}, {{1}}, {{4}}}},  // Increase num points in block 0
           {},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
     {
@@ -999,6 +1000,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
       //    |ooo |ooo|
       //  2 +----+---+
       //    v eta
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<2> domain_creator{
           // Start with 4 unrefined blocks
           {{{-2., 0., 2.}, {-2., 0., 2.}}},
@@ -1009,13 +1012,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           // Increase num points in xi in upper-left block in sketch above
           {{{{0, 0}}, {{1, 1}}, {{4, 3}}}},
           {},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
     {
       INFO("3D");
       using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<3> domain_creator{
           {{{-2., 0., 2.}, {-2., 0., 2.}, {-2., 0., 2.}}},
           {{0, 0, 0}},
@@ -1023,8 +1028,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{{{1, 0, 0}}, {{2, 1, 1}}, {{0, 1, 1}}}},
           {{{{0, 0, 0}}, {{1, 1, 1}}, {{4, 3, 2}}}},
           {},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
   }

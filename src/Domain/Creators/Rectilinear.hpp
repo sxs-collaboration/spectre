@@ -247,11 +247,10 @@ class Rectilinear : public DomainCreator<Dim> {
 
   std::vector<std::string> block_names() const override { return block_names_; }
 
- private:
   // Transforms from option-created boundary conditions to the type used in the
   // constructor
   template <typename BoundaryConditionsBase>
-  auto transform_boundary_conditions(
+  static auto transform_boundary_conditions(
       std::array<
           std::variant<std::unique_ptr<BoundaryConditionsBase>,
                        LowerUpperBoundaryCondition<BoundaryConditionsBase>>,
@@ -263,6 +262,7 @@ class Rectilinear : public DomainCreator<Dim> {
               2>,
           Dim>;
 
+ private:
   std::array<double, Dim> lower_bounds_{};
   std::array<double, Dim> upper_bounds_{};
   std::array<CoordinateMaps::DistributionAndSingularityPosition, Dim>
