@@ -60,6 +60,8 @@ struct CompletedTemporalIds;
 template <typename TemporalId>
 struct PendingTemporalIds;
 template <typename TemporalId>
+struct CurrentTemporalId;
+template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 namespace TargetPoints {
@@ -74,9 +76,7 @@ template <typename TagsList>
 struct Variables;
 /// \endcond
 
-namespace intrp {
-
-namespace InterpolationTarget_detail {
+namespace intrp::InterpolationTarget_detail {
 CREATE_IS_CALLABLE(substep_time)
 CREATE_IS_CALLABLE_V(substep_time)
 template <typename T>
@@ -259,15 +259,40 @@ template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 void clean_up_interpolation_target(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const TemporalId& temporal_id) {
-  // We are now done with this temporal_id, so we can pop it and
+  // We are now done with this temporal_id, so we can remove it and
   // clean up data associated with it.
-  db::mutate<Tags::TemporalIds<TemporalId>,
-             Tags::CompletedTemporalIds<TemporalId>,
+  if constexpr (InterpolationTargetTag::compute_target_points::is_sequential::
+                    value) {
+    db::mutate<Tags::CurrentTemporalId<TemporalId>>(
+        [&temporal_id](const gsl::not_null<std::optional<TemporalId>*> id) {
+          using ::operator<<;
+          ASSERT(id->has_value(),
+                 "Cleaning up the interpolation target but the current "
+                 "temporal id doesn't have a value.");
+          ASSERT(id->value() == temporal_id,
+                 "Cleaning up the interpolation target, but the current "
+                 "temporal id "
+                     << id->value() << " isn't the same as the one passed in "
+                     << temporal_id);
+          id->reset();
+        },
+        box);
+  } else {
+    db::mutate<Tags::TemporalIds<TemporalId>>(
+        [&temporal_id](
+            const gsl::not_null<std::unordered_set<TemporalId>*> ids) {
+          ASSERT(ids->contains(temporal_id),
+                 "Temporal id " << temporal_id << " does not exist in ids "
+                                << *ids);
+          ids->erase(temporal_id);
+        },
+        box);
+  }
+  db::mutate<Tags::CompletedTemporalIds<TemporalId>,
              Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
       [&temporal_id](
-          const gsl::not_null<std::deque<TemporalId>*> ids,
           const gsl::not_null<std::deque<TemporalId>*> completed_ids,
           const gsl::not_null<
               std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
@@ -280,10 +305,6 @@ void clean_up_interpolation_target(
                                         vars_to_interpolate_to_target>>*>
               interpolated_vars) {
         completed_ids->push_back(temporal_id);
-        ASSERT(std::find(ids->begin(), ids->end(), temporal_id) != ids->end(),
-               "Temporal id " << temporal_id << " does not exist in ids");
-        ids->erase(std::remove(ids->begin(), ids->end(), temporal_id),
-                   ids->end());
         // We want to keep track of all completed temporal_ids to deal with
         // the possibility of late calls to
         // AddTemporalIdsToInterpolationTarget.  We could keep all
@@ -334,21 +355,20 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
 }
 
 /// Tells an InterpolationTarget that it should interpolate at
-/// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
+/// the supplied temporal_id.  Changes the InterpolationTarget's DataBox
 /// accordingly.
 ///
-/// Returns the temporal_ids that have actually been newly flagged
-/// (since some of them may have been flagged already).
+/// Returns a bool indicating if the passed in id needs to be set up
 ///
-/// flag_temporal_ids_for_interpolation is called by an Action
+/// flag_temporal_id_for_interpolation is called by an Action
 /// of InterpolationTarget
 ///
-/// Currently one Action calls flag_temporal_ids_for_interpolation:
+/// Currently one Action calls flag_temporal_id_for_interpolation:
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
-std::vector<TemporalId> flag_temporal_ids_for_interpolation(
+bool flag_temporal_id_for_interpolation(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const std::vector<TemporalId>& temporal_ids) {
+    const TemporalId& temporal_id) {
   // We allow this function to be called multiple times with the same
   // temporal_ids (e.g. from each element, or from each node of a
   // NodeGroup ParallelComponent such as Interpolator). If multiple
@@ -362,25 +382,22 @@ std::vector<TemporalId> flag_temporal_ids_for_interpolation(
   // temporal_ids that we have already completed interpolation on.  So
   // here we do not add any temporal_ids that are already present in
   // `ids` or `completed_ids`.
-  std::vector<TemporalId> new_temporal_ids{};
+  bool id_has_been_flagged = false;
 
   db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>>,
                    tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
-      [&temporal_ids, &new_temporal_ids](
-          const gsl::not_null<std::deque<TemporalId>*> ids,
+      [&temporal_id, &id_has_been_flagged](
+          const gsl::not_null<std::unordered_set<TemporalId>*> ids,
           const std::deque<TemporalId>& completed_ids) {
-        for (auto& id : temporal_ids) {
-          if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
-                  completed_ids.end() and
-              std::find(ids->begin(), ids->end(), id) == ids->end()) {
-            ids->push_back(id);
-            new_temporal_ids.push_back(id);
-          }
+        if (not(alg::found(completed_ids, temporal_id) or
+                ids->contains(temporal_id))) {
+          ids->insert(temporal_id);
+          id_has_been_flagged = true;
         }
       },
       box);
 
-  return new_temporal_ids;
+  return id_has_been_flagged;
 }
 
 /// Tells an InterpolationTarget that it should interpolate at
@@ -404,22 +421,23 @@ void flag_temporal_id_as_pending(const gsl::not_null<db::DataBox<DbTags>*> box,
   // late, even after interpolation has been completed on one or more
   // of the temporal_ids (and after that id has already been removed
   // from `ids`).  If this happens, we don't want to add the
-  // temporal_ids again. For that reason we keep track of the
+  // temporal_id again. For that reason we keep track of the
   // temporal_ids that we have already completed interpolation on.  So
   // here we do not add any temporal_ids that are already present in
-  // `ids` or `completed_ids`.
+  // `id` or `completed_ids`.
   db::mutate_apply<tmpl::list<Tags::PendingTemporalIds<TemporalId>>,
-                   tmpl::list<Tags::TemporalIds<TemporalId>,
+                   tmpl::list<Tags::CurrentTemporalId<TemporalId>,
                               Tags::CompletedTemporalIds<TemporalId>>>(
       [&temporal_id](const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-                     const std::deque<TemporalId>& ids,
+                     const std::optional<TemporalId>& current_id,
                      const std::deque<TemporalId>& completed_ids) {
-        if (std::find(completed_ids.begin(), completed_ids.end(),
-                      temporal_id) == completed_ids.end() and
-            std::find(ids.begin(), ids.end(), temporal_id) == ids.end() and
-            std::find(pending_ids->begin(), pending_ids->end(), temporal_id) ==
-                pending_ids->end()) {
+        if (not(alg::found(completed_ids, temporal_id) or
+                (current_id.has_value() and
+                 current_id.value() == temporal_id) or
+                alg::found(*pending_ids, temporal_id))) {
           pending_ids->push_back(temporal_id);
+
+          alg::sort(*pending_ids);
         }
       },
       box);
@@ -788,6 +806,4 @@ void compute_dest_vars_from_source_vars(
         make_not_null(&dest_vars_in_inertial_frame), source_vars, mesh);
   }
 }
-
-}  // namespace InterpolationTarget_detail
-}  // namespace intrp
+}  // namespace intrp::InterpolationTarget_detail

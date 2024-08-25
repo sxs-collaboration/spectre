@@ -185,7 +185,7 @@ struct MockInterpolationTargetReceiveVars {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex, typename TemporalId,
             Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
+                DbTags, intrp::Tags::CurrentTemporalId<TemporalId>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -220,15 +220,15 @@ struct MockInterpolationTargetReceiveVars {
     // Make sure we have interpolated at the correct number of points.
     CHECK(number_of_interpolated_points == 15);
     // Change something in the DataBox so we can test that this function was
-    // indeed called.  Put some unusual temporal_id into Tags::TemporalIds.
-    // This is not the usual usage of Tags::TemporalIds; this is done just
-    // for the test.
+    // indeed called.  Put some unusual temporal_id into
+    // Tags::CurrentTemporalId. This is not the usual usage of
+    // Tags::CurrentTemporalId; this is done just for the test.
     Slab slab(0.0, 1.0);
     TimeStepId strange_temporal_id(true, 0, Time(slab, Rational(111, 135)));
-    db::mutate<intrp::Tags::TemporalIds<TemporalId>>(
+    db::mutate<intrp::Tags::CurrentTemporalId<TemporalId>>(
         [&strange_temporal_id](
-            const gsl::not_null<std::deque<TemporalId>*> temporal_ids) {
-          temporal_ids->push_back(strange_temporal_id);
+            const gsl::not_null<std::optional<TemporalId>*> temporal_id) {
+          *temporal_id = strange_temporal_id;
         },
         make_not_null(&box));
   }
@@ -309,6 +309,15 @@ struct mock_observer_writer {
       tmpl::list<observers::Actions::InitializeWriter<Metavariables>>>>;
 };
 
+// This test was originally written with non-sequential targets, but an
+// infrastructure change made the interpolator only work with sequential
+// targets (horizon find). Rather than rewrite the whole test with horizon
+// finds, we just make new targets from the originals that are now sequential
+template <typename OriginalComputeTargetPoints>
+struct MockComputeTargetPoints : public OriginalComputeTargetPoints {
+  using is_sequential = std::true_type;
+};
+
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -317,8 +326,8 @@ struct MockMetavariables {
     using compute_vars_to_interpolate = ComputeSquare;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3,
-                                           Frame::Inertial>;
+        MockComputeTargetPoints<::intrp::TargetPoints::LineSegment<
+            InterpolationTargetA, 3, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolationTargetA>>;
@@ -492,12 +501,12 @@ void test(const bool dump_vol_data) {
             holders)
             .temporal_ids_when_data_has_been_interpolated.empty());
 
-  // Should be no temporal_ids in the target box, since we never
+  // Should be no temporal_id in the target box, since we never
   // put any there.
-  CHECK(ActionTesting::get_databox_tag<
-            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
-            runner, 0)
-            .empty());
+  CHECK(not ActionTesting::get_databox_tag<
+                target_component,
+                intrp::Tags::CurrentTemporalId<temporal_id_type>>(runner, 0)
+                .has_value());
 
   // Should be one queued simple action, MockInterpolationTargetReceiveVars.
   runner.invoke_queued_simple_action<target_component>(0);
@@ -506,9 +515,9 @@ void test(const bool dump_vol_data) {
   // by looking for a funny temporal_id that it inserts for the specific
   // purpose of this test.
   CHECK(ActionTesting::get_databox_tag<
-            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
             runner, 0)
-            .front() ==
+            .value() ==
         TimeStepId(true, 0, Time(Slab(0.0, 1.0), Rational(111, 135))));
 
   // No more queued simple actions.

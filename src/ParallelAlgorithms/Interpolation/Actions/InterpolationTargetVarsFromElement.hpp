@@ -134,10 +134,8 @@ struct InterpolationTargetVarsFromElement {
     // same temporal_id (by an invocation of InterpolationTargetVarsFromElement
     // by a different Element) and hence set_up_interpolation has already
     // been called.
-    if (not InterpolationTarget_detail::flag_temporal_ids_for_interpolation<
-                InterpolationTargetTag>(make_not_null(&box),
-                                        std::vector<TemporalId>{{temporal_id}})
-                .empty()) {
+    if (InterpolationTarget_detail::flag_temporal_id_for_interpolation<
+            InterpolationTargetTag>(make_not_null(&box), temporal_id)) {
       InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
           make_not_null(&box), temporal_id, block_logical_coords);
     }

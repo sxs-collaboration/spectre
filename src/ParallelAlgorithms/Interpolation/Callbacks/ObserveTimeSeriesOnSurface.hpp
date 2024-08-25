@@ -50,20 +50,18 @@ template <typename... Ts>
 auto make_legend(tmpl::list<Ts...> /* meta */) {
     std::vector<std::string> legend = {"Time"};
 
-    auto append_tags = [&legend](auto tag) {
-        using TagType = decltype(tag);
-        using ReturnType = typename TagType::type;
+    [[maybe_unused]] auto append_tags = [&legend](auto tag) {
+      using TagType = decltype(tag);
+      using ReturnType = typename TagType::type;
 
-        if constexpr (is_array_of_double<ReturnType>::value) {
-            constexpr std::array<const char*, 3> suffix = {"_x", "_y", "_z"};
-            for (size_t i = 0; i < std::tuple_size<ReturnType>::value; ++i) {
-                legend.push_back(db::tag_name<TagType>() + gsl::at(suffix, i));
-            }
+      if constexpr (is_array_of_double<ReturnType>::value) {
+        constexpr std::array<const char*, 3> suffix = {"_x", "_y", "_z"};
+        for (size_t i = 0; i < std::tuple_size<ReturnType>::value; ++i) {
+          legend.push_back(db::tag_name<TagType>() + gsl::at(suffix, i));
         }
-        else {
-            legend.push_back(db::tag_name<TagType>());
-        }
-
+      } else {
+        legend.push_back(db::tag_name<TagType>());
+      }
     };
 
     (append_tags(Ts{}), ...);

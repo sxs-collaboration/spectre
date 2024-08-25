@@ -87,8 +87,7 @@ struct MockReceivePoints {
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id,
+      const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       std::vector<BlockLogicalCoords<VolumeDim>>&& block_coord_holders,
       const size_t iteration = 0_st) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(

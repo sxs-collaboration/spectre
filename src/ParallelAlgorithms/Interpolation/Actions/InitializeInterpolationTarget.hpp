@@ -27,10 +27,8 @@ class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-namespace intrp {
-
 /// Holds Actions for Interpolator and InterpolationTarget.
-namespace Actions {
+namespace intrp::Actions {
 
 // The purpose of the metafunctions in this namespace is to allow
 // InterpolationTarget::compute_target_points to omit an initialize
@@ -55,7 +53,8 @@ CREATE_IS_CALLABLE_V(initialize)
 ///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
 ///   - `Tags::IndicesOfInvalidInterpPoints<TemporalId>`
 ///   - `Tags::PendingTemporalIds<TemporalId>`
-///   - `Tags::TemporalIds<TemporalId>`
+///   - `Tags::TemporalIds<TemporalId>` if target is non-sequential
+///     `Tags::CurrentTemporalId<TemporalId>` if target is sequential
 ///   - `Tags::CompletedTemporalIds<TemporalId>`
 ///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
 ///   - `::Tags::Variables<typename
@@ -66,11 +65,16 @@ CREATE_IS_CALLABLE_V(initialize)
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
+  using is_sequential =
+      typename InterpolationTargetTag::compute_target_points::is_sequential;
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints<TemporalId>,
       Tags::IndicesOfInvalidInterpPoints<TemporalId>,
-      Tags::PendingTemporalIds<TemporalId>, Tags::TemporalIds<TemporalId>,
+      Tags::PendingTemporalIds<TemporalId>,
+      tmpl::conditional_t<is_sequential::value,
+                          Tags::CurrentTemporalId<TemporalId>,
+                          Tags::TemporalIds<TemporalId>>,
       Tags::CompletedTemporalIds<TemporalId>,
       Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>,
       ::Tags::Variables<
@@ -106,5 +110,4 @@ struct InitializeInterpolationTarget {
   }
 };
 
-}  // namespace Actions
-}  // namespace intrp
+}  // namespace intrp::Actions

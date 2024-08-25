@@ -53,8 +53,7 @@ struct TemporalIds;
 }  // namespace intrp
 /// \endcond
 
-namespace intrp {
-namespace callbacks {
+namespace intrp::callbacks {
 
 /// \brief post interpolation callback (see
 /// intrp::protocols::PostInterpolationCallback) that does a FastFlow iteration
@@ -293,8 +292,12 @@ struct FindApparentHorizon
 
       if (status == FastFlow::Status::SuccessfulIteration) {
         // Do another iteration of the same horizon search.
-        const auto& temporal_ids =
-            db::get<intrp::Tags::TemporalIds<TemporalId>>(*box);
+        const auto& current_id =
+            db::get<intrp::Tags::CurrentTemporalId<TemporalId>>(*box);
+        using ::operator<<;
+        ASSERT(current_id.has_value(),
+               "While horizon finding, the current temporal id doesn't have a "
+               "value, but it should.");
         auto& interpolation_target = Parallel::get_parallel_component<
             intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>>(
             *cache);
@@ -302,7 +305,7 @@ struct FindApparentHorizon
         // because the zeroth iteration was the initial guess
         Parallel::simple_action<
             Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
-            interpolation_target, temporal_ids.front(), info.iteration + 1);
+            interpolation_target, current_id.value(), info.iteration + 1);
         // We return false because we don't want this iteration to clean
         // up the volume data, since we are using it for the next iteration
         // (i.e. the simple_action that we just called).
@@ -446,5 +449,4 @@ struct FindApparentHorizon
     return true;
   }
 };
-}  // namespace callbacks
-}  // namespace intrp
+}  // namespace intrp::callbacks
