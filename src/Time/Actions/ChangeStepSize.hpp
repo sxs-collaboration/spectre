@@ -63,7 +63,7 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
   ASSERT(time_step_id.substep() == 0, "Can't change step size on a substep.");
 
-  const auto& current_step = db::get<Tags::TimeStep>(*box);
+  const auto current_step = db::get<Tags::TimeStep>(*box);
   const double last_step_size = current_step.value();
 
   TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
@@ -131,11 +131,15 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
     return true;
   } else {
     db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
-        [&time_stepper, &desired_step, &time_step_id](
-            const gsl::not_null<TimeStepId*> local_next_time_id,
+        [&](const gsl::not_null<TimeStepId*> local_next_time_id,
             const gsl::not_null<TimeDelta*> time_step) {
           *time_step =
               choose_lts_step_size(time_step_id.step_time(), desired_step);
+          ASSERT(*time_step != current_step,
+                 "Step was rejected, but not changed."
+                     << "\ntime_step_id = " << time_step_id
+                     << "\ndesired_step = " << desired_step
+                     << "\ntime_step = " << *time_step);
           *local_next_time_id =
               time_stepper.next_time_id(time_step_id, *time_step);
         },
