@@ -74,6 +74,9 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
+#include "Parallel/ArrayCollection/DgElementCollection.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -664,8 +667,14 @@ struct EvolutionMetavars {
             Parallel::get_parallel_component<component>(cache));
       });
 
-      Parallel::simple_action<deadlock::PrintElementInfo>(
-          Parallel::get_parallel_component<gh_dg_element_array>(cache));
+      if constexpr (Parallel::is_dg_element_collection_v<gh_dg_element_array>) {
+        Parallel::threaded_action<Parallel::Actions::SimpleActionOnElement<
+            deadlock::PrintElementInfo, true>>(
+            Parallel::get_parallel_component<gh_dg_element_array>(cache));
+      } else {
+        Parallel::simple_action<deadlock::PrintElementInfo>(
+            Parallel::get_parallel_component<gh_dg_element_array>(cache));
+      }
     }
   }
 
