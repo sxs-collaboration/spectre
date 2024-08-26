@@ -18,10 +18,11 @@ TimeDelta choose_lts_step_size(const Time& time, const double desired_step) {
   const TimeDelta full_slab =
       desired_step > 0.0 ? time.slab().duration() : -time.slab().duration();
   const double desired_step_count = full_slab.value() / desired_step;
-  const size_t desired_step_power =
-      desired_step_count <= 1
-          ? 0
-          : static_cast<size_t>(std::ceil(std::log2(desired_step_count)));
+  // log2 is a slowly increasing function, so log2(2^n + eps) may give
+  // n because of floating-point truncation.  The inner ceil call
+  // avoids this problem.
+  const auto desired_step_power =
+      static_cast<size_t>(std::ceil(std::log2(std::ceil(desired_step_count))));
 
   // Ensure we will hit the slab boundary if we continue taking
   // constant-sized steps.
