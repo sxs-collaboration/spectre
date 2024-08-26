@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -23,19 +24,26 @@
 namespace domain {
 
 namespace {
-template <size_t Dim>
+
+using namespace std::complex_literals;
+
+template <typename DataType, size_t Dim>
 struct FacesTestCompute
-    : Tags::Faces<Dim, ::Tags::Variables<tmpl::list<::Tags::TempScalar<0>>>>,
+    : Tags::Faces<
+          Dim, ::Tags::Variables<tmpl::list<::Tags::TempScalar<0, DataType>>>>,
       db::ComputeTag {
-  using base =
-      Tags::Faces<Dim, ::Tags::Variables<tmpl::list<::Tags::TempScalar<0>>>>;
+  using base = Tags::Faces<
+      Dim, ::Tags::Variables<tmpl::list<::Tags::TempScalar<0, DataType>>>>;
   using argument_tags = tmpl::list<>;
   static void function(
-      const gsl::not_null<
-          DirectionMap<Dim, Variables<tmpl::list<::Tags::TempScalar<0>>>>*>
+      const gsl::not_null<DirectionMap<
+          Dim, Variables<tmpl::list<::Tags::TempScalar<0, DataType>>>>*>
           vars_on_faces) {
     (*vars_on_faces)[Direction<Dim>::lower_xi()] =
-        Variables<tmpl::list<::Tags::TempScalar<0>>>{3, 1.};
+        Variables<tmpl::list<::Tags::TempScalar<0, DataType>>>{3, 1.};
+    if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+      (*vars_on_faces)[Direction<Dim>::lower_xi()] += ComplexDataVector(3, 2.i);
+    }
   }
 };
 }  // namespace
@@ -79,10 +87,22 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags.Faces", "[Unit][Domain]") {
   }
   {
     INFO("Compute-subitems");
-    auto box = db::create<db::AddSimpleTags<>,
-                          db::AddComputeTags<FacesTestCompute<Dim>>>();
+    auto box =
+        db::create<db::AddSimpleTags<>,
+                   db::AddComputeTags<FacesTestCompute<DataVector, Dim>>>();
     CHECK(get(db::get<scalar_on_faces_tag>(box).at(
               Direction<Dim>::lower_xi())) == DataVector{size_t{3}, 1.});
+  }
+  {
+    INFO("Compute-subitems complex");
+    auto box = db::create<
+        db::AddSimpleTags<>,
+        db::AddComputeTags<FacesTestCompute<ComplexDataVector, Dim>>>();
+    CHECK(
+        get(db::get<Tags::Faces<Dim, ::Tags::TempScalar<0, ComplexDataVector>>>(
+                box)
+                .at(Direction<Dim>::lower_xi())) ==
+        ComplexDataVector{size_t{3}, 1. + 2.i});
   }
 }
 
