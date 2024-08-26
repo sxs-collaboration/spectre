@@ -41,6 +41,7 @@
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayCollection/DgElementCollection.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
