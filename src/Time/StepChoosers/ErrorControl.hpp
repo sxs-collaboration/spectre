@@ -230,7 +230,7 @@ class ErrorControl
     // If the error is out-of-date we can still reject a step, but it
     // won't improve the reported error, so make sure to only do it
     // if we actually request a smaller step.
-    return {{.size_goal = new_step},
+    return {::TimeStepRequest{.size_goal = new_step},
             abs(new_step) >= abs(previous_step) or errors[1]->error <= 1.0};
   }
 

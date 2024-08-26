@@ -70,19 +70,24 @@ struct MockUpdateMessageQueue {
   }
 };
 
+// The Nvidia compiler crashes if we define these lists inside the MockComponent
+// struct.
+using replace_these_simple_actions_mock_component = tmpl::transform<
+    all_tags, tmpl::bind<::Actions::UpdateMessageQueue, tmpl::_1,
+                         tmpl::pin<measurement_queue>,
+                         tmpl::pin<control_system::UpdateControlSystem<size>>>>;
+using with_these_simple_actions_mock_component = tmpl::transform<
+    all_tags,
+    tmpl::bind<MockUpdateMessageQueue, tmpl::_1, tmpl::pin<measurement_queue>,
+               tmpl::pin<control_system::UpdateControlSystem<size>>>>;
+
 template <typename Metavariables>
 struct MockComponent
     : public control_system::TestHelpers::MockControlComponent<Metavariables,
                                                                size> {
-  using replace_these_simple_actions = tmpl::transform<
-      all_tags,
-      tmpl::bind<::Actions::UpdateMessageQueue, tmpl::_1,
-                 tmpl::pin<measurement_queue>,
-                 tmpl::pin<control_system::UpdateControlSystem<size>>>>;
-  using with_these_simple_actions = tmpl::transform<
-      all_tags,
-      tmpl::bind<MockUpdateMessageQueue, tmpl::_1, tmpl::pin<measurement_queue>,
-                 tmpl::pin<control_system::UpdateControlSystem<size>>>>;
+  using replace_these_simple_actions =
+      replace_these_simple_actions_mock_component;
+  using with_these_simple_actions = with_these_simple_actions_mock_component;
 };
 
 struct Metavars {

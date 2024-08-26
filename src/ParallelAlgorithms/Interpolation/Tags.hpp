@@ -139,6 +139,18 @@ struct VolumeVarsInfo : db::SimpleTag {
         db::wrap_tags_in<VarsToInterpolateToTarget,
                          typename Metavariables::interpolation_target_tags>>
         vars_to_interpolate;
+    Info() = default;
+    Info(
+        Mesh<Metavariables::volume_dim> mesh_in,
+        Variables<typename Metavariables::interpolator_source_vars>
+            source_vars_from_element_in,
+        tuples::tagged_tuple_from_typelist<
+            db::wrap_tags_in<VarsToInterpolateToTarget,
+                             typename Metavariables::interpolation_target_tags>>
+            vars_to_interpolate_in)
+        : mesh(std::move(mesh_in)),
+          source_vars_from_element(std::move(source_vars_from_element_in)),
+          vars_to_interpolate(std::move(vars_to_interpolate_in)) {}
     // NOLINTNEXTLINE(google-runtime-references)
     void pup(PUP::er& p) {
       p | mesh;

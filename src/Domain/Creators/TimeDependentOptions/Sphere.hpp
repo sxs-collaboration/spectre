@@ -110,6 +110,9 @@ struct TimeDependentMapOptions {
     };
 
     using options = tmpl::list<InitialValues, DecayTimescaleRotation>;
+    RotationMapOptions();
+    RotationMapOptions(std::array<std::array<double, 4>, 3> initial_values_in,
+                       double decay_timescale_in);
 
     std::array<std::array<double, 4>, 3> initial_values{};
     double decay_timescale{std::numeric_limits<double>::signaling_NaN()};
@@ -151,6 +154,11 @@ struct TimeDependentMapOptions {
     using options = tmpl::list<InitialValues, DecayTimescaleExpansion,
                                InitialValuesOuterBoundary,
                                DecayTimescaleExpansionOuterBoundary>;
+    ExpansionMapOptions();
+    ExpansionMapOptions(std::array<double, 3> initial_values_in,
+                        double decay_timescale_in,
+                        std::array<double, 3> initial_values_outer_boundary_in,
+                        double decay_timescale_outer_boundary_in);
 
     std::array<double, 3> initial_values{
         std::numeric_limits<double>::signaling_NaN(),
@@ -180,6 +188,9 @@ struct TimeDependentMapOptions {
     };
 
     using options = tmpl::list<InitialValues>;
+    TranslationMapOptions();
+    explicit TranslationMapOptions(
+        std::array<std::array<double, 3>, 3> initial_values_in);
 
     std::array<std::array<double, 3>, 3> initial_values{};
   };

@@ -24,6 +24,8 @@ namespace {
 struct DummyOptionsGroup {};
 
 struct SubdomainSolver {
+  SubdomainSolver() = default;
+  explicit SubdomainSolver(const bool is_reset_in) : is_reset(is_reset_in) {}
   void reset() { is_reset = true; }
   bool is_reset = false;
   // NOLINTNEXTLINE(google-runtime-references)

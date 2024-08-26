@@ -50,19 +50,18 @@ class EventsAndTriggers {
     static constexpr Options::String help =
         "Events that run when the Trigger fires.";
     using options = tmpl::list<Trigger, Events>;
-    void pup(PUP::er& p) {
-      p | trigger;
-      p | events;
-    }
+    TriggerAndEvents();
+    TriggerAndEvents(std::unique_ptr<::Trigger> trigger_in,
+                     std::vector<std::unique_ptr<::Event>> events_in);
+    void pup(PUP::er& p);
     std::unique_ptr<::Trigger> trigger;
     std::vector<std::unique_ptr<::Event>> events;
   };
 
   using Storage = std::vector<TriggerAndEvents>;
 
-  EventsAndTriggers() = default;
-  explicit EventsAndTriggers(Storage events_and_triggers)
-      : events_and_triggers_(std::move(events_and_triggers)) {}
+  EventsAndTriggers();
+  explicit EventsAndTriggers(Storage events_and_triggers);
 
   /// Check the triggers and run the associated events.
   ///
@@ -109,7 +108,7 @@ class EventsAndTriggers {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) { p | events_and_triggers_; }
+  void pup(PUP::er& p);
 
   template <typename F>
   void for_each_event(F&& f) const {

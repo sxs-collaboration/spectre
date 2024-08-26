@@ -15,6 +15,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Overloader.hpp"
 
 namespace {
 constexpr size_t num_points = 3;
@@ -192,11 +193,22 @@ void test_history() {
       CHECK(untyped[0].value.has_value());
       CHECK(*untyped[0].value == *const_history[0].value);
       CHECK(untyped[0].derivative == const_history[0].derivative);
-      if constexpr (tt::is_a_v<Variables, Vars>) {
-        CHECK(untyped[0].value->data() == const_history[0].value->data());
-        CHECK(untyped[0].derivative.data() ==
-              const_history[0].derivative.data());
-      }
+      // Note: we use Overloader instead of `if constexpr` because nvcc 12.3
+      // doesn't correctly compile the `if constexpr` version.
+      const Overloader overloader{
+          []<typename U>(
+              const U& /*untyped_local*/,
+              const TimeSteppers::History<double>& /*const_history_local*/) {},
+          []<typename U, typename T>(
+              const U& untyped_local,
+              const TimeSteppers::History<Variables<T>>& const_history_local) {
+            CHECK((untyped_local[0].value->data()) ==
+                  const_history_local[0].value->data());
+            CHECK(untyped_local[0].derivative.data() ==
+                  const_history_local[0].derivative.data());
+          },
+      };
+      overloader(untyped, const_history);
       CHECK(untyped[1].time_step_id == const_history[1].time_step_id);
       CHECK(not untyped[1].value.has_value());
       CHECK(untyped[1].derivative == const_history[1].derivative);

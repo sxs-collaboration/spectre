@@ -36,6 +36,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+#include "Utilities/StdHelpers/RetrieveUniquePtr.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -558,15 +559,9 @@ void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
         // First mutex is for value of mutable tag
         std::mutex& mutex = tuples::get<MutexTag<tag>>(mutexes_).first;
         const std::lock_guard<std::mutex> lock(mutex);
-        if constexpr (tt::is_a_v<std::unique_ptr, typename tag::tag::type>) {
-          Function::apply(make_not_null(&(*std::get<0>(
-                              tuples::get<tag>(mutable_global_cache_)))),
-                          local_args...);
-        } else {
-          Function::apply(make_not_null(&(std::get<0>(
-                              tuples::get<tag>(mutable_global_cache_)))),
-                          local_args...);
-        }
+        Function::apply(make_not_null(&StdHelpers::retrieve(std::get<0>(
+                            tuples::get<tag>(mutable_global_cache_)))),
+                        local_args...);
       },
       args);
 

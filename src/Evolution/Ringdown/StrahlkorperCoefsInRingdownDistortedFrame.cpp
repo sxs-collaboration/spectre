@@ -50,7 +50,7 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
   // matter; the domain is just a spherical shell with inner and outer
   // radii chosen so any conceivable common horizon will fit between them.
   const domain::creators::sphere::TimeDependentMapOptions::ShapeMapOptions
-      shape_map_options{l_max, std::nullopt};
+      shape_map_options{l_max, std::nullopt, std::nullopt};
   const domain::creators::sphere::TimeDependentMapOptions::ExpansionMapOptions
       expansion_map_options{exp_func_and_2_derivs, settling_timescale,
                             exp_outer_bdry_func_and_2_derivs,

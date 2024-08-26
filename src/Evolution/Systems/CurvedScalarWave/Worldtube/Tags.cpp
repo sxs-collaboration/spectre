@@ -27,6 +27,17 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
+namespace CurvedScalarWave::Worldtube::OptionTags {
+SelfForceOptions::SelfForceOptions() = default;
+SelfForceOptions::SelfForceOptions(double mass_in, size_t iterations_in)
+    : mass(mass_in), iterations(iterations_in) {}
+
+void SelfForceOptions::pup(PUP::er& p) {
+  p | mass;
+  p | iterations;
+}
+}  // namespace CurvedScalarWave::Worldtube::OptionTags
+
 namespace CurvedScalarWave::Worldtube::Tags {
 
 #if defined(__GNUC__) && !defined(__clang__)

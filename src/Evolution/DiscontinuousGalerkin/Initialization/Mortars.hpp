@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Amr/Info.hpp"
@@ -260,6 +261,12 @@ struct Mortars {
 ///   - Sets the NormalCovectorAndMagnitude to std::nullopt
 template <typename Metavariables>
 struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
+ private:
+  using magnitude_and_normal_type = ::Variables<tmpl::list<
+      ::evolution::dg::Tags::MagnitudeOfNormal,
+      ::evolution::dg::Tags::NormalCovector<Metavariables::volume_dim>>>;
+
+ public:
   static constexpr size_t dim = Metavariables::volume_dim;
   using dt_variables_tag = typename db::add_tag_prefix<
       ::Tags::dt, typename Metavariables::system::variables_tag>;
@@ -287,9 +294,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<::dg::MortarMap<dim, TimeStepId>*>
           mortar_next_temporal_id,
       const gsl::not_null<
-          DirectionMap<dim, std::optional<Variables<tmpl::list<
-                                evolution::dg::Tags::MagnitudeOfNormal,
-                                evolution::dg::Tags::NormalCovector<dim>>>>>*>
+          DirectionMap<dim, std::optional<magnitude_and_normal_type>>*>
           normal_covector_and_magnitude,
       const gsl::not_null<mortar_data_history_type*> mortar_data_history,
       const Mesh<dim>& new_mesh, const Element<dim>& new_element,
@@ -313,9 +318,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<
           ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
       const gsl::not_null<
-          DirectionMap<dim, std::optional<Variables<tmpl::list<
-                                evolution::dg::Tags::MagnitudeOfNormal,
-                                evolution::dg::Tags::NormalCovector<dim>>>>>*>
+          DirectionMap<dim, std::optional<magnitude_and_normal_type>>*>
       /*normal_covector_and_magnitude*/,
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,
@@ -338,9 +341,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<
           ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
       const gsl::not_null<
-          DirectionMap<dim, std::optional<Variables<tmpl::list<
-                                evolution::dg::Tags::MagnitudeOfNormal,
-                                evolution::dg::Tags::NormalCovector<dim>>>>>*>
+          DirectionMap<dim, std::optional<magnitude_and_normal_type>>*>
       /*normal_covector_and_magnitude*/,
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,

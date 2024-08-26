@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/VectorImpl.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
@@ -451,7 +452,9 @@ SPECTRE_ALWAYS_INLINE
     operator/(const T& lhs, const SpinWeighted<T, Spin>& rhs) {
   return {lhs / rhs.data()};
 }
-template <typename T, int Spin>
+template <
+    typename T, int Spin,
+    Requires<not std::is_same_v<T, get_vector_element_type_t<T>>> = nullptr>
 SPECTRE_ALWAYS_INLINE SpinWeighted<
     decltype(std::declval<get_vector_element_type_t<T>>() / std::declval<T>()),
     -Spin>

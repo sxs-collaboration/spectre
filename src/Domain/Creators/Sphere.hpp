@@ -91,6 +91,8 @@ struct InnerCube {
     static double upper_bound() { return 1.0; }
   };
   using options = tmpl::list<Sphericity>;
+  InnerCube() = default;
+  explicit InnerCube(double sphericity_in) : sphericity(sphericity_in) {}
   double sphericity = std::numeric_limits<double>::signaling_NaN();
 };
 

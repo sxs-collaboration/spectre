@@ -43,7 +43,8 @@ std::ostream& operator<<(std::ostream& os, const Flag& flag) {
       os << "Split";
       break;
     default:
-      ERROR("An undefined flag was passed to the stream operator.");
+      ERROR("An unknown flag was passed to the stream operator. "
+            << static_cast<int>(flag));
   }
   return os;
 }
