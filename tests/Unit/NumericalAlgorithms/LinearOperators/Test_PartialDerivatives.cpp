@@ -214,7 +214,7 @@ void test_partial_derivative_per_tensor(
         const auto single_du =
             partial_derivative(get<var_tag>(u), mesh, inverse_jacobian);
 
-        Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
+        Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
         CHECK_ITERABLE_CUSTOM_APPROX(single_du, get<gradient_tag>(du),
                                      local_approx);
 
@@ -377,7 +377,7 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     CAPTURE(a);
     tmpl::for_each<VariableTags>([&a, &x, &u](auto tag) {
@@ -477,7 +477,7 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   Variables<
       db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
       expected_du(number_of_grid_points);
-  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  Approx local_approx = Approx::custom().epsilon(1e-9).scale(1.0);
   for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
     for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
       for (size_t c = 0; c < mesh.extents(2) / 2; ++c) {

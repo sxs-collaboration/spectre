@@ -42,9 +42,8 @@
 
 spack:
   specs:
-  - blaze@3.8
+  - 'blaze@3.8:3.8'
   - 'boost@1.60:+math+program_options'
-  - brigand@master
   - 'catch2@3.4.0:3'
   # Charm++:
   # - The 'multicore' backend runs with shared memory on a single node. On
@@ -55,11 +54,10 @@ spack:
   - gsl
   - hdf5 -mpi
   - jemalloc
-  - libsharp -mpi -openmp
   - 'libxsmm@1.16.1:'
   - openblas
   - 'python@3.8:'
-  - yaml-cpp@0.6.3
+  - 'yaml-cpp@0.6.3:'
   concretizer:
     unify: true
   view: true

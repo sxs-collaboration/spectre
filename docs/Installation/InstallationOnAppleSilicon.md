@@ -23,20 +23,13 @@ Run the following command in the terminal:
 xcode-select --install
 ```
 
-### 1. Clone spectre and make a directory to install prerequisites
+### 1. Clone spectre
 
-First, make a directory to hold some prerequisites that spectre depends on.
-Name this directory whatever you like, and set `SPECTRE_DEPS_ROOT` to its value.
-These instructions, as an example, set this to the `apps` directory in the
-user's home folder.
-```
-cd $HOME
+Clone the SpECTRE repository in a directory of your choice:
+
+```sh
 git clone git@github.com:sxs-collaboration/spectre.git
-cd spectre
-export SPECTRE_HOME=$(pwd)
-export SPECTRE_DEPS_ROOT=$HOME/apps
-mkdir $SPECTRE_DEPS_ROOT
-cd $SPECTRE_DEPS_ROOT
+export SPECTRE_HOME=$PWD/spectre
 ```
 
 ### 2. Install python dependencies
@@ -64,31 +57,48 @@ pip install jupyterlab
 
 ### 3. Install dependencies with Homebrew
 
-Most of spectre's dependencies beyond python can be installed using the
-[homebrew](https://brew.sh) package manager. First, if you haven't
-already, install Homebrew by
-following the instructions on the [homebrew](https://brew.sh) homepage. Then,
-run the following to install a fortran compiler and other dependencies:
+Most of spectre's dependencies can be installed using the
+[Homebrew](https://brew.sh) package manager. First, if you haven't already,
+install Homebrew by following the instructions on the
+[Homebrew](https://brew.sh) homepage. Then, run the following to install a
+Fortran compiler and other dependencies:
+
 ```
-brew install gcc
-brew install boost gsl cmake doxygen catch2 openblas
-brew install ccache autoconf automake jemalloc hdf5 yaml-cpp
+brew install gcc autoconf automake ccache cmake
+brew install boost catch2 doxygen gsl hdf5 openblas yaml-cpp
 ```
+
+\note We use OpenBLAS instead of Apple's Accelerate framework here because
+Accelerate fails to reach the same floating point accuracy as OpenBLAS in some
+of our tests (specifically partial derivatives).
 
 ### 4. Install remaining dependencies
 
-Here, install the remaining dependencies that cannot be installed
-with homebrew or miniforge. You can install them from source manually, or use
-the [Spack](https://github.com/spack/spack) package manager.
+Here, install the remaining dependencies that cannot be installed with Homebrew.
+You can install them from source manually, or use the
+[Spack](https://github.com/spack/spack) package manager (see below).
 
 #### Install manually
 
-```
+```sh
 export SPECTRE_DEPS_ROOT=$HOME/apps
-```
-
-```
+mkdir -p $SPECTRE_DEPS_ROOT
 cd $SPECTRE_DEPS_ROOT
+
+# Install Charm++
+git clone https://github.com/UIUC-PPL/charm
+pushd charm
+git checkout v7.0.0
+git apply $SPECTRE_HOME/support/charm/v7.0.0.patch
+./build charm++ multicore-darwin-arm8 --with-production -g3 -j --build-shared
+popd
+
+# The following dependencies are optional! They will be installed in the build
+# directory automatically if needed in the next step. You can install them
+# manually like this if you want control over where or how they are installed.
+# If you don't care, you can skip ahead.
+
+# Install Blaze
 mkdir blaze
 pushd blaze
 curl -L https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz \
@@ -97,21 +107,11 @@ tar -xf blaze-3.8.tar.gz
 mv blaze-3.8 include
 popd
 
+# Install libxsmm
 # Need master branch of libxsmm to support Apple Silicon
 git clone https://github.com/hfp/libxsmm.git
 pushd libxsmm
 make
-popd
-```
-
-Next, clone, patch, and install charm++ v7.0.0.
-```
-git clone https://github.com/UIUC-PPL/charm
-pushd charm
-git checkout v7.0.0
-git apply $SPECTRE_HOME/support/charm/v7.0.0.patch
-./build LIBS multicore-darwin-arm8 --with-production -g3 -j \
---without-romio --build-shared
 popd
 ```
 
@@ -128,19 +128,19 @@ git checkout releases/latest
 . ./share/spack/setup-env.sh
 # Find some system packages so we don't have to install them all from source
 spack external find
-spack external find python
 # Install dependencies
 spack install \
-  blaze@3.8.2 \
-  charmpp@7.0.0: +shared backend=multicore \
-  libxsmm@main \
+  charmpp@7.0.0: +shared backend=multicore build-target=charm++ \
+  blaze@3.8.2 ~blas ~lapack smp=none \
+  libxsmm@1.16.1: \
 ```
 
 ### 5. Configure and build SpECTRE
 
 Create a build directory in a location of your choice, e.g.
-```
-cd ${SPECTRE_HOME}
+
+```sh
+cd $SPECTRE_HOME
 mkdir build
 cd build
 ```
@@ -148,8 +148,11 @@ cd build
 Next, configure SpECTRE using the following CMake command. If you installed
 dependencies with Spack, you can use `spack find -p` to retrieve the root
 directories of the packages and replace them in the command below.
+You only need to specify `LIBXSMM_ROOT` and `BLAZE_ROOT` if you installed
+those packages yourself above. The option `SPECTRE_FETCH_MISSING_DEPS` will
+take care of downloading these if you haven't installed them above.
 
-```
+```sh
 cmake \
 -D CMAKE_C_COMPILER=clang \
 -D CMAKE_CXX_COMPILER=clang++ \
@@ -158,21 +161,26 @@ cmake \
 -D BUILD_SHARED_LIBS=ON \
 -D MEMORY_ALLOCATOR=SYSTEM \
 -D CHARM_ROOT=${SPECTRE_DEPS_ROOT}/charm/multicore-darwin-arm8 \
+-D SPECTRE_FETCH_MISSING_DEPS=ON \
 -D SPECTRE_TEST_TIMEOUT_FACTOR=5 \
+-D BLAS_ROOT=$(brew --prefix openblas) \
+-D LAPACK_ROOT=$(brew --prefix openblas) \
 -D LIBXSMM_ROOT=${SPECTRE_DEPS_ROOT}/libxsmm/ \
 -D BLAZE_ROOT=${SPECTRE_DEPS_ROOT}/blaze/ \
 ..
 ```
 
 Finally, build and test SpECTRE. E.g., on a Mac with 10 cores,
-```
+
+```sh
 make -j10 unit-tests
 make -j10 test-executables
 ctest --output-on-failure -j10
 ```
 
 Optionally, to install the python bindings in your python environment,
-```
-make all-pybindings
+
+```sh
+make -j10 all-pybindings
 pip install -e ${SPECTRE_HOME}/build/bin/python
 ```

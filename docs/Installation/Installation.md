@@ -144,7 +144,7 @@ The following dependencies will be fetched automatically if you set
 
 #### Bundled:
 * [Brigand](https://github.com/edouarda/brigand)
-* [libsharp](https://github.com/Libsharp/libsharp)
+* [libsharp](https://github.com/Libsharp/libsharp) \cite Libsharp
 
 ## Clone the SpECTRE repository
 
@@ -350,11 +350,6 @@ with a plain `spack install` if you prefer.
   [LMod](https://github.com/TACC/Lmod). See the [Spack documentation on
   modules](https://spack.readthedocs.io/en/latest/module_file_support.html) for
   details.
-- On macOS:
-  - Brigand has an issue with AppleClang 13 when compiling tests (see
-    https://github.com/edouarda/brigand/issues/274). Since it is header-only,
-    you can simply clone the [Brigand repository](https://github.com/edouarda/brigand)
-    instead of installing it with Spack.
 
 ## Building Charm++ {#building-charm}
 
