@@ -37,13 +37,13 @@ void raise_or_lower_first_index(
   }
 }
 
-template <typename DataType, typename Index0>
+template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
 void raise_or_lower_index(
-    const gsl::not_null<
-        Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>*>
+    const gsl::not_null<Tensor<DataTypeTensor, Symmetry<1>,
+                               index_list<change_index_up_lo<Index0>>>*>
         result,
-    const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
-    const Tensor<DataType, Symmetry<1, 1>,
+    const Tensor<DataTypeTensor, Symmetry<1>, index_list<Index0>>& tensor,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric) {
   constexpr auto dimension = Index0::dim;
@@ -97,6 +97,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
 #undef INDEX1
 #undef INSTANTIATE
 
+// Maps complex<double> -> double and ComplexDataVector -> DataVector
+// to create real metric types in the instantiations below
+template <typename T>
+using make_real_t = std::conditional_t<
+    std::is_same_v<T, ComplexDataVector>, DataVector,
+    std::conditional_t<std::is_same_v<T, std::complex<double>>, double, T>>;
+
 #define INSTANTIATE2(_, data)                                           \
   template void raise_or_lower_index(                                   \
       const gsl::not_null<                                              \
@@ -105,11 +112,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
           trace_of_tensor,                                              \
       const Tensor<DTYPE(data), Symmetry<1>, index_list<INDEX0(data)>>& \
           tensor,                                                       \
-      const Tensor<DTYPE(data), Symmetry<1, 1>,                         \
+      const Tensor<make_real_t<DTYPE(data)>, Symmetry<1, 1>,            \
                    index_list<change_index_up_lo<INDEX0(data)>,         \
                               change_index_up_lo<INDEX0(data)>>>& metric);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3),
+                        (double, DataVector, std::complex<double>,
+                         ComplexDataVector),
                         (Frame::Grid, Frame::Distorted, Frame::Inertial),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
 

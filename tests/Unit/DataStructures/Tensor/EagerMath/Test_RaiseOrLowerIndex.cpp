@@ -41,7 +41,7 @@ void test_raise_or_lower(const DataType& used_for_size) {
       const Tensor<DataType, Symmetry<1, 1>,
                    index_list<change_index_up_lo<Index0>,
                               change_index_up_lo<Index0>>>&) =
-      &raise_or_lower_index<DataType, Index0>;
+      &raise_or_lower_index<DataType, DataType, Index0>;
   pypp::check_with_random_values<1>(f, "numpy", "matmul", {{{-10., 10.}}},
                                     used_for_size);
 }

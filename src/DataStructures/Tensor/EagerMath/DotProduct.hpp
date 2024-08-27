@@ -21,22 +21,26 @@
  * Returns \f$A^a B^b \delta_{ab}\f$ for input vectors \f$A^a\f$ and \f$B^b\f$
  * or \f$A_a B_b \delta^{ab}\f$ for input one forms \f$A_a\f$ and \f$B_b\f$.
  */
-template <typename DataType, typename Index>
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
 void dot_product(
-    const gsl::not_null<Scalar<DataType>*> dot_product,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b) {
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
   get(*dot_product) = get<0>(vector_a) * get<0>(vector_b);
   for (size_t d = 1; d < Index::dim; ++d) {
     get(*dot_product) += vector_a.get(d) * vector_b.get(d);
   }
 }
 
-template <typename DataType, typename Index>
-Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b) {
-  Scalar<DataType> dot_product(get_size(get<0>(vector_a)));
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b) {
+  Scalar<DataTypeResult> dot_product(get_size(get<0>(vector_a)));
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
@@ -53,25 +57,29 @@ Scalar<DataType> dot_product(
  * or \f$A_a B^b \delta^a_b\f$ for input one form \f$A_a\f$ and
  * input vector \f$B^b\f$.
  */
-template <typename DataType, typename Index>
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
 void dot_product(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
-    const gsl::not_null<Scalar<DataType>*> dot_product,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>&
-        vector_b) {
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>,
+                 index_list<change_index_up_lo<Index>>>& vector_b) {
   get(*dot_product) = get<0>(vector_a) * get<0>(vector_b);
   for (size_t d = 1; d < Index::dim; ++d) {
     get(*dot_product) += vector_a.get(d) * vector_b.get(d);
   }
 }
 
-template <typename DataType, typename Index>
-Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>&
-        vector_b) {
-  Scalar<DataType> dot_product(get_size(get<0>(vector_a)));
+template <typename DataTypeLhs, typename DataTypeRhs, typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>,
+                 index_list<change_index_up_lo<Index>>>& vector_b) {
+  Scalar<DataTypeResult> dot_product(get_size(get<0>(vector_a)));
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b);
   return dot_product;
 }
@@ -88,12 +96,15 @@ Scalar<DataType> dot_product(
  * Or, returns \f$g^{ab} A_a B_b\f$ when given one forms \f$A_a\f$
  * and \f$B_b\f$ with an inverse metric \f$g^{ab}\f$.
  */
-template <typename DataType, typename Index>
+template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
+          typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(
+              DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
 void dot_product(
-    const gsl::not_null<Scalar<DataType>*> dot_product,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b,
-    const Tensor<DataType, Symmetry<1, 1>,
+    const gsl::not_null<Scalar<DataTypeResult>*> dot_product,
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) {
   if constexpr (Index::dim == 1) {
@@ -135,14 +146,17 @@ void dot_product(
   }
 }
 
-template <typename DataType, typename Index>
-Scalar<DataType> dot_product(
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
-    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_b,
-    const Tensor<DataType, Symmetry<1, 1>,
+template <typename DataTypeLhs, typename DataTypeRhs, typename DataTypeMetric,
+          typename Index,
+          typename DataTypeResult = decltype(blaze::evaluate(
+              DataTypeLhs() * DataTypeRhs() * DataTypeMetric()))>
+Scalar<DataTypeResult> dot_product(
+    const Tensor<DataTypeLhs, Symmetry<1>, index_list<Index>>& vector_a,
+    const Tensor<DataTypeRhs, Symmetry<1>, index_list<Index>>& vector_b,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) {
-  Scalar<DataType> dot_product(get_size(get<0>(vector_a)));
+  Scalar<DataTypeResult> dot_product(get_size(get<0>(vector_a)));
   ::dot_product(make_not_null(&dot_product), vector_a, vector_b, metric);
   return dot_product;
 }
