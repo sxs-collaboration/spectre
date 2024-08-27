@@ -6,6 +6,7 @@ set(LIBRARY "Test_MonteCarlo")
 set(LIBRARY_SOURCES
   Test_CellCrossingTime.cpp
   Test_CellVolume.cpp
+  Test_CommunicationTags.cpp
   Test_EmitPackets.cpp
   Test_EvolvePackets.cpp
   Test_ImplicitMonteCarloCorrections.cpp
@@ -26,6 +27,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  DgSubcell
   GeneralRelativity
   GeneralRelativityHelpers
   H5
@@ -33,4 +35,5 @@ target_link_libraries(
   HydroHelpers
   Informer
   MonteCarlo
+  Time
   )

@@ -5,6 +5,16 @@
 
 namespace Particles::MonteCarlo {
 
+void Packet::pup(PUP::er& p) {
+  p | species;
+  p | number_of_neutrinos;
+  p | index_of_closest_grid_point;
+  p | time;
+  p | momentum_upper_t;
+  p | coordinates;
+  p | momentum;
+}
+
 void Packet::renormalize_momentum(
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& lapse) {
