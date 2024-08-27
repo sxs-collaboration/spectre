@@ -36,10 +36,8 @@ void test_variable_fixer(
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
   auto tilde_b =
       make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
-  for (size_t d = 0; d < 3; ++d) {
-    tilde_s.get(0) = DataVector{3.0, 3.0, 0.0, 6.0, 5.0};
-    tilde_b.get(1) = DataVector{2.0, 2.0, 2.0, 2.0, 2.0};
-  }
+  tilde_s.get(0) = DataVector{3.0, 3.0, 0.0, 6.0, 5.0};
+  tilde_b.get(1) = DataVector{2.0, 2.0, 2.0, 2.0, 2.0};
 
   auto expected_tilde_d = tilde_d;
   if (enable) {
@@ -81,6 +79,42 @@ void test_variable_fixer(
   CHECK_ITERABLE_APPROX(tilde_ye, expected_tilde_ye);
   CHECK_ITERABLE_APPROX(tilde_tau, expected_tilde_tau);
   CHECK_ITERABLE_APPROX(tilde_s, expected_tilde_s);
+}
+
+void test_variable_fixer_zero_b_field(
+    const grmhd::ValenciaDivClean::FixConservatives& variable_fixer,
+    const bool enable) {
+  // Call variable fixer with AssumeZero for MagneticField
+  // at two points.
+  // [0] : negative tilde tau, should be raised to zero.
+  // [1] : positive tilde tau, no changes.
+  Scalar<DataVector> tilde_d{DataVector{1.0, 1.0}};
+  // We assume that ye = 0.1
+  Scalar<DataVector> tilde_ye{DataVector{1.0, 1.0}};
+  Scalar<DataVector> tilde_tau{DataVector{-2.0, 4.5}};
+  auto expected_tilde_tau = tilde_tau;
+  if (enable) {
+    get(expected_tilde_tau)[0] = 0.0;
+  }
+  auto tilde_s =
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto tilde_b =
+      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto spatial_metric =
+      make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto inv_spatial_metric =
+      make_with_value<tnsr::II<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+  auto sqrt_det_spatial_metric =
+      make_with_value<Scalar<DataVector>>(tilde_d, 1.0);
+  for (size_t d = 0; d < 3; ++d) {
+    spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
+    inv_spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
+  }
+
+  CHECK(enable == variable_fixer(&tilde_d, &tilde_ye, &tilde_tau, &tilde_s,
+                                 tilde_b, spatial_metric, inv_spatial_metric,
+                                 sqrt_det_spatial_metric));
+  CHECK_ITERABLE_APPROX(tilde_tau, expected_tilde_tau);
 }
 
 void run_benchmark(const bool enable) {
@@ -143,14 +177,25 @@ void run_benchmark(const bool enable) {
 SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
                   "[VariableFixing][Unit]") {
   for (const bool enable : {true, false}) {
-    grmhd::ValenciaDivClean::FixConservatives variable_fixer{
+    const grmhd::ValenciaDivClean::FixConservatives variable_fixer{
         1.e-12,  1.0e-11,
         1.0e-10, 1.0e-9,
         0.0,     0.0,
         1.e-12,  0.0,
         enable,  hydro::MagneticFieldTreatment::AssumeNonZero};
+
+    const grmhd::ValenciaDivClean::FixConservatives variable_fixer_zero_b_field{
+        1.e-12,  1.0e-11,
+        1.0e-10, 1.0e-9,
+        0.0,     0.0,
+        1.e-12,  0.0,
+        enable,  hydro::MagneticFieldTreatment::AssumeZero};
+
     test_variable_fixer(serialize_and_deserialize(variable_fixer), enable);
+    test_variable_fixer_zero_b_field(
+        serialize_and_deserialize(variable_fixer_zero_b_field), enable);
     test_serialization(variable_fixer);
+    test_serialization(variable_fixer_zero_b_field);
   }
 
   const auto fixer_from_options =
@@ -165,7 +210,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
           "SafetyFactorForSSlope: 0.0\n"
           "Enable: true\n"
           "MagneticField: AssumeNonZero\n");
+
+  const auto fixer_from_options_zero_b_field =
+      TestHelpers::test_creation<grmhd::ValenciaDivClean::FixConservatives>(
+          "MinimumValueOfD: 1.0e-12\n"
+          "CutoffD: 1.0e-11\n"
+          "MinimumValueOfYe: 1.0e-10\n"
+          "CutoffYe: 1.0e-9\n"
+          "SafetyFactorForB: 0.0\n"
+          "SafetyFactorForS: 0.0\n"
+          "SafetyFactorForSCutoffD: 1.0e-12\n"
+          "SafetyFactorForSSlope: 0.0\n"
+          "Enable: true\n"
+          "MagneticField: AssumeZero\n");
   test_variable_fixer(fixer_from_options, true);
+  test_variable_fixer_zero_b_field(fixer_from_options_zero_b_field, true);
 
   run_benchmark(false);
 }
