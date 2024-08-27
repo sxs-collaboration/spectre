@@ -23,14 +23,14 @@
  * Returns \f$n_i F^i_{j\ldots}\f$, where the flux tensor \f$F\f$ must have an
  * upper spatial first index and may have arbitrary extra indices.
  */
-template <size_t VolumeDim, typename Fr, typename Symm,
+template <size_t VolumeDim, typename Fr, typename DataType, typename Symm,
           typename... RemainingIndices,
-          typename ResultTensor = Tensor<DataVector, tmpl::pop_front<Symm>,
+          typename ResultTensor = Tensor<DataType, tmpl::pop_front<Symm>,
                                          index_list<RemainingIndices...>>>
 void normal_dot_flux(
     const gsl::not_null<ResultTensor*> normal_dot_flux,
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
-    const Tensor<DataVector, Symm,
+    const Tensor<DataType, Symm,
                  index_list<SpatialIndex<VolumeDim, UpLo::Up, Fr>,
                             RemainingIndices...>>& flux_tensor) {
   for (auto it = normal_dot_flux->begin(); it != normal_dot_flux->end(); it++) {
@@ -84,13 +84,14 @@ auto normal_dot_flux(
  * This makes this quantity useful for optimizations of DG formulations for
  * "sparse" (i.e., Kronecker delta) fluxes.
  */
-template <size_t VolumeDim, typename Fr, typename Symm, typename Indices>
+template <size_t VolumeDim, typename Fr, typename DataType, typename Symm,
+          typename Indices>
 void normal_times_flux(
     const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
-        Tensor<DataVector, Symm, Indices>, VolumeDim, UpLo::Lo, Fr>*>
+        Tensor<DataType, Symm, Indices>, VolumeDim, UpLo::Lo, Fr>*>
         normal_times_flux,
     const tnsr::i<DataVector, VolumeDim, Fr>& normal,
-    const Tensor<DataVector, Symm, Indices>& rhs) {
+    const Tensor<DataType, Symm, Indices>& rhs) {
   outer_product(normal_times_flux, normal, rhs);
 }
 
