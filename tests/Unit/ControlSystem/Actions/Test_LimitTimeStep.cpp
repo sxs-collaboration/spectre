@@ -173,7 +173,7 @@ void test(const std::string& test_label, const double initial_time,
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using component = Component<Metavariables>;
   MockRuntimeSystem runner{
-      {}, {std::move(timescales), std::move(functions_of_time)}};
+      {1e-8}, {std::move(timescales), std::move(functions_of_time)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, element_id,

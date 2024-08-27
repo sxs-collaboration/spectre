@@ -142,7 +142,7 @@ void check(const bool time_runs_forward,
   using MockRuntimeSystem =
       ActionTesting::MockRuntimeSystem<Metavariables<StepChoosersToUse>>;
   using Constant = StepChoosers::Constant<StepChooserUse::LtsStep>;
-  MockRuntimeSystem runner{{std::move(time_stepper)}};
+  MockRuntimeSystem runner{{std::move(time_stepper), 1e-8}};
 
   auto choosers =
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
@@ -250,4 +250,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
             slab.duration() / 4, std::make_unique<StepRejector>(1.0)),
       Catch::Matchers::ContainsSubstring("Step was rejected, but not changed"));
 #endif
+
+  CHECK_THROWS_WITH(
+      check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
+            slab.start() + slab.duration() / 4, 1e-9, slab.duration() / 4,
+            std::nullopt),
+      Catch::Matchers::ContainsSubstring("smaller than the MinimumTimeStep"));
 }

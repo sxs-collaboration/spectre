@@ -19,6 +19,7 @@ Evolution:
   InitialTime: 0.0
   # The initial time step gets overridden by `ChangeSlabSize` below
   InitialTimeStep: 0.075
+  MinimumTimeStep: 1e-7
   # Control systems only work with AdamsBashforth
   TimeStepper:
     AdamsBashforth:

@@ -19,6 +19,7 @@ OutputFileChecks:
 
 Evolution:
   InitialTimeStep: 0.01
+  MinimumTimeStep: 1e-7
   InitialSlabSize: 0.8
 
 ResourceInfo:

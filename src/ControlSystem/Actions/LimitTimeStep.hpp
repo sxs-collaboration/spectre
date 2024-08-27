@@ -20,6 +20,7 @@
 #include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "Time/ChangeSlabSize/ChangeSlabSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -82,6 +83,8 @@ struct LimitTimeStep {
   };
 
  public:
+  using const_global_cache_tags = tmpl::list<::Tags::MinimumTimeStep>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(

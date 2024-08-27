@@ -80,7 +80,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
   register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
+      {std::make_unique<TimeSteppers::Rk3HesthavenSsp>(), 1e-8}};
 
   ActionTesting::emplace_component_and_initialize<Component>(&runner, 0, {});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

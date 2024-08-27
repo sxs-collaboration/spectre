@@ -14,6 +14,7 @@
 #include "Time/ChangeSlabSize/ChangeSlabSize.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/TimeStepRequestProcessor.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -59,6 +60,7 @@ namespace Actions {
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
 struct ChangeSlabSize {
+  using const_global_cache_tags = tmpl::list<::Tags::MinimumTimeStep>;
   using simple_tags =
       tmpl::list<::Tags::ChangeSlabSize::NewSlabSize,
                  ::Tags::ChangeSlabSize::NumberOfExpectedMessages>;

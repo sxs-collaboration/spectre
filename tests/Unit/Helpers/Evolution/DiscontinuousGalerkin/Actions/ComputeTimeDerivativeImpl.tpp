@@ -1152,13 +1152,23 @@ void test_impl(const Spectral::Quadrature quadrature,
     domain.inject_time_dependent_map_for_block(
         1, grid_to_inertial_map->get_clone());
 
-    return MockRuntimeSystem{
-        {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                              make_array<Dim>(3_st)},
-         typename metavars::normal_dot_numerical_flux::type{},
-         std::move(domain), dg_formulation,
-         std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
-         std::move(boundary_conditions)}};
+    if constexpr (LocalTimeStepping) {
+      return MockRuntimeSystem{
+          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                make_array<Dim>(3_st)},
+           typename metavars::normal_dot_numerical_flux::type{},
+           std::move(domain), dg_formulation,
+           std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+           std::move(boundary_conditions), 1e-8}};
+    } else {
+      return MockRuntimeSystem{
+          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
+                                                make_array<Dim>(3_st)},
+           typename metavars::normal_dot_numerical_flux::type{},
+           std::move(domain), dg_formulation,
+           std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+           std::move(boundary_conditions)}};
+    }
   }();
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;
