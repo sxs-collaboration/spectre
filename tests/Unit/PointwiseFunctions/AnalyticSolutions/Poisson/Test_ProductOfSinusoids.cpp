@@ -39,11 +39,14 @@ template <size_t Dim>
 struct ProductOfSinusoidsProxy : Poisson::Solutions::ProductOfSinusoids<Dim> {
   using Poisson::Solutions::ProductOfSinusoids<Dim>::ProductOfSinusoids;
 
-  using field_tags = tmpl::list<
-      Poisson::Tags::Field,
-      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
-  using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
+  using field_tags =
+      tmpl::list<Poisson::Tags::Field<DataVector>,
+                 ::Tags::deriv<Poisson::Tags::Field<DataVector>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                              tmpl::size_t<Dim>, Frame::Inertial>>;
+  using source_tags =
+      tmpl::list<Tags::FixedSource<Poisson::Tags::Field<DataVector>>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {

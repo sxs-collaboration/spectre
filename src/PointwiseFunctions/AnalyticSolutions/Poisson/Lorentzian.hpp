@@ -24,27 +24,28 @@ namespace detail {
 template <typename DataType, size_t Dim>
 struct LorentzianVariables {
   using Cache = CachedTempBuffer<
-      Tags::Field,
-      ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::FixedSource<Tags::Field>>;
+      Tags::Field<DataType>,
+      ::Tags::deriv<Tags::Field<DataType>, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::FixedSource<Tags::Field<DataType>>>;
 
   const tnsr::I<DataType, Dim>& x;
   const double constant;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
-                  gsl::not_null<Cache*> cache, Tags::Field /*meta*/) const;
+                  gsl::not_null<Cache*> cache,
+                  Tags::Field<DataType> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
+                  ::Tags::deriv<Tags::Field<DataType>, tmpl::size_t<Dim>,
                                 Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>,
+                  ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>,
                                Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
                   gsl::not_null<Cache*> cache,
-                  ::Tags::FixedSource<Tags::Field> /*meta*/) const;
+                  ::Tags::FixedSource<Tags::Field<DataType>> /*meta*/) const;
 };
 }  // namespace detail
 

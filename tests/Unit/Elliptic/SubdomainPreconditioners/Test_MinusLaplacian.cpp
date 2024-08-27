@@ -47,7 +47,7 @@ struct VectorFieldTag : db::SimpleTag {
 template <size_t Dim>
 using PoissonSubdomainData =
     LinearSolver::Schwarz::ElementCenteredSubdomainData<
-        Dim, tmpl::list<Poisson::Tags::Field>>;
+        Dim, tmpl::list<Poisson::Tags::Field<DataVector>>>;
 struct OptionsGroup {};
 
 template <size_t Dim>
@@ -148,11 +148,12 @@ template <size_t Dim, typename FullData, typename Tag>
 void check_component(const PoissonSubdomainData<Dim>& poisson_data,
                      const FullData& expected_data, Tag /*meta*/,
                      const size_t component) {
-  CHECK(get(get<Poisson::Tags::Field>(poisson_data.element_data)) ==
+  CHECK(get(get<Poisson::Tags::Field<DataVector>>(poisson_data.element_data)) ==
         get<std::decay_t<Tag>>(expected_data.element_data)[component]);
   for (const auto& [overlap_id, data] : expected_data.overlap_data) {
-    CHECK(get(get<Poisson::Tags::Field>(poisson_data.overlap_data.at(
-              overlap_id))) == get<std::decay_t<Tag>>(data)[component]);
+    CHECK(get(get<Poisson::Tags::Field<DataVector>>(
+              poisson_data.overlap_data.at(overlap_id))) ==
+          get<std::decay_t<Tag>>(data)[component]);
   }
 }
 

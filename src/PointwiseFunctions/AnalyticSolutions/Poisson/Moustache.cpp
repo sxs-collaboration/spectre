@@ -21,12 +21,13 @@ namespace Poisson::Solutions::detail {
 template <typename DataType, size_t Dim>
 void MoustacheVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> field,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Field /*meta*/) const {
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::Field<DataType> /*meta*/) const {
   std::fill(field->begin(), field->end(), 1.);
   for (size_t d = 0; d < Dim; d++) {
     get(*field) *= x.get(d) * (1. - x.get(d));
   }
-  auto norm_square = make_with_value<DataVector>(get<0>(x), 0.);
+  auto norm_square = make_with_value<DataType>(get<0>(x), 0.);
   for (size_t d = 0; d < Dim; d++) {
     norm_square += square(x.get(d) - 0.5);
   }
@@ -37,8 +38,8 @@ template <typename DataType, size_t Dim>
 void MoustacheVariables<DataType, Dim>::operator()(
     const gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-    const {
+    ::Tags::deriv<Tags::Field<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial> /*meta*/) const {
   if constexpr (Dim == 1) {
     const auto& x_d = get<0>(x);
     get<0>(*field_gradient) =
@@ -63,10 +64,11 @@ template <typename DataType, size_t Dim>
 void MoustacheVariables<DataType, Dim>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
     const gsl::not_null<Cache*> cache,
-    ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-    const {
+    ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>,
+                 Frame::Inertial> /*meta*/) const {
   const auto& field_gradient = cache->get_var(
-      *this, ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::Field<DataType>, tmpl::size_t<Dim>,
+                           Frame::Inertial>{});
   for (size_t d = 0; d < Dim; ++d) {
     flux_for_field->get(d) = field_gradient.get(d);
   }
@@ -76,7 +78,7 @@ template <typename DataType, size_t Dim>
 void MoustacheVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::Field> /*meta*/) const {
+    ::Tags::FixedSource<Tags::Field<DataType>> /*meta*/) const {
   if constexpr (Dim == 1) {
     const auto x1 = get<0>(x) - 0.5;
     // This polynomial is minus the laplacian of the 1D solution

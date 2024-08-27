@@ -61,11 +61,12 @@ struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
   static constexpr size_t volume_dim = Dim;
 
-  using primal_fields = tmpl::list<Tags::Field>;
+  using primal_fields = tmpl::list<Tags::Field<DataVector>>;
   // We just use the standard `Flux` prefix because the fluxes don't have
   // symmetries and we don't need to give them a particular meaning.
   using primal_fluxes =
-      tmpl::list<::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
+      tmpl::list<::Tags::Flux<Tags::Field<DataVector>, tmpl::size_t<Dim>,
+                              Frame::Inertial>>;
 
   using background_fields = tmpl::conditional_t<
       BackgroundGeometry == Geometry::FlatCartesian, tmpl::list<>,
