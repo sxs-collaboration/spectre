@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
@@ -76,15 +78,6 @@ template <typename Tag>
 struct Var : db::SimpleTag, db::PrefixTag {
   using type = typename Tag::type;
   using tag = Tag;
-};
-
-struct ScalarFieldTag : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-
-template <size_t Dim>
-struct AuxFieldTag : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim>;
 };
 
 struct TemporalIdTag : db::SimpleTag {
@@ -582,7 +575,7 @@ void test_dg_operator(
 
 }  // namespace
 
-// [[TimeOut, 30]]
+// [[TimeOut, 60]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
   domain::creators::register_derived_with_charm();
   // This is what the tests below check:
@@ -742,6 +735,42 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
             analytic_solution_aux_approx, analytic_solution_operator_approx, {},
             true);
       }
+    }
+  }
+  {
+    INFO("1D complex");
+    using system =
+        Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian,
+                                  ComplexDataVector>;
+    Poisson::Solutions::ProductOfSinusoids<1, ComplexDataVector>
+        analytic_solution{{{M_PI}}};
+    const domain::creators::Interval domain_creator{
+        {{-0.5}},
+        {{1.5}},
+        {{1}},
+        {{12}},
+        {{{{std::make_unique<
+                elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                analytic_solution.get_clone(),
+                elliptic::BoundaryConditionType::Dirichlet),
+            std::make_unique<
+                elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                analytic_solution.get_clone(),
+                elliptic::BoundaryConditionType::Neumann)}}}}};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-8).scale(M_PI);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-8).scale(M_PI * penalty_parameter *
+                                              square(12));
+    for (const auto& [use_massive_dg_operator, quadrature] :
+         cartesian_product(make_array(true, false),
+                           make_array(Spectral::Quadrature::GaussLobatto,
+                                      Spectral::Quadrature::Gauss))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, use_massive_dg_operator,
+          quadrature, ::dg::Formulation::StrongInertial, analytic_solution,
+          analytic_solution_aux_approx, analytic_solution_operator_approx, {},
+          true);
     }
   }
   {
@@ -1171,6 +1200,43 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     }
   }
   {
+    INFO("2D complex");
+    using system =
+        Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian,
+                                  ComplexDataVector>;
+    Poisson::Solutions::ProductOfSinusoids<2, ComplexDataVector>
+        analytic_solution{{{M_PI, M_PI}}};
+    const auto dirichlet_bc =
+        elliptic::BoundaryConditions::AnalyticSolution<system>{
+            analytic_solution.get_clone(),
+            elliptic::BoundaryConditionType::Dirichlet};
+    const domain::creators::AlignedLattice<2> domain_creator{
+        {{{0., 0.25, 0.5}, {0., 0.5}}},
+        {{1, 1}},
+        {{12, 12}},
+        {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
+        {},
+        {},
+        {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+          {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-11).scale(M_PI);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-11).scale(M_PI * penalty_parameter *
+                                               square(12));
+    for (const auto& [massive, quadrature, dg_formulation] :
+         cartesian_product(make_array(true, false),
+                           make_array(Spectral::Quadrature::GaussLobatto,
+                                      Spectral::Quadrature::Gauss),
+                           make_array(::dg::Formulation::StrongInertial,
+                                      ::dg::Formulation::WeakInertial))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, massive, quadrature,
+          dg_formulation, analytic_solution, analytic_solution_aux_approx,
+          analytic_solution_operator_approx, {}, true);
+    }
+  }
+  {
     INFO("3D sphere");
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
@@ -1308,6 +1374,45 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
             analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {}, true);
       }
+    }
+  }
+  {
+    INFO("3D complex");
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian,
+                                  ComplexDataVector>;
+    Poisson::Solutions::Lorentzian<3, ComplexDataVector> analytic_solution{
+        0., M_PI_2};
+    const domain::creators::Sphere domain_creator{
+        1.,
+        3.,
+        domain::creators::Sphere::InnerCube{0.},
+        0_st,
+        12_st,
+        true,
+        {},
+        {},
+        domain::CoordinateMaps::Distribution::Linear,
+        ShellWedges::All,
+        std::nullopt,
+        std::make_unique<
+            elliptic::BoundaryConditions::AnalyticSolution<system>>(
+            analytic_solution.get_clone(),
+            elliptic::BoundaryConditionType::Dirichlet)};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-4).scale(1.);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-4).scale(1.);
+    for (const auto& [quadrature, dg_formulation] :
+         cartesian_product(make_array(Spectral::Quadrature::GaussLobatto,
+                                      Spectral::Quadrature::Gauss),
+                           make_array(::dg::Formulation::StrongInertial,
+                                      ::dg::Formulation::StrongLogical,
+                                      ::dg::Formulation::WeakInertial))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, true, quadrature, dg_formulation,
+          analytic_solution, analytic_solution_aux_approx,
+          analytic_solution_operator_approx, {}, true);
     }
   }
 }

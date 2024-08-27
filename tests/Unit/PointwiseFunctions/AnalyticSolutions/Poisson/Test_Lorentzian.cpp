@@ -6,8 +6,10 @@
 #include <cstddef>
 #include <tuple>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -31,66 +33,79 @@
 
 namespace {
 
-template <size_t Dim>
-struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim> {
-  using Poisson::Solutions::Lorentzian<Dim>::Lorentzian;
+template <size_t Dim, typename DataType>
+struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim, DataType> {
+  using Poisson::Solutions::Lorentzian<Dim, DataType>::Lorentzian;
 
   using field_tags =
-      tmpl::list<Poisson::Tags::Field<DataVector>,
-                 ::Tags::deriv<Poisson::Tags::Field<DataVector>,
+      tmpl::list<Poisson::Tags::Field<DataType>,
+                 ::Tags::deriv<Poisson::Tags::Field<DataType>,
                                tmpl::size_t<Dim>, Frame::Inertial>,
-                 ::Tags::Flux<Poisson::Tags::Field<DataVector>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>;
+                 ::Tags::Flux<Poisson::Tags::Field<DataType>, tmpl::size_t<Dim>,
+                              Frame::Inertial>>;
   using source_tags =
-      tmpl::list<Tags::FixedSource<Poisson::Tags::Field<DataVector>>>;
+      tmpl::list<Tags::FixedSource<Poisson::Tags::Field<DataType>>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
-    return Poisson::Solutions::Lorentzian<Dim>::variables(x, field_tags{});
+    return Poisson::Solutions::Lorentzian<Dim, DataType>::variables(
+        x, field_tags{});
   }
 
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const {
-    return Poisson::Solutions::Lorentzian<Dim>::variables(x, source_tags{});
+    return Poisson::Solutions::Lorentzian<Dim, DataType>::variables(
+        x, source_tags{});
   }
 };
 
-template <size_t Dim>
+template <size_t Dim, typename DataType>
 void test_solution() {
-  const LorentzianProxy<Dim> solution{1.5};
+  double complex_phase = 0.0;
+  if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+    complex_phase = 0.7;
+  }
+  const LorentzianProxy<Dim, DataType> solution{1.5, complex_phase};
   pypp::check_with_random_values<1>(
-      &LorentzianProxy<Dim>::field_variables, solution, "Lorentzian",
+      &LorentzianProxy<Dim, DataType>::field_variables, solution, "Lorentzian",
       {"field", "field_gradient", "field_flux"}, {{{-5., 5.}}},
-      std::make_tuple(), DataVector(5));
+      std::make_tuple(1.5, complex_phase), DataVector(5));
   pypp::check_with_random_values<1>(
-      &LorentzianProxy<Dim>::source_variables, solution, "Lorentzian",
-      {"source"}, {{{-5., 5.}}}, std::make_tuple(), DataVector(5));
+      &LorentzianProxy<Dim, DataType>::source_variables, solution, "Lorentzian",
+      {"source"}, {{{-5., 5.}}}, std::make_tuple(1.5, complex_phase),
+      DataVector(5));
 
-  const Poisson::Solutions::Lorentzian<Dim> check_solution{1.2};
+  const Poisson::Solutions::Lorentzian<Dim, DataType> check_solution{
+      1.2, complex_phase};
+  std::string option_string = "PlusConstant: 1.2";
+  if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+    option_string += "\nComplexPhase: 0.7";
+  }
   const auto created_solution =
-      TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>(
-          "PlusConstant: 1.2");
+      TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim, DataType>>(
+          option_string);
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
   test_copy_semantics(check_solution);
 }
 
-}  // namespace
-
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Lorentzian",
-    "[PointwiseFunctions][Unit]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/Poisson"};
+template <typename DataType>
+void test_lorentzian() {
   // 1D and 2D solutions are not implemented yet.
-  test_solution<3>();
+  test_solution<3, DataType>();
+  double complex_phase = 0.0;
+  if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+    complex_phase = M_PI_4;
+  }
 
   {
     // Verify that the solution numerically solves the system and that the
     // discretization error decreases exponentially with polynomial order
     using system =
-        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
-    const Poisson::Solutions::Lorentzian<3> solution{1.0};
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian,
+                                  DataType>;
+    const Poisson::Solutions::Lorentzian<3, DataType> solution{1.0,
+                                                               complex_phase};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -106,8 +121,10 @@ SPECTRE_TEST_CASE(
   {
     // Verify that the solution also solves the non-euclidean system with a
     // Euclidean metric. This is more a test of the system than of the solution.
-    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
-    const Poisson::Solutions::Lorentzian<3> solution{1.0};
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved, DataType>;
+    const Poisson::Solutions::Lorentzian<3, DataType> solution{1.0,
+                                                               complex_phase};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
@@ -129,4 +146,15 @@ SPECTRE_TEST_CASE(
         solution, mesh, coord_map, 0.1, std::make_tuple(inv_spatial_metric),
         std::make_tuple(spatial_christoffel_contracted));
   }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE(
+    "Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Lorentzian",
+    "[PointwiseFunctions][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "PointwiseFunctions/AnalyticSolutions/Poisson"};
+  test_lorentzian<DataVector>();
+  test_lorentzian<ComplexDataVector>();
 }

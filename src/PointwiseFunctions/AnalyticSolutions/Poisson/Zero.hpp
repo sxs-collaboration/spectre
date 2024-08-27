@@ -7,6 +7,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -21,7 +22,7 @@ namespace Poisson::Solutions {
 
 /// The trivial solution \f$u=0\f$ of a Poisson equation. Useful as initial
 /// guess.
-template <size_t Dim>
+template <size_t Dim, typename DataType = DataVector>
 class Zero : public elliptic::analytic_data::AnalyticSolution {
  public:
   using options = tmpl::list<>;
@@ -46,9 +47,9 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
   WRAPPED_PUPable_decl_template(Zero);  // NOLINT
   /// \endcond
 
-  template <typename DataType, typename... RequestedTags>
+  template <typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
-      const tnsr::I<DataType, Dim>& x,
+      const tnsr::I<DataVector, Dim>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
     using supported_tags = tmpl::list<
         Tags::Field<DataType>,
@@ -64,17 +65,19 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
 };
 
 /// \cond
-template <size_t Dim>
-PUP::able::PUP_ID Zero<Dim>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim, typename DataType>
+PUP::able::PUP_ID Zero<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
-template <size_t Dim>
-bool operator==(const Zero<Dim>& /*lhs*/, const Zero<Dim>& /*rhs*/) {
+template <size_t Dim, typename DataType>
+bool operator==(const Zero<Dim, DataType>& /*lhs*/,
+                const Zero<Dim, DataType>& /*rhs*/) {
   return true;
 }
 
-template <size_t Dim>
-bool operator!=(const Zero<Dim>& lhs, const Zero<Dim>& rhs) {
+template <size_t Dim, typename DataType>
+bool operator!=(const Zero<Dim, DataType>& lhs,
+                const Zero<Dim, DataType>& rhs) {
   return not(lhs == rhs);
 }
 

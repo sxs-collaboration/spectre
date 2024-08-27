@@ -4,8 +4,10 @@
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 
 #include <cmath>
+#include <complex>
 #include <cstddef>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -26,6 +28,9 @@ void ProductOfSinusoidsVariables<DataType, Dim>::operator()(
   for (size_t d = 0; d < Dim; d++) {
     get(*field) *= sin(gsl::at(wave_numbers, d) * x.get(d));
   }
+  if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+    get(*field) *= std::complex<double>{cos(complex_phase), sin(complex_phase)};
+  }
 }
 
 template <typename DataType, size_t Dim>
@@ -42,6 +47,10 @@ void ProductOfSinusoidsVariables<DataType, Dim>::operator()(
         field_gradient->get(d) *=
             sin(gsl::at(wave_numbers, other_d) * x.get(other_d));
       }
+    }
+    if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+      field_gradient->get(d) *=
+          std::complex<double>{cos(complex_phase), sin(complex_phase)};
     }
   }
 }
@@ -75,7 +84,7 @@ void ProductOfSinusoidsVariables<DataType, Dim>::operator()(
 #define INSTANTIATE(_, data) \
   template class ProductOfSinusoidsVariables<DTYPE(data), DIM(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector), (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector, ComplexDataVector), (1, 2, 3))
 
 #undef DTYPE
 #undef DIM
