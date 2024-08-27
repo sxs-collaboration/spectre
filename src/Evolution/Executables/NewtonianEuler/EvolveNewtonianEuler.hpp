@@ -133,8 +133,6 @@ struct EvolutionMetavars {
   // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
 
   using system = NewtonianEuler::System<Dim>;
 

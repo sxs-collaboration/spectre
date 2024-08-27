@@ -131,8 +131,6 @@ struct EvolutionMetavars {
   using initial_data_list = ScalarWave::Solutions::all_solutions<Dim>;
 
   using system = ScalarWave::System<Dim>;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   using TimeStepperBase = TimeStepper;
 

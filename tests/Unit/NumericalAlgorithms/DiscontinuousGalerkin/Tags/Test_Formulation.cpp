@@ -17,4 +17,6 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Tags.Formulation",
             "StrongInertial") == dg::Formulation::StrongInertial);
   CHECK(TestHelpers::test_option_tag<dg::OptionTags::Formulation>(
             "WeakInertial") == dg::Formulation::WeakInertial);
+  CHECK(TestHelpers::test_option_tag<dg::OptionTags::Formulation>(
+            "StrongLogical") == dg::Formulation::StrongLogical);
 }

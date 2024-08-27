@@ -211,8 +211,6 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       UseParametrizedDeleptonization;
   static constexpr bool use_dg_subcell = true;
   static constexpr size_t volume_dim = 3;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
   using initial_data_list =
       grmhd::ValenciaDivClean::InitialData::initial_data_list;
 

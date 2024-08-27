@@ -17,8 +17,10 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables/FrameTransform.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -143,6 +145,7 @@ void test_divergence_impl(
   const auto xi = logical_coordinates(mesh);
   const auto x = coordinate_map(xi);
   const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
+  const auto det_jacobian = determinant(coordinate_map.jacobian(xi));
   MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
   using flux_tags = two_fluxes<DataType, Dim, Frame>;
   Variables<flux_tags> fluxes(num_grid_points);
@@ -166,6 +169,15 @@ void test_divergence_impl(
   const auto& expected =
       get<Tags::div<Flux1<DataType, Dim, Frame>>>(div_fluxes);
   CHECK_ITERABLE_CUSTOM_APPROX(expected, div_vector, local_approx);
+
+  // Test logical divergence
+  auto logical_fluxes =
+      transform::first_index_to_different_frame(fluxes, inv_jacobian);
+  Variables<db::wrap_tags_in<Tags::div, flux_tags>> logical_div_fluxes(
+      num_grid_points);
+  logical_divergence(make_not_null(&logical_div_fluxes), logical_fluxes, mesh);
+  CHECK_VARIABLES_CUSTOM_APPROX(logical_div_fluxes, expected_div_fluxes,
+                                local_approx);
 }
 
 template <typename DataType>
@@ -314,7 +326,7 @@ void test_divergence_compute() {
 }
 }  // namespace
 
-// [[Timeout, 10]]
+// [[Timeout, 20]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   test_divergence<DataVector>();
