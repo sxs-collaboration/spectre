@@ -188,18 +188,19 @@ void test_jacobian(
       };
   const double dx = 1e-4;
   const auto jacobian = map.jacobian(test_point, time, functions_of_time);
-  std::array<std::array<double, Map::dim>, 5> dv_to_double_array{};
+  std::vector<std::array<double, Map::dim>> dv_to_double_vector(
+      test_point[0].size());
   std::array<double, Map::dim> dv_to_double{};
-  for (size_t i = 0; i < gsl::at(test_point, 0).size(); ++i) {
+  for (size_t i = 0; i < test_point[0].size(); ++i) {
     for (size_t k = 0; k < Map::dim; k++) {
       gsl::at(dv_to_double, k) = gsl::at(gsl::at(test_point, k), i);
     }
-    gsl::at(dv_to_double_array, i) = dv_to_double;
+    dv_to_double_vector[i] = dv_to_double;
   }
   for (size_t i = 0; i < Map::dim; ++i) {
-    for (size_t k = 0; k < gsl::at(test_point, 0).size(); k++) {
-      const auto numerical_deriv_i =
-          numerical_derivative(compute_map_point, dv_to_double_array[k], i, dx);
+    for (size_t k = 0; k < test_point[0].size(); k++) {
+      const auto numerical_deriv_i = numerical_derivative(
+          compute_map_point, dv_to_double_vector[k], i, dx);
       for (size_t j = 0; j < Map::dim; ++j) {
         INFO("i: " << i << " j: " << j);
         CHECK(jacobian.get(j, i)[k] ==
@@ -363,9 +364,9 @@ void test_inv_jacobian(
  * \brief Given a Map `map`, checks that the frame velocity matches a
  * sixth-order finite difference approximation.
  */
-template <typename Map>
+template <typename Map, typename T>
 void test_frame_velocity(
-    const Map& map, const std::array<double, Map::dim>& test_point,
+    const Map& map, const std::array<T, Map::dim>& test_point,
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -859,7 +860,7 @@ class OrientationMapIterator {
   std::array<size_t, VolumeDim> dims_{};
   std::array<Direction<VolumeDim>, VolumeDim> directions_{};
   VolumeCornerIterator<VolumeDim> vci_{};
-  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>{};
+  OrientationMap<VolumeDim> map_ = OrientationMap<VolumeDim>::create_aligned();
 };
 
 /*!
@@ -868,7 +869,8 @@ class OrientationMapIterator {
  * Sphere domain creator.
  */
 inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
-  const OrientationMap<3> upper_zeta_rotation{};
+  const OrientationMap<3> upper_zeta_rotation =
+      OrientationMap<3>::create_aligned();
   const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
        Direction<3>::lower_zeta()}});

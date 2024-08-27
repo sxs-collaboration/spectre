@@ -44,8 +44,7 @@ void check_quadrature_order(const std::vector<double>& substep_times,
 }  // namespace
 
 void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
-                   const size_t expected_order,
-                   const size_t expected_error_order) {
+                   const size_t expected_order) {
   INFO("check_tableau");
   const auto& substep_times = tableau.substep_times;
   const auto& substep_coefficients = tableau.substep_coefficients;
@@ -97,12 +96,11 @@ void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
   check_quadrature_order(substep_times, result_coefficients, 1.0,
                          expected_order);
   check_quadrature_order(substep_times, error_coefficients, 1.0,
-                         expected_error_order);
+                         expected_order - 1);
 }
 
 void check_tableau(const TimeSteppers::RungeKutta& stepper) {
-  check_tableau(stepper.butcher_tableau(), stepper.order(),
-                stepper.error_estimate_order());
+  check_tableau(stepper.butcher_tableau(), stepper.order());
 }
 
 void check_implicit_tableau(

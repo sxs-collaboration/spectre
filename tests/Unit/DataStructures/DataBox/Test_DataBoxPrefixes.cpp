@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -13,7 +13,6 @@
 #include "Utilities/TMPL.hpp"
 
 class DataVector;
-// IWYU pragma: no_forward_declare Tags::Flux
 
 namespace {
 struct Tag : db::SimpleTag {

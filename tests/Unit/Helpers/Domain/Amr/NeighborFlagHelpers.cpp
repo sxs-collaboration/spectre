@@ -89,7 +89,8 @@ bool are_valid_neighbor_flags(
     const std::array<::amr::Flag, Dim>& element_flags,
     const ElementId<Dim>& neighbor_id,
     const std::array<::amr::Flag, Dim>& neighbor_flags,
-    const OrientationMap<Dim>& orientation_of_neighbor = {}) {
+    const OrientationMap<Dim>& orientation_of_neighbor =
+        OrientationMap<Dim>::create_aligned()) {
   if (element_id == neighbor_id) {
     return element_flags == neighbor_flags;
   }

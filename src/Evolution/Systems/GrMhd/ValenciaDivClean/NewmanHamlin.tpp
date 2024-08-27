@@ -16,7 +16,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
+
 
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 

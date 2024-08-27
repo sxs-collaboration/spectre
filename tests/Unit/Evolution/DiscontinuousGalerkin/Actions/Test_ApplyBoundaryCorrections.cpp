@@ -231,14 +231,16 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            [&face_mesh, &mortar_id,
+            [&face_mesh, &mortar_id, &mortar_mesh,
              &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
-              mortar_data_ptr->at(mortar_id).local_mortar_data() = std::pair{
-                  face_mesh, std::move(type_erased_boundary_data_on_mortar)};
+              mortar_data_ptr->at(mortar_id).local().face_mesh = face_mesh;
+              mortar_data_ptr->at(mortar_id).local().mortar_mesh = mortar_mesh;
+              mortar_data_ptr->at(mortar_id).local().mortar_data =
+                  std::move(type_erased_boundary_data_on_mortar);
             },
             make_not_null(&box));
         ++count;
@@ -266,14 +268,17 @@ struct SetLocalMortarData {
           count++;
           evolution::dg::MortarData<Metavariables::volume_dim>
               past_mortar_data{};
-          past_mortar_data.local_mortar_data() = std::pair{
-              face_mesh, std::move(type_erased_boundary_data_on_mortar)};
+          past_mortar_data.face_mesh = face_mesh;
+          past_mortar_data.mortar_mesh = mortar_mesh;
+          past_mortar_data.mortar_data =
+              std::move(type_erased_boundary_data_on_mortar);
           Scalar<DataVector> local_face_normal_magnitude{
               face_mesh.number_of_grid_points()};
           alg::iota(get(local_face_normal_magnitude),
                     direction.dimension() +
                         10 * static_cast<unsigned long>(direction.side()) +
                         100 * count + 100000);
+          past_mortar_data.face_normal_magnitude = local_face_normal_magnitude;
           if (volume_mesh.quadrature(0) == Spectral::Quadrature::Gauss) {
             Scalar<DataVector> local_face_det_jacobian{
                 face_mesh.number_of_grid_points()};
@@ -287,12 +292,10 @@ struct SetLocalMortarData {
                       direction.dimension() +
                           10 * static_cast<unsigned long>(direction.side()) +
                           100 * count + 300000);
-            past_mortar_data.insert_local_geometric_quantities(
-                local_volume_det_inv_jacobian, local_face_det_jacobian,
-                local_face_normal_magnitude);
-          } else {
-            past_mortar_data.insert_local_face_normal_magnitude(
-                local_face_normal_magnitude);
+            past_mortar_data.volume_det_inv_jacobian =
+                local_volume_det_inv_jacobian;
+            past_mortar_data.volume_mesh = volume_mesh;
+            past_mortar_data.face_det_jacobian = local_face_det_jacobian;
           }
           using dt_variables_tag =
               db::add_tag_prefix<::Tags::dt,
@@ -301,7 +304,7 @@ struct SetLocalMortarData {
               evolution::dg::Tags::MortarData<Metavariables::volume_dim>,
               evolution::dg::Tags::MortarDataHistory<
                   Metavariables::volume_dim, typename dt_variables_tag::type>>(
-              [&det_inv_jacobian, &mortar_id, &past_mortar_data,
+              [&det_inv_jacobian, &mortar_id, &volume_mesh, &past_mortar_data,
                &past_time_step_id, &time_step_id](
                   const auto mortar_data_ptr,
                   const auto mortar_data_history_ptr,
@@ -317,7 +320,7 @@ struct SetLocalMortarData {
 
                 // Now add the current data into the history.
                 evolution::dg::MortarData<Metavariables::volume_dim>&
-                    local_mortar_data = mortar_data_ptr->at(mortar_id);
+                    local_mortar_data = mortar_data_ptr->at(mortar_id).local();
 
                 const Scalar<DataVector>& face_normal_magnitude =
                     get<evolution::dg::Tags::MagnitudeOfNormal>(
@@ -327,6 +330,7 @@ struct SetLocalMortarData {
                 const bool using_gauss_points =
                     mesh.quadrature() == make_array<Metavariables::volume_dim>(
                                              Spectral::Quadrature::Gauss);
+                local_mortar_data.face_normal_magnitude = face_normal_magnitude;
                 if (using_gauss_points) {
                   const Scalar<DataVector> det_jacobian{
                       DataVector{1.0 / get(det_inv_jacobian)}};
@@ -349,12 +353,9 @@ struct SetLocalMortarData {
                   apply_matrices(make_not_null(&get(face_det_jacobian)),
                                  interpolation_matrices, get(det_jacobian),
                                  mesh.extents());
-                  local_mortar_data.insert_local_geometric_quantities(
-                      det_inv_jacobian, face_det_jacobian,
-                      face_normal_magnitude);
-                } else {
-                  local_mortar_data.insert_local_face_normal_magnitude(
-                      face_normal_magnitude);
+                  local_mortar_data.volume_det_inv_jacobian = det_inv_jacobian;
+                  local_mortar_data.volume_mesh = volume_mesh;
+                  local_mortar_data.face_det_jacobian = face_det_jacobian;
                 }
                 mortar_data_history_ptr->at(mortar_id).local().insert(
                     time_step_id, 2, std::move(local_mortar_data));
@@ -514,20 +515,25 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (Dim == 1) {
     self_id = ElementId<Dim>{0, {{{1, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
   } else if constexpr (Dim == 2) {
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{1, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{{south_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
+    neighbors[Direction<Dim>::lower_eta()] =
+        Neighbors<Dim>{{south_id}, OrientationMap<Dim>::create_aligned()};
   } else {
     static_assert(Dim == 3, "Only implemented tests in 1, 2, and 3d");
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{1, 0}, {0, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{{south_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
+    neighbors[Direction<Dim>::lower_eta()] =
+        Neighbors<Dim>{{south_id}, OrientationMap<Dim>::create_aligned()};
   }
   if constexpr (Dim > 1) {
     order_to_send_neighbor_data_in.push_back(
@@ -554,7 +560,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   for (size_t i = 0; i < Dim; ++i) {
     inv_jac.get(i, i) = 2.0;
   }
-  const auto det_inv_jacobian = determinant(inv_jac);
+  auto det_inv_jacobian = determinant(inv_jac);
   const auto jacobian = determinant_and_inverse(inv_jac).second;
 
   // We don't need the Jacobian and map to be consistent since we are just
@@ -691,15 +697,17 @@ void test_impl(const Spectral::Quadrature quadrature,
       if (UseLocalTimeStepping) {
         if (neighbor_time_step_id < local_next_time_step_id) {
           evolution::dg::MortarData<Dim> nhbr_mortar_data{};
-          nhbr_mortar_data.neighbor_mortar_data() =
-              std::pair{face_mesh, flux_data};
+          nhbr_mortar_data.face_mesh = face_mesh;
+          nhbr_mortar_data.mortar_mesh = mortar_mesh;
+          nhbr_mortar_data.mortar_data = flux_data;
           mortar_data_history.at(mortar_id).remote().insert(
               neighbor_time_step_id, integration_order,
               std::move(nhbr_mortar_data));
         }
       } else {
-        all_mortar_data.at(mortar_id).neighbor_mortar_data() =
-            std::pair{face_mesh, flux_data};
+        all_mortar_data.at(mortar_id).neighbor().face_mesh = face_mesh;
+        all_mortar_data.at(mortar_id).neighbor().mortar_mesh = mortar_mesh;
+        all_mortar_data.at(mortar_id).neighbor().mortar_data = flux_data;
       }
       ++count;
     };
@@ -789,23 +797,18 @@ void test_impl(const Spectral::Quadrature quadrature,
       // time stepping we could first perform the integral on the
       // boundaries, and then lift to the volume. This is left as a future
       // optimization.
-      local_mortar_data.get_local_volume_det_inv_jacobian(make_not_null(
-          &const_cast<Scalar<DataVector>&>(det_inv_jacobian)));  // NOLINT
+      det_inv_jacobian = local_mortar_data.volume_det_inv_jacobian.value();
     }
 
     Variables<mortar_tags_list> local_data_on_mortar{
         mortar_mesh.number_of_grid_points()};
     Variables<mortar_tags_list> neighbor_data_on_mortar{
         mortar_mesh.number_of_grid_points()};
-    const std::pair<Mesh<Dim - 1>, DataVector>& local_mesh_and_data =
-        *local_mortar_data.local_mortar_data();
-    const std::pair<Mesh<Dim - 1>, DataVector>& neighbor_mesh_and_data =
-        *neighbor_mortar_data.neighbor_mortar_data();
-    std::copy(std::get<1>(local_mesh_and_data).begin(),
-              std::get<1>(local_mesh_and_data).end(),
+    const DataVector& local_data = *local_mortar_data.mortar_data;
+    const DataVector& neighbor_data = *neighbor_mortar_data.mortar_data;
+    std::copy(local_data.begin(), local_data.end(),
               local_data_on_mortar.data());
-    std::copy(std::get<1>(neighbor_mesh_and_data).begin(),
-              std::get<1>(neighbor_mesh_and_data).end(),
+    std::copy(neighbor_data.begin(), neighbor_data.end(),
               neighbor_data_on_mortar.data());
 
     if (dt_boundary_correction_on_mortar.number_of_grid_points() !=
@@ -852,8 +855,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     // Lift the boundary terms from the face into the volume
     Scalar<DataVector> magnitude_of_face_normal{};
     if (UseLocalTimeStepping) {
-      local_mortar_data.get_local_face_normal_magnitude(
-          &magnitude_of_face_normal);
+      magnitude_of_face_normal =
+          local_mortar_data.face_normal_magnitude.value();
     } else {
       magnitude_of_face_normal = get<evolution::dg::Tags::MagnitudeOfNormal>(
           *get_tag<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
@@ -876,9 +879,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       }
     } else {
       if (UseLocalTimeStepping) {
-        Scalar<DataVector> face_det_jacobian{};
-        local_mortar_data.get_local_face_det_jacobian(
-            make_not_null(&face_det_jacobian));
+        const Scalar<DataVector>& face_det_jacobian =
+            local_mortar_data.face_det_jacobian.value();
 
         Variables<db::wrap_tags_in<::Tags::dt, variables_tags>>
             volume_dt_correction{mesh.number_of_grid_points(), 0.0};
@@ -957,7 +959,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         continue;
       }
       mortar_id_ptr = &mortar_id;
-      compute_correction_coupling(mortar_data, mortar_data);
+      compute_correction_coupling(mortar_data.local(), mortar_data.neighbor());
     }
     tmpl::for_each<dt_variables_tags>(
         [&expected_dt_variables_volume, &runner, &self_id](auto tag_v) {

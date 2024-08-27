@@ -321,6 +321,12 @@ class Binary : public elliptic::analytic_data::Background,
         "The coordinates on the x-axis where the two objects are placed";
     using type = std::array<double, 2>;
   };
+  struct CenterOfMassOffset {
+    static constexpr Options::String help = {
+        "Offset in the y and z axes applied to both objects in order to "
+        "control the center of mass."};
+    using type = std::array<double, 2>;
+  };
   struct ObjectLeft {
     static constexpr Options::String help =
         "The object placed on the negative x-axis";
@@ -355,8 +361,9 @@ class Binary : public elliptic::analytic_data::Background,
         "to disable the Gaussian falloff.";
     using type = Options::Auto<std::array<double, 2>, Options::AutoLabel::None>;
   };
-  using options = tmpl::list<XCoords, ObjectLeft, ObjectRight, AngularVelocity,
-                             Expansion, LinearVelocity, FalloffWidths>;
+  using options =
+      tmpl::list<XCoords, CenterOfMassOffset, ObjectLeft, ObjectRight,
+                 AngularVelocity, Expansion, LinearVelocity, FalloffWidths>;
   static constexpr Options::String help =
       "Binary compact-object data in general relativity, constructed from "
       "superpositions of two isolated objects.";
@@ -369,6 +376,7 @@ class Binary : public elliptic::analytic_data::Background,
   ~Binary() = default;
 
   Binary(const std::array<double, 2> xcoords,
+         const std::array<double, 2> center_of_mass_offset,
          std::unique_ptr<IsolatedObjectBase> object_left,
          std::unique_ptr<IsolatedObjectBase> object_right,
          const double angular_velocity, const double expansion,
@@ -376,6 +384,8 @@ class Binary : public elliptic::analytic_data::Background,
          const std::optional<std::array<double, 2>> falloff_widths,
          const Options::Context& context = {})
       : xcoords_(xcoords),
+        y_offset_(center_of_mass_offset[0]),
+        z_offset_(center_of_mass_offset[1]),
         superposed_objects_({std::move(object_left), std::move(object_right)}),
         angular_velocity_(angular_velocity),
         expansion_(expansion),
@@ -414,6 +424,8 @@ class Binary : public elliptic::analytic_data::Background,
     elliptic::analytic_data::Background::pup(p);
     elliptic::analytic_data::InitialGuess::pup(p);
     p | xcoords_;
+    p | y_offset_;
+    p | z_offset_;
     p | superposed_objects_;
     p | angular_velocity_;
     p | expansion_;
@@ -423,6 +435,9 @@ class Binary : public elliptic::analytic_data::Background,
 
   /// Coordinates of the objects, ascending left to right
   const std::array<double, 2>& x_coords() const { return xcoords_; }
+  /// Offset in y and z coordinates of the objects
+  double y_offset() const { return y_offset_; }
+  double z_offset() const { return z_offset_; }
   /// The two objects. First entry is the left object, second entry is the right
   /// object.
   const std::array<std::unique_ptr<IsolatedObjectBase>, 2>& superposed_objects()
@@ -440,6 +455,8 @@ class Binary : public elliptic::analytic_data::Background,
 
  private:
   std::array<double, 2> xcoords_{};
+  double y_offset_{};
+  double z_offset_{};
   std::array<std::unique_ptr<IsolatedObjectBase>, 2> superposed_objects_{};
   Xcts::Solutions::Flatness flatness_{};
   double angular_velocity_ = std::numeric_limits<double>::signaling_NaN();
@@ -456,6 +473,9 @@ class Binary : public elliptic::analytic_data::Background,
           inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
     std::array<tnsr::I<DataVector, 3>, 2> x_isolated{{x, x}};
+    const std::array<std::array<double, 3>, 2> coords_isolated{
+        {{{xcoords_[0], y_offset_, z_offset_}},
+         {{xcoords_[1], y_offset_, z_offset_}}}};
     std::array<DataVector, 2> euclidean_distance{};
     std::array<DataVector, 2> windows{};
     // Possible optimization: Only retrieve those superposed tags from the
@@ -466,7 +486,9 @@ class Binary : public elliptic::analytic_data::Background,
     std::array<tuples::tagged_tuple_from_typelist<requested_superposed_tags>, 2>
         isolated_vars;
     for (size_t i = 0; i < 2; ++i) {
-      get<0>(gsl::at(x_isolated, i)) -= gsl::at(xcoords_, i);
+      for (size_t dim = 0; dim < 3; dim++) {
+        gsl::at(x_isolated, i).get(dim) -= gsl::at(coords_isolated, i)[dim];
+      }
       gsl::at(euclidean_distance, i) = get(magnitude(gsl::at(x_isolated, i)));
       if (falloff_widths_.has_value()) {
         gsl::at(windows, i) = exp(-square(gsl::at(euclidean_distance, i)) /

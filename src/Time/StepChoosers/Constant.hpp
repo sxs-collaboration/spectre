@@ -3,20 +3,21 @@
 
 #pragma once
 
+#include <cmath>
 #include <limits>
 #include <pup.h>
 #include <utility>
 
 #include "Options/Options.hpp"
 #include "Options/String.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
-#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace StepChoosers {
 
-/// Suggests a constant step size.
+/// Sets a constant goal.
 template <typename StepChooserUse>
 class Constant : public StepChooser<StepChooserUse> {
  public:
@@ -27,20 +28,18 @@ class Constant : public StepChooser<StepChooserUse> {
   WRAPPED_PUPable_decl_template(Constant);  // NOLINT
   /// \endcond
 
-  static constexpr Options::String help{"Suggests a constant step size."};
+  static constexpr Options::String help{"Sets a constant goal."};
 
-  explicit Constant(const double value) : value_(value) {
-    ASSERT(value_ > 0., "Requested step magnitude should be positive.");
-  }
+  explicit Constant(const double value) : value_(value) {}
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<double, bool> operator()(
-      const double /*last_step_magnitude*/) const {
-    return std::make_pair(value_, true);
+  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
+    return {{.size_goal = std::copysign(value_, last_step)}, true};
   }
 
   bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | value_; }

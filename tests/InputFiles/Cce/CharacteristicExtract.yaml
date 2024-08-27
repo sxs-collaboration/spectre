@@ -52,7 +52,7 @@ Cce:
         Order: 3 # Going to higher order doesn't seem necessary for CCE
     StepChoosers:
       - Constant: 0.1 # Don't take steps bigger than 0.1M
-      - Increase:
+      - LimitIncrease:
           Factor: 2
       - ErrorControl(SwshVars):
           AbsoluteTolerance: 1e-8

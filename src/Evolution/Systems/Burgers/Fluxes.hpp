@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-// IWYU pragma: no_forward_declare Tensor
+
 namespace Burgers {
 namespace Tags {
 struct U;

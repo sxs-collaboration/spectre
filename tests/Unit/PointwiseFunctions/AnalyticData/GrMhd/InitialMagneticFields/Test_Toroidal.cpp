@@ -44,7 +44,7 @@ struct ToroidalProxy : Toroidal {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.InitialMagneticFields.Toroidal",
     "[Unit][PointwiseFunctions]") {
-  register_derived_classes_with_charm<InitialMagneticField>();
+  register_classes_with_charm<Toroidal>();
   // test creation
   const auto factory_solution = serialize_and_deserialize(
       TestHelpers::test_factory_creation<InitialMagneticField, Toroidal>(
@@ -70,7 +70,6 @@ SPECTRE_TEST_CASE(
   }
 
   // test derived
-  register_classes_with_charm<Toroidal>();
   const std::unique_ptr<InitialMagneticField> base_ptr =
       std::make_unique<Toroidal>();
   const std::unique_ptr<InitialMagneticField> deserialized_base_ptr =

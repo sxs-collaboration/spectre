@@ -11,6 +11,7 @@
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -67,11 +68,12 @@ class Random : public StepChooser<StepChooserUse> {
   using argument_tags =
       tmpl::list<domain::Tags::Element<VolumeDim>, Tags::TimeStepId>;
 
-  std::pair<double, bool> operator()(const Element<VolumeDim>& element,
-                                     const TimeStepId& time_step_id,
-                                     double last_step_magnitude) const;
+  std::pair<TimeStepRequest, bool> operator()(const Element<VolumeDim>& element,
+                                              const TimeStepId& time_step_id,
+                                              double last_step) const;
 
   bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;

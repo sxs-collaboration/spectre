@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"

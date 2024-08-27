@@ -3,15 +3,15 @@
 
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Variables.hpp"    // IWYU pragma: keep
-#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"

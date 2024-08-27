@@ -9,9 +9,12 @@
 
 #pragma once
 
+#include <complex>
+
 #ifndef SPECTRE_DEBUG
 #include <libxsmm.h>
 #endif  // ifndef SPECTRE_DEBUG
+#include <gsl/gsl_cblas.h>
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -27,6 +30,12 @@ void dgemm_(const char& TRANSA, const char& TRANSB, const int& M, const int& N,
             const int& K, const double& ALPHA, const double* A, const int& LDA,
             const double* B, const int& LDB, const double& BETA,
             const double* C, const int& LDC, size_t, size_t);
+void zgemm_(const char& TRANSA, const char& TRANSB, const int& M, const int& N,
+            const int& K, const std::complex<double>& ALPHA,
+            const std::complex<double>* A, const int& LDA,
+            const std::complex<double>* B, const int& LDB,
+            const std::complex<double>& BETA, const std::complex<double>* C,
+            const int& LDC, size_t, size_t);
 
 // The final argument is the "hidden" length of the first one.
 // https://gcc.gnu.org/onlinedocs/gfortran/Argument-passing-conventions.html
@@ -47,6 +56,7 @@ void dgemv_(const char& TRANS, const int& M, const int& N, const double& ALPHA,
  */
 void disable_openblas_multithreading();
 
+/// @{
 /*!
  * \ingroup UtilitiesGroup
  * The dot product of two vectors.
@@ -68,6 +78,36 @@ inline double ddot_(const size_t& N, const double* X, const size_t& INCX,
                             gsl::narrow_cast<int>(INCX), Y,
                             gsl::narrow_cast<int>(INCY));
 }
+/// The unconjugated complex dot product $x \cdot y$. See `zdotc_` for the
+/// conjugated complex dot product, which is the standard dot product on the
+/// vector space of complex numbers.
+inline std::complex<double> zdotu_(const size_t& N,
+                                   const std::complex<double>* X,
+                                   const size_t& INCX,
+                                   const std::complex<double>* Y,
+                                   const size_t& INCY) {
+  // The complex result of the BLAS zdot* functions is sometimes returned by
+  // value and sometimes returned by reference, depending on the Fortran
+  // compiler settings. By using the cblas interface we ensure a consistent
+  // behavior.
+  std::complex<double> result;
+  cblas_zdotu_sub(gsl::narrow_cast<int>(N), X, gsl::narrow_cast<int>(INCX), Y,
+                  gsl::narrow_cast<int>(INCY), &result);
+  return result;
+}
+/// The conjugated complex dot product $\bar{x} \cdot y$. This is the standard
+/// dot product on the vector space of complex numbers.
+inline std::complex<double> zdotc_(const size_t& N,
+                                   const std::complex<double>* X,
+                                   const size_t& INCX,
+                                   const std::complex<double>* Y,
+                                   const size_t& INCY) {
+  std::complex<double> result;
+  cblas_zdotc_sub(gsl::narrow_cast<int>(N), X, gsl::narrow_cast<int>(INCX), Y,
+                  gsl::narrow_cast<int>(INCY), &result);
+  return result;
+}
+/// @}
 
 /// @{
 /*!
@@ -115,6 +155,27 @@ inline void dgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
          "TRANSB must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
   blas_detail::dgemm_(
+      TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
+      gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
+      gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC), 1, 1);
+}
+template <bool UseLibXsmm = false>
+inline void zgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
+                   const size_t& N, const size_t& K,
+                   const std::complex<double>& ALPHA,
+                   const std::complex<double>* A, const size_t& LDA,
+                   const std::complex<double>* B, const size_t& LDB,
+                   const std::complex<double>& BETA, std::complex<double>* C,
+                   const size_t& LDC) {
+  ASSERT('N' == TRANSA or 'n' == TRANSA or 'T' == TRANSA or 't' == TRANSA or
+             'C' == TRANSA or 'c' == TRANSA,
+         "TRANSA must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
+  ASSERT('N' == TRANSB or 'n' == TRANSB or 'T' == TRANSB or 't' == TRANSB or
+             'C' == TRANSB or 'c' == TRANSB,
+         "TRANSB must be upper or lower case N, T, or C. See the BLAS "
+         "documentation for help.");
+  blas_detail::zgemm_(
       TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
       gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
       gsl::narrow_cast<int>(LDB), BETA, C, gsl::narrow_cast<int>(LDC), 1, 1);

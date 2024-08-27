@@ -7,7 +7,7 @@
 #include <array>
 #include <limits>
 
-#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"

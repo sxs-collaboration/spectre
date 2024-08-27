@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Domain/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

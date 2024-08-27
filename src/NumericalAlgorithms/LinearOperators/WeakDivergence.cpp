@@ -6,6 +6,8 @@
 #include <cstddef>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -33,24 +35,27 @@ void logical_weak_divergence(const gsl::not_null<ResultTensor*> div_flux,
   }
 }
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define TENSOR(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define TENSOR(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATION_SCALAR(r, data)                                    \
+#define INSTANTIATION_SCALAR(r, data)                                     \
+  template void logical_weak_divergence(                                  \
+      const gsl::not_null<Scalar<DTYPE(data)>*> div_flux,                 \
+      const tnsr::I<DTYPE(data), DIM(data), Frame::ElementLogical>& flux, \
+      const Mesh<DIM(data)>& mesh);
+#define INSTANTIATION_TENSOR(r, data)                                    \
   template void logical_weak_divergence(                                 \
-      const gsl::not_null<Scalar<DataVector>*> div_flux,                 \
-      const tnsr::I<DataVector, DIM(data), Frame::ElementLogical>& flux, \
-      const Mesh<DIM(data)>& mesh);
-#define INSTANTIATION_TENSOR(r, data)                                   \
-  template void logical_weak_divergence(                                \
-      const gsl::not_null<tnsr::TENSOR(data) < DataVector, DIM(data),   \
-                          Frame::Inertial>* > div_flux,                 \
-      const TensorMetafunctions::prepend_spatial_index<                 \
-          tnsr::TENSOR(data) < DataVector, DIM(data), Frame::Inertial>, \
-      DIM(data), UpLo::Up, Frame::ElementLogical > &flux,               \
+      const gsl::not_null<tnsr::TENSOR(data) < DTYPE(data), DIM(data),   \
+                          Frame::Inertial>* > div_flux,                  \
+      const TensorMetafunctions::prepend_spatial_index<                  \
+          tnsr::TENSOR(data) < DTYPE(data), DIM(data), Frame::Inertial>, \
+      DIM(data), UpLo::Up, Frame::ElementLogical > &flux,                \
       const Mesh<DIM(data)>& mesh);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION_SCALAR, (1, 2, 3))
-GENERATE_INSTANTIATIONS(INSTANTIATION_TENSOR, (1, 2, 3), (i, I))
+GENERATE_INSTANTIATIONS(INSTANTIATION_SCALAR, (DataVector, ComplexDataVector),
+                        (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION_TENSOR, (DataVector, ComplexDataVector),
+                        (1, 2, 3), (i, I, aa))
 
 #undef INSTANTIATION

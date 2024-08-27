@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Completion.cpp
+  EventsAndTriggers.cpp
   LogicalTriggers.cpp
   )
 

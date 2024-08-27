@@ -20,8 +20,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 struct densitized_eta_minus_kappaJ : db::SimpleTag {
   using type = Scalar<DataVector>;

@@ -8,7 +8,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -152,7 +152,7 @@ Element<VolumeDim> create_initial_element(
             {{ElementId<VolumeDim>{element_id.block_id(),
                                    std::move(segment_ids_of_neighbor),
                                    element_id.grid_index()}}},
-            OrientationMap<VolumeDim>{}));
+            OrientationMap<VolumeDim>::create_aligned()));
   };
 
   typename Element<VolumeDim>::Neighbors_t neighbors_of_element;

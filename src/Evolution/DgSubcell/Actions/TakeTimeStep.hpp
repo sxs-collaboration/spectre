@@ -18,6 +18,7 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -72,7 +73,7 @@ struct TakeTimeStep {
     db::mutate<evolution::dg::Tags::MortarData<Dim>>(
         [](const auto mortar_data_ptr) {
           for (auto& data : *mortar_data_ptr) {
-            data.second = evolution::dg::MortarData<Dim>{};
+            data.second = evolution::dg::MortarDataHolder<Dim>{};
           }
         },
         make_not_null(&box));

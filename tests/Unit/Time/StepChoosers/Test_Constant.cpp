@@ -13,11 +13,10 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <pup.h>
 
 namespace {
 struct Metavariables {
@@ -38,21 +37,21 @@ void test_use() {
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
 
-  const StepChoosers::Constant<Use> constant{5.4};
+  // Sign of argument should be ignored.
+  const StepChoosers::Constant<Use> constant{-5.4};
   const std::unique_ptr<StepChooser<Use>> constant_base =
       std::make_unique<StepChoosers::Constant<Use>>(constant);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  CHECK(constant(current_step) == std::make_pair(5.4, true));
-  CHECK(serialize_and_deserialize(constant)(current_step) ==
-        std::make_pair(5.4, true));
-  CHECK(constant_base->desired_step(current_step, box) ==
-        std::make_pair(5.4, true));
+  const std::pair<TimeStepRequest, bool> expected{{.size_goal = 5.4}, true};
+  CHECK(constant(current_step) == expected);
+  CHECK(serialize_and_deserialize(constant)(current_step) == expected);
+  CHECK(constant_base->desired_step(current_step, box) == expected);
   CHECK(serialize_and_deserialize(constant_base)
-            ->desired_step(current_step, box) == std::make_pair(5.4, true));
+            ->desired_step(current_step, box) == expected);
 
   TestHelpers::test_creation<std::unique_ptr<StepChooser<Use>>, Metavariables>(
-      "Constant: 5.4");
+      "Constant: -5.4");
 }
 }  // namespace
 
@@ -63,11 +62,4 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   test_use<StepChooserUse::Slab>();
 
   CHECK(not StepChoosers::Constant<StepChooserUse::Slab>{}.uses_local_data());
-
-  CHECK_THROWS_WITH(
-      (TestHelpers::test_creation<
-          std::unique_ptr<StepChooser<StepChooserUse::Slab>>, Metavariables>(
-          "Constant: -5.4")),
-      Catch::Matchers::ContainsSubstring(
-          "Requested step magnitude should be positive"));
 }

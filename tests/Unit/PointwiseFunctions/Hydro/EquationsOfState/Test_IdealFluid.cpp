@@ -81,6 +81,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.IdealFluid",
   CHECK(eos != other_type_eos);
   CHECK(*eos.promote_to_3d_eos() ==
         EoS::Equilibrium3D<EoS::IdealFluid<true>>(eos));
+  CHECK(not eos.is_barotropic());
+  CHECK(not other_eos.is_barotropic());
 
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<true>{5.0 / 3.0},
                                        "IdealFluid", "ideal_fluid", d_for_size,

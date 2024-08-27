@@ -20,8 +20,8 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
-#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Auto.hpp"
@@ -66,6 +66,22 @@ struct BlockLogical;
 
 namespace domain {
 namespace creators {
+namespace bco {
+/*!
+ * \brief Create a set of centers of objects for the binary domains.
+ *
+ * \details Will add the following centers to the set:
+ *
+ * - Center: The origin
+ * - CenterA: Center of object A
+ * - CenterB: Center of object B
+ *
+ * \return Object required by the DomainCreator%s
+ */
+std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
+create_grid_anchors(const std::array<double, 3>& center_a,
+                    const std::array<double, 3>& center_b);
+}  // namespace bco
 
 /*!
  * \ingroup ComputationalDomainGroup
@@ -135,6 +151,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Identity2D = CoordinateMaps::Identity<2>;
+  // The Translation type is no longer needed, but it is kept here for backwards
+  // compatibility with old domains.
   using Translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
@@ -159,6 +177,12 @@ class BinaryCompactObject : public DomainCreator<3> {
                             CoordinateMaps::Wedge<3>>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>, Translation>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D,
+                            Affine3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Equiangular3D,
+                            Affine3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                            CoordinateMaps::Wedge<3>, Affine3D>,
       bco::TimeDependentMapOptions<false>::maps_list>>;
 
   /// Options for an excision region in the domain
@@ -177,6 +201,11 @@ class BinaryCompactObject : public DomainCreator<3> {
     using options = tmpl::list<BoundaryCondition<
         domain::BoundaryConditions::get_boundary_conditions_base<
             typename Metavariables::system>>>;
+    Excision() = default;
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    Excision(std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+                 boundary_condition_in)
+        : boundary_condition(std::move(boundary_condition_in)) {}
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         boundary_condition;
   };
@@ -277,6 +306,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       static constexpr Options::String help = {"x-coordinate of center."};
     };
     using options = tmpl::list<XCoord>;
+    CartesianCubeAtXCoord() = default;
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    CartesianCubeAtXCoord(const double x_coord_in) : x_coord(x_coord_in) {}
     bool is_excised() const { return false; }
     double x_coord;
   };
@@ -293,6 +325,15 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Options for the object to the left of the origin (along the negative "
         "x-axis)."};
+  };
+
+  struct CenterOfMassOffset {
+    using type = std::array<double, 2>;
+    static constexpr Options::String help = {
+        "Offset in the y and z axes applied to both object A and B in order to "
+        "control the center of mass. This moves the location of the two objects"
+        " in the grid frame but keeps the Envelope and OuterShell centered on "
+        "the origin in the grid frame."};
   };
 
   struct Envelope {
@@ -394,10 +435,10 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using options = tmpl::append<
-      tmpl::list<ObjectA, ObjectB, EnvelopeRadius, OuterRadius,
-                 InitialRefinement, InitialGridPoints, UseEquiangularMap,
-                 RadialDistributionEnvelope, RadialDistributionOuterShell,
-                 OpeningAngle, TimeDependentMaps>,
+      tmpl::list<ObjectA, ObjectB, CenterOfMassOffset, EnvelopeRadius,
+                 OuterRadius, InitialRefinement, InitialGridPoints,
+                 UseEquiangularMap, RadialDistributionEnvelope,
+                 RadialDistributionOuterShell, OpeningAngle, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -433,7 +474,8 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   BinaryCompactObject(
       typename ObjectA::type object_A, typename ObjectB::type object_B,
-      double envelope_radius, double outer_radius,
+      std::array<double, 2> center_of_mass_offset, double envelope_radius,
+      double outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true,
@@ -491,6 +533,7 @@ class BinaryCompactObject : public DomainCreator<3> {
  private:
   typename ObjectA::type object_A_{};
   typename ObjectB::type object_B_{};
+  std::array<double, 2> center_of_mass_offset_{};
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
   std::vector<std::array<size_t, 3>> initial_refinement_{};

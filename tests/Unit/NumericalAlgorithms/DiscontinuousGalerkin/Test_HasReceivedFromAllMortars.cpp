@@ -41,9 +41,12 @@ void test_has_received_from_all_mortars() {
   }
   const ElementId<Dim> left_id{0};
   const ElementId<Dim> right_id{2};
-  const Element<Dim> element{self_id,
-                             {{Direction<Dim>::lower_xi(), {{left_id}, {}}},
-                              {Direction<Dim>::upper_xi(), {{right_id}, {}}}}};
+  const Element<Dim> element{
+      self_id,
+      {{Direction<Dim>::lower_xi(),
+        {{left_id}, OrientationMap<Dim>::create_aligned()}},
+       {Direction<Dim>::upper_xi(),
+        {{right_id}, OrientationMap<Dim>::create_aligned()}}}};
   {
     INFO("Complete data");
     const tuples::TaggedTuple<InboxTag<Dim>> inbox{

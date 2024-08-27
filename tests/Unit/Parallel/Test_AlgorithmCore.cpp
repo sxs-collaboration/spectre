@@ -37,7 +37,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Slab.hpp"
@@ -479,7 +479,7 @@ struct add_vectors_to_box_and_send {
 
     BoundaryMessage<3>* boundary_message = new BoundaryMessage<3>(
         0, 4, false, true, Parallel::my_node<size_t>(cache),
-        Parallel::my_proc<size_t>(cache), -2, time_step_id, time_step_id, {},
+        Parallel::my_proc<size_t>(cache), -2, 3, time_step_id, time_step_id, {},
         {}, {}, {}, nullptr, const_cast<double*>(db::get<Vector0>(box).data()));
 
     // Send to myself because everybody is on the same node and it's easier to

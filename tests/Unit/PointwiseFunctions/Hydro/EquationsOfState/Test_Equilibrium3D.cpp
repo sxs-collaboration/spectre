@@ -42,6 +42,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Equilibrium3D",
   CHECK(eos.electron_fraction_upper_bound() == 1.0);
   CHECK(eos.specific_enthalpy_lower_bound() ==
         underlying_eos.specific_enthalpy_lower_bound());
+  CHECK(not eos.is_barotropic());
+  CHECK(eos.is_equilibrium());
 
   {
     const double rest_mass_density = 1e-3;

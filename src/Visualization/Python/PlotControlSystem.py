@@ -22,69 +22,14 @@ from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 logger = logging.getLogger(__name__)
 
 
-@click.command(name="control-system")
-@click.argument(
-    "reduction_files",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    nargs=-1,
-    required=True,
-)
-@click.option(
-    "--with-shape/--without-shape",
-    default=True,
-    show_default=True,
-    help="Wether or not to plot shape control.",
-)
-@click.option(
-    "--shape-l_max",
-    "-l",
-    type=int,
-    default=2,
-    show_default=True,
-    help=(
-        "The max number of spherical harmonics to show on the plot. Since"
-        " higher ell can have a lot of components, it may be desirable to show"
-        " fewer components. Never plots l=0,1 since we don't control these"
-        " components. Only used if '--with-shape'."
-    ),
-)
-@click.option(
-    "--show-all-m",
-    is_flag=True,
-    default=False,
-    show_default=True,
-    help=(
-        "When plotting shape control, for a given ell, plot all m components."
-        " Default is, for a given ell, to plot the L2 norm over all the m"
-        " components. Only used if '--with-shape'."
-    ),
-)
-# Plotting options
-@click.option(
-    "--x-bounds",
-    type=float,
-    nargs=2,
-    help="The lower and upper bounds of the x-axis.",
-)
-@click.option(
-    "--x-label",
-    help="The label on the x-axis.",
-)
-@click.option(
-    "--title",
-    "-t",
-    help="Title of the graph.",
-)
-@apply_stylesheet_command()
-@show_or_save_plot_command()
-def plot_control_system_command(
+def plot_control_system(
     reduction_files: Sequence[str],
-    with_shape: str,
-    show_all_m: bool,
-    shape_l_max: int,
-    x_bounds: Optional[Sequence[float]],
-    x_label: Optional[str],
-    title: Optional[str],
+    with_shape: bool = True,
+    show_all_m: bool = False,
+    shape_l_max: int = 2,
+    x_bounds: Optional[Sequence[float]] = None,
+    x_label: Optional[str] = None,
+    title: Optional[str] = None,
 ):
     """
     Plot diagnostic information regarding all control systems except size
@@ -186,6 +131,7 @@ def plot_control_system_command(
     data = pd.DataFrame()
     for reduction_file in reduction_files:
         h5file = h5py.File(reduction_file)
+        file_df = pd.DataFrame()
 
         for system in control_system_components:
             for component in control_system_components[system]:
@@ -193,7 +139,10 @@ def plot_control_system_command(
                     reduction_file, h5file, system, component
                 )
                 tmp_data = extract_relevant_columns(tmp_data, system, component)
-                data = pd.concat([data, tmp_data], axis=1)
+                # When we concat DataFrames from within an H5 file together, we
+                # assume they have the same indexes (times) so we concat along
+                # axis=1
+                file_df = pd.concat([file_df, tmp_data], axis=1)
 
             if "Shape" not in system or show_all_m:
                 continue
@@ -208,11 +157,15 @@ def plot_control_system_command(
                         for m in range(-l, l + 1)
                     ]
 
-                    data[f"{system}{component_prefix}{column}"] = np.sqrt(
-                        np.square(data[components_to_norm].to_numpy()).sum(
+                    file_df[f"{system}{component_prefix}{column}"] = np.sqrt(
+                        np.square(file_df[components_to_norm].to_numpy()).sum(
                             axis=1
                         )
                     )
+
+        # When concating the large DataFrames from each H5 file together, we
+        # assume all the columns are the same so we concat along axis=0
+        data = pd.concat([data, file_df])
 
     # If we aren't showing all m for shape control, modify the shape components
     # that are being plotted
@@ -270,6 +223,67 @@ def plot_control_system_command(
     if title:
         fig.suptitle(title)
     axes[1].legend(loc="center left", bbox_to_anchor=(1.01, 1.1))
+    return fig
+
+
+@click.command(name="control-system", help=plot_control_system.__doc__)
+@click.argument(
+    "reduction_files",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+    nargs=-1,
+    required=True,
+)
+@click.option(
+    "--with-shape/--without-shape",
+    default=True,
+    show_default=True,
+    help="Wether or not to plot shape control.",
+)
+@click.option(
+    "--shape-l_max",
+    "-l",
+    type=int,
+    default=2,
+    show_default=True,
+    help=(
+        "The max number of spherical harmonics to show on the plot. Since"
+        " higher ell can have a lot of components, it may be desirable to show"
+        " fewer components. Never plots l=0,1 since we don't control these"
+        " components. Only used if '--with-shape'."
+    ),
+)
+@click.option(
+    "--show-all-m",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help=(
+        "When plotting shape control, for a given ell, plot all m components."
+        " Default is, for a given ell, to plot the L2 norm over all the m"
+        " components. Only used if '--with-shape'."
+    ),
+)
+# Plotting options
+@click.option(
+    "--x-bounds",
+    type=float,
+    nargs=2,
+    help="The lower and upper bounds of the x-axis.",
+)
+@click.option(
+    "--x-label",
+    help="The label on the x-axis.",
+)
+@click.option(
+    "--title",
+    "-t",
+    help="Title of the graph.",
+)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
+def plot_control_system_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    return plot_control_system(**kwargs)
 
 
 if __name__ == "__main__":

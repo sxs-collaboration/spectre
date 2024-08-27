@@ -50,7 +50,8 @@ void internal_mortar_data_impl(
                               evolution::dg::Tags::MagnitudeOfNormal,
                               evolution::dg::Tags::NormalCovector<Dim>>>>>*>
         normal_covector_and_magnitude_ptr,
-    const gsl::not_null<DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>>*>
+    const gsl::not_null<
+        DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
         mortar_data_ptr,
     const gsl::not_null<gsl::span<double>*> face_temporaries,
     const gsl::not_null<gsl::span<double>*> packaged_data_buffer,
@@ -250,19 +251,16 @@ void internal_mortar_data_impl(
                                    total_face_size);
       } else {
         // Can use the local_mortar_data
-        auto& local_mortar_data_opt =
-            mortar_data_ptr->at(mortar_id).local_mortar_data();
-        // If this isn't the first time, set the face mesh
-        if (LIKELY(local_mortar_data_opt.has_value())) {
-          local_mortar_data_opt->first = face_mesh;
-        } else {
-          // Otherwise we need to initialize the pair. If we don't do this, then
-          // the DataVector will be non-owning which we don't want
-          local_mortar_data_opt =
-              std::optional{std::pair{face_mesh, DataVector{}}};
+        auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
+        local_mortar.face_mesh = face_mesh;
+        local_mortar.mortar_mesh = mortar_mesh;
+        // If this is the first time, initialize the data. If we don't do this,
+        // then the DataVector will be non-owning which we don't want
+        if (UNLIKELY(not local_mortar.mortar_data.has_value())) {
+          local_mortar.mortar_data = DataVector{};
         }
 
-        DataVector& local_mortar_data = local_mortar_data_opt->second;
+        DataVector& local_mortar_data = local_mortar.mortar_data.value();
 
         // Do a destructive resize to account for potential p-refinement
         local_mortar_data.destructive_resize(total_face_size);
@@ -295,20 +293,16 @@ void internal_mortar_data_impl(
       const auto& mortar_size = mortar_sizes.at(mortar_id);
 
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
-        auto& local_mortar_data_opt =
-            mortar_data_ptr->at(mortar_id).local_mortar_data();
-
-        // If this isn't the first time, set the face mesh
-        if (LIKELY(local_mortar_data_opt.has_value())) {
-          local_mortar_data_opt->first = face_mesh;
-        } else {
-          // If we don't do this, then the DataVector will be non-owning which
-          // we don't want
-          local_mortar_data_opt =
-              std::optional{std::pair{face_mesh, DataVector{}}};
+        auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
+        local_mortar.face_mesh = face_mesh;
+        local_mortar.mortar_mesh = mortar_mesh;
+        // If this is the first time, initialize the data. If we don't do this,
+        // then the DataVector will be non-owning which we don't want
+        if (UNLIKELY(not local_mortar.mortar_data.has_value())) {
+          local_mortar.mortar_data = DataVector{};
         }
 
-        DataVector& local_mortar_data = local_mortar_data_opt->second;
+        DataVector& local_mortar_data = local_mortar.mortar_data.value();
 
         // Do a destructive resize to account for potential p-refinement
         local_mortar_data.destructive_resize(

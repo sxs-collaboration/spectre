@@ -22,7 +22,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 
@@ -92,11 +92,13 @@ Element<1> make_element(
   DirectionMap<1, Neighbors<1>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<1>::lower_xi(),
-                      Neighbors<1>{{lower_xi_neighbor_ids}, {}});
+                      Neighbors<1>{{lower_xi_neighbor_ids},
+                                   OrientationMap<1>::create_aligned()});
   }
   if (not upper_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<1>::upper_xi(),
-                      Neighbors<1>{{upper_xi_neighbor_ids}, {}});
+                      Neighbors<1>{{upper_xi_neighbor_ids},
+                                   OrientationMap<1>::create_aligned()});
   }
   return Element<1>{element_id, std::move(neighbors)};
 }
@@ -110,19 +112,23 @@ Element<2> make_element(
   DirectionMap<2, Neighbors<2>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<2>::lower_xi(),
-                      Neighbors<2>{{lower_xi_neighbor_ids}, {}});
+                      Neighbors<2>{{lower_xi_neighbor_ids},
+                                   OrientationMap<2>::create_aligned()});
   }
   if (not upper_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<2>::upper_xi(),
-                      Neighbors<2>{{upper_xi_neighbor_ids}, {}});
+                      Neighbors<2>{{upper_xi_neighbor_ids},
+                                   OrientationMap<2>::create_aligned()});
   }
   if (not lower_eta_neighbor_ids.empty()) {
     neighbors.emplace(Direction<2>::lower_eta(),
-                      Neighbors<2>{{lower_eta_neighbor_ids}, {}});
+                      Neighbors<2>{{lower_eta_neighbor_ids},
+                                   OrientationMap<2>::create_aligned()});
   }
   if (not upper_eta_neighbor_ids.empty()) {
     neighbors.emplace(Direction<2>::upper_eta(),
-                      Neighbors<2>{{upper_eta_neighbor_ids}, {}});
+                      Neighbors<2>{{upper_eta_neighbor_ids},
+                                   OrientationMap<2>::create_aligned()});
   }
   return Element<2>{element_id, std::move(neighbors)};
 }

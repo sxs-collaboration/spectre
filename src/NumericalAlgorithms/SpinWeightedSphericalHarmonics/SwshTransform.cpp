@@ -7,10 +7,8 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
-#include "DataStructures/SpinWeighted.hpp"  // IWYU pragma: keep
+#include "DataStructures/SpinWeighted.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-
-// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral::Swsh {
 

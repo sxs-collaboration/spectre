@@ -9,12 +9,12 @@
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -30,9 +30,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
 
 namespace {
 template <size_t Dim>

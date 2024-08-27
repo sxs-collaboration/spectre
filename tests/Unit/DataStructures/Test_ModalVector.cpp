@@ -8,11 +8,11 @@
 
 #include "DataStructures/ModalVector.hpp"
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
-#include "Utilities/DereferenceWrapper.hpp"   // IWYU pragma: keep
-#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace {
 void test_modal_vector_math() {

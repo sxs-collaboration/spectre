@@ -43,6 +43,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "Evolution/PassVariables.hpp"
@@ -1067,12 +1068,14 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (Dim == 1) {
     self_id = ElementId<Dim>{0, {{{1, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
   } else if constexpr (Dim == 2) {
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
     neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{
         {south_id},
         OrientationMap<Dim>{std::array{Direction<Dim>::lower_xi(),
@@ -1082,7 +1085,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}, {0, 0}}}};
-    neighbors[Direction<Dim>::upper_xi()] = Neighbors<Dim>{{east_id}, {}};
+    neighbors[Direction<Dim>::upper_xi()] =
+        Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
     neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{
         {south_id},
         OrientationMap<Dim>{std::array{Direction<Dim>::lower_xi(),
@@ -1799,25 +1803,24 @@ void test_impl(const Spectral::Quadrature quadrature,
                                   &det_inv_jacobian, &get_tag, &mesh,
                                   &quadrature](const auto& mortar_data,
                                                const auto& mortar_id) {
-    CHECK_ITERABLE_APPROX(mortar_data.local_mortar_data()->second,
+    CHECK_ITERABLE_APPROX(mortar_data.mortar_data.value(),
                           compute_expected_mortar_data(mortar_id.direction(),
                                                        mortar_id.id(), true));
 
     // Check face normal and/or Jacobians
     const bool using_gauss_points = quadrature == Spectral::Quadrature::Gauss;
-
-    Scalar<DataVector> local_face_normal_magnitude{};
-    mortar_data.get_local_face_normal_magnitude(
-        make_not_null(&local_face_normal_magnitude));
+    REQUIRE(mortar_data.face_normal_magnitude.has_value());
+    const Scalar<DataVector>& local_face_normal_magnitude =
+        mortar_data.face_normal_magnitude.value();
     CHECK(local_face_normal_magnitude ==
           get<::evolution::dg::Tags::MagnitudeOfNormal>(
               *get_tag(::evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{})
                    .at(mortar_id.direction())));
 
     if (using_gauss_points) {
-      Scalar<DataVector> local_volume_det_inv_jacobian{};
-      mortar_data.get_local_volume_det_inv_jacobian(
-          make_not_null(&local_volume_det_inv_jacobian));
+      REQUIRE(mortar_data.volume_det_inv_jacobian.has_value());
+      const Scalar<DataVector>& local_volume_det_inv_jacobian =
+          mortar_data.volume_det_inv_jacobian.value();
       CHECK(local_volume_det_inv_jacobian == det_inv_jacobian);
 
       // We use IrregularGridInterpolant to avoid reusing/copying the
@@ -1835,9 +1838,9 @@ void test_impl(const Spectral::Quadrature quadrature,
           get<::Tags::TempScalar<0>>(
               interpolator.interpolate(volume_det_jacobian));
 
-      Scalar<DataVector> local_face_det_jacobian{};
-      mortar_data.get_local_face_det_jacobian(
-          make_not_null(&local_face_det_jacobian));
+      REQUIRE(mortar_data.face_det_jacobian.has_value());
+      const Scalar<DataVector>& local_face_det_jacobian =
+          mortar_data.face_det_jacobian.value();
       CHECK_ITERABLE_APPROX(local_face_det_jacobian,
                             expected_local_face_det_jacobian);
     }
@@ -1859,8 +1862,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     CHECK_ITERABLE_APPROX(
         get_tag(::evolution::dg::Tags::MortarData<Dim>{})
             .at(mortar_id_east)
-            .local_mortar_data()
-            ->second,
+            .local()
+            .mortar_data.value(),
         compute_expected_mortar_data(mortar_id_east.direction(),
                                      mortar_id_east.id(), true));
   }
@@ -1925,8 +1928,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     } else {
       CHECK_ITERABLE_APPROX(get_tag(::evolution::dg::Tags::MortarData<Dim>{})
                                 .at(mortar_id_south)
-                                .local_mortar_data()
-                                ->second,
+                                .local()
+                                .mortar_data.value(),
                             compute_expected_mortar_data(
                                 Direction<Dim>::lower_eta(), south_id, true));
     }
@@ -1950,8 +1953,8 @@ void test_impl(const Spectral::Quadrature quadrature,
          get_tag(::evolution::dg::Tags::MortarData<Dim>{})) {
       // When doing local time stepping the MortarData should've been moved into
       // the MortarDataHistory.
-      CHECK_FALSE(mortar_data.second.local_mortar_data().has_value());
-      CHECK_FALSE(mortar_data.second.neighbor_mortar_data().has_value());
+      CHECK_FALSE(mortar_data.second.local().mortar_data.has_value());
+      CHECK_FALSE(mortar_data.second.neighbor().mortar_data.has_value());
     }
   }
 }

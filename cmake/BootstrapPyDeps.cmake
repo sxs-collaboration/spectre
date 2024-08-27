@@ -2,9 +2,11 @@
 # See LICENSE.txt for details.
 
 option(BOOTSTRAP_PY_DEPS
-  "Install missing Python dependencies in the build directory" OFF)
+  "Install missing Python dependencies in the build directory"
+  ${SPECTRE_FETCH_MISSING_DEPS})
 option(BOOTSTRAP_PY_DEV_DEPS
-  "Install missing Python dev dependencies in the build directory" OFF)
+  "Install missing Python dev dependencies in the build directory"
+  ${SPECTRE_FETCH_MISSING_DEPS})
 
 if (NOT (BOOTSTRAP_PY_DEPS OR BOOTSTRAP_PY_DEV_DEPS))
   return()

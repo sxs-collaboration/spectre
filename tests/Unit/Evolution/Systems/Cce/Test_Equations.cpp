@@ -9,30 +9,13 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Equations.hpp"
-#include "Evolution/Systems/Cce/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Cce::Tags::BondiBeta
-// IWYU pragma: no_forward_declare Cce::Tags::H
-// IWYU pragma: no_forward_declare Cce::Tags::Q
-// IWYU pragma: no_forward_declare Cce::Tags::U
-// IWYU pragma: no_forward_declare Cce::Tags::W
-// IWYU pragma: no_forward_declare Cce::Tags::Integrand
-// IWYU pragma: no_forward_declare Cce::Tags::LinearFactor
-// IWYU pragma: no_forward_declare Cce::Tags::LinearFactorForConjugate
-// IWYU pragma: no_forward_declare Cce::Tags::PoleOfIntegrand
-// IWYU pragma: no_forward_declare Cce::Tags::RegularIntegrand
-// IWYU pragma: no_forward_declare Cce::TagsCategory::IndependentOfBondiIntegration
-// IWYU pragma: no_forward_declare Cce::TagsCategory::SwshDerivatives
-// IWYU pragma: no_forward_declare Cce::TagsCategory::TagsToSwshDifferentiate
-// IWYU pragma: no_forward_declare Cce::TagsCategory::Temporary
-// IWYU pragma: no_forward_declare Cce::ComputeBondiIntegrand
-// IWYU pragma: no_forward_declare Variables
 
 namespace Cce {
 

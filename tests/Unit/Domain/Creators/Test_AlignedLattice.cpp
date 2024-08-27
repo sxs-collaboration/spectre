@@ -44,18 +44,26 @@ create_boundary_condition() {
 }
 
 template <size_t VolumeDim>
-auto make_domain_creator(const std::string& opt_string,
+auto make_domain_creator(std::string opt_string,
                          const bool use_boundary_condition) {
   if (use_boundary_condition) {
+    opt_string +=
+        "  BoundaryConditions:\n"
+        "    - TestBoundaryCondition:\n"
+        "        Direction: upper-xi\n"
+        "        BlockId: 100\n";
+    for (size_t d = 1; d < VolumeDim; ++d) {
+      opt_string +=
+          "    - TestBoundaryCondition:\n"
+          "        Direction: lower-xi\n"
+          "        BlockId: 100\n";
+    }
     return TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<VolumeDim>,
         TestHelpers::domain::BoundaryConditions::
             MetavariablesWithBoundaryConditions<
                 VolumeDim, domain::creators::AlignedLattice<VolumeDim>>>(
-        opt_string + std::string{"  BoundaryCondition:\n"
-                                 "    TestBoundaryCondition:\n"
-                                 "      Direction: upper-xi\n"
-                                 "      BlockId: 100\n"});
+        opt_string);
   } else {
     return TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<VolumeDim>,
@@ -337,28 +345,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                                   Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "Cannot exclude blocks as well as have periodic boundary"));
-  CHECK_THROWS_WITH(
-      creators::AlignedLattice<3>(
-          {{{{-1.5, -0.5, 0.5, 1.5}},
-            {{1.5, -0.5, 0.5, 1.5}},
-            {{-1.5, -0.5, 0.5, 1.5}}}},
-          {{1, 1, 1}}, {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestPeriodicBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "Cannot exclude blocks as well as have periodic boundary"));
-  CHECK_THROWS_WITH(
-      creators::AlignedLattice<3>(
-          {{{{-1.5, -0.5, 0.5, 1.5}},
-            {{1.5, -0.5, 0.5, 1.5}},
-            {{-1.5, -0.5, 0.5, 1.5}}}},
-          {{1, 1, 1}}, {{5, 5, 5}}, {}, {}, {{{{1, 1, 1}}}},
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestNoneBoundaryCondition<3>>(),
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "None boundary condition is not supported. If you would like an "
-          "outflow-type boundary condition, you must use that."));
 }
 }  // namespace domain

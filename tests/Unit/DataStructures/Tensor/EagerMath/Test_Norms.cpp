@@ -20,8 +20,6 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 struct MyScalar : db::SimpleTag {
   using type = Scalar<DataVector>;

@@ -10,6 +10,7 @@
 #include <ostream>
 #include <pup.h>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -65,6 +66,10 @@ class PiecewisePolynomial : public FunctionOfTime {
   std::array<DataVector, 3> func_and_2_derivs(double t) const override {
     return func_and_derivs<2>(t);
   }
+
+  /// Return the function and all derivs up to and including the `MaxDeriv` at
+  /// an arbitrary time `t`.
+  std::vector<DataVector> func_and_all_derivs(double t) const override;
 
   /// Updates the `MaxDeriv`th derivative of the function at the given time.
   /// `updated_max_deriv` is a vector of the `MaxDeriv`ths for each component.

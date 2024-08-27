@@ -11,6 +11,20 @@ Next:
     id_input_file_path: __file__
     id_run_dir: ./
     pipeline_dir: {{ pipeline_dir | default("None") }}
+    control: {{ control }}
+    control_refinement_level: {{ L }}
+    control_polynomial_order: {{ P }}
+    control_params:
+      mass_A: {{ MassRight }}
+      mass_B: {{ MassLeft }}
+      spin_A:
+        - {{ DimensionlessSpinRight_x }}
+        - {{ DimensionlessSpinRight_y }}
+        - {{ DimensionlessSpinRight_z }}
+      spin_B:
+        - {{ DimensionlessSpinLeft_x }}
+        - {{ DimensionlessSpinLeft_y }}
+        - {{ DimensionlessSpinLeft_z }}
     evolve: {{ evolve }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
@@ -25,6 +39,9 @@ Parallelization:
 Background: &background
   Binary:
     XCoords: [&x_left {{ XLeft }}, &x_right {{ XRight }}]
+    CenterOfMassOffset:
+      - &y_offset {{ CenterOfMassOffset_y }}
+      - &z_offset {{ CenterOfMassOffset_z }}
     ObjectLeft: &kerr_left
       KerrSchild:
         Mass: &mass_left {{ MassLeft }}
@@ -33,6 +50,7 @@ Background: &background
           - {{ DimensionlessSpinLeft_y }}
           - {{ DimensionlessSpinLeft_z }}
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     ObjectRight: &kerr_right
       KerrSchild:
         Mass: &mass_right {{ MassRight }}
@@ -41,9 +59,13 @@ Background: &background
           - {{ DimensionlessSpinRight_y }}
           - {{ DimensionlessSpinRight_z }}
         Center: [0., 0., 0.]
+        Velocity: [0., 0., 0.]
     AngularVelocity: {{ OrbitalAngularVelocity }}
     Expansion: {{ RadialExpansionVelocity }}
-    LinearVelocity: [0., 0., 0.]
+    LinearVelocity:
+      - {{ LinearVelocity_x }}
+      - {{ LinearVelocity_y }}
+      - {{ LinearVelocity_z }}
     FalloffWidths:
       - {{ FalloffWidthLeft }}
       - {{ FalloffWidthRight }}
@@ -59,7 +81,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_right, 0., 0.]
+            Center: [*x_right, *y_offset, *z_offset]
             Rotation:
               - {{ HorizonRotationRight_x }}
               - {{ HorizonRotationRight_y }}
@@ -74,7 +96,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition:
           ApparentHorizon:
-            Center: [*x_left, 0., 0.]
+            Center: [*x_left, *y_offset, *z_offset]
             Rotation:
               - {{ HorizonRotationLeft_x }}
               - {{ HorizonRotationLeft_y }}
@@ -82,6 +104,7 @@ DomainCreator:
             Lapse: *kerr_left
             NegativeExpansion: *kerr_left
       UseLogarithmicMap: True
+    CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 60.
       RadialDistribution: Projective
@@ -223,6 +246,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+      - ObserveAdmIntegrals
 
 RandomizeInitialGuess: None
 

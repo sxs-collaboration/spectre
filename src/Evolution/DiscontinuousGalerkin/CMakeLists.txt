@@ -11,6 +11,7 @@ spectre_target_headers(
   DgElementArray.hpp
   InboxTags.hpp
   MortarData.hpp
+  MortarDataHolder.hpp
   MortarTags.hpp
   NormalVectorTags.hpp
   UsingSubcell.hpp
@@ -22,6 +23,7 @@ spectre_target_sources(
   AtomicInboxBoundaryData.cpp
   BoundaryData.cpp
   MortarData.cpp
+  MortarDataHolder.cpp
   )
 
 add_subdirectory(Actions)

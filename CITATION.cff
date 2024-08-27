@@ -67,7 +67,7 @@ authors:
     USA
   family-names: Macedo
   given-names: Alexandra
-  orcid: https://orcid.org/0000-0001-5139-9013
+  orcid: https://orcid.org/0009-0001-7671-6377
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Moxon
@@ -203,6 +203,12 @@ authors:
   family-names: Melchor
   given-names: Denyz
   orcid: https://orcid.org/0000-0002-7854-1953
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA and Department of
+    Physics and Astronomy, Oberlin College, Oberlin, Ohio 44074, USA
+  family-names: Mendes
+  given-names: Iago
+  orcid: https://orcid.org/0009-0007-9845-8448
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
@@ -302,8 +308,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2024-06-18
-doi: 10.5281/zenodo.12098412
+date-released: 2024-08-03
+doi: 10.5281/zenodo.13207712
 keywords:
 - Software
 - Astrophysics
@@ -1021,4 +1027,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2024.06.18
+version: 2024.08.03

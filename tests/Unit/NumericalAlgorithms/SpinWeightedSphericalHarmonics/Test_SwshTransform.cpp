@@ -9,11 +9,11 @@
 #include <string>
 
 #include "DataStructures/ComplexDataVector.hpp"
-#include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/SpinWeighted.hpp"  // IWYU pragma: keep
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -23,14 +23,11 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-// IWYU pragma: no_forward_declare ComplexModalVector
-// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral::Swsh {
 namespace {

@@ -3,22 +3,20 @@
 
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 
-#include <algorithm>  // IWYU pragma: keep
+#include <algorithm>
 #include <array>
 #include <optional>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
 

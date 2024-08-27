@@ -9,15 +9,14 @@
 #include <limits>
 #include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"           // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
-// IWYU pragma: no_forward_declare Tensor
 
 namespace ScalarWave::Solutions {
 

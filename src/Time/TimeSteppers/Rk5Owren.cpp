@@ -8,8 +8,6 @@ Rk5Owren::Rk5Owren(CkMigrateMessage* /*msg*/) {}
 
 size_t Rk5Owren::order() const { return 5; }
 
-size_t Rk5Owren::error_estimate_order() const { return 4; }
-
 // The stability polynomial is
 //
 //   p(z) = \sum_{n=0}^{stages-1} alpha_n z^n / n!,

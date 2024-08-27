@@ -35,12 +35,14 @@ void divergence(
   }
 
   using DerivativeTags = tmpl::list<FluxTags...>;
+  using ValueType = typename Variables<DerivativeTags>::value_type;
   const size_t vars_size =
       Variables<DerivativeTags>::number_of_independent_components *
       F.number_of_grid_points();
-  const auto logical_derivs_data = cpp20::make_unique_for_overwrite<double[]>(
-      (Dim > 1 ? (Dim + 2) : Dim) * vars_size);
-  std::array<double*, Dim> logical_derivs{};
+  const auto logical_derivs_data =
+      cpp20::make_unique_for_overwrite<ValueType[]>(
+          (Dim > 1 ? (Dim + 2) : Dim) * vars_size);
+  std::array<ValueType*, Dim> logical_derivs{};
   std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives_of_F{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);

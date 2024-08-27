@@ -12,6 +12,7 @@ from click.testing import CliRunner
 
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id_command, id_parameters
+from spectre.support.Logging import configure_logging
 
 
 class TestInitialData(unittest.TestCase):
@@ -28,9 +29,12 @@ class TestInitialData(unittest.TestCase):
 
     def test_generate_id(self):
         params = id_parameters(
-            mass_ratio=1.5,
+            mass_a=0.6,
+            mass_b=0.4,
             dimensionless_spin_a=[0.1, 0.2, 0.3],
             dimensionless_spin_b=[0.4, 0.5, 0.6],
+            center_of_mass_offset=[0.1, 0.2, 0.3],
+            linear_velocity=[0.1, 0.2, 0.3],
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,
@@ -39,12 +43,18 @@ class TestInitialData(unittest.TestCase):
         )
         self.assertEqual(params["MassRight"], 0.6)
         self.assertEqual(params["MassLeft"], 0.4)
-        self.assertEqual(params["XRight"], 8.0)
-        self.assertEqual(params["XLeft"], -12.0)
-        self.assertAlmostEqual(
-            params["ExcisionRadiusRight"], 1.0292112276594705
+        self.assertEqual(params["XRight"], 8.0 + 0.1)
+        self.assertEqual(params["XLeft"], -12.0 + 0.1)
+        self.assertEqual(
+            [params[f"CenterOfMassOffset_{yz}"] for yz in "yz"],
+            [0.2, 0.3],
         )
-        self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.5267316022299328)
+        self.assertEqual(
+            [params[f"LinearVelocity_{xyz}"] for xyz in "xyz"],
+            [0.1, 0.2, 0.3],
+        )
+        self.assertAlmostEqual(params["ExcisionRadiusRight"], 1.07546791205)
+        self.assertAlmostEqual(params["ExcisionRadiusLeft"], 0.5504049327)
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(
@@ -67,10 +77,10 @@ class TestInitialData(unittest.TestCase):
         self.assertAlmostEqual(params["FalloffWidthLeft"], 5.520327410332324)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
-        # COM is zero
+        # Newtonian center of mass (without offset) is zero
         self.assertAlmostEqual(
-            params["MassRight"] * params["XRight"]
-            + params["MassLeft"] * params["XLeft"],
+            params["MassRight"] * (params["XRight"] - 0.1)
+            + params["MassLeft"] * (params["XLeft"] - 0.1),
             0.0,
         )
 
@@ -98,6 +108,7 @@ class TestInitialData(unittest.TestCase):
             "5",
             "-E",
             str(self.bin_dir / "SolveXcts"),
+            "--no-schedule",
         ]
         # Not using `CliRunner.invoke()` because it runs in an isolated
         # environment and doesn't work with MPI in the container.
@@ -138,6 +149,15 @@ class TestInitialData(unittest.TestCase):
                     "id_input_file_path": "__file__",
                     "id_run_dir": "./",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
+                    "control": True,
+                    "control_refinement_level": 1,
+                    "control_polynomial_order": 5,
+                    "control_params": {
+                        "mass_A": 0.6,
+                        "mass_B": 0.4,
+                        "spin_A": [0.1, 0.2, 0.3],
+                        "spin_B": [0.4, 0.5, 0.6],
+                    },
                     "evolve": True,
                     "scheduler": "None",
                     "copy_executable": "None",
@@ -149,5 +169,5 @@ class TestInitialData(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

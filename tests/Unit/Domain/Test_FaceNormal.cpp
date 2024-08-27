@@ -52,9 +52,6 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
-// IWYU pragma: no_forward_declare Tensor
-
 namespace domain {
 namespace {
 template <size_t Dim>
@@ -451,7 +448,8 @@ void test_compute_item() {
       ElementMap<2, Frame::Inertial>(
           ElementId<2>(0),
           make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              CoordinateMaps::Wedge<2>(1., 2., 0., 1., OrientationMap<2>{},
+              CoordinateMaps::Wedge<2>(1., 2., 0., 1.,
+                                       OrientationMap<2>::create_aligned(),
                                        false))));
 
   auto invert = [](std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>>

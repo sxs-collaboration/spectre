@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/MinimumGridSpacing.hpp"  // IWYU pragma: keep
+#include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -26,13 +26,12 @@
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/TimeStepper.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <pup.h>
 
 namespace {
 constexpr size_t dim = 1;
@@ -110,16 +109,18 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
 
   const double current_step = std::numeric_limits<double>::infinity();
   const auto result = cfl(grid_spacing, time_stepper, speed, current_step);
+  REQUIRE(result.first.size_goal.has_value());
+  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
   CHECK(serialize_and_deserialize(cfl)(grid_spacing, time_stepper, speed,
                                        current_step) == result);
   CHECK_FALSE(result.second);
   const auto accepted_step_result =
-      cfl(grid_spacing, time_stepper, speed, result.first * 0.7);
+      cfl(grid_spacing, time_stepper, speed, *result.first.size_goal * 0.7);
   CHECK(accepted_step_result.second);
   CHECK(cfl_base->desired_step(current_step, box) == result);
   CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step, box) ==
         result);
-  return result;
+  return {*result.first.size_goal, result.second};
 }
 
 template <typename Use>

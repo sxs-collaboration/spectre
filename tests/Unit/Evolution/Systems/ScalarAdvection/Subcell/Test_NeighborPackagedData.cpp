@@ -97,7 +97,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
   DirectionMap<Dim, Neighbors<Dim>> element_neighbors{};
   for (size_t i = 0; i < 2 * Dim; ++i) {
     element_neighbors[gsl::at(Direction<Dim>::all_directions(), i)] =
-        Neighbors<Dim>{{ElementId<Dim>{i + 1, {}}}, {}};
+        Neighbors<Dim>{{ElementId<Dim>{i + 1, {}}},
+                       OrientationMap<Dim>::create_aligned()};
   }
   const Element<Dim> element{ElementId<Dim>{0, {}}, element_neighbors};
 

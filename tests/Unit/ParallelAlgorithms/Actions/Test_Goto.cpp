@@ -10,8 +10,8 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/Goto.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

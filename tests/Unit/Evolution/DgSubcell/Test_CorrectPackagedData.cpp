@@ -22,6 +22,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -54,8 +55,8 @@ void test() {
       evolution::dg::subcell::fd::mesh(volume_dg_mesh);
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   for (size_t i = 0; i < 2 * Dim; ++i) {
-    neighbors[gsl::at(Direction<Dim>::all_directions(), i)] =
-        Neighbors<Dim>{{ElementId<Dim>{i + 1, {}}}, {}};
+    neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{
+        {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
   }
   const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
   const TimeStepId time_step_id{true, 1, Time{Slab{1.1, 4.4}, {3, 10}}};
@@ -83,16 +84,16 @@ void test() {
     const SubcellFaceVars interior_lower_packaged_data = lower_packaged_data;
     const SubcellFaceVars interior_upper_packaged_data = upper_packaged_data;
 
-    DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>> mortar_data{};
+    DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
     const Direction<Dim> upper{direction_to_check, Side::Upper};
     const Direction<Dim> lower{direction_to_check, Side::Lower};
     const DirectionalId<Dim> upper_neighbor{
         upper, *element.neighbors().at(upper).begin()};
     const DirectionalId<Dim> lower_neighbor{
         lower, *element.neighbors().at(lower).begin()};
-    evolution::dg::MortarData<Dim>& upper_mortar_data =
+    evolution::dg::MortarDataHolder<Dim>& upper_mortar_data =
         mortar_data[upper_neighbor] = {};
-    evolution::dg::MortarData<Dim>& lower_mortar_data =
+    evolution::dg::MortarDataHolder<Dim>& lower_mortar_data =
         mortar_data[lower_neighbor] = {};
 
     const Mesh<Dim - 1> dg_face_mesh =
@@ -117,10 +118,12 @@ void test() {
     }();
 
     // Insert neighbor DG data.
-    upper_mortar_data.neighbor_mortar_data() =
-        std::pair{dg_face_mesh, upper_neighbor_data};
-    lower_mortar_data.neighbor_mortar_data() =
-        std::pair{dg_face_mesh, lower_neighbor_data};
+    upper_mortar_data.neighbor().face_mesh = dg_face_mesh;
+    upper_mortar_data.neighbor().mortar_mesh = dg_face_mesh;
+    upper_mortar_data.neighbor().mortar_data = upper_neighbor_data;
+    lower_mortar_data.neighbor().face_mesh = dg_face_mesh;
+    lower_mortar_data.neighbor().mortar_mesh = dg_face_mesh;
+    lower_mortar_data.neighbor().mortar_data = lower_neighbor_data;
 
     const Mesh<Dim - 1> subcell_face_mesh =
         volume_subcell_mesh.slice_away(direction_to_check);
@@ -223,10 +226,12 @@ void test() {
       DataVector lower_local_data{dg_number_of_independent_components *
                                   dg_face_mesh.number_of_grid_points()};
       std::iota(lower_local_data.begin(), lower_local_data.end(), 1.0e7);
-      upper_mortar_data.local_mortar_data() =
-          std::pair{dg_face_mesh, upper_local_data};
-      lower_mortar_data.local_mortar_data() =
-          std::pair{dg_face_mesh, lower_local_data};
+      upper_mortar_data.local().face_mesh = dg_face_mesh;
+      upper_mortar_data.local().mortar_mesh = dg_face_mesh;
+      upper_mortar_data.local().mortar_data = upper_local_data;
+      lower_mortar_data.local().face_mesh = dg_face_mesh;
+      lower_mortar_data.local().mortar_mesh = dg_face_mesh;
+      lower_mortar_data.local().mortar_data = lower_local_data;
 
       evolution::dg::subcell::correct_package_data<true>(
           make_not_null(&lower_packaged_data),

@@ -39,6 +39,9 @@ class TestTensor(unittest.TestCase):
         coords[0] = DataVector(4, 1.0)
         coords[1] = DataVector(4, 2.0)
         coords[2] = DataVector(4, 3.0)
+        self.assertEqual(coords.get_storage_index(0), 0)
+        self.assertEqual(coords.get_storage_index(1), 1)
+        self.assertEqual(coords.get_storage_index(2), 2)
         for d, xyz in enumerate(coords):
             npt.assert_equal(xyz, np.ones(4) * (d + 1))
             npt.assert_equal(xyz, coords.get(d))

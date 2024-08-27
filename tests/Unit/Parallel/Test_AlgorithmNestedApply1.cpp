@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/CharmMain.tpp"
@@ -13,7 +13,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

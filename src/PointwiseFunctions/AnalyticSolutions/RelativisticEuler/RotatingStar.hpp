@@ -10,10 +10,12 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Options/Options.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
@@ -23,14 +25,23 @@ namespace RelativisticEuler::Solutions {
 namespace detail {
 /*!
  * \brief Read the CST rotating neutron star solution from file, rescaling the
- * solution assuming a polytropic constant `kappa`
+ * solution.  If the EoS in RotNS is set to PT (polytrope), then the user
+ * should use `is_polytrope=true`, so that the normalization is done using the
+ * method in \cite Cook1992. In this case, RotNS already uses geometric units,
+ * letting \f$K\f$ (i.e.  \f$P=K\rho^\gamma\f$) be a free parameter. RotNS
+ * assumes \f$K=1\f$ for its calculations. If the user doesn't want to rescale,
+ * they can just set `polytropic_constant=1.` and nothing will change.
  *
- * The CST RotNS code uses `kappa=1`.
+ * If any other EoS is used, then it's done according to the method in
+ * \cite Cook1994. In this case, RotNS instead normalizes with CGS, so
+ * `is_polytrope=false` converts from CGS into geometric units. The user would
+ * not want to use this for a PT EoS, even if they don't want to rescale.
  */
 class CstSolution {
  public:
   CstSolution() = default;
-  CstSolution(const std::string& filename, double kappa);
+  CstSolution(const std::string& filename, bool is_polytrope,
+              double polytropic_constant);
 
   std::array<double, 6> interpolate(double target_radius,
                                     double target_cos_theta,
@@ -355,8 +366,6 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   };
 
  public:
-  using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
-
   /// The path to the RotNS data file.
   struct RotNsFilename {
     using type = std::string;
@@ -374,18 +383,31 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
     static type lower_bound() { return 0.; }
   };
 
-  using options = tmpl::list<RotNsFilename, PolytropicConstant>;
+  using options = tmpl::list<Options::Alternatives<
+      tmpl::list<RotNsFilename, PolytropicConstant>,
+      tmpl::list<RotNsFilename,
+                 hydro::OptionTags::InitialDataEquationOfState<true, 1>>>>;
+
   static constexpr Options::String help = {
       "Rotating neutron star initial data solved by the RotNS solver. The data "
-      "is read in from disk."};
+      "is read in from disk. If RotNS used a polytropic equation of state, use "
+      "the PolytropicConstant option, so that the polytropic index may be read "
+      "directly from the RotNS output. Otherwise, set the equation of state to "
+      "whichever one you would like to use to load the initial data. Note that "
+      "if a polytrope is put into the EquationOfState option rather than using "
+      "the PolytropicConstant option, the generic unit conversion will be used "
+      "instead of the specific polytrope one."};
 
   RotatingStar() = default;
-  RotatingStar(const RotatingStar& /*rhs*/) = default;
-  RotatingStar& operator=(const RotatingStar& /*rhs*/) = default;
+  RotatingStar(const RotatingStar& /*rhs*/);
+  RotatingStar& operator=(const RotatingStar& /*rhs*/);
   RotatingStar(RotatingStar&& /*rhs*/) = default;
   RotatingStar& operator=(RotatingStar&& /*rhs*/) = default;
   ~RotatingStar() override = default;
 
+  RotatingStar(std::string rot_ns_filename,
+               std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+                   equation_of_state);
   RotatingStar(std::string rot_ns_filename, double polytropic_constant);
 
   auto get_clone() const
@@ -411,8 +433,8 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
-  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
-    return equation_of_state_;
+  const EquationsOfState::EquationOfState<true, 1>& equation_of_state() const {
+    return *equation_of_state_;
   }
 
   double equatorial_radius() const {
@@ -611,7 +633,12 @@ class RotatingStar : public virtual evolution::initial_data::InitialData,
   detail::CstSolution cst_solution_{};
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
-  EquationsOfState::PolytropicFluid<true> equation_of_state_{};
+  bool is_polytrope_{};
+  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+      equation_of_state_;
+  // Floor value to protect EoS from encountering FPEs when computing state
+  // variables in the atmosphere
+  static constexpr double atmosphere_floor_ = 1.e-50;
 };
 
 bool operator!=(const RotatingStar& lhs, const RotatingStar& rhs);

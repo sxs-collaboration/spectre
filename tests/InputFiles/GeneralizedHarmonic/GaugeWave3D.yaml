@@ -56,12 +56,11 @@ DomainCreator:
   Brick:
     LowerBound: [0.0, 0.0, 0.0]
     UpperBound: [1.0, 1.0, 1.0]
+    Distribution: [Linear, Linear, Linear]
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [5, 5, 5]
     TimeDependence: None
-    BoundaryConditionInX: Periodic
-    BoundaryConditionInY: Periodic
-    BoundaryConditionInZ: Periodic
+    BoundaryConditions: [Periodic, Periodic, Periodic]
 
 EvolutionSystem:
   GeneralizedHarmonic:

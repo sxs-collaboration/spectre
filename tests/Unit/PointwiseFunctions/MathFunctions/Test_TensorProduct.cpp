@@ -10,7 +10,7 @@
 #include <string>
 #include <utility>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -26,15 +26,13 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare Tags::deriv
 
 class DataVector;
 template <size_t VolumeDim, typename Fr>

@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include <complex>
 #include <cstddef>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -19,7 +21,7 @@ class Mesh;
 namespace PUP {
 class er;
 }  // namespace PUP
-// IWYU pragma: no_forward_declare Variables
+
 /// \endcond
 
 namespace intrp {
@@ -57,7 +59,8 @@ class Irregular {
   /// @}
 
   /// @{
-  /// \brief Interpolate a DataVector onto the target points.
+  /// \brief Interpolate a DataVector or ComplexDataVector onto the target
+  /// points.
   ///
   /// \note When interpolating multiple tensors, the Variables interface is more
   /// efficient. However, this DataVector interface is useful for applications
@@ -66,11 +69,18 @@ class Irregular {
   void interpolate(gsl::not_null<DataVector*> result,
                    const DataVector& input) const;
   DataVector interpolate(const DataVector& input) const;
+  void interpolate(gsl::not_null<ComplexDataVector*> result,
+                   const ComplexDataVector& input) const;
+  ComplexDataVector interpolate(const ComplexDataVector& input) const;
   /// @}
 
   /// \brief Interpolate multiple variables on the grid to the target points.
+  /// @{
   void interpolate(gsl::not_null<gsl::span<double>*> result,
                    const gsl::span<const double>& input) const;
+  void interpolate(gsl::not_null<gsl::span<std::complex<double>>*> result,
+                   const gsl::span<const std::complex<double>>& input) const;
+  /// @}
 
  private:
   friend bool operator==(const Irregular& lhs, const Irregular& rhs) {
@@ -94,8 +104,8 @@ void Irregular<Dim>::interpolate(
              << ",\n disagrees with the size of the source_mesh, "
              << interpolation_matrix_.columns()
              << ", that was passed into the constructor");
-  gsl::span<double> result_span{result->data(), result->size()};
-  const gsl::span<const double> vars_span{vars.data(), vars.size()};
+  auto result_span = gsl::make_span(result->data(), result->size());
+  const auto vars_span = gsl::make_span(vars.data(), vars.size());
   interpolate(make_not_null(&result_span), vars_span);
 }
 

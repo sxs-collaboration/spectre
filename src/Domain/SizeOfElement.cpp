@@ -9,12 +9,12 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/ElementMap.hpp"  // IWYU pragma: keep
+#include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace {
 // The face-center coordinates for the unit cube's face in direction `dir`, so,

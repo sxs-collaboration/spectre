@@ -3,11 +3,13 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <complex>
 #include <cstddef>
 #include <limits>
 #include <random>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -33,29 +35,33 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
+using namespace std::complex_literals;
+
 namespace {
+template <typename DataType>
 struct Var1 : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 struct Var2 : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim>;
+  using type = tnsr::i<DataType, Dim>;
 };
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
   CAPTURE(Dim);
   CAPTURE(mesh);
   CAPTURE(mesh.quadrature(0));
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
   MAKE_GENERATOR(gen);
-  using flux_tags =
-      tmpl::list<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+  using flux_tags = tmpl::list<
+      Tags::Flux<Var1<DataType>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::Flux<Var2<DataType, Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   using div_tags = tmpl::list<
-      Tags::div<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>,
-      Tags::div<Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>;
+      Tags::div<Tags::Flux<Var1<DataType>, tmpl::size_t<Dim>, Frame::Inertial>>,
+      Tags::div<
+          Tags::Flux<Var2<DataType, Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>;
 
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{
       mesh.number_of_grid_points()};
@@ -80,7 +86,11 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
     auto& flux = get<tag>(fluxes);
     for (size_t storage_index = 0; storage_index < flux.size();
          ++storage_index) {
-      flux[storage_index] = storage_index + 3.0;
+      flux[storage_index] = static_cast<double>(storage_index) + 3.0;
+      if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+        flux[storage_index] +=
+            1.0i * (static_cast<double>(storage_index) + 4.0);
+      }
     }
   });
 
@@ -170,19 +180,20 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
   }
 }
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
   CAPTURE(Dim);
   CAPTURE(mesh);
   CAPTURE(mesh.quadrature(0));
   std::uniform_real_distribution<double> dist(-1.0, 1.0);
   MAKE_GENERATOR(gen);
-  using flux_tags =
-      tmpl::list<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+  using flux_tags = tmpl::list<
+      Tags::Flux<Var1<DataType>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::Flux<Var2<DataType, Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   using div_tags = tmpl::list<
-      Tags::div<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>,
-      Tags::div<Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>;
+      Tags::div<Tags::Flux<Var1<DataType>, tmpl::size_t<Dim>, Frame::Inertial>>,
+      Tags::div<
+          Tags::Flux<Var2<DataType, Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>;
 
   const auto logical_coords = logical_coordinates(mesh);
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{
@@ -219,11 +230,18 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
       using tag = tmpl::type_from<decltype(tag_v)>;
       for (size_t tensor_index = 0;
            tensor_index < get<tag>(local_fluxes).size(); ++tensor_index) {
-        get<tag>(local_fluxes)[tensor_index] =
-            std::sqrt(tensor_index + 1) * square(get<0>(coords));
+        auto& flux_component = get<tag>(local_fluxes)[tensor_index];
+        flux_component = std::sqrt(tensor_index + 1) * square(get<0>(coords));
+        if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+          flux_component +=
+              1.0i * std::sqrt(tensor_index + 2) * square(get<0>(coords));
+        }
         for (size_t d = 1; d < Dim; ++d) {
-          get<tag>(local_fluxes)[tensor_index] +=
-              std::sqrt(tensor_index + 1) * coords.get(d);
+          flux_component += std::sqrt(tensor_index + 1) * coords.get(d);
+          if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+            flux_component +=
+                1.0i * std::sqrt(tensor_index + 2) * coords.get(d);
+          }
         }
       }
     });
@@ -330,16 +348,16 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
   });
 }
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 void test() {
   for (size_t num_pts = 3; num_pts < 9; num_pts += 2) {
     for (const auto& quadrature :
          {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
-      test_weak_divergence_random_jacobian(
+      test_weak_divergence_random_jacobian<DataType>(
           Mesh<Dim>{num_pts, Spectral::Basis::Legendre, quadrature});
       if constexpr (Dim == 1) {
         // Haven't figured out a good test in 2d and 3d
-        test_weak_divergence_constant_jacobian(
+        test_weak_divergence_constant_jacobian<DataType>(
             Mesh<Dim>{num_pts, Spectral::Basis::Legendre, quadrature});
       }
     }
@@ -347,6 +365,7 @@ void test() {
 }
 }  // namespace
 
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.WeakDivergence",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   // We already have tests that verify that the matrix used in the weak
@@ -379,7 +398,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.WeakDivergence",
   // we verify Gauss-Lobatto points separately this is a good test. We only do
   // this check in 1d because 2d and 3d are annoying to get right, so much so
   // that it's better to check everything exactly once the lifting terms are in.
-  test<1>();
-  test<2>();
-  test<3>();
+  test<DataVector, 1>();
+  test<ComplexDataVector, 1>();
+  test<DataVector, 2>();
+  test<ComplexDataVector, 2>();
+  test<DataVector, 3>();
+  test<ComplexDataVector, 3>();
 }

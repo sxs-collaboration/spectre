@@ -13,6 +13,7 @@ spectre_target_headers(
   AddSimpleTags.hpp
   FilterAction.hpp
   FunctionsOfTimeAreReady.hpp
+  GetItemFromDistributedObject.hpp
   Goto.hpp
   InitializeItems.hpp
   LimiterActions.hpp

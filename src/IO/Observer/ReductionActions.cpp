@@ -21,4 +21,10 @@ void append_to_reduction_data(
   all_reduction_data->insert(all_reduction_data->end(), t.begin(), t.end());
 }
 
+void append_to_reduction_data(
+    const gsl::not_null<std::vector<double>*> all_reduction_data,
+    const std::array<double, 3>& t) {
+    all_reduction_data->insert(all_reduction_data->end(), t.begin(), t.end());
+}
+
 }  // namespace observers::ThreadedActions::ReductionActions_detail

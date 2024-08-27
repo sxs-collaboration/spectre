@@ -115,7 +115,9 @@ class ContinuedFractionSummer {
  public:
   using Term_t = std::decay_t<decltype(std::declval<Fraction>().numerator())>;
 
-  /// Sum of the supplied continued fraction terms
+  /// Sum of the supplied continued fraction terms.  If the exact sum
+  /// cannot be represented by the `Fraction` type, a semiconvergent
+  /// may be returned instead.
   Fraction value() const { return Fraction(numerator_, denominator_); }
 
   /// Insert a new term.  Terms should be supplied from most to least
@@ -126,19 +128,35 @@ class ContinuedFractionSummer {
     }
 
     Term_t new_numerator{};
+    Term_t new_denominator{};
     if (__builtin_mul_overflow(term, numerator_, &new_numerator) or
         __builtin_add_overflow(new_numerator, prev_numerator_,
-                               &new_numerator)) {
-      overflowed_ = true;
-      return;
-    }
-
-    Term_t new_denominator{};
-    if (__builtin_mul_overflow(term, denominator_, &new_denominator) or
+                               &new_numerator) or
+        __builtin_mul_overflow(term, denominator_, &new_denominator) or
         __builtin_add_overflow(new_denominator, prev_denominator_,
                                &new_denominator)) {
       overflowed_ = true;
-      return;
+
+      // We can't add this term exactly, but we can try to return a
+      // semiconvergent.
+      using std::abs;
+      const Term_t representable_semiconvergent_index =
+          std::min((std::numeric_limits<Term_t>::max() - abs(prev_numerator_)) /
+                       abs(numerator_),
+                   (std::numeric_limits<Term_t>::max() - prev_denominator_) /
+                       denominator_);
+      // There is an edge case where the two sides of this inequality
+      // are equal, where we don't have enough information to
+      // determine whether the semiconvergent approximation is better
+      // than the current convergent.  We assume it's not.
+      if (2 * representable_semiconvergent_index <= term) {
+        return;
+      }
+
+      new_numerator =
+          representable_semiconvergent_index * numerator_ + prev_numerator_;
+      new_denominator =
+          representable_semiconvergent_index * denominator_ + prev_denominator_;
     }
 
     prev_numerator_ = numerator_;

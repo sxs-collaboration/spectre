@@ -34,7 +34,7 @@ struct TimeStepId;
 template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
-// IWYU pragma: no_forward_declare db::DataBox
+
 /// \endcond
 
 namespace Actions {

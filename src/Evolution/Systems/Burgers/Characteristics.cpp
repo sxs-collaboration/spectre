@@ -10,8 +10,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace Burgers::Tags {
 void CharacteristicSpeedsCompute::function(
     const gsl::not_null<return_type*> result, const Scalar<DataVector>& u,

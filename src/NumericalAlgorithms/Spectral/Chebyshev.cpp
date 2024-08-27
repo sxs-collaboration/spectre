@@ -14,8 +14,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_include <type_traits>
-
 namespace Spectral {
 
 // Algorithms to compute Chebyshev basis functions

@@ -13,6 +13,7 @@ from click.testing import CliRunner
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.PostprocessId import postprocess_id_command
+from support.Python.Logging import configure_logging
 
 
 class TestPostprocessId(unittest.TestCase):
@@ -24,7 +25,8 @@ class TestPostprocessId(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_ratio=1.5,
+            mass_a=0.6,
+            mass_b=0.4,
             dimensionless_spin_a=[0.0, 0.0, 0.0],
             dimensionless_spin_b=[0.0, 0.0, 0.0],
             separation=20.0,
@@ -56,5 +58,5 @@ class TestPostprocessId(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

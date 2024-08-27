@@ -32,6 +32,7 @@ DomainCreator:
   Rectangle:
     LowerBound: [-0.5, -0.5]
     UpperBound: [0.5, 0.5]
+    Distribution: [Linear, Linear]
     IsPeriodicIn: [false, false]
     InitialRefinement: [2, 2]
     InitialGridPoints: [5, 5]

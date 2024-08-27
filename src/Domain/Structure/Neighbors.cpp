@@ -4,14 +4,14 @@
 #include "Domain/Structure/Neighbors.hpp"
 
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <pup_stl.h>
 
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 template <size_t VolumeDim>
 Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
@@ -21,6 +21,8 @@ Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
   ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
          "Can't have " << ids_.size() << " neighbors in " << VolumeDim
                        << " dimensions");
+  ASSERT(orientation_ != OrientationMap<VolumeDim>{},
+         "Cannot use a default-constructed OrientationMap in Neighbors.");
 }
 
 template <size_t VolumeDim>

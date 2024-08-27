@@ -7,7 +7,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Math.hpp"  // IWYU pragma: keep
+#include "Utilities/Math.hpp"
 
 namespace Spectral {
 namespace Swsh {

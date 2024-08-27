@@ -9,7 +9,12 @@
 #include <type_traits>
 
 #include "Options/String.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/PerformAlgorithmOnElement.hpp"
+#include "Parallel/ArrayCollection/Tags/ElementLocations.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/GetComputeItemsOnSource.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
@@ -89,8 +94,21 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
     static_assert(
         std::is_same_v<typename Metavariables::interpolator_source_vars,
                        tmpl::list<InterpolatorSourceVarTags...>>);
-    interpolate<InterpolationTargetTag>(temporal_id, mesh, cache, array_index,
-                                        interpolator_source_vars...);
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      const auto core_id = static_cast<int>(
+          Parallel::local_synchronous_action<
+              Parallel::Actions::GetItemFromDistributedOject<
+                  typename ParallelComponent::element_collection_tag>>(
+              Parallel::get_parallel_component<ParallelComponent>(cache))
+              ->at(array_index)
+              .get_core());
+      interpolate<InterpolationTargetTag>(temporal_id, mesh, cache, array_index,
+                                          core_id, interpolator_source_vars...);
+    } else {
+      interpolate<InterpolationTargetTag>(temporal_id, mesh, cache, array_index,
+                                          std::nullopt,
+                                          interpolator_source_vars...);
+    }
   }
 
   using is_ready_argument_tags = tmpl::list<::Tags::Time>;
@@ -99,8 +117,21 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
   bool is_ready(const double time, Parallel::GlobalCache<Metavariables>& cache,
                 const ArrayIndex& array_index,
                 const Component* const component) const {
-    return domain::functions_of_time_are_ready_algorithm_callback<
-        domain::Tags::FunctionsOfTime>(cache, array_index, component, time);
+    if constexpr (Parallel::is_dg_element_collection_v<Component>) {
+      const auto element_location = static_cast<int>(
+          Parallel::local_synchronous_action<
+              Parallel::Actions::GetItemFromDistributedOject<
+                  Parallel::Tags::ElementLocations<VolumeDim>>>(
+              Parallel::get_parallel_component<Component>(cache))
+              ->at(array_index));
+      return domain::functions_of_time_are_ready_threaded_action_callback<
+          domain::Tags::FunctionsOfTime,
+          Parallel::Actions::PerformAlgorithmOnElement<false>>(
+          cache, element_location, component, time, std::nullopt, array_index);
+    } else {
+      return domain::functions_of_time_are_ready_algorithm_callback<
+          domain::Tags::FunctionsOfTime>(cache, array_index, component, time);
+    }
   }
 
   bool needs_evolved_variables() const override { return true; }

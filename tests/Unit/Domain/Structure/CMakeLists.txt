@@ -32,5 +32,6 @@ target_link_libraries(
   PRIVATE
   DomainHelpers
   DomainStructure
+  SerializationHelpers
   Utilities
   )

@@ -27,10 +27,11 @@ DomainCreator:
   Rectangle:
     LowerBound: [0.0, 0.0]
     UpperBound: [1.0, 1.0]
+    Distribution: [Linear, Linear]
     InitialRefinement: [2, 2]
     InitialGridPoints: [5, 5]
     TimeDependence: None
-    BoundaryCondition: Periodic
+    BoundaryConditions: [Periodic, Periodic]
 
 SpatialDiscretization:
   BoundaryCorrection:

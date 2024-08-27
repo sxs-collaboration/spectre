@@ -30,6 +30,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Barotropic2D",
   CHECK(eos.electron_fraction_upper_bound() == 1.0);
   CHECK(eos.temperature_lower_bound() == 0.0);
   CHECK(eos.temperature_upper_bound() == std::numeric_limits<double>::max());
+  CHECK(eos.is_barotropic());
+  CHECK(eos.is_equilibrium());
   {
     // DataVector functions
     const Scalar<DataVector> rest_mass_density{

@@ -20,13 +20,11 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/Disk.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/ExpandOverBlocks.hpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
 #include "Domain/Creators/RotatedIntervals.hpp"
@@ -849,12 +847,6 @@ struct InitializeConstitutiveRelation
 // handles all of these geometries correctly.
 // [[TimeOut, 40]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
-  // Needed for Brick
-  using VariantType = std::variant<
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
-      domain::creators::Brick::LowerUpperBoundaryCondition<
-          domain::BoundaryConditions::BoundaryCondition>>;
-
   domain::creators::register_derived_with_charm();
   {
     INFO("Rectilinear and aligned");
@@ -866,10 +858,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{2.}},
           {{1}},
           {{3}},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet),
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Neumann)};
+          {{{{make_boundary_condition<system>(
+                  elliptic::BoundaryConditionType::Dirichlet),
+              make_boundary_condition<system>(
+                  elliptic::BoundaryConditionType::Neumann)}}}}};
       for (const auto& [use_massive_dg_operator, quadrature] :
            cartesian_product(make_array(false, true),
                              make_array(Spectral::Quadrature::GaussLobatto,
@@ -881,14 +873,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
     {
       INFO("2D");
       using system = Poisson::FirstOrderSystem<2, Poisson::Geometry::Curved>;
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::Rectangle domain_creator{
           {{-2., 0.}},
           {{2., 1.}},
           {{1, 1}},
           {{3, 3}},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet),
-          nullptr};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
       test_subdomain_operator<system>(domain_creator, true,
                                       Spectral::Quadrature::GaussLobatto, true);
@@ -896,18 +889,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
     {
       INFO("3D");
       using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::Brick domain_creator{
           {{-2., 0., -1.}},
           {{2., 1., 1.}},
           {{1, 0, 1}},
           {{3, 3, 3}},
-          VariantType{make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)},
-          VariantType{make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)},
-          VariantType{make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)},
-          nullptr};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
   }
@@ -979,6 +970,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
       //  [oooo|ooo|ooo]-> xi
       //  ^    ^   ^   ^
       // -2    0   1   2
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<1> domain_creator{
           {{{-2., 0., 2.}}},
           {{0}},
@@ -986,8 +979,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{{{1}}, {{2}}, {{1}}}},  // Refine once in block 1
           {{{{0}}, {{1}}, {{4}}}},  // Increase num points in block 0
           {},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
     {
@@ -1008,6 +1000,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
       //    |ooo |ooo|
       //  2 +----+---+
       //    v eta
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<2> domain_creator{
           // Start with 4 unrefined blocks
           {{{-2., 0., 2.}, {-2., 0., 2.}}},
@@ -1018,13 +1012,15 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           // Increase num points in xi in upper-left block in sketch above
           {{{{0, 0}}, {{1, 1}}, {{4, 3}}}},
           {},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
     {
       INFO("3D");
       using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
+      const auto dirichlet_bc = make_boundary_condition<system>(
+          elliptic::BoundaryConditionType::Dirichlet);
       const domain::creators::AlignedLattice<3> domain_creator{
           {{{-2., 0., 2.}, {-2., 0., 2.}, {-2., 0., 2.}}},
           {{0, 0, 0}},
@@ -1032,8 +1028,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
           {{{{1, 0, 0}}, {{2, 1, 1}}, {{0, 1, 1}}}},
           {{{{0, 0, 0}}, {{1, 1, 1}}, {{4, 3, 2}}}},
           {},
-          make_boundary_condition<system>(
-              elliptic::BoundaryConditionType::Dirichlet)};
+          {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+            {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
       test_subdomain_operator<system>(domain_creator);
     }
   }
@@ -1081,18 +1078,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
   {
     INFO("System with fluxes args");
     using system = Elasticity::FirstOrderSystem<3>;
+    const auto dirichlet_bc = make_boundary_condition<system>(
+        elliptic::BoundaryConditionType::Dirichlet);
     const domain::creators::Brick domain_creator{
         {{-2., 0., -1.}},
         {{2., 1., 1.}},
         {{1, 1, 1}},
         {{3, 3, 3}},
-        VariantType{make_boundary_condition<system>(
-            elliptic::BoundaryConditionType::Dirichlet)},
-        VariantType{make_boundary_condition<system>(
-            elliptic::BoundaryConditionType::Dirichlet)},
-        VariantType{make_boundary_condition<system>(
-            elliptic::BoundaryConditionType::Dirichlet)},
-        nullptr};
+        {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+          {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+          {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
     test_subdomain_operator<system,
                             tmpl::list<InitializeConstitutiveRelation<3>>>(
         domain_creator);

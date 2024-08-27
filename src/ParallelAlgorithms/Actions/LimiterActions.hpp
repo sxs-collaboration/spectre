@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <map>
 #include <optional>

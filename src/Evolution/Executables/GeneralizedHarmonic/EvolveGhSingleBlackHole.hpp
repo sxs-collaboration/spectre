@@ -251,11 +251,11 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
-                         evolution::Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
+              tmpl::list<
+                  ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
+                  evolution::Actions::RunEventsAndTriggers,
+                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = gh_dg_element_array;

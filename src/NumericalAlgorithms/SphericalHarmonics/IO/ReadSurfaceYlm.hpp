@@ -50,9 +50,10 @@ std::vector<ylm::Strahlkorper<Frame>> read_surface_ylm(
  * \param relative_epsilon How much error is allowed when looking for a specific
  * time. This is useful so users don't have to know the specific time to machine
  * precision.
+ * \param check_frame Whether to check the frame in the subfile or not.
  */
 template <typename Frame>
 ylm::Strahlkorper<Frame> read_surface_ylm_single_time(
     const std::string& file_name, const std::string& surface_subfile_name,
-    double time, double relative_epsilon);
+    double time, double relative_epsilon, bool check_frame = true);
 }  // namespace ylm

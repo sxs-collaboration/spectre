@@ -636,7 +636,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Grid, Frame::Distorted, Frame::Inertial),
-                        (Frame::Inertial))
+                        (Frame::Inertial, Frame::Distorted))
 #undef INSTANTIATE
 #undef MEASUREMENTFRAME
 #undef METRICFRAME

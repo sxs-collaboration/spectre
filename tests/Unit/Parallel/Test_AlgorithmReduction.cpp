@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -24,7 +24,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -42,10 +42,8 @@ class DataBox;
 }  // namespace db
 struct TestMetavariables;
 
-// The reason we use a 46 element array is that on Wheeler, the SXS
-// supercomputer at Caltech, there are 23 worker threads per node and we want to
-// be able to test on two nodes to make sure multinode communication is working
-// correctly.
+// The reason we use a 46 element array is that we want to be able to test on
+// two nodes to make sure multinode communication is working correctly.
 static constexpr int number_of_1d_array_elements = 46;
 
 // [reduce_sum_int_action]

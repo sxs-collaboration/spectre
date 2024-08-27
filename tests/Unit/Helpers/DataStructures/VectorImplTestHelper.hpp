@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
-#include <memory>  // IWYU pragma: keep
+#include <memory>
 #include <random>
 #include <sstream>
 #include <tuple>
@@ -21,9 +21,9 @@
 #include "Framework/TestingFramework.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Math.hpp"  // IWYU pragma: keep
+#include "Utilities/Math.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
@@ -382,6 +382,22 @@ void vector_test_construct_and_assign(
     CHECK(initializer_list_constructed.is_owning());
     CHECK(gsl::at(initializer_list_constructed, 0) == generated_value2);
     CHECK(gsl::at(initializer_list_constructed, 1) == generated_value3);
+
+    // construct from STL containers
+    const VectorType vector_constructed{
+        std::vector<typename VectorType::value_type>{
+            static_cast<typename VectorType::value_type>(generated_value2),
+            static_cast<typename VectorType::value_type>(generated_value3)}};
+    CHECK(vector_constructed.size() == 2);
+    CHECK(vector_constructed.is_owning());
+    CHECK(vector_constructed == initializer_list_constructed);
+    const VectorType array_constructed{
+        std::array<typename VectorType::value_type, 2>{
+            {static_cast<typename VectorType::value_type>(generated_value2),
+             static_cast<typename VectorType::value_type>(generated_value3)}}};
+    CHECK(array_constructed.size() == 2);
+    CHECK(array_constructed.is_owning());
+    CHECK(array_constructed == initializer_list_constructed);
 
     // check equality operators do not perform approximate comparison
     CHECK(SINGLE_ARG(

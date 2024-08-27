@@ -13,10 +13,11 @@
 namespace dg {
 
 namespace detail {
-template <size_t Dim>
-void apply_mass_matrix_impl(gsl::not_null<double*> data, const Mesh<Dim>& mesh);
-template <size_t Dim>
-void apply_inverse_mass_matrix_impl(gsl::not_null<double*> data,
+template <typename ValueType, size_t Dim>
+void apply_mass_matrix_impl(gsl::not_null<ValueType*> data,
+                            const Mesh<Dim>& mesh);
+template <typename ValueType, size_t Dim>
+void apply_inverse_mass_matrix_impl(gsl::not_null<ValueType*> data,
                                     const Mesh<Dim>& mesh);
 }  // namespace detail
 
@@ -50,14 +51,14 @@ void apply_inverse_mass_matrix_impl(gsl::not_null<double*> data,
  * correction term on Legendre-Gauss-Lobatto meshes.
  */
 /// @{
-template <size_t Dim>
-void apply_mass_matrix(const gsl::not_null<DataVector*> data,
+template <typename DataType, size_t Dim>
+void apply_mass_matrix(const gsl::not_null<DataType*> data,
                        const Mesh<Dim>& mesh) {
   ASSERT(data->size() == mesh.number_of_grid_points(),
-         "The DataVector has size " << data->size() << ", but expected size "
-                                    << mesh.number_of_grid_points()
-                                    << " on the given mesh.");
-  detail::apply_mass_matrix_impl(data->data(), mesh);
+         "The data has size " << data->size() << ", but expected size "
+                              << mesh.number_of_grid_points()
+                              << " on the given mesh.");
+  detail::apply_mass_matrix_impl(make_not_null(data->data()), mesh);
 }
 
 template <size_t Dim, typename TagsList>
@@ -71,7 +72,8 @@ void apply_mass_matrix(const gsl::not_null<Variables<TagsList>*> data,
   constexpr size_t num_comps =
       Variables<TagsList>::number_of_independent_components;
   for (size_t i = 0; i < num_comps; ++i) {
-    detail::apply_mass_matrix_impl(data->data() + i * num_points, mesh);
+    detail::apply_mass_matrix_impl(make_not_null(data->data() + i * num_points),
+                                   mesh);
   }
 }
 /// @}
@@ -82,14 +84,14 @@ void apply_mass_matrix(const gsl::not_null<Variables<TagsList>*> data,
  * \see dg::apply_mass_matrix
  */
 /// @{
-template <size_t Dim>
-void apply_inverse_mass_matrix(const gsl::not_null<DataVector*> data,
+template <typename DataType, size_t Dim>
+void apply_inverse_mass_matrix(const gsl::not_null<DataType*> data,
                                const Mesh<Dim>& mesh) {
   ASSERT(data->size() == mesh.number_of_grid_points(),
-         "The DataVector has size " << data->size() << ", but expected size "
-                                    << mesh.number_of_grid_points()
-                                    << " on the given mesh.");
-  detail::apply_inverse_mass_matrix_impl(data->data(), mesh);
+         "The data has size " << data->size() << ", but expected size "
+                              << mesh.number_of_grid_points()
+                              << " on the given mesh.");
+  detail::apply_inverse_mass_matrix_impl(make_not_null(data->data()), mesh);
 }
 
 template <size_t Dim, typename TagsList>
@@ -103,7 +105,8 @@ void apply_inverse_mass_matrix(const gsl::not_null<Variables<TagsList>*> data,
   constexpr size_t num_comps =
       Variables<TagsList>::number_of_independent_components;
   for (size_t i = 0; i < num_comps; ++i) {
-    detail::apply_inverse_mass_matrix_impl(data->data() + i * num_points, mesh);
+    detail::apply_inverse_mass_matrix_impl(
+        make_not_null(data->data() + i * num_points), mesh);
   }
 }
 /// @}

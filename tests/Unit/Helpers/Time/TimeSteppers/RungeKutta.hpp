@@ -11,7 +11,7 @@
 namespace TestHelpers::RungeKutta {
 /// Sanity-check a Butcher tableau
 void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
-                   size_t expected_order, size_t expected_error_order);
+                   size_t expected_order);
 /// Convenience wrapper for the previous function
 void check_tableau(const TimeSteppers::RungeKutta& stepper);
 

@@ -18,11 +18,11 @@
 #include <brigand/brigand.hpp>
 
 #include <cstddef>
-#include <initializer_list>  // IWYU pragma: keep
+#include <initializer_list>
 #include <type_traits>
 #include <variant>
 
-#include "Utilities/TmplDigraph.hpp"  // IWYU pragma: export
+#include "Utilities/TmplDigraph.hpp"
 
 namespace brigand {
 /// \cond
@@ -481,9 +481,7 @@ using remove_duplicates =
     fold<List, clear<List>,
          if_<bind<none, _state, defer<std::is_same<_1, parent<_element>>>>,
              bind<push_back, _state, _element>, _state>>;
-}  // namespace brigand
 
-namespace brigand {
 template <bool>
 struct branch_if;
 

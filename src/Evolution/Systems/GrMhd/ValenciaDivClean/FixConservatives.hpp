@@ -6,10 +6,10 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/MagneticFieldTreatment.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

@@ -10,21 +10,21 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/Domain.hpp"  // IWYU pragma: keep
+#include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-template <size_t Dim, typename Frame>
+template <size_t Dim, typename Fr>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
 block_logical_coordinates_single_point(
-    const tnsr::I<double, Dim, Frame>& input_point, const Block<Dim>& block,
+    const tnsr::I<double, Dim, Fr>& input_point, const Block<Dim>& block,
     const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
   std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>> logical_point{};
   if (block.is_time_dependent()) {
-    if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+    if constexpr (std::is_same_v<Fr, ::Frame::Inertial>) {
       // Point is in the inertial frame, so we need to map to the grid
       // frame and then the logical frame.
       const auto moving_inv = block.moving_mesh_grid_to_inertial_map().inverse(
@@ -35,7 +35,7 @@ block_logical_coordinates_single_point(
       // logical to grid map is time-independent.
       logical_point =
           block.moving_mesh_logical_to_grid_map().inverse(moving_inv.value());
-    } else if constexpr (std::is_same_v<Frame, ::Frame::Distorted>) {
+    } else if constexpr (std::is_same_v<Fr, ::Frame::Distorted>) {
       // Point is in the distorted frame, so we need to map to the grid
       // frame and then the logical frame.
       if (not block.has_distorted_frame()) {
@@ -78,7 +78,7 @@ block_logical_coordinates_single_point(
       // frames in the block, so make sure Frame is
       // ::Frame::Grid. (The Inertial and Distorted cases were
       // handled above.)
-      static_assert(std::is_same_v<Frame, ::Frame::Grid>,
+      static_assert(std::is_same_v<Fr, ::Frame::Grid>,
                     "Cannot convert from given frame to Grid frame");
 
       // Point is in the grid frame, just map to logical frame.
@@ -86,7 +86,7 @@ block_logical_coordinates_single_point(
           block.moving_mesh_logical_to_grid_map().inverse(input_point);
     }
   } else {  // not block.is_time_dependent()
-    if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+    if constexpr (std::is_same_v<Fr, ::Frame::Inertial>) {
       logical_point = block.stationary_map().inverse(input_point);
     } else {
       // If the map is time-independent, then the grid, distorted, and
@@ -94,8 +94,8 @@ block_logical_coordinates_single_point(
       // or distorted frames, convert to the inertial frame
       // (this conversion is just a type conversion).
       // Otherwise throw a static_assert.
-      static_assert(std::is_same_v<Frame, ::Frame::Grid> or
-                        std::is_same_v<Frame, ::Frame::Distorted>,
+      static_assert(std::is_same_v<Fr, ::Frame::Grid> or
+                        std::is_same_v<Fr, ::Frame::Distorted>,
                     "Cannot convert from given frame to Inertial frame");
       tnsr::I<double, Dim, ::Frame::Inertial> x_inertial(0.0);
       for (size_t d = 0; d < Dim; ++d) {
@@ -133,14 +133,14 @@ block_logical_coordinates_single_point(
   return logical_point;
 }
 
-template <size_t Dim, typename Frame>
+template <size_t Dim, typename Fr>
 std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
-    const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,
+    const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Fr>& x,
     const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
   const size_t num_pts = get<0>(x).size();
   std::vector<BlockLogicalCoords<Dim>> block_coord_holders(num_pts);
   for (size_t s = 0; s < num_pts; ++s) {
-    tnsr::I<double, Dim, Frame> x_frame(0.0);
+    tnsr::I<double, Dim, Fr> x_frame(0.0);
     for (size_t d = 0; d < Dim; ++d) {
       x_frame.get(d) = x.get(d)[s];
     }

@@ -9,8 +9,8 @@
 #include <memory>
 #include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -36,10 +36,6 @@
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare Tags::dt
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
 
 namespace {
 template <size_t Index, size_t Dim>

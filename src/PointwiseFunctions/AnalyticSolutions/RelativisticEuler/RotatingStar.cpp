@@ -19,8 +19,10 @@
 #include "NumericalAlgorithms/Interpolation/PolynomialInterpolation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -30,8 +32,8 @@
 
 namespace RelativisticEuler::Solutions {
 namespace detail {
-CstSolution::CstSolution(const std::string& filename,
-                         const double equilibrium_kappa) {
+CstSolution::CstSolution(const std::string& filename, const bool is_polytrope,
+                         const double polytropic_constant = 0.) {
   if (not file_system::check_if_file_exists(filename)) {
     ERROR("Cannot open file '" << filename
                                << "' in CstSolution/RotatingStar\n");
@@ -61,6 +63,23 @@ CstSolution::CstSolution(const std::string& filename,
   gamma_.destructive_resize(num_grid_points_);
   omega_.destructive_resize(num_grid_points_);
 
+  // Import the data and rescale.
+  // If the `PolytropicConstant` option was specified in the input file,
+  // `is_polytrope` is set to `true` and the data is rescaled according to the
+  // normalization used in equations 15-23 in \cite{Cook1992}, which uses
+  // geometric units and sets the polytropic constant as a free parameter. If
+  // the user does not want to rescale, they should set `PolytropicConstant` to
+  // be `1.`, which is the value used in RotNS.
+  // If instead `EquationOfState` is specified, `is_polytrope` is set to `false`
+  // and the data is rescaled according to the normalization used in equations
+  // A1-A10 in \cite{Cook1994}. This uses CGS units, defined by a fundamental
+  // length scale $\kappa^{1/2}$, defined as $\kappa = \frac{c^2}{G
+  // \epsilon_0}$, where $\epsilon_0 = 10^{15}$ g cm^-3 is an arbitrarily
+  // defined density scale.
+
+  const double kappa_norm = square(hydro::units::cgs::speed_of_light) /
+                            (1.e15 * hydro::units::cgs::G_Newton);
+
   for (size_t i = 0; i < num_radial_points_; i++) {
     for (size_t j = 0; j < num_angular_points_; j++) {
       // The data is stored in cos(theta) varies fastest
@@ -70,12 +89,39 @@ CstSolution::CstSolution(const std::string& filename,
       cst_file >> radius_[index] >> cos_theta_[index] >>
           rest_mass_density_[index] >> alpha_[index] >> rho_[index] >>
           gamma_[index] >> omega_[index] >> fluid_velocity_[index];
-      radius_[index] *= pow(equilibrium_kappa, polytropic_index_ * 0.5);
-      rest_mass_density_[index] *= pow(equilibrium_kappa, -polytropic_index_);
+      if (is_polytrope) {
+        radius_[index] *= pow(polytropic_constant, 0.5 * polytropic_index_);
+        rest_mass_density_[index] *=
+            pow(polytropic_constant, -polytropic_index_);
+        omega_[index] *= pow(polytropic_constant, -0.5 * polytropic_index_) /
+                         equatorial_radius_;
+        fluid_velocity_[index] *=
+            pow(polytropic_constant, -0.5 * polytropic_index_) /
+            equatorial_radius_;
+      } else {
+        radius_[index] *= sqrt(kappa_norm) / hydro::units::cgs::length_unit;
+        rest_mass_density_[index] *=
+            1.e15 / hydro::units::cgs::rest_mass_density_unit;
+        omega_[index] *= (hydro::units::cgs::speed_of_light /
+                          (equatorial_radius_ * sqrt(kappa_norm))) *
+                         hydro::units::cgs::time_unit;
+        fluid_velocity_[index] *= (hydro::units::cgs::speed_of_light /
+                                   (equatorial_radius_ * sqrt(kappa_norm))) *
+                                  hydro::units::cgs::time_unit;
+      }
     }
   }
   maximum_radius_ = max(radius_);
-  equatorial_radius_ *= pow(equilibrium_kappa, polytropic_index_ * 0.5);
+  if (is_polytrope) {
+    central_angular_speed_ *=
+        pow(polytropic_constant, -0.5 * polytropic_index_) / equatorial_radius_;
+    equatorial_radius_ *= pow(polytropic_constant, 0.5 * polytropic_index_);
+  } else {
+    central_angular_speed_ *= (hydro::units::cgs::speed_of_light /
+                               (equatorial_radius_ * sqrt(kappa_norm))) *
+                              hydro::units::cgs::time_unit;
+    equatorial_radius_ *= sqrt(kappa_norm) / hydro::units::cgs::length_unit;
+  }
 }
 
 void CstSolution::pup(PUP::er& p) {
@@ -307,10 +353,7 @@ std::array<double, 6> CstSolution::interpolate(
              "generating negative densities. Please file an issue so this bug "
              "can get fixed.");
     }
-
-    target_fluid_velocity /= equatorial_radius_;
   }
-  target_omega /= equatorial_radius_;
 
   return {
       {interpolate_hydro_vars ? target_rest_mass_density
@@ -356,10 +399,43 @@ void compute_angular_coordinates(
 RotatingStar::RotatingStar(std::string rot_ns_filename,
                            double polytropic_constant)
     : rot_ns_filename_(std::move(rot_ns_filename)),
-      cst_solution_{rot_ns_filename_, polytropic_constant},
+      cst_solution_{rot_ns_filename_, true, polytropic_constant},
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_{1.0 + 1.0 / cst_solution_.polytropic_index()},
-      equation_of_state_(polytropic_constant_, polytropic_exponent_) {}
+      is_polytrope_{true} {
+  equation_of_state_ =
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(
+          polytropic_constant_, polytropic_exponent_);
+}
+
+RotatingStar::RotatingStar(
+    std::string rot_ns_filename,
+    std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+        equation_of_state)
+    : rot_ns_filename_(std::move(rot_ns_filename)),
+      cst_solution_{rot_ns_filename_, false},
+      equation_of_state_(std::move(equation_of_state)) {}
+
+RotatingStar::RotatingStar(const RotatingStar& rhs)
+    : evolution::initial_data::InitialData(rhs),
+      rot_ns_filename_(rhs.rot_ns_filename_),
+      cst_solution_{rot_ns_filename_, rhs.is_polytrope_,
+                    rhs.polytropic_constant_},
+      polytropic_constant_(rhs.polytropic_constant_),
+      polytropic_exponent_(rhs.polytropic_exponent_),
+      is_polytrope_{rhs.is_polytrope_},
+      equation_of_state_(rhs.equation_of_state_->get_clone()) {}
+
+RotatingStar& RotatingStar::operator=(const RotatingStar& rhs) {
+  rot_ns_filename_ = rhs.rot_ns_filename_;
+  polytropic_constant_ = rhs.polytropic_constant_;
+  cst_solution_ = detail::CstSolution(rhs.rot_ns_filename_, rhs.is_polytrope_,
+                                      rhs.polytropic_constant_);
+  polytropic_exponent_ = rhs.polytropic_exponent_;
+  is_polytrope_ = rhs.is_polytrope_;
+  equation_of_state_ = rhs.equation_of_state_->get_clone();
+  return *this;
+}
 
 RotatingStar::RotatingStar(CkMigrateMessage* msg) : InitialData(msg) {}
 
@@ -374,6 +450,7 @@ void RotatingStar::pup(PUP::er& p) {
   p | cst_solution_;
   p | polytropic_constant_;
   p | polytropic_exponent_;
+  p | is_polytrope_;
   p | equation_of_state_;
 }
 
@@ -600,7 +677,9 @@ RotatingStar::variables(
     const tnsr::I<DataType, 3>& /*x*/,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   interpolate_vars_if_necessary(vars);
-  return {Scalar<DataType>{vars->rest_mass_density.value()}};
+  using std::max;
+  return {Scalar<DataType>{
+      DataType{max(atmosphere_floor_, vars->rest_mass_density.value())}}};
 }
 
 template <typename DataType>
@@ -609,14 +688,14 @@ RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  using std::max;
   return {hydro::relativistic_specific_enthalpy(
-      Scalar<DataType>{DataType{max(1.0e-300, get(rest_mass_density))}},
-      equation_of_state_.specific_internal_energy_from_density(
-          rest_mass_density),
-      equation_of_state_.pressure_from_density(rest_mass_density))};
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
+          vars, x,
+          tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})),
+      get<hydro::Tags::Pressure<DataType>>(
+          variables(vars, x, tmpl::list<hydro::Tags::Pressure<DataType>>{})))};
 }
 
 template <typename DataType>
@@ -626,7 +705,7 @@ tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> RotatingStar::variables(
     tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const {
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  return {equation_of_state_.temperature_from_density(rest_mass_density)};
+  return {equation_of_state_->temperature_from_density(rest_mass_density)};
 }
 
 template <typename DataType>
@@ -634,9 +713,9 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  return {equation_of_state_.pressure_from_density(rest_mass_density)};
+  return {equation_of_state_->pressure_from_density(
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})))};
 }
 
 template <typename DataType>
@@ -645,10 +724,9 @@ RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  return {equation_of_state_.specific_internal_energy_from_density(
-      rest_mass_density)};
+  return {equation_of_state_->specific_internal_energy_from_density(
+      get<hydro::Tags::RestMassDensity<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})))};
 }
 
 template <typename DataType>
@@ -907,12 +985,10 @@ auto RotatingStar::variables(
 PUP::able::PUP_ID RotatingStar::my_PUP_ID = 0;
 
 bool operator==(const RotatingStar& lhs, const RotatingStar& rhs) {
-  // The equation of state and CST solution aren't explicitly checked. However,
-  // if rot_ns_filename_ and the polytropic_exponent_ and polytropic_constant_
-  // are the same, then the solution and EOS should be too.
   return lhs.rot_ns_filename_ == rhs.rot_ns_filename_ and
          lhs.polytropic_constant_ == rhs.polytropic_constant_ and
-         lhs.polytropic_exponent_ == rhs.polytropic_exponent_;
+         lhs.polytropic_exponent_ == rhs.polytropic_exponent_ and
+         *lhs.equation_of_state_ == *rhs.equation_of_state_;
 }
 
 bool operator!=(const RotatingStar& lhs, const RotatingStar& rhs) {

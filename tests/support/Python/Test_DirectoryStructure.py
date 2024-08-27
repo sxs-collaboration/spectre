@@ -13,6 +13,7 @@ from spectre.support.DirectoryStructure import (
     list_checkpoints,
     list_segments,
 )
+from spectre.support.Logging import configure_logging
 
 
 class TestDirectoryStructure(unittest.TestCase):
@@ -65,5 +66,5 @@ class TestDirectoryStructure(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

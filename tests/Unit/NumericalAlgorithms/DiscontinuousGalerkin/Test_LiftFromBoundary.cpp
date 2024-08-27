@@ -98,7 +98,8 @@ template <>
 auto make_map<2>() {
   return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{{-1.0, 1.0, -1.0, -0.9}, {-1.0, 1.0, -1.0, -0.9}},
-      domain::CoordinateMaps::Wedge<2>{1.0, 2.0, 0.0, 1.0, {}, false});
+      domain::CoordinateMaps::Wedge<2>{
+          1.0, 2.0, 0.0, 1.0, OrientationMap<2>::create_aligned(), false});
 }
 
 template <>
@@ -109,7 +110,8 @@ auto make_map<3>() {
                {-1.0, 1.0, -1.0, 1.0}},
       domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge<2>,
                                              Affine>{
-          {1.0, 2.0, 0.0, 1.0, {}, false}, {0.0, 1.0, 0.0, 1.0}});
+          {1.0, 2.0, 0.0, 1.0, OrientationMap<2>::create_aligned(), false},
+          {0.0, 1.0, 0.0, 1.0}});
 }
 
 template <size_t Dim>

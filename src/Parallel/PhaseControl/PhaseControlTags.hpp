@@ -32,12 +32,14 @@ struct TriggerAndPhaseChanges {
   static constexpr Options::String help =
       "Phase changes that are evaluated when the Trigger fires.";
   using options = tmpl::list<Trigger, PhaseChanges>;
-  void pup(PUP::er& p) {
-    p | trigger;
-    p | phase_changes;
-  }
-  std::unique_ptr<::Trigger> trigger;
-  std::vector<std::unique_ptr<::PhaseChange>> phase_changes;
+
+  TriggerAndPhaseChanges();
+  TriggerAndPhaseChanges(
+      std::unique_ptr<::Trigger> trigger_in,
+      std::vector<std::unique_ptr<::PhaseChange>> phase_changes_in);
+  void pup(PUP::er& p);
+  std::unique_ptr<::Trigger> trigger{};
+  std::vector<std::unique_ptr<::PhaseChange>> phase_changes{};
 };
 
 namespace OptionTags {

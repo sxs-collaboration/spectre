@@ -8,12 +8,12 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
@@ -30,6 +30,7 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -37,11 +38,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <pup.h>
-// IWYU pragma: no_include <unordered_map>
-
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 // a silly step chooser that just always rejects, to test the step rejection
@@ -57,11 +53,12 @@ struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
   explicit StepRejector(CkMigrateMessage* /*unused*/) {}
   StepRejector() = default;
 
-  std::pair<double, bool> operator()(const double last_step_magnitude) const {
-    return {last_step_magnitude, false};
+  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
+    return {{.size_goal = last_step}, false};
   }
 
   bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
 
   void pup(PUP::er& /*p*/) override {}
 };

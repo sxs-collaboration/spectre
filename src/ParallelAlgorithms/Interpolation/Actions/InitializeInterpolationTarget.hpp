@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "ParallelAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -20,7 +20,7 @@
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 /// \cond
-// IWYU pragma: no_forward_declare db::DataBox
+
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;

@@ -50,7 +50,9 @@ neighbors_of_child(
     if (gsl::at(parent_info.flags, dim) == Flag::Split and
         has_potential_sibling(child_id, direction)) {
       const auto id = sibling_id(dim);
-      result.first.emplace(direction, Neighbors<VolumeDim>{{id}, {}});
+      result.first.emplace(
+          direction, Neighbors<VolumeDim>{
+                         {id}, OrientationMap<VolumeDim>::create_aligned()});
       result.second.insert({{direction, id}, parent_info.new_mesh});
     } else {
       const auto new_neighbor_ids_and_meshes = amr::new_neighbor_ids(
@@ -72,7 +74,9 @@ neighbors_of_child(
     if (gsl::at(parent_info.flags, dim) == Flag::Split and
         has_potential_sibling(child_id, direction)) {
       const auto id = sibling_id(dim);
-      result.first.emplace(direction, Neighbors<VolumeDim>{{id}, {}});
+      result.first.emplace(
+          direction, Neighbors<VolumeDim>{
+                         {id}, OrientationMap<VolumeDim>::create_aligned()});
       result.second.insert({{direction, id}, parent_info.new_mesh});
     }
   }

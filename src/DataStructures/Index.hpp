@@ -16,7 +16,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
 namespace PUP {
@@ -85,12 +85,19 @@ class Index {
     ASSERT(d < Dim,
            "Can't slice dimension " << d << " from an Index<" << Dim << ">");
     std::array<size_t, Dim - 1> t{};
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds="
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
     for (size_t i = 0; i < d; ++i) {
       gsl::at(t, i) = gsl::at(indices_, i);
     }
     for (size_t i = d + 1; i < Dim; ++i) {
       gsl::at(t, i - 1) = gsl::at(indices_, i);
     }
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
     return Index<Dim - 1>(t);
   }
 

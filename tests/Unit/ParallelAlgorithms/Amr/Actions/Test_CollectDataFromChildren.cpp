@@ -102,69 +102,77 @@ auto neighbor_3_info() {
 
 Element<2> child_1() {
   static Element<2> result{
-      child_1_id,
-      DirectionMap<2, Neighbors<2>>{
-          {Direction<2>::lower_xi(),
-           Neighbors<2>{std::unordered_set{neighbor_1_id},
-                        OrientationMap<2>{}}},
-          {Direction<2>::upper_xi(),
-           Neighbors<2>{std::unordered_set{child_2_id}, OrientationMap<2>{}}},
-          {Direction<2>::lower_eta(),
-           Neighbors<2>{std::unordered_set{child_3_id}, OrientationMap<2>{}}},
-          {Direction<2>::upper_eta(),
-           Neighbors<2>{std::unordered_set{child_3_id}, OrientationMap<2>{}}}}};
+      child_1_id, DirectionMap<2, Neighbors<2>>{
+                      {Direction<2>::lower_xi(),
+                       Neighbors<2>{std::unordered_set{neighbor_1_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_xi(),
+                       Neighbors<2>{std::unordered_set{child_2_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::lower_eta(),
+                       Neighbors<2>{std::unordered_set{child_3_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_eta(),
+                       Neighbors<2>{std::unordered_set{child_3_id},
+                                    OrientationMap<2>::create_aligned()}}}};
   return result;
 }
 
 Element<2> child_2() {
   static Element<2> result{
-      child_2_id,
-      DirectionMap<2, Neighbors<2>>{
-          {Direction<2>::lower_xi(),
-           Neighbors<2>{std::unordered_set{child_1_id}, OrientationMap<2>{}}},
-          {Direction<2>::upper_xi(),
-           Neighbors<2>{
-               std::unordered_set{neighbor_2_id},
-               OrientationMap<2>{std::array{Direction<2>::lower_eta(),
-                                            Direction<2>::upper_xi()}}}},
-          {Direction<2>::lower_eta(),
-           Neighbors<2>{std::unordered_set{child_4_id}, OrientationMap<2>{}}},
-          {Direction<2>::upper_eta(),
-           Neighbors<2>{std::unordered_set{child_4_id}, OrientationMap<2>{}}}}};
+      child_2_id, DirectionMap<2, Neighbors<2>>{
+                      {Direction<2>::lower_xi(),
+                       Neighbors<2>{std::unordered_set{child_1_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_xi(),
+                       Neighbors<2>{std::unordered_set{neighbor_2_id},
+                                    OrientationMap<2>{
+                                        std::array{Direction<2>::lower_eta(),
+                                                   Direction<2>::upper_xi()}}}},
+                      {Direction<2>::lower_eta(),
+                       Neighbors<2>{std::unordered_set{child_4_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_eta(),
+                       Neighbors<2>{std::unordered_set{child_4_id},
+                                    OrientationMap<2>::create_aligned()}}}};
   return result;
 }
 
 Element<2> child_3() {
   static Element<2> result{
-      child_3_id,
-      DirectionMap<2, Neighbors<2>>{
-          {Direction<2>::lower_xi(),
-           Neighbors<2>{std::unordered_set{neighbor_1_id},
-                        OrientationMap<2>{}}},
-          {Direction<2>::upper_xi(),
-           Neighbors<2>{std::unordered_set{child_4_id}, OrientationMap<2>{}}},
-          {Direction<2>::lower_eta(),
-           Neighbors<2>{std::unordered_set{child_1_id}, OrientationMap<2>{}}},
-          {Direction<2>::upper_eta(),
-           Neighbors<2>{std::unordered_set{child_1_id}, OrientationMap<2>{}}}}};
+      child_3_id, DirectionMap<2, Neighbors<2>>{
+                      {Direction<2>::lower_xi(),
+                       Neighbors<2>{std::unordered_set{neighbor_1_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_xi(),
+                       Neighbors<2>{std::unordered_set{child_4_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::lower_eta(),
+                       Neighbors<2>{std::unordered_set{child_1_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_eta(),
+                       Neighbors<2>{std::unordered_set{child_1_id},
+                                    OrientationMap<2>::create_aligned()}}}};
   return result;
 }
 
 Element<2> child_4() {
   static Element<2> result{
-      child_4_id,
-      DirectionMap<2, Neighbors<2>>{
-          {Direction<2>::lower_xi(),
-           Neighbors<2>{std::unordered_set{child_3_id}, OrientationMap<2>{}}},
-          {Direction<2>::upper_xi(),
-           Neighbors<2>{
-               std::unordered_set{neighbor_3_id},
-               OrientationMap<2>{std::array{Direction<2>::lower_eta(),
-                                            Direction<2>::upper_xi()}}}},
-          {Direction<2>::lower_eta(),
-           Neighbors<2>{std::unordered_set{child_2_id}, OrientationMap<2>{}}},
-          {Direction<2>::upper_eta(),
-           Neighbors<2>{std::unordered_set{child_2_id}, OrientationMap<2>{}}}}};
+      child_4_id, DirectionMap<2, Neighbors<2>>{
+                      {Direction<2>::lower_xi(),
+                       Neighbors<2>{std::unordered_set{child_3_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_xi(),
+                       Neighbors<2>{std::unordered_set{neighbor_3_id},
+                                    OrientationMap<2>{
+                                        std::array{Direction<2>::lower_eta(),
+                                                   Direction<2>::upper_xi()}}}},
+                      {Direction<2>::lower_eta(),
+                       Neighbors<2>{std::unordered_set{child_2_id},
+                                    OrientationMap<2>::create_aligned()}},
+                      {Direction<2>::upper_eta(),
+                       Neighbors<2>{std::unordered_set{child_2_id},
+                                    OrientationMap<2>::create_aligned()}}}};
   return result;
 }
 

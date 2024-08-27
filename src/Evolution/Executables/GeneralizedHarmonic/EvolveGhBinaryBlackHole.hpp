@@ -121,6 +121,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -163,13 +164,8 @@
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
-#include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepChoosers/Increase.hpp"
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -196,7 +192,7 @@ using SpecInitialData = NoSuchType;
 
 /// \cond
 namespace Frame {
-// IWYU pragma: no_forward_declare MathFunction
+
 struct Inertial;
 }  // namespace Frame
 namespace PUP {
@@ -476,7 +472,8 @@ struct EvolutionMetavars {
                                                non_tensor_compute_tags>,
                 control_system::metafunctions::control_system_events<
                     control_systems>,
-                Events::time_events<system>>>>,
+                Events::time_events<system>,
+                dg::Events::ObserveTimeStepVolume<3>>>>,
         tmpl::pair<control_system::size::State,
                    control_system::size::States::factory_creatable_states>,
         tmpl::pair<
@@ -540,7 +537,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                         ::domain::CheckFunctionsOfTimeAreReadyPostprocessor,
+                         ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
+                             volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
@@ -550,7 +548,8 @@ struct EvolutionMetavars {
                   system, volume_dim, false>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                  ::domain::CheckFunctionsOfTimeAreReadyPostprocessor>>,
+                  ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
+                      volume_dim>>>,
               control_system::Actions::LimitTimeStep<control_systems>,
               Actions::UpdateU<system>>>,
       Actions::CleanHistory<system, local_time_stepping>,
@@ -612,11 +611,11 @@ struct EvolutionMetavars {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
-                         evolution::Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
+              tmpl::list<
+                  ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
+                  evolution::Actions::RunEventsAndTriggers,
+                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     static std::string name() { return "BondiSachsInterpolation"; }

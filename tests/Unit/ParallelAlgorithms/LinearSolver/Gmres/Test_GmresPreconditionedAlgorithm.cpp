@@ -31,7 +31,7 @@ struct Metavariables {
       "Test the preconditioned GMRES linear solver algorithm"};
 
   using linear_solver =
-      LinearSolver::gmres::Gmres<Metavariables, helpers::fields_tag,
+      LinearSolver::gmres::Gmres<Metavariables, helpers::fields_tag<double>,
                                  SerialGmres, true>;
   using preconditioner = LinearSolver::Richardson::Richardson<
       typename linear_solver::operand_tag, Preconditioner,

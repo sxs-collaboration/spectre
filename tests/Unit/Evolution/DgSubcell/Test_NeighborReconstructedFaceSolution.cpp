@@ -40,10 +40,10 @@ template <size_t Dim>
 using NeighborReconstructionMap = DirectionalIdMap<Dim, DataVector>;
 
 template <size_t Dim>
-using MortarData = evolution::dg::BoundaryData<Dim>;
+using BoundaryData = evolution::dg::BoundaryData<Dim>;
 
 template <size_t Dim>
-using MortarDataMap = DirectionalIdMap<Dim, MortarData<Dim>>;
+using BoundaryDataMap = DirectionalIdMap<Dim, BoundaryData<Dim>>;
 
 template <size_t Dim>
 struct Metavariables {
@@ -85,7 +85,7 @@ void test() {
                  evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
       std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
 
-  std::pair<TimeStepId, MortarDataMap<Dim>> mortar_data_from_neighbors{};
+  std::pair<TimeStepId, BoundaryDataMap<Dim>> mortar_data_from_neighbors{};
   for (size_t d = 0; d < Dim; ++d) {
     const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
                                    Spectral::Quadrature::GaussLobatto};
@@ -109,21 +109,25 @@ void test() {
     if (d % 2 == 0) {
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
-          MortarData<Dim>{dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
-                          dg_flux_data,   {},           1};
+          BoundaryData<Dim>{
+              dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
+              dg_flux_data,   {},           1};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          MortarData<Dim>{fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
-                          std::nullopt,   {},           2};
+          BoundaryData<Dim>{
+              fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
+              std::nullopt,   {},           2};
     } else {
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
-          MortarData<Dim>{dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
-                          dg_flux_data,   {},           3};
+          BoundaryData<Dim>{
+              dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
+              dg_flux_data,   {},           3};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          MortarData<Dim>{fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
-                          std::nullopt,   {},           4};
+          BoundaryData<Dim>{
+              fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
+              std::nullopt,   {},           4};
     }
   }
   evolution::dg::subcell::neighbor_reconstructed_face_solution<

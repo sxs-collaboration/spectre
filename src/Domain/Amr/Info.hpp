@@ -24,6 +24,9 @@ namespace amr {
 /// amr::Flag%s and Mesh of an element.
 template <size_t VolumeDim>
 struct Info {
+  Info();
+  Info(std::array<Flag, VolumeDim> flags_in, Mesh<VolumeDim> new_mesh_in);
+
   std::array<Flag, VolumeDim> flags;
   Mesh<VolumeDim> new_mesh;
 

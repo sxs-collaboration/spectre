@@ -28,7 +28,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 template <size_t VolumeDim>

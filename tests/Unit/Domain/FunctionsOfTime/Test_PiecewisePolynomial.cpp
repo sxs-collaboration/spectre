@@ -32,6 +32,16 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
       *f_of_t_derived;
   CHECK(*f_of_t_derived == f_of_t_derived_copy);
   while (t < final_time) {
+    const auto lambdas_all = f_of_t->func_and_all_derivs(t);
+    CHECK(approx(lambdas_all[0][0]) == cube(t));
+    CHECK(approx(lambdas_all[0][1]) == square(t));
+    CHECK(approx(lambdas_all[1][0]) == 3.0 * square(t));
+    CHECK(approx(lambdas_all[1][1]) == 2.0 * t);
+    CHECK(approx(lambdas_all[2][0]) == 6.0 * t);
+    CHECK(approx(lambdas_all[2][1]) == 2.0);
+    CHECK(approx(lambdas_all[3][0]) == 6.0);
+    CHECK(approx(lambdas_all[3][1]) == 0.0);
+
     const auto lambdas0 = f_of_t->func_and_2_derivs(t);
     CHECK(approx(lambdas0[0][0]) == cube(t));
     CHECK(approx(lambdas0[0][1]) == square(t));
@@ -79,6 +89,10 @@ void test_non_const_deriv(
     CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
   t *= 1.0 + std::numeric_limits<double>::epsilon();
+  const auto lambdas_all = f_of_t->func_and_all_derivs(t);
+  CHECK(approx(lambdas_all[0][0]) == 33.948);
+  CHECK(approx(lambdas_all[1][0]) == 19.56);
+  CHECK(approx(lambdas_all[2][0]) == 7.2);
   const auto lambdas0 = f_of_t->func_and_2_derivs(t);
   CHECK(approx(lambdas0[0][0]) == 33.948);
   CHECK(approx(lambdas0[1][0]) == 19.56);
@@ -96,6 +110,15 @@ void test_non_const_deriv(
 
 template <size_t DerivOrder>
 void test_within_roundoff(const FunctionsOfTime::FunctionOfTime& f_of_t) {
+  const auto lambdas_all = f_of_t.func_and_all_derivs(1.0 - 5.0e-16);
+  CHECK(approx(lambdas_all[0][0]) == 1.0);
+  CHECK(approx(lambdas_all[1][0]) == 3.0);
+  CHECK(approx(lambdas_all[2][0]) == 6.0);
+  CHECK(approx(lambdas_all[3][0]) == 6.0);
+  CHECK(approx(lambdas_all[0][1]) == 1.0);
+  CHECK(approx(lambdas_all[1][1]) == 2.0);
+  CHECK(approx(lambdas_all[2][1]) == 2.0);
+  CHECK(approx(lambdas_all[3][1]) == 0.0);
   const auto lambdas0 = f_of_t.func_and_2_derivs(1.0 - 5.0e-16);
   CHECK(approx(lambdas0[0][0]) == 1.0);
   CHECK(approx(lambdas0[1][0]) == 3.0);
@@ -153,6 +176,14 @@ void check_func_and_derivs(
   CHECK(f_of_t.func(t) == q.func_and_derivs<0>(t));
   CHECK(f_of_t.func_and_deriv(t) == q.func_and_derivs<1>(t));
   CHECK(f_of_t.func_and_2_derivs(t) == q.func_and_derivs<2>(t));
+  auto func_and_all_derivs = f_of_t.func_and_all_derivs(t);
+  auto func_and_2_derivs = q.func_and_derivs<2>(t);
+  CHECK(func_and_all_derivs.size() == MaxDeriv + 1);
+  for (size_t i = 0;
+       i < std::min(func_and_all_derivs.size(), func_and_2_derivs.size());
+       i++) {
+    CHECK(func_and_all_derivs[i] == gsl::at(func_and_2_derivs, i));
+  }
 
   test_copy_semantics(f_of_t);
   auto f_of_t_copy = f_of_t;

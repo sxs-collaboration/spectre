@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"

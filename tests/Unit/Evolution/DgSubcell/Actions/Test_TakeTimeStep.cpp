@@ -115,14 +115,16 @@ auto make_grid_map() {
     return make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
         ProductOf2Maps<Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                        Affine(-1.0, 1.0, -1.0, -0.8)),
-        domain::CoordinateMaps::Wedge<2>(0.5, 0.75, 1.0, 1.0, {}, false));
+        domain::CoordinateMaps::Wedge<2>(
+            0.5, 0.75, 1.0, 1.0, OrientationMap<2>::create_aligned(), false));
   } else {
     using domain::CoordinateMaps::ProductOf3Maps;
     return make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
         ProductOf3Maps<Affine, Affine, Affine>(Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, -1.0, -0.8),
                                                Affine(-1.0, 1.0, 0.8, 1.0)),
-        domain::CoordinateMaps::Wedge<3>(0.5, 0.75, 1.0, 1.0, {}, false));
+        domain::CoordinateMaps::Wedge<3>(
+            0.5, 0.75, 1.0, 1.0, OrientationMap<3>::create_aligned(), false));
   }
 }
 
@@ -146,10 +148,10 @@ void test() {
                                Spectral::Quadrature::CellCentered};
   // Set up nonsense mortar data since we only need to check that it got
   // cleared.
-  DirectionalIdMap<Dim, evolution::dg::MortarData<Dim>> mortar_data{};
-  evolution::dg::MortarData<Dim> lower_xi_data{};
-  lower_xi_data.local_mortar_data() =
-      std::pair{subcell_mesh.slice_away(0), DataVector{1.1, 2.43, 7.8}};
+  DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
+  evolution::dg::MortarDataHolder<Dim> lower_xi_data{};
+  lower_xi_data.local().face_mesh = subcell_mesh.slice_away(0);
+  lower_xi_data.local().mortar_data = DataVector{1.1, 2.43, 7.8};
   const DirectionalId<Dim> lower_id{Direction<Dim>::lower_xi(),
                                     ElementId<Dim>{1}};
   mortar_data[lower_id] = lower_xi_data;
@@ -164,8 +166,8 @@ void test() {
                                        evolution::dg::Tags::MortarData<Dim>>(
             runner, 0)
             .at(lower_id)
-            .local_mortar_data()
-            .has_value());
+            .local()
+            .mortar_data.has_value());
 
   // Invoke the TakeTimeStep action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -173,8 +175,8 @@ void test() {
   CHECK_FALSE(ActionTesting::get_databox_tag<
                   comp, evolution::dg::Tags::MortarData<Dim>>(runner, 0)
                   .at(lower_id)
-                  .local_mortar_data()
-                  .has_value());
+                  .local()
+                  .mortar_data.has_value());
   CHECK(metavars::time_derivative_invoked);
 }
 

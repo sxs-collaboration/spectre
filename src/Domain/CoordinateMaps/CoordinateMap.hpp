@@ -407,7 +407,9 @@ class CoordinateMap
 
   /// @{
   /// Compute the mapped coordinates, frame velocity, Jacobian, and inverse
-  /// Jacobian
+  /// Jacobian. The inverse Jacobian is computed by numerically inverting the
+  /// Jacobian as this was measured to be quicker than computing it directly for
+  /// more complex map concatenations.
   std::tuple<tnsr::I<double, dim, TargetFrame>,
              InverseJacobian<double, dim, SourceFrame, TargetFrame>,
              Jacobian<double, dim, SourceFrame, TargetFrame>,

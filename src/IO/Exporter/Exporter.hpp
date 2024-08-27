@@ -15,6 +15,8 @@
 #include <variant>
 #include <vector>
 
+/// Functions that are intended to be used by external programs, e.g. to
+/// interpolate data in volume files to target points.
 namespace spectre::Exporter {
 
 /// Identifies an observation by its ID in the volume data file.
@@ -45,6 +47,15 @@ struct ObservationStep {
  * "Lapse", "Shift_x", "Shift_y", "Shift_z", "SpatialMetric_xx", etc.
  * Look into the H5 file to see what components are available.
  * \param target_points The points to interpolate to, in inertial coordinates.
+ * \param extrapolate_into_excisions Enables extrapolation into excision regions
+ * of the domain (default is `false`). This can be useful to fill the excision
+ * region with (constraint-violating but smooth) data so it can be imported into
+ * moving puncture codes. Specifically, we implement the strategy used in
+ * \cite Etienne2008re adjusted for distorted excisions: we choose uniformly
+ * spaced radial anchor points spaced as $\Delta r = 0.3 r_\mathrm{AH}$ in the
+ * grid frame (where the excision is spherical), then map the anchor points to
+ * the distorted frame (where we have the target point) and do a 7th order
+ * polynomial extrapolation into the excision region.
  * \param num_threads The number of threads to use if OpenMP is linked in. If
  * not specified, OpenMP will determine the number of threads automatically.
  * It's also possible to set the number of threads using the environment
@@ -62,6 +73,7 @@ std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<ObservationId, ObservationStep>& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
+    bool extrapolate_into_excisions = false,
     std::optional<size_t> num_threads = std::nullopt);
 
 }  // namespace spectre::Exporter

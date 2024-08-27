@@ -68,7 +68,7 @@ class ElementId;
 
 template <size_t Dim>
 bool is_zeroth_element(const ElementId<Dim>&, const std::optional<size_t>&);
-/// \cond
+/// \endcond
 
 namespace Parallel {
 /// \cond
@@ -681,26 +681,33 @@ void DistributedObject<
   p | inboxes_;
   p | array_index_;
   p | global_cache_proxy_;
-  // Note that `perform_registration_or_deregistration` passes the `box_` by
-  // const reference. If mutable access is required to the box, this function
-  // call needs to be carefully considered with respect to the `p | box_` call
-  // in both packing and unpacking scenarios.
-  //
-  // Note also that we don't perform (de)registrations when pup'ing for a
-  // checkpoint/restart. This enables a simpler first-pass implementation of
-  // checkpointing, though it means the restart must occur on the same
-  // hardware configuration (same number of nodes and same procs per node)
-  // used when writing the checkpoint.
-  if (phase_ == Parallel::Phase::LoadBalancing) {
-    // The deregistration and registration below does not actually insert
-    // anything into the PUP::er stream, so nothing is done on a sizing pup.
-    if (p.isPacking()) {
-      deregister_element<ParallelComponent>(
-          box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+  if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+    if (phase_ == Parallel::Phase::LoadBalancing) {
+      ERROR(
+          "Can't do load balacing phase with DG element collection right now.");
     }
-    if (p.isUnpacking()) {
-      register_element<ParallelComponent>(
-          box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+  } else {
+    // Note that `perform_registration_or_deregistration` passes the `box_` by
+    // const reference. If mutable access is required to the box, this function
+    // call needs to be carefully considered with respect to the `p | box_` call
+    // in both packing and unpacking scenarios.
+    //
+    // Note also that we don't perform (de)registrations when pup'ing for a
+    // checkpoint/restart. This enables a simpler first-pass implementation of
+    // checkpointing, though it means the restart must occur on the same
+    // hardware configuration (same number of nodes and same procs per node)
+    // used when writing the checkpoint.
+    if (phase_ == Parallel::Phase::LoadBalancing) {
+      // The deregistration and registration below does not actually insert
+      // anything into the PUP::er stream, so nothing is done on a sizing pup.
+      if (p.isPacking()) {
+        deregister_element<ParallelComponent>(
+            box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+      }
+      if (p.isUnpacking()) {
+        register_element<ParallelComponent>(
+            box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+      }
     }
   }
 }
@@ -821,10 +828,17 @@ void DistributedObject<
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
                                                     Action>::registrar;
-    Action::template apply<ParallelComponent>(
-        box_, *Parallel::local_branch(global_cache_proxy_),
-        static_cast<const array_index&>(array_index_),
-        make_not_null(&node_lock_));
+    if constexpr (Parallel::is_dg_element_collection_v<parallel_component>) {
+      Action::template apply<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_),
+          static_cast<const array_index&>(array_index_),
+          make_not_null(&node_lock_), this);
+    } else {
+      Action::template apply<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_),
+          static_cast<const array_index&>(array_index_),
+          make_not_null(&node_lock_));
+    }
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }

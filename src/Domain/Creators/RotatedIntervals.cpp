@@ -10,15 +10,15 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -109,8 +109,9 @@ Domain<1> RotatedIntervals::create_domain() const {
       boundary_conditions_all_blocks{};
   Domain<1> domain = rectilinear_domain<1>(
       Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}}, {},
-      {OrientationMap<1>{}, OrientationMap<1>{std::array<Direction<1>, 1>{
-                                {Direction<1>::lower_xi()}}}},
+      {OrientationMap<1>::create_aligned(),
+       OrientationMap<1>{
+           std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}},
       is_periodic_in_);
   if (not time_dependence_->is_none()) {
     const size_t number_of_blocks = domain.blocks().size();

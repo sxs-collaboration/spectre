@@ -3,6 +3,7 @@
 
 import functools
 import logging
+import os
 import re
 import shutil
 import subprocess
@@ -12,8 +13,10 @@ from typing import Optional, Sequence, Union
 import click
 import jinja2
 import jinja2.meta
+import numpy as np
 import yaml
 from rich.pretty import pretty_repr
+from yaml.representer import SafeRepresenter
 
 from spectre.support.DirectoryStructure import (
     Checkpoint,
@@ -39,7 +42,13 @@ def _resolve_executable(executable: Union[str, Path]) -> Path:
     Raises 'ValueError' if the executable is not found.
     """
     logger.debug(f"Resolving executable: {executable}")
-    which_exec = shutil.which(executable)
+    # This default bin dir is already added in spectre.__main__.py, but only
+    # when running the CLI. It is the bin dir of the build directory that
+    # contains this script. When running Python code outside the CLI this should
+    # also be the default bin dir.
+    default_bin_dir = Path(__file__).parent.parent.parent.parent.resolve()
+    path = os.environ["PATH"] + ":" + str(default_bin_dir)
+    which_exec = shutil.which(executable, path=path)
     if not which_exec:
         raise ValueError(
             f"Executable not found: {executable}. Make sure it is compiled. To"
@@ -113,6 +122,13 @@ def _copy_submit_script_template(
 # Write `pathlib.Path` objects to YAML as plain strings
 def _path_representer(dumper: yaml.Dumper, path: Path) -> yaml.nodes.ScalarNode:
     return dumper.represent_scalar("tag:yaml.org,2002:str", str(path))
+
+
+# Write `numpy.float64` as regular floats
+def _numpy_representer(
+    dumper: yaml.Dumper, value: np.float64
+) -> yaml.nodes.ScalarNode:
+    return dumper.represent_scalar("tag:yaml.org,2002:float", str(value))
 
 
 def schedule(
@@ -650,6 +666,7 @@ def schedule(
         with open(run_dir / context_file_name, "w") as open_context_file:
             yaml_dumper = yaml.SafeDumper
             yaml_dumper.add_multi_representer(Path, _path_representer)
+            yaml_dumper.add_multi_representer(np.float64, _numpy_representer)
             yaml.dump(context, open_context_file, Dumper=yaml_dumper)
 
     # Submit

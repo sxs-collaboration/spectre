@@ -20,17 +20,12 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_forward_declare db::DataBox
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
-
-// IWYU pragma: no_include <lrtslock.h>
 
 namespace {
 namespace TestSimpleAndThreadedActions {

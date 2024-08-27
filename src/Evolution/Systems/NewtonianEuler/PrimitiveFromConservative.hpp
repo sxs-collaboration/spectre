@@ -20,8 +20,6 @@ class not_null;
 class DataVector;
 /// \endcond
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace NewtonianEuler {
 
 /*!

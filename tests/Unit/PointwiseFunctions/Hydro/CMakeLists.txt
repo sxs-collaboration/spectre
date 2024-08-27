@@ -3,6 +3,7 @@
 
 add_subdirectory(EquationsOfState)
 add_subdirectory(InitialData)
+add_subdirectory(Python)
 
 set(LIBRARY "Test_Hydro")
 

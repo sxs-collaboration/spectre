@@ -28,6 +28,7 @@
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
@@ -62,8 +63,8 @@ void test_subcell_timederivative() {
 
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   for (size_t i = 0; i < 2 * Dim; ++i) {
-    neighbors[gsl::at(Direction<Dim>::all_directions(), i)] =
-        Neighbors<Dim>{{ElementId<Dim>{i + 1, {}}}, {}};
+    neighbors[gsl::at(Direction<Dim>::all_directions(), i)] = Neighbors<Dim>{
+        {ElementId<Dim>{i + 1, {}}}, OrientationMap<Dim>::create_aligned()};
   }
   const Element<Dim> element{ElementId<Dim>{0, {}}, neighbors};
 

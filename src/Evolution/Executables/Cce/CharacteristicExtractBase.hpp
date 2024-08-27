@@ -14,7 +14,7 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <bool EvolveCcm>
@@ -112,7 +112,7 @@ struct CharacteristicExtractDefaults {
                           tmpl::list<Cce::Tags::CauchyAngularCoords>>;
   using cce_step_choosers =
       tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
-                 StepChoosers::Increase<StepChooserUse::LtsStep>,
+                 StepChoosers::LimitIncrease<StepChooserUse::LtsStep>,
                  StepChoosers::ErrorControl<StepChooserUse::LtsStep,
                                             Tags::Variables<evolved_swsh_tags>,
                                             swsh_vars_selector>,

@@ -132,7 +132,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
   test_interface_apply<1, Tags::InternalDirections<1>>(
       // Reference element has one internal direction:
       // [ X | ]-> xi
-      {{0, {{{1, 0}}}}, {{Direction<1>::upper_xi(), {{{0, {{{1, 1}}}}}, {}}}}},
+      {{0, {{{1, 0}}}},
+       {{Direction<1>::upper_xi(),
+         {{{0, {{{1, 1}}}}}, OrientationMap<1>::create_aligned()}}}},
       {Direction<1>::upper_xi()}, {{Direction<1>::upper_xi(), 2.}},
       {{Direction<1>::upper_xi(), 5.}});
   test_interface_apply<1, Tags::InternalDirections<1>>(
@@ -153,7 +155,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
       // |X| |
       // +-+-+> xi
       {{0, {{{1, 0}, {0, 0}}}},
-       {{Direction<2>::upper_xi(), {{{0, {{{1, 1}, {0, 0}}}}}, {}}}}},
+       {{Direction<2>::upper_xi(),
+         {{{0, {{{1, 1}, {0, 0}}}}}, OrientationMap<2>::create_aligned()}}}},
       {Direction<2>::upper_xi()}, {{Direction<2>::upper_xi(), 2.}},
       {{Direction<2>::upper_xi(), 5.}});
 }

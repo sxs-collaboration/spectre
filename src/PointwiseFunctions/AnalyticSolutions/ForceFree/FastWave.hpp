@@ -17,7 +17,7 @@
 
 /// \cond
 class DataVector;
-// IWYU pragma: no_forward_declare Tensor
+
 namespace PUP {
 class er;
 }  // namespace PUP

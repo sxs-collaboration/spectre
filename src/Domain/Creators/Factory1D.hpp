@@ -7,7 +7,7 @@
 
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Factory.hpp"
-#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedIntervals.hpp"
 #include "Utilities/TMPL.hpp"
 

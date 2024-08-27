@@ -9,14 +9,12 @@
 
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/Initialize.hpp"
-#include "IO/Observer/Tags.hpp"           // IWYU pragma: keep
-#include "Parallel/ArrayComponentId.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Tags.hpp"
+#include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <exception>
 
 namespace {
 template <typename Metavariables>

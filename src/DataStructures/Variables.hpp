@@ -21,6 +21,7 @@
 #include <pup.h>
 #include <string>
 #include <tuple>
+#include <type_traits>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
@@ -29,6 +30,7 @@
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/MathWrapper.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -45,9 +47,6 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
-
-// IWYU pragma: no_forward_declare MakeWithValueImpl
-// IWYU pragma: no_forward_declare Variables
 
 /// \cond
 template <typename X, typename Symm, typename IndexList>
@@ -441,16 +440,27 @@ class Variables<tmpl::list<Tags...>> {
     return *this;
   }
 
-  template <typename... WrappedTags,
-            Requires<tmpl2::flat_all<std::is_same_v<
-                db::remove_all_prefixes<WrappedTags>,
-                db::remove_all_prefixes<Tags>>...>::value> = nullptr>
+  template <
+      typename... WrappedTags,
+      Requires<
+          sizeof...(WrappedTags) == sizeof...(Tags) and
+          tmpl2::flat_all_v<std::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                           db::remove_all_prefixes<Tags>>...>
+#ifdef __CUDACC__
+          and tmpl2::flat_all_v<std::is_same_v<typename WrappedTags::type,
+                                               typename Tags::type>...>
+#endif
+          > = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
       const Variables<tmpl::list<WrappedTags...>>& lhs, const Variables& rhs) {
+#ifndef __CUDACC__
+    // nvcc incorrectly hits this static_assert and variants of it, but using
+    // the additional requires part above is fine.
     static_assert(
         (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
          ...),
         "Tensor types do not match!");
+#endif
     return lhs.get_variable_data() + rhs.variable_data_;
   }
   template <typename VT, bool VF>
@@ -464,16 +474,27 @@ class Variables<tmpl::list<Tags...>> {
     return lhs.variable_data_ + *rhs;
   }
 
-  template <typename... WrappedTags,
-            Requires<tmpl2::flat_all<std::is_same_v<
-                db::remove_all_prefixes<WrappedTags>,
-                db::remove_all_prefixes<Tags>>...>::value> = nullptr>
+  template <
+      typename... WrappedTags,
+      Requires<
+          sizeof...(WrappedTags) == sizeof...(Tags) and
+          tmpl2::flat_all_v<std::is_same_v<db::remove_all_prefixes<WrappedTags>,
+                                           db::remove_all_prefixes<Tags>>...>
+#ifdef __CUDACC__
+          and tmpl2::flat_all_v<std::is_same_v<typename WrappedTags::type,
+                                               typename Tags::type>...>
+#endif
+          > = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
       const Variables<tmpl::list<WrappedTags...>>& lhs, const Variables& rhs) {
+#ifndef __CUDACC__
+    // nvcc incorrectly hits this static_assert and variants of it, but using
+    // the additional requires part above is fine.
     static_assert(
         (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
          ...),
         "Tensor types do not match!");
+#endif
     return lhs.get_variable_data() - rhs.variable_data_;
   }
   template <typename VT, bool VF>

@@ -5,14 +5,17 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 
 #include "Options/String.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+struct StepperErrorTolerances;
 class TimeDelta;
 namespace PUP {
 class er;
@@ -215,8 +218,6 @@ class AdamsBashforth : public LtsTimeStepper {
 
   size_t order() const override;
 
-  size_t error_estimate_order() const override;
-
   uint64_t number_of_substeps() const override;
 
   uint64_t number_of_substeps_for_error() const override;
@@ -262,9 +263,10 @@ class AdamsBashforth : public LtsTimeStepper {
                      const TimeDelta& time_step) const;
 
   template <typename T>
-  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-                     const ConstUntypedHistory<T>& history,
-                     const TimeDelta& time_step) const;
+  std::optional<StepperErrorEstimate> update_u_impl(
+      gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+      const TimeDelta& time_step,
+      const std::optional<StepperErrorTolerances>& tolerances) const;
 
   template <typename T>
   void clean_history_impl(const MutableUntypedHistory<T>& history) const;
@@ -277,7 +279,12 @@ class AdamsBashforth : public LtsTimeStepper {
   template <typename T, typename Delta>
   void update_u_common(gsl::not_null<T*> u,
                        const ConstUntypedHistory<T>& history,
-                       const Delta& time_step, size_t order) const;
+                       const Delta& time_step) const;
+
+  template <typename T>
+  void step_error(gsl::not_null<T*> u_error,
+                  const ConstUntypedHistory<T>& history,
+                  const TimeDelta& time_step) const;
 
   template <typename T>
   bool can_change_step_size_impl(const TimeStepId& time_id,

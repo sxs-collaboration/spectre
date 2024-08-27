@@ -51,9 +51,9 @@ Evolution:
     AdamsBashforth:
       Order: 3
   StepChoosers:
-    - Constant: 0.05
-    - Increase:
+    - LimitIncrease:
         Factor: 2
+    - PreventRapidIncrease
     - Cfl:
         SafetyFactor: 0.2
 
@@ -61,12 +61,11 @@ DomainCreator:
   Brick:
     LowerBound: [0.0, 0.0, 0.0]
     UpperBound: [6.283185307179586, 6.283185307179586, 6.283185307179586]
+    Distribution: [Linear, Linear, Linear]
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [6, 6, 6]
     TimeDependence: None
-    BoundaryConditionInX: Periodic
-    BoundaryConditionInY: Periodic
-    BoundaryConditionInZ: Periodic
+    BoundaryConditions: [Periodic, Periodic, Periodic]
 
 SpatialDiscretization:
   BoundaryCorrection:

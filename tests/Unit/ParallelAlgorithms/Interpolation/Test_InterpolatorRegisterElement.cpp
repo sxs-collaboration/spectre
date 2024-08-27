@@ -7,16 +7,14 @@
 
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include <boost/variant/get.hpp>
 
 class DataVector;
 namespace intrp::Tags {

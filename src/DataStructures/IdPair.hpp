@@ -14,9 +14,19 @@
  */
 template <typename IdType, typename DataType>
 struct IdPair {
+  IdPair();
+  IdPair(IdType id_in, DataType data_in);
+
   IdType id{};
   DataType data{};
 };
+
+template <typename IdType, typename DataType>
+IdPair<IdType, DataType>::IdPair() = default;
+
+template <typename IdType, typename DataType>
+IdPair<IdType, DataType>::IdPair(IdType id_in, DataType data_in)
+    : id(std::move(id_in)), data(std::move(data_in)) {}
 
 template <typename IdType, typename DataType>
 IdPair<std::decay_t<IdType>, std::decay_t<DataType>> make_id_pair(

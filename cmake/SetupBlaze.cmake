@@ -24,7 +24,25 @@ endif()
 # release, so we should specify an exact version requirement. However, Blaze
 # hasn't been consistent in naming releases (version 3.8.2 has 3.9.0 written
 # in Version.h).
-find_package(Blaze 3.8 REQUIRED)
+find_package(Blaze 3.8)
+
+if (NOT Blaze_FOUND)
+  if (NOT SPECTRE_FETCH_MISSING_DEPS)
+    message(FATAL_ERROR "Could not find Blaze. If you want to fetch "
+      "missing dependencies automatically, set SPECTRE_FETCH_MISSING_DEPS=ON.")
+  endif()
+  message(STATUS "Fetching Blaze")
+  include(FetchContent)
+  FetchContent_Declare(Blaze
+    URL https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.2.tar.gz
+    ${SPECTRE_FETCHCONTENT_BASE_ARGS}
+  )
+  # Configure Blaze CMake variables. Most configuration is done below.
+  set(BLAZE_SHARED_MEMORY_PARALLELIZATION 0 CACHE INTERNAL "Blaze SMP mode")
+  FetchContent_MakeAvailable(Blaze)
+  set(BLAZE_INCLUDE_DIR ${blaze_SOURCE_DIR})
+  set(BLAZE_VERSION "3.8.2")
+endif()
 
 message(STATUS "Blaze incl: ${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze vers: ${BLAZE_VERSION}")
@@ -112,6 +130,13 @@ target_compile_definitions(Blaze
   #   by the Blaze CMake configuration for the machine we are running on. We
   #   could override it here explicitly to tune performance.
   # BLAZE_CACHE_SIZE
+  # - Disable padding for dynamic matrices.
+  #   Blaze warns that this may decrease performance:
+  #   https://bitbucket.org/blaze-lib/blaze/src/c4d9e85414370e880e5e79c86e3c8d4d38dcde7a/blaze/config/Optimizations.h#lines-52
+  #   We haven't tested this much, so we may want to try enabling padding again.
+  #   To support padding, explicit calls to LAPACK functions need to pass
+  #   `.spacing()` instead of `.rows()/.columns()` to the `LDA`, `LDB`, etc.
+  #   parameters (see `[matrix_spacing]` in `Test_Spectral.cpp`).
   BLAZE_USE_PADDING=0
   # - Always enable non-temporal stores for cache optimization of large data
   #   structures: https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20Files#!streaming-non-temporal-stores
@@ -125,33 +150,13 @@ target_compile_definitions(Blaze
   BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  # CMake doesn't like function macros in target_compile_definitions, so we
-  # have to define it separately. We also need to make sure csignal is
-  # included. It is included in the PCH (see tools/SpectrePch.hpp).
-  # If there's no PCH, we need to include it here.
-  if (NOT USE_PCH)
-    target_compile_options(Blaze
-      INTERFACE
-      "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include csignal>")
-  endif()
+# We need to make sure `BlazeExceptions.hpp` is included. It is included in the
+# PCH (see tools/SpectrePch.hpp). If there's no PCH, we need to include it here.
+if (NOT USE_PCH)
   target_compile_options(Blaze
     INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:
-    -D 'BLAZE_THROW(EXCEPTION)=struct sigaction handler{}\;handler.sa_handler=\
-SIG_IGN\;handler.sa_flags=0\;sigemptyset(&handler.sa_mask)\;\
-sigaction(SIGTRAP,&handler,nullptr)\;raise(SIGTRAP)\;throw EXCEPTION'
-    >")
-else()
-  # In release mode disable checks completely.
-  set_property(TARGET Blaze
-    APPEND PROPERTY
-    INTERFACE_COMPILE_OPTIONS
-    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:
-    -D 'BLAZE_THROW(EXCEPTION)='
-    >")
+    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include Utilities/BlazeExceptions.hpp>")
 endif()
-
 
 add_interface_lib_headers(
   TARGET Blaze

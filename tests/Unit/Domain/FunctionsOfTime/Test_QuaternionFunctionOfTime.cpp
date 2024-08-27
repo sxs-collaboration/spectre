@@ -3,6 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <cmath>
 #include <vector>
 
@@ -200,6 +202,12 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     CHECK_ITERABLE_APPROX(qfot_serialized_deserialized.func_and_deriv(2.0),
                           qfot.func_and_deriv(2.0));
 
+    CHECK_THROWS_WITH(
+        qfot.quat_func_and_3_derivs(2.0),
+        Catch::Matchers::ContainsSubstring(
+            "Need more angle derivs to compute the third derivative of the "
+            "quaternion. Currently only have 2"));
+
     test_copy_semantics(qfot);
     test_move_semantics(std::move(qfot_serialized_deserialized), qfot);
   }
@@ -392,7 +400,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     }
     CHECK(qfot.expiration_after(0.0) == time_step);
 
-    // Get the quaternion and 2 derivatives at a certain time.
+    // Get the quaternion and 3 derivatives at a certain time.
     double check_time = 5.398;
     const std::array<DataVector, 3> quat_func_and_2_derivs =
         qfot.quat_func_and_2_derivs(check_time);
@@ -413,6 +421,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     const double omega =
         3 * fac1 * check_time * check_time + 2 * fac2 * check_time + fac3;
     const double dtomega = 6 * fac1 * check_time + 2 * fac2;
+    const double dt2omega = 6.0 * fac1;
 
     DataVector a_quat{{cos(0.5 * phi), 0.0, 0.0, sin(0.5 * phi)}};
     DataVector a_dtquat{
@@ -420,6 +429,12 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     DataVector a_dt2quat{{-0.5 * (a_dtquat[3] * omega + a_quat[3] * dtomega),
                           0.0, 0.0,
                           0.5 * (a_dtquat[0] * omega + a_quat[0] * dtomega)}};
+    DataVector a_dt3quat{
+        {-0.5 * (a_dt2quat[3] * omega + 2.0 * a_dtquat[3] * dtomega +
+                 a_quat[3] * dt2omega),
+         0.0, 0.0,
+         0.5 * (a_dt2quat[0] * omega + 2.0 * a_dtquat[0] * dtomega +
+                a_quat[0] * dt2omega)}};
 
     // Compare analytic solution to numerical
     Approx custom_approx = Approx::custom().epsilon(5.0e-12).scale(1.0);
@@ -436,6 +451,13 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
     {
       INFO("  Compare second derivative of quaternion");
       CHECK_ITERABLE_CUSTOM_APPROX(quat_func_and_2_derivs[2], a_dt2quat,
+                                   custom_approx);
+    }
+    {
+      INFO("  Compare third derivative of quaternion");
+      const std::array<DataVector, 4> quat_func_and_3_derivs =
+          qfot.quat_func_and_3_derivs(check_time);
+      CHECK_ITERABLE_CUSTOM_APPROX(quat_func_and_3_derivs[3], a_dt3quat,
                                    custom_approx);
     }
   }

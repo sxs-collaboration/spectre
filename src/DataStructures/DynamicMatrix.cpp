@@ -3,7 +3,10 @@
 
 #include "DataStructures/DynamicMatrix.hpp"
 
+#include <complex>
+
 #include "Options/ParseOptions.hpp"
+#include "Options/StdComplex.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace DynamicMatrix_detail {
@@ -20,7 +23,7 @@ std::vector<std::vector<Type>> parse_to_vectors(
   template std::vector<std::vector<TYPE(data)>> parse_to_vectors( \
       const Options::Option& options);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, std::complex<double>))
 
 #undef INSTANTIATE
 #undef TYPE

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -20,15 +20,15 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
-#include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -101,285 +101,293 @@ void test_brick() {
   const std::vector<std::array<size_t, 3>> refinement_level{{{3, 2, 4}}};
   const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}};
   const std::array<double, 3> upper_bound{{0.8, 5.0, 3.0}};
-  // Default OrientationMap is aligned.
-  const OrientationMap<3> aligned_orientation{};
+  const OrientationMap<3> aligned_orientation =
+      OrientationMap<3>::create_aligned();
+  const auto periodic_bc =
+      TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<
+          3>{};
 
-  const creators::Brick brick{lower_bound, upper_bound, refinement_level[0],
-                              grid_points[0],
-                              std::array<bool, 3>{{false, false, false}}};
-  test_brick_construction(brick, lower_bound, upper_bound, grid_points,
-                          refinement_level,
-                          std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
-                          std::vector<std::unordered_set<Direction<3>>>{
-                              {{Direction<3>::lower_xi()},
-                               {Direction<3>::upper_xi()},
-                               {Direction<3>::lower_eta()},
-                               {Direction<3>::upper_eta()},
-                               {Direction<3>::lower_zeta()},
-                               {Direction<3>::upper_zeta()}}});
-  using VariantType = std::variant<
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>,
-      creators::Brick::LowerUpperBoundaryCondition<
-          domain::BoundaryConditions::BoundaryCondition>>;
-
-  const creators::Brick brick_boundary_condition{
-      lower_bound,
-      upper_bound,
-      refinement_level[0],
-      grid_points[0],
-      VariantType{create_boundary_condition()},
-      VariantType{create_boundary_condition()},
-      VariantType{create_boundary_condition()},
-      {}};
-  test_brick_construction(brick_boundary_condition, lower_bound, upper_bound,
-                          grid_points, refinement_level,
-                          std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
-                          std::vector<std::unordered_set<Direction<3>>>{
-                              {{Direction<3>::lower_xi()},
-                               {Direction<3>::upper_xi()},
-                               {Direction<3>::lower_eta()},
-                               {Direction<3>::upper_eta()},
-                               {Direction<3>::lower_zeta()},
-                               {Direction<3>::upper_zeta()}}},
-                          {}, {}, true);
-
-  const creators::Brick periodic_x_brick{
-      lower_bound, upper_bound, refinement_level[0], grid_points[0],
-      std::array<bool, 3>{{true, false, false}}};
-  test_brick_construction(
-      periodic_x_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}});
-
-  const creators::Brick periodic_y_brick{
-      lower_bound, upper_bound, refinement_level[0], grid_points[0],
-      std::array<bool, 3>{{false, true, false}}};
-  test_brick_construction(
-      periodic_y_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}});
-
-  // Test periodic in z
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      std::array<bool, 3>{{false, false, true}}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()}}});
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], VariantType{create_boundary_condition()},
-                      VariantType{create_boundary_condition()},
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()}}},
-      {}, {}, true);
-  // Periodic in x
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()},
-                      VariantType{create_boundary_condition()},
-                      VariantType{create_boundary_condition()}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}},
-      {}, {}, true);
-  // Periodic in y
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], VariantType{create_boundary_condition()},
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()},
-                      VariantType{create_boundary_condition()}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}},
-      {}, {}, true);
-
-  // Test periodic in xy
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], std::array<bool, 3>{{true, true, false}}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}});
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()},
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()},
-                      VariantType{create_boundary_condition()}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}},
-      {}, {}, true);
-
-  // Test periodic in yz
-  const creators::Brick periodic_yz_brick{
-      lower_bound, upper_bound, refinement_level[0], grid_points[0],
-      std::array<bool, 3>{{false, true, true}}};
-  test_brick_construction(
-      periodic_yz_brick, lower_bound, upper_bound, grid_points,
-      refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{{
-          {Direction<3>::lower_xi()},
-          {Direction<3>::upper_xi()},
-      }});
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0], VariantType{create_boundary_condition()},
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()},
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()}, {Direction<3>::upper_xi()}}},
-      {}, {}, true);
-
-  const creators::Brick periodic_xz_brick{
-      lower_bound, upper_bound, refinement_level[0], grid_points[0],
-      std::array<bool, 3>{{true, false, true}}};
-  test_brick_construction(
-      periodic_xz_brick, lower_bound, upper_bound, grid_points,
-      refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
-  test_brick_construction(
-      creators::Brick{lower_bound, upper_bound, refinement_level[0],
-                      grid_points[0],
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()},
-                      VariantType{create_boundary_condition()},
-                      VariantType{TestHelpers::domain::BoundaryConditions::
-                                      TestPeriodicBoundaryCondition<3>{}
-                                          .get_clone()}},
-      lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
-      {}, {}, true);
-
-  const creators::Brick periodic_xyz_brick{
-      lower_bound, upper_bound, refinement_level[0], grid_points[0],
-      std::array<bool, 3>{{true, true, true}}};
-  test_brick_construction(
-      periodic_xyz_brick, lower_bound, upper_bound, grid_points,
-      refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{{}});
-
-  const creators::Brick periodic_brick_boundary_conditions{
-      lower_bound,
-      upper_bound,
-      refinement_level[0],
-      grid_points[0],
-      VariantType{TestHelpers::domain::BoundaryConditions::
-                      TestPeriodicBoundaryCondition<3>{}
-                          .get_clone()},
-      VariantType{TestHelpers::domain::BoundaryConditions::
-                      TestPeriodicBoundaryCondition<3>{}
-                          .get_clone()},
-      VariantType{TestHelpers::domain::BoundaryConditions::
-                      TestPeriodicBoundaryCondition<3>{}
-                          .get_clone()}};
-  test_brick_construction(
-      periodic_brick_boundary_conditions, lower_bound, upper_bound, grid_points,
-      refinement_level,
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, aligned_orientation}},
-           {Direction<3>::upper_xi(), {0, aligned_orientation}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {0, aligned_orientation}},
-           {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{{}}, {}, {}, true);
+  {
+    INFO("Not periodic, no boundary conditions");
+    const creators::Brick brick{lower_bound, upper_bound, refinement_level[0],
+                                grid_points[0],
+                                std::array<bool, 3>{{false, false, false}}};
+    test_brick_construction(brick, lower_bound, upper_bound, grid_points,
+                            refinement_level,
+                            std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
+                            std::vector<std::unordered_set<Direction<3>>>{
+                                {{Direction<3>::lower_xi()},
+                                 {Direction<3>::upper_xi()},
+                                 {Direction<3>::lower_eta()},
+                                 {Direction<3>::upper_eta()},
+                                 {Direction<3>::lower_zeta()},
+                                 {Direction<3>::upper_zeta()}}});
+  }
+  {
+    INFO("Not periodic, with boundary conditions");
+    const creators::Brick brick_boundary_condition{
+        lower_bound,
+        upper_bound,
+        refinement_level[0],
+        grid_points[0],
+        {{{{create_boundary_condition(), create_boundary_condition()}},
+          {{create_boundary_condition(), create_boundary_condition()}},
+          {{create_boundary_condition(), create_boundary_condition()}}}}};
+    test_brick_construction(brick_boundary_condition, lower_bound, upper_bound,
+                            grid_points, refinement_level,
+                            std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
+                            std::vector<std::unordered_set<Direction<3>>>{
+                                {{Direction<3>::lower_xi()},
+                                 {Direction<3>::upper_xi()},
+                                 {Direction<3>::lower_eta()},
+                                 {Direction<3>::upper_eta()},
+                                 {Direction<3>::lower_zeta()},
+                                 {Direction<3>::upper_zeta()}}},
+                            {}, {}, true);
+  }
+  {
+    INFO("Periodic in x");
+    test_brick_construction(
+        creators::Brick{lower_bound, upper_bound, refinement_level[0],
+                        grid_points[0],
+                        std::array<bool, 3>{{true, false, false}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()},
+             {Direction<3>::upper_eta()},
+             {Direction<3>::lower_zeta()},
+             {Direction<3>::upper_zeta()}}});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{create_boundary_condition(), create_boundary_condition()}},
+              {{create_boundary_condition(), create_boundary_condition()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()},
+             {Direction<3>::upper_eta()},
+             {Direction<3>::lower_zeta()},
+             {Direction<3>::upper_zeta()}}},
+        {}, {}, true);
+  }
+  {
+    INFO("Periodic in y");
+    test_brick_construction(
+        creators::Brick{lower_bound, upper_bound, refinement_level[0],
+                        grid_points[0],
+                        std::array<bool, 3>{{false, true, false}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_xi()},
+             {Direction<3>::upper_xi()},
+             {Direction<3>::lower_zeta()},
+             {Direction<3>::upper_zeta()}}});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{create_boundary_condition(), create_boundary_condition()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{create_boundary_condition(), create_boundary_condition()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_xi()},
+             {Direction<3>::upper_xi()},
+             {Direction<3>::lower_zeta()},
+             {Direction<3>::upper_zeta()}}},
+        {}, {}, true);
+  }
+  {
+    INFO("Periodic in z");
+    test_brick_construction(
+        creators::Brick{lower_bound, upper_bound, refinement_level[0],
+                        grid_points[0],
+                        std::array<bool, 3>{{false, false, true}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_xi()},
+             {Direction<3>::upper_xi()},
+             {Direction<3>::lower_eta()},
+             {Direction<3>::upper_eta()}}});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{create_boundary_condition(), create_boundary_condition()}},
+              {{create_boundary_condition(), create_boundary_condition()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_xi()},
+             {Direction<3>::upper_xi()},
+             {Direction<3>::lower_eta()},
+             {Direction<3>::upper_eta()}}},
+        {}, {}, true);
+  }
+  {
+    INFO("Test periodic in xy");
+    test_brick_construction(
+        creators::Brick{lower_bound, upper_bound, refinement_level[0],
+                        grid_points[0],
+                        std::array<bool, 3>{{true, true, false}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}},
+             {Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{create_boundary_condition(), create_boundary_condition()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}},
+             {Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}},
+        {}, {}, true);
+  }
+  {
+    INFO("Test periodic in yz");
+    const creators::Brick periodic_yz_brick{
+        lower_bound, upper_bound, refinement_level[0], grid_points[0],
+        std::array<bool, 3>{{false, true, true}}};
+    test_brick_construction(
+        periodic_yz_brick, lower_bound, upper_bound, grid_points,
+        refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}},
+             {Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{{
+            {Direction<3>::lower_xi()},
+            {Direction<3>::upper_xi()},
+        }});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{create_boundary_condition(), create_boundary_condition()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}},
+             {Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_xi()}, {Direction<3>::upper_xi()}}},
+        {}, {}, true);
+  }
+  {
+    INFO("Test periodic in xz");
+    const creators::Brick periodic_xz_brick{
+        lower_bound, upper_bound, refinement_level[0], grid_points[0],
+        std::array<bool, 3>{{true, false, true}}};
+    test_brick_construction(
+        periodic_xz_brick, lower_bound, upper_bound, grid_points,
+        refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}},
+             {Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{create_boundary_condition(), create_boundary_condition()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}},
+             {Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
+        {}, {}, true);
+  }
+  {
+    INFO("Test periodic in xyz");
+    const creators::Brick periodic_xyz_brick{
+        lower_bound, upper_bound, refinement_level[0], grid_points[0],
+        std::array<bool, 3>{{true, true, true}}};
+    test_brick_construction(
+        periodic_xyz_brick, lower_bound, upper_bound, grid_points,
+        refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}},
+             {Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}},
+             {Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{{}});
+    test_brick_construction(
+        creators::Brick{
+            lower_bound,
+            upper_bound,
+            refinement_level[0],
+            grid_points[0],
+            {{{{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
+        lower_bound, upper_bound, grid_points, refinement_level,
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, aligned_orientation}},
+             {Direction<3>::upper_xi(), {0, aligned_orientation}},
+             {Direction<3>::lower_eta(), {0, aligned_orientation}},
+             {Direction<3>::upper_eta(), {0, aligned_orientation}},
+             {Direction<3>::lower_zeta(), {0, aligned_orientation}},
+             {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
+        std::vector<std::unordered_set<Direction<3>>>{{}}, {}, {}, true);
+  }
 
   // Test serialization of the map
   creators::register_derived_with_charm();
@@ -395,61 +403,35 @@ void test_brick() {
                               Affine{-1., 1., lower_bound[2], upper_bound[2]}}),
                  *serialize_and_deserialize(base_map));
 
-  CHECK_THROWS_WITH(
-      creators::Brick(
-          lower_bound, upper_bound, refinement_level[0], grid_points[0],
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>()},
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>()},
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>()},
-          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "None boundary condition is not supported. If you would like an "
-          "outflow-type boundary condition, you must use that."));
-  CHECK_THROWS_WITH(
-      creators::Brick(
-          lower_bound, upper_bound, refinement_level[0], grid_points[0],
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>()},
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>()},
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>()},
-          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "None boundary condition is not supported. If you would like an "
-          "outflow-type boundary condition, you must use that."));
-  CHECK_THROWS_WITH(
-      creators::Brick(
-          lower_bound, upper_bound, refinement_level[0], grid_points[0],
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>()},
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestPeriodicBoundaryCondition<3>>()},
-          VariantType{std::make_unique<TestHelpers::domain::BoundaryConditions::
-                                           TestNoneBoundaryCondition<3>>()},
-          nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "None boundary condition is not supported. If you would like an "
-          "outflow-type boundary condition, you must use that."));
+  {
+    INFO("Parse error tests");
+    const TestHelpers::domain::BoundaryConditions::TestNoneBoundaryCondition<3>
+        none_bc{};
+    CHECK_THROWS_WITH(
+        creators::Brick(
+            lower_bound, upper_bound, refinement_level[0], grid_points[0],
+            {{{{none_bc.get_clone(), none_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
+              {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}},
+            {}, nullptr, Options::Context{false, {}, 1, 1}),
+        Catch::Matchers::ContainsSubstring(
+            "None boundary condition is not supported. If you would like an "
+            "outflow-type boundary condition, you must use that."));
+  }
 }
 
 void test_brick_factory() {
   const std::string boundary_conditions{
-      "  BoundaryConditionInX:\n"
-      "    TestBoundaryCondition:\n"
-      "      Direction: upper-zeta\n"
-      "      BlockId: 2\n"
-      "  BoundaryConditionInY:\n"
-      "    TestBoundaryCondition:\n"
-      "      Direction: upper-zeta\n"
-      "      BlockId: 2\n"
-      "  BoundaryConditionInZ:\n"
-      "    TestBoundaryCondition:\n"
-      "      Direction: upper-zeta\n"
-      "      BlockId: 2\n"};
+      "  BoundaryConditions:\n"
+      "    - TestBoundaryCondition:\n"
+      "        Direction: upper-zeta\n"
+      "        BlockId: 2\n"
+      "    - TestBoundaryCondition:\n"
+      "        Direction: upper-zeta\n"
+      "        BlockId: 2\n"
+      "    - TestBoundaryCondition:\n"
+      "        Direction: upper-zeta\n"
+      "        BlockId: 2\n"};
   {
     INFO("Brick factory time independent, no boundary condition");
     const auto domain_creator = TestHelpers::test_option_tag<
@@ -459,6 +441,7 @@ void test_brick_factory() {
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
+        "  Distribution: [Linear, Linear, Linear]\n"
         "  IsPeriodicIn: [True,False,True]\n"
         "  InitialGridPoints: [3,4,3]\n"
         "  InitialRefinement: [2,3,2]\n"
@@ -469,10 +452,14 @@ void test_brick_factory() {
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
         std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_xi(), {0, {}}},
-             {Direction<3>::upper_xi(), {0, {}}},
-             {Direction<3>::lower_zeta(), {0, {}}},
-             {Direction<3>::upper_zeta(), {0, {}}}}},
+            {{Direction<3>::lower_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::lower_zeta(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_zeta(),
+              {0, OrientationMap<3>::create_aligned()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
   }
@@ -485,6 +472,7 @@ void test_brick_factory() {
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
+        "  Distribution: [Linear, Linear, Linear]\n"
         "  InitialGridPoints: [3,4,3]\n"
         "  InitialRefinement: [2,3,2]\n"
         "  TimeDependence: None\n" +
@@ -511,6 +499,7 @@ void test_brick_factory() {
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
+        "  Distribution: [Linear, Linear, Linear]\n"
         "  IsPeriodicIn: [True,False,True]\n"
         "  InitialGridPoints: [3,4,3]\n"
         "  InitialRefinement: [2,3,2]\n"
@@ -531,10 +520,14 @@ void test_brick_factory() {
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
         std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_xi(), {0, {}}},
-             {Direction<3>::upper_xi(), {0, {}}},
-             {Direction<3>::lower_zeta(), {0, {}}},
-             {Direction<3>::upper_zeta(), {0, {}}}}},
+            {{Direction<3>::lower_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::lower_zeta(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_zeta(),
+              {0, OrientationMap<3>::create_aligned()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
         std::make_tuple(
@@ -551,10 +544,14 @@ void test_brick_factory() {
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
         std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_xi(), {0, {}}},
-             {Direction<3>::upper_xi(), {0, {}}},
-             {Direction<3>::lower_zeta(), {0, {}}},
-             {Direction<3>::upper_zeta(), {0, {}}}}},
+            {{Direction<3>::lower_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_xi(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::lower_zeta(),
+              {0, OrientationMap<3>::create_aligned()}},
+             {Direction<3>::upper_zeta(),
+              {0, OrientationMap<3>::create_aligned()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
         std::make_tuple(
@@ -577,6 +574,7 @@ void test_brick_factory() {
         "Brick:\n"
         "  LowerBound: [0,0,0]\n"
         "  UpperBound: [1,2,3]\n"
+        "  Distribution: [Linear, Linear, Linear]\n"
         "  InitialGridPoints: [3,4,3]\n"
         "  InitialRefinement: [2,3,2]\n"
         "  TimeDependence:\n"

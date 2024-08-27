@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 
 /// \cond
 template <size_t VolumeDim>
@@ -23,9 +24,6 @@ class BlockNeighbor;
 namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
-namespace FunctionsOfTime {
-class FunctionOfTime;
-}  // namespace FunctionsOfTime
 }  // namespace domain
 class DataVector;
 template <size_t VolumeDim>

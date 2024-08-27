@@ -41,13 +41,17 @@ DomainCreator:
   Rectangle:
     LowerBound: [-0.25, 0.0]
     UpperBound: [0.75, 0.1]
+    Distribution: [Linear, Linear]
     InitialRefinement: [4, 0]
     InitialGridPoints: [2, 2]
     TimeDependence: None
-    BoundaryCondition:
-      DirichletAnalytic:
-        AnalyticPrescription:
-          *InitialData
+    BoundaryConditions:
+      - DirichletAnalytic:
+          AnalyticPrescription:
+            *InitialData
+      - DirichletAnalytic:
+          AnalyticPrescription:
+            *InitialData
 
 SpatialDiscretization:
   BoundaryCorrection:

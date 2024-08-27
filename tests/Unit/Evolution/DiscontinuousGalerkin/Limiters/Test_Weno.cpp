@@ -17,7 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
@@ -40,14 +40,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_include "DataStructures/DataBox/Prefixes.hpp"
-// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
-// IWYU pragma: no_forward_declare Limiters::Weno
-// IWYU pragma: no_forward_declare Tags::Mean
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
-// IWYU pragma: no_forward_declare intrp::RegularGrid
 
 namespace {
 
@@ -200,7 +192,8 @@ void test_package_data_1d() {
   const Mesh<1> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const OrientationMap<1> orientation_aligned{};
+  const OrientationMap<1> orientation_aligned =
+      OrientationMap<1>::create_aligned();
   test_package_data_work(mesh, orientation_aligned);
 
   const OrientationMap<1> orientation_flipped(
@@ -213,7 +206,8 @@ void test_package_data_2d() {
   const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const OrientationMap<2> orientation_aligned{};
+  const OrientationMap<2> orientation_aligned =
+      OrientationMap<2>::create_aligned();
   test_package_data_work(mesh, orientation_aligned);
 
   const OrientationMap<2> orientation_rotated(std::array<Direction<2>, 2>{
@@ -226,7 +220,8 @@ void test_package_data_3d() {
   const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const OrientationMap<3> orientation_aligned{};
+  const OrientationMap<3> orientation_aligned =
+      OrientationMap<3>::create_aligned();
   test_package_data_work(mesh, orientation_aligned);
 
   const OrientationMap<3> orientation_rotated(std::array<Direction<3>, 3>{

@@ -2,7 +2,6 @@
 # See LICENSE.txt for details.
 
 import logging
-import subprocess
 from pathlib import Path
 from typing import Optional, Union
 
@@ -10,16 +9,76 @@ import click
 import yaml
 from rich.pretty import pretty_repr
 
+import spectre.IO.H5 as spectre_h5
 from spectre.support.Schedule import schedule, scheduler_options
+from spectre.Visualization.ReadH5 import to_dataframe
 
 logger = logging.getLogger(__name__)
 
 INSPIRAL_INPUT_FILE_TEMPLATE = Path(__file__).parent / "Inspiral.yaml"
 
 
+# These parameters come from empirically tested values in SpEC and SpECTRE
+def _control_system_params(
+    mass_left: float,
+    mass_right: float,
+    spin_magnitude_left: float,
+    spin_magnitude_right: float,
+) -> dict:
+    total_mass = mass_left + mass_right
+    mass_ratio = max(mass_left, mass_right) / min(mass_left, mass_right)
+    if spin_magnitude_left > 0.9 or spin_magnitude_right > 0.9:
+        damping_time_base = 0.1
+        decrease_threshold_base = 2e-4
+        max_damping_timescale = 10.0
+    else:
+        damping_time_base = 0.2
+        decrease_threshold_base = 2e-3
+        max_damping_timescale = 20.0
+
+    kinematic_timescale = damping_time_base * total_mass
+    decrease_threshold = (
+        0.1 * decrease_threshold_base / (mass_ratio + 1.0 / mass_ratio)
+    )
+    increase_threshold_fraction = 0.25
+
+    return {
+        "MaxDampingTimescale": max_damping_timescale,
+        "KinematicTimescale": kinematic_timescale,
+        "SizeATimescale": damping_time_base * 0.2 * mass_right,
+        "SizeBTimescale": damping_time_base * 0.2 * mass_left,
+        "ShapeATimescale": 5.0 * kinematic_timescale,
+        "ShapeBTimescale": 5.0 * kinematic_timescale,
+        "SizeIncreaseThreshold": 1e-3,
+        "DecreaseThreshold": decrease_threshold,
+        "IncreaseThreshold": increase_threshold_fraction * decrease_threshold,
+        "SizeBMaxTimescale": 10 if spin_magnitude_left > 0.9 else 20,
+        "SizeAMaxTimescale": 10 if spin_magnitude_right > 0.9 else 20,
+    }
+
+
+def _constraint_damping_params(
+    mass_left: float,
+    mass_right: float,
+    initial_separation: float,
+) -> dict:
+    total_mass = mass_left + mass_right
+    return {
+        "Gamma0Constant": 0.001 / total_mass,
+        "Gamma0LeftAmplitude": 4.0 / mass_left,
+        "Gamma0LeftWidth": 7.0 * mass_left,
+        "Gamma0RightAmplitude": 4.0 / mass_right,
+        "Gamma0RightWidth": 7.0 * mass_right,
+        "Gamma0OriginAmplitude": 0.075 / total_mass,
+        "Gamma0OriginWidth": 2.5 * initial_separation,
+        "Gamma1Width": 10.0 * initial_separation,
+    }
+
+
 def inspiral_parameters(
     id_input_file: dict,
     id_run_dir: Union[str, Path],
+    id_horizons_path: Optional[Union[str, Path]],
     refinement_level: int,
     polynomial_order: int,
 ) -> dict:
@@ -31,12 +90,57 @@ def inspiral_parameters(
       id_input_file: Initial data input file as a dictionary.
       id_run_dir: Directory of the initial data run. Paths in the input file
         are relative to this directory.
+      id_horizons_path: Path to H5 file containing information about the
+        horizons in the ID (e.g. mass, spin, spherical harmonic coefficients).
+        If this is 'None', the default is the 'Horizons.h5' file inside
+        'id_run_dir'.
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
     """
     id_domain_creator = id_input_file["DomainCreator"]["BinaryCompactObject"]
+    id_shape_A = id_domain_creator["TimeDependentMaps"]["ShapeMapA"]
+    id_shape_B = id_domain_creator["TimeDependentMaps"]["ShapeMapB"]
     id_binary = id_input_file["Background"]["Binary"]
-    return {
+
+    # ID parameters
+    horizons_filename = (
+        Path(id_horizons_path)
+        if id_horizons_path is not None
+        else Path(id_run_dir) / "Horizons.h5"
+    )
+    if not horizons_filename.is_file():
+        raise ValueError(
+            f"The ID horizons path ({str(horizons_filename.resolve())}) does"
+            " not exist. If there is no 'Horizons.h5' file in your ID"
+            " directory, run 'spectre bbh postprocess-id' on the ID to"
+            " generate it."
+        )
+    initial_separation = (
+        id_domain_creator["ObjectA"]["XCoord"]
+        - id_domain_creator["ObjectB"]["XCoord"]
+    )
+    with spectre_h5.H5File(
+        str(horizons_filename.resolve()), "r"
+    ) as horizons_file:
+        aha_quantities = to_dataframe(horizons_file.get_dat("AhA.dat")).iloc[-1]
+        mass_right = aha_quantities["ChristodoulouMass"]
+        spin_magnitude_right = aha_quantities["DimensionlessSpinMagnitude"]
+
+        horizons_file.close_current_object()
+        ahb_quantities = to_dataframe(horizons_file.get_dat("AhB.dat")).iloc[-1]
+        mass_left = ahb_quantities["ChristodoulouMass"]
+        spin_magnitude_left = ahb_quantities["DimensionlessSpinMagnitude"]
+
+    # Uncomment when we are confident that we can make the total mass 1. For
+    # now, allow total mass != 1
+    # total_mass = (
+    #     horizon_quantities_A["ChristodoulouMass"]
+    #     + horizon_quantities_B["ChristodoulouMass"]
+    # )
+    # if total_mass != 1.0:
+    #     raise ValueError(f"Total mass must 1.0, not {total_mass}.")
+
+    params = {
         # Initial data files
         "IdFileGlob": str(
             Path(id_run_dir).resolve()
@@ -47,13 +151,47 @@ def inspiral_parameters(
         "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"],
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
+        "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
+        "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][1],
         # Initial functions of time
         "InitialAngularVelocity": id_binary["AngularVelocity"],
         "RadialExpansionVelocity": float(id_binary["Expansion"]),
+        "HorizonsFile": str(horizons_filename.resolve()),
+        "AhASubfileName": "AhA/Coefficients",
+        "AhBSubfileName": "AhB/Coefficients",
+        "ExcisionAShapeMass": id_shape_A["InitialValues"]["Mass"],
+        "ExcisionAShapeSpin_x": id_shape_A["InitialValues"]["Spin"][0],
+        "ExcisionAShapeSpin_y": id_shape_A["InitialValues"]["Spin"][1],
+        "ExcisionAShapeSpin_z": id_shape_A["InitialValues"]["Spin"][2],
+        "ExcisionBShapeMass": id_shape_B["InitialValues"]["Mass"],
+        "ExcisionBShapeSpin_x": id_shape_B["InitialValues"]["Spin"][0],
+        "ExcisionBShapeSpin_y": id_shape_B["InitialValues"]["Spin"][1],
+        "ExcisionBShapeSpin_z": id_shape_B["InitialValues"]["Spin"][2],
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
     }
+
+    # Constraint damping parameters
+    params.update(
+        _constraint_damping_params(
+            mass_left=mass_left,
+            mass_right=mass_right,
+            initial_separation=initial_separation,
+        )
+    )
+
+    # Control system
+    params.update(
+        _control_system_params(
+            mass_left=mass_left,
+            mass_right=mass_right,
+            spin_magnitude_left=spin_magnitude_left,
+            spin_magnitude_right=spin_magnitude_right,
+        )
+    )
+
+    return params
 
 
 def _load_spec_id_params(id_params_file: Path) -> dict:
@@ -94,7 +232,14 @@ def inspiral_parameters_spec(
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
     """
-    return {
+
+    mass_left = id_params["ID_MB"]
+    mass_right = id_params["ID_MA"]
+    spin_magnitude_left = id_params["ID_chiBMagnitude"]
+    spin_magnitude_right = id_params["ID_chiAMagnitude"]
+    initial_separation = id_params["ID_d"]
+
+    params = {
         # Initial data files
         "SpecDataDirectory": str(Path(id_run_dir).resolve()),
         # Domain geometry
@@ -111,6 +256,27 @@ def inspiral_parameters_spec(
         "P": polynomial_order,
     }
 
+    # Constraint damping parameters
+    params.update(
+        _constraint_damping_params(
+            mass_left=mass_left,
+            mass_right=mass_right,
+            initial_separation=initial_separation,
+        )
+    )
+
+    # Control system
+    params.update(
+        _control_system_params(
+            mass_left=mass_left,
+            mass_right=mass_right,
+            spin_magnitude_left=spin_magnitude_left,
+            spin_magnitude_right=spin_magnitude_right,
+        )
+    )
+
+    return params
+
 
 def start_inspiral(
     id_input_file_path: Union[str, Path],
@@ -120,6 +286,7 @@ def start_inspiral(
     inspiral_input_file_template: Union[
         str, Path
     ] = INSPIRAL_INPUT_FILE_TEMPLATE,
+    id_horizons_path: Optional[Union[str, Path]] = None,
     continue_with_ringdown: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
@@ -164,6 +331,7 @@ def start_inspiral(
         inspiral_params = inspiral_parameters(
             id_input_file,
             id_run_dir,
+            id_horizons_path=id_horizons_path,
             refinement_level=refinement_level,
             polynomial_order=polynomial_order,
         )
@@ -249,6 +417,24 @@ def start_inspiral(
     default=INSPIRAL_INPUT_FILE_TEMPLATE,
     help="Input file template for the inspiral.",
     show_default=True,
+)
+@click.option(
+    "--id-horizons-path",
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        path_type=Path,
+    ),
+    default=None,
+    show_default="Horizons.h5 inside 'id-run-dir'",
+    help=(
+        "H5 file that holds information of the horizons of the ID solve. If"
+        " this file does not exist in your ID directory, run 'spectre bbh"
+        " postprocess-id' in the ID directory to generate it. Note that this is"
+        " not needed if you are starting from a SpEC ID_Params.perl file."
+    ),
 )
 @click.option(
     "--refinement-level",

@@ -11,11 +11,12 @@
 #include <random>
 #include <string>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -23,9 +24,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Creators/Brick.hpp"
-#include "Domain/Creators/Interval.hpp"
-#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -38,17 +37,14 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/MathFunctions/PowX.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-// IWYU pragma: no_forward_declare MathFunction
-// IWYU pragma: no_forward_declare PowX
-// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 
@@ -85,12 +81,12 @@ auto make_affine_map<3>() {
 
 namespace TestTags {
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 struct Vector : db::SimpleTag {
-  using type = tnsr::I<DataVector, Dim>;
+  using type = tnsr::I<DataType, Dim>;
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) {
-    auto result = make_with_value<tnsr::I<DataVector, Dim>>(x, 0.);
+    auto result = make_with_value<tnsr::I<DataType, Dim>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t d = 0; d < Dim; ++d) {
       result.get(d) = (d + 0.5) * get(f_of_x);
@@ -99,12 +95,12 @@ struct Vector : db::SimpleTag {
   }
 };
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 struct SymmetricTensor : db::SimpleTag {
-  using type = tnsr::ii<DataVector, Dim>;
+  using type = tnsr::ii<DataType, Dim>;
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) {
-    auto result = make_with_value<tnsr::ii<DataVector, Dim>>(x, 0.);
+    auto result = make_with_value<tnsr::ii<DataType, Dim>>(x, 0.);
     const auto f_of_x = f(x);
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t j = i; j < Dim; ++j) {  // Symmetry
@@ -164,8 +160,8 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) {
   const auto src_x = coordinate_map(logical_coordinates(mesh));
 
   // Set up variables
-  using tags =
-      tmpl::list<TestTags::Vector<Dim>, TestTags::SymmetricTensor<Dim>>;
+  using tags = tmpl::list<TestTags::Vector<DataVector, Dim>,
+                          TestTags::SymmetricTensor<DataVector, Dim>>;
   Variables<tags> src_vars(mesh.number_of_grid_points());
   Variables<tags> expected_dest_vars(number_of_points);
 
@@ -198,15 +194,46 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) {
     const Variables<tags> dest_vars =
         irregular_interpolant.interpolate(src_vars);
 
-    tmpl::for_each<tags>([&dest_vars, &expected_dest_vars](auto tag) {
-      using Tag = tmpl::type_from<decltype(tag)>;
-      CHECK_ITERABLE_APPROX(get<Tag>(dest_vars), get<Tag>(expected_dest_vars));
-    });
+    CHECK_VARIABLES_APPROX(dest_vars, expected_dest_vars);
 
     const DataVector result_dv = irregular_interpolant.interpolate(
-        get<0>(get<TestTags::Vector<Dim>>(src_vars)));
+        get<0>(get<TestTags::Vector<DataVector, Dim>>(src_vars)));
     CHECK_ITERABLE_APPROX(
-        result_dv, get<0>(get<TestTags::Vector<Dim>>(expected_dest_vars)));
+        result_dv,
+        get<0>(get<TestTags::Vector<DataVector, Dim>>(expected_dest_vars)));
+
+    {
+      INFO("Complex data");
+      // Copy the real data above into a complex Variables
+      Variables<tmpl::list<TestTags::Vector<ComplexDataVector, Dim>>>
+          src_vars_complex(mesh.number_of_grid_points());
+      Variables<tmpl::list<TestTags::Vector<ComplexDataVector, Dim>>>
+          expected_complex(number_of_points);
+      const auto& src_vector = get<TestTags::Vector<DataVector, Dim>>(src_vars);
+      const auto& expected_vector =
+          get<TestTags::Vector<DataVector, Dim>>(expected_dest_vars);
+      for (size_t d = 0; d < Dim; ++d) {
+        for (size_t j = 0; j < src_vars.number_of_grid_points(); ++j) {
+          get<TestTags::Vector<ComplexDataVector, Dim>>(src_vars_complex)
+              .get(d)[j] = std::complex<double>(src_vector.get(d)[j],
+                                                2. * src_vector.get(d)[j]);
+        }
+        for (size_t j = 0; j < number_of_points; ++j) {
+          get<TestTags::Vector<ComplexDataVector, Dim>>(expected_complex)
+              .get(d)[j] = std::complex<double>(expected_vector.get(d)[j],
+                                                2. * expected_vector.get(d)[j]);
+        }
+      }
+      // Interpolate the complex data
+      const auto result_complex =
+          irregular_interpolant.interpolate(src_vars_complex);
+      CHECK_VARIABLES_APPROX(result_complex, expected_complex);
+      const auto result_cdv = irregular_interpolant.interpolate(get<0>(
+          get<TestTags::Vector<ComplexDataVector, Dim>>(src_vars_complex)));
+      CHECK_ITERABLE_APPROX(
+          result_cdv, get<0>(get<TestTags::Vector<ComplexDataVector, Dim>>(
+                          expected_complex)));
+    }
   }
 }
 

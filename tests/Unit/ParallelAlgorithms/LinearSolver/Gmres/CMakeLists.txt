@@ -29,6 +29,13 @@ target_link_libraries(
   PRIVATE
   "${INTEGRATION_TEST_LINK_LIBRARIES}")
 add_standalone_test(
+  "Integration.LinearSolver.ComplexGmresAlgorithm"
+  INPUT_FILE "Test_ComplexGmresAlgorithm.yaml")
+target_link_libraries(
+  "Test_ComplexGmresAlgorithm"
+  PRIVATE
+  "${INTEGRATION_TEST_LINK_LIBRARIES}")
+add_standalone_test(
   "Integration.LinearSolver.GmresPreconditionedAlgorithm"
   INPUT_FILE "Test_GmresPreconditionedAlgorithm.yaml")
 target_link_libraries(

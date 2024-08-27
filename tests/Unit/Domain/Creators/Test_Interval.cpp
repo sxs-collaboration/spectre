@@ -16,7 +16,7 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -83,26 +83,29 @@ std::string option_string(const CoordinateMaps::Distribution distribution,
   const std::string bc_options =
       with_boundary_conditions
           ? ("  BoundaryConditions:\n"
-             "    LowerBoundary:\n" +
-             std::string{is_periodic ? "      Periodic\n"
-                                     : "      TestBoundaryCondition:\n"
-                                       "        Direction: lower-xi\n"
-                                       "        BlockId: 0\n"} +
-             "    UpperBoundary:\n" +
-             std::string{is_periodic ? "      Periodic\n"
-                                     : "      TestBoundaryCondition:\n"
-                                       "        Direction: upper-xi\n"
-                                       "        BlockId: 0\n"})
+             "    - Lower:\n" +
+             std::string{is_periodic ? "        Periodic\n"
+                                     : "        TestBoundaryCondition:\n"
+                                       "          Direction: lower-xi\n"
+                                       "          BlockId: 0\n"} +
+             "      Upper:\n" +
+             std::string{is_periodic ? "        Periodic\n"
+                                     : "        TestBoundaryCondition:\n"
+                                       "          Direction: upper-xi\n"
+                                       "          BlockId: 0\n"})
           : ("  IsPeriodicIn: [" + std::string{is_periodic ? "True" : "False"} +
              "]\n");
   return "Interval:\n"
          "  LowerBound: [-1.2]\n"
-         "  UpperBound: [0.8]\n"
-         "  Distribution: " +
-         get_output(distribution) +
-         "\n"
-         "  Singularity: " +
-         (singularity.has_value() ? std::to_string(*singularity) : "None") +
+         "  UpperBound: [0.8]\n" +
+         (singularity.has_value()
+              ? ("  Distribution:\n"
+                 "    - " +
+                 get_output(distribution) +
+                 ":\n"
+                 "        SingularityPosition: " +
+                 std::to_string(*singularity))
+              : ("  Distribution: [" + get_output(distribution) + "]")) +
          "\n"
          "  InitialGridPoints: [4]\n"
          "  InitialRefinement: [3]\n" +
@@ -152,8 +155,7 @@ void test_interval() {
         refinement_level[0],
         grid_points[0],
         {{is_periodic}},
-        distribution,
-        singularity,
+        {{{distribution, singularity}}},
         time_dependent ? time_dependence->get_clone() : nullptr};
     test_interval_construction(
         interval, false, is_periodic, lower_bound, upper_bound, times,
@@ -168,12 +170,11 @@ void test_interval() {
         upper_bound,
         refinement_level[0],
         grid_points[0],
-        is_periodic ? periodic_boundary_condition->get_clone()
-                    : lower_boundary_condition->get_clone(),
-        is_periodic ? periodic_boundary_condition->get_clone()
-                    : upper_boundary_condition->get_clone(),
-        distribution,
-        singularity,
+        {{{{is_periodic ? periodic_boundary_condition->get_clone()
+                        : lower_boundary_condition->get_clone(),
+            is_periodic ? periodic_boundary_condition->get_clone()
+                        : upper_boundary_condition->get_clone()}}}},
+        {{{distribution, singularity}}},
         time_dependent ? time_dependence->get_clone() : nullptr};
     test_interval_construction(
         interval_with_bc, true, is_periodic, lower_bound, upper_bound, times,
@@ -204,49 +205,32 @@ void test_parse_errors() {
                            TestPeriodicBoundaryCondition<1>>();
 
   CHECK_THROWS_WITH(
-      creators::Interval(lower_bound, upper_bound, refinement_level[0],
-                         grid_points[0], lower_boundary_condition->get_clone(),
-                         nullptr, CoordinateMaps::Distribution::Linear,
-                         std::nullopt, nullptr,
-                         Options::Context{false, {}, 1, 1}),
+      creators::Interval(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          {{{{lower_boundary_condition->get_clone(),
+              periodic_boundary_condition->get_clone()}}}},
+          {{{CoordinateMaps::Distribution::Linear, std::nullopt}}}, nullptr,
+          Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "Both upper and lower boundary conditions "
-          "must be specified, or neither."));
-  CHECK_THROWS_WITH(
-      creators::Interval(lower_bound, upper_bound, refinement_level[0],
-                         grid_points[0], nullptr,
-                         upper_boundary_condition->get_clone(),
-                         CoordinateMaps::Distribution::Linear, std::nullopt,
-                         nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "Both upper and lower boundary conditions "
-          "must be specified, or neither."));
-  CHECK_THROWS_WITH(
-      creators::Interval(lower_bound, upper_bound, refinement_level[0],
-                         grid_points[0], lower_boundary_condition->get_clone(),
-                         periodic_boundary_condition->get_clone(),
-                         CoordinateMaps::Distribution::Linear, std::nullopt,
-                         nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "Both the upper and lower boundary condition "
-          "must be set to periodic if"));
-  CHECK_THROWS_WITH(
-      creators::Interval(lower_bound, upper_bound, refinement_level[0],
-                         grid_points[0],
-                         periodic_boundary_condition->get_clone(),
-                         lower_boundary_condition->get_clone(),
-                         CoordinateMaps::Distribution::Linear, std::nullopt,
-                         nullptr, Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::ContainsSubstring(
-          "Both the upper and lower boundary condition "
-          "must be set to periodic if"));
+          "Periodic boundary conditions must be applied for both upper and "
+          "lower direction"));
   CHECK_THROWS_WITH(
       creators::Interval(
           lower_bound, upper_bound, refinement_level[0], grid_points[0],
-          lower_boundary_condition->get_clone(),
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestNoneBoundaryCondition<3>>(),
-          CoordinateMaps::Distribution::Linear, std::nullopt, nullptr,
+          {{{{periodic_boundary_condition->get_clone(),
+              lower_boundary_condition->get_clone()}}}},
+          {{{CoordinateMaps::Distribution::Linear, std::nullopt}}}, nullptr,
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "Periodic boundary conditions must be applied for both upper and "
+          "lower direction"));
+  CHECK_THROWS_WITH(
+      creators::Interval(
+          lower_bound, upper_bound, refinement_level[0], grid_points[0],
+          {{{{lower_boundary_condition->get_clone(),
+              std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                   TestNoneBoundaryCondition<3>>()}}}},
+          {{{CoordinateMaps::Distribution::Linear, std::nullopt}}}, nullptr,
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "
@@ -254,10 +238,10 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       creators::Interval(
           lower_bound, upper_bound, refinement_level[0], grid_points[0],
-          std::make_unique<TestHelpers::domain::BoundaryConditions::
-                               TestNoneBoundaryCondition<3>>(),
-          lower_boundary_condition->get_clone(),
-          CoordinateMaps::Distribution::Linear, std::nullopt, nullptr,
+          {{{{std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                   TestNoneBoundaryCondition<3>>(),
+              lower_boundary_condition->get_clone()}}}},
+          {{{CoordinateMaps::Distribution::Linear, std::nullopt}}}, nullptr,
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
           "None boundary condition is not supported. If you would like an "

@@ -49,6 +49,7 @@ target_link_libraries(
   Charmxx::pup
   HDF5::HDF5
   SpectreFlags
+  SpectreKokkos
   )
 
 # Targets can reuse the PCH generated for this library. They must also link

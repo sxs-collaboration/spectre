@@ -102,8 +102,8 @@ struct Metavariables {
 // Elments N6, N7, and N8 are in Block 3 which is anti-aligned with Block 0
 // Elements N1, N2, and N3 are in Block 4 which is rotated 90 deg. clockwise
 void test() {
-  OrientationMap<3> aligned{};
-  OrientationMap<3> b1_orientation{};
+  OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
+  OrientationMap<3> b1_orientation = OrientationMap<3>::create_aligned();
   OrientationMap<3> b2_orientation{std::array{Direction<3>::lower_eta(),
                                               Direction<3>::upper_xi(),
                                               Direction<3>::upper_zeta()}};

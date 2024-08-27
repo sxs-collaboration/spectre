@@ -16,8 +16,6 @@
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-
 namespace {
 
 constexpr double polytropic_constant = 8.0;

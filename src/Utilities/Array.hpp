@@ -6,9 +6,11 @@
 #include <array>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <ostream>
 #include <utility>
 
+#include "Utilities/Kokkos/KokkosCore.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -16,7 +18,7 @@
 namespace cpp20 {
 namespace detail {
 template <typename T, size_t Size, size_t... Is>
-constexpr std::array<T, Size> convert_to_array(
+KOKKOS_FUNCTION constexpr std::array<T, Size> convert_to_array(
     // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     const T (&t)[Size], std::index_sequence<Is...> /*meta*/) {
   return {{t[Is]...}};
@@ -41,55 +43,60 @@ struct array {
   using const_pointer = const value_type*;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // clang-tidy: mark explicit. We want implicit conversion
-  constexpr operator std::array<T, Size>() const {  // NOLINT
+  KOKKOS_FUNCTION constexpr operator std::array<T, Size>() const {  // NOLINT
     return detail::convert_to_array(data_, std::make_index_sequence<Size>{});
   }
 
-  constexpr iterator begin() {
+  KOKKOS_FUNCTION constexpr iterator begin() {
     return iterator(data_);  // NOLINT
   }
-  constexpr const_iterator begin() const {
+  KOKKOS_FUNCTION constexpr const_iterator begin() const {
     return const_iterator(data_);  // NOLINT
   }
-  constexpr iterator end() {
+  KOKKOS_FUNCTION constexpr iterator end() {
     return iterator(data_ + Size);  // NOLINT
   }
-  constexpr const_iterator end() const {
+  KOKKOS_FUNCTION constexpr const_iterator end() const {
     return const_iterator(data_ + Size);  // NOLINT
   }
 
-  constexpr const_iterator cbegin() const { return begin(); }
-  constexpr const_iterator cend() const { return end(); }
+  KOKKOS_FUNCTION constexpr const_iterator cbegin() const { return begin(); }
+  KOKKOS_FUNCTION constexpr const_iterator cend() const { return end(); }
 
-  constexpr size_type size() const { return Size; }
-  constexpr size_type max_size() const { return Size; }
-  constexpr bool empty() const { return Size == 0; }
+  KOKKOS_FUNCTION constexpr size_type size() const { return Size; }
+  KOKKOS_FUNCTION constexpr size_type max_size() const { return Size; }
+  KOKKOS_FUNCTION constexpr bool empty() const { return Size == 0; }
 
-  constexpr reference operator[](const size_type i) {
+  KOKKOS_FUNCTION constexpr reference operator[](const size_type i) {
     return data_[i];  // NOLINT
   }
-  constexpr const_reference operator[](const size_type i) const {
-    return data_[i];  // NOLINT
-  }
-
-  constexpr reference at(const size_type i) {
-    return data_[i];  // NOLINT
-  }
-  constexpr const_reference at(const size_type i) const {
+  KOKKOS_FUNCTION constexpr const_reference operator[](
+      const size_type i) const {
     return data_[i];  // NOLINT
   }
 
-  constexpr reference front() { return data_[0]; }
-  constexpr const_reference front() const { return data_[0]; }
-  constexpr reference back() { return data_[Size > 0 ? Size - 1 : 0]; }
-  constexpr const_reference back() const {
+  KOKKOS_FUNCTION constexpr reference at(const size_type i) {
+    return data_[i];  // NOLINT
+  }
+  KOKKOS_FUNCTION constexpr const_reference at(const size_type i) const {
+    return data_[i];  // NOLINT
+  }
+
+  KOKKOS_FUNCTION constexpr reference front() { return data_[0]; }
+  KOKKOS_FUNCTION constexpr const_reference front() const { return data_[0]; }
+  KOKKOS_FUNCTION constexpr reference back() {
+    return data_[Size > 0 ? Size - 1 : 0];
+  }
+  KOKKOS_FUNCTION constexpr const_reference back() const {
     return data_[Size > 0 ? Size - 1 : 0];
   }
 
-  constexpr value_type* data() { return data_; }
-  constexpr const value_type* data() const { return data_; }
+  KOKKOS_FUNCTION constexpr value_type* data() { return data_; }
+  KOKKOS_FUNCTION constexpr const value_type* data() const { return data_; }
 
   // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   value_type data_[Size > 0 ? Size : 1];
@@ -97,7 +104,8 @@ struct array {
 namespace detail {
 template <typename T = void>
 struct Equal {
-  constexpr bool inline operator()(const T& lhs, const T& rhs) const {
+  KOKKOS_FUNCTION constexpr bool inline operator()(const T& lhs,
+                                                   const T& rhs) const {
     return lhs == rhs;
   }
 };
@@ -105,7 +113,7 @@ struct Equal {
 template <>
 struct Equal<void> {
   template <class T0, class T1>
-  constexpr bool inline operator()(T0&& lhs, T1&& rhs) const {
+  KOKKOS_FUNCTION constexpr bool inline operator()(T0&& lhs, T1&& rhs) const {
     return std::forward<T0>(lhs) == std::forward<T1>(rhs);
   }
 };
@@ -113,8 +121,9 @@ struct Equal<void> {
 
 template <typename InputIter1, typename InputIter2,
           typename BinaryPred = detail::Equal<>>
-constexpr bool equal(InputIter1 first1, InputIter1 last1, InputIter2 first2,
-                     BinaryPred pred = detail::Equal<>{}) {
+KOKKOS_FUNCTION constexpr bool equal(InputIter1 first1, InputIter1 last1,
+                                     InputIter2 first2,
+                                     BinaryPred pred = detail::Equal<>{}) {
   for (; first1 != last1; ++first1, ++first2) {
     if (not pred(*first1, *first2)) {
       return false;
@@ -125,9 +134,9 @@ constexpr bool equal(InputIter1 first1, InputIter1 last1, InputIter2 first2,
 
 template <typename InputIter1, typename InputIter2,
           typename BinaryPred = std::less_equal<>>
-constexpr bool lexicographical_compare(InputIter1 first1, InputIter1 last1,
-                                       InputIter2 first2, InputIter2 last2,
-                                       BinaryPred pred = std::less_equal<>{}) {
+KOKKOS_FUNCTION constexpr bool lexicographical_compare(
+    InputIter1 first1, InputIter1 last1, InputIter2 first2, InputIter2 last2,
+    BinaryPred pred = std::less_equal<>{}) {
   for (; first2 != last2; ++first1, ++first2) {
     if (first1 == last1 or pred(*first1, *first2)) {
       return true;
@@ -139,39 +148,39 @@ constexpr bool lexicographical_compare(InputIter1 first1, InputIter1 last1,
 }
 
 template <class T, size_t Size>
-inline constexpr bool operator==(const array<T, Size>& x,
-                                 const array<T, Size>& y) {
+KOKKOS_FUNCTION inline constexpr bool operator==(const array<T, Size>& x,
+                                                 const array<T, Size>& y) {
   return equal(x.data_, x.data_ + Size, y.data_);  // NOLINT
 }
 
 template <class T, size_t Size>
-inline constexpr bool operator!=(const array<T, Size>& lhs,
-                                 const array<T, Size>& rhs) {
+KOKKOS_FUNCTION inline constexpr bool operator!=(const array<T, Size>& lhs,
+                                                 const array<T, Size>& rhs) {
   return not(lhs == rhs);
 }
 
 template <class T, size_t Size>
-inline constexpr bool operator<(const array<T, Size>& lhs,
-                                const array<T, Size>& rhs) {
+KOKKOS_FUNCTION inline constexpr bool operator<(const array<T, Size>& lhs,
+                                                const array<T, Size>& rhs) {
   return lexicographical_compare(lhs.__elems_, lhs.__elems_ + Size,
                                  rhs.__elems_, rhs.__elems_ + Size);
 }
 
 template <class T, size_t Size>
-inline constexpr bool operator>(const array<T, Size>& lhs,
-                                const array<T, Size>& rhs) {
+KOKKOS_FUNCTION inline constexpr bool operator>(const array<T, Size>& lhs,
+                                                const array<T, Size>& rhs) {
   return rhs < lhs;
 }
 
 template <class T, size_t Size>
-inline constexpr bool operator<=(const array<T, Size>& lhs,
-                                 const array<T, Size>& rhs) {
+KOKKOS_FUNCTION inline constexpr bool operator<=(const array<T, Size>& lhs,
+                                                 const array<T, Size>& rhs) {
   return not(rhs < lhs);
 }
 
 template <class T, size_t Size>
-inline constexpr bool operator>=(const array<T, Size>& lhs,
-                                 const array<T, Size>& rhs) {
+KOKKOS_FUNCTION inline constexpr bool operator>=(const array<T, Size>& lhs,
+                                                 const array<T, Size>& rhs) {
   return not(lhs < rhs);
 }
 
@@ -197,7 +206,7 @@ inline std::ostream& operator<<(std::ostream& os, const array<T, N>& a) {
 namespace detail {
 template <typename List, size_t... indices,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr auto make_cpp20_array_from_list_helper(
+KOKKOS_FUNCTION inline constexpr auto make_cpp20_array_from_list_helper(
     std::integer_sequence<size_t, indices...> /*meta*/)
     -> cpp20::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                     tmpl::size<List>::value> {
@@ -215,7 +224,7 @@ inline constexpr auto make_cpp20_array_from_list_helper(
 /// \return array of integral values from the typelist
 template <typename List,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr auto make_cpp20_array_from_list()
+KOKKOS_FUNCTION inline constexpr auto make_cpp20_array_from_list()
     -> cpp20::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                     tmpl::size<List>::value> {
   return detail::make_cpp20_array_from_list_helper<List>(
@@ -224,7 +233,7 @@ inline constexpr auto make_cpp20_array_from_list()
 
 template <typename TypeForZero,
           Requires<not tt::is_a_v<tmpl::list, TypeForZero>> = nullptr>
-inline constexpr cpp20::array<std::decay_t<TypeForZero>, 0>
+KOKKOS_FUNCTION inline constexpr cpp20::array<std::decay_t<TypeForZero>, 0>
 make_cpp20_array_from_list() {
   return cpp20::array<std::decay_t<TypeForZero>, 0>{{}};
 }

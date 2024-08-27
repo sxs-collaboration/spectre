@@ -3,7 +3,9 @@
 
 import numpy as np
 
-centers = [-5.0, 6.0]
+x_coords = [-5.0, 6.0]
+y_offset = 0.1
+z_offset = 0.2
 masses = [1.1, 0.43]
 angular_velocity = 0.02
 radial_velocity = 0.01
@@ -40,8 +42,16 @@ def longitudinal_shift_background_bbh_isotropic(x):
 
 
 def conformal_factor_minus_one_bbh_isotropic(x):
-    r1 = np.sqrt((x[0] - centers[0]) ** 2 + x[1] ** 2 + x[2] ** 2)
-    r2 = np.sqrt((x[0] - centers[1]) ** 2 + x[1] ** 2 + x[2] ** 2)
+    r1 = np.sqrt(
+        (x[0] - x_coords[0]) ** 2
+        + (x[1] - y_offset) ** 2
+        + (x[2] - z_offset) ** 2
+    )
+    r2 = np.sqrt(
+        (x[0] - x_coords[1]) ** 2
+        + (x[1] - y_offset) ** 2
+        + (x[2] - z_offset) ** 2
+    )
     return 0.5 * (
         np.exp(-(r1**2) / falloff_widths[0] ** 2) * masses[0] / r1
         + np.exp(-(r2**2) / falloff_widths[1] ** 2) * masses[1] / r2

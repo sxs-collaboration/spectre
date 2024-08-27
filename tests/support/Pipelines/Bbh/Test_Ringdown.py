@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
+import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import start_inspiral
@@ -16,6 +17,7 @@ from spectre.Pipelines.Bbh.Ringdown import (
     ringdown_parameters,
     start_ringdown_command,
 )
+from spectre.support.Logging import configure_logging
 
 
 class TestInitialData(unittest.TestCase):
@@ -27,7 +29,8 @@ class TestInitialData(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_ratio=1.5,
+            mass_a=0.6,
+            mass_b=0.4,
             dimensionless_spin_a=[0.0, 0.0, 0.0],
             dimensionless_spin_b=[0.0, 0.0, 0.0],
             separation=20.0,
@@ -41,6 +44,15 @@ class TestInitialData(unittest.TestCase):
             executable=str(self.bin_dir / "SolveXcts"),
         )
         self.id_dir = self.test_dir / "ID"
+        self.horizons_filename = self.id_dir / "Horizons.h5"
+        with spectre_h5.H5File(
+            str(self.horizons_filename.resolve()), "a"
+        ) as horizons_file:
+            legend = ["Time", "ChristodoulouMass", "DimensionlessSpinMagnitude"]
+            for subfile_name in ["AhA", "AhB"]:
+                horizons_file.close_current_object()
+                dat_file = horizons_file.try_insert_dat(subfile_name, legend, 0)
+                dat_file.append([[0.0, 1.0, 0.3]])
         start_inspiral(
             id_input_file_path=self.test_dir / "ID" / "InitialData.yaml",
             refinement_level=1,
@@ -97,5 +109,5 @@ class TestInitialData(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

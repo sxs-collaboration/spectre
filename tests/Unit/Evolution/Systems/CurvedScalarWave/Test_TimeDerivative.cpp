@@ -15,8 +15,6 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 Scalar<DataVector> make_lapse(const DataVector& used_for_size) {
   return Scalar<DataVector>{make_with_value<DataVector>(used_for_size, 3.)};

@@ -43,6 +43,7 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   const size_t sender_node = 2;
   const size_t sender_core = 15;
   const int tci_status = -3;
+  const size_t integration_order = 3;
 
   const Slab current_slab{0.1, 0.5};
   const Time current_time{current_slab, {0, 1}};
@@ -70,7 +71,7 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
 
   BoundaryMessage<Dim>* boundary_message = new BoundaryMessage<Dim>(
       subcell_size, dg_size, owning, enable_if_disabled, sender_node,
-      sender_core, tci_status, current_time_id, next_time_id,
+      sender_core, tci_status, integration_order, current_time_id, next_time_id,
       neighbor_direction, element_id, volume_mesh, interface_mesh,
       subcell_size != 0 ? subcell_data.data() : nullptr,
       dg_size != 0 ? dg_data.data() : nullptr);
@@ -78,8 +79,8 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   // in the pack() function, we set owning = true here
   BoundaryMessage<Dim>* copied_boundary_message = new BoundaryMessage<Dim>(
       subcell_size, dg_size, true, enable_if_disabled, sender_node, sender_core,
-      tci_status, current_time_id, next_time_id, neighbor_direction, element_id,
-      volume_mesh, interface_mesh,
+      tci_status, integration_order, current_time_id, next_time_id,
+      neighbor_direction, element_id, volume_mesh, interface_mesh,
       subcell_size != 0 ? copied_subcell_data.data() : nullptr,
       dg_size != 0 ? copied_dg_data.data() : nullptr);
 
@@ -116,6 +117,7 @@ void test_output() {
   const size_t sender_node = 2;
   const size_t sender_core = 15;
   const int tci_status = -3;
+  const size_t integration_order = 3;
 
   const Slab current_slab{0.1, 0.5};
   const Time current_time{current_slab, {0, 1}};
@@ -134,13 +136,21 @@ void test_output() {
   DataVector subcell_data{0.1, 0.2, 0.3, 0.4};
   DataVector dg_data{-0.3, -0.2, -0.1};
 
-  BoundaryMessage<2> message{subcell_size,   dg_size,
-                             owning,         enable_if_disabled,
-                             sender_node,    sender_core,
-                             tci_status,     current_time_id,
-                             next_time_id,   neighbor_direction,
-                             element_id,     volume_mesh,
-                             interface_mesh, subcell_data.data(),
+  BoundaryMessage<2> message{subcell_size,
+                             dg_size,
+                             owning,
+                             enable_if_disabled,
+                             sender_node,
+                             sender_core,
+                             tci_status,
+                             integration_order,
+                             current_time_id,
+                             next_time_id,
+                             neighbor_direction,
+                             element_id,
+                             volume_mesh,
+                             interface_mesh,
+                             subcell_data.data(),
                              dg_data.data()};
 
   const std::string message_str = get_output(message);
@@ -153,6 +163,7 @@ void test_output() {
      << "sender_node = 2\n"
      << "sender_core = 15\n"
      << "tci_status = -3\n"
+     << "integration_order = 3\n"
      // TimeStepIds have complicated output so don't try and hard code it, just
      // use get_output
      << "current_time_ste_id = " << get_output(current_time_id) << "\n"

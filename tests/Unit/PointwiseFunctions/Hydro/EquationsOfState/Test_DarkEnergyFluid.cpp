@@ -29,6 +29,7 @@ void check_bounds() {
   CHECK(max_double == eos.specific_internal_energy_upper_bound(1.0));
   CHECK(eos.baryon_mass() ==
         approx(hydro::units::geometric::default_baryon_mass));
+  CHECK(not eos.is_barotropic());
 }
 }  // namespace
 

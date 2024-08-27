@@ -13,10 +13,14 @@
 #include "ControlSystem/FutureMeasurements.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/ArrayCollection/PerformAlgorithmOnElement.hpp"
+#include "Parallel/ArrayCollection/Tags/ElementLocations.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -38,7 +42,7 @@ struct Verbosity;
 /// \endcond
 
 namespace control_system {
-/// \ingroup ControlSystemsGroup
+/// \ingroup ControlSystemGroup
 /// \ingroup EventsAndTriggersGroup
 /// Trigger for control system measurements.
 ///
@@ -79,10 +83,10 @@ class Trigger : public DenseTrigger {
       tmpl::list<::Tags::Time,
                  control_system::Tags::FutureMeasurements<ControlSystems>>;
 
-  template <typename Metavariables, typename ArrayIndex, typename Component>
+  template <typename Metavariables, size_t Dim, typename Component>
   std::optional<bool> is_triggered(
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, const Component* /*component*/,
+      const ElementId<Dim>& array_index, const Component* /*component*/,
       const double time,
       const control_system::FutureMeasurements& measurement_times) {
     const auto next_measurement = measurement_times.next_measurement();
@@ -106,10 +110,10 @@ class Trigger : public DenseTrigger {
       tmpl::list<control_system::Tags::FutureMeasurements<ControlSystems>>;
   using next_check_time_argument_tags = tmpl::list<::Tags::Time>;
 
-  template <typename Metavariables, typename ArrayIndex, typename Component>
+  template <typename Metavariables, size_t Dim, typename Component>
   std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, const Component* /*component*/,
+      const ElementId<Dim>& array_index, const Component* /*component*/,
       const gsl::not_null<control_system::FutureMeasurements*>
           measurement_times,
       const double time) {
@@ -118,8 +122,7 @@ class Trigger : public DenseTrigger {
     }
 
     if (not measurement_times->next_measurement().has_value()) {
-      const auto& proxy =
-          ::Parallel::get_parallel_component<Component>(cache)[array_index];
+      auto& proxy = ::Parallel::get_parallel_component<Component>(cache);
       const bool is_ready = Parallel::mutable_cache_item_is_ready<
           control_system::Tags::MeasurementTimescales>(
           cache, Parallel::make_array_component_id<Component>(array_index),
@@ -135,8 +138,29 @@ class Trigger : public DenseTrigger {
             measurement_times->update(
                 *measurement_timescales.at(measurement_name));
             if (not measurement_times->next_measurement().has_value()) {
-              return std::unique_ptr<Parallel::Callback>(
-                  new Parallel::PerformAlgorithmCallback(proxy));
+              if constexpr (Parallel::is_dg_element_collection_v<Component>) {
+                // Note: The ArrayComponentId is still created with the
+                // array_index (ElementId) because we only support 1 callback
+                // per ArrayComponentId. This would mean for nodegroups we would
+                // discard a lot of callbacks that we need. Alternatively, the
+                // callback could do a broadcast to all elements on the
+                // nodegroup.
+                const auto element_location = static_cast<int>(
+                    Parallel::local_synchronous_action<
+                        Parallel::Actions::GetItemFromDistributedOject<
+                            Parallel::Tags::ElementLocations<Dim>>>(
+                        Parallel::get_parallel_component<Component>(cache))
+                        ->at(array_index));
+                return std::unique_ptr<Parallel::Callback>(
+                    new Parallel::ThreadedActionCallback<
+                        Parallel::Actions::PerformAlgorithmOnElement<false>,
+                        decltype(proxy[element_location]),
+                        std::decay_t<decltype(array_index)>>{
+                        proxy[element_location], array_index});
+              } else {
+                return std::unique_ptr<Parallel::Callback>(
+                    new Parallel::PerformAlgorithmCallback(proxy[array_index]));
+              }
             }
             return std::unique_ptr<Parallel::Callback>{};
           });

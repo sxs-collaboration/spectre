@@ -75,7 +75,7 @@ void test_h_refinement() {
   const auto check_lower =
       make_check({0, {{{1, 0}, {1, 0}, {1, 1}}}}, Direction<3>::lower_xi());
 
-  const OrientationMap<3> aligned{};
+  const OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
   const OrientationMap<3> rotated{
       {{Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
         Direction<3>::upper_eta()}}};

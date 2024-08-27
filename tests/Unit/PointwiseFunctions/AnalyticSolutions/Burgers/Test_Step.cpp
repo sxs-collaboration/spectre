@@ -19,8 +19,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Step",
                   "[PointwiseFunctions][Unit]") {
   const double left_value = 2.3;

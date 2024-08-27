@@ -9,7 +9,6 @@
 
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
-#include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
@@ -108,13 +107,12 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
           Parallel::get_parallel_component<ControlComponent<
               Metavariables, Translation<DerivOrder, Measurement>>>(cache);
 
-      const DataVector center =
-          array_to_datavector(strahlkorper.physical_center());
+      DataVector center(strahlkorper.physical_center());
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           QueueTags::Center<Horizon>, MeasurementQueue,
           UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
-                                             center);
+                                             std::move(center));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
@@ -134,16 +132,14 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
           Parallel::get_parallel_component<ControlComponent<
               Metavariables, Translation<DerivOrder, Measurement>>>(cache);
 
-      const DataVector center_a_dv = array_to_datavector(center_a);
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           QueueTags::Center<::domain::ObjectLabel::A>, MeasurementQueue,
           UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
-                                             center_a_dv);
-      const DataVector center_b_dv = array_to_datavector(center_b);
+                                             DataVector(center_a));
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           QueueTags::Center<::domain::ObjectLabel::B>, MeasurementQueue,
           UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
-                                             center_b_dv);
+                                             DataVector(center_b));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",

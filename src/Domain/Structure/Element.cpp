@@ -4,12 +4,12 @@
 #include "Domain/Structure/Element.hpp"
 
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 template <size_t VolumeDim>
 Element<VolumeDim>::Element(ElementId<VolumeDim> id, Neighbors_t neighbors)

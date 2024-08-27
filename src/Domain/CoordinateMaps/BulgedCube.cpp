@@ -5,7 +5,7 @@
 
 #include <cmath>
 #include <exception>
-#include <functional>  // for std::reference_wrapper
+#include <functional>
 #include <limits>
 #include <optional>
 #include <pup.h>

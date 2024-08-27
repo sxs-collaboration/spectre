@@ -37,5 +37,6 @@ template <size_t Dim>
 Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementId<Dim>& element_id, Spectral::Quadrature quadrature,
-    const OrientationMap<Dim>& orientation = {});
+    const OrientationMap<Dim>& orientation =
+        OrientationMap<Dim>::create_aligned());
 }  // namespace domain::Initialization

@@ -10,6 +10,7 @@
 #include <memory>
 #include <ostream>
 #include <pup.h>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -128,6 +129,10 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// time `t`.
   std::array<DataVector, 3> quat_func_and_2_derivs(double t) const;
 
+  /// Returns the quaternion and the first three derivatives at an arbitrary
+  /// time `t`.
+  std::array<DataVector, 4> quat_func_and_3_derivs(double t) const;
+
   /// Returns stored angle at an arbitrary time `t`.
   std::array<DataVector, 1> angle_func(const double t) const {
     return angle_f_of_t_.func(t);
@@ -143,6 +148,10 @@ class QuaternionFunctionOfTime : public FunctionOfTime {
   /// time `t`.
   std::array<DataVector, 3> angle_func_and_2_derivs(const double t) const {
     return angle_f_of_t_.func_and_2_derivs(t);
+  }
+
+  std::vector<DataVector> angle_func_and_all_derivs(const double t) const {
+    return angle_f_of_t_.func_and_all_derivs(t);
   }
 
  private:

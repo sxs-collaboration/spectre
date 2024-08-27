@@ -16,8 +16,8 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Creators/SphereTimeDependentMaps.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Auto.hpp"
@@ -91,6 +91,8 @@ struct InnerCube {
     static double upper_bound() { return 1.0; }
   };
   using options = tmpl::list<Sphericity>;
+  InnerCube() = default;
+  explicit InnerCube(double sphericity_in) : sphericity(sphericity_in) {}
   double sphericity = std::numeric_limits<double>::signaling_NaN();
 };
 

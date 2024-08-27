@@ -7,11 +7,11 @@
 #include <cmath>
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"                  // IWYU pragma: keep
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"

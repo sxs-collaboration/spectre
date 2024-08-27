@@ -102,8 +102,8 @@ void test_reconstructor(const size_t points_per_dimension,
   // create an element and its neighbor elements
   DirectionMap<3, Neighbors<3>> neighbors{};
   for (size_t i = 0; i < 2 * 3; ++i) {
-    neighbors[gsl::at(Direction<3>::all_directions(), i)] =
-        Neighbors<3>{{ElementId<3>{i + 1, {}}}, {}};
+    neighbors[gsl::at(Direction<3>::all_directions(), i)] = Neighbors<3>{
+        {ElementId<3>{i + 1, {}}}, OrientationMap<3>::create_aligned()};
   }
   const Element<3> element{ElementId<3>{0, {}}, neighbors};
 

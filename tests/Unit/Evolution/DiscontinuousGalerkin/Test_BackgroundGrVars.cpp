@@ -18,7 +18,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CreateInitialElement.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
@@ -93,7 +93,7 @@ domain::creators::Brick create_a_brick(const size_t num_dg_pts,
   const auto refinement_levels = make_array<3, size_t>(0);
   return domain::creators::Brick(lower_bounds, upper_bounds, refinement_levels,
                                  make_array<3, size_t>(num_dg_pts),
-                                 make_array<3, bool>(true),
+                                 make_array<3, bool>(true), {},
                                  std::move(time_dependence_ptr));
 }
 

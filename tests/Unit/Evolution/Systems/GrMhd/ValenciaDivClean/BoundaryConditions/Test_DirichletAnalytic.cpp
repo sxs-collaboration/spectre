@@ -38,7 +38,10 @@ struct Metavariables {
             tmpl::list<grmhd::ValenciaDivClean::BoundaryConditions::
                            DirichletAnalytic>>,
         tmpl::pair<evolution::initial_data::InitialData,
-                   grmhd::ValenciaDivClean::InitialData::initial_data_list>>;
+                   grmhd::ValenciaDivClean::InitialData::initial_data_list>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            tmpl::list<grmhd::AnalyticData::InitialMagneticFields::Poloidal>>>;
   };
 };
 }  // namespace

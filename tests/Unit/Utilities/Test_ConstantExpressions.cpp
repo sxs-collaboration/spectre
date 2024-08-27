@@ -4,7 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <cmath>  // IWYU pragma: keep
+#include <cmath>
 #include <cstddef>
 #include <functional>
 

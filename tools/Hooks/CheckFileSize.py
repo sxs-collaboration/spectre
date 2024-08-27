@@ -13,7 +13,6 @@ max_file_size = 200.0
 # Files allowed to exceed the file-size limit
 allowed_large_files = [
     "docs/config/cppreference-doxygen-web.tag.xml",
-    "tools/Iwyu/boost-all.imp",
 ]
 
 # The path to the git-binary:

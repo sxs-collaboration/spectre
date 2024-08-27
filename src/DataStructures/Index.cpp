@@ -3,11 +3,11 @@
 
 #include "DataStructures/Index.hpp"
 
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <pup_stl.h>
 
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 
 template <size_t Dim>
 void Index<Dim>::pup(PUP::er& p) {

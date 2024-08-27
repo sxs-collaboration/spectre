@@ -49,6 +49,18 @@ namespace EquationsOfState {
  * \f[
  * T = (\Gamma_{th} - 1) (\epsilon - \epsilon_{cold})
  * \f]
+ *
+ * This is the amount of internal energy above that of the cold EOS.
+ *
+ * For a hybrid EOS with the cold EOS being a polytrope we have
+ *
+ * \f{align}
+ * p &= \kappa \rho^\Gamma + \rho T
+ *     =\kappa\rho^\Gamma+\rho
+ *     (\Gamma-1)\left(\epsilon-\frac{K\rho^{\Gamma-1}}{\Gamma-1}\right), \\
+ * T&=(\Gamma-1)\left(\epsilon-\frac{K\rho^{\Gamma-1}}{\Gamma-1}\right), \\
+ * \epsilon &= \frac{1}{(\Gamma-1)}\frac{p}{\rho}
+ * \f}
  */
 template <typename ColdEquationOfState>
 class HybridEos

@@ -7,13 +7,17 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CreateElementCollection.hpp
   DgElementArrayMember.hpp
   DgElementArrayMemberBase.hpp
+  DgElementCollection.hpp
   IsDgElementArrayMember.hpp
   IsDgElementCollection.hpp
+  PerformAlgorithmOnElement.hpp
   ReceiveDataForElement.hpp
   SendDataToElement.hpp
   SetTerminateOnElement.hpp
+  SimpleActionOnElement.hpp
   SpawnInitializeElementsInCollection.hpp
   StartPhaseOnNodegroup.hpp
   TransformPdalForNodegroup.hpp

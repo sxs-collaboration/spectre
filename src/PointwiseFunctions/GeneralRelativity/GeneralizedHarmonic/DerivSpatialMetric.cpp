@@ -3,15 +3,13 @@
 
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace gh {
 template <typename DataType, size_t SpatialDim, typename Frame>

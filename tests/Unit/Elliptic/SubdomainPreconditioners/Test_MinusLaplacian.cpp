@@ -217,10 +217,14 @@ auto make_databox_with_boundary_conditions() {
       std::make_unique<BoundaryCondition<Dim>>(BoundaryCondition<Dim>{
           {3, elliptic::BoundaryConditionType::Dirichlet}});
   // Blocks
-  Block<Dim> block_0{
-      make_block_map<Dim>(), 0, {{Direction<Dim>::lower_eta(), {1, {}}}}};
-  Block<Dim> block_1{
-      make_block_map<Dim>(), 1, {{Direction<Dim>::upper_eta(), {0, {}}}}};
+  Block<Dim> block_0{make_block_map<Dim>(),
+                     0,
+                     {{Direction<Dim>::lower_eta(),
+                       {1, OrientationMap<Dim>::create_aligned()}}}};
+  Block<Dim> block_1{make_block_map<Dim>(),
+                     1,
+                     {{Direction<Dim>::upper_eta(),
+                       {0, OrientationMap<Dim>::create_aligned()}}}};
   // Domain
   std::vector<Block<Dim>> blocks{};
   blocks.emplace_back(std::move(block_0));
@@ -433,11 +437,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     const auto& minus_laplacian =
         dynamic_cast<const MinusLaplacian<Dim, OptionsGroup>&>(*cloned);
     const auto& solver = minus_laplacian.solver();
-    REQUIRE(
-        dynamic_cast<
-            const LinearSolver::Serial::ExplicitInverse<typename MinusLaplacian<
-                Dim, OptionsGroup>::solver_type::registrars>*>(&solver) !=
-        nullptr);
+    REQUIRE(dynamic_cast<const LinearSolver::Serial::ExplicitInverse<
+                double, typename MinusLaplacian<
+                            Dim, OptionsGroup>::solver_type::registrars>*>(
+                &solver) != nullptr);
   }
   {
     INFO("Resetting");

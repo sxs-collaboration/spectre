@@ -22,46 +22,12 @@ from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 logger = logging.getLogger(__name__)
 
 
-@click.command(name="size-control")
-@click.argument(
-    "reduction_files",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    nargs=-1,
-    required=True,
-)
-@click.option(
-    "--object-label",
-    "-d",
-    required=True,
-    help=(
-        "Which object to plot. This is either 'A', 'B', or 'None'. 'None' is"
-        " used when there is only one black hole in the simulation."
-    ),
-)
-# Plotting options
-@click.option(
-    "--x-bounds",
-    type=float,
-    nargs=2,
-    help="The lower and upper bounds of the x-axis.",
-)
-@click.option(
-    "--x-label",
-    help="The label on the x-axis.",
-)
-@click.option(
-    "--title",
-    "-t",
-    help="Title of the graph.",
-)
-@apply_stylesheet_command()
-@show_or_save_plot_command()
-def plot_size_control_command(
+def plot_size_control(
     reduction_files: Sequence[str],
     object_label: str,
-    x_bounds: Optional[Sequence[float]],
-    x_label: Optional[str],
-    title: Optional[str],
+    x_bounds: Optional[Sequence[float]] = None,
+    x_label: Optional[str] = None,
+    title: Optional[str] = None,
 ):
     """
     Plot diagnostic information regarding the Size control system.
@@ -128,7 +94,8 @@ def plot_size_control_command(
         top3 = axes[-1].plot(
             times,
             data["SmootherTimescale"],
-            color="C2",
+            color="C1",
+            linestyle="dashed",
             label="Smooth damping time",
         )
         top_lines = top1 + top2 + top3
@@ -137,16 +104,38 @@ def plot_size_control_command(
 
     top_labels = [l.get_label() for l in top_lines]
     axes[0].tick_params(axis="y", labelcolor="C0")
+    axes[-1].tick_params(axis="y", labelcolor="C1")
 
-    # State, and delta R
+    # State
     axes[1].plot(times, data["StateNumber"], label="State")
-    axes[1].plot(times, data["MinDeltaR"], label="Min Delta R")
-    axes[1].plot(times, data["AvgDeltaR"], label="Average Delta R")
+    axes[1].set_ylim(0, 5)
 
-    # Relative delta R
-    axes[2].plot(times, data["MinRelativeDeltaR"], label="Min relative Delta R")
+    # All delta R's
     axes[2].plot(
-        times, data["AvgRelativeDeltaR"], label="Average relative Delta R"
+        times,
+        data["MinRelativeDeltaR"],
+        label="Min relative Delta R",
+        color="C0",
+    )
+    axes[2].plot(
+        times,
+        data["AvgRelativeDeltaR"],
+        label="Average relative Delta R",
+        color="C1",
+    )
+    axes[2].plot(
+        times,
+        data["MinDeltaR"],
+        label="Min Delta R",
+        color="C0",
+        linestyle="dashed",
+    )
+    axes[2].plot(
+        times,
+        data["AvgDeltaR"],
+        label="Average Delta R",
+        color="C1",
+        linestyle="dashed",
     )
 
     # Char speeds
@@ -201,6 +190,46 @@ def plot_size_control_command(
             )
         else:
             axes[i].legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    return fig
+
+
+@click.command(name="size-control", help=plot_size_control.__doc__)
+@click.argument(
+    "reduction_files",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+    nargs=-1,
+    required=True,
+)
+@click.option(
+    "--object-label",
+    "-d",
+    required=True,
+    help=(
+        "Which object to plot. This is either 'A', 'B', or 'None'. 'None' is"
+        " used when there is only one black hole in the simulation."
+    ),
+)
+# Plotting options
+@click.option(
+    "--x-bounds",
+    type=float,
+    nargs=2,
+    help="The lower and upper bounds of the x-axis.",
+)
+@click.option(
+    "--x-label",
+    help="The label on the x-axis.",
+)
+@click.option(
+    "--title",
+    "-t",
+    help="Title of the graph.",
+)
+@apply_stylesheet_command()
+@show_or_save_plot_command()
+def plot_size_control_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    return plot_size_control(**kwargs)
 
 
 if __name__ == "__main__":

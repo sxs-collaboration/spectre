@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <ostream>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 #include <pup_stl.h>
 
 #include "NumericalAlgorithms/Spectral/Basis.hpp"

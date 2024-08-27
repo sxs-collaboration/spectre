@@ -10,9 +10,9 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/Literals.hpp"  // IWYU pragma: keep
+#include "Utilities/Literals.hpp"
 
-// IWYU pragma: no_include <type_traits>  // for __decay_and_strip<>::__type
+// for __decay_and_strip<>::__type
 
 SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
   {

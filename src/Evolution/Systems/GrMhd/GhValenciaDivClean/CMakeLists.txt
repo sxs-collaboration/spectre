@@ -39,6 +39,7 @@ target_link_libraries(
   GhGrMhdSolutions
   GhRelativisticEulerSolutions
   Hydro
+  LinearOperators
   Serialization
   Utilities
   ValenciaDivClean

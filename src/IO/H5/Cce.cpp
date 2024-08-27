@@ -88,14 +88,22 @@ Cce::Cce(const bool exists, detail::OpenGroup&& group, const hid_t /*location*/,
       std::array<hsize_t, 2> max_dims{};
       if (2 != H5Sget_simple_extent_dims(space_id, dataset.size.data(),
                                          max_dims.data())) {
-        ERROR("Invalid number of dimensions in cce file " << bondi_var
-                                                          << " on disk.");
+        ERROR("Invalid number of dimensions (" << max_dims << ") in cce file "
+                                               << bondi_var << " on disk.");
       }
       CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
 
       if (legend_ != read_rank1_attribute<std::string>(dataset.id, "Legend"s)) {
-        ERROR("l_max from cce file " << bondi_var
-                                     << " does not match l_max in constructor");
+        const size_t file_l_max_plus_1 = static_cast<size_t>(
+            sqrt(static_cast<double>(
+                     read_rank1_attribute<std::string>(dataset.id, "Legend"s)
+                         .size() -
+                     1_st) /
+                 2.0));
+        ERROR("l_max (" << (file_l_max_plus_1 > 0 ? file_l_max_plus_1 - 1 : 0)
+                        << ") from cce file " << bondi_var
+                        << " does not match l_max (" << l_max_
+                        << ") in constructor");
       }
     }
   } else {  // file does not exist
@@ -141,6 +149,10 @@ Cce::~Cce() {
   // internals of CHECK_H5), so older compilers that we support may not have
   // fixed this bug.
   for (const auto& name_and_dataset : bondi_datasets_) {
+#ifdef __CUDACC__
+    // nvcc warns that 'name' is unused
+    [[maybe_unused]]
+#endif
     const auto& name = name_and_dataset.first;
     const auto& dataset = name_and_dataset.second;
     CHECK_H5(H5Dclose(dataset.id), "Failed to close dataset " << name);

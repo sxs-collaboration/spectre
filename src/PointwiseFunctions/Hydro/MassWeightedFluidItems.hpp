@@ -7,9 +7,9 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -21,10 +21,11 @@ struct not_null;
 
 namespace hydro {
 
+enum class HalfPlaneIntegralMask { None, PositiveXOnly, NegativeXOnly };
 
-enum class HalfPlaneIntegralMask {None, PositiveXOnly, NegativeXOnly};
+std::ostream& operator<<(std::ostream& os, HalfPlaneIntegralMask mask);
 
-std::string name(const HalfPlaneIntegralMask mask);
+std::string name(HalfPlaneIntegralMask mask);
 
 /// Tag containing TildeD * SpecificInternalEnergy
 /// Useful as a diagnostics tool, as input to volume
@@ -74,51 +75,104 @@ struct MassWeightedCoords : db::SimpleTag {
 };
 }  // namespace Tags
 
+/// @{
+/// Compute $u_t=$
+template <typename DataType, size_t Dim, typename Frame>
+void u_lower_t(gsl::not_null<Scalar<DataType>*> result,
+               const Scalar<DataType>& lorentz_factor,
+               const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
+               const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
+               const Scalar<DataType>& lapse,
+               const tnsr::I<DataType, Dim, Frame>& shift);
+
+template <typename DataType, size_t Dim, typename Frame>
+Scalar<DataType> u_lower_t(
+    const Scalar<DataType>& lorentz_factor,
+    const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift);
+/// @}
+
+/// @{
 /// Compute tilde_d * specific_internal_energy
 /// Result of the calculation stored in result.
 template <typename DataType>
 void mass_weighted_internal_energy(
-    const gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& tilde_d,
+    gsl::not_null<Scalar<DataType>*> result, const Scalar<DataType>& tilde_d,
     const Scalar<DataType>& specific_internal_energy);
 
+template <typename DataType>
+Scalar<DataType> mass_weighted_internal_energy(
+    const Scalar<DataType>& tilde_d,
+    const Scalar<DataType>& specific_internal_energy);
+/// @}
+
+/// @{
 /// Compute tilde_d * (lorentz_factor - 1.0)
 /// Result of the calculation stored in result.
 template <typename DataType>
-void mass_weighted_kinetic_energy(const gsl::not_null<Scalar<DataType>*> result,
+void mass_weighted_kinetic_energy(gsl::not_null<Scalar<DataType>*> result,
                                   const Scalar<DataType>& tilde_d,
                                   const Scalar<DataType>& lorentz_factor);
+template <typename DataType>
+Scalar<DataType> mass_weighted_kinetic_energy(
+    const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor);
+/// @}
 
+/// @{
 /// Returns tilde_d in regions where u_t < -1 and 0 in regions where
 /// u_t > -1 (approximate criteria for unbound matter, theoretically
 /// valid for particles following geodesics of a time-independent metric).
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 void tilde_d_unbound_ut_criterion(
-    const gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor,
+    gsl::not_null<Scalar<DataType>*> result, const Scalar<DataType>& tilde_d,
+    const Scalar<DataType>& lorentz_factor,
     const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
     const tnsr::ii<DataType, Dim, Fr>& spatial_metric,
     const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift);
 
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+Scalar<DataType> tilde_d_unbound_ut_criterion(
+    const Scalar<DataType>& tilde_d, const Scalar<DataType>& lorentz_factor,
+    const tnsr::I<DataType, Dim, Fr>& spatial_velocity,
+    const tnsr::ii<DataType, Dim, Fr>& spatial_metric,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Fr>& shift);
+/// @}
+
+/// @{
 /// Returns tilde_d in one half plane and zero in the other
 /// IntegralMask allows us to restrict the data to the x>0 or x<0
 /// plane in grid coordinates (useful for NSNS).
 template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim>
 void tilde_d_in_half_plane(
-    const gsl::not_null<Scalar<DataType>*> result,
-    const Scalar<DataType>& tilde_d,
+    gsl::not_null<Scalar<DataType>*> result, const Scalar<DataType>& tilde_d,
     const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords);
 
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim>
+Scalar<DataType> tilde_d_in_half_plane(
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords);
+/// @}
+
+/// @{
 /// Returns tilde_d * compute_coords
 /// IntegralMask allows us to restrict the data to the x>0 or x<0
 /// plane in grid coordinates (useful for NSNS).
 template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim,
           typename Fr = Frame::Inertial>
 void mass_weighted_coords(
-    const gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
+    gsl::not_null<tnsr::I<DataType, Dim, Fr>*> result,
     const Scalar<DataType>& tilde_d,
     const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords,
     const tnsr::I<DataType, Dim, Fr>& compute_coords);
+
+template <HalfPlaneIntegralMask IntegralMask, typename DataType, size_t Dim,
+          typename Fr = Frame::Inertial>
+tnsr::I<DataType, Dim, Fr> mass_weighted_coords(
+    const Scalar<DataType>& tilde_d,
+    const tnsr::I<DataType, Dim, Frame::Grid>& grid_coords,
+    const tnsr::I<DataType, Dim, Fr>& compute_coords);
+/// @}
 
 namespace Tags {
 /// Compute item for mass-weighted internal energy

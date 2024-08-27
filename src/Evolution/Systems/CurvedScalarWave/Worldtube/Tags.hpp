@@ -92,10 +92,9 @@ struct SelfForceOptions {
         "acceleration."};
     static size_t lower_bound() { return 1; }
   };
-  void pup(PUP::er& p) {
-    p | mass;
-    p | iterations;
-  }
+  SelfForceOptions();
+  SelfForceOptions(double mass_in, size_t iterations_in);
+  void pup(PUP::er& p);
 
   using options = tmpl::list<Mass, Iterations>;
 

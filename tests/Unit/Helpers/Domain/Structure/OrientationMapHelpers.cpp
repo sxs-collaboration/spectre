@@ -15,13 +15,13 @@
 namespace TestHelpers::domain {
 template <>
 std::vector<OrientationMap<1>> valid_orientation_maps<1>() {
-  return std::vector{OrientationMap<1>{},
+  return std::vector{OrientationMap<1>::create_aligned(),
                      OrientationMap<1>{std::array{Direction<1>::lower_xi()}}};
 }
 
 template <>
 std::vector<OrientationMap<2>> valid_orientation_maps<2>() {
-  return std::vector{OrientationMap<2>{},
+  return std::vector{OrientationMap<2>::create_aligned(),
                      OrientationMap<2>{std::array{Direction<2>::upper_eta(),
                                                   Direction<2>::lower_xi()}},
                      OrientationMap<2>{std::array{Direction<2>::lower_xi(),
@@ -32,7 +32,7 @@ std::vector<OrientationMap<2>> valid_orientation_maps<2>() {
 
 template <>
 std::vector<OrientationMap<3>> valid_orientation_maps<3>() {
-  return std::vector{OrientationMap<3>{},
+  return std::vector{OrientationMap<3>::create_aligned(),
                      OrientationMap<3>{std::array{Direction<3>::lower_xi(),
                                                   Direction<3>::lower_eta(),
                                                   Direction<3>::upper_zeta()}},

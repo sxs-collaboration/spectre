@@ -4,7 +4,7 @@
 #pragma once
 
 #include "DataStructures/ComplexModalVector.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/DiagonalModalOperator.hpp"
 #include "DataStructures/VectorImpl.hpp"
 #include "Utilities/TMPL.hpp"

@@ -11,8 +11,6 @@
 
 #include "Utilities/ErrorHandling/Assert.hpp"
 
-// IWYU pragma: no_include <boost/cstdint.hpp>
-
 namespace {
 // This is needed a lot, so define a shorter name.
 std::int64_t to64(const std::int32_t n) { return static_cast<std::int64_t>(n); }

@@ -14,23 +14,23 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Domain/Block.hpp"                  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Domain.hpp"  // IWYU pragma: keep
+#include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/DirectionMap.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
-#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Framework/TestHelpers.hpp"

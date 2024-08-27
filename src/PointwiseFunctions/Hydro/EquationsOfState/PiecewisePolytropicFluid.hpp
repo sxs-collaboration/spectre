@@ -15,7 +15,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Units.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -23,8 +23,6 @@
 /// \cond
 class DataVector;
 /// \endcond
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace EquationsOfState {
 /*!

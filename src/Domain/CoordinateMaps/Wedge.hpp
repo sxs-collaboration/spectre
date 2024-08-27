@@ -378,7 +378,8 @@ class Wedge {
   double radius_outer_{std::numeric_limits<double>::signaling_NaN()};
   double sphericity_inner_{std::numeric_limits<double>::signaling_NaN()};
   double sphericity_outer_{std::numeric_limits<double>::signaling_NaN()};
-  OrientationMap<Dim> orientation_of_wedge_{};
+  OrientationMap<Dim> orientation_of_wedge_ =
+      OrientationMap<Dim>::create_aligned();
   bool with_equiangular_map_ = false;
   WedgeHalves halves_to_use_ = WedgeHalves::Both;
   Distribution radial_distribution_ = Distribution::Linear;

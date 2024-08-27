@@ -157,7 +157,7 @@ void TimeDerivative::apply(
 
   // Compute the (trace-reversed) stress energy tensor here
   trace_reversed_stress_energy(stress_energy, pi_scalar, phi_scalar,
-                               lapse_scalar);
+                               lapse_scalar, shift_scalar);
 
   add_stress_energy_term_to_dt_pi(dt_pi, *stress_energy, lapse_scalar);
 

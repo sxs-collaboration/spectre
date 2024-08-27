@@ -47,7 +47,7 @@ void test_valid_neighbor_info_1d() {
     return std::vector{neighbor_info_t<1>{{neighbor_id, {join, mesh}}},
                        neighbor_info_t<1>{{neighbor_id, {stay, mesh}}}};
   };
-  const OrientationMap<1> aligned{};
+  const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
   CHECK(valid_neighbor_info(
             root, stay,
             Neighbors<1>{std::unordered_set{neighbor_root}, aligned}) ==
@@ -92,7 +92,7 @@ void test_valid_neighbor_info_2d() {
   const auto split_stay =
       std::array{::amr::Flag::Split, ::amr::Flag::IncreaseResolution};
   const auto split_split = std::array{::amr::Flag::Split, ::amr::Flag::Split};
-  const OrientationMap<2> aligned{};
+  const OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
   ElementId<2> neighbor_0{1, std::array{SegmentId{2, 0}, SegmentId{3, 4}}};
   const Neighbors<2> neighbors_0{std::unordered_set{neighbor_0}, aligned};
   ::TestHelpers::domain::check_neighbors(neighbors_0, element_id,

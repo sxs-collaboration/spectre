@@ -78,7 +78,7 @@ void test() {
   DirectionMap<Dim, Neighbors<Dim>> element_neighbors{};
   const DirectionalId<Dim> lower_xi_id{Direction<Dim>::lower_xi(),
                                        lower_xi_element_id};
-  OrientationMap<Dim> orientation{};
+  OrientationMap<Dim> orientation = OrientationMap<Dim>::create_aligned();
   if constexpr (Dim == 1) {
     orientation = OrientationMap<Dim>{{{Direction<Dim>::lower_xi()}}};
     element_neighbors.insert(

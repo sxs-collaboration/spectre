@@ -14,7 +14,7 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/ComplexDataView.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond

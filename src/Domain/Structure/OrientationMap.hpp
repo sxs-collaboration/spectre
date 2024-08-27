@@ -7,9 +7,9 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "Domain/Structure/Direction.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,8 +35,13 @@ class er;
 template <size_t VolumeDim>
 class OrientationMap {
  public:
-  /// The default orientation is the identity map on directions.
-  /// The bool `is_aligned_` is correspondingly set to `true`.
+  static constexpr uint16_t aligned_mask = 0b1000000000000000;
+  static constexpr uint16_t version_mask = 0b0111000000000000;
+
+  /// \brief Creates an OrientationMap in an uninitialized state.
+  ///
+  /// This can be helpful for debugging code. If you would like the identity
+  /// map, please use `create_aligned()`.
   OrientationMap();
   /// Mapped directions relative to the positive (`Side::Upper`) direction in
   /// each logical direction.
@@ -52,19 +57,31 @@ class OrientationMap {
   OrientationMap(OrientationMap&& /*rhs*/) = default;
   OrientationMap& operator=(OrientationMap&& /*rhs*/) = default;
 
+  /// Creates an OrientationMap that is the identity map on directions.
+  /// `is_aligned()` is `true` in this case.
+  static OrientationMap<VolumeDim> create_aligned();
+
   /// True when mapped(Direction) == Direction
-  bool is_aligned() const { return is_aligned_; }
+  bool is_aligned() const {
+    ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+           "Cannot use a default-constructed OrientationMap");
+    return (bit_field_ bitand aligned_mask) == aligned_mask;
+  }
 
   /// The corresponding dimension in the neighbor.
   size_t operator()(const size_t dim) const {
-    return gsl::at(mapped_directions_, dim).dimension();
+    ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+           "Cannot use a default-constructed OrientationMap");
+    return get_direction(dim).dimension();
   }
 
   /// The corresponding direction in the neighbor.
   Direction<VolumeDim> operator()(const Direction<VolumeDim>& direction) const {
+    ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
+           "Cannot use a default-constructed OrientationMap");
     return direction.side() == Side::Upper
-               ? gsl::at(mapped_directions_, direction.dimension())
-               : gsl::at(mapped_directions_, direction.dimension()).opposite();
+               ? get_direction(direction.dimension())
+               : get_direction(direction.dimension()).opposite();
   }
 
   /// The corresponding SegmentIds in the neighbor.
@@ -101,12 +118,15 @@ class OrientationMap {
 
  private:
   friend bool operator==(const OrientationMap& lhs, const OrientationMap& rhs) {
-    return (lhs.mapped_directions_ == rhs.mapped_directions_ and
-            lhs.is_aligned_ == rhs.is_aligned_);
+    return lhs.bit_field_ == rhs.bit_field_;
   }
 
-  std::array<Direction<VolumeDim>, VolumeDim> mapped_directions_;
-  bool is_aligned_ = true;
+  Direction<VolumeDim> get_direction(size_t dim) const;
+  void set_direction(size_t dim, const Direction<VolumeDim>& direction);
+  void set_aligned(bool is_aligned);
+  std::set<size_t> set_of_dimensions() const;
+
+  uint16_t bit_field_{0b1 << 15};
 };
 
 /// Output operator for OrientationMap.
@@ -125,7 +145,7 @@ template <typename T>
 std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_to_neighbor(
     const std::array<T, VolumeDim>& array_to_permute) const {
   std::array<T, VolumeDim> array_in_neighbor = array_to_permute;
-  if (is_aligned_ or VolumeDim <= 1) {
+  if (is_aligned() or VolumeDim <= 1) {
     return array_in_neighbor;
   }
   for (size_t i = 0; i < VolumeDim; i++) {
@@ -140,7 +160,7 @@ template <typename T>
 std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_from_neighbor(
     const std::array<T, VolumeDim>& array_in_neighbor) const {
   std::array<T, VolumeDim> result = array_in_neighbor;
-  if (not is_aligned_ and VolumeDim > 1) {
+  if (not is_aligned() and VolumeDim > 1) {
     for (size_t i = 0; i < VolumeDim; i++) {
       gsl::at(result, i) = gsl::at(array_in_neighbor, this->operator()(i));
     }

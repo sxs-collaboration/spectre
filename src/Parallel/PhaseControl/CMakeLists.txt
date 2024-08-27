@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   CheckpointAndExitAfterWallclock.cpp
+  PhaseControlTags.cpp
   )
 
 spectre_target_headers(

@@ -5,9 +5,9 @@
 
 #include <limits>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -18,7 +18,7 @@
 
 /// \cond
 class DataVector;
-// IWYU pragma: no_forward_declare Tensor
+
 namespace PUP {
 class er;
 }  // namespace PUP

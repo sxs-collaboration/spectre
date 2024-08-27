@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "DataStructures/IdPair.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
-#include "Domain/Structure/BlockId.hpp"    // IWYU pragma: keep
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

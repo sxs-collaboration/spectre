@@ -4,19 +4,28 @@
 import numpy as np
 
 
-def trace_reversed_stress_energy(pi_scalar, phi_scalar, lapse):
+def trace_reversed_stress_energy(pi_scalar, phi_scalar, lapse, shift):
     # Define the different components
-    tt_component = lapse * lapse * pi_scalar * pi_scalar
-    tj_component = -lapse * pi_scalar * phi_scalar
-    ij_component = np.outer(phi_scalar, phi_scalar)
+    rho = pi_scalar * pi_scalar
+    j_vec = -pi_scalar * phi_scalar
+    S = np.outer(phi_scalar, phi_scalar)
 
     # Construct the trace-reversed stress energy tensor
     stress_energy = np.zeros((4, 4))
 
-    stress_energy[0, 0] = tt_component
-    stress_energy[0, 1:] = tj_component
-    stress_energy[1:, 0] = stress_energy[0, 1:]
-    stress_energy[1:, 1:] = ij_component
+    # 00-component
+    stress_energy[0, 0] = (
+        np.power(lapse, 2) * rho
+        + 2.0 * lapse * np.dot(shift, j_vec)
+        + shift @ S @ shift
+    )
+
+    # 0i-component
+    stress_energy[0, 1:] = lapse * j_vec + shift @ S
+    stress_energy[1:, 0] = np.transpose(stress_energy[0, 1:])
+
+    # ij-component
+    stress_energy[1:, 1:] = S
 
     return stress_energy
 

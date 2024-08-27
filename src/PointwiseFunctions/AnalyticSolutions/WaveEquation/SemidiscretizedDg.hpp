@@ -6,7 +6,7 @@
 #include <array>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
@@ -16,7 +16,7 @@
 
 /// \cond
 class DataVector;
-// IWYU pragma: no_forward_declare Tensor
+
 namespace PUP {
 class er;
 }  // namespace PUP

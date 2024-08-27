@@ -36,9 +36,9 @@ Evolution:
     AdamsBashforth:
       Order: 3
   StepChoosers:
-    - Constant: 0.05
-    - Increase:
+    - LimitIncrease:
         Factor: 2
+    - PreventRapidIncrease
     - Cfl:
         SafetyFactor: 0.2
 
@@ -46,14 +46,11 @@ DomainCreator:
   Interval:
     LowerBound: [0.0]
     UpperBound: [6.283185307179586]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     InitialRefinement: [1]
     InitialGridPoints: [5]
     TimeDependence: None
-    BoundaryConditions:
-      LowerBoundary: Periodic
-      UpperBoundary: Periodic
+    BoundaryConditions: [Periodic]
 
 SpatialDiscretization:
   BoundaryCorrection:

@@ -15,8 +15,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace gr {
 template <typename DataType, size_t SpatialDim, typename Frame>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(

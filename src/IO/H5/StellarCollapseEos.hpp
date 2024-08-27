@@ -10,11 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "DataStructures/BoostMultiArray.hpp" // IWYU pragma: keep
+#include "DataStructures/BoostMultiArray.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
-
-// IWYU pragma: no_include <boost/multi_array.hpp>
 
 namespace h5 {
 /*!

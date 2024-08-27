@@ -11,14 +11,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
 
 /// \cond
 class DataVector;
@@ -27,10 +24,6 @@ template <typename Tag>
 struct Normalized;
 }  // namespace Tags
 /// \endcond
-
-// IWYU pragma:  no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma:  no_forward_declare EquationsOfSTate::IdealFluid
-// IWYU pragma: no_forward_declare Tensor
 
 namespace grmhd {
 namespace ValenciaDivClean {

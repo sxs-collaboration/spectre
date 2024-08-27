@@ -31,8 +31,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace Limiters {
 
 // The overall way of testing the Krivodonova limiter is to set the modal
@@ -81,7 +79,7 @@ void test_package_data(const size_t order) {
   // test no reorienting
   {
     krivodonova.package_data(make_not_null(&packaged_data), tensor0, tensor1,
-                             mesh, {});
+                             mesh, OrientationMap<1>::create_aligned());
     ModalVector expected0(mesh.number_of_grid_points(), 0.0);
     expected0[mesh.number_of_grid_points() - 1] = 1.0;
     CHECK_ITERABLE_APPROX(
@@ -353,7 +351,7 @@ void test_package_data() {
   // test no reorienting
   {
     krivodonova.package_data(make_not_null(&packaged_data), tensor0, tensor1,
-                             mesh, {});
+                             mesh, OrientationMap<2>::create_aligned());
     CHECK(get(get<::Tags::Modal<ScalarTag<0>>>(
               packaged_data.modal_volume_data)) == neighbor_modes);
     for (size_t d = 0; d < dim; ++d) {
@@ -1020,7 +1018,7 @@ void test_package_data() {
   // test no reorienting
   {
     krivodonova.package_data(make_not_null(&packaged_data), tensor0, tensor1,
-                             mesh, {});
+                             mesh, OrientationMap<3>::create_aligned());
     CHECK_ITERABLE_APPROX(
         get(get<::Tags::Modal<ScalarTag<0>>>(packaged_data.modal_volume_data)),
         neighbor_modes);

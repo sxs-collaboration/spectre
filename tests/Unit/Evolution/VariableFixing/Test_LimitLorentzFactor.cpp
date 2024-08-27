@@ -17,8 +17,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 namespace VariableFixing {
 namespace {
 void test_variable_fixer(const LimitLorentzFactor& variable_fixer,

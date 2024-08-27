@@ -10,6 +10,8 @@
 
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 
 namespace LinearSolver {
@@ -21,18 +23,25 @@ namespace InnerProductImpls {
 /// The inner product between any types that have a `dot` product
 template <typename Lhs, typename Rhs>
 struct InnerProductImpl {
-  static double apply(const Lhs& lhs, const Rhs& rhs) { return dot(lhs, rhs); }
+  static auto apply(const Lhs& lhs, const Rhs& rhs) {
+    return dot(conj(lhs), rhs);
+  }
 };
 
 /// The inner product between `Variables`
 template <typename LhsTagsList, typename RhsTagsList>
 struct InnerProductImpl<Variables<LhsTagsList>, Variables<RhsTagsList>> {
-  static double apply(const Variables<LhsTagsList>& lhs,
-                      const Variables<RhsTagsList>& rhs) {
+  using ValueType = typename Variables<LhsTagsList>::value_type;
+  static ValueType apply(const Variables<LhsTagsList>& lhs,
+                         const Variables<RhsTagsList>& rhs) {
     const auto size = lhs.size();
     ASSERT(size == rhs.size(),
            "The Variables must be of the same size to take an inner product");
-    return ddot_(size, lhs.data(), 1, rhs.data(), 1);
+    if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+      return zdotc_(size, lhs.data(), 1, rhs.data(), 1);
+    } else {
+      return ddot_(size, lhs.data(), 1, rhs.data(), 1);
+    }
   }
 };
 
@@ -65,8 +74,31 @@ struct InnerProductImpl<Variables<LhsTagsList>, Variables<RhsTagsList>> {
  * reduction over all elements that sums their local `inner_product`s.
  */
 template <typename Lhs, typename Rhs>
-SPECTRE_ALWAYS_INLINE double inner_product(const Lhs& lhs, const Rhs& rhs) {
+SPECTRE_ALWAYS_INLINE auto inner_product(const Lhs& lhs, const Rhs& rhs) {
   return InnerProductImpls::InnerProductImpl<Lhs, Rhs>::apply(lhs, rhs);
+}
+
+/*!
+ * \ingroup LinearSolverGroup
+ * \brief The local part of the Euclidean inner product of a vector with itself.
+ *
+ * \see LinearSolver::inner_product for details on the inner product. This
+ * function just returns the inner product of a vector with itself, and ensures
+ * that the result is real.
+ */
+template <typename T>
+SPECTRE_ALWAYS_INLINE double magnitude_square(const T& vector) {
+  auto result =
+      InnerProductImpls::InnerProductImpl<T, T>::apply(vector, vector);
+  if constexpr (std::is_same_v<std::decay_t<decltype(result)>,
+                               std::complex<double>>) {
+    ASSERT(equal_within_roundoff(imag(result), 0.0),
+           "The magnitude squared is not real. The imaginary part is: "
+               << imag(result));
+    return real(result);
+  } else {
+    return result;
+  }
 }
 
 }  // namespace LinearSolver

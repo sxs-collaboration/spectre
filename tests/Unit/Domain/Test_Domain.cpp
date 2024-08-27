@@ -35,9 +35,9 @@
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
-#include "Domain/Creators/BinaryCompactObjectHelpers.hpp"
 #include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ExcisionSphere.hpp"
@@ -361,7 +361,7 @@ void test_1d_rectilinear_domains() {
     const auto domain = rectilinear_domain<1>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, {}, {{false}}, {}, true);
-    const OrientationMap<1> aligned{};
+    const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
     std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, aligned}}},
         {{Direction<1>::lower_xi(), {0, aligned}},
@@ -376,7 +376,7 @@ void test_1d_rectilinear_domains() {
   }
   {
     INFO("Antialigned domain.");
-    const OrientationMap<1> aligned{};
+    const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
     const OrientationMap<1> antialigned{
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
     const std::vector<std::unordered_set<Direction<1>>>
@@ -409,7 +409,7 @@ void test_2d_rectilinear_domains() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
   auto orientations_of_all_blocks =
-      std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
+      std::vector<OrientationMap<2>>{4, OrientationMap<2>::create_aligned()};
   orientations_of_all_blocks[1] = half_turn;
   orientations_of_all_blocks[2] = quarter_turn_cw;
   orientations_of_all_blocks[3] = quarter_turn_ccw;
@@ -443,7 +443,7 @@ void test_2d_rectilinear_domains() {
 }
 
 void test_3d_rectilinear_domains() {
-  const OrientationMap<3> aligned{};
+  const OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
   const OrientationMap<3> quarter_turn_cw_xi{std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
        Direction<3>::lower_eta()}}};

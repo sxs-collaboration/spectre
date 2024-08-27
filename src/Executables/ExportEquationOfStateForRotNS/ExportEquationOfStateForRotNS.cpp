@@ -86,8 +86,7 @@ void dump_barotropic_eos(
     // Note: the energy density is divided by c^2
     const double total_energy_density_cgs =
         get(total_energy_density_geometric) *
-        hydro::units::cgs::rest_mass_density_unit *
-        square(hydro::units::cgs::speed_of_light);
+        hydro::units::cgs::rest_mass_density_unit;
 
     // should be dyne cm^(-3)
     const double pressure_cgs =

@@ -9,11 +9,11 @@ from spectre.Domain.Creators import DomainCreator2D, Rectangle
 class TestRectangle(unittest.TestCase):
     def test_construction(self):
         rectangle = Rectangle(
-            lower_xy=[1.0, 0.0],
-            upper_xy=[2.0, 1.0],
-            is_periodic_in_xy=[False, False],
-            initial_refinement_level_xy=[1, 0],
-            initial_number_of_grid_points_in_xy=[3, 4],
+            lower_bounds=[1.0, 0.0],
+            upper_bounds=[2.0, 1.0],
+            is_periodic=[False, False],
+            initial_refinement_levels=[1, 0],
+            initial_num_points=[3, 4],
         )
         self.assertIsInstance(rectangle, DomainCreator2D)
 

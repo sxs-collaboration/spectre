@@ -222,11 +222,11 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     };
     using options = tmpl::list<MaxAllowedRadialDistance, OutwardDriftVelocity,
                                OutwardDriftTimescale>;
-    void pup(PUP::er& p) {
-      p | max_allowed_radial_distance;
-      p | outward_drift_velocity;
-      p | outward_drift_timescale;
-    }
+    DeltaRDriftOutwardOptions();
+    DeltaRDriftOutwardOptions(double max_allowed_radial_distance_in,
+                              double outward_drift_velocity_in,
+                              double outward_drift_timescale_in);
+    void pup(PUP::er& p);
 
     double max_allowed_radial_distance{};
     double outward_drift_velocity{};

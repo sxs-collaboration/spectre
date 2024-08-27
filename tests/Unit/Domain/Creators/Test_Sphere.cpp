@@ -33,11 +33,11 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
-#include "Domain/Creators/ShapeMapOptions.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
+#include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -602,9 +602,9 @@ void test_parse_errors() {
                        TDMO{1.0, TDMO::ShapeMapOptions{5, std::nullopt},
                             std::nullopt, std::nullopt,
                             TDMO::TranslationMapOptions{
-                                std::array<double, 3>{0.0, 0.0, 0.0},
-                                std::array<double, 3>{0.001, -0.003, 0.005},
-                                std::array<double, 3>{0.0, 0.0, 0.0}}},
+                                {std::array<double, 3>{0.0, 0.0, 0.0},
+                                 std::array<double, 3>{0.001, -0.003, 0.005},
+                                 std::array<double, 3>{0.0, 0.0, 0.0}}}},
                        nullptr),
       Catch::Matchers::ContainsSubstring(
           "Currently cannot use hard-coded time dependent maps with an inner "
@@ -712,8 +712,8 @@ void test_sphere(const gsl::not_null<Generator*> gen) {
                 l_max, std::nullopt},
             std::nullopt, std::nullopt,
             creators::sphere::TimeDependentMapOptions::TranslationMapOptions{
-                std::array<double, 3>{0.0, 0.0, 0.0}, translation_velocity,
-                std::array<double, 3>{0.0, 0.0, 0.0}});
+                {std::array<double, 3>{0.0, 0.0, 0.0}, translation_velocity,
+                 std::array<double, 3>{0.0, 0.0, 0.0}}});
       } else {
         time_dependent_options = std::make_unique<
             domain::creators::time_dependence::UniformTranslation<3, 0>>(

@@ -4,7 +4,7 @@
 #include "Evolution/Systems/NewtonianEuler/Limiters/Weno.hpp"
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <unordered_map>
@@ -15,10 +15,10 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/SizeOfElement.hpp"
-#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
-#include "Domain/Tags.hpp"                 // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"

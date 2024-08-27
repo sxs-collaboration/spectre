@@ -103,11 +103,11 @@ void run_event(
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
 
-  auto databox = db::create<
-      db::AddSimpleTags<domain::Tags::Coordinates<2, Frame::Inertial>,
-                        TestTags::ScalarVar, TestTags::OptionalScalar>>(
-      std::move(coordinates), std::move(scalar_var),
-      std::move(optional_scalar));
+  auto databox = db::create<db::AddSimpleTags<
+      domain::Tags::Element<2>, domain::Tags::Coordinates<2, Frame::Inertial>,
+      TestTags::ScalarVar, TestTags::OptionalScalar>>(
+      Element<2>{ElementId<2>{0}, {}}, std::move(coordinates),
+      std::move(scalar_var), std::move(optional_scalar));
 
   auto obs_box = make_observation_box<tmpl::filter<
       TooBig::compute_tags_for_observation_box, db::is_compute_tag<tmpl::_1>>>(
@@ -145,8 +145,10 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.ErrorIfDataTooBig",
                 "  Threshold: 8.5"),
       Catch::Matchers::ContainsSubstring("ScalarVar too big") and
           Catch::Matchers::ContainsSubstring("value T()=9") and
-          Catch::Matchers::ContainsSubstring("at position T(0)=3") and
-          Catch::Matchers::ContainsSubstring("T(1)=3"));
+          Catch::Matchers::ContainsSubstring("at position") and
+          Catch::Matchers::ContainsSubstring("T(0)=3") and
+          Catch::Matchers::ContainsSubstring("T(1)=3") and
+          Catch::Matchers::ContainsSubstring("with ElementId:"));
   CHECK_THROWS_WITH(
       run_event(tnsr::I<DataVector, 2>{{{{1.0, 2.0, 3.0}, {1.0, 2.0, 3.0}}}},
                 Scalar<DataVector>{{{{1.0, 2.0, 3.0}}}},
@@ -156,8 +158,10 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.ErrorIfDataTooBig",
                 "  Threshold: 8.5"),
       Catch::Matchers::ContainsSubstring("OptionalScalar too big") and
           Catch::Matchers::ContainsSubstring("value T()=9") and
-          Catch::Matchers::ContainsSubstring("at position T(0)=3") and
-          Catch::Matchers::ContainsSubstring("T(1)=3"));
+          Catch::Matchers::ContainsSubstring("at position") and
+          Catch::Matchers::ContainsSubstring("T(0)=3") and
+          Catch::Matchers::ContainsSubstring("T(1)=3") and
+          Catch::Matchers::ContainsSubstring("with ElementId:"));
   CHECK_THROWS_WITH(
       run_event(tnsr::I<DataVector, 2>{{{{1.0, 2.0, 3.0}, {1.0, 2.0, 3.0}}}},
                 Scalar<DataVector>{{{{1.0, 2.0, -9.0}}}}, std::nullopt,
@@ -166,8 +170,10 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.ErrorIfDataTooBig",
                 "  Threshold: 8.5"),
       Catch::Matchers::ContainsSubstring("ScalarVar too big") and
           Catch::Matchers::ContainsSubstring("value T()=-9") and
-          Catch::Matchers::ContainsSubstring("at position T(0)=3") and
-          Catch::Matchers::ContainsSubstring("T(1)=3"));
+          Catch::Matchers::ContainsSubstring("at position") and
+          Catch::Matchers::ContainsSubstring("T(0)=3") and
+          Catch::Matchers::ContainsSubstring("T(1)=3") and
+          Catch::Matchers::ContainsSubstring("with ElementId:"));
   CHECK_THROWS_WITH(
       run_event(tnsr::I<DataVector, 2>{{{{1.0, 5.0, 3.0}, {1.0, 2.0, 3.0}}}},
                 Scalar<DataVector>{{{{1.0, 2.0, 3.0}}}}, std::nullopt,
@@ -178,6 +184,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.ErrorIfDataTooBig",
           Catch::Matchers::ContainsSubstring("value T(0,0)=7") and
           Catch::Matchers::ContainsSubstring("T(1,0)=8") and
           Catch::Matchers::ContainsSubstring("T(1,1)=9") and
-          Catch::Matchers::ContainsSubstring("at position T(0)=5") and
+          Catch::Matchers::ContainsSubstring("at position") and
+          Catch::Matchers::ContainsSubstring("T(0)=5") and
           Catch::Matchers::ContainsSubstring("T(1)=2"));
 }

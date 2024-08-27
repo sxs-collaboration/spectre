@@ -7,9 +7,9 @@
 #include <complex>
 #include <vector>
 
-#include "DataStructures/ComplexDataVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/VectorImpl.hpp"  // IWYU pragma: keep
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/VectorImpl.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 // [get_vector_element_type_example]

@@ -15,9 +15,9 @@
 
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
+#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
-#include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/String.hpp"
 #include "Parallel/ArrayComponentId.hpp"

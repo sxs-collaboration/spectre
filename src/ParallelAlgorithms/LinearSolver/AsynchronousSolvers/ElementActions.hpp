@@ -294,8 +294,7 @@ struct PrepareSolve {
           observers::get_section_observation_key<ArraySectionIdTag>(box);
       if (section_observation_key.has_value()) {
         const auto& residual = get<residual_tag>(box);
-        const double residual_magnitude_square =
-            inner_product(residual, residual);
+        const double residual_magnitude_square = magnitude_square(residual);
         contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
             iteration_id, residual_magnitude_square, cache, array_index,
             *section_observation_key);
@@ -386,8 +385,7 @@ struct CompleteStep {
       const size_t completed_iterations =
           get<Convergence::Tags::IterationId<OptionsGroup>>(box);
       const auto& residual = get<residual_tag>(box);
-      const double residual_magnitude_square =
-          inner_product(residual, residual);
+      const double residual_magnitude_square = magnitude_square(residual);
       contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
           completed_iterations, residual_magnitude_square, cache, array_index,
           *section_observation_key);

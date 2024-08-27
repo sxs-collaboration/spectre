@@ -4,7 +4,7 @@
 #pragma once
 
 #include <cstddef>
-#include <unistd.h>  // IWYU pragma: keep
+#include <unistd.h>
 #include <vector>
 
 namespace PUP {

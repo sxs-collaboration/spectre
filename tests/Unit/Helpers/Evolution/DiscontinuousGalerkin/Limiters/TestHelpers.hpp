@@ -18,7 +18,7 @@ namespace Limiters {
 template <size_t VolumeDim>
 Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) {
   return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
-          OrientationMap<VolumeDim>{}};
+          OrientationMap<VolumeDim>::create_aligned()};
 }
 
 // Construct an Element with one neighboring element in each direction.

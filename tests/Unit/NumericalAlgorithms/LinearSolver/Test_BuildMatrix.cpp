@@ -42,10 +42,25 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
   {
     INFO("Build a simple dense matrix");
     const blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
-    const helpers::ApplyMatrix linear_operator{matrix};
+    const helpers::ApplyMatrix<double> linear_operator{matrix};
     blaze::DynamicMatrix<double> matrix_representation(2, 2);
     blaze::DynamicVector<double> operand_buffer(2, 0.);
     blaze::DynamicVector<double> result_buffer(2, 0.);
+    build_matrix(make_not_null(&matrix_representation),
+                 make_not_null(&operand_buffer), make_not_null(&result_buffer),
+                 linear_operator);
+    CHECK_ITERABLE_APPROX(matrix_representation, matrix);
+    CHECK(linear_operator.invocations == 2);
+  }
+  {
+    INFO("Build a complex dense matrix");
+    const blaze::DynamicMatrix<std::complex<double>> matrix{
+        {std::complex(4., 2.), std::complex(1., -1.)},
+        {std::complex(3., 0.), std::complex(1., 3.)}};
+    const helpers::ApplyMatrix<std::complex<double>> linear_operator{matrix};
+    blaze::DynamicMatrix<std::complex<double>> matrix_representation(2, 2);
+    blaze::DynamicVector<std::complex<double>> operand_buffer(2, 0.);
+    blaze::DynamicVector<std::complex<double>> result_buffer(2, 0.);
     build_matrix(make_not_null(&matrix_representation),
                  make_not_null(&operand_buffer), make_not_null(&result_buffer),
                  linear_operator);

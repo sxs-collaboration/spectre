@@ -96,23 +96,27 @@ void test() {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true}}};
 
-  const Element<1> self(self_id,
-                        {{{Direction<1>::lower_xi(), {{sibling_id}, {}}},
-                          {Direction<1>::upper_xi(), {{cousin_id}, {}}}}});
+  const Element<1> self(
+      self_id, {{{Direction<1>::lower_xi(),
+                  {{sibling_id}, OrientationMap<1>::create_aligned()}},
+                 {Direction<1>::upper_xi(),
+                  {{cousin_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {mesh, self, amr::Info<1>{std::array{amr::Flag::Join}, mesh},
        initial_neighbor_info});
 
-  const Element<1> sibling(sibling_id,
-                           {{{Direction<1>::upper_xi(), {{self_id}, {}}}}});
+  const Element<1> sibling(
+      sibling_id, {{{Direction<1>::upper_xi(),
+                     {{self_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, sibling_id,
       {mesh, sibling, amr::Info<1>{std::array{amr::Flag::Join}, mesh},
        initial_neighbor_info});
 
-  const Element<1> cousin(cousin_id,
-                          {{{Direction<1>::lower_xi(), {{self_id}, {}}}}});
+  const Element<1> cousin(
+      cousin_id, {{{Direction<1>::lower_xi(),
+                    {{self_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, cousin_id,
       {mesh, cousin, amr::Info<1>{std::array{amr::Flag::Split}, mesh},
@@ -223,24 +227,28 @@ void test_race_conditions() {
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
 
-  const Element<1> self(self_id,
-                        {{{Direction<1>::lower_xi(), {{sibling_id}, {}}},
-                          {Direction<1>::upper_xi(), {{cousin_id}, {}}}}});
+  const Element<1> self(
+      self_id, {{{Direction<1>::lower_xi(),
+                  {{sibling_id}, OrientationMap<1>::create_aligned()}},
+                 {Direction<1>::upper_xi(),
+                  {{cousin_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {mesh, self, amr::Info<1>{std::array{amr::Flag::Split}, mesh},
        std::unordered_map<ElementId<1>, amr::Info<1>>{
            {cousin_id, {{{amr::Flag::Split}}, mesh}}}});
 
-  const Element<1> sibling(sibling_id,
-                           {{{Direction<1>::upper_xi(), {{self_id}, {}}}}});
+  const Element<1> sibling(
+      sibling_id, {{{Direction<1>::upper_xi(),
+                     {{self_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, sibling_id,
       {mesh, sibling, amr::Info<1>{std::array{amr::Flag::Undefined}, Mesh<1>{}},
        initial_neighbor_info});
 
-  const Element<1> cousin(cousin_id,
-                          {{{Direction<1>::lower_xi(), {{self_id}, {}}}}});
+  const Element<1> cousin(
+      cousin_id, {{{Direction<1>::lower_xi(),
+                    {{self_id}, OrientationMap<1>::create_aligned()}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, cousin_id,
       {mesh, cousin, amr::Info<1>{std::array{amr::Flag::Split}, mesh},
@@ -323,15 +331,19 @@ void test_mesh_update(gsl::not_null<Generator*> generator) {
 
   std::vector<Element<1>> elements;
   elements.reserve(7_st);
-  elements.emplace_back(
-      Element<1>(ids[0], {{{Direction<1>::upper_xi(), {{ids[1]}, {}}}}}));
+  elements.emplace_back(Element<1>(
+      ids[0], {{{Direction<1>::upper_xi(),
+                 {{ids[1]}, OrientationMap<1>::create_aligned()}}}}));
   for (size_t i = 1; i < 6; ++i) {
-    elements.emplace_back(
-        Element<1>(ids[i], {{{Direction<1>::lower_xi(), {{ids[i - 1]}, {}}},
-                             {Direction<1>::upper_xi(), {{ids[i + 1]}, {}}}}}));
+    elements.emplace_back(Element<1>(
+        ids[i], {{{Direction<1>::lower_xi(),
+                   {{ids[i - 1]}, OrientationMap<1>::create_aligned()}},
+                  {Direction<1>::upper_xi(),
+                   {{ids[i + 1]}, OrientationMap<1>::create_aligned()}}}}));
   }
-  elements.emplace_back(
-      Element<1>(ids[6], {{{Direction<1>::lower_xi(), {{ids[5]}, {}}}}}));
+  elements.emplace_back(Element<1>(
+      ids[6], {{{Direction<1>::lower_xi(),
+                 {{ids[5]}, OrientationMap<1>::create_aligned()}}}}));
 
   const auto initial_extents =
       std::vector{7_st, 4_st, 6_st, 5_st, 2_st, 4_st, 4_st};

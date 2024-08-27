@@ -174,6 +174,7 @@
 #include "PointwiseFunctions/AnalyticData/GhGrMhd/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BlastWave.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/BondiHoyleAccretion.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticRotor.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
@@ -217,16 +218,10 @@
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
-#include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepChoosers/Increase.hpp"
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/TimeSequence.hpp"
@@ -242,7 +237,7 @@
 
 /// \cond
 namespace Frame {
-// IWYU pragma: no_forward_declare MathFunction
+
 struct Inertial;
 }  // namespace Frame
 namespace PUP {
@@ -614,6 +609,10 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            grmhd::AnalyticData::InitialMagneticFields::
+                initial_magnetic_fields>,
         tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         // Restrict to monotonic time steppers in LTS to avoid control
@@ -670,10 +669,10 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr auto default_phase_order = std::array<Parallel::Phase, 8>{
       {Parallel::Phase::Initialization,
        Parallel::Phase::RegisterWithElementDataReader,
-       Parallel::Phase::ImportInitialData,
+       Parallel::Phase::Register, Parallel::Phase::ImportInitialData,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
-       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
-       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   struct SubcellOptions {
     using evolved_vars_tags = typename system::variables_tag::tags_list;
@@ -701,7 +700,7 @@ struct GhValenciaDivCleanTemplateBase<
   };
 
   using events_and_dense_triggers_subcell_postprocessors = tmpl::list<
-      ::domain::CheckFunctionsOfTimeAreReadyPostprocessor,
+      ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<volume_dim>,
       AlwaysReadyPostprocessor<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>>;
@@ -852,16 +851,16 @@ struct GhValenciaDivCleanTemplateBase<
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<::domain::Actions::CheckFunctionsOfTimeAreReady,
-                         VariableFixing::Actions::FixVariables<
-                             VariableFixing::FixToAtmosphere<volume_dim>>,
-                         VariableFixing::Actions::FixVariables<
-                             VariableFixing::LimitLorentzFactor>,
-                         Actions::UpdateConservatives,
-                         evolution::Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>,
+              tmpl::list<
+                  ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
+                  VariableFixing::Actions::FixVariables<
+                      VariableFixing::FixToAtmosphere<volume_dim>>,
+                  VariableFixing::Actions::FixVariables<
+                      VariableFixing::LimitLorentzFactor>,
+                  Actions::UpdateConservatives,
+                  evolution::Actions::RunEventsAndTriggers,
+                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>,
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
               tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,

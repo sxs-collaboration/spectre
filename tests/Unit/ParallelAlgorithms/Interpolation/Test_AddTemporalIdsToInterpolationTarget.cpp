@@ -12,7 +12,7 @@
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -24,8 +24,8 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
@@ -40,9 +40,6 @@
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-// IWYU pragma: no_forward_declare db::DataBox
-
-// IWYU pragma: no_include <boost/variant/get.hpp>
 
 class DataVector;
 namespace intrp::Tags {
@@ -333,9 +330,9 @@ void test_add_temporal_ids_time_dependent() {
 
   // Create a Domain with time-dependence. For this test we don't care
   // what the Domain actually is, we care only that it has time-dependence.
-  const auto domain_creator = domain::creators::Brick(
+  const domain::creators::Brick domain_creator(
       {{-1.2, 3.0, 2.5}}, {{0.8, 5.0, 3.0}}, {{1, 1, 1}}, {{5, 4, 3}},
-      {{false, false, false}},
+      {{false, false, false}}, {},
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3>>(
           0.0, std::array<double, 3>({{0.1, 0.2, 0.3}})));

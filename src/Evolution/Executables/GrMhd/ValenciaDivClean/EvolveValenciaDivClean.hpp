@@ -115,7 +115,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
@@ -169,7 +169,7 @@
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
-#include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
+#include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -263,6 +263,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       tmpl::append<
           typename system::variables_tag::tags_list,
           typename system::primitive_variables_tag::tags_list,
+          typename system::flux_spacetime_variables_tag::tags_list,
           tmpl::list<
               grmhd::ValenciaDivClean::Tags::
                   ComovingMagneticFieldMagnitudeCompute,
@@ -349,6 +350,10 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            grmhd::AnalyticData::InitialMagneticFields::
+                initial_magnetic_fields>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,

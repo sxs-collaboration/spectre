@@ -17,7 +17,11 @@ from spectre.Visualization.Plot import (
 )
 
 
-def import_A_and_B(filenames, subfile_name_aha, subfile_name_ahb):
+def import_A_and_B(
+    filenames,
+    subfile_name_aha="ApparentHorizons/ControlSystemAhA_Centers.dat",
+    subfile_name_ahb="ApparentHorizons/ControlSystemAhB_Centers.dat",
+):
     A_data = []
     B_data = []
 
@@ -25,12 +29,12 @@ def import_A_and_B(filenames, subfile_name_aha, subfile_name_ahb):
         with h5py.File(filename, "r") as file:
             A_data.append(
                 np.array(
-                    file[subfile_name_aha][:, [4, 5, 6]]
+                    file[subfile_name_aha][:, [0, 4, 5, 6]]
                 )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
             )
             B_data.append(
                 np.array(
-                    file[subfile_name_ahb][:, [4, 5, 6]]
+                    file[subfile_name_ahb][:, [0, 4, 5, 6]]
                 )  # 0 ->time,  4 -> x, 5 -> y, 6 -> z
             )
 
@@ -43,7 +47,7 @@ def import_A_and_B(filenames, subfile_name_aha, subfile_name_ahb):
         return None, None
 
 
-def plot_trajectory(AhA, AhB, sample_rate, figsize):
+def plot_trajectory(AhA: np.ndarray, AhB: np.ndarray, fig=None):
     """
     Plot concatenated trajectories in inspiral simulation.
 
@@ -54,33 +58,22 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
     value of 15, to speed up the plots and avoid memory error.
 
     Arguments:
-    AhA: Array of shape (num_points, 3) with the coordinates of
-    the first object.
-    AhB: Array of shape (num_points, 3) with the coordinates of
-    the second object.
-    sample_rate: Integer specifying the downsampling rate for 3D plots.
-    figsize: Tuple of two floats specifying the figure size as
-    width and height in inches.
+    AhA: Array of shape (num_points, 4) with the time and coordinates of
+      the first object.
+    AhB: Array of shape (num_points, 4) with the time and coordinates of
+      the second object.
+    fig: Matplotlib figure object used for plotting. Subplots will be added to
+      this figure. If None, a new figure will be created.
     """
-
-    fig = plt.figure(figsize=figsize)
-
-    # Sample data for 3D plots
-    AhA_sampled = AhA[::sample_rate]
-    AhB_sampled = AhB[::sample_rate]
+    if fig is None:
+        fig = plt.figure(figsize=(10, 10))
 
     # Plot 3D trajectories
     ax1 = fig.add_subplot(2, 2, 1, projection="3d")
-    ax1.plot(
-        *AhA_sampled.T,
-        color="C0",
-        label="AhA",
-    )
-    ax1.plot(
-        *AhB_sampled.T,
-        color="C1",
-        label="AhB",
-    )
+    ax1.plot(*AhA[:, 1:].T, color="C0", label="AhA")
+    ax1.scatter(*AhA[-1, 1:], color="C0")
+    ax1.plot(*AhB[:, 1:].T, color="C1", label="AhB")
+    ax1.scatter(*AhB[-1, 1:], color="C1")
     ax1.set_xlabel("X")
     ax1.set_ylabel("Y")
     ax1.set_zlabel("Z")
@@ -88,14 +81,12 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
     ax1.legend()
 
     # Calculate coordinate separation in 3D
-    separation_3d = AhA_sampled - AhB_sampled
+    separation_3d = AhA[:, 1:] - AhB[:, 1:]
 
     # Plot 3D coordinate separation
     ax2 = fig.add_subplot(2, 2, 2, projection="3d")
-    ax2.plot(
-        *separation_3d.T,
-        color="C2",
-    )
+    ax2.plot(*separation_3d.T, color="black")
+    ax2.scatter(*separation_3d[-1], color="black")
     ax2.set_xlabel("X diff")
     ax2.set_ylabel("Y diff")
     ax2.set_zlabel("Z diff")
@@ -103,8 +94,10 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
 
     # Plot 2D trajectories
     ax3 = fig.add_subplot(2, 2, 3)
-    ax3.plot(*AhA[:, 0:2].T, label="AhA", color="C0")
-    ax3.plot(*AhB[:, 0:2].T, label="AhB", color="C1")
+    ax3.plot(*AhA[:, 1:3].T, label="AhA", color="C0")
+    ax3.scatter(*AhA[-1, 1:3], color="C0")
+    ax3.plot(*AhB[:, 1:3].T, label="AhB", color="C1")
+    ax3.scatter(*AhB[-1, 1:3], color="C1")
     ax3.set_xlabel("x")
     ax3.set_ylabel("y")
     ax3.legend()
@@ -113,18 +106,19 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
     ax3.grid(True)  # Add gridlines
 
     # Calculate coordinate separation in 2D
-    separation_2d = AhA[:, 0:2] - AhB[:, 0:2]
+    separation_2d = AhA[:, 1:3] - AhB[:, 1:3]
     # Plot coordinate separation in 2D
     ax4 = fig.add_subplot(2, 2, 4)
-    ax4.plot(*separation_2d.T, color="C2")
+    ax4.plot(*separation_2d.T, color="black")
+    ax4.scatter(*separation_2d[-1], color="black")
     ax4.set_xlabel("x1 - x2")
     ax4.set_ylabel("y1 - y2")
     ax4.set_title("Coordinate separation (2D)")
     ax4.set_aspect("equal")  # Set aspect ratio to 1
     ax4.grid(True)  # Add gridlines
 
-    plt.tight_layout()
     plt.subplots_adjust(wspace=0.3, hspace=0.3)
+    return fig
 
 
 @click.command(name="trajectories")
@@ -153,9 +147,12 @@ def plot_trajectory(AhA, AhB, sample_rate, figsize):
 @click.option(
     "--sample-rate",
     type=int,
-    default=10,
+    default=1,
     show_default=True,
-    help="Downsampling value for 3D plots",
+    help=(
+        "Downsample data to speed up plots. E.g. a value of 10 means every 10th"
+        " point is plotted."
+    ),
 )
 @click.option(
     "--figsize",
@@ -176,7 +173,8 @@ def plot_trajectories_command(
     full trajectories.
     """
     AhA, AhB = import_A_and_B(h5_files, subfile_name_aha, subfile_name_ahb)
-    plot_trajectory(AhA, AhB, sample_rate, figsize)
+    fig = plt.figure(figsize=figsize)
+    return plot_trajectory(AhA[::sample_rate], AhB[::sample_rate], fig)
 
 
 if __name__ == "__main__":

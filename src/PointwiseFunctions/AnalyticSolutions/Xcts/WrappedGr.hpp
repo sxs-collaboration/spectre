@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <pup.h>
+#include <type_traits>
 
 #include "DataStructures/CachedTempBuffer.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -24,6 +25,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -260,13 +262,12 @@ struct WrappedGrVariables
  * \tparam HasMhd Enable to compute matter source terms. Disable to set matter
  * source terms to zero.
  */
-template <typename GrSolution, bool HasMhd = false,
-          typename GrSolutionOptions = typename GrSolution::options>
+
+template <typename GrSolution, bool HasMhd = false>
 class WrappedGr;
 
-template <typename GrSolution, bool HasMhd, typename... GrSolutionOptions>
-class WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>
-    : public elliptic::analytic_data::AnalyticSolution {
+template <typename GrSolution, bool HasMhd>
+class WrappedGr : public elliptic::analytic_data::AnalyticSolution {
  public:
   static constexpr size_t Dim = 3;
 
@@ -281,8 +282,10 @@ class WrappedGr<GrSolution, HasMhd, tmpl::list<GrSolutionOptions...>>
   WrappedGr& operator=(WrappedGr&&) = default;
   ~WrappedGr() = default;
 
-  WrappedGr(typename GrSolutionOptions::type... gr_solution_options)
-      : gr_solution_(std::move(gr_solution_options)...) {}
+  template <typename... Args,
+            Requires<std::is_constructible_v<GrSolution, Args...>> = nullptr>
+  explicit WrappedGr(Args&&... args)
+      : gr_solution_(std::forward<Args>(args)...) {}
 
   const GrSolution& gr_solution() const { return gr_solution_; }
 

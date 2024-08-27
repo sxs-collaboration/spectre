@@ -303,8 +303,17 @@ endfunction()
 # - PY_MODULE_DEPENDENCY
 #                The python module that this test depends on
 #                Set to None if there is no python module dependency
+#
+# Optionally:
+# - TIMEOUT secs Set the test timeout (default 2)
 function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     PY_MODULE_DEPENDENCY)
+  cmake_parse_arguments(ARG "" TIMEOUT "" ${ARGN})
+  if(DEFINED ARG_TIMEOUT)
+    set(TIMEOUT ${ARG_TIMEOUT})
+  else()
+    set(TIMEOUT 2)
+  endif()
   get_filename_component(FILE "${FILE}" ABSOLUTE)
   string(TOLOWER "${TAGS}" TAGS)
 
@@ -315,7 +324,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     ${FILE}
     )
 
-  spectre_test_timeout(TIMEOUT PYTHON 2)
+  spectre_test_timeout(TIMEOUT PYTHON ${TIMEOUT})
 
   set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
   if(BUILD_PYTHON_BINDINGS AND
@@ -358,12 +367,16 @@ endfunction()
 # - PY_MODULE_DEPENDENCY
 #                The python module that this test depends on
 #                Set to None if there is no python module dependency
+#
+# Optionally:
+# - TIMEOUT secs Set the test timeout (default 2)
 function(SPECTRE_ADD_PYTHON_BINDINGS_TEST TEST_NAME FILE TAGS
     PY_MODULE_DEPENDENCY)
   if(NOT BUILD_PYTHON_BINDINGS)
     return()
   endif()
-  spectre_add_python_test(${TEST_NAME} ${FILE} "${TAGS}" ${PY_MODULE_DEPENDENCY})
+  spectre_add_python_test(
+    ${TEST_NAME} ${FILE} "${TAGS}" ${PY_MODULE_DEPENDENCY} ${ARGN})
 endfunction()
 
 # Add a convenient target name for the pybindings.

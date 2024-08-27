@@ -27,11 +27,11 @@ class TestElementMap(unittest.TestCase):
     def test_element_map(self):
         # Full domain is [0, 2]
         domain = Interval(
-            lower_x=[0.0],
-            upper_x=[2.0],
-            is_periodic_in_x=[False],
-            initial_refinement_level_x=[1],
-            initial_number_of_grid_points_in_x=[3],
+            lower_bounds=[0.0],
+            upper_bounds=[2.0],
+            is_periodic=[False],
+            initial_refinement_levels=[1],
+            initial_num_points=[3],
         ).create_domain()
         # Element is [0, 1]
         element_id = ElementId[1]("[B0,(L1I0)]")

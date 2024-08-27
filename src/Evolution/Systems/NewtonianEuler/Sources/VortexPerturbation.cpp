@@ -18,10 +18,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <array>
-
-// IWYU pragma: no_forward_declare Tensor
-
 namespace NewtonianEuler::Sources {
 VortexPerturbation::VortexPerturbation(const double perturbation_amplitude)
     : perturbation_amplitude_(perturbation_amplitude) {}

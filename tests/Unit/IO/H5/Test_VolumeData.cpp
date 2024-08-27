@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
@@ -165,12 +165,13 @@ void test() {
   const std::vector<std::vector<Spectral::Quadrature>> quadratures{
       {3, Spectral::Quadrature::Gauss},
       {3, Spectral::Quadrature::GaussLobatto}};
-  const auto domain_creator = domain::creators::Brick{
+  const domain::creators::Brick domain_creator{
       {{0., 0., 0.}},
       {{1., 2., 3.}},
       {{1, 0, 1}},
       {{3, 4, 5}},
       {{false, false, false}},
+      {},
       std::make_unique<
           domain::creators::time_dependence::UniformTranslation<3, 0>>(
           1., std::array<double, 3>{{2., 3., 4.}})};

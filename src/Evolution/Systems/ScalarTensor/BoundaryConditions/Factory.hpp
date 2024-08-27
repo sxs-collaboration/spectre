@@ -12,6 +12,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/ScalarTensor/BoundaryConditions/ConstraintPreserving.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/ProductOfConditions.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -51,10 +52,11 @@ using subset_standard_boundary_conditions_gh =
 using subset_standard_boundary_conditions_scalar = tmpl::list<
     CurvedScalarWave::BoundaryConditions::AnalyticConstant<3>,
     CurvedScalarWave::BoundaryConditions::DemandOutgoingCharSpeeds<3>>;
-using standard_boundary_conditions =
-    tmpl::push_back<typename detail::AllProductConditions<
-                        subset_standard_boundary_conditions_gh,
-                        subset_standard_boundary_conditions_scalar>::type,
-                    domain::BoundaryConditions::Periodic<BoundaryCondition>>;
+using standard_boundary_conditions = tmpl::append<
+    detail::AllProductConditions<
+        subset_standard_boundary_conditions_gh,
+        subset_standard_boundary_conditions_scalar>::type,
+    tmpl::list<ScalarTensor::BoundaryConditions::ConstraintPreserving,
+               domain::BoundaryConditions::Periodic<BoundaryCondition>>>;
 
 }  // namespace ScalarTensor::BoundaryConditions

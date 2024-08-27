@@ -16,6 +16,8 @@ target_link_libraries(
   )
 
 add_subdirectory(Elasticity)
+add_subdirectory(BnsInitialData)
 add_subdirectory(Poisson)
 add_subdirectory(Punctures)
+add_subdirectory(ScalarGaussBonnet)
 add_subdirectory(Xcts)

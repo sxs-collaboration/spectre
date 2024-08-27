@@ -10,23 +10,18 @@ spectre_target_sources(
   PRIVATE
   AlignedLattice.cpp
   BinaryCompactObject.cpp
-  BinaryCompactObjectHelpers.cpp
   BlockGroups.cpp
-  Brick.cpp
   Cylinder.cpp
   CylindricalBinaryCompactObject.cpp
   Disk.cpp
   ExpandOverBlocks.cpp
   FrustalCloak.cpp
-  Interval.cpp
-  Rectangle.cpp
+  Rectilinear.cpp
   RegisterDerivedWithCharm.cpp
   RotatedBricks.cpp
   RotatedIntervals.cpp
   RotatedRectangles.cpp
-  ShapeMapOptions.cpp
   Sphere.cpp
-  SphereTimeDependentMaps.cpp
   )
 
 spectre_target_headers(
@@ -35,9 +30,7 @@ spectre_target_headers(
   HEADERS
   AlignedLattice.hpp
   BinaryCompactObject.hpp
-  BinaryCompactObjectHelpers.hpp
   BlockGroups.hpp
-  Brick.hpp
   Cylinder.hpp
   CylindricalBinaryCompactObject.hpp
   Disk.hpp
@@ -49,22 +42,20 @@ spectre_target_headers(
   Factory2D.hpp
   Factory3D.hpp
   FrustalCloak.hpp
-  Interval.hpp
   OptionTags.hpp
-  Rectangle.hpp
+  Rectilinear.hpp
   RegisterDerivedWithCharm.hpp
   RotatedBricks.hpp
   RotatedIntervals.hpp
   RotatedRectangles.hpp
-  ShapeMapOptions.hpp
   Sphere.hpp
-  SphereTimeDependentMaps.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DomainStructure
+  H5
   PUBLIC
   CoordinateMaps
   DataStructures
@@ -82,3 +73,4 @@ target_link_libraries(
 add_subdirectory(Python)
 add_subdirectory(Tags)
 add_subdirectory(TimeDependence)
+add_subdirectory(TimeDependentOptions)

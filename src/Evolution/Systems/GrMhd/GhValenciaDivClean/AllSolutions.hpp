@@ -10,7 +10,8 @@
 #ifdef HAS_SPEC_EXPORTER
 #include "PointwiseFunctions/AnalyticData/GrMhd/SpecInitialData.hpp"
 using SpecInitialDataList = tmpl::list<grmhd::AnalyticData::SpecInitialData<1>,
-                                       grmhd::AnalyticData::SpecInitialData<2>>;
+                                       grmhd::AnalyticData::SpecInitialData<2>,
+                                       grmhd::AnalyticData::SpecInitialData<3>>;
 #else
 using SpecInitialDataList = NoSuchType;
 #endif

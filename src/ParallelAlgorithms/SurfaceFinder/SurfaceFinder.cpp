@@ -29,8 +29,8 @@ struct RayInterpolant {
     return apply_matrices(interpolation_matrices, values, mesh.extents())[0];
   }
 
-  const DataVector& values{};
-  const Mesh<1>& mesh{};
+  const DataVector& values;
+  const Mesh<1>& mesh;
 };
 }  // namespace
 

@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TMPL.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
 
 namespace gh::BoundaryCorrections {
 template <size_t Dim>

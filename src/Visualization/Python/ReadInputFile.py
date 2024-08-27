@@ -32,7 +32,10 @@ def find_event(event_name: str, input_file: dict) -> dict:
     for trigger_and_events in input_file["EventsAndTriggers"]:
         try:
             for event in trigger_and_events["Events"]:
-                if event_name in event:
+                if isinstance(event, str):
+                    if event == event_name:
+                        return {}
+                elif event_name in event:
                     return event[event_name]
         except TypeError:
             # Backwards compatibility for input files without metadata (can be

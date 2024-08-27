@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <ostream>
 #include <optional>
-#include <pup.h>  // IWYU pragma: keep
+#include <ostream>
+#include <pup.h>
 #include <utility>
 
 #include "Utilities/ErrorHandling/Assert.hpp"

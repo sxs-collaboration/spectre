@@ -6,9 +6,9 @@
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/Helpers.hpp"
 #include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
-#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

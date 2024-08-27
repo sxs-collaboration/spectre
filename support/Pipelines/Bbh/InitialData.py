@@ -25,9 +25,12 @@ def L1_distance(m1, m2, separation):
 
 
 def id_parameters(
-    mass_ratio: float,
+    mass_a: float,
+    mass_b: float,
     dimensionless_spin_a: Sequence[float],
     dimensionless_spin_b: Sequence[float],
+    center_of_mass_offset: Sequence[float],
+    linear_velocity: Sequence[float],
     separation: float,
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
@@ -39,9 +42,12 @@ def id_parameters(
     These parameters fill the 'ID_INPUT_FILE_TEMPLATE'.
 
     Arguments:
-      mass_ratio: Defined as q = M_A / M_B >= 1.
+      mass_a: Mass of the larger black hole.
+      mass_b: Mass of the smaller black hole.
       dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
       dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
+      center_of_mass_offset: Offset from the Newtonian center of mass.
+      linear_velocity: Velocity added to the shift boundary condition.
       separation: Coordinate separation D of the black holes.
       orbital_angular_velocity: Omega_0.
       radial_expansion_velocity: adot_0.
@@ -49,35 +55,35 @@ def id_parameters(
       polynomial_order: p-refinement level.
     """
 
-    # Sanity checks
-    assert mass_ratio >= 1.0, "Mass ratio is defined to be >= 1.0."
-
-    # Determine initial data parameters from options
-    M_A = mass_ratio / (1.0 + mass_ratio)
-    M_B = 1.0 / (1.0 + mass_ratio)
-    x_A = separation / (1.0 + mass_ratio)
+    x_A = mass_b / (mass_a + mass_b) * separation + center_of_mass_offset[0]
     x_B = x_A - separation
+
     # Spins
     chi_A = np.asarray(dimensionless_spin_a)
-    r_plus_A = M_A * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
+    r_plus_A = mass_a * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
     Omega_A = -0.5 * chi_A / r_plus_A
     Omega_A[2] += orbital_angular_velocity
     chi_B = np.asarray(dimensionless_spin_b)
-    r_plus_B = M_B * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
+    r_plus_B = mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
     Omega_B = -0.5 * chi_B / r_plus_B
     Omega_B[2] += orbital_angular_velocity
     # Falloff widths of superposition
-    L1_dist_A = L1_distance(M_A, M_B, separation)
+    L1_dist_A = L1_distance(mass_a, mass_b, separation)
     L1_dist_B = separation - L1_dist_A
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
     return {
-        "MassRight": M_A,
-        "MassLeft": M_B,
+        "MassRight": mass_a,
+        "MassLeft": mass_b,
         "XRight": x_A,
         "XLeft": x_B,
-        "ExcisionRadiusRight": 0.89 * r_plus_A,
-        "ExcisionRadiusLeft": 0.89 * r_plus_B,
+        "CenterOfMassOffset_y": center_of_mass_offset[1],
+        "CenterOfMassOffset_z": center_of_mass_offset[2],
+        "LinearVelocity_x": linear_velocity[0],
+        "LinearVelocity_y": linear_velocity[1],
+        "LinearVelocity_z": linear_velocity[2],
+        "ExcisionRadiusRight": 0.93 * r_plus_A,
+        "ExcisionRadiusLeft": 0.93 * r_plus_B,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
         "DimensionlessSpinRight_x": chi_A[0],
@@ -101,18 +107,23 @@ def id_parameters(
 
 
 def generate_id(
-    mass_ratio: float,
+    mass_a: float,
+    mass_b: float,
     dimensionless_spin_a: Sequence[float],
     dimensionless_spin_b: Sequence[float],
     # Orbital parameters
     separation: float,
     orbital_angular_velocity: float,
     radial_expansion_velocity: float,
+    # Control parameters
+    center_of_mass_offset: Sequence[float] = [0.0, 0.0, 0.0],
+    linear_velocity: Sequence[float] = [0.0, 0.0, 0.0],
     # Resolution
     refinement_level: int = 1,
     polynomial_order: int = 6,
     # Scheduling options
     id_input_file_template: Union[str, Path] = ID_INPUT_FILE_TEMPLATE,
+    control: bool = False,
     evolve: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
@@ -130,7 +141,8 @@ def generate_id(
     'support.Pipelines.EccentricityControl.InitialOrbitalParameters'.
 
     Intrinsic parameters:
-      mass_ratio: Defined as q = M_A / M_B >= 1.
+      mass_a: Mass of the larger black hole.
+      mass_b: Mass of the smaller black hole.
       dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
       dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
 
@@ -139,8 +151,18 @@ def generate_id(
       orbital_angular_velocity: Omega_0.
       radial_expansion_velocity: adot_0.
 
+    Control parameters:
+      center_of_mass_offset: Offset from the Newtonian center of mass.
+        (default: [0., 0., 0.])
+      linear_velocity: Velocity added to the shift boundary condition.
+        (default: [0., 0., 0.])
+
     Scheduling options:
       id_input_file_template: Input file template where parameters are inserted.
+      control: If set to True, a postprocessing control loop will adjust the
+        input parameters to drive the horizon masses and spins to the specified
+        values. If set to False, the horizon masses and spins in the generated
+        data will differ from the input parameters. (default: False)
       evolve: Set to True to evolve the initial data after generation.
       pipeline_dir: Directory where steps in the pipeline are created. Required
         when 'evolve' is set to True. The initial data will be created in a
@@ -177,12 +199,15 @@ def generate_id(
 
     # Determine initial data parameters from options
     id_params = id_parameters(
-        mass_ratio=mass_ratio,
+        mass_a=mass_a,
+        mass_b=mass_b,
         dimensionless_spin_a=dimensionless_spin_a,
         dimensionless_spin_b=dimensionless_spin_b,
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,
+        center_of_mass_offset=center_of_mass_offset,
+        linear_velocity=linear_velocity,
         refinement_level=refinement_level,
         polynomial_order=polynomial_order,
     )
@@ -193,6 +218,7 @@ def generate_id(
         id_input_file_template,
         **id_params,
         **scheduler_kwargs,
+        control=control,
         evolve=evolve,
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
@@ -315,9 +341,19 @@ def generate_id(
     show_default=True,
 )
 @click.option(
+    "--control/--no-control",
+    default=True,
+    show_default=True,
+    help="Control BBH physical parameters.",
+)
+@click.option(
     "--evolve",
     is_flag=True,
-    help="Evolve the initial data after generation.",
+    help=(
+        "Evolve the initial data after generation. When this flag"
+        "is specified, you must also specify a pipeline directory (-d),"
+        "instead of a run directory (-o)."
+    ),
 )
 @click.option(
     "--pipeline-dir",
@@ -358,8 +394,13 @@ def generate_id_command(
             time_to_merger=time_to_merger,
         )
     )
+
+    mass_a = mass_ratio / (1.0 + mass_ratio)
+    mass_b = 1.0 / (1.0 + mass_ratio)
+
     generate_id(
-        mass_ratio=mass_ratio,
+        mass_a=mass_a,
+        mass_b=mass_b,
         dimensionless_spin_a=dimensionless_spin_a,
         dimensionless_spin_b=dimensionless_spin_b,
         separation=separation,

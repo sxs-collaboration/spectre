@@ -8,8 +8,6 @@ Rk5Tsitouras::Rk5Tsitouras(CkMigrateMessage* /*msg*/) {}
 
 size_t Rk5Tsitouras::order() const { return 5; }
 
-size_t Rk5Tsitouras::error_estimate_order() const { return 4; }
-
 double Rk5Tsitouras::stable_step() const { return 1.7534234969024887; }
 
 const RungeKutta::ButcherTableau& Rk5Tsitouras::butcher_tableau() const {

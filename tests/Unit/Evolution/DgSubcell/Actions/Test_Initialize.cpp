@@ -263,7 +263,8 @@ void test(const bool always_use_subcell, const bool interior_element,
   if (interior_element) {
     size_t id_count = 1;
     for (const auto& direction : Direction<Dim>::all_directions()) {
-      neighbors[direction] = Neighbors<Dim>{{ElementId<Dim>{id_count}}, {}};
+      neighbors[direction] = Neighbors<Dim>{
+          {ElementId<Dim>{id_count}}, OrientationMap<Dim>::create_aligned()};
       ++id_count;
     }
   }
@@ -299,7 +300,8 @@ void test(const bool always_use_subcell, const bool interior_element,
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
       DirectionMap<Dim, Neighbors<Dim>> neighbor_neighbors{};
-      neighbor_neighbors[direction.opposite()] = Neighbors<Dim>{{self_id}, {}};
+      neighbor_neighbors[direction.opposite()] =
+          Neighbors<Dim>{{self_id}, OrientationMap<Dim>::create_aligned()};
       const auto neighbor_id = *neighbors_in_direction.begin();
       // We use the time to get different solutions on the different neighbors
       // since the analytic solution includes the time.

@@ -35,6 +35,8 @@ data-canonical-src="https://codecov.io/gh/sxs-collaboration/spectre/graph/badge.
 style="max-width:100%;"></a>
 
 </p>
+
+<img src="banner.png"/>
 \endhtmlonly
 
 # What is SpECTRE? {#intro_sec}
@@ -80,7 +82,8 @@ accessed by links in the menu bar at the top.
 
 - For instructions on **installing SpECTRE** on personal computers and clusters
   consult the \ref installation "Installation" and \ref installation_on_clusters
-  "Installation on clusters" pages, respectively.
+  "Installation on clusters" pages, respectively. See the
+  \ref spectre_build_system "build system" page for how to configure SpECTRE.
 - If you are looking to **run simulations with SpECTRE** we recommend starting
   with the \ref tutorials "User Tutorials". The tutorials are designed to get
   users up and running with a simulation, as well as analyzing and visualizing
@@ -101,3 +104,10 @@ accessed by links in the menu bar at the top.
   [Namespaces](namespaces.html) section.
 - To browse all files in the repository you can visit the
   [GitHub repository](https://github.com/sxs-collaboration/spectre) directly.
+
+## Logos and visuals {#logos_and_visuals}
+
+You can find logos and other visuals (e.g. to put on slides) in various formats,
+colors, and sizes here:
+
+- [Logos and visuals](https://drive.google.com/drive/folders/1GEvVrXNqlGojr3NBf7RMFo6BzFmf9Ww7?usp=share_link)

@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Actions/AdvanceTime.hpp"           // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
@@ -30,12 +30,7 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <initializer_list>
-// IWYU pragma: no_include <unordered_map>
-
 class TimeStepper;
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
-// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 template <typename Metavariables>

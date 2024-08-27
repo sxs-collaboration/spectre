@@ -15,7 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
@@ -75,20 +75,18 @@ void divergence(
 /// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the divergence of the vector `input`
-template <size_t Dim, typename DerivativeFrame>
-Scalar<DataVector> divergence(
-    const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
-    const Mesh<Dim>& mesh,
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+Scalar<DataType> divergence(
+    const tnsr::I<DataType, Dim, DerivativeFrame>& input, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
 
-template <size_t Dim, typename DerivativeFrame>
-void divergence(
-    gsl::not_null<Scalar<DataVector>*> div_input,
-    const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
-    const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian);
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+void divergence(gsl::not_null<Scalar<DataType>*> div_input,
+                const tnsr::I<DataType, Dim, DerivativeFrame>& input,
+                const Mesh<Dim>& mesh,
+                const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                      DerivativeFrame>& inverse_jacobian);
 /// @}
 
 namespace Tags {
@@ -129,7 +127,7 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   using return_type = typename base::type;
   static constexpr void (*function)(
       const gsl::not_null<return_type*>, const typename Tag::type&,
-      const Mesh<dim>&, const typename InverseJacobianTag::type&) = divergence;
+      const Mesh<dim>&, const typename InverseJacobianTag::type&) = &divergence;
   using argument_tags =
       tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;
 };
@@ -150,10 +148,10 @@ struct DivVectorCompute : div<Tag>, db::ComputeTag {
  public:
   using base = div<Tag>;
   using return_type = typename base::type;
-  static constexpr void (*function)(const gsl::not_null<return_type*>,
-                                    const typename Tag::type&, const Mesh<dim>&,
-                                    const typename InverseJacobianTag::type&) =
-      divergence<dim, typename tmpl::back<inv_jac_indices>::Frame>;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static constexpr void (*function)(
+      const gsl::not_null<return_type*>, const typename Tag::type&,
+      const Mesh<dim>&, const typename InverseJacobianTag::type&) = &divergence;
   using argument_tags = tmpl::list<Tag, MeshTag, InverseJacobianTag>;
 };
 }  // namespace Tags

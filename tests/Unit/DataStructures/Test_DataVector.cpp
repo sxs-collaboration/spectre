@@ -7,18 +7,16 @@
 #include <tuple>
 
 #include "DataStructures/Blaze/IntegerPow.hpp"
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
-#include "Utilities/DereferenceWrapper.hpp"   // IWYU pragma: keep
-#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Math.hpp"        // IWYU pragma: keep
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-
-// IWYU pragma: no_include <algorithm>
+#include "Utilities/Math.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace {
 void test_data_vector_unary_math() {

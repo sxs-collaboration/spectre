@@ -47,6 +47,7 @@
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/ProductOfConditions.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/ProductOfCorrections.hpp"
+#include "Evolution/Systems/ScalarTensor/Constraints.hpp"
 #include "Evolution/Systems/ScalarTensor/Initialize.hpp"
 #include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
@@ -88,6 +89,7 @@
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -130,13 +132,8 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
-#include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Factory.hpp"
-#include "Time/StepChoosers/Increase.hpp"
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
@@ -267,7 +264,7 @@ struct ObserverTags {
       // The 4-index constraint is only implemented in 3d
       tmpl::list<
           gh::Tags::FourIndexConstraintCompute<volume_dim, Frame::Inertial>,
-          gh::Tags::FConstraintCompute<volume_dim, Frame::Inertial>,
+          ScalarTensor::Tags::FConstraintCompute<volume_dim, Frame::Inertial>,
           ::Tags::PointwiseL2NormCompute<
               gh::Tags::FConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
@@ -350,7 +347,8 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                  tmpl::flatten<tmpl::list<
                      Events::Completion, Events::MonitorMemory<volume_dim>,
                      typename detail::ObserverTags::field_observations,
-                     Events::time_events<system>>>>,
+                     Events::time_events<system>,
+                     dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
       tmpl::pair<
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,
@@ -430,7 +428,8 @@ struct ScalarTensorTemplateBase {
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                         ::domain::CheckFunctionsOfTimeAreReadyPostprocessor,
+                         ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
+                             volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<

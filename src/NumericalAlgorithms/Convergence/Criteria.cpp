@@ -3,7 +3,7 @@
 
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
 namespace Convergence {
 

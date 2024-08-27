@@ -7,8 +7,6 @@ namespace TimeSteppers {
 
 size_t Rk3Pareschi::order() const { return 3; }
 
-size_t Rk3Pareschi::error_estimate_order() const { return 2; }
-
 double Rk3Pareschi::stable_step() const { return 1.25637; }
 
 size_t Rk3Pareschi::imex_order() const { return 3; }

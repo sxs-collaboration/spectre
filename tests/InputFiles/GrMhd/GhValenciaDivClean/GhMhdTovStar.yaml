@@ -52,18 +52,17 @@ DomainCreator:
   Brick:
     LowerBound: [-5.0, -5.0, -5.0]
     UpperBound: [5.0, 5.0, 5.0]
+    Distribution: [Linear, Linear, Linear]
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [3, 3, 3]
     TimeDependence: None
-    BoundaryConditionInX:
-      DirichletAnalytic:
-        AnalyticPrescription: *InitialData
-    BoundaryConditionInY:
-      DirichletAnalytic:
-        AnalyticPrescription: *InitialData
-    BoundaryConditionInZ:
-      DirichletAnalytic:
-        AnalyticPrescription: *InitialData
+    BoundaryConditions:
+      - DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      - DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      - DirichletAnalytic:
+          AnalyticPrescription: *InitialData
 
 VariableFixing:
   FixConservatives:
@@ -181,7 +180,7 @@ EventsAndTriggers:
           StepChoosers:
             - Cfl:
                 SafetyFactor: 0.6
-            - Increase:
+            - LimitIncrease:
                 Factor: 1.5
   - Trigger:
       Slabs:

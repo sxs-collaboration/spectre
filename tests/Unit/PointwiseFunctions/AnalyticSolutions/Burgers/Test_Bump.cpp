@@ -20,8 +20,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Bump",
                   "[PointwiseFunctions][Unit]") {
   const double half_width = 5.;

@@ -5,11 +5,11 @@
 
 #include <cmath>
 #include <cstddef>
-#include <pup.h>  // IWYU pragma: keep
+#include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/ParseError.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"

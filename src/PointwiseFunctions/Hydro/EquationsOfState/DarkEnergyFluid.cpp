@@ -5,13 +5,11 @@
 
 #include <memory>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Barotropic3D.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
 
 namespace EquationsOfState {
 template <bool IsRelativistic>

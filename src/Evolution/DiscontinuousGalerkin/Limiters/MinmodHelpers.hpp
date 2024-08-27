@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"

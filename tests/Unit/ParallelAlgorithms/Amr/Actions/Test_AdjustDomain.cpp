@@ -165,7 +165,7 @@ void test() {
   using array_component = ArrayComponent<Metavariables>;
   using singleton_component = SingletonComponent<Metavariables>;
 
-  const OrientationMap<1> aligned{};
+  const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
 
   const ElementId<1> element_1_id{0, std::array{SegmentId{3, 0}}};
   const ElementId<1> element_2_id{0, std::array{SegmentId{3, 1}}};

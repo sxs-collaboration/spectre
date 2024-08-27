@@ -52,8 +52,10 @@ void test() {
 
   DirectionMap<Dim, Neighbors<Dim>> neighbors{};
   // aligned with neighbor so default construct
-  neighbors.insert(std::pair{Direction<Dim>::upper_xi(),
-                             Neighbors<Dim>{{upper_xi_id.id()}, {}}});
+  neighbors.insert(
+      std::pair{Direction<Dim>::upper_xi(),
+                Neighbors<Dim>{{upper_xi_id.id()},
+                               OrientationMap<Dim>::create_aligned()}});
   if constexpr (Dim == 1) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
@@ -65,8 +67,10 @@ void test() {
         Neighbors<Dim>{{lower_xi_id.id()},
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta()}}}}});
-    neighbors.insert(std::pair{Direction<Dim>::upper_eta(),
-                               Neighbors<Dim>{{ElementId<Dim>{3}}, {}}});
+    neighbors.insert(
+        std::pair{Direction<Dim>::upper_eta(),
+                  Neighbors<Dim>{{ElementId<Dim>{3}},
+                                 OrientationMap<Dim>::create_aligned()}});
   } else if constexpr (Dim == 3) {
     neighbors.insert(std::pair{
         Direction<Dim>::lower_xi(),
@@ -74,8 +78,10 @@ void test() {
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta(),
                                              Direction<Dim>::upper_zeta()}}}}});
-    neighbors.insert(std::pair{Direction<Dim>::upper_eta(),
-                               Neighbors<Dim>{{ElementId<Dim>{3}}, {}}});
+    neighbors.insert(
+        std::pair{Direction<Dim>::upper_eta(),
+                  Neighbors<Dim>{{ElementId<Dim>{3}},
+                                 OrientationMap<Dim>::create_aligned()}});
 
     neighbors.insert(std::pair{
         Direction<Dim>::lower_zeta(),
@@ -83,8 +89,10 @@ void test() {
                        OrientationMap<Dim>{{{Direction<Dim>::lower_xi(),
                                              Direction<Dim>::lower_eta(),
                                              Direction<Dim>::upper_zeta()}}}}});
-    neighbors.insert(std::pair{Direction<Dim>::upper_zeta(),
-                               Neighbors<Dim>{{ElementId<Dim>{5}}, {}}});
+    neighbors.insert(
+        std::pair{Direction<Dim>::upper_zeta(),
+                  Neighbors<Dim>{{ElementId<Dim>{5}},
+                                 OrientationMap<Dim>::create_aligned()}});
   }
   Interps neighbor_dg_to_fd_interpolants{};
   {

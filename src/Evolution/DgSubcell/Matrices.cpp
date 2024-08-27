@@ -7,7 +7,7 @@
 #include <ostream>
 #include <utility>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -22,7 +22,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Numeric.hpp"  // IWYU pragma: keep
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace evolution::dg::subcell::fd {
@@ -309,13 +309,13 @@ Matrix reconstruction_matrix_cache_impl_helper(
   // We use rhs_recons_matrix here as a temp buffer, we will fill it later.
   Matrix rhs_recons_matrix(num_pts + 1, num_subcells);
   dgemm_<true>('T', 'N', proj_matrix.columns(), proj_matrix.columns(),
-               proj_matrix.rows(), 2.0, proj_matrix.data(), proj_matrix.rows(),
-               proj_matrix.data(), proj_matrix.rows(), 0.0,
-               rhs_recons_matrix.data(), proj_matrix.columns());
+               proj_matrix.rows(), 2.0, proj_matrix.data(),
+               proj_matrix.spacing(), proj_matrix.data(), proj_matrix.spacing(),
+               0.0, rhs_recons_matrix.data(), rhs_recons_matrix.spacing());
 
   for (size_t l = 0; l < num_pts; ++l) {
     for (size_t j = 0; j < num_pts; ++j) {
-      lhs_recons_matrix(l, j) = *(rhs_recons_matrix.data() + (j + l * num_pts));
+      lhs_recons_matrix(l, j) = rhs_recons_matrix(j, l);
     }
   }
 
@@ -363,9 +363,10 @@ Matrix reconstruction_matrix_cache_impl_helper(
   // than Blaze.
   dgemm_<true>('N', 'N', inv_lhs_recons_matrix.rows(),
                rhs_recons_matrix.columns(), inv_lhs_recons_matrix.columns(),
-               1.0, inv_lhs_recons_matrix.data(), inv_lhs_recons_matrix.rows(),
-               rhs_recons_matrix.data(), inv_lhs_recons_matrix.columns(), 0.0,
-               full_recons_matrix.data(), inv_lhs_recons_matrix.rows());
+               1.0, inv_lhs_recons_matrix.data(),
+               inv_lhs_recons_matrix.spacing(), rhs_recons_matrix.data(),
+               rhs_recons_matrix.spacing(), 0.0, full_recons_matrix.data(),
+               full_recons_matrix.spacing());
   // exclude bottom row for Lagrange multiplier.
   Matrix reduced_recons_matrix(num_pts, num_subcells);
   for (size_t i = 0; i < num_pts; ++i) {

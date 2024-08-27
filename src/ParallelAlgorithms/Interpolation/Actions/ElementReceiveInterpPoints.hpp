@@ -31,12 +31,12 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct ElementReceiveInterpPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex>
+            typename ArrayIndex, size_t Dim>
   static void apply(
       db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      tnsr::I<DataVector, Metavariables::volume_dim,
+      tnsr::I<DataVector, Dim,
               typename InterpolationTargetTag::compute_target_points::frame>&&
           coords) {
     db::mutate<intrp::Tags::InterpPointInfo<Metavariables>>(

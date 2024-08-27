@@ -26,11 +26,24 @@ function(add_spectre_executable TARGET_NAME)
     PUBLIC
     ${SPECTRE_ALLOCATOR_LIBRARY}
     SpectreAllocator
-    )
+  )
+
+  set(SPECTRE_KOKKOS_LAUNCHER "")
+  if(SPECTRE_KOKKOS)
+    # We need to make sure we don't drop the Kokkos link wrapper
+    get_target_property(
+      _RULE_LAUNCH_LINK
+      ${TARGET_NAME}
+      RULE_LAUNCH_LINK)
+    if (_RULE_LAUNCH_LINK)
+      set(SPECTRE_KOKKOS_LAUNCHER ${_RULE_LAUNCH_LINK})
+    endif()
+  endif()
   set_target_properties(
     ${TARGET_NAME}
     PROPERTIES
-    RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
+    RULE_LAUNCH_LINK
+    "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh ${SPECTRE_KOKKOS_LAUNCHER}"
     LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
     # Expose readable symbol names in backtrace (adds flags like -rdynamic)
     ENABLE_EXPORTS ON

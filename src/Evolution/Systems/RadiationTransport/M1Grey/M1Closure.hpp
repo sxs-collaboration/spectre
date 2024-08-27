@@ -6,14 +6,12 @@
 
 #pragma once
 
-#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Utilities/Gsl.hpp"   // for not_...
-#include "Utilities/TMPL.hpp"  // for EXPAND_PACK_LEFT_TO...
-
-// IWYU pragma: no_forward_declare Tensor
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;

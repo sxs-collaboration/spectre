@@ -73,23 +73,28 @@ class EventsAndDenseTriggers {
     static constexpr Options::String help =
         "Events that run when the Trigger fires.";
     using options = tmpl::list<Trigger, Events>;
-    void pup(PUP::er& p) {
-      p | trigger;
-      p | events;
-    }
-    std::unique_ptr<::DenseTrigger> trigger;
-    std::vector<std::unique_ptr<::Event>> events;
+    TriggerAndEvents();
+    TriggerAndEvents(std::unique_ptr<::DenseTrigger> trigger_in,
+                     std::vector<std::unique_ptr<::Event>> events_in);
+    void pup(PUP::er& p);
+    std::unique_ptr<::DenseTrigger> trigger{};
+    std::vector<std::unique_ptr<::Event>> events{};
   };
 
   using ConstructionType = std::vector<TriggerAndEvents>;
 
  private:
   struct TriggerRecord {
-    double next_check;
-    std::optional<bool> is_triggered;
-    size_t num_events_ready;
-    std::unique_ptr<DenseTrigger> trigger;
-    std::vector<std::unique_ptr<Event>> events;
+    TriggerRecord();
+    TriggerRecord(double next_check_in, std::optional<bool> is_triggered_in,
+                  size_t num_events_ready_in,
+                  std::unique_ptr<DenseTrigger> trigger_in,
+                  std::vector<std::unique_ptr<Event>> events_in);
+    double next_check{};
+    std::optional<bool> is_triggered{};
+    size_t num_events_ready{};
+    std::unique_ptr<DenseTrigger> trigger{};
+    std::vector<std::unique_ptr<Event>> events{};
 
     // NOLINTNEXTLINE(google-runtime-references)
     void pup(PUP::er& p);

@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Kokkos)
 add_subdirectory(Simd)
 
 set(LIBRARY Utilities)
@@ -29,6 +30,7 @@ spectre_target_headers(
   Array.hpp
   Base64.hpp
   Blas.hpp
+  BlazeExceptions.hpp
   CachedFunction.hpp
   CallWithDynamicType.hpp
   CartesianProduct.hpp
@@ -93,6 +95,7 @@ target_link_libraries(
   Boost::boost
   Brigand
   ErrorHandling
+  SpectreKokkos
   PRIVATE
   Printf
   )

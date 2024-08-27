@@ -18,6 +18,23 @@
 
 namespace Punctures::AnalyticData {
 
+Puncture::Puncture() = default;
+
+Puncture::Puncture(std::array<double, 3> position_in, double mass_in,
+                   std::array<double, 3> dimensionless_momentum_in,
+                   std::array<double, 3> dimensionless_spin_in)
+    : position(std::move(position_in)),
+      mass(std::move(mass_in)),
+      dimensionless_momentum(dimensionless_momentum_in),
+      dimensionless_spin(dimensionless_spin_in) {}
+
+void Puncture::pup(PUP::er& p) {
+  p | position;
+  p | mass;
+  p | dimensionless_momentum;
+  p | dimensionless_spin;
+}
+
 bool operator==(const Puncture& lhs, const Puncture& rhs) {
   return lhs.position == rhs.position and lhs.mass == rhs.mass and
          lhs.dimensionless_momentum == rhs.dimensionless_momentum and

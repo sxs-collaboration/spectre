@@ -31,7 +31,6 @@ void test_am() {
     CAPTURE(order);
     const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(order);
     CHECK(stepper.order() == order);
-    CHECK(stepper.error_estimate_order() == order - 1);
     CHECK(stepper.number_of_past_steps() == order - 2);
     CHECK(stepper.number_of_substeps() == 2);
     CHECK(stepper.number_of_substeps_for_error() == 2);

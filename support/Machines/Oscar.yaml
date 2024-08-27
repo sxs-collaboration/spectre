@@ -1,0 +1,15 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Oscar
+  Description: |
+    Supercomputer at Brown.
+    More information:
+    https://docs.ccv.brown.edu/oscar
+  # Split one physical 32 core node into two charm nodes
+  DefaultTasksPerNode: 2
+  DefaultProcsPerTasks: 16
+  DefaultQueue: "batch"
+  DefaultTimeLimit: "1-00:00:00"
+  LaunchCommandSingleNode: ["mpirun", "-n", "1"]

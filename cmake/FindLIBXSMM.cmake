@@ -55,29 +55,31 @@ function(get_libxsmm_version FILE MAJOR_PREFIX MINOR_PREFIX PATCH_PREFIX)
   set(LIBXSMM_VERSION ${LIBXSMM_VERSION} PARENT_SCOPE)
 endfunction(get_libxsmm_version FILE MAJOR_REGEX MINOR_REGEX PATCH_REGEX)
 
-get_libxsmm_version(
-  ${LIBXSMM_INCLUDE_DIRS}/libxsmm.h
-  "#define LIBXSMM_VERSION_MAJOR "
-  "#define LIBXSMM_VERSION_MINOR "
-  "#define LIBXSMM_VERSION_UPDATE "
-  )
+if (LIBXSMM_INCLUDE_DIRS)
+  get_libxsmm_version(
+    ${LIBXSMM_INCLUDE_DIRS}/libxsmm.h
+    "#define LIBXSMM_VERSION_MAJOR "
+    "#define LIBXSMM_VERSION_MINOR "
+    "#define LIBXSMM_VERSION_UPDATE "
+    )
 
-get_libxsmm_version(
-  ${LIBXSMM_INCLUDE_DIRS}/libxsmm_config.h
-  "#define LIBXSMM_CONFIG_VERSION_MAJOR "
-  "#define LIBXSMM_CONFIG_VERSION_MINOR "
-  "#define LIBXSMM_CONFIG_VERSION_UPDATE "
-  )
+  get_libxsmm_version(
+    ${LIBXSMM_INCLUDE_DIRS}/libxsmm_config.h
+    "#define LIBXSMM_CONFIG_VERSION_MAJOR "
+    "#define LIBXSMM_CONFIG_VERSION_MINOR "
+    "#define LIBXSMM_CONFIG_VERSION_UPDATE "
+    )
 
-get_libxsmm_version(
-  ${LIBXSMM_INCLUDE_DIRS}/libxsmm_version.h
-  "#define LIBXSMM_CONFIG_VERSION_MAJOR "
-  "#define LIBXSMM_CONFIG_VERSION_MINOR "
-  "#define LIBXSMM_CONFIG_VERSION_UPDATE "
-  )
+  get_libxsmm_version(
+    ${LIBXSMM_INCLUDE_DIRS}/libxsmm_version.h
+    "#define LIBXSMM_CONFIG_VERSION_MAJOR "
+    "#define LIBXSMM_CONFIG_VERSION_MINOR "
+    "#define LIBXSMM_CONFIG_VERSION_UPDATE "
+    )
 
-if("${LIBXSMM_VERSION}" STREQUAL "")
-  message(WARNING "Failed to detect LIBXSMM version.")
+  if("${LIBXSMM_VERSION}" STREQUAL "")
+    message(WARNING "Failed to detect LIBXSMM version.")
+  endif()
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -88,3 +90,23 @@ find_package_handle_standard_args(
   VERSION_VAR LIBXSMM_VERSION)
 mark_as_advanced(LIBXSMM_INCLUDE_DIRS LIBXSMM_LIBRARIES
   LIBXSMM_VERSION)
+
+if (NOT LIBXSMM_FOUND)
+  return()
+endif()
+
+# Define imported target
+add_library(Libxsmm INTERFACE IMPORTED)
+set_property(TARGET Libxsmm
+  APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${LIBXSMM_INCLUDE_DIRS})
+set_property(TARGET Libxsmm
+  APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${LIBXSMM_LIBRARIES})
+# LIBXSMM falls back to BLAS
+find_package(BLAS REQUIRED)
+target_link_libraries(Libxsmm INTERFACE BLAS::BLAS)
+
+add_interface_lib_headers(
+  TARGET Libxsmm
+  HEADERS
+  libxsmm.h
+  )

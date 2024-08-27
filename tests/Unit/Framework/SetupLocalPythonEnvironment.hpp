@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <cstddef>       // IWYU pragma: keep
-#include <patchlevel.h>  // for PY_MAJOR_VERSION
+#include <cstddef>
+#include <patchlevel.h>
 #include <string>
 
 /// Contains all functions for pypp

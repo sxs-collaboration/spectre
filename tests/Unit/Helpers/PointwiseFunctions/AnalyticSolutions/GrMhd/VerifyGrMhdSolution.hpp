@@ -253,8 +253,8 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   if (block.is_time_dependent()) {
     ERROR("The block must be time-independent");
   }
-  const auto div_of_fluxes = divergence<flux_tags, 3, Frame::Inertial>(
-      fluxes, mesh, element_map.inv_jacobian(x_logical));
+  const auto div_of_fluxes =
+      divergence(fluxes, mesh, element_map.inv_jacobian(x_logical));
 
   const auto& div_flux_tilde_d =
       get<Tags::div<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,

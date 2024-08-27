@@ -188,7 +188,8 @@ template <typename FieldsTag, typename SubdomainOperator,
                                           FieldsTag>::tags_list>>
 using subdomain_solver = LinearSolver::Serial::LinearSolver<tmpl::append<
     tmpl::list<::LinearSolver::Serial::Registrars::Gmres<SubdomainData>,
-               ::LinearSolver::Serial::Registrars::ExplicitInverse>,
+               ::LinearSolver::Serial::Registrars::ExplicitInverse<
+                   typename SubdomainData::value_type>>,
     SubdomainPreconditioners>>;
 
 template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,

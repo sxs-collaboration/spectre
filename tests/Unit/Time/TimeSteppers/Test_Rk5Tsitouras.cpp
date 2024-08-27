@@ -15,7 +15,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk5Tsitouras", "[Unit][Time]") {
   const TimeSteppers::Rk5Tsitouras stepper{};
 
   CHECK(stepper.order() == 5);
-  CHECK(stepper.error_estimate_order() == 4);
   CHECK(stepper.number_of_substeps() == 6);
   CHECK(stepper.number_of_substeps_for_error() == 7);
   TestHelpers::RungeKutta::check_tableau(stepper);

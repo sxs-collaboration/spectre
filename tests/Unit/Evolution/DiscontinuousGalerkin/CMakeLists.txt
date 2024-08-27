@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_BoundaryCorrectionsHelper.cpp
   Test_BoundaryData.cpp
   Test_MortarData.cpp
+  Test_MortarDataHolder.cpp
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
   Test_UsingSubcell.cpp
@@ -28,6 +29,7 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  Amr
   Boost::boost
   CoordinateMaps
   DataStructures

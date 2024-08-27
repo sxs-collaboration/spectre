@@ -14,6 +14,7 @@
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -106,6 +107,8 @@ struct StoreOrthogonalization {
       ::Tags::Previous<residual_magnitude_tag>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
+  using ValueType =
+      tt::get_complex_or_fundamental_type_t<typename fields_tag::type>;
 
  public:
   template <typename ParallelComponent, typename DbTagsList,
@@ -116,7 +119,7 @@ struct StoreOrthogonalization {
                     const ArrayIndex& /*array_index*/,
                     const size_t iteration_id,
                     const size_t orthogonalization_iteration_id,
-                    const double orthogonalization) {
+                    const ValueType orthogonalization) {
     if (UNLIKELY(orthogonalization_iteration_id == 0)) {
       // Append a row and a column to the orthogonalization history. Zero the
       // entries that won't be set during the orthogonalization procedure below.
@@ -143,19 +146,21 @@ struct StoreOrthogonalization {
           },
           make_not_null(&box));
 
-      Parallel::receive_data<Tags::Orthogonalization<OptionsGroup>>(
+      Parallel::receive_data<Tags::Orthogonalization<OptionsGroup, ValueType>>(
           Parallel::get_parallel_component<BroadcastTarget>(cache),
           iteration_id, orthogonalization);
       return;
     }
 
     // At this point, the orthogonalization procedure is complete.
+    ASSERT(equal_within_roundoff(imag(orthogonalization), 0.0),
+           "Normalization is not real: " << orthogonalization);
+    const double normalization = sqrt(real(orthogonalization));
     db::mutate<orthogonalization_history_tag>(
-        [orthogonalization, iteration_id,
+        [normalization, iteration_id,
          orthogonalization_iteration_id](const auto orthogonalization_history) {
           (*orthogonalization_history)(orthogonalization_iteration_id,
-                                       iteration_id - 1) =
-              sqrt(orthogonalization);
+                                       iteration_id - 1) = normalization;
         },
         make_not_null(&box));
 
@@ -164,18 +169,19 @@ struct StoreOrthogonalization {
     const auto& orthogonalization_history =
         get<orthogonalization_history_tag>(box);
     const auto num_rows = orthogonalization_iteration_id + 1;
-    blaze::DynamicMatrix<double> qr_Q;
-    blaze::DynamicMatrix<double> qr_R;
+    blaze::DynamicMatrix<ValueType> qr_Q;
+    blaze::DynamicMatrix<ValueType> qr_R;
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
     // Compute the residual vector from the QR decomposition
     blaze::DynamicVector<double> beta(num_rows, 0.);
     const double initial_residual_magnitude =
         get<initial_residual_magnitude_tag>(box);
     beta[0] = initial_residual_magnitude;
-    blaze::DynamicVector<double> minres =
-        blaze::inv(qr_R) * blaze::trans(qr_Q) * beta;
-    const double residual_magnitude =
-        blaze::length(beta - orthogonalization_history * minres);
+    blaze::DynamicVector<ValueType> minres =
+        blaze::inv(qr_R) * blaze::ctrans(qr_Q) * beta;
+    blaze::DynamicVector<ValueType> res =
+        beta - orthogonalization_history * minres;
+    const double residual_magnitude = sqrt(magnitude_square(res));
 
     // At this point, the iteration is complete. We proceed with observing,
     // logging and checking convergence before broadcasting back to the
@@ -233,9 +239,10 @@ struct StoreOrthogonalization {
       }
     }
 
-    Parallel::receive_data<Tags::FinalOrthogonalization<OptionsGroup>>(
+    Parallel::receive_data<
+        Tags::FinalOrthogonalization<OptionsGroup, ValueType>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
-        std::make_tuple(sqrt(orthogonalization), std::move(minres),
+        std::make_tuple(normalization, std::move(minres),
                         // NOLINTNEXTLINE(performance-move-const-arg)
                         std::move(has_converged)));
   }

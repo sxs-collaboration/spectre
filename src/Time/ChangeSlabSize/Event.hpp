@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <map>
 #include <memory>
 #include <pup.h>
 #include <pup_stl.h>
@@ -14,14 +15,20 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Options/Context.hpp"
+#include "Options/ParseError.hpp"
 #include "Options/String.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeStepRequest.hpp"
+#include "Time/TimeStepRequestProcessor.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -40,11 +47,12 @@ struct StoreNewSlabSize {
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const int64_t slab_number, const double slab_size) {
+                    const int64_t slab_number,
+                    const TimeStepRequestProcessor& requests) {
     db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
         [&](const gsl::not_null<
-            std::map<int64_t, std::unordered_multiset<double>>*>
-                sizes) { (*sizes)[slab_number].insert(slab_size); },
+            std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                sizes) { (*sizes)[slab_number].emplace_back(requests); },
         make_not_null(&box));
   }
 };
@@ -67,7 +75,7 @@ struct StoreNewSlabSize {
 class ChangeSlabSize : public Event {
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<int64_t, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<double, funcl::Min<>>>;
+      Parallel::ReductionDatum<TimeStepRequestProcessor, funcl::Plus<>>>;
 
  public:
   /// \cond
@@ -97,8 +105,21 @@ class ChangeSlabSize : public Event {
   ChangeSlabSize() = default;
   ChangeSlabSize(std::vector<std::unique_ptr<StepChooser<StepChooserUse::Slab>>>
                      step_choosers,
-                 const uint64_t delay_change)
-      : step_choosers_(std::move(step_choosers)), delay_change_(delay_change) {}
+                 const uint64_t delay_change, const Options::Context& context)
+      : step_choosers_(std::move(step_choosers)), delay_change_(delay_change) {
+    if (delay_change != 0) {
+      for (const auto& chooser : step_choosers_) {
+        if (not chooser->can_be_delayed()) {
+          // The runtime name might not be exactly the same as the one
+          // used by the factory, but hopefully it's close enough that
+          // the user can figure it out.
+          PARSE_ERROR(context,
+                      "The " << pretty_type::get_runtime_type_name(*chooser)
+                      << " StepChooser cannot be applied with a delay.");
+        }
+      }
+    }
+  }
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
@@ -121,16 +142,15 @@ class ChangeSlabSize : public Event {
                                          : time_step_id.slab_number() + 1;
     const auto slab_to_change =
         next_changable_slab + static_cast<int64_t>(delay_change_);
+    const auto slab_start = time_step_id.step_time();
+    const auto current_slab_size = (time_step_id.time_runs_forward() ? 1 : -1) *
+                                   slab_start.slab().duration();
 
-    double desired_slab_size = std::numeric_limits<double>::infinity();
+    TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
     bool synchronization_required = false;
     for (const auto& step_chooser : step_choosers_) {
-      desired_slab_size = std::min(
-          desired_slab_size,
-          step_chooser
-              ->desired_step(time_step_id.step_time().slab().duration().value(),
-                             *box)
-              .first);
+      step_requests.process(
+          step_chooser->desired_step(current_slab_size.value(), *box).first);
       // We must synchronize if any step chooser requires it, not just
       // the limiting one, because choosers requiring synchronization
       // can be limiting on some processors and not others.
@@ -145,23 +165,31 @@ class ChangeSlabSize : public Event {
         },
         box);
 
-    const auto& component_proxy =
-        Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto& self_proxy = component_proxy[array_index];
-    if (synchronization_required) {
-      Parallel::contribute_to_reduction<
-          ChangeSlabSize_detail::StoreNewSlabSize>(
-          ReductionData(slab_to_change, desired_slab_size), self_proxy,
-          component_proxy);
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      ERROR(
+          "Slab changing is not yet implemented for the DgElementCollection "
+          "parallel component. Specifically, the ability to do reductions "
+          "using Charm++-style reductions has not been implemented.");
     } else {
-      db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
-          [&](const gsl::not_null<
-              std::map<int64_t, std::unordered_multiset<double>>*>
-                  sizes) {
-            (*sizes)[slab_to_change].insert(desired_slab_size);
-          },
-          box);
+      const auto& component_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
+      const auto& self_proxy = component_proxy[array_index];
+      if (synchronization_required) {
+        Parallel::contribute_to_reduction<
+            ChangeSlabSize_detail::StoreNewSlabSize>(
+            ReductionData(slab_to_change, step_requests), self_proxy,
+            component_proxy);
+      } else {
+        db::mutate<::Tags::ChangeSlabSize::NewSlabSize>(
+            [&](const gsl::not_null<
+                std::map<int64_t, std::vector<TimeStepRequestProcessor>>*>
+                    sizes) {
+              (*sizes)[slab_to_change].push_back(step_requests);
+            },
+            box);
+      }
     }
+    (void)cache, (void)array_index;
   }
 
   using is_ready_argument_tags = tmpl::list<>;

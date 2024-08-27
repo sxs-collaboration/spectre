@@ -94,12 +94,8 @@ bool Time::StructuralCompare::operator()(const Time& a, const Time& b) const {
 }
 
 void Time::compute_value() {
-  if (is_at_slab_end()) {
-    // Protection against rounding error.
-    value_ = slab_.end_;
-  } else {
-    value_ = slab_.start_ + (slab_.duration() * fraction_).value();
-  }
+  value_ =
+      (1 - fraction_).value() * slab_.start_ + fraction_.value() * slab_.end_;
 }
 
 void Time::range_check() const {

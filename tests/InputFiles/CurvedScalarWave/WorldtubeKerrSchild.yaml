@@ -26,6 +26,7 @@ BackgroundSpacetime:
     Mass: 1.
     Center: [0., 0., 0.]
     Spin: [0., 0., 0.]
+    Velocity: [0., 0., 0.]
 
 ResourceInfo:
   AvoidGlobalProc0: false
@@ -57,6 +58,7 @@ DomainCreator:
       Interior:
         ExciseWithBoundaryCondition: Worldtube
       UseLogarithmicMap: false
+    CenterOfMassOffset: [0., 0.]
     Envelope:
       RadialDistribution: Linear
       Radius: 50.

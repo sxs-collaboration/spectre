@@ -3,7 +3,7 @@
 
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

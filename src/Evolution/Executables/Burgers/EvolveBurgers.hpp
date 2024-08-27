@@ -105,8 +105,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <pup.h>
-
 /// \cond
 namespace PUP {
 class er;

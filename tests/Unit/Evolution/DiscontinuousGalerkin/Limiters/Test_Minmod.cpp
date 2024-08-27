@@ -48,9 +48,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Limiters::Minmod
-// IWYU pragma: no_forward_declare Tensor
-
 namespace {
 
 struct ScalarTag : db::SimpleTag {
@@ -175,7 +172,8 @@ void test_package_data_1d() {
   const Mesh<1> mesh(4, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const OrientationMap<1> orientation_aligned{};
+  const OrientationMap<1> orientation_aligned =
+      OrientationMap<1>::create_aligned();
   test_package_data_work(mesh, orientation_aligned);
 
   const OrientationMap<1> orientation_flipped(
@@ -188,7 +186,8 @@ void test_package_data_2d() {
   const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const OrientationMap<2> orientation_aligned{};
+  const OrientationMap<2> orientation_aligned =
+      OrientationMap<2>::create_aligned();
   test_package_data_work(mesh, orientation_aligned);
 
   const OrientationMap<2> orientation_rotated(std::array<Direction<2>, 2>{
@@ -201,7 +200,8 @@ void test_package_data_3d() {
   const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
 
-  const OrientationMap<3> orientation_aligned{};
+  const OrientationMap<3> orientation_aligned =
+      OrientationMap<3>::create_aligned();
   test_package_data_work(mesh, orientation_aligned);
 
   const OrientationMap<3> orientation_rotated(std::array<Direction<3>, 3>{
@@ -1128,7 +1128,7 @@ void test_minmod_impl_two_lower_xi_neighbors() {
       Element<2>::Neighbors_t{
           {Direction<2>::lower_xi(),
            {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
-            OrientationMap<2>{}}},
+            OrientationMap<2>::create_aligned()}},
           {Direction<2>::upper_xi(),
            TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
   const auto mesh =
@@ -1278,7 +1278,7 @@ void test_minmod_impl_four_upper_xi_neighbors() {
           {Direction<3>::upper_xi(),
            {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
                                              ElementId<3>(8), ElementId<3>(9)},
-            OrientationMap<3>{}}},
+            OrientationMap<3>::create_aligned()}},
       }};
   const auto mesh =
       Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);

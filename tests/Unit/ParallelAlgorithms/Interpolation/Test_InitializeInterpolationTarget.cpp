@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -18,7 +18,7 @@
 #include "Domain/Domain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"

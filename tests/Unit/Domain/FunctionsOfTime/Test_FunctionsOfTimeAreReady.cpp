@@ -113,7 +113,7 @@ struct Component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Testing,
-      tmpl::list<domain::Actions::CheckFunctionsOfTimeAreReady>>>;
+      tmpl::list<domain::Actions::CheckFunctionsOfTimeAreReady<3>>>>;
 };
 
 template <typename Metavariables, size_t Index>

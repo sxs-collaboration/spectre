@@ -4,7 +4,7 @@
 Executable: EvolveGhSingleBlackHole
 Testing:
   Check: parse;execute_check_output
-  Timeout: 20
+  Timeout: 30
   Priority: High
 ExpectedOutput:
   - GhKerrSchildVolume0.h5
@@ -33,7 +33,7 @@ Evolution:
   # like more frequent output, consider using dense output.
   InitialSlabSize: 0.001
   StepChoosers:
-    - Increase:
+    - LimitIncrease:
         Factor: 2
     - ElementSizeCfl:
         SafetyFactor: 0.5
@@ -74,6 +74,7 @@ InitialData: &InitialData
     Mass: 1.0
     Spin: [0.0, 0.0, 0.0]
     Center: &Center [0.0, 0.0, 0.0]
+    Velocity: [0.0, 0.0, 0.0]
 
 DomainCreator:
   Sphere:

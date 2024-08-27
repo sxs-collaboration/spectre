@@ -52,6 +52,7 @@ namespace evolution::dg::Tags {
  *    using local time stepping.
  * 6. the troublade cell indicator status using for determining halos around
  *    troubled cells.
+ * 7. the integration order of the time-stepper.
  *
  * The TimeStepId is the neighboring element's next time step. When using local
  * time stepping, the neighbor's boundary data is valid up until this time,
@@ -142,7 +143,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     const DirectionalId<Dim>& neighbor_id = data.first;
     // Note: This assumes the neighbor_id is oriented into our (the element
     // whose inbox this is) frame.
-    const size_t neighbor_index = hash_value(neighbor_id);
+    const size_t neighbor_index = inbox->index(neighbor_id);
     if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
                          .try_emplace(time_step_id, std::move(data.second),
                                       std::move(data.first)))) {
@@ -164,13 +165,13 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
-             boundary_data, boundary_data_validity_range, boundary_tci_status] =
-          data.second;
+             boundary_data, boundary_data_validity_range, boundary_tci_status,
+             integration_order] = data.second;
       (void)ghost_cell_data;
       auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
              current_ghost_cell_data, current_boundary_data,
-             current_boundary_data_validity_range, current_tci_status] =
-          it->second;
+             current_boundary_data_validity_range, current_tci_status,
+             current_integration_order] = it->second;
       (void)current_volume_mesh_of_ghost_cell_data;  // Need to use when
                                                      // optimizing subcell
       // We have already received some data at this time. Receiving data twice
@@ -214,6 +215,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
       current_boundary_data = std::move(boundary_data);
       current_boundary_data_validity_range = boundary_data_validity_range;
       current_tci_status = boundary_tci_status;
+      current_integration_order = integration_order;
     } else {
       // We have not received ghost cells or fluxes at this time.
       if (not current_inbox.insert(std::forward<ReceiveDataType>(data))
@@ -226,7 +228,26 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     return current_inbox.size();
   }
 
-  static std::string output_inbox(const type& inbox,
+  static std::string output_inbox(const type_spsc& inbox,
+                                  const size_t padding_size) {
+    std::stringstream ss{};
+    const std::string pad(padding_size, ' ');
+    ss << std::scientific << std::setprecision(16);
+    ss << pad << "BoundaryCorrectionAndGhostCellInbox:\n";
+    ss << pad
+       << "Warning: Printing atomic state is not possible in general so data "
+          "printed is limited.\n";
+    for (size_t i = 0; i < inbox.boundary_data_in_directions.size(); ++i) {
+      const auto& data_in_direction =
+          gsl::at(inbox.boundary_data_in_directions, i);
+      ss << pad << "Id: "
+         << "Approximate size: " << data_in_direction.size() << "\n";
+    }
+
+    return ss.str();
+  }
+
+  static std::string output_inbox(const type_map& inbox,
                                   const size_t padding_size) {
     std::stringstream ss{};
     const std::string pad(padding_size, ' ');
@@ -361,6 +382,8 @@ struct BoundaryMessageInbox {
       current_boundary_data->next_time_step_id =
           boundary_message->next_time_step_id;
       current_boundary_data->tci_status = boundary_message->tci_status;
+      current_boundary_data->integration_order =
+          boundary_message->integration_order;
     } else {
       // We have not received ghost cells or fluxes at this time.
       // Once we insert boundary_message into the unique_ptr we cannot use

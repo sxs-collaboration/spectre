@@ -20,7 +20,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CreateInitialElement.hpp"
-#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
@@ -103,7 +103,7 @@ domain::creators::Brick create_a_brick(const size_t num_dg_pts,
   const auto refinement_levels = make_array<3, size_t>(0);
   return domain::creators::Brick(lower_bounds, upper_bounds, refinement_levels,
                                  make_array<3, size_t>(num_dg_pts),
-                                 make_array<3, bool>(true),
+                                 make_array<3, bool>(true), {},
                                  std::move(time_dependence_ptr));
 }
 
@@ -249,6 +249,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
   auto box = [&block, &brick, &dg_gr_vars, &element, &element_id,
               &grid_to_inertial_map, &initial_time, &solution,
               &subcell_initial_inertial_coords, &subcell_mesh]() {
+    // Bug in GCC 13.2 where having this class created in-place below causes an
+    // internal compiler error
+    typename subcell_face_gr_variables_tag::type face_gr_vars{};
     // Since we want to test that the BackgroundGrVars action properly
     // initializes (allocate + assign) the background GR variables on
     // cell-centered and face-centered coordinates, use an empty subcell GR
@@ -276,8 +279,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
           std::move(grid_to_inertial_map),
           clone_unique_ptrs(brick.functions_of_time()), subcell_mesh,
           subcell_initial_inertial_coords, dg_gr_vars,
-          typename inactive_gr_variables_tag::type{},
-          typename subcell_face_gr_variables_tag::type{}, false,
+          typename inactive_gr_variables_tag::type{}, face_gr_vars, false,
           solution.get_clone());
     } else {
       return db::create<db::AddSimpleTags<
@@ -301,8 +303,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
           std::move(grid_to_inertial_map),
           clone_unique_ptrs(brick.functions_of_time()), subcell_mesh,
           subcell_initial_inertial_coords, dg_gr_vars,
-          typename inactive_gr_variables_tag::type{},
-          typename subcell_face_gr_variables_tag::type{}, false, solution);
+          typename inactive_gr_variables_tag::type{}, face_gr_vars, false,
+          solution);
     }
   }();
 

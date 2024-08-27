@@ -34,8 +34,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tags::deriv
-
 namespace {
 
 FastFlow::Status do_iteration(

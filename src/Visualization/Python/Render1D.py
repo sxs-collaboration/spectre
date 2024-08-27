@@ -25,6 +25,7 @@ from spectre.Domain import (
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.Spectral import Basis
 from spectre.support.CliExceptions import RequiredChoiceError
+from spectre.support.Logging import configure_logging
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
@@ -425,5 +426,5 @@ def render_1d_command(
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    configure_logging(log_level=logging.INFO)
     render_1d_command(help_option_names=["-h", "--help"])

@@ -67,20 +67,19 @@ DomainCreator:
   Interval:
     LowerBound: [-1.570796326794896]
     UpperBound: [3.141592653589793]
-    Distribution: Linear
-    Singularity: None
+    Distribution: [Linear]
     InitialRefinement: [1]
     InitialGridPoints: [4]
     TimeDependence: None
     BoundaryConditions:
-      LowerBoundary:
-        AnalyticSolution:
-          Solution: *solution
-          Field: Dirichlet
-      UpperBoundary:
-        AnalyticSolution:
-          Solution: *solution
-          Field: Neumann
+      - Lower:
+          AnalyticSolution:
+            Solution: *solution
+            Field: Dirichlet
+        Upper:
+          AnalyticSolution:
+            Solution: *solution
+            Field: Neumann
 
 Amr:
   Verbosity: Debug

@@ -9,12 +9,14 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
+import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import (
     inspiral_parameters,
     start_inspiral_command,
 )
+from spectre.support.Logging import configure_logging
 
 
 class TestInspiral(unittest.TestCase):
@@ -26,7 +28,8 @@ class TestInspiral(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_ratio=1.5,
+            mass_a=0.6,
+            mass_b=0.4,
             dimensionless_spin_a=[0.0, 0.0, 0.0],
             dimensionless_spin_b=[0.0, 0.0, 0.0],
             separation=20.0,
@@ -40,6 +43,16 @@ class TestInspiral(unittest.TestCase):
             executable=str(self.bin_dir / "SolveXcts"),
         )
         self.id_dir = self.test_dir / "ID"
+        # Purposefully not in the ID directory
+        self.horizons_filename = self.test_dir / "Horizons.h5"
+        with spectre_h5.H5File(
+            str(self.horizons_filename.resolve()), "a"
+        ) as horizons_file:
+            legend = ["Time", "ChristodoulouMass", "DimensionlessSpinMagnitude"]
+            for subfile_name in ["AhA", "AhB"]:
+                horizons_file.close_current_object()
+                dat_file = horizons_file.try_insert_dat(subfile_name, legend, 0)
+                dat_file.append([[0.0, 1.0, 0.3]])
 
     def tearDown(self):
         shutil.rmtree(self.test_dir, ignore_errors=True)
@@ -50,6 +63,7 @@ class TestInspiral(unittest.TestCase):
         params = inspiral_parameters(
             id_input_file=id_input_file,
             id_run_dir=self.id_dir,
+            id_horizons_path=self.horizons_filename,
             refinement_level=1,
             polynomial_order=5,
         )
@@ -57,14 +71,48 @@ class TestInspiral(unittest.TestCase):
             params["IdFileGlob"],
             str((self.id_dir).resolve() / "BbhVolume*.h5"),
         )
-        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.068)
-        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.712)
+        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.116)
+        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.744)
         self.assertEqual(params["XCoordA"], 8.0)
         self.assertEqual(params["XCoordB"], -12.0)
         self.assertEqual(params["InitialAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
+        self.assertEqual(
+            params["HorizonsFile"], str(self.horizons_filename.resolve())
+        )
+        self.assertEqual(params["AhASubfileName"], "AhA/Coefficients")
+        self.assertEqual(params["AhBSubfileName"], "AhB/Coefficients")
+        self.assertEqual(params["ExcisionAShapeMass"], 0.6)
+        self.assertEqual(params["ExcisionAShapeSpin_x"], 0.0)
+        self.assertEqual(params["ExcisionAShapeSpin_y"], 0.0)
+        self.assertEqual(params["ExcisionAShapeSpin_z"], 0.0)
+        self.assertEqual(params["ExcisionBShapeMass"], 0.4)
+        self.assertEqual(params["ExcisionBShapeSpin_x"], 0.0)
+        self.assertEqual(params["ExcisionBShapeSpin_y"], 0.0)
+        self.assertEqual(params["ExcisionBShapeSpin_z"], 0.0)
         self.assertEqual(params["L"], 1)
         self.assertEqual(params["P"], 5)
+        # Control system
+        self.assertEqual(params["MaxDampingTimescale"], 20.0)
+        self.assertEqual(params["KinematicTimescale"], 0.4)
+        self.assertAlmostEqual(params["SizeATimescale"], 0.04)
+        self.assertAlmostEqual(params["SizeBTimescale"], 0.04)
+        self.assertAlmostEqual(params["ShapeATimescale"], 2.0)
+        self.assertAlmostEqual(params["ShapeBTimescale"], 2.0)
+        self.assertEqual(params["SizeIncreaseThreshold"], 1e-3)
+        self.assertEqual(params["DecreaseThreshold"], 1e-4)
+        self.assertEqual(params["IncreaseThreshold"], 2.5e-5)
+        self.assertEqual(params["SizeAMaxTimescale"], 20)
+        self.assertEqual(params["SizeBMaxTimescale"], 20)
+        # Constraint damping
+        self.assertEqual(params["Gamma0Constant"], 5e-4)
+        self.assertEqual(params["Gamma0LeftAmplitude"], 4.0)
+        self.assertEqual(params["Gamma0LeftWidth"], 7.0)
+        self.assertEqual(params["Gamma0RightAmplitude"], 4.0)
+        self.assertEqual(params["Gamma0RightWidth"], 7.0)
+        self.assertEqual(params["Gamma0OriginAmplitude"], 3.75e-2)
+        self.assertEqual(params["Gamma0OriginWidth"], 50.0)
+        self.assertEqual(params["Gamma1Width"], 200.0)
 
     def test_cli(self):
         common_args = [
@@ -73,8 +121,13 @@ class TestInspiral(unittest.TestCase):
             "1",
             "--polynomial-order",
             "5",
+            "--id-horizons-path",
+            str(self.horizons_filename),
             "-E",
             str(self.bin_dir / "EvolveGhBinaryBlackHole"),
+            "--no-schedule",
+            "--num-nodes",
+            "1",
         ]
         # Not using `CliRunner.invoke()` because it runs in an isolated
         # environment and doesn't work with MPI in the container.
@@ -130,5 +183,5 @@ class TestInspiral(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    configure_logging(log_level=logging.DEBUG)
     unittest.main(verbosity=2)

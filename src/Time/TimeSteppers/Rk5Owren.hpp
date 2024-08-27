@@ -51,8 +51,6 @@ class Rk5Owren : public RungeKutta {
 
   size_t order() const override;
 
-  size_t error_estimate_order() const override;
-
   double stable_step() const override;
 
   WRAPPED_PUPable_decl_template(Rk5Owren);  // NOLINT

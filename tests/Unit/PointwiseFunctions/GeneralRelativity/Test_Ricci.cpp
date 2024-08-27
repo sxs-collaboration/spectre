@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -17,10 +17,6 @@
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
-
-// IWYU pragma: no_include <boost/preprocessor/arithmetic/dec.hpp>
-// IWYU pragma: no_include <boost/preprocessor/repetition/enum.hpp>
-// IWYU pragma: no_include <boost/preprocessor/tuple/reverse.hpp>
 
 namespace {
 template <size_t Dim, IndexType TypeOfIndex, typename DataType>

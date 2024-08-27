@@ -7,6 +7,7 @@ import unittest
 
 import numpy as np
 
+from spectre.DataStructures import Index
 from spectre.Spectral import Basis, Mesh, Quadrature
 
 
@@ -42,7 +43,9 @@ class TestMesh(unittest.TestCase):
                     for quadrature in self.quadratures:
                         mesh = Mesh[dim](extent, basis, quadrature)
                         self.assertEqual(mesh.dim, dim)
-                        self.check_extents(mesh, [extent for _ in range(dim)])
+                        self.check_extents(
+                            mesh, Index[dim]([extent for _ in range(dim)])
+                        )
                         self.check_basis(mesh, [basis for _ in range(dim)])
                         self.check_quadrature(
                             mesh, [quadrature for _ in range(dim)]
@@ -57,7 +60,7 @@ class TestMesh(unittest.TestCase):
                             random.choice(self.extents) for _ in range(dim)
                         ]
                         mesh = Mesh[dim](extents, basis, quadrature)
-                        self.check_extents(mesh, extents)
+                        self.check_extents(mesh, Index[dim](extents))
 
     def test_nonuniform_all_with_pickle(self):
         for dim in [1, 2, 3]:
@@ -70,7 +73,7 @@ class TestMesh(unittest.TestCase):
 
                 mesh = Mesh[dim](extents, bases, quadratures)
                 mesh = pickle.loads(pickle.dumps(mesh))
-                self.check_extents(mesh, extents)
+                self.check_extents(mesh, Index[dim](extents))
                 self.check_basis(mesh, bases)
                 self.check_quadrature(mesh, quadratures)
 

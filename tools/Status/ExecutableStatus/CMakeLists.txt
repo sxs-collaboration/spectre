@@ -6,6 +6,7 @@ spectre_python_add_module(
   MODULE_PATH tools/Status
   PYTHON_FILES
   __init__.py
+  CharacteristicExtract.py
   EvolveGhBinaryBlackHole.py
   EvolveGhSingleBlackHole.py
   ExecutableStatus.py

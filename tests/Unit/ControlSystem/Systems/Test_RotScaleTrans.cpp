@@ -257,11 +257,10 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[2],
                                expected_translation_2nd_deriv, custom_approx1);
   CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[1],
-                               array_to_datavector(initial_velocity),
+                               DataVector(initial_velocity), custom_approx1);
+  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[0],
+                               DataVector(initial_velocity * final_time),
                                custom_approx1);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      trans_and_2_derivs[0], array_to_datavector(initial_velocity * final_time),
-      custom_approx1);
   CHECK_ITERABLE_CUSTOM_APPROX(
       binary_trajectories.separation(final_time) / initial_separation,
       expansion_factor, custom_approx1);

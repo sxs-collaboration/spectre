@@ -18,8 +18,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-// IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
-
 namespace domain {
 namespace {
 template <typename T>

@@ -15,6 +15,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/Executables/Solver.hpp"
 #include "Elliptic/Systems/Xcts/BoundaryConditions/Factory.hpp"
+#include "Elliptic/Systems/Xcts/Events/ObserveAdmIntegrals.hpp"
 #include "Elliptic/Systems/Xcts/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Xcts/HydroQuantities.hpp"
 #include "Elliptic/Triggers/Factory.hpp"
@@ -70,6 +71,8 @@ struct Metavariables {
   using spacetime_quantities_compute = Xcts::Tags::SpacetimeQuantitiesCompute<
       tmpl::list<Xcts::Tags::ConformalFactor<DataVector>,
                  Xcts::Tags::LapseTimesConformalFactor<DataVector>,
+                 ::Tags::deriv<Xcts::Tags::ConformalFactor<DataVector>,
+                               tmpl::size_t<3>, Frame::Inertial>,
                  gr::Tags::HamiltonianConstraint<DataVector>,
                  gr::Tags::MomentumConstraint<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
@@ -133,7 +136,7 @@ struct Metavariables {
                        volume_dim, typename system::primal_fields>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
-                       Events::Completion,
+                       Events::Completion, Events::ObserveAdmIntegrals,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
@@ -145,7 +148,11 @@ struct Metavariables {
                 PhaseControl::VisitAndReturn<
                     Parallel::Phase::EvaluateAmrCriteria>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
-                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>>>>;
+                PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>>>,
+        tmpl::pair<
+            grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
+            grmhd::AnalyticData::InitialMagneticFields::
+                initial_magnetic_fields>>;
   };
 
   // Collect all reduction tags for observers

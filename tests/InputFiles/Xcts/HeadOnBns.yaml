@@ -19,6 +19,7 @@ ResourceInfo:
 Background: &background
   Binary:
     XCoords: [&x_left -20., &x_right 20.]
+    CenterOfMassOffset: [&y_offset 0., &z_offset 0.]
     ObjectLeft: &star_left
       TovStar:
         # Values taken from Sec. V.C and Fig. 8 in
@@ -54,6 +55,7 @@ DomainCreator:
       XCoord: *x_left
       Interior: Auto
       UseLogarithmicMap: False
+    CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
       Radius: &outer_shell_inner_radius 120.
       RadialDistribution: Projective

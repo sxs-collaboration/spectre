@@ -11,7 +11,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/SegmentId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 
