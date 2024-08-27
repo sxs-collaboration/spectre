@@ -361,7 +361,7 @@ def inverse_dlambda_null_metric(
 
 
 def bondi_beta_worldtube_data(local_d_bondi_r):
-    return np.array(-0.5 * math.log(local_d_bondi_r[1]))
+    return np.array(-0.5 * math.log(local_d_bondi_r[1]), dtype=complex)
 
 
 def bondi_u_worldtube_data(down_dyad, local_d_bondi_r, inverse_null_metric):
