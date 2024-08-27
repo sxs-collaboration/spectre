@@ -107,5 +107,4 @@ WarningsAsErrors: '*'
 # It is unclear if the header filter actually works or how to use it so
 # just include all headers
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 FormatStyle:     none
