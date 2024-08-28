@@ -85,9 +85,20 @@ struct ObserveVolumeData {
     const auto record_tensor_components = [&components](const auto tensor_tag_v,
                                                         const auto& tensor) {
       using tensor_tag = std::decay_t<decltype(tensor_tag_v)>;
+      using TensorType = std::decay_t<decltype(tensor)>;
+      using VectorType = typename TensorType::type;
+      using ValueType = typename VectorType::value_type;
       for (size_t i = 0; i < tensor.size(); ++i) {
-        components.emplace_back(
-            db::tag_name<tensor_tag>() + tensor.component_suffix(i), tensor[i]);
+        const std::string component_name =
+            db::tag_name<tensor_tag>() + tensor.component_suffix(i);
+        if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+          components.emplace_back("Re(" + component_name + ")",
+                                  real(tensor[i]));
+          components.emplace_back("Im(" + component_name + ")",
+                                  imag(tensor[i]));
+        } else {
+          components.emplace_back(component_name, tensor[i]);
+        }
       }
     };
     record_tensor_components(domain::Tags::Coordinates<Dim, Frame::Inertial>{},
