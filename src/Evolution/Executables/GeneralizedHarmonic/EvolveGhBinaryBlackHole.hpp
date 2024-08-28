@@ -451,7 +451,7 @@ struct EvolutionMetavars {
                        DenseTriggers::standard_dense_triggers>>>,
         tmpl::pair<
             DomainCreator<volume_dim>,
-            tmpl::list<::domain::creators::BinaryCompactObject,
+            tmpl::list<::domain::creators::BinaryCompactObject<false>,
                        ::domain::creators::CylindricalBinaryCompactObject>>,
         tmpl::pair<
             Event,

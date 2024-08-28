@@ -144,7 +144,12 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  * `domain::creators::bco::TimeDependentMapOptions`. This class must pass a
  * template parameter of `false` to
  * `domain::creators::bco::TimeDependentMapOptions`.
+ *
+ * The `UseWorldtube` template parameter is set to false by default. When set to
+ * true, some of the functions of time will be `IntegratedFunctionOfTime` used
+ * to control the orbit of the worldtube.
  */
+template <bool UseWorldtube = false>
 class BinaryCompactObject : public DomainCreator<3> {
  private:
   // Time-independent maps
