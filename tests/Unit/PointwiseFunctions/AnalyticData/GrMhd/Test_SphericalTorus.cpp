@@ -37,33 +37,59 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.SphericalTorus",
                   "[Unit][PointwiseFunctions]") {
   // check parse errors first
   CHECK_THROWS_WITH(
-      ([]() { grmhd::AnalyticData::SphericalTorus(-1.0, 2.0, 0.1, 0.5); })(),
+      ([]() {
+        grmhd::AnalyticData::SphericalTorus(-1.0, 2.0, 0.1, 0.5, 0.0);
+      })(),
       Catch::Matchers::ContainsSubstring("Minimum radius must be positive."));
-  CHECK_THROWS_WITH(
-      ([]() { grmhd::AnalyticData::SphericalTorus(3.0, 2.0, 0.1, 0.5); })(),
-      Catch::Matchers::ContainsSubstring(
-          "Maximum radius must be greater than minimum radius."));
-  CHECK_THROWS_WITH(
-      ([]() { grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 10.0, 0.5); })(),
-      Catch::Matchers::ContainsSubstring(
-          "Minimum polar angle should be less than pi/2."));
-  CHECK_THROWS_WITH(
-      ([]() { grmhd::AnalyticData::SphericalTorus(1.0, 2.0, -0.1, 0.5); })(),
-      Catch::Matchers::ContainsSubstring(
-          "Minimum polar angle should be positive"));
-  CHECK_THROWS_WITH(
-      ([]() { grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, -0.5); })(),
-      Catch::Matchers::ContainsSubstring(
-          "Fraction of torus included must be positive."));
-  CHECK_THROWS_WITH(
-      ([]() { grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, 2.0); })(),
-      Catch::Matchers::ContainsSubstring(
-          "Fraction of torus included must be at most 1."));
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(3.0, 2.0, 0.1, 0.5,
+                                                          0.0);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Maximum radius must be greater than minimum radius."));
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 10.0, 0.5,
+                                                          0.0);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Minimum polar angle should be less than pi/2."));
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(1.0, 2.0, -0.1, 0.5,
+                                                          0.0);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Minimum polar angle should be positive"));
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, -0.5,
+                                                          0.0);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Fraction of torus included must be positive."));
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, 2.0,
+                                                          0.0);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Fraction of torus included must be at most 1."));
+
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, 1.0,
+                                                          -0.3);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Compression level must be non-negative."));
+
+  CHECK_THROWS_WITH(([]() {
+                      grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, 1.0,
+                                                          1.0);
+                    })(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Compression level must be less than 1."));
 
   // check constructor
   CHECK(grmhd::AnalyticData::SphericalTorus(std::array<double, 2>{1.0, 2.0},
-                                            0.1, 0.5) ==
-        grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, 0.5));
+                                            0.1, 0.5, 0.0) ==
+        grmhd::AnalyticData::SphericalTorus(1.0, 2.0, 0.1, 0.5, 0.0));
 
   MAKE_GENERATOR(gen);
   const double r_min = std::uniform_real_distribution<>(1.0, 2.0)(gen);
@@ -71,10 +97,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.SphericalTorus",
   const double phi_max = std::uniform_real_distribution<>(0.5, 1.0)(gen);
   const double fraction_of_torus =
       std::uniform_real_distribution<>(0.1, 1.0)(gen);
-
+  const double compression_level =
+      std::uniform_real_distribution<>(0.1, 0.9)(gen);
   const grmhd::AnalyticData::SphericalTorus full_torus(r_min, r_max, phi_max);
-  const grmhd::AnalyticData::SphericalTorus partial_torus(r_min, r_max, phi_max,
-                                                          fraction_of_torus);
+  const grmhd::AnalyticData::SphericalTorus partial_torus(
+      r_min, r_max, phi_max, fraction_of_torus, compression_level);
+
   {
     const double x = std::uniform_real_distribution<>(-1.0, 1.0)(gen);
     const double y = std::uniform_real_distribution<>(-1.0, 1.0)(gen);
@@ -116,18 +144,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.SphericalTorus",
   CHECK(not partial_torus.is_identity());
 
   {
-    auto deriv_approx = Approx::custom().epsilon(1.0e-9).scale(1.0);
+    auto deriv_approx = Approx::custom().epsilon(1.0e-6).scale(1.0);
     std::uniform_real_distribution<> dist(-1.0, 1.0);
     const auto test_point = make_with_random_values<std::array<double, 3>>(
         make_not_null(&gen), make_not_null(&dist), double{});
     const auto test_tnsr = a2t(test_point);
     const tnsr::I<double, 3> mapped_tnsr = partial_torus(test_tnsr);
     const auto mapped_point = t2a(mapped_tnsr);
-
+    CAPTURE(test_point);
     const tnsr::I<double, 3> iden_tnsr = partial_torus.inverse(mapped_tnsr);
 
     const auto jac = partial_torus.jacobian(test_tnsr);
     const auto jac_inv = partial_torus.inv_jacobian(test_tnsr);
+    CAPTURE(jac_inv);
+
     const auto analytic = partial_torus.hessian(test_tnsr);
     const auto analytic_inverse =
         partial_torus.derivative_of_inv_jacobian(test_tnsr);

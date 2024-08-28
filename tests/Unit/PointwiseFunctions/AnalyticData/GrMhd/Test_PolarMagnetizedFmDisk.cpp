@@ -53,28 +53,30 @@ void test_create_from_options() {
           "  TorusParameters:\n"
           "    RadialRange: [2.5, 3.6]\n"
           "    MinPolarAngle: 0.9\n"
-          "    FractionOfTorus: 0.7\n")
+          "    FractionOfTorus: 0.7\n"
+          "    CompressionLevel: 0.0\n")
           ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& disk =
       dynamic_cast<const grmhd::AnalyticData::PolarMagnetizedFmDisk&>(
           *deserialized_option_solution);
-  CHECK(disk == grmhd::AnalyticData::PolarMagnetizedFmDisk(
-                    grmhd::AnalyticData::MagnetizedFmDisk(
-                        1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 4),
-                    grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7)));
+  CHECK(disk ==
+        grmhd::AnalyticData::PolarMagnetizedFmDisk(
+            grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2,
+                                                  0.065, 1.654, 0.42, 85.0, 4),
+            grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0)));
 }
 
 void test_move() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
                                             1.654, 0.42, 85.0, 4),
-      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
+      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0));
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk_copy(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
                                             1.654, 0.42, 85.0, 4),
-      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
+      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0));
   test_move_semantics(std::move(disk), disk_copy);
 }
 
@@ -82,7 +84,7 @@ void test_serialize() {
   grmhd::AnalyticData::PolarMagnetizedFmDisk disk(
       grmhd::AnalyticData::MagnetizedFmDisk(1.3, 0.345, 6.123, 14.2, 0.065,
                                             1.654, 0.42, 85.0, 4),
-      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7));
+      grmhd::AnalyticData::SphericalTorus(2.5, 3.6, 0.9, 0.7, 0.0));
   test_serialization(disk);
 }
 
@@ -112,7 +114,7 @@ void test_variables(const DataType& used_for_size) {
           bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
           polytropic_constant, polytropic_exponent, threshold_density,
           inverse_plasma_beta, b_field_normalization),
-      grmhd::AnalyticData::SphericalTorus(3.0, 20.0, 1.0, 0.3));
+      grmhd::AnalyticData::SphericalTorus(3.0, 20.0, 1.0, 0.3, 0.0));
 
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.5);
 
