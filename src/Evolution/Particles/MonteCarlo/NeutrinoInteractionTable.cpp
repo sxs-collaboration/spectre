@@ -246,6 +246,23 @@ NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::NeutrinoInteractionTable(
 }
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
+void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::pup(PUP::er& p) {
+  PUP::able::pup(p);
+  p | table_data;
+  p | table_neutrino_energies;
+  p | table_log_density;
+  p | table_log_temperature;
+  p | table_electron_fraction;
+  if (p.isUnpacking()) {
+    initialize_interpolator();
+  }
+}
+
+template <size_t EnergyBins, size_t NeutrinoSpecies>
+PUP::able::PUP_ID NeutrinoInteractionTable<EnergyBins,
+  NeutrinoSpecies>::my_PUP_ID = 0;  // NOLINT
+
+template <size_t EnergyBins, size_t NeutrinoSpecies>
 void NeutrinoInteractionTable<EnergyBins,
                               NeutrinoSpecies>::initialize_interpolator() {
   // Initialize interpolator

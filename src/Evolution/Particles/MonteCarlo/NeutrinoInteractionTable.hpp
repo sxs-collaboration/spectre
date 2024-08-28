@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <pup.h>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/MultiLinearSpanInterpolation.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
 
 /// \cond
 class DataVector;
@@ -21,7 +23,7 @@ namespace Particles::MonteCarlo {
 /// Class responsible for reading neutrino-matter interaction
 /// tables.
 template <size_t EnergyBins, size_t NeutrinoSpecies>
-class NeutrinoInteractionTable {
+class NeutrinoInteractionTable : public PUP::able {
  public:
   /// Read table from disk and stores interaction rates.
   explicit NeutrinoInteractionTable(const std::string& filename);
@@ -33,6 +35,12 @@ class NeutrinoInteractionTable {
       std::vector<double> table_log_density_,
       std::vector<double> table_log_temperature_,
       std::vector<double> table_electron_fraction_);
+
+  explicit NeutrinoInteractionTable(CkMigrateMessage* msg) : PUP::able(msg) {}
+
+  using PUP::able::register_constructor;
+  void pup(PUP::er& p) override;
+  WRAPPED_PUPable_decl_template(NeutrinoInteractionTable);
 
   /// Interpolate interaction rates to given values of density,
   /// temperature and electron fraction.
