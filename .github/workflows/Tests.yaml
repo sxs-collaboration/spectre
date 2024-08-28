@@ -723,6 +723,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         # We currently don't require codecov in our guidelines, so don't fail
         # the CI build if codecov fails to upload
         continue-on-error: true
+      # Avoid running out of disk space by cleaning up the build directory
+      - name: Clean up unit tests
+        working-directory: build
+        run: |
+          pwd
+          ls | xargs du -sh
+          du -sh .
+          rm -f bin/Test_*
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
@@ -754,6 +762,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Print size of build directory
         working-directory: build
         run: |
+          pwd
           ls | xargs du -sh
           du -sh .
       - name: Diagnose ccache
@@ -781,18 +790,20 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         working-directory: /work/spectre_install
         # Remove files post-install to reduce disk space for later on.
         run: |
+          pwd
           ls | xargs du -sh
           du -sh .
           rm -r ./*
       - name: Test formaline tar can be built
         # - We only run the formaline tests in debug mode to reduce total build
-        #   time in CI.
+        #   time in CI. We don't run them with ASAN because then we run out of
+        #   disk space.
         # - We do run for all compilers, though, because formaline injects data
         #   at the linking stage, which means we are somewhat tied to the
         #   compiler version.
         # - We make sure to use the same compiler flags as the full build above
         #   so ccache is able to speed up the build.
-        if: matrix.build_type == 'Debug'
+        if: matrix.build_type == 'Debug' && matrix.ASAN != 'ON'
         working-directory: build
         run: >
           make EvolveBurgers -j${NUMBER_OF_CORES}
