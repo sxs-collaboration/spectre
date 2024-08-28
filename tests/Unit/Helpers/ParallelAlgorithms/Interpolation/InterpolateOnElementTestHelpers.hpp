@@ -275,7 +275,7 @@ void test_interpolate_on_element(
               0.0, 0.0, 0.1, 0.0));
     } else {
       if constexpr (OffCenter) {
-        using BCO = domain::creators::BinaryCompactObject;
+        using BCO = domain::creators::BinaryCompactObject<false>;
         return std::make_unique<BCO>(
             BCO::Object{0.9, 2.9, 4.0, true, true},
             BCO::Object{0.9, 2.9, -4.0, true, true},

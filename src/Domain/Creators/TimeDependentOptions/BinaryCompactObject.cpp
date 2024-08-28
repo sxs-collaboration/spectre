@@ -19,6 +19,7 @@
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/IntegratedFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
@@ -73,9 +74,97 @@ TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
 template <bool IsCylindrical>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+TimeDependentMapOptions<IsCylindrical>::create_worldtube_functions_of_time()
+    const {
+  if (translation_map_options_.has_value()) {
+    ERROR("Translation map is not implemented for worldtube evolutions.");
+  }
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      result{};
+  // The functions of time need to be valid only for the very first time step,
+  // after that they need to be updated by the worldtube singleton.
+  const double initial_expiration_time = initial_time_ + 1e-10;
+  if (not expansion_map_options_.has_value()) {
+    ERROR("Initial values for the expansion map need to be provided.");
+  }
+  result[expansion_name] =
+      std::make_unique<FunctionsOfTime::IntegratedFunctionOfTime>(
+          initial_time_,
+          std::array<double, 2>{
+              {{gsl::at(expansion_map_options_.value().initial_values, 0)},
+               {gsl::at(expansion_map_options_.value().initial_values, 1)}}},
+          initial_expiration_time, false);
+  result[expansion_outer_boundary_name] =
+      std::make_unique<FunctionsOfTime::FixedSpeedCubic>(
+          1.0, initial_time_,
+          expansion_map_options_.value().outer_boundary_velocity,
+          expansion_map_options_.value().outer_boundary_decay_time);
+  if (not rotation_map_options_.has_value()) {
+    ERROR(
+        "Initial values for the rotation map need to be provided when using "
+        "the worldtube.");
+  }
+
+  result[rotation_name] =
+      std::make_unique<FunctionsOfTime::IntegratedFunctionOfTime>(
+          initial_time_,
+          std::array<double, 2>{
+              0.,
+              gsl::at(rotation_map_options_.value().initial_angular_velocity,
+                      2)},
+          initial_expiration_time, true);
+
+  // Size and Shape FunctionOfTime for objects A and B. Only spherical excision
+  // spheres are supported currently.
+  if (not(shape_options_A_.has_value() and shape_options_B_.has_value())) {
+    ERROR(
+        "Initial size for both excision spheres need to be provided when using "
+        "the worldtube.");
+  }
+  for (size_t i = 0; i < shape_names.size(); i++) {
+    const auto make_initial_size_values = [](const auto& lambda_options) {
+      return std::array<double, 2>{
+          {gsl::at(lambda_options.value().initial_size_values.value(), 0),
+           gsl::at(lambda_options.value().initial_size_values.value(), 1)}};
+    };
+    const std::array<double, 2> initial_size_values =
+        i == 0 ? make_initial_size_values(shape_options_A_)
+               : make_initial_size_values(shape_options_B_);
+    const size_t initial_l_max = 2;
+    const DataVector shape_zeros{
+        ylm::Spherepack::spectral_size(initial_l_max, initial_l_max), 0.0};
+
+    result[gsl::at(shape_names, i)] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time_,
+            std::array<DataVector, 3>{shape_zeros, shape_zeros, shape_zeros},
+            std::numeric_limits<double>::infinity());
+    result[gsl::at(size_names, i)] =
+        std::make_unique<FunctionsOfTime::IntegratedFunctionOfTime>(
+            initial_time_, initial_size_values, initial_expiration_time, false);
+  }
+  return result;
+}
+
+template <bool IsCylindrical>
+template <bool UseWorldtube>
+std::unordered_map<std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
+  if constexpr (UseWorldtube) {
+    static_assert(not IsCylindrical,
+                  "Cylindrical map not supported with worldtube");
+    if (not initial_expiration_times.empty()) {
+      ERROR(
+          "Initial expiration times were specified with worldtube functions of "
+          "time. This is not supported, as the worldtube singleton has to set "
+          "the expiration times each time step");
+    }
+    return create_worldtube_functions_of_time();
+  }
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
@@ -507,4 +596,17 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (true, false),
 #undef OBJECT
 #undef ISCYL
 #undef INSTANTIATE
+
+template std::unordered_map<
+    std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+TimeDependentMapOptions<false>::create_functions_of_time<true>(
+    const std::unordered_map<std::string, double>&) const;
+template std::unordered_map<
+    std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+TimeDependentMapOptions<false>::create_functions_of_time<false>(
+    const std::unordered_map<std::string, double>&) const;
+template std::unordered_map<
+    std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+TimeDependentMapOptions<true>::create_functions_of_time<false>(
+    const std::unordered_map<std::string, double>&) const;
 }  // namespace domain::creators::bco

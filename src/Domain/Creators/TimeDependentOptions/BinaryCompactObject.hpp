@@ -277,7 +277,17 @@ struct TimeDependentMapOptions {
    * - Translation: `PiecewisePolynomial<3>`
    * - SizeA/B: `PiecewisePolynomial<3>`
    * - ShapeA/B: `PiecewisePolynomial<2>`
+   *
+   *  When `UseWorldtube` is set to true, they are
+   *
+   * - Expansion: `IntegratedFunctionOfTime`
+   * - ExpansionOuterBoundary: `FixedSpeedCubic`
+   * - Rotation: `IntegratedFunctionOfTime`
+   * - Translation: None
+   * - SizeA/B: IntegratedFunctionOfTime
+   * - ShapeA/B: `PiecewisePolynomial<2>`
    */
+  template <bool UseWorldtube = false>
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
   create_functions_of_time(const std::unordered_map<std::string, double>&
@@ -398,5 +408,10 @@ struct TimeDependentMapOptions {
       tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
                           std::array<std::array<std::optional<Shape>, 6>, 2>>;
   ShapeMapType shape_maps_{};
+
+  // helper function that creates the functions of time used by the worldtube
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+  create_worldtube_functions_of_time() const;
 };
 }  // namespace domain::creators::bco

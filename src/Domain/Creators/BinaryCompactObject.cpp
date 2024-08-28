@@ -64,11 +64,13 @@ create_grid_anchors(const std::array<double, 3>& center_a,
 }
 }  // namespace bco
 
-bool BinaryCompactObject::Object::is_excised() const {
+template <bool UseWorldtube>
+bool BinaryCompactObject<UseWorldtube>::Object::is_excised() const {
   return inner_boundary_condition.has_value();
 }
 
-BinaryCompactObject::BinaryCompactObject(
+template <bool UseWorldtube>
+BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     typename ObjectA::type object_A, typename ObjectB::type object_B,
     std::array<double, 2> center_of_mass_offset, const double envelope_radius,
     const double outer_radius,
@@ -336,7 +338,8 @@ BinaryCompactObject::BinaryCompactObject(
   }
 }
 
-Domain<3> BinaryCompactObject::create_domain() const {
+template <bool UseWorldtube>
+Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
   const double inner_sphericity_A = is_excised_a_ ? 1.0 : 0.0;
   const double inner_sphericity_B = is_excised_b_ ? 1.0 : 0.0;
 
@@ -728,9 +731,10 @@ Domain<3> BinaryCompactObject::create_domain() const {
   return domain;
 }
 
+template <bool UseWorldtube>
 std::vector<DirectionMap<
     3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-BinaryCompactObject::external_boundary_conditions() const {
+BinaryCompactObject<UseWorldtube>::external_boundary_conditions() const {
   if (outer_boundary_condition_ == nullptr) {
     return {};
   }
@@ -766,16 +770,20 @@ BinaryCompactObject::external_boundary_conditions() const {
   return boundary_conditions;
 }
 
+template <bool UseWorldtube>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-BinaryCompactObject::functions_of_time(
+BinaryCompactObject<UseWorldtube>::functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
   return time_dependent_options_.has_value()
-             ? time_dependent_options_->create_functions_of_time(
+             ? time_dependent_options_->create_functions_of_time<UseWorldtube>(
                    initial_expiration_times)
              : std::unordered_map<
                    std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{};
 }
+
+template class BinaryCompactObject<true>;
+template class BinaryCompactObject<false>;
 }  // namespace domain::creators
