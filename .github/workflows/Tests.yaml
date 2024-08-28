@@ -786,13 +786,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           rm -r ./*
       - name: Test formaline tar can be built
         # - We only run the formaline tests in debug mode to reduce total build
-        #   time in CI.
+        #   time in CI. We don't run them with ASAN because then we run out of
+        #   disk space.
         # - We do run for all compilers, though, because formaline injects data
         #   at the linking stage, which means we are somewhat tied to the
         #   compiler version.
         # - We make sure to use the same compiler flags as the full build above
         #   so ccache is able to speed up the build.
-        if: matrix.build_type == 'Debug'
+        if: matrix.build_type == 'Debug' && matrix.ASAN != 'ON'
         working-directory: build
         run: >
           make EvolveBurgers -j${NUMBER_OF_CORES}
