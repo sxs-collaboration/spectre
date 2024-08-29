@@ -198,13 +198,12 @@ std::array<double, 6> CstSolution::interpolate(
   }
   using std::abs;
   const double target_abs_cos_theta = abs(target_cos_theta);
-  const auto angular_index = static_cast<size_t>(
-      target_abs_cos_theta * static_cast<double>(num_angular_points_ - 1));
-  // radius_index differs from SpEC by +1 to get the stencils to be centered.
-  size_t radius_index =
-      static_cast<size_t>(num_radial_points_ * target_radius /
-                          (target_radius + equatorial_radius_)) +
-      1;
+  // The `lround` centers the stencils and avoids rounding problems.
+  const auto angular_index = static_cast<size_t>(lround(
+      target_abs_cos_theta * static_cast<double>(num_angular_points_ - 1)));
+  const auto radius_index = static_cast<size_t>(
+      lround(static_cast<double>(num_radial_points_) * target_radius /
+             (target_radius + equatorial_radius_)));
   if (const size_t grid_index =
           num_angular_points_ * radius_index + angular_index;
       UNLIKELY(grid_index > num_grid_points_)) {
@@ -232,12 +231,27 @@ std::array<double, 6> CstSolution::interpolate(
                         << num_radial_points_);
   }
 
-  const size_t radial_stencil_index = static_cast<size_t>(std::clamp(
-      static_cast<int>(radius_index) - static_cast<int>(stencil_size) / 2, 0,
-      static_cast<int>(num_radial_points_ - stencil_size)));
+  // If the stencil size is an even number, a shift in the stencil may be
+  // necessary. The intention is that the target point is always in the middle
+  // of the stencil, i.e. between the middle 2 points.
+  int radial_stencil_adjust = 0;
+  int angular_stencil_adjust = 0;
+  if constexpr (stencil_size % 2 == 0) {
+    if (target_radius > radius_[radius_index * num_angular_points_]) {
+      radial_stencil_adjust++;
+    }
+    if (target_abs_cos_theta > cos_theta_[angular_index]) {
+      angular_stencil_adjust++;
+    }
+  }
+  const size_t radial_stencil_index = static_cast<size_t>(
+      std::clamp(static_cast<int>(radius_index) -
+                     static_cast<int>(stencil_size) / 2 + radial_stencil_adjust,
+                 0, static_cast<int>(num_radial_points_ - stencil_size)));
   const size_t angular_stencil_index = static_cast<size_t>(std::clamp(
-      static_cast<int>(angular_index) - static_cast<int>(stencil_size) / 2, 0,
-      static_cast<int>(num_angular_points_ - stencil_size - 1)));
+      static_cast<int>(angular_index) - static_cast<int>(stencil_size) / 2 +
+          angular_stencil_adjust,
+      0, static_cast<int>(num_angular_points_ - stencil_size)));
 
   // We first interpolate in cos(theta) and then in radius.
   std::array<double, stencil_size> rest_mass_density_rad_stencil{};

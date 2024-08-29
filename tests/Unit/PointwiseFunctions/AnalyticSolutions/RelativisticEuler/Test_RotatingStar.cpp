@@ -77,13 +77,23 @@ SPECTRE_TEST_CASE(
   // and update the path to the `dat` file in order to figure out what the
   // central rest mass density is.
   // RelativisticEuler::Solutions::detail::CstSolution cst_solution(
-  //     "/path/to/InitialData.dat", 100);
+  //     "/path/to/InitialData.dat", true, 100);
   // std::cout << cst_solution.interpolate(0.0, 0.0, true) << "\n\n";
 
   // The tolerance depends on the resolution that the RotNS file used. In order
   // to avoid storing very large files in the repo, we accept a larger
   // tolerance. However, Nils Deppe verified on Jan. 5, 2022 that increasing the
   // RotNS code resolution allows for a stricter tolerance.
+
+  const RelativisticEuler::Solutions::detail::CstSolution cst_solution(
+      unit_test_src_path() +
+          "/PointwiseFunctions/AnalyticSolutions/RelativisticEuler/"
+          "RotatingStarId.dat",
+      true, 100.);
+  // The following line would fail under the original stencil construction due
+  // to rounding errors.
+  cst_solution.interpolate(5.85, 0.64999999999, true);
+
   register_classes_with_charm<RelativisticEuler::Solutions::RotatingStar>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
