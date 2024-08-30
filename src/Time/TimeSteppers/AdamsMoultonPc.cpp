@@ -10,6 +10,8 @@
 #include <pup.h>
 
 #include "DataStructures/TaggedVariant.hpp"
+#include "Options/Context.hpp"
+#include "Options/ParseError.hpp"
 #include "Time/ApproximateTime.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
@@ -33,15 +35,25 @@ static_assert(adams_coefficients::maximum_order ==
               AdamsMoultonPc<false>::maximum_order);
 
 template <bool Monotonic>
-AdamsMoultonPc<Monotonic>::AdamsMoultonPc(const size_t order) : order_(order) {
-  ASSERT(order >= minimum_order and order <= maximum_order,
-         "Invalid order: " << order);
+AdamsMoultonPc<Monotonic>::AdamsMoultonPc(const std::optional<size_t>& order,
+                                          const Options::Context& context)
+    : order_(order) {
+  if (order_.has_value() and (*order_ < 2 or *order_ > maximum_order)) {
+    PARSE_ERROR(context,
+                "The order for Adams-Moulton Nth order must be 2 <= order <= "
+                << maximum_order);
+  }
 }
 
 template <bool Monotonic>
 variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
 AdamsMoultonPc<Monotonic>::order() const {
-  return variants::TaggedVariant<Tags::FixedOrder>(order_);
+  if (order_.has_value()) {
+    return variants::TaggedVariant<Tags::FixedOrder>(*order_);
+  } else {
+    return variants::TaggedVariant<Tags::VariableOrder>(minimum_order,
+                                                        maximum_order);
+  }
 }
 
 template <bool Monotonic>
@@ -56,12 +68,17 @@ uint64_t AdamsMoultonPc<Monotonic>::number_of_substeps_for_error() const {
 
 template <bool Monotonic>
 size_t AdamsMoultonPc<Monotonic>::number_of_past_steps() const {
-  return order_ - 2;
+  return order_.value_or(2) - 2;
 }
 
 template <bool Monotonic>
 double AdamsMoultonPc<Monotonic>::stable_step() const {
-  switch (order_) {
+  if (not order_.has_value()) {
+    ERROR_NO_TRACE(
+        "Variable-order time stepper does not have well-defined stable step.");
+  }
+
+  switch (*order_) {
     case 2:
       return 1.0;
     case 3:
@@ -273,10 +290,6 @@ void AdamsMoultonPc<Monotonic>::clean_history_impl(
   if (not history.at_step_start()) {
     ASSERT(history.integration_order() > 1, "Cannot run below second order.");
     const auto required_points = history.integration_order() - 2;
-    ASSERT(history.size() >= required_points,
-           "Insufficient data to take an order-" << history.integration_order()
-           << " step.  Have " << history.size() << " times, need "
-           << required_points);
     history.clear_substeps();
     while (history.size() > required_points) {
       history.pop_front();
@@ -340,13 +353,15 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
   ASSERT(not local_times.empty(), "No local data provided.");
   ASSERT(not remote_times.empty(), "No remote data provided.");
   for (size_t i = 0; i < local_times.size(); ++i) {
-    ASSERT(local_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               local_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(local_times[i]),
            "Incorrect local order " << local_times.integration_order(i)
            << " at time " << local_times[i]);
   }
   for (size_t i = 0; i < remote_times.size(); ++i) {
-    ASSERT(remote_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               remote_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(remote_times[i]),
            "Incorrect remote order " << remote_times.integration_order(i)
            << " at time " << remote_times[i]);
@@ -448,8 +463,18 @@ void AdamsMoultonPc<Monotonic>::clean_boundary_history_impl(
     return;
   }
 
-  const auto required_local_points =
-      local_times.integration_order(local_times.size() - 1) - 2;
+  // Unlike for the volume terms, we need to keep an extra point in
+  // case the order changes.  This is because the order stored in the
+  // volume history represents, when the cleanup is run, the order of
+  // the next step, while the orders in the boundary history are
+  // stored per-step, so we have the order for the step we've just
+  // taken, which may be one lower than what we need.
+  const auto local_order =
+      local_times.integration_order(local_times.size() - 1);
+  auto required_local_points = local_order - 2;
+  if (local_order < maximum_order and not order_.has_value()) {
+    ++required_local_points;
+  }
 
   while (local_times.size() > required_local_points) {
     local_times.pop_front();
@@ -461,8 +486,13 @@ void AdamsMoultonPc<Monotonic>::clean_boundary_history_impl(
   // If the sides are not aligned, then we are in the middle of the
   // remote step, so still need its data.
   if (synchronized) {
-    const auto required_remote_points =
-        remote_times.integration_order(remote_times.size() - 1) - 2;
+    const auto remote_order =
+        remote_times.integration_order(remote_times.size() - 1);
+    auto required_remote_points = remote_order - 2;
+    if (remote_order < maximum_order and not order_.has_value()) {
+      ++required_remote_points;
+    }
+
     while (remote_times.size() > required_remote_points) {
       remote_times.pop_front();
     }
@@ -481,13 +511,15 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const double time) const {
   for (size_t i = 0; i < local_times.size(); ++i) {
-    ASSERT(local_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               local_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(local_times[i]),
            "Incorrect local order " << local_times.integration_order(i)
            << " at time " << local_times[i]);
   }
   for (size_t i = 0; i < remote_times.size(); ++i) {
-    ASSERT(remote_times.integration_order(i) == order_ or
+    ASSERT(not order_.has_value() or
+               remote_times.integration_order(i) == *order_ or
                ::SelfStart::is_self_starting(remote_times[i]),
            "Incorrect remote order " << remote_times.integration_order(i)
            << " at time " << remote_times[i]);

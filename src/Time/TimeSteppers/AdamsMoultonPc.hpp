@@ -10,6 +10,7 @@
 #include <string>
 
 #include "DataStructures/TaggedVariant.hpp"
+#include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -116,7 +117,8 @@ class AdamsMoultonPc : public LtsTimeStepper {
           : "An Adams-Moulton predictor-corrector time-stepper.";
 
   AdamsMoultonPc() = default;
-  explicit AdamsMoultonPc(size_t order);
+  explicit AdamsMoultonPc(const std::optional<size_t>& order,
+                          const Options::Context& context = {});
   AdamsMoultonPc(const AdamsMoultonPc&) = default;
   AdamsMoultonPc& operator=(const AdamsMoultonPc&) = default;
   AdamsMoultonPc(AdamsMoultonPc&&) = default;
@@ -210,7 +212,7 @@ class AdamsMoultonPc : public LtsTimeStepper {
   TIME_STEPPER_DECLARE_OVERLOADS
   LTS_TIME_STEPPER_DECLARE_OVERLOADS
 
-  size_t order_{};
+  std::optional<size_t> order_{};
 };
 
 template <bool Monotonic>
