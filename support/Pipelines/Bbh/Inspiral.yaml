@@ -147,8 +147,6 @@ Evolution:
     - LimitIncrease:
         Factor: 2
     - PreventRapidIncrease
-    - ElementSizeCfl:
-        SafetyFactor: 0.5
     - ErrorControl:
         AbsoluteTolerance: 1e-8
         RelativeTolerance: 1e-6
@@ -157,7 +155,7 @@ Evolution:
         SafetyFactor: 0.95
   # Found that order 4 offers a significant speedup compared to order 5
   TimeStepper:
-    AdamsBashforth:
+    AdamsMoultonPcMonotonic:
       Order: 4
 
 # Set gauge and constraint damping parameters.
@@ -247,6 +245,7 @@ PhaseChangeAndTriggers:
           WallclockHours: 23.5
 
 EventsAndTriggers:
+  # Observe time step and cheap constraints every slab
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -269,19 +268,14 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(ThreeIndexConstraint)
             NormType: L2Norm
             Components: Sum
-          - Name: PointwiseL2Norm(FourIndexConstraint)
-            NormType: L2Norm
-            Components: Sum
+  # Observe constraint energy more sparsely because it is expensive to compute.
+  # Also use it for ErrorIfDataTooBig so we only compute it once.
   - Trigger:
       Slabs:
-        # Trigger apparent horizon observations often enough so they find the
-        # next horizon based on the previous initial guess.
         EvenlySpaced:
-          Interval: 20
+          Interval: 100
           Offset: 0
     Events:
-      # Observe constraint energy while we need it for ErrorIfDataTooBig so we
-      # only compute it once
       - ObserveNorms:
           SubfileName: ConstraintEnergy
           TensorsToObserve:
@@ -294,35 +288,44 @@ EventsAndTriggers:
       - ErrorIfDataTooBig:
           Threshold: 100
           VariablesToCheck: [SpacetimeMetric]
+  # Observe apparent horizons often enough so they find the next horizon based
+  # on the previous initial guess. This is an issue with the AH finders not
+  # sharing initial guesses and needs to be fixed.
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    Events:
       - ObservationAhA
       - ObservationAhB
       - ObservationExcisionBoundaryA
       - ObservationExcisionBoundaryB
+  # Observe volume data for visualization and debugging
   - Trigger:
       Slabs:
         EvenlySpaced:
           Interval: 100
           Offset: 0
     Events:
-      # SpatialRicciScalar is output for visualizations with Render3D/Bbh.py
-      # script
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
-            - Pi
-            - Phi
-            - Lapse
-            - Shift
-            - SpatialRicciScalar
+            # For diagnostics:
+            - ConstraintEnergy
             - PointwiseL2Norm(GaugeConstraint)
             - PointwiseL2Norm(ThreeIndexConstraint)
-            - PointwiseL2Norm(FourIndexConstraint)
+            # For visualization:
+            - Lapse
+            - SpatialRicciScalar
+            - Psi4Real
           InterpolateToMesh: None
           # Save disk space by saving single precision data. This is enough
           # for visualization.
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
+  # Try to find common horizon at small separation
   - Trigger:
       SeparationLessThan:
         Value: 2.5
