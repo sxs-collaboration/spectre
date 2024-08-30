@@ -8,7 +8,6 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <limits>
 #include <map>
 #include <optional>
 #include <ostream>
@@ -246,6 +245,11 @@ std::ostream& operator<<(std::ostream& s, const FakeId& id) {
 
 using ExpectedCoefficients = std::map<std::pair<FakeId, FakeId>, double>;
 
+struct IdOrder {
+  FakeId id;
+  size_t order;
+};
+
 ExpectedCoefficients flip_sides(const ExpectedCoefficients& coefs) {
   ExpectedCoefficients flipped{};
   for (const auto& coef : coefs) {
@@ -314,38 +318,37 @@ TimeStepId alternate_id(const TimeStepId& id) {
 
 template <typename T>
 ExpectedCoefficients step_coefficients_impl(
-    const std::vector<FakeId>& local_steps,
-    const std::vector<FakeId>& remote_steps,
-    const adams_lts::AdamsScheme& local_scheme,
-    const adams_lts::AdamsScheme& remote_scheme,
-    const adams_lts::AdamsScheme& small_step_scheme, const int step_start,
-    const T step_end) {
-  const auto history_order = std::numeric_limits<size_t>::max();  // unused
-
+    const std::vector<IdOrder>& local_steps_and_orders,
+    const std::vector<IdOrder>& remote_steps_and_orders,
+    const adams_lts::SchemeType local_scheme,
+    const adams_lts::SchemeType remote_scheme,
+    const adams_lts::SchemeType small_step_scheme, const int local_order_offset,
+    const int remote_order_offset, const int step_start, const T step_end) {
   TimeSteppers::BoundaryHistory<double, double, double> history{};
   TimeSteppers::BoundaryHistory<double, double, double> alt_history{};
 
-  for (const auto& step : local_steps) {
-    const auto id = make_id(step);
-    history.local().insert(id, history_order, 0.0);
-    alt_history.local().insert(alternate_id(id), history_order, 0.0);
+  for (const auto& step : local_steps_and_orders) {
+    const auto id = make_id(step.id);
+    history.local().insert(id, step.order, 0.0);
+    alt_history.local().insert(alternate_id(id), step.order, 0.0);
   }
-  for (const auto& step : remote_steps) {
-    const auto id = make_id(step);
-    history.remote().insert(id, history_order, 0.0);
-    alt_history.remote().insert(alternate_id(id), history_order, 0.0);
+  for (const auto& step : remote_steps_and_orders) {
+    const auto id = make_id(step.id);
+    history.remote().insert(id, step.order, 0.0);
+    alt_history.remote().insert(alternate_id(id), step.order, 0.0);
   }
 
   const auto coefficients = adams_lts::lts_coefficients(
       history.local(), history.remote(), make_time(step_start),
-      make_time(step_end), local_scheme, remote_scheme, small_step_scheme);
+      make_time(step_end), local_scheme, remote_scheme, small_step_scheme,
+      local_order_offset, remote_order_offset);
 
   // Compare with step scaled by -1/2.
   const auto alt_coefficients = adams_lts::lts_coefficients(
       alt_history.local(), alt_history.remote(),
       alternate_time(make_time(step_start)),
       alternate_time(make_time(step_end)), local_scheme, remote_scheme,
-      small_step_scheme);
+      small_step_scheme, local_order_offset, remote_order_offset);
   REQUIRE(coefficients.size() == alt_coefficients.size());
   for (size_t i = 0; i < coefficients.size(); ++i) {
     const auto& coef = coefficients[i];
@@ -372,48 +375,59 @@ ExpectedCoefficients step_coefficients_impl(
 }  // namespace step_coefficients_detail
 
 ExpectedCoefficients dense_coefficients(
-    const std::vector<FakeId>& local_steps,
-    const std::vector<FakeId>& remote_steps,
-    const adams_lts::AdamsScheme& local_scheme,
-    const adams_lts::AdamsScheme& remote_scheme,
-    const adams_lts::AdamsScheme& small_step_scheme, const int step_start,
+    const std::vector<IdOrder>& local_steps_and_orders,
+    const std::vector<IdOrder>& remote_steps_and_orders,
+    const adams_lts::SchemeType local_scheme,
+    const adams_lts::SchemeType remote_scheme,
+    const adams_lts::SchemeType small_step_scheme, const int local_order_offset,
+    const int remote_order_offset, const int step_start,
     const double step_end) {
   auto result = step_coefficients_detail::step_coefficients_impl(
-      local_steps, remote_steps, local_scheme, remote_scheme, small_step_scheme,
+      local_steps_and_orders, remote_steps_and_orders, local_scheme,
+      remote_scheme, small_step_scheme, local_order_offset, remote_order_offset,
       step_start, step_end);
   // NOLINTNEXTLINE(readability-suspicious-call-argument)
   const auto reversed = step_coefficients_detail::step_coefficients_impl(
-      remote_steps, local_steps, remote_scheme, local_scheme, small_step_scheme,
+      remote_steps_and_orders, local_steps_and_orders, remote_scheme,
+      local_scheme, small_step_scheme, remote_order_offset, local_order_offset,
       step_start, step_end);
   CHECK_ITERABLE_APPROX(result, flip_sides(reversed));
   return result;
 }
 
 ExpectedCoefficients step_coefficients(
-    const std::vector<FakeId>& local_steps,
-    const std::vector<FakeId>& remote_steps,
-    const adams_lts::AdamsScheme& local_scheme,
-    const adams_lts::AdamsScheme& remote_scheme,
-    const adams_lts::AdamsScheme& small_step_scheme, const int step_start,
-    const int step_end, const bool also_check_dense = true) {
+    const std::vector<IdOrder>& local_steps_and_orders,
+    const std::vector<IdOrder>& remote_steps_and_orders,
+    const adams_lts::SchemeType local_scheme,
+    const adams_lts::SchemeType remote_scheme,
+    const adams_lts::SchemeType small_step_scheme, const int local_order_offset,
+    const int remote_order_offset, const int step_start, const int step_end,
+    const bool also_check_dense = true) {
   auto result = step_coefficients_detail::step_coefficients_impl(
-      local_steps, remote_steps, local_scheme, remote_scheme, small_step_scheme,
+      local_steps_and_orders, remote_steps_and_orders, local_scheme,
+      remote_scheme, small_step_scheme, local_order_offset, remote_order_offset,
       step_start, step_end);
   // NOLINTNEXTLINE(readability-suspicious-call-argument)
   const auto reversed = step_coefficients_detail::step_coefficients_impl(
-      remote_steps, local_steps, remote_scheme, local_scheme, small_step_scheme,
+      remote_steps_and_orders, local_steps_and_orders, remote_scheme,
+      local_scheme, small_step_scheme, remote_order_offset, local_order_offset,
       step_start, step_end);
   CHECK_ITERABLE_APPROX(result, flip_sides(reversed));
   if (also_check_dense) {
     const auto dense = dense_coefficients(
-        local_steps, remote_steps, local_scheme, remote_scheme,
-        small_step_scheme, step_start, static_cast<double>(step_end));
+        local_steps_and_orders, remote_steps_and_orders, local_scheme,
+        remote_scheme, small_step_scheme, local_order_offset,
+        remote_order_offset, step_start, static_cast<double>(step_end));
     CHECK_ITERABLE_APPROX(result, dense);
   }
   return result;
 }
 
 void test_lts_coefficients() {
+  // using enum adams_lts::SchemeType; // Not supported until gcc 11
+  const auto Explicit = adams_lts::SchemeType::Explicit;
+  const auto Implicit = adams_lts::SchemeType::Implicit;
+
   // AB2 [0 1] step to 2
   const std::array coefs_ab2{-1.0 / 2.0, 3.0 / 2.0};
   // AB2 [0 1] step to 3/2
@@ -429,127 +443,104 @@ void test_lts_coefficients() {
 
   {
     INFO("AB GTS order 1");
-    const adams_lts::AdamsScheme ab1{adams_lts::SchemeType::Explicit, 1};
-    const std::vector<FakeId> steps{{0}};
+    const std::vector<IdOrder> steps{{{0}, 1}};
     // clang-format off
     const ExpectedCoefficients expected{
         {{{0}, {0}}, 1.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, steps, ab1, ab1, ab1, 0, 1), expected);
+        step_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, 0, 0, 0, 1),
+        expected);
     const ExpectedCoefficients expected_dense_12{
         {{{0}, {0}}, 0.5}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps, steps, ab1, ab1, ab1, 0, 0.5),
+        dense_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, 0, 0, 0, 0.5),
         expected_dense_12);
     // clang-format on
   }
 
   {
     INFO("AB GTS order 3");
-    const adams_lts::AdamsScheme ab3{adams_lts::SchemeType::Explicit, 3};
-    const std::vector<FakeId> steps{{0}, {1}, {2}};
+    const std::vector<IdOrder> steps{{{0}, 3}, {{1}, 3}, {{2}, 3}};
     // clang-format off
     const ExpectedCoefficients expected{
         {{{0}, {0}}, coefs_ab3[0]},
         {{{1}, {1}}, coefs_ab3[1]},
         {{{2}, {2}}, coefs_ab3[2]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, steps, ab3, ab3, ab3, 2, 3), expected);
+        step_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, 0, 0, 2, 3),
+        expected);
     const ExpectedCoefficients expected_dense_52{
         {{{0}, {0}}, coefs_ab3_52[0]},
         {{{1}, {1}}, coefs_ab3_52[1]},
         {{{2}, {2}}, coefs_ab3_52[2]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps, steps, ab3, ab3, ab3, 2, 2.5),
+        dense_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, 0, 0, 2, 2.5),
         expected_dense_52);
     // clang-format on
   }
 
   {
     INFO("AM GTS order 3");
-    const adams_lts::AdamsScheme ab2{adams_lts::SchemeType::Explicit, 2};
-    const adams_lts::AdamsScheme am3{adams_lts::SchemeType::Implicit, 3};
-    const std::vector<FakeId> steps{{0}, {1}, {1, 1}};
+    const std::vector<IdOrder> steps{{{0}, 3}, {{1}, 3}, {{1, 1}, 3}};
     // clang-format off
     const ExpectedCoefficients expected{
         {{{0}, {0}}, coefs_am3[0]},
         {{{1}, {1}}, coefs_am3[1]},
         {{{1, 1}, {1, 1}}, coefs_am3[2]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, steps, am3, am3, am3, 1, 2), expected);
+        step_coefficients(
+            steps, steps, Implicit, Implicit, Implicit, 0, 0, 1, 2),
+        expected);
     const ExpectedCoefficients expected_predictor{
         {{{0}, {0}}, coefs_ab2[0]},
         {{{1}, {1}}, coefs_ab2[1]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, steps, ab2, ab2, ab2, 1, 2),
+        step_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, -1, -1, 1, 2),
         expected_predictor);
     const ExpectedCoefficients expected_dense_32_nonmonotonic{
         {{{0}, {0}}, coefs_am3_32[0]},
         {{{1}, {1}}, coefs_am3_32[1]},
         {{{1, 1}, {1, 1}}, coefs_am3_32[2]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps, steps, am3, am3, am3, 1, 1.5),
+        dense_coefficients(
+            steps, steps, Implicit, Implicit, Implicit, 0, 0, 1, 1.5),
         expected_dense_32_nonmonotonic);
     const ExpectedCoefficients expected_dense_32_monotonic{
         {{{0}, {0}}, coefs_ab2_32[0]},
         {{{1}, {1}}, coefs_ab2_32[1]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps, steps, ab2, ab2, ab2, 1, 1.5),
+        dense_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, -1, -1, 1, 1.5),
         expected_dense_32_monotonic);
     // clang-format on
   }
 
   {
     INFO("AB single-side order 3");
-    const adams_lts::AdamsScheme ab1{adams_lts::SchemeType::Explicit, 1};
-    const adams_lts::AdamsScheme ab3{adams_lts::SchemeType::Explicit, 3};
-    const std::vector<FakeId> steps{{0}, {1}, {2}};
-    const std::vector<FakeId> single_step{{0}};
+    const std::vector<IdOrder> steps{{{0}, 3}, {{1}, 3}, {{2}, 3}};
+    const std::vector<IdOrder> single_step{{{0}, 1}};
     // clang-format off
     const ExpectedCoefficients expected{
         {{{0}, {0}}, coefs_ab3[0]},
         {{{1}, {0}}, coefs_ab3[1]},
         {{{2}, {0}}, coefs_ab3[2]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, single_step, ab3, ab1, ab3, 2, 3), expected);
+        step_coefficients(
+            steps, single_step, Explicit, Explicit, Explicit, 0, 0, 2, 3),
+        expected);
     const ExpectedCoefficients expected_dense_52{
         {{{0}, {0}}, coefs_ab3_52[0]},
         {{{1}, {0}}, coefs_ab3_52[1]},
         {{{2}, {0}}, coefs_ab3_52[2]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps, single_step, ab3, ab1, ab3, 2, 2.5),
+        dense_coefficients(
+            steps, single_step, Explicit, Explicit, Explicit, 0, 0, 2, 2.5),
         expected_dense_52);
-    // clang-format on
-  }
-
-  {
-    INFO("AM single-side order 3");
-    const adams_lts::AdamsScheme ab1{adams_lts::SchemeType::Explicit, 1};
-    const adams_lts::AdamsScheme ab2{adams_lts::SchemeType::Explicit, 2};
-    const adams_lts::AdamsScheme am3{adams_lts::SchemeType::Implicit, 3};
-    const std::vector<FakeId> steps{{0}, {1}, {1, 1}};
-    const std::vector<FakeId> single_step{{0}};
-    // clang-format off
-    const ExpectedCoefficients expected{
-        {{{0}, {0}}, coefs_am3[0]},
-        {{{1}, {0}}, coefs_am3[1]},
-        {{{1, 1}, {0}}, coefs_am3[2]}};
-    CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, single_step, am3, ab1, am3, 1, 2),
-        expected);
-    const ExpectedCoefficients expected_predictor{
-        {{{0}, {0}}, coefs_ab2[0]},
-        {{{1}, {0}}, coefs_ab2[1]}};
-    CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, single_step, ab2, ab1, ab2, 1, 2),
-        expected_predictor);
-    // Nonmonotonic requires additional future data.
-    const ExpectedCoefficients expected_dense_32_monotonic{
-        {{{0}, {0}}, coefs_ab2_32[0]},
-        {{{1}, {0}}, coefs_ab2_32[1]}};
-    CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps, single_step, ab2, ab1, ab2, 1, 1.5),
-        expected_dense_32_monotonic);
     // clang-format on
   }
 
@@ -557,9 +548,9 @@ void test_lts_coefficients() {
     INFO("AB 2:1 order 3");
     // -8          -4           0           4
     //             -4    -2     0     2     4
-    const adams_lts::AdamsScheme ab3{adams_lts::SchemeType::Explicit, 3};
-    const std::vector<FakeId> steps_large{{-8}, {-4}, {0}};
-    const std::vector<FakeId> steps_small{{-4}, {-2}, {0}, {2}};
+    const std::vector<IdOrder> steps_large{{{-8}, 3}, {{-4}, 3}, {{0}, 3}};
+    const std::vector<IdOrder> steps_small{
+        {{-4}, 3}, {{-2}, 3}, {{0}, 3}, {{2}, 3}};
     // clang-format off
     const ExpectedCoefficients expected_large{
         {{{0}, {2}}, 115.0 / 16.0},
@@ -571,7 +562,8 @@ void test_lts_coefficients() {
         {{{-8}, {2}}, 23.0 / 16.0},
         {{{-8}, {-2}}, 11.0 / 48.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, ab3, ab3, ab3, 0, 4, false),
+        step_coefficients(steps_large, steps_small, Explicit, Explicit,
+                          Explicit, 0, 0, 0, 4, false),
         expected_large);
     const ExpectedCoefficients expected_small_1{
         {{{0}, {0}}, 23.0 / 6.0},
@@ -580,7 +572,8 @@ void test_lts_coefficients() {
         {{{-4}, {-4}}, 5.0 / 6.0},
         {{{-2}, {-8}}, 1.0 / 3.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab3, ab3, ab3, 0, 2),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 0, 2),
         expected_small_1);
     const ExpectedCoefficients expected_small_2{
         {{{2}, {0}}, 115.0 / 16.0},
@@ -591,7 +584,8 @@ void test_lts_coefficients() {
         {{{2}, {-8}}, 23.0 / 16.0},
         {{{-2}, {-8}}, -5.0 / 48.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab3, ab3, ab3, 2, 4),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 2, 4),
         expected_small_2);
     // clang-format on
   }
@@ -600,16 +594,16 @@ void test_lts_coefficients() {
     INFO("AB LTS -> GTS order 2");
     // -2     0  1
     //    -1  0  1
-    const adams_lts::AdamsScheme ab2{adams_lts::SchemeType::Explicit, 2};
-    const std::vector<FakeId> steps_large{{-2}, {0}};
-    const std::vector<FakeId> steps_small{{-1}, {0}};
+    const std::vector<IdOrder> steps_large{{{-2}, 2}, {{0}, 2}};
+    const std::vector<IdOrder> steps_small{{{-1}, 2}, {{0}, 2}};
     // clang-format off
     const ExpectedCoefficients expected{
         {{{0}, {0}}, 3.0 / 2.0},
         {{{0}, {-1}}, -1.0 / 4.0},
         {{{-2}, {-1}}, -1.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, ab2, ab2, ab2, 0, 1),
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, Explicit, 0, 0, 0, 1),
         expected);
     // clang-format on
   }
@@ -618,9 +612,9 @@ void test_lts_coefficients() {
     INFO("AB 3:1 order 2");
     // -3        0        3
     //       -1  0  1  2  3
-    const adams_lts::AdamsScheme ab2{adams_lts::SchemeType::Explicit, 2};
-    const std::vector<FakeId> steps_large{{-3}, {0}};
-    const std::vector<FakeId> steps_small{{-1}, {0}, {1}, {2}};
+    const std::vector<IdOrder> steps_large{{{-3}, 2}, {{0}, 2}};
+    const std::vector<IdOrder> steps_small{
+        {{-1}, 2}, {{0}, 2}, {{1}, 2}, {{2}, 2}};
     // clang-format off
     const ExpectedCoefficients expected_large{
         {{{-3}, {-1}}, -1.0 / 6.0},
@@ -631,21 +625,24 @@ void test_lts_coefficients() {
         {{{0}, {1}}, 4.0 / 3.0},
         {{{0}, {2}}, 5.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, ab2, ab2, ab2, 0, 3, false),
+        step_coefficients(steps_large, steps_small, Explicit, Explicit,
+                          Explicit, 0, 0, 0, 3, false),
         expected_large);
     const ExpectedCoefficients expected_small_1{
         {{{-1}, {-3}}, -1.0 / 6.0},
         {{{-1}, {0}}, -1.0 / 3.0},
         {{{0}, {0}}, 3.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab2, ab2, ab2, 0, 1),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 0, 1),
         expected_small_1);
     const ExpectedCoefficients expected_small_2{
         {{{0}, {0}}, -1.0 / 2.0},
         {{{1}, {-3}}, -1.0 / 2.0},
         {{{1}, {0}}, 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab2, ab2, ab2, 1, 2),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 1, 2),
         expected_small_2);
     const ExpectedCoefficients expected_small_3{
         {{{1}, {-3}}, 1.0 / 6.0},
@@ -653,7 +650,8 @@ void test_lts_coefficients() {
         {{{2}, {-3}}, -1.0},
         {{{2}, {0}}, 5.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab2, ab2, ab2, 2, 3),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 2, 3),
         expected_small_3);
 
     const ExpectedCoefficients expected_dense_12{
@@ -661,14 +659,16 @@ void test_lts_coefficients() {
         {{{0}, {-1}}, -1.0 / 12.0},
         {{{0}, {0}}, 5.0 / 8.0}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps_large, steps_small, ab2, ab2, ab2, 0, 0.5),
+        dense_coefficients(steps_large, steps_small, Explicit, Explicit,
+                           Explicit, 0, 0, 0, 0.5),
         expected_dense_12);
     const ExpectedCoefficients expected_dense_32{
         {{{0}, {0}}, -1.0 / 8.0},
         {{{-3}, {1}}, -5.0 / 24.0},
         {{{0}, {1}}, 5.0 / 6.0}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps_large, steps_small, ab2, ab2, ab2, 1, 1.5),
+        dense_coefficients(steps_large, steps_small, Explicit, Explicit,
+                           Explicit, 0, 0, 1, 1.5),
         expected_dense_32);
     const ExpectedCoefficients expected_dense_52{
         {{{-3}, {1}}, 1.0 / 24.0},
@@ -676,7 +676,8 @@ void test_lts_coefficients() {
         {{{-3}, {2}}, -5.0 / 12.0},
         {{{0}, {2}}, 25.0 / 24.0}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps_large, steps_small, ab2, ab2, ab2, 2, 2.5),
+        dense_coefficients(steps_large, steps_small, Explicit, Explicit,
+                           Explicit, 0, 0, 2, 2.5),
         expected_dense_52);
     // clang-format on
   }
@@ -685,16 +686,16 @@ void test_lts_coefficients() {
     INFO("AB unaligned order 2");
     // 0  1     3  4     6
     // 0     2  3     5  6
-    const adams_lts::AdamsScheme ab2{adams_lts::SchemeType::Explicit, 2};
-    const std::vector<FakeId> steps_a{{1}, {3}, {4}};
-    const std::vector<FakeId> steps_b{{2}, {3}, {5}};
+    const std::vector<IdOrder> steps_a{{{1}, 2}, {{3}, 2}, {{4}, 2}};
+    const std::vector<IdOrder> steps_b{{{2}, 2}, {{3}, 2}, {{5}, 2}};
     // clang-format off
     const ExpectedCoefficients expected_a_1{
         {{{1}, {2}}, -1.0 / 4.0},
         {{{3}, {2}}, -1.0 / 4.0},
         {{{3}, {3}}, 3.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_a, steps_b, ab2, ab2, ab2, 3, 4),
+        step_coefficients(
+            steps_a, steps_b, Explicit, Explicit, Explicit, 0, 0, 3, 4),
         expected_a_1);
     const ExpectedCoefficients expected_a_2{
         {{{3}, {3}}, -1.0 / 2.0},
@@ -703,7 +704,8 @@ void test_lts_coefficients() {
         {{{4}, {3}}, 11.0 / 4.0},
         {{{4}, {5}}, 11.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_a, steps_b, ab2, ab2, ab2, 4, 6, false),
+        step_coefficients(
+            steps_a, steps_b, Explicit, Explicit, Explicit, 0, 0, 4, 6, false),
         expected_a_2);
     const ExpectedCoefficients expected_b_1{
         {{{2}, {1}}, -1.0 / 4.0},
@@ -712,14 +714,16 @@ void test_lts_coefficients() {
         {{{3}, {3}}, 1.0},
         {{{3}, {4}}, 3.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_b, steps_a, ab2, ab2, ab2, 3, 5, false),
+        step_coefficients(
+            steps_b, steps_a, Explicit, Explicit, Explicit, 0, 0, 3, 5, false),
         expected_b_1);
     const ExpectedCoefficients expected_b_2{
         {{{3}, {4}}, -1.0 / 4.0},
         {{{5}, {3}}, -3.0 / 2.0},
         {{{5}, {4}}, 11.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_b, steps_a, ab2, ab2, ab2, 5, 6),
+        step_coefficients(
+            steps_b, steps_a, Explicit, Explicit, Explicit, 0, 0, 5, 6),
         expected_b_2);
     // clang-format on
   }
@@ -728,11 +732,10 @@ void test_lts_coefficients() {
     INFO("AM 2:1 order 2");
     // 0     2
     // 0  1  2
-    const adams_lts::AdamsScheme ab1{adams_lts::SchemeType::Explicit, 1};
-    const adams_lts::AdamsScheme am2{adams_lts::SchemeType::Implicit, 2};
-    const std::vector<FakeId> steps_large{{0}, {0, 2}};
-    const std::vector<FakeId> steps_small{{0}, {0, 1}, {1}, {1, 1}};
-    const std::vector<FakeId> steps_small_for_nonmonotonic_predictor{{0}};
+    const std::vector<IdOrder> steps_large{{{0}, 2}, {{0, 2}, 2}};
+    const std::vector<IdOrder> steps_small{
+        {{0}, 2}, {{0, 1}, 2}, {{1}, 2}, {{1, 1}, 2}};
+    const std::vector<IdOrder> steps_small_for_nonmonotonic_predictor{{{0}, 2}};
     // clang-format off
     // Monotonic predictor requires two calls, both of which are
     // small-side tests below.
@@ -740,7 +743,7 @@ void test_lts_coefficients() {
         {{{0}, {0}}, 2.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(steps_large, steps_small_for_nonmonotonic_predictor,
-                          ab1, ab1, ab1, 0, 2),
+                          Explicit, Explicit, Explicit, -1, -1, 0, 2),
         expected_large_predictor_nonmonotonic);
     const ExpectedCoefficients expected_large_corrector{
         {{{0}, {0}}, 1.0 / 2.0},
@@ -750,31 +753,36 @@ void test_lts_coefficients() {
         {{{0, 2}, {1}}, 1.0 / 4.0},
         {{{0, 2}, {1, 1}}, 1.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, am2, am2, am2, 0, 2, false),
+        step_coefficients(steps_large, steps_small, Implicit, Implicit,
+                          Implicit, 0, 0, 0, 2, false),
         expected_large_corrector);
     const ExpectedCoefficients expected_small_predictor_1{
         {{{0}, {0}}, 1.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab1, ab1, ab1, 0, 1),
+        step_coefficients(steps_small, steps_large, Explicit, Explicit,
+                          Explicit, -1, -1, 0, 1),
         expected_small_predictor_1);
     const ExpectedCoefficients expected_small_corrector_1{
         {{{0}, {0}}, 1.0 / 2.0},
         {{{0, 1}, {0}}, 1.0 / 4.0},
         {{{0, 1}, {0, 2}}, 1.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, am2, am2, am2, 0, 1),
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, Implicit, 0, 0, 0, 1),
         expected_small_corrector_1);
     const ExpectedCoefficients expected_small_predictor_2{
         {{{1}, {0}}, 1.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, ab1, ab1, ab1, 1, 2),
+        step_coefficients(steps_small, steps_large, Explicit, Explicit,
+                          Explicit, -1, -1, 1, 2),
         expected_small_predictor_2);
     const ExpectedCoefficients expected_small_corrector_2{
         {{{1}, {0}}, 1.0 / 4.0},
         {{{1}, {0, 2}}, 1.0 / 4.0},
         {{{1, 1}, {0, 2}}, 1.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, am2, am2, am2, 1, 2),
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, Implicit, 0, 0, 1, 2),
         expected_small_corrector_2);
     // clang-format on
   }
@@ -783,8 +791,8 @@ void test_lts_coefficients() {
     INFO("AB self-start order 4");
     // 0 1 2 3 -- 0 1
     // 0 1 2 3 -- 0 1
-    const adams_lts::AdamsScheme ab4{adams_lts::SchemeType::Explicit, 4};
-    const std::vector<FakeId> steps{{2, {}, -1}, {3, {}, -1}, {0}, {1}};
+    const std::vector<IdOrder> steps{
+        {{2, {}, -1}, 3}, {{3, {}, -1}, 3}, {{0}, 4}, {{1}, 4}};
     // clang-format off
     const ExpectedCoefficients expected{
         {{{2, {}, -1}, {2, {}, -1}}, 13.0 / 24.0},
@@ -792,7 +800,8 @@ void test_lts_coefficients() {
         {{{0}, {0}}, -1.0 / 24.0},
         {{{1}, {1}}, 13.0 / 24.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps, steps, ab4, ab4, ab4, 1, 2),
+        step_coefficients(
+            steps, steps, Explicit, Explicit, Explicit, 0, 0, 1, 2),
         expected);
     // clang-format on
   }

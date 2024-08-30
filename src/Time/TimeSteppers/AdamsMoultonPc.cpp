@@ -350,13 +350,7 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
            << " at time " << remote_times[i]);
   }
 
-  const auto current_order =
-      local_times.integration_order(local_times.size() - 1);
   if constexpr (Monotonic) {
-    const adams_lts::AdamsScheme predictor_scheme{
-        adams_lts::SchemeType::Explicit, current_order - 1};
-    const adams_lts::AdamsScheme corrector_scheme{
-        adams_lts::SchemeType::Implicit, current_order};
     const auto step_start = local_times.back().step_time();
     const auto step_end = step_start + time_step;
     const auto small_step_start =
@@ -374,11 +368,13 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
       // Predictor
       auto lts_coefficients = adams_lts::lts_coefficients(
           local_times, remote_times, small_step_start, step_end,
-          predictor_scheme, predictor_scheme, predictor_scheme);
+          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit,
+          adams_lts::SchemeType::Explicit, -1, -1);
       if (not is_synchronization_time(remote_times.back())) {
         lts_coefficients += adams_lts::lts_coefficients(
             local_times, remote_times, synchronization_time, small_step_start,
-            predictor_scheme, corrector_scheme, corrector_scheme);
+            adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Implicit,
+            adams_lts::SchemeType::Implicit, -1, 0);
       }
       adams_lts::apply_coefficients(result, lts_coefficients, coupling);
     } else {
@@ -390,37 +386,44 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
                "Have remote substep data, but it isn't aligned with the local "
                "data.");
         const auto lts_coefficients =
-            adams_lts::lts_coefficients(
-                local_times, remote_times, synchronization_time, step_end,
-                corrector_scheme, corrector_scheme, corrector_scheme) -
-            adams_lts::lts_coefficients(
-                local_times, remote_times, synchronization_time, step_start,
-                corrector_scheme, predictor_scheme, corrector_scheme);
+            adams_lts::lts_coefficients(local_times, remote_times,
+                                        synchronization_time, step_end,
+                                        adams_lts::SchemeType::Implicit,
+                                        adams_lts::SchemeType::Implicit,
+                                        adams_lts::SchemeType::Implicit, 0, 0) -
+            adams_lts::lts_coefficients(local_times, remote_times,
+                                        synchronization_time, step_start,
+                                        adams_lts::SchemeType::Implicit,
+                                        adams_lts::SchemeType::Explicit,
+                                        adams_lts::SchemeType::Implicit, 0, -1);
         adams_lts::apply_coefficients(result, lts_coefficients, coupling);
       } else {
         // Unaligned corrector
         ASSERT(step_start == small_step_start,
                "Trying to take unaligned step, but remote side is smaller.");
         const auto lts_coefficients = adams_lts::lts_coefficients(
-            local_times, remote_times, step_start, step_end, corrector_scheme,
-            predictor_scheme, corrector_scheme);
+            local_times, remote_times, step_start, step_end,
+            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Explicit,
+            adams_lts::SchemeType::Implicit, 0, -1);
         adams_lts::apply_coefficients(result, lts_coefficients, coupling);
       }
     }
   } else {
-    adams_lts::AdamsScheme scheme{adams_lts::SchemeType::Implicit,
-                                  current_order};
+    adams_lts::SchemeType scheme = adams_lts::SchemeType::Implicit;
+    int order_offset = 0;
 
     if (local_times.number_of_substeps(local_times.size() - 1) == 1) {
       // Predictor
-      scheme = {adams_lts::SchemeType::Explicit, current_order - 1};
+      scheme = adams_lts::SchemeType::Explicit;
+      order_offset = -1;
       ASSERT(remote_times.back() <= local_times.back(),
              "Unexpected remote values available.");
     }
 
     const auto lts_coefficients = adams_lts::lts_coefficients(
         local_times, remote_times, local_times.back().step_time(),
-        local_times.back().step_time() + time_step, scheme, scheme, scheme);
+        local_times.back().step_time() + time_step, scheme, scheme, scheme,
+        order_offset, order_offset);
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   }
 }
@@ -494,12 +497,6 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
     ASSERT(local_times.number_of_substeps(local_times.size() - 1) == 1,
            "Dense output must be done before predictor evaluation.");
 
-    const auto current_order =
-        local_times.integration_order(local_times.size() - 1);
-    const adams_lts::AdamsScheme predictor_scheme{
-        adams_lts::SchemeType::Explicit, current_order - 1};
-    const adams_lts::AdamsScheme corrector_scheme{
-        adams_lts::SchemeType::Implicit, current_order};
     const auto small_step_start =
         std::max(local_times.back(), remote_times.back()).step_time();
     const auto synchronization_time =
@@ -513,11 +510,13 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
 
     auto lts_coefficients = adams_lts::lts_coefficients(
         local_times, remote_times, small_step_start, ApproximateTime{time},
-        predictor_scheme, predictor_scheme, predictor_scheme);
+        adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit,
+        adams_lts::SchemeType::Explicit, -1, -1);
     if (not is_synchronization_time(remote_times.back())) {
       lts_coefficients += adams_lts::lts_coefficients(
           local_times, remote_times, synchronization_time, small_step_start,
-          predictor_scheme, corrector_scheme, corrector_scheme);
+          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Implicit,
+          adams_lts::SchemeType::Implicit, -1, 0);
     }
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   } else {
@@ -529,19 +528,18 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
     ASSERT(local_times.number_of_substeps(local_times.size() - 1) == 2,
            "Dense output must be done after predictor evaluation.");
 
-    const auto current_order =
-        local_times.integration_order(local_times.size() - 1);
-    const adams_lts::AdamsScheme scheme{adams_lts::SchemeType::Implicit,
-                                        current_order};
     const auto small_step_start =
         std::max(local_times.back(), remote_times.back()).step_time();
     const auto lts_coefficients =
-        adams_lts::lts_coefficients(local_times, remote_times,
-                                    local_times.back().step_time(),
-                                    small_step_start, scheme, scheme, scheme) +
-        adams_lts::lts_coefficients(local_times, remote_times, small_step_start,
-                                    ApproximateTime{time}, scheme, scheme,
-                                    scheme);
+        adams_lts::lts_coefficients(
+            local_times, remote_times, local_times.back().step_time(),
+            small_step_start, adams_lts::SchemeType::Implicit,
+            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Implicit, 0,
+            0) +
+        adams_lts::lts_coefficients(
+            local_times, remote_times, small_step_start, ApproximateTime{time},
+            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Implicit,
+            adams_lts::SchemeType::Implicit, 0, 0);
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   }
 }
