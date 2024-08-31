@@ -114,6 +114,27 @@ TciOnDgGrid<RecoveryScheme>::apply(
   get<hydro::Tags::Pressure<DataVector>>(pre_tci_prims) =
       get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars);
 
+  // require: tilde_d/avg(sqrt{gamma}) >= 0.0 (or some positive user-specified
+  // value)
+  if (min(get(tilde_d)) / average_sqrt_det_spatial_metric <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor or
+      min(get(subcell_tilde_d)) / average_sqrt_det_spatial_metric <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor or
+      min(get(tilde_ye)) / average_sqrt_det_spatial_metric <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor *
+              tci_options.minimum_ye or
+      min(get(subcell_tilde_ye)) / average_sqrt_det_spatial_metric <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor *
+              tci_options.minimum_ye) {
+    return {-1, std::move(rdmp_tci_data)};
+  }
+
+  // require: tilde_tau >= 0.0 (or some positive user-specified value)
+  if (min(get(tilde_tau)) < tci_options.minimum_tilde_tau or
+      min(get(subcell_tilde_tau)) < tci_options.minimum_tilde_tau) {
+    return {-2, std::move(rdmp_tci_data)};
+  }
+
   // Calculate con2prim up front for primitive variable use later.
   // Determine if con2prim is successful
   const bool successful_con2prim_transformation =
@@ -154,29 +175,6 @@ TciOnDgGrid<RecoveryScheme>::apply(
       *dg_prim_vars = std::move(pre_tci_prims);
     }
   };
-
-  // require: tilde_d/avg(sqrt{gamma}) >= 0.0 (or some positive user-specified
-  // value)
-  if (min(get(tilde_d)) / average_sqrt_det_spatial_metric <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor or
-      min(get(subcell_tilde_d)) / average_sqrt_det_spatial_metric <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor or
-      min(get(tilde_ye)) / average_sqrt_det_spatial_metric <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor *
-              tci_options.minimum_ye or
-      min(get(subcell_tilde_ye)) / average_sqrt_det_spatial_metric <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor *
-              tci_options.minimum_ye) {
-    equate_pre_tci_prims();
-    return {-1, std::move(rdmp_tci_data)};
-  }
-
-  // require: tilde_tau >= 0.0 (or some positive user-specified value)
-  if (min(get(tilde_tau)) < tci_options.minimum_tilde_tau or
-      min(get(subcell_tilde_tau)) < tci_options.minimum_tilde_tau) {
-    equate_pre_tci_prims();
-    return {-2, std::move(rdmp_tci_data)};
-  }
 
   // Check if we are in atmosphere (but not negative tildeD), and if so, then
   // we continue using DG on this element.
