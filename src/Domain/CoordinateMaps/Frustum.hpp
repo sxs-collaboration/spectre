@@ -336,7 +336,7 @@ class Frustum {
   bool with_equiangular_map_{false};
   bool is_identity_{false};
   Distribution zeta_distribution_ = Distribution::Linear;
-  double zeta_distribution_value_{std::numeric_limits<double>::signaling_NaN()};
+  std::optional<double> zeta_distribution_value_{std::nullopt};
   double sigma_x_{std::numeric_limits<double>::signaling_NaN()};
   double delta_x_zeta_{std::numeric_limits<double>::signaling_NaN()};
   double delta_x_xi_{std::numeric_limits<double>::signaling_NaN()};
