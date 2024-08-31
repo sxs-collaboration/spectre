@@ -9,7 +9,13 @@
 #include <memory>
 
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Informer/InfoFromBuild.hpp"
+#include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/SegfaultHandler.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 
 class TestRunListener : public Catch::EventListenerBase {
  public:
@@ -28,6 +34,11 @@ extern "C" void CkRegisterMainModule(void) {}
 #pragma GCC diagnostic pop
 
 int main(int argc, char* argv[]) {
+  setup_error_handling();
+  setup_memory_allocation_failure_reporting();
+  Parallel::printf("%s", info_from_build().c_str());
+  enable_floating_point_exceptions();
+  enable_segfault_handler();
   Catch::StringMaker<double>::precision =
       std::numeric_limits<double>::max_digits10;
   Catch::StringMaker<float>::precision =
