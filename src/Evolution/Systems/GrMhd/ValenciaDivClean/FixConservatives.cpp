@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <ostream>
 #include <pup.h>
 
@@ -350,13 +351,21 @@ bool FixConservatives::operator()(
                                          : static_cast<SimdType>(0);
 
     // Equation B.27 of Foucart
+    //
+    // We avoid division by zero in the SIMD case using a mask and then set the
+    // result to zero using the same mask.
+    const auto normaled_s_dot_b_mask =
+        (b_tilde_squared > 1.e-16 * d_tilde and
+         s_tilde_squared > 1.e-16 * square(d_tilde));
     const SimdType normalized_s_dot_b =
         assume_non_zero_magnetic_field
             ? simd::select(
-                  (b_tilde_squared > 1.e-16 * d_tilde and
-                   s_tilde_squared > 1.e-16 * square(d_tilde)),
-                  s_tilde_dot_b_tilde / sqrt(b_tilde_squared * s_tilde_squared),
-                  SimdType{0.})
+                  normaled_s_dot_b_mask,
+                  s_tilde_dot_b_tilde /
+                      simd::select(normaled_s_dot_b_mask,
+                                   sqrt(b_tilde_squared * s_tilde_squared),
+                                   SimdType{1.0}),
+                  SimdType{0.0})
             : static_cast<SimdType>(0);
 
     // Equation B.40 of Foucart
