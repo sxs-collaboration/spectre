@@ -205,12 +205,12 @@ void test_klein_gordon_h5_boundary_communication(
 
   const double start_time = target_time;
   const double target_step_size = 0.01 * value_dist(*gen);
-  const double end_time = std::numeric_limits<double>::quiet_NaN();
 
   // tests start here
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {l_max, extraction_radius,
-       Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
+       Tags::EndTimeFromFile::create_from_options(std::nullopt, filename,
+                                                  false),
        start_time, number_of_radial_points}};
 
   const size_t buffer_size = 5;
@@ -262,8 +262,7 @@ void test_klein_gordon_h5_boundary_communication(
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
 
-  // finally, run `RequestNextBoundaryData`. Since `end_time` is NaN (see
-  // above), `BoundaryComputeAndSendToEvolution` is not called.
+  // finally, run `RequestNextBoundaryData`.
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
 
   // Then we check that the received data are consistent with what we generated
