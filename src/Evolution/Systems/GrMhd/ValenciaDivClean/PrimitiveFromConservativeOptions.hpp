@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -60,7 +61,8 @@ class PrimitiveFromConservativeOptions {
 
   PrimitiveFromConservativeOptions(double cutoff_d_for_inversion,
                                    double density_when_skipping_inversion,
-                                   double kastaun_max_lorentz_factor);
+                                   double kastaun_max_lorentz_factor,
+                                   const Options::Context& context = {});
 
   void pup(PUP::er& p);
 

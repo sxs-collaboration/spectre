@@ -112,7 +112,8 @@ void test_potentially_eos_dependent_primitive_corrections(
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
-  const double kastaun_max_lorentz = std::numeric_limits<double>::max();
+  const double kastaun_max_lorentz =
+      0.5 * sqrt(std::numeric_limits<double>::max());
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
       primitive_from_conservative_options(cutoff_d_for_inversion,
                                           density_when_skipping_inversion,
@@ -228,7 +229,8 @@ void test_primitive_from_conservative_random(
 
   const double cutoff_d_for_inversion = 0.0;
   const double density_when_skipping_inversion = 0.0;
-  const double kastaun_max_lorentz = std::numeric_limits<double>::max();
+  const double kastaun_max_lorentz =
+      0.5 * sqrt(std::numeric_limits<double>::max());
   const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions
       primitive_from_conservative_options(cutoff_d_for_inversion,
                                           density_when_skipping_inversion,
