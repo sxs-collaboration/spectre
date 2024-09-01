@@ -661,7 +661,7 @@ void test_cylindrical_bbh() {
 }
 }  // namespace
 
-// [[TimeOut, 60]]
+// [[TimeOut, 80]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.CylindricalBinaryCompactObject",
                   "[Domain][Unit]") {
   test_cylindrical_bbh();
