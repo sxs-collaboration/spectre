@@ -245,9 +245,11 @@ def inspiral_parameters_spec(
         # Domain geometry
         "ExcisionRadiusA": id_params["ID_rExcA"],
         "ExcisionRadiusB": id_params["ID_rExcB"],
-        # Off-axis excisions are not supported yet
         "XCoordA": id_params["ID_cA"][0],
         "XCoordB": id_params["ID_cB"][0],
+        # COM offset in y and z is the same for both objects
+        "CenterOfMassOffset_y": id_params["ID_cA"][1],
+        "CenterOfMassOffset_z": id_params["ID_cA"][2],
         # Initial functions of time
         "InitialAngularVelocity": id_params["ID_Omega0"],
         "RadialExpansionVelocity": id_params["ID_adot0"],
