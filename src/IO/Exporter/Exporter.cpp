@@ -421,7 +421,7 @@ std::vector<std::vector<double>> interpolate_to_points(
     std::vector<BlockLogicalCoords<Dim>> extra_block_logical_coords{};
     std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
         extra_extrapolation_info{};
-#pragma omp for nowait
+#pragma omp for
     for (size_t s = 0; s < num_target_points; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
         target_point.get(d) = gsl::at(target_points, d)[s];
