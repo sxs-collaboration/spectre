@@ -71,8 +71,8 @@ void test_initial_position_velocity_tag() {
   const double orbital_radius = 7.;
   const double angular_vel = 0.1;
   const auto domain_creator =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          orbital_radius, 0.2, angular_vel);
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(orbital_radius, 0.2, angular_vel);
   const tnsr::I<double, 3> expected_pos{{orbital_radius, 0., 0.}};
   const tnsr::I<double, 3> expected_vel{{0., angular_vel * orbital_radius, 0.}};
   CHECK(Tags::InitialPositionAndVelocity::create_from_options(
@@ -192,8 +192,8 @@ void test_compute_face_coordinates_grid() {
 void test_compute_face_coordinates() {
   static constexpr size_t Dim = 3;
   const auto domain_creator =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          7., 0.2, pow(7, -1.5));
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(7., 0.2, pow(7, -1.5));
   const double initial_time = 0.;
   auto domain = domain_creator->create_domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
@@ -321,8 +321,8 @@ void test_particle_position_velocity_compute() {
   const double orbit_radius = 9.;
   const double angular_velocity = 1. / (sqrt(orbit_radius) * orbit_radius);
   const auto domain_creator =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          orbit_radius, 0.2, angular_velocity);
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(orbit_radius, 0.2, angular_velocity);
   const double initial_time = 0.;
   auto domain = domain_creator->create_domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
@@ -617,15 +617,15 @@ void test_puncture_field() {
 
 void test_check_input_file() {
   const auto bbh_correct =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          7., 0.2, pow(7., -1.5));
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(7., 0.2, pow(7., -1.5));
   const gr::Solutions::KerrSchild kerr_schild_correct(
       1., make_array(0., 0., 0.), make_array(0., 0., 0.));
   CHECK(Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::create_from_options(
       bbh_correct, "ExcisionSphereA", kerr_schild_correct));
   {
     const auto bbh_incorrect = TestHelpers::CurvedScalarWave::Worldtube::
-        worldtube_binary_compact_object(7., 0.2, 1.);
+        worldtube_binary_compact_object<false>(7., 0.2, 1.);
     CHECK_THROWS_WITH(
         (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
              create_from_options(bbh_incorrect, "ExcisionSphereA",

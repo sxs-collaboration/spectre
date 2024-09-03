@@ -14,6 +14,8 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 
 namespace TestHelpers::CurvedScalarWave::Worldtube {
+
+template <bool EvolveOrbit>
 std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
     const double orbit_radius, const double worldtube_radius,
     const double angular_velocity) {
@@ -69,21 +71,25 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "      InitialAngularVelocity: [0.0, 0.0," +
       angular_velocity_stream.str() +
       "]\n"
-      "    TranslationMap:\n"
-      "      InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.], [0.0, 0.0, "
-      "0.0]]\n"
+      "    TranslationMap: None\n"
       "    ShapeMapA:\n"
-      "      LMax: 8\n"
+      "      LMax: 2\n"
       "      InitialValues: Spherical\n"
       "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
       "      TransitionEndsAtCube: false\n"
       "    ShapeMapB:\n"
-      "      LMax: 8\n"
+      "      LMax: 2\n"
       "      InitialValues: Spherical\n"
       "      SizeInitialValues: [0.0, 0.0, 0.0]\n"
       "      TransitionEndsAtCube: false\n";
   return ::TestHelpers::test_option_tag<::domain::OptionTags::DomainCreator<3>,
-                                        Metavariables>(
+                                        Metavariables<EvolveOrbit>>(
       binary_compact_object_options);
 }
+
+template std::unique_ptr<DomainCreator<3>>
+worldtube_binary_compact_object<true>(double, double, double);
+
+template std::unique_ptr<DomainCreator<3>>
+worldtube_binary_compact_object<false>(double, double, double);
 }  // namespace TestHelpers::CurvedScalarWave::Worldtube
