@@ -732,6 +732,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
       "Mass");
   TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::ExpirationTime>("ExpirationTime");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::WorldtubeRadius>("WorldtubeRadius");
+  TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::BlackHoleRadiusParameters>(

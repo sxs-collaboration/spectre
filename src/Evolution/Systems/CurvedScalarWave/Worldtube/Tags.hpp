@@ -356,6 +356,21 @@ struct CurrentIteration : db::SimpleTag {
 };
 
 /*!
+ * \brief The current expiration time of the functions of time which are
+ * controlled by the worldtube singleton.
+ */
+struct ExpirationTime : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief The current worldtube radius held by the singleton.
+ */
+struct WorldtubeRadius : db::SimpleTag {
+  using type = double;
+};
+
+/*!
  * \brief The initial position and velocity of the scalar charge in inertial
  * coordinates.
  */
