@@ -24,10 +24,9 @@ if(NOT USE_CCACHE)
   return()
 endif()
 
-find_program(CCACHE_EXEC ccache)
+find_package(ccache)
 
 if (NOT CCACHE_EXEC)
-  message(STATUS "Could not find ccache")
   return()
 endif()
 
@@ -35,13 +34,19 @@ execute_process(COMMAND realpath ${CCACHE_EXEC}
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 OUTPUT_VARIABLE REAL_CCACHE_EXEC)
 
-# Invoke compiler through ccache
-set(CMAKE_CXX_COMPILER_LAUNCHER
+# Configure ccache with environment variables
+set(_CCACHE_LAUNCHER_ENV_VARS
   ${CCACHE_LAUNCHER_EXTRA_ENV_VARS}
   "CCACHE_SLOPPINESS=pch_defines,time_macros,include_file_mtime,\
-include_file_ctime,locale"
-  ${REAL_CCACHE_EXEC}
-)
+include_file_ctime")
+# The `locale` sloppiness is only available in ccache 3.6 and later
+if (CCACHE_VERSION VERSION_GREATER_EQUAL 3.6)
+  string(APPEND _CCACHE_LAUNCHER_ENV_VARS ",locale")
+endif()
+
+# Invoke compiler through ccache
+set(CMAKE_CXX_COMPILER_LAUNCHER
+  ${_CCACHE_LAUNCHER_ENV_VARS} ${REAL_CCACHE_EXEC})
 set(CMAKE_C_COMPILER_LAUNCHER ${CMAKE_CXX_COMPILER_LAUNCHER})
 message(STATUS "Using ccache for compilation. It is invoked as: "
   "${CMAKE_CXX_COMPILER_LAUNCHER}")
