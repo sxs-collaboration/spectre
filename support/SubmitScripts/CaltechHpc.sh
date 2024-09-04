@@ -15,6 +15,7 @@
 #SBATCH --nodes {{ num_nodes | default(1) }}
 #SBATCH --ntasks-per-node 2
 #SBATCH --cpus-per-task 28
+#SBATCH --constraint=cascadelake
 #SBATCH -p {{ queue | default("expansion") }}
 #SBATCH -t {{ time_limit | default("1-00:00:00") }}
 {% if reservation is defined %}
