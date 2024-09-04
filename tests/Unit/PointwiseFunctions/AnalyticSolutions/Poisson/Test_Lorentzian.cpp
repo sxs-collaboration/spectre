@@ -61,7 +61,7 @@ struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim, DataType> {
 
 template <size_t Dim, typename DataType>
 void test_solution() {
-  double complex_phase = 0.0;
+  double complex_phase = 0.0;  // NOLINT(misc-const-correctness)
   if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
     complex_phase = 0.7;
   }
@@ -77,6 +77,7 @@ void test_solution() {
 
   const Poisson::Solutions::Lorentzian<Dim, DataType> check_solution{
       1.2, complex_phase};
+  // NOLINTNEXTLINE(misc-const-correctness)
   std::string option_string = "PlusConstant: 1.2";
   if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
     option_string += "\nComplexPhase: 0.7";
@@ -93,7 +94,7 @@ template <typename DataType>
 void test_lorentzian() {
   // 1D and 2D solutions are not implemented yet.
   test_solution<3, DataType>();
-  double complex_phase = 0.0;
+  double complex_phase = 0.0;  // NOLINT(misc-const-correctness)
   if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
     complex_phase = M_PI_4;
   }
@@ -153,7 +154,7 @@ void test_lorentzian() {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Lorentzian",
     "[PointwiseFunctions][Unit]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/Poisson"};
   test_lorentzian<DataVector>();
   test_lorentzian<ComplexDataVector>();

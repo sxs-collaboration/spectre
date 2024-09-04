@@ -90,8 +90,8 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
 template <typename DataType>
 void test_product_of_sinusoids() {
   using AffineMap = domain::CoordinateMaps::Affine;
-  double complex_phase = 0.0;
-  std::string complex_options{};
+  double complex_phase = 0.0;     // NOLINT(misc-const-correctness)
+  std::string complex_options{};  // NOLINT(misc-const-correctness)
   if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
     complex_phase = 0.7;
     complex_options = "\nComplexPhase: 0.7";
@@ -159,7 +159,7 @@ void test_product_of_sinusoids() {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Poisson.ProductOfSinusoids",
     "[PointwiseFunctions][Unit]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
+  const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/Poisson"};
   test_product_of_sinusoids<DataVector>();
   test_product_of_sinusoids<ComplexDataVector>();

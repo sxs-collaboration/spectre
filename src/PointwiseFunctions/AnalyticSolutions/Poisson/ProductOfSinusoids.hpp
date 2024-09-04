@@ -33,9 +33,10 @@ struct ProductOfSinusoidsVariables {
       ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::FixedSource<Tags::Field<DataType>>>;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const tnsr::I<DataVector, Dim>& x;
-  const std::array<double, Dim>& wave_numbers;
-  const double complex_phase;
+  std::array<double, Dim> wave_numbers;
+  double complex_phase;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
                   gsl::not_null<Cache*> cache,

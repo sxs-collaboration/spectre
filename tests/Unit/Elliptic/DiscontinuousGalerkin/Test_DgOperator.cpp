@@ -604,7 +604,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("1D rectilinear");
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<1> analytic_solution{{{M_PI}}};
+    const Poisson::Solutions::ProductOfSinusoids<1> analytic_solution{{{M_PI}}};
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -742,7 +742,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian,
                                   ComplexDataVector>;
-    Poisson::Solutions::ProductOfSinusoids<1, ComplexDataVector>
+    const Poisson::Solutions::ProductOfSinusoids<1, ComplexDataVector>
         analytic_solution{{{M_PI}}};
     const domain::creators::Interval domain_creator{
         {{-0.5}},
@@ -777,7 +777,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("2D rectilinear");
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
+    const Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{
+        {{M_PI, M_PI}}};
     {
       INFO("Regression tests");
       const auto dirichlet_bc =
@@ -904,7 +905,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("3D rectilinear");
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<3> analytic_solution{
+    const Poisson::Solutions::ProductOfSinusoids<3> analytic_solution{
         {{M_PI, M_PI, M_PI}}};
     {
       INFO("Regression tests");
@@ -1053,7 +1054,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("2D with h-nonconforming boundary");
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
+    const Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{
+        {{M_PI, M_PI}}};
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -1204,7 +1206,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian,
                                   ComplexDataVector>;
-    Poisson::Solutions::ProductOfSinusoids<2, ComplexDataVector>
+    const Poisson::Solutions::ProductOfSinusoids<2, ComplexDataVector>
         analytic_solution{{{M_PI, M_PI}}};
     const auto dirichlet_bc =
         elliptic::BoundaryConditions::AnalyticSolution<system>{
@@ -1240,7 +1242,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("3D sphere");
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::Lorentzian<3> analytic_solution{0.};
+    const Poisson::Solutions::Lorentzian<3> analytic_solution{0.};
     {
       INFO("Regression tests");
       const domain::creators::Sphere domain_creator{
@@ -1381,8 +1383,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian,
                                   ComplexDataVector>;
-    Poisson::Solutions::Lorentzian<3, ComplexDataVector> analytic_solution{
-        0., M_PI_2};
+    const Poisson::Solutions::Lorentzian<3, ComplexDataVector>
+        analytic_solution{0., M_PI_2};
     const domain::creators::Sphere domain_creator{
         1.,
         3.,

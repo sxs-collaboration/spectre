@@ -31,9 +31,10 @@ struct LorentzianVariables {
       ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::FixedSource<Tags::Field<DataType>>>;
 
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   const tnsr::I<DataVector, Dim>& x;
-  const double constant;
-  const double complex_phase;
+  double constant;
+  double complex_phase;
 
   void operator()(gsl::not_null<Scalar<DataType>*> field,
                   gsl::not_null<Cache*> cache,
