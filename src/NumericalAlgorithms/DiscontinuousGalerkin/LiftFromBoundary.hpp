@@ -19,35 +19,35 @@
 
 namespace dg {
 namespace detail {
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
-    gsl::not_null<double*> volume_dt_vars, size_t num_independent_components,
+    gsl::not_null<ValueType*> volume_dt_vars, size_t num_independent_components,
     const Mesh<Dim>& volume_mesh, size_t dimension,
     const Scalar<DataVector>& volume_det_inv_jacobian, size_t num_boundary_pts,
-    const gsl::span<const double>& boundary_corrections,
+    const gsl::span<const ValueType>& boundary_corrections,
     const DataVector& boundary_lifting_term,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const Scalar<DataVector>& face_det_jacobian);
 
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
-    gsl::not_null<double*> volume_dt_vars, size_t num_independent_components,
+    gsl::not_null<ValueType*> volume_dt_vars, size_t num_independent_components,
     const Mesh<Dim>& volume_mesh, size_t dimension,
     const Scalar<DataVector>& volume_det_inv_jacobian, size_t num_boundary_pts,
-    const gsl::span<const double>& upper_boundary_corrections,
+    const gsl::span<const ValueType>& upper_boundary_corrections,
     const DataVector& upper_boundary_lifting_term,
     const Scalar<DataVector>& upper_magnitude_of_face_normal,
     const Scalar<DataVector>& upper_face_det_jacobian,
-    const gsl::span<const double>& lower_boundary_corrections,
+    const gsl::span<const ValueType>& lower_boundary_corrections,
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian);
 
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
-    gsl::not_null<double*> volume_data, size_t num_independent_components,
+    gsl::not_null<ValueType*> volume_data, size_t num_independent_components,
     const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
-    const gsl::span<const double>& boundary_corrections);
+    const gsl::span<const ValueType>& boundary_corrections);
 }  // namespace detail
 
 /*!

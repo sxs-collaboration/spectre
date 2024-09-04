@@ -10,6 +10,7 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -40,22 +41,26 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
+using namespace std::complex_literals;
+
+template <typename DataType>
 struct ScalarTensor : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 
-template <size_t SpatialDim>
-struct Coords : db::SimpleTag {
-  using type = tnsr::I<DataVector, SpatialDim, Frame::Inertial>;
+template <typename DataType, size_t SpatialDim>
+struct Vector : db::SimpleTag {
+  using type = tnsr::I<DataType, SpatialDim, Frame::Inertial>;
 };
 
 void test_1d_orient_variables() {
   // Note: only test the DataVector implementation in 1d since all the others
   // forward to it. Just want to make sure it's publicly visible.
   const Index<1> extents{4};
-  Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(extents.product());
-  get(get<ScalarTensor>(vars)) = DataVector{{1.0, 2.0, 3.0, 4.0}};
-  get<0>(get<Coords<1>>(vars)) = DataVector{{0.5, 0.6, 0.7, 0.8}};
+  Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 1>>> vars(
+      extents.product());
+  get(get<ScalarTensor<DataVector>>(vars)) = DataVector{{1.0, 2.0, 3.0, 4.0}};
+  get<0>(get<Vector<DataVector, 1>>(vars)) = DataVector{{0.5, 0.6, 0.7, 0.8}};
   const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
   const DataVector vars_datavector(const_cast<double*>(vars.data()),
                                    vars.size());
@@ -81,10 +86,12 @@ void test_1d_orient_variables() {
     const OrientationMap<1> orientation_map(
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
     const auto oriented_vars = orient_variables(vars, extents, orientation_map);
-    Variables<tmpl::list<ScalarTensor, Coords<1>>> expected_vars(
-        extents.product());
-    get(get<ScalarTensor>(expected_vars)) = DataVector{{4.0, 3.0, 2.0, 1.0}};
-    get<0>(get<Coords<1>>(expected_vars)) = DataVector{{0.8, 0.7, 0.6, 0.5}};
+    Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 1>>>
+        expected_vars(extents.product());
+    get(get<ScalarTensor<DataVector>>(expected_vars)) =
+        DataVector{{4.0, 3.0, 2.0, 1.0}};
+    get<0>(get<Vector<DataVector, 1>>(expected_vars)) =
+        DataVector{{0.8, 0.7, 0.6, 0.5}};
     CHECK(oriented_vars == expected_vars);
 
     const std::vector<double> oriented_vars_vector =
@@ -136,27 +143,53 @@ void test_2d_orient_variables_simple_case_by_hand() {
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
   const auto extents = Index<2>{2, 3};
 
-  Variables<tmpl::list<ScalarTensor>> vars(6);
-  get(get<ScalarTensor>(vars)) = DataVector{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0}};
+  Variables<tmpl::list<ScalarTensor<DataVector>>> vars(6);
+  Variables<tmpl::list<ScalarTensor<ComplexDataVector>>> vars_complex(6);
+  get(get<ScalarTensor<DataVector>>(vars)) =
+      DataVector{{1.0, 2.0, 3.0, 4.0, 5.0, 6.0}};
+  get(get<ScalarTensor<ComplexDataVector>>(vars_complex)) = ComplexDataVector{
+      {1.0 + 4.0i, 2.0 + 3.0i, 3.0 + 2.0i, 4.0 + 1.0i, 5.0 + 0.0i, 6.0 - 1.0i}};
   const auto oriented_vars = orient_variables(vars, extents, orientation_map);
+  const auto oriented_vars_complex =
+      orient_variables(vars_complex, extents, orientation_map);
 
-  Variables<tmpl::list<ScalarTensor>> expected_vars(6);
-  get(get<ScalarTensor>(expected_vars)) =
+  Variables<tmpl::list<ScalarTensor<DataVector>>> expected_vars(6);
+  Variables<tmpl::list<ScalarTensor<ComplexDataVector>>> expected_vars_complex(
+      6);
+  get(get<ScalarTensor<DataVector>>(expected_vars)) =
       DataVector{{2.0, 4.0, 6.0, 1.0, 3.0, 5.0}};
+  get(get<ScalarTensor<ComplexDataVector>>(expected_vars_complex)) =
+      ComplexDataVector{{2.0 + 3.0i, 4.0 + 1.0i, 6.0 - 1.0i, 1.0 + 4.0i,
+                         3.0 + 2.0i, 5.0 + 0.0i}};
   CHECK(oriented_vars == expected_vars);
+  CHECK(oriented_vars_complex == expected_vars_complex);
 
   const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
+  const std::vector<std::complex<double>> vars_vector_complex(
+      vars_complex.data(), vars_complex.data() + vars_complex.size());
   const std::vector<double> oriented_vars_vector =
       orient_variables(vars_vector, extents, orientation_map);
+  const std::vector<std::complex<double>> oriented_vars_vector_complex =
+      orient_variables(vars_vector_complex, extents, orientation_map);
   const std::vector<double> expected_vars_vector(
       expected_vars.data(), expected_vars.data() + expected_vars.size());
+  const std::vector<std::complex<double>> expected_vars_vector_complex(
+      expected_vars_complex.data(),
+      expected_vars_complex.data() + expected_vars_complex.size());
   CHECK(oriented_vars_vector == expected_vars_vector);
+  CHECK(oriented_vars_vector_complex == expected_vars_vector_complex);
 
   const DataVector vars_dv(vars.data(), vars.size());
+  const ComplexDataVector vars_cdv(vars_complex.data(), vars_complex.size());
   const DataVector oriented_vars_dv =
       orient_variables(vars_dv, extents, orientation_map);
+  const ComplexDataVector oriented_vars_cdv =
+      orient_variables(vars_cdv, extents, orientation_map);
   const DataVector expected_vars_dv(expected_vars.data(), expected_vars.size());
+  const ComplexDataVector expected_vars_cdv(expected_vars_complex.data(),
+                                            expected_vars_complex.size());
   CHECK(oriented_vars_dv == expected_vars_dv);
+  CHECK(oriented_vars_cdv == expected_vars_cdv);
 }
 
 // Test orient_variables using a general orientation.
@@ -176,23 +209,24 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
           affine);
   const auto logical_coords = logical_coordinates(mesh);
 
-  Variables<tmpl::list<ScalarTensor, Coords<2>>> vars(extents.product());
+  Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 2>>> vars(
+      extents.product());
   // Fill ScalarTensor with x-coordinate values
-  get(get<ScalarTensor>(vars)) = get<0>(map(logical_coords));
-  get<Coords<2>>(vars) = map(logical_coordinates(mesh));
+  get(get<ScalarTensor<DataVector>>(vars)) = get<0>(map(logical_coords));
+  get<Vector<DataVector, 2>>(vars) = map(logical_coordinates(mesh));
   const auto oriented_vars = orient_variables(vars, extents, orientation_map);
 
-  Variables<tmpl::list<ScalarTensor, Coords<2>>> expected_vars(
-      extents.product());
+  Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 2>>>
+      expected_vars(extents.product());
   const std::array<DataVector, 2> oriented_logical_coords = discrete_rotation(
       orientation_map,
       std::array{get<0>(logical_coordinates(orientation_map(mesh))),
                  get<1>(logical_coordinates(orientation_map(mesh)))});
   const auto oriented_mapped_coords = map(
       tnsr::I<DataVector, 2, Frame::ElementLogical>{oriented_logical_coords});
-  get(get<ScalarTensor>(expected_vars)) = oriented_mapped_coords[0];
-  get<0>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[0];
-  get<1>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[1];
+  get(get<ScalarTensor<DataVector>>(expected_vars)) = oriented_mapped_coords[0];
+  get<0>(get<Vector<DataVector, 2>>(expected_vars)) = oriented_mapped_coords[0];
+  get<1>(get<Vector<DataVector, 2>>(expected_vars)) = oriented_mapped_coords[1];
   CHECK(oriented_vars == expected_vars);
 
   const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
@@ -262,14 +296,14 @@ void test_3d_orient_variables_simple_case_by_hand() {
        Direction<3>::upper_xi()}});
   const auto extents = Index<3>{2, 3, 4};
 
-  Variables<tmpl::list<ScalarTensor>> vars(24);
-  get(get<ScalarTensor>(vars)) = DataVector{
+  Variables<tmpl::list<ScalarTensor<DataVector>>> vars(24);
+  get(get<ScalarTensor<DataVector>>(vars)) = DataVector{
       {0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,  10.0, 11.0,
        12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0}};
   const auto oriented_vars = orient_variables(vars, extents, orientation_map);
 
-  Variables<tmpl::list<ScalarTensor>> expected_vars(24);
-  get(get<ScalarTensor>(expected_vars)) = DataVector{
+  Variables<tmpl::list<ScalarTensor<DataVector>>> expected_vars(24);
+  get(get<ScalarTensor<DataVector>>(expected_vars)) = DataVector{
       {0.0, 6.0, 12.0, 18.0, 2.0, 8.0, 14.0, 20.0, 4.0, 10.0, 16.0, 22.0,
        1.0, 7.0, 13.0, 19.0, 3.0, 9.0, 15.0, 21.0, 5.0, 11.0, 17.0, 23.0}};
   CHECK(oriented_vars == expected_vars);
@@ -306,14 +340,15 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
           affine);
   const auto logical_coords = logical_coordinates(mesh);
 
-  Variables<tmpl::list<ScalarTensor, Coords<3>>> vars(extents.product());
-  // Fill ScalarTensor with x-coordinate values
-  get(get<ScalarTensor>(vars)) = get<0>(map(logical_coords));
-  get<Coords<3>>(vars) = map(logical_coords);
+  Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 3>>> vars(
+      extents.product());
+  // Fill ScalarTensor<DataVector> with x-coordinate values
+  get(get<ScalarTensor<DataVector>>(vars)) = get<0>(map(logical_coords));
+  get<Vector<DataVector, 3>>(vars) = map(logical_coords);
   const auto oriented_vars = orient_variables(vars, extents, orientation_map);
 
-  Variables<tmpl::list<ScalarTensor, Coords<3>>> expected_vars(
-      extents.product());
+  Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 3>>>
+      expected_vars(extents.product());
   const std::array<DataVector, 3> oriented_logical_coords = discrete_rotation(
       orientation_map,
       std::array{get<0>(logical_coordinates(orientation_map(mesh))),
@@ -321,10 +356,10 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
                  get<2>(logical_coordinates(orientation_map(mesh)))});
   const auto oriented_mapped_coords = map(
       tnsr::I<DataVector, 3, Frame::ElementLogical>{oriented_logical_coords});
-  get(get<ScalarTensor>(expected_vars)) = oriented_mapped_coords[0];
-  get<0>(get<Coords<3>>(expected_vars)) = oriented_mapped_coords[0];
-  get<1>(get<Coords<3>>(expected_vars)) = oriented_mapped_coords[1];
-  get<2>(get<Coords<3>>(expected_vars)) = oriented_mapped_coords[2];
+  get(get<ScalarTensor<DataVector>>(expected_vars)) = oriented_mapped_coords[0];
+  get<0>(get<Vector<DataVector, 3>>(expected_vars)) = oriented_mapped_coords[0];
+  get<1>(get<Vector<DataVector, 3>>(expected_vars)) = oriented_mapped_coords[1];
+  get<2>(get<Vector<DataVector, 3>>(expected_vars)) = oriented_mapped_coords[2];
   CHECK(oriented_vars == expected_vars);
 
 #ifdef SPECTRE_DEBUG
@@ -399,9 +434,10 @@ void check_vector(const Variables<TagsList>& vars,
 // Test 0D slice of a 1D element
 void test_0d_orient_variables_on_slice() {
   const Index<0> slice_extents{1};
-  Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(slice_extents.product());
-  get(get<ScalarTensor>(vars)) = DataVector{{-0.5}};
-  get<0>(get<Coords<1>>(vars)) = DataVector{{1.0}};
+  Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 1>>> vars(
+      slice_extents.product());
+  get(get<ScalarTensor<DataVector>>(vars)) = DataVector{{-0.5}};
+  get<0>(get<Vector<DataVector, 1>>(vars)) = DataVector{{1.0}};
   const auto slice_mesh = Mesh<0>{};
   for (const auto& side : {Side::Lower, Side::Upper}) {
     CAPTURE(side);
@@ -444,19 +480,20 @@ void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
             domain::CoordinateMaps::DiscreteRotation<1>{slice_orientation_map},
             affine);
 
-    Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(
+    Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 1>>> vars(
         slice_extents.product());
-    // Fill ScalarTensor with x-coordinate values
-    get(get<ScalarTensor>(vars)) = get<0>(map(logical_coordinates(slice_mesh)));
-    get<Coords<1>>(vars) = map(logical_coordinates(slice_mesh));
+    // Fill ScalarTensor<DataVector> with x-coordinate values
+    get(get<ScalarTensor<DataVector>>(vars)) =
+        get<0>(map(logical_coordinates(slice_mesh)));
+    get<Vector<DataVector, 1>>(vars) = map(logical_coordinates(slice_mesh));
     const auto oriented_vars = orient_variables_on_slice(
         vars, slice_extents, sliced_dim, orientation_map);
 
-    Variables<tmpl::list<ScalarTensor, Coords<1>>> expected_vars(
-        slice_extents.product());
-    get(get<ScalarTensor>(expected_vars)) = get<0>(
+    Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 1>>>
+        expected_vars(slice_extents.product());
+    get(get<ScalarTensor<DataVector>>(expected_vars)) = get<0>(
         map_oriented(logical_coordinates(slice_orientation_map(slice_mesh))));
-    get<Coords<1>>(expected_vars) =
+    get<Vector<DataVector, 1>>(expected_vars) =
         map_oriented(logical_coordinates(slice_orientation_map(slice_mesh)));
     CHECK(oriented_vars == expected_vars);
 
@@ -572,19 +609,23 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
     const auto oriented_mapped_coords = map(
         tnsr::I<DataVector, 2, Frame::ElementLogical>{oriented_logical_coords});
 
-    Variables<tmpl::list<ScalarTensor, Coords<2>>> vars(
+    Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 2>>> vars(
         slice_extents.product());
-    // Fill ScalarTensor with x-coordinate values
-    get(get<ScalarTensor>(vars)) = get<0>(map(logical_coordinates(slice_mesh)));
-    get<Coords<2>>(vars) = map(logical_coordinates(slice_mesh));
+    // Fill ScalarTensor<DataVector> with x-coordinate values
+    get(get<ScalarTensor<DataVector>>(vars)) =
+        get<0>(map(logical_coordinates(slice_mesh)));
+    get<Vector<DataVector, 2>>(vars) = map(logical_coordinates(slice_mesh));
     const auto oriented_vars = orient_variables_on_slice(
         vars, slice_extents, sliced_dim, orientation_map);
 
-    Variables<tmpl::list<ScalarTensor, Coords<2>>> expected_vars(
-        slice_extents.product());
-    get(get<ScalarTensor>(expected_vars)) = oriented_mapped_coords[0];
-    get<0>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[0];
-    get<1>(get<Coords<2>>(expected_vars)) = oriented_mapped_coords[1];
+    Variables<tmpl::list<ScalarTensor<DataVector>, Vector<DataVector, 2>>>
+        expected_vars(slice_extents.product());
+    get(get<ScalarTensor<DataVector>>(expected_vars)) =
+        oriented_mapped_coords[0];
+    get<0>(get<Vector<DataVector, 2>>(expected_vars)) =
+        oriented_mapped_coords[0];
+    get<1>(get<Vector<DataVector, 2>>(expected_vars)) =
+        oriented_mapped_coords[1];
     CHECK_VARIABLES_APPROX(oriented_vars, expected_vars);
 
     check_vector(vars, oriented_vars, slice_extents, sliced_dim,

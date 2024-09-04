@@ -30,6 +30,9 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+
+using namespace std::complex_literals;
+
 // [convert_arbitrary_a]
 struct ClassForConversionTest {
   double a_;
@@ -440,6 +443,18 @@ void test_tensor_datavector() {
                          "PyppPyTests", "identity", tnsr_aBcc)));
 }
 
+void test_tensor_complex_datavector() {
+  const size_t npts = 5;
+  const Scalar<ComplexDataVector> scalar{ComplexDataVector(npts, 0.8 + 0.2i)};
+  const tnsr::A<ComplexDataVector, 3> vector{
+      {{ComplexDataVector(npts, 3. + 2.i), ComplexDataVector(npts, 4. + 5.i),
+        ComplexDataVector(npts, 5. + 6.i), ComplexDataVector(npts, 6. + 7.i)}}};
+  CHECK(scalar == (pypp::call<Scalar<ComplexDataVector>>("PyppPyTests",
+                                                         "identity", scalar)));
+  CHECK(vector == (pypp::call<tnsr::A<ComplexDataVector, 3>>(
+                      "PyppPyTests", "identity", vector)));
+}
+
 template <typename T>
 void test_einsum(const T& used_for_size) {
   MAKE_GENERATOR(generator);
@@ -669,6 +684,7 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_complex_datavector();
   test_tensor_double();
   test_tensor_datavector();
+  test_tensor_complex_datavector();
   test_einsum<double>(0.);
   test_einsum<DataVector>(DataVector(5));
   test_function_of_time();

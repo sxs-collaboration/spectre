@@ -38,13 +38,16 @@ using OuterProductResultTensor = Tensor<
  * $B_{i\ldots}$ and $C_{j\ldots}$. Both tensors can have arbitrary indices and
  * symmetries.
  */
-template <typename DataType, typename SymmLhs, typename IndicesLhs,
-          typename SymmRhs, typename IndicesRhs>
-void outer_product(const gsl::not_null<OuterProductResultTensor<
-                       DataType, SymmLhs, IndicesLhs, SymmRhs, IndicesRhs>*>
-                       result,
-                   const Tensor<DataType, SymmLhs, IndicesLhs>& lhs,
-                   const Tensor<DataType, SymmRhs, IndicesRhs>& rhs) {
+template <typename DataTypeLhs, typename SymmLhs, typename IndicesLhs,
+          typename DataTypeRhs, typename SymmRhs, typename IndicesRhs,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+void outer_product(
+    const gsl::not_null<OuterProductResultTensor<
+        DataTypeResult, SymmLhs, IndicesLhs, SymmRhs, IndicesRhs>*>
+        result,
+    const Tensor<DataTypeLhs, SymmLhs, IndicesLhs>& lhs,
+    const Tensor<DataTypeRhs, SymmRhs, IndicesRhs>& rhs) {
   for (auto it_lhs = lhs.begin(); it_lhs != lhs.end(); ++it_lhs) {
     for (auto it_rhs = rhs.begin(); it_rhs != rhs.end(); ++it_rhs) {
       const auto result_indices = concatenate(lhs.get_tensor_index(it_lhs),
@@ -54,13 +57,16 @@ void outer_product(const gsl::not_null<OuterProductResultTensor<
   }
 }
 
-template <typename DataType, typename SymmLhs, typename IndicesLhs,
-          typename SymmRhs, typename IndicesRhs>
-auto outer_product(const Tensor<DataType, SymmLhs, IndicesLhs>& lhs,
-                   const Tensor<DataType, SymmRhs, IndicesRhs>& rhs)
-    -> OuterProductResultTensor<DataType, SymmLhs, IndicesLhs, SymmRhs,
+template <typename DataTypeLhs, typename SymmLhs, typename IndicesLhs,
+          typename DataTypeRhs, typename SymmRhs, typename IndicesRhs,
+          typename DataTypeResult = decltype(blaze::evaluate(DataTypeLhs() *
+                                                             DataTypeRhs()))>
+auto outer_product(const Tensor<DataTypeLhs, SymmLhs, IndicesLhs>& lhs,
+                   const Tensor<DataTypeRhs, SymmRhs, IndicesRhs>& rhs)
+    -> OuterProductResultTensor<DataTypeResult, SymmLhs, IndicesLhs, SymmRhs,
                                 IndicesRhs> {
-  OuterProductResultTensor<DataType, SymmLhs, IndicesLhs, SymmRhs, IndicesRhs>
+  OuterProductResultTensor<DataTypeResult, SymmLhs, IndicesLhs, SymmRhs,
+                           IndicesRhs>
       result{};
   ::outer_product(make_not_null(&result), lhs, rhs);
   return result;

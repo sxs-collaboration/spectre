@@ -16,6 +16,7 @@
 /// Copy a given index of each component of a `Tensor<DataVector>` or
 /// `Variables<DataVector>` into a `Tensor<double>`, single point
 /// `Tensor<DataVector>`, or single-point `Variables<DataVector>`.
+/// Also works with `ComplexDataVector`.
 ///
 /// \note There is no by-value overload extracting to a
 /// `Tensor<DataVector>`.  This is both for the practical reason that
@@ -25,27 +26,28 @@
 ///
 /// \see overwrite_point
 /// @{
-template <typename... Structure>
+template <typename VectorType, typename... Structure>
 void extract_point(
-    const gsl::not_null<Tensor<double, Structure...>*> destination,
-    const Tensor<DataVector, Structure...>& source, const size_t index) {
+    const gsl::not_null<Tensor<typename VectorType::value_type, Structure...>*>
+        destination,
+    const Tensor<VectorType, Structure...>& source, const size_t index) {
   for (size_t i = 0; i < destination->size(); ++i) {
     (*destination)[i] = source[i][index];
   }
 }
 
-template <typename... Structure>
-Tensor<double, Structure...> extract_point(
-    const Tensor<DataVector, Structure...>& tensor, const size_t index) {
-  Tensor<double, Structure...> result;
+template <typename VectorType, typename... Structure>
+Tensor<typename VectorType::value_type, Structure...> extract_point(
+    const Tensor<VectorType, Structure...>& tensor, const size_t index) {
+  Tensor<typename VectorType::value_type, Structure...> result;
   extract_point(make_not_null(&result), tensor, index);
   return result;
 }
 
-template <typename... Structure>
+template <typename VectorType, typename... Structure>
 void extract_point(
-    const gsl::not_null<Tensor<DataVector, Structure...>*> destination,
-    const Tensor<DataVector, Structure...>& source, const size_t index) {
+    const gsl::not_null<Tensor<VectorType, Structure...>*> destination,
+    const Tensor<VectorType, Structure...>& source, const size_t index) {
   ASSERT(destination->begin()->size() == 1,
          "Output tensor components have wrong size: "
          << destination->begin()->size());
@@ -79,19 +81,20 @@ Variables<tmpl::list<Tags...>> extract_point(
 ///
 /// \see extract_point
 /// @{
-template <typename... Structure>
+template <typename VectorType, typename... Structure>
 void overwrite_point(
-    const gsl::not_null<Tensor<DataVector, Structure...>*> destination,
-    const Tensor<double, Structure...>& source, const size_t index) {
+    const gsl::not_null<Tensor<VectorType, Structure...>*> destination,
+    const Tensor<typename VectorType::value_type, Structure...>& source,
+    const size_t index) {
   for (size_t i = 0; i < destination->size(); ++i) {
     (*destination)[i][index] = source[i];
   }
 }
 
-template <typename... Structure>
+template <typename VectorType, typename... Structure>
 void overwrite_point(
-    const gsl::not_null<Tensor<DataVector, Structure...>*> destination,
-    const Tensor<DataVector, Structure...>& source, const size_t index) {
+    const gsl::not_null<Tensor<VectorType, Structure...>*> destination,
+    const Tensor<VectorType, Structure...>& source, const size_t index) {
   ASSERT(source.begin()->size() == 1,
          "Cannot overwrite with " << source.begin()->size() << " points.");
   for (size_t i = 0; i < destination->size(); ++i) {

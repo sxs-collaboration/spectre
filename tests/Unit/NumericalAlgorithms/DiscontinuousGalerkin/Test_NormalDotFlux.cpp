@@ -9,6 +9,7 @@
 #include <numeric>
 #include <string>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -37,30 +38,31 @@ void check_normal_dot_flux(const tnsr::i<DataVector, Dim>& normal,
   }
 }
 
-template <size_t Dim, typename Fr, typename Symm, typename... RemainingIndices>
+template <size_t Dim, typename Fr, typename DataType, typename Symm,
+          typename... RemainingIndices>
 void test_with_random_values(
     const DataVector& used_for_size,
-    Tensor<DataVector, Symm,
+    Tensor<DataType, Symm,
            index_list<SpatialIndex<Dim, UpLo::Up, Fr>, RemainingIndices...>>
     /*meta*/) {
-  using NDotFluxTensor = Tensor<DataVector, tmpl::pop_front<Symm>,
-                                index_list<RemainingIndices...>>;
+  using NDotFluxTensor =
+      Tensor<DataType, tmpl::pop_front<Symm>, index_list<RemainingIndices...>>;
   using FluxTensor =
-      Tensor<DataVector, Symm,
+      Tensor<DataType, Symm,
              index_list<SpatialIndex<Dim, UpLo::Up, Fr>, RemainingIndices...>>;
   pypp::check_with_random_values<1>(
       // This static_cast helps GCC figure out the type of the function
       static_cast<void (*)(const gsl::not_null<NDotFluxTensor*>,
-          const tnsr::i<DataVector, Dim, Fr>&,
+                           const tnsr::i<DataVector, Dim, Fr>&,
                            const FluxTensor&)>(
-          &normal_dot_flux<Dim, Fr, Symm, RemainingIndices...>),
+          &normal_dot_flux<Dim, Fr, DataType, Symm, RemainingIndices...>),
       "NormalDotFlux", {"normal_dot_flux"}, {{{-1.0, 1.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
       static_cast<void (*)(
           const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
               NDotFluxTensor, Dim, UpLo::Lo, Fr>*>,
           const tnsr::i<DataVector, Dim, Fr>&, const NDotFluxTensor&)>(
-          &normal_times_flux<Dim, Fr, tmpl::pop_front<Symm>,
+          &normal_times_flux<Dim, Fr, DataType, tmpl::pop_front<Symm>,
                              index_list<RemainingIndices...>>),
       "NormalDotFlux", {"normal_times_flux"}, {{{-1.0, 1.0}}}, used_for_size);
 }
@@ -316,12 +318,14 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.NormalDotFlux",
     test_with_random_values(dv, tnsr::I<DataVector, 1>{});
     test_with_random_values(dv, tnsr::I<DataVector, 2>{});
     test_with_random_values(dv, tnsr::I<DataVector, 3>{});
+    test_with_random_values(dv, tnsr::I<ComplexDataVector, 3>{});
     test_with_random_values(dv, tnsr::II<DataVector, 1>{});
     test_with_random_values(dv, tnsr::II<DataVector, 2>{});
     test_with_random_values(dv, tnsr::II<DataVector, 3>{});
     test_with_random_values(dv, tnsr::Ij<DataVector, 1>{});
     test_with_random_values(dv, tnsr::Ij<DataVector, 2>{});
     test_with_random_values(dv, tnsr::Ij<DataVector, 3>{});
+    test_with_random_values(dv, tnsr::Ij<ComplexDataVector, 3>{});
     test_with_random_values(dv, tnsr::Ijk<DataVector, 1>{});
     test_with_random_values(dv, tnsr::Ijk<DataVector, 2>{});
     test_with_random_values(dv, tnsr::Ijk<DataVector, 3>{});

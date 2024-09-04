@@ -3,9 +3,11 @@
 
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 
+#include <complex>
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
@@ -19,16 +21,20 @@ namespace dg::detail {
 namespace {
 // We use a separate function in the  xi direction to avoid the expensive
 // SliceIterator
+template <typename ValueType>
 void lift_boundary_terms_gauss_points_impl_xi_dir(
-    const gsl::not_null<double*> volume_dt_vars,
+    const gsl::not_null<ValueType*> volume_dt_vars,
     const size_t num_independent_components, const size_t num_volume_pts,
     const Scalar<DataVector>& volume_det_inv_jacobian,
     const size_t num_boundary_pts,
-    const gsl::span<const double>& boundary_corrections,
+    const gsl::span<const ValueType>& boundary_corrections,
     const DataVector& boundary_lifting_term,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const Scalar<DataVector>& face_det_jacobian) {
-  DataVector volume_dt_vars_view{};
+  using VectorType =
+      tmpl::conditional_t<std::is_same_v<ValueType, std::complex<double>>,
+                          ComplexDataVector, DataVector>;
+  VectorType volume_dt_vars_view{};
   DataVector volume_inv_det_jacobian_view{};
   for (size_t component_index = 0; component_index < num_independent_components;
        ++component_index) {
@@ -58,20 +64,24 @@ void lift_boundary_terms_gauss_points_impl_xi_dir(
 
 // We use a separate function in the  xi direction to avoid the expensive
 // SliceIterator
+template <typename ValueType>
 void lift_boundary_terms_gauss_points_impl_xi_dir(
-    const gsl::not_null<double*> volume_dt_vars,
+    const gsl::not_null<ValueType*> volume_dt_vars,
     const size_t num_independent_components, const size_t num_volume_pts,
     const Scalar<DataVector>& volume_det_inv_jacobian,
     const size_t num_boundary_pts,
-    const gsl::span<const double>& upper_boundary_corrections,
+    const gsl::span<const ValueType>& upper_boundary_corrections,
     const DataVector& upper_boundary_lifting_term,
     const Scalar<DataVector>& upper_magnitude_of_face_normal,
     const Scalar<DataVector>& upper_face_det_jacobian,
-    const gsl::span<const double>& lower_boundary_corrections,
+    const gsl::span<const ValueType>& lower_boundary_corrections,
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian) {
-  DataVector volume_dt_vars_view{};
+  using VectorType =
+      tmpl::conditional_t<std::is_same_v<ValueType, std::complex<double>>,
+                          ComplexDataVector, DataVector>;
+  VectorType volume_dt_vars_view{};
   DataVector volume_inv_det_jacobian_view{};
   for (size_t component_index = 0; component_index < num_independent_components;
        ++component_index) {
@@ -106,13 +116,13 @@ void lift_boundary_terms_gauss_points_impl_xi_dir(
 }
 }  // namespace
 
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
-    const gsl::not_null<double*> volume_dt_vars,
+    const gsl::not_null<ValueType*> volume_dt_vars,
     const size_t num_independent_components, const Mesh<Dim>& volume_mesh,
     const size_t dimension, const Scalar<DataVector>& volume_det_inv_jacobian,
     const size_t num_boundary_pts,
-    const gsl::span<const double>& boundary_corrections,
+    const gsl::span<const ValueType>& boundary_corrections,
     const DataVector& boundary_lifting_term,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const Scalar<DataVector>& face_det_jacobian) {
@@ -154,17 +164,17 @@ void lift_boundary_terms_gauss_points_impl(
   }
 }
 
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
-    const gsl::not_null<double*> volume_dt_vars,
+    const gsl::not_null<ValueType*> volume_dt_vars,
     const size_t num_independent_components, const Mesh<Dim>& volume_mesh,
     const size_t dimension, const Scalar<DataVector>& volume_det_inv_jacobian,
     const size_t num_boundary_pts,
-    const gsl::span<const double>& upper_boundary_corrections,
+    const gsl::span<const ValueType>& upper_boundary_corrections,
     const DataVector& upper_boundary_lifting_term,
     const Scalar<DataVector>& upper_magnitude_of_face_normal,
     const Scalar<DataVector>& upper_face_det_jacobian,
-    const gsl::span<const double>& lower_boundary_corrections,
+    const gsl::span<const ValueType>& lower_boundary_corrections,
     const DataVector& lower_boundary_lifting_term,
     const Scalar<DataVector>& lower_magnitude_of_face_normal,
     const Scalar<DataVector>& lower_face_det_jacobian) {
@@ -213,12 +223,12 @@ void lift_boundary_terms_gauss_points_impl(
   }
 }
 
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void lift_boundary_terms_gauss_points_impl(
-    const gsl::not_null<double*> volume_data,
+    const gsl::not_null<ValueType*> volume_data,
     const size_t num_independent_components, const Mesh<Dim>& volume_mesh,
     const Direction<Dim>& direction,
-    const gsl::span<const double>& boundary_corrections) {
+    const gsl::span<const ValueType>& boundary_corrections) {
   const size_t dimension = direction.dimension();
   const auto& lower_and_upper_lifting_matrix =
       Spectral::boundary_interpolation_matrices(
@@ -250,38 +260,39 @@ void lift_boundary_terms_gauss_points_impl(
   }
 }
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(r, data)                                                 \
   template void lift_boundary_terms_gauss_points_impl(                       \
-      gsl::not_null<double*> volume_dt_vars,                                 \
+      gsl::not_null<DTYPE(data)*> volume_dt_vars,                            \
       size_t num_independent_components, const Mesh<DIM(data)>& volume_mesh, \
       size_t dimension, const Scalar<DataVector>& volume_det_inv_jacobian,   \
       size_t num_boundary_pts,                                               \
-      const gsl::span<const double>& boundary_corrections,                   \
+      const gsl::span<const DTYPE(data)>& boundary_corrections,              \
       const DataVector& boundary_lifting_term,                               \
       const Scalar<DataVector>& magnitude_of_face_normal,                    \
       const Scalar<DataVector>& face_det_jacobian);                          \
   template void lift_boundary_terms_gauss_points_impl(                       \
-      gsl::not_null<double*> volume_dt_vars,                                 \
+      gsl::not_null<DTYPE(data)*> volume_dt_vars,                            \
       size_t num_independent_components, const Mesh<DIM(data)>& volume_mesh, \
       size_t dimension, const Scalar<DataVector>& volume_det_inv_jacobian,   \
       size_t num_boundary_pts,                                               \
-      const gsl::span<const double>& upper_boundary_corrections,             \
+      const gsl::span<const DTYPE(data)>& upper_boundary_corrections,        \
       const DataVector& upper_boundary_lifting_term,                         \
       const Scalar<DataVector>& upper_magnitude_of_face_normal,              \
       const Scalar<DataVector>& upper_face_det_jacobian,                     \
-      const gsl::span<const double>& lower_boundary_corrections,             \
+      const gsl::span<const DTYPE(data)>& lower_boundary_corrections,        \
       const DataVector& lower_boundary_lifting_term,                         \
       const Scalar<DataVector>& lower_magnitude_of_face_normal,              \
       const Scalar<DataVector>& lower_face_det_jacobian);                    \
   template void lift_boundary_terms_gauss_points_impl(                       \
-      gsl::not_null<double*> volume_data, size_t num_independent_components, \
-      const Mesh<DIM(data)>& volume_mesh,                                    \
+      gsl::not_null<DTYPE(data)*> volume_data,                               \
+      size_t num_independent_components, const Mesh<DIM(data)>& volume_mesh, \
       const Direction<DIM(data)>& direction,                                 \
-      const gsl::span<const double>& boundary_corrections);
+      const gsl::span<const DTYPE(data)>& boundary_corrections);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, std::complex<double>), (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM

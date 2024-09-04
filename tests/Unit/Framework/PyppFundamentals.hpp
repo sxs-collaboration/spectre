@@ -527,10 +527,25 @@ T tensor_conversion_impl(PyObject* p) {
   }
   // clang-tidy: reinterpret_cast
   const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
-  if (PyArray_TYPE(npy_array) != NPY_DOUBLE) {
-    throw std::runtime_error{
-        "Cannot convert array of non-double type to Tensor."};
-  } else if (PyArray_NDIM(npy_array) != static_cast<long>(T::rank())) {
+  using ValueType = tt::get_complex_or_fundamental_type_t<typename T::type>;
+  static_assert(std::is_same_v<ValueType, double> or
+                    std::is_same_v<ValueType, std::complex<double>>,
+                "Only Tensors of type 'double' and 'std::complex<double>' are "
+                "supported.");
+  if constexpr (std::is_same_v<ValueType, double>) {
+    if (PyArray_TYPE(npy_array) != NPY_DOUBLE) {
+      throw std::runtime_error{
+          "Cannot convert Numpy array to Tensor of type 'double'."
+          " Check the 'dtype' of the Numpy array."};
+    }
+  } else if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+    if (PyArray_TYPE(npy_array) != NPY_CDOUBLE) {
+      throw std::runtime_error{
+          "Cannot convert Numpy array to Tensor of type 'std::complex<double>'."
+          " Check the 'dtype' of the Numpy array."};
+    }
+  }
+  if (PyArray_NDIM(npy_array) != static_cast<long>(T::rank())) {
     throw std::runtime_error{"Mismatch between ndim of numpy ndarray (" +
                              std::to_string(PyArray_NDIM(npy_array)) +
                              ") and rank of Tensor (" +
@@ -660,8 +675,7 @@ struct FromPyObject<Scalar<std::complex<double>>> {
       return Scalar<std::complex<double>>{std::complex<double>(
           PyComplex_RealAsDouble(p), PyComplex_ImagAsDouble(p))};
     } else {
-      return Scalar<std::complex<double>>{std::complex<double>{
-          get(tensor_conversion_impl<Scalar<double>>(p)), 0.0}};
+      return tensor_conversion_impl<Scalar<std::complex<double>>>(p);
     }
   }
 };

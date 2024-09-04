@@ -66,25 +66,25 @@ raise_or_lower_first_index(
  * corresponding tensor \f$ S_{a} \f$ is calculated with respect to the metric
  * \f$g_{ab}\f$.
  */
-template <typename DataType, typename Index0>
+template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
 void raise_or_lower_index(
-    gsl::not_null<
-        Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>*>
+    gsl::not_null<Tensor<DataTypeTensor, Symmetry<1>,
+                         index_list<change_index_up_lo<Index0>>>*>
         result,
-    const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
-    const Tensor<DataType, Symmetry<1, 1>,
+    const Tensor<DataTypeTensor, Symmetry<1>, index_list<Index0>>& tensor,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric);
 
-template <typename DataType, typename Index0>
-Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
+template <typename DataTypeTensor, typename DataTypeMetric, typename Index0>
+Tensor<DataTypeTensor, Symmetry<1>, index_list<change_index_up_lo<Index0>>>
 raise_or_lower_index(
-    const Tensor<DataType, Symmetry<1>, index_list<Index0>>& tensor,
-    const Tensor<DataType, Symmetry<1, 1>,
+    const Tensor<DataTypeTensor, Symmetry<1>, index_list<Index0>>& tensor,
+    const Tensor<DataTypeMetric, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index0>,
                             change_index_up_lo<Index0>>>& metric) {
-  auto result = make_with_value<
-      Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>>>(
+  auto result = make_with_value<Tensor<DataTypeTensor, Symmetry<1>,
+                                       index_list<change_index_up_lo<Index0>>>>(
       metric, 0.);
   raise_or_lower_index(make_not_null(&result), tensor, metric);
   return result;

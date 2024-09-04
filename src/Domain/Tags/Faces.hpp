@@ -15,10 +15,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-class DataVector;
-/// \endcond
-
 namespace domain {
 namespace Tags {
 
@@ -59,6 +55,7 @@ struct Subitems<
              tt::is_a_v<Variables, typename FacesTag::tag::type>>> {
   static constexpr size_t Dim = FacesTag::volume_dim;
   using VariablesTag = typename FacesTag::tag;
+  using VectorType = typename VariablesTag::type::vector_type;
 
   template <typename LocalTag>
   using faces_tag = domain::Tags::Faces<Dim, LocalTag>;
@@ -105,7 +102,7 @@ struct Subitems<
         // allow only allow const access to the contained DataVectors,
         // so no modification through the pointer cast here is
         // possible.
-        sub_var_it->set_data_ref(const_cast<DataVector*>(&*vars_it));  // NOLINT
+        sub_var_it->set_data_ref(const_cast<VectorType*>(&*vars_it));  // NOLINT
       }
     }
   }

@@ -7,8 +7,10 @@
 #include <array>
 #include <numeric>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
@@ -339,9 +341,9 @@ Mesh<VolumeDim - 1> orient_mesh_on_slice(
   }
 }
 
-template <size_t VolumeDim>
+template <typename VectorType, size_t VolumeDim>
 void orient_variables(
-    const gsl::not_null<DataVector*> result, const DataVector& variables,
+    const gsl::not_null<VectorType*> result, const VectorType& variables,
     const Index<VolumeDim>& extents,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) {
   ASSERT(result->size() == variables.size(),
@@ -366,10 +368,10 @@ void orient_variables(
                         number_of_grid_points, oriented_extents);
 }
 
-template <size_t VolumeDim>
+template <typename VectorType, size_t VolumeDim>
 void orient_variables_on_slice(
-    const gsl::not_null<DataVector*> result,
-    const DataVector& variables_on_slice,
+    const gsl::not_null<VectorType*> result,
+    const VectorType& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) {
   ASSERT(result->size() == variables_on_slice.size(),
@@ -397,89 +399,64 @@ void orient_variables_on_slice(
       number_of_grid_points, oriented_offset);
 }
 
-template <size_t VolumeDim>
-std::vector<double> orient_variables(
-    const std::vector<double>& variables, const Index<VolumeDim>& extents,
+template <typename VectorType, size_t VolumeDim>
+VectorType orient_variables(
+    const VectorType& variables, const Index<VolumeDim>& extents,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) {
-  std::vector<double> oriented_variables(variables.size());
-  DataVector result(oriented_variables.data(), oriented_variables.size());
-  orient_variables(
-      make_not_null(&result),
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-      DataVector(const_cast<double*>(variables.data()), variables.size()),
-      extents, orientation_of_neighbor);
-  return oriented_variables;
-}
-
-template <size_t VolumeDim>
-DataVector orient_variables(
-    const DataVector& variables, const Index<VolumeDim>& extents,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
-  DataVector oriented_variables{variables.size()};
+  VectorType oriented_variables(variables.size());
   orient_variables(make_not_null(&oriented_variables), variables, extents,
                    orientation_of_neighbor);
   return oriented_variables;
 }
 
-template <size_t VolumeDim>
-std::vector<double> orient_variables_on_slice(
-    const std::vector<double>& variables_on_slice,
+template <typename VectorType, size_t VolumeDim>
+VectorType orient_variables_on_slice(
+    const VectorType& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) {
-  std::vector<double> oriented_variables(variables_on_slice.size());
-  DataVector result(oriented_variables.data(), oriented_variables.size());
-  orient_variables_on_slice(
-      make_not_null(&result),
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-      DataVector(const_cast<double*>(variables_on_slice.data()),
-                 variables_on_slice.size()),
-      slice_extents, sliced_dim, orientation_of_neighbor);
-  return oriented_variables;
-}
-
-template <size_t VolumeDim>
-DataVector orient_variables_on_slice(
-    const DataVector& variables_on_slice,
-    const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
-    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
-  DataVector oriented_variables{variables_on_slice.size()};
+  VectorType oriented_variables(variables_on_slice.size());
   orient_variables_on_slice(make_not_null(&oriented_variables),
                             variables_on_slice, slice_extents, sliced_dim,
                             orientation_of_neighbor);
   return oriented_variables;
 }
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                               \
-  template Mesh<DIM(data) - 1> orient_mesh_on_slice(                         \
-      const Mesh<DIM(data) - 1>& mesh_on_slice, const size_t sliced_dim,     \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
-  template void orient_variables(                                            \
-      const gsl::not_null<DataVector*> result, const DataVector& variables,  \
-      const Index<DIM(data)>& extents,                                       \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
-  template void orient_variables_on_slice(                                   \
-      const gsl::not_null<DataVector*> result,                               \
-      const DataVector& variables_on_slice,                                  \
-      const Index<DIM(data) - 1>& slice_extents, size_t sliced_dim,          \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
-  template std::vector<double> orient_variables<DIM(data)>(                  \
-      const std::vector<double>& variables, const Index<DIM(data)>& extents, \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
-  template DataVector orient_variables<DIM(data)>(                           \
-      const DataVector& variables, const Index<DIM(data)>& extents,          \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
-  template std::vector<double> orient_variables_on_slice<DIM(data)>(         \
-      const std::vector<double>& variables,                                  \
-      const Index<DIM(data) - 1>& extents, size_t sliced_dim,                \
-      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
-  template DataVector orient_variables_on_slice<DIM(data)>(                  \
-      const DataVector& variables, const Index<DIM(data) - 1>& extents,      \
-      size_t sliced_dim,                                                     \
+template Mesh<0> orient_mesh_on_slice(
+    const Mesh<0>& mesh_on_slice, const size_t sliced_dim,
+    const OrientationMap<1>& orientation_of_neighbor);
+template Mesh<1> orient_mesh_on_slice(
+    const Mesh<1>& mesh_on_slice, const size_t sliced_dim,
+    const OrientationMap<2>& orientation_of_neighbor);
+template Mesh<2> orient_mesh_on_slice(
+    const Mesh<2>& mesh_on_slice, const size_t sliced_dim,
+    const OrientationMap<3>& orientation_of_neighbor);
+
+#define INSTANTIATION(r, data)                                                 \
+  template void orient_variables(                                              \
+      const gsl::not_null<DTYPE(data)*> result, const DTYPE(data) & variables, \
+      const Index<DIM(data)>& extents,                                         \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);               \
+  template void orient_variables_on_slice(                                     \
+      const gsl::not_null<DTYPE(data)*> result,                                \
+      const DTYPE(data) & variables_on_slice,                                  \
+      const Index<DIM(data) - 1>& slice_extents, size_t sliced_dim,            \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);               \
+  template DTYPE(data) orient_variables(                                       \
+      const DTYPE(data) & variables, const Index<DIM(data)>& extents,          \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);               \
+  template DTYPE(data) orient_variables_on_slice(                              \
+      const DTYPE(data) & variables, const Index<DIM(data) - 1>& extents,      \
+      size_t sliced_dim,                                                       \
       const OrientationMap<DIM(data)>& orientation_of_neighbor);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (DataVector, ComplexDataVector, ModalVector,
+                         std::vector<double>,
+                         std::vector<std::complex<double>>),
+                        (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM

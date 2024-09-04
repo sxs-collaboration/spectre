@@ -82,6 +82,8 @@ void project_contiguous_data_to_boundary(
   constexpr const size_t number_of_independent_components =
       Variables<VolumeVarsTagsList>::number_of_independent_components;
   using first_volume_tag = tmpl::front<VolumeVarsTagsList>;
+  using VectorType = typename Variables<FaceVarsTagsList>::vector_type;
+  using ValueType = typename VectorType::value_type;
   const size_t sliced_dim = direction.dimension();
   if (volume_mesh.quadrature(sliced_dim) == Spectral::Quadrature::Gauss) {
     const Matrix identity{};
@@ -98,16 +100,17 @@ void project_contiguous_data_to_boundary(
     // number of grid points on the face. Note that this is _not_ equal to the
     // size of face_fields->size() since face_fields is a superset of the
     // volume variables.
-    DataVector face_view{
+    VectorType face_view{
         first_face_field[0].data(),
         first_face_field[0].size() * number_of_independent_components};
 
-    apply_matrices(make_not_null(&face_view), interpolation_matrices,
-                   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-                   DataVector{const_cast<double*>(first_volume_field[0].data()),
-                              first_volume_field[0].size() *
-                                  number_of_independent_components},
-                   volume_mesh.extents());
+    apply_matrices(
+        make_not_null(&face_view), interpolation_matrices,
+        VectorType{
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+            const_cast<ValueType*>(first_volume_field[0].data()),
+            first_volume_field[0].size() * number_of_independent_components},
+        volume_mesh.extents());
   } else {
     const size_t fixed_index = direction.side() == Side::Upper
                                    ? volume_mesh.extents(sliced_dim) - 1
@@ -117,10 +120,11 @@ void project_contiguous_data_to_boundary(
         volume_mesh.extents().slice_away(sliced_dim).product();
     const size_t volume_grid_points = volume_mesh.number_of_grid_points();
 
-    const double* vars_data = volume_fields.data();
+    const ValueType* vars_data = volume_fields.data();
     // Since the face fields are a superset of the volume tags we need to find
     // the first volume tag on the face and get the pointer for that.
-    double* interface_vars_data = get<first_volume_tag>(*face_fields)[0].data();
+    ValueType* interface_vars_data =
+        get<first_volume_tag>(*face_fields)[0].data();
 
     // The reason we can't use data_on_slice is because the volume and face tags
     // are not the same, but data_on_slice assumes they are. In general, this
