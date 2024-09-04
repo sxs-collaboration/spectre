@@ -41,7 +41,8 @@ namespace grmhd::AnalyticData {
  * where
  * \f{align}
  *  r & = r_\mathrm{min}\frac{1-\xi}{2} + r_\mathrm{max}\frac{1+\xi}{2}, \\
- *  \theta & = \pi/2 - (\pi/2 - \theta_\mathrm{min}) \eta, \\
+ *  \eta_\mathrm{new} & = a_\mathrm{comp} \eta^3 + (1-a_\mathrm{comp}) \eta, \\
+ *  \theta & = \pi/2 - (\pi/2 - \theta_\mathrm{min}) \eta_\mathrm{new}, \\
  *  \phi   & = f_\mathrm{torus} \pi \zeta.
  * \f}
  *
@@ -50,6 +51,8 @@ namespace grmhd::AnalyticData {
  *    from +z axis) of torus, which is equal to the half of the apex angle of
  *    the removed polar cones.
  *  - $f_\mathrm{torus}\in(0, 1)$ is azimuthal fraction that the torus covers.
+ *  - $a_\mathrm{comp}\in[0,1)$ sets the level of equatorial compression
+ *    for theta, with zero being none.
  *
  */
 class SphericalTorus {
@@ -82,17 +85,27 @@ class SphericalTorus {
     static type upper_bound() { return 1.0; }
   };
 
+  struct CompressionLevel {
+    using type = double;
+    static constexpr Options::String help =
+        "Level of Equatorial Compression for the polar angle.";
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
+  };
+
   static constexpr Options::String help =
       "Torus made by removing polar cones from a spherical shell";
 
-  using options = tmpl::list<RadialRange, MinPolarAngle, FractionOfTorus>;
+  using options =
+      tmpl::list<RadialRange, MinPolarAngle, FractionOfTorus, CompressionLevel>;
 
   SphericalTorus(const std::array<double, 2>& radial_range,
-                 const double min_polar_angle, const double fraction_of_torus,
+                 double min_polar_angle, double fraction_of_torus,
+                 double compression_level,
                  const Options::Context& context = {});
 
   SphericalTorus(double r_min, double r_max, double min_polar_angle,
-                 double fraction_of_torus = 1.0,
+                 double fraction_of_torus = 1.0, double compression_level = 0.0,
                  const Options::Context& context = {});
 
   SphericalTorus() = default;
@@ -133,6 +146,11 @@ class SphericalTorus {
   template <typename T>
   T radius_inverse(const T& r) const;
 
+  template <typename T>
+  T cubic_compression(const T& x) const;
+
+  double cubic_inversion(double x) const;
+
   friend bool operator==(const SphericalTorus& lhs, const SphericalTorus& rhs);
 
   double r_min_ = std::numeric_limits<double>::signaling_NaN();
@@ -140,6 +158,7 @@ class SphericalTorus {
   double pi_over_2_minus_theta_min_ =
       std::numeric_limits<double>::signaling_NaN();
   double fraction_of_torus_ = std::numeric_limits<double>::signaling_NaN();
+  double compression_level_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 bool operator!=(const SphericalTorus& lhs, const SphericalTorus& rhs);
