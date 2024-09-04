@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -153,8 +154,15 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
   } else if (zeta_distribution_ == Distribution::Linear) {
     cap_zeta = zeta;
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
-    Interval log_mapping{
-        -1.0, 1.0, -1.0, 1.0, zeta_distribution_, zeta_distribution_value_};
+    ASSERT(
+        zeta_distribution_value_.has_value(),
+        "Cannot us a logarithmic map without setting zeta_distribution_value_");
+    const Interval log_mapping{-1.0,
+                               1.0,
+                               -1.0,
+                               1.0,
+                               zeta_distribution_,
+                               zeta_distribution_value_.value()};
     cap_zeta = log_mapping(std::array<T, 1>{{zeta}})[0];
   } else {
     ERROR(
@@ -236,8 +244,15 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     logical_coords[2] = (-w_minus_ + w_plus_ * logical_coords[2]) /
                         (w_plus_ - w_minus_ * logical_coords[2]);
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
-    Interval log_mapping{
-        -1.0, 1.0, -1.0, 1.0, zeta_distribution_, zeta_distribution_value_};
+    ASSERT(
+        zeta_distribution_value_.has_value(),
+        "Cannot us a logarithmic map without setting zeta_distribution_value_");
+    const Interval log_mapping{-1.0,
+                               1.0,
+                               -1.0,
+                               1.0,
+                               zeta_distribution_,
+                               zeta_distribution_value_.value()};
     logical_coords[2] =
         log_mapping.inverse(std::array<double, 1>{{logical_coords[2]}})
             .value()[0];
@@ -338,8 +353,15 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
     cap_zeta = zeta;
     cap_zeta_deriv = make_with_value<ReturnType>(zeta, 1.0);
   } else if (zeta_distribution_ == Distribution::Logarithmic) {
-    Interval log_mapping{
-        -1.0, 1.0, -1.0, 1.0, zeta_distribution_, zeta_distribution_value_};
+    ASSERT(
+        zeta_distribution_value_.has_value(),
+        "Cannot us a logarithmic map without setting zeta_distribution_value_");
+    const Interval log_mapping{-1.0,
+                               1.0,
+                               -1.0,
+                               1.0,
+                               zeta_distribution_,
+                               zeta_distribution_value_.value()};
     cap_zeta = log_mapping(std::array<T, 1>{{zeta}})[0];
     cap_zeta_deriv = get<0, 0>(log_mapping.jacobian(std::array<T, 1>{{zeta}}));
   } else {
@@ -527,7 +549,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
 }
 
 void Frustum::pup(PUP::er& p) {
-  size_t version = 3;
+  size_t version = 4;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -578,8 +600,16 @@ void Frustum::pup(PUP::er& p) {
     // data from an old version.
     inner_radius_ = std::numeric_limits<double>::signaling_NaN();
   }
-  if (version >= 3) {
+  if (version >= 4) {
     p | zeta_distribution_value_;
+  } else if (version == 3) {
+    double zeta_file = zeta_distribution_value_.value_or(0.0);
+    p | zeta_file;
+    if (zeta_distribution_ == CoordinateMaps::Distribution::Logarithmic) {
+      zeta_distribution_value_ = zeta_file;
+    } else {
+      zeta_distribution_value_ = std::nullopt;
+    }
   } else {
     if (zeta_distribution_ == CoordinateMaps::Distribution::Logarithmic) {
       zeta_distribution_value_ =
@@ -616,11 +646,7 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) {
          lhs.half_opening_angle_ == rhs.half_opening_angle_ and
          lhs.one_over_tan_half_opening_angle_ ==
              rhs.one_over_tan_half_opening_angle_ and
-         std::isnan(lhs.zeta_distribution_value_) ==
-             std::isnan(rhs.zeta_distribution_value_) and
-         ((std::isnan(lhs.zeta_distribution_value_) and
-           std::isnan(rhs.zeta_distribution_value_)) or
-          lhs.zeta_distribution_value_ == rhs.zeta_distribution_value_);
+         lhs.zeta_distribution_value_ == rhs.zeta_distribution_value_;
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) {

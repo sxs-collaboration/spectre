@@ -238,7 +238,7 @@ void test(const TestThis test_this, const int expected_tci_status,
   } else if (test_this == TestThis::NegativeTildeDSubcell) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
         [point_to_change](const auto tilde_d_ptr) {
-          get(*tilde_d_ptr)[point_to_change] = 1.0e-200;
+          get(*tilde_d_ptr)[point_to_change] = 1e-200;
         },
         make_not_null(&box));
   } else if (test_this == TestThis::NegativeTildeTauSubcell) {
@@ -346,7 +346,7 @@ void test(const TestThis test_this, const int expected_tci_status,
       CHECK(max(get<0>(
                 db::get<
                     hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
-                    box))) == max_B_field);
+                    box))) == approx(max_B_field));
     } else {
       // If element_stays_on_dg is false, then
       // the primitives will not update, causing a mismatch between

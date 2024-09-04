@@ -43,13 +43,28 @@ T safe_div(const T& num, const T& denom, const T& r) {
     return num / denom;
   } else {
     // return num / denom without overflow, return r if overflow would occur.
+    //
+    // To do this we need to handle the following cases:
+    // 1. fabs(denom) < 1 AND fabs(denom * max) <= fabs(num):
+    //    return r
+    // 2. return num / denom
+    //
+    // We do this by creating 2 masks.
+    // 1. `mask0` selects where fabs(denom) < 1. This is where we _may_ have
+    //    issues with division by zero or overflow.
+    // 2. `mask` selects where fabs(denom) < 1 AND fabs(denom * max)<=fabs(num)
+    //    * Note: the edge case of fabs(num)==max could be problematic, but if
+    //            you're dealing with numbers like that you are likely in
+    //            trouble anyway.
+    // The second mask is where we must avoid division by zero and instead
+    // return `r`.
     const auto mask0 = fabs(denom) < static_cast<T>(1);
     // Note: if denom >= 1.0 you get an FPE because of overflow from
-    // `max() * (1. + value)`
-    const auto mask = fabs(simd::select(mask0, denom, static_cast<T>(0)) *
+    // `max() * (1. + value)`, which is why `mask0` is necessary.
+    const auto mask = fabs(simd::select(mask0, denom, static_cast<T>(1.0)) *
                            std::numeric_limits<T>::max()) <= fabs(num);
-    return simd::select(mask0 and mask, r,
-                        num / simd::select(mask, denom, static_cast<T>(1)));
+    const auto new_denom = simd::select(mask, static_cast<T>(1), denom);
+    return simd::select(mask, r, num / new_denom);
   }
 }
 
@@ -345,10 +360,12 @@ std::pair<T, T> toms748_solve(F f, const T& ax, const T& bx, const T& fax,
   T e(static_cast<T>(1e5F));
   T fd(static_cast<T>(1e5F));
 
-  T c(std::numeric_limits<T>::signaling_NaN());
-  T d(std::numeric_limits<T>::signaling_NaN());
+  T c(0.0);
+  T d(0.0);
 
-  const T nan(std::numeric_limits<T>::signaling_NaN());
+  // We can't use signaling_NaN() because we do a max comparison at the end to
+  // 0, and signaling_NaN when compared to 0 raises an FPE.
+  const T nan(std::numeric_limits<T>::quiet_NaN());
   auto completed_a = simd::select(completion_mask, a, nan);
   auto completed_b = simd::select(completion_mask, b, nan);
   auto completed_fa = simd::select(completion_mask, fa, nan);

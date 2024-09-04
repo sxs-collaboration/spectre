@@ -22,7 +22,10 @@ TimeDelta choose_lts_step_size(const Time& time, const double desired_step) {
   // n because of floating-point truncation.  The inner ceil call
   // avoids this problem.
   const auto desired_step_power =
-      static_cast<size_t>(std::ceil(std::log2(std::ceil(desired_step_count))));
+      desired_step_count == 0.0
+          ? 0
+          : static_cast<size_t>(
+                std::ceil(std::log2(std::ceil(desired_step_count))));
 
   // Ensure we will hit the slab boundary if we continue taking
   // constant-sized steps.
