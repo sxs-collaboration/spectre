@@ -122,7 +122,7 @@ class TensorPrinter:
         def __init__(self, component_suffix_eval_string, start, num_entries):
             self.component_suffix_eval_string = component_suffix_eval_string
             self.item = start
-            self.finish = start + int(num_entries)
+            self.num_entries = int(num_entries)
             self.count = 0
 
         def __iter__(self):
@@ -131,26 +131,34 @@ class TensorPrinter:
         def __next__(self):
             count = self.count
             self.count = self.count + 1
-            if self.item == self.finish:
+            if self.count == self.num_entries + 1:
                 raise StopIteration
-            elt = self.item.dereference()
-            self.item = self.item + 1
-            index = str(
-                gdb.parse_and_eval(
-                    self.component_suffix_eval_string + str(count) + ")"
-                )
-            )[2:-1]
-            return ("\n[%s]" % index, elt)
+            elt = self.item[count]
+            index = str(count)
+            # ND: It seems like some versions (or something else) causes GDB to
+            # sometimes fail to evaluate expressions and causes GDB to hard
+            # crash. Instead, we return the less helpful storage index since
+            # I don't know how to detect if a hard crash will happen. A
+            # workaround would be implementing the storage->suffix map in
+            # python.
+            #
+            # gdb.parse_and_eval(
+            #         self.component_suffix_eval_string + str(count) + ")")
+            index = "\n[" + str(index) + "]"
+            return (index, str(elt))
 
     def children(self):
         array_name = str(
             self.val["data_"].type.strip_typedefs().fields()[0].name
         )
-        return self._iterator(
-            str(self.val.type.strip_typedefs()) + "::component_suffix(",
-            self.val["data_"][array_name]
-            .cast(self.val["data_"][array_name].type.strip_typedefs())[0]
-            .address,
+        suffix_eval_string = (
+            str(self.val.type.strip_typedefs())
+            .replace("&", "")
+            .replace("const ", "")
+            .replace(" ", "")
+            + "::component_suffix("
+        )
+        num_entries = (
             int(
                 self.val["data_"]
                 .type.strip_typedefs()
@@ -158,7 +166,12 @@ class TensorPrinter:
                 .type.strip_typedefs()
                 .range()[1]
             )
-            + 1,
+            + 1
+        )
+        return self._iterator(
+            suffix_eval_string,
+            self.val["data_"][array_name][0].address,
+            num_entries,
         )
 
     def __init__(self, val):
