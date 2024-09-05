@@ -38,10 +38,10 @@ void test_center_tags() {
   TestHelpers::db::test_simple_tag<Tags::ObjectCenter<ObjectLabel::B>>(
       "ObjectCenterB");
 
-  using Object = domain::creators::BinaryCompactObject::Object;
+  using Object = domain::creators::BinaryCompactObject<false>::Object;
 
   const std::unique_ptr<DomainCreator<3>> domain_creator =
-      std::make_unique<domain::creators::BinaryCompactObject>(
+      std::make_unique<domain::creators::BinaryCompactObject<false>>(
           Object{0.2, 5.0, 8.0, true, true}, Object{0.6, 4.0, -5.5, true, true},
           std::array<double, 2>{{0.1, 0.2}}, 100.0, 500.0, 1_st, 5_st);
 

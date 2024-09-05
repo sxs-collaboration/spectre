@@ -52,10 +52,10 @@ class FunctionOfTime;
 
 namespace {
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
-using Object = domain::creators::BinaryCompactObject::Object;
+using Object = domain::creators::BinaryCompactObject<false>::Object;
 using CartesianCubeAtXCoord =
-    domain::creators::BinaryCompactObject::CartesianCubeAtXCoord;
-using Excision = domain::creators::BinaryCompactObject::Excision;
+    domain::creators::BinaryCompactObject<false>::CartesianCubeAtXCoord;
+using Excision = domain::creators::BinaryCompactObject<false>::Excision;
 using Distribution = domain::CoordinateMaps::Distribution;
 
 template <size_t Dim, bool WithBoundaryConditions>
@@ -67,8 +67,9 @@ struct Metavariables {
                                          SystemWithoutBoundaryConditions<Dim>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        DomainCreator<3>, tmpl::list<::domain::creators::BinaryCompactObject>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<DomainCreator<3>,
+                   tmpl::list<::domain::creators::BinaryCompactObject<false>>>>;
   };
 };
 
@@ -275,7 +276,7 @@ void test_connectivity() {
                                             create_inner_boundary_condition()})
                                       : std::nullopt,
                      false},
-              domain::creators::BinaryCompactObject::Object{
+              domain::creators::BinaryCompactObject<false>::Object{
                   inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
                   excise_interiorB ? std::make_optional(Excision{
                                          create_inner_boundary_condition()})

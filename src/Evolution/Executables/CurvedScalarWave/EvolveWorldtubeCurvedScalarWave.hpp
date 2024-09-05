@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "Domain/Creators/Factory3D.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/ElementDistribution.hpp"
@@ -208,7 +208,8 @@ struct EvolutionMetavars {
                     standard_boundary_conditions<volume_dim>,
                 CurvedScalarWave::BoundaryConditions::Worldtube<volume_dim>>>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
-        tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
+        tmpl::pair<DomainCreator<volume_dim>,
+                   tmpl::list<domain::creators::BinaryCompactObject<false>>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<

@@ -586,13 +586,14 @@ struct GhValenciaDivCleanTemplateBase<
                    tmpl::append<DenseTriggers::standard_dense_triggers,
                                 control_system::control_system_triggers<
                                     control_systems>>>,
-        tmpl::pair<DomainCreator<volume_dim>,
-                   // Currently control systems can only be used with BCO
-                   // domains
-                   tmpl::conditional_t<
-                       use_control_systems,
-                       tmpl::list<::domain::creators::BinaryCompactObject>,
-                       domain_creators<volume_dim>>>,
+        tmpl::pair<
+            DomainCreator<volume_dim>,
+            // Currently control systems can only be used with BCO
+            // domains
+            tmpl::conditional_t<
+                use_control_systems,
+                tmpl::list<::domain::creators::BinaryCompactObject<false>>,
+                domain_creators<volume_dim>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
