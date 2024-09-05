@@ -71,8 +71,8 @@ void test_initial_position_velocity_tag() {
   const double orbital_radius = 7.;
   const double angular_vel = 0.1;
   const auto domain_creator =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          orbital_radius, 0.2, angular_vel);
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(orbital_radius, 0.2, angular_vel);
   const tnsr::I<double, 3> expected_pos{{orbital_radius, 0., 0.}};
   const tnsr::I<double, 3> expected_vel{{0., angular_vel * orbital_radius, 0.}};
   CHECK(Tags::InitialPositionAndVelocity::create_from_options(
@@ -192,8 +192,8 @@ void test_compute_face_coordinates_grid() {
 void test_compute_face_coordinates() {
   static constexpr size_t Dim = 3;
   const auto domain_creator =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          7., 0.2, pow(7, -1.5));
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(7., 0.2, pow(7, -1.5));
   const double initial_time = 0.;
   auto domain = domain_creator->create_domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
@@ -321,8 +321,8 @@ void test_particle_position_velocity_compute() {
   const double orbit_radius = 9.;
   const double angular_velocity = 1. / (sqrt(orbit_radius) * orbit_radius);
   const auto domain_creator =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          orbit_radius, 0.2, angular_velocity);
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(orbit_radius, 0.2, angular_velocity);
   const double initial_time = 0.;
   auto domain = domain_creator->create_domain();
   const auto excision_sphere = domain.excision_spheres().at("ExcisionSphereA");
@@ -617,15 +617,15 @@ void test_puncture_field() {
 
 void test_check_input_file() {
   const auto bbh_correct =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object(
-          7., 0.2, pow(7., -1.5));
+      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
+          false>(7., 0.2, pow(7., -1.5));
   const gr::Solutions::KerrSchild kerr_schild_correct(
       1., make_array(0., 0., 0.), make_array(0., 0., 0.));
   CHECK(Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::create_from_options(
       bbh_correct, "ExcisionSphereA", kerr_schild_correct));
   {
     const auto bbh_incorrect = TestHelpers::CurvedScalarWave::Worldtube::
-        worldtube_binary_compact_object(7., 0.2, 1.);
+        worldtube_binary_compact_object<false>(7., 0.2, 1.);
     CHECK_THROWS_WITH(
         (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
              create_from_options(bbh_incorrect, "ExcisionSphereA",
@@ -686,6 +686,33 @@ void test_self_force_options() {
   CHECK(options.iterations == 3);
 }
 
+void test_radius_options() {
+  {
+    const auto wt_options =
+        TestHelpers::test_creation<OptionTags::RadiusOptions<true>>(
+            "TransitionRadius: 5.\n"
+            "TransitionWidth: 0.1\n"
+            "Exponent: 3.2\n"
+            "Amplitude: 0.3\n");
+    CHECK(wt_options.transition_radius == 5.);
+    CHECK(wt_options.transition_width == 0.1);
+    CHECK(wt_options.exponent == 3.2);
+    CHECK(wt_options.amplitude == 0.3);
+  }
+  {
+    const auto bh_options =
+        TestHelpers::test_creation<OptionTags::RadiusOptions<false>>(
+            "TransitionRadius: 5.\n"
+            "TransitionWidth: 0.1\n"
+            "Exponent: 3.2\n"
+            "Amplitude: 0.3\n");
+    CHECK(bh_options.transition_radius == 5.);
+    CHECK(bh_options.transition_width == 0.1);
+    CHECK(bh_options.exponent == 3.2);
+    CHECK(bh_options.amplitude == 0.3);
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -705,7 +732,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
       "Mass");
   TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::ExpirationTime>("ExpirationTime");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::WorldtubeRadius>("WorldtubeRadius");
+  TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::BlackHoleRadiusParameters>(
+      "BlackHoleRadiusParameters");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::WorldtubeRadiusParameters>(
+      "WorldtubeRadiusParameters");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::CurrentIteration>("CurrentIteration");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
@@ -737,6 +774,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "BackgroundQuantities");
   test_excision_sphere_tag();
   test_self_force_options();
+  test_radius_options();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();

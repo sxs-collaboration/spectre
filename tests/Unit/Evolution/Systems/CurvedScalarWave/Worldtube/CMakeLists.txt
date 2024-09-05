@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AccelerationTerms.cpp
   Test_KerrSchildDerivatives.cpp
   Test_PunctureField.cpp
+  Test_RadiusFunctions.cpp
   Test_SelfForce.cpp
   Test_Tags.cpp
   ElementActions/Test_SendToWorldtube.cpp
@@ -19,6 +20,7 @@ set(LIBRARY_SOURCES
   SingletonActions/Test_InitializeEvolvedVariables.cpp
   SingletonActions/Test_ObserveWorldtubeSolution.cpp
   SingletonActions/Test_UpdateAcceleration.cpp
+  SingletonActions/Test_UpdateFunctionsOfTime.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

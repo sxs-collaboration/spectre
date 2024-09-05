@@ -33,6 +33,7 @@ struct InitializeEvolvedVariables {
 
   using simple_tags =
       tmpl::list<variables_tag, dt_variables_tag, Tags::CurrentIteration,
+                 Tags::ExpirationTime,
                  ::Tags::HistoryEvolvedVariables<variables_tag>>;
   using return_tags = simple_tags;
 
@@ -40,8 +41,9 @@ struct InitializeEvolvedVariables {
   using const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags = tmpl::list<>;
   using simple_tags_from_options = tmpl::list<Tags::InitialPositionAndVelocity>;
-  using argument_tags = tmpl::list<::Tags::TimeStepper<TimeStepper>,
-                                   Tags::InitialPositionAndVelocity>;
+  using argument_tags =
+      tmpl::list<::Tags::TimeStepper<TimeStepper>,
+                 Tags::InitialPositionAndVelocity, ::Tags::Time>;
   static void apply(
       const gsl::not_null<Variables<
           tmpl::list<Tags::EvolvedPosition<Dim>, Tags::EvolvedVelocity<Dim>>>*>
@@ -51,11 +53,15 @@ struct InitializeEvolvedVariables {
                                ::Tags::dt<Tags::EvolvedVelocity<Dim>>>>*>
           dt_evolved_vars,
       const gsl::not_null<size_t*> current_iteration,
+      const gsl::not_null<double*> expiration_time,
       const gsl::not_null<::Tags::HistoryEvolvedVariables<variables_tag>::type*>
           time_stepper_history,
       const TimeStepper& time_stepper,
-      const std::array<tnsr::I<double, Dim>, 2>& initial_pos_and_vel) {
+      const std::array<tnsr::I<double, Dim>, 2>& initial_pos_and_vel,
+      const double initial_time) {
     *current_iteration = 0;
+    *expiration_time = initial_time + 1e-10;
+
     const size_t starting_order =
         time_stepper.number_of_past_steps() == 0 ? time_stepper.order() : 1;
     *time_stepper_history =
