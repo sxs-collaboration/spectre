@@ -35,7 +35,8 @@ namespace CurvedScalarWave::Worldtube::Actions {
 
 /*!
  * \brief When Tags::ObserveCoefficientsTrigger is triggered, write the
- * coefficients of the Taylor expansion of the regular field to file.
+ * coefficients of the Taylor expansion of the regular field as well as the
+ * current particle's position, velocity and acceleration to file.
  */
 struct ObserveWorldtubeSolution {
   using reduction_data = Parallel::ReductionData<
@@ -56,6 +57,11 @@ struct ObserveWorldtubeSolution {
       const ParallelComponent* const /*meta*/) {
     if (db::get<Tags::ObserveCoefficientsTrigger>(box).is_triggered(box) and
         db::get<::Tags::TimeStepId>(box).substep() == 0) {
+      const auto& inertial_particle_position =
+          db::get<Tags::EvolvedPosition<Dim>>(box);
+      const auto& particle_velocity = db::get<Tags::EvolvedVelocity<Dim>>(box);
+      const auto& particle_acceleration =
+          db::get<::Tags::dt<Tags::EvolvedVelocity<Dim>>>(box);
       const size_t expansion_order = db::get<Tags::ExpansionOrder>(box);
       const auto& psi_monopole = db::get<
           Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Inertial>>(
@@ -68,10 +74,17 @@ struct ObserveWorldtubeSolution {
       const size_t num_coefs = ((expansion_order + 3) * (expansion_order + 2) *
                                 (expansion_order + 1)) /
                                6;
-      std::vector<double> psi_coefs(2 * num_coefs);
-      psi_coefs[0] = get(psi_monopole);
-      psi_coefs[num_coefs] = get(dt_psi_monopole);
-
+      // offset everything by the 3 * 3 components for position, velocity and
+      // acceleration
+      const size_t pos_offset = 9;
+      std::vector<double> psi_coefs(2 * num_coefs + pos_offset);
+      for (size_t i = 0; i < 3; ++i) {
+        psi_coefs[i] = inertial_particle_position.get(i)[0];
+        psi_coefs[i + 3] = particle_velocity.get(i)[0];
+        psi_coefs[i + 6] = particle_acceleration.get(i)[0];
+      }
+      psi_coefs[0 + pos_offset] = get(psi_monopole);
+      psi_coefs[num_coefs + pos_offset] = get(dt_psi_monopole);
       if (expansion_order > 0) {
         const auto& psi_dipole = db::get<
             Stf::Tags::StfTensor<Tags::PsiWorldtube, 1, Dim, Frame::Inertial>>(
@@ -80,18 +93,25 @@ struct ObserveWorldtubeSolution {
             db::get<Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                          Frame::Inertial>>(box);
         for (size_t i = 0; i < Dim; ++i) {
-          psi_coefs[1 + i] = psi_dipole.get(i);
-          psi_coefs[num_coefs + 1 + i] = dt_psi_dipole.get(i);
+          psi_coefs[1 + i + pos_offset] = psi_dipole.get(i);
+          psi_coefs[num_coefs + 1 + i + pos_offset] = dt_psi_dipole.get(i);
         }
       }
       const auto legend = [&expansion_order]() -> std::vector<std::string> {
         switch (expansion_order) {
           case (0):
-            return {"Time", "Psi0", "dtPsi0"};
+            return {"Time",           "Position_x",     "Position_y",
+                    "Position_z",     "Velocity_x",     "Velocity_y",
+                    "Velocity_z",     "Acceleration_x", "Acceleration_y",
+                    "Acceleration_z", "Psi0",           "dtPsi0"};
             break;
           case (1):
-            return {"Time",   "Psi0",   "Psix",   "Psiy",  "Psiz",
-                    "dtPsi0", "dtPsix", "dtPsiy", "dtPsiz"};
+            return {"Time",           "Position_x",     "Position_y",
+                    "Position_z",     "Velocity_x",     "Velocity_y",
+                    "Velocity_z",     "Acceleration_x", "Acceleration_y",
+                    "Acceleration_z", "Psi0",           "Psix",
+                    "Psiy",           "Psiz",           "dtPsi0",
+                    "dtPsix",         "dtPsiy",         "dtPsiz"};
             break;
           default:
             ERROR("requested invalid expansion order");
