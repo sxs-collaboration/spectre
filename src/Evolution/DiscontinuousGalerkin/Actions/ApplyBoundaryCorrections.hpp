@@ -124,12 +124,12 @@ void retrieve_boundary_data_spsc(
             it != current_inbox.end()) {
           auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
                  boundary_data, boundary_data_validity_range,
-                 boundary_tci_status] = data;
+                 boundary_tci_status, boundary_integration_order] = data;
           (void)ghost_cell_data;
           auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
                  current_ghost_cell_data, current_boundary_data,
-                 current_boundary_data_validity_range, current_tci_status] =
-              it->second;
+                 current_boundary_data_validity_range, current_tci_status,
+                 current_integration_order] = it->second;
           // Need to use when optimizing subcell
           (void)current_volume_mesh_of_ghost_cell_data;
           // We have already received some data at this time. Receiving
@@ -175,6 +175,7 @@ void retrieve_boundary_data_spsc(
           current_boundary_data = std::move(boundary_data);
           current_boundary_data_validity_range = boundary_data_validity_range;
           current_tci_status = boundary_tci_status;
+          current_integration_order = boundary_integration_order;
         } else {
           // We have not received ghost cells or fluxes at this time.
           if (not current_inbox

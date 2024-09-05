@@ -24,6 +24,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Parallel/Phase.hpp"
@@ -75,7 +76,7 @@ template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = int;
+  using array_index = ElementId<3>;
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales,
                  FunctionsOfTimeTag>;
@@ -117,6 +118,8 @@ void test(const std::string& test_label, const double initial_time,
   ASSERT(fot_updatesA.size() > 1, "Bad argument");
   ASSERT(fot_updatesB.size() > 1, "Bad argument");
   ASSERT(fot_updatesC.size() > 1, "Bad argument");
+
+  const ElementId<3> element_id{0};
 
   const Slab initial_slab(initial_time, initial_step_end);
   const TimeStepId initial_id(true, 0, initial_slab.start());
@@ -173,18 +176,18 @@ void test(const std::string& test_label, const double initial_time,
       {}, {std::move(timescales), std::move(functions_of_time)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
-      ActionTesting::LocalCoreId{0}, 0,
+      ActionTesting::LocalCoreId{0}, element_id,
       {std::move(measurementsA), std::move(measurementsBC), std::move(stepper),
        initial_id, TimeStepId{}, initial_slab.duration(), TimeDelta{},
        AdaptiveSteppingDiagnostics{}, std::move(history)});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-  const bool ready =
-      ActionTesting::next_action_if_ready<component>(make_not_null(&runner), 0);
+  const bool ready = ActionTesting::next_action_if_ready<component>(
+      make_not_null(&runner), element_id);
   if (ready and expected_step_end.has_value()) {
     const Slab expected_slab(initial_time, *expected_step_end);
     CHECK(ActionTesting::get_databox_tag<component, Tags::TimeStep>(
-              runner, 0) == expected_slab.duration());
+              runner, element_id) == expected_slab.duration());
   } else {
     CHECK(not ready);
     CHECK(not expected_step_end.has_value());

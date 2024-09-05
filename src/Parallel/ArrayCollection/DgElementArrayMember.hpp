@@ -436,10 +436,12 @@ bool DgElementArrayMember<Dim, Metavariables,
   }
 #endif  // SPECTRE_CHARM_PROJECTIONS
 
-  const auto& [requested_execution, next_action_step] = ThisAction::apply(
-      box_, inboxes_, *Parallel::local_branch(global_cache_proxy_),
-      std::as_const(this->element_id_), actions_list{},
-      std::add_pointer_t<ParallelComponent>{});
+  const auto& [requested_execution_return, next_action_step] =
+      ThisAction::apply(box_, inboxes_,
+                        *Parallel::local_branch(global_cache_proxy_),
+                        std::as_const(this->element_id_), actions_list{},
+                        std::add_pointer_t<ParallelComponent>{});
+  const auto& requested_execution = requested_execution_return;
 
   if (next_action_step.has_value()) {
     ASSERT(

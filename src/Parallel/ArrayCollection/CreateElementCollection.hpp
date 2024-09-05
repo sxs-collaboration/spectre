@@ -156,7 +156,9 @@ struct CreateElementCollection {
           const auto serialized_initialization_items =
               serialize(initialization_items);
           *element_locations_ptr = std::move(node_of_elements);
-          for (const auto& [element_id, core] : my_elements_and_cores) {
+          for (const auto& element_id_and_core : my_elements_and_cores) {
+            const auto& element_id = element_id_and_core.first;
+            const auto core = element_id_and_core.second;
             if (not collection_ptr
                         ->emplace(
                             std::piecewise_construct,
