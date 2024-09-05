@@ -3,12 +3,10 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ContainerHelpers.hpp"
+#include <cstddef>
+
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace gr {
 /// @{

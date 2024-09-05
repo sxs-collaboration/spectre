@@ -20,19 +20,24 @@
 /// dynamic type of `*obj`.  The decay type of `T` must be in the
 /// provided list of classes.
 ///
+/// Extra arguments can be passed by `const&` to the functor.
+///
 /// \tparam Result the return type
 /// \tparam Classes the typelist of derived classes
-template <typename Result, typename Classes, typename Base, typename Callable>
-Result call_with_dynamic_type(Base* const obj, Callable&& f) {
+template <typename Result, typename Classes, typename Base, typename Callable,
+          typename... Args>
+Result call_with_dynamic_type(Base* const obj, Callable&& f, Args&&... args) {
   if constexpr (tmpl::size<Classes>::value != 0) {
     using Derived = tmpl::front<Classes>;
     using DerivedPointer = tmpl::conditional_t<std::is_const<Base>::value,
                                                Derived const*, Derived*>;
     return typeid(*obj) == typeid(Derived)
                ? std::forward<Callable>(f)(
-                     tt::fast_pointer_cast<DerivedPointer>(obj))
+                     tt::fast_pointer_cast<DerivedPointer>(obj),
+                     std::forward<Args>(args)...)
                : call_with_dynamic_type<Result, tmpl::pop_front<Classes>>(
-                     obj, std::forward<Callable>(f));
+                     obj, std::forward<Callable>(f),
+                     std::forward<Args>(args)...);
   } else {
     ERROR("Class " << pretty_type::get_runtime_type_name(*obj)
                    << " is not registered with "

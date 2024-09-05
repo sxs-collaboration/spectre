@@ -673,10 +673,12 @@ struct PostprocessA {
       const gsl::not_null<MockRuntimeSystem*> runner, const bool should_run,
       const std::vector<std::pair<double, EvolvedVariables>>& expected_calls) {
     CHECK(run_if_ready(runner) == should_run);
+    // We define the lambda out-of-line for nvcc compatibility
+    auto multiplier = [](const Scalar<DataVector>& v) { return 2.0 * get(v); };
     TestEvent::check_calls(
         expected_calls,
         std::pair{PostprocessedVar<Scalar<DataVector>, labels::A>{},
-                  [](const Scalar<DataVector>& v) { return 2.0 * get(v); }});
+                  std::move(multiplier)});
   }
 };
 
@@ -693,16 +695,23 @@ struct PostprocessAll {
       const gsl::not_null<MockRuntimeSystem*> runner, const bool should_run,
       const std::vector<std::pair<double, EvolvedVariables>>& expected_calls) {
     CHECK(run_if_ready(runner) == should_run);
+    // We define the lambdas out-of-line for nvcc compatibility
+    auto multiplier0 = [](const Scalar<DataVector>& v) { return 2.0 * get(v); };
+    auto multiplier1 = [](const Scalar<DataVector>& v) { return 4.0 * get(v); };
+    auto multiplier2 = [](const Scalar<DataVector>& v) {
+      return 5.0 * get(v)[0];
+    };
+    auto multiplier3 = [](const Scalar<DataVector>& /*v*/) {
+      return "Processed";
+    };
     TestEvent::check_calls(
         expected_calls,
         std::pair{PostprocessedVar<Scalar<DataVector>, labels::A>{},
-                  [](const Scalar<DataVector>& v) { return 2.0 * get(v); }},
+                  std::move(multiplier0)},
         std::pair{PostprocessedVar<Scalar<DataVector>, labels::B>{},
-                  [](const Scalar<DataVector>& v) { return 4.0 * get(v); }},
-        std::pair{PostprocessedVar<Scalar<double>>{},
-                  [](const Scalar<DataVector>& v) { return 5.0 * get(v)[0]; }},
-        std::pair{PostprocessedVar<std::string>{},
-                  [](const Scalar<DataVector>& /*v*/) { return "Processed"; }});
+                  std::move(multiplier1)},
+        std::pair{PostprocessedVar<Scalar<double>>{}, std::move(multiplier2)},
+        std::pair{PostprocessedVar<std::string>{}, std::move(multiplier3)});
   }
 };
 
@@ -716,12 +725,13 @@ struct PostprocessEvolved {
       const gsl::not_null<MockRuntimeSystem*> runner, const bool should_run,
       const std::vector<std::pair<double, EvolvedVariables>>& expected_calls) {
     CHECK(run_if_ready(runner) == should_run);
+    // We define the lambdas out-of-line for nvcc compatibility
+    auto helper0 = [](const Scalar<DataVector>& v) { return -get(v); };
+    auto helper1 = [](const Scalar<DataVector>& v) { return -2.0 * get(v); };
     TestEvent::check_calls(
-        expected_calls,
-        std::pair{EvolvedVar{},
-                  [](const Scalar<DataVector>& v) { return -get(v); }},
+        expected_calls, std::pair{EvolvedVar{}, std::move(helper0)},
         std::pair{PostprocessedVar<Scalar<DataVector>, labels::A>{},
-                  [](const Scalar<DataVector>& v) { return -2.0 * get(v); }});
+                  std::move(helper1)});
   }
 };
 }  // namespace test_cases

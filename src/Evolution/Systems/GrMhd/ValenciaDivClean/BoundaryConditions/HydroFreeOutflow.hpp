@@ -85,9 +85,6 @@ class HydroFreeOutflow final : public BoundaryCondition {
                  LorentzFactorTimesSpatialVelocity, MagneticField,
                  DivergenceCleaningField>;
 
-  template <typename T>
-  using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
-
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -195,7 +192,9 @@ class HydroFreeOutflow final : public BoundaryCondition {
       gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
 
       gsl::not_null<std::optional<Variables<db::wrap_tags_in<
-          Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>*>
+          ::Tags::Flux,
+          typename grmhd::ValenciaDivClean::System::flux_variables,
+          tmpl::size_t<3>, Frame::Inertial>>>*>
           cell_centered_ghost_fluxes,
 
       const Direction<3>& direction,

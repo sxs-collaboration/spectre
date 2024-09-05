@@ -168,6 +168,11 @@ std::optional<std::string> HydroFreeOutflow::dg_ghost(
   return {};
 }
 
+namespace {
+template <typename T>
+using Flux = ::Tags::Flux<T, tmpl::size_t<3>, Frame::Inertial>;
+}  // namespace
+
 void HydroFreeOutflow::fd_ghost(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
@@ -179,7 +184,8 @@ void HydroFreeOutflow::fd_ghost(
     const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
 
     const gsl::not_null<std::optional<Variables<db::wrap_tags_in<
-        Flux, typename grmhd::ValenciaDivClean::System::flux_variables>>>*>
+        ::Tags::Flux, typename grmhd::ValenciaDivClean::System::flux_variables,
+        tmpl::size_t<3>, Frame::Inertial>>>*>
         cell_centered_ghost_fluxes,
 
     const Direction<3>& direction,

@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
 namespace gsl {
@@ -53,8 +53,7 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_propagating(
     const tnsr::I<DataType, SpatialDim, Frame>& unit_interface_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
-    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
-    const double sign);
+    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij, double sign);
 
 template <typename DataType, size_t SpatialDim, typename Frame>
 void weyl_propagating(
@@ -66,7 +65,6 @@ void weyl_propagating(
     const tnsr::I<DataType, SpatialDim, Frame>& unit_interface_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& projection_IJ,
     const tnsr::ii<DataType, SpatialDim, Frame>& projection_ij,
-    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij,
-    const double sign);
+    const tnsr::Ij<DataType, SpatialDim, Frame>& projection_Ij, double sign);
 /// @}
 }  // namespace gr

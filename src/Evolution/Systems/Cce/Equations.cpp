@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Cce {

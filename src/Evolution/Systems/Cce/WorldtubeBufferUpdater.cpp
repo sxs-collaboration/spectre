@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/ExtractionRadius.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/H5/Dat.hpp"

@@ -31,16 +31,34 @@ void test_static_cast() {
   std::unique_ptr<B> d2 = std::make_unique<D2>();
 
   CHECK(1 == (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
-                 d1.get(), [](auto* const p) { return p->mutable_func(); })));
+                 d1.get(),
+                 [](auto* const p, const int extra_arg) {
+                   CHECK(extra_arg == 5);
+                   return p->mutable_func();
+                 },
+                 5)));
   CHECK(2 == (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
-                 d2.get(), [](auto* const p) { return p->mutable_func(); })));
+                 d2.get(),
+                 [](auto* const p, const int extra_arg) {
+                   CHECK(extra_arg == 6);
+                   return p->mutable_func();
+                 },
+                 6)));
 
   CHECK(11 == (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
                   &std::as_const(*d1),
-                  [](const auto* const p) { return p->const_func(); })));
+                  [](const auto* const p, const int extra_arg) {
+                    CHECK(extra_arg == 7);
+                    return p->const_func();
+                  },
+                  7)));
   CHECK(12 == (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
                   &std::as_const(*d2),
-                  [](const auto* const p) { return p->const_func(); })));
+                  [](const auto* const p, const int extra_arg) {
+                    CHECK(extra_arg == 8);
+                    return p->const_func();
+                  },
+                  8)));
 
   // Test void return type
   int result = 0;
@@ -75,21 +93,48 @@ void test_dynamic_cast() {
   std::unique_ptr<B> c = std::make_unique<C>();
 
   CHECK(1 == (call_with_dynamic_type<int, tmpl::list<D1, D2, C>>(
-                 d1.get(), [](auto* const p) { return p->mutable_func(); })));
+                 d1.get(),
+                 [](auto* const p, const int extra_arg) {
+                   CHECK(extra_arg == 5);
+                   return p->mutable_func();
+                 },
+                 5)));
   CHECK(2 == (call_with_dynamic_type<int, tmpl::list<D1, D2, C>>(
-                 d2.get(), [](auto* const p) { return p->mutable_func(); })));
+                 d2.get(),
+                 [](auto* const p, const int extra_arg) {
+                   CHECK(extra_arg == 6);
+                   return p->mutable_func();
+                 },
+                 6)));
   CHECK(3 == (call_with_dynamic_type<int, tmpl::list<D1, D2, C>>(
-                 c.get(), [](auto* const p) { return p->mutable_func(); })));
+                 c.get(),
+                 [](auto* const p, const int extra_arg) {
+                   CHECK(extra_arg == 7);
+                   return p->mutable_func();
+                 },
+                 7)));
 
   CHECK(11 == (call_with_dynamic_type<int, tmpl::list<D1, D2, C>>(
                   &std::as_const(*d1),
-                  [](const auto* const p) { return p->const_func(); })));
+                  [](const auto* const p, const int extra_arg) {
+                    CHECK(extra_arg == 8);
+                    return p->const_func();
+                  },
+                  8)));
   CHECK(12 == (call_with_dynamic_type<int, tmpl::list<D1, D2, C>>(
                   &std::as_const(*d2),
-                  [](const auto* const p) { return p->const_func(); })));
+                  [](const auto* const p, const int extra_arg) {
+                    CHECK(extra_arg == 9);
+                    return p->const_func();
+                  },
+                  9)));
   CHECK(13 == (call_with_dynamic_type<int, tmpl::list<D1, D2, C>>(
                   &std::as_const(*c),
-                  [](const auto* const p) { return p->const_func(); })));
+                  [](const auto* const p, const int extra_arg) {
+                    CHECK(extra_arg == 10);
+                    return p->const_func();
+                  },
+                  10)));
 
   // Test void return type
   int result = 0;

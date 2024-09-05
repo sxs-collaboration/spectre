@@ -31,6 +31,58 @@ struct dt : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating spatial derivatives
+ *
+ * Prefix indicating the spatial derivatives of a Tensor.
+ *
+ * \tparam Tag The tag to wrap
+ * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
+ * \tparam Frame The frame of the derivative index
+ *
+ * \see Tags::DerivCompute
+ */
+template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+struct deriv;
+
+/// \cond
+template <typename Tag, typename Dim, typename Frame>
+struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
+    : db::PrefixTag, db::SimpleTag {
+  using type =
+      TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
+                                                 UpLo::Lo, Frame>;
+  using tag = Tag;
+};
+/// \endcond
+
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating spacetime derivatives
+ *
+ * Prefix indicating the spacetime derivatives of a Tensor or that a Variables
+ * contains spatial derivatives of Tensors.
+ *
+ * \tparam Tag The tag to wrap
+ * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
+ * \tparam Frame The frame of the derivative index
+ */
+template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+struct spacetime_deriv;
+
+/// \cond
+template <typename Tag, typename Dim, typename Frame>
+struct spacetime_deriv<Tag, Dim, Frame,
+                       Requires<tt::is_a_v<Tensor, typename Tag::type>>>
+    : db::PrefixTag, db::SimpleTag {
+  using type =
+      TensorMetafunctions::prepend_spacetime_index<typename Tag::type,
+                                                   Dim::value, UpLo::Lo, Frame>;
+  using tag = Tag;
+};
+/// \endcond
+
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a flux
 ///

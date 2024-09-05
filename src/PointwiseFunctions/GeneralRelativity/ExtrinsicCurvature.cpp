@@ -3,13 +3,9 @@
 
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 
-#include <cmath>
-
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
 
 namespace gr {
 

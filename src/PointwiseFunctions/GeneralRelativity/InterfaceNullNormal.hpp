@@ -35,14 +35,14 @@ template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::a<DataType, VolumeDim, Frame> interface_null_normal(
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
-    const double sign);
+    double sign);
 
 template <typename DataType, size_t VolumeDim, typename Frame>
 void interface_null_normal(
     gsl::not_null<tnsr::a<DataType, VolumeDim, Frame>*> null_one_form,
     const tnsr::a<DataType, VolumeDim, Frame>& spacetime_normal_one_form,
     const tnsr::i<DataType, VolumeDim, Frame>& interface_unit_normal_one_form,
-    const double sign);
+    double sign);
 /// @}
 
 /*!
@@ -64,7 +64,7 @@ template <typename DataType, size_t VolumeDim, typename Frame>
 tnsr::A<DataType, VolumeDim, Frame> interface_null_normal(
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const double sign);
+    double sign);
 
 /*!
  * \ingroup GeneralRelativityGroup
@@ -86,5 +86,5 @@ void interface_null_normal(
     gsl::not_null<tnsr::A<DataType, VolumeDim, Frame>*> null_vector,
     const tnsr::A<DataType, VolumeDim, Frame>& spacetime_normal_vector,
     const tnsr::I<DataType, VolumeDim, Frame>& interface_unit_normal_vector,
-    const double sign);
+    double sign);
 }  // namespace gr

@@ -6,7 +6,6 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 /// \cond
 namespace gsl {

@@ -138,7 +138,8 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
 
     const Mesh<volume_dim> mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
     const Matrix empty{};
-    auto filter = make_array<volume_dim>(std::cref(empty));
+    std::array<std::reference_wrapper<const Matrix>, volume_dim> filter =
+        make_array<volume_dim>(std::cref(empty));
     for (size_t d = 0; d < volume_dim; d++) {
       gsl::at(filter, d) =
           std::cref(filter_helper.filter_matrix(mesh.slice_through(d)));
@@ -163,22 +164,24 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
           make_not_null(&box), mesh);
     } else {
       db::mutate<TagsToFilter...>(
-          [&filter](const gsl::not_null<
-                        typename TagsToFilter::type*>... tensors_to_filter,
-                    const auto& local_mesh) {
+          [](const gsl::not_null<
+                 typename TagsToFilter::type*>... tensors_to_filter,
+             const Mesh<volume_dim>& local_mesh,
+             const std::array<std::reference_wrapper<const Matrix>, volume_dim>&
+                 local_filter) {
             DataVector temp(local_mesh.number_of_grid_points(), 0.0);
-            const auto helper = [&local_mesh, &filter,
+            const auto helper = [&local_mesh, &local_filter,
                                  &temp](const auto tensor) {
               for (auto& component : *tensor) {
                 temp = 0.0;
-                apply_matrices(make_not_null(&temp), filter, component,
+                apply_matrices(make_not_null(&temp), local_filter, component,
                                local_mesh.extents());
                 component = temp;
               }
             };
             EXPAND_PACK_LEFT_TO_RIGHT(helper(tensors_to_filter));
           },
-          make_not_null(&box), mesh);
+          make_not_null(&box), mesh, filter);
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

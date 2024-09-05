@@ -8,6 +8,7 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/LinearSolve.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"

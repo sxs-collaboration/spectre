@@ -302,7 +302,7 @@ class CoordinateMap
 
   /// @{
   /// Apply the `Maps...` to the point(s) `source_point`
-  constexpr tnsr::I<double, dim, TargetFrame> operator()(
+  tnsr::I<double, dim, TargetFrame> operator()(
       tnsr::I<double, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -315,7 +315,7 @@ class CoordinateMap
     return call_impl(std::move(source_point), time, functions_of_time,
                      std::make_index_sequence<sizeof...(Maps)>{});
   }
-  constexpr tnsr::I<DataVector, dim, TargetFrame> operator()(
+  tnsr::I<DataVector, dim, TargetFrame> operator()(
       tnsr::I<DataVector, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -332,7 +332,7 @@ class CoordinateMap
 
   /// @{
   /// Apply the inverse `Maps...` to the point(s) `target_point`
-  constexpr std::optional<tnsr::I<double, dim, SourceFrame>> inverse(
+  std::optional<tnsr::I<double, dim, SourceFrame>> inverse(
       tnsr::I<double, dim, TargetFrame> target_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -350,7 +350,7 @@ class CoordinateMap
   /// @{
   /// Compute the inverse Jacobian of the `Maps...` at the point(s)
   /// `source_point`
-  constexpr InverseJacobian<double, dim, SourceFrame, TargetFrame> inv_jacobian(
+  InverseJacobian<double, dim, SourceFrame, TargetFrame> inv_jacobian(
       tnsr::I<double, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -362,8 +362,7 @@ class CoordinateMap
       const override {
     return inv_jacobian_impl(std::move(source_point), time, functions_of_time);
   }
-  constexpr InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>
-  inv_jacobian(
+  InverseJacobian<DataVector, dim, SourceFrame, TargetFrame> inv_jacobian(
       tnsr::I<DataVector, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -379,7 +378,7 @@ class CoordinateMap
 
   /// @{
   /// Compute the Jacobian of the `Maps...` at the point(s) `source_point`
-  constexpr Jacobian<double, dim, SourceFrame, TargetFrame> jacobian(
+  Jacobian<double, dim, SourceFrame, TargetFrame> jacobian(
       tnsr::I<double, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -391,7 +390,7 @@ class CoordinateMap
       const override {
     return jacobian_impl(std::move(source_point), time, functions_of_time);
   }
-  constexpr Jacobian<DataVector, dim, SourceFrame, TargetFrame> jacobian(
+  Jacobian<DataVector, dim, SourceFrame, TargetFrame> jacobian(
       tnsr::I<DataVector, dim, SourceFrame> source_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<

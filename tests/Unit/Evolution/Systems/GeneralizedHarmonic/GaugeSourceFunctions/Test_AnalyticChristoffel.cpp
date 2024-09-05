@@ -195,8 +195,8 @@ SPECTRE_TEST_CASE(
   for (const auto& basis_and_quadrature :
        {std::pair{Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto},
-        {Spectral::Basis::FiniteDifference,
-         Spectral::Quadrature::CellCentered}}) {
+        std::pair{Spectral::Basis::FiniteDifference,
+                  Spectral::Quadrature::CellCentered}}) {
     test_gauge_wave<1>(
         {5, basis_and_quadrature.first, basis_and_quadrature.second});
     test_gauge_wave<2>(
