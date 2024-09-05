@@ -29,12 +29,20 @@
 
 namespace CurvedScalarWave::Worldtube::OptionTags {
 SelfForceOptions::SelfForceOptions() = default;
-SelfForceOptions::SelfForceOptions(double mass_in, size_t iterations_in)
-    : mass(mass_in), iterations(iterations_in) {}
+SelfForceOptions::SelfForceOptions(const double mass_in,
+                                   const size_t iterations_in,
+                                   const double turn_on_time_in,
+                                   const double turn_on_interval_in)
+    : mass(mass_in),
+      iterations(iterations_in),
+      turn_on_time(turn_on_time_in),
+      turn_on_interval(turn_on_interval_in) {}
 
 void SelfForceOptions::pup(PUP::er& p) {
   p | mass;
   p | iterations;
+  p | turn_on_time;
+  p | turn_on_interval;
 }
 }  // namespace CurvedScalarWave::Worldtube::OptionTags
 
