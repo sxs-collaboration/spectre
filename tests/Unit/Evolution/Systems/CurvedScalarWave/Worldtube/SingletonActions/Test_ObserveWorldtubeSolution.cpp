@@ -48,8 +48,8 @@ struct MockWorldtubeSingleton {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
-                  ::Tags::Time, Tags::ObserveCoefficientsTrigger, Tags::Psi0,
-                  Tags::dtPsi0,
+                  ::Tags::Time, ::Tags::TimeStepId,
+                  Tags::ObserveCoefficientsTrigger, Tags::Psi0, Tags::dtPsi0,
                   Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim,
                                        Frame::Inertial>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,

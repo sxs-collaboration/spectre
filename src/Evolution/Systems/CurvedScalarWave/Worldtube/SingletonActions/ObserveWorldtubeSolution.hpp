@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Time/Tags/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -53,7 +54,8 @@ struct ObserveWorldtubeSolution {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if (db::get<Tags::ObserveCoefficientsTrigger>(box).is_triggered(box)) {
+    if (db::get<Tags::ObserveCoefficientsTrigger>(box).is_triggered(box) and
+        db::get<::Tags::TimeStepId>(box).substep() == 0) {
       const size_t expansion_order = db::get<Tags::ExpansionOrder>(box);
       const auto& psi_monopole = db::get<
           Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim, Frame::Inertial>>(
