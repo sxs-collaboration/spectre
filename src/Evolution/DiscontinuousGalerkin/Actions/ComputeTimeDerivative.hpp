@@ -56,6 +56,7 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/TakeStep.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
@@ -353,7 +354,9 @@ struct ComputeTimeDerivative {
   using const_global_cache_tags = tmpl::append<
       tmpl::list<::dg::Tags::Formulation,
                  evolution::Tags::BoundaryCorrection<EvolutionSystem>,
-                 domain::Tags::ExternalBoundaryConditions<Dim>>>;
+                 domain::Tags::ExternalBoundaryConditions<Dim>>,
+      tmpl::conditional_t<LocalTimeStepping,
+                          tmpl::list<::Tags::MinimumTimeStep>, tmpl::list<>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,

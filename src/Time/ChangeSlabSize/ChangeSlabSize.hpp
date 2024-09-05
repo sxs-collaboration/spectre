@@ -16,6 +16,7 @@
 /// \cond
 namespace Tags {
 struct AdaptiveSteppingDiagnostics;
+struct MinimumTimeStep;
 template <typename Tag>
 struct Next;
 struct TimeStep;
@@ -61,6 +62,22 @@ void change_slab_size(const gsl::not_null<db::DataBox<DbTags>*> box,
       old_time_step_id.time_runs_forward(), old_time_step_id.slab_number(),
       old_time_step_id.step_time().with_slab(new_slab));
   const auto new_time_step = old_time_step.with_slab(new_slab);
+
+  if (std::abs(new_time_step.value()) <
+      db::get<::Tags::MinimumTimeStep>(*box)) {
+    ERROR_NO_TRACE(
+        "Chosen step size "
+        << new_time_step.value() << " is smaller than the MinimumTimeStep of "
+        << db::get<::Tags::MinimumTimeStep>(*box)
+        << " while changing the slab size to " << new_slab.duration().value()
+        << ".\n"
+           "\n"
+           "This can indicate a flaw in the step chooser, the grid, or a "
+           "simulation instability that an error-based stepper is naively "
+           "attempting to resolve. A possible issue is an aliasing-driven "
+           "instability that could be cured by more aggressive filtering if "
+           "you are using DG.");
+  }
 
   const auto new_next_time_step_id =
       db::get<Tags::TimeStepper<TimeStepper>>(*box).next_time_id(

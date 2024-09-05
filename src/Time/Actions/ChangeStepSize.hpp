@@ -15,9 +15,11 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/TimeStepRequestProcessor.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -98,25 +100,52 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   const double desired_step = step_requests.step_size(
       time_step_id.step_time().value(), current_step.value());
 
-  constexpr double smallest_relative_step_size = 1.0e-9;
+  // We do this check twice, first on the desired value, and then on
+  // the actual chosen value, which is probably slightly smaller.
+  if (std::abs(desired_step) < db::get<::Tags::MinimumTimeStep>(*box)) {
+    ERROR_NO_TRACE(
+        "Chosen step size "
+        << desired_step << " is smaller than the MinimumTimeStep of "
+        << db::get<::Tags::MinimumTimeStep>(*box)
+        << ".\n"
+           "\n"
+           "This can indicate a flaw in the step chooser, the grid, or a "
+           "simulation instability that an error-based stepper is naively "
+           "attempting to resolve. A possible issue is an aliasing-driven "
+           "instability that could be cured by more aggressive filtering if "
+           "you are using DG.");
+  }
+
+  constexpr double smallest_relative_step_size = 1.0 / (1 << 31);
   if (abs(desired_step / current_step.slab().duration().value()) <
       smallest_relative_step_size) {
-    ERROR(
-        "Chosen step is extremely small; this can indicate a flaw in the "
-        "step chooser, the grid, or a simualtion instability that an "
-        "error-based stepper is naively attempting to resolve. It is unlikely "
-        "that the simulation can proceed in a stable and accurate manner. "
-        "A possible issue is an aliasing-driven instability that could be "
-        "cured by more aggressive filtering if you are using DG. The desired "
-        "time step size is "
-        << desired_step << " which, when divided by the slab size ("
-        << current_step.slab().duration().value() << ") is below the tolerance "
-        << smallest_relative_step_size << ". The current time is "
-        << time_step_id.substep_time() << ".");
+    ERROR_NO_TRACE(
+        "Chosen step "
+        << desired_step
+        << " cannot be represented as a fraction of a slab of size "
+        << current_step.slab().duration().value()
+        << " without integer overflow.  The smallest representable step is "
+        << smallest_relative_step_size * current_step.slab().duration().value()
+        << ".");
   }
 
   const auto new_step = choose_lts_step_size(
       time_step_id.step_time() + current_step, desired_step);
+
+  if (std::abs(new_step.value()) < db::get<::Tags::MinimumTimeStep>(*box)) {
+    ERROR_NO_TRACE(
+        "Chosen step size after conversion to a fraction of a slab "
+        << new_step << " is smaller than the MinimumTimeStep of "
+        << db::get<::Tags::MinimumTimeStep>(*box)
+        << ".\n"
+           "\n"
+           "This can indicate a flaw in the step chooser, the grid, or a "
+           "simulation instability that an error-based stepper is naively "
+           "attempting to resolve. A possible issue is an aliasing-driven "
+           "instability that could be cured by more aggressive filtering if "
+           "you are using DG.");
+  }
+
   db::mutate<Tags::Next<Tags::TimeStep>>(
       [&new_step](const gsl::not_null<TimeDelta*> next_step) {
         *next_step = new_step;
@@ -174,6 +203,8 @@ namespace Actions {
 /// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
 template <typename StepChoosersToUse = AllStepChoosers>
 struct ChangeStepSize {
+  using const_global_cache_tags = tmpl::list<::Tags::MinimumTimeStep>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

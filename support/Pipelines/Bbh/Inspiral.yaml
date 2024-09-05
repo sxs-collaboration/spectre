@@ -139,6 +139,7 @@ DomainCreator:
 Evolution:
   InitialTime: *InitialTime
   InitialTimeStep: 0.0002
+  MinimumTimeStep: 1e-7
   # This is the smallest interval we'd need to observe time step/constraints. If
   # you need it smaller you can edit it, but make sure to change the slab
   # intervals in the EventsAndTriggers

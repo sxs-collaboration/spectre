@@ -42,6 +42,7 @@ Evolution:
   InitialTime: &initial_time 0.0
   # Test backwards evolution in an integration test
   InitialTimeStep: -0.001
+  MinimumTimeStep: 1e-7
   TimeStepper:
     AdamsBashforth:
       Order: 3

@@ -14,6 +14,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
@@ -54,12 +55,12 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
             Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
             Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
             Tags::HistoryEvolvedVariables<Vars1>,
-            Tags::HistoryEvolvedVariables<Vars2>>,
+            Tags::HistoryEvolvedVariables<Vars2>, ::Tags::MinimumTimeStep>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
         initial_id, initial_step, next_id, next_step, diagnostics,
-        std::move(history1), std::move(history2));
+        std::move(history1), std::move(history2), 1e-8);
 
     change_slab_size(make_not_null(&box), 5.0);
 
@@ -107,12 +108,12 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
             Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
             Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
             Tags::HistoryEvolvedVariables<Vars1>,
-            Tags::HistoryEvolvedVariables<Vars2>>,
+            Tags::HistoryEvolvedVariables<Vars2>, ::Tags::MinimumTimeStep>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::Rk3HesthavenSsp>(time_stepper)),
         initial_id, initial_step, next_id, next_step, diagnostics,
-        std::move(history1), std::move(history2));
+        std::move(history1), std::move(history2), 1e-8);
 
     change_slab_size(make_not_null(&box), -1.0);
 
@@ -160,12 +161,12 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
             Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
             Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
             Tags::HistoryEvolvedVariables<Vars1>,
-            Tags::HistoryEvolvedVariables<Vars2>>,
+            Tags::HistoryEvolvedVariables<Vars2>, ::Tags::MinimumTimeStep>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
         initial_id, initial_step, next_id, next_step, diagnostics, history1,
-        history2);
+        history2, 1e-8);
 
     change_slab_size(make_not_null(&box), 3.0);
 

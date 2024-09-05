@@ -55,6 +55,7 @@ PhaseChangeAndTriggers:
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.001
+  MinimumTimeStep: 1e-7
   TimeStepper:
     AdamsBashforth:
       Order: 3

@@ -8,6 +8,7 @@ spectre_target_headers(
   InitialSlabSize.hpp
   InitialTime.hpp
   InitialTimeStep.hpp
+  MinimumTimeStep.hpp
   StepChoosers.hpp
   TimeStepper.hpp
   )

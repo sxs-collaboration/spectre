@@ -25,6 +25,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(Actions)
 add_subdirectory(ChangeSlabSize)
+add_subdirectory(OptionTags)
 add_subdirectory(StepChoosers)
 add_subdirectory(Tags)
 add_subdirectory(TimeSteppers)

@@ -27,6 +27,7 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepChoosers.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
@@ -109,14 +110,15 @@ void test_gts() {
                         Tags::HistoryEvolvedVariables<EvolvedVariable>,
                         Tags::ConcreteTimeStepper<TimeStepper>,
                         ::Tags::IsUsingTimeSteppingErrorControl,
-                        ::Tags::StepperErrorTolerances<EvolvedVariable>>,
+                        ::Tags::StepperErrorTolerances<EvolvedVariable>,
+                        ::Tags::MinimumTimeStep>,
       time_stepper_ref_tags<TimeStepper>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
-      false, std::optional<StepperErrorTolerances>{});
+      false, std::optional<StepperErrorTolerances>{}, 1e-8);
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
                                         db::get<EvolvedVariable>(box));
@@ -176,7 +178,7 @@ void test_lts() {
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
           ::Tags::IsUsingTimeSteppingErrorControl,
           ::Tags::StepperErrorTolerances<EvolvedVariable>,
-          Tags::AdaptiveSteppingDiagnostics>,
+          Tags::AdaptiveSteppingDiagnostics, ::Tags::MinimumTimeStep>,
       tmpl::push_back<time_stepper_ref_tags<LtsTimeStepper>,
                       typename Metavariables::system::
                           compute_largest_characteristic_speed>>(
@@ -189,7 +191,7 @@ void test_lts() {
       std::move(step_choosers),
       1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(), false,
       std::optional<StepperErrorTolerances>{},
-      AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
+      AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}, 1e-8);
 
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),

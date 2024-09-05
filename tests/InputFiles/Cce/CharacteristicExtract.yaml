@@ -14,6 +14,7 @@ Evolution:
   # The initial step sizes isn't super important because we use error-based
   # adaptive time stepping to adjust the step size.
   InitialTimeStep: 0.25
+  MinimumTimeStep: 1e-7
   # The initial Slab size controls how often the EventsAndTriggers are run. They
   # are run once per Slab.
   InitialSlabSize: 10.0
