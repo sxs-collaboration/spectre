@@ -180,7 +180,7 @@ def plot_slice(
         plt.gca().set_aspect("equal")
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm), ax=ax)
+    cbar = plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm), ax=ax)
     time_label = plt.annotate(
         "",
         xy=(0, 0),
@@ -212,6 +212,8 @@ def plot_slice(
             contours_filled, colors="white", linewidths=0.5, alpha=0.6
         )
         time_label.set_text(f"t = {time:g}")
+        if norm is None:
+            cbar.update_normal(contours_filled)
         return contours_filled.collections + contours.collections
 
     # Plot a static slice and return early
