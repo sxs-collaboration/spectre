@@ -4,30 +4,30 @@
 #pragma once
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/IndexToSliceAt.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
-
-#include <cmath>
-
-#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 
 namespace Xcts {
 
 /// @{
 /*!
- * \brief Surface integrand for ADM linear momentum calculation defined as (see
- * Eq. 20 in \cite Ossokine2015yla):
+ * \brief Surface integrand for the ADM linear momentum calculation.
+ *
+ * We define the ADM linear momentum integral as (see Eqs. 19-20 in
+ * \cite Ossokine2015yla):
  *
  * \begin{equation}
- *   \frac{1}{8\pi} \psi^{10} (K^{ij} - K \gamma^{ij})
+ *   P_\text{ADM}^i = \frac{1}{8\pi}
+ *                    \oint_{S_\infty} \psi^10 \Big(
+ *                      K^{ij} - K \gamma^{ij}
+ *                    \Big) \, dS_j.
  * \end{equation}
  *
- * \param result output buffer for the surface integrand
+ * \note For consistency with `adm_linear_momentum_volume_integrand`, this
+ * integrand needs to be contracted with the Euclidean face normal and
+ * integrated with the Euclidean area element.
+ *
+ * \param result output pointer
  * \param conformal_factor the conformal factor $\psi$
  * \param inv_spatial_metric the inverse spatial metric $\gamma^{ij}$
  * \param inv_extrinsic_curvature the inverse extrinsic curvature $K^{ij}$
@@ -54,23 +54,26 @@ tnsr::II<DataVector, 3> adm_linear_momentum_surface_integrand(
  * Eq. 20 in \cite Ossokine2015yla):
  *
  * \begin{equation}
- *   - \frac{1}{8\pi} (
- *       \bar\Gamma^i_{jk} P^{jk}
- *       + \bar\Gamma^j_{jk} P^{jk}
- *       - 2 \bar\gamma_{jk} P^{jk} \bar\gamma^{il} \partial_l(\ln\psi)
- *   ),
+ *   P_\text{ADM}^i = - \frac{1}{8\pi}
+ *                      \int_{V_\infty} \Big(
+ *                        \bar\Gamma^i_{jk} P^{jk}
+ *                        + \bar\Gamma^j_{jk} P^{jk}
+ *                        - 2 \bar\gamma_{jk} P^{jk} \bar\gamma^{il}
+ *                                                   \partial_l(\ln\psi)
+ *                      \Big) \, dV,
  * \end{equation}
  *
- * where $\frac{1}{8\pi} P^{jk}$ is the result from
+ * where $1/(8\pi) P^{jk}$ is the result from
  * `adm_linear_momentum_surface_integrand`.
  *
- * Note that we are including the negative sign in the integrand.
+ * \note For consistency with `adm_linear_momentum_surface_integrand`, this
+ * integrand needs to be integrated with the Euclidean volume element.
  *
- * \param result output buffer for the surface integrand
- * \param surface_integrand the result of
- * `adm_linear_momentum_surface_integrand`
+ * \param result output pointer
+ * \param surface_integrand the quantity $1/(8\pi) P^{ij}$ (result of
+ * `adm_linear_momentum_surface_integrand`)
  * \param conformal_factor the conformal factor $\psi$
- * \param conformal_factor_deriv the derivative of the conformal factor
+ * \param deriv_conformal_factor the gradient of the conformal factor
  * $\partial_i\psi$
  * \param conformal_metric the conformal metric $\bar\gamma_{ij}$
  * \param inv_conformal_metric the inverse conformal metric $\bar\gamma^{ij}$
@@ -83,7 +86,7 @@ void adm_linear_momentum_volume_integrand(
     gsl::not_null<tnsr::I<DataVector, 3>*> result,
     const tnsr::II<DataVector, 3>& surface_integrand,
     const Scalar<DataVector>& conformal_factor,
-    const tnsr::i<DataVector, 3>& conformal_factor_deriv,
+    const tnsr::i<DataVector, 3>& deriv_conformal_factor,
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind,
@@ -93,7 +96,7 @@ void adm_linear_momentum_volume_integrand(
 tnsr::I<DataVector, 3> adm_linear_momentum_volume_integrand(
     const tnsr::II<DataVector, 3>& surface_integrand,
     const Scalar<DataVector>& conformal_factor,
-    const tnsr::i<DataVector, 3>& conformal_factor_deriv,
+    const tnsr::i<DataVector, 3>& deriv_conformal_factor,
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
     const tnsr::Ijj<DataVector, 3>& conformal_christoffel_second_kind,
