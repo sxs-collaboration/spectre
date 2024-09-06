@@ -48,8 +48,8 @@ struct MockWorldtubeSingleton {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
-                  ::Tags::Time, Tags::ObserveCoefficientsTrigger, Tags::Psi0,
-                  Tags::dtPsi0,
+                  ::Tags::Time, ::Tags::TimeStepId,
+                  Tags::ObserveCoefficientsTrigger, Tags::Psi0, Tags::dtPsi0,
                   Stf::Tags::StfTensor<Tags::PsiWorldtube, 0, Dim,
                                        Frame::Inertial>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 0, Dim,
@@ -111,11 +111,16 @@ void check_observe_worldtube_solution(
   ActionTesting::MockRuntimeSystem<MockMetavariables<Dim>> runner{
       {expansion_order}};
 
-  // initial time should not trigger
-  const double initial_time = 0.5;
+  // this should NOT trigger because the initial time is too low and the substep
+  // is not 0
+  const double initial_time_value = 0.5;
+  const Slab initial_slab(0.2, 1.2);
+  const TimeDelta test_delta(initial_slab, {2, 4});
+  const Time initial_time(initial_slab, {2, 4});
+  const TimeStepId id(true, 1234, initial_time, 98, test_delta, 1.1);
   ActionTesting::emplace_component_and_initialize<worldtube_chare>(
       make_not_null(&runner), 0,
-      {initial_time, std::move(trigger), psi0, dt_psi0, psi_monopole,
+      {initial_time_value, id, std::move(trigger), psi0, dt_psi0, psi_monopole,
        dt_psi_monopole, psi_dipole, dt_psi_dipole, excision_sphere});
   ActionTesting::emplace_nodegroup_component_and_initialize<
       mock_observer_writer>(make_not_null(&runner), {});
@@ -124,15 +129,33 @@ void check_observe_worldtube_solution(
   // should not trigger, so no action in queue
   CHECK(ActionTesting::is_threaded_action_queue_empty<mock_observer_writer>(
       runner, 0));
+
   auto& box =
       ActionTesting::get_databox<worldtube_chare>(make_not_null(&runner), 0);
-
-  // mutate time so we trigger an observation
-  const double new_time = 3.9;
+  // mutate the time. This still should NOT trigger because we are still not at
+  // the beginning of a slab
+  const double new_time_value = 3.9;
   db::mutate<::Tags::Time>(
-      [&new_time](const gsl::not_null<double*> time) { *time = new_time; },
+      [&new_time_value](const gsl::not_null<double*> time) {
+        *time = new_time_value;
+      },
+      make_not_null(&box));
+  ActionTesting::next_action<worldtube_chare>(make_not_null(&runner), 0);
+  // should not trigger, so no action in queue
+  CHECK(ActionTesting::is_threaded_action_queue_empty<mock_observer_writer>(
+      runner, 0));
+
+  // create new time step id with substep 0
+  const Slab new_slab(new_time_value, new_time_value + 1.);
+  const Time new_time(new_slab, {0, 4});
+  const TimeStepId new_id(true, 12345, new_time);
+  db::mutate<::Tags::TimeStepId>(
+      [&new_id](const gsl::not_null<TimeStepId*> time_step_id) {
+        *time_step_id = new_id;
+      },
       make_not_null(&box));
 
+  // now we should trigger the action
   ActionTesting::next_action<worldtube_chare>(make_not_null(&runner), 0);
   CHECK_FALSE(
       ActionTesting::is_threaded_action_queue_empty<mock_observer_writer>(
@@ -150,7 +173,7 @@ void check_observe_worldtube_solution(
     const auto& data = dat_file.get_data();
     CHECK(data.rows() == 1);
     CHECK(data.columns() == 3);
-    CHECK(data.at(0, 0) == new_time);
+    CHECK(data.at(0, 0) == new_time_value);
     CHECK(data.at(0, 1) == get(psi_monopole));
     CHECK(data.at(0, 2) == get(dt_psi_monopole));
   } else if (expansion_order == 1) {
@@ -161,7 +184,7 @@ void check_observe_worldtube_solution(
     const auto& data = dat_file.get_data();
     CHECK(data.rows() == 1);
     CHECK(data.columns() == 9);
-    CHECK(data.at(0, 0) == new_time);
+    CHECK(data.at(0, 0) == new_time_value);
     CHECK(data.at(0, 1) == get(psi_monopole));
     CHECK(data.at(0, 2) == get<0>(psi_dipole));
     CHECK(data.at(0, 3) == get<1>(psi_dipole));
