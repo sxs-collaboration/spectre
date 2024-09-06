@@ -164,8 +164,8 @@ struct SendToWorldtube {
     Parallel::receive_data<Worldtube::Tags::SphericalHarmonicsInbox<Dim>>(
         worldtube_component, db::get<::Tags::TimeStepId>(box),
         std::make_pair(element_id, std::move(Ylm_coefs)));
-    if (db::get<Tags::CurrentIteration>(box) <
-        db::get<Tags::MaxIterations>(box) - 1) {
+    if (db::get<Tags::CurrentIteration>(box) + 1 <
+        db::get<Tags::MaxIterations>(box) ) {
       db::mutate<Tags::CurrentIteration>(
           [](const gsl::not_null<size_t*> current_iteration) {
             *current_iteration += 1;
