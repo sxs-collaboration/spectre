@@ -248,7 +248,7 @@ ControlSystems:
   MeasurementsPerUpdate: 4
   Verbosity: Silent
   Translation:
-    IsActive: false
+    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
@@ -264,7 +264,7 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   Shape:
-    IsActive: false
+    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
@@ -280,7 +280,7 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   Size:
-    IsActive: false
+    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: true
