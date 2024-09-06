@@ -27,6 +27,7 @@ SourceDomainCreator:
       RadialDistribution: Inverse
       OpeningAngle: 90.0
     UseEquiangularMap: True
+    CubeScale: 1.0
     InitialRefinement: 1
     InitialGridPoints: 7
     TimeDependentMaps: None
@@ -54,6 +55,7 @@ TargetDomainCreator:
       RadialDistribution: Linear
       OpeningAngle: 90.0
     UseEquiangularMap: True
+    CubeScale: 1.0
     InitialRefinement: 0
     InitialGridPoints: 3
     TimeDependentMaps: None

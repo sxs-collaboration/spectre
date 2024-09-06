@@ -123,9 +123,17 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  *   hemispheres. The cutting plane always intersects the x-axis at the origin.
  * - The x-coordinate locations of the two objects should be chosen such that
  *   the center of mass is located at x=0.
- * -  Alternatively, one can replace the inner shell and cube blocks of each
- *    object with a single cartesian cube. This is less efficient, but allows
- *    testing of methods only coded on cartesian grids.
+ * - The cubes are first constructed at the origin. Then, they are translated
+ *   left/right by their Object's x-coordinate and offset depending on the cube
+ *   length.
+ * - The CubeScale option describes how to scale the length of the cube
+ *   surrounding object A/B. It must be greater than or equal to 1.0 with 1.0
+ *   meaning the side length of the cube is the initial physical separation
+ *   between the two objects. If CubeScale is greater than 1.0, the centers of
+ *   the two objects will be offset relative to the centers of the cubes.
+ * - Alternatively, one can replace the inner shell and cube blocks of each
+ *   object with a single cartesian cube. This is less efficient, but allows
+ *   testing of methods only coded on cartesian grids.
  *
  * \par Time dependence:
  * The following time-dependent maps are applied:
@@ -376,6 +384,16 @@ class BinaryCompactObject : public DomainCreator<3> {
         " outer shell into six Blocks of equal angular size."};
   };
 
+  struct CubeScale {
+    using type = double;
+    static constexpr Options::String help = {
+        "Specify the desired cube scale that must be greater than or equal to "
+        "1.0. The initial separation is multiplied by this cube scale to "
+        "produce larger cubes around each object which is desirable when "
+        "closer to merger."};
+    static double lower_bound() { return 1.0; }
+  };
+
   struct InitialRefinement {
     using type =
         std::variant<size_t, std::array<size_t, 3>,
@@ -441,7 +459,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   template <typename Metavariables>
   using options = tmpl::append<
       tmpl::list<ObjectA, ObjectB, CenterOfMassOffset, EnvelopeRadius,
-                 OuterRadius, InitialRefinement, InitialGridPoints,
+                 OuterRadius, CubeScale, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, RadialDistributionEnvelope,
                  RadialDistributionOuterShell, OpeningAngle, TimeDependentMaps>,
       tmpl::conditional_t<
@@ -480,7 +498,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   BinaryCompactObject(
       typename ObjectA::type object_A, typename ObjectB::type object_B,
       std::array<double, 2> center_of_mass_offset, double envelope_radius,
-      double outer_radius,
+      double outer_radius, double cube_scale,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_number_of_grid_points,
       bool use_equiangular_map = true,
@@ -560,6 +578,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       block_groups_{};
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
       grid_anchors_{};
+  double offset_x_coord_a_{};
+  double offset_x_coord_b_{};
 
   // Variables to handle std::variant on Object A and B
   double x_coord_a_{};

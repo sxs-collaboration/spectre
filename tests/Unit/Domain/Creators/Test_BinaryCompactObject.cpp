@@ -109,210 +109,179 @@ void test_connectivity() {
   // Outer shell:
   constexpr double outer_radius = 32.4;
 
+  // Cube length array with and without offsets:
+  const std::array<double, 2> cube_scales = {{1.0, 1.5}};
+
   // Misc.:
   constexpr size_t grid_points = 3;
   constexpr bool use_equiangular_map = true;
 
-  for (const auto& [with_boundary_conditions, excise_interiorA,
-                    excise_interiorB, opening_angle,
-                    radial_distribution_envelope,
-                    radial_distribution_outer_shell] :
-       random_sample<5>(
-           cartesian_product(
-               make_array(true, false), make_array(true, false),
-               make_array(true, false), make_array(60.0, 90.0, 120.0),
-               make_array(Distribution::Linear, Distribution::Projective,
-                          Distribution::Logarithmic),
-               make_array(Distribution::Linear, Distribution::Logarithmic,
-                          Distribution::Inverse)),
-           make_not_null(&gen))) {
-    CAPTURE(with_boundary_conditions);
-    CAPTURE(excise_interiorA);
-    CAPTURE(excise_interiorB);
-    CAPTURE(opening_angle);
-    std::unordered_map<std::string, std::array<size_t, 3>> refinement{
-        {"ObjectAShell", {{1, 1, 1}}},
-        {"ObjectACube", {{1, 1, 1}}},
-        {"ObjectBShell", {{1, 1, 1}}},
-        {"ObjectBCube", {{1, 1, 1}}},
-        {"Envelope", {{1, 1, 1}}},
-        // Add some radial refinement in outer shell
-        {"OuterShell", {{1, 1, 4}}}};
-    if (not excise_interiorA) {
-      refinement["ObjectAInterior"] = std::array<size_t, 3>{{1, 1, 1}};
-    }
-    if (not excise_interiorB) {
-      refinement["ObjectBInterior"] = std::array<size_t, 3>{{1, 1, 1}};
-    }
-    CAPTURE(radial_distribution_outer_shell);
-    CAPTURE(radial_distribution_envelope);
-    const domain::creators::BinaryCompactObject binary_compact_object{
-        Object{inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
-               excise_interiorA ? std::make_optional(Excision{
-                                      with_boundary_conditions
-                                          ? create_inner_boundary_condition()
-                                          : nullptr})
-                                : std::nullopt,
-               false},
-        Object{inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
-               excise_interiorB ? std::make_optional(Excision{
-                                      with_boundary_conditions
-                                          ? create_inner_boundary_condition()
-                                          : nullptr})
-                                : std::nullopt,
-               false},
-        center_of_mass_offset,
-        envelope_radius,
-        outer_radius,
-        refinement,
-        grid_points,
-        use_equiangular_map,
-        radial_distribution_envelope,
-        radial_distribution_outer_shell,
-        opening_angle,
-        std::nullopt,
-        with_boundary_conditions ? create_outer_boundary_condition() : nullptr};
+  for (const auto& cube_scale : cube_scales) {
+    for (const auto& [with_boundary_conditions, excise_interiorA,
+                      excise_interiorB, opening_angle,
+                      radial_distribution_envelope,
+                      radial_distribution_outer_shell] :
+         random_sample<5>(
+             cartesian_product(
+                 make_array(true, false), make_array(true, false),
+                 make_array(true, false), make_array(60.0, 90.0, 120.0),
+                 make_array(Distribution::Linear, Distribution::Projective,
+                            Distribution::Logarithmic),
+                 make_array(Distribution::Linear, Distribution::Logarithmic,
+                            Distribution::Inverse)),
+             make_not_null(&gen))) {
+      CAPTURE(with_boundary_conditions);
+      CAPTURE(excise_interiorA);
+      CAPTURE(excise_interiorB);
+      CAPTURE(opening_angle);
+      CAPTURE(cube_scale);
+      CAPTURE(inner_radius_objectA);
+      CAPTURE(outer_radius_objectA);
+      CAPTURE(inner_radius_objectB);
+      CAPTURE(outer_radius_objectB);
+      std::unordered_map<std::string, std::array<size_t, 3>> refinement{
+          {"ObjectAShell", {{1, 1, 1}}},
+          {"ObjectACube", {{1, 1, 1}}},
+          {"ObjectBShell", {{1, 1, 1}}},
+          {"ObjectBCube", {{1, 1, 1}}},
+          {"Envelope", {{1, 1, 1}}},
+          // Add some radial refinement in outer shell
+          {"OuterShell", {{1, 1, 4}}}};
+      if (not excise_interiorA) {
+        refinement["ObjectAInterior"] = std::array<size_t, 3>{{1, 1, 1}};
+      }
+      if (not excise_interiorB) {
+        refinement["ObjectBInterior"] = std::array<size_t, 3>{{1, 1, 1}};
+      }
+      CAPTURE(radial_distribution_outer_shell);
+      CAPTURE(radial_distribution_envelope);
+      const domain::creators::BinaryCompactObject binary_compact_object{
+          Object{inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
+                 excise_interiorA ? std::make_optional(Excision{
+                                        with_boundary_conditions
+                                            ? create_inner_boundary_condition()
+                                            : nullptr})
+                                  : std::nullopt,
+                 false},
+          Object{inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
+                 excise_interiorB ? std::make_optional(Excision{
+                                        with_boundary_conditions
+                                            ? create_inner_boundary_condition()
+                                            : nullptr})
+                                  : std::nullopt,
+                 false},
+          center_of_mass_offset,
+          envelope_radius,
+          outer_radius,
+          (excise_interiorA and excise_interiorB and opening_angle == 90)
+              ? cube_scale
+              : cube_scales[0],
+          refinement,
+          grid_points,
+          use_equiangular_map,
+          radial_distribution_envelope,
+          radial_distribution_outer_shell,
+          opening_angle,
+          std::nullopt,
+          with_boundary_conditions ? create_outer_boundary_condition()
+                                   : nullptr};
 
-    const auto domain = TestHelpers::domain::creators::test_domain_creator(
-        binary_compact_object, with_boundary_conditions);
+      const auto domain = TestHelpers::domain::creators::test_domain_creator(
+          binary_compact_object, with_boundary_conditions);
 
-    std::vector<std::string> expected_block_names{
-        "ObjectAShellUpperZ",   "ObjectAShellLowerZ",
-        "ObjectAShellUpperY",   "ObjectAShellLowerY",
-        "ObjectAShellUpperX",   "ObjectAShellLowerX",
-        "ObjectACubeUpperZ",    "ObjectACubeLowerZ",
-        "ObjectACubeUpperY",    "ObjectACubeLowerY",
-        "ObjectACubeUpperX",    "ObjectACubeLowerX",
-        "ObjectBShellUpperZ",   "ObjectBShellLowerZ",
-        "ObjectBShellUpperY",   "ObjectBShellLowerY",
-        "ObjectBShellUpperX",   "ObjectBShellLowerX",
-        "ObjectBCubeUpperZ",    "ObjectBCubeLowerZ",
-        "ObjectBCubeUpperY",    "ObjectBCubeLowerY",
-        "ObjectBCubeUpperX",    "ObjectBCubeLowerX",
-        "EnvelopeUpperZLeft",   "EnvelopeUpperZRight",
-        "EnvelopeLowerZLeft",   "EnvelopeLowerZRight",
-        "EnvelopeUpperYLeft",   "EnvelopeUpperYRight",
-        "EnvelopeLowerYLeft",   "EnvelopeLowerYRight",
-        "EnvelopeUpperX",       "EnvelopeLowerX",
-        "OuterShellUpperZLeft", "OuterShellUpperZRight",
-        "OuterShellLowerZLeft", "OuterShellLowerZRight",
-        "OuterShellUpperYLeft", "OuterShellUpperYRight",
-        "OuterShellLowerYLeft", "OuterShellLowerYRight",
-        "OuterShellUpperX",     "OuterShellLowerX"};
-    std::unordered_map<std::string, std::unordered_set<std::string>>
-        expected_block_groups{
-            {"ObjectAShell",
-             {"ObjectAShellLowerZ", "ObjectAShellUpperX", "ObjectAShellLowerX",
-              "ObjectAShellUpperY", "ObjectAShellUpperZ",
-              "ObjectAShellLowerY"}},
-            {"ObjectBShell",
-             {"ObjectBShellLowerZ", "ObjectBShellUpperX", "ObjectBShellLowerX",
-              "ObjectBShellUpperY", "ObjectBShellUpperZ",
-              "ObjectBShellLowerY"}},
-            {"ObjectACube",
-             {"ObjectACubeLowerY", "ObjectACubeLowerZ", "ObjectACubeUpperY",
-              "ObjectACubeUpperX", "ObjectACubeUpperZ", "ObjectACubeLowerX"}},
-            {"ObjectBCube",
-             {"ObjectBCubeLowerY", "ObjectBCubeLowerZ", "ObjectBCubeUpperY",
-              "ObjectBCubeUpperX", "ObjectBCubeUpperZ", "ObjectBCubeLowerX"}},
-            {"Envelope",
-             {"EnvelopeUpperZRight", "EnvelopeUpperX", "EnvelopeLowerZLeft",
-              "EnvelopeLowerZRight", "EnvelopeUpperYRight",
-              "EnvelopeLowerYRight", "EnvelopeUpperYLeft", "EnvelopeUpperZLeft",
-              "EnvelopeLowerYLeft", "EnvelopeLowerX"}},
-            {"OuterShell",
-             {"OuterShellUpperZLeft", "OuterShellUpperZRight",
-              "OuterShellLowerZLeft", "OuterShellLowerZRight",
-              "OuterShellUpperYLeft", "OuterShellUpperYRight",
-              "OuterShellLowerYLeft", "OuterShellLowerYRight",
-              "OuterShellUpperX", "OuterShellLowerX"}}};
-    if (not excise_interiorA) {
-      expected_block_names.emplace_back("ObjectAInterior");
-    }
-    if (not excise_interiorB) {
-      expected_block_names.emplace_back("ObjectBInterior");
-    }
-    CHECK(binary_compact_object.block_names() == expected_block_names);
-    CHECK(binary_compact_object.block_groups() == expected_block_groups);
-    std::unordered_map<std::string, ExcisionSphere<3>>
-        expected_excision_spheres{};
-    if (excise_interiorA) {
-      expected_excision_spheres.emplace(
-          "ExcisionSphereA",
-          ExcisionSphere<3>{inner_radius_objectA,
-                            tnsr::I<double, 3, Frame::Grid>{
-                                {xcoord_objectA, center_of_mass_offset[0],
-                                 center_of_mass_offset[1]}},
-                            {{0, Direction<3>::lower_zeta()},
-                             {1, Direction<3>::lower_zeta()},
-                             {2, Direction<3>::lower_zeta()},
-                             {3, Direction<3>::lower_zeta()},
-                             {4, Direction<3>::lower_zeta()},
-                             {5, Direction<3>::lower_zeta()}}});
-    }
-    if (excise_interiorB) {
-      expected_excision_spheres.emplace(
-          "ExcisionSphereB",
-          ExcisionSphere<3>{inner_radius_objectB,
-                            tnsr::I<double, 3, Frame::Grid>{
-                                {xcoord_objectB, center_of_mass_offset[0],
-                                 center_of_mass_offset[1]}},
-                            {{12, Direction<3>::lower_zeta()},
-                             {13, Direction<3>::lower_zeta()},
-                             {14, Direction<3>::lower_zeta()},
-                             {15, Direction<3>::lower_zeta()},
-                             {16, Direction<3>::lower_zeta()},
-                             {17, Direction<3>::lower_zeta()}}});
-    }
-    CHECK(domain.excision_spheres() == expected_excision_spheres);
+      std::vector<std::string> expected_block_names{
+          "ObjectAShellUpperZ",   "ObjectAShellLowerZ",
+          "ObjectAShellUpperY",   "ObjectAShellLowerY",
+          "ObjectAShellUpperX",   "ObjectAShellLowerX",
+          "ObjectACubeUpperZ",    "ObjectACubeLowerZ",
+          "ObjectACubeUpperY",    "ObjectACubeLowerY",
+          "ObjectACubeUpperX",    "ObjectACubeLowerX",
+          "ObjectBShellUpperZ",   "ObjectBShellLowerZ",
+          "ObjectBShellUpperY",   "ObjectBShellLowerY",
+          "ObjectBShellUpperX",   "ObjectBShellLowerX",
+          "ObjectBCubeUpperZ",    "ObjectBCubeLowerZ",
+          "ObjectBCubeUpperY",    "ObjectBCubeLowerY",
+          "ObjectBCubeUpperX",    "ObjectBCubeLowerX",
+          "EnvelopeUpperZLeft",   "EnvelopeUpperZRight",
+          "EnvelopeLowerZLeft",   "EnvelopeLowerZRight",
+          "EnvelopeUpperYLeft",   "EnvelopeUpperYRight",
+          "EnvelopeLowerYLeft",   "EnvelopeLowerYRight",
+          "EnvelopeUpperX",       "EnvelopeLowerX",
+          "OuterShellUpperZLeft", "OuterShellUpperZRight",
+          "OuterShellLowerZLeft", "OuterShellLowerZRight",
+          "OuterShellUpperYLeft", "OuterShellUpperYRight",
+          "OuterShellLowerYLeft", "OuterShellLowerYRight",
+          "OuterShellUpperX",     "OuterShellLowerX"};
+      std::unordered_map<std::string, std::unordered_set<std::string>>
+          expected_block_groups{
+              {"ObjectAShell",
+               {"ObjectAShellLowerZ", "ObjectAShellUpperX",
+                "ObjectAShellLowerX", "ObjectAShellUpperY",
+                "ObjectAShellUpperZ", "ObjectAShellLowerY"}},
+              {"ObjectBShell",
+               {"ObjectBShellLowerZ", "ObjectBShellUpperX",
+                "ObjectBShellLowerX", "ObjectBShellUpperY",
+                "ObjectBShellUpperZ", "ObjectBShellLowerY"}},
+              {"ObjectACube",
+               {"ObjectACubeLowerY", "ObjectACubeLowerZ", "ObjectACubeUpperY",
+                "ObjectACubeUpperX", "ObjectACubeUpperZ", "ObjectACubeLowerX"}},
+              {"ObjectBCube",
+               {"ObjectBCubeLowerY", "ObjectBCubeLowerZ", "ObjectBCubeUpperY",
+                "ObjectBCubeUpperX", "ObjectBCubeUpperZ", "ObjectBCubeLowerX"}},
+              {"Envelope",
+               {"EnvelopeUpperZRight", "EnvelopeUpperX", "EnvelopeLowerZLeft",
+                "EnvelopeLowerZRight", "EnvelopeUpperYRight",
+                "EnvelopeLowerYRight", "EnvelopeUpperYLeft",
+                "EnvelopeUpperZLeft", "EnvelopeLowerYLeft", "EnvelopeLowerX"}},
+              {"OuterShell",
+               {"OuterShellUpperZLeft", "OuterShellUpperZRight",
+                "OuterShellLowerZLeft", "OuterShellLowerZRight",
+                "OuterShellUpperYLeft", "OuterShellUpperYRight",
+                "OuterShellLowerYLeft", "OuterShellLowerYRight",
+                "OuterShellUpperX", "OuterShellLowerX"}}};
+      if (not excise_interiorA) {
+        expected_block_names.emplace_back("ObjectAInterior");
+      }
+      if (not excise_interiorB) {
+        expected_block_names.emplace_back("ObjectBInterior");
+      }
+      CHECK(binary_compact_object.block_names() == expected_block_names);
+      CHECK(binary_compact_object.block_groups() == expected_block_groups);
+      std::unordered_map<std::string, ExcisionSphere<3>>
+          expected_excision_spheres{};
+      if (excise_interiorA) {
+        expected_excision_spheres.emplace(
+            "ExcisionSphereA",
+            ExcisionSphere<3>{inner_radius_objectA,
+                              tnsr::I<double, 3, Frame::Grid>{
+                                  {xcoord_objectA, center_of_mass_offset[0],
+                                   center_of_mass_offset[1]}},
+                              {{0, Direction<3>::lower_zeta()},
+                               {1, Direction<3>::lower_zeta()},
+                               {2, Direction<3>::lower_zeta()},
+                               {3, Direction<3>::lower_zeta()},
+                               {4, Direction<3>::lower_zeta()},
+                               {5, Direction<3>::lower_zeta()}}});
+      }
+      if (excise_interiorB) {
+        expected_excision_spheres.emplace(
+            "ExcisionSphereB",
+            ExcisionSphere<3>{inner_radius_objectB,
+                              tnsr::I<double, 3, Frame::Grid>{
+                                  {xcoord_objectB, center_of_mass_offset[0],
+                                   center_of_mass_offset[1]}},
+                              {{12, Direction<3>::lower_zeta()},
+                               {13, Direction<3>::lower_zeta()},
+                               {14, Direction<3>::lower_zeta()},
+                               {15, Direction<3>::lower_zeta()},
+                               {16, Direction<3>::lower_zeta()},
+                               {17, Direction<3>::lower_zeta()}}});
+      }
+      CHECK(domain.excision_spheres() == expected_excision_spheres);
 
-    if (with_boundary_conditions) {
-      using PeriodicBc = TestHelpers::domain::BoundaryConditions::
-          TestPeriodicBoundaryCondition<3>;
-      CHECK_THROWS_WITH(
-          domain::creators::BinaryCompactObject(
-              Object{inner_radius_objectA, outer_radius_objectA, xcoord_objectA,
-                     excise_interiorA ? std::make_optional(Excision{
-                                            create_inner_boundary_condition()})
-                                      : std::nullopt,
-                     false},
-              domain::creators::BinaryCompactObject<false>::Object{
-                  inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
-                  excise_interiorB ? std::make_optional(Excision{
-                                         create_inner_boundary_condition()})
-                                   : std::nullopt,
-                  false},
-              center_of_mass_offset, envelope_radius, outer_radius, refinement,
-              grid_points, use_equiangular_map, radial_distribution_envelope,
-              radial_distribution_outer_shell, opening_angle, std::nullopt,
-              std::make_unique<PeriodicBc>(),
-              Options::Context{false, {}, 1, 1}),
-          Catch::Matchers::ContainsSubstring(
-              "Cannot have periodic boundary "
-              "conditions with a binary domain"));
-      if (excise_interiorA or excise_interiorB) {
-        CHECK_THROWS_WITH(
-            domain::creators::BinaryCompactObject(
-                Object{inner_radius_objectA, outer_radius_objectA,
-                       xcoord_objectA,
-                       excise_interiorA ? std::make_optional(Excision{
-                                              std::make_unique<PeriodicBc>()})
-                                        : std::nullopt,
-                       false},
-                Object{inner_radius_objectB, outer_radius_objectB,
-                       xcoord_objectB,
-                       excise_interiorB ? std::make_optional(Excision{
-                                              std::make_unique<PeriodicBc>()})
-                                        : std::nullopt,
-                       false},
-                center_of_mass_offset, envelope_radius, outer_radius,
-                refinement, grid_points, use_equiangular_map,
-                radial_distribution_envelope, radial_distribution_outer_shell,
-                opening_angle, std::nullopt, create_outer_boundary_condition(),
-                Options::Context{false, {}, 1, 1}),
-            Catch::Matchers::ContainsSubstring(
-                "Cannot have periodic boundary "
-                "conditions with a binary domain"));
+      if (with_boundary_conditions) {
+        using PeriodicBc = TestHelpers::domain::BoundaryConditions::
+            TestPeriodicBoundaryCondition<3>;
         CHECK_THROWS_WITH(
             domain::creators::BinaryCompactObject(
                 Object{
@@ -321,40 +290,100 @@ void test_connectivity() {
                                            create_inner_boundary_condition()})
                                      : std::nullopt,
                     false},
-                Object{
+                domain::creators::BinaryCompactObject<false>::Object{
                     inner_radius_objectB, outer_radius_objectB, xcoord_objectB,
                     excise_interiorB ? std::make_optional(Excision{
                                            create_inner_boundary_condition()})
                                      : std::nullopt,
                     false},
                 center_of_mass_offset, envelope_radius, outer_radius,
+                (excise_interiorA and excise_interiorB) ? cube_scale
+                                                        : cube_scales[0],
                 refinement, grid_points, use_equiangular_map,
                 radial_distribution_envelope, radial_distribution_outer_shell,
-                opening_angle, std::nullopt, nullptr,
+                opening_angle, std::nullopt, std::make_unique<PeriodicBc>(),
                 Options::Context{false, {}, 1, 1}),
             Catch::Matchers::ContainsSubstring(
-                "Must specify either both inner and outer boundary "
-                "conditions or neither."));
-        CHECK_THROWS_WITH(
-            domain::creators::BinaryCompactObject(
-                Object{inner_radius_objectA, outer_radius_objectA,
-                       xcoord_objectA,
-                       excise_interiorA ? std::make_optional(Excision{nullptr})
-                                        : std::nullopt,
-                       false},
-                Object{inner_radius_objectB, outer_radius_objectB,
-                       xcoord_objectB,
-                       excise_interiorB ? std::make_optional(Excision{nullptr})
-                                        : std::nullopt,
-                       false},
-                center_of_mass_offset, envelope_radius, outer_radius,
-                refinement, grid_points, use_equiangular_map,
-                radial_distribution_envelope, radial_distribution_outer_shell,
-                opening_angle, std::nullopt, create_outer_boundary_condition(),
-                Options::Context{false, {}, 1, 1}),
-            Catch::Matchers::ContainsSubstring(
-                "Must specify either both inner and outer boundary "
-                "conditions or neither."));
+                "Cannot have periodic boundary "
+                "conditions with a binary domain"));
+        if (excise_interiorA or excise_interiorB) {
+          CHECK_THROWS_WITH(
+              domain::creators::BinaryCompactObject(
+                  Object{inner_radius_objectA, outer_radius_objectA,
+                         xcoord_objectA,
+                         excise_interiorA ? std::make_optional(Excision{
+                                                std::make_unique<PeriodicBc>()})
+                                          : std::nullopt,
+                         false},
+                  Object{inner_radius_objectB, outer_radius_objectB,
+                         xcoord_objectB,
+                         excise_interiorB ? std::make_optional(Excision{
+                                                std::make_unique<PeriodicBc>()})
+                                          : std::nullopt,
+                         false},
+                  center_of_mass_offset, envelope_radius, outer_radius,
+                  (excise_interiorA and excise_interiorB) ? cube_scale
+                                                          : cube_scales[0],
+                  refinement, grid_points, use_equiangular_map,
+                  radial_distribution_envelope, radial_distribution_outer_shell,
+                  opening_angle, std::nullopt,
+                  create_outer_boundary_condition(),
+                  Options::Context{false, {}, 1, 1}),
+              Catch::Matchers::ContainsSubstring(
+                  "Cannot have periodic boundary "
+                  "conditions with a binary domain"));
+          CHECK_THROWS_WITH(
+              domain::creators::BinaryCompactObject(
+                  Object{inner_radius_objectA, outer_radius_objectA,
+                         xcoord_objectA,
+                         excise_interiorA
+                             ? std::make_optional(
+                                   Excision{create_inner_boundary_condition()})
+                             : std::nullopt,
+                         false},
+                  Object{inner_radius_objectB, outer_radius_objectB,
+                         xcoord_objectB,
+                         excise_interiorB
+                             ? std::make_optional(
+                                   Excision{create_inner_boundary_condition()})
+                             : std::nullopt,
+                         false},
+                  center_of_mass_offset, envelope_radius, outer_radius,
+                  (excise_interiorA and excise_interiorB) ? cube_scale
+                                                          : cube_scales[0],
+                  refinement, grid_points, use_equiangular_map,
+                  radial_distribution_envelope, radial_distribution_outer_shell,
+                  opening_angle, std::nullopt, nullptr,
+                  Options::Context{false, {}, 1, 1}),
+              Catch::Matchers::ContainsSubstring(
+                  "Must specify either both inner and outer boundary "
+                  "conditions or neither."));
+          CHECK_THROWS_WITH(
+              domain::creators::BinaryCompactObject(
+                  Object{inner_radius_objectA, outer_radius_objectA,
+                         xcoord_objectA,
+                         excise_interiorA
+                             ? std::make_optional(Excision{nullptr})
+                             : std::nullopt,
+                         false},
+                  Object{inner_radius_objectB, outer_radius_objectB,
+                         xcoord_objectB,
+                         excise_interiorB
+                             ? std::make_optional(Excision{nullptr})
+                             : std::nullopt,
+                         false},
+                  center_of_mass_offset, envelope_radius, outer_radius,
+                  (excise_interiorA and excise_interiorB) ? cube_scale
+                                                          : cube_scales[0],
+                  refinement, grid_points, use_equiangular_map,
+                  radial_distribution_envelope, radial_distribution_outer_shell,
+                  opening_angle, std::nullopt,
+                  create_outer_boundary_condition(),
+                  Options::Context{false, {}, 1, 1}),
+              Catch::Matchers::ContainsSubstring(
+                  "Must specify either both inner and outer boundary "
+                  "conditions or neither."));
+        }
       }
     }
   }
@@ -368,6 +397,8 @@ std::string create_option_string(
     const size_t additional_refinement_outer,
     const size_t additional_refinement_A, const size_t additional_refinement_B,
     const double opening_angle, const bool add_boundary_condition) {
+  const std::string cube_length =
+      (excise_A and excise_B and opening_angle == 90) ? "1.5" : "1.0";
   const std::string time_dependence{
       add_time_dependence
           ? "  TimeDependentMaps:\n"
@@ -458,7 +489,9 @@ std::string create_option_string(
          "    OuterShell: [1, 1, " +
          std::to_string(1 + additional_refinement_outer) +
          "]\n"
-         "  InitialGridPoints: 3\n"
+         "  InitialGridPoints: 3\n" +
+         "  CubeScale: " + cube_length +
+         "\n"
          "  UseEquiangularMap: " +
          stringize(use_equiangular_map) + "\n" + time_dependence;
 }
@@ -485,6 +518,9 @@ void test_bns_domain_with_cubes() {
   constexpr double outer_radius = 32.4;
   constexpr double opening_angle = 90.0;
 
+  // Cube length array with and without offsets:
+  const std::array<double, 2> cube_scales = {{1.0, 1.5}};
+
   // Misc.:
   constexpr size_t grid_points = 3;
   constexpr bool use_equiangular_map = false;
@@ -496,61 +532,65 @@ void test_bns_domain_with_cubes() {
       {"ObjectB", {{1, 1, 1}}},
       {"Envelope", {{1, 1, 1}}},
       {"OuterShell", {{1, 1, 4}}}};
-  const domain::creators::BinaryCompactObject binary_compact_object{
-      CartesianCubeAtXCoord{xcoord_objectA},
-      CartesianCubeAtXCoord{xcoord_objectB},
-      center_of_mass_offset,
-      envelope_radius,
-      outer_radius,
-      refinement,
-      grid_points,
-      use_equiangular_map,
-      radial_distribution_envelope,
-      radial_distribution_outer_shell,
-      opening_angle,
-      std::nullopt,
-      create_outer_boundary_condition()};
 
-  const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      binary_compact_object, with_boundary_conditions);
+  for (const auto cube_scale : cube_scales) {
+    const domain::creators::BinaryCompactObject binary_compact_object{
+        CartesianCubeAtXCoord{xcoord_objectA},
+        CartesianCubeAtXCoord{xcoord_objectB},
+        center_of_mass_offset,
+        envelope_radius,
+        outer_radius,
+        cube_scale,
+        refinement,
+        grid_points,
+        use_equiangular_map,
+        radial_distribution_envelope,
+        radial_distribution_outer_shell,
+        opening_angle,
+        std::nullopt,
+        create_outer_boundary_condition()};
 
-  std::vector<std::string> expected_block_names{"ObjectA",
-                                                "ObjectB",
-                                                "EnvelopeUpperZLeft",
-                                                "EnvelopeUpperZRight",
-                                                "EnvelopeLowerZLeft",
-                                                "EnvelopeLowerZRight",
-                                                "EnvelopeUpperYLeft",
-                                                "EnvelopeUpperYRight",
-                                                "EnvelopeLowerYLeft",
-                                                "EnvelopeLowerYRight",
-                                                "EnvelopeUpperX",
-                                                "EnvelopeLowerX",
-                                                "OuterShellUpperZLeft",
-                                                "OuterShellUpperZRight",
-                                                "OuterShellLowerZLeft",
-                                                "OuterShellLowerZRight",
-                                                "OuterShellUpperYLeft",
-                                                "OuterShellUpperYRight",
-                                                "OuterShellLowerYLeft",
-                                                "OuterShellLowerYRight",
-                                                "OuterShellUpperX",
-                                                "OuterShellLowerX"};
-  std::unordered_map<std::string, std::unordered_set<std::string>>
-      expected_block_groups{
-          {"Envelope",
-           {"EnvelopeUpperZRight", "EnvelopeUpperX", "EnvelopeLowerZLeft",
-            "EnvelopeLowerZRight", "EnvelopeUpperYRight", "EnvelopeLowerYRight",
-            "EnvelopeUpperYLeft", "EnvelopeUpperZLeft", "EnvelopeLowerYLeft",
-            "EnvelopeLowerX"}},
-          {"OuterShell",
-           {"OuterShellUpperZLeft", "OuterShellUpperZRight",
-            "OuterShellLowerZLeft", "OuterShellLowerZRight",
-            "OuterShellUpperYLeft", "OuterShellUpperYRight",
-            "OuterShellLowerYLeft", "OuterShellLowerYRight", "OuterShellUpperX",
-            "OuterShellLowerX"}}};
-  CHECK(binary_compact_object.block_names() == expected_block_names);
-  CHECK(binary_compact_object.block_groups() == expected_block_groups);
+    const auto domain = TestHelpers::domain::creators::test_domain_creator(
+        binary_compact_object, with_boundary_conditions);
+
+    std::vector<std::string> expected_block_names{"ObjectA",
+                                                  "ObjectB",
+                                                  "EnvelopeUpperZLeft",
+                                                  "EnvelopeUpperZRight",
+                                                  "EnvelopeLowerZLeft",
+                                                  "EnvelopeLowerZRight",
+                                                  "EnvelopeUpperYLeft",
+                                                  "EnvelopeUpperYRight",
+                                                  "EnvelopeLowerYLeft",
+                                                  "EnvelopeLowerYRight",
+                                                  "EnvelopeUpperX",
+                                                  "EnvelopeLowerX",
+                                                  "OuterShellUpperZLeft",
+                                                  "OuterShellUpperZRight",
+                                                  "OuterShellLowerZLeft",
+                                                  "OuterShellLowerZRight",
+                                                  "OuterShellUpperYLeft",
+                                                  "OuterShellUpperYRight",
+                                                  "OuterShellLowerYLeft",
+                                                  "OuterShellLowerYRight",
+                                                  "OuterShellUpperX",
+                                                  "OuterShellLowerX"};
+    std::unordered_map<std::string, std::unordered_set<std::string>>
+        expected_block_groups{
+            {"Envelope",
+             {"EnvelopeUpperZRight", "EnvelopeUpperX", "EnvelopeLowerZLeft",
+              "EnvelopeLowerZRight", "EnvelopeUpperYRight",
+              "EnvelopeLowerYRight", "EnvelopeUpperYLeft", "EnvelopeUpperZLeft",
+              "EnvelopeLowerYLeft", "EnvelopeLowerX"}},
+            {"OuterShell",
+             {"OuterShellUpperZLeft", "OuterShellUpperZRight",
+              "OuterShellLowerZLeft", "OuterShellLowerZRight",
+              "OuterShellUpperYLeft", "OuterShellUpperYRight",
+              "OuterShellLowerYLeft", "OuterShellLowerYRight",
+              "OuterShellUpperX", "OuterShellLowerX"}}};
+    CHECK(binary_compact_object.block_names() == expected_block_names);
+    CHECK(binary_compact_object.block_groups() == expected_block_groups);
+  }
 }
 
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
@@ -696,7 +736,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -705,7 +745,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -714,7 +754,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -722,9 +762,19 @@ void test_parse_errors() {
           "small! The Frustums will be malformed."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 0.5, 2_st, 6_st, true,
+          Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "The cube length should be greater than or equal to the initial "
+          "separation between the two objects."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -733,7 +783,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -742,7 +792,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, std::nullopt, true},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, true, 6_st,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -753,7 +803,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, std::nullopt, true},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st, 6_st, true,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
@@ -764,7 +814,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0,
           std::vector<std::array<size_t, 3>>{}, 6_st, true,
           Distribution::Projective, Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
@@ -773,7 +823,7 @@ void test_parse_errors() {
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 2_st,
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st,
           std::vector<std::array<size_t, 3>>{}, true, Distribution::Projective,
           Distribution::Linear, 120.0, std::nullopt,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
@@ -803,6 +853,7 @@ void test_kerr_horizon_conforming() {
       std::array<double, 2>{{0.1, 0.2}},
       40.,
       200.,
+      1.0,
       0_st,
       6_st,
       true,

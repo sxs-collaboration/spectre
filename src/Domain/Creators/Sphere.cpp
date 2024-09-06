@@ -308,7 +308,7 @@ Domain<3> Sphere::create_domain() const {
       sph_wedge_coordinate_maps(
           inner_radius_, outer_radius_,
           fill_interior_ ? std::get<InnerCube>(interior_).sphericity : 1.0, 1.0,
-          use_equiangular_map_, false, radial_partitioning_,
+          use_equiangular_map_, std::nullopt, false, radial_partitioning_,
           radial_distribution_, which_wedges_),
       compression);
 

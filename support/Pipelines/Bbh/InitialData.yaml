@@ -114,6 +114,7 @@ DomainCreator:
       OpeningAngle: 120.0
       BoundaryCondition: Robin
     UseEquiangularMap: True
+    CubeScale: 1.0
     InitialRefinement:
       ObjectAShell:     [{{ L }}, {{ L }}, {{ L }}]
       ObjectBShell:     [{{ L }}, {{ L }}, {{ L }}]

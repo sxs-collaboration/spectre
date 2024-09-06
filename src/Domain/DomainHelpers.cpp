@@ -595,8 +595,10 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
-    const bool use_equiangular_map, const bool use_half_wedges,
-    const std::vector<double>& radial_partitioning,
+    const bool use_equiangular_map,
+    const std::optional<std::pair<double, std::array<double, 3>>>&
+        offset_options,
+    const bool use_half_wedges, const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
     const ShellWedges which_wedges, const double opening_angle) {
@@ -616,63 +618,114 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 
   const size_t number_of_layers = 1 + radial_partitioning.size();
   double temp_inner_radius = inner_radius;
-  double temp_outer_radius{};
   double temp_inner_sphericity = inner_sphericity;
-  for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
-    const auto& radial_distribution_this_layer =
-        radial_distribution.at(layer_i);
-    if (layer_i != radial_partitioning.size()) {
-      temp_outer_radius = radial_partitioning.at(layer_i);
-    } else {
-      temp_outer_radius = outer_radius;
+  if (offset_options.has_value()) {
+    for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
+      const auto& radial_distribution_this_layer =
+          radial_distribution.at(layer_i);
+      std::optional<double> optional_outer_radius{};
+      if (outer_sphericity != 0.0) {
+        optional_outer_radius = outer_radius;
+      } else {
+        optional_outer_radius = std::nullopt;
+      }
+      // Generate wedges/half-wedges a layer at a time.
+      std::vector<Wedge3DMap> wedges_for_this_layer{};
+      if (not use_half_wedges) {
+        for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
+             face_j++) {
+          wedges_for_this_layer.emplace_back(
+              temp_inner_radius, optional_outer_radius,
+              offset_options.value().first, offset_options.value().second,
+              gsl::at(wedge_orientations, face_j), use_equiangular_map,
+              Halves::Both, radial_distribution_this_layer);
+        }
+      } else {
+        for (size_t i = 0; i < 4; i++) {
+          wedges_for_this_layer.emplace_back(
+              temp_inner_radius, optional_outer_radius,
+              offset_options.value().first, offset_options.value().second,
+              gsl::at(wedge_orientations, i), use_equiangular_map,
+              Halves::LowerOnly, radial_distribution_this_layer);
+          wedges_for_this_layer.emplace_back(
+              temp_inner_radius, optional_outer_radius,
+              offset_options.value().first, offset_options.value().second,
+              gsl::at(wedge_orientations, i), use_equiangular_map,
+              Halves::UpperOnly, radial_distribution_this_layer);
+        }
+        wedges_for_this_layer.emplace_back(
+            temp_inner_radius, optional_outer_radius,
+            offset_options.value().first, offset_options.value().second,
+            gsl::at(wedge_orientations, 4), use_equiangular_map, Halves::Both,
+            radial_distribution_this_layer);
+        wedges_for_this_layer.emplace_back(
+            temp_inner_radius, optional_outer_radius,
+            offset_options.value().first, offset_options.value().second,
+            gsl::at(wedge_orientations, 5), use_equiangular_map, Halves::Both,
+            radial_distribution_this_layer);
+      }
+      for (const auto& wedge : wedges_for_this_layer) {
+        wedges_for_all_layers.push_back(wedge);
+      }
     }
-    // Generate wedges/half-wedges a layer at a time.
-    std::vector<Wedge3DMap> wedges_for_this_layer{};
-    if (not use_half_wedges) {
-      for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
-           face_j++) {
+  } else {
+    double temp_outer_radius{};
+    for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
+      const auto& radial_distribution_this_layer =
+          radial_distribution.at(layer_i);
+      if (layer_i != radial_partitioning.size()) {
+        temp_outer_radius = radial_partitioning.at(layer_i);
+      } else {
+        temp_outer_radius = outer_radius;
+      }
+      // Generate wedges/half-wedges a layer at a time.
+      std::vector<Wedge3DMap> wedges_for_this_layer{};
+      if (not use_half_wedges) {
+        for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
+             face_j++) {
+          wedges_for_this_layer.emplace_back(
+              temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
+              outer_sphericity, gsl::at(wedge_orientations, face_j),
+              use_equiangular_map, Halves::Both, radial_distribution_this_layer,
+              std::array<double, 2>({{M_PI_2, M_PI_2}}));
+        }
+      } else {
+        for (size_t i = 0; i < 4; i++) {
+          wedges_for_this_layer.emplace_back(
+              temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
+              outer_sphericity, gsl::at(wedge_orientations, i),
+              use_equiangular_map, Halves::LowerOnly,
+              radial_distribution_this_layer,
+              std::array<double, 2>({{opening_angle, M_PI_2}}));
+          wedges_for_this_layer.emplace_back(
+              temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
+              outer_sphericity, gsl::at(wedge_orientations, i),
+              use_equiangular_map, Halves::UpperOnly,
+              radial_distribution_this_layer,
+              std::array<double, 2>({{opening_angle, M_PI_2}}));
+        }
+        const double endcap_opening_angle = M_PI - opening_angle;
+        const std::array<double, 2> endcap_opening_angles = {
+            {endcap_opening_angle, endcap_opening_angle}};
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
-            outer_sphericity, gsl::at(wedge_orientations, face_j),
+            outer_sphericity, gsl::at(wedge_orientations, 4),
             use_equiangular_map, Halves::Both, radial_distribution_this_layer,
-            std::array<double, 2>({{M_PI_2, M_PI_2}}));
-      }
-    } else {
-      for (size_t i = 0; i < 4; i++) {
+            endcap_opening_angles, false);
         wedges_for_this_layer.emplace_back(
             temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
-            outer_sphericity, gsl::at(wedge_orientations, i),
-            use_equiangular_map, Halves::LowerOnly,
-            radial_distribution_this_layer,
-            std::array<double, 2>({{opening_angle, M_PI_2}}));
-        wedges_for_this_layer.emplace_back(
-            temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
-            outer_sphericity, gsl::at(wedge_orientations, i),
-            use_equiangular_map, Halves::UpperOnly,
-            radial_distribution_this_layer,
-            std::array<double, 2>({{opening_angle, M_PI_2}}));
+            outer_sphericity, gsl::at(wedge_orientations, 5),
+            use_equiangular_map, Halves::Both, radial_distribution_this_layer,
+            endcap_opening_angles, false);
       }
-      const double endcap_opening_angle = M_PI - opening_angle;
-      const std::array<double, 2> endcap_opening_angles = {
-          {endcap_opening_angle, endcap_opening_angle}};
-      wedges_for_this_layer.emplace_back(
-          temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
-          outer_sphericity, gsl::at(wedge_orientations, 4), use_equiangular_map,
-          Halves::Both, radial_distribution_this_layer, endcap_opening_angles,
-          false);
-      wedges_for_this_layer.emplace_back(
-          temp_inner_radius, temp_outer_radius, temp_inner_sphericity,
-          outer_sphericity, gsl::at(wedge_orientations, 5), use_equiangular_map,
-          Halves::Both, radial_distribution_this_layer, endcap_opening_angles,
-          false);
-    }
-    for (const auto& wedge : wedges_for_this_layer) {
-      wedges_for_all_layers.push_back(wedge);
-    }
+      for (const auto& wedge : wedges_for_this_layer) {
+        wedges_for_all_layers.push_back(wedge);
+      }
 
-    if (layer_i != radial_partitioning.size()) {
-      temp_inner_radius = radial_partitioning.at(layer_i);
-      temp_inner_sphericity = outer_sphericity;
+      if (layer_i != radial_partitioning.size()) {
+        temp_inner_radius = radial_partitioning.at(layer_i);
+        temp_inner_sphericity = outer_sphericity;
+      }
     }
   }
   return wedges_for_all_layers;

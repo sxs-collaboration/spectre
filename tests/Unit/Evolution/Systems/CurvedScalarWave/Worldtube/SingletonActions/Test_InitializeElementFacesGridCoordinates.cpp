@@ -125,6 +125,7 @@ SPECTRE_TEST_CASE(
         std::array<double, 2>{{0.1, 0.2}},
         30.,
         50.,
+        1.0,
         initial_refinement,
         initial_extents};
     test_initialize_element_faces_coordinates_map(binary_compact_object,

@@ -103,6 +103,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         std::array<double, 2>{{0., 0.}},
         60.,
         300.,
+        1.0,
         0_st,
         6_st,
         true,

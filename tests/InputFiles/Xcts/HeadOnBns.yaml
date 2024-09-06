@@ -65,6 +65,7 @@ DomainCreator:
       OpeningAngle: 90.0
       BoundaryCondition: Flatness
     UseEquiangularMap: True
+    CubeScale: 1.0
     # This h-refinement is set up so spherical wedges have equal angular size.
     # Once the domain supports equatorial compression (or similar) this
     # h-refinement will simplify considerably.
