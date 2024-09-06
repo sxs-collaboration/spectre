@@ -296,7 +296,7 @@ void test_iterations(const size_t max_iterations) {
           make_not_null(&runner), element_id));
     }
 
-    for (size_t current_iteration = 1; current_iteration <= max_iterations - 1;
+    for (size_t current_iteration = 1; current_iteration + 1 <= max_iterations;
          ++current_iteration) {
       CAPTURE(current_iteration);
       using inbox_tag = Tags::SphericalHarmonicsInbox<Dim>;
@@ -411,6 +411,7 @@ void test_iterations(const size_t max_iterations) {
 }
 
 SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.Iterations", "[Unit]") {
+  test_iterations(0);
   test_iterations(1);
   test_iterations(2);
   test_iterations(5);

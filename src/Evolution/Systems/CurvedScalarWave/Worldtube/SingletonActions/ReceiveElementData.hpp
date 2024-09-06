@@ -128,8 +128,8 @@ struct ReceiveElementData {
         ylm::ylm_to_stf_0(dt_psi_ylm_l0), std::move(psi_stf_l1),
         std::move(dt_psi_stf_l1));
     inbox.erase(time_step_id);
-    if (db::get<Tags::CurrentIteration>(box) <
-        db::get<Tags::MaxIterations>(box) - 1) {
+    if (db::get<Tags::CurrentIteration>(box) + 1 <
+        db::get<Tags::MaxIterations>(box)) {
       db::mutate<Tags::CurrentIteration>(
           [](const gsl::not_null<size_t*> current_iteration) {
             *current_iteration += 1;
