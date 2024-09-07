@@ -4,17 +4,25 @@
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 
 #include <array>
+#include <cmath>
+#include <fstream>
+#include <istream>
+#include <limits>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <variant>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
+#include "FromVolumeFile.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
@@ -36,6 +44,16 @@ YlmsFromFile::YlmsFromFile(std::string h5_filename_in,
       match_time_epsilon(match_time_epsilon_in),
       set_l1_coefs_to_zero(set_l1_coefs_to_zero_in),
       check_frame(check_frame_in) {}
+
+YlmsFromSpEC::YlmsFromSpEC() = default;
+YlmsFromSpEC::YlmsFromSpEC(std::string dat_filename_in,
+                           const double match_time_in,
+                           const std::optional<double> match_time_epsilon_in,
+                           bool set_l1_coefs_to_zero_in)
+    : dat_filename(std::move(dat_filename_in)),
+      match_time(match_time_in),
+      match_time_epsilon(match_time_epsilon_in),
+      set_l1_coefs_to_zero(set_l1_coefs_to_zero_in) {}
 
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
 std::pair<std::array<DataVector, 3>, std::array<DataVector, 4>>
@@ -65,7 +83,7 @@ initial_shape_and_size_funcs(
       shape_funcs[0] = ylm.phys_to_spec(radial_distortion);
       // Transform from SPHEREPACK to actual Ylm for size func
       size_funcs[0][0] = shape_funcs[0][0] * sqrt(0.5 * M_PI);
-      // Set l=0 for shape map to 0 because size is going to be used
+      // Set l=0 for shape map to 0 because size control will adjust l=0
       shape_funcs[0][0] = 0.0;
     } else if (std::holds_alternative<YlmsFromFile>(
                    shape_options.initial_values.value())) {
@@ -98,7 +116,7 @@ initial_shape_and_size_funcs(
         // Transform from SPHEREPACK to actual Ylm for size func
         gsl::at(size_funcs, i)[0] =
             gsl::at(shape_funcs, i)[0] * sqrt(0.5 * M_PI);
-        // Set l=0 for shape map to 0 because size is going to be used
+        // Set l=0 for shape map to 0 because size control will adjust l=0
         gsl::at(shape_funcs, i)[0] = 0.0;
         if (set_l1_coefs_to_zero) {
           for (int m = -1; m <= 1; m++) {
@@ -106,6 +124,117 @@ initial_shape_and_size_funcs(
           }
         }
       }
+    } else if (std::holds_alternative<YlmsFromSpEC>(
+                   shape_options.initial_values.value())) {
+      const auto& spec_option =
+          std::get<YlmsFromSpEC>(shape_options.initial_values.value());
+      const std::string& dat_filename = spec_option.dat_filename;
+      const double match_time = spec_option.match_time;
+      const double match_time_epsilon =
+          spec_option.match_time_epsilon.value_or(1e-12);
+      const bool set_l1_coefs_to_zero = spec_option.set_l1_coefs_to_zero;
+
+      std::ifstream dat_file(dat_filename);
+      if (not dat_file.is_open()) {
+        ERROR("Unable to open SpEC dat file " << dat_filename);
+      }
+      std::string line{};
+      size_t total_col = 0;
+      std::optional<size_t> l_max{};
+      std::array<double, 3> center{};
+      ModalVector coefficients{};
+      // This will be actually set below
+      ylm::SpherepackIterator file_iter{2, 2};
+
+      // We have to parse the dat file manually
+      while (std::getline(dat_file, line)) {
+        // Avoid comment lines. The SpEC file puts the legend in comments at the
+        // top of the file, so we count how many columns the dat file has based
+        // on the number of comment lines that are the legend (ends in ')')
+        if (line.starts_with("#")) {
+          if (line.starts_with("# [") and line.ends_with(")")) {
+            ++total_col;
+          }
+          continue;
+        }
+
+        std::stringstream ss(line);
+
+        double time = 0.0;
+        ss >> time;
+
+        // Set scale to current time plus 1 just in case time = 0
+        if (not equal_within_roundoff(time, match_time, match_time_epsilon,
+                                      time + 1.0)) {
+          continue;
+        }
+
+        if (l_max.has_value()) {
+          ERROR("Found more than one time in the SpEC dat file "
+                << dat_filename << " that is within a relative epsilon of "
+                << match_time_epsilon << " of the time requested " << time);
+        }
+
+        // Casting to an integer floors a double, so we add 0.5 before we take
+        // the sqrt to avoid any rounding issues
+        const auto l_max_plus_one =
+            static_cast<size_t>(sqrt(static_cast<double>(total_col) + 0.5));
+        if (l_max_plus_one == 0) {
+          ERROR(
+              "Invalid l_max from SpEC dat file. l_max + 1 was computed to be "
+              "0");
+        }
+        l_max = l_max_plus_one - 1;
+
+        ss >> center[0];
+        ss >> center[1];
+        ss >> center[2];
+
+        coefficients.destructive_resize(
+            ylm::Spherepack::spectral_size(l_max.value(), l_max.value()));
+
+        file_iter = ylm::SpherepackIterator{l_max.value(), l_max.value()};
+
+        for (int l = 0; l <= static_cast<int>(l_max.value()); l++) {
+          for (int m = -l; m <= l; m++) {
+            ss >> coefficients[file_iter.set(static_cast<size_t>(l), m)()];
+          }
+        }
+      }
+
+      if (not l_max.has_value()) {
+        ERROR_NO_TRACE("Unable to find requested time "
+                       << time << " within an epsilon of " << match_time_epsilon
+                       << " in SpEC dat file " << dat_filename);
+      }
+
+      const ylm::Strahlkorper<Frame::Inertial> file_strahlkorper{
+          l_max.value(), l_max.value(), coefficients, center};
+      const ylm::Strahlkorper<Frame::Inertial> this_strahlkorper{
+          shape_options.l_max, 1.0, std::array{0.0, 0.0, 0.0}};
+      ylm::SpherepackIterator iter{shape_options.l_max, shape_options.l_max};
+
+      shape_funcs[0] =
+          -1.0 * file_strahlkorper.ylm_spherepack().prolong_or_restrict(
+                     file_strahlkorper.coefficients(),
+                     this_strahlkorper.ylm_spherepack());
+      // Transform from SPHEREPACK to actual Ylm for size func
+      size_funcs[0][0] = shape_funcs[0][0] * sqrt(0.5 * M_PI);
+      // Set l=0 for shape map to 0 because size control will adjust l=0
+      shape_funcs[0][0] = 0.0;
+      if (set_l1_coefs_to_zero) {
+        for (int m = -1; m <= 1; m++) {
+          shape_funcs[0][iter.set(1_st, m)()] = 0.0;
+        }
+      }
+    } else if (std::holds_alternative<FromVolumeFile<names::ShapeSize<Object>>>(
+                   shape_options.initial_values.value())) {
+      const auto& volume_file_options =
+          std::get<FromVolumeFile<names::ShapeSize<Object>>>(
+              shape_options.initial_values.value());
+
+      shape_funcs = volume_file_options.shape_values;
+      size_funcs = volume_file_options.size_values;
     }
   }
 

@@ -55,6 +55,8 @@ Checks: '*,
 -llvm-qualified-auto,
 # We are not developing LLVM libc,
 -llvmlibc-*,
+# Triggers when 'l' is used because it's "too similar" to 'I'
+-misc-confusable-identifiers,
 # thinks constexpr variables in header files cause ODR violations,
 -misc-definitions-in-headers,
 # false positives,
