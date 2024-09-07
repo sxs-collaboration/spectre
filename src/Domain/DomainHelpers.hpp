@@ -161,6 +161,9 @@ size_t which_wedge_index(const ShellWedges& which_wedges);
  * boundary (1.0) or a cubical inner boundary (0.0).
  * \param outer_sphericity Specifies if the wedges form a spherical outer
  * boundary (1.0) or a cubical outer boundary (0.0).
+ * \param offset_options A pair of values with the first being half the length
+ * of the cube that would form the outer boundary and the second being the
+ * offset to apply to the wedges.
  * \param use_equiangular_map Toggles the equiangular map of the Wedge map.
  * \param use_half_wedges When `true`, the wedges in the +z,-z,+y,-y directions
  * are cut in half along their xi-axes. The resulting ten CoordinateMaps are
@@ -179,6 +182,8 @@ size_t which_wedge_index(const ShellWedges& which_wedges);
 std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
+    const std::optional<std::pair<double, std::array<double, 3>>>&
+        offset_options = std::nullopt,
     bool use_half_wedges = false,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<domain::CoordinateMaps::Distribution>&

@@ -81,6 +81,7 @@ DomainCreator:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
     UseEquiangularMap: True
+    CubeScale: 1.0
     # These values have been tested to be stable for full equal mass mergers
     # with constraints ~10^-7 for L=1, P=10
     InitialRefinement:

@@ -309,7 +309,9 @@ struct TimeDependentMapOptions {
    * the surrounding cube.
    */
   void build_maps(
-      const std::array<std::array<double, 3>, 2>& centers,
+      const std::array<std::array<double, 3>, 2>& object_centers,
+      const std::optional<std::array<double, 3>>& cube_A_center,
+      const std::optional<std::array<double, 3>>& cube_B_center,
       const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
           object_A_radii,
       const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&

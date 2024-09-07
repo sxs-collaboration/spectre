@@ -43,7 +43,7 @@ void test_center_tags() {
   const std::unique_ptr<DomainCreator<3>> domain_creator =
       std::make_unique<domain::creators::BinaryCompactObject<false>>(
           Object{0.2, 5.0, 8.0, true, true}, Object{0.6, 4.0, -5.5, true, true},
-          std::array<double, 2>{{0.1, 0.2}}, 100.0, 500.0, 1_st, 5_st);
+          std::array<double, 2>{{0.1, 0.2}}, 100.0, 500.0, 1.0, 1_st, 5_st);
 
   const auto grid_center_A =
       Tags::ObjectCenter<ObjectLabel::A>::create_from_options(domain_creator);

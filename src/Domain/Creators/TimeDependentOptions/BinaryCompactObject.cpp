@@ -292,7 +292,9 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
 
 template <bool IsCylindrical>
 void TimeDependentMapOptions<IsCylindrical>::build_maps(
-    const std::array<std::array<double, 3>, 2>& centers,
+    const std::array<std::array<double, 3>, 2>& object_centers,
+    const std::optional<std::array<double, 3>>& cube_A_center,
+    const std::optional<std::array<double, 3>>& cube_B_center,
     const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
         object_A_radii,
     const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
@@ -350,23 +352,45 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
       // Currently, we don't support different transition functions for the
       // cylindrical domain
       if constexpr (IsCylindrical) {
+        if (cube_A_center.has_value() or cube_B_center.has_value()) {
+          ERROR_NO_TRACE(
+              "When using the CylindricalBinaryCompactObject domain creator, "
+              "the excision centers cannot be offset.");
+        }
         transition_func =
             std::make_unique<domain::CoordinateMaps::
                                  ShapeMapTransitionFunctions::SphereTransition>(
                 radii[0], radii[1]);
 
-        gsl::at(shape_maps_, i) =
-            Shape{gsl::at(centers, i),     initial_l_max,
-                  initial_l_max,           std::move(transition_func),
-                  gsl::at(shape_names, i), gsl::at(size_names, i)};
+        gsl::at(shape_maps_, i) = Shape{gsl::at(object_centers, i),
+                                        initial_l_max,
+                                        initial_l_max,
+                                        std::move(transition_func),
+                                        gsl::at(shape_names, i),
+                                        gsl::at(size_names, i)};
       } else {
         // These must match the order of orientations_for_sphere_wrappings() in
-        // DomainHelpers.hpp
+        // DomainHelpers.hpp. The values must match that of Wedge::Axis
         const std::array<int, 6> axes{3, -3, 2, -2, 1, -1};
 
         const bool transition_ends_at_cube =
             i == 0 ? shape_options_A_->transition_ends_at_cube
                    : shape_options_B_->transition_ends_at_cube;
+
+        // These centers must take in to account if we have an offset of the
+        // center of the object and where the transition ends. The inner center
+        // is always the center of the object. The outer center depends on if we
+        // have an offset and where the transition ends. If the transition ends
+        // at the cube, then if we have an offset we use the cube center, if not
+        // it's the same as the object center. If the transition ends at the
+        // sphere, then the center is the object center
+        const std::optional<std::array<double, 3>>& cube_center =
+            i == 0 ? cube_A_center : cube_B_center;
+        const std::array<double, 3>& inner_center = gsl::at(object_centers, i);
+        const std::array<double, 3>& outer_center =
+            transition_ends_at_cube
+                ? cube_center.value_or(gsl::at(object_centers, i))
+                : gsl::at(object_centers, i);
 
         const double inner_sphericity = 1.0;
         const double outer_sphericity = transition_ends_at_cube ? 0.0 : 1.0;
@@ -379,14 +403,19 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
             domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge;
         for (size_t j = 0; j < axes.size(); j++) {
           transition_func = std::make_unique<Wedge>(
-              gsl::at(centers, i), inner_radius, inner_sphericity,
-              gsl::at(centers, i), outer_radius, outer_sphericity,
+              inner_center, inner_radius, inner_sphericity, outer_center,
+              outer_radius, outer_sphericity,
               static_cast<Wedge::Axis>(gsl::at(axes, j)));
 
+          // The shape map should be given the center of the excision always,
+          // regardless of if it is offset or not
           gsl::at(gsl::at(shape_maps_, i), j) =
-              Shape{gsl::at(centers, i),     initial_l_max,
-                    initial_l_max,           std::move(transition_func),
-                    gsl::at(shape_names, i), gsl::at(size_names, i)};
+              Shape{inner_center,
+                    initial_l_max,
+                    initial_l_max,
+                    std::move(transition_func),
+                    gsl::at(shape_names, i),
+                    gsl::at(size_names, i)};
         }
       }
 

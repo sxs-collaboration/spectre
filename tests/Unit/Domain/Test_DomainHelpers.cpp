@@ -96,10 +96,11 @@ void test_periodic_different_blocks() {
 std::vector<CoordinateMaps::Wedge<3>> test_wedge_map_generation(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
+    std::optional<std::pair<double, std::array<double, 3>>> offset_options,
     bool use_half_wedges = false) {
   using Wedge3DMap = CoordinateMaps::Wedge<3>;
 
-  if (use_half_wedges) {
+  if (use_half_wedges and not offset_options.has_value()) {
     using Halves = Wedge3DMap::WedgeHalves;
     return make_vector(
         Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
@@ -156,48 +157,149 @@ std::vector<CoordinateMaps::Wedge<3>> test_wedge_map_generation(
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map});
+  } else if (not use_half_wedges and not offset_options.has_value()) {
+    return make_vector(
+        Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                   outer_sphericity, OrientationMap<3>::create_aligned(),
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                   outer_sphericity,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                        Direction<3>::lower_zeta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                   outer_sphericity,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                        Direction<3>::lower_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                   outer_sphericity,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                   outer_sphericity,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, outer_radius, inner_sphericity,
+                   outer_sphericity,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map});
+  } else if (use_half_wedges and offset_options.has_value()) {
+    using Halves = Wedge3DMap::WedgeHalves;
+    return make_vector(
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>::create_aligned(), use_equiangular_map,
+                   Halves::LowerOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>::create_aligned(), use_equiangular_map,
+                   Halves::UpperOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                        Direction<3>::lower_zeta()}}},
+                   use_equiangular_map, Halves::LowerOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                        Direction<3>::lower_zeta()}}},
+                   use_equiangular_map, Halves::UpperOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                        Direction<3>::lower_eta()}}},
+                   use_equiangular_map, Halves::LowerOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                        Direction<3>::lower_eta()}}},
+                   use_equiangular_map, Halves::UpperOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map, Halves::LowerOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map, Halves::UpperOnly},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map});
+  } else {
+    return make_vector(
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>::create_aligned(), use_equiangular_map},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                        Direction<3>::lower_zeta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                        Direction<3>::lower_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map},
+        Wedge3DMap{inner_radius, std::nullopt, offset_options.value().first,
+                   offset_options.value().second,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map});
   }
-
-  return make_vector(
-      Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>::create_aligned(), use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                      Direction<3>::lower_zeta()}}},
-                 use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                      Direction<3>::lower_eta()}}},
-                 use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                      Direction<3>::upper_eta()}}},
-                 use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                      Direction<3>::upper_eta()}}},
-                 use_equiangular_map},
-      Wedge3DMap{inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-                 OrientationMap<3>{std::array<Direction<3>, 3>{
-                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                      Direction<3>::upper_eta()}}},
-                 use_equiangular_map});
 }
 
 void test_wedge_map_generation_against_domain_helpers(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
+    std::optional<std::pair<double, std::array<double, 3>>> offset_options,
     bool use_half_wedges = false) {
   const auto expected_coord_maps = test_wedge_map_generation(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, use_half_wedges);
+      use_equiangular_map, offset_options, use_half_wedges);
   const auto maps = sph_wedge_coordinate_maps(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, use_half_wedges);
+      use_equiangular_map, offset_options, use_half_wedges);
   CHECK(maps == expected_coord_maps);
 }
 
@@ -217,8 +319,8 @@ void test_wedge_errors() {
         const ShellWedges which_wedges = ShellWedges::FourOnEquator;
         static_cast<void>(sph_wedge_coordinate_maps(
             inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-            use_equiangular_map, use_half_wedges, {}, radial_distribution,
-            which_wedges));
+            use_equiangular_map, std::nullopt, use_half_wedges, {},
+            radial_distribution, which_wedges));
       }()),
       Catch::Matchers::ContainsSubstring(
           "If we are using half wedges we must also be using "
@@ -235,7 +337,7 @@ void test_six_wedge_directions_equiangular() {
   const bool use_equiangular_map = true;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map);
+      use_equiangular_map, std::nullopt);
 }
 
 void test_six_wedge_directions_equidistant() {
@@ -247,7 +349,21 @@ void test_six_wedge_directions_equidistant() {
   const bool use_equiangular_map = false;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map);
+      use_equiangular_map, std::nullopt);
+}
+
+void test_six_wedge_directions_with_offset() {
+  INFO("Default six wedge directions with an offset");
+  const double inner_radius = 1.2;
+  const double outer_radius = 2.7;
+  const double inner_sphericity = 1.0;
+  const double outer_sphericity = 0.0;
+  const std::pair<double, std::array<double, 3>> offset_options{
+      {4.0}, {{2.0, 0.0, 0.0}}};
+  const bool use_equiangular_map = true;
+  test_wedge_map_generation_against_domain_helpers(
+      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+      use_equiangular_map, offset_options);
 }
 
 void test_ten_wedge_directions_equiangular() {
@@ -260,7 +376,7 @@ void test_ten_wedge_directions_equiangular() {
   const bool use_half_wedges = true;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, use_half_wedges);
+      use_equiangular_map, std::nullopt, use_half_wedges);
 }
 
 void test_ten_wedge_directions_equidistant() {
@@ -273,14 +389,31 @@ void test_ten_wedge_directions_equidistant() {
   const bool use_half_wedges = true;
   test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, use_half_wedges);
+      use_equiangular_map, std::nullopt, use_half_wedges);
+}
+
+void test_ten_wedge_directions_with_offset() {
+  INFO("Default six wedge directions with an offset");
+  const double inner_radius = 1.4;
+  const double outer_radius = 3.5;
+  const double inner_sphericity = 1.0;
+  const double outer_sphericity = 0.0;
+  const std::pair<double, std::array<double, 3>> offset_options{
+      {6.0}, {{2.4, 0.0, 0.0}}};
+  const bool use_equiangular_map = false;
+  const bool use_half_wedges = true;
+  test_wedge_map_generation_against_domain_helpers(
+      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+      use_equiangular_map, offset_options, use_half_wedges);
 }
 
 void test_wedge_map_generation() {
   test_six_wedge_directions_equiangular();
   test_six_wedge_directions_equidistant();
+  test_six_wedge_directions_with_offset();
   test_ten_wedge_directions_equiangular();
   test_ten_wedge_directions_equidistant();
+  test_ten_wedge_directions_with_offset();
 }
 
 void test_all_frustum_directions() {
