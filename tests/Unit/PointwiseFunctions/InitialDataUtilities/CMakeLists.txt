@@ -5,6 +5,7 @@ set(LIBRARY Test_InitialDataUtilities)
 
 set(LIBRARY_SOURCES
   Tags/Test_InitialData.cpp
+  Test_NumericData.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
@@ -12,5 +13,6 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  InitialDataUtilities
   Parallel
   )
