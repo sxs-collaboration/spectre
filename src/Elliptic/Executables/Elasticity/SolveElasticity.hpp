@@ -48,6 +48,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/NumericData.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -94,9 +95,13 @@ struct Metavariables {
                    Elasticity::BoundaryConditions::standard_boundary_conditions<
                        system>>,
         tmpl::pair<elliptic::analytic_data::Background,
-                   Elasticity::Solutions::all_analytic_solutions<volume_dim>>,
+                   tmpl::push_back<Elasticity::Solutions::
+                                       all_analytic_solutions<volume_dim>,
+                                   elliptic::analytic_data::NumericData>>,
         tmpl::pair<elliptic::analytic_data::InitialGuess,
-                   Elasticity::Solutions::all_analytic_solutions<volume_dim>>,
+                   tmpl::push_back<Elasticity::Solutions::
+                                       all_analytic_solutions<volume_dim>,
+                                   elliptic::analytic_data::NumericData>>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
                    Elasticity::Solutions::all_analytic_solutions<volume_dim>>,
         tmpl::pair<
@@ -107,17 +112,17 @@ struct Metavariables {
                    ::amr::Criteria::standard_criteria<
                        volume_dim,
                        tmpl::list<Elasticity::Tags::Displacement<volume_dim>>>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, observe_fields, observer_compute_tags,
-                    LinearSolver::multigrid::Tags::IsFinestGrid>,
-                // Observation per material layer
-                ::Events::ObserveNorms<observe_fields, observer_compute_tags,
-                                       Elasticity::Tags::MaterialLayerName,
-                                       ObserveNormsPerLayer>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       dg::Events::field_observations<
+                           volume_dim, observe_fields, observer_compute_tags,
+                           LinearSolver::multigrid::Tags::IsFinestGrid>,
+                       // Observation per material layer
+                       ::Events::ObserveNorms<
+                           observe_fields, observer_compute_tags,
+                           Elasticity::Tags::MaterialLayerName,
+                           ObserveNormsPerLayer>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 ::amr::OptionTags::AmrGroup>>,
         tmpl::pair<

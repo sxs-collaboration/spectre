@@ -22,6 +22,7 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   FunctionsOfTime
   Informer
+  InitialDataUtilities
   LinearOperators
   Observer
   Options

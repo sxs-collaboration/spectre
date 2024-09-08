@@ -29,6 +29,7 @@ target_link_libraries(
   EventsAndTriggers
   FunctionsOfTime
   Informer
+  InitialDataUtilities
   Initialization
   LinearOperators
   MathFunctions

@@ -43,6 +43,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/NumericData.hpp"
 #include "PointwiseFunctions/Punctures/AdmIntegrals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -73,9 +74,11 @@ struct Metavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<elliptic::analytic_data::Background,
-                   tmpl::list<Punctures::AnalyticData::MultiplePunctures>>,
+                   tmpl::list<Punctures::AnalyticData::MultiplePunctures,
+                              elliptic::analytic_data::NumericData>>,
         tmpl::pair<elliptic::analytic_data::InitialGuess,
-                   tmpl::list<Punctures::Solutions::Flatness>>,
+                   tmpl::list<Punctures::Solutions::Flatness,
+                              elliptic::analytic_data::NumericData>>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution, tmpl::list<>>,
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
                    tmpl::list<Punctures::BoundaryConditions::Flatness>>,
