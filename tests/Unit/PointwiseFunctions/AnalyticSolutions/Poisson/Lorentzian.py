@@ -3,20 +3,28 @@
 
 import numpy as np
 
-constant = 1.5
+
+def field(x, constant, complex_phase):
+    result = 1.0 / np.sqrt(1.0 + np.dot(x, x)) + constant
+    if complex_phase != 0:
+        result *= np.exp(1j * complex_phase)
+    return result
 
 
-def field(x):
-    return 1.0 / np.sqrt(1.0 + np.dot(x, x)) + constant
+def field_gradient(x, constant, complex_phase):
+    dtype = float if complex_phase == 0 else complex
+    result = -np.asarray(x, dtype) / np.sqrt(1.0 + np.dot(x, x)) ** 3
+    if complex_phase != 0:
+        result *= np.exp(1j * complex_phase)
+    return result
 
 
-def field_gradient(x):
-    return -np.asarray(x) / np.sqrt(1.0 + np.dot(x, x)) ** 3
+def field_flux(x, constant, complex_phase):
+    return field_gradient(x, constant, complex_phase)
 
 
-def field_flux(x):
-    return field_gradient(x)
-
-
-def source(x):
-    return 3.0 / np.sqrt(1.0 + np.dot(x, x)) ** 5
+def source(x, constant, complex_phase):
+    result = 3.0 / np.sqrt(1.0 + np.dot(x, x)) ** 5
+    if complex_phase != 0:
+        result *= np.exp(1j * complex_phase)
+    return result

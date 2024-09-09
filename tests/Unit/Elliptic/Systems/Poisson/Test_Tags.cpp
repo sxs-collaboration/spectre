@@ -9,5 +9,5 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Tags", "[Unit][Elliptic]") {
-  TestHelpers::db::test_simple_tag<Poisson::Tags::Field> ("Field");
+  TestHelpers::db::test_simple_tag<Poisson::Tags::Field<DataVector>>("Field");
 }

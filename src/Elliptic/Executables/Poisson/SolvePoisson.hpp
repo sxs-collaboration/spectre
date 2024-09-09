@@ -96,9 +96,10 @@ struct Metavariables {
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Poisson::BoundaryConditions::standard_boundary_conditions<system>>,
-        tmpl::pair<::amr::Criterion,
-                   ::amr::Criteria::standard_criteria<
-                       volume_dim, tmpl::list<Poisson::Tags::Field>>>,
+        tmpl::pair<
+            ::amr::Criterion,
+            ::amr::Criteria::standard_criteria<
+                volume_dim, tmpl::list<Poisson::Tags::Field<DataVector>>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,

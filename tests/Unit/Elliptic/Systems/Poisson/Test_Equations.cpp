@@ -22,23 +22,23 @@ namespace helpers = TestHelpers::elliptic;
 
 namespace {
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 void test_equations(const DataVector& used_for_size) {
-  pypp::check_with_random_values<1>(&Poisson::flat_cartesian_fluxes<Dim>,
-                                    "Equations", {"flat_cartesian_fluxes"},
-                                    {{{0., 1.}}}, used_for_size);
-  pypp::check_with_random_values<1>(&Poisson::curved_fluxes<Dim>, "Equations",
-                                    {"curved_fluxes"}, {{{0., 1.}}},
-                                    used_for_size);
   pypp::check_with_random_values<1>(
-      &Poisson::add_curved_sources<Dim>, "Equations", {"add_curved_sources"},
-      {{{0., 1.}}}, used_for_size, 1.e-12, {}, 0.);
+      &Poisson::flat_cartesian_fluxes<DataType, Dim>, "Equations",
+      {"flat_cartesian_fluxes"}, {{{0., 1.}}}, used_for_size);
+  pypp::check_with_random_values<1>(&Poisson::curved_fluxes<DataType, Dim>,
+                                    "Equations", {"curved_fluxes"},
+                                    {{{0., 1.}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      &Poisson::add_curved_sources<DataType, Dim>, "Equations",
+      {"add_curved_sources"}, {{{0., 1.}}}, used_for_size, 1.e-12, {}, 0.);
 }
 
-template <size_t Dim, Poisson::Geometry BackgroundGeometry>
+template <typename DataType, size_t Dim, Poisson::Geometry BackgroundGeometry>
 void test_computers(const DataVector& used_for_size) {
   CAPTURE(Dim);
-  using system = Poisson::FirstOrderSystem<Dim, BackgroundGeometry>;
+  using system = Poisson::FirstOrderSystem<Dim, BackgroundGeometry, DataType>;
   static_assert(
       tt::assert_conforms_to_v<system, elliptic::protocols::FirstOrderSystem>);
   helpers::test_first_order_fluxes_computer<system>(used_for_size);
@@ -52,8 +52,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson", "[Unit][Elliptic]") {
       "Elliptic/Systems/Poisson"};
 
   GENERATE_UNINITIALIZED_DATAVECTOR;
-  CHECK_FOR_DATAVECTORS(test_equations, (1, 2, 3));
+  CHECK_FOR_DATAVECTORS(test_equations, (DataVector, ComplexDataVector),
+                        (1, 2, 3));
   CHECK_FOR_DATAVECTORS(
-      test_computers, (1, 2, 3),
+      test_computers, (DataVector, ComplexDataVector), (1, 2, 3),
       (Poisson::Geometry::FlatCartesian, Poisson::Geometry::Curved));
 }

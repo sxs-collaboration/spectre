@@ -22,7 +22,8 @@ namespace detail {
 template <typename DataType, size_t Dim>
 void MathFunctionVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> field,
-    const gsl::not_null<Cache*> /*cache*/, Tags::Field /*meta*/) const {
+    const gsl::not_null<Cache*> /*cache*/,
+    Tags::Field<DataType> /*meta*/) const {
   *field = math_function(x);
 }
 
@@ -30,8 +31,8 @@ template <typename DataType, size_t Dim>
 void MathFunctionVariables<DataType, Dim>::operator()(
     const gsl::not_null<tnsr::i<DataType, Dim>*> field_gradient,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-    const {
+    ::Tags::deriv<Tags::Field<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial> /*meta*/) const {
   *field_gradient = math_function.first_deriv(x);
 }
 
@@ -39,10 +40,11 @@ template <typename DataType, size_t Dim>
 void MathFunctionVariables<DataType, Dim>::operator()(
     const gsl::not_null<tnsr::I<DataType, Dim>*> flux_for_field,
     const gsl::not_null<Cache*> cache,
-    ::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
-    const {
+    ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>,
+                 Frame::Inertial> /*meta*/) const {
   const auto& field_gradient = cache->get_var(
-      *this, ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>{});
+      *this, ::Tags::deriv<Tags::Field<DataType>, tmpl::size_t<Dim>,
+                           Frame::Inertial>{});
   for (size_t d = 0; d < Dim; ++d) {
     flux_for_field->get(d) = field_gradient.get(d);
   }
@@ -52,7 +54,7 @@ template <typename DataType, size_t Dim>
 void MathFunctionVariables<DataType, Dim>::operator()(
     const gsl::not_null<Scalar<DataType>*> fixed_source_for_field,
     const gsl::not_null<Cache*> /*cache*/,
-    ::Tags::FixedSource<Tags::Field> /*meta*/) const {
+    ::Tags::FixedSource<Tags::Field<DataType>> /*meta*/) const {
   const auto second_deriv = math_function.second_deriv(x);
   get(*fixed_source_for_field) = 0.;
   for (size_t d = 0; d < Dim; ++d) {

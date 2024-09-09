@@ -25,8 +25,9 @@ namespace Tags {
 /*!
  * \brief The scalar field \f$u(x)\f$ to solve for
  */
+template <typename DataType>
 struct Field : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
 
 }  // namespace Tags

@@ -53,19 +53,30 @@ namespace Poisson {
  * The fluxes and sources simplify significantly when the background metric is
  * flat and we employ Cartesian coordinates so \f$\gamma_{ij} = \delta_{ij}\f$
  * and \f$\Gamma^i_{jk} = 0\f$. Set the template parameter `BackgroundGeometry`
- * to `Poisson::Geometry::FlatCartesian` to specialise the system for this case.
+ * to `Poisson::Geometry::FlatCartesian` to specialize the system for this case.
  * Set it to `Poisson::Geometry::Curved` for the general case.
+ *
+ * ## Complex Poisson equation
+ *
+ * This system can also be used to solve the complex Poisson equation where
+ * $u(x)$ and $f(x)$ are complex-valued, by setting the `DataType` template
+ * parameter to `ComplexDataVector`. Note that the real and imaginary sectors of
+ * the equations decouple, so they are essentially two independent Poisson
+ * equations. This is useful for testing the elliptic solver with complex-valued
+ * fields, and also as building blocks for other Poisson-like systems of
+ * equations that have additional complex-valued source terms.
  */
-template <size_t Dim, Geometry BackgroundGeometry>
+template <size_t Dim, Geometry BackgroundGeometry,
+          typename DataType = DataVector>
 struct FirstOrderSystem
     : tt::ConformsTo<elliptic::protocols::FirstOrderSystem> {
   static constexpr size_t volume_dim = Dim;
 
-  using primal_fields = tmpl::list<Tags::Field>;
+  using primal_fields = tmpl::list<Tags::Field<DataType>>;
   // We just use the standard `Flux` prefix because the fluxes don't have
   // symmetries and we don't need to give them a particular meaning.
-  using primal_fluxes =
-      tmpl::list<::Tags::Flux<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
+  using primal_fluxes = tmpl::list<
+      ::Tags::Flux<Tags::Field<DataType>, tmpl::size_t<Dim>, Frame::Inertial>>;
 
   using background_fields = tmpl::conditional_t<
       BackgroundGeometry == Geometry::FlatCartesian, tmpl::list<>,
@@ -76,10 +87,10 @@ struct FirstOrderSystem
       tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian, void,
                           gr::Tags::InverseSpatialMetric<DataVector, Dim>>;
 
-  using fluxes_computer = Fluxes<Dim, BackgroundGeometry>;
+  using fluxes_computer = Fluxes<Dim, BackgroundGeometry, DataType>;
   using sources_computer =
       tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian, void,
-                          Sources<Dim, BackgroundGeometry>>;
+                          Sources<Dim, BackgroundGeometry, DataType>>;
 
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<Dim>;

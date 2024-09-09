@@ -30,6 +30,6 @@ if(${BUILD_PYTHON_BINDINGS})
   set_tests_properties(
     "tools.ValidateInputFile"
     PROPERTIES
-    TIMEOUT 20
+    TIMEOUT 30
     )
 endif()

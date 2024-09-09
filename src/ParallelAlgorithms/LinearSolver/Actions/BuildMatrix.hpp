@@ -148,9 +148,21 @@ void observe_matrix_column(
                                                 &component_i](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const auto& tensor = get<tag>(operator_applied_to_operand);
+    using TensorType = std::decay_t<decltype(tensor)>;
+    using VectorType = typename TensorType::type;
+    using ValueType = typename VectorType::value_type;
     for (size_t i = 0; i < tensor.size(); ++i) {
-      observe_components.emplace_back("Variable_" + std::to_string(component_i),
-                                      tensor[i]);
+      if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+        observe_components.emplace_back(
+            "Re(Variable_" + std::to_string(component_i) + ")",
+            real(tensor[i]));
+        observe_components.emplace_back(
+            "Im(Variable_" + std::to_string(component_i) + ")",
+            imag(tensor[i]));
+      } else {
+        observe_components.emplace_back(
+            "Variable_" + std::to_string(component_i), tensor[i]);
+      }
       ++component_i;
     }
   });
