@@ -39,25 +39,14 @@ domain::creators::Interval make_interval() {
 }
 
 template <size_t Dim>
-struct MockMetavariables {
-  struct InterpolationTargetA
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::SpecifiedPoints<InterpolationTargetA, Dim>;
-    using post_interpolation_callbacks = tmpl::list<>;
-  };
-  static constexpr size_t volume_dim = Dim;
-  using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-
-  using component_list = tmpl::list<
-      InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables<Dim>,
-                                                         InterpolationTargetA>,
-      InterpTargetTestHelpers::mock_interpolator<MockMetavariables<Dim>>>;
+struct SpecifiedPointsTag
+    : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::SpecifiedPoints<SpecifiedPointsTag, Dim>;
+  using post_interpolation_callbacks = tmpl::list<>;
 };
 
 template <InterpTargetTestHelpers::ValidPoints ValidPoints>
@@ -81,13 +70,14 @@ void test_1d() {
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
 
-  TestHelpers::db::test_simple_tag<intrp::Tags::SpecifiedPoints<
-      MockMetavariables<1>::InterpolationTargetA, 1>>("SpecifiedPoints");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::SpecifiedPoints<SpecifiedPointsTag<1>, 1>>(
+      "SpecifiedPoints");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables<1>, intrp::Tags::SpecifiedPoints<
-                                MockMetavariables<1>::InterpolationTargetA, 1>>(
-      domain_creator, std::move(points_opts), expected_block_coord_holders);
+      SpecifiedPointsTag<1>, 1,
+      intrp::Tags::SpecifiedPoints<SpecifiedPointsTag<1>, 1>>(
+      created_opts, expected_block_coord_holders);
 }
 
 void test_2d() {
@@ -113,13 +103,14 @@ void test_2d() {
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
 
-  TestHelpers::db::test_simple_tag<intrp::Tags::SpecifiedPoints<
-      MockMetavariables<2>::InterpolationTargetA, 2>>("SpecifiedPoints");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::SpecifiedPoints<SpecifiedPointsTag<2>, 2>>(
+      "SpecifiedPoints");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables<2>, intrp::Tags::SpecifiedPoints<
-                                MockMetavariables<2>::InterpolationTargetA, 2>>(
-      domain_creator, std::move(points_opts), expected_block_coord_holders);
+      SpecifiedPointsTag<2>, 2,
+      intrp::Tags::SpecifiedPoints<SpecifiedPointsTag<2>, 2>>(
+      created_opts, expected_block_coord_holders);
 }
 
 void test_3d() {
@@ -150,13 +141,14 @@ void test_3d() {
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
 
-  TestHelpers::db::test_simple_tag<intrp::Tags::SpecifiedPoints<
-      MockMetavariables<3>::InterpolationTargetA, 3>>("SpecifiedPoints");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::SpecifiedPoints<SpecifiedPointsTag<3>, 3>>(
+      "SpecifiedPoints");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables<3>, intrp::Tags::SpecifiedPoints<
-                                MockMetavariables<3>::InterpolationTargetA, 3>>(
-      domain_creator, std::move(points_opts), expected_block_coord_holders);
+      SpecifiedPointsTag<3>, 3,
+      intrp::Tags::SpecifiedPoints<SpecifiedPointsTag<3>, 3>>(
+      created_opts, expected_block_coord_holders);
 }
 }  // namespace
 

@@ -44,26 +44,15 @@ domain::creators::Sphere make_sphere() {
   return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
 }
 
-struct MockMetavariables {
-  struct InterpolationTargetA
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::KerrHorizon<InterpolationTargetA,
-                                           ::Frame::Inertial>;
-    using post_interpolation_callbacks = tmpl::list<>;
-  };
-  static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-
-  using component_list =
-      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
-                     MockMetavariables, InterpolationTargetA>,
-                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+struct KerrHorizonTargetTag
+    : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::KerrHorizon<KerrHorizonTargetTag,
+                                         ::Frame::Inertial>;
+  using post_interpolation_callbacks = tmpl::list<>;
 };
 
 template <InterpTargetTestHelpers::ValidPoints ValidPoints>
@@ -165,13 +154,11 @@ void test_interpolation_target_kerr_horizon(
   }();
 
   TestHelpers::db::test_simple_tag<
-      intrp::Tags::KerrHorizon<MockMetavariables::InterpolationTargetA>>(
-      "KerrHorizon");
+      intrp::Tags::KerrHorizon<KerrHorizonTargetTag>>("KerrHorizon");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables,
-      intrp::Tags::KerrHorizon<MockMetavariables::InterpolationTargetA>>(
-      domain_creator, kerr_horizon_opts, expected_block_coord_holders);
+      KerrHorizonTargetTag, 3, intrp::Tags::KerrHorizon<KerrHorizonTargetTag>>(
+      kerr_horizon_opts, expected_block_coord_holders);
 }
 }  // namespace
 

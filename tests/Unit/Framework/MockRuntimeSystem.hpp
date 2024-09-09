@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "Framework/MockDistributedObject.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"

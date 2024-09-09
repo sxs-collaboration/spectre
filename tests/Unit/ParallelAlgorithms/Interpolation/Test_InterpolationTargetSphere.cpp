@@ -48,25 +48,13 @@ domain::creators::Sphere make_sphere() {
   return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
 }
 
-struct MockMetavariables {
-  struct InterpolationTargetA
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::Sphere<InterpolationTargetA, ::Frame::Inertial>;
-    using post_interpolation_callbacks = tmpl::list<>;
-  };
-  static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-
-  using component_list =
-      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
-                     MockMetavariables, InterpolationTargetA>,
-                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+struct SphereTag : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::Sphere<SphereTag, ::Frame::Inertial>;
+  using post_interpolation_callbacks = tmpl::list<>;
 };
 
 template <InterpTargetTestHelpers::ValidPoints ValidPoints, typename Generator>
@@ -129,8 +117,7 @@ void test_interpolation_target_sphere(
 
   const auto domain_creator = make_sphere<ValidPoints>();
 
-  TestHelpers::db::test_simple_tag<
-      intrp::Tags::Sphere<MockMetavariables::InterpolationTargetA>>("Sphere");
+  TestHelpers::db::test_simple_tag<intrp::Tags::Sphere<SphereTag>>("Sphere");
 
   const auto expected_block_coord_holders = [&domain_creator, &radii, &center,
                                              &angular_ordering,
@@ -186,10 +173,10 @@ void test_interpolation_target_sphere(
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
+
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables,
-      intrp::Tags::Sphere<MockMetavariables::InterpolationTargetA>>(
-      domain_creator, sphere_opts, expected_block_coord_holders);
+      SphereTag, 3, intrp::Tags::Sphere<SphereTag>>(
+      created_opts, expected_block_coord_holders);
 }
 
 void test_sphere_errors() {

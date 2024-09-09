@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <deque>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -86,7 +87,7 @@ struct IndicesOfInvalidInterpPoints : db::SimpleTag {
 };
 
 /// `temporal_id`s that have been flagged to interpolate on, but that
-/// have not yet been added to Tags::TemporalIds.  A `temporal_id` is
+/// have not yet been added to Tags::CurrentTemporalId.  A `temporal_id` is
 /// pending if the `FunctionOfTime`s are not up to date for the time
 /// associated with the `temporal_id`.
 template <typename TemporalId>
@@ -94,10 +95,21 @@ struct PendingTemporalIds : db::SimpleTag {
   using type = std::deque<TemporalId>;
 };
 
+/// `temporal_id` on which to interpolate.
+///
+/// \note This tag is only used in sequential targets because only one temporal
+/// id can be interpolated to at any given time
+template <typename TemporalId>
+struct CurrentTemporalId : db::SimpleTag {
+  using type = std::optional<TemporalId>;
+};
+
 /// `temporal_id`s on which to interpolate.
+///
+/// \note This tag is only used in non-sequential targets
 template <typename TemporalId>
 struct TemporalIds : db::SimpleTag {
-  using type = std::deque<TemporalId>;
+  using type = std::unordered_set<TemporalId>;
 };
 
 /// `temporal_id`s that we have already interpolated onto.

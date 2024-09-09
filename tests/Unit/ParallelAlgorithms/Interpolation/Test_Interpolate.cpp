@@ -107,9 +107,8 @@ struct MockAddTemporalIdsToInterpolationTarget {
       db::DataBox<DbTags>& /*box*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      std::vector<
-          typename Metavariables::InterpolatorTargetA::temporal_id::type>&&
-      /*temporal_ids*/) {
+      const typename Metavariables::InterpolatorTargetA::temporal_id::type&
+      /*temporal_id*/) {
     // We are not testing this Action here.
     // Do nothing except make sure it is called once.
     ++called_mock_add_temporal_ids_to_interpolation_target;

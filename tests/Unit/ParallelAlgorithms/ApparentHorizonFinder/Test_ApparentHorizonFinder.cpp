@@ -435,10 +435,12 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
   // Tell the InterpolationTargets that we want to interpolate at
   // two temporal_ids.
-  ActionTesting::simple_action<
-      target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                            typename metavars::AhA>>(make_not_null(&runner), 0,
-                                                     temporal_ids);
+  for (const auto& temporal_id : temporal_ids) {
+    ActionTesting::simple_action<
+        target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                              typename metavars::AhA>>(make_not_null(&runner),
+                                                       0, temporal_id);
+  }
 
   // Center of the analytic solution.
   const auto analytic_solution_center = []() -> std::array<double, 3> {
