@@ -1,0 +1,14 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Sonic
+  Description: |
+    HPC at ICTS-TIFR hosted by AstroRel.
+    More information:
+    https://it.icts.res.in/docs/sonic-cluster/
+  DefaultTasksPerNode: 3
+  DefaultProcsPerTasks: 32
+  DefaultQueue: "long"
+  DefaultTimeLimit: "1-00:00:00"
+  LaunchCommandSingleNode: ["mpirun", "-n", "1"]
