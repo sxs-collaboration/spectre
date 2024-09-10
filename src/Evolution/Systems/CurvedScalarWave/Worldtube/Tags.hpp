@@ -423,19 +423,23 @@ struct TimeDilationFactor : db::SimpleTag {
  */
 template <size_t Dim>
 struct BackgroundQuantities : db::SimpleTag {
-  using type =
-      tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
-                          gr::Tags::InverseSpacetimeMetric<double, Dim>,
-                          Tags::TimeDilationFactor>;
+  using type = tuples::TaggedTuple<
+      gr::Tags::SpacetimeMetric<double, Dim>,
+      gr::Tags::InverseSpacetimeMetric<double, Dim>,
+      gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>,
+      gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim>,
+      Tags::TimeDilationFactor>;
 };
 
 template <size_t Dim>
 struct BackgroundQuantitiesCompute : BackgroundQuantities<Dim>, db::ComputeTag {
   using base = BackgroundQuantities<Dim>;
-  using return_type =
-      tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
-                          gr::Tags::InverseSpacetimeMetric<double, Dim>,
-                          Tags::TimeDilationFactor>;
+  using return_type = tuples::TaggedTuple<
+      gr::Tags::SpacetimeMetric<double, Dim>,
+      gr::Tags::InverseSpacetimeMetric<double, Dim>,
+      gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>,
+      gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim>,
+      Tags::TimeDilationFactor>;
 
   using argument_tags = tmpl::list<
       ParticlePositionVelocity<Dim>,

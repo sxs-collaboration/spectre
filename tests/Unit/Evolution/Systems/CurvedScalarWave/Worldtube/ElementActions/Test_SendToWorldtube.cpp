@@ -254,9 +254,12 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
         initial_refinements, quadrature, shell_domain, excision_sphere);
 
     // these are all unused
-    tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
-                        gr::Tags::InverseSpacetimeMetric<double, Dim>,
-                        Tags::TimeDilationFactor>
+    tuples::TaggedTuple<
+        gr::Tags::SpacetimeMetric<double, Dim>,
+        gr::Tags::InverseSpacetimeMetric<double, Dim>,
+        gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>,
+        gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim>,
+        Tags::TimeDilationFactor>
         background_quantities{};
     MockWorldtubeSingleton<MockMetavariables<Dim>>::dt_variables_tag::type
         dt_variables{};
