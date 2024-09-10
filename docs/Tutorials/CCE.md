@@ -78,8 +78,7 @@ Currently CCE is able to read in worldtube data in two different formats.
 
 ### Cartesian metric and derivatives {#cartesian_metric_and_derivatives}
 
-This metric data format must be provided as spherical harmonic modes of the
-following datasets:
+This metric data format must be provided as the following datasets:
 - `gxx.dat`, `gxy.dat`, `gxz.dat`, `gyy.dat`, `gyz.dat`, `gzz.dat`
 - `Drgxx.dat`, `Drgxy.dat`, `Drgxz.dat`, `Drgyy.dat`, `Drgyz.dat`, `Drgzz.dat`
 - `Dtgxx.dat`, `Dtgxy.dat`, `Dtgxz.dat`, `Dtgyy.dat`, `Dtgyz.dat`, `Dtgzz.dat`
@@ -90,8 +89,12 @@ following datasets:
 - `DrLapse.dat`
 - `DtLapse.dat`
 
-In this format, each row must start with the time stamp, and the remaining
-values are the complex modes in m-varies-fastest format. That is,
+#### Spherical harmonic modes {#cartesian_spherical_modes}
+
+In this format, the worldtube data are stored as spherical harmonic
+coefficients. We use spherical harmonic conventions documented by the
+ylm::Spherepack class. Each row must start with the time stamp, and the
+remaining values are the complex modes in m-varies-fastest format. That is,
 ```
 "time", "Lapse_Re(0,0)", "Lapse_Im(0,0)",
 "Lapse_Re(1,1)", "Lapse_Im(1,1)", "Lapse_Re(1,0)", "Lapse_Im(1,0)",
@@ -100,6 +103,39 @@ values are the complex modes in m-varies-fastest format. That is,
 "Lapse_Re(2,0)", "Lapse_Im(2,0)", "Lapse_Re(2,-1)", "Lapse_Im(2,-1)",
 "Lapse_Re(2,-2)", "Lapse_Im(2,-2)"
 ```
+
+#### Spherical harmonic nodes {#cartesian_spherical_nodes}
+
+\warning This format is not yet fully supported but is under development. If you
+need it please file an issue so we can escalate the priority.
+
+In this format the value of the functions at specially chosen collocation points
+(grid points) is read in. This allows SpECTRE to perform integrals, derivatives,
+and interpolation exactly on the input data. These grid points are
+Gauss-Legendre in $cos(\theta)$ and equally spaced in $\phi$. Below is a routine
+for computing the spherical harmonic $\theta$ and $\phi$ values. These can be
+used to compute the Cartesian locations for a given radius using the standard
+transformation. The routine supports \f$\ell\in[4, 32]\f$.
+
+<details id="details">
+<summary> C Code for computing SpECTRE CCE gridpoint locations </summary>
+\snippet Test_Spherepack.cpp spectre_cce_grid_point_locations
+</details>
+
+Each `dat` file holds `1 + (l_max + 1) * (2 * l_max + 1)` columns, with the
+first one being the `time`. The columns must be in \f$\theta\f$-varies-fastest
+ordering. That is,
+```
+"time",
+"Theta_0_Phi_0", "Theta_1_Phi_0", "Theta_2_Phi_0", "Theta_3_Phi_0",
+"Theta_4_Phi_0",
+"Theta_0_Phi_1", "Theta_1_Phi_1", "Theta_2_Phi_1", "Theta_3_Phi_1",
+"Theta_4_Phi_1",
+```
+
+
+#### Formatting of data types
+
 Each dataset in the file must also have an attribute named "Legend" which
 is an ASCII-encoded null-terminated variable-length string. That is, the HDF5
 type is:
