@@ -118,8 +118,14 @@ void check_impl(
   // configurations if the sampled rho, epsilon require a
   // negative temperature.  If any EoS assumes T >= 0
   // this will have to be modified.
-  const std::array<std::pair<double, double>, 2> random_value_bounds{
-      {{1.0e-4, 4.0}, {0.0, 1e4}}};
+  std::array<std::pair<double, double>, 2> random_value_bounds{
+      {{1.0e-4, 4.0}, {0.0, 1.0e4}}};
+  const double specific_internal_energy_of_max_density{
+      in_eos->specific_internal_energy_lower_bound(
+          random_value_bounds[0].second)};
+  random_value_bounds[1].first = specific_internal_energy_of_max_density;
+  random_value_bounds[1].second =
+      1.0e4 + specific_internal_energy_of_max_density;
   MAKE_GENERATOR(generator, std::random_device{}());
   std::uniform_real_distribution<> distribution_density{
       random_value_bounds[0].first, random_value_bounds[0].second};
@@ -152,18 +158,10 @@ void check_impl(
                           "_rel_pressure_from_density_and_enthalpy")
             : std::string(python_function_prefix +
                           "_newt_pressure_from_density_and_enthalpy"),
-        {{{1.0e-4, 4.0}, {1.0, 1.0e4}}}, member_args_tuple, used_for_size);
-    INFO("Done\nTesting specific_internal_energy_from_density_and_pressure...");
-    // This test doesn't make sense, as pressure arguement is
-    // is receiving randomly generated specific energies. It will
-    // still work though, as long as the pressure is sufficiently large
-    // and the rest mass density sufficiently small.
-    pypp::check_with_random_values<2>(
-        func = &EoS::specific_internal_energy_from_density_and_pressure, *eos,
-        python_file_name,
-        python_function_prefix +
-            "_specific_internal_energy_from_density_and_pressure",
-        random_value_bounds, member_args_tuple, used_for_size);
+        {{{1.0e-4, 4.0},
+          {1.0 + random_value_bounds[1].first,
+           1.0 + random_value_bounds[1].second}}},
+        member_args_tuple, used_for_size);
     INFO("Done\nTesting temperature_from_density_and_specific_int_energy...");
     pypp::check_with_random_values<2>(
         func = &EoS::temperature_from_density_and_energy, *eos,
@@ -178,6 +176,14 @@ void check_impl(
             rest_mass_density,
             eos->temperature_from_density_and_energy(rest_mass_density,
                                                      specific_internal_energy)),
+        custom_approx);
+    INFO("Done\nTesting specific_internal_energy_from_density_and_pressure...");
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        specific_internal_energy,
+        eos->specific_internal_energy_from_density_and_pressure(
+            rest_mass_density,
+            eos->pressure_from_density_and_energy(rest_mass_density,
+                                                  specific_internal_energy)),
         custom_approx);
     INFO("Done\nTesting chi_from_density_and_energy...");
     pypp::check_with_random_values<2>(

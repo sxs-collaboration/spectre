@@ -81,12 +81,14 @@ Scalar<DataType>
 HybridEos<ColdEquationOfState>::pressure_from_density_and_energy_impl(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy) const {
+  using std::max;
   return Scalar<DataType>{
       get(cold_eos_.pressure_from_density(rest_mass_density)) +
       get(rest_mass_density) * (thermal_adiabatic_index_ - 1.0) *
-          (get(specific_internal_energy) -
-           get(cold_eos_.specific_internal_energy_from_density(
-               rest_mass_density)))};
+          max((get(specific_internal_energy) -
+               get(cold_eos_.specific_internal_energy_from_density(
+                   rest_mass_density))),
+              0.0)};
 }
 
 template <typename ColdEquationOfState>
@@ -95,21 +97,22 @@ Scalar<DataType>
 HybridEos<ColdEquationOfState>::pressure_from_density_and_enthalpy_impl(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_enthalpy) const {
+  using std::max;
   if constexpr (ColdEquationOfState::is_relativistic) {
     return Scalar<DataType>{
         (get(cold_eos_.pressure_from_density(rest_mass_density)) +
          get(rest_mass_density) * (thermal_adiabatic_index_ - 1.0) *
-             (get(specific_enthalpy) - 1.0 -
-              get(cold_eos_.specific_internal_energy_from_density(
-                  rest_mass_density)))) /
+             max((get(specific_enthalpy) - 1.0 -
+                  get(cold_eos_.specific_internal_energy_from_density(
+                      rest_mass_density))), 0.0)) /
         thermal_adiabatic_index_};
   } else {
     return Scalar<DataType>{
         (get(cold_eos_.pressure_from_density(rest_mass_density)) +
          get(rest_mass_density) * (thermal_adiabatic_index_ - 1.0) *
-             (get(specific_enthalpy) -
-              get(cold_eos_.specific_internal_energy_from_density(
-                  rest_mass_density)))) /
+             max((get(specific_enthalpy) -
+                  get(cold_eos_.specific_internal_energy_from_density(
+                      rest_mass_density))), 0.0)) /
         thermal_adiabatic_index_};
   }
 }
@@ -120,11 +123,12 @@ Scalar<DataType> HybridEos<ColdEquationOfState>::
     specific_internal_energy_from_density_and_pressure_impl(
         const Scalar<DataType>& rest_mass_density,
         const Scalar<DataType>& pressure) const {
+  using std::max;
   return Scalar<DataType>{
       get(cold_eos_.specific_internal_energy_from_density(rest_mass_density)) +
       1.0 / (thermal_adiabatic_index_ - 1.0) *
-          (get(pressure) -
-           get(cold_eos_.pressure_from_density(rest_mass_density))) /
+          max((get(pressure) -
+               get(cold_eos_.pressure_from_density(rest_mass_density))), 0.0) /
           get(rest_mass_density)};
 }
 
@@ -134,10 +138,11 @@ Scalar<DataType>
 HybridEos<ColdEquationOfState>::temperature_from_density_and_energy_impl(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy) const {
+  using std::max;
   return Scalar<DataType>{(thermal_adiabatic_index_ - 1.0) *
-                          (get(specific_internal_energy) -
+                          max((get(specific_internal_energy) -
                            get(cold_eos_.specific_internal_energy_from_density(
-                               rest_mass_density)))};
+                               rest_mass_density))), 0.0)};
 }
 
 template <typename ColdEquationOfState>
@@ -173,14 +178,15 @@ Scalar<DataType> HybridEos<ColdEquationOfState>::
     kappa_times_p_over_rho_squared_from_density_and_energy_impl(
         const Scalar<DataType>& rest_mass_density,
         const Scalar<DataType>& specific_internal_energy) const {
+  using std::max;
   return Scalar<DataType>{
       (thermal_adiabatic_index_ - 1.0) *
           get(cold_eos_.pressure_from_density(rest_mass_density)) /
           get(rest_mass_density) +
       square(thermal_adiabatic_index_ - 1.0) *
-          (get(specific_internal_energy) -
-           get(cold_eos_.specific_internal_energy_from_density(
-               rest_mass_density)))};
+          max((get(specific_internal_energy) -
+               get(cold_eos_.specific_internal_energy_from_density(
+                   rest_mass_density))), 0.0)};
 }
 }  // namespace EquationsOfState
 

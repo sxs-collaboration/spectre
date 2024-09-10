@@ -302,6 +302,24 @@ double PiecewisePolytropicFluid<IsRelativistic>::rest_mass_density_upper_bound()
   }
   return std::numeric_limits<double>::max();
 }
+
+template <bool IsRelativistic>
+double PiecewisePolytropicFluid<
+    IsRelativistic>::specific_internal_energy_upper_bound() const {
+  // this bound comes from the dominant energy condition which implies
+  // that the pressure is bounded by the total energy density,
+  // i.e. p < e = rho * (1 + eps)
+  if (IsRelativistic and polytropic_exponent_hi_ > 2.0) {
+    const double eint_boundary_constant =
+        (polytropic_exponent_hi_ - polytropic_exponent_lo_) *
+        polytropic_constant_lo_ /
+        ((polytropic_exponent_hi_ - 1.0) * (polytropic_exponent_lo_ - 1.0)) *
+        pow(transition_density_, polytropic_exponent_lo_ - 1.0);
+    return (1.0 + (polytropic_exponent_hi_ - 1.0) * eint_boundary_constant) /
+           (polytropic_exponent_hi_ - 2.0);
+  }
+  return std::numeric_limits<double>::max();
+}
 }  // namespace EquationsOfState
 
 template class EquationsOfState::PiecewisePolytropicFluid<true>;

@@ -141,7 +141,8 @@ class HybridEos
   /// at the given rest mass density \f$\rho\f$
   double specific_internal_energy_lower_bound(
       const double rest_mass_density) const override {
-    return cold_eos_.specific_internal_energy_lower_bound(rest_mass_density);
+    return get(cold_eos_.specific_internal_energy_from_density(
+        Scalar<double>{rest_mass_density}));
   }
 
   /// The upper bound of the specific internal energy that is valid for this EOS
