@@ -396,26 +396,17 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
   } else {
     adams_lts::AdamsScheme scheme{adams_lts::SchemeType::Implicit,
                                   current_order};
-    auto remote_scheme = scheme;
 
     if (local_times.number_of_substeps(local_times.size() - 1) == 1) {
       // Predictor
       scheme = {adams_lts::SchemeType::Explicit, current_order - 1};
       ASSERT(remote_times.back() <= local_times.back(),
              "Unexpected remote values available.");
-      // If the sides are not aligned, we use the predictor data
-      // available from the neighbor.  If they are, that data has not
-      // been received.
-      remote_scheme = {remote_times.back() == local_times.back()
-                           ? adams_lts::SchemeType::Explicit
-                           : adams_lts::SchemeType::Implicit,
-                       current_order - 1};
     }
 
     const auto lts_coefficients = adams_lts::lts_coefficients(
         local_times, remote_times, local_times.back().step_time(),
-        local_times.back().step_time() + time_step, scheme, remote_scheme,
-        scheme);
+        local_times.back().step_time() + time_step, scheme, scheme, scheme);
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   }
 }
