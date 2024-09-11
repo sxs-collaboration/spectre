@@ -38,7 +38,6 @@ void test_expansion_control_error() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
-      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Expansion: 1\n"
       "ControlSystems:\n"

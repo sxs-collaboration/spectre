@@ -42,7 +42,6 @@ void test_rotation_control_error() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
-      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Rotation: 3\n"
       "ControlSystems:\n"

@@ -366,7 +366,7 @@ struct GhValenciaDivCleanTemplateBase<
       use_control_systems,
       tmpl::list<control_system::Systems::Rotation<3, measurement>,
                  control_system::Systems::Expansion<2, measurement>,
-                 control_system::Systems::Translation<2, measurement>>,
+                 control_system::Systems::Translation<2, measurement, 2>>,
       tmpl::list<>>;
 
   using interpolator_source_vars =

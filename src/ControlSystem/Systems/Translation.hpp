@@ -11,6 +11,7 @@
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
 #include "ControlSystem/Measurements/BothHorizons.hpp"
+#include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Protocols/ControlError.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -44,23 +45,24 @@ namespace control_system::Systems {
  * domain::CoordinateMaps::TimeDependent::Translation Translation \endlink map.
  *
  * Requirements:
- * - This control system requires that there be exactly two objects in the
+ * - This control system requires that there be either one or two objects in the
  *   simulation
- * - Currently both these objects must be black holes
- * - Currently this control system can only be used with the \link
+ * - This control system can only be used with the \link
  *   control_system::measurements::BothHorizons BothHorizons \endlink
- * measurement
+ *   measurement, the \link
+ *   control_system::measurements::SingleHorizon<::domain::ObjectLabel::None>
+ *   \endlink measurement, or the \link
+ *   measurements::BothNSCenters::FindTwoCenters \endlink measurement.
  * - Currently this control system can only be used with the \link
  *   control_system::ControlErrors::Translation Translation \endlink control
  *   error
  */
-template <size_t DerivOrder, typename Measurement>
+template <size_t DerivOrder, typename Measurement, size_t NumberOfObjects>
 struct Translation : tt::ConformsTo<protocols::ControlSystem> {
+ public:
   static constexpr size_t deriv_order = DerivOrder;
 
-  static std::string name() {
-    return pretty_type::short_name<Translation<DerivOrder, Measurement>>();
-  }
+  static std::string name() { return pretty_type::short_name<Translation>(); }
 
   static std::optional<std::string> component_name(
       const size_t component, const size_t num_components) {
@@ -74,15 +76,18 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
-  using control_error = ControlErrors::Translation;
+  using control_error = ControlErrors::Translation<NumberOfObjects>;
   static_assert(tt::conforms_to_v<control_error,
                                   control_system::protocols::ControlError>);
 
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {
     using type = LinkedMessageQueue<
-        double, tmpl::list<QueueTags::Center<::domain::ObjectLabel::A>,
-                           QueueTags::Center<::domain::ObjectLabel::B>>>;
+        double, tmpl::conditional_t<
+                    NumberOfObjects == 1,
+                    tmpl::list<QueueTags::Center<::domain::ObjectLabel::None>>,
+                    tmpl::list<QueueTags::Center<::domain::ObjectLabel::A>,
+                               QueueTags::Center<::domain::ObjectLabel::B>>>>;
   };
 
   using simple_tags = tmpl::list<MeasurementQueue>;
@@ -97,15 +102,37 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
             measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::B>>,
         tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>>>;
 
+    template <typename Metavariables>
+    static void apply(
+        measurements::SingleHorizon<::domain::ObjectLabel::None>::Submeasurement
+            submeasurement,
+        const ylm::Strahlkorper<Frame::Distorted>& strahlkorper,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const LinkedMessageId<double>& measurement_id) {
+      auto& control_sys_proxy = Parallel::get_parallel_component<
+          ControlComponent<Metavariables, Translation>>(cache);
+
+      Parallel::simple_action<::Actions::UpdateMessageQueue<
+          QueueTags::Center<::domain::ObjectLabel::None>, MeasurementQueue,
+          UpdateControlSystem<Translation>>>(
+          control_sys_proxy, measurement_id,
+          DataVector{strahlkorper.physical_center()});
+
+      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+        Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
+                         name(), measurement_id.id,
+                         pretty_type::name(submeasurement));
+      }
+    }
+
     template <::domain::ObjectLabel Horizon, typename Metavariables>
     static void apply(
         measurements::BothHorizons::FindHorizon<Horizon> submeasurement,
         const ylm::Strahlkorper<Frame::Distorted>& strahlkorper,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
-      auto& control_sys_proxy =
-          Parallel::get_parallel_component<ControlComponent<
-              Metavariables, Translation<DerivOrder, Measurement>>>(cache);
+      auto& control_sys_proxy = Parallel::get_parallel_component<
+          ControlComponent<Metavariables, Translation>>(cache);
 
       DataVector center(strahlkorper.physical_center());
 
@@ -128,9 +155,8 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
         const std::array<double, 3> center_b,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
-      auto& control_sys_proxy =
-          Parallel::get_parallel_component<ControlComponent<
-              Metavariables, Translation<DerivOrder, Measurement>>>(cache);
+      auto& control_sys_proxy = Parallel::get_parallel_component<
+          ControlComponent<Metavariables, Translation>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           QueueTags::Center<::domain::ObjectLabel::A>, MeasurementQueue,

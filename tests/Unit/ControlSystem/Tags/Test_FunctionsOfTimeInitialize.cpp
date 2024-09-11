@@ -54,7 +54,7 @@ struct FakeControlSystem
   using measurement = control_system::TestHelpers::Measurement<
       control_system::TestHelpers::TestStructs_detail::LabelA>;
   using simple_tags = tmpl::list<>;
-  using control_error = control_system::TestHelpers::ControlError<1>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
@@ -215,7 +215,7 @@ void test_functions_of_time_tag() {
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
-  const control_system::TestHelpers::ControlError<1> control_error{};
+  const control_system::TestHelpers::ControlError control_error{};
 
   OptionHolder<1> option_holder1(false, averager, controller, tuner1,
                                  control_error);
@@ -286,7 +286,7 @@ void not_controlling(const bool is_active) {
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
-  const control_system::TestHelpers::ControlError<1> control_error{};
+  const control_system::TestHelpers::ControlError control_error{};
 
   OptionHolder<1> option_holder1(is_active, averager, controller, tuner,
                                  control_error);
@@ -311,7 +311,7 @@ void incompatible(const bool is_active) {
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
-  const control_system::TestHelpers::ControlError<1> control_error{};
+  const control_system::TestHelpers::ControlError control_error{};
 
   OptionHolder<1> option_holder1(is_active, averager, controller, tuner,
                                  control_error);

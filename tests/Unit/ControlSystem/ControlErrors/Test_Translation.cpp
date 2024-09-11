@@ -4,19 +4,27 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/ControlErrors/Rotation.hpp"
+#include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
+#include "ControlSystem/TimescaleTuner.hpp"
+#include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -43,7 +51,6 @@ void test_translation_control_error() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
-      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Translation: 3\n"
       "ControlSystems:\n"
@@ -159,9 +166,79 @@ void test_translation_control_error() {
                                custom_approx);
 }
 
+struct SingleMetavars {
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
+  using component_list = tmpl::list<>;
+};
+
+void test_single_object_translation_control_error() {
+  using ControlError = ControlErrors::Translation<1>;
+  using QueueTag =
+      control_system::QueueTags::Center<::domain::ObjectLabel::None>;
+  using QueueTuple = tuples::TaggedTuple<QueueTag>;
+  using CacheType = Parallel::GlobalCache<SingleMetavars>;
+
+  const TimescaleTuner<true> unused_tuner{};
+  // Along x-axis makes things easier to test
+  const QueueTuple fake_measurement_tuple{DataVector{-0.2, 0.0, 0.0}};
+
+  const double check_time = 0.1;
+  const std::string function_of_time_name{"Translation"};
+
+  {
+    const CacheType cache{{domain::FunctionsOfTimeMap{}}};
+
+    const DataVector control_error =
+        ControlError{}(unused_tuner, cache, check_time, function_of_time_name,
+                       fake_measurement_tuple);
+    const DataVector& expected_control_error =
+        tuples::get<QueueTag>(fake_measurement_tuple);
+    CHECK(control_error == expected_control_error);
+  }
+
+  {
+    domain::FunctionsOfTimeMap functions_of_time{};
+    functions_of_time["Expansion"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            0.0, std::array{DataVector{0.5}}, check_time * 10.0);
+    const CacheType cache{{std::move(functions_of_time)}};
+
+    const DataVector control_error =
+        ControlError{}(unused_tuner, cache, check_time, function_of_time_name,
+                       fake_measurement_tuple);
+    const DataVector expected_control_error =
+        0.5 * tuples::get<QueueTag>(fake_measurement_tuple);
+    CHECK(control_error == expected_control_error);
+  }
+
+  {
+    domain::FunctionsOfTimeMap functions_of_time{};
+    functions_of_time["Expansion"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            0.0, std::array{DataVector{0.5}}, check_time * 10.0);
+    functions_of_time["Rotation"] =
+        std::make_unique<domain::FunctionsOfTime::QuaternionFunctionOfTime<2>>(
+            0.0, std::array{DataVector{1.0, 0.0, 0.0, 0.0}},
+            std::array{DataVector{3, 0.0}, DataVector{0.0, 0.0, 1.5},
+                       DataVector{3, 0.0}},
+            check_time * 10.0);
+    const CacheType cache{{std::move(functions_of_time)}};
+
+    const DataVector control_error =
+        ControlError{}(unused_tuner, cache, check_time, function_of_time_name,
+                       fake_measurement_tuple);
+    // Rotation and expand
+    const DataVector expected_control_error =
+        0.5 * -0.2 * DataVector{cos(0.1 * 1.5), sin(0.1 * 1.5), 0.0};
+    CHECK_ITERABLE_APPROX(control_error, expected_control_error);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Translation",
                   "[ControlSystem][Unit]") {
   test_translation_control_error();
+  test_single_object_translation_control_error();
 }
 }  // namespace
 }  // namespace control_system

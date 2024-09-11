@@ -33,9 +33,9 @@ struct LabelA {};
 struct LabelB {};
 struct Rotation {};
 using system = control_system::TestHelpers::System<
-    2, LabelA, control_system::TestHelpers::Measurement<LabelA>, 1>;
+    2, LabelA, control_system::TestHelpers::Measurement<LabelA>>;
 using system2 = control_system::TestHelpers::System<
-    2, LabelB, control_system::TestHelpers::Measurement<LabelA>, 2>;
+    2, LabelB, control_system::TestHelpers::Measurement<LabelA>>;
 using quat_system = control_system::TestHelpers::System<
     2, Rotation, control_system::TestHelpers::Measurement<Rotation>>;
 
@@ -187,13 +187,10 @@ void test_individual_tags() {
       tuner_str(false));
 
   const std::unique_ptr<DomainCreator<3>> creator =
-      std::make_unique<FakeCreator>(
-          std::unordered_map<std::string, size_t>{{system::name(), 2},
-                                                  {quat_system::name(), 3}},
-          2);
+      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{
+          {system::name(), 2}, {quat_system::name(), 3}});
   const std::unique_ptr<DomainCreator<3>> creator_empty =
-      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{},
-                                    1);
+      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{});
 
   const TimescaleTuner<true> created_tuner =
       tuner_tag::create_from_options<MetavarsEmpty>(holder, creator, 0.0);
