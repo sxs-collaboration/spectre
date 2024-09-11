@@ -970,17 +970,20 @@ struct component {
           Parallel::Phase::Testing,
           tmpl::list<::evolution::dg::Actions::ComputeTimeDerivative<
               Metavariables::volume_dim, typename Metavariables::system,
-              AllStepChoosers, Metavariables::local_time_stepping>>>>;
+              AllStepChoosers, Metavariables::local_time_stepping,
+              Metavariables::use_nodegroup_dg_elements>>>>;
 };
 
 template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
-          bool UseMovingMesh, bool HasPrimitiveVariables, bool PassVariables>
+          bool UseMovingMesh, bool HasPrimitiveVariables, bool PassVariables,
+          bool UseNodegroupDgElements>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
   static constexpr bool use_moving_mesh = UseMovingMesh;
   static constexpr bool local_time_stepping = LocalTimeStepping;
   static constexpr bool pass_variables = PassVariables;
+  static constexpr bool use_nodegroup_dg_elements = UseNodegroupDgElements;
   using system =
       System<Dim, system_type, HasPrimitiveVariables, pass_variables>;
   using normal_dot_numerical_flux =
@@ -1021,7 +1024,8 @@ double dg_package_data(
 }
 
 template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
-          SystemType system_type, bool HasPrims, bool PassVariables>
+          SystemType system_type, bool HasPrims, bool PassVariables,
+          bool UseNodegroupDgElements>
 void test_impl(const Spectral::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) {
   CAPTURE(LocalTimeStepping);
@@ -1032,8 +1036,9 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(PassVariables);
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
-  using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
-                                 UseMovingMesh, HasPrims, PassVariables>;
+  using metavars =
+      Metavariables<Dim, system_type, LocalTimeStepping, UseMovingMesh,
+                    HasPrims, PassVariables, UseNodegroupDgElements>;
   register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   register_factory_classes_with_charm<metavars>();
 
@@ -1880,8 +1885,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   CHECK_ITERABLE_APPROX(
       (ActionTesting::get_inbox_tag<
            component<metavars>,
-           ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-           runner, mortar_id_east.id())
+           ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+               Dim, UseNodegroupDgElements>>(runner, mortar_id_east.id())
            .at(time_step_id)
            .at(DirectionalId<Dim>{
                element.neighbors()
@@ -1894,8 +1899,8 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   CHECK((ActionTesting::get_inbox_tag<
              component<metavars>,
-             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-             runner, mortar_id_east.id())
+             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                 Dim, UseNodegroupDgElements>>(runner, mortar_id_east.id())
              .at(time_step_id)
              .at(DirectionalId<Dim>{
                  element.neighbors()
@@ -1907,20 +1912,19 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> mortar_id_south{Direction<Dim>::lower_eta(),
-                                           south_id};
-    CHECK(
-        (ActionTesting::get_inbox_tag<
-             component<metavars>,
-             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-             runner, mortar_id_south.id())
-             .at(time_step_id)
-             .at(DirectionalId<Dim>{
-                 element.neighbors()
-                     .at(mortar_id_south.direction())
-                     .orientation()(mortar_id_south.direction().opposite()),
-                 element.id()})
-             .validity_range) ==
-        (LocalTimeStepping ? next_time_step_id : time_step_id));
+                                             south_id};
+    CHECK((ActionTesting::get_inbox_tag<
+               component<metavars>,
+               ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                   Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
+               .at(time_step_id)
+               .at(DirectionalId<Dim>{
+                   element.neighbors()
+                       .at(mortar_id_south.direction())
+                       .orientation()(mortar_id_south.direction().opposite()),
+                   element.id()})
+               .validity_range) ==
+          (LocalTimeStepping ? next_time_step_id : time_step_id));
 
     if (LocalTimeStepping) {
       const auto& south_mortar_data =
@@ -1946,8 +1950,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     CHECK_ITERABLE_APPROX(
         (ActionTesting::get_inbox_tag<
              component<metavars>,
-             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-             runner, mortar_id_south.id())
+             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                 Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
              .at(time_step_id)
              .at(DirectionalId<Dim>{
                  element.neighbors()
@@ -2027,6 +2031,8 @@ void test() {
   register_derived_classes_with_charm<
       BoundaryCorrection<Dim, false>>();
 
+  constexpr bool use_nodegroup_dg_elements = false;
+
   const auto invoke_tests_with_quadrature_and_formulation =
       [](const Spectral::Quadrature quadrature,
          const ::dg::Formulation local_dg_formulation) {
@@ -2037,23 +2043,27 @@ void test() {
             // Clang doesn't want moving mesh to be captured, but GCC requires
             // it. Silence the Clang warning by "using" it.
             (void)moving_mesh;
-            if constexpr (not(decltype(use_prims)::value and system_type ==
-                              SystemType::Nonconservative)) {
+            if constexpr (not(decltype(use_prims)::value and
+                              system_type == SystemType::Nonconservative)) {
               // PassVariables == false
               test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
                         system_type, std::decay_t<decltype(use_prims)>::value,
-                        false>(quadrature, local_dg_formulation);
+                        false, use_nodegroup_dg_elements>(quadrature,
+                                                          local_dg_formulation);
               test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
                         system_type, std::decay_t<decltype(use_prims)>::value,
-                        false>(quadrature, local_dg_formulation);
+                        false, use_nodegroup_dg_elements>(quadrature,
+                                                          local_dg_formulation);
 
               // PassVariables == true
               test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
                         system_type, std::decay_t<decltype(use_prims)>::value,
-                        true>(quadrature, local_dg_formulation);
+                        true, use_nodegroup_dg_elements>(quadrature,
+                                                         local_dg_formulation);
               test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
                         system_type, std::decay_t<decltype(use_prims)>::value,
-                        true>(quadrature, local_dg_formulation);
+                        true, use_nodegroup_dg_elements>(quadrature,
+                                                         local_dg_formulation);
             }
           };
           prim_helper(std::integral_constant<bool, false>{});

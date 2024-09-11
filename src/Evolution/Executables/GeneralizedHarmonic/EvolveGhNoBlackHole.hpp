@@ -38,6 +38,8 @@ struct EvolutionMetavars
   using typename gh_base::observed_reduction_data_tags;
   using typename gh_base::system;
   static constexpr bool local_time_stepping = gh_base::local_time_stepping;
+  static constexpr bool use_dg_element_collection =
+      gh_base::use_dg_element_collection;
 
   using step_actions = typename gh_base::template step_actions<tmpl::list<>>;
 

@@ -260,6 +260,7 @@ struct GhValenciaDivCleanDefaults {
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
+  static constexpr bool use_dg_element_collection = false;
 
   using system = grmhd::GhValenciaDivClean::System;
   using analytic_variables_tags =
@@ -344,6 +345,8 @@ struct GhValenciaDivCleanTemplateBase<
   using temporal_id = typename defaults::temporal_id;
   using TimeStepperBase = typename defaults::TimeStepperBase;
   static constexpr bool local_time_stepping = defaults::local_time_stepping;
+  static constexpr bool use_dg_element_collection =
+      defaults::use_dg_element_collection;
   using system = typename defaults::system;
   using analytic_variables_tags = typename defaults::analytic_variables_tags;
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
@@ -708,14 +711,15 @@ struct GhValenciaDivCleanTemplateBase<
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-              system, volume_dim, false>>,
+              system, volume_dim, false, use_dg_element_collection>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false>,
+                  system, volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               Actions::UpdateU<system>>>,
       Actions::CleanHistory<system, local_time_stepping>,
@@ -734,9 +738,10 @@ struct GhValenciaDivCleanTemplateBase<
                                      gh::Tags::Pi<DataVector, 3>,
                                      gh::Tags::Phi<DataVector, 3>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false>,
+          system, volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<system>,
@@ -759,7 +764,7 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim,
           grmhd::GhValenciaDivClean::subcell::PrimitiveGhostVariables,
-          local_time_stepping>,
+          local_time_stepping, use_dg_element_collection>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,

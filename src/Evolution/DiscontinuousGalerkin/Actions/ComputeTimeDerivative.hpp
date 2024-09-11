@@ -347,10 +347,11 @@ struct get_primitive_tags_for_face {
  *   - `evolution::dg::Tags::MortarData<Dim>`
  */
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool LocalTimeStepping>
+          bool LocalTimeStepping, bool UseNodegroupDgElements>
 struct ComputeTimeDerivative {
-  using inbox_tags = tmpl::list<
-      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>;
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Dim, UseNodegroupDgElements>>;
   using const_global_cache_tags = tmpl::append<
       tmpl::list<::dg::Tags::Formulation,
                  evolution::Tags::BoundaryCorrection<EvolutionSystem>,
@@ -380,17 +381,27 @@ struct ComputeTimeDerivative {
 };
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool LocalTimeStepping>
+          bool LocalTimeStepping, bool UseNodegroupDgElements>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
           typename ActionList, typename ParallelComponent,
           typename Metavariables>
 Parallel::iterable_action_return_t
-ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
+ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
+                      UseNodegroupDgElements>::
     apply(db::DataBox<DbTagsList>& box,
           tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
           Parallel::GlobalCache<Metavariables>& cache,
           const ArrayIndex& /*array_index*/, ActionList /*meta*/,
           const ParallelComponent* const /*meta*/) {  // NOLINT const
+  static_assert(UseNodegroupDgElements ==
+                    Parallel::is_dg_element_collection_v<ParallelComponent>,
+                "The action ComputeTimeDerivative is told by the "
+                "template parameter UseNodegroupDgElements that it is being "
+                "used with a DgElementCollection, but the ParallelComponent "
+                "is not a DgElementCollection. You need to change the "
+                "template parameter on the ComputeTimeDerivative action "
+                "in your action list.");
+
   using variables_tag = typename EvolutionSystem::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using partial_derivative_tags = typename EvolutionSystem::gradient_variables;
@@ -639,11 +650,11 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
 }
 
 template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers,
-          bool LocalTimeStepping>
+          bool LocalTimeStepping, bool UseNodegroupDgElements>
 template <typename ParallelComponent, typename DbTagsList,
           typename Metavariables>
 void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
-                           LocalTimeStepping>::
+                           LocalTimeStepping, UseNodegroupDgElements>::
     send_data_for_fluxes(
         const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
         const gsl::not_null<db::DataBox<DbTagsList>*> box,
@@ -745,13 +756,15 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
         Parallel::local_synchronous_action<
             Parallel::Actions::SendDataToElement>(
             receiver_proxy, cache,
-            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>{},
+            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                Dim, UseNodegroupDgElements>{},
             neighbor, time_step_id,
             std::make_pair(DirectionalId{direction_from_neighbor, element.id()},
                            std::move(data)));
       } else {
         Parallel::receive_data<
-            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                Dim, UseNodegroupDgElements>>(
             receiver_proxy[neighbor], time_step_id,
             std::make_pair(DirectionalId{direction_from_neighbor, element.id()},
                            std::move(data)));

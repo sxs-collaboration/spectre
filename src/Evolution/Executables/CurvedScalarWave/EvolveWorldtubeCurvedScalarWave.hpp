@@ -149,6 +149,7 @@ struct EvolutionMetavars {
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
+  static constexpr bool use_dg_element_collection = false;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
@@ -250,9 +251,10 @@ struct EvolutionMetavars {
       CurvedScalarWave::Worldtube::Actions::IteratePunctureField,
       CurvedScalarWave::Worldtube::Actions::ReceiveWorldtubeData,
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false>,
+          system, volume_dim, false, use_dg_element_collection>,
       Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
       Actions::UpdateU<system>,

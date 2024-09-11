@@ -83,7 +83,7 @@ struct System {
   using flux_variables = tmpl::list<Var1>;
 };
 
-template <size_t Dim, typename Metavariables>
+template <size_t Dim, typename Metavariables, bool UseNodegroupDgElements>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -112,14 +112,15 @@ struct component {
           evolution::dg::subcell::Actions::SendDataForReconstruction<
               Dim, typename Metavariables::GhostDataMutator,
               // No local time stepping
-              false>,
+              false, UseNodegroupDgElements>,
           evolution::dg::subcell::Actions::ReceiveDataForReconstruction<Dim>>>>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
-  using component_list = tmpl::list<component<Dim, Metavariables>>;
+  using component_list =
+      tmpl::list<component<Dim, Metavariables, UseNodegroupDgElements>>;
   using system = System<Dim>;
   using const_global_cache_tags = tmpl::list<>;
 
@@ -148,24 +149,26 @@ struct Metavariables {
   };
 };
 
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool Metavariables<Dim>::ghost_zone_size_invoked = false;
-template <size_t Dim>
+bool Metavariables<Dim, UseNodegroupDgElements>::ghost_zone_size_invoked =
+    false;
+template <size_t Dim, bool UseNodegroupDgElements>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool Metavariables<Dim>::ghost_data_mutator_invoked = false;
+bool Metavariables<Dim, UseNodegroupDgElements>::ghost_data_mutator_invoked =
+    false;
 
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 void test(const bool use_cell_centered_flux) {
   CAPTURE(Dim);
   CAPTURE(use_cell_centered_flux);
 
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
 
-  using metavars = Metavariables<Dim>;
+  using metavars = Metavariables<Dim, UseNodegroupDgElements>;
   metavars::ghost_zone_size_invoked = false;
   metavars::ghost_data_mutator_invoked = false;
-  using comp = component<Dim, metavars>;
+  using comp = component<Dim, metavars, UseNodegroupDgElements>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{}};
 
@@ -393,8 +396,8 @@ void test(const bool use_cell_centered_flux) {
                   static_cast<int>(rdmp_tci_data.min_variables_values.size())));
 
     const auto& east_data = ActionTesting::get_inbox_tag<
-        comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-        runner, east_id);
+        comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                  Dim, UseNodegroupDgElements>>(runner, east_id);
     CHECK_ITERABLE_APPROX(
         expected_east_data,
         east_data.at(time_step_id)
@@ -444,8 +447,8 @@ void test(const bool use_cell_centered_flux) {
                   static_cast<int>(rdmp_tci_data.min_variables_values.size())));
 
     const auto& south_data = ActionTesting::get_inbox_tag<
-        comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-        runner, south_id);
+        comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                  Dim, UseNodegroupDgElements>>(runner, south_id);
     CHECK(
         expected_south_data ==
         south_data.at(time_step_id)
@@ -461,8 +464,8 @@ void test(const bool use_cell_centered_flux) {
   // correctly. We need to check both if a neighbor is doing DG or if a neighbor
   // is doing subcell.
   auto& self_inbox = ActionTesting::get_inbox_tag<
-      comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-      make_not_null(&runner), self_id);
+      comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                Dim, UseNodegroupDgElements>>(make_not_null(&runner), self_id);
   REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
       make_not_null(&runner), self_id));
 
@@ -476,7 +479,8 @@ void test(const bool use_cell_centered_flux) {
     alg::iota(east_ghost_cells_and_rdmp, 0.0);
     DataVector boundary_data{face_mesh.number_of_grid_points() * (2 + Dim)};
     alg::iota(boundary_data, 1000.0);
-    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
+    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+        Dim, UseNodegroupDgElements>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
@@ -497,7 +501,8 @@ void test(const bool use_cell_centered_flux) {
         rdmp_size};
     alg::iota(south_ghost_cells_and_rdmp, 10000.0);
     *std::prev(south_ghost_cells_and_rdmp.end()) = -10.0;
-    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
+    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+        Dim, UseNodegroupDgElements>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
@@ -576,9 +581,9 @@ void test(const bool use_cell_centered_flux) {
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.ReconstructionCommunication",
                   "[Evolution][Unit]") {
   for (const bool use_cell_centered_flux : {false, true}) {
-    test<1>(use_cell_centered_flux);
-    test<2>(use_cell_centered_flux);
-    test<3>(use_cell_centered_flux);
+    test<1, false>(use_cell_centered_flux);
+    test<2, false>(use_cell_centered_flux);
+    test<3, false>(use_cell_centered_flux);
   }
 }
 }  // namespace

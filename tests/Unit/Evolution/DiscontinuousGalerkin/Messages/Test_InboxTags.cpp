@@ -54,10 +54,11 @@ BoundaryMessage<Dim>* create_boundary_message(
   );
 }
 
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 void test_no_ghost_cells() {
   static constexpr size_t number_of_components = 1 + Dim;
-  using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
+  using bc_tag =
+      Tags::BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>;
   using bm_tag = Tags::BoundaryMessageInbox<Dim>;
   using BcType = evolution::dg::BoundaryData<Dim>;
   using BcInbox = typename bc_tag::type;
@@ -177,10 +178,11 @@ void test_no_ghost_cells() {
 #pragma GCC diagnostic pop
 #endif
 
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 void test_with_ghost_cells() {
   static constexpr size_t number_of_components = 1 + Dim;
-  using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
+  using bc_tag =
+      Tags::BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>;
   using bm_tag = Tags::BoundaryMessageInbox<Dim>;
   using BcType = evolution::dg::BoundaryData<Dim>;
   using BcInbox = typename bc_tag::type;
@@ -358,8 +360,8 @@ void test_with_ghost_cells() {
 
 template <size_t Dim>
 void test() {
-  test_no_ghost_cells<Dim>();
-  test_with_ghost_cells<Dim>();
+  test_no_ghost_cells<Dim, false>();
+  test_with_ghost_cells<Dim, false>();
 
   TestHelpers::db::test_simple_tag<Tags::BoundaryData<Dim>>("BoundaryData");
 }

@@ -438,19 +438,20 @@ struct component {
               local_time_stepping,
               ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                   typename Metavariables::system, Metavariables::volume_dim,
-                  false>,
+                  false, Metavariables::use_nodegroup_dg_elements>,
               ::evolution::dg::Actions::
                   ApplyBoundaryCorrectionsToTimeDerivative<
                       typename Metavariables::system, Metavariables::volume_dim,
-                      false>>>>>;
+                      false, Metavariables::use_nodegroup_dg_elements>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
-          bool LocalTimeStepping>
+          bool LocalTimeStepping, bool UseNodegroupDgElements>
 struct Metavariables {
   static constexpr TestHelpers::SystemType system_type = SystemType;
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = LocalTimeStepping;
+  static constexpr bool use_nodegroup_dg_elements = UseNodegroupDgElements;
   using system = System<Dim, SystemType>;
   using const_global_cache_tags = tmpl::list<domain::Tags::InitialExtents<Dim>>;
 
@@ -466,7 +467,7 @@ const auto& get_tag(
 }
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
-          bool UseLocalTimeStepping>
+          bool UseLocalTimeStepping, bool UseNodegroupDgElements>
 void test_impl(const Spectral::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) {
   CAPTURE(Dim);
@@ -474,7 +475,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(quadrature);
   CAPTURE(UseLocalTimeStepping);
   register_derived_classes_with_charm<BoundaryCorrection<Dim>>();
-  using metavars = Metavariables<Dim, SystemType, UseLocalTimeStepping>;
+  using metavars = Metavariables<Dim, SystemType, UseLocalTimeStepping,
+                                 UseNodegroupDgElements>;
   using comp = component<metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using variables_tag = typename metavars::system::variables_tag;
@@ -691,7 +693,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       runner.template mock_distributed_objects<comp>()
           .at(self_id)
           .template receive_data<
-              evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+              evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                  Dim, UseNodegroupDgElements>>(
               neighbor_time_step_id,
               std::pair{DirectionalId<Dim>{direction, neighbor_id}, data});
       if (UseLocalTimeStepping) {
@@ -745,8 +748,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   REQUIRE(
       runner
           .template nonempty_inboxes<
-              comp,
-              evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>()
+              comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                        Dim, UseNodegroupDgElements>>()
           .size() == 1);
 
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
@@ -757,14 +760,14 @@ void test_impl(const Spectral::Quadrature quadrature,
         runner
             .template nonempty_inboxes<
                 comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                          Dim>>()
+                          Dim, UseNodegroupDgElements>>()
             .empty());
   } else {
     CHECK(
         runner
             .template nonempty_inboxes<
                 comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                          Dim>>()
+                          Dim, UseNodegroupDgElements>>()
             .size() == 1);
   }
 
@@ -995,8 +998,8 @@ void test() {
        {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
     for (const auto quadrature :
          {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-      test_impl<Dim, SystemType, UseLocalTimeStepping>(quadrature,
-                                                       dg_formulation);
+      test_impl<Dim, SystemType, UseLocalTimeStepping, false>(quadrature,
+                                                              dg_formulation);
     }
   }
 }
