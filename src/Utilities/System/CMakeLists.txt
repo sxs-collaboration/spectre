@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Abort.cpp
+  AttachDebugger.cpp
   Exit.cpp
   ParallelInfo.cpp
   Prefetch.cpp
@@ -19,6 +20,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Abort.hpp
+  AttachDebugger.hpp
   Exit.hpp
   ParallelInfo.hpp
   Prefetch.hpp

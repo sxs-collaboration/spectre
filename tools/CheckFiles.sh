@@ -30,6 +30,7 @@ iostream() {
     is_c++ "$1" \
      && whitelist "$1" \
                   'tests/Unit/IO/Exporter/BundledExporter/Test_BundledExporter.cpp$' \
+                  'src/Utilities/System/AttachDebugger.cpp' \
      && grep -q '#include <iostream>' "$1"
 }
 iostream_report() {
