@@ -16,6 +16,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/NodeLock.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -47,15 +48,16 @@ struct SendDataToElement {
       const ReceiveTag& /*meta*/, const ElementId<Dim>& element_to_execute_on,
       typename ReceiveTag::temporal_id instance, ReceiveData&& receive_data) {
     const size_t my_node = Parallel::my_node<size_t>(*cache);
-    auto& element = db::get_mutable_reference<
-                        typename ParallelComponent::element_collection_tag>(
-                        make_not_null(&box))
-                        .at(element_to_execute_on);
     // While we don't mutate the value, we want to avoid locking the DataBox
     // and the nodegroup by using `db::get_mutable_reference`. If/when we
     // start dynamically inserting and removing elements, we'll need to update
     // how we handle this. For example, we might need the containers to have
     // strong stability guarantees.
+    ASSERT(db::get_mutable_reference<Parallel::Tags::ElementLocations<Dim>>(
+               make_not_null(&box))
+                   .count(element_to_execute_on) == 1,
+           "Could not find ElementId " << element_to_execute_on
+                                       << " in the list of element locations");
     const size_t node_of_element =
         db::get_mutable_reference<Parallel::Tags::ElementLocations<Dim>>(
             make_not_null(&box))
@@ -64,6 +66,17 @@ struct SendDataToElement {
         Parallel::get_parallel_component<ParallelComponent>(*cache);
     if (node_of_element == my_node) {
       [[maybe_unused]] size_t count = 0;
+      ASSERT(db::get_mutable_reference<
+                 typename ParallelComponent::element_collection_tag>(
+                 make_not_null(&box))
+                     .count(element_to_execute_on) == 1,
+             "The element with ID "
+                 << element_to_execute_on << " is not on node " << my_node
+                 << ". We should be sending data to node " << node_of_element);
+      auto& element = db::get_mutable_reference<
+                          typename ParallelComponent::element_collection_tag>(
+                          make_not_null(&box))
+                          .at(element_to_execute_on);
       if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
                                    typename ReceiveTag::type>) {
         count = ReceiveTag::insert_into_inbox(
