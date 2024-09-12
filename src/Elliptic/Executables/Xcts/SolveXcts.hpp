@@ -134,7 +134,9 @@ struct Metavariables {
                        volume_dim, typename system::primal_fields>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
-                       Events::Completion, Events::ObserveAdmIntegrals,
+                       Events::Completion,
+                       Events::ObserveAdmIntegrals<
+                           LinearSolver::multigrid::Tags::IsFinestGrid>,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
