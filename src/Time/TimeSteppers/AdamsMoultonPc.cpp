@@ -368,13 +368,13 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
       // Predictor
       auto lts_coefficients = adams_lts::lts_coefficients(
           local_times, remote_times, small_step_start, step_end,
-          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit,
-          adams_lts::SchemeType::Explicit, -1, -1);
+          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit, -1,
+          -1);
       if (not is_synchronization_time(remote_times.back())) {
         lts_coefficients += adams_lts::lts_coefficients(
             local_times, remote_times, synchronization_time, small_step_start,
             adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Implicit,
-            adams_lts::SchemeType::Implicit, -1, 0);
+            -1, 0);
       }
       adams_lts::apply_coefficients(result, lts_coefficients, coupling);
     } else {
@@ -389,13 +389,11 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
             adams_lts::lts_coefficients(local_times, remote_times,
                                         synchronization_time, step_end,
                                         adams_lts::SchemeType::Implicit,
-                                        adams_lts::SchemeType::Implicit,
                                         adams_lts::SchemeType::Implicit, 0, 0) -
             adams_lts::lts_coefficients(local_times, remote_times,
                                         synchronization_time, step_start,
                                         adams_lts::SchemeType::Implicit,
-                                        adams_lts::SchemeType::Explicit,
-                                        adams_lts::SchemeType::Implicit, 0, -1);
+                                        adams_lts::SchemeType::Explicit, 0, -1);
         adams_lts::apply_coefficients(result, lts_coefficients, coupling);
       } else {
         // Unaligned corrector
@@ -403,8 +401,8 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
                "Trying to take unaligned step, but remote side is smaller.");
         const auto lts_coefficients = adams_lts::lts_coefficients(
             local_times, remote_times, step_start, step_end,
-            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Explicit,
-            adams_lts::SchemeType::Implicit, 0, -1);
+            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Explicit, 0,
+            -1);
         adams_lts::apply_coefficients(result, lts_coefficients, coupling);
       }
     }
@@ -422,7 +420,7 @@ void AdamsMoultonPc<Monotonic>::add_boundary_delta_impl(
 
     const auto lts_coefficients = adams_lts::lts_coefficients(
         local_times, remote_times, local_times.back().step_time(),
-        local_times.back().step_time() + time_step, scheme, scheme, scheme,
+        local_times.back().step_time() + time_step, scheme, scheme,
         order_offset, order_offset);
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   }
@@ -510,13 +508,13 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
 
     auto lts_coefficients = adams_lts::lts_coefficients(
         local_times, remote_times, small_step_start, ApproximateTime{time},
-        adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit,
-        adams_lts::SchemeType::Explicit, -1, -1);
+        adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit, -1,
+        -1);
     if (not is_synchronization_time(remote_times.back())) {
       lts_coefficients += adams_lts::lts_coefficients(
           local_times, remote_times, synchronization_time, small_step_start,
-          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Implicit,
-          adams_lts::SchemeType::Implicit, -1, 0);
+          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Implicit, -1,
+          0);
     }
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   } else {
@@ -534,12 +532,11 @@ void AdamsMoultonPc<Monotonic>::boundary_dense_output_impl(
         adams_lts::lts_coefficients(
             local_times, remote_times, local_times.back().step_time(),
             small_step_start, adams_lts::SchemeType::Implicit,
-            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Implicit, 0,
-            0) +
-        adams_lts::lts_coefficients(
-            local_times, remote_times, small_step_start, ApproximateTime{time},
-            adams_lts::SchemeType::Implicit, adams_lts::SchemeType::Implicit,
-            adams_lts::SchemeType::Implicit, 0, 0);
+            adams_lts::SchemeType::Implicit, 0, 0) +
+        adams_lts::lts_coefficients(local_times, remote_times, small_step_start,
+                                    ApproximateTime{time},
+                                    adams_lts::SchemeType::Implicit,
+                                    adams_lts::SchemeType::Implicit, 0, 0);
     adams_lts::apply_coefficients(result, lts_coefficients, coupling);
   }
 }

@@ -199,8 +199,8 @@ OrderVector<TimeStepId> find_relevant_ids(
 }
 
 // Choose the relevant times from `local` and `remote` for defining
-// small steps for `small_step_scheme`, using the specified schemes
-// for interpolation on the local and remote sides.
+// the small steps, using the specified schemes for interpolation on
+// the local and remote sides.
 //
 // This is the `num_steps` most recent values from the union of the
 // `local` and `remote` times, excluding any values that should only
@@ -210,7 +210,6 @@ OrderVector<Time> merge_to_small_steps(const OrderVector<Time>& local,
                                        const evolution_less<Time>& less,
                                        const SchemeType local_scheme,
                                        const SchemeType remote_scheme,
-                                       const SchemeType small_step_scheme,
                                        const size_t num_steps) {
   OrderVector<Time> small_steps(num_steps);
   auto local_it = local.rbegin();
@@ -225,27 +224,17 @@ OrderVector<Time> merge_to_small_steps(const OrderVector<Time>& local,
              less(*remote_it, *local_it)),
          "Explicit time " << *local_it << " after implicit " << *remote_it);
 
-  if (small_step_scheme == SchemeType::Explicit) {
-    // Don't use implicit interpolation points for an explicit step
-    if (local_scheme == SchemeType::Implicit) {
-      ++local_it;
-    }
-    if (remote_scheme == SchemeType::Implicit) {
+  if (local_scheme == SchemeType::Implicit and
+      remote_scheme == SchemeType::Implicit) {
+    // If both the interpolation schemes are implicit, we will get
+    // two times after the small step we are working on, one from
+    // each.  One of them (if they are different) belongs to a later
+    // small step, and we should ignore it.  If they are the same,
+    // ignoring one of them is harmless.
+    if (less(*local_it, *remote_it)) {
       ++remote_it;
-    }
-  } else {
-    if (local_scheme == SchemeType::Implicit and
-        remote_scheme == SchemeType::Implicit) {
-      // If both the interpolation schemes are implicit, we will get
-      // two times after the small step we are working on, one from
-      // each.  One of them (if they are different) belongs to a later
-      // small step, and we should ignore it.  If they are the same,
-      // ignoring one of them is harmless.
-      if (less(*local_it, *remote_it)) {
-        ++remote_it;
-      } else {
-        ++local_it;
-      }
+    } else {
+      ++local_it;
     }
   }
 
@@ -321,12 +310,14 @@ LtsCoefficients lts_coefficients_for_gts(
 }  // namespace
 
 template <typename TimeType>
-LtsCoefficients lts_coefficients(
-    const ConstBoundaryHistoryTimes& local_times,
-    const ConstBoundaryHistoryTimes& remote_times, const Time& start_time,
-    const TimeType& end_time, const SchemeType local_scheme,
-    const SchemeType remote_scheme, const SchemeType small_step_scheme,
-    const int local_order_offset, const int remote_order_offset) {
+LtsCoefficients lts_coefficients(const ConstBoundaryHistoryTimes& local_times,
+                                 const ConstBoundaryHistoryTimes& remote_times,
+                                 const Time& start_time,
+                                 const TimeType& end_time,
+                                 const SchemeType local_scheme,
+                                 const SchemeType remote_scheme,
+                                 const int local_order_offset,
+                                 const int remote_order_offset) {
   ASSERT(local_order_offset == 0 or local_order_offset == -1,
          "Must be 0 or -1, not " << local_order_offset);
   ASSERT(remote_order_offset == 0 or remote_order_offset == -1,
@@ -350,8 +341,8 @@ LtsCoefficients lts_coefficients(
     // Check is the there is actually local time-stepping happening at
     // this boundary.  Only check for the latest small step, before we
     // have generated any coefficients.
-    if (step_coefficients.empty() and small_step_scheme == local_scheme and
-        small_step_scheme == remote_scheme and local_ids == remote_ids) {
+    if (step_coefficients.empty() and local_scheme == remote_scheme and
+        local_ids == remote_ids) {
       return lts_coefficients_for_gts(local_ids, start_time, end_time);
     }
 
@@ -371,10 +362,13 @@ LtsCoefficients lts_coefficients(
 
     const OrderVector<Time> small_step_times = merge_to_small_steps(
         local_control_times, remote_control_times, time_less, local_scheme,
-        remote_scheme, small_step_scheme, integration_order);
+        remote_scheme, integration_order);
     const Time current_small_step =
         small_step_times[small_step_times.size() -
-                         (small_step_scheme == SchemeType::Implicit ? 2 : 1)];
+                         (local_scheme == SchemeType::Implicit or
+                                  remote_scheme == SchemeType::Implicit
+                              ? 2
+                              : 1)];
     ASSERT(not time_less(current_small_step, start_time),
            "Reached time " << current_small_step
            << " without hitting start time " << start_time
@@ -470,8 +464,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (MATH_WRAPPER_TYPES))
       const ConstBoundaryHistoryTimes& local_times,                          \
       const ConstBoundaryHistoryTimes& remote_times, const Time& start_time, \
       const TIME_TYPE(data) & end_time, SchemeType local_scheme,             \
-      SchemeType remote_scheme, SchemeType small_step_scheme,                \
-      int local_order_offset, int remote_order_offset);
+      SchemeType remote_scheme, int local_order_offset,                      \
+      int remote_order_offset);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Time, ApproximateTime))
 #undef INSTANTIATE

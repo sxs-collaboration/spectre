@@ -251,8 +251,7 @@ void AdamsBashforth::add_boundary_delta_impl(
   const auto step_start = local_times.back().step_time();
   const auto lts_coefficients = adams_lts::lts_coefficients(
       local_times, remote_times, step_start, step_start + time_step,
-      adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit,
-      adams_lts::SchemeType::Explicit, 0, 0);
+      adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit, 0, 0);
   adams_lts::apply_coefficients(result, lts_coefficients, coupling);
 }
 
@@ -306,12 +305,11 @@ void AdamsBashforth::boundary_dense_output_impl(
       adams_lts::lts_coefficients(
           local_times, remote_times, local_times.back().step_time(),
           small_step_start, adams_lts::SchemeType::Explicit,
-          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit, 0,
-          0) +
-      adams_lts::lts_coefficients(
-          local_times, remote_times, small_step_start, ApproximateTime{time},
-          adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit,
-          adams_lts::SchemeType::Explicit, 0, 0);
+          adams_lts::SchemeType::Explicit, 0, 0) +
+      adams_lts::lts_coefficients(local_times, remote_times, small_step_start,
+                                  ApproximateTime{time},
+                                  adams_lts::SchemeType::Explicit,
+                                  adams_lts::SchemeType::Explicit, 0, 0);
   adams_lts::apply_coefficients(result, lts_coefficients, coupling);
 }
 

@@ -321,8 +321,7 @@ ExpectedCoefficients step_coefficients_impl(
     const std::vector<IdOrder>& local_steps_and_orders,
     const std::vector<IdOrder>& remote_steps_and_orders,
     const adams_lts::SchemeType local_scheme,
-    const adams_lts::SchemeType remote_scheme,
-    const adams_lts::SchemeType small_step_scheme, const int local_order_offset,
+    const adams_lts::SchemeType remote_scheme, const int local_order_offset,
     const int remote_order_offset, const int step_start, const T step_end) {
   TimeSteppers::BoundaryHistory<double, double, double> history{};
   TimeSteppers::BoundaryHistory<double, double, double> alt_history{};
@@ -340,15 +339,15 @@ ExpectedCoefficients step_coefficients_impl(
 
   const auto coefficients = adams_lts::lts_coefficients(
       history.local(), history.remote(), make_time(step_start),
-      make_time(step_end), local_scheme, remote_scheme, small_step_scheme,
-      local_order_offset, remote_order_offset);
+      make_time(step_end), local_scheme, remote_scheme, local_order_offset,
+      remote_order_offset);
 
   // Compare with step scaled by -1/2.
   const auto alt_coefficients = adams_lts::lts_coefficients(
       alt_history.local(), alt_history.remote(),
       alternate_time(make_time(step_start)),
       alternate_time(make_time(step_end)), local_scheme, remote_scheme,
-      small_step_scheme, local_order_offset, remote_order_offset);
+      local_order_offset, remote_order_offset);
   REQUIRE(coefficients.size() == alt_coefficients.size());
   for (size_t i = 0; i < coefficients.size(); ++i) {
     const auto& coef = coefficients[i];
@@ -378,19 +377,18 @@ ExpectedCoefficients dense_coefficients(
     const std::vector<IdOrder>& local_steps_and_orders,
     const std::vector<IdOrder>& remote_steps_and_orders,
     const adams_lts::SchemeType local_scheme,
-    const adams_lts::SchemeType remote_scheme,
-    const adams_lts::SchemeType small_step_scheme, const int local_order_offset,
+    const adams_lts::SchemeType remote_scheme, const int local_order_offset,
     const int remote_order_offset, const int step_start,
     const double step_end) {
   auto result = step_coefficients_detail::step_coefficients_impl(
       local_steps_and_orders, remote_steps_and_orders, local_scheme,
-      remote_scheme, small_step_scheme, local_order_offset, remote_order_offset,
-      step_start, step_end);
+      remote_scheme, local_order_offset, remote_order_offset, step_start,
+      step_end);
   // NOLINTNEXTLINE(readability-suspicious-call-argument)
   const auto reversed = step_coefficients_detail::step_coefficients_impl(
       remote_steps_and_orders, local_steps_and_orders, remote_scheme,
-      local_scheme, small_step_scheme, remote_order_offset, local_order_offset,
-      step_start, step_end);
+      local_scheme, remote_order_offset, local_order_offset, step_start,
+      step_end);
   CHECK_ITERABLE_APPROX(result, flip_sides(reversed));
   return result;
 }
@@ -399,25 +397,24 @@ ExpectedCoefficients step_coefficients(
     const std::vector<IdOrder>& local_steps_and_orders,
     const std::vector<IdOrder>& remote_steps_and_orders,
     const adams_lts::SchemeType local_scheme,
-    const adams_lts::SchemeType remote_scheme,
-    const adams_lts::SchemeType small_step_scheme, const int local_order_offset,
+    const adams_lts::SchemeType remote_scheme, const int local_order_offset,
     const int remote_order_offset, const int step_start, const int step_end,
     const bool also_check_dense = true) {
   auto result = step_coefficients_detail::step_coefficients_impl(
       local_steps_and_orders, remote_steps_and_orders, local_scheme,
-      remote_scheme, small_step_scheme, local_order_offset, remote_order_offset,
-      step_start, step_end);
+      remote_scheme, local_order_offset, remote_order_offset, step_start,
+      step_end);
   // NOLINTNEXTLINE(readability-suspicious-call-argument)
   const auto reversed = step_coefficients_detail::step_coefficients_impl(
       remote_steps_and_orders, local_steps_and_orders, remote_scheme,
-      local_scheme, small_step_scheme, remote_order_offset, local_order_offset,
-      step_start, step_end);
+      local_scheme, remote_order_offset, local_order_offset, step_start,
+      step_end);
   CHECK_ITERABLE_APPROX(result, flip_sides(reversed));
   if (also_check_dense) {
     const auto dense = dense_coefficients(
         local_steps_and_orders, remote_steps_and_orders, local_scheme,
-        remote_scheme, small_step_scheme, local_order_offset,
-        remote_order_offset, step_start, static_cast<double>(step_end));
+        remote_scheme, local_order_offset, remote_order_offset, step_start,
+        static_cast<double>(step_end));
     CHECK_ITERABLE_APPROX(result, dense);
   }
   return result;
@@ -448,14 +445,12 @@ void test_lts_coefficients() {
     const ExpectedCoefficients expected{
         {{{0}, {0}}, 1.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, 0, 0, 0, 1),
+        step_coefficients(steps, steps, Explicit, Explicit, 0, 0, 0, 1),
         expected);
     const ExpectedCoefficients expected_dense_12{
         {{{0}, {0}}, 0.5}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, 0, 0, 0, 0.5),
+        dense_coefficients(steps, steps, Explicit, Explicit, 0, 0, 0, 0.5),
         expected_dense_12);
     // clang-format on
   }
@@ -469,16 +464,14 @@ void test_lts_coefficients() {
         {{{1}, {1}}, coefs_ab3[1]},
         {{{2}, {2}}, coefs_ab3[2]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, 0, 0, 2, 3),
+        step_coefficients(steps, steps, Explicit, Explicit, 0, 0, 2, 3),
         expected);
     const ExpectedCoefficients expected_dense_52{
         {{{0}, {0}}, coefs_ab3_52[0]},
         {{{1}, {1}}, coefs_ab3_52[1]},
         {{{2}, {2}}, coefs_ab3_52[2]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, 0, 0, 2, 2.5),
+        dense_coefficients(steps, steps, Explicit, Explicit, 0, 0, 2, 2.5),
         expected_dense_52);
     // clang-format on
   }
@@ -492,30 +485,26 @@ void test_lts_coefficients() {
         {{{1}, {1}}, coefs_am3[1]},
         {{{1, 1}, {1, 1}}, coefs_am3[2]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps, steps, Implicit, Implicit, Implicit, 0, 0, 1, 2),
+        step_coefficients(steps, steps, Implicit, Implicit, 0, 0, 1, 2),
         expected);
     const ExpectedCoefficients expected_predictor{
         {{{0}, {0}}, coefs_ab2[0]},
         {{{1}, {1}}, coefs_ab2[1]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, -1, -1, 1, 2),
+        step_coefficients(steps, steps, Explicit, Explicit, -1, -1, 1, 2),
         expected_predictor);
     const ExpectedCoefficients expected_dense_32_nonmonotonic{
         {{{0}, {0}}, coefs_am3_32[0]},
         {{{1}, {1}}, coefs_am3_32[1]},
         {{{1, 1}, {1, 1}}, coefs_am3_32[2]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(
-            steps, steps, Implicit, Implicit, Implicit, 0, 0, 1, 1.5),
+        dense_coefficients(steps, steps, Implicit, Implicit, 0, 0, 1, 1.5),
         expected_dense_32_nonmonotonic);
     const ExpectedCoefficients expected_dense_32_monotonic{
         {{{0}, {0}}, coefs_ab2_32[0]},
         {{{1}, {1}}, coefs_ab2_32[1]}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, -1, -1, 1, 1.5),
+        dense_coefficients(steps, steps, Explicit, Explicit, -1, -1, 1, 1.5),
         expected_dense_32_monotonic);
     // clang-format on
   }
@@ -530,8 +519,7 @@ void test_lts_coefficients() {
         {{{1}, {0}}, coefs_ab3[1]},
         {{{2}, {0}}, coefs_ab3[2]}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps, single_step, Explicit, Explicit, Explicit, 0, 0, 2, 3),
+        step_coefficients(steps, single_step, Explicit, Explicit, 0, 0, 2, 3),
         expected);
     const ExpectedCoefficients expected_dense_52{
         {{{0}, {0}}, coefs_ab3_52[0]},
@@ -539,7 +527,7 @@ void test_lts_coefficients() {
         {{{2}, {0}}, coefs_ab3_52[2]}};
     CHECK_ITERABLE_APPROX(
         dense_coefficients(
-            steps, single_step, Explicit, Explicit, Explicit, 0, 0, 2, 2.5),
+            steps, single_step, Explicit, Explicit, 0, 0, 2, 2.5),
         expected_dense_52);
     // clang-format on
   }
@@ -562,8 +550,8 @@ void test_lts_coefficients() {
         {{{-8}, {2}}, 23.0 / 16.0},
         {{{-8}, {-2}}, 11.0 / 48.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, Explicit, Explicit,
-                          Explicit, 0, 0, 0, 4, false),
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, 0, 0, 0, 4, false),
         expected_large);
     const ExpectedCoefficients expected_small_1{
         {{{0}, {0}}, 23.0 / 6.0},
@@ -573,7 +561,7 @@ void test_lts_coefficients() {
         {{{-2}, {-8}}, 1.0 / 3.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 0, 2),
+            steps_small, steps_large, Explicit, Explicit, 0, 0, 0, 2),
         expected_small_1);
     const ExpectedCoefficients expected_small_2{
         {{{2}, {0}}, 115.0 / 16.0},
@@ -585,7 +573,7 @@ void test_lts_coefficients() {
         {{{-2}, {-8}}, -5.0 / 48.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 2, 4),
+            steps_small, steps_large, Explicit, Explicit, 0, 0, 2, 4),
         expected_small_2);
     // clang-format on
   }
@@ -603,7 +591,7 @@ void test_lts_coefficients() {
         {{{-2}, {-1}}, -1.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_large, steps_small, Explicit, Explicit, Explicit, 0, 0, 0, 1),
+            steps_large, steps_small, Explicit, Explicit, 0, 0, 0, 1),
         expected);
     // clang-format on
   }
@@ -625,8 +613,8 @@ void test_lts_coefficients() {
         {{{0}, {1}}, 4.0 / 3.0},
         {{{0}, {2}}, 5.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, Explicit, Explicit,
-                          Explicit, 0, 0, 0, 3, false),
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, 0, 0, 0, 3, false),
         expected_large);
     const ExpectedCoefficients expected_small_1{
         {{{-1}, {-3}}, -1.0 / 6.0},
@@ -634,7 +622,7 @@ void test_lts_coefficients() {
         {{{0}, {0}}, 3.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 0, 1),
+            steps_small, steps_large, Explicit, Explicit, 0, 0, 0, 1),
         expected_small_1);
     const ExpectedCoefficients expected_small_2{
         {{{0}, {0}}, -1.0 / 2.0},
@@ -642,7 +630,7 @@ void test_lts_coefficients() {
         {{{1}, {0}}, 2.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 1, 2),
+            steps_small, steps_large, Explicit, Explicit, 0, 0, 1, 2),
         expected_small_2);
     const ExpectedCoefficients expected_small_3{
         {{{1}, {-3}}, 1.0 / 6.0},
@@ -651,7 +639,7 @@ void test_lts_coefficients() {
         {{{2}, {0}}, 5.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Explicit, Explicit, Explicit, 0, 0, 2, 3),
+            steps_small, steps_large, Explicit, Explicit, 0, 0, 2, 3),
         expected_small_3);
 
     const ExpectedCoefficients expected_dense_12{
@@ -659,16 +647,16 @@ void test_lts_coefficients() {
         {{{0}, {-1}}, -1.0 / 12.0},
         {{{0}, {0}}, 5.0 / 8.0}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps_large, steps_small, Explicit, Explicit,
-                           Explicit, 0, 0, 0, 0.5),
+        dense_coefficients(
+            steps_large, steps_small, Explicit, Explicit, 0, 0, 0, 0.5),
         expected_dense_12);
     const ExpectedCoefficients expected_dense_32{
         {{{0}, {0}}, -1.0 / 8.0},
         {{{-3}, {1}}, -5.0 / 24.0},
         {{{0}, {1}}, 5.0 / 6.0}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps_large, steps_small, Explicit, Explicit,
-                           Explicit, 0, 0, 1, 1.5),
+        dense_coefficients(
+            steps_large, steps_small, Explicit, Explicit, 0, 0, 1, 1.5),
         expected_dense_32);
     const ExpectedCoefficients expected_dense_52{
         {{{-3}, {1}}, 1.0 / 24.0},
@@ -676,8 +664,8 @@ void test_lts_coefficients() {
         {{{-3}, {2}}, -5.0 / 12.0},
         {{{0}, {2}}, 25.0 / 24.0}};
     CHECK_ITERABLE_APPROX(
-        dense_coefficients(steps_large, steps_small, Explicit, Explicit,
-                           Explicit, 0, 0, 2, 2.5),
+        dense_coefficients(
+            steps_large, steps_small, Explicit, Explicit, 0, 0, 2, 2.5),
         expected_dense_52);
     // clang-format on
   }
@@ -694,8 +682,7 @@ void test_lts_coefficients() {
         {{{3}, {2}}, -1.0 / 4.0},
         {{{3}, {3}}, 3.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps_a, steps_b, Explicit, Explicit, Explicit, 0, 0, 3, 4),
+        step_coefficients(steps_a, steps_b, Explicit, Explicit, 0, 0, 3, 4),
         expected_a_1);
     const ExpectedCoefficients expected_a_2{
         {{{3}, {3}}, -1.0 / 2.0},
@@ -705,7 +692,7 @@ void test_lts_coefficients() {
         {{{4}, {5}}, 11.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_a, steps_b, Explicit, Explicit, Explicit, 0, 0, 4, 6, false),
+            steps_a, steps_b, Explicit, Explicit, 0, 0, 4, 6, false),
         expected_a_2);
     const ExpectedCoefficients expected_b_1{
         {{{2}, {1}}, -1.0 / 4.0},
@@ -715,15 +702,14 @@ void test_lts_coefficients() {
         {{{3}, {4}}, 3.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_b, steps_a, Explicit, Explicit, Explicit, 0, 0, 3, 5, false),
+            steps_b, steps_a, Explicit, Explicit, 0, 0, 3, 5, false),
         expected_b_1);
     const ExpectedCoefficients expected_b_2{
         {{{3}, {4}}, -1.0 / 4.0},
         {{{5}, {3}}, -3.0 / 2.0},
         {{{5}, {4}}, 11.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps_b, steps_a, Explicit, Explicit, Explicit, 0, 0, 5, 6),
+        step_coefficients(steps_b, steps_a, Explicit, Explicit, 0, 0, 5, 6),
         expected_b_2);
     // clang-format on
   }
@@ -743,7 +729,7 @@ void test_lts_coefficients() {
         {{{0}, {0}}, 2.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(steps_large, steps_small_for_nonmonotonic_predictor,
-                          Explicit, Explicit, Explicit, -1, -1, 0, 2),
+                          Explicit, Explicit, -1, -1, 0, 2),
         expected_large_predictor_nonmonotonic);
     const ExpectedCoefficients expected_large_corrector{
         {{{0}, {0}}, 1.0 / 2.0},
@@ -753,14 +739,14 @@ void test_lts_coefficients() {
         {{{0, 2}, {1}}, 1.0 / 4.0},
         {{{0, 2}, {1, 1}}, 1.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_large, steps_small, Implicit, Implicit,
-                          Implicit, 0, 0, 0, 2, false),
+        step_coefficients(
+            steps_large, steps_small, Implicit, Implicit, 0, 0, 0, 2, false),
         expected_large_corrector);
     const ExpectedCoefficients expected_small_predictor_1{
         {{{0}, {0}}, 1.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, Explicit, Explicit,
-                          Explicit, -1, -1, 0, 1),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 0, 1),
         expected_small_predictor_1);
     const ExpectedCoefficients expected_small_corrector_1{
         {{{0}, {0}}, 1.0 / 2.0},
@@ -768,13 +754,13 @@ void test_lts_coefficients() {
         {{{0, 1}, {0, 2}}, 1.0 / 4.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Implicit, Implicit, Implicit, 0, 0, 0, 1),
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 0, 1),
         expected_small_corrector_1);
     const ExpectedCoefficients expected_small_predictor_2{
         {{{1}, {0}}, 1.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(steps_small, steps_large, Explicit, Explicit,
-                          Explicit, -1, -1, 1, 2),
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 1, 2),
         expected_small_predictor_2);
     const ExpectedCoefficients expected_small_corrector_2{
         {{{1}, {0}}, 1.0 / 4.0},
@@ -782,7 +768,7 @@ void test_lts_coefficients() {
         {{{1, 1}, {0, 2}}, 1.0 / 2.0}};
     CHECK_ITERABLE_APPROX(
         step_coefficients(
-            steps_small, steps_large, Implicit, Implicit, Implicit, 0, 0, 1, 2),
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 1, 2),
         expected_small_corrector_2);
     // clang-format on
   }
@@ -800,8 +786,7 @@ void test_lts_coefficients() {
         {{{0}, {0}}, -1.0 / 24.0},
         {{{1}, {1}}, 13.0 / 24.0}};
     CHECK_ITERABLE_APPROX(
-        step_coefficients(
-            steps, steps, Explicit, Explicit, Explicit, 0, 0, 1, 2),
+        step_coefficients(steps, steps, Explicit, Explicit, 0, 0, 1, 2),
         expected);
     // clang-format on
   }
