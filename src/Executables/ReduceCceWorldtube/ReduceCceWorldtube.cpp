@@ -3,10 +3,12 @@
 
 #include <boost/program_options.hpp>
 #include <cstddef>
+#include <exception>
 #include <string>
 
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Variables.hpp"
@@ -18,9 +20,14 @@
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
+#include "Options/Auto.hpp"
+#include "Options/ParseOptions.hpp"
+#include "Options/String.hpp"
+#include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 // Charm looks for this function but since we build without a main function or
 // main module we just have it be empty
@@ -275,6 +282,107 @@ void perform_cce_worldtube_reduction(
   }
   Parallel::printf("\n");
 }
+
+namespace OptionTags {
+struct InputH5File {
+  using type = std::string;
+  static constexpr Options::String help =
+      "Name of the H5 worldtube file. A '.h5' extension will be added if "
+      "needed.";
+};
+
+struct OutputH5File {
+  using type = std::string;
+  static constexpr Options::String help =
+      "Name of output H5 file. A '.h5' extension will be added if needed.";
+};
+
+struct FixSpecNormalization {
+  using type = bool;
+  static constexpr Options::String help =
+      "Apply corrections associated with documented SpEC worldtube file "
+      "errors. If you are using worldtube data from SpECTRE or from another NR "
+      "code but in the SpECTRE format, then this option must be 'False'";
+};
+
+struct BufferDepth {
+  using type = Options::Auto<size_t>;
+  static constexpr Options::String help =
+      "Number of time steps to load during each call to the file-accessing "
+      "routines. Higher values mean fewer, larger loads from file into RAM. "
+      "Set to 'Auto' to use a default value (2000).";
+};
+
+struct LMaxFactor {
+  using type = Options::Auto<size_t>;
+  static constexpr Options::String help =
+      "The boundary computations will be performed at a resolution that is "
+      "'LMaxFactor' times the input file LMax to avoid aliasing. Set to 'Auto' "
+      "to use a default value (2).";
+};
+}  // namespace OptionTags
+
+using option_tags =
+    tmpl::list<OptionTags::InputH5File, OptionTags::OutputH5File,
+               OptionTags::FixSpecNormalization, OptionTags::BufferDepth,
+               OptionTags::LMaxFactor>;
+using OptionTuple = tuples::tagged_tuple_from_typelist<option_tags>;
+
+namespace ReduceCceTags {
+struct InputH5File : db::SimpleTag {
+  using type = std::string;
+  using option_tags = tmpl::list<OptionTags::InputH5File>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(std::string option) {
+    if (not option.ends_with(".h5")) {
+      option += ".h5";
+    }
+    return option;
+  }
+};
+
+struct OutputH5File : db::SimpleTag {
+  using type = std::string;
+  using option_tags = tmpl::list<OptionTags::OutputH5File>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(std::string option) {
+    if (not option.ends_with(".h5")) {
+      option += ".h5";
+    }
+    return option;
+  }
+};
+
+struct FixSpecNormalization : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::FixSpecNormalization>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const bool option) { return option; }
+};
+
+struct BufferDepth : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::BufferDepth>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const std::optional<size_t>& option) {
+    return option.value_or(2000);
+  }
+};
+
+struct LMaxFactor : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::BufferDepth>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const std::optional<size_t>& option) {
+    return option.value_or(2);
+  }
+};
+}  // namespace ReduceCceTags
+
+using tags = tmpl::list<ReduceCceTags::InputH5File, ReduceCceTags::OutputH5File,
+                        ReduceCceTags::FixSpecNormalization,
+                        ReduceCceTags::BufferDepth, ReduceCceTags::LMaxFactor>;
+using TagsTuple = tuples::tagged_tuple_from_typelist<tags>;
 }  // namespace
 
 /*
@@ -283,44 +391,60 @@ void perform_cce_worldtube_reduction(
  * storing the worldtube scalars that are required as input for CCE.
  */
 int main(int argc, char** argv) {
-  boost::program_options::positional_options_description pos_desc;
-  pos_desc.add("old_spec_cce_file", 1).add("output_file", 1);
-
+  // Boost options for the input yaml and --help flag
   boost::program_options::options_description desc("Options");
   desc.add_options()("help,h,", "show this help message")(
-      "input_file", boost::program_options::value<std::string>()->required(),
-      "name of old CCE data file")(
-      "output_file", boost::program_options::value<std::string>()->required(),
-      "output filename")(
-      "fix_spec_normalization",
-      "Apply corrections associated with documented SpEC "
-      "worldtube file errors")(
-      "buffer_depth",
-      boost::program_options::value<size_t>()->default_value(2000),
-      "number of time steps to load during each call to the file-accessing "
-      "routines. Higher values mean fewer, larger loads from file into RAM.")(
-      "lmax_factor", boost::program_options::value<size_t>()->default_value(2),
-      "the boundary computations will be performed at a resolution that is "
-      "lmax_factor times the input file lmax to avoid aliasing");
+      "input-file", boost::program_options::value<std::string>()->required(),
+      "Name of YAML input file to use.");
 
   boost::program_options::variables_map vars;
-
   boost::program_options::store(
       boost::program_options::command_line_parser(argc, argv)
-          .positional(pos_desc)
           .options(desc)
           .run(),
       vars);
 
-  if (vars.count("help") != 0u or vars.count("input_file") == 0u or
-      vars.count("output_file") == 0u) {
-    Parallel::printf("%s\n", desc);
+  // Option parser for all the actual options
+  Options::Parser<option_tags> parser{
+      "This executable is used for converting the unnecessarily large metric "
+      "worldtube data format into a smaller representation (roughly a factor "
+      "of 4) just storing the worldtube scalars that are required as "
+      "input for CCE."};
+
+  // Help is a successful return
+  if (vars.contains("help")) {
+    Parallel::printf("%s\n%s", desc, parser.help());
     return 0;
   }
 
-  perform_cce_worldtube_reduction(vars["input_file"].as<std::string>(),
-                                  vars["output_file"].as<std::string>(),
-                                  vars["buffer_depth"].as<size_t>(),
-                                  vars["lmax_factor"].as<size_t>(),
-                                  vars.count("fix_spec_normalization") != 0u);
+  // Not specifying an input file is an error
+  if (not vars.contains("input-file")) {
+    Parallel::printf("Missing input file. Pass '--input-file'");
+    return 1;
+  }
+
+  // Wrap in try-catch to print nice errors and terminate gracefully
+  try {
+    const std::string input_yaml = vars["input-file"].as<std::string>();
+
+    // Actually parse the yaml. This does a check if it exists.
+    parser.parse_file(input_yaml);
+
+    // First create option tags, and then actual tags.
+    const OptionTuple options = parser.template apply<option_tags>(
+        [](auto... args) { return OptionTuple(std::move(args)...); });
+    const TagsTuple inputs =
+        Parallel::create_from_options<void>(options, tags{});
+
+    // Do the reduction
+    perform_cce_worldtube_reduction(
+        tuples::get<ReduceCceTags::InputH5File>(inputs),
+        tuples::get<ReduceCceTags::OutputH5File>(inputs),
+        tuples::get<ReduceCceTags::BufferDepth>(inputs),
+        tuples::get<ReduceCceTags::BufferDepth>(inputs),
+        tuples::get<ReduceCceTags::FixSpecNormalization>(inputs));
+  } catch (const std::exception& exception) {
+    Parallel::printf("%s\n", exception.what());
+    return 1;
+  }
 }

@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# [reduce_cce_worldtube_yaml_doxygen_example]
+
+InputH5File: InputFilenameR0292.h5
+OutputH5File: ReducedWorldtubeR0292.h5
+FixSpecNormalization: False
+BufferDepth: Auto
+LMaxFactor: 3
+
+# [reduce_cce_worldtube_yaml_doxygen_example]

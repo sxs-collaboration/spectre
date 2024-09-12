@@ -24,7 +24,7 @@ release). Inside this tarball is
    [Input worldtube data formats](#input_worldtube_data_formats) section)
 - an example YAML input file
 - example output from CCE
-- a `ReduceCceWorldtube` executable for converting between
+- a `ReduceCceWorldtube` executable and YAML file for converting between
    [worldtube data formats](#input_worldtube_data_formats)
 
 \note The tarball is `.xz` so use `tar -xf TarName.tar.xz` to extract. The `-z`
@@ -198,18 +198,22 @@ SpECTRE provides a separate executable for converting from the
 The `ReduceCceWorldtube` executable should be run on a
 [cartesian_metric](#cartesian_metric_and_derivatives) worldtube file, and will
 produce a corresponding 'reduced' Bondi-Sachs worldtube file.
-The basic command-line arguments for the executable are:
+This executable works similarly to our other executables by accepting a YAML
+input file:
 
 ```
-ReduceCceWorldtube --input-file CceR0050.h5 --output-file BondiCceR0050.h5\
- --lmax_factor 3
+ReduceCceWorldtube --input-file ReduceCceWorldtube.yaml
 ```
 
-The argument `--lmax_factor` determines the factor by which the resolution of
+with a YAML file
+
+\snippet ReduceCceWorldtube.yaml reduce_cce_worldtube_yaml_doxygen_example
+
+The option `LMaxFactor` determines the factor by which the resolution of
 the boundary computation that is run will exceed the resolution of the
 input and output files.
-Empirically, we have found that `lmax_factor` of 3 is sufficient to achieve
-roundoff precision in all boundary data we have attempted, and an `lmax_factor`
+Empirically, we have found that `LMaxFactor` of 3 is sufficient to achieve
+roundoff precision in all boundary data we have attempted, and an `LMaxFactor`
 of 2 is usually sufficient to vastly exceed the precision of the simulation that
 provided the boundary dataset.
 

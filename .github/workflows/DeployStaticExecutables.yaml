@@ -61,6 +61,9 @@ jobs:
           cp ./tests/InputFiles/Cce/CharacteristicExtract.yaml
           ./CceExecutables/CharacteristicExtract.yaml
 
+          cp ./tests/InputFiles/ReduceCceWorldtube/ReduceCceWorldtube.yaml
+          ./CceExecutables/ReduceCceWorldtube.yaml
+
           for i in CharacteristicExtract ReduceCceWorldtube; do
             docker cp static-execs:/work/spectre/build/bin/$i ./CceExecutables;
           done
