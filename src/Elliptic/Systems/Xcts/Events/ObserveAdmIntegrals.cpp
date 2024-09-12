@@ -148,6 +148,4 @@ void local_adm_integrals(
   }
 }
 
-PUP::able::PUP_ID ObserveAdmIntegrals::my_PUP_ID = 0;  // NOLINT
-
 }  // namespace Events
