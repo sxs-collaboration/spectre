@@ -136,7 +136,7 @@ void test(const std::string& filename_prefix,
                                                num_points_single_sphere);
 
   // Options for Sphere
-  const intrp::AngularOrdering angular_ordering = intrp::AngularOrdering::Cce;
+  const ylm::AngularOrdering angular_ordering = ylm::AngularOrdering::Cce;
   const std::array<double, 3> center = {{0.05, 0.06, 0.07}};
   intrp::OptionHolders::Sphere sphere_opts(l_max, center, radii,
                                            angular_ordering);
@@ -157,8 +157,8 @@ void test(const std::string& filename_prefix,
   // Check the error
   CHECK_THROWS_WITH(
       ([&box, &radii, &center, &filename_prefix]() {
-        const intrp::AngularOrdering local_angular_ordering =
-            intrp::AngularOrdering::Strahlkorper;
+        const ylm::AngularOrdering local_angular_ordering =
+            ylm::AngularOrdering::Strahlkorper;
         intrp::OptionHolders::Sphere local_sphere_opts(l_max, center, radii,
                                                        local_angular_ordering);
         Parallel::GlobalCache<metavars> local_cache{

@@ -6,12 +6,12 @@
 #include <string>
 
 #include "Framework/TestCreation.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "Utilities/GetOutput.hpp"
 
-namespace intrp {
-SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.InterpolationTarget.AngularOrdering", "[Unit]") {
+namespace ylm {
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.SphericalHarmonics.AngularOrdering",
+                  "[Unit]") {
   CHECK(get_output(AngularOrdering::Cce) == "Cce");
   CHECK(get_output(AngularOrdering::Strahlkorper) == "Strahlkorper");
   CHECK(TestHelpers::test_creation<AngularOrdering>("Cce") ==
@@ -19,4 +19,4 @@ SPECTRE_TEST_CASE(
   CHECK(TestHelpers::test_creation<AngularOrdering>("Strahlkorper") ==
         AngularOrdering::Strahlkorper);
 }
-}  // namespace intrp
+}  // namespace ylm

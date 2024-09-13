@@ -134,7 +134,7 @@ void test_callback_function(const gsl::not_null<Generator*> gen) {
       tmpl::list<::gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Phi<DataVector, 3>, gh::Tags::Pi<DataVector, 3>>;
   using target = typename test_metavariables<LocalTimeStepping>::Target;
-  const intrp::AngularOrdering angular_ordering = intrp::AngularOrdering::Cce;
+  const ylm::AngularOrdering angular_ordering = ylm::AngularOrdering::Cce;
   const double radius = 3.6;
   const std::array<double, 3> center = {{0.05, 0.06, 0.07}};
   // Options for Sphere

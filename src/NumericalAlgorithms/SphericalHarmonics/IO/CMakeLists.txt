@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   FillYlmLegendAndData.cpp
   ReadSurfaceYlm.cpp
+  StrahlkorperCoordsToTextFile.cpp
   )
 
 spectre_target_headers(
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   FillYlmLegendAndData.hpp
   ReadSurfaceYlm.hpp
+  StrahlkorperCoordsToTextFile.hpp
   )
 
 target_link_libraries(

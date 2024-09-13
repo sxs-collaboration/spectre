@@ -12,8 +12,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/ReadSurfaceYlm.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/StrahlkorperCoordsToTextFile.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 
 namespace py = pybind11;
@@ -79,5 +81,20 @@ void bind_strahlkorper(pybind11::module& m) {  // NOLINT
         &ylm::read_surface_ylm_single_time<Frame::Inertial>,
         py::arg("file_name"), py::arg("surface_subfile_name"), py::arg("time"),
         py::arg("relative_epsilon"), py::arg("check_frame"));
+  py::enum_<ylm::AngularOrdering>(m, "AngularOrdering")
+      .value("Strahlkorper", ylm::AngularOrdering::Strahlkorper)
+      .value("Cce", ylm::AngularOrdering::Cce);
+  m.def(
+      "write_sphere_of_points_to_text_file",
+      [](const double radius, const size_t l_max,
+         const std::array<double, 3>& center,
+         const std::string& output_file_name,
+         const ylm::AngularOrdering ordering, const bool overwrite_file) {
+        ylm::write_strahlkorper_coords_to_text_file(
+            radius, l_max, center, output_file_name, ordering, overwrite_file);
+      },
+      py::arg("radius"), py::arg("l_max"), py::arg("center"),
+      py::arg("output_file_name"), py::arg("ordering"),
+      py::arg("overwrite_file") = false);
 }
 }  // namespace ylm::py_bindings

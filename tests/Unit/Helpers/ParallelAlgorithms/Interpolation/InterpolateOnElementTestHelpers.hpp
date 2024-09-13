@@ -349,7 +349,7 @@ void test_interpolate_on_element(
     tuples::get<intrp::Tags::Sphere<target_tag>>(init_tuple) =
         intrp::OptionHolders::Sphere{ell, std::array{x_center, 0.0, 0.0},
                                      std::vector<double>{1.0, 2.5},
-                                     intrp::AngularOrdering::Cce};
+                                     ylm::AngularOrdering::Cce};
   }
 
   // Emplace target component.
