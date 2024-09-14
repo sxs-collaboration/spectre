@@ -139,7 +139,7 @@ std::optional<std::unordered_set<size_t>> get_block_numbers_to_use(
 
 namespace h5 {
 
-void combine_h5(
+void combine_h5_vol(
     const std::vector<std::string>& file_names, const std::string& subfile_name,
     const std::string& output, const std::optional<double> start_value,
     const std::optional<double> stop_value,

@@ -116,7 +116,7 @@ def combine_h5_vol_command(
     if not output.endswith(".h5"):
         output += ".h5"
 
-    spectre_h5.combine_h5(
+    spectre_h5.combine_h5_vol(
         h5files,
         subfile_name,
         output,

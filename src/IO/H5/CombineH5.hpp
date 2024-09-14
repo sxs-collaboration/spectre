@@ -15,7 +15,7 @@ namespace h5 {
  * should be combined. We ignore other blocks when combining the HDF5
  * files. This provides a way to filter volume data for easier visualization.
  */
-void combine_h5(const std::vector<std::string>& file_names,
+void combine_h5_vol(const std::vector<std::string>& file_names,
                 const std::string& subfile_name, const std::string& output,
                 std::optional<double> start_value = std::nullopt,
                 std::optional<double> stop_value = std::nullopt,
