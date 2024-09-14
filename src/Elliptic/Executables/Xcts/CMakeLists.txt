@@ -30,6 +30,7 @@ target_link_libraries(
   FunctionsOfTime
   Hydro
   Informer
+  InitialDataUtilities
   Initialization
   LinearOperators
   MathFunctions
