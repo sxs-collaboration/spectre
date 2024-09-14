@@ -152,9 +152,17 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
                          .try_emplace(time_step_id, std::move(data.second),
                                       std::move(data.first)))) {
-      ERROR("Failed to emplace data into inbox. neighbor_id: ("
-            << neighbor_id.direction() << ',' << neighbor_id.id()
-            << ") at TimeStepID: " << time_step_id);
+      ERROR(
+          "Failed to emplace data into inbox. neighbor_id: ("
+          << neighbor_id.direction() << ',' << neighbor_id.id()
+          << ") at TimeStepID: " << time_step_id << " the size of the inbox is "
+          << gsl::at(inbox->boundary_data_in_directions, neighbor_index).size()
+          << " the message count is "
+          << gsl::at(inbox->boundary_data_in_directions, neighbor_index)
+                 .message_count.load()
+          << " and the number of neighbors is "
+          << gsl::at(inbox->boundary_data_in_directions, neighbor_index)
+                 .number_of_neighbors.load());
     }
     // Notes:
     // 1. fetch_add does a post-increment.
