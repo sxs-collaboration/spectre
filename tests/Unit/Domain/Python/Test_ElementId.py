@@ -10,16 +10,21 @@ class TestElementId(unittest.TestCase):
     def test_construction(self):
         element_id = ElementId[1](block_id=1)
         self.assertEqual(element_id.block_id, 1)
+        self.assertEqual(element_id.grid_index, 0)
+        self.assertEqual(element_id.refinement_levels, [0])
         self.assertEqual(element_id.segment_ids, [SegmentId(0, 0)])
         element_id = ElementId[1](block_id=1, segment_ids=[SegmentId(1, 0)])
         self.assertEqual(element_id.block_id, 1)
+        self.assertEqual(element_id.grid_index, 0)
+        self.assertEqual(element_id.refinement_levels, [1])
         self.assertEqual(element_id.segment_ids, [SegmentId(1, 0)])
-        self.assertEqual(
-            ElementId[2]("[B2,(L0I0,L2I3)]"),
-            ElementId[2](
-                block_id=2, segment_ids=[SegmentId(0, 0), SegmentId(2, 3)]
-            ),
+        element_id = ElementId[2](
+            block_id=2, segment_ids=[SegmentId(0, 0), SegmentId(2, 3)]
         )
+        self.assertEqual(element_id.block_id, 2)
+        self.assertEqual(element_id.grid_index, 0)
+        self.assertEqual(element_id.refinement_levels, [0, 2])
+        self.assertEqual(ElementId[2]("[B2,(L0I0,L2I3)]"), element_id)
 
     def test_repr(self):
         self.assertEqual(repr(ElementId[1](0)), "[B0,(L0I0)]")
