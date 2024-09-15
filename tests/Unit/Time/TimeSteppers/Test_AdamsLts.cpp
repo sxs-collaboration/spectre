@@ -245,6 +245,36 @@ std::ostream& operator<<(std::ostream& s, const FakeId& id) {
 
 using ExpectedCoefficients = std::map<std::pair<FakeId, FakeId>, double>;
 
+ExpectedCoefficients operator+(ExpectedCoefficients a,
+                               const ExpectedCoefficients& b) {
+  for (const auto& term : b) {
+    const auto inserted = a.insert(term);
+    if (not inserted.second) {
+      inserted.first->second += term.second;
+      if (inserted.first->second == 0.0) {
+        a.erase(inserted.first);
+      }
+    }
+  }
+  return a;
+}
+
+ExpectedCoefficients operator-(ExpectedCoefficients a,
+                               const ExpectedCoefficients& b) {
+  for (const auto& term : b) {
+    const auto inserted = a.insert(term);
+    if (inserted.second) {
+      inserted.first->second *= -1.0;
+    } else {
+      inserted.first->second -= term.second;
+      if (inserted.first->second == 0.0) {
+        a.erase(inserted.first);
+      }
+    }
+  }
+  return a;
+}
+
 struct IdOrder {
   FakeId id;
   size_t order;
@@ -788,6 +818,449 @@ void test_lts_coefficients() {
     CHECK_ITERABLE_APPROX(
         step_coefficients(steps, steps, Explicit, Explicit, 0, 0, 1, 2),
         expected);
+    // clang-format on
+  }
+
+  {
+    INFO("Paper example - non-monotonic");
+    //   1 2       6
+    // 0   2   4 5 6
+    std::vector<IdOrder> steps_large{{{1}, 3}, {{2}, 3}};
+    std::vector<IdOrder> steps_small{{{0}, 3}, {{2}, 3}};
+    // clang-format off
+    const ExpectedCoefficients expected_large_predictor{
+       {{{1}, {0}}, -4.0},
+       {{{1}, {2}}, -4.0},
+       {{{2}, {2}}, 12.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, -1, -1, 2, 6, false),
+        expected_large_predictor);
+    const ExpectedCoefficients expected_small_predictor_0{
+       {{{0}, {1}}, -1.0},
+       {{{2}, {1}}, -1.0},
+       {{{2}, {2}}, 4.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 2, 4),
+        expected_small_predictor_0);
+    steps_large.push_back({{2, 4}, 3});
+    steps_small.push_back({{2, 2}, 3});
+    const ExpectedCoefficients expected_small_corrector_0{
+        {{{0}, {1}}, -1.0 / 6.0},
+        {{{2}, {1}}, -1.0 / 3.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2, 2}, {1}}, -17.0 / 30.0},
+        {{{2, 2}, {2}}, 7.0 / 6.0},
+        {{{2, 2}, {2, 4}}, 7.0 / 30.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 2, 4),
+        expected_small_corrector_0);
+    steps_small.push_back({{4}, 3});
+    const ExpectedCoefficients expected_small_predictor_1{
+        {{{2}, {2}}, -1.0 / 4.0},
+        {{{4}, {1}}, -5.0 / 2.0},
+        {{{4}, {2}}, 15.0 / 4.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 4, 5),
+        expected_small_predictor_1);
+    steps_small.push_back({{4, 1}, 3});
+    const ExpectedCoefficients expected_small_corrector_1{
+        {{{2}, {2}}, -1.0 / 36.0},
+        {{{4}, {1}}, -7.0 / 15.0},
+        {{{4}, {2}}, 7.0 / 8.0},
+        {{{4}, {2, 4}}, 7.0 / 40.0},
+        {{{4, 1}, {1}}, -4.0 / 15.0},
+        {{{4, 1}, {2}}, 4.0 / 9.0},
+        {{{4, 1}, {2, 4}}, 4.0 / 15.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 4, 5),
+        expected_small_corrector_1);
+    steps_small.push_back({{5}, 3});
+    const ExpectedCoefficients expected_small_predictor_2{
+        {{{4}, {1}}, 1.0},
+        {{{4}, {2}}, -3.0 / 2.0},
+        {{{5}, {1}}, -9.0 / 2.0},
+        {{{5}, {2}}, 6.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 5, 6),
+        expected_small_predictor_2);
+    steps_small.push_back({{5, 1}, 3});
+    const ExpectedCoefficients expected_small_corrector_2{
+        {{{4}, {1}}, 1.0 / 15.0},
+        {{{4}, {2}}, -1.0 / 8.0},
+        {{{4}, {2, 4}}, -1.0 / 40.0},
+        {{{5}, {1}}, -2.0 / 5.0},
+        {{{5}, {2}}, 2.0 / 3.0},
+        {{{5}, {2, 4}}, 2.0 / 5.0},
+        {{{5, 1}, {2, 4}}, 5.0 / 12.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 5, 6),
+        expected_small_corrector_2);
+    const ExpectedCoefficients expected_large_corrector{
+        {{{1}, {0}}, -1.0 / 6.0},
+        {{{1}, {2}}, -1.0 / 3.0},
+        {{{1}, {2, 2}}, -17.0 / 30.0},
+        {{{1}, {4}}, -2.0 / 5.0},
+        {{{1}, {4, 1}}, -4.0 / 15.0},
+        {{{1}, {5}}, -2.0 / 5.0},
+        {{{2}, {2}}, 59.0 / 36.0},
+        {{{2}, {2, 2}}, 7.0 / 6.0},
+        {{{2}, {4}}, 3.0 / 4.0},
+        {{{2}, {4, 1}}, 4.0 / 9.0},
+        {{{2}, {5}}, 2.0 / 3.0},
+        {{{2, 4}, {2, 2}}, 7.0 / 30.0},
+        {{{2, 4}, {4}}, 3.0 / 20.0},
+        {{{2, 4}, {4, 1}}, 4.0 / 15.0},
+        {{{2, 4}, {5}}, 2.0 / 5.0},
+        {{{2, 4}, {5, 1}}, 5.0 / 12.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Implicit, Implicit, 0, 0, 2, 6, false),
+        expected_large_corrector);
+    // clang-format on
+  }
+
+  {
+    INFO("Paper example - monotonic");
+    //   1 2       6
+    // 0   2   4 5 6
+    std::vector<IdOrder> steps_large{{{1}, 3}, {{2}, 3}};
+    std::vector<IdOrder> steps_small{{{0}, 3}, {{2}, 3}};
+    // clang-format off
+    const ExpectedCoefficients expected_small_predictor_0{
+        {{{0}, {1}}, -1.0},
+        {{{2}, {1}}, -1.0},
+        {{{2}, {2}}, 4.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 2, 4),
+        expected_small_predictor_0);
+    steps_small.push_back({{2, 2}, 3});
+    const ExpectedCoefficients expected_small_corrector_0{
+        {{{0}, {1}}, -1.0 / 6.0},
+        {{{2}, {1}}, -1.0 / 3.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2, 2}, {1}}, -3.0 / 2.0},
+        {{{2, 2}, {2}}, 7.0 / 3.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Explicit, 0, -1, 2, 4),
+        expected_small_corrector_0);
+    steps_small.push_back({{4}, 3});
+    const ExpectedCoefficients expected_small_predictor_1{
+        {{{2}, {2}}, -1.0 / 4.0},
+        {{{4}, {1}}, -5.0 / 2.0},
+        {{{4}, {2}}, 15.0 / 4.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 4, 5),
+        expected_small_predictor_1);
+    steps_small.push_back({{4, 1}, 3});
+    const ExpectedCoefficients expected_small_corrector_1{
+        {{{2}, {2}}, -1.0 / 36.0},
+        {{{4}, {1}}, -7.0 / 6.0},
+        {{{4}, {2}}, 7.0 / 4.0},
+        {{{4, 1}, {1}}, -4.0 / 3.0},
+        {{{4, 1}, {2}}, 16.0 / 9.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Explicit, 0, -1, 4, 5),
+        expected_small_corrector_1);
+    steps_small.push_back({{5}, 3});
+    const ExpectedCoefficients expected_small_predictor_2{
+        {{{4}, {1}}, 1.0},
+        {{{4}, {2}}, -3.0 / 2.0},
+        {{{5}, {1}}, -9.0 / 2.0},
+        {{{5}, {2}}, 6.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 5, 6),
+        expected_small_predictor_2);
+    const ExpectedCoefficients expected_large_predictor{
+        {{{1}, {0}}, -1.0 / 6.0},
+        {{{1}, {2}}, -1.0 / 3.0},
+        {{{1}, {2, 2}}, -3.0 / 2.0},
+        {{{1}, {4}}, -1.0 / 6.0},
+        {{{1}, {4, 1}}, -4.0 / 3.0},
+        {{{1}, {5}}, -9.0 / 2.0},
+        {{{2}, {2}}, 59.0 / 36.0},
+        {{{2}, {2, 2}}, 7.0 / 3.0},
+        {{{2}, {4}}, 1.0 / 4.0},
+        {{{2}, {4, 1}}, 16.0 / 9.0},
+        {{{2}, {5}}, 6.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, -1, -1, 5, 6) +
+        step_coefficients(
+            steps_large, steps_small, Explicit, Implicit, -1, 0, 2, 5, false),
+        expected_large_predictor);
+    steps_small.push_back({{5, 1}, 3});
+    steps_large.push_back({{2, 4}, 3});
+    const ExpectedCoefficients expected_large_corrector{
+        {{{1}, {0}}, -1.0 / 6.0},
+        {{{1}, {2}}, -1.0 / 3.0},
+        {{{1}, {2, 2}}, -17.0 / 30.0},
+        {{{1}, {4}}, -2.0 / 5.0},
+        {{{1}, {4, 1}}, -4.0 / 15.0},
+        {{{1}, {5}}, -2.0 / 5.0},
+        {{{2}, {2}}, 59.0 / 36.0},
+        {{{2}, {2, 2}}, 7.0 / 6.0},
+        {{{2}, {4}}, 3.0 / 4.0},
+        {{{2}, {4, 1}}, 4.0 / 9.0},
+        {{{2}, {5}}, 2.0 / 3.0},
+        {{{2, 4}, {2, 2}}, 7.0 / 30.0},
+        {{{2, 4}, {4}}, 3.0 / 20.0},
+        {{{2, 4}, {4, 1}}, 4.0 / 15.0},
+        {{{2, 4}, {5}}, 2.0 / 5.0},
+        {{{2, 4}, {5, 1}}, 5.0 / 12.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Implicit, Implicit, 0, 0, 2, 6, false),
+        expected_large_corrector);
+    const ExpectedCoefficients expected_small_corrector_2{
+        {{{2, 2}, {1}}, 14.0 / 15.0},
+        {{{2, 2}, {2}}, -7.0 / 6.0},
+        {{{2, 2}, {2, 4}}, 7.0 / 30.0},
+        {{{4}, {1}}, 23.0 / 30.0},
+        {{{4}, {2}}, -1.0},
+        {{{4}, {2, 4}}, 3.0 / 20.0},
+        {{{4, 1}, {1}}, 16.0 / 15.0},
+        {{{4, 1}, {2}}, -4.0 / 3.0},
+        {{{4, 1}, {2, 4}}, 4.0 / 15.0},
+        {{{5}, {1}}, -2.0 / 5.0},
+        {{{5}, {2}}, 2.0 / 3.0},
+        {{{5}, {2, 4}}, 2.0 / 5.0},
+        {{{5, 1}, {2, 4}}, 5.0 / 12.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 2, 6, false) -
+        step_coefficients(
+            steps_small, steps_large, Implicit, Explicit, 0, -1, 2, 5, false),
+        expected_small_corrector_2);
+    // clang-format on
+  }
+
+  {
+    INFO("Paper example - non-monotonic variable order");
+    //   1 2       6
+    // 0   2   4 5 6
+    std::vector<IdOrder> steps_large{{{1}, 3}, {{2}, 3}};
+    std::vector<IdOrder> steps_small{{{0}, 3}, {{2}, 3}};
+    // clang-format off
+    const ExpectedCoefficients expected_large_predictor{
+        {{{1}, {0}}, -4.0},
+        {{{1}, {2}}, -4.0},
+        {{{2}, {2}}, 12.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, -1, -1, 2, 6, false),
+        expected_large_predictor);
+    const ExpectedCoefficients expected_small_predictor_0{
+        {{{0}, {1}}, -1.0},
+        {{{2}, {1}}, -1.0},
+        {{{2}, {2}}, 4.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 2, 4),
+        expected_small_predictor_0);
+    steps_large.push_back({{2, 4}, 3});
+    steps_small.push_back({{2, 2}, 3});
+    const ExpectedCoefficients expected_small_corrector_0{
+        {{{0}, {1}}, -1.0 / 6.0},
+        {{{2}, {1}}, -1.0 / 3.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2, 2}, {1}}, -17.0 / 30.0},
+        {{{2, 2}, {2}}, 7.0 / 6.0},
+        {{{2, 2}, {2, 4}}, 7.0 / 30.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 2, 4),
+        expected_small_corrector_0);
+    steps_small.push_back({{4}, 2});
+    const ExpectedCoefficients expected_small_predictor_1{
+        {{{4}, {1}}, -5.0 / 2.0},
+        {{{4}, {2}}, 7.0 / 2.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 4, 5),
+        expected_small_predictor_1);
+    steps_small.push_back({{4, 1}, 2});
+    const ExpectedCoefficients expected_small_corrector_1{
+        {{{4}, {1}}, -7.0 / 15.0},
+        {{{4}, {2}}, 19.0 / 24.0},
+        {{{4}, {2, 4}}, 7.0 / 40.0},
+        {{{4, 1}, {1}}, -4.0 / 15.0},
+        {{{4, 1}, {2}}, 1.0 / 2.0},
+        {{{4, 1}, {2, 4}}, 4.0 / 15.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 4, 5),
+        expected_small_corrector_1);
+    steps_small.push_back({{5}, 2});
+    const ExpectedCoefficients expected_small_predictor_2{
+        {{{5}, {1}}, -7.0 / 2.0},
+        {{{5}, {2}}, 9.0 / 2.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 5, 6),
+        expected_small_predictor_2);
+    steps_small.push_back({{5, 1}, 2});
+    const ExpectedCoefficients expected_small_corrector_2{
+        {{{5}, {1}}, -1.0 / 3.0},
+        {{{5}, {2}}, 1.0 / 2.0},
+        {{{5}, {2, 4}}, 1.0 / 3.0},
+        {{{5, 1}, {2}}, 1.0 / 24.0},
+        {{{5, 1}, {2, 4}}, 11.0 / 24.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 5, 6),
+        expected_small_corrector_2);
+    const ExpectedCoefficients expected_large_corrector{
+        {{{1}, {0}}, -1.0 / 6.0},
+        {{{1}, {2}}, -1.0 / 3.0},
+        {{{1}, {2, 2}}, -17.0 / 30.0},
+        {{{1}, {4}}, -7.0 / 15.0},
+        {{{1}, {4, 1}}, -4.0 / 15.0},
+        {{{1}, {5}}, -1.0 / 3.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2}, {2, 2}}, 7.0 / 6.0},
+        {{{2}, {4}}, 19.0 / 24.0},
+        {{{2}, {4, 1}}, 1.0 / 2.0},
+        {{{2}, {5}}, 1.0 / 2.0},
+        {{{2}, {5, 1}}, 1.0 / 24.0},
+        {{{2, 4}, {2, 2}}, 7.0 / 30.0},
+        {{{2, 4}, {4}}, 7.0 / 40.0},
+        {{{2, 4}, {4, 1}}, 4.0 / 15.0},
+        {{{2, 4}, {5}}, 1.0 / 3.0},
+        {{{2, 4}, {5, 1}}, 11.0 / 24.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Implicit, Implicit, 0, 0, 2, 6, false),
+        expected_large_corrector);
+    // clang-format on
+  }
+
+  {
+    INFO("Paper example - monotonic variable order");
+    //   1 2       6
+    // 0   2   4 5 6
+    std::vector<IdOrder> steps_large{{{1}, 3}, {{2}, 3}};
+    std::vector<IdOrder> steps_small{{{0}, 3}, {{2}, 3}};
+    // clang-format off
+    const ExpectedCoefficients expected_small_predictor_0{
+        {{{0}, {1}}, -1.0},
+        {{{2}, {1}}, -1.0},
+        {{{2}, {2}}, 4.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 2, 4),
+        expected_small_predictor_0);
+    steps_small.push_back({{2, 2}, 3});
+    const ExpectedCoefficients expected_small_corrector_0{
+        {{{0}, {1}}, -1.0 / 6.0},
+        {{{2}, {1}}, -1.0 / 3.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2, 2}, {1}}, -3.0 / 2.0},
+        {{{2, 2}, {2}}, 7.0 / 3.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Explicit, 0, -1, 2, 4),
+        expected_small_corrector_0);
+    steps_small.push_back({{4}, 2});
+    const ExpectedCoefficients expected_small_predictor_1{
+        {{{4}, {1}}, -5.0 / 2.0},
+        {{{4}, {2}}, 7.0 / 2.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 4, 5),
+        expected_small_predictor_1);
+    steps_small.push_back({{4, 1}, 2});
+    const ExpectedCoefficients expected_small_corrector_1{
+        {{{4}, {1}}, -7.0 / 6.0},
+        {{{4}, {2}}, 5.0 / 3.0},
+        {{{4, 1}, {1}}, -4.0 / 3.0},
+        {{{4, 1}, {2}}, 11.0 / 6.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Explicit, 0, -1, 4, 5),
+        expected_small_corrector_1);
+    steps_small.push_back({{5}, 2});
+    const ExpectedCoefficients expected_small_predictor_2{
+        {{{5}, {1}}, -7.0 / 2.0},
+        {{{5}, {2}}, 9.0 / 2.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Explicit, Explicit, -1, -1, 5, 6),
+        expected_small_predictor_2);
+    const ExpectedCoefficients expected_large_predictor{
+        {{{1}, {0}}, -1.0 / 6.0},
+        {{{1}, {2}}, -1.0 / 3.0},
+        {{{1}, {2, 2}}, -3.0 / 2.0},
+        {{{1}, {4}}, -7.0 / 6.0},
+        {{{1}, {4, 1}}, -4.0 / 3.0},
+        {{{1}, {5}}, -7.0 / 2.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2}, {2, 2}}, 7.0 / 3.0},
+        {{{2}, {4}}, 5.0 / 3.0},
+        {{{2}, {4, 1}}, 11.0 / 6.0},
+        {{{2}, {5}}, 9.0 / 2.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Explicit, Explicit, -1, -1, 5, 6) +
+        step_coefficients(
+            steps_large, steps_small, Explicit, Implicit, -1, 0, 2, 5, false),
+        expected_large_predictor);
+    steps_small.push_back({{5, 1}, 2});
+    steps_large.push_back({{2, 4}, 3});
+    const ExpectedCoefficients expected_large_corrector{
+        {{{1}, {0}}, -1.0 / 6.0},
+        {{{1}, {2}}, -1.0 / 3.0},
+        {{{1}, {2, 2}}, -17.0 / 30.0},
+        {{{1}, {4}}, -7.0 / 15.0},
+        {{{1}, {4, 1}}, -4.0 / 15.0},
+        {{{1}, {5}}, -1.0 / 3.0},
+        {{{2}, {2}}, 5.0 / 3.0},
+        {{{2}, {2, 2}}, 7.0 / 6.0},
+        {{{2}, {4}}, 19.0 / 24.0},
+        {{{2}, {4, 1}}, 1.0 / 2.0},
+        {{{2}, {5}}, 1.0 / 2.0},
+        {{{2}, {5, 1}}, 1.0 / 24.0},
+        {{{2, 4}, {2, 2}}, 7.0 / 30.0},
+        {{{2, 4}, {4}}, 7.0 / 40.0},
+        {{{2, 4}, {4, 1}}, 4.0 / 15.0},
+        {{{2, 4}, {5}}, 1.0 / 3.0},
+        {{{2, 4}, {5, 1}}, 11.0 / 24.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_large, steps_small, Implicit, Implicit, 0, 0, 2, 6, false),
+        expected_large_corrector);
+    const ExpectedCoefficients expected_small_corrector_2{
+        {{{2, 2}, {1}}, 14.0 / 15.0},
+        {{{2, 2}, {2}}, -7.0 / 6.0},
+        {{{2, 2}, {2, 4}}, 7.0 / 30.0},
+        {{{4}, {1}}, 7.0 / 10.0},
+        {{{4}, {2}}, -7.0 / 8.0},
+        {{{4}, {2, 4}}, 7.0 / 40.0},
+        {{{4, 1}, {1}}, 16.0 / 15.0},
+        {{{4, 1}, {2}}, -4.0 / 3.0},
+        {{{4, 1}, {2, 4}}, 4.0 / 15.0},
+        {{{5}, {1}}, -1.0 / 3.0},
+        {{{5}, {2}}, 1.0 / 2.0},
+        {{{5}, {2, 4}}, 1.0 / 3.0},
+        {{{5, 1}, {2}}, 1.0 / 24.0},
+        {{{5, 1}, {2, 4}}, 11.0 / 24.0}};
+    CHECK_ITERABLE_APPROX(
+        step_coefficients(
+            steps_small, steps_large, Implicit, Implicit, 0, 0, 2, 6, false) -
+        step_coefficients(
+            steps_small, steps_large, Implicit, Explicit, 0, -1, 2, 5, false),
+        expected_small_corrector_2);
     // clang-format on
   }
 }
