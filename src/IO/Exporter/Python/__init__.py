@@ -46,4 +46,4 @@ def interpolate_tensors_to_points(
         for i in range(tensor.size):
             tensor[i] = DataVector(data[j])
             j += 1
-    return tensors.values()
+    return list(tensors.values())
