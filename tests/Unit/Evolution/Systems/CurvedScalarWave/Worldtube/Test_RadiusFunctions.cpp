@@ -14,7 +14,7 @@ void test_smooth_broken_power_law_limits() {
   const double amp = 1.234;
   const double rb = 43.45;
   for (const double exp : {0., 0.01, 0.5, 1., 1.5, 2.456, 3., 4.}) {
-    for (const double delta : {0.001, 0.002, 0.005, 0.01, 0.0345, 0.1}) {
+    for (const double delta : {0.01, 0.0345, 0.1}) {
       CAPTURE(exp, delta);
       const double r_left_1 = 1.1;
       const double r_left_2 = 1.2;
@@ -49,7 +49,7 @@ void test_smooth_broken_power_law_derivative() {
   const Approx custom_approx = Approx::custom().epsilon(1.e-10).scale(1.0);
 
   for (const double exp : {0., 0.01, 0.5, 1., 1.5, 2.456, 3., 4.}) {
-    for (const double delta : {0.001, 0.002, 0.005, 0.01, 0.0345, 0.1}) {
+    for (const double delta : {0.01, 0.0345, 0.1}) {
       auto fd_func = [exp, amp, rb, delta](double r) -> double {
         return smooth_broken_power_law(r, exp, amp, rb, delta);
       };

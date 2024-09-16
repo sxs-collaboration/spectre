@@ -123,10 +123,20 @@ struct RadiusOptions {
       return "BlackHoleRadiusOptions";
     }
   }
+
+  struct Exponent {
+    using type = double;
+    static constexpr Options::String help{
+        "The exponent alpha according to which the excision sphere grows with "
+        "orbital radius until the transition radius."};
+    static double lower_bound() { return 0.; }
+    static double upper_bound() { return 4.; }
+  };
+
   struct Amplitude {
     using type = double;
     static constexpr Options::String help{
-        "The amplitude of the smoothly broken power law."};
+        "The amplitude A of the smoothly broken power law."};
     static double lower_bound() { return 0.; }
   };
 
@@ -134,7 +144,7 @@ struct RadiusOptions {
     using type = double;
     static constexpr Options::String help{
         "The transition radius rb of the smoothly broken power law. At this "
-        "point the transitions to a constant value."};
+        "point the radius transitions to a constant value."};
     static double lower_bound() { return 0.; }
   };
 
@@ -145,27 +155,18 @@ struct RadiusOptions {
     static double lower_bound() { return 1e-3; }
   };
 
-  struct Exponent {
-    using type = double;
-    static constexpr Options::String help{
-        "The exponent according to which the excision sphere grows with "
-        "orbital radius until the transition radius."};
-    static double lower_bound() { return 0.; }
-    static double upper_bound() { return 4.; }
-  };
-
   RadiusOptions();
-  RadiusOptions(double amplitude_in, double transition_radius_in,
-                double transition_width_in, double exponent_in);
+  RadiusOptions(double exponent_in, double amplitude_in,
+                double transition_radius_in, double transition_width_in);
   void pup(PUP::er& p);
 
   using options =
-      tmpl::list<Amplitude, TransitionRadius, TransitionWidth, Exponent>;
+      tmpl::list<Exponent, Amplitude, TransitionRadius, TransitionWidth>;
 
+  double exponent{};
   double amplitude{};
   double transition_radius{};
   double transition_width{};
-  double exponent{};
 };
 
 /*!
@@ -492,8 +493,8 @@ struct WorldtubeRadiusParameters : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static std::array<double, 4> create_from_options(
       const OptionTags::RadiusOptions<true>& params) {
-    return {{params.amplitude, params.transition_radius,
-             params.transition_width, params.exponent}};
+    return {{params.exponent, params.amplitude, params.transition_radius,
+             params.transition_width}};
   }
 };
 
@@ -508,8 +509,8 @@ struct BlackHoleRadiusParameters : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static std::array<double, 4> create_from_options(
       const OptionTags::RadiusOptions<false>& params) {
-    return {{params.amplitude, params.transition_radius,
-             params.transition_width, params.exponent}};
+    return {{params.exponent, params.amplitude, params.transition_radius,
+             params.transition_width}};
   }
 };
 

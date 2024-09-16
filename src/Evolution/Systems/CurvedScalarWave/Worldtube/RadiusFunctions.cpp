@@ -14,12 +14,12 @@ double smooth_broken_power_law(double orbit_radius, double alpha, double amp,
                                double rb, double delta) {
   if (alpha < 0. or alpha > 4.) {
     ERROR(
-        "Only exponents between 0 and 4 have been tested for the broken law. "
-        "Values outside this range are likely not sensible.");
+        "Only exponents between 0 and 4 have been tested for the broken power "
+        "law. Values outside this range are likely not sensible.");
   }
-  if (delta < 1e-3) {
+  if (delta < 1e-2) {
     ERROR(
-        "A value of delta less than 0.001 is disabled as it can lead to "
+        "A value of delta less than 0.01 is disabled as it can lead to "
         "prohibitively large floating precision errors.");
   }
   const double r_by_rb = orbit_radius / rb;
@@ -31,15 +31,14 @@ double smooth_broken_power_law_derivative(double orbit_radius, double alpha,
                                           double amp, double rb, double delta) {
   if (alpha < 0. or alpha > 4.) {
     ERROR(
-        "Only exponents between 0 and 4 have been tested for the broken law. "
-        "Values outside this range are likely not sensible.");
+        "Only exponents between 0 and 4 have been tested for the broken power "
+        "law. Values outside this range are likely not sensible.");
   }
-  if (delta < 1e-3) {
+  if (delta < 1e-2) {
     ERROR(
-        "A value of delta less than 0.001 is disabled as it can lead to "
+        "A value of delta less than 0.01 is disabled as it can lead to "
         "prohibitively large floating precision errors.");
   }
-
   // During testing it was found that for large values of rb, the equation below
   // can FPE even though the derivative is clearly zero up to double precision.
   // To avoid this, we introduce this shortcut.

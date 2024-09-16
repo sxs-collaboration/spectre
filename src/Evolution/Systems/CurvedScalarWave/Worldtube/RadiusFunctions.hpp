@@ -6,7 +6,7 @@
 namespace CurvedScalarWave::Worldtube {
 
 /*!
- * \brief A smoothly broken power law, that grows falls off to a constant value
+ * \brief A smoothly broken power law that falls off to a constant value
  * for larger radii.
  *
  * \details The function is given by

@@ -41,21 +41,21 @@ template <bool IsWorldtube>
 RadiusOptions<IsWorldtube>::RadiusOptions() = default;
 
 template <bool IsWorldtube>
-RadiusOptions<IsWorldtube>::RadiusOptions(double amplitude_in,
+RadiusOptions<IsWorldtube>::RadiusOptions(double exponent_in,
+                                          double amplitude_in,
                                           double transition_radius_in,
-                                          double transition_width_in,
-                                          double exponent_in)
-    : amplitude(amplitude_in),
+                                          double transition_width_in)
+    : exponent(exponent_in),
+      amplitude(amplitude_in),
       transition_radius(transition_radius_in),
-      transition_width(transition_width_in),
-      exponent(exponent_in) {}
+      transition_width(transition_width_in) {}
 
 template <bool IsWorldtube>
 void RadiusOptions<IsWorldtube>::pup(PUP::er& p) {
+  p | exponent;
   p | amplitude;
   p | transition_radius;
   p | transition_width;
-  p | exponent;
 }
 
 template struct RadiusOptions<true>;
