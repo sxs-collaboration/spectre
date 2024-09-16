@@ -82,6 +82,7 @@ Checks: '*,
 # We have lots of "x", "p", & "os" variable names,
 -readability-identifier-length,
 -readability-magic-numbers,
+-misc-confusable-identifiers
 # Same as llvm-qualified-auto above.,
 -readability-qualified-auto,
 # Access specifiers can be useful to structure code,

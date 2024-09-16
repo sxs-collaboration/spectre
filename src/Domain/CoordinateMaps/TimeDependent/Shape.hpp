@@ -241,6 +241,20 @@ class Shape {
       const std::array<T, 3>& source_coords, double time,
       const FunctionsOfTimeMap& functions_of_time) const;
 
+  /*!
+   * \brief An optimized call that computes the target coordinates, frame
+   * velocity and jacobian at once to avoid duplicate calculations.
+   *
+   * \details The first argument `source_and_target_coords` should contain
+   * the source coordinates and will be overwritten in place with the target
+   * coordinates.
+   */
+  void coords_frame_velocity_jacobian(
+      gsl::not_null<std::array<DataVector, 3>*> source_and_target_coords,
+      gsl::not_null<std::array<DataVector, 3>*> frame_vel,
+      gsl::not_null<tnsr::Ij<DataVector, 3, Frame::NoFrame>*> jac, double time,
+      const FunctionsOfTimeMap& functions_of_time) const;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
   static bool is_identity() { return false; }
@@ -258,6 +272,7 @@ class Shape {
   size_t l_max_ = 2;
   size_t m_max_ = 2;
   ylm::Spherepack ylm_{2, 2};
+  ylm::Spherepack extended_ylm_{3, 3};
   std::unique_ptr<ShapeMapTransitionFunctions::ShapeMapTransitionFunction>
       transition_func_;
 
@@ -267,6 +282,23 @@ class Shape {
     return {coords[0] - center_[0], coords[1] - center_[1],
             coords[2] - center_[2]};
   }
+
+  template <typename T>
+  void center_coordinates(
+      gsl::not_null<std::array<tt::remove_cvref_wrap_t<T>, 3>*> result,
+      const std::array<T, 3>& coords) const {
+    for (size_t i = 0; i < 3; ++i) {
+      gsl::at(*result, i) = gsl::at(coords, i) - gsl::at(center_, i);
+    }
+  }
+
+  template <typename T>
+  void jacobian_helper(
+      gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
+      const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
+      const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
+      const T& distorted_radii, const T& one_over_radius,
+      const T& transition_func_over_radius) const;
 
   void check_size(const gsl::not_null<DataVector*>& coefs,
                   const FunctionsOfTimeMap& functions_of_time, double time,

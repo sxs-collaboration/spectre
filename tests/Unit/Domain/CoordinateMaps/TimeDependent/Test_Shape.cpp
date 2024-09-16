@@ -537,6 +537,50 @@ void test_inverse(const gsl::not_null<Generator*> generator) {
     CHECK(radius == approx(mapped_radius));
   }
 }
+
+template <typename TransitionFunction>
+void test_combined_call(const TransitionFunction& transition_func, size_t l_max,
+                        size_t m_max, size_t num_points,
+                        gsl::not_null<std::mt19937*> generator) {
+  const std::uniform_real_distribution dist{-10., 10.};
+  const auto center =
+      make_with_random_values<std::array<double, 3>>(generator, dist, 3);
+  auto target_data = make_with_random_values<std::array<DataVector, 3>>(
+      generator, dist, num_points);
+
+  auto random_coefs = generate_random_coefs(l_max, m_max, generator);
+
+  FunctionsOfTimeMap functions_of_time{};
+  double time{};
+  auto map = CoordinateMaps::TimeDependent::Shape{};
+
+  DataVector spherepack_coefs =
+      convert_coefs_to_spherepack(random_coefs, l_max, m_max);
+  std::optional<double> random_00_coef{};
+  random_coefs[0][0] = 0.0;
+  spherepack_coefs[0] = 0.0;
+  random_00_coef = generate_random_00_coef(generator);
+  generate_random_map_time_and_f_of_time(
+      make_not_null(&map), make_not_null(&time),
+      make_not_null(&functions_of_time), l_max, m_max, center, transition_func,
+      spherepack_coefs, random_00_coef, true, generator);
+  const auto single_coords = map(target_data, time, functions_of_time);
+  const auto single_frame_velocity =
+      map.frame_velocity(target_data, time, functions_of_time);
+  const auto single_jacobian =
+      map.jacobian(target_data, time, functions_of_time);
+
+  std::array<DataVector, 3> combined_frame_velocity{};
+  tnsr::Ij<DataVector, 3, Frame::NoFrame> combined_jacobian{};
+
+  map.coords_frame_velocity_jacobian(
+      make_not_null(&target_data), make_not_null(&combined_frame_velocity),
+      make_not_null(&combined_jacobian), time, functions_of_time);
+
+  CHECK_ITERABLE_APPROX(target_data, single_coords);
+  CHECK_ITERABLE_APPROX(combined_frame_velocity, single_frame_velocity);
+  CHECK_ITERABLE_APPROX(combined_jacobian, single_jacobian);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Shape",
@@ -579,6 +623,16 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Shape",
       const size_t m_max = 2;
       test_analytical_jacobian(sphere_transition, l_max, m_max, include_size,
                                1000, make_not_null(&generator));
+    }
+    {
+      INFO("Testing combined call");
+      for (size_t l_max = 2; l_max <= 3; ++l_max) {
+        for (size_t m_max = 2; m_max <= l_max; ++m_max) {
+          CAPTURE(l_max, m_max);
+          test_combined_call(sphere_transition, l_max, m_max, 1000,
+                             make_not_null(&generator));
+        }
+      }
     }
   }
 }
