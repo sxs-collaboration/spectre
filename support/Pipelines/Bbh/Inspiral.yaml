@@ -31,6 +31,7 @@ InitialData:
     FileGlob: "{{ IdFileGlob }}"
     Subgroup: "VolumeData"
     ObservationValue: Last
+    ObservationValueEpsilon: Auto
     Interpolate: True
     Variables:
       Lapse: Lapse

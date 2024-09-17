@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -117,7 +118,8 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   using element_array = MockElementArray<metavars, AddSubcell>;
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{importers::ImporterOptions{
-      "TestVolumeData*.h5", "element_data", observation_selection, false}}};
+      "TestVolumeData*.h5", "element_data", observation_selection,
+      Options::Auto<double>{}, false}}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(

@@ -245,6 +245,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       NumericInitialData{"TestInitialData.h5",
                          "VolumeData",
                          0.,
+                         {1.0e-9},
                          false,
                          {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
                          1.e-14},
@@ -252,6 +253,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       "  FileGlob: TestInitialData.h5\n"
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
+      "  ObservationValueEpsilon: 1e-9\n"
       "  Interpolate: False\n"
       "  Variables:\n"
       "    RestMassDensity: CustomRho\n"
@@ -263,6 +265,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       NumericInitialData{"TestInitialData.h5",
                          "VolumeData",
                          0.,
+                         std::nullopt,
                          false,
                          {"CustomRho", "CustomUi", 0.15, 0.},
                          1.e-14},
@@ -270,6 +273,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.NumericInitialData",
       "  FileGlob: TestInitialData.h5\n"
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
+      "  ObservationValueEpsilon: Auto\n"
       "  Interpolate: False\n"
       "  Variables:\n"
       "    RestMassDensity: CustomRho\n"
