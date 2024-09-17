@@ -90,13 +90,26 @@ void test_strahlkorper() {
           observation_values[0]);
   }
 
+  // Check exact observation value
   TestHelpers::io::VolumeData::check_volume_data(
       h5_file_name, version_number, "element_data"s, observation_ids[0],
-      observation_values[0], tensor_and_coord_data, {{grid_name}}, {bases},
-      {quadratures}, {extents},
+      observation_values[0], std::nullopt, tensor_and_coord_data, {{grid_name}},
+      {bases}, {quadratures}, {extents},
       {"InertialCoordinates_x", "InertialCoordinates_y",
        "InertialCoordinates_z", "TestScalar"},
       {{0, 1, 2, 3}}, {}, observation_values[0]);
+
+  // Check observation value within epsilon
+  {
+    const std::optional<double> epsilon = 1.0e-8;
+    TestHelpers::io::VolumeData::check_volume_data(
+        h5_file_name, version_number, "element_data"s, observation_ids[0],
+        observation_values[0] + 0.1 * epsilon.value(), epsilon,
+        tensor_and_coord_data, {{grid_name}}, {bases}, {quadratures}, {extents},
+        {"InertialCoordinates_x", "InertialCoordinates_y",
+         "InertialCoordinates_z", "TestScalar"},
+        {{0, 1, 2, 3}}, {}, observation_values[0]);
+  }
 
   // Check pole connectivity
   DataVector connectivity_data{};
@@ -287,8 +300,8 @@ void test() {
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     TestHelpers::io::VolumeData::check_volume_data(
         h5_file_name, version_number, "element_data"s, observation_ids[i],
-        observation_values[i], tensor_components_and_coords, grid_names, bases,
-        quadratures, {{2, 2, 2}, {2, 2, 2}},
+        observation_values[i], std::nullopt, tensor_components_and_coords,
+        grid_names, bases, quadratures, {{2, 2, 2}, {2, 2, 2}},
         {"S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z"},
         {{0, 1, 2, 3, 4, 5, 6}, {1, 0, 5, 3, 6, 4, 2}}, {},
         observation_values[i]);
