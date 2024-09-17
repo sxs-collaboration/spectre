@@ -127,6 +127,7 @@ void test_check_observation_ids_match() {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.H5.CheckH5PropertiesMatch", "[Unit][IO][H5]") {
   test_check_src_files_match<DataVector>();
   test_check_src_files_match<std::vector<float>>();
