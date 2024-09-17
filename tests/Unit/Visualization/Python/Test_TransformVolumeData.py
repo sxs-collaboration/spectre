@@ -13,6 +13,7 @@ from click.testing import CliRunner
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import InverseJacobian, Scalar, tnsr
+from spectre.Domain import ElementId
 from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
 from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
@@ -73,6 +74,10 @@ def abs_and_max(component: DataVector):
     }
 
 
+def refinement_level(element_id: ElementId[3]):
+    return element_id.refinement_levels
+
+
 class TestTransformVolumeData(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join(
@@ -128,6 +133,7 @@ class TestTransformVolumeData(unittest.TestCase):
                 output_name=None,
                 map_input_names={"component": "Psi"},
             ),
+            Kernel(refinement_level, output_name="RefinementLevel"),
         ]
 
         transform_volume_data(volfiles=open_volfiles, kernels=kernels)
@@ -194,6 +200,12 @@ class TestTransformVolumeData(unittest.TestCase):
         npt.assert_allclose(
             np.array(result_max), np.ones(len(radius)) * np.max(np.array(psi))
         )
+        result_lev = (
+            open_volfiles[0]
+            .get_tensor_component(obs_id, "RefinementLevel_1")
+            .data
+        )
+        npt.assert_allclose(np.array(result_lev), np.ones(len(radius)))
 
     def test_integrate(self):
         open_h5_files = [spectre_h5.H5File(self.h5_filename, "a")]
