@@ -58,7 +58,9 @@ struct MockWorldtubeSingleton {
                                        Frame::Inertial>,
                   Stf::Tags::StfTensor<::Tags::dt<Tags::PsiWorldtube>, 1, Dim,
                                        Frame::Inertial>,
-                  Tags::ExcisionSphere<Dim>>,
+                  Tags::ExcisionSphere<Dim>, Tags::EvolvedPosition<Dim>,
+                  Tags::EvolvedVelocity<Dim>,
+                  ::Tags::dt<Tags::EvolvedVelocity<Dim>>>,
               db::AddComputeTags<>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::ObserveWorldtubeSolution>>>;
@@ -104,6 +106,16 @@ void check_observe_worldtube_solution(
   const auto dt_psi_dipole =
       make_with_random_values<tnsr::i<double, Dim, Frame::Inertial>>(generator,
                                                                      dist, 1);
+
+  const auto position =
+      make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
+          generator, dist, DataVector(1));
+  const auto velocity =
+      make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
+          generator, dist, DataVector(1));
+  const auto acceleration =
+      make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
+          generator, dist, DataVector(1));
   const double wt_radius = 1.5;
   const ExcisionSphere<Dim> excision_sphere(
       wt_radius, tnsr::I<double, Dim, Frame::Grid>{{0., 0., 0.}}, {});
@@ -121,7 +133,8 @@ void check_observe_worldtube_solution(
   ActionTesting::emplace_component_and_initialize<worldtube_chare>(
       make_not_null(&runner), 0,
       {initial_time_value, id, std::move(trigger), psi0, dt_psi0, psi_monopole,
-       dt_psi_monopole, psi_dipole, dt_psi_dipole, excision_sphere});
+       dt_psi_monopole, psi_dipole, dt_psi_dipole, excision_sphere, position,
+       velocity, acceleration});
   ActionTesting::emplace_nodegroup_component_and_initialize<
       mock_observer_writer>(make_not_null(&runner), {});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
@@ -166,33 +179,46 @@ void check_observe_worldtube_solution(
       mock_observer_writer, TestHelpers::observers::MockReductionFileTag>(
       runner, 0);
   const auto& dat_file = mock_h5_file.get_dat("/PsiTaylorCoefs");
+  const auto& data = dat_file.get_data();
+
+  CHECK(data.at(0, 0) == new_time_value);
+  CHECK(data.at(0, 1) == get<0>(position)[0]);
+  CHECK(data.at(0, 2) == get<1>(position)[0]);
+  CHECK(data.at(0, 3) == get<2>(position)[0]);
+  CHECK(data.at(0, 4) == get<0>(velocity)[0]);
+  CHECK(data.at(0, 5) == get<1>(velocity)[0]);
+  CHECK(data.at(0, 6) == get<2>(velocity)[0]);
+  CHECK(data.at(0, 7) == get<0>(acceleration)[0]);
+  CHECK(data.at(0, 8) == get<1>(acceleration)[0]);
+  CHECK(data.at(0, 9) == get<2>(acceleration)[0]);
 
   if (expansion_order == 0) {
-    const std::vector<std::string> legend_0{{"Time", "Psi0", "dtPsi0"}};
+    const std::vector<std::string> legend_0{
+        {"Time", "Position_x", "Position_y", "Position_z", "Velocity_x",
+         "Velocity_y", "Velocity_z", "Acceleration_x", "Acceleration_y",
+         "Acceleration_z", "Psi0", "dtPsi0"}};
     CHECK(legend_0 == dat_file.get_legend());
-    const auto& data = dat_file.get_data();
     CHECK(data.rows() == 1);
-    CHECK(data.columns() == 3);
-    CHECK(data.at(0, 0) == new_time_value);
-    CHECK(data.at(0, 1) == get(psi_monopole));
-    CHECK(data.at(0, 2) == get(dt_psi_monopole));
+    CHECK(data.columns() == 12);
+    CHECK(data.at(0, 10) == get(psi_monopole));
+    CHECK(data.at(0, 11) == get(dt_psi_monopole));
   } else if (expansion_order == 1) {
-    const std::vector<std::string> legend_1{{"Time", "Psi0", "Psix", "Psiy",
-                                             "Psiz", "dtPsi0", "dtPsix",
-                                             "dtPsiy", "dtPsiz"}};
+    const std::vector<std::string> legend_1{
+        {"Time", "Position_x", "Position_y", "Position_z", "Velocity_x",
+         "Velocity_y", "Velocity_z", "Acceleration_x", "Acceleration_y",
+         "Acceleration_z", "Psi0", "Psix", "Psiy", "Psiz", "dtPsi0", "dtPsix",
+         "dtPsiy", "dtPsiz"}};
     CHECK(legend_1 == dat_file.get_legend());
-    const auto& data = dat_file.get_data();
     CHECK(data.rows() == 1);
-    CHECK(data.columns() == 9);
-    CHECK(data.at(0, 0) == new_time_value);
-    CHECK(data.at(0, 1) == get(psi_monopole));
-    CHECK(data.at(0, 2) == get<0>(psi_dipole));
-    CHECK(data.at(0, 3) == get<1>(psi_dipole));
-    CHECK(data.at(0, 4) == get<2>(psi_dipole));
-    CHECK(data.at(0, 5) == get(dt_psi_monopole));
-    CHECK(data.at(0, 6) == get<0>(dt_psi_dipole));
-    CHECK(data.at(0, 7) == get<1>(dt_psi_dipole));
-    CHECK(data.at(0, 8) == get<2>(dt_psi_dipole));
+    CHECK(data.columns() == 18);
+    CHECK(data.at(0, 10) == get(psi_monopole));
+    CHECK(data.at(0, 11) == get<0>(psi_dipole));
+    CHECK(data.at(0, 12) == get<1>(psi_dipole));
+    CHECK(data.at(0, 13) == get<2>(psi_dipole));
+    CHECK(data.at(0, 14) == get(dt_psi_monopole));
+    CHECK(data.at(0, 15) == get<0>(dt_psi_dipole));
+    CHECK(data.at(0, 16) == get<1>(dt_psi_dipole));
+    CHECK(data.at(0, 17) == get<2>(dt_psi_dipole));
   }
 }
 
