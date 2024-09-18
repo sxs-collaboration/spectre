@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/QuaternionHelpers.hpp"
@@ -110,6 +111,20 @@ FromVolumeFile<names::Expansion>::FromVolumeFile(
   expansion_values = exp_function_of_time->func_and_2_derivs(time);
   expansion_values_outer_boundary =
       exp_outer_boundary_function_of_time->func_and_2_derivs(time);
+
+  const auto* fixed_speed_cubic =
+      dynamic_cast<domain::FunctionsOfTime::FixedSpeedCubic*>(
+          exp_outer_boundary_function_of_time.get());
+
+  if (fixed_speed_cubic == nullptr) {
+    PARSE_ERROR(
+        context,
+        "When reading the Expansion map parameters from a volume file, the "
+        "ExpansionOuterBoundary function of time must be a FixedSpeedCubic.");
+  }
+
+  velocity_outer_boundary = fixed_speed_cubic->velocity();
+  decay_timescale_outer_boundary = fixed_speed_cubic->decay_timescale();
 }
 
 FromVolumeFile<names::Rotation>::FromVolumeFile(

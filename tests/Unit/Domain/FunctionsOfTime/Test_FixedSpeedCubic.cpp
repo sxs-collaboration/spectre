@@ -63,10 +63,18 @@ void test(
   CHECK(f_of_t->expiration_after(check_time) ==
         std::numeric_limits<double>::infinity());
 
-  INFO("Test stream operator.");
-  CHECK(
-      get_output(*dynamic_cast<const domain::FunctionsOfTime::FixedSpeedCubic*>(
-          f_of_t.get())) == "FixedSpeedCubic(t=10, f=1, v=0.4, tau^2=25)");
+  const auto* fixed_speed_cubic =
+      dynamic_cast<const domain::FunctionsOfTime::FixedSpeedCubic*>(
+          f_of_t.get());
+
+  CHECK(fixed_speed_cubic->velocity() == velocity);
+  CHECK(fixed_speed_cubic->decay_timescale() == decay_timescale);
+
+  {
+    INFO("Test stream operator.");
+    CHECK(get_output(*fixed_speed_cubic) ==
+          "FixedSpeedCubic(t=10, f=1, v=0.4, tau^2=25)");
+  }
 }
 
 void test_function(const double initial_function_value,

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <memory>
@@ -73,6 +74,13 @@ class FixedSpeedCubic : public FunctionOfTime {
   double expiration_after(const double /*time*/) const override {
     return std::numeric_limits<double>::infinity();
   }
+
+  /// Returns the velocity that the function approaches
+  double velocity() const { return velocity_; }
+
+  /// Returns the timescale at which the function approaches a constant
+  /// velocity.
+  double decay_timescale() const { return sqrt(squared_decay_timescale_); }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
