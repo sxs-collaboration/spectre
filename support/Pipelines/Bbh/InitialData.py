@@ -7,6 +7,7 @@ from typing import Optional, Sequence, Union
 
 import click
 import numpy as np
+import yaml
 from rich.pretty import pretty_repr
 
 from spectre.Pipelines.EccentricityControl.InitialOrbitalParameters import (

@@ -353,8 +353,8 @@ def coordinate_separation_eccentricity_control(
     The updates are computed using Newtonian estimates.
     See ArXiv:gr-qc/0702106 and ArXiv:0710.0158 for more details.
 
-    A summary is printed to screen and if a matplotlib figure is provided, a
-    plot is generated. The latter is useful to decide between the updates of
+    A summary is printed to screen and if an output file is provided, a plot
+    is generated. The latter is useful to decide between the updates of
     different models (look for small residuals at early times).
 
     See OmegaDoEccRemoval.py in SpEC for improved eccentricity control.
@@ -528,7 +528,7 @@ def coordinate_separation_eccentricity_control(
     nargs=1,
     help=(
         "The lower time bound to start the fit. Used to remove initial junk"
-        " and transients in the coordinate separations. Default tmin=20 (or 60)"
+        " andtransients in the coordinate separations. Default tmin=20 (or 60)"
         " for tmax<200 (or >200)."
     ),
 )
