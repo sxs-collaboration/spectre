@@ -226,9 +226,11 @@ void reconstruct_prims_work(
 
     if (compute_conservatives) {
       ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
-          make_not_null(&gsl::at(*vars_on_lower_face, i)), eos, fix_to_atmosphere);
+          make_not_null(&gsl::at(*vars_on_lower_face, i)), eos,
+          fix_to_atmosphere);
       ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
-          make_not_null(&gsl::at(*vars_on_upper_face, i)), eos, fix_to_atmosphere);
+          make_not_null(&gsl::at(*vars_on_upper_face, i)), eos,
+          fix_to_atmosphere);
     }
   }
 }
@@ -366,8 +368,8 @@ void reconstruct_fd_neighbor_work(
     spacetime_vars_for_grmhd(vars_on_face);
   }
   if (compute_conservatives) {
-    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(vars_on_face,
-                                                                   eos, fix_to_atmosphere);
+    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
+        vars_on_face, eos, fix_to_atmosphere);
   }
 }
 }  // namespace grmhd::GhValenciaDivClean::fd

@@ -173,11 +173,12 @@ void test_variable_fixer(
   Scalar<DataVector> expected_density{
       DataVector{1.e-12, 2.e-11, 4.e-12, 2.e-11}};
   // Temperature reset to zero in atmosphere
-  Scalar<DataVector> expected_temperature{DataVector{0.0, 1.0, 2.0, 1.0}};
+  const Scalar<DataVector> expected_temperature{DataVector{0.0, 1.0, 2.0, 1.0}};
   // The [0] component is atmosphere, value reset to equilibrium
   // The [2] and [3] components are above and below the allowed values
   // so are reset to "equalibrium" which in this case is just .1
-  Scalar<DataVector> expected_electron_fraction{DataVector{.1, .2, .1, .1}};
+  const Scalar<DataVector> expected_electron_fraction{
+      DataVector{.1, .2, .1, .1}};
   auto expected_pressure = equation_of_state.pressure_from_density_and_energy(
       expected_density, expected_temperature, expected_electron_fraction);
   auto expected_specific_internal_energy =
@@ -237,7 +238,7 @@ void test_variable_fixer() {
   // Test for not-so representative 3-d equation of state
   // Replace with a realisitic 3-d EoS when that's easy
   // enough to do
-  EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>
+  const EquationsOfState::Barotropic3D<EquationsOfState::PolytropicFluid<true>>
       barotropic_3d_eos{EquationsOfState::PolytropicFluid<true>{100.0, 2.0}};
   test_variable_fixer<Dim>(variable_fixer, barotropic_3d_eos);
   test_serialization(variable_fixer);

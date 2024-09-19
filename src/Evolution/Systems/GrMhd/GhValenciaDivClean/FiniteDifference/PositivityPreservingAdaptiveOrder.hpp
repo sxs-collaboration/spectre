@@ -193,9 +193,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere, 
-      const Direction<dim>
-              direction_to_reconstruct) const;
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
+      const Direction<dim>& direction_to_reconstruct) const;
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)

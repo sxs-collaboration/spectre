@@ -115,8 +115,9 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
   call_with_dynamic_type<void, derived_boundary_corrections>(
       &base_boundary_correction,
       [&box, &dg_mesh, &mortars_to_reconstruct_to, &neighbor_package_data,
-       &ghost_subcell_data, &recons, &subcell_mesh, &fix_to_atmosphere, &subcell_options,
-       &volume_prims, &volume_spacetime_vars](const auto* gh_grmhd_correction) {
+       &ghost_subcell_data, &recons, &subcell_mesh, &fix_to_atmosphere,
+       &subcell_options, &volume_prims,
+       &volume_spacetime_vars](const auto* gh_grmhd_correction) {
         using DerivedCorrection = std::decay_t<decltype(*gh_grmhd_correction)>;
         const auto& boundary_correction =
             dynamic_cast<const DerivedCorrection&>(*gh_grmhd_correction);
@@ -159,9 +160,10 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
           call_with_dynamic_type<void, typename grmhd::GhValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
-              &recons, [&element, &eos, &mortar_id, &ghost_subcell_data,
-                        &subcell_mesh, &fix_to_atmosphere, &vars_on_face, &volume_prims,
-                        &volume_spacetime_vars](const auto& reconstructor) {
+              &recons,
+              [&element, &eos, &mortar_id, &ghost_subcell_data, &subcell_mesh,
+               &fix_to_atmosphere, &vars_on_face, &volume_prims,
+               &volume_spacetime_vars](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims,
                     volume_spacetime_vars, eos, element, ghost_subcell_data,
