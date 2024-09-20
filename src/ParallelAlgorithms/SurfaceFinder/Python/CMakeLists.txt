@@ -10,6 +10,7 @@ spectre_python_add_module(
   Bindings.cpp
   PYTHON_FILES
   __init__.py
+  FindRadialSurface.py
 )
 
 spectre_python_link_libraries(
