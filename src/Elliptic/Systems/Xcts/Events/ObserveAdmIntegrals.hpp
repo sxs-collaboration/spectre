@@ -56,12 +56,11 @@ void local_adm_integrals(
     const tnsr::II<DataVector, 3>& inv_spatial_metric,
     const tnsr::ii<DataVector, 3>& extrinsic_curvature,
     const Scalar<DataVector>& trace_extrinsic_curvature,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian,
     const Mesh<3>& mesh, const Element<3>& element,
-    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
-    const DirectionMap<3, tnsr::I<DataVector, 3>>&
-        conformal_face_normal_vectors);
+    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals);
 /// @}
 
 /// @{
@@ -135,10 +134,10 @@ class ObserveAdmIntegrals : public Event {
       gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Inertial>,
       gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame::Inertial>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
+      domain::Tags::Coordinates<3, Frame::Inertial>,
       domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::Faces<3, domain::Tags::FaceNormal<3>>,
-      domain::Tags::Faces<3, domain::Tags::FaceNormalVector<3>>,
       ::Tags::ObservationBox>;
 
   template <typename DataBoxType, typename ComputeTagsList,
@@ -155,12 +154,11 @@ class ObserveAdmIntegrals : public Event {
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
       const tnsr::ii<DataVector, 3>& extrinsic_curvature,
       const Scalar<DataVector>& trace_extrinsic_curvature,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const Mesh<3>& mesh, const Element<3>& element,
       const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
-      const DirectionMap<3, tnsr::I<DataVector, 3>>&
-          conformal_face_normal_vectors,
       const ObservationBox<DataBoxType, ComputeTagsList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ParallelComponent* const /*meta*/,
@@ -182,8 +180,8 @@ class ObserveAdmIntegrals : public Event {
         deriv_conformal_factor, conformal_metric, inv_conformal_metric,
         conformal_christoffel_second_kind, conformal_christoffel_contracted,
         spatial_metric, inv_spatial_metric, extrinsic_curvature,
-        trace_extrinsic_curvature, inv_jacobian, mesh, element,
-        conformal_face_normals, conformal_face_normal_vectors);
+        trace_extrinsic_curvature, inertial_coords, inv_jacobian, mesh, element,
+        conformal_face_normals);
 
     // Save components of linear momentum as reduction data
     ReductionData reduction_data{get(adm_mass),

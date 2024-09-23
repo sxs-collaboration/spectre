@@ -31,12 +31,11 @@ void local_adm_integrals(
     const tnsr::II<DataVector, 3>& inv_spatial_metric,
     const tnsr::ii<DataVector, 3>& extrinsic_curvature,
     const Scalar<DataVector>& trace_extrinsic_curvature,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian,
     const Mesh<3>& mesh, const Element<3>& element,
-    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
-    const DirectionMap<3, tnsr::I<DataVector, 3>>&
-        conformal_face_normal_vectors) {
+    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals) {
   // Initialize integrals to 0
   adm_mass->get() = 0;
   for (int I = 0; I < 3; I++) {
@@ -82,6 +81,8 @@ void local_adm_integrals(
         extrinsic_curvature, mesh, boundary_direction);
     const auto face_trace_extrinsic_curvature = dg::project_tensor_to_boundary(
         trace_extrinsic_curvature, mesh, boundary_direction);
+    const auto face_inertial_coords = dg::project_tensor_to_boundary(
+        inertial_coords, mesh, boundary_direction);
     // This projection could be avoided by using
     // domain::Tags::DetSurfaceJacobian from the DataBox, which is computed
     // directly on the face (not projected). That would be better on Gauss
@@ -103,15 +104,18 @@ void local_adm_integrals(
     const auto& face_mesh = mesh.slice_away(boundary_direction.dimension());
     const auto& conformal_face_normal =
         conformal_face_normals.at(boundary_direction);
-    const auto& conformal_face_normal_vector =
-        conformal_face_normal_vectors.at(boundary_direction);
+    const auto face_normal_magnitude = magnitude(conformal_face_normal);
+    const auto flat_face_normal = tenex::evaluate<ti::i>(
+        conformal_face_normal(ti::i) / face_normal_magnitude());
 
-    // Compute curved area element
+    // Compute curved and flat area elements
     const auto face_sqrt_det_conformal_metric =
         Scalar<DataVector>(sqrt(get(determinant(face_conformal_metric))));
     const auto conformal_area_element =
         area_element(face_inv_jacobian, boundary_direction,
                      face_inv_conformal_metric, face_sqrt_det_conformal_metric);
+    const auto flat_area_element =
+        euclidean_area_element(face_inv_jacobian, boundary_direction);
 
     // Compute surface integrands
     const auto mass_integrand = Xcts::adm_mass_surface_integrand(
@@ -124,26 +128,24 @@ void local_adm_integrals(
             face_inv_extrinsic_curvature, face_trace_extrinsic_curvature);
     const auto center_of_mass_integrand =
         Xcts::center_of_mass_surface_integrand(face_conformal_factor,
-                                               conformal_face_normal_vector);
+                                               face_inertial_coords);
 
     // Contract surface integrands with face normal
     const auto contracted_mass_integrand =
         tenex::evaluate(mass_integrand(ti::I) * conformal_face_normal(ti::i));
     const auto contracted_linear_momentum_integrand = tenex::evaluate<ti::I>(
-        linear_momentum_integrand(ti::I, ti::J) * conformal_face_normal(ti::j));
+        linear_momentum_integrand(ti::I, ti::J) * flat_face_normal(ti::j));
 
     // Take integrals
     adm_mass->get() += definite_integral(
         get(contracted_mass_integrand) * get(conformal_area_element),
         face_mesh);
     for (int I = 0; I < 3; I++) {
-      adm_linear_momentum->get(I) +=
-          definite_integral(contracted_linear_momentum_integrand.get(I) *
-                                get(conformal_area_element),
-                            face_mesh);
-      center_of_mass->get(I) += definite_integral(
-          center_of_mass_integrand.get(I) * get(conformal_area_element),
+      adm_linear_momentum->get(I) += definite_integral(
+          contracted_linear_momentum_integrand.get(I) * get(flat_area_element),
           face_mesh);
+      center_of_mass->get(I) += definite_integral(
+          center_of_mass_integrand.get(I) * get(flat_area_element), face_mesh);
     }
   }
 }
