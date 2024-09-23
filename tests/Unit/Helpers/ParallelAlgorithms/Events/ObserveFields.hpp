@@ -224,14 +224,18 @@ struct ScalarSystem {
       "  CoordinatesFloatingPointType: Double\n"
       "  VariablesToObserve: [Scalar, ScalarVarTimesTwo, ScalarVarTimesThree, "
       "Error(Scalar)]\n"
-      "  FloatingPointTypes: [Double]\n";
+      "  FloatingPointTypes: [Double]\n"
+      "  BlocksToObserve: All\n";
   static ObserveEvent make_test_object(
-      const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
+      const std::optional<Mesh<volume_dim>>& interpolating_mesh,
+      std::optional<std::vector<std::string>> active_block_or_block_groups =
+          std::nullopt) {
     return ObserveEvent{
         "element_data",
         FloatingPointType::Double,
         {FloatingPointType::Double},
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Error(Scalar)"},
+        std::move(active_block_or_block_groups),
         interpolating_mesh};
   }
 };
@@ -346,10 +350,13 @@ struct ComplicatedSystem {
       "                       Vector, Tensor, Tensor2,"
       "                       Error(Vector), Error(Tensor2)]\n"
       "  FloatingPointTypes: [Double, Double, Double, Double, Float, Float,"
-      "                       Double, Float]\n";
+      "                       Double, Float]\n"
+      "  BlocksToObserve: All\n";
 
   static ObserveEvent make_test_object(
-      const std::optional<Mesh<volume_dim>>& interpolating_mesh) {
+      const std::optional<Mesh<volume_dim>>& interpolating_mesh,
+      std::optional<std::vector<std::string>> active_block_or_block_groups =
+          std::nullopt) {
     return ObserveEvent(
         "element_data", FloatingPointType::Double,
         {FloatingPointType::Double, FloatingPointType::Double,
@@ -358,7 +365,7 @@ struct ComplicatedSystem {
          FloatingPointType::Double, FloatingPointType::Float},
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Vector",
          "Tensor", "Tensor2", "Error(Vector)", "Error(Tensor2)"},
-        interpolating_mesh);
+        std::move(active_block_or_block_groups), interpolating_mesh);
   }
 };
 }  // namespace TestHelpers::dg::Events::ObserveFields

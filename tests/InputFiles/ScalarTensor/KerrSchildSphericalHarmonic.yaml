@@ -173,6 +173,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
+          BlocksToObserve: All
   - Trigger:
       Slabs:
         EvenlySpaced:

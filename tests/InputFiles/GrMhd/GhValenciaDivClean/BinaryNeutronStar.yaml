@@ -311,6 +311,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
+          BlocksToObserve: All
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan
@@ -362,6 +363,7 @@ EventsRunAtCleanup:
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
         FloatingPointTypes: [Double]
+        BlocksToObserve: All
 
 # Control systems are disabled by default
 ControlSystems:

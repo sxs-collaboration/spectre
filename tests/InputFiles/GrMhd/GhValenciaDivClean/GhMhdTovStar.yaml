@@ -239,6 +239,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Double, Double, Double, Double]
+          BlocksToObserve: All
   - Trigger:
       Slabs:
         Specified:
