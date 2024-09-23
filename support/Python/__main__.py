@@ -30,6 +30,7 @@ class Cli(click.MultiCommand):
             "extract-dat",
             "extract-input",
             "find-radial-surface",
+            "generate-tetrahedral-connectivity",
             "generate-xdmf",
             "interpolate-to-mesh",
             "interpolate-to-points",
@@ -91,6 +92,12 @@ class Cli(click.MultiCommand):
             )
 
             return find_radial_surface_command
+        elif name == "generate-tetrahedral-connectivity":
+            from spectre.Visualization.GenerateTetrahedralConnectivity import (
+                generate_tetrahedral_connectivity_command,
+            )
+
+            return generate_tetrahedral_connectivity_command
         elif name == "generate-xdmf":
             from spectre.Visualization.GenerateXdmf import generate_xdmf_command
 
