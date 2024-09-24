@@ -113,6 +113,8 @@ class TestCompileReleaseNotes(unittest.TestCase):
             "Do this and that.",
             "Not all whitespace is stripped",
         )
+        self.assertIsNone(get_upgrade_instructions(""))
+        self.assertIsNone(get_upgrade_instructions(None))
 
     def test_compile_release_notes(self):
         self.assertEqual(
