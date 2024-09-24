@@ -18,6 +18,7 @@
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -25,13 +26,28 @@
 namespace {
 // Returns all the observation_ids stored in the volume files. Assumes all
 // volume files have the same observation ids
-std::vector<size_t> get_observation_ids(
+std::vector<std::pair<size_t, double>> get_observation_ids(
     const std::vector<std::string>& file_names,
     const std::string& subfile_name) {
   const h5::H5File<h5::AccessType::ReadOnly> initial_file(file_names[0], false);
   const auto& initial_volume_file =
       initial_file.get<h5::VolumeData>(subfile_name);
-  return initial_volume_file.list_observation_ids();
+  const std::vector<size_t> observation_ids =
+      initial_volume_file.list_observation_ids();
+  std::vector<std::pair<size_t, double>> observation_ids_and_values(
+      observation_ids.size());
+  for (size_t i = 0; i < observation_ids.size(); ++i) {
+    observation_ids_and_values[i] = std::pair{
+        observation_ids[i],
+        initial_volume_file.get_observation_value(observation_ids[i])};
+  }
+  // Sort by the observation value
+  alg::sort(observation_ids_and_values,
+            [](const std::pair<size_t, double>& id_and_value_a,
+               const std::pair<size_t, double>& id_and_value_b) {
+              return id_and_value_a.second < id_and_value_b.second;
+            });
+  return observation_ids_and_values;
 }
 
 // Returns total number of elements for an observation id across all volume data
@@ -54,7 +70,8 @@ namespace h5 {
 
 void combine_h5(const std::vector<std::string>& file_names,
                 const std::string& subfile_name, const std::string& output,
-                const bool check_src) {
+                const std::optional<double> start_value,
+                const std::optional<double> stop_value, const bool check_src) {
   // Parses for and stores all input files to be looped over
   Parallel::printf("Processing files:\n%s\n",
                    std::string{MakeString{} << file_names}.c_str());
@@ -88,12 +105,25 @@ void combine_h5(const std::vector<std::string>& file_names,
   }  // End of scope for H5 file
 
   // Obtains list of observation ids to loop over
-  const std::vector<size_t> observation_ids =
+  const std::vector<std::pair<size_t, double>> observation_ids_and_values =
       get_observation_ids(file_names, subfile_name);
 
+  if (observation_ids_and_values.empty()) {
+    ERROR("No observation IDs found in subfile" << subfile_name);
+  }
+
   // Loops over observation ids to write volume data by observation id
-  for (size_t obs_index = 0; obs_index < observation_ids.size(); ++obs_index) {
-    const size_t obs_id = observation_ids[obs_index];
+  for (size_t obs_index = 0; obs_index < observation_ids_and_values.size();
+       ++obs_index) {
+    const double obs_value = observation_ids_and_values[obs_index].second;
+    if (obs_value > stop_value.value_or(std::numeric_limits<double>::max()) or
+        obs_value <
+            start_value.value_or(std::numeric_limits<double>::lowest())) {
+      Parallel::printf("Skipping observation value %1.6e\n", obs_value);
+      continue;
+    }
+
+    const size_t obs_id = observation_ids_and_values[obs_index].first;
     // Pre-calculates size of vector to store element data and allocates
     // corresponding memory
     const size_t vector_dim =
@@ -117,7 +147,7 @@ void combine_h5(const std::vector<std::string>& file_names,
       if (not printed) {
         Parallel::printf(
             "Processing obsevation ID %lo (%lo/%lo) with value %1.14e\n",
-            obs_id, obs_index, observation_ids.size(), obs_val);
+            obs_id, obs_index, observation_ids_and_values.size(), obs_val);
         printed = true;
       }
       Parallel::printf("  Processing file: %s\n", file_name.c_str());

@@ -47,6 +47,22 @@ combine_h5_command.add_command(combine_h5_dat_command, name="dat")
     help="combined output filename",
 )
 @click.option(
+    "--start-time",
+    type=float,
+    help=(
+        "The earliest time at which to start visualizing. The start-time "
+        "value is included."
+    ),
+)
+@click.option(
+    "--stop-time",
+    type=float,
+    help=(
+        "The time at which to stop visualizing. The stop-time value is "
+        "not included."
+    ),
+)
+@click.option(
     "--check-src/--no-check-src",
     default=True,
     show_default=True,
@@ -55,7 +71,14 @@ combine_h5_command.add_command(combine_h5_dat_command, name="dat")
         " checked, False implies no src files to check."
     ),
 )
-def combine_h5_vol_command(h5files, subfile_name, output, check_src):
+def combine_h5_vol_command(
+    h5files,
+    subfile_name,
+    output,
+    start_time,
+    stop_time,
+    check_src,
+):
     """Combines volume data spread over multiple H5 files into a single file
 
     The typical use case is to combine volume data from multiple nodes into a
@@ -82,7 +105,14 @@ def combine_h5_vol_command(h5files, subfile_name, output, check_src):
     if not output.endswith(".h5"):
         output += ".h5"
 
-    spectre_h5.combine_h5(h5files, subfile_name, output, check_src)
+    spectre_h5.combine_h5(
+        h5files,
+        subfile_name,
+        output,
+        start_time,
+        stop_time,
+        check_src,
+    )
 
 
 if __name__ == "__main__":

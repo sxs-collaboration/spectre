@@ -152,7 +152,14 @@ class TestCombineH5(unittest.TestCase):
         # Run the combine_h5 command and check if any feature (for eg.
         # connectivity length has increased due to combining two files)
 
-        combine_h5(self.file_names, self.subfile_name, self.output_file, False)
+        combine_h5(
+            self.file_names,
+            self.subfile_name,
+            self.output_file,
+            None,
+            None,
+            False,
+        )
         h5_output = spectre_h5.H5File(file_name=self.output_file, mode="r")
         output_vol = h5_output.get_vol(self.subfile_name)
 
