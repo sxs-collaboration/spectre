@@ -21,9 +21,11 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -61,7 +63,8 @@ struct SetInterpolators {
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 evolution::dg::subcell::Tags::Reconstructor>;
+                 evolution::dg::subcell::Tags::Reconstructor,
+                 evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
   template <typename ReconstructorType>
   static void apply(
@@ -81,7 +84,13 @@ struct SetInterpolators {
       // Needs to be updated to support non-uniform h/p-refinement
       const Mesh<Dim>& neighbor_fd_mesh,
       const ElementMap<Dim, Frame::Grid>& element_map,
-      const ReconstructorType& reconstructor) {
+      const ReconstructorType& reconstructor,
+      const evolution::dg::subcell::SubcellOptions& subcell_options) {
+    if (alg::found(subcell_options.only_dg_block_ids(),
+                   element.id().block_id())) {
+      return;
+    }
+
     const size_t number_of_ghost_zones = reconstructor.ghost_zone_size();
     const size_t my_block_id = element.id().block_id();
     for (const auto& direction_neighbors_in_direction : element.neighbors()) {
@@ -104,7 +113,8 @@ struct SetInterpolators {
         // 3. Create interpolators
 
         if (not is_isotropic(neighbor_fd_mesh)) {
-          ERROR("We assume an isotropic mesh but got " << neighbor_fd_mesh);
+          ERROR("We assume an isotropic mesh but got "
+                << neighbor_fd_mesh << " ElementID is " << element.id());
         }
 
         const auto get_logical_coords = [&element, &neighbor_id, &direction](

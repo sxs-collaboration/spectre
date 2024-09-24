@@ -115,6 +115,8 @@ void test_1d_domains() {
         {"Left", "Right"}, {{"All", {"Left", "Right"}}});
     CHECK(domain_from_corners.blocks()[0].name() == "Left");
     CHECK(domain_from_corners.blocks()[1].name() == "Right");
+    CHECK(domain_from_corners.block_names() ==
+          std::vector<std::string>{std::string{"Left"}, std::string{"Right"}});
     CHECK(domain_from_corners.block_groups().at("All") ==
           std::unordered_set<std::string>{"Left", "Right"});
 
@@ -135,6 +137,8 @@ void test_1d_domains() {
     CHECK_FALSE(domain_no_corners.is_time_dependent());
     CHECK(domain_no_corners.blocks()[0].name() == "Left");
     CHECK(domain_no_corners.blocks()[1].name() == "Right");
+    CHECK(domain_no_corners.block_names() ==
+          std::vector<std::string>{std::string{"Left"}, std::string{"Right"}});
     CHECK(domain_no_corners.block_groups().at("All") ==
           std::unordered_set<std::string>{"Left", "Right"});
 

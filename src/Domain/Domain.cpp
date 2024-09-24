@@ -150,6 +150,16 @@ std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d) {
 }
 
 template <size_t VolumeDim>
+std::vector<std::string> Domain<VolumeDim>::block_names() const {
+  std::vector<std::string> result{blocks_.size()};
+  alg::transform(blocks_, result.begin(),
+                 [](const Block<VolumeDim>& block) -> const std::string& {
+                   return block.name();
+                 });
+  return result;
+}
+
+template <size_t VolumeDim>
 void Domain<VolumeDim>::pup(PUP::er& p) {
   size_t version = 1;
   p | version;

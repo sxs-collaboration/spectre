@@ -207,6 +207,9 @@ class Domain {
     return block_groups_;
   }
 
+  /// The block names in the current domain.
+  std::vector<std::string> block_names() const;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
