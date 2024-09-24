@@ -4,8 +4,10 @@
 #include "Time/TimeSteppers/AdamsLts.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -48,7 +50,8 @@ LtsCoefficients& add_assign_impl(LtsCoefficients& a, const LtsCoefficients& b,
            (get<0>(l) == get<0>(r) and get<1>(l) < get<1>(r));
   };
 
-  // Two passes: first the common entries, and then the new entries.
+  // Three passes: first the common entries, then the new entries, and
+  // then remove zeros.
   size_t common_entries = 0;
   {
     auto a_it = a.begin();
@@ -61,6 +64,13 @@ LtsCoefficients& add_assign_impl(LtsCoefficients& a, const LtsCoefficients& b,
       } else {
         ++common_entries;
         get<2>(*a_it) += op(get<2>(*b_it));
+        // Zero any values that are just roundoff.  They will be
+        // removed below.
+        constexpr double tolerance =
+            100.0 * std::numeric_limits<double>::epsilon();
+        if (std::abs(get<2>(*a_it)) < tolerance * std::abs(get<2>(*b_it))) {
+          get<2>(*a_it) = 0.0;
+        }
         ++a_it;
         ++b_it;
       }
@@ -86,6 +96,15 @@ LtsCoefficients& add_assign_impl(LtsCoefficients& a, const LtsCoefficients& b,
       }
       ++write;
     }
+  }
+  {
+    auto write = a.begin();
+    for (const auto& entry : a) {
+      if (get<2>(entry) != 0.0) {
+        *write++ = entry;
+      }
+    }
+    a.erase(write, a.end());
   }
   return a;
 }

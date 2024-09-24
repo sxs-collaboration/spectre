@@ -57,14 +57,14 @@ void test_lts_coefficients_struct() {
   const TimeStepId id3 = id2.next_step(slab.duration() / 2);
 
   const adams_lts::LtsCoefficients coefs1{
-      {id1, id1, 2.0}, {id1, id2, 3.0}, {id1, id3, 4.0}};
+      {id1, id1, 2.0}, {id1, id2, 3.0}, {id1, id3, 4.0}, {id2, id2, 11.0}};
   const adams_lts::LtsCoefficients coefs2{
-      {id1, id1, 5.0}, {id1, id3, 7.0}, {id2, id1, 9.0}};
+      {id1, id1, 5.0}, {id1, id3, -4.0}, {id2, id1, 9.0}, {id2, id2, 11.0}};
 
   const adams_lts::LtsCoefficients sum{
-      {id1, id1, 7.0}, {id1, id2, 3.0}, {id1, id3, 11.0}, {id2, id1, 9.0}};
+      {id1, id1, 7.0}, {id1, id2, 3.0}, {id2, id1, 9.0}, {id2, id2, 22.0}};
   const adams_lts::LtsCoefficients difference{
-      {id1, id1, -3.0}, {id1, id2, 3.0}, {id1, id3, -3.0}, {id2, id1, -9.0}};
+      {id1, id1, -3.0}, {id1, id2, 3.0}, {id1, id3, 8.0}, {id2, id1, -9.0}};
 
   {
     auto s = coefs1;
@@ -145,6 +145,35 @@ void test_lts_coefficients_struct() {
     const auto res = std::move(a) - std::move(b);
     CHECK((res.data() == a_data or res.data() == b_data));
     CHECK(res == allocated_coefs - allocated_coefs);
+  }
+
+  // Check roundoff elimination
+  {
+    const double eps = 10.0 * std::numeric_limits<double>::epsilon();
+    CHECK((adams_lts::LtsCoefficients{{id1, id1, 1.0 + eps}} +
+           adams_lts::LtsCoefficients{{id1, id1, -1.0}})
+              .empty());
+    CHECK(not(adams_lts::LtsCoefficients{{id1, id1, 1.0 + 100.0 * eps}} +
+              adams_lts::LtsCoefficients{{id1, id1, -1.0}})
+                 .empty());
+    CHECK((adams_lts::LtsCoefficients{{id1, id1, 1.0 + eps}} -
+           adams_lts::LtsCoefficients{{id1, id1, 1.0}})
+              .empty());
+    CHECK(not(adams_lts::LtsCoefficients{{id1, id1, 1.0 + 100.0 * eps}} -
+              adams_lts::LtsCoefficients{{id1, id1, 1.0}})
+                 .empty());
+    CHECK((adams_lts::LtsCoefficients{{id1, id1, 1.0e-5 * (1.0 + eps)}} +
+           adams_lts::LtsCoefficients{{id1, id1, -1.0e-5}})
+              .empty());
+    CHECK(not(adams_lts::LtsCoefficients{{id1, id1, 1.0e-5 + eps}} +
+              adams_lts::LtsCoefficients{{id1, id1, -1.0e-5}})
+                 .empty());
+    CHECK((adams_lts::LtsCoefficients{{id1, id1, 1.0e-5 * (1.0 + eps)}} -
+           adams_lts::LtsCoefficients{{id1, id1, 1.0e-5}})
+              .empty());
+    CHECK(not(adams_lts::LtsCoefficients{{id1, id1, 1.0e-5 + eps}} -
+              adams_lts::LtsCoefficients{{id1, id1, 1.0e-5}})
+                 .empty());
   }
 }
 
