@@ -145,6 +145,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
@@ -605,6 +606,7 @@ struct GhValenciaDivCleanTemplateBase<
                        Events::ObserveAtExtremum<observe_fields,
                                                  non_tensor_compute_tags>,
                        Events::time_events<system>,
+                       dg::Events::ObserveTimeStepVolume<volume_dim>,
                        control_system::metafunctions::control_system_events<
                            control_systems>,
                        intrp::Events::InterpolateWithoutInterpComponent<

@@ -127,7 +127,7 @@ template <size_t VolumeDim>
 std::vector<TensorComponent> ObserveTimeStepVolume<VolumeDim>::assemble_data(
     const double time, const domain::FunctionsOfTimeMap& functions_of_time,
     const Domain<VolumeDim>& domain, const ElementId<VolumeDim>& element_id,
-    const TimeDelta& time_step) const {
+    const TimeDelta& time_step, const double minimum_grid_spacing) const {
   constexpr auto num_corners = two_to_the(VolumeDim);
 
   std::vector<TensorComponent> components{};
@@ -157,6 +157,7 @@ std::vector<TensorComponent> ObserveTimeStepVolume<VolumeDim>::assemble_data(
   };
   add_constant("Time step", time_step.value());
   add_constant("Slab fraction", time_step.fraction().value());
+  add_constant("Minimum grid spacing", minimum_grid_spacing);
 
   return components;
 }

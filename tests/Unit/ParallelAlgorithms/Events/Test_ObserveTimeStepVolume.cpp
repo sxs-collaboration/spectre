@@ -129,12 +129,13 @@ void test() {
           4.0));
   const double expected_offset = 2.0 + (time - 1.0) * 5.0;
 
-  auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>, Tags::Time,
-                        LocalTags::FunctionsOfTime,
-                        domain::Tags::Domain<VolumeDim>, Tags::TimeStep>>(
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavars>, Tags::Time,
+      LocalTags::FunctionsOfTime, domain::Tags::Domain<VolumeDim>,
+      Tags::TimeStep,
+      domain::Tags::MinimumGridSpacing<VolumeDim, Frame::Inertial>>>(
       metavars{}, time, std::move(functions_of_time), std::move(domain),
-      time_step);
+      time_step, 0.23);
 
   const double observation_value = 1.23;
 
@@ -156,7 +157,7 @@ void test() {
   CHECK(results.received_volume_data.extents ==
         std::vector<size_t>(VolumeDim, 2));
   const auto& components = results.received_volume_data.tensor_components;
-  REQUIRE(components.size() == VolumeDim + 2);
+  REQUIRE(components.size() == VolumeDim + 3);
   for (const auto& component : components) {
     std::visit(
         [](const auto& data) { CHECK(data.size() == two_to_the(VolumeDim)); },
@@ -211,6 +212,14 @@ void test() {
         }
       },
       components[VolumeDim + 1].data);
+  CHECK(components[VolumeDim + 2].name == "Minimum grid spacing");
+  std::visit(
+      [&](const auto& data) {
+        for (size_t i = 0; i < data.size(); ++i) {
+          CHECK(data[i] == 0.23f);
+        }
+      },
+      components[VolumeDim + 2].data);
 }
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.ObserveTimeStepVolume",

@@ -13,6 +13,7 @@
 
 #include "DataStructures/FloatingPointType.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
@@ -116,18 +117,21 @@ class ObserveTimeStepVolume : public Event {
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<::Tags::Time, ::domain::Tags::FunctionsOfTime,
-                 ::domain::Tags::Domain<VolumeDim>, ::Tags::TimeStep>;
+                 ::domain::Tags::Domain<VolumeDim>, ::Tags::TimeStep,
+                 domain::Tags::MinimumGridSpacing<VolumeDim, Frame::Inertial>>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(const double time,
                   const domain::FunctionsOfTimeMap& functions_of_time,
                   const Domain<VolumeDim>& domain, const TimeDelta& time_step,
+                  const double minimum_grid_spacing,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<VolumeDim>& element_id,
                   const ParallelComponent* const /*component*/,
                   const ObservationValue& observation_value) const {
     std::vector<TensorComponent> components =
-        assemble_data(time, functions_of_time, domain, element_id, time_step);
+        assemble_data(time, functions_of_time, domain, element_id, time_step,
+                      minimum_grid_spacing);
 
     const Mesh<VolumeDim> single_cell_mesh(2, Spectral::Basis::Legendre,
                                            Spectral::Quadrature::GaussLobatto);
@@ -187,7 +191,7 @@ class ObserveTimeStepVolume : public Event {
   std::vector<TensorComponent> assemble_data(
       double time, const domain::FunctionsOfTimeMap& functions_of_time,
       const Domain<VolumeDim>& domain, const ElementId<VolumeDim>& element_id,
-      const TimeDelta& time_step) const;
+      const TimeDelta& time_step, double minimum_grid_spacing) const;
 
   std::string subfile_path_;
   ::FloatingPointType coordinates_floating_point_type_ =
