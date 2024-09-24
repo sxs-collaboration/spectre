@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DomainStructure")
 
 set(LIBRARY_SOURCES
+  Test_BlockGroups.cpp
   Test_BlockId.cpp
   Test_BlockNeighbor.cpp
   Test_ChildSize.cpp

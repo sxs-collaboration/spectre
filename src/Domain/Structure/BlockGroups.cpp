@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Creators/BlockGroups.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 
 #include <exception>
 #include <string>

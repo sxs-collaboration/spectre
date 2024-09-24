@@ -8,7 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Domain/Creators/BlockGroups.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 
 namespace domain {
 

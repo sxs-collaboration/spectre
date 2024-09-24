@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  BlockGroups.cpp
   BlockNeighbor.cpp
   ChildSize.cpp
   CreateInitialMesh.cpp
@@ -30,6 +31,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  BlockGroups.hpp
   BlockId.hpp
   BlockNeighbor.hpp
   ChildSize.hpp
