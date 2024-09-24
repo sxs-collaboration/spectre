@@ -42,6 +42,7 @@ spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
   Boost::boost
+  DomainCreators
   DataStructures
   H5
   pybind11::module

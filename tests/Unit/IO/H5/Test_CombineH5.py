@@ -158,6 +158,7 @@ class TestCombineH5(unittest.TestCase):
             self.output_file,
             None,
             None,
+            None,
             False,
         )
         h5_output = spectre_h5.H5File(file_name=self.output_file, mode="r")

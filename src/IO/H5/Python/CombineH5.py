@@ -63,6 +63,16 @@ combine_h5_command.add_command(combine_h5_dat_command, name="dat")
     ),
 )
 @click.option(
+    "--block",
+    "-b",
+    "block_or_group_names",
+    multiple=True,
+    help=(
+        "Name of block or block group to analyze. "
+        "Can be specified multiple times to plot several block(groups) at once."
+    ),
+)
+@click.option(
     "--check-src/--no-check-src",
     default=True,
     show_default=True,
@@ -77,6 +87,7 @@ def combine_h5_vol_command(
     output,
     start_time,
     stop_time,
+    block_or_group_names,
     check_src,
 ):
     """Combines volume data spread over multiple H5 files into a single file
@@ -111,6 +122,7 @@ def combine_h5_vol_command(
         output,
         start_time,
         stop_time,
+        block_or_group_names,
         check_src,
     )
 
