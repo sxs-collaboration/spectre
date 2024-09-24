@@ -175,6 +175,26 @@ void test_lts_coefficients_struct() {
               adams_lts::LtsCoefficients{{id1, id1, 1.0e-5}})
                  .empty());
   }
+
+  {
+    auto twice_coefs1 = coefs1;
+    twice_coefs1 += coefs1;
+    auto a = coefs1;
+    a += a;
+    CHECK(a == twice_coefs1);
+  }
+  {
+    auto a = coefs1;
+#if defined(__clang__) and __clang__ < 17
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif
+    a -= a;
+#if defined(__clang__) and __clang__ < 17
+#pragma GCC diagnostic pop
+#endif
+    CHECK(a.empty());
+  }
 }
 
 template <typename T>
