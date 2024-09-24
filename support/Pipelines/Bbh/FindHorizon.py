@@ -135,6 +135,12 @@ def find_horizon(
     Returns: The Strahlkorper representing the horizon, and a dictionary of
       horizon quantities (e.g. area, mass, spin, etc.).
     """
+    # Validate input arguments
+    if output_surfaces_file:
+        assert output_coeffs_subfile or output_coords_subfile, (
+            "Specify either 'output_coeffs_subfile' or 'output_coords_subfile'"
+            " or both."
+        )
     if not tensor_names:
         tensor_names = [
             "SpatialMetric",
@@ -231,10 +237,6 @@ def find_horizon(
     )
     # Write the horizon to a file and return it
     if output_surfaces_file:
-        assert output_coeffs_subfile or output_coords_subfile, (
-            "Specify either 'output_coeffs_subfile' or 'output_coords_subfile'"
-            " or both."
-        )
         if Path(output_surfaces_file).suffix not in [".h5", ".hdf5"]:
             output_surfaces_file += ".h5"
         if output_coeffs_subfile:

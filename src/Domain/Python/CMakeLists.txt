@@ -10,6 +10,7 @@ spectre_python_add_module(
   Bindings.cpp
   Block.cpp
   BlockLogicalCoordinates.cpp
+  Direction.cpp
   Domain.cpp
   ElementId.cpp
   ElementLogicalCoordinates.cpp
@@ -28,6 +29,7 @@ spectre_python_headers(
   HEADERS
   Block.hpp
   BlockLogicalCoordinates.hpp
+  Direction.hpp
   Domain.hpp
   ElementId.hpp
   ElementLogicalCoordinates.hpp

@@ -31,9 +31,12 @@ namespace domain::py_bindings {
 namespace {
 template <size_t Dim>
 void bind_block_logical_coordinates_impl(py::module& m) {  // NOLINT
-  py::class_<
-      IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::BlockLogical>>>(
-      m, ("BlockIdAndLogicalCoord" + get_output(Dim) + "D").c_str());
+  using BlockIdAndLogicalCoord =
+      IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::BlockLogical>>;
+  py::class_<BlockIdAndLogicalCoord>(
+      m, ("BlockIdAndLogicalCoord" + get_output(Dim) + "D").c_str())
+      .def_readonly("id", &BlockIdAndLogicalCoord::id)
+      .def_readonly("data", &BlockIdAndLogicalCoord::data);
   m.def(
       "block_logical_coordinates",
       [](const Domain<Dim>& domain,

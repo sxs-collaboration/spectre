@@ -24,6 +24,15 @@ void bind_block_impl(py::module& m) {  // NOLINT
       .def("has_distorted_frame", &Block<Dim>::has_distorted_frame)
       .def_property_readonly("id", &Block<Dim>::id)
       .def_property_readonly("name", &Block<Dim>::name)
+      .def_property_readonly(
+          "neighbors",
+          [](const Block<Dim>& block) {
+            std::unordered_map<Direction<Dim>, size_t> neighbors{};
+            for (const auto& [direction, neighbor] : block.neighbors()) {
+              neighbors[direction] = neighbor.id();
+            }
+            return neighbors;
+          })
       .def_property_readonly("stationary_map", &Block<Dim>::stationary_map)
       .def_property_readonly("moving_mesh_logical_to_grid_map",
                              &Block<Dim>::moving_mesh_logical_to_grid_map)

@@ -4,6 +4,7 @@
 from ._Pybindings import *
 
 Block = {1: Block1D, 2: Block2D, 3: Block3D}
+Direction = {1: Direction1D, 2: Direction2D, 3: Direction3D}
 Domain = {1: Domain1D, 2: Domain2D, 3: Domain3D}
 ElementId = {1: ElementId1D, 2: ElementId2D, 3: ElementId3D}
 

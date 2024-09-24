@@ -8,6 +8,12 @@ spectre_add_python_bindings_test(
   PyDomain)
 
 spectre_add_python_bindings_test(
+  "Unit.Domain.Python.Direction"
+  Test_Direction.py
+  "Unit;Domain"
+  PyDomain)
+
+spectre_add_python_bindings_test(
   "Unit.Domain.Python.Domain"
   Test_Domain.py
   "Unit;Domain"

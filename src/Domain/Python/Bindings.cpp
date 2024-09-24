@@ -5,6 +5,7 @@
 
 #include "Domain/Python/Block.hpp"
 #include "Domain/Python/BlockLogicalCoordinates.hpp"
+#include "Domain/Python/Direction.hpp"
 #include "Domain/Python/Domain.hpp"
 #include "Domain/Python/ElementId.hpp"
 #include "Domain/Python/ElementLogicalCoordinates.hpp"
@@ -13,7 +14,6 @@
 #include "Domain/Python/JacobianDiagnostic.hpp"
 #include "Domain/Python/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Python/SegmentId.hpp"
-#include "Domain/Structure/Side.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
@@ -25,9 +25,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   py::module_::import("spectre.Domain.CoordinateMaps");
-  py::enum_<Side>(m, "Side")
-      .value("Lower", Side::Lower)
-      .value("Upper", Side::Upper);
+  py_bindings::bind_direction(m);
   py_bindings::bind_block(m);
   py_bindings::bind_block_logical_coordinates(m);
   py_bindings::bind_domain(m);
