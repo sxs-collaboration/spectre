@@ -308,16 +308,16 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
     TestHelpers::io::VolumeData::check_volume_data(
         surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
-        observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
-        {quadratures}, {extents},
+        observation_id.value(), std::nullopt, tensor_and_coord_data,
+        {grid_name}, {bases}, {quadratures}, {extents},
         {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
          "InertialCoordinates_z"s, "Square"s},
         {{0, 1, 2, 3}}, 1.e-14, 1.0, {"Square"s});
   } else {
     TestHelpers::io::VolumeData::check_volume_data(
         surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
-        observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
-        {quadratures}, {extents},
+        observation_id.value(), std::nullopt, tensor_and_coord_data,
+        {grid_name}, {bases}, {quadratures}, {extents},
         {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
          "InertialCoordinates_z"s, "Square"s},
         {{0, 1, 2, 3}}, 1.e-2);  // loose tolerance because of low resolution

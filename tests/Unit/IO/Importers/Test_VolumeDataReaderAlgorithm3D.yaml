@@ -65,6 +65,7 @@ Importers:
     FileGlob: "Test_DataImporterAlgorithm3D.h5"
     Subgroup: "TestData"
     ObservationValue: 3.
+    ObservationValueEpsilon: Auto
     Interpolate: True
 
 ResourceInfo:

@@ -9,6 +9,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
 #include <hdf5.h>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <ostream>
@@ -30,6 +31,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/ExpectsAndEnsures.hpp"
@@ -427,6 +429,39 @@ double VolumeData::get_observation_value(const size_t observation_id) const {
                                       AccessType::ReadOnly);
   return h5::read_value_attribute<double>(observation_group.id(),
                                           "observation_value");
+}
+
+size_t VolumeData::find_observation_id(
+    const double observation_value,
+    const std::optional<double>& observation_value_epsilon) const {
+  std::optional<size_t> result_observation_id{};
+  for (const size_t observation_id : list_observation_ids()) {
+    const double file_observation_value = get_observation_value(observation_id);
+    // If we are given an epsilon, use that to compare within roundoff using the
+    // requested value as a scale (unless it's zero, then do 1.0). If we aren't
+    // given an epsilon, compare exactly.
+    if ((observation_value_epsilon.has_value()
+             ? equal_within_roundoff(
+                   observation_value, file_observation_value,
+                   observation_value_epsilon.value(),
+                   (observation_value == 0.0 ? 1.0 : observation_value))
+             : observation_value == file_observation_value)) {
+      if (result_observation_id.has_value()) {
+        ERROR_NO_TRACE("There are multiple observations with the same value "
+                       << observation_value << " within an epsilon of "
+                       << observation_value_epsilon.value_or(
+                              std::numeric_limits<double>::epsilon())
+                       << " in the volume file " << name_);
+      }
+      result_observation_id = observation_id;
+    }
+  }
+  if (not result_observation_id.has_value()) {
+    ERROR_NO_TRACE("No observation with value " << observation_value
+                                                << " found in volume file.");
+  }
+
+  return result_observation_id.value();
 }
 
 std::vector<std::string> VolumeData::list_tensor_components(

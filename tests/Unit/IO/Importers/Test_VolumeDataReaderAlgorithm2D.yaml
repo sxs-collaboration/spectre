@@ -21,6 +21,7 @@ Importers:
     FileGlob: "Test_DataImporterAlgorithm2D.h5"
     Subgroup: "TestData"
     ObservationValue: 2.
+    ObservationValueEpsilon: Auto
     Interpolate: False
 # [importer_options]
 

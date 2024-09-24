@@ -33,7 +33,8 @@ T multiply(const double obs_value, const T& component) {
 
 /// Helper function to check that volume data was written correctly.
 /// This function checks the following:
-///    0. That the provided observation_id is present in the file
+///    0. That the provided observation_id is present in the file (possibly
+///       within an epsilon)
 ///    1. That the grid_names provided are present in the file
 ///    2. That the provided bases and quadratures agree with the bases
 ///       and quadratures in the file.
@@ -50,6 +51,7 @@ void check_volume_data(
     const std::string& h5_file_name, const uint32_t version_number,
     const std::string& group_name, const size_t observation_id,
     const double observation_value,
+    const std::optional<double>& observation_value_epsilon,
     const std::vector<DataType>& tensor_components_and_coords,
     const std::vector<std::string>& grid_names,
     const std::vector<std::vector<Spectral::Basis>>& bases,

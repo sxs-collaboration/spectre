@@ -427,6 +427,7 @@ InitialData:
     FileGlob: BnsVolume*.h5
     Subgroup: VolumeData
     ObservationValue: Last
+    ObservationValueEpsilon: Auto
     Interpolate: True
     GhVariables:
       Lapse: Lapse

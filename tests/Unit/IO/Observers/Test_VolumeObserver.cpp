@@ -148,8 +148,8 @@ void check_write_volume_data(
     TestHelpers::io::VolumeData::check_volume_data(
         h5_write_volume_file_name + ".h5"s, 0, "element_data",
         write_vol_observation_id.hash(), write_vol_observation_id.value(),
-        h5_write_volume_expected_tensor_data, {h5_write_volume_element_name},
-        {h5_write_volume_expected_bases},
+        std::nullopt, h5_write_volume_expected_tensor_data,
+        {h5_write_volume_element_name}, {h5_write_volume_expected_bases},
         {h5_write_volume_expected_quadratures},
         {h5_write_volume_expected_extents}, expected_tensor_names,
         {{0, 1, 2, 5, 3, 4}}, {});

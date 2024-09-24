@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -55,6 +56,15 @@ struct ObservationValue {
       "The observation value at which to read data";
 };
 
+struct ObservationValueEpsilon {
+  using type = Options::Auto<double>;
+  static constexpr Options::String help =
+      "Look for observations in the data within this epsilon of the "
+      "'ObservationValue'. Set to 'Auto' to use default of 1e-12. This option "
+      "is ignored if the 'ObservationValue' is a selector like 'First' or "
+      "'Last'.";
+};
+
 /*!
  * \brief Toggle interpolation of numeric data to the target domain
  */
@@ -77,6 +87,7 @@ struct EnableInterpolation {
 struct ImporterOptions
     : tuples::TaggedTuple<OptionTags::FileGlob, OptionTags::Subgroup,
                           OptionTags::ObservationValue,
+                          OptionTags::ObservationValueEpsilon,
                           OptionTags::EnableInterpolation> {
   using options = tags_list;
   static constexpr Options::String help = "The volume data to load.";

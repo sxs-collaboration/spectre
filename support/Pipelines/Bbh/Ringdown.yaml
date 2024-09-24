@@ -17,6 +17,7 @@ InitialData:
     FileGlob: "{{ IdFileGlob }}"
     Subgroup: "VolumeData"
     ObservationValue: Last
+    ObservationValueEpsilon: Auto
     Interpolate: True
     Variables:
       SpacetimeMetric: SpacetimeMetric
