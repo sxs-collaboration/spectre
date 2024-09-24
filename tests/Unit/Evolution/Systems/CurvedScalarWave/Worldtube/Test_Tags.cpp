@@ -696,9 +696,13 @@ void test_check_input_file() {
 void test_self_force_options() {
   const auto options = TestHelpers::test_creation<OptionTags::SelfForceOptions>(
       "Mass: 0.1\n"
-      "Iterations: 3");
+      "Iterations: 3\n"
+      "TurnOnTime: 1234.\n"
+      "TurnOnInterval: 987.");
   CHECK(options.mass == 0.1);
   CHECK(options.iterations == 3);
+  CHECK(options.turn_on_time == 1234.);
+  CHECK(options.turn_on_interval == 987.);
 }
 
 }  // namespace
@@ -719,6 +723,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "Charge");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
       "Mass");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnTime>(
+      "SelfForceTurnOnTime");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnInterval>(
+      "SelfForceTurnOnInterval");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
   TestHelpers::db::test_simple_tag<

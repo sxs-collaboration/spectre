@@ -274,6 +274,8 @@ struct EvolutionMetavars {
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
       CurvedScalarWave::Worldtube::Tags::Charge,
+      CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnTime,
+      CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnInterval,
       CurvedScalarWave::Worldtube::Tags::Mass,
       CurvedScalarWave::Worldtube::Tags::MaxIterations,
       CurvedScalarWave::Worldtube::Tags::ObserveCoefficientsTrigger>;

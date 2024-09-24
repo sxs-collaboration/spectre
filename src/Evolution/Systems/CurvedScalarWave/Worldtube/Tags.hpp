@@ -69,6 +69,15 @@ struct Charge {
 /*!
  * \brief Options for the scalar self-force. Select `None` for a purely geodesic
  * evolution
+ *
+ *\details The self force is turned on using the smooth transition function
+ *
+ * \begin{equation}
+ * w(t) = 1 - \exp{ \left(- \left(\frac{t - t_1}{\sigma} \right)^4 \right)}.
+ * \end{equation}
+ *
+ * The turn on time is given by \f$t_1\f$ and the turn on interval is given by
+ *\f$sigma\f$.
  */
 struct SelfForceOptions {
   static constexpr Options::String help = {
@@ -92,14 +101,33 @@ struct SelfForceOptions {
         "acceleration."};
     static size_t lower_bound() { return 1; }
   };
+
+  struct TurnOnTime {
+    using type = double;
+    static constexpr Options::String help{
+        "The time at which the scalar self force is turned on."};
+    static double lower_bound() { return 0.; }
+  };
+
+  struct TurnOnInterval {
+    using type = double;
+    static constexpr Options::String help{
+        "The interval over which the scalar self force is smoothly turned on. "
+        "We require a minimum of 1 M for the interval."};
+    static double lower_bound() { return 1.; }
+  };
+
   SelfForceOptions();
-  SelfForceOptions(double mass_in, size_t iterations_in);
+  SelfForceOptions(double mass_in, size_t iterations_in, double turn_on_time_in,
+                   double turn_on_interval_in);
   void pup(PUP::er& p);
 
-  using options = tmpl::list<Mass, Iterations>;
+  using options = tmpl::list<Mass, Iterations, TurnOnTime, TurnOnInterval>;
 
   double mass{};
   size_t iterations{};
+  double turn_on_time{};
+  double turn_on_interval{};
 };
 
 /*!
@@ -249,6 +277,52 @@ struct Charge : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::Charge>;
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double charge) { return charge; };
+};
+
+/*!
+ * \brief The time at which the self-force is smoothly turned on.
+ *
+ * \details The self force is turned on using the smooth transition function
+ *
+ * \begin{equation}
+ * w(t) = 1 - \exp{ \left(- \left(\frac{t - t_1}{\sigma} \right)^4 \right)}.
+ * \end{equation}
+ *
+ * The turn on time is given by \f$t_1\f$.
+ */
+struct SelfForceTurnOnTime : db::SimpleTag {
+  using type = std::optional<double>;
+  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
+  static constexpr bool pass_metavariables = false;
+  static std::optional<double> create_from_options(
+      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
+    return self_force_options.has_value()
+               ? std::make_optional(self_force_options->turn_on_time)
+               : std::nullopt;
+  };
+};
+
+/*!
+ * \brief The interval over which the self-force is smoothly turned on.
+ *
+ * \details The self force is turned on using the smooth transition function
+ *
+ * \begin{equation}
+ * w(t) = 1 - \exp{ \left(- \left(\frac{t - t_1}{\sigma} \right)^4 \right)}.
+ * \end{equation}
+ *
+ * The turn on interval is given by \f$\sigma\f$.
+ */
+struct SelfForceTurnOnInterval : db::SimpleTag {
+  using type = std::optional<double>;
+  using option_tags = tmpl::list<OptionTags::SelfForceOptions>;
+  static constexpr bool pass_metavariables = false;
+  static std::optional<double> create_from_options(
+      const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
+    return self_force_options.has_value()
+               ? std::make_optional(self_force_options->turn_on_interval)
+               : std::nullopt;
+  };
 };
 
 /*!
