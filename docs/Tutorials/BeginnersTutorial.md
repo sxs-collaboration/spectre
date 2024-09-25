@@ -204,8 +204,8 @@ the Paraview server, run
 pvserver &
 ```
 
-\note On compute clusters you should use the cluster-specific instructions for
-using ParaView since you may require MPI and specifying which port to use. You can run `mpirun -np 1 pvserver -p PARAVIEW_REMOTE_PORT` on the remote cluster, where the `PARAVIEW_REMOTE_PORT` is the port that the paraView server will use on the cluster, you may choose it to be, for example, 11112. With 'pvserver' running on the remote machine, open a new local terminal and run `ssh -L11111:YOUR_CLUSTER:PARAVIEW_REMOTE_PORT USERNAME@YOUR_CLUSTER`.
+\note For cluster users, check cluster-specific instructions for
+ParaView. You may require MPI and specify which port to use. You can run `mpirun -np 1 pvserver -p PARAVIEW_REMOTE_PORT` on the remote cluster. Here, `PARAVIEW_REMOTE_PORT` is the port that the ParaView server will use on the cluster. You may choose it to be, for example, 11112. With 'pvserver' running on the remote machine, open a new local terminal. Locally, run `ssh -L11111:YOUR_CLUSTER:PARAVIEW_REMOTE_PORT USERNAME@YOUR_CLUSTER`.
 
 The `&` is so that the server runs in the background. If you hit `Enter`
 a couple times you'll get back to being able to type commands. You should see
@@ -219,9 +219,10 @@ Accepting connection(s): 92bbb69f2af2:11111
 
 This means it's waiting for you to connect some external Paraview session (the
 "client") to the server. Now, ***outside*** the container, start a session of
-Paraview. 
+Paraview 5.10.1. (Again, you must use this version otherwise it won't work
+properly.)
 
-\note To figure out the version of ParaView to use, run `mpirun -n 1 pvserver --version`, then download ***exactly the same*** version of Paraview. At the time when writing this tutorial, we are using ParaView 5.11.1  
+\note For cluster users, run `mpirun -n 1 pvserver --version` to check ParaView version. On your computer, download ***exactly the same*** version of Paraview. 
 
 
 Go to `File > Connect`. Click `Add Server`. Name it whatever you
