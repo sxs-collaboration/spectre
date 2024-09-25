@@ -9,7 +9,7 @@ import numpy.testing as npt
 from spectre.Pipelines.EccentricityControl.InitialOrbitalParameters import (
     initial_orbital_parameters,
 )
-from support.Python.Logging import configure_logging
+from spectre.support.Logging import configure_logging
 
 
 class TestInitialOrbitalParameters(unittest.TestCase):

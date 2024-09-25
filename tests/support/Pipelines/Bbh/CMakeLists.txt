@@ -23,6 +23,13 @@ spectre_add_python_bindings_test(
   TIMEOUT 60)
 
 spectre_add_python_bindings_test(
+  "support.Pipelines.Bbh.PostprocessId"
+  Test_PostprocessId.py
+  "Python"
+  None
+  TIMEOUT 60)
+
+spectre_add_python_bindings_test(
   "support.Pipelines.Bbh.Ringdown"
   Test_Ringdown.py
   "Python"
