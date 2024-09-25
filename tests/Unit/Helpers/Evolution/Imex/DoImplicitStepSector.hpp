@@ -15,6 +15,7 @@
 #include "Evolution/Imex/GuessResult.hpp"
 #include "Evolution/Imex/Protocols/ImexSystem.hpp"
 #include "Evolution/Imex/Protocols/ImplicitSector.hpp"
+#include "Evolution/Imex/Protocols/ImplicitSource.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -42,7 +43,8 @@ struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   };
 
   struct SolveAttempt {
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<Tags::Source<Var>>;
       using argument_tags = tmpl::list<Var>;
       static void apply(const gsl::not_null<Scalar<DataVector>*> source,
@@ -98,7 +100,8 @@ struct NonautonomousSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   };
 
   struct SolveAttempt {
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<Tags::Source<Var1>>;
       using argument_tags = tmpl::list<::Tags::Time>;
       static void apply(const gsl::not_null<Scalar<DataVector>*> source,

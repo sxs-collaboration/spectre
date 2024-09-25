@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_M1Closure.cpp
   Test_M1HydroCoupling.cpp
   Test_Sources.cpp
+  Test_System.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp
   )
