@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Transpose.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
@@ -18,7 +19,6 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -73,7 +73,7 @@ struct KerrHorizon {
         "Dimensionless spin of black hole"};
   };
   struct AngularOrdering {
-    using type = intrp::AngularOrdering;
+    using type = ylm::AngularOrdering;
     static constexpr Options::String help = {
         "Chooses theta,phi ordering in 2d array"};
   };
@@ -85,7 +85,7 @@ struct KerrHorizon {
 
   KerrHorizon(size_t l_max_in, std::array<double, 3> center_in, double mass_in,
               std::array<double, 3> dimensionless_spin_in,
-              intrp::AngularOrdering angular_ordering_in,
+              ylm::AngularOrdering angular_ordering_in,
               const Options::Context& context = {});
 
   KerrHorizon() = default;
@@ -102,7 +102,7 @@ struct KerrHorizon {
   std::array<double, 3> center{};
   double mass{};
   std::array<double, 3> dimensionless_spin{};
-  intrp::AngularOrdering angular_ordering;
+  ylm::AngularOrdering angular_ordering;
 };
 
 bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs);
@@ -193,7 +193,7 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
       const tmpl::type_<Metavariables>& /*meta*/) {
     const auto& kerr_horizon =
         db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
-    if (kerr_horizon.angular_ordering == intrp::AngularOrdering::Strahlkorper) {
+    if (kerr_horizon.angular_ordering == ylm::AngularOrdering::Strahlkorper) {
       return db::get<ylm::Tags::CartesianCoords<Frame>>(box);
     } else {
       const auto& strahlkorper = db::get<ylm::Tags::Strahlkorper<Frame>>(box);

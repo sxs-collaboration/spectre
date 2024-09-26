@@ -25,11 +25,13 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "PointwiseFunctions/Xcts/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 
 namespace {
 
@@ -180,8 +182,7 @@ void test_local_adm_integrals(const double& distance,
     const auto inv_conformal_metric = tenex::evaluate<ti::I, ti::J>(
         inv_spatial_metric(ti::I, ti::J) * pow<4>(conformal_factor()));
 
-    // Compute spatial derivatives (needed for extrinsic curvature).
-    const auto deriv_lapse = partial_derivative(lapse, mesh, inv_jacobian);
+    // Compute spatial derivatives.
     const auto deriv_shift = partial_derivative(shift, mesh, inv_jacobian);
     const auto deriv_spatial_metric =
         partial_derivative(spatial_metric, mesh, inv_jacobian);
@@ -203,7 +204,7 @@ void test_local_adm_integrals(const double& distance,
     const auto barred_r =
         sqrt(square(x) + square(y) + square(lorentz_factor * z));
 
-    // Compute spatial metric time derivative (needed for extrinsic curvature).
+    // Compute spatial metric time derivative.
     // Note that these formulas were derived in a Mathematica notebook
     // specifically for this problem. Here, we are evaluating them at t = 0.
     auto dt_spatial_metric =
@@ -242,12 +243,6 @@ void test_local_adm_integrals(const double& distance,
     const DirectionMap<3, tnsr::i<DataVector, 3>> conformal_face_normals(
         {std::make_pair(direction, conformal_face_normal)});
 
-    // Compute face normal vector.
-    const auto conformal_face_normal_vector = tenex::evaluate<ti::I>(
-        face_inv_conformal_metric(ti::I, ti::J) * conformal_face_normal(ti::j));
-    const DirectionMap<3, tnsr::I<DataVector, 3>> conformal_face_normal_vectors(
-        {std::make_pair(direction, conformal_face_normal_vector)});
-
     // Compute local integrals.
     Scalar<double> local_adm_mass;
     tnsr::I<double, 3> local_adm_linear_momentum;
@@ -259,8 +254,8 @@ void test_local_adm_integrals(const double& distance,
         deriv_conformal_factor, conformal_metric, inv_conformal_metric,
         conformal_christoffel_second_kind, conformal_christoffel_contracted,
         spatial_metric, inv_spatial_metric, extrinsic_curvature,
-        trace_extrinsic_curvature, inv_jacobian, mesh, current_element,
-        conformal_face_normals, conformal_face_normal_vectors);
+        trace_extrinsic_curvature, inertial_coords, inv_jacobian, mesh,
+        current_element, conformal_face_normals);
     total_adm_mass.get() += get(local_adm_mass);
     for (int I = 0; I < 3; I++) {
       total_adm_linear_momentum.get(I) += local_adm_linear_momentum.get(I);

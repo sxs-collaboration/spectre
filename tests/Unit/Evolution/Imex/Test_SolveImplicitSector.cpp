@@ -24,6 +24,8 @@
 #include "Evolution/Imex/GuessResult.hpp"
 #include "Evolution/Imex/Mode.hpp"
 #include "Evolution/Imex/Protocols/ImplicitSector.hpp"
+#include "Evolution/Imex/Protocols/ImplicitSource.hpp"
+#include "Evolution/Imex/Protocols/ImplicitSourceJacobian.hpp"
 #include "Evolution/Imex/SolveImplicitSector.hpp"
 #include "Evolution/Imex/SolveImplicitSector.tpp"
 #include "Evolution/Imex/Tags/ImplicitHistory.hpp"
@@ -181,7 +183,8 @@ struct InitialGuess {
 };
 
 // [source]
-struct Source {
+struct Source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                tt::ConformsTo<::protocols::StaticReturnApplyable> {
   using return_tags = tmpl::list<::Tags::Source<Var2>, ::Tags::Source<Var3>>;
   using argument_tags = tmpl::list<Var1, Var2, Var3, NonTensor,
                                    RecordPreparersForTest, SomeComputeTagBase>;
@@ -220,9 +223,12 @@ struct Source {
     tenex::evaluate<ti::I>(source_var3, -var1() * var3(ti::I));
   }
 };
+static_assert(
+    tt::assert_conforms_to_v<Source, imex::protocols::ImplicitSource>);
 
-// [jacobian]
-struct Jacobian {
+// [Jacobian]
+struct Jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                  tt::ConformsTo<::protocols::StaticReturnApplyable> {
   using return_tags =
       tmpl::list<imex::Tags::Jacobian<Var2, ::Tags::Source<Var2>>,
                  imex::Tags::Jacobian<Var3, ::Tags::Source<Var2>>,
@@ -236,7 +242,7 @@ struct Jacobian {
                     const Scalar<DataVector>& var1,
                     const tnsr::I<DataVector, 2>& var3, const double non_tensor,
                     const RecordPreparersForTest::type& prep_run_values) {
-    // [jacobian]
+    // [Jacobian]
     CHECK(not performing_step_with_no_implicit_term);
 
     // We don't need var2 for anything else in this function.  Hard to
@@ -259,6 +265,8 @@ struct Jacobian {
     }
   }
 };
+static_assert(tt::assert_conforms_to_v<
+              Jacobian, imex::protocols::ImplicitSourceJacobian>);
 
 template <bool TestWithAnalyticSolution>
 struct ImplicitSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
@@ -286,6 +294,8 @@ struct ImplicitSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
 
   using solve_attempts = tmpl::list<SolveAttempt>;
 };
+static_assert(tt::assert_conforms_to_v<ImplicitSector<false>,
+                                       imex::protocols::ImplicitSector>);
 
 // ::tensors doesn't depend on the template parameter
 using sector_variables_tag = Tags::Variables<ImplicitSector<false>::tensors>;
@@ -597,7 +607,8 @@ struct ResettingTestSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
     using source_prep = tmpl::list<>;
     using jacobian_prep = tmpl::list<>;
 
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<::Tags::Source<Var1>>;
       using argument_tags = tmpl::list<Var2>;
 
@@ -607,7 +618,8 @@ struct ResettingTestSector : tt::ConformsTo<imex::protocols::ImplicitSector> {
       }
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                  tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
 
@@ -674,7 +686,8 @@ struct SectorWithFallback : tt::ConformsTo<imex::protocols::ImplicitSector> {
     using source_prep = tmpl::list<>;
     using jacobian_prep = tmpl::list<>;
 
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<::Tags::Source<Var1>>;
       using argument_tags = tmpl::list<DesiredLevel>;
 
@@ -685,7 +698,8 @@ struct SectorWithFallback : tt::ConformsTo<imex::protocols::ImplicitSector> {
       }
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                  tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags =
           tmpl::list<imex::Tags::Jacobian<Var1, ::Tags::Source<Var1>>>;
       using argument_tags = tmpl::list<DesiredLevel>;

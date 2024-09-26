@@ -48,10 +48,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CSW.Worldtube.UpdateAcceleration",
       make_not_null(&gen), dist, 1);
   const auto inverse_metric = make_with_random_values<tnsr::AA<double, Dim>>(
       make_not_null(&gen), dist, 1);
+  const auto christoffel = make_with_random_values<tnsr::Abb<double, Dim>>(
+      make_not_null(&gen), dist, 1);
+  const auto trace_christoffel = make_with_random_values<tnsr::A<double, Dim>>(
+      make_not_null(&gen), dist, 1);
   const auto dilation =
       make_with_random_values<Scalar<double>>(make_not_null(&gen), dist, 1);
   const Tags::BackgroundQuantities<Dim>::type background_quantities{
-      metric, inverse_metric, dilation};
+      metric, inverse_metric, christoffel, trace_christoffel, dilation};
   const auto dt_psi_monopole =
       make_with_random_values<Scalar<double>>(make_not_null(&gen), dist, 1);
   const auto psi_dipole = make_with_random_values<tnsr::i<double, Dim>>(

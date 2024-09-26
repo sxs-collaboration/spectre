@@ -335,6 +335,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
             "TestInitialData.h5",
             "VolumeData",
             0.,
+            {1.0e-9},
             false,
             gh::NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi"},
             {"CustomRho", "CustomUi", "CustomYe", "CustomB"},
@@ -343,6 +344,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
         "  FileGlob: TestInitialData.h5\n"
         "  Subgroup: VolumeData\n"
         "  ObservationValue: 0.\n"
+        "  ObservationValueEpsilon: 1e-9\n"
         "  Interpolate: False\n"
         "  GhVariables:\n"
         "    SpacetimeMetric: CustomSpacetimeMetric\n"
@@ -358,6 +360,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
         NumericInitialData{"TestInitialData.h5",
                            "VolumeData",
                            0.,
+                           std::nullopt,
                            false,
                            gh::NumericInitialData::AdmVars{
                                "CustomSpatialMetric", "CustomLapse",
@@ -368,6 +371,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GhValenciaDivClean.SetInitialData",
         "  FileGlob: TestInitialData.h5\n"
         "  Subgroup: VolumeData\n"
         "  ObservationValue: 0.\n"
+        "  ObservationValueEpsilon: Auto\n"
         "  Interpolate: False\n"
         "  GhVariables:\n"
         "    SpatialMetric: CustomSpatialMetric\n"

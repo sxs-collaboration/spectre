@@ -49,6 +49,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/NumericData.hpp"
 #include "PointwiseFunctions/Xcts/SpacetimeQuantities.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -116,7 +117,8 @@ struct Metavariables {
     using analytic_solutions_and_data = tmpl::push_back<
         Xcts::Solutions::all_analytic_solutions,
         Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
-                                   Xcts::Solutions::all_analytic_solutions>>;
+                                   Xcts::Solutions::all_analytic_solutions>,
+        elliptic::analytic_data::NumericData>;
 
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
@@ -134,7 +136,9 @@ struct Metavariables {
                        volume_dim, typename system::primal_fields>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
-                       Events::Completion, Events::ObserveAdmIntegrals,
+                       Events::Completion,
+                       Events::ObserveAdmIntegrals<
+                           LinearSolver::multigrid::Tags::IsFinestGrid>,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,

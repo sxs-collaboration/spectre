@@ -20,8 +20,11 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SetInterpolators.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
@@ -68,6 +71,11 @@ void test() {
   //   | lower_xi | element |
   //
   // No neighbors in upper xi or in eta/zeta.
+
+  const evolution::dg::subcell::SubcellOptions subcell_options(
+      4.0, 1, 2.0e-3, 2.0e-4, false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
 
   const ::Mesh<Dim> dg_mesh{6, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
@@ -137,7 +145,8 @@ void test() {
 
           ::domain::Tags::Element<Dim>, ::domain::Tags::Domain<Dim>,
           domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
-          ::domain::Tags::ElementMap<Dim, Frame::Grid>, Tags::Reconstructor>,
+          ::domain::Tags::ElementMap<Dim, Frame::Grid>, Tags::Reconstructor,
+          evolution::dg::subcell::Tags::SubcellOptions<Dim>>,
       db::AddComputeTags<
           domain::Tags::LogicalCoordinates<Dim>,
           domain::Tags::MappedCoordinates<
@@ -155,7 +164,7 @@ void test() {
 
       element, Domain<Dim>{std::move(blocks)}, dg_mesh, subcell_mesh,
       ElementMap{element_id, make_grid_map<Dim, Frame::Grid>(0)},
-      std::make_unique<DummyReconstructor>());
+      std::make_unique<DummyReconstructor>(), subcell_options);
   db::mutate_apply<evolution::dg::subcell::SetInterpolators<Dim>>(
       make_not_null(&box));
 

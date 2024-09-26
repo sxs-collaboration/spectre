@@ -36,7 +36,8 @@ struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
   };
 
   struct SolveAttempt {
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<Tags::Source<Var>>;
       using argument_tags = tmpl::list<Var>;
       static void apply(gsl::not_null<Scalar<DataVector>*> source);

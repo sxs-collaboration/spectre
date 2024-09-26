@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"
@@ -15,6 +16,7 @@
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
@@ -25,6 +27,7 @@ void check_volume_data(
     const std::string& h5_file_name, const uint32_t version_number,
     const std::string& group_name, const size_t observation_id,
     const double observation_value,
+    const std::optional<double>& observation_value_epsilon,
     const std::vector<DataType>& tensor_components_and_coords,
     const std::vector<std::string>& grid_names,
     const std::vector<std::vector<Spectral::Basis>>& bases,
@@ -40,7 +43,16 @@ void check_volume_data(
       file_read.get<h5::VolumeData>("/"s + group_name, version_number);
 
   CHECK(extents == volume_file.get_extents(observation_id));
-  CHECK(volume_file.get_observation_value(observation_id) == observation_value);
+  const double file_observation_value =
+      volume_file.get_observation_value(observation_id);
+  CHECK((observation_value_epsilon.has_value()
+             ? equal_within_roundoff(file_observation_value, observation_value,
+                                     observation_value_epsilon.value(),
+                                     file_observation_value)
+             : volume_file.get_observation_value(observation_id) ==
+                   observation_value));
+  CHECK(volume_file.find_observation_id(
+            observation_value, observation_value_epsilon) == observation_id);
   // Check that all of the grid names were written correctly by checking their
   // equality of elements
   const std::vector<std::string> read_grid_names =
@@ -156,7 +168,12 @@ void check_volume_data(
       continue;
     }
     ++observations_found;
-    CHECK(std::get<1>(single_time_data) == approx(observation_value));
+    const double single_time_data_value = std::get<1>(single_time_data);
+    CHECK((observation_value_epsilon.has_value()
+               ? equal_within_roundoff(
+                     single_time_data_value, observation_value,
+                     observation_value_epsilon.value(), single_time_data_value)
+               : single_time_data_value == approx(observation_value)));
 
     for (size_t j = 0; j < grid_names.size(); j++) {
       const std::string& grid_name = grid_names[j];
@@ -221,6 +238,7 @@ void check_volume_data(
       const std::string& h5_file_name, const uint32_t version_number,    \
       const std::string& group_name, const size_t observation_id,        \
       const double observation_value,                                    \
+      const std::optional<double>& observation_value_epsilon,            \
       const std::vector<GET_DTYPE(data)>& tensor_components_and_coords,  \
       const std::vector<std::string>& grid_names,                        \
       const std::vector<std::vector<Spectral::Basis>>& bases,            \

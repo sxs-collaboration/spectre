@@ -290,8 +290,8 @@ def coordinate_separation_eccentricity_control_digest(
             ]
             logger.info("Updated Xcts values based on fit:")
             logger.info(
-                f"(Omega, adot) = ({(xcts_omega + dOmg):13.10f},"
-                f" {(xcts_expansion + dadot):13.10g})"
+                f"(Omega, adot) = ({(xcts_omega):13.10f},"
+                f" {(xcts_expansion):13.10g})"
             )
 
         # Plot

@@ -18,9 +18,9 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -44,31 +44,20 @@ domain::creators::Sphere make_sphere() {
   return {3.4, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false};
 }
 
-struct MockMetavariables {
-  struct InterpolationTargetA
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::KerrHorizon<InterpolationTargetA,
-                                           ::Frame::Inertial>;
-    using post_interpolation_callbacks = tmpl::list<>;
-  };
-  static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-
-  using component_list =
-      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
-                     MockMetavariables, InterpolationTargetA>,
-                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+struct KerrHorizonTargetTag
+    : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::KerrHorizon<KerrHorizonTargetTag,
+                                         ::Frame::Inertial>;
+  using post_interpolation_callbacks = tmpl::list<>;
 };
 
 template <InterpTargetTestHelpers::ValidPoints ValidPoints>
 void test_interpolation_target_kerr_horizon(
-    const intrp::AngularOrdering angular_ordering) {
+    const ylm::AngularOrdering angular_ordering) {
   // Constants used in this test.
   // We use l_max=18 to get enough points that the surface is
   // represented to roundoff error; for smaller l_max we would need to
@@ -136,7 +125,7 @@ void test_interpolation_target_kerr_horizon(
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
     size_t s = 0;
-    if (angular_ordering == intrp::AngularOrdering::Strahlkorper) {
+    if (angular_ordering == ylm::AngularOrdering::Strahlkorper) {
       for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
         const double phi = two_pi_over_n_phi * i_phi;
         for (size_t i_theta = 0; i_theta < n_theta; ++i_theta) {
@@ -165,13 +154,11 @@ void test_interpolation_target_kerr_horizon(
   }();
 
   TestHelpers::db::test_simple_tag<
-      intrp::Tags::KerrHorizon<MockMetavariables::InterpolationTargetA>>(
-      "KerrHorizon");
+      intrp::Tags::KerrHorizon<KerrHorizonTargetTag>>("KerrHorizon");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      MockMetavariables,
-      intrp::Tags::KerrHorizon<MockMetavariables::InterpolationTargetA>>(
-      domain_creator, kerr_horizon_opts, expected_block_coord_holders);
+      KerrHorizonTargetTag, 3, intrp::Tags::KerrHorizon<KerrHorizonTargetTag>>(
+      kerr_horizon_opts, expected_block_coord_holders);
 }
 }  // namespace
 
@@ -179,14 +166,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
   test_interpolation_target_kerr_horizon<
-      InterpTargetTestHelpers::ValidPoints::All>(intrp::AngularOrdering::Cce);
+      InterpTargetTestHelpers::ValidPoints::All>(ylm::AngularOrdering::Cce);
   test_interpolation_target_kerr_horizon<
       InterpTargetTestHelpers::ValidPoints::All>(
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   test_interpolation_target_kerr_horizon<
       InterpTargetTestHelpers::ValidPoints::Some>(
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   test_interpolation_target_kerr_horizon<
       InterpTargetTestHelpers::ValidPoints::None>(
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
 }

@@ -18,7 +18,7 @@ void register_derived_with_charm_impl() {
       LinearSolver::Serial::LinearSolver<tmpl::list<
           ::LinearSolver::Serial::Registrars::Gmres<
               ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-                  Dim, tmpl::list<Poisson::Tags::Field>>>,
+                  Dim, tmpl::list<Poisson::Tags::Field<DataVector>>>>,
           ::LinearSolver::Serial::Registrars::ExplicitInverse<double>>>>();
 }
 }  // namespace

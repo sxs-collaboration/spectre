@@ -3,6 +3,7 @@
 
 Executable: EvolveM1GreyConstantM1
 Testing:
+  Timeout: 5
   Check: parse;execute
   Priority: High
 ExpectedOutput:
@@ -21,8 +22,10 @@ Evolution:
   InitialTimeStep: 0.01
   MinimumTimeStep: 1e-7
   TimeStepper:
-    AdamsBashforth:
-      Order: 3
+    Rk3Kennedy:
+  Imex:
+    Mode: SemiImplicit
+    SolveTolerance: 1.0e-5
 
 PhaseChangeAndTriggers:
 

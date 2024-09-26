@@ -44,6 +44,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
@@ -198,7 +199,8 @@ void retrieve_boundary_data_spsc(
 
 /// Receive boundary data for global time-stepping.  Returns true if
 /// all necessary data has been received.
-template <typename Metavariables, typename DbTagsList, typename... InboxTags>
+template <bool UseNodegroupDgElements, typename Metavariables,
+          typename DbTagsList, typename... InboxTags>
 bool receive_boundary_data_global_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
@@ -238,7 +240,7 @@ bool receive_boundary_data_global_time_stepping(
                     evolution::dg::AtomicInboxBoundaryData<volume_dim>,
                     typename evolution::dg::Tags::
                         BoundaryCorrectionAndGhostCellsInbox<
-                            volume_dim>::type>) {
+                            volume_dim, UseNodegroupDgElements>::type>) {
     bool have_all_data = false;
     received_temporal_id_and_data =
         db::mutate<evolution::dg::Tags::BoundaryData<volume_dim>>(
@@ -277,7 +279,7 @@ bool receive_boundary_data_global_time_stepping(
             make_not_null(
                 &tuples::get<
                     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                        volume_dim>>(*inboxes)),
+                        volume_dim, UseNodegroupDgElements>>(*inboxes)),
             db::get<domain::Tags::Element<volume_dim>>(*box));
     if (not have_all_data) {
       return false;
@@ -285,10 +287,9 @@ bool receive_boundary_data_global_time_stepping(
   } else {
     // Scope to make sure the `node` can't be used later.
     NodeType node = get_temporal_id_and_data_node(
-        make_not_null(
-            &tuples::get<evolution::dg::Tags::
-                             BoundaryCorrectionAndGhostCellsInbox<volume_dim>>(
-                *inboxes)),
+        make_not_null(&tuples::get<
+                      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                          volume_dim, UseNodegroupDgElements>>(*inboxes)),
         db::get<domain::Tags::Element<volume_dim>>(*box));
     if (node.empty()) {
       return false;
@@ -357,8 +358,8 @@ bool receive_boundary_data_global_time_stepping(
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
-template <typename System, size_t Dim, bool DenseOutput, typename DbTagsList,
-          typename... InboxTags>
+template <bool UseNodegroupDgElements, typename System, size_t Dim,
+          bool DenseOutput, typename DbTagsList, typename... InboxTags>
 bool receive_boundary_data_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
@@ -391,10 +392,10 @@ bool receive_boundary_data_local_time_stepping(
       std::map<TimeStepId,
                DirectionalIdMap<Dim, evolution::dg::BoundaryData<Dim>>>;
   InboxMap* inbox_ptr = nullptr;
-  if constexpr (std::is_same_v<
-                    evolution::dg::AtomicInboxBoundaryData<Dim>,
-                    typename evolution::dg::Tags::
-                        BoundaryCorrectionAndGhostCellsInbox<Dim>::type>) {
+  if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
+                               typename evolution::dg::Tags::
+                                   BoundaryCorrectionAndGhostCellsInbox<
+                                       Dim, UseNodegroupDgElements>::type>) {
     inbox_ptr = db::mutate<evolution::dg::Tags::BoundaryData<Dim>>(
         [](const auto boundary_data_ptr, const auto local_inbox_ptr,
            const Element<Dim>& element) -> InboxMap* {
@@ -404,15 +405,14 @@ bool receive_boundary_data_local_time_stepping(
           return boundary_data_ptr.get();
         },
         box,
-        make_not_null(
-            &tuples::get<
-                evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-                *inboxes)),
+        make_not_null(&tuples::get<
+                      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                          Dim, UseNodegroupDgElements>>(*inboxes)),
         db::get<domain::Tags::Element<Dim>>(*box));
   } else {
-    inbox_ptr = &tuples::get<
-        evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-        *inboxes);
+    inbox_ptr =
+        &tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+            Dim, UseNodegroupDgElements>>(*inboxes);
   }
   ASSERT(inbox_ptr != nullptr, "The inbox pointer should not be null.");
   InboxMap& inbox = *inbox_ptr;
@@ -493,15 +493,15 @@ bool receive_boundary_data_local_time_stepping(
     return false;
   }
 
-  if constexpr (std::is_same_v<
-                    evolution::dg::AtomicInboxBoundaryData<Dim>,
-                    typename evolution::dg::Tags::
-                        BoundaryCorrectionAndGhostCellsInbox<Dim>::type>) {
+  if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
+                               typename evolution::dg::Tags::
+                                   BoundaryCorrectionAndGhostCellsInbox<
+                                       Dim, UseNodegroupDgElements>::type>) {
     // We only decrease the counter if we are done with the current time
     // and we only decrease it by the number of neighbors at the current
     // time.
-    tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
-        *inboxes)
+    tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+        Dim, UseNodegroupDgElements>>(*inboxes)
         .message_count.fetch_sub(
             db::get<domain::Tags::Element<Dim>>(*box).number_of_neighbors(),
             std::memory_order_acq_rel);
@@ -646,12 +646,13 @@ struct ApplyBoundaryCorrections {
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*component*/) {
     if constexpr (local_time_stepping) {
-      return receive_boundary_data_local_time_stepping<System, VolumeDim,
-                                                       DenseOutput>(box,
-                                                                    inboxes);
+      return receive_boundary_data_local_time_stepping<
+          Parallel::is_dg_element_collection_v<ParallelComponent>, System,
+          VolumeDim, DenseOutput>(box, inboxes);
     } else {
-      return receive_boundary_data_global_time_stepping<Metavariables>(box,
-                                                                       inboxes);
+      return receive_boundary_data_global_time_stepping<
+          Parallel::is_dg_element_collection_v<ParallelComponent>,
+          Metavariables>(box, inboxes);
     }
   }
 
@@ -995,10 +996,12 @@ namespace Actions {
  * \brief Computes the boundary corrections for global time-stepping
  * and adds them to the time derivative.
  */
-template <typename System, size_t VolumeDim, bool DenseOutput>
+template <typename System, size_t VolumeDim, bool DenseOutput,
+          bool UseNodegroupDgElements>
 struct ApplyBoundaryCorrectionsToTimeDerivative {
-  using inbox_tags = tmpl::list<
-      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<VolumeDim>>;
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          VolumeDim, UseNodegroupDgElements>>;
   using const_global_cache_tags =
       tmpl::list<evolution::Tags::BoundaryCorrection<System>,
                  ::dg::Tags::Formulation>;
@@ -1011,6 +1014,15 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    static_assert(
+        UseNodegroupDgElements ==
+            Parallel::is_dg_element_collection_v<ParallelComponent>,
+        "The action ApplyBoundaryCorrectionsToTimeDerivative is told by the "
+        "template parameter UseNodegroupDgElements that it is being "
+        "used with a DgElementCollection, but the ParallelComponent "
+        "is not a DgElementCollection. You need to change the template "
+        "parameter on the ApplyBoundaryCorrectionsToTimeDerivative action "
+        "in your action list.");
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
     const Element<volume_dim>& element =
         db::get<domain::Tags::Element<volume_dim>>(box);
@@ -1020,8 +1032,9 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if (not receive_boundary_data_global_time_stepping<Metavariables>(
-            make_not_null(&box), make_not_null(&inboxes))) {
+    if (not receive_boundary_data_global_time_stepping<
+            Parallel::is_dg_element_collection_v<ParallelComponent>,
+            Metavariables>(make_not_null(&box), make_not_null(&inboxes))) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
@@ -1043,10 +1056,12 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
  * data history, we insert the received temporal id, that is, the current time
  * of the neighbor, along with the boundary correction data.
  */
-template <typename System, size_t VolumeDim, bool DenseOutput>
+template <typename System, size_t VolumeDim, bool DenseOutput,
+          bool UseNodegroupDgElements>
 struct ApplyLtsBoundaryCorrections {
-  using inbox_tags = tmpl::list<
-      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<VolumeDim>>;
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          VolumeDim, UseNodegroupDgElements>>;
   using const_global_cache_tags =
       tmpl::list<evolution::Tags::BoundaryCorrection<System>,
                  ::dg::Tags::Formulation>;
@@ -1059,6 +1074,15 @@ struct ApplyLtsBoundaryCorrections {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    static_assert(
+        UseNodegroupDgElements ==
+            Parallel::is_dg_element_collection_v<ParallelComponent>,
+        "The action ApplyLtsBoundaryCorrections is told by the "
+        "template parameter UseNodegroupDgElements that it is being "
+        "used with a DgElementCollection, but the ParallelComponent "
+        "is not a DgElementCollection. You need to change the "
+        "template parameter on the ApplyLtsBoundaryCorrections action "
+        "in your action list.");
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
     const Element<volume_dim>& element =
         db::get<domain::Tags::Element<volume_dim>>(box);
@@ -1068,8 +1092,9 @@ struct ApplyLtsBoundaryCorrections {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if (not receive_boundary_data_local_time_stepping<System, VolumeDim, false>(
-            make_not_null(&box), make_not_null(&inboxes))) {
+    if (not receive_boundary_data_local_time_stepping<
+            Parallel::is_dg_element_collection_v<ParallelComponent>, System,
+            VolumeDim, false>(make_not_null(&box), make_not_null(&inboxes))) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 

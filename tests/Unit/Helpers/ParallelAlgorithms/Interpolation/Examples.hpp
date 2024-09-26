@@ -55,7 +55,7 @@ struct ExampleComputeTargetPoints
   // the global cache
   using const_global_cache_tags = tmpl::list<FakeCacheTag>;
 
-  using is_sequential = std::true_type;
+  using is_sequential = std::false_type;
 
   using frame = ::Frame::Grid;
 

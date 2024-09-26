@@ -113,6 +113,7 @@ if (NOT (SPECTRE_DEBUG AND APPLE))
 endif()
 
 add_subdirectory(ErrorHandling)
+add_subdirectory(Protocols)
 add_subdirectory(StdHelpers)
 add_subdirectory(System)
 add_subdirectory(Serialization)

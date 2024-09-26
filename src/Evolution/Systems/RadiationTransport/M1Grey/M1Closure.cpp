@@ -60,7 +60,7 @@ void compute_closure_impl(
   // Dimension of spatial tensors
   constexpr size_t spatial_dim = 3;
   // Tolerance used in the rootfinding used to find the closure factor
-  constexpr double root_find_tolerance = 1.e-6;
+  constexpr double root_find_tolerance = 1.e-14;
   Variables<
       tmpl::list<hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
                  MomentumUp, hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,

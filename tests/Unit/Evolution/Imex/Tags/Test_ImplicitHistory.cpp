@@ -21,13 +21,15 @@ struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
     using source_prep = tmpl::list<>;
     using jacobian_prep = tmpl::list<>;
 
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                      tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();
@@ -39,6 +41,6 @@ struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Imex.Tags.ImplicitHistory",
                   "[Unit][Evolution]") {
-  TestHelpers::db::test_simple_tag<
-      imex::Tags::ImplicitHistory<Sector>>("ImplicitHistory");
+  TestHelpers::db::test_simple_tag<imex::Tags::ImplicitHistory<Sector>>(
+      "ImplicitHistory");
 }

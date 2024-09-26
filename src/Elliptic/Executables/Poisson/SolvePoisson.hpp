@@ -43,6 +43,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/NumericData.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -85,9 +86,13 @@ struct Metavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<elliptic::analytic_data::Background,
-                   Poisson::Solutions::all_analytic_solutions<volume_dim>>,
+                   tmpl::push_back<
+                       Poisson::Solutions::all_analytic_solutions<volume_dim>,
+                       elliptic::analytic_data::NumericData>>,
         tmpl::pair<elliptic::analytic_data::InitialGuess,
-                   Poisson::Solutions::all_analytic_solutions<volume_dim>>,
+                   tmpl::push_back<
+                       Poisson::Solutions::all_analytic_solutions<volume_dim>,
+                       elliptic::analytic_data::NumericData>>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
                    Poisson::Solutions::all_analytic_solutions<volume_dim>>,
         tmpl::pair<
@@ -96,9 +101,10 @@ struct Metavariables {
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Poisson::BoundaryConditions::standard_boundary_conditions<system>>,
-        tmpl::pair<::amr::Criterion,
-                   ::amr::Criteria::standard_criteria<
-                       volume_dim, tmpl::list<Poisson::Tags::Field>>>,
+        tmpl::pair<
+            ::amr::Criterion,
+            ::amr::Criteria::standard_criteria<
+                volume_dim, tmpl::list<Poisson::Tags::Field<DataVector>>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,

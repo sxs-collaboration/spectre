@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
@@ -28,17 +29,19 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceivePoints.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -72,40 +75,6 @@ struct CompletedTemporalIds;
 }  // namespace intrp::Tags
 
 namespace {
-
-// In the test, we don't care what SendPointsToInterpolator actually does;
-// we care only that SendPointsToInterpolator is called with the
-// correct arguments.
-template <typename InterpolationTargetTag>
-struct MockSendPointsToInterpolator {
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<
-                            typename Metavariables::InterpolationTargetA::
-                                temporal_id::type>>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) {
-    using temporal_id_type =
-        typename Metavariables::InterpolationTargetA::temporal_id::type;
-    CHECK(temporal_id == 14.0 / 16.0);
-    // Increment IndicesOfFilledInterpPoints so we can check later
-    // whether this function was called.  This isn't the usual usage
-    // of IndicesOfFilledInterpPoints; this is done only for the test.
-    db::mutate<intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
-        [&temporal_id](
-            const gsl::not_null<std::unordered_map<temporal_id_type,
-                                                   std::unordered_set<size_t>>*>
-                indices) {
-          (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
-        },
-        make_not_null(&box));
-  }
-};
-
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   using metavariables = Metavariables;
@@ -127,10 +96,6 @@ struct mock_interpolation_target {
                                  simple_tags, typename InterpolationTargetTag::
                                                   compute_items_on_target>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-  using replace_these_simple_actions = tmpl::list<
-      intrp::Actions::SendPointsToInterpolator<InterpolationTargetTag>>;
-  using with_these_simple_actions =
-      tmpl::list<MockSendPointsToInterpolator<InterpolationTargetTag>>;
 };
 
 template <typename InterpolationTargetTag>
@@ -145,7 +110,7 @@ struct MockCleanUpInterpolator {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
           temporal_id) {
-    CHECK(temporal_id == 13.0 / 16.0);
+    CHECK(temporal_id.id == 13.0 / 16.0);
     // Put something in NumberOfElements so we can check later whether
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
@@ -213,7 +178,7 @@ struct ResetFoT {
 template <typename DbTags, typename TemporalId>
 void callback_impl(const db::DataBox<DbTags>& box,
                    const TemporalId& temporal_id) {
-  CHECK(temporal_id == 13.0 / 16.0);
+  CHECK(temporal_id.id == 13.0 / 16.0);
   // The result should be the square of the first 10 integers, in
   // a Scalar<DataVector>.
   const Scalar<DataVector> expected{
@@ -261,13 +226,13 @@ struct MockPostInterpolationCallbackWithInvalidPoints
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::InterpolationTargetA::temporal_id::type&
           temporal_id) {
-    CHECK(temporal_id == 13.0 / 16.0);
+    CHECK(temporal_id.id == 13.0 / 16.0);
 
     // The result should be the square of the first 10 integers, in
     // a Scalar<DataVector>, followed by several 225s.
     DataVector expected_dv(NumberOfInvalidInterpolationPoints + 10);
     for (size_t i = 0; i < 10; ++i) {
-      expected_dv[i] = double(i * i);
+      expected_dv[i] = static_cast<double>(i * i);
     }
     for (size_t i = 10; i < 10 + NumberOfInvalidInterpolationPoints; ++i) {
       expected_dv[i] = 225.0;
@@ -286,23 +251,28 @@ struct mock_interpolator {
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolator<
-              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
+              intrp::Tags::VolumeVarsInfo<Metavariables,
+                                          ::Tags::TimeAndPrevious<0>>,
               intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked = intrp::Interpolator<Metavariables>;
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::CleanUpInterpolator<
-          typename Metavariables::InterpolationTargetA>>;
+                     typename Metavariables::InterpolationTargetA>,
+                 intrp::Actions::ReceivePoints<
+                     typename Metavariables::InterpolationTargetA>>;
   using with_these_simple_actions = tmpl::list<
-      MockCleanUpInterpolator<typename Metavariables::InterpolationTargetA>>;
+      MockCleanUpInterpolator<typename Metavariables::InterpolationTargetA>,
+      InterpTargetTestHelpers::MockReceivePoints<
+          typename Metavariables::InterpolationTargetA>>;
 };
 
 template <typename MockCallBackType, typename IsTimeDependent>
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::Time;
+    using temporal_id = ::Tags::TimeAndPrevious<0>;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points = MockComputeTargetPoints;
@@ -323,31 +293,30 @@ template <typename MockCallbackType, typename IsTimeDependent,
           size_t NumberOfExpectedCleanUpActions,
           size_t NumberOfInvalidPointsToAdd>
 void test_interpolation_target_receive_vars() {
+  CAPTURE(IsTimeDependent::value);
+  CAPTURE(NumberOfExpectedCleanUpActions);
+  CAPTURE(NumberOfInvalidPointsToAdd);
   using metavars = MockMetavariables<MockCallbackType, IsTimeDependent>;
-  using temporal_id_type =
-      typename metavars::InterpolationTargetA::temporal_id::type;
+  using target_tag = typename metavars::InterpolationTargetA;
+  using temporal_id_type = typename target_tag::temporal_id::type;
   using interp_component = mock_interpolator<metavars>;
-  using target_component =
-      mock_interpolation_target<metavars,
-                                typename metavars::InterpolationTargetA>;
+  using target_component = mock_interpolation_target<metavars, target_tag>;
 
   const size_t num_points = 10;
-  const double first_time = 13.0 / 16.0;
+  const LinkedMessageId<double> first_time{13.0 / 16.0, std::nullopt};
   // Add maybe_unused for when IsTimeDependent == false
   // This name must match the hard coded one in UniformTranslation
   [[maybe_unused]] const std::string f_of_t_name = "Translation";
   [[maybe_unused]] std::unordered_map<std::string, double>
       initial_expiration_times{};
   initial_expiration_times[f_of_t_name] = 13.5 / 16.0;
-  const double second_time = 14.0 / 16.0;
+  const LinkedMessageId<double> second_time{14.0 / 16.0, 13.0 / 16.0};
   [[maybe_unused]] const double new_expiration_time = 14.5 / 16.0;
 
-  std::deque<temporal_id_type> current_temporal_ids{};
-  std::deque<temporal_id_type> pending_temporal_ids{};
+  const std::optional<temporal_id_type> current_temporal_id = first_time;
+  const std::deque<temporal_id_type> pending_temporal_ids{second_time};
   std::unique_ptr<ActionTesting::MockRuntimeSystem<metavars>> runner_ptr{};
   if constexpr (IsTimeDependent::value) {
-    current_temporal_ids.push_back(first_time);
-    pending_temporal_ids.push_back(second_time);
     const domain::creators::Brick domain_creator(
         {{-1.2, 3.0, 2.5}}, {{0.8, 5.0, 3.0}}, {{1, 1, 1}}, {{5, 4, 3}},
         {{false, false, false}}, {},
@@ -360,8 +329,6 @@ void test_interpolation_target_receive_vars() {
         domain_creator.create_domain(),
         domain_creator.functions_of_time(initial_expiration_times));
   } else {
-    current_temporal_ids.insert(current_temporal_ids.end(),
-                                {first_time, second_time});
     const auto domain_creator = domain::creators::Sphere(
         0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
@@ -378,8 +345,8 @@ void test_interpolation_target_receive_vars() {
   }
 
   // Type alias for better readability below.
-  using vars_type = Variables<
-      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>;
+  using vars_type =
+      Variables<typename target_tag::vars_to_interpolate_to_target>;
 
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   for (size_t i = 0; i < 2; ++i) {
@@ -390,11 +357,11 @@ void test_interpolation_target_receive_vars() {
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
        std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{
            invalid_indices},
-       pending_temporal_ids, current_temporal_ids,
+       pending_temporal_ids, current_temporal_id,
        std::deque<temporal_id_type>{},
-       std::unordered_map<temporal_id_type,
-                          Variables<typename metavars::InterpolationTargetA::
-                                        vars_to_interpolate_to_target>>{
+       std::unordered_map<
+           temporal_id_type,
+           Variables<typename target_tag::vars_to_interpolate_to_target>>{
            {first_time, vars_type{num_points + NumberOfInvalidPointsToAdd}}},
        // Default-constructed Variables cause problems, so below
        // we construct the Variables with a single point.
@@ -402,8 +369,8 @@ void test_interpolation_target_receive_vars() {
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Now set up the vars.
-  std::vector<typename ::Variables<
-      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>>
+  std::vector<
+      typename ::Variables<typename target_tag::vars_to_interpolate_to_target>>
       vars_src;
   std::vector<std::vector<size_t>> global_offsets;
 
@@ -412,8 +379,8 @@ void test_interpolation_target_receive_vars() {
                              const std::vector<double>& lapse_vals,
                              const std::vector<size_t>& offset_vals) {
     vars_src.emplace_back(
-        ::Variables<typename metavars::InterpolationTargetA::
-                        vars_to_interpolate_to_target>{lapse_vals.size()});
+        ::Variables<typename target_tag::vars_to_interpolate_to_target>{
+            lapse_vals.size()});
     global_offsets.emplace_back(offset_vals);
     auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars_src.back());
     for (size_t i = 0; i < lapse_vals.size(); ++i) {
@@ -424,9 +391,9 @@ void test_interpolation_target_receive_vars() {
   add_to_vars_src({{3.0, 6.0}}, {{3, 6}});
   add_to_vars_src({{2.0, 7.0}}, {{2, 7}});
 
-  ActionTesting::simple_action<target_component,
-                               intrp::Actions::InterpolationTargetReceiveVars<
-                                   typename metavars::InterpolationTargetA>>(
+  ActionTesting::simple_action<
+      target_component,
+      intrp::Actions::InterpolationTargetReceiveVars<target_tag>>(
       make_not_null(&runner), 0, vars_src, global_offsets, first_time);
 
   // It should have interpolated 4 points by now.
@@ -445,9 +412,8 @@ void test_interpolation_target_receive_vars() {
 
   // And the number of temporal_ids is the same as it used to be.
   CHECK(ActionTesting::get_databox_tag<
-            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
-            runner, 0)
-            .size() == current_temporal_ids.size());
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
+            runner, 0) == current_temporal_id);
 
   vars_src.clear();
   global_offsets.clear();
@@ -455,9 +421,9 @@ void test_interpolation_target_receive_vars() {
                   {{1, 6}});  // 6 is repeated, point will be ignored.
   add_to_vars_src({{8.0, 0.0, 4.0}}, {{8, 0, 4}});
 
-  ActionTesting::simple_action<target_component,
-                               intrp::Actions::InterpolationTargetReceiveVars<
-                                   typename metavars::InterpolationTargetA>>(
+  ActionTesting::simple_action<
+      target_component,
+      intrp::Actions::InterpolationTargetReceiveVars<target_tag>>(
       make_not_null(&runner), 0, vars_src, global_offsets, first_time);
 
   // It should have interpolated 8 points by now. (The ninth point had
@@ -484,18 +450,18 @@ void test_interpolation_target_receive_vars() {
   if constexpr (IsTimeDependent::value) {
     Parallel::mutate<domain::Tags::FunctionsOfTime, ResetFoT>(
         ActionTesting::cache<target_component>(runner, 0), f_of_t_name,
-        first_time / 2.0);
+        first_time.id / 2.0);
   }
 
   // This will try to call InterpolationTargetA::post_interpolation_callbacks
   // where we check that the points are correct.
-  ActionTesting::simple_action<target_component,
-                               intrp::Actions::InterpolationTargetReceiveVars<
-                                   typename metavars::InterpolationTargetA>>(
+  ActionTesting::simple_action<
+      target_component,
+      intrp::Actions::InterpolationTargetReceiveVars<target_tag>>(
       make_not_null(&runner), 0, vars_src, global_offsets, first_time);
 
   const auto check_zero_cleanup = [&runner, &first_time,
-                                   &current_temporal_ids]() {
+                                   &current_temporal_id]() {
     // It should have interpolated all the points by now.
     // But those points should have not been cleaned up.
     CHECK(ActionTesting::get_databox_tag<
@@ -513,10 +479,10 @@ void test_interpolation_target_receive_vars() {
 
     // Also, there should still be the same number of TemporalIds left
     // because we did not clean them up.
-    CHECK(ActionTesting::get_databox_tag<
-              target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
-              runner, 0)
-              .size() == current_temporal_ids.size());
+    CHECK(
+        ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
+            runner, 0) == current_temporal_id);
 
     // And there should be 0 CompletedTemporalIds because we did not
     // clean up TemporalIds.
@@ -559,18 +525,17 @@ void test_interpolation_target_receive_vars() {
               runner, 0)
               .count(first_time) == 0);
 
-    // There should be a queued simple action on the target_component,
-    // which is either SendPointsToInterpolator or
-    // VerifyTemporalIdsAndSendPoints (depending on whether we are
-    // time-dependent)
-    CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
-              runner, 0) == 1);
+    // There should be a no simple actions on the target_component. Whether we
+    // directly called SendPointsToInterpolator or
+    // VerifyTemporalIdsAndSendPoints, they both result in a simple action
+    // (ReceivePoints) on the interpolator
+    CHECK(ActionTesting::is_simple_action_queue_empty<target_component>(runner,
+                                                                        0));
 
-    // There should be a queued simple action on the
-    // interp_component, which is CleanUpInterpolator, which here we
-    // mock.
+    // CleanUpInterpolator should always be queued on the interpolator. If we
+    // aren't time dependent, then we should also have ReceivePoints queued.
     CHECK(ActionTesting::number_of_queued_simple_actions<interp_component>(
-              runner, 0) == 1);
+              runner, 0) == (IsTimeDependent::value ? 1 : 2));
     ActionTesting::invoke_queued_simple_action<interp_component>(
         make_not_null(&runner), 0);
 
@@ -580,24 +545,13 @@ void test_interpolation_target_receive_vars() {
                                          intrp::Tags::NumberOfElements>(
               runner, 0) == 1);
 
-    // And there should be 1 CompletedTemporalId, and its value
-    // should be the value of the initial TemporalId.
-    CHECK(ActionTesting::get_databox_tag<
-              target_component,
-              intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
-              .size() == 1);
-    CHECK(ActionTesting::get_databox_tag<
-              target_component,
-              intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
-              .front() == first_time);
-
     if constexpr (IsTimeDependent::value) {
-      // There should zero TemporalIds left, but one PendingTemporalId.
-      // The PendingTemporalId's value should be second_temporal_id.
-      CHECK(ActionTesting::get_databox_tag<
-                target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
-                runner, 0)
-                .empty());
+      // There should be zero TemporalIds left, but one PendingTemporalId,
+      // second time.
+      CHECK(not ActionTesting::get_databox_tag<
+                    target_component,
+                    intrp::Tags::CurrentTemporalId<temporal_id_type>>(runner, 0)
+                    .has_value());
       CHECK(ActionTesting::get_databox_tag<
                 target_component,
                 intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
@@ -606,10 +560,6 @@ void test_interpolation_target_receive_vars() {
                 target_component,
                 intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
                 .front() == second_time);
-
-      // Invoke the remaining simple action, VerifyTemporalIdsAndSendPoints.
-      ActionTesting::invoke_queued_simple_action<target_component>(
-          make_not_null(&runner), 0);
 
       // Now there should be no more simple actions, because the
       // FunctionsOfTime are not up to date for the pending
@@ -635,52 +585,61 @@ void test_interpolation_target_receive_vars() {
       ActionTesting::invoke_queued_simple_action<target_component>(
           make_not_null(&runner), 0);
 
-      // Now there should be a single simple_action which is
-      // MockSendPointsToInterpolator.
-      CHECK(ActionTesting::number_of_queued_simple_actions<target_component>(
+      // Check that there is now MockReceivePoints queued on the interpolator
+      CHECK(ActionTesting::number_of_queued_simple_actions<interp_component>(
                 runner, 0) == 1);
-
-      // And PendingTemporalIds should be empty.
-      CHECK(ActionTesting::get_databox_tag<
-                target_component,
-                intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
-                .empty());
     }
+
+    // And there should be
+    //  - 1 new TemporalIds, second_time
+    //  - 0 PendingTemporalId (it was moved to TemporalIds)
+    //  - 1 CompletedTemporalId, first_time
+    CHECK(
+        ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
+            runner, 0)
+            .has_value());
+    CHECK(
+        ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
+            runner, 0)
+            .value() == second_time);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
+              .size() == 1);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
+              .front() == first_time);
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::PendingTemporalIds<temporal_id_type>>(runner, 0)
+              .empty());
+
+    // Call MockReceivePoints
+    ActionTesting::invoke_queued_simple_action<interp_component>(
+        make_not_null(&runner), 0);
+
+    // Check that ReceivePoints was called with the next id
+    CHECK(get<intrp::Vars::HolderTag<target_tag, metavars>>(
+              ActionTesting::get_databox_tag<
+                  interp_component,
+                  intrp::Tags::InterpolatedVarsHolders<metavars>>(runner, 0))
+              .infos.contains(second_time));
 
     // There should be only 1 TemporalId left.
     // And its value should be second_temporal_id.
-    CHECK(ActionTesting::get_databox_tag<
-              target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
-              runner, 0)
-              .size() == 1);
-    CHECK(ActionTesting::get_databox_tag<
-              target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
-              runner, 0)
-              .front() == second_time);
-
-    // Check that MockSendPointsToInterpolator was not yet called.
-    // MockSendPointsToInterpolator sets a (fake) value of
-    // IndicesOfFilledInterpPoints for the express purpose of this
-    // check.
-    const auto& indices_to_check = ActionTesting::get_databox_tag<
-        target_component,
-        intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0);
-    CHECK(indices_to_check.find(second_time) == indices_to_check.end());
-
-    // And there is yet one more simple action, SendPointsToInterpolator,
-    // which here we mock just to check that it is called.
-    ActionTesting::invoke_queued_simple_action<target_component>(
-        make_not_null(&runner), 0);
-
-    // Check that MockSendPointsToInterpolator was called.
-    // MockSendPointsToInterpolator sets a (fake) value of
-    // IndicesOfFilledInterpPoints for the express purpose of this check.
-    CHECK(ActionTesting::get_databox_tag<
-              target_component,
-              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
-              runner, 0)
-              .at(second_time)
-              .size() == 1);
+    CHECK(
+        ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
+            runner, 0)
+            .has_value());
+    CHECK(
+        ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::CurrentTemporalId<temporal_id_type>>(
+            runner, 0)
+            .value() == second_time);
   }
 
   // There should be no more queued actions; verify this.

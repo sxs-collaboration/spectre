@@ -280,7 +280,7 @@ void check_bounds() {
       transition_density, 0.5 * polytropic_constant, 0.5 * polytropic_exponent,
       1.0 * polytropic_exponent};
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
-  CHECK(0.0 == eos.specific_internal_energy_lower_bound(1.0));
+  CHECK(0.0 == eos.specific_internal_energy_lower_bound());
   if constexpr (IsRelativistic) {
     CHECK(1.0 == eos.specific_enthalpy_lower_bound());
   } else {
@@ -288,7 +288,7 @@ void check_bounds() {
   }
   const double max_double = std::numeric_limits<double>::max();
   CHECK(max_double == eos.rest_mass_density_upper_bound());
-  CHECK(max_double == eos.specific_internal_energy_upper_bound(1.0));
+  CHECK(max_double == eos.specific_internal_energy_upper_bound());
 
   const auto eos_high_gamma =
       EquationsOfState::PiecewisePolytropicFluid<IsRelativistic>{

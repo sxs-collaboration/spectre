@@ -42,6 +42,30 @@ namespace CoordinateMap_detail {
 CREATE_IS_CALLABLE(function_of_time_names)
 CREATE_IS_CALLABLE_V(function_of_time_names)
 
+template <size_t Dim, typename T>
+using combined_coords_frame_velocity_jacs_t =
+    decltype(std::declval<T>().coords_frame_velocity_jacobian(
+        std::declval<gsl::not_null<std::array<DataVector, Dim>*>>(),
+        std::declval<gsl::not_null<std::array<DataVector, Dim>*>>(),
+        std::declval<
+            gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::NoFrame>*>>(),
+        std::declval<const double>(),
+        std::declval<const std::unordered_map<
+            std::string,
+            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&>()));
+
+template <size_t Dim, typename T, typename = std::void_t<>>
+struct has_combined_coords_frame_velocity_jacs : std::false_type {};
+
+template <size_t Dim, typename T>
+struct has_combined_coords_frame_velocity_jacs<
+    Dim, T, std::void_t<combined_coords_frame_velocity_jacs_t<Dim, T>>>
+    : std::true_type {};
+
+template <size_t Dim, typename T>
+inline constexpr bool has_combined_coords_frame_velocity_jacs_v =
+    has_combined_coords_frame_velocity_jacs<Dim, T>::value;
+
 template <typename T>
 struct map_type {
   using type = T;
@@ -449,36 +473,56 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
   tuple_transform(
       maps_,
       [&frame_velocity, &jac, &mapped_point, time, &functions_of_time](
-          const auto& map, auto index, const std::tuple<Maps...>& maps) {
+          const auto& map, auto index, const std::tuple<Maps...>& /*maps*/) {
         constexpr size_t count = decltype(index)::value;
         using Map = std::decay_t<decltype(map)>;
+        static constexpr bool is_time_dependent =
+            domain::is_map_time_dependent_v<Map>;
+        static constexpr bool use_combined_call =
+            CoordinateMap_detail::has_combined_coords_frame_velocity_jacs_v<
+                dim, Map> and
+            std::is_same_v<T, DataVector>;
+
+        [[maybe_unused]] std::array<T, dim> noframe_frame_velocity{};
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
+        if constexpr (use_combined_call) {
+          map.coords_frame_velocity_jacobian(
+              make_not_null(&mapped_point),
+              make_not_null(&noframe_frame_velocity),
+              make_not_null(&noframe_jac), time, functions_of_time);
+        } else {
+          // if the map is the identity we do not compute it unless it is the
+          // first map, then it is used for initialization
+          if (not(map.is_identity() and count != 0)) {
+            ::domain::detail::get_jacobian(
+                make_not_null(&noframe_jac), map, mapped_point, time,
+                functions_of_time,
+                domain::is_jacobian_time_dependent_t<Map, T>{});
+            if constexpr (is_time_dependent) {
+              noframe_frame_velocity = domain::detail::get_frame_velocity(
+                  map, mapped_point, time, functions_of_time);
+            }
+            CoordinateMap_detail::apply_map(
+                make_not_null(&mapped_point), map, time, functions_of_time,
+                domain::is_map_time_dependent_t<decltype(map)>{});
+          }
+        }
         if constexpr (count == 0) {
-          // Set Jacobian
-          ::domain::detail::get_jacobian(
-              make_not_null(&noframe_jac), map, mapped_point, time,
-              functions_of_time,
-              domain::is_jacobian_time_dependent_t<Map, T>{});
           for (size_t target = 0; target < dim; ++target) {
             for (size_t source = 0; source < dim; ++source) {
               jac.get(target, source) =
                   std::move(noframe_jac.get(target, source));
             }
           }
-
           // Set frame velocity
-          if constexpr (domain::is_map_time_dependent_v<std::tuple_element_t<
-                            0, std::decay_t<decltype(maps)>>>) {
-            std::array<T, dim> noframe_frame_velocity =
-                ::domain::detail::get_frame_velocity(map, mapped_point, time,
-                                                     functions_of_time);
+          if constexpr (is_time_dependent) {
             for (size_t i = 0; i < dim; ++i) {
               frame_velocity.get(i) =
                   std::move(gsl::at(noframe_frame_velocity, i));
             }
           } else {
-            // If the first map is time-independent the velocity is initialized
-            // to zero
+            // If the first map is time-independent the velocity is
+            // initialized to zero
             for (size_t i = 0; i < frame_velocity.size(); ++i) {
               frame_velocity[i] = make_with_value<T>(get<0, 0>(jac), 0.0);
             }
@@ -487,21 +531,9 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
           // WARNING: we have assumed that if the map is the identity the frame
           // velocity is also zero. That is, we do not optimize for the map
           // being instantaneously zero.
-
-          ::domain::detail::get_jacobian(
-              make_not_null(&noframe_jac), map, mapped_point, time,
-              functions_of_time,
-              domain::is_jacobian_time_dependent_t<Map, T>{});
-
-          // Perform matrix multiplication for Jacobian
           ::domain::detail::multiply_jacobian(make_not_null(&jac), noframe_jac);
 
-          // Set frame velocity, only if map is time-dependent
-          std::array<T, dim> noframe_frame_velocity{};
-          if constexpr (domain::is_map_time_dependent_v<
-                  std::tuple_element_t<count, std::decay_t<decltype(maps)>>>) {
-            noframe_frame_velocity = ::domain::detail::get_frame_velocity(
-                map, mapped_point, time, functions_of_time);
+          if constexpr (is_time_dependent) {
             for (size_t target_frame_index = 0; target_frame_index < dim;
                  ++target_frame_index) {
               for (size_t source_frame_index = 0; source_frame_index < dim;
@@ -533,11 +565,6 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
                  frame_velocity.get(target_frame_index));
           }
         }
-
-        // Update to the next mapped point
-        CoordinateMap_detail::apply_map(
-            make_not_null(&mapped_point), map, time, functions_of_time,
-            domain::is_map_time_dependent_t<decltype(map)>{});
       },
       maps_);
   return std::tuple<tnsr::I<T, dim, TargetFrame>,

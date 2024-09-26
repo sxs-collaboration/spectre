@@ -56,12 +56,11 @@ void local_adm_integrals(
     const tnsr::II<DataVector, 3>& inv_spatial_metric,
     const tnsr::ii<DataVector, 3>& extrinsic_curvature,
     const Scalar<DataVector>& trace_extrinsic_curvature,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>& inv_jacobian,
     const Mesh<3>& mesh, const Element<3>& element,
-    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
-    const DirectionMap<3, tnsr::I<DataVector, 3>>&
-        conformal_face_normal_vectors);
+    const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals);
 /// @}
 
 /// @{
@@ -72,8 +71,11 @@ void local_adm_integrals(
  * the domain boundary in the upper logical zeta direction.
  *
  * Writes reduction quantities:
- * - `Linear momentum`
+ * - ADM mass
+ * - Linear momentum
+ * - Center of mass
  */
+template <typename ArraySectionIdTag = void>
 class ObserveAdmIntegrals : public Event {
  private:
   using ReductionData = Parallel::ReductionData<
@@ -132,12 +134,14 @@ class ObserveAdmIntegrals : public Event {
       gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Inertial>,
       gr::Tags::ExtrinsicCurvature<DataVector, 3, Frame::Inertial>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
+      domain::Tags::Coordinates<3, Frame::Inertial>,
       domain::Tags::InverseJacobian<3, Frame::ElementLogical, Frame::Inertial>,
       domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::Faces<3, domain::Tags::FaceNormal<3>>,
-      domain::Tags::Faces<3, domain::Tags::FaceNormalVector<3>>>;
+      ::Tags::ObservationBox>;
 
-  template <typename Metavariables, typename ArrayIndex,
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(
       const Scalar<DataVector>& conformal_factor,
@@ -150,15 +154,23 @@ class ObserveAdmIntegrals : public Event {
       const tnsr::II<DataVector, 3>& inv_spatial_metric,
       const tnsr::ii<DataVector, 3>& extrinsic_curvature,
       const Scalar<DataVector>& trace_extrinsic_curvature,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       const Mesh<3>& mesh, const Element<3>& element,
       const DirectionMap<3, tnsr::i<DataVector, 3>>& conformal_face_normals,
-      const DirectionMap<3, tnsr::I<DataVector, 3>>&
-          conformal_face_normal_vectors,
+      const ObservationBox<DataBoxType, ComputeTagsList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ParallelComponent* const /*meta*/,
       const ObservationValue& observation_value) const {
+    // Skip observation on elements that are not part of a section
+    const std::optional<std::string> section_observation_key =
+        observers::get_section_observation_key<ArraySectionIdTag>(box);
+    if (not section_observation_key.has_value()) {
+      return;
+    }
+    const std::string subfile_path = subfile_path_ + *section_observation_key;
+
     Scalar<double> adm_mass;
     tnsr::I<double, 3> adm_linear_momentum;
     tnsr::I<double, 3> center_of_mass;
@@ -168,8 +180,8 @@ class ObserveAdmIntegrals : public Event {
         deriv_conformal_factor, conformal_metric, inv_conformal_metric,
         conformal_christoffel_second_kind, conformal_christoffel_contracted,
         spatial_metric, inv_spatial_metric, extrinsic_curvature,
-        trace_extrinsic_curvature, inv_jacobian, mesh, element,
-        conformal_face_normals, conformal_face_normal_vectors);
+        trace_extrinsic_curvature, inertial_coords, inv_jacobian, mesh, element,
+        conformal_face_normals);
 
     // Save components of linear momentum as reduction data
     ReductionData reduction_data{get(adm_mass),
@@ -194,7 +206,7 @@ class ObserveAdmIntegrals : public Event {
                                 observers::ObserverWriter<Metavariables>,
                                 observers::Observer<Metavariables>>>(cache));
     observers::ObservationId observation_id{observation_value.value,
-                                            subfile_path_ + ".dat"};
+                                            subfile_path + ".dat"};
     Parallel::ArrayComponentId array_component_id{
         std::add_pointer_t<ParallelComponent>{nullptr},
         Parallel::ArrayIndex<ElementId<3>>(array_index)};
@@ -204,23 +216,31 @@ class ObserveAdmIntegrals : public Event {
       Parallel::threaded_action<
           observers::ThreadedActions::CollectReductionDataOnNode>(
           local_observer, std::move(observation_id),
-          std::move(array_component_id), subfile_path_, std::move(legend),
+          std::move(array_component_id), subfile_path, std::move(legend),
           std::move(reduction_data));
     } else {
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
           local_observer, std::move(observation_id),
-          std::move(array_component_id), subfile_path_, std::move(legend),
+          std::move(array_component_id), subfile_path, std::move(legend),
           std::move(reduction_data));
     }
   }
 
-  using observation_registration_tags = tmpl::list<>;
+  using observation_registration_tags = tmpl::list<::Tags::DataBox>;
 
+  template <typename DbTagsList>
   std::optional<
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
-  get_observation_type_and_key_for_registration() const {
+  get_observation_type_and_key_for_registration(
+      const db::DataBox<DbTagsList>& box) const {
+    const std::optional<std::string> section_observation_key =
+        observers::get_section_observation_key<ArraySectionIdTag>(box);
+    if (not section_observation_key.has_value()) {
+      return std::nullopt;
+    }
     return {{observers::TypeOfObservation::Reduction,
-             observers::ObservationKey(subfile_path_ + ".dat")}};
+             observers::ObservationKey(
+                 subfile_path_ + section_observation_key.value() + ".dat")}};
   }
 
   using is_ready_argument_tags = tmpl::list<>;
@@ -244,5 +264,11 @@ class ObserveAdmIntegrals : public Event {
   std::string subfile_path_ = "/AdmIntegrals";
 };
 /// @}
+
+/// \cond
+template <typename ArraySectionIdTag>
+PUP::able::PUP_ID ObserveAdmIntegrals<ArraySectionIdTag>::my_PUP_ID =
+    0;  // NOLINT
+/// \endcond
 
 }  // namespace Events

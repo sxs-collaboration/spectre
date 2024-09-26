@@ -13,7 +13,6 @@
 
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 class DataVector;
@@ -146,15 +145,15 @@ class VolumeData : public h5::Object {
   double get_observation_value(size_t observation_id) const;
 
   /// Find the observation ID that matches the `observation_value`
-  size_t find_observation_id(const double observation_value) const {
-    for (auto& observation_id : list_observation_ids()) {
-      if (get_observation_value(observation_id) == observation_value) {
-        return observation_id;
-      }
-    }
-    ERROR_NO_TRACE("No observation with value " << observation_value
-                                                << " found in volume file.");
-  }
+  ///
+  /// \details An epsilon can be specified and the observation id that matches
+  /// within the epsilon of `observation_value` will be returned. If there is
+  /// more than one id that is within the epsilon, an error will occur. If no
+  /// epsilon is specified, this function will do exact comparison.
+  size_t find_observation_id(
+      double observation_value,
+      const std::optional<double>& observation_value_epsilon =
+          std::nullopt) const;
 
   /// List all the tensor components at observation id `observation_id`
   std::vector<std::string> list_tensor_components(size_t observation_id) const;

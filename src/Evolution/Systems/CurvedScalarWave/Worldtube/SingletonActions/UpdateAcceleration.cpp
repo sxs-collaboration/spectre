@@ -18,9 +18,12 @@ void UpdateAcceleration::apply(
                              ::Tags::dt<Tags::EvolvedVelocity<Dim>>>>*>
         dt_evolved_vars,
     const std::array<tnsr::I<double, Dim>, 2>& pos_vel,
-    const tuples::TaggedTuple<gr::Tags::SpacetimeMetric<double, Dim>,
-                              gr::Tags::InverseSpacetimeMetric<double, Dim>,
-                              Tags::TimeDilationFactor>& background,
+    const tuples::TaggedTuple<
+        gr::Tags::SpacetimeMetric<double, Dim>,
+        gr::Tags::InverseSpacetimeMetric<double, Dim>,
+        gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>,
+        gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim>,
+        Tags::TimeDilationFactor>& background,
     const tnsr::I<double, Dim, Frame::Inertial>& geodesic_acc,
     const Scalar<double>& dt_psi_monopole,
     const tnsr::i<double, Dim, Frame::Inertial>& psi_dipole,

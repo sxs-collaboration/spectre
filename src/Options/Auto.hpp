@@ -5,6 +5,8 @@
 
 #include <optional>
 #include <ostream>
+#include <pup.h>
+#include <pup_stl.h>
 #include <string>
 #include <utility>
 #include <variant>
@@ -46,6 +48,8 @@ class Auto {
   explicit Auto(T value) : value_(std::move(value)) {}
 
   // These lines are just to work around a spurious warning.
+  Auto(const Auto&) = default;
+  Auto& operator=(const Auto&) = default;
   Auto(Auto&&) = default;
   Auto& operator=(Auto&&) = default;
 #if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and \
@@ -64,6 +68,8 @@ class Auto {
   operator std::optional<U>() && {
     return std::move(value_);
   }
+
+  void pup(PUP::er& p) { p | value_; }
 
   // NOLINTNEXTLINE(google-explicit-constructor)
   operator const value_type&() const { return value_; }

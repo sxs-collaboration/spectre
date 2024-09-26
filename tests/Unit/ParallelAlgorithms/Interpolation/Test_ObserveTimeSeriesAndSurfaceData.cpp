@@ -45,6 +45,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -65,7 +66,6 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
@@ -308,16 +308,16 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   if constexpr (ValidPoints == InterpTargetTestHelpers::ValidPoints::None) {
     TestHelpers::io::VolumeData::check_volume_data(
         surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
-        observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
-        {quadratures}, {extents},
+        observation_id.value(), std::nullopt, tensor_and_coord_data,
+        {grid_name}, {bases}, {quadratures}, {extents},
         {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
          "InertialCoordinates_z"s, "Square"s},
         {{0, 1, 2, 3}}, 1.e-14, 1.0, {"Square"s});
   } else {
     TestHelpers::io::VolumeData::check_volume_data(
         surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
-        observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
-        {quadratures}, {extents},
+        observation_id.value(), std::nullopt, tensor_and_coord_data,
+        {grid_name}, {bases}, {quadratures}, {extents},
         {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
          "InertialCoordinates_z"s, "Square"s},
         {{0, 1, 2, 3}}, 1.e-2);  // loose tolerance because of low resolution
@@ -419,6 +419,15 @@ struct MockInterpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
+// This test was originally written with non-sequential targets, but an
+// infrastructure change made the interpolator only work with sequential
+// targets (horizon find). Rather than rewrite the whole test with horizon
+// finds, we just make new targets from the originals that are now sequential
+template <typename OriginalComputeTargetPoints>
+struct MockComputeTargetPoints : public OriginalComputeTargetPoints {
+  using is_sequential = std::true_type;
+};
+
 struct MockMetavariables {
   struct SurfaceA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
@@ -429,8 +438,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
@@ -448,8 +457,8 @@ struct MockMetavariables {
                                                               Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<Tags::Negate,
                                                               Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Square,
@@ -467,8 +476,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Negate, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<gr::surfaces::Tags::SurfaceIntegral<Tags::Negate,
@@ -485,8 +494,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveSurfaceData<
             tmpl::list<Tags::Square>, SurfaceD, ::Frame::Inertial>>;
@@ -501,8 +510,8 @@ struct MockMetavariables {
                    gr::surfaces::Tags::AreaElementCompute<Frame::Inertial>,
                    gr::surfaces::Tags::SurfaceIntegralCompute<
                        Tags::Square, ::Frame::Inertial>>;
-    using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<SurfaceE, ::Frame::Inertial>;
+    using compute_target_points = MockComputeTargetPoints<
+        intrp::TargetPoints::KerrHorizon<SurfaceE, ::Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveSurfaceData<
             tmpl::list<Tags::Square>, SurfaceE, ::Frame::Inertial>>;
@@ -576,22 +585,22 @@ void run_test() {
   // Options for all InterpolationTargets.
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_A(
       10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_B(
       10, {{0.0, 0.0, 0.0}}, 2.0, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
       10, {{0.0, 0.0, 0.0}}, 1.5, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(
       10, {{0.01, 0.02, 0.03}}, 1.4, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   // Surface for testing Ylm coefficients are written correctly. Using a
   // non-zero spin because with zero spin, Y_{00} is the only term with a
   // non-zero coefficient
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_E(
       3, {{0.04, 0.05, 0.06}}, 1.1, {{1.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   const auto domain_creator = make_sphere<ValidPoints>();
   tuples::TaggedTuple<
       observers::Tags::ReductionFileName, observers::Tags::SurfaceFileName,
@@ -689,26 +698,23 @@ void run_test() {
   ActionTesting::simple_action<
       target_a_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
   ActionTesting::simple_action<
       target_b_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   ActionTesting::simple_action<
       target_c_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   ActionTesting::simple_action<
       target_d_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceD>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
   ActionTesting::simple_action<
       target_e_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceE>>(
-      make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time()});
+      make_not_null(&runner), 0, temporal_id.substep_time());
 
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));

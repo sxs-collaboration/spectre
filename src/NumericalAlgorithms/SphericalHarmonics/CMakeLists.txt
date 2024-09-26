@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AngularOrdering.cpp
   ChangeCenterOfStrahlkorper.cpp
   RealSphericalHarmonics.cpp
   SpherepackIterator.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AngularOrdering.hpp
   ChangeCenterOfStrahlkorper.hpp
   RealSphericalHarmonics.hpp
   SpherepackIterator.hpp

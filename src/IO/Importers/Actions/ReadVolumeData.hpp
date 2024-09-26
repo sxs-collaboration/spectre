@@ -456,8 +456,11 @@ struct ReadAllVolumeDataAndDistribute {
       // Select observation ID
       const size_t observation_id = std::visit(
           Overloader{
-              [&volume_file](const double local_obs_value) {
-                return volume_file.find_observation_id(local_obs_value);
+              [&volume_file, &options](const double local_obs_value) {
+                const auto& observation_value_epsilon =
+                    get<OptionTags::ObservationValueEpsilon>(options);
+                return volume_file.find_observation_id(
+                    local_obs_value, observation_value_epsilon);
               },
               [&volume_file](const ObservationSelector local_obs_selector) {
                 const std::vector<size_t> all_observation_ids =

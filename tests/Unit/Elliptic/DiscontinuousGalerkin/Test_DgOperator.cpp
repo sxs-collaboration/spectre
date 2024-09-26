@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
@@ -76,15 +78,6 @@ template <typename Tag>
 struct Var : db::SimpleTag, db::PrefixTag {
   using type = typename Tag::type;
   using tag = Tag;
-};
-
-struct ScalarFieldTag : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-
-template <size_t Dim>
-struct AuxFieldTag : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim>;
 };
 
 struct TemporalIdTag : db::SimpleTag {
@@ -582,7 +575,7 @@ void test_dg_operator(
 
 }  // namespace
 
-// [[TimeOut, 30]]
+// [[TimeOut, 60]]
 SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
   domain::creators::register_derived_with_charm();
   // This is what the tests below check:
@@ -611,7 +604,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("1D rectilinear");
     using system =
         Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<1> analytic_solution{{{M_PI}}};
+    const Poisson::Solutions::ProductOfSinusoids<1> analytic_solution{{{M_PI}}};
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -633,46 +626,47 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       const ElementId<1> midleft_id{0, {{{2, 1}}}};
       const ElementId<1> midright_id{0, {{{2, 2}}}};
       const ElementId<1> right_id{0, {{{2, 3}}}};
-      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
-      using PrimalFluxes = Variables<tmpl::list<Var<::Tags::Flux<
-          Poisson::Tags::Field, tmpl::size_t<1>, Frame::Inertial>>>>;
-      using OperatorVars =
-          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field<DataVector>>>>;
+      using PrimalFluxes = Variables<
+          tmpl::list<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                      tmpl::size_t<1>, Frame::Inertial>>>>;
+      using OperatorVars = Variables<tmpl::list<
+          DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>>;
       Vars vars_rnd_left{4};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_left)) =
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_left)) =
           DataVector{0.6964691855978616, 0.28613933495037946,
                      0.2268514535642031, 0.5513147690828912};
       Vars vars_rnd_midleft{4};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_midleft)) =
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_midleft)) =
           DataVector{0.7194689697855631, 0.42310646012446096,
                      0.9807641983846155, 0.6848297385848633};
       Vars vars_rnd_midright{4};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_midright)) =
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_midright)) =
           DataVector{0.48093190148436094, 0.3921175181941505,
                      0.3431780161508694, 0.7290497073840416};
       Vars vars_rnd_right{4};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_right)) =
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_right)) =
           DataVector{0.4385722446796244, 0.05967789660956835,
                      0.3980442553304314, 0.7379954057320357};
       PrimalFluxes expected_primal_fluxes_rnd_left{4};
-      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<1>,
-                                  Frame::Inertial>>>(
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<1>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd_left)) =
           DataVector{-4.027188081328469, -1.9207736184862605,
                      1.3653213194134493, 3.3207435803332324};
       PrimalFluxes expected_primal_fluxes_rnd_right{4};
-      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<1>,
-                                  Frame::Inertial>>>(
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<1>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd_right)) =
           DataVector{-5.281316261986065, -0.5513540594510129,
                      2.6634207403536934, 1.9071387227305365};
       OperatorVars expected_operator_vars_rnd_left{4};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd_left)) =
           DataVector{1384.5953530154895, 41.55242721423977, -41.54933376905333,
                      -32.40787768105913};
       OperatorVars expected_operator_vars_rnd_right{4};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd_right)) =
           DataVector{-215.34463496424186, -37.924582769790135,
                      2.1993037260176997, 51.85418137198471};
@@ -744,10 +738,47 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     }
   }
   {
+    INFO("1D complex");
+    using system =
+        Poisson::FirstOrderSystem<1, Poisson::Geometry::FlatCartesian,
+                                  ComplexDataVector>;
+    const Poisson::Solutions::ProductOfSinusoids<1, ComplexDataVector>
+        analytic_solution{{{M_PI}}};
+    const domain::creators::Interval domain_creator{
+        {{-0.5}},
+        {{1.5}},
+        {{1}},
+        {{12}},
+        {{{{std::make_unique<
+                elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                analytic_solution.get_clone(),
+                elliptic::BoundaryConditionType::Dirichlet),
+            std::make_unique<
+                elliptic::BoundaryConditions::AnalyticSolution<system>>(
+                analytic_solution.get_clone(),
+                elliptic::BoundaryConditionType::Neumann)}}}}};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-8).scale(M_PI);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-8).scale(M_PI * penalty_parameter *
+                                              square(12));
+    for (const auto& [use_massive_dg_operator, quadrature] :
+         cartesian_product(make_array(true, false),
+                           make_array(Spectral::Quadrature::GaussLobatto,
+                                      Spectral::Quadrature::Gauss))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, use_massive_dg_operator,
+          quadrature, ::dg::Formulation::StrongInertial, analytic_solution,
+          analytic_solution_aux_approx, analytic_solution_operator_approx, {},
+          true);
+    }
+  }
+  {
     INFO("2D rectilinear");
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
+    const Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{
+        {{M_PI, M_PI}}};
     {
       INFO("Regression tests");
       const auto dirichlet_bc =
@@ -771,36 +802,40 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       const ElementId<2> northwest_id{0, {{{1, 0}, {1, 1}}}};
       const ElementId<2> southwest_id{0, {{{1, 0}, {1, 0}}}};
       const ElementId<2> northeast_id{0, {{{1, 1}, {1, 1}}}};
-      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
-      using PrimalFluxes = Variables<tmpl::list<Var<::Tags::Flux<
-          Poisson::Tags::Field, tmpl::size_t<2>, Frame::Inertial>>>>;
-      using OperatorVars =
-          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field<DataVector>>>>;
+      using PrimalFluxes = Variables<
+          tmpl::list<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                      tmpl::size_t<2>, Frame::Inertial>>>>;
+      using OperatorVars = Variables<tmpl::list<
+          DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>>;
       Vars vars_rnd_northwest{6};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_northwest)) = DataVector{
-          0.9807641983846155, 0.6848297385848633, 0.48093190148436094,
-          0.3921175181941505, 0.3431780161508694, 0.7290497073840416};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_northwest)) =
+          DataVector{0.9807641983846155,  0.6848297385848633,
+                     0.48093190148436094, 0.3921175181941505,
+                     0.3431780161508694,  0.7290497073840416};
       Vars vars_rnd_southwest{6};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_southwest)) = DataVector{
-          0.6964691855978616, 0.28613933495037946, 0.2268514535642031,
-          0.5513147690828912, 0.7194689697855631,  0.42310646012446096};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_southwest)) =
+          DataVector{0.6964691855978616, 0.28613933495037946,
+                     0.2268514535642031, 0.5513147690828912,
+                     0.7194689697855631, 0.42310646012446096};
       Vars vars_rnd_northeast{6};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_northeast)) = DataVector{
-          0.5315513738418384, 0.5318275870968661, 0.6344009585513211,
-          0.8494317940777896, 0.7244553248606352, 0.6110235106775829};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_northeast)) =
+          DataVector{0.5315513738418384, 0.5318275870968661,
+                     0.6344009585513211, 0.8494317940777896,
+                     0.7244553248606352, 0.6110235106775829};
       PrimalFluxes expected_primal_fluxes_rnd{6};
-      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
-                                  Frame::Inertial>>>(
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<2>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd)) = DataVector{
           -0.683905542298754,  -0.49983229690025466, -0.3157590515017552,
           -0.5326901973630155, 0.3369321891898911,   1.2065545757427976};
-      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
-                                  Frame::Inertial>>>(
+      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<2>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd)) = DataVector{
           -1.1772933603809301, -0.6833034448679879, 0.4962356117993614,
           -1.1772933603809301, -0.6833034448679879, 0.4962356117993614};
       OperatorVars expected_operator_vars_rnd{6};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd)) =
           DataVector{164.82044058319110, 9.68580366789113,  -2.370110768729976,
                      91.310963425225239, 30.31342257245155, 56.03237239864831};
@@ -870,7 +905,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("3D rectilinear");
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<3> analytic_solution{
+    const Poisson::Solutions::ProductOfSinusoids<3> analytic_solution{
         {{M_PI, M_PI, M_PI}}};
     {
       INFO("Regression tests");
@@ -890,53 +925,58 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       const ElementId<3> neighbor_id_xi{0, {{{1, 1}, {1, 0}, {1, 0}}}};
       const ElementId<3> neighbor_id_eta{0, {{{1, 0}, {1, 1}, {1, 0}}}};
       const ElementId<3> neighbor_id_zeta{0, {{{1, 0}, {1, 0}, {1, 1}}}};
-      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
-      using PrimalFluxes = Variables<tmpl::list<Var<::Tags::Flux<
-          Poisson::Tags::Field, tmpl::size_t<3>, Frame::Inertial>>>>;
-      using OperatorVars =
-          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field<DataVector>>>>;
+      using PrimalFluxes = Variables<
+          tmpl::list<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                      tmpl::size_t<3>, Frame::Inertial>>>>;
+      using OperatorVars = Variables<tmpl::list<
+          DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>>;
       Vars vars_rnd_self{24};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_self)) = DataVector{
-          0.6964691855978616, 0.28613933495037946, 0.2268514535642031,
-          0.5513147690828912, 0.7194689697855631,  0.42310646012446096,
-          0.9807641983846155, 0.6848297385848633,  0.48093190148436094,
-          0.3921175181941505, 0.3431780161508694,  0.7290497073840416,
-          0.4385722446796244, 0.05967789660956835, 0.3980442553304314,
-          0.7379954057320357, 0.18249173045349998, 0.17545175614749253,
-          0.5315513738418384, 0.5318275870968661,  0.6344009585513211,
-          0.8494317940777896, 0.7244553248606352,  0.6110235106775829};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_self)) =
+          DataVector{
+              0.6964691855978616, 0.28613933495037946, 0.2268514535642031,
+              0.5513147690828912, 0.7194689697855631,  0.42310646012446096,
+              0.9807641983846155, 0.6848297385848633,  0.48093190148436094,
+              0.3921175181941505, 0.3431780161508694,  0.7290497073840416,
+              0.4385722446796244, 0.05967789660956835, 0.3980442553304314,
+              0.7379954057320357, 0.18249173045349998, 0.17545175614749253,
+              0.5315513738418384, 0.5318275870968661,  0.6344009585513211,
+              0.8494317940777896, 0.7244553248606352,  0.6110235106775829};
       Vars vars_rnd_neighbor_xi{24};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_neighbor_xi)) = DataVector{
-          0.15112745234808023, 0.39887629272615654,  0.24085589772362448,
-          0.34345601404832493, 0.5131281541990022,   0.6666245501640716,
-          0.10590848505681383, 0.13089495066408074,  0.32198060646830806,
-          0.6615643366662437,  0.8465062252707221,   0.5532573447967134,
-          0.8544524875245048,  0.3848378112757611,   0.31678789711837974,
-          0.3542646755916785,  0.17108182920509907,  0.8291126345018904,
-          0.3386708459143266,  0.5523700752940731,   0.578551468108833,
-          0.5215330593973323,  0.002688064574320692, 0.98834541928282};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_neighbor_xi)) =
+          DataVector{
+              0.15112745234808023, 0.39887629272615654,  0.24085589772362448,
+              0.34345601404832493, 0.5131281541990022,   0.6666245501640716,
+              0.10590848505681383, 0.13089495066408074,  0.32198060646830806,
+              0.6615643366662437,  0.8465062252707221,   0.5532573447967134,
+              0.8544524875245048,  0.3848378112757611,   0.31678789711837974,
+              0.3542646755916785,  0.17108182920509907,  0.8291126345018904,
+              0.3386708459143266,  0.5523700752940731,   0.578551468108833,
+              0.5215330593973323,  0.002688064574320692, 0.98834541928282};
       Vars vars_rnd_neighbor_eta{24};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_neighbor_eta)) = DataVector{
-          0.5194851192598093, 0.6128945257629677,  0.12062866599032374,
-          0.8263408005068332, 0.6030601284109274,  0.5450680064664649,
-          0.3427638337743084, 0.3041207890271841,  0.4170222110247016,
-          0.6813007657927966, 0.8754568417951749,  0.5104223374780111,
-          0.6693137829622723, 0.5859365525622129,  0.6249035020955999,
-          0.6746890509878248, 0.8423424376202573,  0.08319498833243877,
-          0.7636828414433382, 0.243666374536874,   0.19422296057877086,
-          0.5724569574914731, 0.09571251661238711, 0.8853268262751396};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_neighbor_eta)) =
+          DataVector{
+              0.5194851192598093, 0.6128945257629677,  0.12062866599032374,
+              0.8263408005068332, 0.6030601284109274,  0.5450680064664649,
+              0.3427638337743084, 0.3041207890271841,  0.4170222110247016,
+              0.6813007657927966, 0.8754568417951749,  0.5104223374780111,
+              0.6693137829622723, 0.5859365525622129,  0.6249035020955999,
+              0.6746890509878248, 0.8423424376202573,  0.08319498833243877,
+              0.7636828414433382, 0.243666374536874,   0.19422296057877086,
+              0.5724569574914731, 0.09571251661238711, 0.8853268262751396};
       Vars vars_rnd_neighbor_zeta{24};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_neighbor_zeta)) = DataVector{
-          0.7224433825702216,  0.3229589138531782,  0.3617886556223141,
-          0.22826323087895561, 0.29371404638882936, 0.6309761238544878,
-          0.09210493994507518, 0.43370117267952824, 0.4308627633296438,
-          0.4936850976503062,  0.425830290295828,   0.3122612229724653,
-          0.4263513069628082,  0.8933891631171348,  0.9441600182038796,
-          0.5018366758843366,  0.6239529517921112,  0.11561839507929572,
-          0.3172854818203209,  0.4148262119536318,  0.8663091578833659,
-          0.2504553653965067,  0.48303426426270435, 0.985559785610705};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_neighbor_zeta)) =
+          DataVector{
+              0.7224433825702216,  0.3229589138531782,  0.3617886556223141,
+              0.22826323087895561, 0.29371404638882936, 0.6309761238544878,
+              0.09210493994507518, 0.43370117267952824, 0.4308627633296438,
+              0.4936850976503062,  0.425830290295828,   0.3122612229724653,
+              0.4263513069628082,  0.8933891631171348,  0.9441600182038796,
+              0.5018366758843366,  0.6239529517921112,  0.11561839507929572,
+              0.3172854818203209,  0.4148262119536318,  0.8663091578833659,
+              0.2504553653965067,  0.48303426426270435, 0.985559785610705};
       OperatorVars expected_operator_vars_rnd{24};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd)) = DataVector{
           490.4639148694344,  218.0462676038626,   40.25819450876480,
           83.251427119123945, 176.2577516255026,   -15.624072102187602,
@@ -1014,7 +1054,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     INFO("2D with h-nonconforming boundary");
     using system =
         Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{{{M_PI, M_PI}}};
+    const Poisson::Solutions::ProductOfSinusoids<2> analytic_solution{
+        {{M_PI, M_PI}}};
     {
       INFO("Regression tests");
       // Domain decomposition:
@@ -1042,52 +1083,56 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
       const ElementId<2> lowerleft_id{0, {{{0, 0}, {1, 0}}}};
       const ElementId<2> upperleft_id{0, {{{0, 0}, {1, 1}}}};
       const ElementId<2> right_id{1, {{{0, 0}, {0, 0}}}};
-      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
-      using PrimalFluxes = Variables<tmpl::list<Var<::Tags::Flux<
-          Poisson::Tags::Field, tmpl::size_t<2>, Frame::Inertial>>>>;
-      using OperatorVars =
-          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field<DataVector>>>>;
+      using PrimalFluxes = Variables<
+          tmpl::list<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                      tmpl::size_t<2>, Frame::Inertial>>>>;
+      using OperatorVars = Variables<tmpl::list<
+          DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>>;
       Vars vars_rnd_lowerleft{6};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_lowerleft)) = DataVector{
-          0.9807641983846155, 0.6848297385848633, 0.48093190148436094,
-          0.3921175181941505, 0.3431780161508694, 0.7290497073840416};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_lowerleft)) =
+          DataVector{0.9807641983846155,  0.6848297385848633,
+                     0.48093190148436094, 0.3921175181941505,
+                     0.3431780161508694,  0.7290497073840416};
       Vars vars_rnd_upperleft{6};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_upperleft)) = DataVector{
-          0.6964691855978616, 0.28613933495037946, 0.2268514535642031,
-          0.5513147690828912, 0.7194689697855631,  0.42310646012446096};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_upperleft)) =
+          DataVector{0.6964691855978616, 0.28613933495037946,
+                     0.2268514535642031, 0.5513147690828912,
+                     0.7194689697855631, 0.42310646012446096};
       Vars vars_rnd_right{6};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_right)) = DataVector{
-          0.5315513738418384, 0.5318275870968661, 0.6344009585513211,
-          0.8494317940777896, 0.7244553248606352, 0.6110235106775829};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_right)) =
+          DataVector{0.5315513738418384, 0.5318275870968661,
+                     0.6344009585513211, 0.8494317940777896,
+                     0.7244553248606352, 0.6110235106775829};
       PrimalFluxes expected_primal_fluxes_rnd_lowerleft{6};
-      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
-                                  Frame::Inertial>>>(
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<2>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd_lowerleft)) = DataVector{
           -2.73562216919501644, -1.99932918760101819, -1.26303620600701905,
           -2.13076078945206238, 1.34772875675956438,  4.82621830297119114};
-      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
-                                  Frame::Inertial>>>(
+      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<2>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd_lowerleft)) = DataVector{
           -2.35458672076185982, -1.36660688973597555, 0.99247122359872275,
           -2.35458672076185982, -1.36660688973597555, 0.99247122359872275};
       PrimalFluxes expected_primal_fluxes_rnd_right{6};
-      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
-                                  Frame::Inertial>>>(
+      get<0>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<2>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd_right)) = DataVector{
           -0.40697892675748815, 0.41139833883793075, 1.22977560443334877,
           -1.04599037387364335, -0.9536331336008268, -0.86127589332801024};
-      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<2>,
-                                  Frame::Inertial>>>(
+      get<1>(get<Var<::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<2>, Frame::Inertial>>>(
           expected_primal_fluxes_rnd_right)) = DataVector{
           0.6357608404719024, 0.38525547552753836, -0.04675489574747638,
           0.6357608404719024, 0.38525547552753836, -0.04675489574747638};
       OperatorVars expected_operator_vars_rnd_lowerleft{6};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd_lowerleft)) = DataVector{
           13.52385143255982491, 6.82929107083524833, 0.04527695301629676,
           4.39834760568600736,  0.65041277314590373, 0.78222246779709226};
       OperatorVars expected_operator_vars_rnd_right{6};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd_right)) = DataVector{
           1.60618450837350557, 4.71949148249203443, 15.72408761869980509,
           4.06376669069456398, 5.88578668691303086, 15.11012286654655945};
@@ -1157,10 +1202,47 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
     }
   }
   {
+    INFO("2D complex");
+    using system =
+        Poisson::FirstOrderSystem<2, Poisson::Geometry::FlatCartesian,
+                                  ComplexDataVector>;
+    const Poisson::Solutions::ProductOfSinusoids<2, ComplexDataVector>
+        analytic_solution{{{M_PI, M_PI}}};
+    const auto dirichlet_bc =
+        elliptic::BoundaryConditions::AnalyticSolution<system>{
+            analytic_solution.get_clone(),
+            elliptic::BoundaryConditionType::Dirichlet};
+    const domain::creators::AlignedLattice<2> domain_creator{
+        {{{0., 0.25, 0.5}, {0., 0.5}}},
+        {{1, 1}},
+        {{12, 12}},
+        {{{{0, 0}}, {{1, 1}}, {{1, 2}}}},
+        {},
+        {},
+        {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+          {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-11).scale(M_PI);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-11).scale(M_PI * penalty_parameter *
+                                               square(12));
+    for (const auto& [massive, quadrature, dg_formulation] :
+         cartesian_product(make_array(true, false),
+                           make_array(Spectral::Quadrature::GaussLobatto,
+                                      Spectral::Quadrature::Gauss),
+                           make_array(::dg::Formulation::StrongInertial,
+                                      ::dg::Formulation::WeakInertial))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, massive, quadrature,
+          dg_formulation, analytic_solution, analytic_solution_aux_approx,
+          analytic_solution_operator_approx, {}, true);
+    }
+  }
+  {
     INFO("3D sphere");
     using system =
         Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
-    Poisson::Solutions::Lorentzian<3> analytic_solution{0.};
+    const Poisson::Solutions::Lorentzian<3> analytic_solution{0.};
     {
       INFO("Regression tests");
       const domain::creators::Sphere domain_creator{
@@ -1181,33 +1263,35 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
               elliptic::BoundaryConditionType::Dirichlet)};
       const ElementId<3> center_id{6};
       const ElementId<3> wedge_id{0};
-      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field>>>;
-      using OperatorVars =
-          Variables<tmpl::list<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>>;
+      using Vars = Variables<tmpl::list<Var<Poisson::Tags::Field<DataVector>>>>;
+      using OperatorVars = Variables<tmpl::list<
+          DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>>;
       Vars vars_rnd_center{27};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_center)) = DataVector{
-          0.09649087905837017, 0.8726189695670388,  0.2550997406970058,
-          0.9371182951233519,  0.6633191884394125,  0.7910467053506253,
-          0.8976248825657923,  0.8253597552079079,  0.2614810810491418,
-          0.37703802268313935, 0.18811315681728424, 0.9286960528710335,
-          0.7799863844018025,  0.29158508058745125, 0.3078187493178257,
-          0.11582259489772695, 0.9504180903537383,  0.6290805984444998,
-          0.4156900249686264,  0.6322967693109368,  0.17729543326351738,
-          0.30252861325858027, 0.0700623995180415,  0.7014453661500705,
-          0.09301082210249478, 0.2507901753830596,  0.7325836921946847};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_center)) =
+          DataVector{
+              0.09649087905837017, 0.8726189695670388,  0.2550997406970058,
+              0.9371182951233519,  0.6633191884394125,  0.7910467053506253,
+              0.8976248825657923,  0.8253597552079079,  0.2614810810491418,
+              0.37703802268313935, 0.18811315681728424, 0.9286960528710335,
+              0.7799863844018025,  0.29158508058745125, 0.3078187493178257,
+              0.11582259489772695, 0.9504180903537383,  0.6290805984444998,
+              0.4156900249686264,  0.6322967693109368,  0.17729543326351738,
+              0.30252861325858027, 0.0700623995180415,  0.7014453661500705,
+              0.09301082210249478, 0.2507901753830596,  0.7325836921946847};
       Vars vars_rnd_wedge{27};
-      get(get<Var<Poisson::Tags::Field>>(vars_rnd_wedge)) = DataVector{
-          0.33924615234165656, 0.8449024556165292,  0.4541579237278579,
-          0.8205705845059463,  0.35547255892487073, 0.015009371066981636,
-          0.9211805795375337,  0.4002407787315444,  0.0024764405702156767,
-          0.8731417034578796,  0.5033095307249483,  0.3680070578003968,
-          0.176441382310489,   0.6746744554291877,  0.6668359104611603,
-          0.8208960531956108,  0.6243130189945111,  0.19954959587642307,
-          0.7370176442442482,  0.4477495010295536,  0.8282274072733592,
-          0.9199607746918792,  0.9635732092068038,  0.3504092315426307,
-          0.11524312515866864, 0.17417975746930436, 0.5870281973363631};
+      get(get<Var<Poisson::Tags::Field<DataVector>>>(vars_rnd_wedge)) =
+          DataVector{
+              0.33924615234165656, 0.8449024556165292,  0.4541579237278579,
+              0.8205705845059463,  0.35547255892487073, 0.015009371066981636,
+              0.9211805795375337,  0.4002407787315444,  0.0024764405702156767,
+              0.8731417034578796,  0.5033095307249483,  0.3680070578003968,
+              0.176441382310489,   0.6746744554291877,  0.6668359104611603,
+              0.8208960531956108,  0.6243130189945111,  0.19954959587642307,
+              0.7370176442442482,  0.4477495010295536,  0.8282274072733592,
+              0.9199607746918792,  0.9635732092068038,  0.3504092315426307,
+              0.11524312515866864, 0.17417975746930436, 0.5870281973363631};
       OperatorVars expected_operator_vars_rnd_center{27, 0.};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd_center)) =
           DataVector{0.13900947487894668719,   2.8012452842448594126,
                      0.70606635684663743291,   3.0110762308109988439,
@@ -1224,7 +1308,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
                      -0.76756810709326805942,  -0.037296848003322793930,
                      2.2419306171966684182};
       OperatorVars expected_operator_vars_rnd_wedge{27, 0.};
-      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field>>>(
+      get(get<DgOperatorAppliedTo<Var<Poisson::Tags::Field<DataVector>>>>(
           expected_operator_vars_rnd_wedge)) =
           DataVector{0.16499268635017833029, 1.8644717241195962742,
                      0.50779733947485694578, 1.8863114030787757613,
@@ -1292,6 +1376,45 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
             analytic_solution, analytic_solution_aux_approx,
             analytic_solution_operator_approx, {}, true);
       }
+    }
+  }
+  {
+    INFO("3D complex");
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian,
+                                  ComplexDataVector>;
+    const Poisson::Solutions::Lorentzian<3, ComplexDataVector>
+        analytic_solution{0., M_PI_2};
+    const domain::creators::Sphere domain_creator{
+        1.,
+        3.,
+        domain::creators::Sphere::InnerCube{0.},
+        0_st,
+        12_st,
+        true,
+        {},
+        {},
+        domain::CoordinateMaps::Distribution::Linear,
+        ShellWedges::All,
+        std::nullopt,
+        std::make_unique<
+            elliptic::BoundaryConditions::AnalyticSolution<system>>(
+            analytic_solution.get_clone(),
+            elliptic::BoundaryConditionType::Dirichlet)};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-4).scale(1.);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-4).scale(1.);
+    for (const auto& [quadrature, dg_formulation] :
+         cartesian_product(make_array(Spectral::Quadrature::GaussLobatto,
+                                      Spectral::Quadrature::Gauss),
+                           make_array(::dg::Formulation::StrongInertial,
+                                      ::dg::Formulation::StrongLogical,
+                                      ::dg::Formulation::WeakInertial))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, true, quadrature, dg_formulation,
+          analytic_solution, analytic_solution_aux_approx,
+          analytic_solution_operator_approx, {}, true);
     }
   }
 }

@@ -54,7 +54,7 @@ template <size_t Dim, typename OptionsGroup,
           typename Solver = LinearSolver::Serial::LinearSolver<tmpl::list<
               ::LinearSolver::Serial::Registrars::Gmres<
                   ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-                      Dim, tmpl::list<Poisson::Tags::Field>>>,
+                      Dim, tmpl::list<Poisson::Tags::Field<DataVector>>>>,
               ::LinearSolver::Serial::Registrars::ExplicitInverse<double>>>>
 struct MinusLaplacian {
   template <typename LinearSolverRegistrars>
@@ -96,7 +96,7 @@ template <size_t Dim, typename OptionsGroup,
           typename Solver = LinearSolver::Serial::LinearSolver<tmpl::list<
               ::LinearSolver::Serial::Registrars::Gmres<
                   ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-                      Dim, tmpl::list<Poisson::Tags::Field>>>,
+                      Dim, tmpl::list<Poisson::Tags::Field<DataVector>>>>,
               ::LinearSolver::Serial::Registrars::ExplicitInverse<double>>>,
           typename LinearSolverRegistrars =
               tmpl::list<Registrars::MinusLaplacian<Dim, OptionsGroup, Solver>>>
@@ -120,7 +120,7 @@ class MinusLaplacian
       poisson_system, OptionsGroup,
       tmpl::list<Poisson::BoundaryConditions::Robin<Dim>>>;
   using SubdomainData = ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
-      Dim, tmpl::list<Poisson::Tags::Field>>;
+      Dim, tmpl::list<Poisson::Tags::Field<DataVector>>>;
   // Associates Dirichlet or Neumann conditions to every external block
   // boundary. For every configuration of this type we'll need a separate
   // solver, which may cache the Poisson operator matrix that imposes the

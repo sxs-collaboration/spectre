@@ -119,8 +119,13 @@ namespace evolution::dg::Tags {
  *   be sent to the element to have it continue the algorithm. This is so as
  *   to minimize the number of communications made through Charm++ and instead
  *   to move data atomically between neighbors whenever possible.
+ *
+ * #### DG Element Nodegroup Support
+ * If you are using the `DgElementCollection` then you must set
+ * `UseNodegroupDgElements` to `true`. The actions that use this tag check
+ * that the parallel component and the `UseNodegroupDgElements` is consistent.
  */
-template <size_t Dim>
+template <size_t Dim, bool UseNodegroupDgElements>
 struct BoundaryCorrectionAndGhostCellsInbox {
   using stored_type = evolution::dg::BoundaryData<Dim>;
 
@@ -133,7 +138,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   using type_spsc = evolution::dg::AtomicInboxBoundaryData<Dim>;
 
   // The actual type being used.
-  using type = type_map;
+  using type = tmpl::conditional_t<UseNodegroupDgElements, type_spsc, type_map>;
   using value_type = type;
 
   template <typename ReceiveDataType>
@@ -147,9 +152,17 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
                          .try_emplace(time_step_id, std::move(data.second),
                                       std::move(data.first)))) {
-      ERROR("Failed to emplace data into inbox. neighbor_id: ("
-            << neighbor_id.direction() << ',' << neighbor_id.id()
-            << ") at TimeStepID: " << time_step_id);
+      ERROR(
+          "Failed to emplace data into inbox. neighbor_id: ("
+          << neighbor_id.direction() << ',' << neighbor_id.id()
+          << ") at TimeStepID: " << time_step_id << " the size of the inbox is "
+          << gsl::at(inbox->boundary_data_in_directions, neighbor_index).size()
+          << " the message count is "
+          << gsl::at(inbox->boundary_data_in_directions, neighbor_index)
+                 .message_count.load()
+          << " and the number of neighbors is "
+          << gsl::at(inbox->boundary_data_in_directions, neighbor_index)
+                 .number_of_neighbors.load());
     }
     // Notes:
     // 1. fetch_add does a post-increment.
@@ -280,7 +293,8 @@ struct BoundaryCorrectionAndGhostCellsInbox {
  */
 template <size_t Dim>
 struct BoundaryData : db::SimpleTag {
-  using type = typename BoundaryCorrectionAndGhostCellsInbox<Dim>::type_map;
+  using type =
+      typename BoundaryCorrectionAndGhostCellsInbox<Dim, false>::type_map;
 };
 
 /*!

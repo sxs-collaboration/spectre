@@ -340,6 +340,14 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
                                                           extraction_radius),
           l_max, number_of_lookahead_times, interpolator->get_clone());
     } else {
+      Parallel::printf(
+          "\nDEPRECATION WARNING: Reading worldtube H5 files that are in the "
+          "Metric data format (i.e. cartesian components of the metric and "
+          "derivs expressed in modal coefficients) is deprecated. Convert your "
+          "data to the Bondi modal format using the 'ReduceCceWorldtube' "
+          "executable. See https://spectre-code.org/tutorial_cce.html for "
+          "details. Support for reading the Metric data format will be "
+          "dropped in January 2025.\n");
       return std::make_unique<MetricWorldtubeDataManager>(
           std::make_unique<MetricWorldtubeH5BufferUpdater>(filename,
                                                            extraction_radius),

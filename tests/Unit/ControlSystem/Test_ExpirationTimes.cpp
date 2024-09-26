@@ -37,7 +37,7 @@ struct FakeControlSystem
   using measurement =
       control_system::TestHelpers::Measurement<Label<(Index < 3 ? 0 : 1)>>;
   using simple_tags = tmpl::list<>;
-  using control_error = control_system::TestHelpers::ControlError<1>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
@@ -73,7 +73,7 @@ void test_expiration_time_construction() {
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
-  const control_system::TestHelpers::ControlError<1> control_error{};
+  const control_system::TestHelpers::ControlError control_error{};
 
   OptionHolder<1> option_holder1(true, averager, controller, tuner1,
                                  control_error);

@@ -21,13 +21,15 @@ struct Sector : tt::ConformsTo<imex::protocols::ImplicitSector> {
     using source_prep = tmpl::list<>;
     using jacobian_prep = tmpl::list<>;
 
-    struct source {
+    struct source : tt::ConformsTo<imex::protocols::ImplicitSource>,
+                    tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();
     };
 
-    struct jacobian {
+    struct jacobian : tt::ConformsTo<imex::protocols::ImplicitSourceJacobian>,
+                      tt::ConformsTo<::protocols::StaticReturnApplyable> {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<>;
       static void apply();

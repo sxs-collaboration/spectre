@@ -105,8 +105,9 @@ struct PrintElementInfo {
       const auto& inboxes = local_object.get_inboxes();
 
       const std::string mortar_inbox = Parallel::output_inbox<
-          evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<3>>(inboxes,
-                                                                        2_st);
+          evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+              3, Parallel::is_dg_element_collection_v<ParallelComponent>>>(
+          inboxes, 2_st);
       ss << mortar_inbox;
 
       ss << " Mortars:\n";

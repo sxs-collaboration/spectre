@@ -58,6 +58,20 @@ target_link_libraries(
   SpectreWarnNoNoexceptType
   )
 
+# GCC versions below 13 don't respect 'GCC diagnostic' pragmas to disable
+# warnings by the preprocessor:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
+# So we disable the warning about unknown pragmas because we can't silence it.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
+  create_cxx_flag_target("-Wno-unknown-pragmas" SpectreWarnNoUnknownPragmas)
+  target_link_libraries(
+    SpectreWarnings
+    INTERFACE
+    SpectreWarnNoUnknownPragmas
+    )
+endif()
+
 target_link_libraries(
   SpectreFlags
   INTERFACE

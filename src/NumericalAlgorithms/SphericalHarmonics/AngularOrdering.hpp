@@ -13,7 +13,7 @@ struct create_from_yaml;
 }  // namespace Options
 /// \endcond
 
-namespace intrp {
+namespace ylm {
 /*!
  * \brief Label for the ordering of spherical harmonic points on a sphere
  *
@@ -23,17 +23,17 @@ namespace intrp {
  */
 enum class AngularOrdering { Strahlkorper, Cce };
 std::ostream& operator<<(std::ostream& os, AngularOrdering ordering);
-}  // namespace intrp
+}  // namespace ylm
 
 template <>
-struct Options::create_from_yaml<intrp::AngularOrdering> {
+struct Options::create_from_yaml<ylm::AngularOrdering> {
   template <typename Metavariables>
-  static intrp::AngularOrdering create(const Options::Option& options) {
+  static ylm::AngularOrdering create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 
 template <>
-intrp::AngularOrdering
-Options::create_from_yaml<intrp::AngularOrdering>::create<void>(
+ylm::AngularOrdering
+Options::create_from_yaml<ylm::AngularOrdering>::create<void>(
     const Options::Option& options);

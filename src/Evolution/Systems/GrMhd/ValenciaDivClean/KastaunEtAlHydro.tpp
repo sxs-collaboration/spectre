@@ -57,9 +57,12 @@ class FunctionOfZ {
     if constexpr (EosType::thermodynamic_dim == 3) {
       eps_min = equation_of_state_.specific_internal_energy_lower_bound(
           rho_min, electron_fraction);
-    } else {
+    } else if constexpr (EosType::thermodynamic_dim == 2) {
       eps_min =
           equation_of_state_.specific_internal_energy_lower_bound(rho_min);
+    } else {
+      eps_min =
+          equation_of_state_.specific_internal_energy_lower_bound();
     }
 
     if constexpr (EnforcePhysicality) {
@@ -134,11 +137,16 @@ Primitives FunctionOfZ<EosType, EnforcePhysicality>::primitives(
                        rho_hat, electron_fraction_),
                    equation_of_state_.specific_internal_energy_upper_bound(
                        rho_hat, electron_fraction_));
-  } else {
+  } else if constexpr (EosType::thermodynamic_dim == 2) {
     epsilon_hat = std::clamp(
         epsilon_hat,
         equation_of_state_.specific_internal_energy_lower_bound(rho_hat),
         equation_of_state_.specific_internal_energy_upper_bound(rho_hat));
+  } else {
+    epsilon_hat = std::clamp(
+        epsilon_hat,
+        equation_of_state_.specific_internal_energy_lower_bound(),
+        equation_of_state_.specific_internal_energy_upper_bound());
   }
 
   // Pressure from EOS

@@ -144,6 +144,18 @@ double PolytropicFluid<IsRelativistic>::rest_mass_density_upper_bound() const {
   }
   return std::numeric_limits<double>::max();
 }
+
+template <bool IsRelativistic>
+double PolytropicFluid<IsRelativistic>::specific_internal_energy_upper_bound()
+    const {
+  // this bound comes from the dominant energy condition which implies
+  // that the pressure is bounded by the total energy density,
+  // i.e. p < e = rho * (1 + eps)
+  if (IsRelativistic and polytropic_exponent_ > 2.0) {
+    return 1.0 / (polytropic_exponent_ - 2.0);
+  }
+  return std::numeric_limits<double>::max();
+}
 }  // namespace EquationsOfState
 
 template class EquationsOfState::PolytropicFluid<true>;

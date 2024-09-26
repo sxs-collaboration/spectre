@@ -70,11 +70,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.LargeOuterRadius", "[Unit][Elliptic]") {
   const auto det_jacobian = determinant(element_map.jacobian(logical_coords));
 
   // Take first derivative
-  using Field = Poisson::Tags::Field;
-  using FieldDeriv =
-      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<3>, Frame::Inertial>;
-  using Flux =
-      ::Tags::Flux<Poisson::Tags::Field, tmpl::size_t<3>, Frame::Inertial>;
+  using Field = Poisson::Tags::Field<DataVector>;
+  using FieldDeriv = ::Tags::deriv<Poisson::Tags::Field<DataVector>,
+                                   tmpl::size_t<3>, Frame::Inertial>;
+  using Flux = ::Tags::Flux<Poisson::Tags::Field<DataVector>, tmpl::size_t<3>,
+                            Frame::Inertial>;
   using FixedSource = ::Tags::FixedSource<Field>;
   const auto vars = solution.variables(
       inertial_coords, tmpl::list<Field, FieldDeriv, FixedSource>{});

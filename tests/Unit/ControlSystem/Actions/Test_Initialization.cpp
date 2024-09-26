@@ -46,7 +46,7 @@ struct MockControlSystem
     return get_output(i);
   }
   using measurement = Measurement;
-  using control_error = control_system::TestHelpers::ControlError<0>;
+  using control_error = control_system::TestHelpers::ControlError;
   static constexpr size_t deriv_order = order;
   using simple_tags = tmpl::list<>;
 };

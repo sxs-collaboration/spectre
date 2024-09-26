@@ -6,11 +6,13 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -18,6 +20,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Requires.hpp"
@@ -29,22 +32,19 @@
 namespace domain::Tags {
 struct FunctionsOfTime;
 }  // namespace domain::Tags
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 template <typename TemporalId>
 struct CompletedTemporalIds;
 template <typename TemporalId>
 struct PendingTemporalIds;
 template <typename TemporalId>
 struct TemporalIds;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 template <typename TagsList>
 struct Variables;
 /// \endcond
 
-namespace intrp {
-namespace Actions {
+namespace intrp::Actions {
 /// \ingroup ActionsGroup
 /// \brief Receives interpolated variables from an `Interpolator` on a subset
 ///  of the target points.
@@ -57,13 +57,13 @@ namespace Actions {
 /// - Tells `Interpolator`s that the interpolation is complete
 ///  (by calling
 ///  `Actions::CleanUpInterpolator<InterpolationTargetTag>`)
-/// - Removes the first `temporal_id` from `Tags::TemporalIds<TemporalId>`
+/// - Removes the current id from `Tags::CurrentTemporalId<TemporalId>`
 /// - If there are more `temporal_id`s, begins interpolation at the next
-///  `temporal_id` (by calling `InterpolationTargetTag::compute_target_points`)
+///  `temporal_id` (by calling `Actions::VerifyTemporalIdsAndSendPoints`)
 ///
 /// Uses:
 /// - DataBox:
-///   - `Tags::TemporalIds<TemporalId>`
+///   - `Tags::CurrentTemporalId<TemporalId>`
 ///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
 ///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
 ///
@@ -71,7 +71,7 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `Tags::TemporalIds<TemporalId>`
+///   - `Tags::CurrentTemporalId<TemporalId>`
 ///   - `Tags::CompletedTemporalIds<TemporalId>`
 ///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
 ///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
@@ -81,6 +81,10 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars {
+  static_assert(
+      InterpolationTargetTag::compute_target_points::is_sequential::value,
+      "Actions::InterpolationTargetReceiveVars can be used only with "
+      "sequential targets.");
   /// For requirements on Metavariables, see InterpolationTarget
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex, typename TemporalId>
@@ -165,31 +169,22 @@ struct InterpolationTargetReceiveVars {
             Actions::CleanUpInterpolator<InterpolationTargetTag>>(
             interpolator_proxy, temporal_id);
 
-        // If we have a sequential target, and there are further
-        // temporal_ids, begin interpolation for the next one.
-        if (InterpolationTargetTag::compute_target_points::is_sequential::
-                value) {
-          const auto& temporal_ids =
-              db::get<Tags::TemporalIds<TemporalId>>(box);
-          if (not temporal_ids.empty()) {
-            auto& my_proxy = Parallel::get_parallel_component<
-                InterpolationTarget<Metavariables, InterpolationTargetTag>>(
-                cache);
-            Parallel::simple_action<
-                SendPointsToInterpolator<InterpolationTargetTag>>(
-                my_proxy, temporal_ids.front());
-          } else if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box)
-                             .empty()) {
-            auto& my_proxy = Parallel::get_parallel_component<
-                InterpolationTarget<Metavariables, InterpolationTargetTag>>(
-                cache);
-            Parallel::simple_action<Actions::VerifyTemporalIdsAndSendPoints<
-                InterpolationTargetTag>>(my_proxy);
-          }
+        // If there are further pending_temporal_ids, begin interpolation for
+        // the next one.
+        const auto& current_id =
+            db::get<Tags::CurrentTemporalId<TemporalId>>(box);
+        using ::operator<<;
+        ASSERT(not current_id.has_value(),
+               "After a serial interpolation (horizon find) is finished, the "
+               "current temporal id shouldn't have a value, but it does "
+                   << current_id.value());
+        if (not db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
+          // Call directly
+          Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>::
+              template apply<ParallelComponent>(box, cache, array_index);
         }
       }
     }
   }
 };
-}  // namespace Actions
-}  // namespace intrp
+}  // namespace intrp::Actions

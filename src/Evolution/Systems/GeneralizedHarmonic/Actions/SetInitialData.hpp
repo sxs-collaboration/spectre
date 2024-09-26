@@ -131,10 +131,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
   };
 
   using options =
-      tmpl::list<importers::OptionTags::FileGlob,
-                 importers::OptionTags::Subgroup,
-                 importers::OptionTags::ObservationValue,
-                 importers::OptionTags::EnableInterpolation, Variables>;
+      tmpl::push_back<importers::ImporterOptions::tags_list, Variables>;
 
   static constexpr Options::String help =
       "Numeric initial data loaded from volume data files";
@@ -160,6 +157,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
   NumericInitialData(
       std::string file_glob, std::string subfile_name,
       std::variant<double, importers::ObservationSelector> observation_value,
+      std::optional<double> observation_value_epsilon,
       bool enable_interpolation,
       std::variant<AdmVars, GhVars> selected_variables);
 

@@ -86,6 +86,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/NumericData.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -137,6 +138,7 @@ struct EvolutionMetavars {
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
+  static constexpr bool use_dg_element_collection = false;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
@@ -186,7 +188,9 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
-        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::push_back<initial_data_list,
+                                   evolution::initial_data::NumericData>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
@@ -225,17 +229,18 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false>>,
+                         system, volume_dim, false, use_dg_element_collection>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false>,
+                  system, volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,

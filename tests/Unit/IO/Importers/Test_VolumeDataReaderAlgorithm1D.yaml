@@ -32,6 +32,7 @@ Importers:
     FileGlob: "Test_DataImporterAlgorithm1D.h5"
     Subgroup: "TestData"
     ObservationValue: 1.
+    ObservationValueEpsilon: Auto
     Interpolate: True
 
 ResourceInfo:

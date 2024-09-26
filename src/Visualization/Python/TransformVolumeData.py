@@ -24,6 +24,7 @@ from spectre.DataStructures.Tensor import (
     Tensor,
     tnsr,
 )
+from spectre.Domain import ElementId
 from spectre.IO.H5.IterElements import Element, iter_elements
 from spectre.NumericalAlgorithms.LinearOperators import definite_integral
 from spectre.Spectral import Mesh
@@ -167,6 +168,7 @@ def parse_kernel_arg(
     arguments are supported:
 
     - Mesh: Annotate the argument with a 'Mesh' type.
+    - ElementId: Annotate the argument with an 'ElementId' type.
     - Coordinates: Annotate the argument with a 'tnsr.I' type and name it
         "logical_coords" / "logical_coordinates" or "inertial_coords" /
         "inertial_coordinates" / "x".
@@ -218,6 +220,8 @@ def parse_kernel_arg(
 
     if arg.annotation in Mesh.values():
         return ElementArg("mesh")
+    elif arg.annotation in ElementId.values():
+        return ElementArg("id")
     elif arg.name in ["logical_coords", "logical_coordinates"]:
         assert arg.annotation in [
             tnsr.I[DataVector, 1, Frame.ElementLogical],

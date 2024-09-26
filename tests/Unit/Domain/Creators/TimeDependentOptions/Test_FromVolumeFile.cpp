@@ -135,6 +135,8 @@ void test<domain::creators::time_dependent_options::names::Expansion>() {
   CHECK(from_volume_file.expansion_values == expected_values);
   CHECK_ITERABLE_APPROX(from_volume_file.expansion_values_outer_boundary,
                         expected_values_outer_boundary);
+  CHECK(from_volume_file.velocity_outer_boundary == velocity);
+  CHECK(from_volume_file.decay_timescale_outer_boundary == decay_timescale);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

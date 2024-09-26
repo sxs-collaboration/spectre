@@ -325,6 +325,7 @@ struct GeneralizedHarmonicTemplateBase {
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
+  static constexpr bool use_dg_element_collection = false;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -371,7 +372,8 @@ struct GeneralizedHarmonicTemplateBase {
   template <typename ControlSystems>
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
@@ -380,10 +382,10 @@ struct GeneralizedHarmonicTemplateBase {
                          evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false>>,
+                         system, volume_dim, false, use_dg_element_collection>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false>,
+                  system, volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,

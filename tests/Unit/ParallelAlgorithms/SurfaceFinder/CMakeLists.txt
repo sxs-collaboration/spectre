@@ -18,3 +18,10 @@ target_link_libraries(
   Spectral
   SurfaceFinder
   )
+
+spectre_add_python_bindings_test(
+  "SurfaceFinder.FindRadialSurface"
+  Test_FindRadialSurface.py
+  "Python"
+  None
+  TIMEOUT 20)

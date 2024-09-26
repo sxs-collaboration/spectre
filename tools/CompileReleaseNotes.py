@@ -124,6 +124,8 @@ def get_upgrade_instructions(pr_description: str) -> Optional[str]:
     <!-- UPGRADE INSTRUCTIONS -->
     ```
     """
+    if not pr_description:
+        return None
     FENCE_PATTERN = "<!-- UPGRADE INSTRUCTIONS -->"
     match = re.search(
         FENCE_PATTERN + "(.*)" + FENCE_PATTERN, pr_description, flags=re.DOTALL

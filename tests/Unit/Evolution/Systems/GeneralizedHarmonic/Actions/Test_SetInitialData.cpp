@@ -287,26 +287,33 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
   register_factory_classes_with_charm<Metavariables>();
   test_set_initial_data(
       NumericInitialData{
-          "TestInitialData.h5", "VolumeData", 0., false,
+          "TestInitialData.h5",
+          "VolumeData",
+          0.,
+          {1.0e-9},
+          false,
           NumericInitialData::GhVars{"CustomSpacetimeMetric", "CustomPi"}},
       "NumericInitialData:\n"
       "  FileGlob: TestInitialData.h5\n"
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
+      "  ObservationValueEpsilon: 1e-9\n"
       "  Interpolate: False\n"
       "  Variables:\n"
       "    SpacetimeMetric: CustomSpacetimeMetric\n"
       "    Pi: CustomPi\n",
       true);
   test_set_initial_data(
-      NumericInitialData{"TestInitialData.h5", "VolumeData", 0., false,
-                         NumericInitialData::AdmVars{
-                             "CustomSpatialMetric", "CustomLapse",
-                             "CustomShift", "CustomExtrinsicCurvature"}},
+      NumericInitialData{
+          "TestInitialData.h5", "VolumeData", 0., std::nullopt, false,
+          NumericInitialData::AdmVars{"CustomSpatialMetric", "CustomLapse",
+                                      "CustomShift",
+                                      "CustomExtrinsicCurvature"}},
       "NumericInitialData:\n"
       "  FileGlob: TestInitialData.h5\n"
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
+      "  ObservationValueEpsilon: Auto\n"
       "  Interpolate: False\n"
       "  Variables:\n"
       "    SpatialMetric: CustomSpatialMetric\n"

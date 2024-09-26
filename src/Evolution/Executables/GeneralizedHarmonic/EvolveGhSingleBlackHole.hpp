@@ -16,6 +16,7 @@
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Size.hpp"
+#include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "Domain/FunctionsOfTime/OutputTimeBounds.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
@@ -140,6 +141,11 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                      ::domain::ObjectLabel::None, 2,
                      control_system::measurements::SingleHorizon<
                          ::domain::ObjectLabel::None>>,
+                 control_system::Systems::Translation<
+                     2,
+                     control_system::measurements::SingleHorizon<
+                         ::domain::ObjectLabel::None>,
+                     1>,
                  control_system::Systems::Size<::domain::ObjectLabel::None, 2>>;
 
   static constexpr bool use_control_systems =

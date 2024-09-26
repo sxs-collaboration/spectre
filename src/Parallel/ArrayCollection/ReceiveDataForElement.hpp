@@ -38,14 +38,14 @@ struct ReceiveDataForElement {
                     const ElementId<Dim>& element_to_execute_on,
                     typename ReceiveTag::temporal_id instance,
                     ReceiveData receive_data) {
-    ERROR(
-        "The multi-node code hasn't been tested. It should work, but be aware "
-        "that I haven't tried yet.");
+    [[maybe_unused]] const size_t my_node = Parallel::my_node<size_t>(cache);
     auto& element_collection = db::get_mutable_reference<
         typename ParallelComponent::element_collection_tag>(
         make_not_null(&box));
-    // Note: We'll be able to do a counter-based check here too once that
-    // works for LTS in `SendDataToElement`
+
+    ASSERT(
+        element_collection.count(element_to_execute_on) == 1,
+        "ElementId " << element_to_execute_on << " is not on node " << my_node);
     ReceiveTag::insert_into_inbox(
         make_not_null(&tuples::get<ReceiveTag>(
             element_collection.at(element_to_execute_on).inboxes())),
@@ -79,14 +79,14 @@ struct ReceiveDataForElement {
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_to_execute_on,
       const gsl::not_null<ElementCollection*> element_collection) {
-    const size_t my_node = Parallel::my_node<size_t>(cache);
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-
     if constexpr (StartPhase) {
       const Phase current_phase =
           Parallel::local_branch(
               Parallel::get_parallel_component<ParallelComponent>(cache))
               ->phase();
+      ASSERT(element_collection->count(element_to_execute_on) == 1,
+             "ElementId " << element_to_execute_on << " is not on node "
+                          << Parallel::my_node<size_t>(cache););
       auto& element = element_collection->at(element_to_execute_on);
       const std::lock_guard element_lock(element.element_lock());
       element.start_phase(current_phase);
@@ -96,6 +96,9 @@ struct ReceiveDataForElement {
       if (element_lock.try_lock()) {
         element.perform_algorithm();
       } else {
+        const size_t my_node = Parallel::my_node<size_t>(cache);
+        auto& my_proxy =
+            Parallel::get_parallel_component<ParallelComponent>(cache);
         Parallel::threaded_action<Parallel::Actions::ReceiveDataForElement<>>(
             my_proxy[my_node], element_to_execute_on);
       }

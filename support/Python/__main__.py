@@ -29,6 +29,7 @@ class Cli(click.MultiCommand):
             "extend-connectivity",
             "extract-dat",
             "extract-input",
+            "find-radial-surface",
             "generate-xdmf",
             "interpolate-to-mesh",
             "interpolate-to-points",
@@ -84,6 +85,12 @@ class Cli(click.MultiCommand):
             )
 
             return extract_input_source_from_h5_command
+        elif name == "find-radial-surface":
+            from spectre.SurfaceFinder.FindRadialSurface import (
+                find_radial_surface_command,
+            )
+
+            return find_radial_surface_command
         elif name == "generate-xdmf":
             from spectre.Visualization.GenerateXdmf import generate_xdmf_command
 

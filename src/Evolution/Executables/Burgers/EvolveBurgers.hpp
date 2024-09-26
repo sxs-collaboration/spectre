@@ -123,6 +123,7 @@ struct EvolutionMetavars {
 
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
+  static constexpr bool use_dg_element_collection = false;
 
   // The use_dg_subcell flag controls whether to use "standard" limiting (false)
   // or a DG-FD hybrid scheme (true).
@@ -220,17 +221,18 @@ struct EvolutionMetavars {
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false>>,
+                         system, volume_dim, false, use_dg_element_collection>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false>,
+                  system, volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,
@@ -242,9 +244,10 @@ struct EvolutionMetavars {
       evolution::dg::subcell::Actions::SelectNumericalMethod,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       evolution::dg::Actions::ComputeTimeDerivative<
-          volume_dim, system, AllStepChoosers, local_time_stepping>,
+          volume_dim, system, AllStepChoosers, local_time_stepping,
+          use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false>,
+          system, volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<
@@ -257,7 +260,8 @@ struct EvolutionMetavars {
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
-          volume_dim, Burgers::subcell::GhostVariables, local_time_stepping>,
+          volume_dim, Burgers::subcell::GhostVariables, local_time_stepping,
+          use_dg_element_collection>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,

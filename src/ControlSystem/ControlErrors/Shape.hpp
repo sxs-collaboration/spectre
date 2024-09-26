@@ -92,8 +92,6 @@ std::string size_name() {
  */
 template <::domain::ObjectLabel Horizon>
 struct Shape : tt::ConformsTo<protocols::ControlError> {
-  static constexpr size_t expected_number_of_excisions = 1;
-
   // Shape needs an excision sphere
   using object_centers = domain::object_list<Horizon>;
 

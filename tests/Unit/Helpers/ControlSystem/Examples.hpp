@@ -97,8 +97,6 @@ struct ExampleMeasurement
 /// [ControlError]
 struct ExampleControlError
     : tt::ConformsTo<control_system::protocols::ControlError> {
-  static constexpr size_t expected_number_of_excisions = 1;
-
   using object_centers = domain::object_list<domain::ObjectLabel::A>;
 
   void pup(PUP::er& /*p*/) {}

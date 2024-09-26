@@ -263,7 +263,7 @@ void test() {
       &runner, 0,
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
        std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
-       std::deque<temporal_id_type>{}, std::deque<temporal_id_type>{},
+       std::deque<temporal_id_type>{}, std::unordered_set<temporal_id_type>{},
        std::deque<temporal_id_type>{},
        std::unordered_map<temporal_id_type,
                           Variables<typename metavars::InterpolationTargetA::
@@ -496,7 +496,7 @@ void test() {
   CHECK(ActionTesting::get_databox_tag<
             target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
-            .front() == first_temporal_id);
+            .contains(first_temporal_id));
   // There should be 1 CompletedTemporalId, and its value
   // should be second_temporal_id.
   CHECK(ActionTesting::get_databox_tag<

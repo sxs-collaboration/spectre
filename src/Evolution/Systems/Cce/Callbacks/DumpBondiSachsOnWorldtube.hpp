@@ -24,13 +24,13 @@
 #include "IO/Observer/Actions/GetLockPointer.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -133,7 +133,7 @@ struct DumpBondiSachsOnWorldtube
         Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache);
     const auto& filename_prefix = Parallel::get<Cce::Tags::FilePrefix>(cache);
 
-    if (sphere.angular_ordering != intrp::AngularOrdering::Cce) {
+    if (sphere.angular_ordering != ylm::AngularOrdering::Cce) {
       ERROR(
           "To use the DumpBondiSachsOnWorldtube post interpolation callback, "
           "the angular ordering of the Spheres must be Cce, not "

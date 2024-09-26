@@ -436,7 +436,8 @@ void test_background_quantities_compute() {
       random_position, 0.,
       tmpl::list<gr::Tags::Lapse<double>, gr::Tags::Shift<double, Dim>,
                  gr::Tags::SpatialMetric<double, Dim>,
-                 gr::Tags::InverseSpatialMetric<double, Dim>>{});
+                 gr::Tags::InverseSpatialMetric<double, Dim>,
+                 gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>{});
   const auto expected_metric = gr::spacetime_metric(
       get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
       get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
@@ -445,6 +446,12 @@ void test_background_quantities_compute() {
       get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
       get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
       get<gr::Tags::InverseSpatialMetric<double, Dim>>(kerr_schild_quantities));
+  const auto& expected_christoffel =
+      get<gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>(
+          kerr_schild_quantities);
+  const auto expected_trace_christoffel =
+      tenex::evaluate<ti::C>(expected_inverse_metric(ti::A, ti::B) *
+                             expected_christoffel(ti::C, ti::a, ti::b));
 
   const auto& background_quantities =
       db::get<Tags::BackgroundQuantities<Dim>>(box);
@@ -453,9 +460,17 @@ void test_background_quantities_compute() {
       get<gr::Tags::SpacetimeMetric<double, Dim>>(background_quantities);
   const auto& inverse_metric =
       get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(background_quantities);
+  const auto& christoffel =
+      get<gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>(
+          background_quantities);
+  const auto& trace_christoffel =
+      get<gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim>>(
+          background_quantities);
 
   CHECK_ITERABLE_APPROX(metric, expected_metric);
   CHECK_ITERABLE_APPROX(inverse_metric, expected_inverse_metric);
+  CHECK_ITERABLE_APPROX(christoffel, expected_christoffel);
+  CHECK_ITERABLE_APPROX(trace_christoffel, expected_trace_christoffel);
 
   const double dilation_factor =
       get(get<Tags::TimeDilationFactor>(background_quantities));
@@ -681,9 +696,13 @@ void test_check_input_file() {
 void test_self_force_options() {
   const auto options = TestHelpers::test_creation<OptionTags::SelfForceOptions>(
       "Mass: 0.1\n"
-      "Iterations: 3");
+      "Iterations: 3\n"
+      "TurnOnTime: 1234.\n"
+      "TurnOnInterval: 987.");
   CHECK(options.mass == 0.1);
   CHECK(options.iterations == 3);
+  CHECK(options.turn_on_time == 1234.);
+  CHECK(options.turn_on_interval == 987.);
 }
 
 }  // namespace
@@ -704,6 +723,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "Charge");
   TestHelpers::db::test_simple_tag<CurvedScalarWave::Worldtube::Tags::Mass>(
       "Mass");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnTime>(
+      "SelfForceTurnOnTime");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnInterval>(
+      "SelfForceTurnOnInterval");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
   TestHelpers::db::test_simple_tag<

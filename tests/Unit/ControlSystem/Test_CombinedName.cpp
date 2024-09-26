@@ -23,7 +23,7 @@ using measurement = control_system::TestHelpers::Measurement<Label>;
 template <typename ControlSystemLabel, typename MeasurementLabel>
 using system =
     control_system::TestHelpers::System<2, ControlSystemLabel,
-                                        measurement<MeasurementLabel>, 1>;
+                                        measurement<MeasurementLabel>>;
 
 struct LabelA {};
 struct LabelB {};

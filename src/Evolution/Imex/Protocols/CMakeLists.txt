@@ -7,5 +7,7 @@ spectre_target_headers(
   HEADERS
   ImexSystem.hpp
   ImplicitSector.hpp
+  ImplicitSource.hpp
+  ImplicitSourceJacobian.hpp
   NamespaceDocs.hpp
   )

@@ -18,7 +18,9 @@
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "IO/Exporter/Exporter.hpp"
+#include "IO/Exporter/InterpolateToPoints.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
@@ -45,6 +47,26 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     CHECK(psi[1] == approx(0.7869554122196492));
     CHECK(psi[2] == approx(0.9876185584100299));
     const auto& phi_y = interpolated_data[2];
+    CHECK(phi_y[0] == approx(1.0569673471948728));
+    CHECK(phi_y[1] == approx(0.6741524090220188));
+    CHECK(phi_y[2] == approx(0.2629752479142838));
+  }
+  {
+    INFO("Tensor interface");
+    // [interpolate_tensors_to_points_example]
+    const tnsr::I<DataVector, 3> target_points{
+        {{{0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}}};
+    const auto interpolated_data = interpolate_to_points<
+        tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Phi<3>>>(
+        unit_test_src_path() + "/Visualization/Python/VolTestData*.h5",
+        "element_data", ObservationStep{0}, target_points);
+    const auto& psi = get(get<ScalarWave::Tags::Psi>(interpolated_data));
+    // [interpolate_tensors_to_points_example]
+    CHECK(psi[0] == approx(-0.07059806932542323));
+    CHECK(psi[1] == approx(0.7869554122196492));
+    CHECK(psi[2] == approx(0.9876185584100299));
+    const auto& phi_y =
+        get<1>(get<ScalarWave::Tags::Phi<3>>(interpolated_data));
     CHECK(phi_y[0] == approx(1.0569673471948728));
     CHECK(phi_y[1] == approx(0.6741524090220188));
     CHECK(phi_y[2] == approx(0.2629752479142838));

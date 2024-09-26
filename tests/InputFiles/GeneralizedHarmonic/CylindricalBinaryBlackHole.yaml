@@ -411,6 +411,7 @@ InitialData:
     FileGlob: "/path/to/initial_data.h5"
     Subgroup: "VolumeData"
     ObservationValue: Last
+    ObservationValueEpsilon: Auto
     Interpolate: True
     Variables:
       Lapse: Lapse

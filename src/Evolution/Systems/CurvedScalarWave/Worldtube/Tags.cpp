@@ -29,12 +29,20 @@
 
 namespace CurvedScalarWave::Worldtube::OptionTags {
 SelfForceOptions::SelfForceOptions() = default;
-SelfForceOptions::SelfForceOptions(double mass_in, size_t iterations_in)
-    : mass(mass_in), iterations(iterations_in) {}
+SelfForceOptions::SelfForceOptions(const double mass_in,
+                                   const size_t iterations_in,
+                                   const double turn_on_time_in,
+                                   const double turn_on_interval_in)
+    : mass(mass_in),
+      iterations(iterations_in),
+      turn_on_time(turn_on_time_in),
+      turn_on_interval(turn_on_interval_in) {}
 
 void SelfForceOptions::pup(PUP::er& p) {
   p | mass;
   p | iterations;
+  p | turn_on_time;
+  p | turn_on_interval;
 }
 }  // namespace CurvedScalarWave::Worldtube::OptionTags
 
@@ -193,11 +201,12 @@ void BackgroundQuantitiesCompute<Dim>::function(
     const std::array<tnsr::I<double, Dim, Frame::Inertial>, 2>&
         position_velocity,
     const gr::Solutions::KerrSchild& background_spacetime) {
-  const auto kerr_schild_quantities = background_spacetime.variables(
+  auto kerr_schild_quantities = background_spacetime.variables(
       position_velocity.at(0), 0.,
       tmpl::list<gr::Tags::Lapse<double>, gr::Tags::Shift<double, Dim>,
                  gr::Tags::SpatialMetric<double, Dim>,
-                 gr::Tags::InverseSpatialMetric<double, Dim>>{});
+                 gr::Tags::InverseSpatialMetric<double, Dim>,
+                 gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>{});
   auto metric = gr::spacetime_metric(
       get<gr::Tags::Lapse<double>>(kerr_schild_quantities),
       get<gr::Tags::Shift<double, Dim>>(kerr_schild_quantities),
@@ -215,10 +224,20 @@ void BackgroundQuantitiesCompute<Dim>::function(
       temp += metric.get(i + 1, j + 1) * velocity.get(i) * velocity.get(j);
     }
   }
+  auto& christoffel =
+      get<gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>(
+          kerr_schild_quantities);
+  auto& trace_christoffel =
+      get<gr::Tags::TraceSpacetimeChristoffelSecondKind<double, Dim>>(*result);
+  tenex::evaluate<ti::C>(
+      make_not_null(&trace_christoffel),
+      inverse_metric(ti::A, ti::B) * christoffel(ti::C, ti::a, ti::b));
   get(get<TimeDilationFactor>(*result)) = sqrt(-1. / temp);
   get<gr::Tags::SpacetimeMetric<double, Dim>>(*result) = std::move(metric);
   get<gr::Tags::InverseSpacetimeMetric<double, Dim>>(*result) =
       std::move(inverse_metric);
+  get<gr::Tags::SpacetimeChristoffelSecondKind<double, Dim>>(*result) =
+      std::move(christoffel);
 }
 
 void FaceQuantitiesCompute::function(

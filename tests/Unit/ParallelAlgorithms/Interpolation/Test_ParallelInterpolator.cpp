@@ -32,6 +32,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -47,7 +48,6 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
-#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Slab.hpp"
@@ -231,6 +231,15 @@ struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
+// This test was originally written with non-sequential targets, but an
+// infrastructure change made the interpolator only work with sequential
+// targets (horizon find). Rather than rewrite the whole test with horizon
+// finds, we just make new targets from the originals that are now sequential
+template <typename OriginalComputeTargetPoints>
+struct MockComputeTargetPoints : public OriginalComputeTargetPoints {
+  using is_sequential = std::true_type;
+};
+
 struct MockMetavariables {
   struct InterpolationTargetA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -239,8 +248,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<InterpolationTargetA, 3,
-                                         Frame::Inertial>;
+        MockComputeTargetPoints<intrp::TargetPoints::LineSegment<
+            InterpolationTargetA, 3, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<TestFunction<InterpolationTargetA, Tags::Square>>;
   };
@@ -251,8 +260,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<Tags::NegateCompute>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<InterpolationTargetB, 3,
-                                         Frame::Inertial>;
+        MockComputeTargetPoints<intrp::TargetPoints::LineSegment<
+            InterpolationTargetB, 3, Frame::Inertial>>;
     using post_interpolation_callbacks =
         tmpl::list<TestFunction<InterpolationTargetB, Tags::Negate>>;
   };
@@ -262,8 +271,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
-        intrp::TargetPoints::KerrHorizon<InterpolationTargetC,
-                                         ::Frame::Inertial>;
+        MockComputeTargetPoints<intrp::TargetPoints::KerrHorizon<
+            InterpolationTargetC, ::Frame::Inertial>>;
     using post_interpolation_callbacks = tmpl::list<TestKerrHorizonIntegral>;
   };
 
@@ -301,7 +310,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
       {{1.1, 1.1, 1.1}}, {{2.5, 2.5, 2.5}}, 17);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
       10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}},
-      intrp::AngularOrdering::Strahlkorper);
+      ylm::AngularOrdering::Strahlkorper);
   const auto domain_creator = domain::creators::Sphere(
       0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
   tuples::TaggedTuple<
@@ -381,15 +390,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   ActionTesting::simple_action<
       target_b_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetB>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   ActionTesting::simple_action<
       target_c_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetC>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -446,7 +455,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0, temporal_id);
   // ...so make sure it was ignored by checking that there isn't anything
   // else in the simple_action queue of the target or the interpolator.
   CHECK(ActionTesting::is_simple_action_queue_empty<target_a_component>(runner,

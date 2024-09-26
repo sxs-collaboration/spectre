@@ -24,7 +24,8 @@ struct SpawnInitializeElementsInCollection {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double /*unused_but_we_needed_to_reduce_something*/) {
-    auto my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+    auto my_proxy = Parallel::get_parallel_component<ParallelComponent>(
+        cache)[Parallel::my_node<size_t>(cache)];
     db::mutate<typename ParallelComponent::element_collection_tag>(
         [&my_proxy](const auto element_collection_ptr) {
           for (auto& [element_id, element] : *element_collection_ptr) {

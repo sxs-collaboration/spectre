@@ -12,6 +12,7 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   Informer
+  InitialDataUtilities
   LinearOperators
   MathFunctions
   ScalarWave
