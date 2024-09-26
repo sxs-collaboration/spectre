@@ -57,6 +57,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -202,6 +203,8 @@ struct SendDataForReconstruction {
 
     const int tci_decision =
         db::get<evolution::dg::subcell::Tags::TciDecision>(box);
+    const auto integration_order =
+        db::get<::Tags::HistoryEvolvedVariables<>>(box).integration_order();
     // Compute and send actual variables
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
@@ -264,7 +267,8 @@ struct SendDataForReconstruction {
             std::move(subcell_data_to_send),
             std::nullopt,
             next_time_step_id,
-            tci_decision};
+            tci_decision,
+            integration_order};
 
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<

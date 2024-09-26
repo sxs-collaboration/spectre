@@ -49,6 +49,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -98,7 +99,9 @@ struct component {
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciDecision,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
-      ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarMesh<Dim>,
+      ::Tags::Variables<tmpl::list<Var1>>,
+      ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
+      evolution::dg::Tags::MortarMesh<Dim>,
       evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>,
@@ -248,6 +251,7 @@ void test(const bool use_cell_centered_flux) {
       subcell_mesh.number_of_grid_points()};
   // Set Var1 to the logical coords, just need some data
   get(get<Var1>(evolved_vars)) = get<0>(logical_coordinates(subcell_mesh));
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{};
 
   using CellCenteredFluxTag =
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>;
@@ -308,6 +312,7 @@ void test(const bool use_cell_centered_flux) {
            typename evolution::dg::subcell::Tags::NeighborTciDecisions<
                Dim>::type{},
            Variables<evolved_vars_tags>{},
+           time_stepper_history,
            MortarMesh{},
            MortarData{},
            MortarNextId{},
@@ -329,8 +334,8 @@ void test(const bool use_cell_centered_flux) {
        // Explicitly set RDMP data since this would be set previously by the TCI
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},
-       self_tci_decision, neighbor_decision, evolved_vars, mortar_mesh,
-       mortar_data, mortar_next_id,
+       self_tci_decision, neighbor_decision, evolved_vars, time_stepper_history,
+       mortar_mesh, mortar_data, mortar_next_id,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
