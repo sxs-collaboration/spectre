@@ -242,6 +242,7 @@ class ErrorControl
   }
 
   void pup(PUP::er& p) override {  // NOLINT
+    StepChooser<StepChooserUse>::pup(p);
     p | absolute_tolerance_;
     p | relative_tolerance_;
     p | min_factor_;

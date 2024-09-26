@@ -31,8 +31,9 @@ struct Element;
 namespace StepChoosers {
 /// Changes the step size pseudo-randomly.  Values are distributed
 /// uniformly in $\log(dt)$.  The current step is always accepted.
-template <typename StepChooserUse, size_t VolumeDim>
-class Random : public StepChooser<StepChooserUse> {
+template <size_t VolumeDim>
+class Random : public StepChooser<StepChooserUse::Slab>,
+               public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   Random();

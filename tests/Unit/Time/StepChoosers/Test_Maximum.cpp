@@ -22,11 +22,11 @@ namespace {
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::Maximum<StepChooserUse::LtsStep>>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::list<StepChoosers::Maximum<StepChooserUse::Slab>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::Maximum>>,
+                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                             tmpl::list<StepChoosers::Maximum>>>;
   };
   using component_list = tmpl::list<>;
 };
@@ -38,9 +38,9 @@ void test_use() {
       Metavariables{});
 
   // Sign of argument should be ignored.
-  const StepChoosers::Maximum<Use> maximum{-5.4};
+  const StepChoosers::Maximum maximum{-5.4};
   const std::unique_ptr<StepChooser<Use>> maximum_base =
-      std::make_unique<StepChoosers::Maximum<Use>>(maximum);
+      std::make_unique<StepChoosers::Maximum>(maximum);
 
   const double current_step = std::numeric_limits<double>::infinity();
   const std::pair<TimeStepRequest, bool> expected{{.size = 5.4}, true};
@@ -61,5 +61,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Maximum", "[Unit][Time]") {
   test_use<StepChooserUse::LtsStep>();
   test_use<StepChooserUse::Slab>();
 
-  CHECK(not StepChoosers::Maximum<StepChooserUse::Slab>{}.uses_local_data());
+  CHECK(not StepChoosers::Maximum{}.uses_local_data());
 }

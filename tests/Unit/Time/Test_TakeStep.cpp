@@ -71,8 +71,8 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
         StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>,
-                   StepChoosers::Cfl<StepChooserUse::LtsStep, Frame::Inertial,
+        tmpl::list<StepChoosers::LimitIncrease,
+                   StepChoosers::Cfl<Frame::Inertial,
                                      typename Metavariables::system>>>>;
   };
 
@@ -141,12 +141,11 @@ void test_lts() {
   std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
       step_choosers;
   step_choosers.emplace_back(
-      std::make_unique<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>(
-          2.0));
+      std::make_unique<StepChoosers::LimitIncrease>(2.0));
   step_choosers.emplace_back(
       std::make_unique<
-          StepChoosers::Cfl<StepChooserUse::LtsStep, Frame::Inertial,
-                            typename Metavariables::system>>(1.0));
+          StepChoosers::Cfl<Frame::Inertial, typename Metavariables::system>>(
+          1.0));
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist{-1.0, 1.0};

@@ -117,10 +117,9 @@ struct Metavariables {
   static constexpr bool local_time_stepping = true;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
-                              StepRejector>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::Constant, StepRejector>>>;
   };
   using component_list = tmpl::list<Component<Metavariables>>;
 };
@@ -141,14 +140,13 @@ void check(const bool time_runs_forward,
   using component = Component<Metavariables<StepChoosersToUse>>;
   using MockRuntimeSystem =
       ActionTesting::MockRuntimeSystem<Metavariables<StepChoosersToUse>>;
-  using Constant = StepChoosers::Constant<StepChooserUse::LtsStep>;
   MockRuntimeSystem runner{{std::move(time_stepper), 1e-8}};
 
   auto choosers =
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
-          std::make_unique<Constant>(2. * request),
-          std::make_unique<Constant>(request),
-          std::make_unique<Constant>(2. * request));
+          std::make_unique<StepChoosers::Constant>(2. * request),
+          std::make_unique<StepChoosers::Constant>(request),
+          std::make_unique<StepChoosers::Constant>(2. * request));
   if (rejector.has_value()) {
     choosers.emplace_back(std::move(*rejector));
   }
@@ -236,7 +234,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
 
   CHECK_THROWS_WITH(
       ([&slab, &slab_length]() {
-        check<tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>(
+        check<tmpl::list<StepChoosers::Constant>>(
             true, std::make_unique<TimeSteppers::AdamsBashforth>(1), {},
             slab.start() + slab.duration() / 4, slab_length / 5.,
             slab.duration() / 8, std::make_unique<StepRejector>(0.5));

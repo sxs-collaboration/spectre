@@ -30,8 +30,9 @@ struct Element;
 
 namespace StepChoosers {
 /// Sets a goal specified per-block.
-template <typename StepChooserUse, size_t Dim>
-class ByBlock : public StepChooser<StepChooserUse> {
+template <size_t Dim>
+class ByBlock : public StepChooser<StepChooserUse::Slab>,
+                public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   ByBlock() = default;
@@ -66,14 +67,18 @@ class ByBlock : public StepChooser<StepChooserUse> {
   bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | sizes_; }
+  void pup(PUP::er& p) override {
+    StepChooser<StepChooserUse::Slab>::pup(p);
+    StepChooser<StepChooserUse::LtsStep>::pup(p);
+    p | sizes_;
+  }
 
  private:
   std::vector<double> sizes_;
 };
 
 /// \cond
-template <typename StepChooserUse, size_t Dim>
-PUP::able::PUP_ID ByBlock<StepChooserUse, Dim>::my_PUP_ID = 0;  // NOLINT
+template <size_t Dim>
+PUP::able::PUP_ID ByBlock<Dim>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

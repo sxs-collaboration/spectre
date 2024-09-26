@@ -16,8 +16,8 @@
 
 namespace StepChoosers {
 /// Limits step increase to a constant ratio.
-template <typename StepChooserUse>
-class LimitIncrease : public StepChooser<StepChooserUse> {
+class LimitIncrease : public StepChooser<StepChooserUse::Slab>,
+                      public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   LimitIncrease() = default;
@@ -48,14 +48,13 @@ class LimitIncrease : public StepChooser<StepChooserUse> {
   bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | factor_; }
+  void pup(PUP::er& p) override {
+    StepChooser<StepChooserUse::Slab>::pup(p);
+    StepChooser<StepChooserUse::LtsStep>::pup(p);
+    p | factor_;
+  }
 
  private:
   double factor_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-/// \cond
-template <typename StepChooserUse>
-PUP::able::PUP_ID LimitIncrease<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace StepChoosers

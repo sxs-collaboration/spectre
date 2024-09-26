@@ -23,13 +23,11 @@ namespace {
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<
-            StepChooser<StepChooserUse::LtsStep>,
-            tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::Slab>,
-            tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::Slab>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::LimitIncrease>>,
+                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                             tmpl::list<StepChoosers::LimitIncrease>>>;
   };
   using component_list = tmpl::list<>;
 };
@@ -44,9 +42,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.LimitIncrease", "[Unit][Time]") {
   const auto check = [&box](auto use, const double step,
                             const double expected_size) {
     using Use = tmpl::type_from<decltype(use)>;
-    const StepChoosers::LimitIncrease<Use> increase{5.};
+    const StepChoosers::LimitIncrease increase{5.};
     const std::unique_ptr<StepChooser<Use>> increase_base =
-        std::make_unique<StepChoosers::LimitIncrease<Use>>(increase);
+        std::make_unique<StepChoosers::LimitIncrease>(increase);
 
     const std::pair<TimeStepRequest, bool> expected{{.size = expected_size},
                                                     true};
@@ -74,6 +72,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.LimitIncrease", "[Unit][Time]") {
       "LimitIncrease:\n"
       "  Factor: 5.0");
 
-  CHECK(not StepChoosers::LimitIncrease<StepChooserUse::Slab>{}
-                .uses_local_data());
+  CHECK(not StepChoosers::LimitIncrease{}.uses_local_data());
 }

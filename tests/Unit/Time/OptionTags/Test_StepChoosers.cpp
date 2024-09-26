@@ -17,9 +17,9 @@ namespace {
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::LimitIncrease>>>;
   };
 };
 
@@ -30,7 +30,6 @@ SPECTRE_TEST_CASE("Unit.Time.OptionTags.StepChoosers", "[Unit][Time]") {
           "    Factor: 3.0\n");
   CHECK(choosers.size() == 1);
   const auto& quiet_compiler = *choosers[0];
-  CHECK(typeid(quiet_compiler) ==
-        typeid(StepChoosers::LimitIncrease<StepChooserUse::LtsStep>));
+  CHECK(typeid(quiet_compiler) == typeid(StepChoosers::LimitIncrease));
 }
 }  // namespace

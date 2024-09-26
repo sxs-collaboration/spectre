@@ -5,7 +5,9 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Constant.cpp
+  LimitIncrease.cpp
   Maximum.cpp
+  PreventRapidIncrease.cpp
   Random.cpp
   StepToTimes.cpp
   )

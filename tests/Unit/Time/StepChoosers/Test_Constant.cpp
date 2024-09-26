@@ -22,11 +22,11 @@ namespace {
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                   tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>,
-        tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                   tmpl::list<StepChoosers::Constant<StepChooserUse::Slab>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::Constant>>,
+                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                             tmpl::list<StepChoosers::Constant>>>;
   };
   using component_list = tmpl::list<>;
 };
@@ -38,9 +38,9 @@ void test_use() {
       Metavariables{});
 
   // Sign of argument should be ignored.
-  const StepChoosers::Constant<Use> constant{-5.4};
+  const StepChoosers::Constant constant{-5.4};
   const std::unique_ptr<StepChooser<Use>> constant_base =
-      std::make_unique<StepChoosers::Constant<Use>>(constant);
+      std::make_unique<StepChoosers::Constant>(constant);
 
   const double current_step = std::numeric_limits<double>::infinity();
   const std::pair<TimeStepRequest, bool> expected{{.size_goal = 5.4}, true};
@@ -61,5 +61,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   test_use<StepChooserUse::LtsStep>();
   test_use<StepChooserUse::Slab>();
 
-  CHECK(not StepChoosers::Constant<StepChooserUse::Slab>{}.uses_local_data());
+  CHECK(not StepChoosers::Constant{}.uses_local_data());
 }

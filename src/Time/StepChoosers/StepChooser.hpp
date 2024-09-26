@@ -78,11 +78,9 @@ struct AllStepChoosers {};
 ///
 /// Derived classes must indicate whether the chooser is usable as a
 /// step chooser, slab chooser, or both by inheriting from StepChooser
-/// with the appropriate `StepChooserUse` template argument.  A class
-/// cannot inherit from both base classes simultaneously; if both uses
-/// are supported the use must be chosen using a template parameter.
+/// with the appropriate `StepChooserUse` template argument.
 template <typename StepChooserUse>
-class StepChooser : public PUP::able {
+class StepChooser : public virtual PUP::able {
  protected:
   /// \cond HIDDEN_SYMBOLS
   StepChooser() = default;

@@ -5,10 +5,13 @@
 
 #include "Options/ParseOptions.hpp"
 
-namespace StepChoosers::Maximum_detail {
-// This function lets us avoid including ParseOptions.hpp in the
-// header.
-double parse_options(const Options::Option& options) {
-  return options.parse_as<double>();
+namespace StepChoosers {
+PUP::able::PUP_ID Maximum::my_PUP_ID = 0;  // NOLINT
+}  // namespace StepChoosers
+
+template <>
+StepChoosers::Maximum
+Options::create_from_yaml<StepChoosers::Maximum>::create<void>(
+    const Options::Option& options) {
+  return StepChoosers::Maximum{options.parse_as<double>()};
 }
-}  // namespace StepChoosers::Maximum_detail

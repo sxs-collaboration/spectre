@@ -91,7 +91,10 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
   bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | times_; }
+  void pup(PUP::er& p) override {
+    StepChooser<StepChooserUse::Slab>::pup(p);
+    p | times_;
+  }
 
  private:
   std::unique_ptr<TimeSequence<double>> times_;
