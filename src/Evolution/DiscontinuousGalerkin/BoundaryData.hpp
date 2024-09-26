@@ -17,25 +17,27 @@ namespace evolution::dg {
  *
  * The stored data consists of the following:
  *
- * 1. the mesh of the ghost cell data we received. This allows eliding
+ * 1. the volume mesh of the element.
+ * 2. the volume mesh corresponding to the ghost cell data. This allows eliding
  *    projection when all neighboring elements are doing DG.
- * 2. the mesh of the neighboring element's face (not the mortar mesh!)
- * 3. the variables at the ghost zone cells for finite difference/volume
+ * 3. the mesh of the neighboring element's face (not the mortar mesh!)
+ * 4. the variables at the ghost zone cells for finite difference/volume
  *    reconstruction
- * 4. the data on the mortar needed for computing the boundary corrections (e.g.
+ * 5. the data on the mortar needed for computing the boundary corrections (e.g.
  *    fluxes, characteristic speeds, conserved variables)
- * 5. the TimeStepId beyond which the boundary terms are no longer valid, when
+ * 6. the TimeStepId beyond which the boundary terms are no longer valid, when
  *    using local time stepping.
- * 6. the troubled cell indicator status used for determining halos around
+ * 7. the troubled cell indicator status used for determining halos around
  *    troubled cells.
- * 7. the integration order of the time-stepper
+ * 8. the integration order of the time-stepper
  */
 template <size_t Dim>
 struct BoundaryData {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
-  Mesh<Dim> volume_mesh_ghost_cell_data{};
+  Mesh<Dim> volume_mesh{};
+  std::optional<Mesh<Dim>> volume_mesh_ghost_cell_data{};
   Mesh<Dim - 1> interface_mesh{};
   std::optional<DataVector> ghost_cell_data{};
   std::optional<DataVector> boundary_correction_data{};

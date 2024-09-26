@@ -675,9 +675,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   std::optional<DirectionMap<Dim, DataVector>>
       all_neighbor_data_for_reconstruction = std::nullopt;
   int tci_decision = 0;
-  // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
-  // projection.
-  Mesh<Dim> ghost_data_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+  const Mesh<Dim>& volume_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+  std::optional<Mesh<Dim>> ghost_data_mesh = std::nullopt;
   if constexpr (using_subcell_v<Metavariables>) {
     if (not all_neighbor_data_for_reconstruction.has_value()) {
       all_neighbor_data_for_reconstruction = DirectionMap<Dim, DataVector>{};
@@ -734,7 +733,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       SendData data{};
 
       if (neighbor_count == total_neighbors) {
-        data = SendData{ghost_data_mesh,
+        data = SendData{volume_mesh,
+                        ghost_data_mesh,
                         face_mesh_for_neighbor,
                         std::move(ghost_and_subcell_data),
                         {std::move(neighbor_boundary_data_on_mortar)},
@@ -742,7 +742,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                         tci_decision,
                         integration_order};
       } else {
-        data = SendData{ghost_data_mesh,
+        data = SendData{volume_mesh,
+                        ghost_data_mesh,
                         face_mesh_for_neighbor,
                         ghost_and_subcell_data,
                         {std::move(neighbor_boundary_data_on_mortar)},
@@ -804,7 +805,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                evolution::dg::Tags::MortarDataHistory<
                    Dim, typename dt_variables_tag::type>>(
         [&element, integration_order, &time_step_id, using_gauss_points,
-         &volume_det_inv_jacobian](
+         &volume_det_inv_jacobian, &volume_mesh](
             const gsl::not_null<
                 DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
                 mortar_data,
@@ -814,7 +815,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                                           evolution::dg::MortarData<Dim>,
                                           typename dt_variables_tag::type>>*>
                 boundary_data_history,
-            const Mesh<Dim>& volume_mesh,
             const DirectionMap<Dim,
                                std::optional<Variables<tmpl::list<
                                    evolution::dg::Tags::MagnitudeOfNormal,
@@ -878,7 +878,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             }
           }
         },
-        box, db::get<domain::Tags::Mesh<Dim>>(*box),
+        box,
         db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box));
   }
 }

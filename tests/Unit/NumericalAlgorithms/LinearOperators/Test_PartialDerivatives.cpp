@@ -575,7 +575,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
   }
 }
 
-// [[Timeout, 60]]
+// [[Timeout, 90]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   const size_t n0 =

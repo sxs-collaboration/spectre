@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -62,7 +63,7 @@ template <typename Metavariables, typename DbTagsList, size_t Dim>
 void prepare_neighbor_data(
     const gsl::not_null<DirectionMap<Dim, DataVector>*>
         all_neighbor_data_for_reconstruction,
-    const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+    const gsl::not_null<std::optional<Mesh<Dim>>*> ghost_data_mesh,
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     [[maybe_unused]] const Variables<db::wrap_tags_in<
         ::Tags::Flux, typename Metavariables::system::flux_variables,

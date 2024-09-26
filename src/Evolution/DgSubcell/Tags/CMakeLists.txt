@@ -18,6 +18,7 @@ spectre_target_headers(
   Interpolators.hpp
   Jacobians.hpp
   Mesh.hpp
+  MeshForGhostData.hpp
   MethodOrder.hpp
   ObserverCoordinates.hpp
   ObserverMesh.hpp

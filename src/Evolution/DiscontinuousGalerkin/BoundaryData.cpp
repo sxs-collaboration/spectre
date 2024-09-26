@@ -13,6 +13,7 @@
 namespace evolution::dg {
 template <size_t Dim>
 void BoundaryData<Dim>::pup(PUP::er& p) {
+  p | volume_mesh;
   p | volume_mesh_ghost_cell_data;
   p | interface_mesh;
   p | ghost_cell_data;
@@ -24,7 +25,8 @@ void BoundaryData<Dim>::pup(PUP::er& p) {
 
 template <size_t Dim>
 bool operator==(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs) {
-  return lhs.volume_mesh_ghost_cell_data == rhs.volume_mesh_ghost_cell_data and
+  return lhs.volume_mesh == rhs.volume_mesh and
+         lhs.volume_mesh_ghost_cell_data == rhs.volume_mesh_ghost_cell_data and
          lhs.interface_mesh == rhs.interface_mesh and
          lhs.ghost_cell_data == rhs.ghost_cell_data and
          lhs.boundary_correction_data == rhs.boundary_correction_data and
@@ -40,7 +42,8 @@ bool operator!=(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs) {
 
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
-  return os << "Ghost mesh: " << value.volume_mesh_ghost_cell_data << '\n'
+  return os << "Volume mesh: " << value.volume_mesh << '\n'
+            << "Ghost mesh: " << value.volume_mesh_ghost_cell_data << '\n'
             << "Interface mesh: " << value.interface_mesh << '\n'
             << "Ghost cell data: " << value.ghost_cell_data << '\n'
             << "Boundary correction: " << value.boundary_correction_data << '\n'

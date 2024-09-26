@@ -30,6 +30,7 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
 #include "Evolution/DgSubcell/Tags/StepsSinceTciCall.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -68,6 +69,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `System::variables_tag`
  * - Adds:
  *   - `subcell::Tags::Mesh<Dim>`
+ *   - `subcell::Tags::MeshForGhostData<Dim>`
  *   - `subcell::Tags::ActiveGrid`
  *   - `subcell::Tags::DidRollback`
  *   - `subcell::Tags::TciGridHistory`
@@ -94,6 +96,7 @@ struct SetSubcellGrid {
   using simple_tags = tmpl::list<
       Tags::ActiveGrid, Tags::DidRollback, Tags::TciGridHistory,
       Tags::TciCallsSinceRollback, Tags::StepsSinceTciCall,
+      evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
       Tags::GhostDataForReconstruction<Dim>, Tags::TciDecision,
       Tags::NeighborTciDecisions<Dim>, Tags::DataForRdmpTci,
       subcell::Tags::CellCenteredFlux<typename System::flux_variables, Dim>,
