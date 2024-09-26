@@ -3,13 +3,16 @@
 
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/Structure/DirectionalIdMap.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+
+/// \cond
+template <size_t Dim, typename T>
+class DirectionalIdMap;
+template <size_t Dim>
+class Mesh;
+/// \endcond
 
 namespace domain::Tags {
 /*!
