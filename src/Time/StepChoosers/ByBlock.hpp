@@ -3,17 +3,13 @@
 
 #pragma once
 
-#include <cmath>
 #include <cstddef>
-#include <pup.h>
-#include <pup_stl.h>
 #include <utility>
 #include <vector>
 
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepRequest.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -26,6 +22,9 @@ template <size_t VolumeDim>
 struct Element;
 }  // namespace Tags
 }  // namespace domain
+namespace PUP {
+class er;
+}  // namespace PUP
 /// \endcond
 
 namespace StepChoosers {
@@ -50,35 +49,20 @@ class ByBlock : public StepChooser<StepChooserUse::Slab>,
   static constexpr Options::String help{"Sets a goal specified per-block."};
   using options = tmpl::list<Sizes>;
 
-  explicit ByBlock(std::vector<double> sizes) : sizes_(std::move(sizes)) {}
+  explicit ByBlock(std::vector<double> sizes);
 
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
 
   std::pair<TimeStepRequest, bool> operator()(const Element<Dim>& element,
-                                              const double last_step) const {
-    const size_t block = element.id().block_id();
-    if (block >= sizes_.size()) {
-      ERROR("Step size not specified for block " << block);
-    }
-    return {{.size_goal = std::copysign(sizes_[block], last_step)}, true};
-  }
+                                              double last_step) const;
 
-  bool uses_local_data() const override { return true; }
-  bool can_be_delayed() const override { return true; }
+  bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override {
-    StepChooser<StepChooserUse::Slab>::pup(p);
-    StepChooser<StepChooserUse::LtsStep>::pup(p);
-    p | sizes_;
-  }
+  void pup(PUP::er& p) override;
 
  private:
   std::vector<double> sizes_;
 };
-
-/// \cond
-template <size_t Dim>
-PUP::able::PUP_ID ByBlock<Dim>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace StepChoosers

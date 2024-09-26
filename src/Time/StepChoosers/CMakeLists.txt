@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ByBlock.cpp
   Constant.cpp
   LimitIncrease.cpp
   Maximum.cpp

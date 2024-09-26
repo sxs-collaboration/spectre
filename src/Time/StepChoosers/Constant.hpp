@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include <cmath>
 #include <limits>
-#include <pup.h>
 #include <utility>
 
 #include "Options/Options.hpp"
@@ -14,6 +12,12 @@
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
 
 namespace StepChoosers {
 
@@ -30,23 +34,17 @@ class Constant : public StepChooser<StepChooserUse::Slab>,
 
   static constexpr Options::String help{"Sets a constant goal."};
 
-  explicit Constant(const double value) : value_(value) {}
+  explicit Constant(double value);
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
-    return {{.size_goal = std::copysign(value_, last_step)}, true};
-  }
+  std::pair<TimeStepRequest, bool> operator()(double last_step) const;
 
-  bool uses_local_data() const override { return false; }
-  bool can_be_delayed() const override { return true; }
+  bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override {
-    StepChooser<StepChooserUse::Slab>::pup(p);
-    StepChooser<StepChooserUse::LtsStep>::pup(p);
-    p | value_;
-  }
+  void pup(PUP::er& p) override;
 
  private:
   double value_ = std::numeric_limits<double>::signaling_NaN();

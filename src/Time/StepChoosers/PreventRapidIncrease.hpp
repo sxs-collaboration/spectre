@@ -4,7 +4,7 @@
 #pragma once
 
 #include <cmath>
-#include <pup.h>
+#include <optional>
 #include <utility>
 
 #include "Options/String.hpp"
@@ -14,6 +14,12 @@
 #include "Time/Utilities.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
 
 namespace StepChoosers {
 /// Limits the time step to prevent multistep integrator instabilities.
@@ -66,12 +72,9 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
     return {{}, true};
   }
 
-  bool uses_local_data() const override { return false; }
-  bool can_be_delayed() const override { return true; }
+  bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
-  void pup(PUP::er& p) override {
-    StepChooser<StepChooserUse::Slab>::pup(p);
-    StepChooser<StepChooserUse::LtsStep>::pup(p);
-  }
+  void pup(PUP::er& p) override;
 };
 }  // namespace StepChoosers
