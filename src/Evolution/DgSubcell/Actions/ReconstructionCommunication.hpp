@@ -263,6 +263,7 @@ struct SendDataForReconstruction {
         evolution::dg::BoundaryData<Dim> data{
             subcell_mesh,
             subcell_mesh,
+            std::nullopt,
             dg_mesh.slice_away(direction.dimension()),
             std::move(subcell_data_to_send),
             std::nullopt,

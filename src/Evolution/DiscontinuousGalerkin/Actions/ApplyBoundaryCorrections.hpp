@@ -123,16 +123,18 @@ void retrieve_boundary_data_spsc(
         auto& current_inbox = (*boundary_data_ptr)[time_step_id];
         if (auto it = current_inbox.find(directional_element_id);
             it != current_inbox.end()) {
-          auto& [volume_mesh, volume_mesh_of_ghost_cell_data, face_mesh,
-                 ghost_cell_data, boundary_data, boundary_data_validity_range,
-                 boundary_tci_status, boundary_integration_order] = data;
+          auto& [volume_mesh, volume_mesh_ghost_cell_data,
+                 boundary_correction_mesh, interface_mesh, ghost_cell_data,
+                 boundary_correction_data, validity_range, tci_status,
+                 integration_order] = data;
           (void)ghost_cell_data;
-          auto& [current_volume_mesh, current_volume_mesh_of_ghost_cell_data,
-                 current_face_mesh, current_ghost_cell_data,
-                 current_boundary_data, current_boundary_data_validity_range,
-                 current_tci_status, current_integration_order] = it->second;
+          auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
+                 current_boundary_correction_mesh, current_interface_mesh,
+                 current_ghost_cell_data, current_boundary_correction_data,
+                 current_validity_range, current_tci_status,
+                 current_integration_order] = it->second;
           // Need to use when optimizing subcell
-          (void)current_volume_mesh_of_ghost_cell_data;
+          (void)current_volume_mesh_ghost_cell_data;
           // We have already received some data at this time. Receiving
           // data twice at the same time should only occur when
           // receiving fluxes after having previously received ghost
@@ -149,7 +151,8 @@ void retrieve_boundary_data_spsc(
                      << time_step_id
                      << " but the inbox entry already exists. This is a bug in "
                         "the ordering of the actions.");
-          ASSERT(not current_boundary_data.has_value(),
+          ASSERT(not current_boundary_correction_data.has_value() and
+                     not current_boundary_correction_mesh.has_value(),
                  "The fluxes have already been received at time step "
                      << time_step_id
                      << ". They are either being received for a second time, "
@@ -157,26 +160,27 @@ void retrieve_boundary_data_spsc(
                         "a different ASSERT should've caught that), or the "
                         "incorrect temporal ID is being sent.");
 
-          ASSERT(current_face_mesh == face_mesh,
+          ASSERT(current_interface_mesh == interface_mesh,
                  "The mesh being received for the fluxes is different than the "
                  "mesh received for the ghost cells. Mesh for fluxes: "
-                     << face_mesh << " mesh for ghost cells "
-                     << current_face_mesh);
-          ASSERT(current_volume_mesh_of_ghost_cell_data ==
-                     volume_mesh_of_ghost_cell_data,
+                     << interface_mesh << " mesh for ghost cells "
+                     << current_interface_mesh);
+          ASSERT(current_volume_mesh_ghost_cell_data ==
+                     volume_mesh_ghost_cell_data,
                  "The mesh being received for the ghost cell data is different "
                  "than the mesh received previously. Mesh for received when we "
                  "got fluxes: "
-                     << volume_mesh_of_ghost_cell_data
+                     << volume_mesh_ghost_cell_data
                      << " mesh received when we got ghost cells "
-                     << current_volume_mesh_of_ghost_cell_data);
+                     << current_volume_mesh_ghost_cell_data);
 
           // We always move here since we take ownership of the data and
           // moves implicitly decay to copies
-          current_boundary_data = std::move(boundary_data);
-          current_boundary_data_validity_range = boundary_data_validity_range;
-          current_tci_status = boundary_tci_status;
-          current_integration_order = boundary_integration_order;
+          current_boundary_correction_data =
+              std::move(boundary_correction_data);
+          current_validity_range = validity_range;
+          current_tci_status = tci_status;
+          current_integration_order = integration_order;
         } else {
           // We have not received ghost cells or fluxes at this time.
           if (not current_inbox

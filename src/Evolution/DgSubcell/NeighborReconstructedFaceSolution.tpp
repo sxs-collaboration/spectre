@@ -116,6 +116,7 @@ void neighbor_reconstructed_face_solution(
   // Now copy over the packaged data _into_ the inbox in order to avoid having
   // to make other changes to the DG algorithm (code in
   // src/Evolution/DiscontinuousGalerkin)
+  const Mesh<VolumeDim>& dg_mesh = db::get<domain::Tags::Mesh<VolumeDim>>(*box);
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {
     const auto& mortar_id = received_mortar_data.first;
     if (not received_mortar_data.second.boundary_correction_data.has_value()) {
@@ -125,6 +126,8 @@ void neighbor_reconstructed_face_solution(
                                          << " in reconstructed data map.");
       received_mortar_data.second.boundary_correction_data =
           std::move(neighbor_reconstructed_evolved_vars.at(mortar_id));
+      received_mortar_data.second.boundary_correction_mesh =
+          dg_mesh.slice_away(mortar_id.direction().dimension());
     }
   }
 }

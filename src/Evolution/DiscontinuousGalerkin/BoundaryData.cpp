@@ -15,6 +15,7 @@ template <size_t Dim>
 void BoundaryData<Dim>::pup(PUP::er& p) {
   p | volume_mesh;
   p | volume_mesh_ghost_cell_data;
+  p | boundary_correction_mesh;
   p | interface_mesh;
   p | ghost_cell_data;
   p | boundary_correction_data;
@@ -27,6 +28,7 @@ template <size_t Dim>
 bool operator==(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs) {
   return lhs.volume_mesh == rhs.volume_mesh and
          lhs.volume_mesh_ghost_cell_data == rhs.volume_mesh_ghost_cell_data and
+         lhs.boundary_correction_mesh == rhs.boundary_correction_mesh and
          lhs.interface_mesh == rhs.interface_mesh and
          lhs.ghost_cell_data == rhs.ghost_cell_data and
          lhs.boundary_correction_data == rhs.boundary_correction_data and
@@ -44,9 +46,12 @@ template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
   return os << "Volume mesh: " << value.volume_mesh << '\n'
             << "Ghost mesh: " << value.volume_mesh_ghost_cell_data << '\n'
+            << "Boundary correction mesh: " << value.boundary_correction_mesh
+            << '\n'
             << "Interface mesh: " << value.interface_mesh << '\n'
             << "Ghost cell data: " << value.ghost_cell_data << '\n'
-            << "Boundary correction: " << value.boundary_correction_data << '\n'
+            << "Boundary correction data: " << value.boundary_correction_data
+            << '\n'
             << "Validy range: " << value.validity_range << '\n'
             << "TCI status: " << value.tci_status << '\n'
             << "Integration order: " << value.integration_order;

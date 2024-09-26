@@ -25,59 +25,76 @@ void test() {
   const Mesh<Dim> ghost_data_mesh{9, Spectral::Basis::FiniteDifference,
                               Spectral::Quadrature::CellCentered};
   const Mesh<Dim - 1> interface_mesh = volume_mesh.slice_away(0);
+  const Mesh<Dim - 1> mortar_mesh{6, Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::Gauss};
   const Time time{{0.0, 1.0}, {0, 1}};
   const BoundaryData<Dim> data0{volume_mesh,
                                 ghost_data_mesh,
+                                mortar_mesh,
                                 interface_mesh,
                                 DataVector{2, 2.3},
                                 DataVector{1, 4.4},
                                 TimeStepId{true, 1, time},
                                 7,
                                 3};
-  CHECK(data0 == BoundaryData<Dim>{volume_mesh, ghost_data_mesh, interface_mesh,
-                                   DataVector{2, 2.3}, DataVector{1, 4.4},
+  CHECK(data0 == BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                   interface_mesh, DataVector{2, 2.3},
+                                   DataVector{1, 4.4},
                                    TimeStepId{true, 1, time}, 7, 3});
   CHECK(data0 != BoundaryData<Dim>{Mesh<Dim>{6, Spectral::Basis::Legendre,
                                              Spectral::Quadrature::Gauss},
-                                   ghost_data_mesh, interface_mesh,
+                                   ghost_data_mesh, mortar_mesh, interface_mesh,
                                    DataVector{2, 2.3}, DataVector{1, 4.4},
                                    TimeStepId{true, 1, time}, 7, 3});
   CHECK(data0 !=
         BoundaryData<Dim>{volume_mesh,
                           Mesh<Dim>{11, Spectral::Basis::FiniteDifference,
                                     Spectral::Quadrature::CellCentered},
-                          interface_mesh, DataVector{2, 2.3},
+                          mortar_mesh, interface_mesh, DataVector{2, 2.3},
                           DataVector{1, 4.4}, TimeStepId{true, 1, time}, 7, 3});
   if constexpr (Dim > 1) {
     CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh,
                                      Mesh<Dim - 1>{2, Spectral::Basis::Legendre,
                                                    Spectral::Quadrature::Gauss},
+                                     interface_mesh, DataVector{2, 2.3},
+                                     DataVector{1, 4.4},
+                                     TimeStepId{true, 1, time}, 7, 3});
+    CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                     Mesh<Dim - 1>{2, Spectral::Basis::Legendre,
+                                                   Spectral::Quadrature::Gauss},
                                      DataVector{2, 2.3}, DataVector{1, 4.4},
                                      TimeStepId{true, 1, time}, 7, 3});
   }
-  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, interface_mesh,
-                                   DataVector{9, 2.3}, DataVector{1, 4.4},
+  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                   interface_mesh, DataVector{9, 2.3},
+                                   DataVector{1, 4.4},
                                    TimeStepId{true, 1, time}, 7, 3});
-  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, interface_mesh,
-                                   DataVector{2, 2.3}, DataVector{6, 4.4},
+  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                   interface_mesh, DataVector{2, 2.3},
+                                   DataVector{6, 4.4},
                                    TimeStepId{true, 1, time}, 7, 3});
-  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, interface_mesh,
-                                   DataVector{2, 2.3}, DataVector{1, 4.4},
+  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                   interface_mesh, DataVector{2, 2.3},
+                                   DataVector{1, 4.4},
                                    TimeStepId{true, 2, time}, 7, 3});
-  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, interface_mesh,
-                                   DataVector{2, 2.3}, DataVector{1, 4.4},
+  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                   interface_mesh, DataVector{2, 2.3},
+                                   DataVector{1, 4.4},
                                    TimeStepId{true, 1, time}, 9, 3});
-  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, interface_mesh,
-                                   DataVector{2, 2.3}, DataVector{1, 4.4},
+  CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                                   interface_mesh, DataVector{2, 2.3},
+                                   DataVector{1, 4.4},
                                    TimeStepId{true, 2, time}, 7, 5});
   CHECK(get_output(data0) ==
-        std::string("Volume mesh: " + get_output(volume_mesh) +
-                    "\nGhost mesh: " + get_output(ghost_data_mesh) +
-                    "\nInterface mesh: " + get_output(interface_mesh) +
-                    "\nGhost cell data: " + get_output(DataVector{2, 2.3}) +
-                    "\nBoundary correction: " + get_output(DataVector{1, 4.4}) +
-                    "\nValidy range: " + get_output(TimeStepId{true, 1, time}) +
-                    "\nTCI status: 7\nIntegration order: 3"));
+        std::string(
+            "Volume mesh: " + get_output(volume_mesh) +
+            "\nGhost mesh: " + get_output(ghost_data_mesh) +
+            "\nBoundary correction mesh: " + get_output(mortar_mesh) +
+            "\nInterface mesh: " + get_output(interface_mesh) +
+            "\nGhost cell data: " + get_output(DataVector{2, 2.3}) +
+            "\nBoundary correction data: " + get_output(DataVector{1, 4.4}) +
+            "\nValidy range: " + get_output(TimeStepId{true, 1, time}) +
+            "\nTCI status: 7\nIntegration order: 3"));
 }
 }  // namespace
 

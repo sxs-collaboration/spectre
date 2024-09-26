@@ -275,13 +275,13 @@ void test(const bool use_cell_centered_flux) {
   MortarMesh mortar_mesh{};
   MortarNextId mortar_next_id{};
   mortar_data[east_neighbor_id] = {};
-  mortar_mesh[east_neighbor_id] = {};
+  mortar_mesh[east_neighbor_id] = {dg_mesh.slice_away(0)};
   mortar_next_id[east_neighbor_id] = {};
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
                                                south_id};
     mortar_data[south_neighbor_id] = {};
-    mortar_mesh[south_neighbor_id] = {};
+    mortar_mesh[south_neighbor_id] = {dg_mesh.slice_away(1)};
     mortar_next_id[south_neighbor_id] = {};
   }
 
@@ -500,16 +500,19 @@ void test(const bool use_cell_centered_flux) {
     alg::iota(east_ghost_cells_and_rdmp, 0.0);
     DataVector boundary_data{face_mesh.number_of_grid_points() * (2 + Dim)};
     alg::iota(boundary_data, 1000.0);
+    const DirectionalId<Dim> east_dir_id{Direction<Dim>::upper_xi(), east_id};
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
         Dim, UseNodegroupDgElements>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
-                      evolution::dg::BoundaryData<Dim>{dg_mesh,
-                          // subcell_mesh because we are sending the projected
-                          // data right now.
-                          subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
-                          boundary_data, next_time_step_id, -10}});
+            std::pair{east_dir_id,
+                      evolution::dg::BoundaryData<Dim>{
+                          dg_mesh,
+                          // subcell_mesh because we are sending the
+                          // projected data right now.
+                          subcell_mesh, mortar_mesh.at(east_dir_id), face_mesh,
+                          east_ghost_cells_and_rdmp, boundary_data,
+                          next_time_step_id, -10}});
   }
   [[maybe_unused]] DataVector south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
@@ -527,11 +530,13 @@ void test(const bool use_cell_centered_flux) {
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
             std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                      evolution::dg::BoundaryData<Dim>{subcell_mesh,
+                      evolution::dg::BoundaryData<Dim>{
+                          subcell_mesh,
                           // subcell_mesh because we are sending the projected
                           // data right now.
-                          subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
-                          std::nullopt, next_time_step_id, -15}});
+                          subcell_mesh, std::nullopt, face_mesh,
+                          south_ghost_cells_and_rdmp, std::nullopt,
+                          next_time_step_id, -15}});
   }
 
   // Run the ReceiveDataForReconstruction action on self_id
