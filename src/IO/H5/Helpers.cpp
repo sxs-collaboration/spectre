@@ -88,6 +88,20 @@ struct VectorTo<2, boost::multi_array<T, 2>> {
 };
 
 template <>
+struct VectorTo<2, Matrix> {
+  static Matrix apply(const std::vector<double>& raw_data,
+                      const std::array<hsize_t, 2>& size) {
+    Matrix temp(size[0], size[1]);
+    for (size_t i = 0; i < size[0]; ++i) {
+      for (size_t j = 0; j < size[1]; ++j) {
+        temp(i, j) = raw_data[j + i * size[1]];
+      }
+    }
+    return temp;
+  }
+};
+
+template <>
 struct VectorTo<3, DataVector> {
   static DataVector apply(DataVector raw_data,
                           const std::array<hsize_t, 3>& /*size*/) {
@@ -156,19 +170,6 @@ struct VectorTo<5, boost::multi_array<T, 5>> {
     return temp;
   }
 };
-
-// Given a vector of contiguous data and an array giving the dimensions of the
-// matrix returns a `vector<vector<T>>` representing the matrix.
-Matrix vector_to_matrix(const std::vector<double>& raw_data,
-                        const std::array<hsize_t, 2>& size) {
-  Matrix temp(size[0], size[1]);
-  for (size_t i = 0; i < size[0]; ++i) {
-    for (size_t j = 0; j < size[1]; ++j) {
-      temp(i, j) = raw_data[j + i * size[1]];
-    }
-  }
-  return temp;
-}
 }  // namespace
 
 namespace h5 {
@@ -401,7 +402,7 @@ Matrix retrieve_dataset(const hid_t file_id,
                      h5::h5p_default(), temp.data()),
              "Failed to read data");
   }
-  return vector_to_matrix(temp, size);
+  return VectorTo<2, Matrix>::apply(temp, size);
 }
 
 Matrix retrieve_dataset_subset(const hid_t file_id,
@@ -461,8 +462,8 @@ Matrix retrieve_dataset_subset(const hid_t file_id,
 
   CHECK_H5(H5Sclose(memspace_id), "Failed to close memory space");
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
-  return vector_to_matrix(raw_data,
-                          std::array<hsize_t, 2>{{num_rows, num_cols}});
+  return VectorTo<2, Matrix>::apply(
+      raw_data, std::array<hsize_t, 2>{{num_rows, num_cols}});
 }
 
 std::vector<std::string> get_group_names(const hid_t file_id,
