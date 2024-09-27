@@ -7,6 +7,9 @@ See LICENSE.txt for details.
 
 Learn how to use a debugger such as gdb.
 
+You can debug MPI executables using the `sys::attach_debugger()` function. See
+the documentation of that function for details.
+
 # Useful gdb commands
 
 - To break when an exception is thrown `catch throw`
