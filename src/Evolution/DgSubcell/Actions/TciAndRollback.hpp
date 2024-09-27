@@ -218,7 +218,7 @@ struct TciAndRollback {
             const gsl::not_null<bool*> did_rollback_ptr,
             const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
                 ghost_data_ptr,
-            const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
+            const DirectionalIdMap<Dim, Mesh<Dim>>& meshes_for_ghost_data,
             const size_t ghost_zone_size,
             const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>&
                 neighbor_dg_to_fd_interpolants) {
@@ -245,13 +245,13 @@ struct TciAndRollback {
           // Project the neighbor data we were sent for reconstruction since
           // the neighbor might have sent DG volume data instead of ghost data
           // in order to elide projections when they aren't necessary.
-          for (const auto& [directional_element_id, neighbor_mesh] :
-               neighbor_meshes) {
+          for (const auto& [directional_element_id, mesh_for_ghost_data] :
+               meshes_for_ghost_data) {
             evolution::dg::subcell::insert_or_update_neighbor_volume_data<
                 false>(ghost_data_ptr,
                        ghost_data_ptr->at(directional_element_id)
                            .neighbor_ghost_data_for_reconstruction(),
-                       0, directional_element_id, neighbor_mesh, element,
+                       0, directional_element_id, mesh_for_ghost_data, element,
                        subcell_mesh, ghost_zone_size,
                        neighbor_dg_to_fd_interpolants);
           }
