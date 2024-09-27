@@ -25,7 +25,8 @@ fi
 popd >/dev/null
 
 pushd @CMAKE_BINARY_DIR@/tmp >/dev/null
-ld -r -b binary -o ${formaline_archive_name}.o ${formaline_archive_name}.tar.gz
+ld -r -z noexecstack -b binary -o ${formaline_archive_name}.o \
+   ${formaline_archive_name}.tar.gz
 rm ${formaline_dir}/${formaline_archive_name}.tar.gz
 popd >/dev/null
 # Set the formaline object file output name
