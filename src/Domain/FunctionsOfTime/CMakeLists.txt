@@ -48,5 +48,4 @@ target_link_libraries(
   Utilities
   PRIVATE
   ErrorHandling
-  H5
   )

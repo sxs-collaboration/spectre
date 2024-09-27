@@ -12,8 +12,8 @@
 #include <utility>
 #include <vector>
 
-#include "Domain/Creators/BlockGroups.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
