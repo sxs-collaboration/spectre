@@ -510,7 +510,7 @@ def generate_xdmf(
     type=float,
     help=(
         "The time at which to stop visualizing. The stop-time value is "
-        "not included."
+        "included."
     ),
 )
 @click.option(
