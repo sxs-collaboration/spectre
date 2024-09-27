@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <vector>
 
 #include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -95,6 +96,21 @@ struct VectorTo<2, Matrix> {
     for (size_t i = 0; i < size[0]; ++i) {
       for (size_t j = 0; j < size[1]; ++j) {
         temp(i, j) = raw_data[j + i * size[1]];
+      }
+    }
+    return temp;
+  }
+};
+
+template <>
+struct VectorTo<2, std::vector<std::vector<double>>> {
+  static std::vector<std::vector<double>> apply(
+      const std::vector<double>& raw_data, const std::array<hsize_t, 2>& size) {
+    std::vector<std::vector<double>> temp(size[0]);
+    for (size_t i = 0; i < size[0]; ++i) {
+      temp[i].resize(size[1]);
+      for (size_t j = 0; j < size[1]; ++j) {
+        temp[i][j] = raw_data[j + i * size[1]];
       }
     }
     return temp;
@@ -375,8 +391,13 @@ std::array<hsize_t, 2> append_to_dataset(
   return new_size;
 }
 
-Matrix retrieve_dataset(const hid_t file_id,
-                        const std::array<hsize_t, 2>& file_size) {
+template <typename T>
+T retrieve_dataset(const hid_t file_id,
+                   const std::array<hsize_t, 2>& file_size) {
+  static_assert(std::is_same_v<T, Matrix> or
+                    std::is_same_v<T, std::vector<std::vector<double>>>,
+                "'retrieve_dataset' can only return a Matrix or a "
+                "std::vector<std::vector<double>>.");
   const hid_t dataspace_id = H5Dget_space(file_id);
   CHECK_H5(dataspace_id, "Failed to get dataspace");
 
@@ -402,13 +423,18 @@ Matrix retrieve_dataset(const hid_t file_id,
                      h5::h5p_default(), temp.data()),
              "Failed to read data");
   }
-  return VectorTo<2, Matrix>::apply(temp, size);
+  return VectorTo<2, T>::apply(temp, size);
 }
 
-Matrix retrieve_dataset_subset(const hid_t file_id,
-                               const std::vector<size_t>& these_columns,
-                               const size_t first_row, const size_t num_rows,
-                               const std::array<hsize_t, 2>& file_size) {
+template <typename T>
+T retrieve_dataset_subset(const hid_t file_id,
+                          const std::vector<size_t>& these_columns,
+                          const size_t first_row, const size_t num_rows,
+                          const std::array<hsize_t, 2>& file_size) {
+  static_assert(std::is_same_v<T, Matrix> or
+                    std::is_same_v<T, std::vector<std::vector<double>>>,
+                "'retrieve_dataset_subset' can only return a Matrix or a "
+                "std::vector<std::vector<double>>.");
   Expects(first_row + num_rows <= file_size[0]);
   Expects(std::all_of(
       these_columns.begin(), these_columns.end(),
@@ -416,7 +442,13 @@ Matrix retrieve_dataset_subset(const hid_t file_id,
 
   const auto num_cols = these_columns.size();
   if (0 == num_cols * num_rows) {
-    return {num_rows, num_cols, 0.0};
+    if constexpr (std::is_same_v<T, Matrix>) {
+      return {num_rows, num_cols, 0.0};
+    } else {
+      // Columns don't matter because either there are 0 columns, or there are 0
+      // rows. Either way we don't size the columns
+      return std::vector<std::vector<double>>(num_rows);
+    }
   }
 
   const hid_t dataspace_id = H5Dget_space(file_id);
@@ -462,8 +494,8 @@ Matrix retrieve_dataset_subset(const hid_t file_id,
 
   CHECK_H5(H5Sclose(memspace_id), "Failed to close memory space");
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
-  return VectorTo<2, Matrix>::apply(
-      raw_data, std::array<hsize_t, 2>{{num_rows, num_cols}});
+  return VectorTo<2, T>::apply(raw_data,
+                               std::array<hsize_t, 2>{{num_rows, num_cols}});
 }
 
 std::vector<std::string> get_group_names(const hid_t file_id,
@@ -963,6 +995,18 @@ template void write_to_attribute(const hid_t location_id,
                                  const std::string& name, const bool& value);
 template bool read_value_attribute<bool>(const hid_t location_id,
                                          const std::string& name);
+template Matrix retrieve_dataset(const hid_t file_id,
+                                 const std::array<hsize_t, 2>& file_size);
+template std::vector<std::vector<double>> retrieve_dataset(
+    const hid_t file_id, const std::array<hsize_t, 2>& file_size);
+template Matrix retrieve_dataset_subset(
+    const hid_t file_id, const std::vector<size_t>& these_columns,
+    const size_t first_row, const size_t num_rows,
+    const std::array<hsize_t, 2>& file_size);
+template std::vector<std::vector<double>> retrieve_dataset_subset(
+    const hid_t file_id, const std::vector<size_t>& these_columns,
+    const size_t first_row, const size_t num_rows,
+    const std::array<hsize_t, 2>& file_size);
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 

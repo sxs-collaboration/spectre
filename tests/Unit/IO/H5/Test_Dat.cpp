@@ -11,6 +11,7 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <utility>
 #include <vector>
@@ -38,6 +39,68 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+template <typename T>
+T expected_data(const std::vector<double>& unformatted_data,
+                const std::array<size_t, 2>& size) {
+  REQUIRE(size[0] * size[1] == unformatted_data.size());
+  T result{};
+
+  if constexpr (std::is_same_v<T, Matrix>) {
+    result = Matrix(size[0], size[1]);
+  } else {
+    result = std::vector<std::vector<double>>(size[0]);
+    for (size_t i = 0; i < size[0]; i++) {
+      result[i].resize(size[1]);
+    }
+  }
+
+  for (size_t i = 0; i < size[0]; i++) {
+    for (size_t j = 0; j < size[1]; j++) {
+      if constexpr (std::is_same_v<T, Matrix>) {
+        result(i, j) = unformatted_data[j + i * size[1]];
+      } else {
+        result[i][j] = unformatted_data[j + i * size[1]];
+      }
+    }
+  }
+
+  return result;
+}
+
+void check_get_data(const h5::Dat& dat_file,
+                    const std::vector<double>& unformatted_data,
+                    const std::array<size_t, 2>& size) {
+  {
+    using T = Matrix;
+    const auto data = expected_data<T>(unformatted_data, size);
+    CHECK(dat_file.get_data<T>() == data);
+  }
+  {
+    using T = std::vector<std::vector<double>>;
+    const auto data = expected_data<T>(unformatted_data, size);
+    CHECK(dat_file.get_data<T>() == data);
+  }
+}
+
+void check_get_data_subset(const h5::Dat& dat_file,
+                           const std::vector<double>& unformatted_data,
+                           const std::array<size_t, 2>& size,
+                           const std::vector<size_t>& these_columns,
+                           size_t first_row, size_t num_rows) {
+  {
+    using T = Matrix;
+    const auto data = expected_data<T>(unformatted_data, size);
+    CHECK(dat_file.get_data_subset<T>(these_columns, first_row, num_rows) ==
+          data);
+  }
+  {
+    using T = std::vector<std::vector<double>>;
+    const auto data = expected_data<T>(unformatted_data, size);
+    CHECK(dat_file.get_data_subset<T>(these_columns, first_row, num_rows) ==
+          data);
+  }
+}
+
 void test_errors() {
   std::string file_name{"./Unit.IO.H5.Dat.FileErrorObjectAlreadyExists.h5"};
   CHECK_THROWS_WITH(
@@ -198,80 +261,48 @@ void test_core_functionality() {
   std::array<hsize_t, 2> size_of_data{{4, 4}};
   CHECK(error_file.get_dimensions() == size_of_data);
 
-  // [h5dat_get_data]
-  const Matrix data_in_dat_file = []() {
-    Matrix result(4, 4);
-    result(0, 0) = 0.0;
-    result(0, 1) = 0.1;
-    result(0, 2) = 0.2;
-    result(0, 3) = 0.3;
-    result(1, 0) = 0.11;
-    result(1, 1) = 0.4;
-    result(1, 2) = 0.5;
-    result(1, 3) = 0.6;
-    result(2, 0) = 0.22;
-    result(2, 1) = 0.55;
-    result(2, 2) = 0.6;
-    result(2, 3) = 0.8;
-    result(3, 0) = 0.33;
-    result(3, 1) = 0.66;
-    result(3, 2) = 0.77;
-    result(3, 3) = 0.9;
-    return result;
-  }();
-  CHECK(error_file.get_data() == data_in_dat_file);
-  // [h5dat_get_data]
+  // For the docs
+  {
+    // [h5dat_get_data]
+    const Matrix matrix_data_in_dat_file = error_file.get_data();
+    const auto matrix_data_in_dat_file2 = error_file.get_data<Matrix>();
+    const auto vector_data_in_dat_file =
+        error_file.get_data<std::vector<std::vector<double>>>();
+    // [h5dat_get_data]
+    // [h5dat_get_subset]
+    const Matrix matrix_subset_data_in_dat_file =
+        error_file.get_data_subset({1, 3}, 1, 3);
+    const auto matrix_subset_data_in_dat_file2 =
+        error_file.get_data_subset<Matrix>({1, 3}, 1, 3);
+    const auto vector_subset_data_in_dat_file =
+        error_file.get_data_subset<std::vector<std::vector<double>>>({1, 3}, 1,
+                                                                     3);
+    // [h5dat_get_subset]
+    (void)matrix_data_in_dat_file;
+    (void)matrix_data_in_dat_file2;
+    (void)vector_data_in_dat_file;
+    (void)matrix_subset_data_in_dat_file;
+    (void)matrix_subset_data_in_dat_file2;
+    (void)vector_subset_data_in_dat_file;
+  }
 
-  {
-    const auto subset = error_file.get_data_subset({1, 2}, 1, 2);
-    const Matrix answer = []() {
-      Matrix result(2, 2);
-      result(0, 0) = 0.4;
-      result(0, 1) = 0.5;
-      result(1, 0) = 0.55;
-      result(1, 1) = 0.6;
-      return result;
-    }();
-    CHECK(subset == answer);
-  }
-  {
-    // [h5dat_get_subset]
-    const auto subset = error_file.get_data_subset({1, 3}, 1, 3);
-    const Matrix answer = []() {
-      Matrix result(3, 2);
-      result(0, 0) = 0.4;
-      result(0, 1) = 0.6;
-      result(1, 0) = 0.55;
-      result(1, 1) = 0.8;
-      result(2, 0) = 0.66;
-      result(2, 1) = 0.9;
-      return result;
-    }();
-    CHECK(subset == answer);
-    // [h5dat_get_subset]
-  }
-  {
-    const auto subset = error_file.get_data_subset({0, 3}, 0, 2);
-    const Matrix answer = []() {
-      Matrix result(2, 2);
-      result(0, 0) = 0.0;
-      result(0, 1) = 0.3;
-      result(1, 0) = 0.11;
-      result(1, 1) = 0.6;
-      return result;
-    }();
-    CHECK(subset == answer);
-  }
-  {
-    const auto subset = error_file.get_data_subset({}, 0, 2);
-    const Matrix answer(2, 0, 0.0);
-    CHECK(subset == answer);
-  }
-  {
-    const auto subset = error_file.get_data_subset({0, 3}, 0, 0);
-    const Matrix answer(0, 2, 0.0);
-    CHECK(subset == answer);
-  }
+  check_get_data(error_file,
+                 {0.0, 0.1, 0.2, 0.3, 0.11, 0.4, 0.5, 0.6, 0.22, 0.55, 0.6, 0.8,
+                  0.33, 0.66, 0.77, 0.9},
+                 {4, 4});
+
+  check_get_data_subset(error_file, {0.4, 0.5, 0.55, 0.6}, {2, 2}, {1, 2}, 1,
+                        2);
+
+  check_get_data_subset(error_file, {0.4, 0.6, 0.55, 0.8, 0.66, 0.9}, {3, 2},
+                        {1, 3}, 1, 3);
+
+  check_get_data_subset(error_file, {0.0, 0.3, 0.11, 0.6}, {2, 2}, {0, 3}, 0,
+                        2);
+
+  check_get_data_subset(error_file, {}, {2, 0}, {}, 0, 2);
+
+  check_get_data_subset(error_file, {}, {0, 2}, {0, 3}, 0, 0);
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
@@ -334,66 +365,23 @@ void test_dat_read() {
   std::array<hsize_t, 2> size_of_data{{4, 4}};
   CHECK(error_file.get_dimensions() == size_of_data);
 
-  const Matrix data_in_dat_file = []() {
-    Matrix result(4, 4);
-    result(0, 0) = 0.0;
-    result(0, 1) = 0.1;
-    result(0, 2) = 0.2;
-    result(0, 3) = 0.3;
-    result(1, 0) = 0.11;
-    result(1, 1) = 0.4;
-    result(1, 2) = 0.5;
-    result(1, 3) = 0.6;
-    result(2, 0) = 0.22;
-    result(2, 1) = 0.55;
-    result(2, 2) = 0.6;
-    result(2, 3) = 0.8;
-    result(3, 0) = 0.33;
-    result(3, 1) = 0.66;
-    result(3, 2) = 0.77;
-    result(3, 3) = 0.9;
-    return result;
-  }();
-  CHECK(error_file.get_data() == data_in_dat_file);
+  check_get_data(error_file,
+                 {0.0, 0.1, 0.2, 0.3, 0.11, 0.4, 0.5, 0.6, 0.22, 0.55, 0.6, 0.8,
+                  0.33, 0.66, 0.77, 0.9},
+                 {4, 4});
 
-  {
-    const auto subset = error_file.get_data_subset({1, 2}, 1, 2);
-    const Matrix answer = []() {
-      Matrix result(2, 2);
-      result(0, 0) = 0.4;
-      result(0, 1) = 0.5;
-      result(1, 0) = 0.55;
-      result(1, 1) = 0.6;
-      return result;
-    }();
-    CHECK(subset == answer);
-  }
-  {
-    const auto subset = error_file.get_data_subset({1, 3}, 1, 3);
-    const Matrix answer = []() {
-      Matrix result(3, 2);
-      result(0, 0) = 0.4;
-      result(0, 1) = 0.6;
-      result(1, 0) = 0.55;
-      result(1, 1) = 0.8;
-      result(2, 0) = 0.66;
-      result(2, 1) = 0.9;
-      return result;
-    }();
-    CHECK(subset == answer);
-  }
-  {
-    const auto subset = error_file.get_data_subset({0, 3}, 0, 2);
-    const Matrix answer = []() {
-      Matrix result(2, 2);
-      result(0, 0) = 0.0;
-      result(0, 1) = 0.3;
-      result(1, 0) = 0.11;
-      result(1, 1) = 0.6;
-      return result;
-    }();
-    CHECK(subset == answer);
-  }
+  check_get_data_subset(error_file, {0.4, 0.5, 0.55, 0.6}, {2, 2}, {1, 2}, 1,
+                        2);
+
+  check_get_data_subset(error_file, {0.4, 0.6, 0.55, 0.8, 0.66, 0.9}, {3, 2},
+                        {1, 3}, 1, 3);
+
+  check_get_data_subset(error_file, {0.0, 0.3, 0.11, 0.6}, {2, 2}, {0, 3}, 0,
+                        2);
+
+  check_get_data_subset(error_file, {}, {2, 0}, {}, 0, 2);
+
+  check_get_data_subset(error_file, {}, {0, 2}, {0, 3}, 0, 0);
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);

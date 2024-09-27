@@ -133,14 +133,17 @@ std::array<hsize_t, 2> append_to_dataset(
 /// @{
 /*!
  * \ingroup HDF5Group
- * \brief Convert the data in a dataset to a Matrix
+ * \brief Convert the data in a dataset to a Matrix or a
+ * std::vector<std::vector<double>>
  */
-Matrix retrieve_dataset(hid_t file_id, const std::array<hsize_t, 2>& file_size);
+template <typename T>
+T retrieve_dataset(hid_t file_id, const std::array<hsize_t, 2>& file_size);
 
-Matrix retrieve_dataset_subset(hid_t file_id,
-                               const std::vector<size_t>& these_columns,
-                               size_t first_row, size_t num_rows,
-                               const std::array<hsize_t, 2>& file_size);
+template <typename T>
+T retrieve_dataset_subset(hid_t file_id,
+                          const std::vector<size_t>& these_columns,
+                          size_t first_row, size_t num_rows,
+                          const std::array<hsize_t, 2>& file_size);
 /// @}
 
 /*!

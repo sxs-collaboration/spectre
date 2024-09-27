@@ -102,11 +102,14 @@ class Cce : public h5::Object {
   /// @{
   /*!
    * \brief Return all currently stored data in the `h5::Cce` file in the form
-   * of a `Matrix` for each bondi variable
+   * of a `Matrix` or a `std::vector<std::vector<double>>` for each bondi
+   * variable
    */
-  std::unordered_map<std::string, Matrix> get_data() const;
+  template <typename T = Matrix>
+  std::unordered_map<std::string, T> get_data() const;
 
-  Matrix get_data(const std::string& bondi_variable_name) const;
+  template <typename T = Matrix>
+  T get_data(const std::string& bondi_variable_name) const;
   /// @}
 
   /// @{
@@ -119,13 +122,15 @@ class Cce : public h5::Object {
    * l_max that this file was constructed with. Also both the first and last row
    * requested must be less than or equal to the total number of rows.
    */
-  std::unordered_map<std::string, Matrix> get_data_subset(
+  template <typename T = Matrix>
+  std::unordered_map<std::string, T> get_data_subset(
       const std::vector<size_t>& these_ell, size_t first_row = 0,
       size_t num_rows = 1) const;
 
-  Matrix get_data_subset(const std::string& bondi_variable_name,
-                         const std::vector<size_t>& these_ell,
-                         size_t first_row = 0, size_t num_rows = 1) const;
+  template <typename T = Matrix>
+  T get_data_subset(const std::string& bondi_variable_name,
+                    const std::vector<size_t>& these_ell, size_t first_row = 0,
+                    size_t num_rows = 1) const;
   /// @}
 
   /*!
