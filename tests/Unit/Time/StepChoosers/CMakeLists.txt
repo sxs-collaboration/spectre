@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   StepChoosers/Test_Constant.cpp
   StepChoosers/Test_ElementSizeCfl.cpp
   StepChoosers/Test_ErrorControl.cpp
+  StepChoosers/Test_FixedLtsRatio.cpp
   StepChoosers/Test_LimitIncrease.cpp
   StepChoosers/Test_Maximum.cpp
   StepChoosers/Test_PreventRapidIncrease.cpp
