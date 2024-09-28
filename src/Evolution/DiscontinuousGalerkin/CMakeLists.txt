@@ -14,6 +14,7 @@ spectre_target_headers(
   MortarDataHolder.hpp
   MortarTags.hpp
   NormalVectorTags.hpp
+  TimeDerivativeDecisions.hpp
   UsingSubcell.hpp
   )
 
