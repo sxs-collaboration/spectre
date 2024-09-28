@@ -13,7 +13,7 @@ from click.testing import CliRunner
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.PostprocessId import postprocess_id_command
-from support.Python.Logging import configure_logging
+from spectre.support.Logging import configure_logging
 
 
 class TestPostprocessId(unittest.TestCase):
