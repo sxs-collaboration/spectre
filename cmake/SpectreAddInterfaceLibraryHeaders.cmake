@@ -52,7 +52,43 @@ function(add_interface_lib_headers)
   # elements of a list.
   string(REPLACE ";" ":" TARGET_HEADERS
     "${ARG_TARGET}=${ARG_HEADERS}")
+
+  # BEGIN ADD EXISTING HEADERS
+  # This block checks if the current target already has a list of header files
+  # associated with it. If so, then we parse the current headers from the
+  # string SPECTRE_INTERFACE_LIBRARY_HEADERS. Once we've parsed out the
+  # _PREVIOUS_HEADERS we append them to the list of current headers,
+  # (TARGET_HEADERS). Finally, we remove the current target from the interface
+  # libaries string (SPECTRE_INTERFACE_LIBRARY_HEADERS) because we add it with
+  # the new headers later.
+  set(_PREVIOUS_HEADERS "")
+  string(FIND "${SPECTRE_INTERFACE_LIBRARY_HEADERS}" "${ARG_TARGET}="
+    _POSITION_OF_TARGET)
+  if (NOT ${_POSITION_OF_TARGET} EQUAL -1)
+    string(SUBSTRING "${SPECTRE_INTERFACE_LIBRARY_HEADERS}"
+      ${_POSITION_OF_TARGET} -1 _PREVIOUS_HEADERS)
+    string(FIND "${_PREVIOUS_HEADERS}" "="
+      POSITION_OF_THIS_EQUALS)
+    math(EXPR POSITION_OF_THIS_EQUALS_PLUS_ONE
+      "${POSITION_OF_THIS_EQUALS} + 1")
+    string(SUBSTRING "${_PREVIOUS_HEADERS}" ${POSITION_OF_THIS_EQUALS_PLUS_ONE}
+      -1 _PREVIOUS_HEADERS)
+    string(FIND "${_PREVIOUS_HEADERS}" "="
+      POSITION_OF_NEXT_EQUALS)
+    string(SUBSTRING "${_PREVIOUS_HEADERS}" 0 ${POSITION_OF_NEXT_EQUALS}
+      _PREVIOUS_HEADERS)
+    string(FIND "${_PREVIOUS_HEADERS}" ";" POSITION_OF_LAST_SEMI REVERSE)
+    string(SUBSTRING "${_PREVIOUS_HEADERS}" 0 ${POSITION_OF_LAST_SEMI}
+      _PREVIOUS_HEADERS)
+    set(TARGET_HEADERS "${TARGET_HEADERS}:${_PREVIOUS_HEADERS}")
+    string(REPLACE "${ARG_TARGET}=${_PREVIOUS_HEADERS}" ""
+      SPECTRE_INTERFACE_LIBRARY_HEADERS "${SPECTRE_INTERFACE_LIBRARY_HEADERS}")
+  endif()
+
+  string(REPLACE ";;" ";"
+      SPECTRE_INTERFACE_LIBRARY_HEADERS "${SPECTRE_INTERFACE_LIBRARY_HEADERS}")
   list(APPEND SPECTRE_INTERFACE_LIBRARY_HEADERS ${TARGET_HEADERS})
+  # END ADD EXISTING HEADERS
 
   set_property(
     GLOBAL PROPERTY SPECTRE_INTERFACE_LIBRARY_HEADERS
