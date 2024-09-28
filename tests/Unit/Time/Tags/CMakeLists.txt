@@ -4,6 +4,7 @@
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
   Tags/Test_AdaptiveSteppingDiagnostics.cpp
+  Tags/Test_FixedLtsRatio.cpp
   Tags/Test_HistoryEvolvedVariables.cpp
   Tags/Test_IsUsingTimeSteppingErrorControl.cpp
   Tags/Test_MinimumTimeStep.cpp
