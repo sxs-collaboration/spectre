@@ -191,6 +191,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+          BlocksToObserve: All
       - ApparentHorizon
       - ExcisionBoundary
   # Never terminate... run until something fails!

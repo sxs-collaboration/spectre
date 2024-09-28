@@ -20,6 +20,7 @@
 #include "DataStructures/DataBox/ValidateSelection.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FloatingPointType.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
@@ -157,9 +158,19 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     using type = FloatingPointType;
   };
 
+  /// \brief A list of block or group names on which to observe.
+  ///
+  /// Set to `All` to observe everywhere.
+  struct BlocksToObserve {
+    using type =
+        Options::Auto<std::vector<std::string>, Options::AutoLabel::All>;
+    static constexpr Options::String help = {
+        "A list of block and group names on which to observe."};
+  };
+
   using options =
       tmpl::list<SubfileName, CoordinatesFloatingPointType, FloatingPointTypes,
-                 VariablesToObserve, InterpolateToMesh>;
+                 VariablesToObserve, BlocksToObserve, InterpolateToMesh>;
 
   static constexpr Options::String help =
       "Observe volume tensor fields.\n"
@@ -170,12 +181,14 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
 
   ObserveFields() = default;
 
-  ObserveFields(const std::string& subfile_name,
-                FloatingPointType coordinates_floating_point_type,
-                const std::vector<FloatingPointType>& floating_point_types,
-                const std::vector<std::string>& variables_to_observe,
-                std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
-                const Options::Context& context = {});
+  ObserveFields(
+      const std::string& subfile_name,
+      FloatingPointType coordinates_floating_point_type,
+      const std::vector<FloatingPointType>& floating_point_types,
+      const std::vector<std::string>& variables_to_observe,
+      std::optional<std::vector<std::string>> active_block_or_block_groups = {},
+      std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+      const Options::Context& context = {});
 
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
@@ -192,6 +205,10 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                   const ElementId<VolumeDim>& array_index,
                   const ParallelComponent* const component,
                   const ObservationValue& observation_value) const {
+    if (not active_block(get<domain::Tags::Domain<VolumeDim>>(box),
+                         array_index)) {
+      return;
+    }
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -333,6 +350,10 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       std::pair<observers::TypeOfObservation, observers::ObservationKey>>
   get_observation_type_and_key_for_registration(
       const db::DataBox<DbTagsList>& box) const {
+    if (not active_block(db::get<domain::Tags::Domain<VolumeDim>>(box),
+                         db::get<domain::Tags::Element<VolumeDim>>(box).id())) {
+      return std::nullopt;
+    }
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
     if (not section_observation_key.has_value()) {
@@ -359,6 +380,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     Event::pup(p);
     p | subfile_path_;
     p | variables_to_observe_;
+    p | active_block_or_block_groups_;
     p | interpolation_mesh_;
   }
 
@@ -375,8 +397,22 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     return false;
   }
 
+  bool active_block(const Domain<VolumeDim>& domain,
+                    const ElementId<VolumeDim>& element_id) const {
+    if (not active_block_or_block_groups_.has_value()) {
+      return true;
+    }
+    const std::unordered_set<std::string> block_names =
+        domain::expand_block_groups_to_block_names(
+            active_block_or_block_groups_.value(), domain.block_names(),
+            domain.block_groups());
+    return alg::found(block_names,
+                      domain.blocks().at(element_id.block_id()).name());
+  }
+
   std::string subfile_path_;
   std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
+  std::optional<std::vector<std::string>> active_block_or_block_groups_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
 };
 
@@ -384,12 +420,14 @@ template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
 ObserveFields<VolumeDim, tmpl::list<Tensors...>,
               tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
-    ObserveFields(const std::string& subfile_name,
-                  const FloatingPointType coordinates_floating_point_type,
-                  const std::vector<FloatingPointType>& floating_point_types,
-                  const std::vector<std::string>& variables_to_observe,
-                  std::optional<Mesh<VolumeDim>> interpolation_mesh,
-                  const Options::Context& context)
+    ObserveFields(
+        const std::string& subfile_name,
+        const FloatingPointType coordinates_floating_point_type,
+        const std::vector<FloatingPointType>& floating_point_types,
+        const std::vector<std::string>& variables_to_observe,
+        std::optional<std::vector<std::string>> active_block_or_block_groups,
+        std::optional<Mesh<VolumeDim>> interpolation_mesh,
+        const Options::Context& context)
     : subfile_path_("/" + subfile_name),
       variables_to_observe_([&context, &floating_point_types,
                              &variables_to_observe]() {
@@ -416,6 +454,7 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         }
         return result;
       }()),
+      active_block_or_block_groups_(std::move(active_block_or_block_groups)),
       interpolation_mesh_(interpolation_mesh) {
   ASSERT(
       (... or (db::tag_name<Tensors>() == "InertialCoordinates")),

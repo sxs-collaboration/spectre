@@ -85,6 +85,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Float, Float]
+          BlocksToObserve: All
 
 EventsAndDenseTriggers:
 

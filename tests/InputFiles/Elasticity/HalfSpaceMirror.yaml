@@ -142,6 +142,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+          BlocksToObserve: All
 
 Amr:
   Verbosity: Quiet

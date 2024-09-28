@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -21,6 +22,7 @@
 #include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -95,8 +97,9 @@ template <typename System, typename ArraySectionIdTag = void,
 void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
-    const bool has_analytic_solutions,
+    const bool has_analytic_solutions, const bool test_specific_blocks,
     const std::optional<std::string>& section = std::nullopt) {
+  INFO(test_specific_blocks);
   using metavariables = Metavariables<System, false>;
   constexpr size_t volume_dim = System::volume_dim;
   using DataType = typename System::data_type;
@@ -105,7 +108,14 @@ void test_observe(
   using coordinates_tag =
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
-  const ElementId<volume_dim> element_id(2);
+  const ElementId<volume_dim> element_id(0);
+  const Element<volume_dim> element(element_id, {});
+  // NOTE: The coordinate map is not actually what is used to compute the
+  // coordinates.
+  const domain::creators::Rectilinear<volume_dim> rectilinear{
+      make_array<volume_dim>(-2.0), make_array<volume_dim>(2.0),
+      make_array<volume_dim>(0_st), make_array<volume_dim>(5_st),
+      make_array<volume_dim>(true)};
   const typename element_component::array_index array_index(element_id);
   const Mesh<volume_dim> mesh(5, Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto);
@@ -160,13 +170,14 @@ void test_observe(
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavariables>,
+      domain::Tags::Domain<volume_dim>, domain::Tags::Element<volume_dim>,
       domain::Tags::Mesh<volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>,
       ::Tags::Variables<typename decltype(prim_vars)::tags_list>,
       coordinates_tag, ::Tags::AnalyticSolutions<solution_variables>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, mesh, vars, prim_vars,
-      get<coordinates_tag>(coordinate_vars),
+      metavariables{}, rectilinear.create_domain(), element, mesh, vars,
+      prim_vars, get<coordinates_tag>(coordinate_vars),
       [&solutions, &has_analytic_solutions]() {
         return has_analytic_solutions ? std::make_optional(solutions)
                                       : std::nullopt;
@@ -322,22 +333,25 @@ void test_system(
   INFO(pretty_type::get_name<ArraySectionIdTag>());
   CAPTURE(section);
   using metavariables = Metavariables<System, false>;
-  test_observe<System, ArraySectionIdTag>(
-      std::make_unique<typename System::ObserveEvent>(
-          System::make_test_object(interpolating_mesh)),
-      interpolating_mesh, has_analytic_solutions, section);
-  INFO("create/serialize");
-  register_factory_classes_with_charm<metavariables>();
-  {
-    const std::string creation_string = System::creation_string_for_test +
-                                        mesh_creation_string;
-    const auto factory_event =
-        TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
-            creation_string);
-    auto serialized_event = serialize_and_deserialize(factory_event);
+  for (const bool test_specific_blocks : {false, true}) {
     test_observe<System, ArraySectionIdTag>(
-        std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
+        std::make_unique<typename System::ObserveEvent>(
+            System::make_test_object(interpolating_mesh)),
+        interpolating_mesh, has_analytic_solutions, test_specific_blocks,
         section);
+    INFO("create/serialize");
+    register_factory_classes_with_charm<metavariables>();
+    {
+      const std::string creation_string =
+          System::creation_string_for_test + mesh_creation_string;
+      const auto factory_event =
+          TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
+              creation_string);
+      auto serialized_event = serialize_and_deserialize(factory_event);
+      test_observe<System, ArraySectionIdTag>(
+          std::move(serialized_event), interpolating_mesh,
+          has_analytic_solutions, test_specific_blocks, section);
+    }
   }
 }
 }  // namespace
@@ -466,7 +480,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
             dg::Events::ObserveFields>::ObserveEvent>(
             ComplicatedSystem<dg::Events::ObserveFields>::make_test_object(
                 interpolating_mesh)),
-        interpolating_mesh, true);
+        interpolating_mesh, true, false);
   }
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<
@@ -475,7 +489,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "CoordinatesFloatingPointType: Double\n"
           "VariablesToObserve: [NotAVar]\n"
           "FloatingPointTypes: [Double]\n"
-          "InterpolateToMesh: None\n"),
+          "InterpolateToMesh: None\n"
+          "BlocksToObserve: All\n"),
       Catch::Matchers::ContainsSubstring("Invalid selection: NotAVar"));
 
   CHECK_THROWS_WITH(
@@ -485,6 +500,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
           "CoordinatesFloatingPointType: Double\n"
           "VariablesToObserve: [Scalar, Scalar]\n"
           "FloatingPointTypes: [Double]\n"
-          "InterpolateToMesh: None\n"),
+          "InterpolateToMesh: None\n"
+          "BlocksToObserve: All\n"),
       Catch::Matchers::ContainsSubstring("Scalar specified multiple times"));
 }

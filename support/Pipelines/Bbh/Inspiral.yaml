@@ -328,6 +328,7 @@ EventsAndTriggers:
           # for visualization.
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
+          BlocksToObserve: All
   # Try to find common horizon at small separation
   - Trigger:
       SeparationLessThan:
