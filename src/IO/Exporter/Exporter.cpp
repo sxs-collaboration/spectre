@@ -421,17 +421,27 @@ std::vector<std::vector<double>> interpolate_to_points(
     std::vector<BlockLogicalCoords<Dim>> extra_block_logical_coords{};
     std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
         extra_extrapolation_info{};
+    // Keep track of a priority order for blocks to accelerate the search.
+    // This helps when the target points are ordered so that they are likely to
+    // be in the same block as the previous point.
+    std::vector<size_t> block_order(domain.blocks().size());
+    std::iota(block_order.begin(), block_order.end(), 0);
 #pragma omp for
     for (size_t s = 0; s < num_target_points; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
         target_point.get(d) = gsl::at(target_points, d)[s];
       }
-      for (const auto& block : domain.blocks()) {
+      for (auto block_it = block_order.begin(); block_it != block_order.end();
+           ++block_it) {
+        const auto& block = domain.blocks()[*block_it];
         auto x_logical = block_logical_coordinates_single_point(
             target_point, block, time, functions_of_time);
         if (x_logical.has_value()) {
           block_logical_coords[s] = {domain::BlockId(block.id()),
                                      std::move(x_logical.value())};
+          // Push this block to the front of the priority order
+          block_order.erase(block_it);
+          block_order.insert(block_order.begin(), block.id());
           break;
         }
       }  // for blocks
