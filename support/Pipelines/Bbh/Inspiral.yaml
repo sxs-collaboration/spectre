@@ -82,23 +82,25 @@ DomainCreator:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
     UseEquiangularMap: True
-    CubeScale: 1.0
+    # Found that a CubeScale of 1.2 worked well for equal mass non-spinning
+    # inspirals and allowed for more common horizon finds.
+    CubeScale: 1.2
     # These values have been tested to be stable for full equal mass mergers
     # with constraints ~10^-7 for L=1, P=10
     InitialRefinement:
-      ObjectAShell:   [{{ L     }}, {{ L     }}, {{ L + 1 }}]
-      ObjectACube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L     }}]
-      ObjectBShell:   [{{ L     }}, {{ L     }}, {{ L + 1 }}]
-      ObjectBCube:    [{{ L + 1 }}, {{ L + 1 }}, {{ L     }}]
-      Envelope:       [{{ L     }}, {{ L     }}, {{ L     }}]
-      OuterShell:     [{{ L     }}, {{ L     }}, {{ L + 1 }}]
+      ObjectAShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
+      ObjectACube:    [{{ L + 2 }}, {{ L + 2 }}, {{ L + 1 }}]
+      ObjectBShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
+      ObjectBCube:    [{{ L + 2 }}, {{ L + 2 }}, {{ L + 1 }}]
+      Envelope:       [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
+      OuterShell:     [{{ L     }}, {{ L     }}, {{ L + 2 }}]
     InitialGridPoints:
       ObjectAShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
       ObjectACube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
       ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
       ObjectBCube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
       Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
-      OuterShell:     [{{ P + 2 }}, {{ P + 2 }}, {{ P + 4 }}]
+      OuterShell:     [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
     TimeDependentMaps:
       InitialTime: &InitialTime 0.0
       ExpansionMap:
@@ -297,7 +299,7 @@ EventsAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 10
+          Interval: 1
           Offset: 0
     Events:
       - ObservationAhA
@@ -329,12 +331,27 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All
-  # Try to find common horizon at small separation
+# Trigger to find common horizon and gather volume data needed for ringdown.
   - Trigger:
       SeparationLessThan:
-        Value: 2.5
+        Value: 2.38 # for q=1, spin=0, quasicircular
     Events:
+      - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - Constant: 0.01
       - ObservationAhC
+      - ObserveFields:
+          SubfileName: ForContinuation
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+          InterpolateToMesh: None
+          # This volume data is for ringdown, so double precision is needed.
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
   # Never terminate... run until something fails!
 
 EventsAndDenseTriggers:
@@ -376,7 +393,7 @@ ApparentHorizons:
     Verbosity: Quiet
   ObservationAhC:
     InitialGuess:
-      LMax: 20
+      LMax: 33
       Radius: 10.0
       Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow

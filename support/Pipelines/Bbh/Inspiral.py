@@ -451,7 +451,7 @@ def start_inspiral(
     "-P",
     type=int,
     help="p-refinement level.",
-    default=9,
+    default=8,
     show_default=True,
 )
 @click.option(
