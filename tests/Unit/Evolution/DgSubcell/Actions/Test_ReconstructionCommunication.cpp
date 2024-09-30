@@ -530,7 +530,7 @@ void test(const bool use_cell_centered_flux) {
             make_not_null(&self_inbox), time_step_id,
             std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
                       evolution::dg::BoundaryData<Dim>{
-                          subcell_mesh,
+                          dg_mesh,
                           // subcell_mesh because we are sending the projected
                           // data right now.
                           subcell_mesh, std::nullopt, face_mesh,
@@ -598,8 +598,7 @@ void test(const bool use_cell_centered_flux) {
       const auto it =
           neighbor_meshes.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(it != neighbor_meshes.end());
-      CHECK(it->second ==
-            (it->first == east_neighbor_id ? dg_mesh : subcell_mesh));
+      CHECK(it->second == dg_mesh);
       const auto ghost_it =
           meshes_for_ghost_data.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(ghost_it != meshes_for_ghost_data.end());

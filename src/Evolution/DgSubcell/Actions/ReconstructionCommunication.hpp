@@ -261,7 +261,7 @@ struct SendDataForReconstruction {
                                 rdmp_tci_data.min_variables_values.size())));
 
         evolution::dg::BoundaryData<Dim> data{
-            subcell_mesh,
+            dg_mesh,
             subcell_mesh,
             std::nullopt,
             dg_mesh.slice_away(direction.dimension()),

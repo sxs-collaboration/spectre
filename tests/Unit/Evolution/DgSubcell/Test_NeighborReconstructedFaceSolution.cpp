@@ -125,7 +125,7 @@ void test() {
                             1};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{fd_volume_mesh,
+          BoundaryData<Dim>{dg_volume_mesh,
                             fd_volume_mesh,
                             std::nullopt,
                             fd_face_mesh,
@@ -146,7 +146,7 @@ void test() {
                             3};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{fd_volume_mesh,
+          BoundaryData<Dim>{dg_volume_mesh,
                             fd_volume_mesh,
                             std::nullopt,
                             fd_face_mesh,
