@@ -25,6 +25,8 @@ Next:
         - {{ DimensionlessSpinLeft_x }}
         - {{ DimensionlessSpinLeft_y }}
         - {{ DimensionlessSpinLeft_z }}
+      center_of_mass: [0., 0., 0.]
+      linear_momentum: [0., 0., 0.]
     evolve: {{ evolve }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
