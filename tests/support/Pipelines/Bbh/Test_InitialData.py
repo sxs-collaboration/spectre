@@ -157,6 +157,8 @@ class TestInitialData(unittest.TestCase):
                         "mass_B": 0.4,
                         "spin_A": [0.1, 0.2, 0.3],
                         "spin_B": [0.4, 0.5, 0.6],
+                        "center_of_mass": [0.0, 0.0, 0.0],
+                        "linear_momentum": [0.0, 0.0, 0.0],
                     },
                     "evolve": True,
                     "scheduler": "None",

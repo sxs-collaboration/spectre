@@ -15,7 +15,9 @@ from spectre.Visualization.ReadH5 import to_dataframe
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_RESIDUAL_TOLERANCE = 1.0e-6
+# The default tolerance is just below the effect of junk radiation on the
+# controlled paramaters, which  is about 1.0e-3.
+DEFAULT_RESIDUAL_TOLERANCE = 1.0e-4
 DEFAULT_MAX_ITERATIONS = 30
 
 # Initial data physical parameters that are supported in this control scheme
