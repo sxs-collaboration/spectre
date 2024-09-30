@@ -418,12 +418,13 @@ void test_p_refine(
     const mortar_data_history_type<Dim>& expected_mortar_data_history) {
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      amr::Tags::NeighborInfo<Dim>, Tags::MortarData<Dim>,
-      Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
+      domain::Tags::NeighborMesh<Dim>, amr::Tags::NeighborInfo<Dim>,
+      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
       Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
-      std::move(new_mesh), std::move(new_element), std::move(neighbor_info),
+      std::move(new_mesh), std::move(new_element),
+      ::dg::MortarMap<Dim, Mesh<Dim>>{}, std::move(neighbor_info),
       std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_size),
       std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
