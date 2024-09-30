@@ -32,6 +32,8 @@ def _list_tensor_components(observation):
     components.remove("connectivity")
     if "pole_connectivity" in components:
         components.remove("pole_connectivity")
+    if "tetrahedral_connectivity" in components:
+        components.remove("tetrahedral_connectivity")
     components.remove("total_extents")
     components.remove("grid_names")
     components.remove("bases")
@@ -57,6 +59,7 @@ def _xmf_topology(
     num_vertices = {
         "Hexahedron": 8,
         "Quadrilateral": 4,
+        "Tetrahedron": 4,
         "Triangle": 3,
     }[topology_type]
     num_cells = len(observation[connectivity_name]) // num_vertices
@@ -162,6 +165,7 @@ def _xmf_grid(
     temporal_id: str,
     coordinates: str,
     filling_poles: bool = False,
+    use_tetrahedral_connectivity: bool = False,
 ) -> ET.Element:
     # Make sure the coordinates are found in the file. We assume there should
     # always be an x-coordinate.
@@ -219,10 +223,17 @@ def _xmf_grid(
             )
     else:
         # Cover volume
+        if use_tetrahedral_connectivity:
+            topology_type = {3: "Tetrahedron", 2: "Triangle"}[topo_dim]
+            connectivity_name = "tetrahedral_connectivity"
+        else:
+            topology_type = {3: "Hexahedron", 2: "Quadrilateral"}[topo_dim]
+            connectivity_name = "connectivity"
+
         xmf_topology = _xmf_topology(
             observation,
-            topology_type={3: "Hexahedron", 2: "Quadrilateral"}[topo_dim],
-            connectivity_name="connectivity",
+            topology_type=topology_type,
+            connectivity_name=connectivity_name,
             grid_path=grid_path,
         )
     xmf_grid.append(xmf_topology)
@@ -279,6 +290,7 @@ def generate_xdmf(
     stop_time: Optional[float] = None,
     stride: int = 1,
     coordinates: str = "InertialCoordinates",
+    use_tetrahedral_connectivity: bool = False,
 ):
     """Generate an XDMF file for ParaView and VisIt
 
@@ -304,6 +316,8 @@ def generate_xdmf(
       stride: Optional. View only every stride'th time step.
       coordinates: Optional. Name of coordinates dataset. Default:
         "InertialCoordinates".
+      use_tetrahedral_connectivity: Optional. Use "tetrahedral_connectivity".
+        Default: False
     """
     h5files = [(h5py.File(filename, "r"), filename) for filename in h5files]
 
@@ -402,6 +416,7 @@ def generate_xdmf(
                     subfile_name=subfile_name,
                     temporal_id=temporal_id,
                     coordinates=coordinates,
+                    use_tetrahedral_connectivity=use_tetrahedral_connectivity,
                 )
             )
             # Connect poles if the data is a 2D surface in 3D
@@ -415,6 +430,9 @@ def generate_xdmf(
                         temporal_id=temporal_id,
                         coordinates=coordinates,
                         filling_poles=True,
+                        use_tetrahedral_connectivity=(
+                            use_tetrahedral_connectivity
+                        ),
                     )
                 )
 
@@ -492,7 +510,7 @@ def generate_xdmf(
     type=float,
     help=(
         "The time at which to stop visualizing. The stop-time value is "
-        "not included."
+        "included."
     ),
 )
 @click.option(
@@ -500,6 +518,17 @@ def generate_xdmf(
     default="InertialCoordinates",
     show_default=True,
     help="The coordinates to use for visualization",
+)
+@click.option(
+    "--use-tetrahedral-connectivity",
+    is_flag=True,
+    default=False,
+    help=(
+        "Use a tetrahedral connectivity called tetrahedral_connectivity in "
+        "the HDF5 file. See the generate-tetrahedral-connectivity CLI for "
+        "information on how to generate tetrahedral connectivity and what it "
+        "can be useful for."
+    ),
 )
 def generate_xdmf_command(**kwargs):
     _rich_traceback_guard = True  # Hide traceback until here

@@ -36,41 +36,55 @@ class TestGenerateXdmf(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_generate_xdmf(self):
-        data_files = glob.glob(os.path.join(self.data_dir, "VolTestData*.h5"))
-        output_filename = os.path.join(
-            self.test_dir, "Test_GenerateXdmf_output"
-        )
-        generate_xdmf(
-            h5files=data_files,
-            output=output_filename,
-            subfile_name="element_data",
-            start_time=0.0,
-            stop_time=1.0,
-            stride=1,
-            coordinates="InertialCoordinates",
-        )
+        for use_tetrahedral_connectivity in [False, True]:
+            data_files = glob.glob(
+                os.path.join(self.data_dir, "VolTestData*.h5")
+            )
+            output_filename = os.path.join(
+                self.test_dir, "Test_GenerateXdmf_output"
+            )
+            generate_xdmf(
+                h5files=data_files,
+                output=output_filename,
+                subfile_name="element_data",
+                start_time=0.0,
+                stop_time=1.0,
+                stride=1,
+                coordinates="InertialCoordinates",
+                use_tetrahedral_connectivity=use_tetrahedral_connectivity,
+            )
 
-        # The script is quite opaque right now, so we only test that we can run
-        # it and it produces output without raising an error. To test more
-        # details, we should refactor the script into smaller units.
-        self.assertTrue(os.path.isfile(output_filename + ".xmf"))
+            # The script is quite opaque right now, so we only test that we can
+            # run it and it produces output without raising an error. To test
+            # more details, we should refactor the script into smaller units.
+            self.assertTrue(os.path.isfile(output_filename + ".xmf"))
 
-        # Also make sure that the output doesn't change. This has caught many
-        # bugs.
-        # - Compare canonicalized XML with stripped whitespace. Pretty
-        #   indentation was only added in Python 3.9.
-        self.assertEqual(
-            ET.canonicalize(
-                from_file=output_filename + ".xmf", strip_text=True
-            ),
-            ET.canonicalize(
-                from_file=os.path.join(self.data_dir, "VolTestData.xmf"),
-                strip_text=True,
-            ).replace(
-                "VolTestData0.h5",
-                os.path.relpath(data_files[0], self.test_dir),
-            ),
-        )
+            # Also make sure that the output doesn't change. This has caught
+            # many bugs.
+            # - Compare canonicalized XML with stripped whitespace. Pretty
+            #   indentation was only added in Python 3.9.
+            self.assertEqual(
+                ET.canonicalize(
+                    from_file=output_filename + ".xmf", strip_text=True
+                ),
+                ET.canonicalize(
+                    from_file=os.path.join(
+                        self.data_dir,
+                        (
+                            "VolTestDataTetrahedral.xmf"
+                            if use_tetrahedral_connectivity
+                            else "VolTestData.xmf"
+                        ),
+                    ),
+                    strip_text=True,
+                ).replace(
+                    "VolTestData0.h5",
+                    os.path.relpath(data_files[0], self.test_dir),
+                ),
+            )
+            os.remove(
+                os.path.join(self.test_dir, "Test_GenerateXdmf_output.xmf")
+            )
 
     def test_surface_generate_xdmf(self):
         data_files = [os.path.join(self.data_dir, "SurfaceTestData.h5")]
