@@ -519,7 +519,6 @@ void test(const bool use_cell_centered_flux) {
     REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
         make_not_null(&runner), self_id));
 
-    const auto face_mesh = subcell_mesh.slice_away(1);
     south_ghost_cells_and_rdmp = DataVector{
         subcell_mesh.slice_away(0).number_of_grid_points() * ghost_zone_size +
         rdmp_size};
