@@ -4,6 +4,7 @@
 import logging
 import unittest
 
+import numpy as np
 import numpy.testing as npt
 
 from spectre.Pipelines.EccentricityControl.InitialOrbitalParameters import (
@@ -14,7 +15,7 @@ from spectre.support.Logging import configure_logging
 
 class TestInitialOrbitalParameters(unittest.TestCase):
     def test_initial_orbital_parameters(self):
-        # Expected results are computed from SpEC's ZeroEccParamsFromPN.py
+        np.set_printoptions(precision=14)
         npt.assert_allclose(
             initial_orbital_parameters(
                 mass_ratio=1.0,
@@ -34,7 +35,7 @@ class TestInitialOrbitalParameters(unittest.TestCase):
                 eccentricity=0.0,
                 separation=16.0,
             ),
-            [16.0, 0.014474280975952748, -4.117670632867514e-05],
+            [16.0, 0.014454484323416913, -4.236562633362394e-05],
         )
         npt.assert_allclose(
             initial_orbital_parameters(
@@ -44,7 +45,7 @@ class TestInitialOrbitalParameters(unittest.TestCase):
                 eccentricity=0.0,
                 orbital_angular_velocity=0.015,
             ),
-            [15.6060791015625, 0.015, -4.541705362753467e-05],
+            [15.59033203125, 0.015, -4.696365029012517e-05],
         )
         npt.assert_allclose(
             initial_orbital_parameters(
@@ -54,7 +55,7 @@ class TestInitialOrbitalParameters(unittest.TestCase):
                 eccentricity=0.0,
                 orbital_angular_velocity=0.015,
             ),
-            [15.6060791015625, 0.015, -4.541705362753467e-05],
+            [15.59033203125, 0.015, -4.696365029012517e-05],
         )
         npt.assert_allclose(
             initial_orbital_parameters(
@@ -64,7 +65,7 @@ class TestInitialOrbitalParameters(unittest.TestCase):
                 eccentricity=0.0,
                 num_orbits=20,
             ),
-            [16.0421142578125, 0.014419921875000002, -4.0753460821644916e-05],
+            [15.71142578125, 0.014835205078125004, -4.554164727449197e-05],
         )
         npt.assert_allclose(
             initial_orbital_parameters(
@@ -74,7 +75,7 @@ class TestInitialOrbitalParameters(unittest.TestCase):
                 eccentricity=0.0,
                 time_to_merger=6000,
             ),
-            [16.1357421875, 0.01430025219917298, -3.9831982447244026e-05],
+            [16.0909423828125, 0.01433787536621094, -4.14229775202535e-05],
         )
 
 

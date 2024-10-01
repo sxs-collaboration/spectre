@@ -10,6 +10,43 @@ from scipy.optimize import minimize
 logger = logging.getLogger(__name__)
 
 
+# The following two functions are modernized versions of those in SpEC's
+# `ZeroEccParamsFromPN.py`. They use higher PN orders (whichever are implemented
+# in the PostNewtonian module), are much faster, and avoid spurious output from
+# old Fortran code (LSODA) that was used in SpEC's `ZeroEccParamsFromPN.py`.
+# They are consistent with SpEC up to 2.5 PN order, as tested by Mike Boyle (see
+# https://github.com/moble/PostNewtonian.jl/issues/41).
+#
+# Since these functions use Julia through Python bindings, they will download
+# Julia and precompile the packages on first use, which may take a few minutes
+# (see https://moble.github.io/PostNewtonian.jl/dev/interface/python/).
+
+
+def omega_and_adot(r, q, chiA, chiB):
+    from sxs.julia import PostNewtonian
+
+    pn = PostNewtonian.BBH(
+        np.array(
+            [1.0 / (1.0 + q), q / (1.0 + q), *chiA, *chiB, 1, 0, 0, 0, 1, 0]
+        )
+    )
+    pn.state[12] = PostNewtonian.separation_inverse(r, pn)
+    return PostNewtonian.Omega(pn), PostNewtonian.separation_dot(pn) / r
+
+
+def num_orbits_and_time_to_merger(q, chiA0, chiB0, omega0):
+    from sxs.julia import PNWaveform
+
+    pn_waveform = PNWaveform(
+        M1=1.0 / (1.0 + q),
+        M2=q / (1.0 + q),
+        chi1=chiA0,
+        chi2=chiB0,
+        Omega_i=omega0,
+    )
+    return 0.5 * pn_waveform.orbital_phase[-1] / np.pi, pn_waveform.time[-1]
+
+
 def initial_orbital_parameters(
     mass_ratio: float,
     dimensionless_spin_a: Sequence[float],
@@ -76,8 +113,8 @@ def initial_orbital_parameters(
         )
         return separation, orbital_angular_velocity, radial_expansion_velocity
 
-    # The functions from SpEC currently work only for zero eccentricity. We will
-    # need to generalize this for eccentric orbits.
+    # The functions from the PostNewtonian module currently work only for zero
+    # eccentricity. We will need to generalize this for eccentric orbits.
     assert eccentricity == 0.0, (
         "Initial orbital parameters can currently only be computed for zero"
         " eccentricity."
@@ -97,25 +134,13 @@ def initial_orbital_parameters(
         " 'time_to_merger'."
     )
 
-    # Import functions from SpEC until we have ported them over. These functions
-    # call old Fortran code (LSODA) through scipy.integrate.odeint, which leads
-    # to lots of noise in stdout. When porting these functions, we should
-    # modernize them to use scipy.integrate.solve_ivp.
-    try:
-        from ZeroEccParamsFromPN import nOrbitsAndTotalTime, omegaAndAdot
-    except ImportError:
-        raise ImportError(
-            "Importing from SpEC failed. Make sure you have pointed "
-            "'-D SPEC_ROOT' to a SpEC installation when configuring the build "
-            "with CMake."
-        )
-
     # Find an omega0 that gives the right number of orbits or time to merger
     if num_orbits is not None or time_to_merger is not None:
+        logger.info("Finding orbital angular velocity...")
         opt_result = minimize(
             lambda x: (
                 abs(
-                    nOrbitsAndTotalTime(
+                    num_orbits_and_time_to_merger(
                         q=mass_ratio,
                         chiA0=dimensionless_spin_a,
                         chiB0=dimensionless_spin_b,
@@ -140,14 +165,14 @@ def initial_orbital_parameters(
 
     # Find the separation that gives the desired orbital angular velocity
     if orbital_angular_velocity is not None:
+        logger.info("Finding separation...")
         opt_result = minimize(
             lambda x: abs(
-                omegaAndAdot(
+                omega_and_adot(
                     r=x[0],
                     q=mass_ratio,
                     chiA=dimensionless_spin_a,
                     chiB=dimensionless_spin_b,
-                    rPrime0=1.0,  # Choice also made in SpEC
                 )[0]
                 - orbital_angular_velocity
             ),
@@ -163,12 +188,11 @@ def initial_orbital_parameters(
         logger.debug(f"Found initial separation: {separation}")
 
     # Find the radial expansion velocity
-    new_orbital_angular_velocity, radial_expansion_velocity = omegaAndAdot(
+    new_orbital_angular_velocity, radial_expansion_velocity = omega_and_adot(
         r=separation,
         q=mass_ratio,
         chiA=dimensionless_spin_a,
         chiB=dimensionless_spin_b,
-        rPrime0=1.0,  # Choice also made in SpEC
     )
     if orbital_angular_velocity is None:
         orbital_angular_velocity = new_orbital_angular_velocity
@@ -181,7 +205,7 @@ def initial_orbital_parameters(
         )
 
     # Estimate number of orbits and time to merger
-    num_orbits, time_to_merger = nOrbitsAndTotalTime(
+    num_orbits, time_to_merger = num_orbits_and_time_to_merger(
         q=mass_ratio,
         chiA0=dimensionless_spin_a,
         chiB0=dimensionless_spin_b,

@@ -32,3 +32,7 @@ pyyaml
 # Rich: to format CLI output and tracebacks
 rich >= 12.0.0
 scipy
+# SXS package: to work with SXS data, waveforms, etc. Also to evaluate some
+# post-Newtonian expressions, e.g. for low-eccentricity initial orbital
+# parameters.
+sxs >= 2024.0.3
