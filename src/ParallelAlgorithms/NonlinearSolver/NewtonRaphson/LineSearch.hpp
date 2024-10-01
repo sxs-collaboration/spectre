@@ -12,7 +12,7 @@ namespace NonlinearSolver::newton_raphson {
  * The next step length is chosen such that it minimizes the quadratic (first
  * globalization step, i.e., when `globalization_iteration_id` is 0) or cubic
  * (subsequent globalization steps) polynomial interpolation. This function
- * implements Algorithm A6.1.3 in \cite DennisSchnabel (p. 325). This is how
+ * implements Algorithm A6.3.1 in \cite DennisSchnabel (p. 325). This is how
  * argument names map to symbols in that algorithm:
  *
  * - `step_length`: \f$\lambda\f$
