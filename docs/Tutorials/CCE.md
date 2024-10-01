@@ -20,12 +20,16 @@ of the release (there may be a lot of text detailing what's been updated in this
 release). Inside this tarball is
 
 - the CCE executable `CharacteristicExtract`
-- an example set of Bondi-Sachs worldtube data (see
-   [Input worldtube data formats](#input_worldtube_data_formats) section)
 - an example YAML input file
-- example output from CCE
+- an example set of Bondi-Sachs worldtube data in the `Tests/` directory (see
+   [Input worldtube data formats](#input_worldtube_data_formats) section)
+- example output from CCE in the `Tests/` directory
 - a `ReduceCceWorldtube` executable and YAML file for converting between
-   [worldtube data formats](#input_worldtube_data_formats)
+   [worldtube data formats](#input_worldtube_data_formats) in the
+   `ReduceCceWorldtube/` diretory
+- a python script `CheckCceOutput.py` (meant to be run from the root of the
+  tarball and after you run the example YAML input file also in the root of the
+  tarball) that will check if the example output is correct
 
 \note The tarball is `.xz` so use `tar -xf TarName.tar.xz` to extract. The `-z`
 flag to use gzip will cause an error.

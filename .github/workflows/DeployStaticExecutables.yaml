@@ -53,38 +53,50 @@ jobs:
           gdown \
           "https://drive.google.com/uc?id=1uaESVdylNmcHwpZwogX4TVrNs8JbWNF1"
           gdown \
-          "https://drive.google.com/uc?id=1rfzjtXtrP9pQE2az3935uN0z_5aSF1hy"
+          "https://drive.google.com/uc?id=1yYMM4PVUec9pIjKTxI4aCpo0Umqconr8"
       - name: Copy CCE executables from the container
         run: >
-          mkdir CceExecutables
+          mkdir CceExecutables;
+          mkdir ./CceExecutables/ReduceCceWorldtube;
+          mkdir ./CceExecutables/Tests;
 
           cp ./tests/InputFiles/Cce/CharacteristicExtract.yaml
           ./CceExecutables/CharacteristicExtract.yaml
 
           cp ./tests/InputFiles/ReduceCceWorldtube/ReduceCceWorldtube.yaml
-          ./CceExecutables/ReduceCceWorldtube.yaml
+          ./CceExecutables/ReduceCceWorldtube/ReduceCceWorldtube.yaml
 
-          for i in CharacteristicExtract ReduceCceWorldtube; do
-            docker cp static-execs:/work/spectre/build/bin/$i ./CceExecutables;
-          done
+          docker cp
+          static-execs:/work/spectre/build/bin/CharacteristicExtract
+          ./CceExecutables/
+
+          docker cp static-execs:/work/spectre/build/bin/ReduceCceWorldtube
+          ./CceExecutables/ReduceCceWorldtube/
       - name: Test CCE executable outside of container
         run: |
-          sed -i 's/CceR0257/BondiSachsCceR0200/g' \
+          mv BondiSachsCceR0200.h5 ./CceExecutables/Tests/
+          mv CheckCceOutput.py ./CceExecutables/Tests/
+          mv CharacteristicExtractReduction_Expected.h5 \
+          ./CceExecutables/Tests/
+
+          sed -i 's/CceR0257/Tests\/BondiSachsCceR0200/g' \
           ./CceExecutables/CharacteristicExtract.yaml
           sed -i 's/H5IsBondiData: False/H5IsBondiData: True/g' \
           ./CceExecutables/CharacteristicExtract.yaml
-          ./CceExecutables/CharacteristicExtract \
-          --input-file ./CceExecutables/CharacteristicExtract.yaml
-          python ./CheckCceOutput.py
+
+          cd ./CceExecutables/
+
+          ./CharacteristicExtract \
+          --input-file ./CharacteristicExtract.yaml
+          python ./Tests/CheckCceOutput.py
           rm CharacteristicExtractReduction.h5
+
+          cd ../
       - name: Create CCE executables release asset
         # Note: We use xz compression since it's much better than gzip, even
         # though it's a decent bit slower. Specifically, xz is two thirds the
         # size of gzip.
         run:  |
-          mv BondiSachsCceR0200.h5 ./CceExecutables/
-          mv CharacteristicExtractReduction_Expected.h5 ./CceExecutables/
-          mv CheckCceOutput.py ./CceExecutables/
           tar cJf CceExecutables.tar.xz CceExecutables
       - name: Upload to release
         uses: softprops/action-gh-release@v2
