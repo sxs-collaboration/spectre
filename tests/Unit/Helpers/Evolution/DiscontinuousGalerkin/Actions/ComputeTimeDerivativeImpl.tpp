@@ -993,12 +993,11 @@ struct Metavariables {
                  domain::Tags::Domain<Dim>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<BoundaryCondition<Dim>,
-                   tmpl::list<DemandOutgoingCharSpeeds<Dim>>>,
-        tmpl::pair<
-            StepChooser<StepChooserUse::LtsStep>,
-            tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<BoundaryCondition<Dim>,
+                             tmpl::list<DemandOutgoingCharSpeeds<Dim>>>,
+                  tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::Constant>>>;
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
@@ -1322,9 +1321,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (metavars::local_time_stepping) {
     std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
         step_choosers;
-    step_choosers.emplace_back(
-        std::make_unique<StepChoosers::Constant<StepChooserUse::LtsStep>>(
-            0.128));
+    step_choosers.emplace_back(std::make_unique<StepChoosers::Constant>(0.128));
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id,

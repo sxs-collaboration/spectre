@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include <cmath>
 #include <limits>
-#include <pup.h>
 #include <utility>
 
 #include "Options/Options.hpp"
@@ -15,11 +13,17 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 namespace StepChoosers {
 
 /// Limits the step size to a constant.
-template <typename StepChooserUse>
-class Maximum : public StepChooser<StepChooserUse> {
+class Maximum : public StepChooser<StepChooserUse::Slab>,
+                public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   Maximum() = default;
@@ -30,40 +34,32 @@ class Maximum : public StepChooser<StepChooserUse> {
 
   static constexpr Options::String help{"Limits the step size to a constant."};
 
-  explicit Maximum(const double value) : value_(value) {}
+  explicit Maximum(double value);
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
-    return {{.size = std::copysign(value_, last_step)}, true};
-  }
+  std::pair<TimeStepRequest, bool> operator()(double last_step) const;
 
-  bool uses_local_data() const override { return false; }
-  bool can_be_delayed() const override { return true; }
+  bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | value_; }
+  void pup(PUP::er& p) override;
 
  private:
   double value_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-/// \cond
-template <typename StepChooserUse>
-PUP::able::PUP_ID Maximum<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
-
-namespace Maximum_detail {
-double parse_options(const Options::Option& options);
-}  // namespace Maximum_detail
 }  // namespace StepChoosers
 
-template <typename StepChooserUse>
-struct Options::create_from_yaml<StepChoosers::Maximum<StepChooserUse>> {
+template <>
+struct Options::create_from_yaml<StepChoosers::Maximum> {
   template <typename Metavariables>
-  static StepChoosers::Maximum<StepChooserUse> create(
-      const Options::Option& options) {
-    return StepChoosers::Maximum<StepChooserUse>(
-        StepChoosers::Maximum_detail::parse_options(options));
+  static StepChoosers::Maximum create(const Options::Option& options) {
+    return create<void>(options);
   }
 };
+
+template <>
+StepChoosers::Maximum
+Options::create_from_yaml<StepChoosers::Maximum>::create<void>(
+    const Options::Option& options);

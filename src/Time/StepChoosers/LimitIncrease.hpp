@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include <cmath>
 #include <limits>
-#include <pup.h>
 #include <utility>
 
 #include "Options/String.hpp"
@@ -14,10 +12,16 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 namespace StepChoosers {
 /// Limits step increase to a constant ratio.
-template <typename StepChooserUse>
-class LimitIncrease : public StepChooser<StepChooserUse> {
+class LimitIncrease : public StepChooser<StepChooserUse::Slab>,
+                      public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   LimitIncrease() = default;
@@ -36,26 +40,19 @@ class LimitIncrease : public StepChooser<StepChooserUse> {
       "Limits step increase to a constant ratio."};
   using options = tmpl::list<Factor>;
 
-  explicit LimitIncrease(const double factor) : factor_(factor) {}
+  explicit LimitIncrease(double factor);
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<TimeStepRequest, bool> operator()(const double last_step) const {
-    return {{.size = last_step * factor_}, true};
-  }
+  std::pair<TimeStepRequest, bool> operator()(double last_step) const;
 
-  bool uses_local_data() const override { return false; }
-  bool can_be_delayed() const override { return true; }
+  bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | factor_; }
+  void pup(PUP::er& p) override;
 
  private:
   double factor_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-/// \cond
-template <typename StepChooserUse>
-PUP::able::PUP_ID LimitIncrease<StepChooserUse>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace StepChoosers

@@ -231,8 +231,7 @@ struct EvolutionMetavars {
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    tmpl::push_back<StepChoosers::standard_slab_choosers<
                                        system, local_time_stepping>,
-                                   StepChoosers::ByBlock<StepChooserUse::Slab,
-                                                         volume_dim>>>,
+                                   StepChoosers::ByBlock<volume_dim>>>,
         tmpl::pair<TimeSequence<double>,
                    TimeSequences::all_time_sequences<double>>,
         tmpl::pair<TimeSequence<std::uint64_t>,

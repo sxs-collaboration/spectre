@@ -73,12 +73,11 @@ struct ErrorControlSelecter {
 
 template <bool WithErrorControl, bool WithAltErrorControl = false>
 struct Metavariables {
-  template <typename Use>
   using step_choosers_without_error_control =
-      tmpl::list<StepChoosers::LimitIncrease<Use>, StepChoosers::Constant<Use>>;
+      tmpl::list<StepChoosers::LimitIncrease, StepChoosers::Constant>;
   template <typename Use>
   using step_choosers = tmpl::append<
-      step_choosers_without_error_control<Use>,
+      step_choosers_without_error_control,
       tmpl::conditional_t<
           WithErrorControl,
           tmpl::list<StepChoosers::ErrorControl<Use, EvolvedVariablesTag>>,

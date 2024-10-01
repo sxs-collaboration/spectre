@@ -39,11 +39,9 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
         tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::PreventRapidIncrease<
-                                 StepChooserUse::LtsStep>>>,
+                             tmpl::list<StepChoosers::PreventRapidIncrease>>,
                   tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::PreventRapidIncrease<
-                                 StepChooserUse::Slab>>>>;
+                             tmpl::list<StepChoosers::PreventRapidIncrease>>>;
   };
   using component_list = tmpl::list<>;
 };
@@ -109,9 +107,9 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
               ? (current_time - history.back().time_step_id.step_time()).value()
               : direction * std::numeric_limits<double>::infinity();
 
-      const StepChoosers::PreventRapidIncrease<Use> relax{};
+      const StepChoosers::PreventRapidIncrease relax{};
       const std::unique_ptr<StepChooser<Use>> relax_base =
-          std::make_unique<StepChoosers::PreventRapidIncrease<Use>>(relax);
+          std::make_unique<StepChoosers::PreventRapidIncrease>(relax);
 
       const std::pair<TimeStepRequest, bool> expected{{.size = expected_size},
                                                       true};
@@ -163,7 +161,7 @@ void check_substep_methods() {
   history.insert(TimeStepId(true, 0, slab.start(), 2, slab.duration(),
                             (slab.start() + slab.duration() / 2).value()),
                  0.0, 0.0);
-  const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
+  const StepChoosers::PreventRapidIncrease relax{};
   CHECK(relax(history, 3.14) == std::pair(TimeStepRequest{}, true));
 }
 }  // namespace
@@ -196,6 +194,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
   TestHelpers::test_creation<std::unique_ptr<StepChooser<StepChooserUse::Slab>>,
                              Metavariables>("PreventRapidIncrease");
 
-  CHECK(not StepChoosers::PreventRapidIncrease<StepChooserUse::Slab>{}
-                .uses_local_data());
+  CHECK(not StepChoosers::PreventRapidIncrease{}.uses_local_data());
 }

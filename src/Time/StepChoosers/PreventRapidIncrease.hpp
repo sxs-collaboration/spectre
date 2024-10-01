@@ -4,7 +4,7 @@
 #pragma once
 
 #include <cmath>
-#include <pup.h>
+#include <optional>
 #include <utility>
 
 #include "Options/String.hpp"
@@ -15,6 +15,12 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 namespace StepChoosers {
 /// Limits the time step to prevent multistep integrator instabilities.
 ///
@@ -23,8 +29,8 @@ namespace StepChoosers {
 /// time-stepper history increased.  If there have been recent step
 /// size increases, the new size bound is the size of the most recent
 /// step, otherwise no restriction is imposed.
-template <typename StepChooserUse>
-class PreventRapidIncrease : public StepChooser<StepChooserUse> {
+class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
+                             public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   PreventRapidIncrease() = default;
@@ -66,13 +72,9 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
     return {{}, true};
   }
 
-  bool uses_local_data() const override { return false; }
-  bool can_be_delayed() const override { return true; }
-};
+  bool uses_local_data() const override;
+  bool can_be_delayed() const override;
 
-/// \cond
-template <typename StepChooserUse>
-PUP::able::PUP_ID PreventRapidIncrease<StepChooserUse>::my_PUP_ID =
-    0;  // NOLINT
-/// \endcond
+  void pup(PUP::er& p) override;
+};
 }  // namespace StepChoosers

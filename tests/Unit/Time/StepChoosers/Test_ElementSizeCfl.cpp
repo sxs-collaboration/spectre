@@ -62,13 +62,11 @@ struct Metavariables {
   };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::ElementSizeCfl<
-                                 StepChooserUse::LtsStep, Dim, system>>>,
-                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::ElementSizeCfl<
-                                 StepChooserUse::Slab, Dim, system>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::list<StepChoosers::ElementSizeCfl<Dim, system>>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::list<StepChoosers::ElementSizeCfl<Dim, system>>>>;
   };
 };
 
@@ -95,13 +93,11 @@ std::pair<double, bool> get_suggestion(
       ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           ::domain::CoordinateMaps::Identity<Dim>{}),
       0.0, typename domain::Tags::FunctionsOfTimeInitialize::type{});
-  const StepChoosers::ElementSizeCfl<StepChooserUse::LtsStep, Dim,
-                                     typename Metavariables<Dim>::system>
+  const StepChoosers::ElementSizeCfl<Dim, typename Metavariables<Dim>::system>
       element_size_cfl{safety_factor};
   const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
       element_size_base = std::make_unique<StepChoosers::ElementSizeCfl<
-          StepChooserUse::LtsStep, Dim, typename Metavariables<Dim>::system>>(
-          element_size_cfl);
+          Dim, typename Metavariables<Dim>::system>>(element_size_cfl);
 
   const double speed = get<typename Metavariables<
       Dim>::system::compute_largest_characteristic_speed>(box);
@@ -186,7 +182,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
       "ElementSizeCfl:\n"
       "  SafetyFactor: 5.0");
 
-  CHECK(StepChoosers::ElementSizeCfl<StepChooserUse::Slab, 1,
-                                     Metavariables<1>::system>{}
+  CHECK(StepChoosers::ElementSizeCfl<1, Metavariables<1>::system>{}
             .uses_local_data());
 }

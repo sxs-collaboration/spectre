@@ -61,16 +61,13 @@ struct Metavariables {
     };
   };
 
-  template <typename Use>
-  using Cfl = StepChoosers::Cfl<Use, frame, system>;
+  using Cfl = StepChoosers::Cfl<frame, system>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<Cfl<StepChooserUse::LtsStep>>>,
-                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<Cfl<StepChooserUse::Slab>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<Cfl>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>, tmpl::list<Cfl>>>;
   };
 };
 
@@ -79,7 +76,7 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
                                        const double safety_factor,
                                        const double characteristic_speed,
                                        const DataVector& coordinates) {
-  using Cfl = Metavariables::Cfl<Use>;
+  using Cfl = Metavariables::Cfl;
 
   auto box = db::create<
       db::AddSimpleTags<
@@ -143,6 +140,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Cfl", "[Unit][Time]") {
   test_use<StepChooserUse::LtsStep>();
   test_use<StepChooserUse::Slab>();
 
-  CHECK(StepChoosers::Cfl<StepChooserUse::Slab, frame, Metavariables::system>{}
-            .uses_local_data());
+  CHECK(StepChoosers::Cfl<frame, Metavariables::system>{}.uses_local_data());
 }

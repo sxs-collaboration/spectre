@@ -20,25 +20,23 @@
 
 namespace StepChoosers {
 
-template <typename StepChooserUse, size_t VolumeDim>
-Random<StepChooserUse, VolumeDim>::Random() = default;
+template <size_t VolumeDim>
+Random<VolumeDim>::Random() = default;
 
-template <typename StepChooserUse, size_t VolumeDim>
-Random<StepChooserUse, VolumeDim>::Random(CkMigrateMessage* /*unused*/) {}
+template <size_t VolumeDim>
+Random<VolumeDim>::Random(CkMigrateMessage* /*unused*/) {}
 
-template <typename StepChooserUse, size_t VolumeDim>
-Random<StepChooserUse, VolumeDim>::Random(const double minimum,
-                                          const double maximum,
-                                          const size_t seed,
-                                          const Options::Context& context)
+template <size_t VolumeDim>
+Random<VolumeDim>::Random(const double minimum, const double maximum,
+                          const size_t seed, const Options::Context& context)
     : minimum_(minimum), maximum_(maximum), seed_(seed) {
   if (minimum_ >= maximum_) {
     PARSE_ERROR(context, "Must have Minimum < Maximum");
   }
 }
 
-template <typename StepChooserUse, size_t VolumeDim>
-std::pair<TimeStepRequest, bool> Random<StepChooserUse, VolumeDim>::operator()(
+template <size_t VolumeDim>
+std::pair<TimeStepRequest, bool> Random<VolumeDim>::operator()(
     const Element<VolumeDim>& element, const TimeStepId& time_step_id,
     const double last_step) const {
   size_t local_seed = seed_;
@@ -55,35 +53,34 @@ std::pair<TimeStepRequest, bool> Random<StepChooserUse, VolumeDim>::operator()(
   }
 }
 
-template <typename StepChooserUse, size_t VolumeDim>
-bool Random<StepChooserUse, VolumeDim>::uses_local_data() const {
+template <size_t VolumeDim>
+bool Random<VolumeDim>::uses_local_data() const {
   return true;
 }
 
-template <typename StepChooserUse, size_t VolumeDim>
-bool Random<StepChooserUse, VolumeDim>::can_be_delayed() const {
+template <size_t VolumeDim>
+bool Random<VolumeDim>::can_be_delayed() const {
   return true;
 }
 
-template <typename StepChooserUse, size_t VolumeDim>
-void Random<StepChooserUse, VolumeDim>::pup(PUP::er& p) {
+template <size_t VolumeDim>
+void Random<VolumeDim>::pup(PUP::er& p) {
+  StepChooser<StepChooserUse::Slab>::pup(p);
+  StepChooser<StepChooserUse::LtsStep>::pup(p);
   p | minimum_;
   p | maximum_;
   p | seed_;
 }
 
-template <typename StepChooserUse, size_t VolumeDim>
-PUP::able::PUP_ID Random<StepChooserUse, VolumeDim>::my_PUP_ID = 0;  // NOLINT
+template <size_t VolumeDim>
+PUP::able::PUP_ID Random<VolumeDim>::my_PUP_ID = 0;  // NOLINT
 
-#define USE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data) \
-  template class Random<StepChooserUse::USE(data), DIM(data)>;
+#define INSTANTIATE(_, data) template class Random<DIM(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (Slab, LtsStep), (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-#undef USE
 }  // namespace StepChoosers

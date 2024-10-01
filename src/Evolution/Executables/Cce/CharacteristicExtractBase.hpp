@@ -111,8 +111,7 @@ struct CharacteristicExtractDefaults {
                                      Cce::Tags::PartiallyFlatAngularCoords>,
                           tmpl::list<Cce::Tags::CauchyAngularCoords>>;
   using cce_step_choosers =
-      tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
-                 StepChoosers::LimitIncrease<StepChooserUse::LtsStep>,
+      tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
                  StepChoosers::ErrorControl<StepChooserUse::LtsStep,
                                             Tags::Variables<evolved_swsh_tags>,
                                             swsh_vars_selector>,

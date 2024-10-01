@@ -36,11 +36,9 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
         tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::Random<
-                                 StepChooserUse::LtsStep, volume_dim>>>,
+                             tmpl::list<StepChoosers::Random<volume_dim>>>,
                   tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::Random<
-                                 StepChooserUse::Slab, volume_dim>>>>;
+                             tmpl::list<StepChoosers::Random<volume_dim>>>>;
   };
   using component_list = tmpl::list<>;
 };
@@ -49,7 +47,7 @@ template <typename Use>
 double get_suggestion(const double min, const double max, const size_t seed,
                       const Element<volume_dim>& element,
                       const TimeStepId& time_step_id) {
-  using Random = StepChoosers::Random<Use, volume_dim>;
+  using Random = StepChoosers::Random<volume_dim>;
 
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,

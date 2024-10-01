@@ -38,8 +38,9 @@ namespace StepChoosers {
 ///
 /// This is useful as a coarse estimate for slabs, or to place a ceiling on
 /// another dynamically-adjusted step chooser.
-template <typename StepChooserUse, size_t Dim, typename System>
-class ElementSizeCfl : public StepChooser<StepChooserUse> {
+template <size_t Dim, typename System>
+class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
+                       public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   ElementSizeCfl() = default;
@@ -94,15 +95,18 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
   bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | safety_factor_; }
+  void pup(PUP::er& p) override {
+    StepChooser<StepChooserUse::Slab>::pup(p);
+    StepChooser<StepChooserUse::LtsStep>::pup(p);
+    p | safety_factor_;
+  }
 
  private:
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 /// \cond
-template <typename StepChooserUse, size_t Dim, typename System>
-PUP::able::PUP_ID ElementSizeCfl<StepChooserUse, Dim, System>::my_PUP_ID =
-    0;  // NOLINT
+template <size_t Dim, typename System>
+PUP::able::PUP_ID ElementSizeCfl<Dim, System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

@@ -34,8 +34,9 @@ struct MinimumGridSpacing;
 
 namespace StepChoosers {
 /// Sets a goal based on the CFL stability criterion.
-template <typename StepChooserUse, typename Frame, typename System>
-class Cfl : public StepChooser<StepChooserUse> {
+template <typename Frame, typename System>
+class Cfl : public StepChooser<StepChooserUse::Slab>,
+            public StepChooser<StepChooserUse::LtsStep> {
  public:
   /// \cond
   Cfl() = default;
@@ -82,14 +83,18 @@ class Cfl : public StepChooser<StepChooserUse> {
   bool can_be_delayed() const override { return true; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { p | safety_factor_; }
+  void pup(PUP::er& p) override {
+    StepChooser<StepChooserUse::Slab>::pup(p);
+    StepChooser<StepChooserUse::LtsStep>::pup(p);
+    p | safety_factor_;
+  }
 
  private:
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 /// \cond
-template <typename StepChooserUse, typename Frame, typename System>
-PUP::able::PUP_ID Cfl<StepChooserUse, Frame, System>::my_PUP_ID = 0;  // NOLINT
+template <typename Frame, typename System>
+PUP::able::PUP_ID Cfl<Frame, System>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers

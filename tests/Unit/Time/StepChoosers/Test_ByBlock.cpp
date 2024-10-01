@@ -31,18 +31,16 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
         tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::ByBlock<
-                                 StepChooserUse::LtsStep, volume_dim>>>,
+                             tmpl::list<StepChoosers::ByBlock<volume_dim>>>,
                   tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::ByBlock<
-                                 StepChooserUse::Slab, volume_dim>>>>;
+                             tmpl::list<StepChoosers::ByBlock<volume_dim>>>>;
   };
   using component_list = tmpl::list<>;
 };
 
 template <typename Use>
 void test_by_block() {
-  using ByBlock = StepChoosers::ByBlock<Use, volume_dim>;
+  using ByBlock = StepChoosers::ByBlock<volume_dim>;
 
   const ByBlock by_block({2.5, 3.0, 3.5});
   const std::unique_ptr<StepChooser<Use>> by_block_base =
@@ -81,5 +79,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
   test_by_block<StepChooserUse::LtsStep>();
   test_by_block<StepChooserUse::Slab>();
 
-  CHECK(StepChoosers::ByBlock<StepChooserUse::Slab, 1>{}.uses_local_data());
+  CHECK(StepChoosers::ByBlock<1>{}.uses_local_data());
 }

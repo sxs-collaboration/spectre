@@ -50,9 +50,9 @@ template <typename TimeStepperType>
 struct TestMetavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::LimitIncrease<StepChooserUse::LtsStep>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::LimitIncrease>>>;
   };
   using component_list = tmpl::list<>;
   using const_global_cache_tags =
