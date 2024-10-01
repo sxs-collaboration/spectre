@@ -44,9 +44,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/ScalarTensor/BoundaryConditions/ProductOfConditions.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/Factory.hpp"
-#include "Evolution/Systems/ScalarTensor/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/ScalarTensor/Constraints.hpp"
 #include "Evolution/Systems/ScalarTensor/Initialize.hpp"
 #include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
@@ -288,7 +286,8 @@ struct ObserverTags {
       ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
                                                     Frame::Inertial>,
       ::Events::Tags::ObserverMeshVelocityCompute<volume_dim, Frame::Inertial>,
-      gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>;
+      gh::gauges::Tags::GaugeAndDerivativeCompute<
+          volume_dim, gh::ScalarTensor::AnalyticData::all_analytic_data>>;
 
   using field_observations =
       dg::Events::field_observations<volume_dim, observe_fields,
@@ -396,7 +395,8 @@ struct ScalarTensorTemplateBase {
       Initialization::Actions::AddComputeTags<
           ScalarTensor::Initialization::scalar_tensor_3plus1_compute_tags<
               volume_dim>>,
-      Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<volume_dim>>,
+      Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
+          gh::ScalarTensor::AnalyticData::all_analytic_data, volume_dim>>,
       Initialization::Actions::AddSimpleTags<
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>>,

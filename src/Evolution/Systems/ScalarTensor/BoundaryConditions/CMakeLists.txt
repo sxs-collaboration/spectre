@@ -6,6 +6,8 @@ spectre_target_sources(
   PRIVATE
   BoundaryCondition.cpp
   ConstraintPreserving.cpp
+  DemandOutgoingCharSpeeds.cpp
+  DirichletAnalytic.cpp
   )
 
 spectre_target_headers(
@@ -14,6 +16,7 @@ spectre_target_headers(
   HEADERS
   BoundaryCondition.hpp
   ConstraintPreserving.hpp
+  DemandOutgoingCharSpeeds.hpp
+  DirichletAnalytic.hpp
   Factory.hpp
-  ProductOfConditions.hpp
   )

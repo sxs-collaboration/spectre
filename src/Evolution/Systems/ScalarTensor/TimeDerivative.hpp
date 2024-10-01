@@ -17,6 +17,7 @@
 #include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
+#include "PointwiseFunctions/AnalyticData/GhScalarTensor/Factory.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -46,9 +47,11 @@ struct TimeDerivative {
       ::Tags::dt,
       typename CurvedScalarWave::System<dim>::variables_tag::tags_list>;
   using dt_tags = tmpl::append<gh_dt_tags, scalar_dt_tags>;
-  using gh_temp_tags = typename gh::TimeDerivative<dim>::temporary_tags;
+  using gh_temp_tags = typename gh::TimeDerivative<
+      gh::ScalarTensor::AnalyticData::all_analytic_data, dim>::temporary_tags;
   using gh_gradient_tags = typename gh::System<dim>::gradients_tags;
-  using gh_arg_tags = typename gh::TimeDerivative<dim>::argument_tags;
+  using gh_arg_tags = typename gh::TimeDerivative<
+      gh::ScalarTensor::AnalyticData::all_analytic_data, dim>::argument_tags;
   using scalar_temp_tags =
       typename CurvedScalarWave::TimeDerivative<dim>::temporary_tags;
   using scalar_extra_temp_tags =

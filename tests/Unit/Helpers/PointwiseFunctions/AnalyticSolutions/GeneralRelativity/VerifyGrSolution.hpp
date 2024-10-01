@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
@@ -241,7 +242,7 @@ void verify_time_independent_einstein_solution(
       gr::Tags::DerivativesOfSpacetimeMetric<DataVector, 3>>>
       buffer(mesh.number_of_grid_points());
 
-  gh::TimeDerivative<3>::apply(
+  gh::TimeDerivative<gh::Solutions::all_solutions<3>, 3>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
       make_not_null(

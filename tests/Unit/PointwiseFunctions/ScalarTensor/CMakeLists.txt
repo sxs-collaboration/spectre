@@ -12,5 +12,6 @@ target_link_libraries(
   PRIVATE
   Framework
   ScalarTensor
+  ScalarTensorAnalyticData
   ScalarTensorPointwise
   )

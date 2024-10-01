@@ -245,9 +245,10 @@ struct EvolutionMetavars {
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
-  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<volume_dim>>,
-      Parallel::Actions::TerminatePhase>;
+  using initialize_initial_data_dependent_quantities_actions =
+      tmpl::list<Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
+                     gh::Solutions::all_solutions<volume_dim>, volume_dim>>,
+                 Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -424,7 +425,8 @@ struct EvolutionMetavars {
       ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
                                                     Frame::Inertial>,
       ::Events::Tags::ObserverMeshVelocityCompute<volume_dim, Frame::Inertial>,
-      gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>;
+      gh::gauges::Tags::GaugeAndDerivativeCompute<
+          volume_dim, gh::Solutions::all_solutions<volume_dim>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

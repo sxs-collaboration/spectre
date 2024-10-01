@@ -5,8 +5,8 @@
 
 #include <cstddef>
 
-#include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -16,7 +16,7 @@ template <size_t Dim>
 void impl() {
   // The analytic gauge condition also can hold all the different solutions, so
   // register those too.
-  using solutions = gh::solutions_including_matter<Dim>;
+  using solutions = gh::Solutions::all_solutions<Dim>;
   register_classes_with_charm(solutions{});
 }
 }  // namespace

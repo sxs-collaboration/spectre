@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   StressEnergy.cpp
+  TimeDerivativeTerms.cpp
   VolumeTermsInstantiation.cpp
   )
 

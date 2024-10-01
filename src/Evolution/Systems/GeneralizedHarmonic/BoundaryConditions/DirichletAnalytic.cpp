@@ -8,8 +8,8 @@
 #include <pup.h>
 #include <type_traits>
 
-#include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
@@ -80,7 +80,7 @@ std::optional<std::string> DirichletAnalytic<Dim>::dg_ghost(
   using evolved_vars_tags = typename System<Dim>::variables_tag::tags_list;
   auto boundary_values = call_with_dynamic_type<
       tuples::tagged_tuple_from_typelist<evolved_vars_tags>,
-      solutions_including_matter<Dim>>(
+      gh::Solutions::all_solutions<Dim>>(
       analytic_prescription_.get(),
       [&coords, &time](const auto* const analytic_solution_or_data) {
         if constexpr (is_analytic_solution_v<

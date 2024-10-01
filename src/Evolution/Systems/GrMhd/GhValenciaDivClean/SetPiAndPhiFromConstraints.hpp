@@ -27,6 +27,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -44,22 +45,31 @@ namespace grmhd::GhValenciaDivClean {
  */
 struct SetPiAndPhiFromConstraints {
  public:
-  using return_tags =
-      typename gh::gauges::SetPiAndPhiFromConstraints<3>::return_tags;
+  using return_tags = typename gh::gauges::SetPiAndPhiFromConstraints<
+      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
+      3>::return_tags;
 
   using argument_tags = tmpl::push_back<
-      typename gh::gauges::SetPiAndPhiFromConstraints<3>::argument_tags,
+      typename gh::gauges::SetPiAndPhiFromConstraints<
+          ghmhd::GhValenciaDivClean::InitialData::
+              analytic_solutions_and_data_list,
+          3>::argument_tags,
       evolution::dg::subcell::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::ActiveGrid>;
 
-  using compute_tags =
-      typename gh::gauges::SetPiAndPhiFromConstraints<3>::compute_tags;
+  using compute_tags = typename gh::gauges::SetPiAndPhiFromConstraints<
+      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
+      3>::compute_tags;
   using const_global_cache_tags =
       typename gh::gauges::SetPiAndPhiFromConstraints<
+          ghmhd::GhValenciaDivClean::InitialData::
+              analytic_solutions_and_data_list,
           3>::const_global_cache_tags;
   using mutable_global_cache_tags =
       typename gh::gauges::SetPiAndPhiFromConstraints<
+          ghmhd::GhValenciaDivClean::InitialData::
+              analytic_solutions_and_data_list,
           3>::mutable_global_cache_tags;
 
   static void apply(
@@ -82,15 +92,21 @@ struct SetPiAndPhiFromConstraints {
           subcell_logical_coordinates,
       const evolution::dg::subcell::ActiveGrid active_grid) {
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      gh::gauges::SetPiAndPhiFromConstraints<3>::apply(
-          pi, phi, initial_time, dg_mesh, logical_to_grid_map,
-          grid_to_inertial_map, functions_of_time, dg_logical_coordinates,
-          spacetime_metric, gauge_condition, set_pi_and_phi_from_constraints);
+      gh::gauges::SetPiAndPhiFromConstraints<
+          ghmhd::GhValenciaDivClean::InitialData::
+              analytic_solutions_and_data_list,
+          3>::apply(pi, phi, initial_time, dg_mesh, logical_to_grid_map,
+                    grid_to_inertial_map, functions_of_time,
+                    dg_logical_coordinates, spacetime_metric, gauge_condition,
+                    set_pi_and_phi_from_constraints);
     } else {
-      gh::gauges::SetPiAndPhiFromConstraints<3>::apply(
-          pi, phi, initial_time, subcell_mesh, logical_to_grid_map,
-          grid_to_inertial_map, functions_of_time, subcell_logical_coordinates,
-          spacetime_metric, gauge_condition, set_pi_and_phi_from_constraints);
+      gh::gauges::SetPiAndPhiFromConstraints<
+          ghmhd::GhValenciaDivClean::InitialData::
+              analytic_solutions_and_data_list,
+          3>::apply(pi, phi, initial_time, subcell_mesh, logical_to_grid_map,
+                    grid_to_inertial_map, functions_of_time,
+                    subcell_logical_coordinates, spacetime_metric,
+                    gauge_condition, set_pi_and_phi_from_constraints);
     }
   }
 };

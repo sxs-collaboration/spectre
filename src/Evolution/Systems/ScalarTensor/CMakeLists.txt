@@ -29,14 +29,15 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  CurvedScalarWave
   DataStructures
   DiscontinuousGalerkin
   DomainBoundaryConditions
   GeneralRelativity
   GeneralizedHarmonic
+  GhScalarTensorAnalyticData
   Serialization
   Utilities
-  CurvedScalarWave
   INTERFACE
   Options
   Parallel

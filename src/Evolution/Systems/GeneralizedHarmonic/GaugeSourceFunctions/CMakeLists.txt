@@ -25,12 +25,14 @@ spectre_target_headers(
   DampedWaveHelpers.hpp
   DhGaugeParameters.hpp
   Dispatch.hpp
+  Dispatch.tpp
   Factory.hpp
   Gauges.hpp
   HalfPiPhiTwoNormals.hpp
   Harmonic.hpp
   RegisterDerived.hpp
   SetPiAndPhiFromConstraints.hpp
+  SetPiAndPhiFromConstraints.tpp
   )
 
 add_subdirectory(Tags)

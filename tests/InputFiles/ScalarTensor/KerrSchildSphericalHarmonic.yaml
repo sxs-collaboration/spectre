@@ -58,11 +58,9 @@ DomainCreator:
     OuterRadius: 25.0
     Interior:
       ExciseWithBoundaryCondition:
-        ProductDirichletAnalyticAndAnalyticConstant:
-          GeneralizedHarmonicDirichletAnalytic:
-            AnalyticPrescription: *InitialData
-          ScalarAnalyticConstant:
-            Amplitude: 0.0
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+          Amplitude: 0.0
     InitialRefinement: [0, 0, 1]
     InitialGridPoints: [6, 6, 6]
     UseEquiangularMap: true
@@ -72,11 +70,9 @@ DomainCreator:
     WhichWedges: All
     TimeDependentMaps: None
     OuterBoundaryCondition:
-      ProductDirichletAnalyticAndAnalyticConstant:
-        GeneralizedHarmonicDirichletAnalytic:
-          AnalyticPrescription: *InitialData
-        ScalarAnalyticConstant:
-          Amplitude: 0.0
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
+        Amplitude: 0.0
 
 EvolutionSystem:
   GeneralizedHarmonic:

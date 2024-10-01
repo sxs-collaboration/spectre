@@ -257,7 +257,8 @@ struct ObserverTags {
                                                     Frame::Inertial>,
       ::Events::Tags::ObserverMeshVelocityCompute<volume_dim, Frame::Inertial>,
       analytic_compute, error_compute,
-      gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>;
+      gh::gauges::Tags::GaugeAndDerivativeCompute<
+          volume_dim, gh::Solutions::all_solutions<volume_dim>>>;
 
   using field_observations =
       dg::Events::field_observations<volume_dim, observe_fields,
@@ -337,9 +338,10 @@ struct GeneralizedHarmonicTemplateBase {
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
 
-  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<volume_dim>>,
-      Parallel::Actions::TerminatePhase>;
+  using initialize_initial_data_dependent_quantities_actions =
+      tmpl::list<Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
+                     gh::Solutions::all_solutions<volume_dim>, volume_dim>>,
+                 Parallel::Actions::TerminatePhase>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables

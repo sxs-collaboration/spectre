@@ -65,7 +65,6 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -286,7 +285,10 @@ struct GhValenciaDivCleanDefaults {
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Actions::MutateApply<tmpl::conditional_t<
           UseDgSubcell, grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints,
-          gh::gauges::SetPiAndPhiFromConstraints<3>>>,
+          gh::gauges::SetPiAndPhiFromConstraints<
+              ghmhd::GhValenciaDivClean::InitialData::
+                  analytic_solutions_and_data_list,
+              3>>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
               DataVector, volume_dim, domain_frame>>>,
@@ -577,7 +579,9 @@ struct GhValenciaDivCleanTemplateBase<
                      ::Events::Tags::ObserverInverseJacobian<
                          volume_dim, Frame::ElementLogical, Frame::Inertial>,
                      typename system::gradient_variables>,
-                 gh::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>>;
+                 gh::gauges::Tags::GaugeAndDerivativeCompute<
+                     volume_dim, ghmhd::GhValenciaDivClean::InitialData::
+                                     analytic_solutions_and_data_list>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

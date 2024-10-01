@@ -39,6 +39,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -113,8 +114,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
             std::make_unique<gh::gauges::DampedHarmonic>(
                 100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6})),
         false);
-    db::mutate_apply<gh::gauges::SetPiAndPhiFromConstraints<Dim>>(
-        make_not_null(&box));
+    db::mutate_apply<gh::gauges::SetPiAndPhiFromConstraints<
+        gh::Solutions::all_solutions<Dim>, Dim>>(make_not_null(&box));
 
     // Should be exact since we didn't compute anything
     CHECK(get<gh::Tags::Pi<DataVector, Dim>>(evolved_vars) ==
@@ -146,8 +147,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
           std::make_unique<gh::gauges::DampedHarmonic>(
               100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6})),
       true);
-  db::mutate_apply<gh::gauges::SetPiAndPhiFromConstraints<Dim>>(
-      make_not_null(&box));
+  db::mutate_apply<gh::gauges::SetPiAndPhiFromConstraints<
+      gh::Solutions::all_solutions<Dim>, Dim>>(make_not_null(&box));
 
   // Verify that the gauge constraint is satisfied
   const auto& spacetime_metric =
@@ -196,7 +197,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
-  gh::gauges::dispatch(
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
       half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi, mesh,

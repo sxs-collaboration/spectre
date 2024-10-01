@@ -36,6 +36,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiAndPhiFromConstraints.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -173,15 +174,17 @@ SPECTRE_TEST_CASE(
         get<gh::Tags::Pi<DataVector, 3>>(initial_vars);
     tnsr::iaa<DataVector, 3, Frame::Inertial> expected_phi =
         get<gh::Tags::Phi<DataVector, 3>>(initial_vars);
-    gh::gauges::SetPiAndPhiFromConstraints<3>::apply(
-        make_not_null(&expected_pi), make_not_null(&expected_phi), 0., mesh,
-        db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
-        db::get<domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
-                                                            Frame::Inertial>>(
-            box),
-        db::get<domain::Tags::FunctionsOfTime>(box), logical_coordinates(mesh),
-        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
-        db::get<gh::gauges::Tags::GaugeCondition>(box), true);
+    gh::gauges::SetPiAndPhiFromConstraints<
+        ghmhd::GhValenciaDivClean::InitialData::
+            analytic_solutions_and_data_list,
+        3>::apply(make_not_null(&expected_pi), make_not_null(&expected_phi), 0.,
+                  mesh, db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
+                  db::get<domain::CoordinateMaps::Tags::CoordinateMap<
+                      3, Frame::Grid, Frame::Inertial>>(box),
+                  db::get<domain::Tags::FunctionsOfTime>(box),
+                  logical_coordinates(mesh),
+                  get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
+                  db::get<gh::gauges::Tags::GaugeCondition>(box), true);
 
     const auto& pi = db::get<gh::Tags::Pi<DataVector, 3>>(box);
     CHECK(pi == expected_pi);
