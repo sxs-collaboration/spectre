@@ -116,3 +116,24 @@ The second command with `SPECTRE_DEBUG=ON` enables sanity checks and
 optimizations. This means it can be used in production-level runs to ensure
 there aren't any subtle bugs that might only arise after a decently
 long simulation.
+
+## Sonic at ICTS-TIFR
+
+Cluster documentation: https://it.icts.res.in/docs/sonic-cluster
+
+1. Clone the spectre source code and set `SPECTRE_HOME` to point it.
+2. Create a directory for building SpECTRE (`SPECTRE_BUILD`).
+3. Setup the software environment
+    ```
+    . /mnt/pfs/vaishak.p/soft/modules-5.2.0/init/bash
+    ```
+    Add these lines to your `.bashrc` and source it
+    if you would like to make it persistent.
+4. Source the `$SPECTRE_HOME/support/Environments/Sonic.sh` script.
+5. Build SpECTRE by changing to `$SPECTRE_BUILD` and using
+   one of the variants of the `spectre_run_cmake` commands.
+   This by default compiles SpECTRE in Release mode,
+   without debug symbols and LTO, and with system malloc.
+   If you wish to compile in debug mode, with LTO/JEMALLOC, or other options,
+   simply suffix the additional cmake flags to the command.
+6. Use `make` to build your targets.
