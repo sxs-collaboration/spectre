@@ -30,6 +30,7 @@ def render_domain(
     clip_origin: tuple[float, float, float] = (0.0, 0.0, 0.0),
     clip_normal: tuple[float, float, float] = (0.0, 0.0, 1.0),
     slice: bool = False,
+    background_color: tuple[float, float, float] = (1.0, 1.0, 1.0),
 ):
     """Renders a 3D domain with elements and grid lines
 
@@ -55,7 +56,7 @@ def render_domain(
     render_view = pv.GetActiveViewOrCreate("RenderView")
     render_view.UseLight = 0
     render_view.UseColorPaletteForBackground = 0
-    render_view.Background = 3 * [1.0]
+    render_view.Background = background_color
     render_view.OrientationAxesVisibility = 0
 
     def slice_or_clip(triangulate, **kwargs):
@@ -193,6 +194,14 @@ def render_domain(
     "slice",
     default=False,
     help="Use a slice instead of a clip.",
+    show_default=True,
+)
+@click.option(
+    "--background-color",
+    nargs=3,
+    type=float,
+    default=(1.0, 1.0, 1.0),
+    help="Background color in RGB fractions (white is 1 1 1, black is 0 0 0).",
     show_default=True,
 )
 def render_domain_command(**kwargs):

@@ -6,21 +6,21 @@ import logging
 import rich.logging
 
 
-def configure_logging(log_level=logging.INFO):
+def configure_logging(log_level: int):
     """
     Configure logging for our python scripts using the 'logging' module
 
     This is factored out into a free function so that any time we need to add
     module-specific logging configuration, we only have to add it to one place.
 
-    Module specific logging info:
-     - Disable 'matplotlib.font_manager' logging for 'logging.DEBUG' or higher
+    Logging verbosity of the spectre module is set to the 'log_level'.
+    For other modules we set the log level to WARNING or above, so we don't get
+    debug output from all the modules we import.
     """
     logging.basicConfig(
-        level=logging.INFO if log_level is None else log_level,
+        level=max(log_level, logging.WARNING),
         format="%(message)s",
         datefmt="[%X]",
         handlers=[rich.logging.RichHandler()],
     )
-    if log_level is not None and log_level >= logging.DEBUG:
-        logging.getLogger("matplotlib.font_manager").disabled = True
+    logging.getLogger("spectre").setLevel(log_level)
