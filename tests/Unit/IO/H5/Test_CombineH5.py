@@ -10,7 +10,7 @@ from click.testing import CliRunner
 import spectre.IO.H5 as spectre_h5
 from spectre import Informer
 from spectre.DataStructures import DataVector
-from spectre.IO.H5 import ElementVolumeData, TensorComponent, combine_h5
+from spectre.IO.H5 import ElementVolumeData, TensorComponent, combine_h5_vol
 from spectre.IO.H5.CombineH5 import combine_h5_command
 from spectre.Spectral import Basis, Quadrature
 
@@ -152,7 +152,7 @@ class TestCombineH5(unittest.TestCase):
         # Run the combine_h5 command and check if any feature (for eg.
         # connectivity length has increased due to combining two files)
 
-        combine_h5(
+        combine_h5_vol(
             self.file_names,
             self.subfile_name,
             self.output_file,

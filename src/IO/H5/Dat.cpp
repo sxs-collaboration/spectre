@@ -8,6 +8,7 @@
 #include <iosfwd>
 #include <memory>
 #include <ostream>
+#include <vector>
 
 #include "DataStructures/Matrix.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -160,14 +161,24 @@ void Dat::append(const Matrix& data) {
                                 data.rows(), size_);
 }
 
-Matrix Dat::get_data() const {
-  return h5::retrieve_dataset(dataset_id_, size_);
+template <typename T>
+T Dat::get_data() const {
+  return h5::retrieve_dataset<T>(dataset_id_, size_);
 }
 
-Matrix Dat::get_data_subset(const std::vector<size_t>& these_columns,
-                            const size_t first_row,
-                            const size_t num_rows) const {
-  return retrieve_dataset_subset(dataset_id_, these_columns, first_row,
-                                 num_rows, size_);
+template <typename T>
+T Dat::get_data_subset(const std::vector<size_t>& these_columns,
+                       const size_t first_row, const size_t num_rows) const {
+  return retrieve_dataset_subset<T>(dataset_id_, these_columns, first_row,
+                                    num_rows, size_);
 }
+
+template Matrix Dat::get_data() const;
+template std::vector<std::vector<double>> Dat::get_data() const;
+template Matrix Dat::get_data_subset(const std::vector<size_t>& these_columns,
+                                     const size_t first_row,
+                                     const size_t num_rows) const;
+template std::vector<std::vector<double>> Dat::get_data_subset(
+    const std::vector<size_t>& these_columns, const size_t first_row,
+    const size_t num_rows) const;
 }  // namespace h5

@@ -85,7 +85,8 @@ class Dat : public h5::Object {
    * \example
    * \snippet Test_Dat.cpp h5dat_get_data
    */
-  Matrix get_data() const;
+  template <typename T = Matrix>
+  T get_data() const;
 
   /*!
    * \brief Get only some columns over a range of rows
@@ -97,8 +98,9 @@ class Dat : public h5::Object {
    * \example
    * \snippet Test_Dat.cpp h5dat_get_subset
    */
-  Matrix get_data_subset(const std::vector<size_t>& these_columns,
-                         size_t first_row = 0, size_t num_rows = 1) const;
+  template <typename T = Matrix>
+  T get_data_subset(const std::vector<size_t>& these_columns,
+                    size_t first_row = 0, size_t num_rows = 1) const;
 
   /*!
    * \returns the number of rows (first index) and columns (second index)

@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <hdf5.h>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -23,6 +24,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -182,41 +184,44 @@ void Cce::append(
   }
 }
 
-std::unordered_map<std::string, Matrix> Cce::get_data() const {
-  std::unordered_map<std::string, Matrix> result{};
+template <typename T>
+std::unordered_map<std::string, T> Cce::get_data() const {
+  std::unordered_map<std::string, T> result{};
 
   for (const std::string& bondi_var : bondi_variables_) {
     const DataSet& dataset = bondi_datasets_.at(bondi_var);
-    result[bondi_var] = h5::retrieve_dataset(dataset.id, dataset.size);
+    result[bondi_var] = h5::retrieve_dataset<T>(dataset.id, dataset.size);
   }
 
   return result;
 }
 
-Matrix Cce::get_data(const std::string& bondi_variable_name) const {
+template <typename T>
+T Cce::get_data(const std::string& bondi_variable_name) const {
   check_bondi_variable(bondi_variable_name);
 
   const DataSet& dataset = bondi_datasets_.at(bondi_variable_name);
-  return h5::retrieve_dataset(dataset.id, dataset.size);
+  return h5::retrieve_dataset<T>(dataset.id, dataset.size);
 }
 
-std::unordered_map<std::string, Matrix> Cce::get_data_subset(
+template <typename T>
+std::unordered_map<std::string, T> Cce::get_data_subset(
     const std::vector<size_t>& these_ell, const size_t first_row,
     const size_t num_rows) const {
-  std::unordered_map<std::string, Matrix> result{};
+  std::unordered_map<std::string, T> result{};
 
   for (const std::string& bondi_var : bondi_variables_) {
     result[bondi_var] =
-        get_data_subset(bondi_var, these_ell, first_row, num_rows);
+        get_data_subset<T>(bondi_var, these_ell, first_row, num_rows);
   }
 
   return result;
 }
 
-Matrix Cce::get_data_subset(const std::string& bondi_variable_name,
-                            const std::vector<size_t>& these_ell,
-                            const size_t first_row,
-                            const size_t num_rows) const {
+template <typename T>
+T Cce::get_data_subset(const std::string& bondi_variable_name,
+                       const std::vector<size_t>& these_ell,
+                       const size_t first_row, const size_t num_rows) const {
   check_bondi_variable(bondi_variable_name);
 
   if (alg::any_of(these_ell,
@@ -226,7 +231,11 @@ Matrix Cce::get_data_subset(const std::string& bondi_variable_name,
   }
 
   if (these_ell.empty()) {
-    return {num_rows, 0, 0.0};
+    if constexpr (std::is_same_v<T, Matrix>) {
+      return {num_rows, 0, 0.0};
+    } else {
+      return std::vector<std::vector<double>>(num_rows);
+    }
   }
 
   // Always grab the time
@@ -252,12 +261,16 @@ Matrix Cce::get_data_subset(const std::string& bondi_variable_name,
   }
 
   if (num_rows == 0) {
-    return {0, these_columns.size(), 0.0};
+    if constexpr (std::is_same_v<T, Matrix>) {
+      return {0, these_columns.size(), 0.0};
+    } else {
+      return std::vector<std::vector<double>>{};
+    }
   }
 
   const DataSet& dataset = bondi_datasets_.at(bondi_variable_name);
-  return h5::retrieve_dataset_subset(dataset.id, these_columns, first_row,
-                                     num_rows, dataset.size);
+  return h5::retrieve_dataset_subset<T>(dataset.id, these_columns, first_row,
+                                        num_rows, dataset.size);
 }
 
 void Cce::check_bondi_variable(const std::string& bondi_variable_name) const {
@@ -273,4 +286,23 @@ const std::array<hsize_t, 2>& Cce::get_dimensions(
 
   return bondi_datasets_.at(bondi_variable_name).size;
 }
+
+#define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                  \
+  template std::unordered_map<std::string, TYPE(data)> Cce::get_data() const; \
+  template TYPE(data) Cce::get_data(const std::string& bondi_variable_name)   \
+      const;                                                                  \
+  template std::unordered_map<std::string, TYPE(data)> Cce::get_data_subset(  \
+      const std::vector<size_t>& these_ell, const size_t first_row,           \
+      const size_t num_rows) const;                                           \
+  template TYPE(data) Cce::get_data_subset(                                   \
+      const std::string& bondi_variable_name,                                 \
+      const std::vector<size_t>& these_ell, const size_t first_row,           \
+      const size_t num_rows) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (Matrix, std::vector<std::vector<double>>))
+
+#undef INSTANTIATE
+#undef TYPE
 }  // namespace h5

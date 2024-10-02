@@ -3,26 +3,34 @@
 
 #include "IO/H5/CombineH5.hpp"
 
-#include <boost/program_options.hpp>
+#include <array>
 #include <cstddef>
 #include <cstdlib>
 #include <iterator>
 #include <limits>
+#include <optional>
+#include <sstream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockGroups.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5PropertiesMatch.hpp"
+#include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/SourceArchive.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -139,7 +147,7 @@ std::optional<std::unordered_set<size_t>> get_block_numbers_to_use(
 
 namespace h5 {
 
-void combine_h5(
+void combine_h5_vol(
     const std::vector<std::string>& file_names, const std::string& subfile_name,
     const std::string& output, const std::optional<double> start_value,
     const std::optional<double> stop_value,
@@ -278,6 +286,195 @@ void combine_h5(
                                       serialized_domain,
                                       serialized_functions_of_time);
     new_file.close_current_object();
+  }
+}
+
+void combine_h5_dat(const std::vector<std::string>& h5_files_to_combine,
+                    const std::string& output_h5_filename,
+                    const Verbosity verbosity) {
+  if (h5_files_to_combine.empty()) {
+    ERROR_NO_TRACE("No H5 files to combine!");
+  }
+
+  std::vector<std::string> subfile_dat_names{};
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> file_to_combine{
+        h5_files_to_combine[0]};
+    subfile_dat_names = file_to_combine.all_files<h5::Dat>("/");
+
+    if (subfile_dat_names.empty()) {
+      ERROR_NO_TRACE("No dat files in H5 file " << h5_files_to_combine[0]
+                                                << "to combine!");
+    }
+  }
+
+  if (verbosity >= Verbosity::Quiet) {
+    Parallel::printf("Combining all dat files from %s into %s\n",
+                     h5_files_to_combine, output_h5_filename);
+  }
+
+  // We just copy if there's only 1 file. We could change this behavior to
+  // error, but that's less versatile when using globs
+  if (h5_files_to_combine.size() == 1) {
+    file_system::copy(h5_files_to_combine[0], output_h5_filename);
+    if (verbosity >= Verbosity::Quiet) {
+      Parallel::printf("Done!\n");
+    }
+    return;
+  }
+
+  // For each dat subfile, this holds the number of *sorted* times from each of
+  // the H5 files to combine so that we always use the latest times. The
+  // std::vector should be the same length as the number of H5 files to combine
+  std::unordered_map<std::string, std::vector<size_t>> num_time_map{};
+
+  // The outer loop is over dat files because we don't require different dat
+  // files to have the same times
+  for (const std::string& dat_filename : subfile_dat_names) {
+    num_time_map[dat_filename];
+    num_time_map.at(dat_filename).resize(h5_files_to_combine.size());
+
+    // The legend and version are sanity checks
+    std::optional<std::vector<std::string>> legend{};
+    std::optional<uint32_t> version{};
+    // Nullopt just means the first file we are looping over
+    std::optional<double> earliest_time{};
+    // We loop backwards to always ensure the "latest" time is used.
+    for (int i = static_cast<int>(h5_files_to_combine.size()) - 1; i >= 0;
+         i--) {
+      const auto index = static_cast<size_t>(i);
+      const std::string& filename = h5_files_to_combine[index];
+      const h5::H5File<h5::AccessType::ReadOnly> file_to_combine{filename};
+      const auto& dat_file = file_to_combine.get<h5::Dat>(dat_filename);
+      const auto dimensions = dat_file.get_dimensions();
+      if (not legend.has_value()) {
+        legend = dat_file.get_legend();
+        version = dat_file.get_version();
+      }
+
+      // Only grab the times for now
+      auto times = dat_file.get_data_subset<std::vector<std::vector<double>>>(
+          {0}, 0, dimensions[0]);
+      alg::sort(times,
+                [](const std::vector<double>& v1,
+                   const std::vector<double>& v2) { return v1[0] < v2[0]; });
+
+      // Makes things easier below.
+      if (UNLIKELY(times.empty())) {
+        ERROR_NO_TRACE("No times in dat file " << dat_filename << " in H5 file "
+                                               << filename);
+      }
+      if (UNLIKELY(legend.value() != dat_file.get_legend())) {
+        ERROR_NO_TRACE("Legend of dat file "
+                       << dat_filename << " in H5 file " << filename
+                       << " doesn't match other H5 files.");
+      }
+      if (UNLIKELY(version.value() != dat_file.get_version())) {
+        ERROR_NO_TRACE("Version of dat file "
+                       << dat_filename << " in H5 file " << filename
+                       << " doesn't match other H5 files.");
+      }
+
+      // This is the first (last) file. We can't make any decisions here so just
+      // store the number of times and the earliest time of this file
+      if (not earliest_time.has_value()) {
+        num_time_map.at(dat_filename)[index] = dimensions[0];
+        earliest_time = times[0][0];
+        continue;
+      }
+
+      // Check that the earliest time of the previous file (previous = later
+      // in the sequence of files since we are looping backward) is after the
+      // first time of this file. We require the files to be passed in
+      // increasing order by their first time.
+      if (UNLIKELY(times[0][0] >= earliest_time.value())) {
+        ERROR_NO_TRACE("The H5 files passed in "
+                       << h5_files_to_combine
+                       << " are not monotonically increasing in their first "
+                          "times for dat file "
+                       << dat_filename);
+      }
+
+      // Determine if the earliest time of the previous file is before any of
+      // the times in this file. If so, don't include those times.
+      size_t row = times.size() - 1;
+      while (times[row][0] >= earliest_time.value()) {
+        // Make sure we don't reach row 0 since that would mean the files are
+        // not ordered. We should've checked for this above, so this is an
+        // additional safety check.
+        if (UNLIKELY(row == 0)) {
+          ERROR_NO_TRACE("Internal consistency error. Please file an issue.");
+        }
+
+        row--;
+      }
+
+      // So long as this file contains some times that need to be combined,
+      // store the number of times and the first time in this file.
+      num_time_map.at(dat_filename)[index] = row + 1;
+      earliest_time = times[0][0];
+
+      file_to_combine.close_current_object();
+    }
+  }
+
+  if (verbosity >= Verbosity::Verbose) {
+    std::stringstream ss{};
+    ss << "Number of times selected to combine in each H5 file for each dat "
+          "subfile:\n";
+    for (const auto& [subfile_name, h5_files_num_times] : num_time_map) {
+      ss << " Dat Subfile " << subfile_name << ":\n";
+      for (size_t i = 0; i < h5_files_num_times.size(); i++) {
+        ss << "  H5 File " << h5_files_to_combine[i] << ": "
+           << h5_files_num_times[i] << "\n";
+      }
+    }
+
+    Parallel::printf("%s", ss.str());
+  }
+
+  // Now that we know the time indices for each dat file for each H5 file to
+  // combine, we open the output file and combine everything
+  h5::H5File<h5::AccessType::ReadWrite> output_h5_file{output_h5_filename};
+
+  // Now we loop over H5 files first to avoid unnecessary filesystem access
+  for (size_t i = 0; i < h5_files_to_combine.size(); i++) {
+    const std::string& filename = h5_files_to_combine[i];
+    const h5::H5File<h5::AccessType::ReadOnly> file_to_combine{filename};
+    for (const std::string& dat_filename : subfile_dat_names) {
+      const auto& input_dat_file = file_to_combine.get<h5::Dat>(dat_filename);
+      const std::vector<std::string>& legend = input_dat_file.get_legend();
+
+      // Avoid copying the legend around if we don't have to
+      h5::Dat* output_dat_file = nullptr;
+      if (output_h5_file.exists<h5::Dat>(dat_filename)) {
+        output_dat_file = &output_h5_file.get<h5::Dat>(dat_filename);
+      } else {
+        const uint32_t version = input_dat_file.get_version();
+        output_dat_file =
+            &output_h5_file.insert<h5::Dat>(dat_filename, legend, version);
+      }
+
+      const size_t num_times = num_time_map.at(dat_filename)[i];
+
+      // We must get all data first and sort it by times, because the number of
+      // times is only meaningful for the sorted data
+      auto data_to_append =
+          input_dat_file.get_data<std::vector<std::vector<double>>>();
+      alg::sort(data_to_append,
+                [](const std::vector<double>& v1,
+                   const std::vector<double>& v2) { return v1[0] < v2[0]; });
+      data_to_append.resize(num_times);
+
+      output_dat_file->append(data_to_append);
+
+      file_to_combine.close_current_object();
+      output_h5_file.close_current_object();
+    }
+  }
+
+  if (verbosity >= Verbosity::Quiet) {
+    Parallel::printf("Done!\n");
   }
 }
 }  // namespace h5
