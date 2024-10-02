@@ -93,4 +93,23 @@ if (TARGET FUKA::Exporter)
     )
 endif()
 
+if (TARGET COCAL::Exporter)
+  spectre_target_sources(
+    ${LIBRARY}
+    PRIVATE
+    CocalInitialData.cpp
+    )
+  spectre_target_headers(
+    ${LIBRARY}
+    INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    HEADERS
+    CocalInitialData.hpp
+    )
+  target_link_libraries(
+    ${LIBRARY}
+    PUBLIC
+    ExternalIO
+    )
+endif()
+
 add_subdirectory(InitialMagneticFields)

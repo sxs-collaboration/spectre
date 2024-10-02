@@ -24,6 +24,14 @@ using FukaInitialDataList = tmpl::list<grmhd::AnalyticData::FukaInitialData>;
 using FukaInitialDataList = NoSuchType;
 #endif
 
+// Check if COCAL is linked and therefore we can load COCAL initial data
+#ifdef HAS_COCAL_EXPORTER
+#include "PointwiseFunctions/AnalyticData/GrMhd/CocalInitialData.hpp"
+using CocalInitialDataList = tmpl::list<grmhd::AnalyticData::CocalInitialData>;
+#else
+using CocalInitialDataList = NoSuchType;
+#endif
+
 namespace ghmhd::GhValenciaDivClean::InitialData {
 // These are solutions that can be used for analytic prescriptions
 using analytic_solutions_and_data_list = gh::ghmhd_solutions;
@@ -34,5 +42,7 @@ using initial_data_list = tmpl::flatten<tmpl::list<
         tmpl::conditional_t<std::is_same_v<SpecInitialDataList, NoSuchType>,
                             tmpl::list<>, SpecInitialDataList>,
         tmpl::conditional_t<std::is_same_v<FukaInitialDataList, NoSuchType>,
-                            tmpl::list<>, FukaInitialDataList>>>>>;
+                            tmpl::list<>, FukaInitialDataList>,
+        tmpl::conditional_t<std::is_same_v<CocalInitialDataList, NoSuchType>,
+                            tmpl::list<>, CocalInitialDataList>>>>>;
 }  // namespace ghmhd::GhValenciaDivClean::InitialData
