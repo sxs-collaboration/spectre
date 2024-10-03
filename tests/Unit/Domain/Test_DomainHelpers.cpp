@@ -499,6 +499,7 @@ void test_all_frustum_directions() {
             top,
             OrientationMap<3>::create_aligned(),
             use_equiangular_map,
+            use_equiangular_map,
             radial_distribution,
             std::nullopt,
             sphericity,
@@ -511,6 +512,7 @@ void test_all_frustum_directions() {
             lower - displacement2[2],
             top,
             OrientationMap<3>::create_aligned(),
+            use_equiangular_map,
             use_equiangular_map,
             radial_distribution,
             std::nullopt,
@@ -527,6 +529,7 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                  Direction<3>::lower_zeta()}}},
             use_equiangular_map,
+            use_equiangular_map,
             radial_distribution,
             std::nullopt,
             sphericity,
@@ -541,6 +544,7 @@ void test_all_frustum_directions() {
             OrientationMap<3>{std::array<Direction<3>, 3>{
                 {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                  Direction<3>::lower_zeta()}}},
+            use_equiangular_map,
             use_equiangular_map,
             radial_distribution,
             std::nullopt,
@@ -557,6 +561,7 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                  Direction<3>::lower_eta()}}},
             use_equiangular_map,
+            use_equiangular_map,
             radial_distribution,
             std::nullopt,
             sphericity,
@@ -571,6 +576,7 @@ void test_all_frustum_directions() {
             OrientationMap<3>{std::array<Direction<3>, 3>{
                 {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                  Direction<3>::lower_eta()}}},
+            use_equiangular_map,
             use_equiangular_map,
             radial_distribution,
             std::nullopt,
@@ -587,6 +593,7 @@ void test_all_frustum_directions() {
                 {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                  Direction<3>::upper_eta()}}},
             use_equiangular_map,
+            use_equiangular_map,
             radial_distribution,
             std::nullopt,
             sphericity,
@@ -601,6 +608,7 @@ void test_all_frustum_directions() {
             OrientationMap<3>{std::array<Direction<3>, 3>{
                 {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                  Direction<3>::upper_eta()}}},
+            use_equiangular_map,
             use_equiangular_map,
             radial_distribution,
             std::nullopt,
@@ -617,6 +625,7 @@ void test_all_frustum_directions() {
                        {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map,
+                   use_equiangular_map,
                    radial_distribution},
         // Frustum on left half in the -x direction
         FrustumMap{{{{{-lower - displacement10[0], -lower - displacement10[1]}},
@@ -628,6 +637,7 @@ void test_all_frustum_directions() {
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
+                   use_equiangular_map,
                    use_equiangular_map,
                    radial_distribution});
 

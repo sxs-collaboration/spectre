@@ -253,7 +253,7 @@ namespace CoordinateMaps {
  * \phi^2)\tan(\frac{\pi}{4}\frac{\xi+\phi}{1+\phi^2})-\phi\f]
  *
  * For \f$\phi=0\f$ this generalized map simplifies to the original equiangular
- * map \f$Xi_0 = \tan(\frac{\pi}{4}\xi)\f$.
+ * map \f$\Xi_0 = \tan(\frac{\pi}{4}\xi)\f$.
  *
  * This function is compatible with the ability to bulge out the Frustum; the
  * map and Jacobian remain unchanged, modulo this substitution.
@@ -270,8 +270,12 @@ class Frustum {
    * \param upper_bound z distance from the origin to the upper base of the
    * frustum.
    * \param orientation_of_frustum The orientation of the frustum in 3D space.
-   * \param with_equiangular_map Determines whether to apply a tangent function
-   * mapping to the logical coordinates (true) or not (false).
+   * \param equiangular_map_at_outer Determines whether to apply a tangent
+   * function mapping to the logical coordinates (true) or not (false) at the
+   * larger side of the frustum.
+   * \param equiangular_map_at_inner Determines whether to apply a tangent
+   * function mapping to the logical coordinates (true) or not (false) at the
+   * smaller side of the frustum.
    * \param zeta_distribution Whether to apply a linear, logarithmic, or
    * projective mapping to the logical zeta coordinate.
    * \param distribution_value In the case of a projective map, the projective
@@ -288,7 +292,8 @@ class Frustum {
   Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
           double lower_bound, double upper_bound,
           OrientationMap<3> orientation_of_frustum,
-          bool with_equiangular_map = false,
+          bool equiangular_map_at_outer = false,
+          bool equiangular_map_at_inner = false,
           Distribution zeta_distribution = Distribution::Linear,
           std::optional<double> distribution_value = std::nullopt,
           double sphericity = 0.0, double transition_phi = 0.0,
@@ -333,7 +338,8 @@ class Frustum {
 
   OrientationMap<3> orientation_of_frustum_ =
       OrientationMap<3>::create_aligned();
-  bool with_equiangular_map_{false};
+  bool equiangular_map_at_outer_{false};
+  bool equiangular_map_at_inner_{false};
   bool is_identity_{false};
   Distribution zeta_distribution_ = Distribution::Linear;
   std::optional<double> zeta_distribution_value_{std::nullopt};
