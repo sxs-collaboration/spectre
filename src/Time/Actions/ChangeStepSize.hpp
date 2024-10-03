@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <bit>
 #include <limits>
 #include <optional>
 #include <tuple>
@@ -16,6 +17,7 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
+#include "Time/TimeStepRequest.hpp"
 #include "Time/TimeStepRequestProcessor.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -36,6 +38,7 @@ namespace StepChooserUse {
 struct LtsStep;
 }  // namespace StepChooserUse
 namespace Tags {
+struct FixedLtsRatio;
 template <typename Tag>
 struct Next;
 struct StepChoosers;
@@ -50,7 +53,21 @@ struct TimeStepper;
 /// \brief Adjust the step size for local time stepping, returning true if the
 /// step just completed is accepted, and false if it is rejected.
 ///
-/// \details The optional template parameter `StepChoosersToUse` may be used to
+/// \details
+/// Usually, the new step size is chosen by calling the StepChoosers from
+/// `Tags::StepChoosers`, restricted based on the allowed step sizes at the
+/// current (if rejected) or next (if not rejected) time, and limits from
+/// history initialization.
+///
+/// If `Tags::FixedLtsRatio` is present in the DataBox and not empty, the
+/// StepChoosers are not called and instead the desired step is taken to be the
+/// slab size over that value, without rejecting the step.  Early in the
+/// evolution, the actual chosen step may differ from this because of
+/// restrictions on the allowed step, but all such restrictions are global and
+/// will not result in different decisions for different elements with the same
+/// desired fixed ratio.
+///
+/// The optional template parameter `StepChoosersToUse` may be used to
 /// indicate a subset of the constructable step choosers to use for the current
 /// application of `ChangeStepSize`. Passing `AllStepChoosers` (default)
 /// indicates that any constructible step chooser may be used. This option is
@@ -65,19 +82,6 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
   ASSERT(time_step_id.substep() == 0, "Can't change step size on a substep.");
 
-  const auto current_step = db::get<Tags::TimeStep>(*box);
-  const double last_step_size = current_step.value();
-
-  TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
-  bool step_accepted = true;
-  for (const auto& step_chooser : step_choosers) {
-    const auto [step_request, step_choice_accepted] =
-        step_chooser->template desired_step<StepChoosersToUse>(last_step_size,
-                                                               *box);
-    step_requests.process(step_request);
-    step_accepted = step_accepted and step_choice_accepted;
-  }
-
   using history_tags = ::Tags::get_all_history_tags<DbTags>;
   bool can_change_step_size = true;
   tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
@@ -90,6 +94,34 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
     can_change_step_size =
         time_stepper.can_change_step_size(time_step_id, history);
   });
+
+  const auto current_step = db::get<Tags::TimeStep>(*box);
+
+  std::optional<size_t> fixed_lts_ratio{};
+  if constexpr (db::tag_is_retrievable_v<Tags::FixedLtsRatio,
+                                         db::DataBox<DbTags>>) {
+    fixed_lts_ratio = db::get<Tags::FixedLtsRatio>(*box);
+  }
+
+  TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
+  bool step_accepted = true;
+  if (fixed_lts_ratio.has_value()) {
+    ASSERT(std::popcount(*fixed_lts_ratio) == 1,
+           "fixed_lts_ratio must be a power of 2, not " << *fixed_lts_ratio);
+    step_requests.process(TimeStepRequest{
+        .size_goal =
+            (current_step.slab().duration() / *fixed_lts_ratio).value()});
+  } else {
+    const double last_step_size = current_step.value();
+    for (const auto& step_chooser : step_choosers) {
+      const auto [step_request, step_choice_accepted] =
+          step_chooser->template desired_step<StepChoosersToUse>(last_step_size,
+                                                                 *box);
+      step_requests.process(step_request);
+      step_accepted = step_accepted and step_choice_accepted;
+    }
+  }
+
   if (not can_change_step_size) {
     step_requests.error_on_hard_limit(
         current_step.value(),

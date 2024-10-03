@@ -16,6 +16,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
@@ -24,6 +25,7 @@
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/FixedLtsRatio.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepChoosers.hpp"
@@ -178,6 +180,60 @@ void check(const bool time_runs_forward,
   }
   CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_step);
 }
+
+struct FixedRatioMetavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                             tmpl::list<StepChoosers::Constant>>>;
+  };
+};
+
+void test_fixed_lts_ratio() {
+  std::unique_ptr<LtsTimeStepper> time_stepper =
+      std::make_unique<TimeSteppers::AdamsBashforth>(3);
+  const Slab slab(2.3, 4.5);
+  const TimeStepId initial_id(true, 0, slab.start());
+  const auto initial_step = slab.duration() / 4;
+  const auto next_id = time_stepper->next_time_id(initial_id, initial_step);
+  TimeSteppers::History<double> history(3);
+  history.insert(TimeStepId(true, -1, slab.start() + initial_step), 0.0, 0.0);
+  history.insert(TimeStepId(true, -1, slab.start() + 2 * initial_step), 0.0,
+                 0.0);
+  history.insert(initial_id, 0.0, 0.0);
+
+  auto box = db::create<
+      db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<FixedRatioMetavariables>,
+          Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers,
+          Tags::MinimumTimeStep, Tags::FixedLtsRatio, Tags::TimeStepId,
+          Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
+          Tags::Next<Tags::TimeStep>, Tags::HistoryEvolvedVariables<Var>>,
+      db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
+      FixedRatioMetavariables{}, std::move(time_stepper),
+      Tags::StepChoosers::type{}, 1e-10, std::optional<size_t>(8), initial_id,
+      initial_step, next_id, initial_step, std::move(history));
+
+  change_step_size(make_not_null(&box));
+  // Step size change forbidden after self-start
+  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == initial_step);
+
+  db::mutate<Tags::HistoryEvolvedVariables<Var>>(
+      [&](const gsl::not_null<TimeSteppers::History<double>*> local_history) {
+        const auto old_step = initial_step.with_slab(slab.retreat());
+        local_history->clear();
+        local_history->insert(TimeStepId(true, -1, slab.start() - 2 * old_step),
+                              0.0, 0.0);
+        local_history->insert(TimeStepId(true, -1, slab.start() - old_step),
+                              0.0, 0.0);
+        local_history->insert(initial_id, 0.0, 0.0);
+      },
+      make_not_null(&box));
+
+  change_step_size(make_not_null(&box));
+  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box).fraction() == Rational(1, 8));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
@@ -254,4 +310,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
             slab.start() + slab.duration() / 4, 1e-9, slab.duration() / 4,
             std::nullopt),
       Catch::Matchers::ContainsSubstring("smaller than the MinimumTimeStep"));
+
+  test_fixed_lts_ratio();
 }
