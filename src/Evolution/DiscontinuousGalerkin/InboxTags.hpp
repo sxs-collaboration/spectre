@@ -45,7 +45,6 @@ namespace evolution::dg::Tags {
  * 2. the volume mesh corresponding to the ghost cell data. This allows eliding
  *    projection when all neighboring elements are doing DG.
  * 3. the mortar mesh of the data on the mortar
- * 3. the mesh of the neighboring element's face (not the mortar mesh!)
  * 4. the variables at the ghost zone cells for finite difference/volume
  *    reconstruction
  * 5. the data on the mortar needed for computing the boundary corrections (e.g.
@@ -180,14 +179,13 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
-             interface_mesh, ghost_cell_data, boundary_correction_data,
-             validity_range, tci_status, integration_order] = data.second;
+             ghost_cell_data, boundary_correction_data, validity_range,
+             tci_status, integration_order] = data.second;
       (void)ghost_cell_data;
       auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
-             current_boundary_correction_mesh, current_interface_mesh,
-             current_ghost_cell_data, current_boundary_correction_data,
-             current_validity_range, current_tci_status,
-             current_integration_order] = it->second;
+             current_boundary_correction_mesh, current_ghost_cell_data,
+             current_boundary_correction_data, current_validity_range,
+             current_tci_status, current_integration_order] = it->second;
       (void)current_volume_mesh_ghost_cell_data;  // Need to use when
                                                   // optimizing subcell
       // We have already received some data at this time. Receiving data twice
@@ -214,11 +212,11 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                     "different ASSERT should've caught that), or the incorrect "
                     "temporal ID is being sent.");
 
-      ASSERT(current_interface_mesh == interface_mesh,
+      ASSERT(current_volume_mesh == volume_mesh,
              "The mesh being received for the fluxes is different than the "
              "mesh received for the ghost cells. Mesh for fluxes: "
-                 << interface_mesh << " mesh for ghost cells "
-                 << current_interface_mesh);
+                 << volume_mesh << " mesh for ghost cells "
+                 << current_volume_mesh);
       ASSERT(current_volume_mesh_ghost_cell_data == volume_mesh_ghost_cell_data,
              "The mesh being received for the ghost cell data is different "
              "than the mesh received previously. Mesh for received when we got "

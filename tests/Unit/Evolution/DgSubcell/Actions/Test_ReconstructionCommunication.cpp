@@ -510,7 +510,7 @@ void test(const bool use_cell_centered_flux) {
                           dg_mesh,
                           // subcell_mesh because we are sending the
                           // projected data right now.
-                          subcell_mesh, mortar_mesh.at(east_dir_id), face_mesh,
+                          subcell_mesh, mortar_mesh.at(east_dir_id),
                           east_ghost_cells_and_rdmp, boundary_data,
                           next_time_step_id, -10}});
   }
@@ -528,14 +528,14 @@ void test(const bool use_cell_centered_flux) {
         Dim, UseNodegroupDgElements>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                      evolution::dg::BoundaryData<Dim>{
-                          dg_mesh,
-                          // subcell_mesh because we are sending the projected
-                          // data right now.
-                          subcell_mesh, std::nullopt, face_mesh,
-                          south_ghost_cells_and_rdmp, std::nullopt,
-                          next_time_step_id, -15}});
+            std::pair{
+                DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
+                evolution::dg::BoundaryData<Dim>{
+                    dg_mesh,
+                    // subcell_mesh because we are sending the projected
+                    // data right now.
+                    subcell_mesh, std::nullopt, south_ghost_cells_and_rdmp,
+                    std::nullopt, next_time_step_id, -15}});
   }
 
   // Run the ReceiveDataForReconstruction action on self_id

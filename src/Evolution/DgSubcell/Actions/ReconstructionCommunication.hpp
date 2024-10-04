@@ -261,15 +261,10 @@ struct SendDataForReconstruction {
                                 rdmp_tci_data.min_variables_values.size())));
 
         evolution::dg::BoundaryData<Dim> data{
-            dg_mesh,
-            subcell_mesh,
-            std::nullopt,
-            dg_mesh.slice_away(direction.dimension()),
-            std::move(subcell_data_to_send),
-            std::nullopt,
-            next_time_step_id,
-            tci_decision,
-            integration_order};
+            dg_mesh,      subcell_mesh,
+            std::nullopt, std::move(subcell_data_to_send),
+            std::nullopt, next_time_step_id,
+            tci_decision, integration_order};
 
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -405,7 +400,8 @@ struct ReceiveDataForReconstruction {
             if (received_mortar_data.second.boundary_correction_data
                     .has_value()) {
               mortar_data->at(mortar_id).neighbor().face_mesh =
-                  received_mortar_data.second.interface_mesh;
+                  received_mortar_data.second.volume_mesh.slice_away(
+                      mortar_id.direction().dimension());
               mortar_data->at(mortar_id).neighbor().mortar_mesh =
                   mortar_meshes.at(mortar_id);
               mortar_data->at(mortar_id).neighbor().mortar_data = std::move(

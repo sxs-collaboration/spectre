@@ -124,15 +124,14 @@ void retrieve_boundary_data_spsc(
         if (auto it = current_inbox.find(directional_element_id);
             it != current_inbox.end()) {
           auto& [volume_mesh, volume_mesh_ghost_cell_data,
-                 boundary_correction_mesh, interface_mesh, ghost_cell_data,
+                 boundary_correction_mesh, ghost_cell_data,
                  boundary_correction_data, validity_range, tci_status,
                  integration_order] = data;
           (void)ghost_cell_data;
           auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
-                 current_boundary_correction_mesh, current_interface_mesh,
-                 current_ghost_cell_data, current_boundary_correction_data,
-                 current_validity_range, current_tci_status,
-                 current_integration_order] = it->second;
+                 current_boundary_correction_mesh, current_ghost_cell_data,
+                 current_boundary_correction_data, current_validity_range,
+                 current_tci_status, current_integration_order] = it->second;
           // Need to use when optimizing subcell
           (void)current_volume_mesh_ghost_cell_data;
           // We have already received some data at this time. Receiving
@@ -160,11 +159,11 @@ void retrieve_boundary_data_spsc(
                         "a different ASSERT should've caught that), or the "
                         "incorrect temporal ID is being sent.");
 
-          ASSERT(current_interface_mesh == interface_mesh,
+          ASSERT(current_volume_mesh == volume_mesh,
                  "The mesh being received for the fluxes is different than the "
                  "mesh received for the ghost cells. Mesh for fluxes: "
-                     << interface_mesh << " mesh for ghost cells "
-                     << current_interface_mesh);
+                     << volume_mesh << " mesh for ghost cells "
+                     << current_volume_mesh);
           ASSERT(current_volume_mesh_ghost_cell_data ==
                      volume_mesh_ghost_cell_data,
                  "The mesh being received for the ghost cell data is different "
@@ -361,7 +360,8 @@ bool receive_boundary_data_global_time_stepping(
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
             mortar_data->at(mortar_id).neighbor().face_mesh =
-                received_mortar_data.second.interface_mesh;
+                received_mortar_data.second.volume_mesh.slice_away(
+                    mortar_id.direction().dimension());
             mortar_data->at(mortar_id).neighbor().mortar_mesh =
                 received_mortar_data.second.boundary_correction_mesh.value();
             mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
@@ -522,7 +522,8 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mesh->insert_or_assign(
                 mortar_id, received_mortar_data->second.volume_mesh);
             neighbor_mortar_data.face_mesh =
-                received_mortar_data->second.interface_mesh;
+                received_mortar_data->second.volume_mesh.slice_away(
+                    mortar_id.direction().dimension());
             neighbor_mortar_data.mortar_mesh =
                 received_mortar_data->second.boundary_correction_mesh.value();
             neighbor_mortar_data.mortar_data = std::move(

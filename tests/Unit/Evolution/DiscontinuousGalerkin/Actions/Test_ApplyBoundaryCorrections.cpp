@@ -684,14 +684,10 @@ void test_impl(const Spectral::Quadrature quadrature,
                 direction.dimension() +
                     10 * static_cast<unsigned long>(direction.side()) +
                     100 * count);
-      evolution::dg::BoundaryData<Dim> data{mesh,
-                                            std::nullopt,
-                                            mortar_mesh,
-                                            face_mesh,
-                                            std::nullopt,
-                                            {flux_data},
-                                            {neighbor_next_time_step_id},
-                                            decision};
+      const evolution::dg::BoundaryData<Dim> data{
+          mesh,         std::nullopt, mortar_mesh,
+          std::nullopt, {flux_data},  {neighbor_next_time_step_id},
+          decision};
       neighbor_decision.insert(std::pair{mortar_id, decision});
       ++decision;
 

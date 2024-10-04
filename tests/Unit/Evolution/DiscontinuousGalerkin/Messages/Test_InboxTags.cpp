@@ -83,7 +83,6 @@ void test_no_ghost_cells() {
   const Mesh<Dim - 1> mesh_a{5, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
   send_data_a.volume_mesh_ghost_cell_data = volume_mesh_a;
-  send_data_a.interface_mesh = mesh_a;
   send_data_a.boundary_correction_data =
       DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
   send_data_a.validity_range = time_step_id_a;
@@ -114,7 +113,6 @@ void test_no_ghost_cells() {
   const Mesh<Dim - 1> mesh_b{7, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
   send_data_b.volume_mesh_ghost_cell_data = volume_mesh_b;
-  send_data_b.interface_mesh = mesh_b;
 
   send_data_b.boundary_correction_data =
       DataVector{mesh_b.number_of_grid_points() * number_of_components, 0.0};
@@ -208,7 +206,6 @@ void test_with_ghost_cells() {
   const Mesh<Dim - 1> mesh_a{5, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
   send_data_a.volume_mesh_ghost_cell_data = volume_mesh_a;
-  send_data_a.interface_mesh = mesh_a;
   send_data_a.ghost_cell_data =
       DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
   send_data_a.validity_range = time_step_id_a;
@@ -238,10 +235,8 @@ void test_with_ghost_cells() {
   const Mesh<Dim - 1> mesh_b{7, Spectral::Basis::Legendre,
                              Spectral::Quadrature::GaussLobatto};
   send_data_b.volume_mesh_ghost_cell_data = volume_mesh_b;
-  send_data_b.interface_mesh = mesh_b;
-  send_data_b.ghost_cell_data = DataVector{
-      send_data_b.interface_mesh.number_of_grid_points() * number_of_components,
-      0.0};
+  send_data_b.ghost_cell_data =
+      DataVector{mesh_b.number_of_grid_points() * number_of_components, 0.0};
   send_data_b.validity_range = time_step_id_b;
   send_data_b.tci_status = 6;
   send_data_b.integration_order = 4;
@@ -291,10 +286,8 @@ void test_with_ghost_cells() {
   BcType send_flux_data_a;
   send_flux_data_a.volume_mesh_ghost_cell_data =
       send_data_a.volume_mesh_ghost_cell_data;
-  send_flux_data_a.interface_mesh = send_data_a.interface_mesh;
-  send_flux_data_a.boundary_correction_data = DataVector{
-      send_data_a.interface_mesh.number_of_grid_points() * number_of_components,
-      0.0};
+  send_flux_data_a.boundary_correction_data =
+      DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
   // Verify that when we update the fluxes the validity of the fluxes is also
   // updated correctly
   send_flux_data_a.validity_range = time_step_id_c;
@@ -332,10 +325,8 @@ void test_with_ghost_cells() {
 
   // Check sending both ghost and flux data at once
   BcType send_all_data_b = send_data_b;
-  send_all_data_b.boundary_correction_data =
-      DataVector{2 * send_all_data_b.interface_mesh.number_of_grid_points() *
-                     number_of_components,
-                 0.0};
+  send_all_data_b.boundary_correction_data = DataVector{
+      2 * mesh_b.number_of_grid_points() * number_of_components, 0.0};
   send_all_data_b.validity_range = time_step_id_c;
   send_data_b.tci_status = 5;
   send_data_b.integration_order = 3;

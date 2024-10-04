@@ -16,7 +16,6 @@ void BoundaryData<Dim>::pup(PUP::er& p) {
   p | volume_mesh;
   p | volume_mesh_ghost_cell_data;
   p | boundary_correction_mesh;
-  p | interface_mesh;
   p | ghost_cell_data;
   p | boundary_correction_data;
   p | validity_range;
@@ -29,7 +28,6 @@ bool operator==(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs) {
   return lhs.volume_mesh == rhs.volume_mesh and
          lhs.volume_mesh_ghost_cell_data == rhs.volume_mesh_ghost_cell_data and
          lhs.boundary_correction_mesh == rhs.boundary_correction_mesh and
-         lhs.interface_mesh == rhs.interface_mesh and
          lhs.ghost_cell_data == rhs.ghost_cell_data and
          lhs.boundary_correction_data == rhs.boundary_correction_data and
          lhs.validity_range == rhs.validity_range and
@@ -48,7 +46,6 @@ std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
             << "Ghost mesh: " << value.volume_mesh_ghost_cell_data << '\n'
             << "Boundary correction mesh: " << value.boundary_correction_mesh
             << '\n'
-            << "Interface mesh: " << value.interface_mesh << '\n'
             << "Ghost cell data: " << value.ghost_cell_data << '\n'
             << "Boundary correction data: " << value.boundary_correction_data
             << '\n'

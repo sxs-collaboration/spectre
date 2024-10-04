@@ -95,11 +95,6 @@ void test() {
   const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
                                  Spectral::Basis::FiniteDifference,
                                  Spectral::Quadrature::CellCentered};
-  const Mesh<Dim - 1> dg_face_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim - 1> fd_face_mesh{2 + 2 * Dim + 1,
-                                   Spectral::Basis::FiniteDifference,
-                                   Spectral::Quadrature::CellCentered};
   const Mesh<Dim - 1> mortar_mesh{2 + 2 * Dim + 1, Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto};
   for (size_t d = 0; d < Dim; ++d) {
@@ -118,7 +113,6 @@ void test() {
           BoundaryData<Dim>{dg_volume_mesh,
                             dg_volume_mesh,
                             mortar_mesh,
-                            dg_face_mesh,
                             dg_recons_and_rdmp_data,
                             dg_flux_data,
                             {},
@@ -128,7 +122,6 @@ void test() {
           BoundaryData<Dim>{dg_volume_mesh,
                             fd_volume_mesh,
                             std::nullopt,
-                            fd_face_mesh,
                             fd_recons_and_rdmp_data,
                             std::nullopt,
                             {},
@@ -139,7 +132,6 @@ void test() {
           BoundaryData<Dim>{dg_volume_mesh,
                             dg_volume_mesh,
                             mortar_mesh,
-                            dg_face_mesh,
                             dg_recons_and_rdmp_data,
                             dg_flux_data,
                             {},
@@ -149,7 +141,6 @@ void test() {
           BoundaryData<Dim>{dg_volume_mesh,
                             fd_volume_mesh,
                             std::nullopt,
-                            fd_face_mesh,
                             fd_recons_and_rdmp_data,
                             std::nullopt,
                             {},
