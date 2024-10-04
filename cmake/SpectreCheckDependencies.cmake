@@ -23,6 +23,7 @@ function(check_spectre_libs_dependencies)
       ALLOWED_EXTRA_TARGETS
       SpectreAllocator
       SpectreFlags
+      SpectrePchFlags
       ERROR_ON_FAILURE
       )
   endforeach(TARGET_TO_CHECK ${ARGN})

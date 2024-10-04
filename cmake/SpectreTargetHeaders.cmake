@@ -38,18 +38,27 @@ function(spectre_target_headers TARGET_NAME)
     ARG "" "INCLUDE_DIRECTORY" "HEADERS"
     ${ARGN})
 
-  if(NOT ARG_INCLUDE_DIRECTORY)
-    message(FATAL_ERROR
-      "Must specify the include directory relative to which the "
-      "header files for a library will be included when calling "
-      "spectre_target_headers. The named argument is INCLUDE_DIRECTORY.")
-  endif(NOT ARG_INCLUDE_DIRECTORY)
-
   get_target_property(
     TARGET_TYPE
     ${TARGET_NAME}
     TYPE
     )
+
+  if(NOT ARG_INCLUDE_DIRECTORY)
+    message(FATAL_ERROR
+      "Must specify the include directory relative to which the "
+      "header files for a library will be included when calling "
+      "spectre_target_headers. The named argument is INCLUDE_DIRECTORY. "
+      "Call was made for target ${TARGET_NAME}.")
+  endif(NOT ARG_INCLUDE_DIRECTORY)
+  # Note: Search the list because an empty HEADERS is okay.
+  list(FIND ARGN "HEADERS" _FOUND_HEADERS)
+  if(${_FOUND_HEADERS} EQUAL -1)
+    message(FATAL_ERROR
+      "No HEADERS section specified in call to spectre_target_headers "
+      "for target ${TARGET_NAME}. You must specificy HEADERS before "
+      "listing the header files.")
+  endif()
 
   if(NOT ${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
     get_property(
