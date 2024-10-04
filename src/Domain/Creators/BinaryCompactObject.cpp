@@ -520,6 +520,8 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
   Maps maps_frustums = domain::make_vector_coordinate_map_base<
       Frame::BlockLogical, Frame::Inertial, 3>(frustum_coordinate_maps(
       length_inner_cube_, length_outer_cube_, use_equiangular_map_,
+      use_equiangular_map_ and not use_single_block_a_ and
+          not use_single_block_b_,
       {{-translation_, -center_of_mass_offset_[0], -center_of_mass_offset_[1]}},
       radial_distribution_envelope_,
       radial_distribution_envelope_ ==

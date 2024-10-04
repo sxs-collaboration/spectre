@@ -642,8 +642,8 @@ void test_all_frustum_directions() {
                    radial_distribution});
 
     const auto maps = frustum_coordinate_maps(
-        2.0 * lower, 2.0 * top, use_equiangular_map, origin_preimage,
-        CoordinateMaps::Distribution::Projective);
+        2.0 * lower, 2.0 * top, use_equiangular_map, use_equiangular_map,
+        origin_preimage, CoordinateMaps::Distribution::Projective);
     CHECK(maps == expected_coord_maps);
   }
 }
@@ -656,9 +656,9 @@ void test_frustrum_errors() {
         const double length_outer_cube = 1.5;
         const bool use_equiangular_map = true;
         const std::array<double, 3> origin_preimage = {{0.0, 0.0, 0.0}};
-        static_cast<void>(
-            frustum_coordinate_maps(length_inner_cube, length_outer_cube,
-                                    use_equiangular_map, origin_preimage));
+        static_cast<void>(frustum_coordinate_maps(
+            length_inner_cube, length_outer_cube, use_equiangular_map,
+            use_equiangular_map, origin_preimage));
       }()),
       Catch::Matchers::ContainsSubstring(
           "The outer cube is too small! The inner cubes will "
@@ -670,9 +670,9 @@ void test_frustrum_errors() {
         const double length_outer_cube = 3.0;
         const bool use_equiangular_map = true;
         const std::array<double, 3> origin_preimage = {{0.6, 0.0, 0.0}};
-        static_cast<void>(
-            frustum_coordinate_maps(length_inner_cube, length_outer_cube,
-                                    use_equiangular_map, origin_preimage));
+        static_cast<void>(frustum_coordinate_maps(
+            length_inner_cube, length_outer_cube, use_equiangular_map,
+            use_equiangular_map, origin_preimage));
       }()),
       Catch::Matchers::ContainsSubstring(
           "The current choice for `origin_preimage` results in the "

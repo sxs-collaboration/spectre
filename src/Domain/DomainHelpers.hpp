@@ -199,8 +199,10 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 /// \param length_inner_cube The side length of the cubes enveloping the two
 /// shells.
 /// \param length_outer_cube The side length of the outer cube.
-/// \param use_equiangular_map Whether to apply a tangent map in the angular
-/// directions.
+/// \param equiangular_map_at_outer Whether to apply a tangent map in the
+/// angular directions at the outer boundary.
+/// \param equiangular_map_at_inner Whether to apply a tangent map in the
+/// angular directions at the inner boundary.
 /// \param origin_preimage The center of the two joined inner cubes is moved
 /// away from the origin and to this point, origin_preimage.
 /// \param radial_distribution The gridpoint distribution in the radial
@@ -214,7 +216,7 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 /// the same value for `opening_angle`.
 std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
-    bool use_equiangular_map,
+    bool equiangular_map_at_outer, bool equiangular_map_at_inner,
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
     domain::CoordinateMaps::Distribution radial_distribution =
         domain::CoordinateMaps::Distribution::Linear,
