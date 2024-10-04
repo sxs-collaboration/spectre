@@ -1,9 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(yaml-cpp)
+find_package(YAML_CPP NAMES yaml-cpp)
 
-if (NOT yaml-cpp_FOUND)
+if (NOT YAML_CPP_FOUND)
   if (NOT SPECTRE_FETCH_MISSING_DEPS)
     message(FATAL_ERROR "Could not find yaml-cpp. If you want to fetch "
       "missing dependencies automatically, set SPECTRE_FETCH_MISSING_DEPS=ON.")
