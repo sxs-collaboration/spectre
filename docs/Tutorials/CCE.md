@@ -20,12 +20,16 @@ of the release (there may be a lot of text detailing what's been updated in this
 release). Inside this tarball is
 
 - the CCE executable `CharacteristicExtract`
-- an example set of Bondi-Sachs worldtube data (see
-   [Input worldtube data formats](#input_worldtube_data_formats) section)
 - an example YAML input file
-- example output from CCE
-- a `ReduceCceWorldtube` executable for converting between
-   [worldtube data formats](#input_worldtube_data_formats)
+- an example set of Bondi-Sachs worldtube data in the `Tests/` directory (see
+   [Input worldtube data formats](#input_worldtube_data_formats) section)
+- example output from CCE in the `Tests/` directory
+- a `ReduceCceWorldtube` executable and YAML file for converting between
+   [worldtube data formats](#input_worldtube_data_formats) in the
+   `ReduceCceWorldtube/` diretory
+- a python script `CheckCceOutput.py` (meant to be run from the root of the
+  tarball and after you run the example YAML input file also in the root of the
+  tarball) that will check if the example output is correct
 
 \note The tarball is `.xz` so use `tar -xf TarName.tar.xz` to extract. The `-z`
 flag to use gzip will cause an error.
@@ -198,18 +202,22 @@ SpECTRE provides a separate executable for converting from the
 The `ReduceCceWorldtube` executable should be run on a
 [cartesian_metric](#cartesian_metric_and_derivatives) worldtube file, and will
 produce a corresponding 'reduced' Bondi-Sachs worldtube file.
-The basic command-line arguments for the executable are:
+This executable works similarly to our other executables by accepting a YAML
+input file:
 
 ```
-ReduceCceWorldtube --input-file CceR0050.h5 --output-file BondiCceR0050.h5\
- --lmax_factor 3
+ReduceCceWorldtube --input-file ReduceCceWorldtube.yaml
 ```
 
-The argument `--lmax_factor` determines the factor by which the resolution of
+with a YAML file
+
+\snippet ReduceCceWorldtube.yaml reduce_cce_worldtube_yaml_doxygen_example
+
+The option `LMaxFactor` determines the factor by which the resolution of
 the boundary computation that is run will exceed the resolution of the
 input and output files.
-Empirically, we have found that `lmax_factor` of 3 is sufficient to achieve
-roundoff precision in all boundary data we have attempted, and an `lmax_factor`
+Empirically, we have found that `LMaxFactor` of 3 is sufficient to achieve
+roundoff precision in all boundary data we have attempted, and an `LMaxFactor`
 of 2 is usually sufficient to vastly exceed the precision of the simulation that
 provided the boundary dataset.
 

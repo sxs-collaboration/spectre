@@ -17,6 +17,8 @@ target_link_libraries(
   Cce
   GeneralRelativity
   Informer
+  Options
+  Parallel
   Printf
   Spectral
   SpinWeightedSphericalHarmonics

@@ -109,13 +109,20 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
 endfunction()
 
 # Searches the directory INPUT_FILE_DIR for .yaml files and adds a test for each
-# one. See `WritingTests.md` for details on controlling input file tests.
-function(add_input_file_tests INPUT_FILE_DIR)
+# one. See `WritingTests.md` for details on controlling input file tests. Add
+# input files to the whitelist at the bottom of this file to ignore those tests
+function(add_input_file_tests INPUT_FILE_DIR INPUT_FILE_WHITELIST)
   set(INPUT_FILE_LIST "")
   file(GLOB_RECURSE INPUT_FILE_LIST ${INPUT_FILE_DIR} "${INPUT_FILE_DIR}*.yaml")
   set(TIMEOUT 2)
+  list(TRANSFORM INPUT_FILE_WHITELIST PREPEND ${INPUT_FILE_DIR})
 
   foreach(INPUT_FILE ${INPUT_FILE_LIST})
+    # Only parse the input file if we are allowed to
+    if (${INPUT_FILE} IN_LIST INPUT_FILE_WHITELIST)
+      continue()
+    endif()
+
     file(READ ${INPUT_FILE} INPUT_FILE_CONTENTS)
 
     # Read the priority of the test specified in input file, empty is accepted.
@@ -239,4 +246,9 @@ configure_file(
   ${PROJECT_BINARY_DIR}/tmp/RunInputFileTest.sh
   @ONLY)
 
-add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")
+# These paths should be relative to the input file directory passed to
+# `add_input_file_tests`
+set(INPUT_FILE_WHITELIST
+    "ReduceCceWorldtube/ReduceCceWorldtube.yaml")
+
+add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/" ${INPUT_FILE_WHITELIST})
