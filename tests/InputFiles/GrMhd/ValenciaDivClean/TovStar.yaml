@@ -1,0 +1,259 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveValenciaDivClean
+Testing:
+  Check: parse;execute
+  Timeout: 30
+  Priority: High
+ExpectedOutput:
+  - TovStarVolume0.h5
+  - TovStarReductions.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: False
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0001
+  MinimumTimeStep: 1e-7
+  TimeStepper:
+    # Both RK3 and AM-PC 3 should work. These are the "standard" time steppers
+    # for spectre for hydro right now.
+    Rk3HesthavenSsp:
+    # AdamsMoultonPc:
+    #   Order: 3
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1000
+          Offset: 5
+    PhaseChanges:
+      - VisitAndReturn(LoadBalancing)
+
+InitialData: &InitialData
+  TovStar:
+    CentralDensity: 1.28e-3
+    EquationOfState:
+        PolytropicFluid:
+            PolytropicConstant: 100.0
+            PolytropicExponent: 2.0
+    Coordinates: Isotropic
+
+EquationOfState:
+  FromInitialData
+# Note: these domains are chosen so that we only need to simulate the interior
+# of the star, avoiding the surface discontinuity. A few pre-made options are
+# provided to test out more or less complicated domains. The least trivial, a
+# Sphere domain with filled interior, is enabled by default.
+# A simpler domain would be a Brick. If the boundaries are set to [-3.5, 3.5]^3,
+# it will remain within the star.
+DomainCreator:
+  Sphere:
+    InnerRadius: 3.
+    OuterRadius: 7.
+    Interior:
+      FillWithSphericity: 0.0
+      # To test only the wedges, which would be a less complicated domain,
+      # comment out the above line and uncomment the below ones
+      #ExciseWithBoundaryCondition:
+      #  DirichletAnalytic:
+      #      AnalyticPrescription: *InitialData
+    InitialRefinement: [1,1,1]
+    InitialGridPoints: [5,5,5]
+    EquatorialCompression: None
+    WhichWedges: All
+    RadialPartitioning: []
+    RadialDistribution: [Linear]
+    UseEquiangularMap: False
+    TimeDependentMaps: None
+    OuterBoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
+
+VariableFixing:
+  FixConservatives:
+    Enable: False # Only needed when not using Kastaun for recovery
+    CutoffD: &CutoffD 1.1e-15
+    MinimumValueOfD: &MinimumD 1.0e-15
+    CutoffYe: 0.0
+    MinimumValueOfYe: 0.0
+    SafetyFactorForB: &BSafetyFactor 1.0e-12
+    SafetyFactorForS: 1.0e-12
+    SafetyFactorForSCutoffD: 1.0e-8
+    SafetyFactorForSSlope: 0.0001
+    MagneticField: AssumeZero
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-15
+    DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
+    VelocityLimiting:
+      AtmosphereMaxVelocity: 0.0
+      NearAtmosphereMaxVelocity: 1.0e-4
+      AtmosphereDensityCutoff: 3.0e-15
+      TransitionDensityBound: 3.0e-14
+    KappaLimiting:
+      DensityLowerBound: 2.0e-14
+      EplisonKappaMinus: 1.0e-3
+      DensityUpperBound: 2.0e-13
+      EpsilonKappaMax: 0.01
+      LimitAboveDensityUpperBound: False
+      MinTemperature: FromEos
+
+PrimitiveFromConservative:
+  CutoffDForInversion: *CutoffD
+  DensityWhenSkippingInversion: *MinimumD
+  KastaunMaxLorentzFactor: 10.0
+
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    Hll:
+      MagneticFieldMagnitudeForHydro: 1.0e-30
+      LightSpeedDensityCutoff: 1.0e-8
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Filtering:
+      - None:
+          BlocksToFilter: All
+    Subcell:
+      TroubledCellIndicator:
+        PerssonTci:
+          Exponent: 4.0
+          NumHighestModes: 1
+        RdmpTci:
+          Delta0: 1.0e-7
+          Epsilon: 1.0e-3
+        FdToDgTci:
+          NumberOfStepsBetweenTciCalls: 1
+          MinTciCallsAfterRollback: 1
+          MinimumClearTcis: 1
+        AlwaysUseSubcells: False # Enable to test FD convergence
+        EnableExtensionDirections: False
+        UseHalo: False
+        OnlyDgBlocksAndGroups: None
+      SubcellToDgReconstructionMethod: DimByDim
+      FiniteDifferenceDerivativeOrder: 2
+      FdInterpolationOrder: 3 # Can be reduced for simpler domains
+    TciOptions:
+      MinimumValueOfD: 1.0e-20
+      MinimumValueOfYe: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-50
+      AtmosphereDensity: *AtmosphereDensityCutoff
+      SafetyFactorForB: *BSafetyFactor
+      MagneticFieldCutoff: DoNotCheckMagneticField
+  SubcellSolver:
+    Reconstructor:
+      PositivityPreservingAdaptiveOrderPrim:
+        Alpha5: 3.8
+        Alpha7: None
+        Alpha9: None
+        LowOrderReconstructor: MonotonisedCentral
+        ReconstructRhoTimesTemperature: True
+
+EventsAndTriggersAtCheckpoints:
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 5
+          StepChoosers:
+            - Cfl:
+                SafetyFactor: 0.5
+            - LimitIncrease:
+                Factor: 1.5
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    Events:
+      - ObserveTimeStep:
+          SubfileName: Time
+          PrintTimeToTerminal: True
+          ObservePerCore: False
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: RestMassDensity
+              NormType: Max
+              Components: Individual
+            - Name: Error(RestMassDensity)
+              NormType: L2Norm
+              Components: Individual
+            - Name: Error(SpecificInternalEnergy)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(SpatialVelocity)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pressure)
+              NormType: L2Norm
+              Components: Sum
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - RestMassDensity
+            - Error(RestMassDensity)
+            - SpatialVelocity
+            - SpecificInternalEnergy
+            - TciStatus
+          InterpolateToMesh: None
+          ProjectToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+  - Trigger:
+      Slabs:
+        Specified:
+          Values: [3]
+    Events:
+      - Completion
+
+Observers:
+  VolumeFileName: "TovStarVolume"
+  ReductionFileName: "TovStarReductions"
+
+EventsAndDenseTriggers:
+
+EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:
+    - ObserveFields:
+        SubfileName: VolumeDataOnFailure
+        VariablesToObserve:
+          - RestMassDensity
+          - Error(RestMassDensity)
+          - TildeD
+          - SpatialVelocity
+          - SpecificInternalEnergy
+          - TildeTau
+          - Pressure
+          - TciStatus
+        InterpolateToMesh: None
+        ProjectToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+        BlocksToObserve: All
+

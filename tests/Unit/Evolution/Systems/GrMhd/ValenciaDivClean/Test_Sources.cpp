@@ -36,11 +36,13 @@
 #include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
+#include "Evolution/DgSubcell/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
+#include "Evolution/DgSubcell/Tags/GhostZoneInverseJacobian.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
@@ -379,6 +381,13 @@ void test_cartoon_fd_time_derivative() {
         evolution::dg::subcell::Tags::CellCenteredFlux<
             typename grmhd::ValenciaDivClean::System::flux_variables, 3>;
 
+    typename evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>::type
+        ghost_zone_inv_jac{};
+    evolution::dg::subcell::GhostZoneInverseJacobian<
+        3, grmhd::ValenciaDivClean::fd::Tags::Reconstructor>::
+        apply(make_not_null(&ghost_zone_inv_jac), subcell_mesh,
+              logical_to_grid_map, recons);
+
     auto box = db::create<
         db::AddSimpleTags<
             domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
@@ -409,7 +418,8 @@ void test_cartoon_fd_time_derivative() {
             Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
             CellCenteredFluxesTag,
             evolution::dg::subcell::Tags::SubcellOptions<3>,
-            evolution::dg::subcell::Tags::ReconstructionOrder<3>>,
+            evolution::dg::subcell::Tags::ReconstructionOrder<3>,
+            evolution::dg::subcell::Tags::GhostZoneInverseJacobian<3>>,
         db::AddComputeTags<
             ::domain::Tags::LogicalCoordinates<3>,
             // Compute tags for Frame::Grid quantities
@@ -482,7 +492,8 @@ void test_cartoon_fd_time_derivative() {
             1.0e8, 1_st, 1.0e-4, 1.0e-5, false, false,
             evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
             std::nullopt, ::fd::DerivativeOrder::Two, 2, 2, 2},
-        typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{});
+        typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{},
+        ghost_zone_inv_jac);
     db::mutate_apply<grmhd::ValenciaDivClean::ConservativeFromPrimitive>(
         make_not_null(&box));
 
