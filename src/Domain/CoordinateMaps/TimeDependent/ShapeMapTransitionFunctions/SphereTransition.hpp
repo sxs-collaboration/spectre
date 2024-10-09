@@ -14,12 +14,10 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
 /*!
  * \ingroup CoordMapsTimeDependentGroup
- * \brief A transition function that falls off as $f(r) = g(r) / r$ where $g(r)
- * = ar + b$.
+ * \brief A transition function that falls off as $f(r) = ar + b$.
  *
- * \details The coefficients $a$ and $b$ are chosen so that the function $g(r) =
- * ar + b$ falls off linearly from 1 at `r_min` to 0 at `r_max`. This means that
- * $f(r)$ falls off from $1/r_{\text{min}}$ at `r_min` to 0 at `r_max`. The
+ * \details The coefficients $a$ and $b$ are chosen so that the function $f(r) =
+ * ar + b$ falls off linearly from 1 at `r_min` to 0 at `r_max`. The
  * coefficients are
  *
  * \f{align}{
