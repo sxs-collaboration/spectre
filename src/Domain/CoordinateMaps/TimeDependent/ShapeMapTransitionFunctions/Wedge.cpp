@@ -62,11 +62,12 @@ Wedge::Wedge(const std::array<double, 3>& inner_center,
              const double inner_radius, const double inner_sphericity,
              const std::array<double, 3>& outer_center,
              const double outer_radius, const double outer_sphericity,
-             const Axis axis)
+             const Axis axis, const bool reverse)
     : inner_surface_(inner_center, inner_radius, inner_sphericity),
       outer_surface_(outer_center, outer_radius, outer_sphericity),
       projection_center_(inner_surface_.center - outer_surface_.center),
-      axis_(axis) {
+      axis_(axis),
+      reverse_(reverse) {
   if (projection_center_ != std::array{0.0, 0.0, 0.0} and
       inner_surface_.sphericity != 1.0) {
     ERROR(
@@ -341,8 +342,13 @@ T Wedge::call_impl(const std::array<T, 3>& source_coords) const {
   check_distances(inner_distance, outer_distance, centered_coords_magnitude,
                   source_coords);
 
-  return (outer_distance - centered_coords_magnitude) /
-         (outer_distance - inner_distance);
+  const auto result = (outer_distance - centered_coords_magnitude) /
+                      (outer_distance - inner_distance);
+  if (reverse_) {
+    return 1.0 - result;
+  } else {
+    return result;
+  }
 }
 
 std::optional<double> Wedge::original_radius_over_radius(
@@ -375,8 +381,9 @@ std::optional<double> Wedge::original_radius_over_radius(
   // First we check the extremal case of being outside the outer distance. We
   // can check the outermost distance because its surface doesn't move. We can't
   // check the innermost surface because the inner bound is the origin which we
-  // already checked above.
-  if (centered_coords_magnitude - eps_ > outer_distance) {
+  // already checked above. This logic is reversed if we are in reverse mode.
+  if ((not reverse_ and (centered_coords_magnitude > outer_distance + eps_)) or
+      (reverse_ and (centered_coords_magnitude < inner_distance - eps_))) {
     return std::nullopt;
   }
 
@@ -393,19 +400,25 @@ std::optional<double> Wedge::original_radius_over_radius(
   // so the map is again the identity so the radius and original radius are
   // equal. We can't check the overall inner distance because that has been
   // distorted so we don't know where the mapped inner distance is.
-  if (equal_within_roundoff(centered_coords_magnitude, outer_distance)) {
+  // This logic is reversed if we are in reverse mode.
+  if ((not reverse_ and
+       equal_within_roundoff(centered_coords_magnitude, outer_distance)) or
+      (reverse_ and
+       equal_within_roundoff(centered_coords_magnitude, inner_distance))) {
     return std::optional{1.0};
   }
 
-  const double denom = outer_distance - inner_distance + distorted_radius;
+  const double denom = outer_distance - inner_distance +
+                       (reverse_ ? -1.0 : 1.0) * distorted_radius;
   // prevent zero division
   if (equal_within_roundoff(denom, 0.)) {
     return std::nullopt;
   }
 
   const double original_radius_over_radius =
-      (outer_distance * (1.0 + distorted_radius / centered_coords_magnitude) -
-       inner_distance) /
+      (outer_distance - inner_distance +
+       (reverse_ ? -inner_distance : outer_distance) * distorted_radius /
+           centered_coords_magnitude) /
       denom;
   const double original_radius =
       original_radius_over_radius * centered_coords_magnitude;
@@ -500,7 +513,7 @@ std::array<T, 3> Wedge::gradient_impl(
             source_coords * one_over_centered_coords_magnitude -
             (outer_distance - centered_coords_magnitude) * outer_gradient *
                 one_over_distance_difference) *
-           one_over_distance_difference;
+           one_over_distance_difference * (reverse_ ? -1.0 : 1.0);
   } else {
     const std::array<T, 3> inner_gradient = inner_surface_gradient();
 
@@ -509,7 +522,7 @@ std::array<T, 3> Wedge::gradient_impl(
             (outer_distance - centered_coords_magnitude) *
                 (outer_gradient - inner_gradient) *
                 one_over_distance_difference) *
-           one_over_distance_difference;
+           one_over_distance_difference * (reverse_ ? -1.0 : 1.0);
   }
 }
 
@@ -525,7 +538,7 @@ bool Wedge::operator==(const ShapeMapTransitionFunction& other) const {
   const Wedge& other_ref = *dynamic_cast<const Wedge*>(&other);
   return surface_equal(inner_surface_, other_ref.inner_surface_) and
          surface_equal(outer_surface_, other_ref.outer_surface_) and
-         axis_ == other_ref.axis_;
+         axis_ == other_ref.axis_ and reverse_ == other_ref.reverse_;
 }
 
 bool Wedge::operator!=(const ShapeMapTransitionFunction& other) const {
@@ -585,7 +598,7 @@ struct LegacySurface {
 
 void Wedge::pup(PUP::er& p) {
   ShapeMapTransitionFunction::pup(p);
-  size_t version = 1;
+  size_t version = 2;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -595,6 +608,11 @@ void Wedge::pup(PUP::er& p) {
     p | outer_surface_;
     p | projection_center_;
     p | axis_;
+    if (version >= 2) {
+      p | reverse_;
+    } else {
+      reverse_ = false;
+    }
   } else if (p.isUnpacking()) {
     LegacySurface inner_surface{};
     LegacySurface outer_surface{};

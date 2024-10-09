@@ -389,10 +389,15 @@ class Wedge final : public ShapeMapTransitionFunction {
    * \param outer_radius Outermost radius of outermost wedge
    * \param outer_sphericity Sphericity of outermost surface of outermost wedge
    * \param axis The direction that this wedge is in.
+   * \param reverse If true, the transition function will be 0 at the inner
+   * boundary and 1 at the outer boundary (useful for deforming star surfaces).
+   * Otherwise, it will be 1 at the inner boundary and 0 at the outer boundary
+   * (useful for deforming black hole excision surfaces).
    */
   Wedge(const std::array<double, 3>& inner_center, double inner_radius,
         double inner_sphericity, const std::array<double, 3>& outer_center,
-        double outer_radius, double outer_sphericity, Axis axis);
+        double outer_radius, double outer_sphericity, Axis axis,
+        bool reverse = false);
 
   double operator()(const std::array<double, 3>& source_coords) const override;
   DataVector operator()(
@@ -473,6 +478,7 @@ class Wedge final : public ShapeMapTransitionFunction {
   Surface outer_surface_{};
   std::array<double, 3> projection_center_{};
   Axis axis_{};
+  bool reverse_{false};
 
   static constexpr double eps_ = std::numeric_limits<double>::epsilon() * 100;
 };

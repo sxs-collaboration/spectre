@@ -15,7 +15,8 @@
 
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
-SphereTransition::SphereTransition(const double r_min, const double r_max)
+SphereTransition::SphereTransition(const double r_min, const double r_max,
+                                   const bool reverse)
     : r_min_(r_min), r_max_(r_max) {
   if (r_min <= 0.) {
     ERROR("The minimum radius must be greater than 0 but is " << r_min);
@@ -28,6 +29,10 @@ SphereTransition::SphereTransition(const double r_min, const double r_max)
   }
   a_ = -1.0 / (r_max - r_min);
   b_ = -a_ * r_max;
+  if (reverse) {
+    a_ *= -1.0;
+    b_ = 1.0 - b_;
+  }
 }
 
 double SphereTransition::operator()(

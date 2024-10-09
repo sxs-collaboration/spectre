@@ -25,11 +25,15 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * b &= \frac{r_{\text{max}}}{r_{\text{max}} - r_{\text{min}}} = -a
  * r_{\text{max}}
  * \f}
+ *
+ * If the `reverse` flag is set to `true`, then the function falls off from 0 at
+ * `r_min` to 1 at `r_max`. To do this, the coefficients are modified as
+ * $a \rightarrow -a$ and $b \rightarrow 1-b$.
  */
 class SphereTransition final : public ShapeMapTransitionFunction {
  public:
   explicit SphereTransition() = default;
-  SphereTransition(double r_min, double r_max);
+  SphereTransition(double r_min, double r_max, bool reverse = false);
 
   double operator()(const std::array<double, 3>& source_coords) const override;
   DataVector operator()(
