@@ -186,11 +186,11 @@ void test_only_transition_no_offset() {
   std::optional<double> orig_rad_over_rad_reverse{};
   const auto set_orig_rad_over_rad =
       [&](const std::array<double, 3>& mapped_point,
-          const double distorted_radii) {
+          const double radial_distortion) {
         orig_rad_over_rad =
-            wedge.original_radius_over_radius(mapped_point, distorted_radii);
+            wedge.original_radius_over_radius(mapped_point, radial_distortion);
         orig_rad_over_rad_reverse = wedge_reverse.original_radius_over_radius(
-            mapped_point, distorted_radii);
+            mapped_point, radial_distortion);
       };
 
   // Test actual values
@@ -209,12 +209,6 @@ void test_only_transition_no_offset() {
         approx(4.0 / magnitude(point * (1.0 + 0.25 * function_value * 0.5))));
   // Hit some internal checks
   set_orig_rad_over_rad(point * 0.0, 0.0);
-  CHECK_FALSE(orig_rad_over_rad.has_value());
-  CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
-  set_orig_rad_over_rad(point, 1.0);
-  CHECK_FALSE(orig_rad_over_rad.has_value());
-  CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
-  set_orig_rad_over_rad(point, 15.0);
   CHECK_FALSE(orig_rad_over_rad.has_value());
   CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
   set_orig_rad_over_rad(point * 15.0, 0.0);
@@ -291,11 +285,11 @@ void test_only_transition_offset() {
   std::optional<double> orig_rad_over_rad_reverse{};
   const auto set_orig_rad_over_rad =
       [&](const std::array<double, 3>& mapped_point,
-          const double distorted_radii) {
+          const double radial_distortion) {
         orig_rad_over_rad =
-            wedge.original_radius_over_radius(mapped_point, distorted_radii);
+            wedge.original_radius_over_radius(mapped_point, radial_distortion);
         orig_rad_over_rad_reverse = wedge_reverse.original_radius_over_radius(
-            mapped_point, distorted_radii);
+            mapped_point, radial_distortion);
       };
 
   // Test actual values
@@ -335,12 +329,6 @@ void test_only_transition_offset() {
 
   // Hit some internal checks
   set_orig_rad_over_rad(centered_point * 0.0, 0.0);
-  CHECK_FALSE(orig_rad_over_rad.has_value());
-  CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
-  set_orig_rad_over_rad(centered_point, 1.0);
-  CHECK_FALSE(orig_rad_over_rad.has_value());
-  CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
-  set_orig_rad_over_rad(centered_point, 15.0);
   CHECK_FALSE(orig_rad_over_rad.has_value());
   CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
   set_orig_rad_over_rad(centered_point * 15.0, 0.0);

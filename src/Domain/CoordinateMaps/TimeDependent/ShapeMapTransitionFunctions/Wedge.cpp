@@ -352,17 +352,17 @@ T Wedge::call_impl(const std::array<T, 3>& source_coords) const {
 }
 
 std::optional<double> Wedge::original_radius_over_radius(
-    const std::array<double, 3>& target_coords, double distorted_radius) const {
+    const std::array<double, 3>& target_coords,
+    double radial_distortion) const {
   // The target coords are centered
   const double centered_coords_magnitude = magnitude(target_coords);
   CAPTURE_FOR_ERROR(target_coords);
-  CAPTURE_FOR_ERROR(distorted_radius);
+  CAPTURE_FOR_ERROR(radial_distortion);
   CAPTURE_FOR_ERROR(centered_coords_magnitude);
 
   // Couple protections that would make a point completely outside of the domain
   // of validity for any wedge
-  if (equal_within_roundoff(centered_coords_magnitude, 0.0) or
-      equal_within_roundoff(distorted_radius, 1.0) or distorted_radius > 1.0) {
+  if (equal_within_roundoff(centered_coords_magnitude, 0.0)) {
     return std::nullopt;
   }
 
@@ -392,7 +392,7 @@ std::optional<double> Wedge::original_radius_over_radius(
   // We do this check after we check if the point is beyond the outer distance
   // because if a point is outside the distorted frame, this function should
   // return nullopt.
-  if (equal_within_roundoff(distorted_radius, 0.0)) {
+  if (equal_within_roundoff(radial_distortion, 0.0)) {
     return std::optional{1.0};
   }
 
@@ -409,7 +409,7 @@ std::optional<double> Wedge::original_radius_over_radius(
   }
 
   const double denom = outer_distance - inner_distance +
-                       (reverse_ ? -1.0 : 1.0) * distorted_radius;
+                       (reverse_ ? -1.0 : 1.0) * radial_distortion;
   // prevent zero division
   if (equal_within_roundoff(denom, 0.)) {
     return std::nullopt;
@@ -417,7 +417,7 @@ std::optional<double> Wedge::original_radius_over_radius(
 
   const double original_radius_over_radius =
       (outer_distance - inner_distance +
-       (reverse_ ? -inner_distance : outer_distance) * distorted_radius /
+       (reverse_ ? -inner_distance : outer_distance) * radial_distortion /
            centered_coords_magnitude) /
       denom;
   const double original_radius =

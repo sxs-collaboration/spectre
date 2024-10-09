@@ -83,7 +83,7 @@ class ShapeMapTransitionFunction : public PUP::able {
    * This method returns $r/\tilde{r}$ given the mapped coordinates
    * $\tilde{x}^i$ (`target_coords`) and the spherical harmonic expansion
    * $\Sigma(t, \theta, \phi) = \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta, \phi)$
-   * (`distorted_radius`). See domain::CoordinateMaps::TimeDependent::Shape for
+   * (`radial_distortion`). See domain::CoordinateMaps::TimeDependent::Shape for
    * details on how this quantity is used to compute the inverse of the Shape
    * map.
    *
@@ -92,13 +92,13 @@ class ShapeMapTransitionFunction : public PUP::able {
    * $f(r,\theta,\phi)$.
    *
    * \param target_coords The mapped Cartesian coordinates $\tilde{x}^i$.
-   * \param distorted_radius The spherical harmonic expansion
+   * \param radial_distortion The spherical harmonic expansion
    * $\Sigma(t, \theta, \phi)$.
    * \return The quantity $r/\tilde{r}$.
    */
   virtual std::optional<double> original_radius_over_radius(
       const std::array<double, 3>& target_coords,
-      double distorted_radius) const = 0;
+      double radial_distortion) const = 0;
 
   /*!
    * Evaluate the gradient of the transition function with respect to the

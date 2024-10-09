@@ -297,7 +297,7 @@ class Shape {
       gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
       const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
       const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
-      const T& distorted_radii, const T& one_over_radius,
+      const T& radial_distortion, const T& one_over_radius,
       const T& transition_func_over_radius) const;
 
   void check_size(const gsl::not_null<DataVector*>& coefs,

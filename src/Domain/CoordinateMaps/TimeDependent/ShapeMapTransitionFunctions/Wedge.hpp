@@ -201,7 +201,7 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  *
  * ## Original radius divided by mapped radius
  *
- * Given an already mapped point $\tilde{\vec x}$ and the distorted radius
+ * Given an already mapped point $\tilde{\vec x}$ and the radial distortion
  * $\Sigma(\theta, \phi) = \sum_{\ell,m}\lambda_{\ell m}Y_{\ell m}(\theta,
  * \phi)$, we can figure out the ratio of the original radius $r$ to the mapped
  * $\tilde{r} = |\tilde{\vec x}|$ by solving
@@ -405,7 +405,7 @@ class Wedge final : public ShapeMapTransitionFunction {
 
   std::optional<double> original_radius_over_radius(
       const std::array<double, 3>& target_coords,
-      double distorted_radius) const override;
+      double radial_distortion) const override;
 
   std::array<double, 3> gradient(
       const std::array<double, 3>& source_coords) const override;

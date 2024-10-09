@@ -47,7 +47,7 @@ void Shape::jacobian_helper(
     gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
     const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
     const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
-    const T& distorted_radii, const T& one_over_radius,
+    const T& radial_distortion, const T& one_over_radius,
     const T& transition_func_over_radius) const {
   const auto angular_gradient =
       extended_ylm_.gradient_from_coefs(extended_coefs);
@@ -117,52 +117,52 @@ void Shape::jacobian_helper(
   get<0, 0>(*result) =
       -x_centered * ((x_transition_gradient_over_radius -
                       x_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_x_times_spatial_part);
   get<0, 1>(*result) =
       -x_centered * ((y_transition_gradient_over_radius -
                       y_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_y_times_spatial_part);
   get<0, 2>(*result) =
       -x_centered * ((z_transition_gradient_over_radius -
                       z_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_z_times_spatial_part);
   get<1, 0>(*result) =
       -y_centered * ((x_transition_gradient_over_radius -
                       x_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_x_times_spatial_part);
   get<1, 1>(*result) =
       -y_centered * ((y_transition_gradient_over_radius -
                       y_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_y_times_spatial_part);
   get<1, 2>(*result) =
       -y_centered * ((z_transition_gradient_over_radius -
                       z_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_z_times_spatial_part);
   get<2, 0>(*result) =
       -z_centered * ((x_transition_gradient_over_radius -
                       x_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_x_times_spatial_part);
   get<2, 1>(*result) =
       -z_centered * ((y_transition_gradient_over_radius -
                       y_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_y_times_spatial_part);
   get<2, 2>(*result) =
       -z_centered * ((z_transition_gradient_over_radius -
                       z_centered * transition_func_over_cube_radius) *
-                         distorted_radii +
+                         radial_distortion +
                      target_gradient_z_times_spatial_part);
 
-  get<0, 0>(*result) += 1. - distorted_radii * transition_func_over_radius;
-  get<1, 1>(*result) += 1. - distorted_radii * transition_func_over_radius;
-  get<2, 2>(*result) += 1. - distorted_radii * transition_func_over_radius;
+  get<0, 0>(*result) += 1. - radial_distortion * transition_func_over_radius;
+  get<1, 1>(*result) += 1. - radial_distortion * transition_func_over_radius;
+  get<2, 2>(*result) += 1. - radial_distortion * transition_func_over_radius;
 }
 
 Shape::Shape(
@@ -217,9 +217,9 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
   check_size(make_not_null(&coefs), functions_of_time, time, false);
   check_coefficients(coefs);
   // re-use allocation
-  auto& distorted_radii = get<0>(theta_phis);
+  auto& radial_distortion = get<0>(theta_phis);
   // evaluate the spherical harmonic expansion at the angles of `source_coords`
-  ylm_.interpolate_from_coefs(make_not_null(&distorted_radii), coefs,
+  ylm_.interpolate_from_coefs(make_not_null(&radial_distortion), coefs,
                               interpolation_info);
 
   // this should be taken care of by the control system but is very hard to
@@ -227,7 +227,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 #ifdef SPECTRE_DEBUG
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType shift_radii =
-      distorted_radii * transition_func_->operator()(centered_coords) *
+      radial_distortion * transition_func_->operator()(centered_coords) *
       check_and_compute_one_over_radius(centered_coords);
   if constexpr (std::is_same_v<ReturnType, double>) {
     ASSERT(shift_radii < 1., "Coordinates mapped through the center!");
@@ -240,7 +240,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 
   return center_ +
          centered_coords *
-             (1. - distorted_radii *
+             (1. - radial_distortion *
                        transition_func_->operator()(centered_coords) *
                        check_and_compute_one_over_radius(centered_coords));
 }
@@ -255,10 +255,11 @@ std::optional<std::array<double, 3>> Shape::inverse(
   DataVector coefs = functions_of_time.at(shape_f_of_t_name_)->func(time)[0];
   check_size(make_not_null(&coefs), functions_of_time, time, false);
   check_coefficients(coefs);
-  const double distorted_radii = ylm_.interpolate_from_coefs(coefs, theta_phis);
+  const double radial_distortion =
+      ylm_.interpolate_from_coefs(coefs, theta_phis);
   const std::optional<double> original_radius_over_radius =
       transition_func_->original_radius_over_radius(centered_coords,
-                                                    distorted_radii);
+                                                    radial_distortion);
   if (not original_radius_over_radius.has_value()) {
     return std::nullopt;
   }
@@ -296,7 +297,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
 
   // The Cartesian gradient cannot be represented exactly by `l_max_` and
   // `m_max_` which causes an aliasing error. We need an additional order to
-  // represent it. This is in theory not needed for the distorted_radii
+  // represent it. This is in theory not needed for the radial_distortion
   // calculation but saves calculating the `interpolation_info` twice.
   const auto interpolation_info =
       extended_ylm_.set_up_interpolation_info(theta_phis);
@@ -322,8 +323,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
 
   // Re-use allocation
-  auto& distorted_radii = get<0>(theta_phis);
-  extended_ylm_.interpolate_from_coefs(make_not_null(&distorted_radii),
+  auto& radial_distortion = get<0>(theta_phis);
+  extended_ylm_.interpolate_from_coefs(make_not_null(&radial_distortion),
                                        extended_coefs, interpolation_info);
 
   using ReturnType = tt::remove_cvref_wrap_t<T>;
@@ -335,7 +336,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
       get_size(centered_coords[0]));
 
   jacobian_helper(make_not_null(&result), interpolation_info, extended_coefs,
-                  centered_coords, distorted_radii, one_over_radius,
+                  centered_coords, radial_distortion, one_over_radius,
                   transition_func_over_radius);
   return result;
 }
@@ -397,10 +398,10 @@ void Shape::coords_frame_velocity_jacobian(
   check_size(make_not_null(&extended_coefs), functions_of_time, time, false);
   check_size(make_not_null(&extended_coefs_derivs), functions_of_time, time,
              true);
-  auto& distorted_radii = get(get<::Tags::TempScalar<0>>(temps));
+  auto& radial_distortion = get(get<::Tags::TempScalar<0>>(temps));
   // evaluate the spherical harmonic expansion at the angles of
   // `source_coords`
-  extended_ylm_.interpolate_from_coefs(make_not_null(&distorted_radii),
+  extended_ylm_.interpolate_from_coefs(make_not_null(&radial_distortion),
                                        extended_coefs, interpolation_info);
 
   auto& one_over_radius = get(get<::Tags::TempScalar<1>>(temps));
@@ -410,7 +411,7 @@ void Shape::coords_frame_velocity_jacobian(
       transition_func_->operator()(centered_coords) * one_over_radius;
   *source_and_target_coords =
       center_ +
-      centered_coords * (1. - distorted_radii * transition_func_over_radius);
+      centered_coords * (1. - radial_distortion * transition_func_over_radius);
 
   auto& radii_velocities = get<0, 1>(*jac);
   extended_ylm_.interpolate_from_coefs(make_not_null(&radii_velocities),
@@ -420,8 +421,8 @@ void Shape::coords_frame_velocity_jacobian(
       -centered_coords * radii_velocities * transition_func_over_radius;
 
   jacobian_helper<DataVector>(jac, interpolation_info, extended_coefs,
-                              centered_coords, distorted_radii, one_over_radius,
-                              transition_func_over_radius);
+                              centered_coords, radial_distortion,
+                              one_over_radius, transition_func_over_radius);
 }
 
 template <typename T>
