@@ -112,7 +112,8 @@ static_assert(check_maps_list_v<combo_maps_4_expected, combo_maps_4>);
 template <bool IsCylindrical>
 void test(const bool include_expansion, const bool include_rotation,
           const bool include_translation, const bool include_shape_a,
-          const bool include_shape_b) {
+          const bool include_shape_b, const bool transition_ends_at_cube_A,
+          const bool transition_ends_at_cube_B) {
   CAPTURE(IsCylindrical);
   CAPTURE(include_expansion);
   CAPTURE(include_rotation);
@@ -151,8 +152,9 @@ void test(const bool include_expansion, const bool include_rotation,
     shape_map_a_options =
         IsCylindrical ? ShapeMapAOptions<IsCylindrical>{l_max_A, std::nullopt,
                                                         size_A_values}
-                      : ShapeMapAOptions<IsCylindrical>{l_max_A, std::nullopt,
-                                                        size_A_values, true};
+                      : ShapeMapAOptions<IsCylindrical>{
+                            l_max_A, std::nullopt, size_A_values,
+                            transition_ends_at_cube_A};
   }
 
   const std::array<double, 3> size_B_values{-0.001, -0.02, -0.3};
@@ -161,8 +163,9 @@ void test(const bool include_expansion, const bool include_rotation,
     shape_map_b_options =
         IsCylindrical ? ShapeMapBOptions<IsCylindrical>{l_max_B, std::nullopt,
                                                         size_B_values}
-                      : ShapeMapBOptions<IsCylindrical>{l_max_B, std::nullopt,
-                                                        size_B_values, false};
+                      : ShapeMapBOptions<IsCylindrical>{
+                            l_max_B, std::nullopt, size_B_values,
+                            transition_ends_at_cube_B};
   }
 
   const double initial_time = 1.5;
@@ -290,84 +293,68 @@ void test(const bool include_expansion, const bool include_rotation,
   CHECK(anchors.at("CenterA") == tnsr::I<double, 3, Frame::Grid>(centers[0]));
   CHECK(anchors.at("CenterB") == tnsr::I<double, 3, Frame::Grid>(centers[1]));
 
-  using ExciseType =
-      typename TimeDependentMapOptions<IsCylindrical>::IncludeDistortedMapType;
-  std::array<ExciseType, 2> excise_possibilities{};
-  if constexpr (IsCylindrical) {
-    excise_possibilities = std::array{true, false};
-  } else {
-    excise_possibilities = std::array<ExciseType, 2>{{{0_st}, std::nullopt}};
-  }
-
   for (const auto& [excise_A, excise_B] :
-       cartesian_product(excise_possibilities, excise_possibilities)) {
+       cartesian_product(make_array(true, false), make_array(true, false))) {
     CAPTURE(excise_A);
     CAPTURE(excise_B);
     using RadiiType = std::optional<std::array<double, IsCylindrical ? 2 : 3>>;
     RadiiType inner_outer_radii_A{};
     RadiiType inner_outer_radii_B{};
 
-    const auto is_excised = [](const ExciseType& excise) {
-      if constexpr (IsCylindrical) {
-        return excise;
-      } else {
-        return excise.has_value();
-      }
-    };
-
-    if (is_excised(excise_A)) {
       if constexpr (IsCylindrical) {
         inner_outer_radii_A = std::array{0.8, 3.2};
       } else {
         inner_outer_radii_A = std::array{0.8, 1.4, 3.2};
       }
-    }
-    if (is_excised(excise_B)) {
       if constexpr (IsCylindrical) {
         inner_outer_radii_B = std::array{0.5, 2.1};
       } else {
         inner_outer_radii_B = std::array{0.5, 0.9, 2.1};
       }
-    }
-    const auto build_maps = [&time_dep_options, &centers, &inner_outer_radii_A,
-                             &inner_outer_radii_B, &domain_envelope_radius,
-                             &domain_outer_radius, &cube_a_center,
-                             &cube_b_center]() {
-      time_dep_options.build_maps(centers, cube_a_center, cube_b_center,
-                                  inner_outer_radii_A, inner_outer_radii_B,
-                                  domain_envelope_radius, domain_outer_radius);
-    };
+      const auto build_maps = [&time_dep_options, &centers,
+                               &inner_outer_radii_A, &inner_outer_radii_B,
+                               &domain_envelope_radius, &domain_outer_radius,
+                               &cube_a_center, &cube_b_center,
+                               filled_A = not excise_A,
+                               filled_B = not excise_B]() {
+        time_dep_options.build_maps(centers, cube_a_center, cube_b_center,
+                                    inner_outer_radii_A, inner_outer_radii_B,
+                                    filled_A, filled_B, domain_envelope_radius,
+                                    domain_outer_radius);
+      };
 
-    // If we have excision info, but didn't specify shape map options, we
-    // should hit an error.
-    if (is_excised(excise_A) and not include_shape_a) {
-      CHECK_THROWS_WITH(build_maps(),
-                        Catch::Matchers::ContainsSubstring(
-                            "Trying to build the shape map for object"));
-      continue;
-    }
-    // If we have shape map options, but didn't specify excisions, we should
-    // hit an error.
-    if (include_shape_a and not is_excised(excise_A)) {
-      CHECK_THROWS_WITH(build_maps(),
-                        Catch::Matchers::ContainsSubstring(
-                            "No excision was specified for object"));
-      continue;
-    }
-
-    // Same for B
-    if (is_excised(excise_B) and not include_shape_b) {
-      CHECK_THROWS_WITH(build_maps(),
-                        Catch::Matchers::ContainsSubstring(
-                            "Trying to build the shape map for object"));
-      continue;
-    }
-    if (include_shape_b and not is_excised(excise_B)) {
-      CHECK_THROWS_WITH(build_maps(),
-                        Catch::Matchers::ContainsSubstring(
-                            "No excision was specified for object"));
-      continue;
-    }
+      if constexpr (not IsCylindrical) {
+        if (include_shape_a and
+            (not excise_A and not transition_ends_at_cube_A)) {
+          CHECK_THROWS_WITH(build_maps(),
+                            Catch::Matchers::ContainsSubstring(
+                                "If the object is filled, the transition must "
+                                "end at the cube."));
+          continue;
+        }
+        if (include_shape_a and not excise_A) {
+          CHECK_THROWS_WITH(
+              build_maps(),
+              Catch::Matchers::ContainsSubstring(
+                  "the centers of the inner and outer object are different"));
+          continue;
+        }
+        if (include_shape_b and
+            (not excise_B and not transition_ends_at_cube_B)) {
+          CHECK_THROWS_WITH(build_maps(),
+                            Catch::Matchers::ContainsSubstring(
+                                "If the object is filled, the transition must "
+                                "end at the cube."));
+          continue;
+        }
+        if (include_shape_b and not excise_B) {
+          CHECK_THROWS_WITH(
+              build_maps(),
+              Catch::Matchers::ContainsSubstring(
+                  "the centers of the inner and outer object are different"));
+          continue;
+        }
+      }
 
     // Now for each object, either we have included shape map options and
     // excision info, or we didn't include either. (i.e. include_shape_map_?
@@ -375,44 +362,58 @@ void test(const bool include_expansion, const bool include_rotation,
     // maps now
     build_maps();
 
+    using IncludeDistortedMapType = typename TimeDependentMapOptions<
+        IsCylindrical>::IncludeDistortedMapType;
+    IncludeDistortedMapType include_distorted_map_A{};
+    IncludeDistortedMapType include_distorted_map_B{};
+    if constexpr (IsCylindrical) {
+      include_distorted_map_A = include_shape_a;
+      include_distorted_map_B = include_shape_b;
+    } else {
+      include_distorted_map_A =
+          include_shape_a ? std::make_optional(0_st) : std::nullopt;
+      include_distorted_map_B =
+          include_shape_b ? std::make_optional(0_st) : std::nullopt;
+    }
+
     if ((not include_rotation) and (not include_expansion) and
-        (not include_translation) and (not is_excised(excise_A))) {
+        (not include_translation) and (not include_shape_a)) {
       CHECK(time_dep_options
                 .template grid_to_inertial_map<domain::ObjectLabel::A>(
-                    excise_A, true) == nullptr);
+                    include_distorted_map_A, true) == nullptr);
       continue;
     }
     if ((not include_rotation) and (not include_expansion) and
-        (not include_translation) and (not is_excised(excise_B))) {
+        (not include_translation) and (not include_shape_b)) {
       CHECK(time_dep_options
                 .template grid_to_inertial_map<domain::ObjectLabel::B>(
-                    excise_B, true) == nullptr);
+                    include_distorted_map_B, true) == nullptr);
       continue;
     }
 
     const auto grid_to_distorted_map_A =
         time_dep_options.template grid_to_distorted_map<domain::ObjectLabel::A>(
-            excise_A);
+            include_distorted_map_A);
     const auto grid_to_distorted_map_B =
         time_dep_options.template grid_to_distorted_map<domain::ObjectLabel::B>(
-            excise_B);
+            include_distorted_map_B);
     const auto grid_to_inertial_map_A =
         time_dep_options.template grid_to_inertial_map<domain::ObjectLabel::A>(
-            excise_A, true);
+            include_distorted_map_A, true);
     const auto grid_to_inertial_map_B =
         time_dep_options.template grid_to_inertial_map<domain::ObjectLabel::B>(
-            excise_B, true);
+            include_distorted_map_B, true);
     // Even though the distorted to inertial map is not tied to a specific
     // object, we use `excise_?` to determine if the distorted map is
     // included just for testing.
     const auto distorted_to_inertial_map_A =
         time_dep_options
             .template distorted_to_inertial_map<domain::ObjectLabel::A>(
-                excise_A, true);
+                include_distorted_map_A, true);
     const auto distorted_to_inertial_map_B =
         time_dep_options
             .template distorted_to_inertial_map<domain::ObjectLabel::B>(
-                excise_B, true);
+                include_distorted_map_B, true);
 
     // All of these maps are tested individually. Rather than going through
     // the effort of coming up with a source coordinate and calculating
@@ -424,22 +425,40 @@ void test(const bool include_expansion, const bool include_rotation,
       if (is_null) {
         CHECK(map == nullptr);
       } else {
+        REQUIRE(map != nullptr);
         CHECK(map->is_identity() == is_identity);
         CHECK(map->inv_jacobian_is_time_dependent() != is_identity);
         CHECK(map->jacobian_is_time_dependent() != is_identity);
       }
     };
-
-    check_map(grid_to_distorted_map_A, not is_excised(excise_A), false);
-    check_map(grid_to_distorted_map_B, not is_excised(excise_B), false);
-    check_map(grid_to_inertial_map_A, false, false);
-    check_map(grid_to_inertial_map_B, false, false);
-    check_map(distorted_to_inertial_map_A, not is_excised(excise_A),
-              (not include_rotation) and (not include_expansion) and
-                  (not include_translation) and is_excised(excise_A));
-    check_map(distorted_to_inertial_map_B, not excise_B,
-              (not include_rotation) and (not include_expansion) and
-                  (not include_translation) and is_excised(excise_B));
+    {
+      INFO("grid_to_distorted_map_A");
+      check_map(grid_to_distorted_map_A, not include_shape_a, false);
+    }
+    {
+      INFO("grid_to_distorted_map_B");
+      check_map(grid_to_distorted_map_B, not include_shape_b, false);
+    }
+    {
+      INFO("grid_to_inertial_map_A");
+      check_map(grid_to_inertial_map_A, false, false);
+    }
+    {
+      INFO("grid_to_inertial_map_B");
+      check_map(grid_to_inertial_map_B, false, false);
+    }
+    {
+      INFO("distorted_to_inertial_map_A");
+      check_map(distorted_to_inertial_map_A, not include_shape_a,
+                (not include_rotation) and (not include_expansion) and
+                    (not include_translation) and include_shape_a);
+    }
+    {
+      INFO("distorted_to_inertial_map_B");
+      check_map(distorted_to_inertial_map_B, not include_shape_b,
+                (not include_rotation) and (not include_expansion) and
+                    (not include_translation) and include_shape_b);
+    }
     // Test functions of time
     const auto functions_of_time =
         time_dep_options.create_functions_of_time(expiration_times);
@@ -573,45 +592,13 @@ void test_errors() {
                     Catch::Matchers::ContainsSubstring(
                         "Time dependent map options were "
                         "specified, but all options were 'None'."));
-  using RadiiType = std::optional<std::array<double, IsCylindrical ? 2 : 3>>;
+  using RadiiType = std::array<double, IsCylindrical ? 2 : 3>;
   RadiiType radii{};
   if constexpr (IsCylindrical) {
     radii = std::array{0.1, 1.0};
   } else {
     radii = std::array{0.1, 0.5, 1.0};
   }
-  CHECK_THROWS_WITH(
-      ([&radii]() {
-        TimeDependentMapOptions<IsCylindrical> time_dep_opts{
-            1.0,
-            ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-            RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
-            std::nullopt,
-            std::nullopt,
-            ShapeMapBOptions<IsCylindrical>{8, {}}};
-        time_dep_opts.build_maps(
-            std::array{std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0}},
-            std::nullopt, std::nullopt, radii, std::nullopt, 25.0, 100.0);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Trying to build the shape map for object " +
-          get_output(domain::ObjectLabel::A)));
-  CHECK_THROWS_WITH(
-      ([&radii]() {
-        TimeDependentMapOptions<IsCylindrical> time_dep_opts{
-            1.0,
-            ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-            RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
-            std::nullopt,
-            ShapeMapAOptions<IsCylindrical>{8, {}},
-            std::nullopt};
-        time_dep_opts.build_maps(
-            std::array{std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 0.0}},
-            std::nullopt, std::nullopt, radii, radii, 25.0, 100.0);
-      }()),
-      Catch::Matchers::ContainsSubstring(
-          "Trying to build the shape map for object " +
-          get_output(domain::ObjectLabel::B)));
   if (IsCylindrical) {
     CHECK_THROWS_WITH(
         ([&radii]() {
@@ -624,36 +611,13 @@ void test_errors() {
               std::nullopt};
           time_dep_opts.build_maps(
               std::array{std::array{5.0, 0.0, 0.0}, std::array{-5.0, 0.0, 0.0}},
-              {{7.5, 0.0, 0.0}}, {{-7.5, 0.0, 0.0}}, radii, radii, 25.0, 100.0);
+              {{7.5, 0.0, 0.0}}, {{-7.5, 0.0, 0.0}}, radii, radii, false, false,
+              25.0, 100.0);
         }()),
         Catch::Matchers::ContainsSubstring(
             "When using the CylindricalBinaryCompactObject domain creator, "
             "the excision centers cannot be offset."));
   }
-  CHECK_THROWS_WITH(
-      TimeDependentMapOptions<IsCylindrical>{}
-          .template grid_to_distorted_map<domain::ObjectLabel::A>(true),
-      Catch::Matchers::ContainsSubstring(
-          "Requesting grid to distorted map with distorted frame "
-          "but shape map options were not specified."));
-  CHECK_THROWS_WITH(
-      TimeDependentMapOptions<IsCylindrical>{}
-          .template grid_to_distorted_map<domain::ObjectLabel::B>(true),
-      Catch::Matchers::ContainsSubstring(
-          "Requesting grid to distorted map with distorted frame "
-          "but shape map options were not specified."));
-  CHECK_THROWS_WITH(
-      TimeDependentMapOptions<IsCylindrical>{}
-          .template grid_to_inertial_map<domain::ObjectLabel::A>(true, true),
-      Catch::Matchers::ContainsSubstring(
-          "Requesting grid to inertial map with distorted frame "
-          "but shape map options were not specified."));
-  CHECK_THROWS_WITH(
-      TimeDependentMapOptions<IsCylindrical>{}
-          .template grid_to_inertial_map<domain::ObjectLabel::B>(true, true),
-      Catch::Matchers::ContainsSubstring(
-          "Requesting grid to inertial map with distorted frame "
-          "but shape map options were not specified."));
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       TimeDependentMapOptions<IsCylindrical>{}.has_distorted_frame_options(
@@ -762,14 +726,22 @@ SPECTRE_TEST_CASE(
     "Unit.Domain.Creators.TimeDependentOptions.BinaryCompactObject",
     "[Domain][Unit]") {
   for (const auto& [include_expansion, include_rotation, include_translation,
-                    include_shape_a, include_shape_b] :
+                    include_shape_a, include_shape_b, transition_ends_at_cube_A,
+                    transition_ends_at_cube_B] :
        cartesian_product(make_array(true, false), make_array(true, false),
                          make_array(true, false), make_array(true, false),
+                         make_array(true, false), make_array(true, false),
                          make_array(true, false))) {
-    test<true>(include_expansion, include_rotation, include_translation,
-               include_shape_a, include_shape_b);
     test<false>(include_expansion, include_rotation, include_translation,
-                include_shape_a, include_shape_b);
+                include_shape_a, include_shape_b, transition_ends_at_cube_A,
+                transition_ends_at_cube_B);
+    // Filter out cases that are not valid for the cylindrical domain
+    if (transition_ends_at_cube_A or transition_ends_at_cube_B) {
+      continue;
+    }
+    test<true>(include_expansion, include_rotation, include_translation,
+               include_shape_a, include_shape_b, transition_ends_at_cube_A,
+               transition_ends_at_cube_B);
   }
   check_names<true>();
   check_names<false>();

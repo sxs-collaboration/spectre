@@ -401,8 +401,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   // maps use piecewise functions for `Expansion` and `Translation`. This means
   // an inner common radius must be specified for the piecewise bounds.
   if (time_dependent_options_.has_value() and
-      not(include_inner_sphere_A and include_inner_sphere_B) and
-      not include_outer_sphere) {
+      not(include_inner_sphere_A and include_inner_sphere_B and
+          include_outer_sphere)) {
     PARSE_ERROR(context,
                 "To use the CylindricalBBH domain with time-dependent maps, "
                 "you must include the inner spheres for both objects and "
@@ -417,8 +417,8 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
         std::array{rotate_from_z_to_x_axis(center_A_),
                    rotate_from_z_to_x_axis(center_B_)},
         std::nullopt, std::nullopt, std::array{radius_A_, outer_radius_A_},
-        std::array{radius_B_, outer_radius_B_}, inner_common_radius,
-        outer_radius_);
+        std::array{radius_B_, outer_radius_B_}, false, false,
+        inner_common_radius, outer_radius_);
   }
 }
 

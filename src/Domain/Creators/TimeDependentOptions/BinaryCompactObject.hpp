@@ -303,10 +303,21 @@ struct TimeDependentMapOptions {
    *
    * If the radii for an object are `std::nullopt`, this means that a Shape map
    * is not constructed for that object. An identity map will be used instead.
+   * This happens when the object is covered by a Cartesian cube, rather than a
+   * sphere.
    * If \p IsCylindrical is true, only pass two radii for the inner/outer radius
    * of the object sphere. If it is false, pass three radii corresponding to the
    * excision radius, the outer radius of the inner sphere, and the radius of
    * the surrounding cube.
+   *
+   * If a shape map is requested and the object is excised, then the shape map
+   * will deform the inner excision surface of the object. This deformation
+   * either extends to the outer radius of the sphere, or further to the edge of
+   * the cube that surrounds the sphere, depending on the `TransitionEndsAtCube`
+   * option.
+   * If the object is filled, then the shape map will deform the outer radius of
+   * the sphere that covers the object and the `TransitionEndsAtCube` option
+   * must be `true`.
    */
   void build_maps(
       const std::array<std::array<double, 3>, 2>& object_centers,
@@ -316,7 +327,8 @@ struct TimeDependentMapOptions {
           object_A_radii,
       const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
           object_B_radii,
-      double envelope_radius, double domain_outer_radius);
+      bool object_A_filled, bool object_B_filled, double envelope_radius,
+      double domain_outer_radius);
 
   /*!
    * \brief Check whether options were specified in the constructor for the
@@ -408,7 +420,7 @@ struct TimeDependentMapOptions {
   std::optional<std::pair<RotScaleTrans, RotScaleTrans>> rot_scale_trans_map_{};
   using ShapeMapType =
       tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
-                          std::array<std::array<std::optional<Shape>, 6>, 2>>;
+                          std::array<std::array<std::optional<Shape>, 12>, 2>>;
   ShapeMapType shape_maps_{};
 
   // helper function that creates the functions of time used by the worldtube

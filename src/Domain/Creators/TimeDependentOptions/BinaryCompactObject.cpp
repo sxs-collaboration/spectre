@@ -299,6 +299,7 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
         object_A_radii,
     const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
         object_B_radii,
+    const bool object_A_filled, const bool object_B_filled,
     const double envelope_radius, const double domain_outer_radius) {
   if (expansion_map_options_.has_value() or rotation_map_options_.has_value() or
       translation_map_options_.has_value()) {
@@ -329,102 +330,117 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
 
   for (size_t i = 0; i < 2; i++) {
     const auto& radii_opt = i == 0 ? object_A_radii : object_B_radii;
-    if (radii_opt.has_value()) {
-      const auto& radii = radii_opt.value();
-      if (not(i == 0 ? shape_options_A_.has_value()
-                     : shape_options_B_.has_value())) {
-        ERROR_NO_TRACE(
-            "Trying to build the shape map for object "
-            << (i == 0 ? domain::ObjectLabel::A : domain::ObjectLabel::B)
-            << ", but no time dependent map options were specified "
-               "for that object.");
+    const bool has_shape_map =
+        i == 0 ? shape_options_A_.has_value() : shape_options_B_.has_value();
+    if (not radii_opt.has_value()) {
+      // No radii were specified, so we skip building the shape map. This
+      // happens when the object is covered by a Cartesian cube.
+      if (has_shape_map) {
+        ERROR(
+            "A shape map was specified for object "
+            << (i == 0 ? "A" : "B")
+            << ", but no radii were provided. The object must be enclosed by a "
+               "sphere, not covered by a Cartesian cube.");
       }
-      // Store the inner radii for creating functions of time
-      gsl::at(inner_radii_, i) = radii[0];
+      continue;
+    }
+    if (not has_shape_map) {
+      // Radii were specified, but no shape map was requested. Skip building the
+      // shape map.
+      continue;
+    }
+    const auto& radii = radii_opt.value();
+    const bool filled = i == 0 ? object_A_filled : object_B_filled;
+    // Store the inner radii for creating functions of time
+    gsl::at(inner_radii_, i) = radii[0];
 
-      const size_t initial_l_max = i == 0 ? shape_options_A_.value().l_max
-                                          : shape_options_B_.value().l_max;
+    const size_t initial_l_max = i == 0 ? shape_options_A_.value().l_max
+                                        : shape_options_B_.value().l_max;
 
-      std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
-                          ShapeMapTransitionFunction>
-          transition_func{};
+    std::unique_ptr<domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                        ShapeMapTransitionFunction>
+        transition_func{};
 
-      // Currently, we don't support different transition functions for the
-      // cylindrical domain
-      if constexpr (IsCylindrical) {
-        if (cube_A_center.has_value() or cube_B_center.has_value()) {
-          ERROR_NO_TRACE(
-              "When using the CylindricalBinaryCompactObject domain creator, "
-              "the excision centers cannot be offset.");
-        }
-        transition_func =
-            std::make_unique<domain::CoordinateMaps::
-                                 ShapeMapTransitionFunctions::SphereTransition>(
-                radii[0], radii[1]);
+    // Currently, we don't support different transition functions for the
+    // cylindrical domain
+    if constexpr (IsCylindrical) {
+      if (cube_A_center.has_value() or cube_B_center.has_value()) {
+        ERROR_NO_TRACE(
+            "When using the CylindricalBinaryCompactObject domain creator, "
+            "the excision centers cannot be offset.");
+      }
+      transition_func =
+          std::make_unique<domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                               SphereTransition>(radii[0], radii[1]);
 
-        gsl::at(shape_maps_, i) = Shape{gsl::at(object_centers, i),
-                                        initial_l_max,
-                                        initial_l_max,
-                                        std::move(transition_func),
-                                        gsl::at(shape_names, i),
-                                        gsl::at(size_names, i)};
-      } else {
-        // These must match the order of orientations_for_sphere_wrappings() in
-        // DomainHelpers.hpp. The values must match that of Wedge::Axis
-        const std::array<int, 6> axes{3, -3, 2, -2, 1, -1};
+      gsl::at(shape_maps_, i) = Shape{gsl::at(object_centers, i),
+                                      initial_l_max,
+                                      initial_l_max,
+                                      std::move(transition_func),
+                                      gsl::at(shape_names, i),
+                                      gsl::at(size_names, i)};
+    } else {
+      // These must match the order of orientations_for_sphere_wrappings() in
+      // DomainHelpers.hpp. The values must match that of Wedge::Axis
+      const std::array<int, 6> axes{3, -3, 2, -2, 1, -1};
 
-        const bool transition_ends_at_cube =
-            i == 0 ? shape_options_A_->transition_ends_at_cube
-                   : shape_options_B_->transition_ends_at_cube;
+      const bool transition_ends_at_cube =
+          i == 0 ? shape_options_A_->transition_ends_at_cube
+                 : shape_options_B_->transition_ends_at_cube;
 
-        // These centers must take in to account if we have an offset of the
-        // center of the object and where the transition ends. The inner center
-        // is always the center of the object. The outer center depends on if we
-        // have an offset and where the transition ends. If the transition ends
-        // at the cube, then if we have an offset we use the cube center, if not
-        // it's the same as the object center. If the transition ends at the
-        // sphere, then the center is the object center
-        const std::optional<std::array<double, 3>>& cube_center =
-            i == 0 ? cube_A_center : cube_B_center;
-        const std::array<double, 3>& inner_center = gsl::at(object_centers, i);
-        const std::array<double, 3>& outer_center =
-            transition_ends_at_cube
-                ? cube_center.value_or(gsl::at(object_centers, i))
-                : gsl::at(object_centers, i);
+      // These centers must take in to account if we have an offset of the
+      // center of the object and where the transition ends. The inner center
+      // is always the center of the object. The outer center depends on if we
+      // have an offset and where the transition ends. If the transition ends
+      // at the cube, then if we have an offset we use the cube center, if not
+      // it's the same as the object center. If the transition ends at the
+      // sphere, then the center is the object center
+      const std::optional<std::array<double, 3>>& cube_center =
+          i == 0 ? cube_A_center : cube_B_center;
+      const std::array<double, 3>& inner_center = gsl::at(object_centers, i);
+      const std::array<double, 3>& outer_center =
+          transition_ends_at_cube
+              ? cube_center.value_or(gsl::at(object_centers, i))
+              : gsl::at(object_centers, i);
 
-        const double inner_sphericity = 1.0;
-        const double outer_sphericity = transition_ends_at_cube ? 0.0 : 1.0;
+      // These are the inner and outer radii between which the shape map falls
+      // off outside the object/excision. If the object is filled, then inside
+      // the object there will be an additional reverse transition function from
+      // the inner cube to the deformed outer surface of the sphere.
+      const double inner_radius = filled ? radii[1] : radii[0];
+      const double outer_radius = transition_ends_at_cube ? radii[2] : radii[1];
+      const double inner_sphericity = 1.0;
+      const double outer_sphericity = transition_ends_at_cube ? 0.0 : 1.0;
 
-        const double inner_radius = radii[0];
-        const double outer_radius =
-            transition_ends_at_cube ? radii[2] : radii[1];
+      if (filled and not transition_ends_at_cube) {
+        ERROR_NO_TRACE(
+            "If the object is filled, the transition must end at the cube.");
+      }
 
-        using Wedge =
-            domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge;
-        for (size_t j = 0; j < axes.size(); j++) {
+      using Wedge = domain::CoordinateMaps::ShapeMapTransitionFunctions::Wedge;
+      for (size_t j = 0; j < 12; j++) {
+        if (filled and j < 6) {
+          // Reverse the transition function so the shape map goes to zero at
+          // the inner cube
+          transition_func = std::make_unique<Wedge>(
+              inner_center, radii[0], 0.0, outer_center, radii[1], 1.0,
+              static_cast<Wedge::Axis>(gsl::at(axes, j)), true);
+        } else {
           transition_func = std::make_unique<Wedge>(
               inner_center, inner_radius, inner_sphericity, outer_center,
               outer_radius, outer_sphericity,
-              static_cast<Wedge::Axis>(gsl::at(axes, j)));
-
-          // The shape map should be given the center of the excision always,
-          // regardless of if it is offset or not
-          gsl::at(gsl::at(shape_maps_, i), j) =
-              Shape{inner_center,
-                    initial_l_max,
-                    initial_l_max,
-                    std::move(transition_func),
-                    gsl::at(shape_names, i),
-                    gsl::at(size_names, i)};
+              static_cast<Wedge::Axis>(gsl::at(axes, j % 6)));
         }
-      }
 
-    } else if (i == 0 ? shape_options_A_.has_value()
-                      : shape_options_B_.has_value()) {
-      ERROR_NO_TRACE(
-          "No excision was specified for object "
-          << (i == 0 ? domain::ObjectLabel::A : domain::ObjectLabel::B)
-          << ", but ShapeMap options were specified for that object.");
+        // The shape map should be given the center of the excision always,
+        // regardless of if it is offset or not
+        gsl::at(gsl::at(shape_maps_, i), j) = Shape{inner_center,
+                                                    initial_l_max,
+                                                    initial_l_max,
+                                                    std::move(transition_func),
+                                                    gsl::at(shape_names, i),
+                                                    gsl::at(size_names, i)};
+      }
     }
   }
 }
@@ -483,17 +499,19 @@ typename TimeDependentMapOptions<IsCylindrical>::template MapType<
     Frame::Grid, Frame::Distorted>
 TimeDependentMapOptions<IsCylindrical>::grid_to_distorted_map(
     const IncludeDistortedMapType& include_distorted_map) const {
-  bool block_has_shape_map = false;
+  bool block_has_shape_map = Object == domain::ObjectLabel::A
+                                 ? shape_options_A_.has_value()
+                                 : shape_options_B_.has_value();
 
   if constexpr (IsCylindrical) {
-    block_has_shape_map = include_distorted_map;
+    block_has_shape_map = block_has_shape_map and include_distorted_map;
   } else {
     const bool transition_ends_at_cube =
         Object == domain::ObjectLabel::A
             ? shape_options_A_->transition_ends_at_cube
             : shape_options_B_->transition_ends_at_cube;
     block_has_shape_map =
-        include_distorted_map.has_value() and
+        block_has_shape_map and include_distorted_map.has_value() and
         (transition_ends_at_cube or include_distorted_map.value() < 6);
   }
 
@@ -509,14 +527,10 @@ TimeDependentMapOptions<IsCylindrical>::grid_to_distorted_map(
             "11, but it is "
             << include_distorted_map.value());
       }
-      shape = &gsl::at(gsl::at(shape_maps_, index),
-                       include_distorted_map.value() % 6);
+      shape =
+          &gsl::at(gsl::at(shape_maps_, index), include_distorted_map.value());
     }
-    if (not shape->has_value()) {
-      ERROR(
-          "Requesting grid to distorted map with distorted frame but shape map "
-          "options were not specified.");
-    }
+    ASSERT(shape->has_value(), "Shape map was requested but not built.");
     return std::make_unique<detail::gd_map<Shape>>(shape->value());
   } else {
     return nullptr;
@@ -530,17 +544,19 @@ typename TimeDependentMapOptions<IsCylindrical>::template MapType<
 TimeDependentMapOptions<IsCylindrical>::grid_to_inertial_map(
     const IncludeDistortedMapType& include_distorted_map,
     const bool use_rigid_map) const {
-  bool block_has_shape_map = false;
+  bool block_has_shape_map = Object == domain::ObjectLabel::A
+                                 ? shape_options_A_.has_value()
+                                 : shape_options_B_.has_value();
 
   if constexpr (IsCylindrical) {
-    block_has_shape_map = include_distorted_map;
+    block_has_shape_map = block_has_shape_map and include_distorted_map;
   } else {
     const bool transition_ends_at_cube =
         Object == domain::ObjectLabel::A
             ? shape_options_A_->transition_ends_at_cube
             : shape_options_B_->transition_ends_at_cube;
     block_has_shape_map =
-        include_distorted_map.has_value() and
+        block_has_shape_map and include_distorted_map.has_value() and
         (transition_ends_at_cube or include_distorted_map.value() < 6);
   }
 
@@ -562,14 +578,10 @@ TimeDependentMapOptions<IsCylindrical>::grid_to_inertial_map(
             "11, but it is "
             << include_distorted_map.value());
       }
-      shape = &gsl::at(gsl::at(shape_maps_, index),
-                       include_distorted_map.value() % 6);
+      shape =
+          &gsl::at(gsl::at(shape_maps_, index), include_distorted_map.value());
     }
-    if (not shape->has_value()) {
-      ERROR(
-          "Requesting grid to inertial map with distorted frame but shape map "
-          "options were not specified.");
-    }
+    ASSERT(shape->has_value(), "Shape map was requested but not built.");
     if (rot_scale_trans_map_.has_value()) {
       return std::make_unique<detail::gi_map<Shape, RotScaleTrans>>(
           shape->value(), rot_scale_trans);

@@ -397,7 +397,7 @@ std::string create_option_string(
     const size_t additional_refinement_outer,
     const size_t additional_refinement_A, const size_t additional_refinement_B,
     const double opening_angle, const bool add_boundary_condition) {
-  const std::string cube_length =
+  const std::string cube_scale =
       (excise_A and excise_B and opening_angle == 90) ? "1.5" : "1.0";
   const std::string time_dependence{
       add_time_dependence
@@ -490,7 +490,7 @@ std::string create_option_string(
          std::to_string(1 + additional_refinement_outer) +
          "]\n"
          "  InitialGridPoints: 3\n" +
-         "  CubeScale: " + cube_length +
+         "  CubeScale: " + cube_scale +
          "\n"
          "  UseEquiangularMap: " +
          stringize(use_equiangular_map) + "\n" + time_dependence;
@@ -810,6 +810,13 @@ void test_parse_errors() {
           "Using a logarithmically spaced radial grid in the "
           "part of Layer 1 enveloping Object A requires excising the interior "
           "of Object A"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 1.0, 1.0, false, false},
+          Object{0.5, 1.0, -1.0, false, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.2, 2_st, 6_st),
+      Catch::Matchers::ContainsSubstring(
+          "A filled object cannot be offset within its cube."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
