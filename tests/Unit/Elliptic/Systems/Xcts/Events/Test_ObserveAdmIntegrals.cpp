@@ -25,13 +25,11 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "PointwiseFunctions/Xcts/ExtrinsicCurvature.hpp"
-#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 
 namespace {
 
@@ -54,7 +52,7 @@ void test_local_adm_integrals(const double& distance,
                               const std::vector<double>& prev_distances) {
   // Define black hole parameters.
   const double mass = 1;
-  const double boost_speed = 0.5;
+  const double boost_speed = 0.;
   const double lorentz_factor = 1. / sqrt(1. - square(boost_speed));
   const std::array<double, 3> boost_velocity{{0., 0., boost_speed}};
 
@@ -231,19 +229,30 @@ void test_local_adm_integrals(const double& distance,
     const auto trace_extrinsic_curvature = tenex::evaluate(
         inv_spatial_metric(ti::I, ti::J) * extrinsic_curvature(ti::i, ti::j));
 
-    // Compute face normal (related to the conformal metric).
-    auto direction = Direction<3>::upper_zeta();
-    auto conformal_face_normal =
-        unnormalized_face_normal(face_mesh, logical_to_inertial_map, direction);
-    const auto& face_inv_conformal_metric =
-        dg::project_tensor_to_boundary(inv_conformal_metric, mesh, direction);
-    const auto face_normal_magnitude =
-        magnitude(conformal_face_normal, face_inv_conformal_metric);
+    // Compute face normals (related to the conformal metric)
+    auto lower_conformal_face_normal = unnormalized_face_normal(
+        face_mesh, logical_to_inertial_map, Direction<3>::lower_zeta());
+    const auto& lower_face_inv_conformal_metric =
+        dg::project_tensor_to_boundary(inv_conformal_metric, mesh,
+                                       Direction<3>::lower_zeta());
+    const auto lower_face_normal_magnitude =
+        magnitude(lower_conformal_face_normal, lower_face_inv_conformal_metric);
+    auto upper_conformal_face_normal = unnormalized_face_normal(
+        face_mesh, logical_to_inertial_map, Direction<3>::upper_zeta());
+    const auto& upper_face_inv_conformal_metric =
+        dg::project_tensor_to_boundary(inv_conformal_metric, mesh,
+                                       Direction<3>::upper_zeta());
+    const auto upper_face_normal_magnitude =
+        magnitude(upper_conformal_face_normal, upper_face_inv_conformal_metric);
     for (size_t d = 0; d < 3; ++d) {
-      conformal_face_normal.get(d) /= get(face_normal_magnitude);
+      lower_conformal_face_normal.get(d) /= get(lower_face_normal_magnitude);
+      upper_conformal_face_normal.get(d) /= get(upper_face_normal_magnitude);
     }
     const DirectionMap<3, tnsr::i<DataVector, 3>> conformal_face_normals(
-        {std::make_pair(direction, conformal_face_normal)});
+        {std::make_pair(Direction<3>::lower_zeta(),
+                        lower_conformal_face_normal),
+         std::make_pair(Direction<3>::upper_zeta(),
+                        upper_conformal_face_normal)});
 
     // Compute local integrals.
     Scalar<double> local_adm_mass;
@@ -283,6 +292,7 @@ void test_local_adm_integrals(const double& distance,
 
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.ObserveAdmIntegrals",
                   "[Unit][PointwiseFunctions]") {
   // Test convergence with distance
