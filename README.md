@@ -21,8 +21,15 @@ computers.
 
 SpECTRE is being developed in support of our collaborative Simulating
 eXtreme Spacetimes (SXS) research program into the multi-messenger
-astrophysics of neutron star mergers, core-collapse supernovae, and
-gamma-ray bursts.
+astrophysics of black hole and neutron star mergers, core-collapse supernovae,
+and gamma-ray bursts.
+
+## Documentation
+
+You find instructions on installing and running the code, as well as many guides
+and tutorials, in the documentation:
+
+- Documentation: https://spectre-code.org/
 
 ## Citing SpECTRE
 
@@ -66,10 +73,6 @@ supplemental material to the publication.
 
 See our [publication policy](https://spectre-code.org/publication_policies.html)
 for more information.
-
-## Viewing Documentation
-
-The documentation can be viewed at https://spectre-code.org/.
 
 ## Logos and visuals
 

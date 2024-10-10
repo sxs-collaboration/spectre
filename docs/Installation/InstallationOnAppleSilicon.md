@@ -89,7 +89,7 @@ cd $SPECTRE_DEPS_ROOT
 git clone https://github.com/UIUC-PPL/charm
 pushd charm
 git checkout v7.0.0
-git apply $SPECTRE_HOME/support/charm/v7.0.0.patch
+git apply $SPECTRE_HOME/support/Charm/v7.0.0.patch
 ./build charm++ multicore-darwin-arm8 --with-production -g3 -j --build-shared
 popd
 
