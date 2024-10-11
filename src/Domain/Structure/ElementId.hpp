@@ -8,18 +8,15 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <iosfwd>
-#include <limits>
 #include <optional>
+#include <string>
 
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "Utilities/Algorithm.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/MakeArray.hpp"
 
 /// \cond
 namespace PUP {
@@ -42,19 +39,13 @@ class er;
  * - `ElementId` must satisfy `std::is_pod`
  * - `ElementId` must not be larger than the size of three `int`s, i.e.
  *   `sizeof(ElementId) <= 3 * sizeof(int)`
- *
- * The latter restriction can be relaxed with a special compilation flag to
- * Charm++, but we have not yet needed more elements than can be accounted for
- * by densely packing bits together. `SegmentId` is responsible for handling the
- * low-level bit manipulations to create an index that satisfies the size
- * constraints.
  */
 template <size_t VolumeDim>
-class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
+class alignas(int[2]) ElementId {  // NOLINT(modernize-avoid-c-arrays)
  public:
   // We restrict the ElementId size to 64 bits for easy hashing into
-  // size_t. This still allows us to have over 17 trillion elements, which is
-  // probably enough. 2^36 * 2^8=17.6 trillion elements per grid index, with
+  // size_t. This still allows us to have over 9 quadrillion elements, which is
+  // probably enough. 2^45 * 2^8 9 quadrillion elements per grid index, with
   // up to 16 grid indices.
   //
   // Note: C++ populates bits from right to left in order of the
@@ -62,19 +53,16 @@ class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
   static constexpr size_t block_id_bits = 8;
   static constexpr size_t grid_index_bits = 4;
   static constexpr size_t direction_bits = 4;
-  static constexpr size_t refinement_bits = 4;
   /// The maximum allowed refinement level
-  static constexpr size_t max_refinement_level = 12;
+  static constexpr size_t max_refinement_level = 15;
   static constexpr uint64_t direction_shift =
       static_cast<uint64_t>(block_id_bits + grid_index_bits);
   static constexpr uint64_t direction_mask = static_cast<uint64_t>(0b1111)
                                              << direction_shift;
-  static_assert(block_id_bits + 3 * (refinement_bits + max_refinement_level) +
+  static_assert(block_id_bits + 3 * (1 + max_refinement_level) +
                         grid_index_bits + direction_bits ==
                     static_cast<size_t>(2 * 8) * sizeof(int),
                 "Bit representation requires padding or is too large");
-  static_assert(two_to_the(refinement_bits) >= max_refinement_level,
-                "Not enough bits to represent all refinement levels");
 
   static constexpr size_t volume_dim = VolumeDim;
 
@@ -90,7 +78,8 @@ class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
   explicit ElementId(size_t block_id, size_t grid_index = 0);
 
   /// Create an arbitrary ElementId.
-  ElementId(size_t block_id, std::array<SegmentId, VolumeDim> segment_ids,
+  ElementId(size_t block_id,
+            const std::array<SegmentId, VolumeDim>& segment_ids,
             size_t grid_index = 0);
 
   /// Create an ElementId from its string representation (see `operator<<`).
@@ -111,7 +100,7 @@ class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
   SegmentId segment_id(size_t dim) const;
 
   /// Returns an ElementId meant for identifying data on external boundaries,
-  /// which should never correspond to the Id of an actual element.
+  /// which does not correspond to the Id of an actual element.
   static ElementId<VolumeDim> external_boundary_id();
 
   /// Returns the number of block boundaries the element has.
@@ -127,15 +116,30 @@ class alignas(int[3]) ElementId { // NOLINT(modernize-avoid-c-arrays)
   ElementId without_direction() const;
 
  private:
+  template <size_t Dim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(const ElementId<Dim>& lhs, const ElementId<Dim>& rhs);
+
+  template <size_t Dim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator<(const ElementId<Dim>& lhs, const ElementId<Dim>& rhs);
+
+  template <size_t Dim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool is_zeroth_element(const ElementId<Dim>& id,
+                                const std::optional<size_t>& grid_index);
+
+  ElementId(uint8_t block_id, uint8_t grid_index, uint8_t direction,
+            uint16_t compact_segment_id_xi, uint16_t compact_segment_id_eta,
+            uint16_t compact_segment_id_zeta);
+
   uint8_t block_id_ : block_id_bits;
   uint8_t grid_index_ : grid_index_bits;
   uint8_t direction_ : direction_bits;  // end first 16 bits
-  uint16_t index_xi_ : max_refinement_level;
-  uint8_t refinement_level_xi_ : refinement_bits;  // second 16 bits
-  uint16_t index_eta_ : max_refinement_level;
-  uint8_t refinement_level_eta_ : refinement_bits;  // third 16 bits
-  uint16_t index_zeta_ : max_refinement_level;
-  uint8_t refinement_level_zeta_ : refinement_bits;  // fourth 16 bits
+  // each of the following is 16 bits in length
+  uint16_t compact_segment_id_xi_ : max_refinement_level + 1;
+  uint16_t compact_segment_id_eta_ : max_refinement_level + 1;
+  uint16_t compact_segment_id_zeta_ : max_refinement_level + 1;
 };
 
 /// \cond
@@ -235,8 +239,8 @@ bool is_zeroth_element(const ElementId<Dim>& id);
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& id);
 
-// clang-tidy: do not modify namespace std
-namespace std {  // NOLINT
+// NOLINTNEXTLINE(cert-dcl58-cpp)
+namespace std {
 template <size_t VolumeDim>
 struct hash<ElementId<VolumeDim>> {
   size_t operator()(const ElementId<VolumeDim>& id) const;
@@ -247,9 +251,11 @@ template <size_t VolumeDim>
 inline bool operator==(const ElementId<VolumeDim>& lhs,
                        const ElementId<VolumeDim>& rhs) {
   // Note: Direction is intentionally skipped.
-  return lhs.block_id() == rhs.block_id() and
-         lhs.segment_ids() == rhs.segment_ids() and
-         lhs.grid_index() == rhs.grid_index();
+  return lhs.block_id_ == rhs.block_id_ and
+         lhs.grid_index_ == rhs.grid_index_ and
+         lhs.compact_segment_id_xi_ == rhs.compact_segment_id_xi_ and
+         lhs.compact_segment_id_eta_ == rhs.compact_segment_id_eta_ and
+         lhs.compact_segment_id_zeta_ == rhs.compact_segment_id_zeta_;
 }
 
 template <size_t VolumeDim>
