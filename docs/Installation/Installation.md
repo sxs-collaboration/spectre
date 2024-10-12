@@ -6,19 +6,146 @@ See LICENSE.txt for details.
 
 \tableofcontents
 
-This page details the installation procedure for SpECTRE on personal computers
-using x86-64 processors. For configuring SpECTRE, please refer to the
-\subpage spectre_build_system page. For instructions on installing SpECTRE on
-clusters please refer to the \subpage installation_on_clusters page. For
-instructions on installing SpECTRE on Apple Silicon Macs, please refer to the
-\subpage installation_on_apple_silicon page. Refer to the
-\subpage versioning_and_releases page for information on specific versions
-to install.
+This page details how to install SpECTRE on personal machines and on clusters
+that have no official support (yet).
 
-### Install a specific version with Spack
+- For details on installing SpECTRE on a number of clusters that we support
+  please refer to:
+  \subpage installation_on_clusters
+- For configuring SpECTRE please refer to:
+  \subpage spectre_build_system
+- For instructions on installing SpECTRE on Apple Silicon Macs please refer to:
+  \subpage installation_on_apple_silicon
+- For information on our versioning scheme and public releases please refer to:
+  \subpage versioning_and_releases
 
-You can install SpECTRE with the [Spack](https://github.com/spack/spack) package
-manager:
+### Running containerized releases
+
+A quick way to run the code without installing anything at all is with our
+containerized releases:
+
+```
+docker run sxscollaboration/spectre --help
+```
+
+You can also use [Apptainer/Singularity](https://apptainer.org) instead of
+Docker, which works better on computing clusters and is more convenient because
+it shares the host's file system:
+
+```
+apptainer run docker://sxscollaboration/spectre --help
+```
+
+The entrypoint to this container is the SpECTRE
+\ref tutorial_cli "command-line interface (CLI)".
+For example, you can generate initial data for a simulation of merging black
+holes and plot the result like this:
+
+```
+apptainer run docker://sxscollaboration/spectre bbh generate-id \
+  -q 1 --chi-A 0 0 0 --chi-B 0 0 0 -D 16 -w 0.015 -a 0 -o ./bbh_id
+apptainer run docker://sxscollaboration/spectre plot slice \
+  bbh_id/BbhVolume*.h5 -C 0,0,0 -n 0,0,1 -u 0,1,0 -X 24 24 \
+  -y ConformalFactor -o plot.pdf
+```
+
+The containers currently have precompiled code only for Linux x86_64 platforms,
+and only have a limited set of executables precompiled. The supported features
+available in the precompiled containers are:
+
+- Generating initial data
+- Running CCE (see \ref tutorial_cce)
+- Running Python support code with the SpECTRE CLI (see \ref tutorial_cli)
+
+### Running static binaries
+
+Another way of running the code without installing anything is with our
+precompiled static binaries, which are published on GitHub:
+
+- Releases with precompiled executables:
+  https://github.com/sxs-collaboration/spectre/releases
+
+These are currently compiled only for Linux x86_64 platforms and for Intel
+Haswell architecture, so they should be compatible with machines newer than mid
+2013.
+
+We only publish a limited set of precompiled static binaries that are useful as
+stand-alone tools, such as the CCE executables (see \ref tutorial_cce).
+
+### Quick-start guide for code development with Docker and Visual Studio Code
+
+If you're new to writing code for SpECTRE and would like to jump right into a
+working development environment, a good place to start is our
+\subpage dev_guide_quick_start_docker_vscode.
+
+### Quick-start installation {#quick_start_install}
+
+The easiest way of installing SpECTRE natively on a new machine is this:
+
+1. Collect dependencies. You need a C++ compiler (GCC or Clang), CMake,
+   BLAS/LAPACK, Boost, GSL, HDF5, and Python installed. For details on these
+   required dependencies see \ref build_dependencies. On many computing clusters
+   they are available as modules. On personal machines you can install them with
+   a package manager.
+
+2. Clone the SpECTRE repository:
+
+  ```sh
+  git clone git@github.com:sxs-collaboration/spectre.git
+  export SPECTRE_HOME=$PWD/spectre
+  ```
+
+3. Install Charm++:
+
+  ```sh
+  git clone https://github.com/UIUC-PPL/charm
+  cd charm
+  git checkout v7.0.0
+  git apply $SPECTRE_HOME/support/Charm/v7.0.0.patch
+  ./build charm++ <version> --with-production --build-shared
+  export CHARM_ROOT=$PWD/<version>
+  ```
+
+  Choose the `<version>` from [this list in the Charm++
+  documentation](https://github.com/charmplusplus/charm?tab=readme-ov-file#how-to-choose-a-version).
+  For example, choose `multicore-linux-x86_64` on a Linux laptop,
+  `multicore-darwin-arm8` on an Apple Silicon laptop, and `mpi-linux-x86_64` on
+  a standard computing cluster (you will also need MPI for this). See
+  \ref building-charm for details.
+
+4. Configure and build SpECTRE:
+
+  ```sh
+  cd $SPECTRE_HOME
+  mkdir build
+  cd build
+  cmake \
+    -D CMAKE_C_COMPILER=<clang or gcc> \
+    -D CMAKE_CXX_COMPILER=<clang++ or g++> \
+    -D CMAKE_Fortran_COMPILER=gfortran \
+    -D CMAKE_BUILD_TYPE=<Debug or Release> \
+    -D CHARM_ROOT=$CHARM_ROOT \
+    -D SPECTRE_FETCH_MISSING_DEPS=ON \
+    -D MEMORY_ALLOCATOR=SYSTEM \
+    $SPECTRE_HOME
+  ```
+
+  See \ref building-spectre for details and \ref common_cmake_flags for a list
+  of possible configuration options. For example, set `-D ENABLE_OPENMP=ON`
+  to enable OpenMP-parallelization for the exporter library.
+
+  Now you can compile executables (again, see \ref building-spectre for
+  details). For example:
+
+  ```sh
+  make -j12 cli
+  make -j12 BundledExporter
+  ```
+
+### Installation with Spack
+
+You can also install SpECTRE with the [Spack](https://github.com/spack/spack)
+package manager:
 
 ```sh
 git clone https://github.com/spack/spack
@@ -41,20 +168,17 @@ spack info spectre  # or charmpp, etc.
 Refer to the [Spack documentation](https://spack.readthedocs.io/en/latest/) for
 more information.
 
-### Quick-start guide for code development with Docker and Visual Studio Code
+\warning We have not found the Spack installation particularly stable since the
+Spack package manager is still in development.
 
-If you're new to writing code for SpECTRE and would like to jump right into a
-working development environment, a good place to start is our
-\subpage dev_guide_quick_start_docker_vscode. If you prefer setting up your
-development environment differently, read on!
+## Detailed installation instructions
+
+This remainder of this page details the installation procedure for SpECTRE.
 
 ### Dependencies {#build_dependencies}
 
-**Note**: You don't need to install any of these dependencies by hand,
-or by using yum, apt, or other package managers; it is much easier
-to instead use Singularity, Docker, or Spack (see the corresponding
-sections below) to obtain an environment that includes
-all of these dependencies.
+\note You don't need to install any of these dependencies by hand if you
+use a container or follow the \ref quick_start_install.
 
 #### Required:
 
@@ -102,6 +226,7 @@ The following dependencies will be fetched automatically if you set
   </details>
 
 #### Optional:
+
 * [Pybind11](https://pybind11.readthedocs.io) 2.7.0 or later for SpECTRE Python
   bindings. Included in `support/Python/requirements.txt`.  \cite Pybind11
 * [jemalloc](https://github.com/jemalloc/jemalloc)
@@ -143,6 +268,7 @@ The following dependencies will be fetched automatically if you set
   the same compiler and MPI as SpECTRE to avoid compatibility issues.
 
 #### Bundled:
+
 * [Brigand](https://github.com/edouarda/brigand)
 * [libsharp](https://github.com/Libsharp/libsharp) \cite Libsharp
 
@@ -161,12 +287,6 @@ when you `cp` or `mv` the source files.
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectre/) and can
 be used to build SpECTRE on a personal machine.
-
-**Note**: The Docker image or the Singularity image (see below) are
-the recommended ways of using SpECTRE on a personal
-Linux machine. Because of the wide variety of operating systems available today
-it is not possible for us to support all configurations. However, using Spack
-as outlined below is a supported alternative to Docker or Singularity images.
 
 **Note**: If you have SELinux active
 on your system you must figure out how to enable sharing files with the host
@@ -401,7 +521,7 @@ Follow these steps:
    ```
    cmake -D CHARM_ROOT=$CHARM_ROOT SPECTRE_ROOT
    ```
-   Add options to the `cmake` command to to configure the build, select
+   Add options to the `cmake` command to configure the build, select
    compilers, etc. For instance, to build with clang you may run:
    ```
    cmake -D CMAKE_CXX_COMPILER=clang++ \

@@ -12,7 +12,7 @@ if (NOT YAML_CPP_FOUND)
   include(FetchContent)
   FetchContent_Declare(yaml-cpp
     GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-    GIT_TAG yaml-cpp-0.7.0
+    GIT_TAG yaml-cpp-0.8.0
     GIT_SHALLOW TRUE
     ${SPECTRE_FETCHCONTENT_BASE_ARGS}
   )
