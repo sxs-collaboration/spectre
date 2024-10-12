@@ -30,29 +30,6 @@
 
 namespace domain::creators::sphere {
 
-TimeDependentMapOptions::RotationMapOptions::RotationMapOptions() = default;
-TimeDependentMapOptions::RotationMapOptions::RotationMapOptions(
-    const std::array<std::array<double, 4>, 3> initial_values_in,
-    const double decay_timescale_in)
-    : initial_values(initial_values_in), decay_timescale(decay_timescale_in) {}
-
-TimeDependentMapOptions::ExpansionMapOptions::ExpansionMapOptions() = default;
-TimeDependentMapOptions::ExpansionMapOptions::ExpansionMapOptions(
-    const std::array<double, 3> initial_values_in,
-    const double decay_timescale_in,
-    const std::array<double, 3> initial_values_outer_boundary_in,
-    const double decay_timescale_outer_boundary_in)
-    : initial_values(initial_values_in),
-      decay_timescale(decay_timescale_in),
-      initial_values_outer_boundary(initial_values_outer_boundary_in),
-      decay_timescale_outer_boundary(decay_timescale_outer_boundary_in) {}
-
-TimeDependentMapOptions::TranslationMapOptions::TranslationMapOptions() =
-    default;
-TimeDependentMapOptions::TranslationMapOptions::TranslationMapOptions(
-    const std::array<std::array<double, 3>, 3> initial_values_in)
-    : initial_values(initial_values_in) {}
-
 TimeDependentMapOptions::TimeDependentMapOptions(
     const double initial_time, std::optional<ShapeMapOptions> shape_map_options,
     std::optional<RotationMapOptions> rotation_map_options,
@@ -79,6 +56,8 @@ TimeDependentMapOptions::create_functions_of_time(
   std::unordered_map<std::string, double> expiration_times{
       {size_name, std::numeric_limits<double>::infinity()},
       {shape_name, std::numeric_limits<double>::infinity()},
+      {rotation_name, std::numeric_limits<double>::infinity()},
+      {expansion_name, std::numeric_limits<double>::infinity()},
       {translation_name, std::numeric_limits<double>::infinity()}};
 
   // If we have control systems, overwrite these expiration times with the ones
@@ -107,75 +86,57 @@ TimeDependentMapOptions::create_functions_of_time(
 
   // ExpansionMap FunctionOfTime
   if (expansion_map_options_.has_value()) {
-    result[expansion_name] =
-        std::make_unique<FunctionsOfTime::SettleToConstant>(
-            std::array<DataVector, 3>{
-                {{gsl::at(expansion_map_options_.value().initial_values, 0)},
-                 {gsl::at(expansion_map_options_.value().initial_values, 1)},
-                 {gsl::at(expansion_map_options_.value().initial_values, 2)}}},
-            initial_time_, expansion_map_options_.value().decay_timescale);
+    if (expansion_map_options_->decay_timescale.has_value()) {
+      result[expansion_name] =
+          std::make_unique<FunctionsOfTime::SettleToConstant>(
+              expansion_map_options_->initial_values, initial_time_,
+              expansion_map_options_->decay_timescale.value());
+    } else {
+      result[expansion_name] =
+          std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+              initial_time_, expansion_map_options_->initial_values,
+              expiration_times.at(expansion_name));
+    }
 
     // ExpansionMap in the Outer regionFunctionOfTime
-    result[expansion_outer_boundary_name] = std::make_unique<
-        FunctionsOfTime::SettleToConstant>(
-        std::array<DataVector, 3>{
-            {{gsl::at(
-                 expansion_map_options_.value().initial_values_outer_boundary,
-                 0)},
-             {gsl::at(
-                 expansion_map_options_.value().initial_values_outer_boundary,
-                 1)},
-             {gsl::at(
-                 expansion_map_options_.value().initial_values_outer_boundary,
-                 2)}}},
-        initial_time_,
-        expansion_map_options_.value().decay_timescale_outer_boundary);
+    if (expansion_map_options_->asymptotic_velocity_outer_boundary
+            .has_value()) {
+      result[expansion_outer_boundary_name] =
+          std::make_unique<FunctionsOfTime::FixedSpeedCubic>(
+              expansion_map_options_->initial_values[0][0], initial_time_,
+              expansion_map_options_->asymptotic_velocity_outer_boundary
+                  .value(),
+              expansion_map_options_->decay_timescale_outer_boundary);
+    } else {
+      result[expansion_outer_boundary_name] =
+          std::make_unique<FunctionsOfTime::SettleToConstant>(
+              expansion_map_options_->initial_values_outer_boundary,
+              initial_time_,
+              expansion_map_options_->decay_timescale_outer_boundary);
+    }
   }
-
-  DataVector initial_quaternion_value{4, 0.0};
-  DataVector initial_quaternion_first_derivative_value{4, 0.0};
-  DataVector initial_quaternion_second_derivative_value{4, 0.0};
 
   // RotationMap FunctionOfTime
   if (rotation_map_options_.has_value()) {
-    for (size_t i = 0; i < 4; i++) {
-      initial_quaternion_value[i] =
-          gsl::at(gsl::at(rotation_map_options_.value().initial_values, 0), i);
-      initial_quaternion_first_derivative_value[i] =
-          gsl::at(gsl::at(rotation_map_options_.value().initial_values, 1), i);
-      initial_quaternion_second_derivative_value[i] =
-          gsl::at(gsl::at(rotation_map_options_.value().initial_values, 2), i);
+    if (rotation_map_options_->decay_timescale.has_value()) {
+      result[rotation_name] =
+          std::make_unique<FunctionsOfTime::QuaternionFunctionOfTime<2>>(
+              initial_time_, std::array{rotation_map_options_->quaternions[0]},
+              rotation_map_options_->angles,
+              expiration_times.at(rotation_name));
+    } else {
+      result[rotation_name] =
+          std::make_unique<FunctionsOfTime::SettleToConstantQuaternion>(
+              rotation_map_options_->quaternions, initial_time_,
+              rotation_map_options_->decay_timescale.value());
     }
-    result[rotation_name] =
-        std::make_unique<FunctionsOfTime::SettleToConstantQuaternion>(
-            std::array<DataVector, 3>{
-                std::move(initial_quaternion_value),
-                std::move(initial_quaternion_first_derivative_value),
-                std::move(initial_quaternion_second_derivative_value)},
-            initial_time_, rotation_map_options_.value().decay_timescale);
   }
-
-  DataVector initial_translation_center{3, 0.0};
-  DataVector initial_translation_velocity{3, 0.0};
-  DataVector initial_translation_acceleration{3, 0.0};
 
   // Translation FunctionOfTime
   if (translation_map_options_.has_value()) {
-    for (size_t i = 0; i < 3; i++) {
-      initial_translation_center[i] = gsl::at(
-          gsl::at(translation_map_options_.value().initial_values, 0), i);
-      initial_translation_velocity[i] = gsl::at(
-          gsl::at(translation_map_options_.value().initial_values, 1), i);
-      initial_translation_acceleration[i] = gsl::at(
-          gsl::at(translation_map_options_.value().initial_values, 2), i);
-    }
     result[translation_name] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_,
-            std::array<DataVector, 3>{
-                {std::move(initial_translation_center),
-                 std::move(initial_translation_velocity),
-                 std::move(initial_translation_acceleration)}},
+            initial_time_, translation_map_options_->initial_values,
             expiration_times.at(translation_name));
   }
 

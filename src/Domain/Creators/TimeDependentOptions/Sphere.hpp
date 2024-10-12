@@ -16,7 +16,10 @@
 #include "Domain/CoordinateMaps/TimeDependent/RotScaleTrans.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/Creators/TimeDependentOptions/ExpansionMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/RotationMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/TranslationMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/Auto.hpp"
@@ -88,112 +91,12 @@ struct TimeDependentMapOptions {
   using ShapeMapOptions =
       time_dependent_options::ShapeMapOptions<false, domain::ObjectLabel::None>;
 
-  struct RotationMapOptions {
-    using type = Options::Auto<RotationMapOptions, Options::AutoLabel::None>;
-    static std::string name() { return "RotationMap"; }
-    static constexpr Options::String help = {
-        "Options for a time-dependent rotation map about an arbitrary axis. "
-        "Specify 'None' to not use this map."};
+  using RotationMapOptions = time_dependent_options::RotationMapOptions<2>;
 
-    struct InitialValues {
-      using type = std::array<std::array<double, 4>, 3>;
-      static constexpr Options::String help = {
-          "The initial values for the quaternion function and its first two "
-          "derivatives."};
-    };
+  using ExpansionMapOptions = time_dependent_options::ExpansionMapOptions;
 
-    struct DecayTimescaleRotation {
-      using type = double;
-      static constexpr Options::String help = {
-          "The timescale for how fast the rotation approaches its asymptotic "
-          "value."};
-    };
-
-    using options = tmpl::list<InitialValues, DecayTimescaleRotation>;
-    RotationMapOptions();
-    RotationMapOptions(std::array<std::array<double, 4>, 3> initial_values_in,
-                       double decay_timescale_in);
-
-    std::array<std::array<double, 4>, 3> initial_values{};
-    double decay_timescale{std::numeric_limits<double>::signaling_NaN()};
-  };
-
-  struct ExpansionMapOptions {
-    using type = Options::Auto<ExpansionMapOptions, Options::AutoLabel::None>;
-    static std::string name() { return "ExpansionMap"; }
-    static constexpr Options::String help = {
-        "Options for the expansion map. Specify 'None' to not use this map."};
-
-    struct InitialValues {
-      using type = std::array<double, 3>;
-      static constexpr Options::String help = {
-          "Initial value and first two derivatives of expansion."};
-    };
-
-    struct DecayTimescaleExpansion {
-      using type = double;
-      static constexpr Options::String help = {
-          "The timescale for how fast the expansion approaches "
-          "its asymptotic value."};
-    };
-
-    struct InitialValuesOuterBoundary {
-      using type = std::array<double, 3>;
-      static constexpr Options::String help = {
-          "Initial value and first two derivatives of expansion outside the "
-          "transition region."};
-    };
-
-    struct DecayTimescaleExpansionOuterBoundary {
-      using type = double;
-      static constexpr Options::String help = {
-          "The timescale for how fast the expansion approaches "
-          "its asymptotic value outside the transition region."};
-    };
-
-    using options = tmpl::list<InitialValues, DecayTimescaleExpansion,
-                               InitialValuesOuterBoundary,
-                               DecayTimescaleExpansionOuterBoundary>;
-    ExpansionMapOptions();
-    ExpansionMapOptions(std::array<double, 3> initial_values_in,
-                        double decay_timescale_in,
-                        std::array<double, 3> initial_values_outer_boundary_in,
-                        double decay_timescale_outer_boundary_in);
-
-    std::array<double, 3> initial_values{
-        std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN()};
-    double decay_timescale{std::numeric_limits<double>::signaling_NaN()};
-    std::array<double, 3> initial_values_outer_boundary{
-        std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN()};
-    double decay_timescale_outer_boundary{
-        std::numeric_limits<double>::signaling_NaN()};
-  };
-
-  struct TranslationMapOptions {
-    using type = Options::Auto<TranslationMapOptions, Options::AutoLabel::None>;
-    static std::string name() { return "TranslationMap"; }
-    static constexpr Options::String help = {
-        "Options for a time-dependent translation map in that keeps the "
-        "outer boundary fixed. Specify 'None' to not use this map."};
-
-    struct InitialValues {
-      using type = std::array<std::array<double, 3>, 3>;
-      static constexpr Options::String help = {
-          "Initial values for the translation map, its velocity and "
-          "acceleration."};
-    };
-
-    using options = tmpl::list<InitialValues>;
-    TranslationMapOptions();
-    explicit TranslationMapOptions(
-        std::array<std::array<double, 3>, 3> initial_values_in);
-
-    std::array<std::array<double, 3>, 3> initial_values{};
-  };
+  using TranslationMapOptions =
+      time_dependent_options::TranslationMapOptions<3>;
 
   using options = tmpl::list<InitialTime, ShapeMapOptions, RotationMapOptions,
                              ExpansionMapOptions, TranslationMapOptions>;

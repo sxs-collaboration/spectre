@@ -39,5 +39,5 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
     double settling_timescale,
     const std::array<double, 3>& exp_func_and_2_derivs,
     const std::array<double, 3>& exp_outer_bdry_func_and_2_derivs,
-    const std::array<std::array<double, 4>, 3>& rot_func_and_2_derivs);
+    const std::vector<std::array<double, 4>>& rot_func_and_2_derivs);
 }  // namespace evolution::Ringdown

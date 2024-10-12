@@ -125,17 +125,20 @@ void test(const bool include_expansion, const bool include_rotation,
   std::optional<ShapeMapAOptions<IsCylindrical>> shape_map_a_options{};
   std::optional<ShapeMapBOptions<IsCylindrical>> shape_map_b_options{};
 
-  const std::array<double, 2> exp_values{1.0, 0.0};
+  const std::array<double, 3> exp_values{1.0, 0.0, 0.0};
   const double exp_outer_boundary_velocity = -0.01;
   const double exp_outer_boundary_timescale = 25.0;
   if (include_expansion) {
     exp_map_options = ExpMapOptions<IsCylindrical>{
-        exp_values, exp_outer_boundary_velocity, exp_outer_boundary_timescale};
+        exp_values, std::array{1.0, 0.0, 0.0}, exp_outer_boundary_timescale,
+        std::nullopt, exp_outer_boundary_velocity};
   }
 
   const std::array<double, 3> angular_velocity{0.2, -0.4, 0.6};
   if (include_rotation) {
-    rot_map_options = RotMapOptions<IsCylindrical>{angular_velocity};
+    rot_map_options = RotMapOptions<IsCylindrical>{
+        std::vector{std::array{1.0, 0.0, 0.0, 0.0}},
+        std::vector{std::array{0.0, 0.0, 0.0}, angular_velocity}, std::nullopt};
   }
 
   const std::array<std::array<double, 3>, 3> translation_values = {
@@ -573,6 +576,44 @@ void test_errors() {
                     Catch::Matchers::ContainsSubstring(
                         "Time dependent map options were "
                         "specified, but all options were 'None'."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const TimeDependentMapOptions<IsCylindrical> time_dep_opts{
+            1.0,
+            ExpMapOptions<IsCylindrical>{std::array{1.0, 0.0, 0.0},
+                                         std::array{1.0, 0.0, 0.0}, 0.01, 1.0,
+                                         std::nullopt},
+            RotMapOptions<IsCylindrical>{
+                std::vector{std::array{1.0, 0.0, 0.0, 0.0}}, std::nullopt,
+                std::nullopt},
+            std::nullopt,
+            std::nullopt,
+            ShapeMapBOptions<IsCylindrical>{8, {}}};
+        time_dep_opts.create_functions_of_time({});
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "The BinaryCompactObject domains don't support using a "
+          "SettleToConstant function of time for the expansion map. Set the "
+          "asymptotic velocity to a value and set the decay timescale to "
+          "'None'"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const TimeDependentMapOptions<IsCylindrical> time_dep_opts{
+            1.0,
+            ExpMapOptions<IsCylindrical>{std::array{1.0, 0.0, 0.0},
+                                         std::array{1.0, 0.0, 0.0}, 0.01,
+                                         std::nullopt, -0.1},
+            RotMapOptions<IsCylindrical>{
+                std::vector{std::array{1.0, 0.0, 0.0, 0.0}}, std::nullopt, 1.0},
+            std::nullopt,
+            std::nullopt,
+            ShapeMapBOptions<IsCylindrical>{8, {}}};
+        time_dep_opts.create_functions_of_time({});
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "The BinaryCompactObject domains don't support using a "
+          "SettleToConstant function of time for the rotation map. Set the "
+          "decay timescale to 'None'"));
   using RadiiType = std::optional<std::array<double, IsCylindrical ? 2 : 3>>;
   RadiiType radii{};
   if constexpr (IsCylindrical) {
@@ -584,8 +625,12 @@ void test_errors() {
       ([&radii]() {
         TimeDependentMapOptions<IsCylindrical> time_dep_opts{
             1.0,
-            ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-            RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
+            ExpMapOptions<IsCylindrical>{std::array{1.0, 0.0, 0.0},
+                                         std::array{1.0, 0.0, 0.0}, 0.01,
+                                         std::nullopt, 0.0},
+            RotMapOptions<IsCylindrical>{
+                std::vector{std::array{1.0, 0.0, 0.0, 0.0}}, std::nullopt,
+                std::nullopt},
             std::nullopt,
             std::nullopt,
             ShapeMapBOptions<IsCylindrical>{8, {}}};
@@ -600,8 +645,12 @@ void test_errors() {
       ([&radii]() {
         TimeDependentMapOptions<IsCylindrical> time_dep_opts{
             1.0,
-            ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-            RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
+            ExpMapOptions<IsCylindrical>{std::array{1.0, 0.0, 0.0},
+                                         std::array{1.0, 0.0, 0.0}, 0.01,
+                                         std::nullopt, 0.0},
+            RotMapOptions<IsCylindrical>{
+                std::vector{std::array{1.0, 0.0, 0.0, 0.0}}, std::nullopt,
+                std::nullopt},
             std::nullopt,
             ShapeMapAOptions<IsCylindrical>{8, {}},
             std::nullopt};
@@ -617,8 +666,12 @@ void test_errors() {
         ([&radii]() {
           TimeDependentMapOptions<IsCylindrical> time_dep_opts{
               1.0,
-              ExpMapOptions<IsCylindrical>{{1.0, 0.0}, 0.0, 0.01},
-              RotMapOptions<IsCylindrical>{{0.0, 0.0, 0.0}},
+              ExpMapOptions<IsCylindrical>{std::array{1.0, 0.0, 0.0},
+                                           std::array{1.0, 0.0, 0.0}, 1.0,
+                                           std::nullopt, 0.01},
+              RotMapOptions<IsCylindrical>{
+                  std::vector{std::array{1.0, 0.0, 0.0, 0.0}},
+                  std::vector{std::array{0.0, 0.0, 0.0}}, std::nullopt},
               std::nullopt,
               ShapeMapAOptions<IsCylindrical>{8, {}},
               std::nullopt};
@@ -674,8 +727,15 @@ void test_worldtube_fots() {
   const TimeDependentMapOptions<false> worldtube_options{
       initial_time,
       ExpMapOptions<false>{
-          {initial_expansion, initial_expansion_deriv}, 1., 1.},
-      RotMapOptions<false>{{0.0, 0.0, 1.0}},
+          std::array{initial_expansion, initial_expansion_deriv, 0.0},
+          std::array{1.0, 0.0, 0.0},
+          {1.0},
+          std::nullopt,
+          {1.0}},
+      RotMapOptions<false>{
+          std::vector{std::array{1.0, 0.0, 0.0, 0.0}},
+          std::vector{std::array{0.0, 0.0, 0.0}, std::array{0.0, 0.0, 1.0}},
+          std::nullopt},
       std::nullopt,
       ShapeMapAOptions<false>{2, {}, std::make_optional(size_a_opts)},
       ShapeMapBOptions<false>{2, {}, std::make_optional(size_b_opts)}};
