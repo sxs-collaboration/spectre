@@ -12,18 +12,35 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Shape.SphereTransition",
                   "[Domain][Unit]") {
-  SphereTransition sphere_transition{2., 4.};
   constexpr double eps = std::numeric_limits<double>::epsilon() * 100;
-  const std::array<double, 3> lower_bound{{2., 0., 0.}};
-  CHECK(sphere_transition(lower_bound) == approx(1.0));
-  const std::array<double, 3> lower_bound_eps{{2. - eps, 0., 0.}};
-  CHECK(sphere_transition(lower_bound_eps) == approx(1.0));
-  const std::array<double, 3> midpoint{{3., 0., 0.}};
-  CHECK(sphere_transition(midpoint) == approx(0.5));
-  const std::array<double, 3> upper_bound{{4., 0., 0.}};
-  CHECK(sphere_transition(upper_bound) == approx(0.));
-  const std::array<double, 3> upper_bound_eps{{4. + eps, 0., 0.}};
-  CHECK(sphere_transition(upper_bound_eps) == approx(0.));
+  {
+    INFO("Sphere transition");
+    const SphereTransition sphere_transition{2., 4.};
+    const std::array<double, 3> lower_bound{{2., 0., 0.}};
+    CHECK(sphere_transition(lower_bound) == approx(1.0));
+    const std::array<double, 3> lower_bound_eps{{2. - eps, 0., 0.}};
+    CHECK(sphere_transition(lower_bound_eps) == approx(1.0));
+    const std::array<double, 3> midpoint{{3., 0., 0.}};
+    CHECK(sphere_transition(midpoint) == approx(0.5));
+    const std::array<double, 3> upper_bound{{4., 0., 0.}};
+    CHECK(sphere_transition(upper_bound) == approx(0.));
+    const std::array<double, 3> upper_bound_eps{{4. + eps, 0., 0.}};
+    CHECK(sphere_transition(upper_bound_eps) == approx(0.));
+  }
+  {
+    INFO("Reverse sphere transition");
+    const SphereTransition sphere_transition{2., 4., true};
+    const std::array<double, 3> lower_bound{{2., 0., 0.}};
+    CHECK(sphere_transition(lower_bound) == approx(0.0));
+    const std::array<double, 3> lower_bound_eps{{2. - eps, 0., 0.}};
+    CHECK(sphere_transition(lower_bound_eps) == approx(0.0));
+    const std::array<double, 3> midpoint{{3., 0., 0.}};
+    CHECK(sphere_transition(midpoint) == approx(0.5));
+    const std::array<double, 3> upper_bound{{4., 0., 0.}};
+    CHECK(sphere_transition(upper_bound) == approx(1.0));
+    const std::array<double, 3> upper_bound_eps{{4. + eps, 0., 0.}};
+    CHECK(sphere_transition(upper_bound_eps) == approx(1.0));
+  }
 }
 
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

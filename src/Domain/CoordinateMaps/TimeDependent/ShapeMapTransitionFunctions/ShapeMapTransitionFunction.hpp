@@ -25,10 +25,11 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * from the mapped radius. The mapped radius \f$\tilde{r}\f$ is related to the
  * original \f$r\f$ radius by:
  * \f{equation}{\label{eq:shape_map_radius}
- *  \tilde{r} = r (1 - f(r,\theta,\phi) \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta,
- *  \phi)),
+ *  \tilde{r} = r (1 - \frac{f(r,\theta,\phi)}{r}
+ *    \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta,\phi)),
  *  \f}
- * where \f$f(r,\theta,\phi)\f$ is the transition function. Depending
+ * where $f(r,\theta,\phi) \in [0, 1]$ is the transition function (see docs of
+ * domain::CoordinateMaps::TimeDependent::Shape map). Depending
  * on the format of the transition function, it should be possible to
  * analytically derive this map's inverse because it preserves angles and shifts
  * only the radius of each point. Otherwise the inverse has to be computed
@@ -67,8 +68,8 @@ class ShapeMapTransitionFunction : public PUP::able {
 
   /// @{
   /*!
-   * Evaluate the transition function at the Cartesian coordinates
-   *`source_coords`.
+   * Evaluate the transition function $f(r,\theta,\phi) \in [0, 1]$ at the
+   * Cartesian coordinates `source_coords`.
    */
   virtual double operator()(
       const std::array<double, 3>& source_coords) const = 0;
@@ -77,16 +78,27 @@ class ShapeMapTransitionFunction : public PUP::able {
   /// @}
 
   /*!
-   * Given the mapped coordinates `target_coords` and the corresponding
-   * spherical harmonic expansion \f$\sum_{lm} \lambda_{lm}(t)Y_{lm}\f$,
-   * `distorted_radius`, this method evaluates the original radius from the
-   * mapped radius by inverting the domain::CoordinateMaps::TimeDependent::Shape
-   * map. It also divides by the mapped radius to simplify calculations in the
-   * shape map.
+   * \brief The inverse of the transition function
+   *
+   * This method returns $r/\tilde{r}$ given the mapped coordinates
+   * $\tilde{x}^i$ (`target_coords`) and the spherical harmonic expansion
+   * $\Sigma(t, \theta, \phi) = \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta, \phi)$
+   * (`radial_distortion`). See domain::CoordinateMaps::TimeDependent::Shape for
+   * details on how this quantity is used to compute the inverse of the Shape
+   * map.
+   *
+   * To derive the expression for this inverse, solve Eq.
+   * (\f$\ref{eq:shape_map_radius}\f$) for $r$ after substituting
+   * $f(r,\theta,\phi)$.
+   *
+   * \param target_coords The mapped Cartesian coordinates $\tilde{x}^i$.
+   * \param radial_distortion The spherical harmonic expansion
+   * $\Sigma(t, \theta, \phi)$.
+   * \return The quantity $r/\tilde{r}$.
    */
   virtual std::optional<double> original_radius_over_radius(
       const std::array<double, 3>& target_coords,
-      double distorted_radius) const = 0;
+      double radial_distortion) const = 0;
 
   /*!
    * Evaluate the gradient of the transition function with respect to the

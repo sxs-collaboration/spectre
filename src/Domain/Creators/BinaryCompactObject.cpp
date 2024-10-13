@@ -127,9 +127,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
   // We chose to handle potential roundoff differences here by using equal
   // within roundoff instead of exact equality because the wedge map expects
   // exact equality when checking for a zero offset.
-  if (equal_within_roundoff(length_inner_cube_, (x_coord_a_ - x_coord_b_),
-                            std::numeric_limits<double>::epsilon() * 100.0,
-                            length_inner_cube_)) {
+  if (equal_within_roundoff(cube_scale, 1.0)) {
     offset_x_coord_a_ = 0.0;
     offset_x_coord_b_ = 0.0;
   } else {
@@ -193,6 +191,12 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
           "of Layer 1 enveloping Object A requires excising the interior of "
           "Object A");
     }
+    if (not object_a.is_excised() and
+        not equal_within_roundoff(cube_scale, 1.0)) {
+      ERROR(
+          "A filled object cannot be offset within its cube. Set the CubeScale "
+          "to 1.");
+    }
     if (object_a.is_excised() and
         ((*object_a.inner_boundary_condition == nullptr) !=
          (outer_boundary_condition_ == nullptr))) {
@@ -214,6 +218,12 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
           "Using a logarithmically spaced radial grid in the part "
           "of Layer 1 enveloping Object B requires excising the interior of "
           "Object B");
+    }
+    if (not object_b.is_excised() and
+        not equal_within_roundoff(cube_scale, 1.0)) {
+      ERROR(
+          "A filled object cannot be offset within its cube. Set the CubeScale "
+          "to 1.");
     }
     if (object_b.is_excised() and
         ((*object_b.inner_boundary_condition == nullptr) !=
@@ -349,12 +359,12 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
   std::optional<std::array<double, 3>> radii_A{};
   std::optional<std::array<double, 3>> radii_B{};
 
-  if (is_excised_a_) {
+  if (not use_single_block_a_) {
     radii_A = std::array{std::get<Object>(object_A_).inner_radius,
                          std::get<Object>(object_A_).outer_radius,
                          sqrt(3.0) * 0.5 * length_inner_cube_};
   }
-  if (is_excised_b_) {
+  if (not use_single_block_b_) {
     radii_B = std::array{std::get<Object>(object_B_).inner_radius,
                          std::get<Object>(object_B_).outer_radius,
                          sqrt(3.0) * 0.5 * length_inner_cube_};
@@ -378,8 +388,8 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
                               center_of_mass_offset_[1]},
                    std::array{x_coord_b_, center_of_mass_offset_[0],
                               center_of_mass_offset_[1]}},
-        cube_A_center, cube_B_center, radii_A, radii_B, envelope_radius_,
-        outer_radius_);
+        cube_A_center, cube_B_center, radii_A, radii_B, not is_excised_a_,
+        not is_excised_b_, envelope_radius_, outer_radius_);
   }
 }
 
@@ -728,8 +738,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
     // grid to inertial map.
     for (size_t block = 0; block < number_of_blocks_ - 1; ++block) {
       if ((not use_single_block_a_) and block < first_block_object_B) {
-        const std::optional<size_t> block_for_distorted_frame =
-            is_excised_a_ ? std::optional{block} : std::nullopt;
+        const size_t block_for_distorted_frame = block;
         grid_to_inertial_block_maps[block] =
             time_dependent_options_
                 ->grid_to_inertial_map<domain::ObjectLabel::A>(
@@ -744,9 +753,7 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
                     block_for_distorted_frame, true);
       } else if ((not use_single_block_b_) and block >= first_block_object_B and
                  block < first_block_object_B + 12) {
-        const std::optional<size_t> block_for_distorted_frame =
-            is_excised_b_ ? std::optional{block - first_block_object_B}
-                          : std::nullopt;
+        const size_t block_for_distorted_frame = block - first_block_object_B;
         grid_to_inertial_block_maps[block] =
             time_dependent_options_
                 ->grid_to_inertial_map<domain::ObjectLabel::B>(

@@ -14,12 +14,10 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
 /*!
  * \ingroup CoordMapsTimeDependentGroup
- * \brief A transition function that falls off as $f(r) = g(r) / r$ where $g(r)
- * = ar + b$.
+ * \brief A transition function that falls off as $f(r) = ar + b$.
  *
- * \details The coefficients $a$ and $b$ are chosen so that the function $g(r) =
- * ar + b$ falls off linearly from 1 at `r_min` to 0 at `r_max`. This means that
- * $f(r)$ falls off from $1/r_{\text{min}}$ at `r_min` to 0 at `r_max`. The
+ * \details The coefficients $a$ and $b$ are chosen so that the function $f(r) =
+ * ar + b$ falls off linearly from 1 at `r_min` to 0 at `r_max`. The
  * coefficients are
  *
  * \f{align}{
@@ -27,11 +25,15 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * b &= \frac{r_{\text{max}}}{r_{\text{max}} - r_{\text{min}}} = -a
  * r_{\text{max}}
  * \f}
+ *
+ * If the `reverse` flag is set to `true`, then the function falls off from 0 at
+ * `r_min` to 1 at `r_max`. To do this, the coefficients are modified as
+ * $a \rightarrow -a$ and $b \rightarrow 1-b$.
  */
 class SphereTransition final : public ShapeMapTransitionFunction {
  public:
   explicit SphereTransition() = default;
-  SphereTransition(double r_min, double r_max);
+  SphereTransition(double r_min, double r_max, bool reverse = false);
 
   double operator()(const std::array<double, 3>& source_coords) const override;
   DataVector operator()(
@@ -39,7 +41,7 @@ class SphereTransition final : public ShapeMapTransitionFunction {
 
   std::optional<double> original_radius_over_radius(
       const std::array<double, 3>& target_coords,
-      double distorted_radius) const override;
+      double radial_distortion) const override;
 
   std::array<double, 3> gradient(
       const std::array<double, 3>& source_coords) const override;

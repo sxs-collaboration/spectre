@@ -169,6 +169,7 @@ def find_radial_surface(
                         functions_of_time,
                     )
                 )[:, 0]
+                - initial_guess.expansion_center
             )
             filled[offset] = True
         if np.all(filled):

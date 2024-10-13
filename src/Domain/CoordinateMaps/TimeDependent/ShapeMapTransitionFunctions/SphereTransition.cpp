@@ -15,7 +15,8 @@
 
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
-SphereTransition::SphereTransition(const double r_min, const double r_max)
+SphereTransition::SphereTransition(const double r_min, const double r_max,
+                                   const bool reverse)
     : r_min_(r_min), r_max_(r_max) {
   if (r_min <= 0.) {
     ERROR("The minimum radius must be greater than 0 but is " << r_min);
@@ -28,6 +29,10 @@ SphereTransition::SphereTransition(const double r_min, const double r_max)
   }
   a_ = -1.0 / (r_max - r_min);
   b_ = -a_ * r_max;
+  if (reverse) {
+    a_ *= -1.0;
+    b_ = 1.0 - b_;
+  }
 }
 
 double SphereTransition::operator()(
@@ -40,14 +45,15 @@ DataVector SphereTransition::operator()(
 }
 
 std::optional<double> SphereTransition::original_radius_over_radius(
-    const std::array<double, 3>& target_coords, double distorted_radius) const {
+    const std::array<double, 3>& target_coords,
+    double radial_distortion) const {
   const double mag = magnitude(target_coords);
-  const double denom = 1. - distorted_radius * a_;
+  const double denom = 1. - radial_distortion * a_;
   // prevent zero division
   if (equal_within_roundoff(mag, 0.) or equal_within_roundoff(denom, 0.)) {
     return std::nullopt;
   }
-  const double original_radius = (mag + distorted_radius * b_) / denom;
+  const double original_radius = (mag + radial_distortion * b_) / denom;
 
   return (original_radius + eps_) >= r_min_ and
                  (original_radius - eps_) <= r_max_
