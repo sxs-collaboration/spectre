@@ -30,7 +30,7 @@ namespace Particles::MonteCarlo {
 /// densities; thus when coupling to the evolution of the
 /// energy/momentum density, division by the spatial volume is
 /// necessary. We calculate the source terms of Eqs (62-64) of
-/// \cite Foucart:2021mcb, with integrals calculated as in
+/// \cite Foucart2021mcb, with integrals calculated as in
 /// Eqs (6-10) of that manuscript (except that we do not
 /// divide by the coordinate volume V).
 void AddCouplingTermsForPropagation(

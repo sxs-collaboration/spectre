@@ -19,7 +19,7 @@ struct Packet;
 
 /// Precomputed quantities useful for the diffusion approximation
 /// in high-scattering opacity regions.
-/// We follow \cite Foucart:2017mbt
+/// We follow \cite Foucart2017mbt
 /// Note that r_d in that manuscript should be
 /// (distance diffused)/(time elapsed)
 /// i.e. the paper is missing a normalization

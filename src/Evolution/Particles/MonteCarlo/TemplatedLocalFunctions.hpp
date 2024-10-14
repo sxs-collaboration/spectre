@@ -165,7 +165,7 @@ struct TemplatedLocalFunctions {
    * \brief Evolve Monte-Carlo packets within an element.
    *
    * Evolve packets until (approximately) the provided final time
-   * following the methods of \cite Foucart:2021mcb.
+   * following the methods of \cite Foucart2021mcb.
    * The vector of Packets should contain all MC packets that we wish
    * to advance in time. Note that this function only handles
    * propagation / absorption / scattering of packets, but not
