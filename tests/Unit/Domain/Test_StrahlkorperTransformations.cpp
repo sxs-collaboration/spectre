@@ -94,8 +94,7 @@ void test_strahlkorper_in_different_frame() {
             std::array<double, 3>{{0.1, 0.2, 0.3}}));
     strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
         l_max, l_max, new_radius, strahlkorper_src_center));
-  } else if constexpr (std::is_same_v<SrcFrame, ::Frame::Inertial> and
-                       std::is_same_v<DestFrame, ::Frame::Distorted>) {
+  } else if constexpr (std::is_same_v<SrcFrame, ::Frame::Inertial>) {
     strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
         l_max, 2.0,
         {{strahlkorper_src_center[0] - 0.005, strahlkorper_src_center[1] - 0.01,
@@ -199,6 +198,7 @@ SPECTRE_TEST_CASE("Unit.Domain.StrahlkorperTransformations", "[Unit]") {
   test_strahlkorper_in_different_frame<false, Frame::Grid, Frame::Inertial>();
   test_strahlkorper_in_different_frame<false, Frame::Inertial,
                                        Frame::Distorted>();
+  test_strahlkorper_in_different_frame<false, Frame::Inertial, Frame::Grid>();
   test_strahlkorper_in_different_frame<true, Frame::Grid, Frame::Inertial>();
   test_strahlkorper_in_different_frame<true, Frame::Grid, Frame::Distorted>();
   test_strahlkorper_coords_in_different_frame<true, Frame::Grid>();
