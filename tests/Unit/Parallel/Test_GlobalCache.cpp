@@ -219,16 +219,30 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
   UseCkCallbackAsCallback() = default;
   explicit UseCkCallbackAsCallback(CkMigrateMessage* msg)
       : Parallel::Callback(msg) {}
-  explicit UseCkCallbackAsCallback(const CkCallback& callback)
-      : callback_(callback) {}
+  explicit UseCkCallbackAsCallback(const CkCallback& callback,
+                                   const size_t index)
+      : callback_(callback), index_(index) {}
   using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
   void pup(PUP::er& p) override { p | callback_; }
   // We shouldn't be pupping so registration doesn't matter
   void register_with_charm() override {}
+  bool is_equal_to(const Parallel::Callback& rhs) const override {
+    const auto* downcast_ptr =
+        dynamic_cast<const UseCkCallbackAsCallback*>(&rhs);
+    if (downcast_ptr == nullptr) {
+      return false;
+    }
+    return index_ == downcast_ptr->index_;
+  }
+
+  std::string name() const override {
+    return "UseCkCallbackAsCallback" + std::to_string(index_);
+  }
 
  private:
   CkCallback callback_;
+  size_t index_{};
 };
 
 template <typename Metavariables>
@@ -288,9 +302,10 @@ void TestArrayChare<Metavariables>::run_test_two() {
           *Parallel::local_branch(global_cache_proxy_), array_component_id,
           [&callback](
               const double& weight_l) -> std::unique_ptr<Parallel::Callback> {
-            return weight_l == 150 ? std::unique_ptr<Parallel::Callback>{}
-                                   : std::unique_ptr<Parallel::Callback>(
-                                         new UseCkCallbackAsCallback(callback));
+            return weight_l == 150
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(local_cache));
@@ -319,7 +334,7 @@ void TestArrayChare<Metavariables>::run_test_three() {
             return email_l == "albert@einstein.de"
                        ? std::unique_ptr<Parallel::Callback>{}
                        : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE("albert@einstein.de" ==
@@ -346,7 +361,7 @@ void TestArrayChare<Metavariables>::run_test_four() {
             return animal_l.number_of_legs() == 8
                        ? std::unique_ptr<Parallel::Callback>{}
                        : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
@@ -373,7 +388,7 @@ void TestArrayChare<Metavariables>::run_test_five() {
             return animal_l.number_of_legs() == 30
                        ? std::unique_ptr<Parallel::Callback>{}
                        : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
