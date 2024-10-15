@@ -25,6 +25,8 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/PausePhase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
@@ -161,10 +163,15 @@ struct Component {
                  Actions::CleanHistory<typename metavariables::system, false>,
                  tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
                                      tmpl::list<>>>;
-  using action_list = tmpl::flatten<
-      tmpl::list<SelfStart::self_start_procedure<
-                     step_actions, typename metavariables::system>,
-                 step_actions>>;
+  // This test doesn't operate exactly like how SelfStart would normally work in
+  // an executable. Instead it jumps around quite a lot. Therefore to avoid any
+  // issues that TerminatePhase would cause, we just replace it with PausePhase.
+  using action_list = tmpl::replace<
+      tmpl::flatten<
+          tmpl::list<SelfStart::self_start_procedure<
+                         step_actions, typename metavariables::system>,
+                     step_actions>>,
+      Parallel::Actions::TerminatePhase, Parallel::Actions::PausePhase>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<

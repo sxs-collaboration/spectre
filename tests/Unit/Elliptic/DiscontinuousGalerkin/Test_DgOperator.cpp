@@ -46,6 +46,7 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Actions/PausePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
@@ -156,7 +157,7 @@ struct ElementArray {
                              System, fixed_sources_tag>,
                      ::Actions::Label<ApplyOperatorStart>,
                      typename dg_operator::apply_actions, IncrementTemporalId,
-                     Parallel::Actions::TerminatePhase>>>;
+                     Parallel::Actions::PausePhase>>>;
 };
 
 template <typename Metavariables>
