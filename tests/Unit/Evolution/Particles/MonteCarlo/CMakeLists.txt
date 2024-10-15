@@ -31,6 +31,7 @@ target_link_libraries(
   DgSubcell
   GeneralRelativity
   GeneralRelativityHelpers
+  GeneralRelativitySolutions
   H5
   Hydro
   HydroHelpers
