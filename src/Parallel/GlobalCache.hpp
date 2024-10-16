@@ -503,9 +503,8 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
         auto& vec_callbacks = callbacks.at(array_component_id);
         if (alg::none_of(vec_callbacks,
                          [&](const std::unique_ptr<Callback>& local_callback) {
-                           return local_callback
-                               ->is_equal_to(*optional_callback)
-                               .value_or(false);
+                           return local_callback->is_equal_to(
+                               *optional_callback);
                          })) {
           vec_callbacks.emplace_back(std::move(optional_callback));
         }
