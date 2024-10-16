@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <optional>
 #include <pup.h>
 #include <tuple>
 #include <utility>
@@ -62,13 +61,8 @@ class Callback : public PUP::able {
   virtual void register_with_charm() = 0;
   /*!
    * \brief Returns if this callback is equal to the one passed in.
-   *
-   * \details If the `std::optional` doesn't have a value, then the pointer
-   * cast between the two callbacks failed. If it does have a value, then the
-   * pointer case succeeded, and the boolean value determines if the callbacks
-   * are equal.
    */
-  virtual std::optional<bool> is_equal_to(const Callback& rhs) const = 0;
+  virtual bool is_equal_to(const Callback& rhs) const = 0;
   virtual std::string name() const = 0;
 };
 
@@ -105,12 +99,12 @@ class SimpleActionCallback : public Callback {
     register_classes_with_charm<SimpleActionCallback>();
   }
 
-  std::optional<bool> is_equal_to(const Callback& rhs) const override {
+  bool is_equal_to(const Callback& rhs) const override {
     const auto* downcast_ptr = dynamic_cast<const SimpleActionCallback*>(&rhs);
     if (downcast_ptr == nullptr) {
-      return std::nullopt;
+      return false;
     }
-    return {detail::tuple_equal(args_, downcast_ptr->args_)};
+    return detail::tuple_equal(args_, downcast_ptr->args_);
   }
 
   std::string name() const override {
@@ -149,9 +143,9 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
     register_classes_with_charm<SimpleActionCallback>();
   }
 
-  std::optional<bool> is_equal_to(const Callback& rhs) const override {
+  bool is_equal_to(const Callback& rhs) const override {
     const auto* downcast_ptr = dynamic_cast<const SimpleActionCallback*>(&rhs);
-    return downcast_ptr == nullptr ? std::nullopt : std::optional{true};
+    return downcast_ptr != nullptr;
   }
 
   std::string name() const override {
@@ -199,13 +193,13 @@ class ThreadedActionCallback : public Callback {
     register_classes_with_charm<ThreadedActionCallback>();
   }
 
-  std::optional<bool> is_equal_to(const Callback& rhs) const override {
+  bool is_equal_to(const Callback& rhs) const override {
     const auto* downcast_ptr =
         dynamic_cast<const ThreadedActionCallback*>(&rhs);
     if (downcast_ptr == nullptr) {
-      return std::nullopt;
+      return false;
     }
-    return {detail::tuple_equal(args_, downcast_ptr->args_)};
+    return detail::tuple_equal(args_, downcast_ptr->args_);
   }
 
   std::string name() const override {
@@ -244,10 +238,10 @@ class ThreadedActionCallback<ThreadedAction, Proxy> : public Callback {
     register_classes_with_charm<ThreadedActionCallback>();
   }
 
-  std::optional<bool> is_equal_to(const Callback& rhs) const override {
+  bool is_equal_to(const Callback& rhs) const override {
     const auto* downcast_ptr =
         dynamic_cast<const ThreadedActionCallback*>(&rhs);
-    return downcast_ptr == nullptr ? std::nullopt : std::optional{true};
+    return downcast_ptr != nullptr;
   }
 
   std::string name() const override {
@@ -284,10 +278,10 @@ class PerformAlgorithmCallback : public Callback {
     register_classes_with_charm<PerformAlgorithmCallback>();
   }
 
-  std::optional<bool> is_equal_to(const Callback& rhs) const override {
+  bool is_equal_to(const Callback& rhs) const override {
     const auto* downcast_ptr =
         dynamic_cast<const PerformAlgorithmCallback*>(&rhs);
-    return downcast_ptr == nullptr ? std::nullopt : std::optional{true};
+    return downcast_ptr != nullptr;
   }
 
   std::string name() const override {

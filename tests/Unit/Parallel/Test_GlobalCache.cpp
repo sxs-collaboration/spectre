@@ -227,14 +227,13 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
   void pup(PUP::er& p) override { p | callback_; }
   // We shouldn't be pupping so registration doesn't matter
   void register_with_charm() override {}
-  std::optional<bool> is_equal_to(
-      const Parallel::Callback& rhs) const override {
+  bool is_equal_to(const Parallel::Callback& rhs) const override {
     const auto* downcast_ptr =
         dynamic_cast<const UseCkCallbackAsCallback*>(&rhs);
     if (downcast_ptr == nullptr) {
-      return std::nullopt;
+      return false;
     }
-    return {index_ == downcast_ptr->index_};
+    return index_ == downcast_ptr->index_;
   }
 
   std::string name() const override {

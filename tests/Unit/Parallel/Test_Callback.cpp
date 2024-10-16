@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <vector>
 
@@ -263,14 +262,10 @@ struct RunCallbacks {
     auto callback_3 = serialize_and_deserialize(callback_0);
     auto callback_4 = serialize_and_deserialize(callback_1);
     auto callback_5 = serialize_and_deserialize(callback_2);
-    SPECTRE_PARALLEL_REQUIRE(
-        callback_0.is_equal_to(callback_3).value_or(false));
-    SPECTRE_PARALLEL_REQUIRE_FALSE(
-        callback_0.is_equal_to(callback_4).has_value());
-    SPECTRE_PARALLEL_REQUIRE(
-        callback_1.is_equal_to(callback_4).value_or(false));
-    SPECTRE_PARALLEL_REQUIRE_FALSE(
-        callback_1.is_equal_to(callback_5).has_value());
+    SPECTRE_PARALLEL_REQUIRE(callback_0.is_equal_to(callback_3));
+    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_0.is_equal_to(callback_4));
+    SPECTRE_PARALLEL_REQUIRE(callback_1.is_equal_to(callback_4));
+    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_1.is_equal_to(callback_5));
     callback_3.invoke();
     callback_4.invoke();
     callback_5.invoke();
@@ -285,10 +280,7 @@ struct RunCallbacks {
     callbacks.emplace_back(
         std::make_unique<Parallel::SimpleActionCallback<
             MultiplyValueByFactor, decltype(proxy_2), double>>(proxy_2, 2.0));
-    const std::optional<bool> callback_2_equal_to_vec_end =
-        callback_2.is_equal_to(*callbacks.back());
-    SPECTRE_PARALLEL_REQUIRE(callback_2_equal_to_vec_end.has_value());
-    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_2_equal_to_vec_end.value());
+    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_2.is_equal_to(*callbacks.back()));
 
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<TestNodegroup<Metavariables>>(cache);
