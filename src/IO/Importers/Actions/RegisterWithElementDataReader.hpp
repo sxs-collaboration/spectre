@@ -38,6 +38,8 @@ const typename DgTag::type& get_active_tag(const db::DataBox<DbTagsList>& box);
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
+template <size_t Dim>
+struct Mesh;
 struct ActiveGrid;
 }  // namespace Tags
 }  // namespace evolution::dg::subcell
@@ -70,7 +72,7 @@ struct RegisterWithElementDataReader {
     auto& local_reader_component = *Parallel::local_branch(
         Parallel::get_parallel_component<
             importers::ElementDataReader<Metavariables>>(cache));
-    const auto& coords = [&box]() {
+    auto coords_and_mesh = [&box]() {
       if constexpr (db::tag_is_retrievable_v<
                         evolution::dg::subcell::Tags::ActiveGrid,
                         db::DataBox<DbTagsList>> and
@@ -78,18 +80,25 @@ struct RegisterWithElementDataReader {
                         evolution::dg::subcell::Tags::Coordinates<
                             Dim, Frame::Inertial>,
                         db::DataBox<DbTagsList>>) {
-        return evolution::dg::subcell::get_active_tag<
-            domain::Tags::Coordinates<Dim, Frame::Inertial>,
-            evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
-            box);
+        return std::make_pair(
+            evolution::dg::subcell::get_active_tag<
+                domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                evolution::dg::subcell::Tags::Coordinates<Dim,
+                                                          Frame::Inertial>>(
+                box),
+            evolution::dg::subcell::get_active_tag<
+                domain::Tags::Mesh<Dim>,
+                evolution::dg::subcell::Tags::Mesh<Dim>>(box));
       } else {
-        return db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+        return std::make_pair(
+            db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
+            db::get<domain::Tags::Mesh<Dim>>(box));
       }
     }();
     Parallel::simple_action<importers::Actions::RegisterElementWithSelf>(
         local_reader_component,
         Parallel::make_array_component_id<ParallelComponent>(array_index),
-        coords);
+        std::move(coords_and_mesh));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -112,14 +121,13 @@ struct RegisterElementWithSelf {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const Parallel::ArrayComponentId& array_component_id,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+      std::pair<tnsr::I<DataVector, Dim, Frame::Inertial>, Mesh<Dim>>
+          coords_and_mesh) {
     db::mutate<Tags::RegisteredElements<Dim>>(
-        [&array_component_id, &inertial_coords](
-            const gsl::not_null<
-                std::unordered_map<Parallel::ArrayComponentId,
-                                   tnsr::I<DataVector, Dim, Frame::Inertial>>*>
-                registered_elements) {
-          (*registered_elements)[array_component_id] = inertial_coords;
+        [&array_component_id,
+         &coords_and_mesh](const auto registered_elements) {
+          (*registered_elements)[array_component_id] =
+              std::move(coords_and_mesh);
         },
         make_not_null(&box));
   }

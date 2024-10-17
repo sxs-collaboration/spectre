@@ -22,7 +22,7 @@ Importers:
     Subgroup: "TestData"
     ObservationValue: 2.
     ObservationValueEpsilon: Auto
-    Interpolate: False
+    ElementsMatch: False
 # [importer_options]
 
 ResourceInfo:

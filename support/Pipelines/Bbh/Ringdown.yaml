@@ -18,7 +18,7 @@ InitialData:
     Subgroup: "VolumeData"
     ObservationValue: Last
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsMatch: False
     Variables:
       SpacetimeMetric: SpacetimeMetric
       Pi: Pi
