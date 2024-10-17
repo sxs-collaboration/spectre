@@ -136,6 +136,9 @@ EventsAndTriggers:
 
 EventsAndDenseTriggers:
 
+Interpolator:
+  Verbosity: Silent
+
 InterpolationTargets:
   SphericalSurface:
     LMax: 10
