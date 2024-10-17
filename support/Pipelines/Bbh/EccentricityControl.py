@@ -43,7 +43,7 @@ def eccentricity_control(
       interest.
 
     Arguments:
-      h5_file: file that contains the trajectory data; optional parameter
+      h5_file: file that contains the trajectory data
       id_input_file_path: path to the input file of the initial data run
       subfile_name_aha: subfile for black hole A; optional parameter
       subfile_name_ahb: subfile for black hole B; optional parameter
@@ -51,7 +51,7 @@ def eccentricity_control(
         500 if not specified
       tmax: stopping point for eccentricity reduction script; set to use all
         available data by default
-      output: represents output of the function; optional parameter
+      output: outputs to terminal plus makes pdf file, if specified
     """
     # Read and process the initial data input file
     with open(id_input_file_path, "r") as open_input_file:
@@ -79,7 +79,7 @@ def eccentricity_control(
 
     fit_result = ecout["fit result"]
 
-    # Prepare data
+    # Prepare data from fit result
     data = {
         "Attribute": [
             "Eccentricity",
@@ -101,7 +101,7 @@ def eccentricity_control(
         ],
     }
 
-    # Create DataFrame
+    # Create DataFrame to display data in tabular format
     df = pd.DataFrame(data)
     # Print header line
     print("=" * 40)
