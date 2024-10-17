@@ -392,7 +392,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
       const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
-      const Direction<3> direction_to_reconstruct) const;
+      const Direction<3>& direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
