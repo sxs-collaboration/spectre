@@ -23,10 +23,12 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
                       const Mesh<Dim>& face_mesh2) {
   Index<Dim> mortar_extents{};
   for (size_t i = 0; i < Dim; ++i) {
-    ASSERT(
-        face_mesh1.basis(i) == Spectral::Basis::Legendre and
-            face_mesh2.basis(i) == Spectral::Basis::Legendre,
-        "Only Legendre basis meshes are supported for element faces so far.");
+    ASSERT(face_mesh1.basis(i) == Spectral::Basis::Legendre and
+               face_mesh2.basis(i) == Spectral::Basis::Legendre,
+           "Only Legendre basis meshes are supported for element faces so far, "
+           "but face_mesh1 is "
+               << face_mesh1.basis(i) << " while face_mesh2 is "
+               << face_mesh2.basis(i));
     ASSERT(face_mesh1.quadrature(i) == face_mesh2.quadrature(i),
            "The quadrature on face_mesh1 and face_mesh2 must be equal in "
            "direction "

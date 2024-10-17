@@ -123,16 +123,17 @@ void retrieve_boundary_data_spsc(
         auto& current_inbox = (*boundary_data_ptr)[time_step_id];
         if (auto it = current_inbox.find(directional_element_id);
             it != current_inbox.end()) {
-          auto& [volume_mesh, volume_mesh_of_ghost_cell_data, face_mesh,
-                 ghost_cell_data, boundary_data, boundary_data_validity_range,
-                 boundary_tci_status, boundary_integration_order] = data;
+          auto& [volume_mesh, volume_mesh_ghost_cell_data,
+                 boundary_correction_mesh, ghost_cell_data,
+                 boundary_correction_data, validity_range, tci_status,
+                 integration_order] = data;
           (void)ghost_cell_data;
-          auto& [current_volume_mesh, current_volume_mesh_of_ghost_cell_data,
-                 current_face_mesh, current_ghost_cell_data,
-                 current_boundary_data, current_boundary_data_validity_range,
+          auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
+                 current_boundary_correction_mesh, current_ghost_cell_data,
+                 current_boundary_correction_data, current_validity_range,
                  current_tci_status, current_integration_order] = it->second;
           // Need to use when optimizing subcell
-          (void)current_volume_mesh_of_ghost_cell_data;
+          (void)current_volume_mesh_ghost_cell_data;
           // We have already received some data at this time. Receiving
           // data twice at the same time should only occur when
           // receiving fluxes after having previously received ghost
@@ -149,7 +150,8 @@ void retrieve_boundary_data_spsc(
                      << time_step_id
                      << " but the inbox entry already exists. This is a bug in "
                         "the ordering of the actions.");
-          ASSERT(not current_boundary_data.has_value(),
+          ASSERT(not current_boundary_correction_data.has_value() and
+                     not current_boundary_correction_mesh.has_value(),
                  "The fluxes have already been received at time step "
                      << time_step_id
                      << ". They are either being received for a second time, "
@@ -157,26 +159,27 @@ void retrieve_boundary_data_spsc(
                         "a different ASSERT should've caught that), or the "
                         "incorrect temporal ID is being sent.");
 
-          ASSERT(current_face_mesh == face_mesh,
+          ASSERT(current_volume_mesh == volume_mesh,
                  "The mesh being received for the fluxes is different than the "
                  "mesh received for the ghost cells. Mesh for fluxes: "
-                     << face_mesh << " mesh for ghost cells "
-                     << current_face_mesh);
-          ASSERT(current_volume_mesh_of_ghost_cell_data ==
-                     volume_mesh_of_ghost_cell_data,
+                     << volume_mesh << " mesh for ghost cells "
+                     << current_volume_mesh);
+          ASSERT(current_volume_mesh_ghost_cell_data ==
+                     volume_mesh_ghost_cell_data,
                  "The mesh being received for the ghost cell data is different "
                  "than the mesh received previously. Mesh for received when we "
                  "got fluxes: "
-                     << volume_mesh_of_ghost_cell_data
+                     << volume_mesh_ghost_cell_data
                      << " mesh received when we got ghost cells "
-                     << current_volume_mesh_of_ghost_cell_data);
+                     << current_volume_mesh_ghost_cell_data);
 
           // We always move here since we take ownership of the data and
           // moves implicitly decay to copies
-          current_boundary_data = std::move(boundary_data);
-          current_boundary_data_validity_range = boundary_data_validity_range;
-          current_tci_status = boundary_tci_status;
-          current_integration_order = boundary_integration_order;
+          current_boundary_correction_data =
+              std::move(boundary_correction_data);
+          current_validity_range = validity_range;
+          current_tci_status = tci_status;
+          current_integration_order = integration_order;
         } else {
           // We have not received ghost cells or fluxes at this time.
           if (not current_inbox
@@ -308,23 +311,40 @@ bool receive_boundary_data_global_time_stepping(
         make_not_null(&db::as_access(*box)), received_temporal_id_and_data);
   }
 
-  const auto& mortar_meshes =
-      get<evolution::dg::Tags::MortarMesh<volume_dim>>(*box);
-  db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
+  db::mutate<evolution::dg::Tags::MortarMesh<volume_dim>,
+             evolution::dg::Tags::MortarData<volume_dim>,
              evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
              domain::Tags::NeighborMesh<volume_dim>>(
-      [&received_temporal_id_and_data, &mortar_meshes](
+      [&received_temporal_id_and_data](
+          const gsl::not_null<
+              DirectionalIdMap<volume_dim, Mesh<volume_dim - 1>>*>
+              mortar_meshes,
           const gsl::not_null<DirectionalIdMap<
               volume_dim, evolution::dg::MortarDataHolder<volume_dim>>*>
               mortar_data,
           const gsl::not_null<DirectionalIdMap<volume_dim, TimeStepId>*>
               mortar_next_time_step_id,
           const gsl::not_null<DirectionalIdMap<volume_dim, Mesh<volume_dim>>*>
-              neighbor_mesh) {
+              neighbor_mesh,
+          const Mesh<volume_dim>& volume_mesh) {
         neighbor_mesh->clear();
         for (auto& received_mortar_data :
              received_temporal_id_and_data.second) {
           const auto& mortar_id = received_mortar_data.first;
+          const size_t sliced_away_dim = mortar_id.direction().dimension();
+          const Mesh<volume_dim - 1> face_mesh =
+              volume_mesh.slice_away(sliced_away_dim);
+          const Mesh<volume_dim - 1> neighbor_face_mesh =
+              received_mortar_data.second.volume_mesh.slice_away(
+                  sliced_away_dim);
+          const Mesh<volume_dim - 1> mortar_mesh =
+              ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
+          if (mortar_mesh != mortar_meshes->at(mortar_id)) {
+            mortar_meshes->at(mortar_id) = mortar_mesh;
+            p_project_only_mortar_data(
+                make_not_null(&mortar_data->at(mortar_id).local()),
+                mortar_mesh);
+          }
           neighbor_mesh->insert_or_assign(
               mortar_id, received_mortar_data.second.volume_mesh);
           mortar_next_time_step_id->at(mortar_id) =
@@ -340,15 +360,22 @@ bool receive_boundary_data_global_time_stepping(
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
             mortar_data->at(mortar_id).neighbor().face_mesh =
-                received_mortar_data.second.interface_mesh;
+                received_mortar_data.second.volume_mesh.slice_away(
+                    mortar_id.direction().dimension());
             mortar_data->at(mortar_id).neighbor().mortar_mesh =
-                mortar_meshes.at(mortar_id);
+                received_mortar_data.second.boundary_correction_mesh.value();
             mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
                 received_mortar_data.second.boundary_correction_data.value());
+            if (mortar_mesh !=
+                received_mortar_data.second.boundary_correction_mesh) {
+              p_project_only_mortar_data(
+                  make_not_null(&mortar_data->at(mortar_id).neighbor()),
+                  mortar_mesh);
+            }
           }
         }
       },
-      box);
+      box, db::get<domain::Tags::Mesh<volume_dim>>(*box));
   return true;
 }
 
@@ -415,24 +442,26 @@ bool receive_boundary_data_local_time_stepping(
   }
   ASSERT(inbox_ptr != nullptr, "The inbox pointer should not be null.");
   InboxMap& inbox = *inbox_ptr;
-  const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
 
   const bool have_all_intermediate_messages = db::mutate<
+      evolution::dg::Tags::MortarMesh<Dim>,
       evolution::dg::Tags::MortarDataHistory<Dim,
                                              typename dt_variables_tag::type>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>>(
-      [&inbox, &needed_time, &mortar_meshes](
-          const gsl::not_null<DirectionalIdMap<
-              Dim,
-              TimeSteppers::BoundaryHistory<evolution::dg::MortarData<Dim>,
-                                            evolution::dg::MortarData<Dim>,
-                                            typename dt_variables_tag::type>>*>
+      [&inbox, &needed_time](
+          const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim - 1>>*>
+              mortar_meshes,
+          const gsl::not_null<
+              DirectionalIdMap<Dim, TimeSteppers::BoundaryHistory<
+                                        evolution::dg::MortarData<Dim>,
+                                        evolution::dg::MortarData<Dim>,
+                                        typename dt_variables_tag::type>>*>
               boundary_data_history,
           const gsl::not_null<DirectionalIdMap<Dim, TimeStepId>*>
               mortar_next_time_step_ids,
           const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_mesh,
-          const Element<Dim>& element) {
+          const Element<Dim>& element, const Mesh<Dim>& volume_mesh) {
         // Remove neighbor meshes for neighbors that don't exist anymore
         domain::remove_nonexistent_neighbors(neighbor_mesh, element);
 
@@ -442,6 +471,9 @@ bool receive_boundary_data_local_time_stepping(
           if (mortar_id.id() == ElementId<Dim>::external_boundary_id()) {
             continue;
           }
+          const size_t sliced_away_dim = mortar_id.direction().dimension();
+          const Mesh<Dim - 1> face_mesh =
+              volume_mesh.slice_away(sliced_away_dim);
           while (needed_time(mortar_next_time_step_id)) {
             const auto time_entry = inbox.find(mortar_next_time_step_id);
             if (time_entry == inbox.end()) {
@@ -451,6 +483,29 @@ bool receive_boundary_data_local_time_stepping(
                 time_entry->second.find(mortar_id);
             if (received_mortar_data == time_entry->second.end()) {
               return false;
+            }
+
+            const Mesh<Dim - 1> neighbor_face_mesh =
+                received_mortar_data->second.volume_mesh.slice_away(
+                    sliced_away_dim);
+            const Mesh<Dim - 1> mortar_mesh =
+                ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
+
+            const auto project_boundary_mortar_data =
+                [&mortar_mesh](
+                    const TimeStepId& /*id*/,
+                    const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                        mortar_data) {
+                  p_project_only_mortar_data(mortar_data, mortar_mesh);
+                };
+
+            if (mortar_mesh != mortar_meshes->at(mortar_id)) {
+              mortar_meshes->at(mortar_id) = mortar_mesh;
+              boundary_data_history->at(mortar_id).local().for_each(
+                  project_boundary_mortar_data);
+              boundary_data_history->at(mortar_id).remote().for_each(
+                  project_boundary_mortar_data);
+              boundary_data_history->at(mortar_id).clear_coupling_cache();
             }
 
             MortarData<Dim> neighbor_mortar_data{};
@@ -467,14 +522,22 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mesh->insert_or_assign(
                 mortar_id, received_mortar_data->second.volume_mesh);
             neighbor_mortar_data.face_mesh =
-                received_mortar_data->second.interface_mesh;
-            neighbor_mortar_data.mortar_mesh = mortar_meshes.at(mortar_id);
+                received_mortar_data->second.volume_mesh.slice_away(
+                    mortar_id.direction().dimension());
+            neighbor_mortar_data.mortar_mesh =
+                received_mortar_data->second.boundary_correction_mesh.value();
             neighbor_mortar_data.mortar_data = std::move(
                 received_mortar_data->second.boundary_correction_data.value());
             boundary_data_history->at(mortar_id).remote().insert(
                 mortar_next_time_step_id,
                 received_mortar_data->second.integration_order,
                 std::move(neighbor_mortar_data));
+            if (mortar_mesh !=
+                received_mortar_data->second.boundary_correction_mesh) {
+              boundary_data_history->at(mortar_id).remote().for_each(
+                  project_boundary_mortar_data);
+              boundary_data_history->at(mortar_id).clear_coupling_cache();
+            }
             mortar_next_time_step_id =
                 received_mortar_data->second.validity_range;
             time_entry->second.erase(received_mortar_data);
@@ -485,7 +548,8 @@ bool receive_boundary_data_local_time_stepping(
         }
         return true;
       },
-      box, db::get<::domain::Tags::Element<Dim>>(*box));
+      box, db::get<::domain::Tags::Element<Dim>>(*box),
+      db::get<domain::Tags::Mesh<Dim>>(*box));
 
   if (not have_all_intermediate_messages) {
     return false;
@@ -775,9 +839,28 @@ struct ApplyBoundaryCorrections {
 
               // Extract local and neighbor data, copy into Variables because
               // we store them in a std::vector for type erasure.
+              ASSERT(*local_mortar_data.mortar_mesh ==
+                             *neighbor_mortar_data.mortar_mesh and
+                         *local_mortar_data.mortar_mesh == mortar_mesh,
+                     "local mortar mesh: " << *local_mortar_data.mortar_mesh
+                                           << "\nneighbor mortar mesh: "
+                                           << *neighbor_mortar_data.mortar_mesh
+                                           << "\nmortar mesh: " << mortar_mesh
+                                           << "\n");
               const DataVector& local_data = *local_mortar_data.mortar_data;
               const DataVector& neighbor_data =
                   *neighbor_mortar_data.mortar_data;
+              ASSERT(local_data.size() == neighbor_data.size(),
+                     "local data size: "
+                         << local_data.size()
+                         << "\nneighbor_data: " << neighbor_data.size()
+                         << "\n mortar_mesh: " << mortar_mesh << "\n");
+              ASSERT(local_data_on_mortar.number_of_grid_points() ==
+                         neighbor_data_on_mortar.number_of_grid_points(),
+                     "Local data size = "
+                         << local_data_on_mortar.number_of_grid_points()
+                         << ", but neighbor size = "
+                         << neighbor_data_on_mortar.number_of_grid_points());
               local_data_on_mortar.set_data_ref(
                   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                   const_cast<double*>(local_data.data()), local_data.size());

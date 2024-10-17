@@ -16,6 +16,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.tpp"
@@ -80,24 +81,22 @@ void test() {
   rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
   rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
   GhostDataMap<Dim> neighbor_data_map{};
-  auto box = db::create<
-      tmpl::list<evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
-                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
-      DirectionalIdMap<Dim, Mesh<Dim>>{}, std::move(neighbor_data_map),
-      std::move(rdmp_tci_data), 2.5);
-
-  std::pair<TimeStepId, BoundaryDataMap<Dim>> mortar_data_from_neighbors{};
   const Mesh<Dim> dg_volume_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto};
+  auto box = db::create<
+      tmpl::list<domain::Tags::Mesh<Dim>,
+                 evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
+                 evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci, VolumeDouble>>(
+      dg_volume_mesh, DirectionalIdMap<Dim, Mesh<Dim>>{},
+      std::move(neighbor_data_map), std::move(rdmp_tci_data), 2.5);
+
+  std::pair<TimeStepId, BoundaryDataMap<Dim>> mortar_data_from_neighbors{};
   const Mesh<Dim> fd_volume_mesh{2 + 2 * Dim + 1,
                                  Spectral::Basis::FiniteDifference,
                                  Spectral::Quadrature::CellCentered};
-  const Mesh<Dim - 1> dg_face_mesh{2 + 2 * Dim, Spectral::Basis::Legendre,
-                                   Spectral::Quadrature::GaussLobatto};
-  const Mesh<Dim - 1> fd_face_mesh{2 + 2 * Dim + 1,
-                                   Spectral::Basis::FiniteDifference,
-                                   Spectral::Quadrature::CellCentered};
+  const Mesh<Dim - 1> mortar_mesh{2 + 2 * Dim + 1, Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::GaussLobatto};
   for (size_t d = 0; d < Dim; ++d) {
     DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
     DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
@@ -113,16 +112,16 @@ void test() {
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
           BoundaryData<Dim>{dg_volume_mesh,
                             dg_volume_mesh,
-                            dg_face_mesh,
+                            mortar_mesh,
                             dg_recons_and_rdmp_data,
                             dg_flux_data,
                             {},
                             1};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{fd_volume_mesh,
+          BoundaryData<Dim>{dg_volume_mesh,
                             fd_volume_mesh,
-                            fd_face_mesh,
+                            std::nullopt,
                             fd_recons_and_rdmp_data,
                             std::nullopt,
                             {},
@@ -132,16 +131,16 @@ void test() {
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
           BoundaryData<Dim>{dg_volume_mesh,
                             dg_volume_mesh,
-                            dg_face_mesh,
+                            mortar_mesh,
                             dg_recons_and_rdmp_data,
                             dg_flux_data,
                             {},
                             3};
       mortar_data_from_neighbors.second[DirectionalId<Dim>{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          BoundaryData<Dim>{fd_volume_mesh,
+          BoundaryData<Dim>{dg_volume_mesh,
                             fd_volume_mesh,
-                            fd_face_mesh,
+                            std::nullopt,
                             fd_recons_and_rdmp_data,
                             std::nullopt,
                             {},

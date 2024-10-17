@@ -20,7 +20,7 @@ namespace evolution::dg {
  * 1. the volume mesh of the element.
  * 2. the volume mesh corresponding to the ghost cell data. This allows eliding
  *    projection when all neighboring elements are doing DG.
- * 3. the mesh of the neighboring element's face (not the mortar mesh!)
+ * 3. the mortar mesh of the data on the mortar
  * 4. the variables at the ghost zone cells for finite difference/volume
  *    reconstruction
  * 5. the data on the mortar needed for computing the boundary corrections (e.g.
@@ -38,7 +38,7 @@ struct BoundaryData {
 
   Mesh<Dim> volume_mesh{};
   std::optional<Mesh<Dim>> volume_mesh_ghost_cell_data{};
-  Mesh<Dim - 1> interface_mesh{};
+  std::optional<Mesh<Dim - 1>> boundary_correction_mesh{};
   std::optional<DataVector> ghost_cell_data{};
   std::optional<DataVector> boundary_correction_data{};
   ::TimeStepId validity_range{};

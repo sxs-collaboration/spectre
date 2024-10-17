@@ -706,8 +706,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
 
-      Mesh<Dim - 1> face_mesh_for_neighbor =
-          all_mortar_data.at(mortar_id).local().face_mesh.value();
+      const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
       DataVector neighbor_boundary_data_on_mortar{};
 
       if (LIKELY(orientation.is_aligned())) {
@@ -735,7 +734,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       if (neighbor_count == total_neighbors) {
         data = SendData{volume_mesh,
                         ghost_data_mesh,
-                        face_mesh_for_neighbor,
+                        mortar_mesh,
                         std::move(ghost_and_subcell_data),
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
@@ -744,7 +743,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       } else {
         data = SendData{volume_mesh,
                         ghost_data_mesh,
-                        face_mesh_for_neighbor,
+                        mortar_mesh,
                         ghost_and_subcell_data,
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,

@@ -57,6 +57,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -202,6 +203,8 @@ struct SendDataForReconstruction {
 
     const int tci_decision =
         db::get<evolution::dg::subcell::Tags::TciDecision>(box);
+    const auto integration_order =
+        db::get<::Tags::HistoryEvolvedVariables<>>(box).integration_order();
     // Compute and send actual variables
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
@@ -258,13 +261,10 @@ struct SendDataForReconstruction {
                                 rdmp_tci_data.min_variables_values.size())));
 
         evolution::dg::BoundaryData<Dim> data{
-            subcell_mesh,
-            subcell_mesh,
-            dg_mesh.slice_away(direction.dimension()),
-            std::move(subcell_data_to_send),
-            std::nullopt,
-            next_time_step_id,
-            tci_decision};
+            dg_mesh,      subcell_mesh,
+            std::nullopt, std::move(subcell_data_to_send),
+            std::nullopt, next_time_step_id,
+            tci_decision, integration_order};
 
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -400,7 +400,8 @@ struct ReceiveDataForReconstruction {
             if (received_mortar_data.second.boundary_correction_data
                     .has_value()) {
               mortar_data->at(mortar_id).neighbor().face_mesh =
-                  received_mortar_data.second.interface_mesh;
+                  received_mortar_data.second.volume_mesh.slice_away(
+                      mortar_id.direction().dimension());
               mortar_data->at(mortar_id).neighbor().mortar_mesh =
                   mortar_meshes.at(mortar_id);
               mortar_data->at(mortar_id).neighbor().mortar_data = std::move(

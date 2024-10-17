@@ -44,7 +44,7 @@ namespace evolution::dg::Tags {
  * 1. the volume mesh of the element.
  * 2. the volume mesh corresponding to the ghost cell data. This allows eliding
  *    projection when all neighboring elements are doing DG.
- * 3. the mesh of the neighboring element's face (not the mortar mesh!)
+ * 3. the mortar mesh of the data on the mortar
  * 4. the variables at the ghost zone cells for finite difference/volume
  *    reconstruction
  * 5. the data on the mortar needed for computing the boundary corrections (e.g.
@@ -178,16 +178,16 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                                   ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
-      auto& [volume_mesh, volume_mesh_of_ghost_cell_data, face_mesh,
-             ghost_cell_data, boundary_data, boundary_data_validity_range,
-             boundary_tci_status, integration_order] = data.second;
+      auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
+             ghost_cell_data, boundary_correction_data, validity_range,
+             tci_status, integration_order] = data.second;
       (void)ghost_cell_data;
-      auto& [current_volume_mesh, current_volume_mesh_of_ghost_cell_data,
-             current_face_mesh, current_ghost_cell_data, current_boundary_data,
-             current_boundary_data_validity_range, current_tci_status,
-             current_integration_order] = it->second;
-      (void)current_volume_mesh_of_ghost_cell_data;  // Need to use when
-                                                     // optimizing subcell
+      auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
+             current_boundary_correction_mesh, current_ghost_cell_data,
+             current_boundary_correction_data, current_validity_range,
+             current_tci_status, current_integration_order] = it->second;
+      (void)current_volume_mesh_ghost_cell_data;  // Need to use when
+                                                  // optimizing subcell
       // We have already received some data at this time. Receiving data twice
       // at the same time should only occur when receiving fluxes after having
       // previously received ghost cells. We sanity check that the data we
@@ -203,7 +203,8 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                  << time_step_id
                  << " but the inbox entry already exists. This is a bug in the "
                     "ordering of the actions.");
-      ASSERT(not current_boundary_data.has_value(),
+      ASSERT(not current_boundary_correction_data.has_value() and
+                 not current_boundary_correction_mesh.has_value(),
              "The fluxes have already been received at time step "
                  << time_step_id
                  << ". They are either being received for a second time, there "
@@ -211,24 +212,24 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                     "different ASSERT should've caught that), or the incorrect "
                     "temporal ID is being sent.");
 
-      ASSERT(current_face_mesh == face_mesh,
+      ASSERT(current_volume_mesh == volume_mesh,
              "The mesh being received for the fluxes is different than the "
              "mesh received for the ghost cells. Mesh for fluxes: "
-                 << face_mesh << " mesh for ghost cells " << current_face_mesh);
-      ASSERT(current_volume_mesh_of_ghost_cell_data ==
-                 volume_mesh_of_ghost_cell_data,
+                 << volume_mesh << " mesh for ghost cells "
+                 << current_volume_mesh);
+      ASSERT(current_volume_mesh_ghost_cell_data == volume_mesh_ghost_cell_data,
              "The mesh being received for the ghost cell data is different "
              "than the mesh received previously. Mesh for received when we got "
              "fluxes: "
-                 << volume_mesh_of_ghost_cell_data
+                 << volume_mesh_ghost_cell_data
                  << " mesh received when we got ghost cells "
-                 << current_volume_mesh_of_ghost_cell_data);
+                 << current_volume_mesh_ghost_cell_data);
 
       // We always move here since we take ownership of the data and moves
       // implicitly decay to copies
-      current_boundary_data = std::move(boundary_data);
-      current_boundary_data_validity_range = boundary_data_validity_range;
-      current_tci_status = boundary_tci_status;
+      current_boundary_correction_data = std::move(boundary_correction_data);
+      current_validity_range = validity_range;
+      current_tci_status = tci_status;
       current_integration_order = integration_order;
     } else {
       // We have not received ghost cells or fluxes at this time.

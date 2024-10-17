@@ -49,6 +49,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -98,7 +99,9 @@ struct component {
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciDecision,
       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
-      ::Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarMesh<Dim>,
+      ::Tags::Variables<tmpl::list<Var1>>,
+      ::Tags::HistoryEvolvedVariables<::Tags::Variables<tmpl::list<Var1>>>,
+      evolution::dg::Tags::MortarMesh<Dim>,
       evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       domain::Tags::NeighborMesh<Dim>,
@@ -248,6 +251,7 @@ void test(const bool use_cell_centered_flux) {
       subcell_mesh.number_of_grid_points()};
   // Set Var1 to the logical coords, just need some data
   get(get<Var1>(evolved_vars)) = get<0>(logical_coordinates(subcell_mesh));
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{};
 
   using CellCenteredFluxTag =
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>;
@@ -271,13 +275,13 @@ void test(const bool use_cell_centered_flux) {
   MortarMesh mortar_mesh{};
   MortarNextId mortar_next_id{};
   mortar_data[east_neighbor_id] = {};
-  mortar_mesh[east_neighbor_id] = {};
+  mortar_mesh[east_neighbor_id] = {dg_mesh.slice_away(0)};
   mortar_next_id[east_neighbor_id] = {};
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
                                                south_id};
     mortar_data[south_neighbor_id] = {};
-    mortar_mesh[south_neighbor_id] = {};
+    mortar_mesh[south_neighbor_id] = {dg_mesh.slice_away(1)};
     mortar_next_id[south_neighbor_id] = {};
   }
 
@@ -308,6 +312,7 @@ void test(const bool use_cell_centered_flux) {
            typename evolution::dg::subcell::Tags::NeighborTciDecisions<
                Dim>::type{},
            Variables<evolved_vars_tags>{},
+           time_stepper_history,
            MortarMesh{},
            MortarData{},
            MortarNextId{},
@@ -329,8 +334,8 @@ void test(const bool use_cell_centered_flux) {
        // Explicitly set RDMP data since this would be set previously by the TCI
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},
-       self_tci_decision, neighbor_decision, evolved_vars, mortar_mesh,
-       mortar_data, mortar_next_id,
+       self_tci_decision, neighbor_decision, evolved_vars, time_stepper_history,
+       mortar_mesh, mortar_data, mortar_next_id,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
@@ -495,23 +500,25 @@ void test(const bool use_cell_centered_flux) {
     alg::iota(east_ghost_cells_and_rdmp, 0.0);
     DataVector boundary_data{face_mesh.number_of_grid_points() * (2 + Dim)};
     alg::iota(boundary_data, 1000.0);
+    const DirectionalId<Dim> east_dir_id{Direction<Dim>::upper_xi(), east_id};
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
         Dim, UseNodegroupDgElements>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{DirectionalId<Dim>{Direction<Dim>::upper_xi(), east_id},
-                      evolution::dg::BoundaryData<Dim>{dg_mesh,
-                          // subcell_mesh because we are sending the projected
-                          // data right now.
-                          subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
-                          boundary_data, next_time_step_id, -10}});
+            std::pair{east_dir_id,
+                      evolution::dg::BoundaryData<Dim>{
+                          dg_mesh,
+                          // subcell_mesh because we are sending the
+                          // projected data right now.
+                          subcell_mesh, mortar_mesh.at(east_dir_id),
+                          east_ghost_cells_and_rdmp, boundary_data,
+                          next_time_step_id, -10}});
   }
   [[maybe_unused]] DataVector south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
     REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
         make_not_null(&runner), self_id));
 
-    const auto face_mesh = subcell_mesh.slice_away(1);
     south_ghost_cells_and_rdmp = DataVector{
         subcell_mesh.slice_away(0).number_of_grid_points() * ghost_zone_size +
         rdmp_size};
@@ -521,12 +528,14 @@ void test(const bool use_cell_centered_flux) {
         Dim, UseNodegroupDgElements>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
-                      evolution::dg::BoundaryData<Dim>{subcell_mesh,
-                          // subcell_mesh because we are sending the projected
-                          // data right now.
-                          subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
-                          std::nullopt, next_time_step_id, -15}});
+            std::pair{
+                DirectionalId<Dim>{Direction<Dim>::lower_eta(), south_id},
+                evolution::dg::BoundaryData<Dim>{
+                    dg_mesh,
+                    // subcell_mesh because we are sending the projected
+                    // data right now.
+                    subcell_mesh, std::nullopt, south_ghost_cells_and_rdmp,
+                    std::nullopt, next_time_step_id, -15}});
   }
 
   // Run the ReceiveDataForReconstruction action on self_id
@@ -589,8 +598,7 @@ void test(const bool use_cell_centered_flux) {
       const auto it =
           neighbor_meshes.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(it != neighbor_meshes.end());
-      CHECK(it->second ==
-            (it->first == east_neighbor_id ? dg_mesh : subcell_mesh));
+      CHECK(it->second == dg_mesh);
       const auto ghost_it =
           meshes_for_ghost_data.find(DirectionalId<Dim>{direction, neighbor});
       REQUIRE(ghost_it != meshes_for_ghost_data.end());
