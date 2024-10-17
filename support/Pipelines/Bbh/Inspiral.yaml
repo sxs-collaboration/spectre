@@ -32,7 +32,7 @@ InitialData:
     Subgroup: "VolumeData"
     ObservationValue: Last
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsMatch: False
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`
