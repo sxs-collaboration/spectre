@@ -64,8 +64,8 @@ class Cli(click.MultiCommand):
 
             return delete_subfiles_command
 
-        elif name == "eccentricity-control":
-            from spectre.Pipelines.EccentricityControl import (
+        elif name in ["eccentricity-control", "ecc-control"]:
+            from spectre.Pipelines.EccentricityControl.EccentricityControl import (
                 eccentricity_control_command,
             )
 
