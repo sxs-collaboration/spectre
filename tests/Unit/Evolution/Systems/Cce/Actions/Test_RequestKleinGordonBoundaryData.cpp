@@ -108,6 +108,7 @@ struct test_metavariables : CharacteristicExtractDefaults<false> {
   using klein_gordon_transform_buffer_tags = tmpl::list<>;
   using klein_gordon_source_tags = tmpl::list<>;
   using klein_gordon_cce_integrand_tags = tmpl::list<>;
+  using klein_gordon_constraint_tags = tmpl::list<>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
