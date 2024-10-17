@@ -18,6 +18,7 @@ spectre_target_headers(
   InitializeItems.hpp
   LimiterActions.hpp
   MutateApply.hpp
+  PausePhase.hpp
   RandomizeVariables.hpp
   SetData.hpp
   TerminatePhase.hpp
