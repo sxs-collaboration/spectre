@@ -57,12 +57,16 @@ TimeDependentMapOptions::TimeDependentMapOptions(
     const double initial_time, std::optional<ShapeMapOptions> shape_map_options,
     std::optional<RotationMapOptions> rotation_map_options,
     std::optional<ExpansionMapOptions> expansion_map_options,
-    std::optional<TranslationMapOptions> translation_map_options)
+    std::optional<TranslationMapOptions> translation_map_options,
+    std::optional<double> initial_time_for_shape_map)
     : initial_time_(initial_time),
       shape_map_options_(std::move(shape_map_options)),
       rotation_map_options_(std::move(rotation_map_options)),
       expansion_map_options_(std::move(expansion_map_options)),
-      translation_map_options_(std::move(translation_map_options)) {}
+      translation_map_options_(std::move(translation_map_options)) {
+  initial_time_for_shape_map_ =
+      initial_time_for_shape_map.value_or(initial_time);
+}
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -95,13 +99,13 @@ TimeDependentMapOptions::create_functions_of_time(
     // ShapeMap FunctionOfTime
     result[shape_name] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time_, std::move(shape_funcs),
+            initial_time_for_shape_map_, std::move(shape_funcs),
             expiration_times.at(shape_name));
 
     // Size FunctionOfTime (used in ShapeMap)
     result[size_name] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-            initial_time_, std::move(size_funcs),
+            initial_time_for_shape_map_, std::move(size_funcs),
             expiration_times.at(size_name));
   }
 

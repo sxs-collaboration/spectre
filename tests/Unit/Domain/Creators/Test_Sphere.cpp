@@ -145,6 +145,7 @@ std::string option_string(
       time_dependent ? (hard_coded_time_dependent_maps
                             ? "  TimeDependentMaps:\n"
                               "    InitialTime: 1.0\n"
+                              "    InitialTimeForShapeMap: None\n"
                               "    ShapeMap:\n"
                               "      LMax: 10\n"
                               "      InitialValues: Spherical\n"

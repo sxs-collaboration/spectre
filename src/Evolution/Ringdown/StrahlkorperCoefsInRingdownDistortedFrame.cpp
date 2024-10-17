@@ -32,8 +32,8 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
       ylm::read_surface_ylm<Frame::Inertial>(
           path_to_horizons_h5, surface_subfile_name,
           requested_number_of_times_from_end);
-  const size_t l_max{ahc_inertial_h5[0].l_max()};
 
+  const size_t l_max{ahc_inertial_h5[0].l_max()};
   std::vector<double> ahc_times{};
   {
     // Read the AhC times from the H5 file
@@ -58,9 +58,9 @@ std::vector<DataVector> strahlkorper_coefs_in_ringdown_distorted_frame(
   const domain::creators::sphere::TimeDependentMapOptions::RotationMapOptions
       rotation_map_options{rot_func_and_2_derivs, settling_timescale};
   const domain::creators::sphere::TimeDependentMapOptions
-      time_dependent_map_options{match_time, shape_map_options,
+      time_dependent_map_options{match_time,           shape_map_options,
                                  rotation_map_options, expansion_map_options,
-                                 std::nullopt};
+                                 std::nullopt,         {gsl::at(ahc_times, 0)}};
   const domain::creators::Sphere domain_creator{
       0.01,
       200.0,

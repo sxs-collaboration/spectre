@@ -32,6 +32,7 @@ namespace {
 // nullopt implies no shape map at all
 std::string create_option_string(const std::optional<bool> use_non_zero_shape) {
   return "InitialTime: 1.5\n"
+         "InitialTimeForShapeMap: None\n"
          "ShapeMap:" +
          (use_non_zero_shape.has_value()
               ? "\n"
