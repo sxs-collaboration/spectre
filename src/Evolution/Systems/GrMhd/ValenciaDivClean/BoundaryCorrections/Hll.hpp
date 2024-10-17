@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <limits>
 #include <memory>
 #include <optional>
 
@@ -13,6 +14,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -93,7 +96,20 @@ class Hll final : public BoundaryCorrection {
     using type = Scalar<DataVector>;
   };
 
-  using options = tmpl::list<>;
+  struct MagneticFieldMagnitudeForHydro {
+    static constexpr Options::String help = {
+        "When the magnetic field is below this value we use the hydro "
+        "characteristic speeds."};
+    using type = double;
+  };
+  struct AtmosphereDensityCutoff {
+    static constexpr Options::String help = {
+        "When the density is below this value we just use the light speed for "
+        "the characteristic speeds."};
+    using type = double;
+  };
+  using options =
+      tmpl::list<MagneticFieldMagnitudeForHydro, AtmosphereDensityCutoff>;
   static constexpr Options::String help = {
       "Computes the HLL boundary correction term for the GRMHD system."};
 
@@ -103,6 +119,9 @@ class Hll final : public BoundaryCorrection {
   Hll(Hll&&) = default;
   Hll& operator=(Hll&&) = default;
   ~Hll() override = default;
+
+  Hll(double magnetic_field_magnitude_for_hydro,
+      double atmosphere_density_cutoff);
 
   /// \cond
   explicit Hll(CkMigrateMessage* /*unused*/);
@@ -123,13 +142,19 @@ class Hll final : public BoundaryCorrection {
                  ::Tags::NormalDotFlux<Tags::TildeB<Frame::Inertial>>,
                  ::Tags::NormalDotFlux<Tags::TildePhi>,
                  LargestOutgoingCharSpeed, LargestIngoingCharSpeed>;
-  using dg_package_data_temporary_tags =
-      tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>>;
-  using dg_package_data_primitive_tags = tmpl::list<>;
-  using dg_package_data_volume_tags = tmpl::list<>;
-  using dg_boundary_terms_volume_tags = tmpl::list<>;
+  using dg_package_data_temporary_tags = tmpl::list<
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>;
+  using dg_package_data_primitive_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>>;
+  using dg_package_data_volume_tags =
+      tmpl::list<hydro::Tags::GrmhdEquationOfState>;
+    using dg_boundary_terms_volume_tags = tmpl::list<>;
 
-  static double dg_package_data(
+  double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_d,
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_ye,
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_tau,
@@ -162,12 +187,20 @@ class Hll final : public BoundaryCorrection {
 
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& spatial_velocity_one_form,
+
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& electron_fraction,
+      const Scalar<DataVector>& temperature,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
 
       const tnsr::i<DataVector, 3, Frame::Inertial>& normal_covector,
       const tnsr::I<DataVector, 3, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
       /*mesh_velocity*/,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity);
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      const EquationsOfState::EquationOfState<true, 3>& equation_of_state)
+      const;
 
   static void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_d,
@@ -211,8 +244,14 @@ class Hll final : public BoundaryCorrection {
       const Scalar<DataVector>& largest_outgoing_char_speed_ext,
       const Scalar<DataVector>& largest_ingoing_char_speed_ext,
       dg::Formulation dg_formulation);
-};
 
-bool operator==(const Hll& lhs, const Hll& rhs);
+ private:
+  friend bool operator==(const Hll& lhs, const Hll& rhs);
+
+  double magnetic_field_magnitude_for_hydro_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double atmosphere_density_cutoff_{
+      std::numeric_limits<double>::signaling_NaN()};
+};
 bool operator!=(const Hll& lhs, const Hll& rhs);
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

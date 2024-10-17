@@ -22,6 +22,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/MonotonisedCentral.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -79,23 +80,35 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
           generator, make_not_null(&dist), num_points);
 
-  using Vars = Variables<tmpl::append<
-      grmhd::GhValenciaDivClean::System::variables_tag::tags_list,
-      db::wrap_tags_in<::Tags::Flux,
-                       grmhd::GhValenciaDivClean::System::flux_variables,
-                       tmpl::size_t<3_st>, Frame::Inertial>,
-      tmpl::list<gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gh::ConstraintDamping::Tags::ConstraintGamma2,
-                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-                 gr::Tags::InverseSpatialMetric<DataVector, 3>>>>;
+  using Vars = Variables<tmpl::pop_back<
+      grmhd::GhValenciaDivClean::fd::tags_list_for_reconstruct_fd_neighbor>>;
+  using tags_not_set_by_boundary_condition =
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 hydro::Tags::DivergenceCleaningField<DataVector>,
+                 hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
   Vars vars{num_points};
   const auto expected_vars = [&analytic_solution_or_data, &coords,
                               &interior_gamma1, &interior_gamma2, time]() {
     Vars expected{num_points};
     auto& [spacetime_metric, pi, phi, tilde_d, tilde_ye, tilde_tau, tilde_s,
-           tilde_b, tilde_phi, tilde_d_flux, tilde_ye_flux, tilde_tau_flux,
-           tilde_s_flux, tilde_b_flux, tilde_phi_flux, gamma1, gamma2, lapse,
-           shift, inverse_spatial_metric] = expected;
+           tilde_b, tilde_phi,
+
+           rest_mass_density, electron_fraction, specific_internal_energy,
+           spatial_velocity, magnetic_field, divergence_cleaning_field,
+           lorentz_factor, pressure, temperature,
+           lorentz_factor_times_spatial_velocity,
+
+           tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux,
+           tilde_b_flux, tilde_phi_flux, gamma1, gamma2, lapse, shift,
+
+           spatial_velocity_one_form, spatial_metric, sqrt_det_spatial_metric,
+
+           inverse_spatial_metric] = expected;
 
     gamma1 = interior_gamma1;
     gamma2 = interior_gamma2;
@@ -127,14 +140,10 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       (void)time;
       analytic_vars = analytic_solution_or_data.variables(coords, tags{});
     }
-    spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<DataVector, 3>>(analytic_vars);
-    pi = get<::gh::Tags::Pi<DataVector, 3>>(analytic_vars);
-    phi = get<::gh::Tags::Phi<DataVector, 3>>(analytic_vars);
-    lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
-    shift = get<gr::Tags::Shift<DataVector, 3>>(analytic_vars);
-    inverse_spatial_metric =
-        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(analytic_vars);
+    expected.assign_subset(analytic_vars);
+    tenex::evaluate<ti::i>(
+        make_not_null(&spatial_velocity_one_form),
+        spatial_velocity(ti::J) * spatial_metric(ti::i, ti::j));
 
     grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
         make_not_null(&tilde_d), make_not_null(&tilde_ye),
@@ -167,9 +176,19 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
     return expected;
   }();
   auto& [spacetime_metric, pi, phi, tilde_d, tilde_ye, tilde_tau, tilde_s,
-         tilde_b, tilde_phi, tilde_d_flux, tilde_ye_flux, tilde_tau_flux,
-         tilde_s_flux, tilde_b_flux, tilde_phi_flux, gamma1, gamma2, lapse,
-         shift, inverse_spatial_metric] = vars;
+         tilde_b, tilde_phi,
+
+         rest_mass_density, electron_fraction, specific_internal_energy,
+         spatial_velocity, magnetic_field, divergence_cleaning_field,
+         lorentz_factor, pressure, temperature,
+         lorentz_factor_times_spatial_velocity,
+
+         tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux,
+         tilde_b_flux, tilde_phi_flux, gamma1, gamma2, lapse, shift,
+
+         spatial_velocity_one_form, spatial_metric, sqrt_det_spatial_metric,
+
+         inverse_spatial_metric] = vars;
 
   const auto result = boundary_condition.dg_ghost(
       make_not_null(&spacetime_metric), make_not_null(&pi), make_not_null(&phi),
@@ -180,11 +199,21 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       make_not_null(&tilde_tau_flux), make_not_null(&tilde_s_flux),
       make_not_null(&tilde_b_flux), make_not_null(&tilde_phi_flux),
       make_not_null(&gamma1), make_not_null(&gamma2), make_not_null(&lapse),
-      make_not_null(&shift), make_not_null(&inverse_spatial_metric), {}, {}, {},
-      coords, interior_gamma1, interior_gamma2, time);
+      make_not_null(&shift), make_not_null(&spatial_velocity_one_form),
+      make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
+      make_not_null(&temperature), make_not_null(&spatial_velocity),
+      make_not_null(&inverse_spatial_metric), {}, {}, {}, coords,
+      interior_gamma1, interior_gamma2, time);
   CHECK(not result.has_value());
 
-  CHECK(vars == expected_vars);
+  tmpl::for_each<typename Vars::tags_list>([&expected_vars, &vars](auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    if constexpr (not tmpl::list_contains_v<tags_not_set_by_boundary_condition,
+                                            tag>) {
+      CAPTURE(db::tag_name<tag>());
+      CHECK(get<tag>(vars) == get<tag>(expected_vars));
+    }
+  });
 }
 
 template <typename T, typename U>
