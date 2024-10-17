@@ -1207,7 +1207,8 @@ Domain<3> create_serialized_domain() {
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial, 3>(
           frustum_coordinate_maps(
               length_inner_cube, length_outer_cube, use_equiangular_map,
-              {{-translation, 0.0, 0.0}}, radial_distribution_envelope,
+              use_equiangular_map, {{-translation, 0.0, 0.0}},
+              radial_distribution_envelope,
               radial_distribution_envelope ==
                       CoordinateMaps::Distribution::Projective
                   ? std::optional<double>(length_inner_cube / length_outer_cube)

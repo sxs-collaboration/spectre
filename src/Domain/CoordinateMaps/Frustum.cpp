@@ -30,23 +30,25 @@ namespace domain::CoordinateMaps {
 Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  const double lower_bound, const double upper_bound,
                  OrientationMap<3> orientation_of_frustum,
-                 const bool with_equiangular_map,
+                 bool equiangular_map_at_outer, bool equiangular_map_at_inner,
                  const Distribution zeta_distribution,
                  const std::optional<double> distribution_value,
                  const double sphericity, const double transition_phi,
                  const double opening_angle)
     // clang-tidy: trivially copyable
     : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
-      with_equiangular_map_(with_equiangular_map),
-      is_identity_(face_vertices ==
-                       std::array<std::array<double, 2>, 4>{{{{-1.0, -1.0}},
-                                                             {{1.0, 1.0}},
-                                                             {{-1.0, -1.0}},
-                                                             {{1.0, 1.0}}}} and
-                   lower_bound == -1.0 and upper_bound == 1.0 and
-                   orientation_of_frustum_.is_aligned() and
-                   not with_equiangular_map and
-                   zeta_distribution == Distribution::Linear),
+      equiangular_map_at_outer_{equiangular_map_at_outer},
+      equiangular_map_at_inner_{equiangular_map_at_inner},
+      is_identity_(
+          face_vertices ==
+              std::array<std::array<double, 2>, 4>{{{{-1.0, -1.0}},
+                                                    {{1.0, 1.0}},
+                                                    {{-1.0, -1.0}},
+                                                    {{1.0, 1.0}}}} and
+          lower_bound == -1.0 and upper_bound == 1.0 and
+          orientation_of_frustum_.is_aligned() and
+          not(equiangular_map_at_inner_ or equiangular_map_at_outer_) and
+          zeta_distribution == Distribution::Linear),
       zeta_distribution_(zeta_distribution),
       sphericity_(sphericity) {
   ASSERT(sphericity_ >= 0.0 and sphericity_ <= 1.0,
@@ -169,33 +171,41 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
         "Only the distributions Linear, Projective, and Logarithmic are "
         "supported.");
   }
-  const ReturnType cap_xi_zero = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType& cap_xi_zero =
+      equiangular_map_at_inner_ ? tan(M_PI_4 * xi) : xi;
   const double one_plus_phi_square = 1.0 + phi_ * phi_;
-  const ReturnType cap_xi_upper =
-      with_equiangular_map_
+  const ReturnType& cap_xi_upper =
+      equiangular_map_at_outer_
           ? one_plus_phi_square * one_over_tan_half_opening_angle_ *
                     tan(half_opening_angle_ * (xi + phi_) /
                         one_plus_phi_square) -
                 phi_
           : xi;
-  const ReturnType cap_xi_transition = 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
-                                       0.5 * (1.0 - cap_zeta) * cap_xi_zero;
-  const ReturnType cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType& cap_xi_transition = 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
+                                        0.5 * (1.0 - cap_zeta) * cap_xi_zero;
+
+  const ReturnType& cap_eta_zero =
+      equiangular_map_at_inner_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType& cap_eta_upper =
+      equiangular_map_at_outer_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType& cap_eta_transition =
+      0.5 * (1.0 + cap_zeta) * cap_eta_upper +
+      0.5 * (1.0 - cap_zeta) * cap_eta_zero;
 
   ReturnType physical_x =
       sigma_x_ + delta_x_xi_ * cap_xi_transition +
       (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition) * cap_zeta;
   ReturnType physical_y =
-      sigma_y_ + delta_y_eta_ * cap_eta +
-      (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta) * cap_zeta;
+      sigma_y_ + delta_y_eta_ * cap_eta_transition +
+      (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_transition) * cap_zeta;
   ReturnType physical_z = sigma_z_ + delta_z_zeta_ * cap_zeta;
   if (sphericity_ > 0.0) {
     const ReturnType upper_surface_x =
         sigma_x_ + delta_x_xi_ * cap_xi_upper +
         (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_upper);
     const ReturnType upper_surface_y =
-        sigma_y_ + delta_y_eta_ * cap_eta +
-        (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta);
+        sigma_y_ + delta_y_eta_ * cap_eta_upper +
+        (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_upper);
     const double upper_surface_z = sigma_z_ + delta_z_zeta_;
     const ReturnType upper_surface_r =
         sqrt(square(upper_surface_x) + square(upper_surface_y) +
@@ -236,7 +246,7 @@ std::optional<std::array<double, 3>> Frustum::inverse(
   logical_coords[1] =
       (physical_coords[1] - sigma_y_ - delta_y_zeta_ * logical_coords[2]) /
       denom1;
-  if (with_equiangular_map_) {
+  if (equiangular_map_at_inner_ or equiangular_map_at_outer_) {
     logical_coords[0] = atan(logical_coords[0]) / M_PI_4;
     logical_coords[1] = atan(logical_coords[1]) / M_PI_4;
   }
@@ -369,39 +379,57 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
         "Only the distributions Linear, Projective, and Logarithmic are "
         "supported.");
   }
-  const ReturnType& cap_xi_zero = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType& cap_xi_zero =
+      equiangular_map_at_inner_ ? tan(M_PI_4 * xi) : xi;
   const double one_plus_phi_square = 1.0 + phi_ * phi_;
-  const ReturnType cap_xi_upper =
-      with_equiangular_map_
+  const ReturnType& cap_xi_upper =
+      equiangular_map_at_outer_
           ? one_plus_phi_square * one_over_tan_half_opening_angle_ *
                     tan(half_opening_angle_ * (xi + phi_) /
                         one_plus_phi_square) -
                 phi_
           : xi;
-  const ReturnType cap_xi_transition =
-      with_equiangular_map_ ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
-                                  0.5 * (1.0 - cap_zeta) * cap_xi_zero
-                            : xi;
+  const ReturnType& cap_xi_transition =
+      (equiangular_map_at_outer_ or equiangular_map_at_inner_)
+          ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
+                0.5 * (1.0 - cap_zeta) * cap_xi_zero
+          : xi;
 
-  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
-  const ReturnType cap_xi_zero_deriv =
-      with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap_xi_zero))
-                            : make_with_value<ReturnType>(xi, 1.0);
-  const ReturnType cap_xi_upper_deriv =
-      with_equiangular_map_
+  const ReturnType& cap_eta_zero =
+      equiangular_map_at_inner_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType& cap_eta_upper =
+      equiangular_map_at_outer_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType& cap_eta_transition =
+      0.5 * (1.0 + cap_zeta) * cap_eta_upper +
+      0.5 * (1.0 - cap_zeta) * cap_eta_zero;
+
+  const ReturnType& cap_xi_zero_deriv =
+      equiangular_map_at_inner_ ? M_PI_4 * (1.0 + square(cap_xi_zero))
+                                : make_with_value<ReturnType>(xi, 1.0);
+  const ReturnType& cap_xi_upper_deriv =
+      equiangular_map_at_outer_
           ? one_over_tan_half_opening_angle_ * half_opening_angle_ *
                 (1.0 + square(tan(half_opening_angle_ * (xi + phi_) /
                                   one_plus_phi_square)))
           : make_with_value<ReturnType>(xi, 1.0);
 
-  const ReturnType cap_xi_transition_deriv =
-      with_equiangular_map_ ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper_deriv +
-                                  0.5 * (1.0 - cap_zeta) * cap_xi_zero_deriv
-                            : make_with_value<ReturnType>(xi, 1.0);
+  const ReturnType& cap_xi_transition_deriv =
+      (equiangular_map_at_inner_ or equiangular_map_at_outer_)
+          ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper_deriv +
+                0.5 * (1.0 - cap_zeta) * cap_xi_zero_deriv
+          : make_with_value<ReturnType>(xi, 1.0);
 
-  const ReturnType cap_eta_deriv = with_equiangular_map_
-                                       ? M_PI_4 * (1.0 + square(cap_eta))
-                                       : make_with_value<ReturnType>(eta, 1.0);
+  const ReturnType& cap_eta_zero_deriv =
+      equiangular_map_at_inner_ ? M_PI_4 * (1.0 + square(cap_eta_zero))
+                                : make_with_value<ReturnType>(eta, 1.0);
+  const ReturnType& cap_eta_upper_deriv =
+      equiangular_map_at_outer_ ? M_PI_4 * (1.0 + square(cap_eta_upper))
+                                : make_with_value<ReturnType>(eta, 1.0);
+  const ReturnType& cap_eta_transition_deriv =
+      (equiangular_map_at_inner_ or equiangular_map_at_outer_)
+          ? 0.5 * (1.0 + cap_zeta) * cap_eta_upper_deriv +
+                0.5 * (1.0 - cap_zeta) * cap_eta_zero_deriv
+          : make_with_value<ReturnType>(eta, 1.0);
 
   auto jacobian_matrix =
       make_with_value<tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame>>(
@@ -413,7 +441,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   const size_t mapped_dim_0 = orientation_of_frustum_.inverse_map()(0);
   jacobian_matrix.get(mapped_dim_0, 0) =
       delta_x_xi_ + delta_x_xi_zeta_ * cap_zeta;
-  if (with_equiangular_map_) {
+  if (equiangular_map_at_inner_ or equiangular_map_at_outer_) {
     jacobian_matrix.get(mapped_dim_0, 0) *= cap_xi_transition_deriv;
   }
   if (mapped_xi.side() == Side::Lower) {
@@ -426,8 +454,8 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   const size_t mapped_dim_1 = orientation_of_frustum_.inverse_map()(1);
   jacobian_matrix.get(mapped_dim_1, 1) =
       delta_y_eta_ + delta_y_eta_zeta_ * cap_zeta;
-  if (with_equiangular_map_) {
-    jacobian_matrix.get(mapped_dim_1, 1) *= cap_eta_deriv;
+  if (equiangular_map_at_inner_ or equiangular_map_at_outer_) {
+    jacobian_matrix.get(mapped_dim_1, 1) *= cap_eta_transition_deriv;
   }
   if (mapped_eta.side() == Side::Lower) {
     jacobian_matrix.get(mapped_dim_1, 1) *= -1.0;
@@ -440,7 +468,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
           {delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition +
                (delta_x_xi_ + delta_x_xi_zeta_ * cap_zeta) * 0.5 *
                    (cap_xi_upper - cap_xi_zero),
-           delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta,
+           delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta_transition +
+               (delta_y_eta_ + delta_y_eta_zeta_ * cap_zeta) * 0.5 *
+                   (cap_eta_upper - cap_eta_zero),
+           // delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta,
            make_with_value<ReturnType>(zeta, delta_z_zeta_)}});
 
   if (zeta_distribution_ != Distribution::Linear) {
@@ -458,9 +489,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
                                       delta_x_zeta_ +
                                       delta_x_xi_zeta_ * cap_xi_upper;
 
-    const ReturnType flat_frustum_y = sigma_y_ + delta_y_eta_ * cap_eta +
+    const ReturnType flat_frustum_y = sigma_y_ + delta_y_eta_ * cap_eta_upper +
                                       delta_y_zeta_ +
-                                      delta_y_eta_zeta_ * cap_eta;
+                                      delta_y_eta_zeta_ * cap_eta_upper;
 
     const double flat_frustum_z = sigma_z_ + delta_z_zeta_;
 
@@ -489,7 +520,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
                  -1.0 * r_over_mag_flat * flat_frustum_z_hat *
                      flat_frustum_x_hat}});
 
-    if (with_equiangular_map_) {
+    if (equiangular_map_at_inner_ or equiangular_map_at_outer_) {
       delta_dX_dxi[0] *= cap_xi_upper_deriv;
       delta_dX_dxi[1] *= cap_xi_upper_deriv;
       delta_dX_dxi[2] *= cap_xi_upper_deriv;
@@ -510,10 +541,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
                  -1.0 * r_over_mag_flat * flat_frustum_z_hat *
                      flat_frustum_y_hat}});
 
-    if (with_equiangular_map_) {
-      delta_dX_deta[0] *= cap_eta_deriv;
-      delta_dX_deta[1] *= cap_eta_deriv;
-      delta_dX_deta[2] *= cap_eta_deriv;
+    if (equiangular_map_at_inner_ or equiangular_map_at_outer_) {
+      delta_dX_deta[0] *= cap_eta_upper_deriv;
+      delta_dX_deta[1] *= cap_eta_upper_deriv;
+      delta_dX_deta[2] *= cap_eta_upper_deriv;
     }
 
     get<0, 1>(jacobian_matrix) += delta_dX_deta[0];
@@ -549,14 +580,24 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::inv_jacobian(
 }
 
 void Frustum::pup(PUP::er& p) {
-  size_t version = 4;
+  size_t version = 5;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
   // whenever possible. See `Domain` docs for details.
   if (version >= 0) {
     p | orientation_of_frustum_;
-    p | with_equiangular_map_;
+    if (version < 5) {
+      bool with_equiangular_map{false};
+      p | with_equiangular_map;
+      if (p.isUnpacking()) {
+        equiangular_map_at_inner_ = with_equiangular_map;
+        equiangular_map_at_outer_ = with_equiangular_map;
+      }
+    } else {
+      p | equiangular_map_at_inner_;
+      p | equiangular_map_at_outer_;
+    }
     p | is_identity_;
     if (version < 2 /*is unpacking*/) {
       bool with_projective_map = false;  // unused
@@ -628,7 +669,8 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) {
   // above.
   // `radius` is also not compared for similar reasons.
   return lhs.orientation_of_frustum_ == rhs.orientation_of_frustum_ and
-         lhs.with_equiangular_map_ == rhs.with_equiangular_map_ and
+         lhs.equiangular_map_at_inner_ == rhs.equiangular_map_at_inner_ and
+         lhs.equiangular_map_at_outer_ == rhs.equiangular_map_at_outer_ and
          lhs.is_identity_ == rhs.is_identity_ and
          lhs.zeta_distribution_ == rhs.zeta_distribution_ and
          lhs.sigma_x_ == rhs.sigma_x_ and
