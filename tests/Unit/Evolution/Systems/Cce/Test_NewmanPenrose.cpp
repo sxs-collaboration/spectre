@@ -35,6 +35,9 @@ void pypp_test_volume_weyl() {
   pypp::check_with_random_values<1>(&(VolumeWeyl<Tags::Psi0>::apply),
                                     "NewmanPenrose", {"psi0"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
+  pypp::check_with_random_values<1>(&(VolumeWeyl<Tags::Psi1>::apply),
+                                    "NewmanPenrose", {"psi1"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
 }
 }  // namespace
 
