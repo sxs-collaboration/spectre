@@ -257,10 +257,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
           false, false, std::optional<double>{}));
 
   // this should run the initializations
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
-  for (size_t i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 1; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);

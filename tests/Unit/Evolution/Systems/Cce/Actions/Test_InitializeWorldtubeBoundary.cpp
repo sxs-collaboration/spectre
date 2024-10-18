@@ -128,7 +128,7 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
           false, false, std::optional<double>{}));
 
   // this should run the initialization
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
@@ -177,7 +177,7 @@ void test_gh_initialization() {
       InterfaceManagers::GhLockstep{});
 
   // this should run the initialization
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   runner.set_phase(Parallel::Phase::Evolve);
@@ -210,7 +210,7 @@ void test_analytic_initialization() {
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
   // this should run the initialization
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   runner.set_phase(Parallel::Phase::Evolve);

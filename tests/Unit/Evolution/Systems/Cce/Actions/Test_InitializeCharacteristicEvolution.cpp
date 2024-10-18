@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE(
       target_step_size, scri_plus_interpolation_order);
 
   // this should run the initialization
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
