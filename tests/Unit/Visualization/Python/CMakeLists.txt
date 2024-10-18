@@ -2,6 +2,12 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.EccentricityControl"
+  Test_EccentricityControl.py
+  "unit;visualization;python"
+  None)
+
+spectre_add_python_bindings_test(
   "Unit.Visualization.Python.GenerateXdmf"
   Test_GenerateXdmf.py
   "unit;visualization;python"
@@ -70,6 +76,11 @@ spectre_add_python_bindings_test(
 if(${BUILD_PYTHON_BINDINGS})
   # Test is a bit slow because it writes a bunch of plot files to verify
   # the argument handling works.
+  set_tests_properties(
+    "Unit.Visualization.Python.EccentricityControl"
+    PROPERTIES
+    TIMEOUT 10
+    )
   set_tests_properties(
     "Unit.Visualization.Python.PlotAlongLine"
     PROPERTIES

@@ -286,6 +286,7 @@ def start_inspiral(
     ] = INSPIRAL_INPUT_FILE_TEMPLATE,
     id_horizons_path: Optional[Union[str, Path]] = None,
     continue_with_ringdown: bool = False,
+    eccentricity_control: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
@@ -370,6 +371,8 @@ def start_inspiral(
         **inspiral_params,
         **scheduler_kwargs,
         continue_with_ringdown=continue_with_ringdown,
+        eccentricity_control=eccentricity_control,
+        id_input_file_path=Path(id_input_file_path).resolve(),
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
         segments_dir=segments_dir,
@@ -456,6 +459,14 @@ def start_inspiral(
     help=(
         "Continue with the ringdown simulation once a common horizon has"
         " formed."
+    ),
+)
+@click.option(
+    "--eccentricity-control",
+    is_flag=True,
+    help=(
+        "Perform eccentricity reduction script that finds current eccentricity"
+        "and better guesses for the input orbital parameters."
     ),
 )
 @click.option(
