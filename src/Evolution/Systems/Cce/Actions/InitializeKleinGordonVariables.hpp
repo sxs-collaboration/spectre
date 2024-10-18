@@ -52,6 +52,8 @@ struct InitializeKleinGordonVariables {
       ::Tags::Variables<typename Metavariables::klein_gordon_source_tags>;
   using klein_gordon_integrand_variables_tag = ::Tags::Variables<
       typename Metavariables::klein_gordon_cce_integrand_tags>;
+  using klein_gordon_constraint_variables_tag =
+      ::Tags::Variables<typename Metavariables::klein_gordon_constraint_tags>;
 
   using simple_tags =
       tmpl::list<klein_gordon_boundary_communication_tags,
@@ -60,7 +62,8 @@ struct InitializeKleinGordonVariables {
                  klein_gordon_swsh_derivatives_variables_tag,
                  klein_gordon_transform_buffer_variables_tag,
                  klein_gordon_source_variables_tag,
-                 klein_gordon_integrand_variables_tag>;
+                 klein_gordon_integrand_variables_tag,
+                 klein_gordon_constraint_variables_tag>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
@@ -91,7 +94,8 @@ struct InitializeKleinGordonVariables {
         typename klein_gordon_transform_buffer_variables_tag::type{
             transform_buffer_size},
         typename klein_gordon_source_variables_tag::type{volume_size},
-        typename klein_gordon_integrand_variables_tag::type{volume_size});
+        typename klein_gordon_integrand_variables_tag::type{volume_size},
+        typename klein_gordon_constraint_variables_tag::type{boundary_size});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
