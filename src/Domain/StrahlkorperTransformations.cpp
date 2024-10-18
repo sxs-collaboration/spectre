@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -91,14 +92,26 @@ void coords_to_different_frame(
       } else {
         ERROR("Map from Frame::Distorted to Frame::Inertial is not invertible");
       }
-    } else {
-      static_assert(std::is_same_v<DestFrame, ::Frame::Inertial> and
-                        std::is_same_v<SrcFrame, ::Frame::Grid>,
-                    "Source frame -> destination frame must be Grid -> "
-                    "Distorted, Grid -> Inertial, or Inertial -> Distorted");
+    } else if constexpr (std::is_same_v<DestFrame, ::Frame::Inertial> and
+                         std::is_same_v<SrcFrame, ::Frame::Grid>) {
       const auto& grid_to_inertial_map =
           block.moving_mesh_grid_to_inertial_map();
       x_dest = grid_to_inertial_map(x_src, time, functions_of_time);
+    } else {
+      static_assert(std::is_same_v<DestFrame, ::Frame::Grid> and
+                        std::is_same_v<SrcFrame, ::Frame::Inertial>,
+                    "Source frame -> destination frame must be Grid -> "
+                    "Distorted, Grid -> Inertial, Inertial -> Distorted, or "
+                    "Inertial -> Grid");
+      const auto& grid_to_inertial_map =
+          block.moving_mesh_grid_to_inertial_map();
+      const auto inv_point =
+          grid_to_inertial_map.inverse(x_src, time, functions_of_time);
+      if (inv_point.has_value()) {
+        x_dest = inv_point.value();
+      } else {
+        ERROR("Map from Frame::Inertial to Frame::Grid is not invertible");
+      }
     }
 
     get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
@@ -200,14 +213,14 @@ void strahlkorper_in_different_frame(
     const auto& block_id_and_coords = block_logical_coords[0].value();
     const auto& block = domain.blocks()[block_id_and_coords.id.get_index()];
 
-    static_assert(
-        std::is_same_v<SrcFrame, ::Frame::Grid> or
-            std::is_same_v<SrcFrame, ::Frame::Inertial>,
-        "Source frame must currently be Grid frame or Inertial frame");
-    static_assert(std::is_same_v<DestFrame, ::Frame::Inertial> or
-                      std::is_same_v<DestFrame, ::Frame::Distorted>,
-                  "Destination frame must currently be Inertial frame or "
-                  "Distorted frame");
+    // Update for new instantiations
+    static_assert((std::is_same_v<SrcFrame, ::Frame::Grid> and
+                   std::is_same_v<DestFrame, ::Frame::Inertial>) or
+                      (std::is_same_v<SrcFrame, ::Frame::Inertial> and
+                       std::is_same_v<DestFrame, ::Frame::Distorted>) or
+                      (std::is_same_v<SrcFrame, ::Frame::Inertial> and
+                       std::is_same_v<DestFrame, ::Frame::Grid>),
+                  "Invalid frame choices for strahlkorper_in_different_frame");
     tnsr::I<double, 3, SrcFrame> x_src{};
     if constexpr (std::is_same_v<SrcFrame, ::Frame::Grid>) {
       x_src = block.moving_mesh_logical_to_grid_map()(block_id_and_coords.data);
@@ -440,6 +453,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATEGENERAL, (::Frame::Grid),
 template void strahlkorper_in_different_frame(
     const gsl::not_null<ylm::Strahlkorper<::Frame::Distorted>*>
         dest_strahlkorper,
+    const ylm::Strahlkorper<::Frame::Inertial>& src_strahlkorper,
+    const Domain<3>& domain,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time,
+    const double time);
+template void strahlkorper_in_different_frame(
+    const gsl::not_null<ylm::Strahlkorper<::Frame::Grid>*> dest_strahlkorper,
     const ylm::Strahlkorper<::Frame::Inertial>& src_strahlkorper,
     const Domain<3>& domain,
     const std::unordered_map<
