@@ -28,10 +28,10 @@ MagnetizedFmDisk::MagnetizedFmDisk(
     const double bh_mass, const double bh_dimless_spin,
     const double inner_edge_radius, const double max_pressure_radius,
     const double polytropic_constant, const double polytropic_exponent,
-    const double threshold_density, const double inverse_plasma_beta,
-    const size_t normalization_grid_res)
+    const double noise, const double threshold_density,
+    const double inverse_plasma_beta, const size_t normalization_grid_res)
     : fm_disk_(bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
-               polytropic_constant, polytropic_exponent),
+               polytropic_constant, polytropic_exponent, noise),
       threshold_density_(threshold_density),
       inverse_plasma_beta_(inverse_plasma_beta),
       normalization_grid_res_(normalization_grid_res),

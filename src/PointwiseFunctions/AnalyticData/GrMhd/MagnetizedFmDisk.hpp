@@ -150,7 +150,7 @@ class MagnetizedFmDisk : public virtual evolution::initial_data::InitialData,
   MagnetizedFmDisk(
       double bh_mass, double bh_dimless_spin, double inner_edge_radius,
       double max_pressure_radius, double polytropic_constant,
-      double polytropic_exponent, double threshold_density,
+      double polytropic_exponent, double noise, double threshold_density,
       double inverse_plasma_beta,
       size_t normalization_grid_res = BFieldNormGridRes::suggested_value());
 
