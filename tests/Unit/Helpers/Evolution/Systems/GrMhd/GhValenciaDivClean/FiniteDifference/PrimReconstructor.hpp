@@ -203,7 +203,8 @@ void test_prim_reconstructor_impl(
   using cons_tags = typename ghmhd::System::variables_tag::tags_list;
   using spacetime_tags =
       ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
-
+  const VariableFixing::FixToAtmosphere<3> fix_to_atmosphere{1.0e-16, 1.1e-16,
+                                                             1.0e-15, 1.0};
   const Mesh<3> subcell_mesh{points_per_dimension,
                              Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
@@ -293,7 +294,8 @@ void test_prim_reconstructor_impl(
         .reconstruct(make_not_null(&vars_on_lower_face),
                      make_not_null(&vars_on_upper_face),
                      make_not_null(&reconstruction_order), volume_prims,
-                     volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+                     volume_cons_vars, eos, element, ghost_data, subcell_mesh,
+                     fix_to_atmosphere);
     for (size_t d = 0; d < 3; ++d) {
       CAPTURE(d);
       for (size_t i = 0; i < gsl::at(reconstruction_order_storage, d).size();
@@ -307,7 +309,8 @@ void test_prim_reconstructor_impl(
     dynamic_cast<const Reconstructor&>(reconstructor)
         .reconstruct(make_not_null(&vars_on_lower_face),
                      make_not_null(&vars_on_upper_face), volume_prims,
-                     volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+                     volume_cons_vars, eos, element, ghost_data, subcell_mesh,
+                     fix_to_atmosphere);
   }
 
   for (size_t dim = 0; dim < 3; ++dim) {
@@ -457,19 +460,19 @@ void test_prim_reconstructor_impl(
         num_pts_on_mortar};
     if (dim != 2) {
       dynamic_cast<const Reconstructor&>(reconstructor)
-          .reconstruct_fd_neighbor(make_not_null(&upper_side_vars_on_mortar),
-                                   volume_prims, volume_spacetime_vars, eos,
-                                   element, ghost_data, subcell_mesh,
-                                   Direction<3>{dim, Side::Upper});
+          .reconstruct_fd_neighbor(
+              make_not_null(&upper_side_vars_on_mortar), volume_prims,
+              volume_spacetime_vars, eos, element, ghost_data, subcell_mesh,
+              fix_to_atmosphere, Direction<3>{dim, Side::Upper});
     }
 
     Variables<dg_package_data_argument_tags> lower_side_vars_on_mortar{
         num_pts_on_mortar};
     dynamic_cast<const Reconstructor&>(reconstructor)
-        .reconstruct_fd_neighbor(make_not_null(&lower_side_vars_on_mortar),
-                                 volume_prims, volume_spacetime_vars, eos,
-                                 element, ghost_data, subcell_mesh,
-                                 Direction<3>{dim, Side::Lower});
+        .reconstruct_fd_neighbor(
+            make_not_null(&lower_side_vars_on_mortar), volume_prims,
+            volume_spacetime_vars, eos, element, ghost_data, subcell_mesh,
+            fix_to_atmosphere, Direction<3>{dim, Side::Lower});
 
     tmpl::for_each<tmpl::append<tags_to_test, spacetime_tags>>(
         [dim, &expected_lower_face_values, &expected_upper_face_values,

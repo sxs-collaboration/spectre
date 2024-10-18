@@ -61,6 +61,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -613,6 +615,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           evolution::Tags::BoundaryCorrection<
               grmhd::GhValenciaDivClean::System>,
           hydro::Tags::GrmhdEquationOfState,
+          ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
@@ -675,7 +678,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           std::make_unique<BoundaryCorrections::ProductOfCorrections<
               gh::BoundaryCorrections::UpwindPenalty<3>,
               ValenciaDivClean::BoundaryCorrections::Hll>>()},
-      soln.equation_of_state().promote_to_3d_eos(), cell_centered_prim_vars,
+      soln.equation_of_state().promote_to_3d_eos(),
+      VariableFixing::FixToAtmosphere<3>{1.0e-16, 1.1e-16, 1.0e-15, 1.0},
+      cell_centered_prim_vars,
       // Set incorrect size for dt variables because they should get resized.
       Variables<typename dt_variables_tag::tags_list>{}, initial_variables,
       neighbor_data, dummy_reconstruction_order, 1.0, mortar_data,
