@@ -2,6 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
+  "support.Pipelines.Bbh.EccentricityControl"
+  Test_EccentricityControl.py
+  "Python"
+  None
+  TIMEOUT 20)
+
+spectre_add_python_bindings_test(
   "support.Pipelines.Bbh.FindHorizon"
   Test_FindHorizon.py
   "Python"
