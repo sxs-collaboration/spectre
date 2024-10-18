@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AccelerationTerms.cpp
   Test_KerrSchildDerivatives.cpp
   Test_PunctureField.cpp
+  Test_RadiusFunctions.cpp
   Test_SelfForce.cpp
   Test_Tags.cpp
   ElementActions/Test_SendToWorldtube.cpp
