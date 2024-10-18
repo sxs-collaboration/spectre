@@ -191,9 +191,10 @@ struct MutexTag {
 template <typename Tag>
 struct MutableCacheTag {
   using tag = Tag;
-  using type = std::tuple<typename Tag::type,
-                          std::unordered_map<Parallel::ArrayComponentId,
-                                             std::unique_ptr<Callback>>>;
+  using type =
+      std::tuple<typename Tag::type,
+                 std::unordered_map<Parallel::ArrayComponentId,
+                                    std::vector<std::unique_ptr<Callback>>>>;
 };
 
 template <typename Tag>
