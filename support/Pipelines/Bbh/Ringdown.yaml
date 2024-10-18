@@ -6,7 +6,7 @@ Executable: EvolveGhSingleBlackHole
 ---
 
 Parallelization:
-  ElementDistribution: NumGridPoints
+  ElementDistribution: NumGridPointsAndGridSpacing
 
 # Note: most of the parameters in this file are just made up. They should be
 # replaced with values that make sense once we have a better idea of the
@@ -15,8 +15,8 @@ Parallelization:
 InitialData:
   NumericInitialData:
     FileGlob: "{{ IdFileGlob }}"
-    Subgroup: "VolumeData"
-    ObservationValue: Last
+    Subgroup: "{{ IdFileGlobSubgroup }}"
+    ObservationValue: &InitialTime "{{ MatchTime }}"
     ObservationValueEpsilon: Auto
     Interpolate: True
     Variables:
@@ -25,28 +25,70 @@ InitialData:
 
 DomainCreator:
   Sphere:
-    InnerRadius: &InnerRadius 2.0
-    OuterRadius: 1000.0
+    # InnerRadius is not yet set automatically. The value of 1.45 works
+    # for equal-mass, zero spin, quasicircular.
+    InnerRadius: &InnerRadius 1.45
+    OuterRadius: "{{ OuterBdryRadius }}"
     Interior:
       ExciseWithBoundaryCondition:
         DemandOutgoingCharSpeeds:
     InitialRefinement:
-      Shell0: [{{ L }}, {{ L }}, {{ L }}]
-      Shell1: [{{ L }}, {{ L }}, {{ L + 2 }}]
+      Shell0: [{{ L }}, {{ L }}, {{ L + 2 }}]
+      Shell1: [{{ L - 1 }}, {{ L - 1 }}, {{ L + 3 }}]
     InitialGridPoints: {{ P + 1 }}
-    UseEquiangularMap: True
+    UseEquiangularMap: False
     EquatorialCompression: None
-    RadialPartitioning: [30.0]
+    # The radial partitioning split has been tested for
+    # equal-mass, zero spin, quasi-circular, but not
+    # yet for other cases.
+    RadialPartitioning: [50.0]
     RadialDistribution: [Logarithmic, Linear]
     WhichWedges: All
-    TimeDependentMaps: None
+    TimeDependentMaps:
+      InitialTime: *InitialTime
+      ShapeMap:
+        LMax: &MaximumL {{ ShapeMapLMax }}
+        InitialValues:
+          H5Filename: "{{ PathToAhCCoefsH5File }}"
+          SubfileNames: ["{{ AhCCoefsSubfilePrefix }}AhC_Ylm",
+                         "{{ AhCCoefsSubfilePrefix }}dtAhC_Ylm",
+                         "{{ AhCCoefsSubfilePrefix }}dt2AhC_Ylm"]
+          MatchTime: *InitialTime
+          MatchTimeEpsilon: 1.e-10
+          SetL1CoefsToZero: True
+          CheckFrame: True
+        # The excision surface initially has some outward velocity to avoid
+        # incoming char speeds. The size control system should catch the
+        # excision surface before it collides with the apparent horizon.
+        # This value works for equal-mass, nonspinning, quasicircular,
+        # and has not been tested for other configurations.
+        SizeInitialValues: [0.0, -1.0, 0.0]
+      RotationMap:
+        InitialValues:
+          - [{{ Rotation0 }}, {{ Rotation1 }}, {{ Rotation2 }}, {{ Rotation3 }}]
+          - [{{ dtRotation0 }}, {{ dtRotation1 }}, {{ dtRotation2 }},
+             {{ dtRotation3 }}]
+          - [{{ dt2Rotation0 }}, {{ dt2Rotation1 }}, {{ dt2Rotation2}},
+             {{ dt2Rotation3 }}]
+        DecayTimescaleRotation: 1.0
+      ExpansionMap:
+        # During the ringdown, only the outer boundary's expansion map is
+        # applied.
+        InitialValues: [1.0, 0.0, 0.0]
+        InitialValuesOuterBoundary: [{{ ExpansionOuterBdry }},
+                                     {{ dtExpansionOuterBdry }},
+                                     {{ dt2ExpansionOuterBdry }}]
+        DecayTimescaleExpansion: 1.0
+        DecayTimescaleExpansionOuterBoundary: 1.0
+      TranslationMap:
+        InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
     OuterBoundaryCondition:
       ConstraintPreservingBjorhus:
         Type: ConstraintPreservingPhysical
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.0002
+  InitialTimeStep: 0.0001
   MinimumTimeStep: 1e-7
   # This is the smallest interval we'd need to observe time step/constraints. If
   # you would like more frequent output, consider using dense output.
@@ -54,17 +96,14 @@ Evolution:
   StepChoosers:
     - LimitIncrease:
         Factor: 2
-    - ElementSizeCfl:
-        SafetyFactor: 0.5
     - ErrorControl:
-        AbsoluteTolerance: 1e-10
-        RelativeTolerance: 1e-8
+        AbsoluteTolerance: 1e-8
+        RelativeTolerance: 1e-6
         MaxFactor: 2
         MinFactor: 0.25
         SafetyFactor: 0.95
-  # Found that order 4 offers a significant speedup compared to order 5
   TimeStepper:
-    AdamsBashforth:
+    AdamsMoultonPcMonotonic:
       Order: 4
 
 EvolutionSystem:
@@ -78,29 +117,49 @@ EvolutionSystem:
     # Einstein Code (SpEC). They should be suitable for evolutions of a
     # perturbation of a Kerr-Schild black hole.
     DampingFunctionGamma0:
-      GaussianPlusConstant:
+      # SpEC uses a sum of 2 gaussians. Here, the expansion func of time
+      # is just the identity, so TimeDependentTripleGaussian ought to work here
+      # as a time-independent triple Gaussian..
+      # The Gaussian amplitudes, widths, and centers are set according to what
+      # SpEC does ringdown for an equal-mass, zero-spin, circular inspiral.
+      TimeDependentTripleGaussian:
         Constant: 0.001
-        Amplitude: 3.0
-        Width: 11.313708499
-        Center: [0.0, 0.0, 0.0]
+        Gaussian1:
+          Amplitude: 7.0
+          Width: 2.5
+          Center: [0.0, 0.0, 0.0]
+        Gaussian2:
+          Amplitude: 0.1
+          Width: 100.0
+          Center: [0.0, 0.0, 0.0]
+        Gaussian3:
+          Amplitude: 0.0
+          Width: 100.0
+          Center: [0.0, 0.0, 0.0]
     DampingFunctionGamma1:
-      GaussianPlusConstant:
-        Constant: -1.0
-        Amplitude: 0.0
-        Width: 11.313708499
-        Center: [0.0, 0.0, 0.0]
+      Constant:
+        Value: -1.0
     DampingFunctionGamma2:
-      GaussianPlusConstant:
+      TimeDependentTripleGaussian:
         Constant: 0.001
-        Amplitude: 1.0
-        Width: 11.313708499
-        Center: [0.0, 0.0, 0.0]
+        Gaussian1:
+          Amplitude: 7.0
+          Width: 2.5
+          Center: [0.0, 0.0, 0.0]
+        Gaussian2:
+          Amplitude: 0.1
+          Width: 100.0
+          Center: [0.0, 0.0, 0.0]
+        Gaussian3:
+          Amplitude: 0.0
+          Width: 100.0
+          Center: [0.0, 0.0, 0.0]
 
 Filtering:
   ExpFilter0:
-    Alpha: 36.0
-    HalfPower: 24
-    Enable: false
+    Alpha: 64.0
+    HalfPower: 210
+    Enable: true
     BlocksToFilter: All
 
 SpatialDiscretization:
@@ -159,9 +218,6 @@ EventsAndTriggers:
           - Name: PointwiseL2Norm(ThreeIndexConstraint)
             NormType: L2Norm
             Components: Sum
-          - Name: PointwiseL2Norm(FourIndexConstraint)
-            NormType: L2Norm
-            Components: Sum
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -174,27 +230,40 @@ EventsAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 100
+          Interval: 1
           Offset: 0
     Events:
+      - ApparentHorizon
+      - ExcisionBoundary
+  - Trigger:
+      Times:
+        EvenlySpaced:
+          Interval: 10.0
+          Offset: 0.0
+    Events:
+      # SpatialRicciScalar and Psi4Real output for visualizations scripts.
       - ObserveFields:
           SubfileName: VolumeData
           VariablesToObserve:
             - SpacetimeMetric
-            - Pi
-            - Phi
-            - Lapse
-            - Shift
+            # For diagnostics:
+            - ConstraintEnergy
             - PointwiseL2Norm(GaugeConstraint)
             - PointwiseL2Norm(ThreeIndexConstraint)
-            - PointwiseL2Norm(FourIndexConstraint)
+            # For visualization:
+            - Lapse
+            - SpatialRicciScalar
+            - Psi4Real
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
-      - ApparentHorizon
-      - ExcisionBoundary
-  # Never terminate... run until something fails!
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: {{ FinalTime }}
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
   # BondiSachs output needs to be often enough for CCE to run properly. An
@@ -213,7 +282,7 @@ Interpolator:
 ApparentHorizons:
   ApparentHorizon: &Ah
     InitialGuess:
-      LMax: &LMax 4
+      LMax: *MaximumL
       Radius: 2.2
       Center: [0., 0., 0.]
     FastFlow:
@@ -221,11 +290,11 @@ ApparentHorizons:
       Alpha: 1.0
       Beta: 0.5
       AbsTol: 1e-12
-      TruncationTol: 1e-2
-      DivergenceTol: 1.2
+      TruncationTol: 1e-5
+      DivergenceTol: 5
       DivergenceIter: 5
       MaxIts: 100
-    Verbosity: Verbose
+    Verbosity: Quiet
   ControlSystemSingleAh: *Ah
   ControlSystemCharSpeedAh: *Ah
 
@@ -236,7 +305,7 @@ InterpolationTargets:
     Center: [0, 0, 0]
     AngularOrdering: Cce
   ExcisionBoundary: &ExBdry
-    LMax: *LMax
+    LMax: *MaximumL
     Center: [0., 0., 0.]
     Radius: *InnerRadius
     AngularOrdering: "Strahlkorper"
@@ -269,12 +338,14 @@ ControlSystems:
     IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
-      Average0thDeriv: false
+      # This is different from inspiral but same as SpEC.
+      # See ComputePostMergerDataFromAhC.pl:2278
+      Average0thDeriv: true
     Controller:
-      UpdateFraction: 0.03
+      UpdateFraction: 0.3
     TimescaleTuner:
-      InitialTimescales: 0.2
-      MinTimescale: 1.0e-2
+      InitialTimescales: 0.04
+      MinTimescale: 1.0e-3
       MaxTimescale: 10.0
       IncreaseThreshold: 2.5e-4
       DecreaseThreshold: 1.0e-3
@@ -287,10 +358,10 @@ ControlSystems:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: true
     Controller:
-      UpdateFraction: 0.06
+      UpdateFraction: 0.1
     TimescaleTuner:
-      InitialTimescales: 0.2
-      MinTimescale: 1.0e-4
+      InitialTimescales: 0.008
+      MinTimescale: 1.0e-5
       MaxTimescale: 20.0
       IncreaseThreshold: 2.5e-4
       IncreaseFactor: 1.01
@@ -300,7 +371,7 @@ ControlSystems:
       DeltaRDriftOutwardOptions: None
       InitialState: DeltaR
       SmootherTuner:
-        InitialTimescales: [0.2]
+        InitialTimescales: [0.02]
         MinTimescale: 1.0e-4
         MaxTimescale: 20.0
         IncreaseThreshold: 2.5e-4
