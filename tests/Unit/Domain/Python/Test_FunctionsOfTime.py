@@ -7,7 +7,13 @@ import unittest
 
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
-from spectre.Domain import deserialize_functions_of_time
+from spectre.Domain import (
+    PiecewisePolynomial2,
+    PiecewisePolynomial3,
+    QuaternionFunctionOfTime,
+    deserialize_functions_of_time,
+    serialize_functions_of_time,
+)
 from spectre.Informer import unit_test_src_path
 
 
@@ -31,6 +37,60 @@ class TestFunctionsOfTime(unittest.TestCase):
         self.assertEqual(
             translation.func_and_2_derivs(0.0),
             3 * [DataVector(size=3, fill=0.0)],
+        )
+
+    def test_serialize(self):
+        translation_fot = PiecewisePolynomial2(
+            time=0.0,
+            initial_func_and_derivs=3 * [DataVector(size=3, fill=0.0)],
+            expiration_time=math.inf,
+        )
+        rotation_fot = QuaternionFunctionOfTime(
+            time=0.0,
+            initial_quat_func=[DataVector(size=4, fill=1.0)],
+            initial_angle_func=4 * [DataVector(size=3, fill=0.0)],
+            expiration_time=math.inf,
+        )
+        expansion_fot = PiecewisePolynomial3(
+            time=0.0,
+            initial_func_and_derivs=4 * [DataVector(size=1, fill=0.0)],
+            expiration_time=math.inf,
+        )
+        expansion_outer_fot = PiecewisePolynomial3(
+            time=0.0,
+            initial_func_and_derivs=4 * [DataVector(size=1, fill=0.0)],
+            expiration_time=math.inf,
+        )
+        not_serialized_fots = {
+            "Expansion": expansion_fot,
+            "ExpansionOuterBoundary": expansion_outer_fot,
+            "Rotation": rotation_fot,
+            "Translation": translation_fot,
+        }
+
+        serialized_fots = serialize_functions_of_time(not_serialized_fots)
+        deserialized_fots = deserialize_functions_of_time(serialized_fots)
+        self.assertEqual(
+            not_serialized_fots["Expansion"].func_and_2_derivs(0.0),
+            deserialized_fots["Expansion"].func_and_2_derivs(0.0),
+        )
+        self.assertEqual(
+            not_serialized_fots["ExpansionOuterBoundary"].func_and_2_derivs(
+                0.0
+            ),
+            deserialized_fots["ExpansionOuterBoundary"].func_and_2_derivs(0.0),
+        )
+        self.assertEqual(
+            not_serialized_fots["Rotation"].func_and_2_derivs(0.0),
+            deserialized_fots["Rotation"].func_and_2_derivs(0.0),
+        )
+        self.assertEqual(
+            not_serialized_fots["Rotation"].quat_func_and_2_derivs(0.0),
+            deserialized_fots["Rotation"].quat_func_and_2_derivs(0.0),
+        )
+        self.assertEqual(
+            not_serialized_fots["Translation"].func_and_2_derivs(0.0),
+            deserialized_fots["Translation"].func_and_2_derivs(0.0),
         )
 
 
