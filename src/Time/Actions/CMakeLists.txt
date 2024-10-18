@@ -10,5 +10,6 @@ spectre_target_headers(
   CleanHistory.hpp
   RecordTimeStepperData.hpp
   SelfStartActions.hpp
+  TakeLtsStep.hpp
   UpdateU.hpp
   )
