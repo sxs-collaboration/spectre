@@ -705,6 +705,33 @@ void test_self_force_options() {
   CHECK(options.turn_on_interval == 987.);
 }
 
+void test_radius_options() {
+  {
+    const auto wt_options =
+        TestHelpers::test_creation<OptionTags::RadiusOptions<true>>(
+            "TransitionRadius: 5.\n"
+            "TransitionWidth: 0.1\n"
+            "Exponent: 3.2\n"
+            "Amplitude: 0.3\n");
+    CHECK(wt_options.transition_radius == 5.);
+    CHECK(wt_options.transition_width == 0.1);
+    CHECK(wt_options.exponent == 3.2);
+    CHECK(wt_options.amplitude == 0.3);
+  }
+  {
+    const auto bh_options =
+        TestHelpers::test_creation<OptionTags::RadiusOptions<false>>(
+            "TransitionRadius: 5.\n"
+            "TransitionWidth: 0.1\n"
+            "Exponent: 3.2\n"
+            "Amplitude: 0.3\n");
+    CHECK(bh_options.transition_radius == 5.);
+    CHECK(bh_options.transition_width == 0.1);
+    CHECK(bh_options.exponent == 3.2);
+    CHECK(bh_options.amplitude == 0.3);
+  }
+}
+
 }  // namespace
 
 // [[TimeOut, 15]]
@@ -731,6 +758,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "SelfForceTurnOnInterval");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::MaxIterations>("MaxIterations");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::BlackHoleRadiusParameters>(
+      "BlackHoleRadiusParameters");
+  TestHelpers::db::test_simple_tag<
+      CurvedScalarWave::Worldtube::Tags::WorldtubeRadiusParameters>(
+      "WorldtubeRadiusParameters");
   TestHelpers::db::test_simple_tag<
       CurvedScalarWave::Worldtube::Tags::CurrentIteration>("CurrentIteration");
   TestHelpers::db::test_simple_tag<Tags::ElementFacesGridCoordinates<3>>(
@@ -762,6 +795,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "BackgroundQuantities");
   test_excision_sphere_tag();
   test_self_force_options();
+  test_radius_options();
   test_initial_position_velocity_tag();
   test_compute_face_coordinates_grid();
   test_compute_face_coordinates();

@@ -131,6 +131,73 @@ struct SelfForceOptions {
 };
 
 /*!
+ * \brief Options for the excision sphere radii which are adjusted according to
+ * `smooth_broken_power_law`. If `IsWorldtube` is true, these options control
+ * the worldtube growth around the scalar charge. Else, they control the growth
+ * of the excision sphere within the central black hole.
+ */
+template <bool IsWorldtube>
+struct RadiusOptions {
+  static constexpr Options::String help = {
+      "Options for the scalar self-force. Select `None` for a purely geodesic "
+      "evolution"};
+  using group = Worldtube;
+  using type = RadiusOptions;
+
+  static std::string name() {
+    if constexpr (IsWorldtube) {
+      return "WorldtubeRadiusOptions";
+    } else {
+      return "BlackHoleRadiusOptions";
+    }
+  }
+
+  struct Exponent {
+    using type = double;
+    static constexpr Options::String help{
+        "The exponent alpha according to which the excision sphere grows with "
+        "orbital radius until the transition radius."};
+    static double lower_bound() { return 0.; }
+    static double upper_bound() { return 4.; }
+  };
+
+  struct Amplitude {
+    using type = double;
+    static constexpr Options::String help{
+        "The amplitude A of the smoothly broken power law."};
+    static double lower_bound() { return 0.; }
+  };
+
+  struct TransitionRadius {
+    using type = double;
+    static constexpr Options::String help{
+        "The transition radius rb of the smoothly broken power law. At this "
+        "point the radius transitions to a constant value."};
+    static double lower_bound() { return 0.; }
+  };
+
+  struct TransitionWidth {
+    using type = double;
+    static constexpr Options::String help{
+        "The width delta of the transition region."};
+    static double lower_bound() { return 1e-3; }
+  };
+
+  RadiusOptions();
+  RadiusOptions(double exponent_in, double amplitude_in,
+                double transition_radius_in, double transition_width_in);
+  void pup(PUP::er& p);
+
+  using options =
+      tmpl::list<Exponent, Amplitude, TransitionRadius, TransitionWidth>;
+
+  double exponent{};
+  double amplitude{};
+  double transition_radius{};
+  double transition_width{};
+};
+
+/*!
  * \brief Name of the excision sphere designated to act as a worldtube
  */
 struct ExcisionSphere {
@@ -487,6 +554,38 @@ struct GeodesicAccelerationCompute : GeodesicAcceleration<Dim>, db::ComputeTag {
  */
 struct TimeDilationFactor : db::SimpleTag {
   using type = Scalar<double>;
+};
+
+/*!
+ * \brief The parameters controlling the growth of the worldtube excision
+ * sphere, see smooth_broken_power_law. The parameters here are, in order, the
+ * amplitude, the transition radius, the transition width and the exponent.
+ */
+struct WorldtubeRadiusParameters : db::SimpleTag {
+  using type = std::array<double, 4>;
+  using option_tags = tmpl::list<OptionTags::RadiusOptions<true>>;
+  static constexpr bool pass_metavariables = false;
+  static std::array<double, 4> create_from_options(
+      const OptionTags::RadiusOptions<true>& params) {
+    return {{params.exponent, params.amplitude, params.transition_radius,
+             params.transition_width}};
+  }
+};
+
+/*!
+ * \brief The parameters controlling the growth of the black holes excision
+ * sphere, see smooth_broken_power_law. The parameters here are, in order, the
+ * amplitude, the transition radius, the transition width and the exponent.
+ */
+struct BlackHoleRadiusParameters : db::SimpleTag {
+  using type = std::array<double, 4>;
+  using option_tags = tmpl::list<OptionTags::RadiusOptions<false>>;
+  static constexpr bool pass_metavariables = false;
+  static std::array<double, 4> create_from_options(
+      const OptionTags::RadiusOptions<false>& params) {
+    return {{params.exponent, params.amplitude, params.transition_radius,
+             params.transition_width}};
+  }
 };
 
 /// @{
