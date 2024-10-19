@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_ConstraintPreserving.cpp
   BoundaryConditions/Test_ProductOfConditions.cpp
   BoundaryCorrections/Test_ProductOfCorrections.cpp
+  ConstraintDamping/Test_GaussianPlusConstant.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_Sources.cpp
