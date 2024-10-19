@@ -8,6 +8,10 @@ if (TARGET FUKA::Exporter)
   set(_LIB_TYPE "")
 endif()
 
+if (TARGET COCAL::Exporter)
+  set(_LIB_TYPE "")
+endif()
+
 add_spectre_library(${LIBRARY} ${_LIB_TYPE})
 
 if (TARGET SpEC::Exporter)
@@ -55,3 +59,32 @@ if (TARGET FUKA::Exporter)
   target_compile_definitions(
     ${LIBRARY} INTERFACE HAS_FUKA_EXPORTER)
 endif()
+
+
+if (TARGET COCAL::Exporter)
+  spectre_target_sources(
+    ${LIBRARY}
+    PRIVATE
+    InterpolateFromCocal.cpp
+    )
+  spectre_target_headers(
+    ${LIBRARY}
+    INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    HEADERS
+    InterpolateFromCocal.hpp
+    )
+  target_link_libraries(
+    ${LIBRARY}
+    PUBLIC
+    COCAL::Exporter
+    DataStructures
+    GeneralRelativity
+    Hydro
+    Utilities
+    PRIVATE
+    ErrorHandling
+    )
+  target_compile_definitions(
+    ${LIBRARY} INTERFACE HAS_COCAL_EXPORTER)
+endif()
+
