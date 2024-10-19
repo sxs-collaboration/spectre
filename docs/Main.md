@@ -41,8 +41,9 @@ style="max-width:100%;"></a>
 
 # What is SpECTRE? {#intro_sec}
 
-SpECTRE is an open-source code for multi-scale, multi-physics problems
-in astrophysics and gravitational physics. In the future, we hope that
+SpECTRE is an open-source code for multi-scale, multi-physics problems in
+astrophysics and gravitational physics. It is based on high-order spectral
+finite element methods and massive parallelism. In the future, we hope that
 it can be applied to problems across discipline boundaries in fluid
 dynamics, geoscience, plasma physics, nuclear physics, and
 engineering. It runs at petascale and is designed for future exascale
@@ -50,8 +51,15 @@ computers.
 
 SpECTRE is being developed in support of our collaborative Simulating
 eXtreme Spacetimes (SXS) research program into the multi-messenger
-astrophysics of neutron star mergers, core-collapse supernovae, and
+astrophysics of black hole neutron star mergers, core-collapse supernovae, and
 gamma-ray bursts.
+
+## Gallery
+
+For an overview of some of SpECTRE's features and some simulations performed
+with SpECTRE, visit the gallery:
+
+- Gallery: https://spectre-code.org/gallery
 
 ## Citing SpECTRE
 
