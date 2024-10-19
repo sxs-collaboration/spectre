@@ -79,12 +79,11 @@ and now you're in the container!
 
 ### With VSCode
 
-If you're using VSCode, you'll need the `Remote-Containers` extension to be
-able to access the container. Once you have it, open the
+Open the
 [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette)
 and run the following commands.
 
-1. `Remote-Containers: Attach to Running Container` - you should see the
+1. `Dev Containers: Attach to Running Container` - you should see the
    container `spectre_demo` that's currently running. Select that.
 2. `File: Open Folder` - select `/work/spectre` which is where the repo is.
 
