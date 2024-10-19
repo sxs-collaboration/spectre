@@ -341,7 +341,7 @@ struct InitializeElement {
                  Tags::InitialExtents<Dim, SourceOrTarget::Target>>;
   using simple_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 ScalarFieldTag, VectorFieldTag<Dim>>;
+                 domain::Tags::Mesh<Dim>, ScalarFieldTag, VectorFieldTag<Dim>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
@@ -364,9 +364,11 @@ struct InitializeElement {
         initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
     const auto& block = domain.blocks()[element_id.block_id()];
     Initialization::mutate_assign<
-        tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>>(
+        tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                   domain::Tags::Mesh<Dim>>>(
         make_not_null(&box),
-        inertial_coordinates(element_id, mesh, block, time, functions_of_time));
+        inertial_coordinates(element_id, mesh, block, time, functions_of_time),
+        mesh);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
