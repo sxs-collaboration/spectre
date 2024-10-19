@@ -23,6 +23,7 @@
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -239,7 +240,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   const Domain<3> domain = domain_creator.create_domain();
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain()}, {}, std::vector<std::size_t>{2_st}};
+      {domain_creator.create_domain(), ::Verbosity::Silent},
+      {},
+      std::vector<std::size_t>{2_st}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   // Two components of the interpolator

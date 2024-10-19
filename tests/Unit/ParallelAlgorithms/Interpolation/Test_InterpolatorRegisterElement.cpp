@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "Framework/ActionTesting.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
@@ -76,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   using metavars = MockMetavariables;
   using interp_component = mock_interpolator<metavars>;
   using elem_component = mock_element<metavars>;
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
