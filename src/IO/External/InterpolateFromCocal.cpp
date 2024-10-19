@@ -4,7 +4,6 @@
 #include "IO/External/InterpolateFromCocal.hpp"
 
 #include <array>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -61,14 +60,6 @@ void coc2cac_sp(const int& npoints, const double* x, const double* y,
 
 namespace io {
 
-// namespace {
-// DataVector to_datavector(const double* data, size_t size) {
-//   DataVector result(size);
-//   std::copy(data, data + size, result.begin());
-//   return result;
-// }
-
-// }  // namespace
 namespace {
 DataVector to_datavector(std::vector<double> vec) {
   DataVector result(vec.size());
@@ -93,8 +84,6 @@ tuples::tagged_tuple_from_typelist<cocal_tags> interpolate_from_cocal(
     y_coords[i] = x.get(1)[i];
     z_coords[i] = x.get(2)[i];
   }
-
-  // std::cout << "Coordinates prepared " << std::endl;
 
   std::vector<double> lapse(num_points);
   std::vector<double> shift_x(num_points);
