@@ -55,6 +55,9 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
   using klein_gordon_scri_tags =
       tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
 
+  using klein_gordon_constraint_tags =
+      tmpl::list<Cce::Tags::KleinGordonWorldtubeConstraint>;
+
   using cce_step_choosers =
       tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
                  StepChoosers::Increase<StepChooserUse::LtsStep>,
@@ -110,7 +113,8 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
 
   using scri_values_to_observe =
       tmpl::append<cce_base::scri_values_to_observe,
-                   tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>>>;
+                   tmpl::list<Cce::Tags::KleinGordonWorldtubeConstraint,
+                              Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPsi>>>;
 
   using cce_scri_tags =
       tmpl::append<cce_base::cce_scri_tags,

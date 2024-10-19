@@ -11,6 +11,7 @@
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSource.hpp"
 #include "Evolution/Systems/Cce/KleinGordonSystem.hpp"
+#include "Evolution/Systems/Cce/WorldtubeConstraint.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
@@ -64,6 +65,7 @@ struct KleinGordonCharacteristicEvolution
 
   using klein_gordon_hypersurface_computation = tmpl::list<
       ::Actions::MutateApply<GaugeAdjustedBoundaryValue<Tags::KleinGordonPi>>,
+      ::Actions::MutateApply<ComputeKGWorldtubeConstraint>,
       Actions::CalculateIntegrandInputsForTag<Tags::KleinGordonPi>,
       tmpl::transform<
           integrand_terms_to_compute_for_bondi_variable<Tags::KleinGordonPi>,
