@@ -170,7 +170,7 @@ include(UpdateAddExecutables)
 # dependencies on the PCH if necessary.
 include(SetupClangFormat)
 include(SetupClangTidy)
-include(SetupIwyu)
+#include(SetupIwyu) // This somehow doesn't work for COCAL reader
 if(BUILD_DOCS)
   include(SetupDoxygen)
   include(SetupSphinx)

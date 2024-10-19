@@ -15,9 +15,39 @@
 #include "Utilities/TaggedTuple.hpp"
 
 extern "C" {
+// Define the COCAL Fortran reader functions here for different id_types.
+void coc2cac_co(const int& npoints, const double* x, const double* y,
+                const double* z, const char* data_directory, const int& len_dir,
+                double* lapse, double* shift_x, double* shift_y,
+                double* shift_z, double* spatial_metric_xx,
+                double* spatial_metric_xy, double* spatial_metric_xz,
+                double* spatial_metric_yy, double* spatial_metric_yz,
+                double* spatial_metric_zz, double* extrinsic_curvature_xx,
+                double* extrinsic_curvature_xy, double* extrinsic_curvature_xz,
+                double* extrinsic_curvature_yy, double* extrinsic_curvature_yz,
+                double* extrinsic_curvature_zz, double* rest_mass_density,
+                double* spatial_velocity_x, double* spatial_velocity_y,
+                double* spatial_velocity_z, double* pressure,
+                double* specific_internal_energy);
+
 void coc2cac_ir(const int& npoints, const double* x, const double* y,
-                const double* z, double* lapse, double* shift_x,
-                double* shift_y, double* shift_z, double* spatial_metric_xx,
+                const double* z, const char* data_directory, const int& len_dir,
+                double* lapse, double* shift_x, double* shift_y,
+                double* shift_z, double* spatial_metric_xx,
+                double* spatial_metric_xy, double* spatial_metric_xz,
+                double* spatial_metric_yy, double* spatial_metric_yz,
+                double* spatial_metric_zz, double* extrinsic_curvature_xx,
+                double* extrinsic_curvature_xy, double* extrinsic_curvature_xz,
+                double* extrinsic_curvature_yy, double* extrinsic_curvature_yz,
+                double* extrinsic_curvature_zz, double* rest_mass_density,
+                double* spatial_velocity_x, double* spatial_velocity_y,
+                double* spatial_velocity_z, double* pressure,
+                double* specific_internal_energy);
+
+void coc2cac_sp(const int& npoints, const double* x, const double* y,
+                const double* z, const char* data_directory, const int& len_dir,
+                double* lapse, double* shift_x, double* shift_y,
+                double* shift_z, double* spatial_metric_xx,
                 double* spatial_metric_xy, double* spatial_metric_xz,
                 double* spatial_metric_yy, double* spatial_metric_yz,
                 double* spatial_metric_zz, double* extrinsic_curvature_xx,
@@ -48,11 +78,12 @@ DataVector to_datavector(std::vector<double> vec) {
 }  // namespace
 
 tuples::tagged_tuple_from_typelist<cocal_tags> interpolate_from_cocal(
-    const gsl::not_null<std::mutex*> cocal_lock,
-    /*const std::string& data_directory,*/
+    const gsl::not_null<std::mutex*> cocal_lock, const CocalIdType id_type,
+    const std::string& data_directory,
     const tnsr::I<DataVector, 3, Frame::Inertial>& x) {
   tuples::tagged_tuple_from_typelist<cocal_tags> result{};
   const std::lock_guard lock{*cocal_lock};
+  const ScopedFpeState disable_fpes(false);  // test for fpe issues
   const size_t num_points = get<0>(x).size();
   std::vector<double> x_coords(num_points);
   std::vector<double> y_coords(num_points);
@@ -88,60 +119,52 @@ tuples::tagged_tuple_from_typelist<cocal_tags> interpolate_from_cocal(
   std::vector<double> pressure(num_points);
   std::vector<double> specific_internal_energy(num_points);
 
-  // std::cout << "Calling coc2cac_ir " /* << num_points << " points." */ <<
-  // std::endl;
+  // Pass the string and its length to Fortran
+  const char* dir_cstr =
+      data_directory.c_str();  // Convert std::string to C string
+  int len_dir = static_cast<int>(
+      data_directory.length());  // Get the length of the string
 
-  coc2cac_ir(num_points, x_coords.data(), y_coords.data(), z_coords.data(),
-             lapse.data(), shift_x.data(), shift_y.data(), shift_z.data(),
-             spatial_metric_xx.data(), spatial_metric_xy.data(),
-             spatial_metric_xz.data(), spatial_metric_yy.data(),
-             spatial_metric_yz.data(), spatial_metric_zz.data(),
-             extrinsic_curvature_xx.data(), extrinsic_curvature_xy.data(),
-             extrinsic_curvature_xz.data(), extrinsic_curvature_yy.data(),
-             extrinsic_curvature_yz.data(), extrinsic_curvature_zz.data(),
-             rest_mass_density.data(), spatial_velocity_x.data(),
-             spatial_velocity_y.data(), spatial_velocity_z.data(),
-             pressure.data(), specific_internal_energy.data());
-
-  get(get<gr::Tags::Lapse<DataVector>>(result)) = DataVector(num_points);
-  get<gr::Tags::Shift<DataVector, 3>>(result).get(0) = DataVector(num_points);
-  get<gr::Tags::Shift<DataVector, 3>>(result).get(1) = DataVector(num_points);
-  get<gr::Tags::Shift<DataVector, 3>>(result).get(2) = DataVector(num_points);
-  get<gr::Tags::SpatialMetric<DataVector, 3>>(result).get(0, 0) =
-      DataVector(num_points);
-  get<gr::Tags::SpatialMetric<DataVector, 3>>(result).get(0, 1) =
-      DataVector(num_points);
-  get<gr::Tags::SpatialMetric<DataVector, 3>>(result).get(0, 2) =
-      DataVector(num_points);
-  get<gr::Tags::SpatialMetric<DataVector, 3>>(result).get(1, 1) =
-      DataVector(num_points);
-  get<gr::Tags::SpatialMetric<DataVector, 3>>(result).get(1, 2) =
-      DataVector(num_points);
-  get<gr::Tags::SpatialMetric<DataVector, 3>>(result).get(2, 2) =
-      DataVector(num_points);
-  get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result).get(0, 0) =
-      DataVector(num_points);
-  get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result).get(0, 1) =
-      DataVector(num_points);
-  get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result).get(0, 2) =
-      DataVector(num_points);
-  get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result).get(1, 1) =
-      DataVector(num_points);
-  get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result).get(1, 2) =
-      DataVector(num_points);
-  get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(result).get(2, 2) =
-      DataVector(num_points);
-  get(get<hydro::Tags::RestMassDensity<DataVector>>(result)) =
-      DataVector(num_points);
-  get<hydro::Tags::SpatialVelocity<DataVector, 3>>(result).get(0) =
-      DataVector(num_points);
-  get<hydro::Tags::SpatialVelocity<DataVector, 3>>(result).get(1) =
-      DataVector(num_points);
-  get<hydro::Tags::SpatialVelocity<DataVector, 3>>(result).get(2) =
-      DataVector(num_points);
-  get(get<hydro::Tags::SpecificInternalEnergy<DataVector>>(result)) =
-      DataVector(num_points);
-  get(get<hydro::Tags::Pressure<DataVector>>(result)) = DataVector(num_points);
+  if (id_type == CocalIdType::Co) {
+    coc2cac_co(num_points, x_coords.data(), y_coords.data(), z_coords.data(),
+               dir_cstr, len_dir, lapse.data(), shift_x.data(), shift_y.data(),
+               shift_z.data(), spatial_metric_xx.data(),
+               spatial_metric_xy.data(), spatial_metric_xz.data(),
+               spatial_metric_yy.data(), spatial_metric_yz.data(),
+               spatial_metric_zz.data(), extrinsic_curvature_xx.data(),
+               extrinsic_curvature_xy.data(), extrinsic_curvature_xz.data(),
+               extrinsic_curvature_yy.data(), extrinsic_curvature_yz.data(),
+               extrinsic_curvature_zz.data(), rest_mass_density.data(),
+               spatial_velocity_x.data(), spatial_velocity_y.data(),
+               spatial_velocity_z.data(), pressure.data(),
+               specific_internal_energy.data());
+  } else if (id_type == CocalIdType::Ir) {
+    coc2cac_ir(num_points, x_coords.data(), y_coords.data(), z_coords.data(),
+               dir_cstr, len_dir, lapse.data(), shift_x.data(), shift_y.data(),
+               shift_z.data(), spatial_metric_xx.data(),
+               spatial_metric_xy.data(), spatial_metric_xz.data(),
+               spatial_metric_yy.data(), spatial_metric_yz.data(),
+               spatial_metric_zz.data(), extrinsic_curvature_xx.data(),
+               extrinsic_curvature_xy.data(), extrinsic_curvature_xz.data(),
+               extrinsic_curvature_yy.data(), extrinsic_curvature_yz.data(),
+               extrinsic_curvature_zz.data(), rest_mass_density.data(),
+               spatial_velocity_x.data(), spatial_velocity_y.data(),
+               spatial_velocity_z.data(), pressure.data(),
+               specific_internal_energy.data());
+  } else if (id_type == CocalIdType::Sp) {
+    coc2cac_sp(num_points, x_coords.data(), y_coords.data(), z_coords.data(),
+               dir_cstr, len_dir, lapse.data(), shift_x.data(), shift_y.data(),
+               shift_z.data(), spatial_metric_xx.data(),
+               spatial_metric_xy.data(), spatial_metric_xz.data(),
+               spatial_metric_yy.data(), spatial_metric_yz.data(),
+               spatial_metric_zz.data(), extrinsic_curvature_xx.data(),
+               extrinsic_curvature_xy.data(), extrinsic_curvature_xz.data(),
+               extrinsic_curvature_yy.data(), extrinsic_curvature_yz.data(),
+               extrinsic_curvature_zz.data(), rest_mass_density.data(),
+               spatial_velocity_x.data(), spatial_velocity_y.data(),
+               spatial_velocity_z.data(), pressure.data(),
+               specific_internal_energy.data());
+  }
 
   get(get<gr::Tags::Lapse<DataVector>>(result)) = to_datavector(lapse);
   get<gr::Tags::Shift<DataVector, 3>>(result).get(0) = to_datavector(shift_x);

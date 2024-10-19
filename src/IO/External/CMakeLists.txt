@@ -60,10 +60,8 @@ if (TARGET FUKA::Exporter)
     ${LIBRARY} INTERFACE HAS_FUKA_EXPORTER)
 endif()
 
-# Add COCAL interpolation support
-message("\n\n\n\n\nHERE\n\n\n\n\n")
+
 if (TARGET COCAL::Exporter)
-  message("\n\n\n\n\nHERE\n\n\n\n\n")
   spectre_target_sources(
     ${LIBRARY}
     PRIVATE

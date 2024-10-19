@@ -16,6 +16,9 @@
 
 namespace io {
 
+/// Type of COCAL initial data
+enum class CocalIdType { Co, Ir, Sp };
+
 // List of tags supplied by COCAL initial data
 using cocal_tags =
     tmpl::list<gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
@@ -29,13 +32,15 @@ using cocal_tags =
 
 /*!
  * \brief Interpolate numerical COCAL initial data to arbitrary points
- * \param cocal_lock
+ * \param cocal_lock A simple lock to lock the thread
+ * \param id_type Type of COCAL initial data (e.g., Co, Ir, Sp)
+ * \param data_directory Directory containing COCAL data
  * \param x Coordinates of points to interpolate to
  * \return Data interpolated to the given points
  */
 tuples::tagged_tuple_from_typelist<cocal_tags> interpolate_from_cocal(
-    gsl::not_null<std::mutex*> cocal_lock,
-    /*const std::string& data_directory,*/
+    gsl::not_null<std::mutex*> cocal_lock, const CocalIdType id_type,
+    const std::string& data_directory,
     const tnsr::I<DataVector, 3, Frame::Inertial>& x);
 
 }  // namespace io
