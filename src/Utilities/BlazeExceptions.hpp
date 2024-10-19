@@ -5,6 +5,8 @@
 
 #include <csignal>
 
+#include "Utilities/ErrorHandling/Error.hpp"
+
 #ifdef __CUDA_ARCH__
 // When building for Nvidia GPUs we need to disable the use of vector
 // intrinsics.
@@ -12,14 +14,7 @@
 #endif
 
 #ifdef SPECTRE_DEBUG
-#define BLAZE_THROW(EXCEPTION)           \
-  struct sigaction handler {};           \
-  handler.sa_handler = SIG_IGN;          \
-  handler.sa_flags = 0;                  \
-  sigemptyset(&handler.sa_mask);         \
-  sigaction(SIGTRAP, &handler, nullptr); \
-  raise(SIGTRAP);                        \
-  throw EXCEPTION
+#define BLAZE_THROW(EXCEPTION) ERROR(EXCEPTION.what())
 #else  // SPECTRE_DEBUG
 #define BLAZE_THROW(EXCEPTION)
 #endif  // SPECTRE_DEBUG
