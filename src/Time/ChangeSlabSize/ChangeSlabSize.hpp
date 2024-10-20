@@ -86,13 +86,11 @@ void change_slab_size(const gsl::not_null<db::DataBox<DbTags>*> box,
   db::mutate_apply<
       tmpl::push_front<Tags::get_all_history_tags<DbTags>,
                        ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-                       ::Tags::Next<::Tags::TimeStep>, ::Tags::TimeStepId,
-                       ::Tags::AdaptiveSteppingDiagnostics>,
+                       ::Tags::TimeStepId, ::Tags::AdaptiveSteppingDiagnostics>,
       tmpl::list<>>(
       [&new_next_time_step_id, &new_time_step, &new_time_step_id](
           const gsl::not_null<TimeStepId*> next_time_step_id,
           const gsl::not_null<TimeDelta*> time_step,
-          const gsl::not_null<TimeDelta*> next_time_step,
           const gsl::not_null<TimeStepId*> local_time_step_id,
           const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
           const auto... histories) {
@@ -109,7 +107,6 @@ void change_slab_size(const gsl::not_null<db::DataBox<DbTags>*> box,
 
         *next_time_step_id = new_next_time_step_id;
         *time_step = new_time_step;
-        *next_time_step = new_time_step;
         *local_time_step_id = new_time_step_id;
         ++diags->number_of_slab_size_changes;
       },

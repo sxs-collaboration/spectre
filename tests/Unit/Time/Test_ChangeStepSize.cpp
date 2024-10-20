@@ -74,20 +74,17 @@ void check(const bool time_runs_forward,
                         Tags::ConcreteTimeStepper<LtsTimeStepper>,
                         Tags::MinimumTimeStep, Tags::TimeStepId,
                         Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                        Tags::Next<Tags::TimeStep>, Tags::StepChoosers,
-                        Tags::HistoryEvolvedVariables<Var>>,
+                        Tags::StepChoosers, Tags::HistoryEvolvedVariables<Var>>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
       Metavariables{}, std::move(time_stepper), 1e-8,
       TimeStepId(time_runs_forward, 0, time),
       TimeStepId(time_runs_forward, 0, time + initial_step_size),
-      initial_step_size, initial_step_size, std::move(choosers),
-      std::move(history));
+      initial_step_size, std::move(choosers), std::move(history));
 
   const bool accepted =
       change_step_size<StepChoosersToUse>(make_not_null(&box));
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
-  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_step);
   CHECK(accepted == (db::get<Tags::TimeStep>(box) == initial_step_size));
 }
 
@@ -105,20 +102,20 @@ void test_fixed_lts_ratio() {
   history.insert(initial_id, 0.0, 0.0);
 
   auto box = db::create<
-      db::AddSimpleTags<
-          Parallel::Tags::MetavariablesImpl<Metavariables>,
-          Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers,
-          Tags::MinimumTimeStep, Tags::FixedLtsRatio, Tags::TimeStepId,
-          Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-          Tags::Next<Tags::TimeStep>, Tags::HistoryEvolvedVariables<Var>>,
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
+                        Tags::ConcreteTimeStepper<LtsTimeStepper>,
+                        Tags::StepChoosers, Tags::MinimumTimeStep,
+                        Tags::FixedLtsRatio, Tags::TimeStepId, Tags::TimeStep,
+                        Tags::Next<Tags::TimeStepId>,
+                        Tags::HistoryEvolvedVariables<Var>>,
       db::AddComputeTags<time_stepper_ref_tags<LtsTimeStepper>>>(
       Metavariables{}, std::move(time_stepper), Tags::StepChoosers::type{},
       1e-10, std::optional<size_t>(8), initial_id, initial_step, next_id,
-      initial_step, std::move(history));
+      std::move(history));
 
   change_step_size(make_not_null(&box));
   // Step size change forbidden after self-start
-  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == initial_step);
+  CHECK(db::get<Tags::TimeStep>(box) == initial_step);
 
   db::mutate<Tags::HistoryEvolvedVariables<Var>>(
       [&](const gsl::not_null<TimeSteppers::History<double>*> local_history) {
@@ -133,7 +130,7 @@ void test_fixed_lts_ratio() {
       make_not_null(&box));
 
   change_step_size(make_not_null(&box));
-  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box).fraction() == Rational(1, 8));
+  CHECK(db::get<Tags::TimeStep>(box).fraction() == Rational(1, 8));
 }
 }  // namespace
 

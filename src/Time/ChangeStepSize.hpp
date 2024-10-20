@@ -166,13 +166,10 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
            "you are using DG.");
   }
 
-  db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-             Tags::Next<Tags::TimeStep>>(
+  db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
       [&](const gsl::not_null<TimeStepId*> local_next_time_id,
-          const gsl::not_null<TimeDelta*> time_step,
-          const gsl::not_null<TimeDelta*> next_step) {
+          const gsl::not_null<TimeDelta*> time_step) {
         *time_step = new_step;
-        *next_step = new_step;
         *local_next_time_id =
             time_stepper.next_time_id(time_step_id, *time_step);
       },

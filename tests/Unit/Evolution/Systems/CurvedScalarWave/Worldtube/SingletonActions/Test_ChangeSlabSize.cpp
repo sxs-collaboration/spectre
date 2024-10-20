@@ -53,8 +53,7 @@ struct MockWorldtubeSingleton {
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<
                   ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                  ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>,
-                  ::Tags::ConcreteTimeStepper<TimeStepper>>,
+                  ::Tags::TimeStep, ::Tags::ConcreteTimeStepper<TimeStepper>>,
               time_stepper_ref_tags<TimeStepper>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::ChangeSlabSize>>>;
@@ -97,14 +96,13 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
         ActionTesting::emplace_component_and_initialize<worldtube_chare>(
             runner, 0,
             {time_step_id_1, time_stepper.next_time_id(time_step_id_1, step_1),
-             step_1, step_1,
-             std::make_unique<TimeSteppers::Rk3HesthavenSsp>()});
+             step_1, std::make_unique<TimeSteppers::Rk3HesthavenSsp>()});
         ActionTesting::set_phase(runner, Parallel::Phase::Testing);
       };
   const auto check_time_tags =
       [](const ActionTesting::MockRuntimeSystem<MockMetavariables<Dim>>& runner,
          const TimeStepId& time_step_id, const TimeStepId& next_time_step_id,
-         const TimeDelta& step, const TimeDelta& next_step) {
+         const TimeDelta& step) {
         CHECK(
             ActionTesting::get_databox_tag<worldtube_chare, ::Tags::TimeStepId>(
                 runner, 0) == time_step_id);
@@ -113,9 +111,6 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
                   runner, 0) == next_time_step_id);
         CHECK(ActionTesting::get_databox_tag<worldtube_chare, ::Tags::TimeStep>(
                   runner, 0) == step);
-        CHECK(ActionTesting::get_databox_tag<worldtube_chare,
-                                             ::Tags::Next<::Tags::TimeStep>>(
-                  runner, 0) == next_step);
       };
   using inbox_variables_type =
       Variables<tmpl::list<CurvedScalarWave::Tags::Psi,
@@ -127,8 +122,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
     CHECK_FALSE(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     check_time_tags(runner, time_step_id_1,
-                    time_stepper.next_time_id(time_step_id_1, step_1), step_1,
-                    step_1);
+                    time_stepper.next_time_id(time_step_id_1, step_1), step_1);
     auto& worldtube_inbox =
         ActionTesting::get_inbox_tag<worldtube_chare,
                                      Tags::SphericalHarmonicsInbox<Dim>>(
@@ -138,16 +132,14 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
     CHECK(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     check_time_tags(runner, time_step_id_1,
-                    time_stepper.next_time_id(time_step_id_1, step_1), step_1,
-                    step_1);
+                    time_stepper.next_time_id(time_step_id_1, step_1), step_1);
     // send from other element
     worldtube_inbox[time_step_id_1][element_ids.at(1)] = inbox_variables_type{};
     CHECK(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     // same slab size so nothing shoud have changed.
     check_time_tags(runner, time_step_id_1,
-                    time_stepper.next_time_id(time_step_id_1, step_1), step_1,
-                    step_1);
+                    time_stepper.next_time_id(time_step_id_1, step_1), step_1);
 
     const std::string inbox_output =
         Tags::SphericalHarmonicsInbox<Dim>::output_inbox(worldtube_inbox, 2);
@@ -217,15 +209,13 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ChangeSlabSize", "[Unit]") {
     CHECK(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     check_time_tags(runner, time_step_id_2,
-                    time_stepper.next_time_id(time_step_id_2, step_2), step_2,
-                    step_2);
+                    time_stepper.next_time_id(time_step_id_2, step_2), step_2);
     // data sent from both elements
     worldtube_inbox[time_step_id_2][element_ids.at(1)] = inbox_variables_type{};
     CHECK(ActionTesting::next_action_if_ready<worldtube_chare>(
         make_not_null(&runner), 0));
     check_time_tags(runner, time_step_id_2,
-                    time_stepper.next_time_id(time_step_id_2, step_2), step_2,
-                    step_2);
+                    time_stepper.next_time_id(time_step_id_2, step_2), step_2);
   }
 }
 }  // namespace

@@ -51,9 +51,8 @@ struct Component {
       tmpl::list<Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers>;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                        Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-                        Tags::AdaptiveSteppingDiagnostics, Var, ::Tags::dt<Var>,
-                        Tags::HistoryEvolvedVariables<Var>>;
+                        Tags::TimeStep, Tags::AdaptiveSteppingDiagnostics, Var,
+                        ::Tags::dt<Var>, Tags::HistoryEvolvedVariables<Var>>;
   using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -107,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.TakeLtsStep", "[Unit][Time][Actions]") {
             component::compute_tags>(box_data..., Metavariables{},
                                      std::move(time_stepper),
                                      Tags::StepChoosers::type{}, minimum_step);
-      }(time_step_id, next_time_step_id, time_step, time_step,
+      }(time_step_id, next_time_step_id, time_step,
         Tags::AdaptiveSteppingDiagnostics::type{}, initial_value, derivative,
         history);
 

@@ -117,7 +117,6 @@ struct TimeStepping {
   /// Tags for items in the DataBox that are mutated by the apply function
   using return_tags =
       tmpl::list<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-                 ::Tags::Next<::Tags::TimeStep>,
                  ::Tags::ChangeSlabSize::SlabSizeGoal>;
 
   /// Tags for mutable DataBox items that are either default initialized or
@@ -133,7 +132,6 @@ struct TimeStepping {
   /// LTS, mutate the items in the DataBox corresponding to return_tags
   static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
                     const gsl::not_null<TimeDelta*> time_step,
-                    const gsl::not_null<TimeDelta*> next_time_step,
                     const gsl::not_null<double*> slab_size_goal,
                     const double initial_time_value,
                     const double initial_dt_value,
@@ -145,7 +143,6 @@ struct TimeStepping {
     detail::set_next_time_step_id(next_time_step_id, initial_time,
                                   time_runs_forward, time_stepper);
     *time_step = choose_lts_step_size(initial_time, initial_dt_value);
-    *next_time_step = *time_step;
     *slab_size_goal =
         time_runs_forward ? initial_slab_size : -initial_slab_size;
   }
@@ -154,7 +151,6 @@ struct TimeStepping {
   /// using LTS, mutate the items in the DataBox corresponding to return_tags
   static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
                     const gsl::not_null<TimeDelta*> time_step,
-                    const gsl::not_null<TimeDelta*> next_time_step,
                     const gsl::not_null<double*> slab_size_goal,
                     const double initial_time_value,
                     const double initial_dt_value,
@@ -166,7 +162,6 @@ struct TimeStepping {
     detail::set_next_time_step_id(next_time_step_id, initial_time,
                                   time_runs_forward, time_stepper);
     *time_step = (time_runs_forward ? 1 : -1) * initial_time.slab().duration();
-    *next_time_step = *time_step;
     *slab_size_goal =
         time_runs_forward ? initial_slab_size : -initial_slab_size;
   }
@@ -177,8 +172,7 @@ template <size_t Dim>
 struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
   using return_tags =
       tmpl::list<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                 ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
-                 ::Tags::StepNumberWithinSlab,
+                 ::Tags::TimeStep, ::Tags::Time, ::Tags::StepNumberWithinSlab,
                  ::Tags::AdaptiveSteppingDiagnostics,
                  ::Tags::ChangeSlabSize::SlabSizeGoal>;
   using argument_tags = tmpl::list<Parallel::Tags::ArrayIndex>;
@@ -187,7 +181,6 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<TimeStepId*> /*time_step_id*/,
       const gsl::not_null<TimeStepId*> /*next_time_step_id*/,
       const gsl::not_null<TimeDelta*> /*time_step*/,
-      const gsl::not_null<TimeDelta*> /*next_time_step*/,
       const gsl::not_null<double*> /*time*/,
       const gsl::not_null<uint64_t*> /*step_number_within_slab*/,
       const gsl::not_null<AdaptiveSteppingDiagnostics*>
@@ -202,7 +195,6 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
   static void apply(const gsl::not_null<TimeStepId*> time_step_id,
                     const gsl::not_null<TimeStepId*> next_time_step_id,
                     const gsl::not_null<TimeDelta*> time_step,
-                    const gsl::not_null<TimeDelta*> next_time_step,
                     const gsl::not_null<double*> time,
                     const gsl::not_null<uint64_t*> step_number_within_slab,
                     const gsl::not_null<AdaptiveSteppingDiagnostics*>
@@ -213,7 +205,6 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
     *time_step_id = get<::Tags::TimeStepId>(parent_items);
     *next_time_step_id = get<::Tags::Next<::Tags::TimeStepId>>(parent_items);
     *time_step = get<::Tags::TimeStep>(parent_items);
-    *next_time_step = get<::Tags::Next<::Tags::TimeStep>>(parent_items);
     *time = get<::Tags::Time>(parent_items);
     *slab_size_goal = get<::Tags::ChangeSlabSize::SlabSizeGoal>(parent_items);
     *step_number_within_slab = get<::Tags::StepNumberWithinSlab>(parent_items);
@@ -243,7 +234,6 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<TimeStepId*> time_step_id,
       const gsl::not_null<TimeStepId*> next_time_step_id,
       const gsl::not_null<TimeDelta*> time_step,
-      const gsl::not_null<TimeDelta*> next_time_step,
       const gsl::not_null<double*> time,
       const gsl::not_null<uint64_t*> step_number_within_slab,
       const gsl::not_null<AdaptiveSteppingDiagnostics*>
@@ -266,7 +256,6 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
     *next_time_step_id =
         get<::Tags::Next<::Tags::TimeStepId>>(slowest_child_items);
     *time_step = get<::Tags::TimeStep>(slowest_child_items);
-    *next_time_step = get<::Tags::Next<::Tags::TimeStep>>(slowest_child_items);
     *time = get<::Tags::Time>(slowest_child_items);
     *slab_size_goal =
         get<::Tags::ChangeSlabSize::SlabSizeGoal>(slowest_child_items);

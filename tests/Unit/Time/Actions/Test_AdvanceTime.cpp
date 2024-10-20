@@ -44,7 +44,7 @@ struct Component {
 
   using simple_tags = db::AddSimpleTags<
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-      Tags::Next<Tags::TimeStep>, Tags::Time, Tags::StepNumberWithinSlab,
+      Tags::Time, Tags::StepNumberWithinSlab,
       Tags::IsUsingTimeSteppingErrorControl, Tags::AdaptiveSteppingDiagnostics>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
@@ -80,7 +80,7 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
            ? TimeStepId(time_step.is_positive(), 8, start + time_step)
            : TimeStepId(time_step.is_positive(), 8, start, 1, time_step,
                         (start + substep_offsets[1]).value()),
-       time_step, time_step, start.value(), uint64_t{0}, using_error_control,
+       time_step, start.value(), uint64_t{0}, using_error_control,
        AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   uint64_t step_number_within_slab = 0;
@@ -117,9 +117,6 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
               db::get<Tags::AdaptiveSteppingDiagnostics>(box).number_of_slabs,
           "Current slab number is not what I expected");
     }
-    db::mutate<Tags::Next<Tags::TimeStep>>(
-        [](const gsl::not_null<TimeDelta*> next_step) { *next_step /= 2; },
-        make_not_null(&box));
   }
 
   const auto& box = ActionTesting::get_databox<component>(runner, 0);
@@ -129,10 +126,10 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
   CHECK(final_time_id ==
         TimeStepId(time_step.is_positive(), 8, start + 2 * time_step));
   CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time());
-  CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab) / 2);
+  CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
         AdaptiveSteppingDiagnostics{
-            1 + static_cast<uint64_t>(final_time_id.slab_number() - 8), 2, 5, 5,
+            1 + static_cast<uint64_t>(final_time_id.slab_number() - 8), 2, 5, 4,
             5});
 }
 }  // namespace

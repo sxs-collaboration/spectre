@@ -74,7 +74,6 @@ void test_gts() {
   const TimeStepId expected_next_time_step_id = TimeStepId(
       true, -static_cast<int64_t>(time_stepper->number_of_past_steps()), time);
   const TimeDelta expected_time_step = time.slab().duration();
-  const TimeDelta expected_next_time_step = expected_time_step;
 
   tuples::TaggedTuple<::Tags::ConcreteTimeStepper<TimeStepper>>
       const_global_cache_items(std::move(time_stepper));
@@ -87,11 +86,11 @@ void test_gts() {
           ::Tags::Time, Initialization::Tags::InitialTimeDelta,
           Initialization::Tags::InitialSlabSize<false>,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-          ::Tags::Next<::Tags::TimeStep>, ::Tags::ChangeSlabSize::SlabSizeGoal>,
+          ::Tags::ChangeSlabSize::SlabSizeGoal>,
       tmpl::list<Parallel::Tags::FromGlobalCache<
           ::Tags::ConcreteTimeStepper<TimeStepper>>>>(
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
-      TimeDelta{}, TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
+      TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<TestMetavariables<TimeStepper>,
                                                 TimeStepper>>(
@@ -100,8 +99,6 @@ void test_gts() {
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
         expected_next_time_step_id);
   CHECK(db::get<::Tags::TimeStep>(box) == expected_time_step);
-  CHECK(db::get<::Tags::Next<::Tags::TimeStep>>(box) ==
-        expected_next_time_step);
   CHECK(db::get<::Tags::ChangeSlabSize::SlabSizeGoal>(box) ==
         initial_slab_size);
 }
@@ -120,7 +117,6 @@ void test_lts() {
       true, -static_cast<int64_t>(lts_time_stepper->number_of_past_steps()),
       time);
   const TimeDelta expected_time_step = choose_lts_step_size(time, initial_dt);
-  const TimeDelta expected_next_time_step = expected_time_step;
 
   tuples::TaggedTuple<::Tags::ConcreteTimeStepper<LtsTimeStepper>>
       const_global_cache_items(std::move(lts_time_stepper));
@@ -134,11 +130,11 @@ void test_lts() {
           ::Tags::Time, Initialization::Tags::InitialTimeDelta,
           Initialization::Tags::InitialSlabSize<true>,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-          ::Tags::Next<::Tags::TimeStep>, ::Tags::ChangeSlabSize::SlabSizeGoal>,
+          ::Tags::ChangeSlabSize::SlabSizeGoal>,
       tmpl::list<Parallel::Tags::FromGlobalCache<
           ::Tags::ConcreteTimeStepper<LtsTimeStepper>>>>(
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
-      TimeDelta{}, TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
+      TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::TimeStepping<
       TestMetavariables<LtsTimeStepper>, LtsTimeStepper>>(make_not_null(&box));
@@ -146,30 +142,26 @@ void test_lts() {
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
         expected_next_time_step_id);
   CHECK(db::get<::Tags::TimeStep>(box) == expected_time_step);
-  CHECK(db::get<::Tags::Next<::Tags::TimeStep>>(box) ==
-        expected_next_time_step);
   CHECK(db::get<::Tags::ChangeSlabSize::SlabSizeGoal>(box) ==
         initial_slab_size);
 }
 using items_type = tuples::TaggedTuple<
     Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
-    ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-    ::Tags::Next<::Tags::TimeStep>, ::Tags::Time, ::Tags::StepNumberWithinSlab,
-    ::Tags::AdaptiveSteppingDiagnostics, ::Tags::ChangeSlabSize::SlabSizeGoal>;
+    ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
+    ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
+    ::Tags::ChangeSlabSize::SlabSizeGoal>;
 
 using parent_items_type = tuples::TaggedTuple<
     Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
-    ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-    ::Tags::Next<::Tags::TimeStep>, ::Tags::Time, ::Tags::StepNumberWithinSlab,
-    ::Tags::AdaptiveSteppingDiagnostics, ::Tags::ChangeSlabSize::SlabSizeGoal,
-    ::amr::Tags::Info<1>>;
+    ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
+    ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
+    ::Tags::ChangeSlabSize::SlabSizeGoal, ::amr::Tags::Info<1>>;
 
 template <typename DbTagList>
 void check(const db::DataBox<DbTagList>& box,
            const TimeStepId& expected_time_step_id,
            const TimeStepId& expected_next_time_step_id,
-           const TimeDelta& expected_time_step,
-           const TimeDelta& expected_next_time_step, const double expected_time,
+           const TimeDelta& expected_time_step, const double expected_time,
            const uint64_t expected_step_number_within_slab,
            const AdaptiveSteppingDiagnostics& expected_diagnostics,
            const double expected_slab_size_goal) {
@@ -177,8 +169,6 @@ void check(const db::DataBox<DbTagList>& box,
   CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
         expected_next_time_step_id);
   CHECK(db::get<::Tags::TimeStep>(box) == expected_time_step);
-  CHECK(db::get<::Tags::Next<::Tags::TimeStep>>(box) ==
-        expected_next_time_step);
   CHECK(db::get<::Tags::Time>(box) == expected_time);
   CHECK(db::get<::Tags::StepNumberWithinSlab>(box) ==
         expected_step_number_within_slab);
@@ -196,7 +186,6 @@ void test_p_refine() {
   const Slab slab(0., 1.);
   const Time start{slab.start()};
   const TimeDelta time_step{slab.duration()};
-  const TimeDelta next_time_step = time_step;
   const TimeStepId time_step_id{time_step.is_positive(), 8, start};
   const TimeStepId next_time_step_id{time_step.is_positive(), 8,
                                      start + time_step};
@@ -207,17 +196,16 @@ void test_p_refine() {
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
-      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
-      element_id, time_step_id, next_time_step_id, time_step, next_time_step,
-      time, step_number_within_slab, diagnostics, slab_size_goal);
+      element_id, time_step_id, next_time_step_id, time_step, time,
+      step_number_within_slab, diagnostics, slab_size_goal);
 
   db::mutate_apply<Initialization::ProjectTimeStepping<1>>(
       make_not_null(&box), std::make_pair(mesh, element));
 
-  check(box, time_step_id, next_time_step_id, time_step, next_time_step, time,
+  check(box, time_step_id, next_time_step_id, time_step, time,
         step_number_within_slab, diagnostics, slab_size_goal);
 }
 
@@ -229,7 +217,6 @@ void test_split() {
   const Slab slab(1., 1.5);
   const Time start{slab.start()};
   const TimeDelta time_step{slab.duration()};
-  const TimeDelta next_time_step = time_step;
   const TimeStepId time_step_id{time_step.is_positive(), 8, start};
   const TimeStepId next_time_step_id{time_step.is_positive(), 8,
                                      start + time_step};
@@ -243,7 +230,6 @@ void test_split() {
       time_step_id,
       next_time_step_id,
       time_step,
-      next_time_step,
       time,
       step_number_within_slab,
       diagnostics,
@@ -252,36 +238,34 @@ void test_split() {
 
   auto child_1_box = db::create<db::AddSimpleTags<
       Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
-      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
-      child_1_id, TimeStepId{}, TimeStepId{}, TimeDelta{}, TimeDelta{}, 0.0,
+      child_1_id, TimeStepId{}, TimeStepId{}, TimeDelta{}, 0.0,
       std::numeric_limits<uint64_t>::max(), AdaptiveSteppingDiagnostics{},
       std::numeric_limits<double>::signaling_NaN());
 
   auto child_2_box = db::create<db::AddSimpleTags<
       Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
-      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
-      child_2_id, TimeStepId{}, TimeStepId{}, TimeDelta{}, TimeDelta{}, 0.0,
+      child_2_id, TimeStepId{}, TimeStepId{}, TimeDelta{}, 0.0,
       std::numeric_limits<uint64_t>::max(), AdaptiveSteppingDiagnostics{},
       std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::ProjectTimeStepping<1>>(
       make_not_null(&child_1_box), parent_items);
 
-  check(child_1_box, time_step_id, next_time_step_id, time_step, next_time_step,
-        time, step_number_within_slab, diagnostics, slab_size_goal);
+  check(child_1_box, time_step_id, next_time_step_id, time_step, time,
+        step_number_within_slab, diagnostics, slab_size_goal);
 
   db::mutate_apply<Initialization::ProjectTimeStepping<1>>(
       make_not_null(&child_2_box), parent_items);
 
-  check(child_2_box, time_step_id, next_time_step_id, time_step, next_time_step,
-        time, step_number_within_slab,
-        AdaptiveSteppingDiagnostics{7, 2, 0, 0, 0}, slab_size_goal);
+  check(child_2_box, time_step_id, next_time_step_id, time_step, time,
+        step_number_within_slab, AdaptiveSteppingDiagnostics{7, 2, 0, 0, 0},
+        slab_size_goal);
 }
 
 template <bool ForwardInTime>
@@ -294,7 +278,6 @@ void test_join() {
   const Time start_1{ForwardInTime ? slab_1.start() : slab_1.end()};
   const TimeDelta time_step_1{ForwardInTime ? slab_1.duration()
                                             : -slab_1.duration()};
-  const TimeDelta next_time_step_1 = time_step_1;
   const TimeStepId time_step_id_1{time_step_1.is_positive(), 8, start_1};
   const TimeStepId next_time_step_id_1{time_step_1.is_positive(), 8,
                                        start_1 + time_step_1};
@@ -306,7 +289,6 @@ void test_join() {
   const Slab slab_2(1., 1.5);
   const Time start_2{ForwardInTime ? slab_2.start() : slab_2.end()};
   const TimeDelta time_step_2{slab_2, Rational{ForwardInTime ? 1 : -1, 2}};
-  const TimeDelta next_time_step_2 = time_step_2;
   const TimeStepId time_step_id_2{time_step_2.is_positive(), 8, start_2};
   const TimeStepId next_time_step_id_2{time_step_2.is_positive(), 8,
                                        start_2 + time_step_2};
@@ -319,30 +301,29 @@ void test_join() {
   children_items.emplace(
       child_1_id,
       items_type{child_1_id, time_step_id_1, next_time_step_id_1, time_step_1,
-                 next_time_step_1, time_1, step_number_within_slab_1,
-                 diagnostics_1, slab_size_goal_1});
+                 time_1, step_number_within_slab_1, diagnostics_1,
+                 slab_size_goal_1});
   children_items.emplace(
       child_2_id,
       items_type{child_2_id, time_step_id_2, next_time_step_id_2, time_step_2,
-                 next_time_step_2, time_2, step_number_within_slab_2,
-                 diagnostics_2, slab_size_goal_2});
+                 time_2, step_number_within_slab_2, diagnostics_2,
+                 slab_size_goal_2});
 
   auto parent_box = db::create<db::AddSimpleTags<
       Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
-      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
-      parent_id, TimeStepId{}, TimeStepId{}, TimeDelta{}, TimeDelta{}, 0.0,
+      parent_id, TimeStepId{}, TimeStepId{}, TimeDelta{}, 0.0,
       std::numeric_limits<uint64_t>::max(), AdaptiveSteppingDiagnostics{},
       std::numeric_limits<double>::signaling_NaN());
 
   db::mutate_apply<Initialization::ProjectTimeStepping<1>>(
       make_not_null(&parent_box), children_items);
 
-  check(parent_box, time_step_id_2, next_time_step_id_2, time_step_2,
-        next_time_step_2, time_2, step_number_within_slab_2,
-        AdaptiveSteppingDiagnostics{7, 2, 40, 6, 13}, slab_size_goal_2);
+  check(parent_box, time_step_id_2, next_time_step_id_2, time_step_2, time_2,
+        step_number_within_slab_2, AdaptiveSteppingDiagnostics{7, 2, 40, 6, 13},
+        slab_size_goal_2);
 }
 }  // namespace
 

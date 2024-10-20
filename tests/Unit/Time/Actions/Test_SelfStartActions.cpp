@@ -148,7 +148,7 @@ struct Component {
       tmpl::conditional_t<Metavariables::multiple_histories,
                           additional_history_tag, tmpl::list<>>,
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-      Tags::Next<Tags::TimeStep>, Tags::Time, Tags::StepNumberWithinSlab,
+      Tags::Time, Tags::StepNumberWithinSlab,
       Tags::IsUsingTimeSteppingErrorControl,
       Tags::AdaptiveSteppingDiagnostics>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
@@ -190,9 +190,8 @@ void emplace_component_and_initialize(
       {initial_value, 0., typename history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
-       Tags::AdaptiveSteppingDiagnostics::type{}});
+       initial_time_step, std::numeric_limits<double>::signaling_NaN(),
+       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -208,9 +207,8 @@ void emplace_component_and_initialize<true, false>(
        TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
-       Tags::AdaptiveSteppingDiagnostics::type{}});
+       initial_time_step, std::numeric_limits<double>::signaling_NaN(),
+       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -226,9 +224,8 @@ void emplace_component_and_initialize<false, true>(
        typename additional_history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
-       Tags::AdaptiveSteppingDiagnostics::type{}});
+       initial_time_step, std::numeric_limits<double>::signaling_NaN(),
+       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -244,9 +241,8 @@ void emplace_component_and_initialize<true, true>(
        typename additional_history_tag::type{1}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
-       initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
-       Tags::AdaptiveSteppingDiagnostics::type{}});
+       initial_time_step, std::numeric_limits<double>::signaling_NaN(),
+       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 using not_self_start_action = std::negation<std::disjunction<
