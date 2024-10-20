@@ -27,26 +27,24 @@ struct TimeStepId;
 
 /// Bundled method for recording the current system state in the history, and
 /// updating the evolved variables and step size.
-///
-/// This function is used to encapsulate any needed logic for updating the
-/// system, and in the case for which step parameters may need to be rejected
-/// and re-tried, looping until an acceptable step is performed.
 template <typename System, bool LocalTimeStepping,
           typename StepChoosersToUse = AllStepChoosers, typename DbTags>
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
   record_time_stepper_data<System>(box);
   if constexpr (LocalTimeStepping) {
     if (db::get<Tags::TimeStepId>(*box).substep() == 0) {
-      uint64_t step_attempts = 0;
       const auto original_step = db::get<Tags::TimeStep>(*box);
-      do {
-        ++step_attempts;
+      update_u<System>(box);
+      const bool accepted = change_step_size<StepChoosersToUse>(box);
+      if (not accepted) {
         update_u<System>(box);
-      } while (not change_step_size<StepChoosersToUse>(box));
+      }
       db::mutate<Tags::AdaptiveSteppingDiagnostics>(
           [&](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
               const TimeDelta& new_step) {
-            diags->number_of_step_rejections += step_attempts - 1;
+            if (not accepted) {
+              ++diags->number_of_step_rejections;
+            }
             if (original_step != new_step) {
               ++diags->number_of_step_fraction_changes;
             }

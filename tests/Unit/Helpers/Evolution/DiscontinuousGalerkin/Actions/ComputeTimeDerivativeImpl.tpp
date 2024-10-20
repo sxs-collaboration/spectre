@@ -1316,7 +1316,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   }();
 
   const Slab time_slab{0.2, 3.4};
-  const TimeDelta time_step{time_slab, {4, 128}};
+  const TimeDelta time_step{time_slab, {1, 128}};
   const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 128}}};
   const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
   // Our moving mesh map doesn't actually move (we set a mesh velocity, etc.
@@ -1332,7 +1332,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (metavars::local_time_stepping) {
     std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
         step_choosers;
-    step_choosers.emplace_back(std::make_unique<StepChoosers::Constant>(0.128));
+    step_choosers.emplace_back(std::make_unique<StepChoosers::Constant>(
+        time_step.value()));
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id,

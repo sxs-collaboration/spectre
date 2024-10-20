@@ -188,7 +188,7 @@ void test_lts() {
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       std::move(step_choosers),
-      1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(), false,
+      0.3 / TimeSteppers::AdamsBashforth{5}.stable_step(), false,
       std::optional<StepperErrorTolerances>{},
       AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}, 1e-8);
 
