@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <initializer_list>
+#include <limits>
 #include <memory>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
@@ -46,8 +46,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.LimitIncrease", "[Unit][Time]") {
     const std::unique_ptr<StepChooser<Use>> increase_base =
         std::make_unique<StepChoosers::LimitIncrease>(increase);
 
-    const std::pair<TimeStepRequest, bool> expected{{.size = expected_size},
-                                                    true};
+    const TimeStepRequest expected{.size = expected_size};
     CHECK(increase(step) == expected);
     CHECK(serialize_and_deserialize(increase)(step) == expected);
     CHECK(increase_base->desired_step(step, box) == expected);

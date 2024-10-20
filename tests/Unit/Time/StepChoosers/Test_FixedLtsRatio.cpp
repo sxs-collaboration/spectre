@@ -7,7 +7,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
@@ -45,7 +44,7 @@ class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<TimeStepRequest, bool> operator()(double /*last_step*/) const {
+  TimeStepRequest operator()(double /*last_step*/) const {
     ERROR("StepChooser should not be called in fixed LTS region");
   }
 
@@ -104,9 +103,8 @@ void test(const std::optional<double>& expected_goal,
     };
 
     const double current_step = time_sign * slab.duration().value();
-    const std::pair<TimeStepRequest, bool> expected{
-        {.size_goal = set_sign(expected_goal), .size = set_sign(expected_size)},
-        true};
+    const TimeStepRequest expected{.size_goal = set_sign(expected_goal),
+                                   .size = set_sign(expected_size)};
     CHECK(chooser->desired_step(current_step, box) == expected);
     CHECK(serialize_and_deserialize(chooser)->desired_step(current_step, box) ==
           expected);

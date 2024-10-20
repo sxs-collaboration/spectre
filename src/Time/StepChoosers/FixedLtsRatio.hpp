@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <memory>
 #include <optional>
-#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -63,11 +62,11 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
   using argument_tags = tmpl::list<::Tags::DataBox>;
 
   template <typename DbTags>
-  std::pair<TimeStepRequest, bool> operator()(
-      const db::DataBox<DbTags>& box, const double /*last_step*/) const {
+  TimeStepRequest operator()(const db::DataBox<DbTags>& box,
+                             const double /*last_step*/) const {
     const auto& step_ratio = db::get<::Tags::FixedLtsRatio>(box);
     if (not step_ratio.has_value()) {
-      return {{}, true};
+      return {};
     }
 
     const auto& current_step = db::get<::Tags::TimeStep>(box);
@@ -77,7 +76,7 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
     std::optional<double> size{};
     for (const auto& step_chooser : step_choosers_) {
       const auto step_request =
-          step_chooser->desired_step(current_step.value(), box).first;
+          step_chooser->desired_step(current_step.value(), box);
 
       if (step_request.size_goal.has_value()) {
         if (size_goal.has_value()) {
@@ -114,7 +113,7 @@ class FixedLtsRatio : public StepChooser<StepChooserUse::Slab> {
       }
     }
 
-    return {{.size_goal = size_goal, .size = size}, true};
+    return {.size_goal = size_goal, .size = size};
   }
 
   bool uses_local_data() const override;

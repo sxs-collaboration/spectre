@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <optional>
-#include <utility>
 
 #include "Options/String.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -46,10 +45,10 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
   using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
 
   template <typename History>
-  std::pair<TimeStepRequest, bool> operator()(const History& history,
-                                              const double last_step) const {
+  TimeStepRequest operator()(const History& history,
+                             const double last_step) const {
     if (history.size() < 2) {
-      return {{}, true};
+      return {};
     }
 
     const double sloppiness =
@@ -63,13 +62,13 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
         // Potential roundoff error comes from the inability to make
         // slabs exactly the same length.
         if (this_step < newer_step - sloppiness) {
-          return {{.size = last_step}, true};
+          return {.size = last_step};
         }
         newer_step = this_step;
       }
       previous_time.emplace(time);
     }
-    return {{}, true};
+    return {};
   }
 
   bool uses_local_data() const override;

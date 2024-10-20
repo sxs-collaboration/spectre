@@ -150,7 +150,7 @@ class ChangeSlabSize : public Event {
     bool synchronization_required = false;
     for (const auto& step_chooser : step_choosers_) {
       step_requests.process(
-          step_chooser->desired_step(current_slab_size.value(), *box).first);
+          step_chooser->desired_step(current_slab_size.value(), *box));
       // We must synchronize if any step chooser requires it, not just
       // the limiting one, because choosers requiring synchronization
       // can be limiting on some processors and not others.

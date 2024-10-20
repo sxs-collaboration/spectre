@@ -18,12 +18,12 @@ namespace StepChoosers {
 StepToTimes::StepToTimes(std::unique_ptr<TimeSequence<double>> times)
     : times_(std::move(times)) {}
 
-std::pair<TimeStepRequest, bool> StepToTimes::operator()(
-    const double now, const double last_step) const {
+TimeStepRequest StepToTimes::operator()(const double now,
+                                        const double last_step) const {
   const auto goal_times = times_->times_near(now);
   if (not goal_times[1].has_value()) {
     // No times requested.
-    return {{}, true};
+    return {};
   }
 
   const evolution_greater<double> after{last_step > 0.0};
@@ -32,7 +32,7 @@ std::pair<TimeStepRequest, bool> StepToTimes::operator()(
                              : gsl::at(goal_times, last_step > 0.0 ? 2 : 0);
   if (not next_time.has_value()) {
     // We've passed all the times.  No restriction.
-    return {{}, true};
+    return {};
   }
 
   // The calling code can ignore one part of the request if it can
@@ -42,10 +42,9 @@ std::pair<TimeStepRequest, bool> StepToTimes::operator()(
   // to *next_time followed by a very small step.  This will work
   // poorly if there are two copies of this StepChooser targeting
   // times very close together, but hopefully people don't do that.
-  return {{.size = 2.0 / 3.0 * (*next_time - now),
-           .end = *next_time,
-           .end_hard_limit = *next_time},
-          true};
+  return {.size = 2.0 / 3.0 * (*next_time - now),
+          .end = *next_time,
+          .end_hard_limit = *next_time};
 }
 
 bool StepToTimes::uses_local_data() const { return false; }

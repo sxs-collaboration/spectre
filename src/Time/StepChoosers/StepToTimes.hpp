@@ -51,8 +51,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
 
   using argument_tags = tmpl::list<::Tags::Time>;
 
-  std::pair<TimeStepRequest, bool> operator()(double now,
-                                              double last_step) const;
+  TimeStepRequest operator()(double now, double last_step) const;
 
   bool uses_local_data() const override;
   bool can_be_delayed() const override;

@@ -88,7 +88,6 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   }
 
   TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
-  bool step_accepted = true;
   if (fixed_lts_ratio.has_value()) {
     ASSERT(std::popcount(*fixed_lts_ratio) == 1,
            "fixed_lts_ratio must be a power of 2, not " << *fixed_lts_ratio);
@@ -98,11 +97,10 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   } else {
     const double last_step_size = current_step.value();
     for (const auto& step_chooser : step_choosers) {
-      const auto [step_request, step_choice_accepted] =
+      const auto step_request =
           step_chooser->template desired_step<StepChoosersToUse>(last_step_size,
                                                                  *box);
       step_requests.process(step_request);
-      step_accepted = step_accepted and step_choice_accepted;
     }
   }
 

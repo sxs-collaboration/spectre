@@ -4,7 +4,6 @@
 #pragma once
 
 #include <limits>
-#include <utility>
 
 #include "Options/Options.hpp"
 #include "Options/String.hpp"
@@ -38,7 +37,7 @@ class Maximum : public StepChooser<StepChooserUse::Slab>,
 
   using argument_tags = tmpl::list<>;
 
-  std::pair<TimeStepRequest, bool> operator()(double last_step) const;
+  TimeStepRequest operator()(double last_step) const;
 
   bool uses_local_data() const override;
   bool can_be_delayed() const override;

@@ -5,7 +5,6 @@
 
 #include <memory>
 #include <type_traits>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
@@ -43,7 +42,7 @@ void test_use() {
       std::make_unique<StepChoosers::Maximum>(maximum);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const std::pair<TimeStepRequest, bool> expected{{.size = 5.4}, true};
+  const TimeStepRequest expected{.size = 5.4};
   CHECK(maximum(current_step) == expected);
   CHECK(serialize_and_deserialize(maximum)(current_step) == expected);
   CHECK(maximum_base->desired_step(current_step, box) == expected);

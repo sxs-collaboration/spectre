@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <limits>
 #include <pup.h>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/SizeOfElement.hpp"
@@ -73,10 +73,9 @@ class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
       tmpl::list<domain::Tags::SizeOfElementCompute<Dim>,
                  typename System::compute_largest_characteristic_speed>;
 
-  std::pair<TimeStepRequest, bool> operator()(
-      const TimeStepper& time_stepper,
-      const std::array<double, Dim>& element_size, const double speed,
-      const double last_step) const {
+  TimeStepRequest operator()(const TimeStepper& time_stepper,
+                             const std::array<double, Dim>& element_size,
+                             const double speed, const double last_step) const {
     double min_size_of_element = std::numeric_limits<double>::infinity();
     for (auto face_to_face_dimension : element_size) {
       if (face_to_face_dimension < min_size_of_element) {
@@ -86,9 +85,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
     const double time_stepper_stability_factor = time_stepper.stable_step();
     const double step_size = safety_factor_ * time_stepper_stability_factor *
                              min_size_of_element / (speed * Dim);
-    // Reject the step if the CFL condition is violated.
-    return {{.size_goal = std::copysign(step_size, last_step)},
-            abs(last_step) <= step_size};
+    return {.size_goal = std::copysign(step_size, last_step)};
   }
 
   bool uses_local_data() const override { return true; }

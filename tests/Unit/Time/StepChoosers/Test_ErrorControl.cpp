@@ -9,7 +9,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -105,7 +104,7 @@ struct Metavariables {
 };
 
 template <typename StepChooserUse>
-std::pair<std::optional<double>, bool> get_suggestion(
+std::optional<double> get_suggestion(
     const StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>&
         error_control,
     const std::optional<StepperErrorEstimate>& error,
@@ -123,13 +122,13 @@ std::pair<std::optional<double>, bool> get_suggestion(
 
   const auto result =
       error_control(std::array{previous_error, error}, previous_step);
-  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
+  CHECK(result == TimeStepRequest{.size_goal = result.size_goal});
   CHECK(error_control_base->desired_step(previous_step, box) == result);
   CHECK(serialize_and_deserialize(error_control)(
             std::array{previous_error, error}, previous_step) == result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(previous_step, box) == result);
-  return {result.first.size_goal, result.second};
+  return result.size_goal;
 }
 
 template <typename StepChooserUse>
@@ -157,8 +156,7 @@ void test_chooser() {
         INFO("No data available");
         const ErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
         const auto result = get_suggestion(error_control, {}, {}, unit_step);
-        CHECK(not result.first.has_value());
-        CHECK(result.second);
+        CHECK(not result.has_value());
       }
       {
         INFO("Test successful step");
@@ -167,27 +165,24 @@ void test_chooser() {
               StepperErrorTolerances{.absolute = 5.0e-4, .relative = 1.0e-3});
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 0.3)}, {}, unit_step);
-        REQUIRE(first_result.first.has_value());
-        CHECK(approx(*first_result.first) ==
+        REQUIRE(first_result.has_value());
+        CHECK(approx(*first_result) ==
               0.95 * unit_step / pow(0.3, 1.0 / stepper_order));
-        CHECK(first_result.second);
         if constexpr (std::is_same_v<StepChooserUse, ::StepChooserUse::Slab>) {
           const auto second_result = get_suggestion(
-              error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
-              {step_errors(-1.0, 0.3)}, *first_result.first);
-          REQUIRE(second_result.first.has_value());
-          CHECK(approx(*second_result.first) ==
-                0.95 * *first_result.first /
-                    (pow(0.3, -0.4 / stepper_order) *
-                     pow(0.31, 0.7 / stepper_order)));
-          CHECK(second_result.second);
+              error_control, {step_errors(0.0, 0.31, abs(*first_result))},
+              {step_errors(-1.0, 0.3)}, *first_result);
+          REQUIRE(second_result.has_value());
+          CHECK(approx(*second_result) == 0.95 * *first_result /
+                                              (pow(0.3, -0.4 / stepper_order) *
+                                               pow(0.31, 0.7 / stepper_order)));
           // Check that the suggested step size is smaller if the error in
           // increasing faster.
           const auto adjusted_second_result = get_suggestion(
-              error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
-              {step_errors(-1.0, 0.1)}, *first_result.first);
-          REQUIRE(adjusted_second_result.first.has_value());
-          CHECK(abs(*adjusted_second_result.first) < abs(*second_result.first));
+              error_control, {step_errors(0.0, 0.31, abs(*first_result))},
+              {step_errors(-1.0, 0.1)}, *first_result);
+          REQUIRE(adjusted_second_result.has_value());
+          CHECK(abs(*adjusted_second_result) < abs(*second_result));
         } else {
           // Check that the result is independent of the old error
           const auto second_result =
@@ -201,34 +196,31 @@ void test_chooser() {
         const ErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
         const auto result_start = get_suggestion(
             error_control, {step_errors(0.0, 1.2)}, {}, unit_step);
-        REQUIRE(result_start.first.has_value());
+        REQUIRE(result_start.has_value());
         const auto result_end = get_suggestion(
             error_control, {step_errors(-1.0, 1.2)}, {}, unit_step);
-        REQUIRE(result_end.first.has_value());
+        REQUIRE(result_end.has_value());
         const auto result_end2 = get_suggestion(
-            error_control, {step_errors(-1.0, 1.2)}, {}, *result_end.first);
-        REQUIRE(result_end2.first.has_value());
-        CHECK(approx(*result_start.first) ==
+            error_control, {step_errors(-1.0, 1.2)}, {}, *result_end);
+        REQUIRE(result_end2.has_value());
+        CHECK(approx(*result_start) ==
               0.95 * unit_step / pow(1.2, 1.0 / stepper_order));
-        CHECK(result_end.first == result_start.first);
-        CHECK(result_end2.first == result_start.first);
-        CHECK_FALSE(result_start.second);
-        CHECK_FALSE(result_end.second);
-        CHECK(result_end2.second);
+        CHECK(result_end == result_start);
+        CHECK(result_end2 == result_start);
       }
       {
         INFO("Test error control clamped minimum");
         const ErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 10.0)}, {}, unit_step);
-        CHECK(first_result.first == std::optional(0.9 * unit_step));
+        CHECK(first_result == std::optional(0.9 * unit_step));
       }
       {
         INFO("Test error control clamped maximum");
         const ErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 0.01)}, {}, unit_step);
-        CHECK(first_result == std::pair(std::optional(2.0 * unit_step), true));
+        CHECK(first_result == std::optional(2.0 * unit_step));
       }
     }
   }

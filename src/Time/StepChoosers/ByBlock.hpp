@@ -4,7 +4,6 @@
 #pragma once
 
 #include <cstddef>
-#include <utility>
 #include <vector>
 
 #include "Options/String.hpp"
@@ -57,8 +56,8 @@ class ByBlock : public StepChooser<StepChooserUse::Slab>,
 
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
 
-  std::pair<TimeStepRequest, bool> operator()(const Element<Dim>& element,
-                                              double last_step) const;
+  TimeStepRequest operator()(const Element<Dim>& element,
+                             double last_step) const;
 
   bool uses_local_data() const override;
   bool can_be_delayed() const override;
