@@ -78,22 +78,23 @@ void test_create_from_options() {
       "InnerEdgeRadius: 6.0\n"
       "MaxPressureRadius: 12.0\n"
       "PolytropicConstant: 0.001\n"
-      "PolytropicExponent: 1.4");
+      "PolytropicExponent: 1.4\n"
+      "Noise: 0.0");
   CHECK(disk == RelativisticEuler::Solutions::FishboneMoncriefDisk(
-                    1.0, 0.23, 6.0, 12.0, 0.001, 1.4));
+                    1.0, 0.23, 6.0, 12.0, 0.001, 1.4, 0.0));
 }
 
 void test_move() {
   RelativisticEuler::Solutions::FishboneMoncriefDisk disk(3.45, 0.23, 4.8, 8.6,
-                                                          0.02, 1.5);
-  RelativisticEuler::Solutions::FishboneMoncriefDisk disk_copy(3.45, 0.23, 4.8,
-                                                               8.6, 0.02, 1.5);
+                                                          0.02, 1.5, 0.0);
+  const RelativisticEuler::Solutions::FishboneMoncriefDisk disk_copy(
+      3.45, 0.23, 4.8, 8.6, 0.02, 1.5, 0.0);
   test_move_semantics(std::move(disk), disk_copy);  //  NOLINT
 }
 
 void test_serialize() {
   RelativisticEuler::Solutions::FishboneMoncriefDisk disk(4.21, 0.65, 6.0, 12.0,
-                                                          0.001, 1.4);
+                                                          0.001, 1.4, 0.0);
   test_serialization(disk);
 }
 
@@ -105,13 +106,14 @@ void test_variables(const DataType& used_for_size) {
   const double max_pressure_radius = 12.0;
   const double polytropic_constant = 0.001;
   const double polytropic_exponent = 4.0 / 3.0;
+  const double noise = 0.0;
 
-  FishboneMoncriefDiskProxy disk(bh_mass, bh_dimless_spin, inner_edge_radius,
-                                 max_pressure_radius, polytropic_constant,
-                                 polytropic_exponent);
+  const FishboneMoncriefDiskProxy disk(
+      bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
+      polytropic_constant, polytropic_exponent, noise);
   const auto member_variables = std::make_tuple(
       bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
-      polytropic_constant, polytropic_exponent);
+      polytropic_constant, polytropic_exponent, noise);
 
   pypp::check_with_random_values<1>(
       &FishboneMoncriefDiskProxy::hydro_variables<DataType>, disk,
@@ -163,8 +165,8 @@ template <typename DataType>
 void test_sin_theta_squared(const DataType& used_for_size) {
   // Numbers below reproduce the initial data the bug was spotted with,
   // along with the points where the FPEs were found.
-  FishboneMoncriefDiskProxy disk(1.0, 0.9375, 6.0, 12.0, 0.001,
-                                 1.3333333333333333333333);
+  const FishboneMoncriefDiskProxy disk(1.0, 0.9375, 6.0, 12.0, 0.001,
+                                       1.3333333333333333333333, 0.0);
   using variables_tags =
       FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>;
   auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.0);
@@ -192,7 +194,8 @@ void test_solution() {
           "  InnerEdgeRadius: 6.0\n"
           "  MaxPressureRadius: 12.0\n"
           "  PolytropicConstant: 0.001\n"
-          "  PolytropicExponent: 1.33333333333333333\n")
+          "  PolytropicExponent: 1.33333333333333333\n"
+          "  Noise: 0.0\n")
           ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
@@ -236,7 +239,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
                         "InnerEdgeRadius: 4.3\n"
                         "MaxPressureRadius: 6.7\n"
                         "PolytropicConstant: 0.12\n"
-                        "PolytropicExponent: 1.5"),
+                        "PolytropicExponent: 1.5\n"
+                        "Noise : 0.0"),
                     Catch::Matchers::ContainsSubstring(
                         "Value -1.5 is below the lower bound of 0"));
   CHECK_THROWS_WITH(TestHelpers::test_creation<
@@ -246,7 +250,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
                         "InnerEdgeRadius: 5.76\n"
                         "MaxPressureRadius: 13.2\n"
                         "PolytropicConstant: 0.002\n"
-                        "PolytropicExponent: 1.34"),
+                        "PolytropicExponent: 1.34\n"
+                        "Noise: 0.0"),
                     Catch::Matchers::ContainsSubstring(
                         "Value -0.24 is below the lower bound of 0"));
   CHECK_THROWS_WITH(TestHelpers::test_creation<
@@ -256,7 +261,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
                         "InnerEdgeRadius: 5.76\n"
                         "MaxPressureRadius: 13.2\n"
                         "PolytropicConstant: 0.002\n"
-                        "PolytropicExponent: 1.34"),
+                        "PolytropicExponent: 1.34\n"
+                        "Noise: 0.0"),
                     Catch::Matchers::ContainsSubstring(
                         "Value 1.24 is above the upper bound of 1"));
   CHECK_THROWS_WITH(TestHelpers::test_creation<
@@ -266,7 +272,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
                         "InnerEdgeRadius: 4.3\n"
                         "MaxPressureRadius: 6.7\n"
                         "PolytropicConstant: -0.12\n"
-                        "PolytropicExponent: 1.5"),
+                        "PolytropicExponent: 1.5\n"
+                        "Noise: 0.0"),
                     Catch::Matchers::ContainsSubstring(
                         "Value -0.12 is below the lower bound of 0"));
   CHECK_THROWS_WITH(TestHelpers::test_creation<
@@ -276,7 +283,30 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
                         "InnerEdgeRadius: 4.3\n"
                         "MaxPressureRadius: 6.7\n"
                         "PolytropicConstant: 0.123\n"
-                        "PolytropicExponent: 0.25"),
+                        "PolytropicExponent: 0.25\n"
+                        "Noise: 0.0"),
                     Catch::Matchers::ContainsSubstring(
                         "Value 0.25 is below the lower bound of 1"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<
+                        RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+                        "BhMass: 1.5\n"
+                        "BhDimlessSpin: 0.3\n"
+                        "InnerEdgeRadius: 4.3\n"
+                        "MaxPressureRadius: 6.7\n"
+                        "PolytropicConstant: 0.123\n"
+                        "PolytropicExponent: 1.5\n"
+                        "Noise: -1.25"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Value -1.25 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<
+                        RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+                        "BhMass: 1.5\n"
+                        "BhDimlessSpin: 0.3\n"
+                        "InnerEdgeRadius: 4.3\n"
+                        "MaxPressureRadius: 6.7\n"
+                        "PolytropicConstant: 0.123\n"
+                        "PolytropicExponent: 1.5\n"
+                        "Noise: 1.5"),
+                    Catch::Matchers::ContainsSubstring(
+                        "Value 1.5 is above the upper bound of 1"));
 }

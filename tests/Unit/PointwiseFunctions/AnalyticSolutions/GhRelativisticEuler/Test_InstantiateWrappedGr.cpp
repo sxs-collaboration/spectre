@@ -22,10 +22,10 @@ SPECTRE_TEST_CASE(
   const tnsr::I<DataVector, 1, Frame::Inertial> x_1d{DataVector{3.0, 4.0}};
   check_wrapped_gr_solution_consistency(
       gh::Solutions::WrappedGr<
-          RelativisticEuler::Solutions::FishboneMoncriefDisk>{1.0, 0.23, 6.0,
-                                                              12.0, 0.001, 1.4},
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>{
+          1.0, 0.23, 6.0, 12.0, 0.001, 1.4, 0.0},
       RelativisticEuler::Solutions::FishboneMoncriefDisk{1.0, 0.23, 6.0, 12.0,
-                                                         0.001, 1.4},
+                                                         0.001, 1.4, 0.0},
       x_3d, t);
 
   check_wrapped_gr_solution_consistency(

@@ -55,6 +55,7 @@ InitialData: &initial_data
     MaxPressureRadius: 12.0
     PolytropicConstant: 0.001
     PolytropicExponent: 1.3333333333333333333333
+    Noise: 0.0
 
 EquationOfState:
   FromInitialData

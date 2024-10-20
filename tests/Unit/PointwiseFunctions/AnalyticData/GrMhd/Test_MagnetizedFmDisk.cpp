@@ -82,6 +82,7 @@ void test_create_from_options() {
           "  MaxPressureRadius: 14.2\n"
           "  PolytropicConstant: 0.065\n"
           "  PolytropicExponent: 1.654\n"
+          "  Noise: 0.0\n"
           "  ThresholdDensity: 0.42\n"
           "  InversePlasmaBeta: 85.0\n"
           "  BFieldNormGridRes: 4")
@@ -92,20 +93,20 @@ void test_create_from_options() {
       *deserialized_option_solution);
 
   CHECK(disk == grmhd::AnalyticData::MagnetizedFmDisk(
-                    1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 4));
+                    1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.0, 0.42, 85.0, 4));
 }
 
 void test_move() {
   grmhd::AnalyticData::MagnetizedFmDisk disk(3.51, 0.87, 7.43, 15.3, 42.67,
-                                             1.87, 0.13, 0.015, 4);
-  grmhd::AnalyticData::MagnetizedFmDisk disk_copy(3.51, 0.87, 7.43, 15.3, 42.67,
-                                                  1.87, 0.13, 0.015, 4);
+                                             1.87, 0.0, 0.13, 0.015, 4);
+  const grmhd::AnalyticData::MagnetizedFmDisk disk_copy(
+      3.51, 0.87, 7.43, 15.3, 42.67, 1.87, 0.0, 0.13, 0.015, 4);
   test_move_semantics(std::move(disk), disk_copy);  //  NOLINT
 }
 
 void test_serialize() {
-  grmhd::AnalyticData::MagnetizedFmDisk disk(3.51, 0.87, 7.43, 15.3, 42.67,
-                                             1.87, 0.13, 0.015, 4);
+  const grmhd::AnalyticData::MagnetizedFmDisk disk(
+      3.51, 0.87, 7.43, 15.3, 42.67, 1.87, 0.0, 0.13, 0.015, 4);
   test_serialization(disk);
 }
 
@@ -117,17 +118,18 @@ void test_variables(const DataType& used_for_size) {
   const double max_pressure_radius = 11.6;
   const double polytropic_constant = 0.034;
   const double polytropic_exponent = 1.65;
+  const double noise = 0.0;
   const double threshold_density = 0.14;
   const double inverse_plasma_beta = 0.023;
   const size_t b_field_normalization = 51;  // Using lower than default
                                             //  resolution for faster testing.
-  MagnetizedFmDiskProxy disk(bh_mass, bh_dimless_spin, inner_edge_radius,
-                             max_pressure_radius, polytropic_constant,
-                             polytropic_exponent, threshold_density,
-                             inverse_plasma_beta, b_field_normalization);
+  const MagnetizedFmDiskProxy disk(
+      bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
+      polytropic_constant, polytropic_exponent, noise, threshold_density,
+      inverse_plasma_beta, b_field_normalization);
   const auto member_variables = std::make_tuple(
       bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
-      polytropic_constant, polytropic_exponent, threshold_density,
+      polytropic_constant, polytropic_exponent, noise, threshold_density,
       inverse_plasma_beta);
 
   pypp::check_with_random_values<1>(
@@ -162,9 +164,10 @@ void test_variables(const DataType& used_for_size) {
 
   // Check that when InversePlasmaBeta = 0, magnetic field vanishes and
   // we recover FishboneMoncriefDisk
-  MagnetizedFmDiskProxy another_disk(
+  const MagnetizedFmDiskProxy another_disk(
       bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
-      polytropic_constant, polytropic_exponent, threshold_density, 0.0, 4);
+      polytropic_constant, polytropic_exponent, noise, threshold_density, 0.0,
+      4);
 
   pypp::check_with_random_values<1>(
       &MagnetizedFmDiskProxy::hydro_variables<DataType>, another_disk,
@@ -201,36 +204,36 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(
-            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, -0.2, 0.023, 4);
+            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.0, -0.2, 0.023, 4);
       }(),
       Catch::Matchers::ContainsSubstring(
           "The threshold density must be in the range (0, 1)"));
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(
-            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 1.45, 0.023, 4);
+            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.0, 1.45, 0.023, 4);
       }(),
       Catch::Matchers::ContainsSubstring(
           "The threshold density must be in the range (0, 1)"));
   CHECK_THROWS_WITH(
       []() {
         grmhd::AnalyticData::MagnetizedFmDisk disk(
-            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.2, -0.153, 4);
+            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.0, 0.2, -0.153, 4);
       }(),
       Catch::Matchers::ContainsSubstring(
           "The inverse plasma beta must be non-negative."));
   CHECK_THROWS_WITH(
       []() {
-        grmhd::AnalyticData::MagnetizedFmDisk disk(0.7, 0.61, 5.4, 9.182,
-                                                   11.123, 1.44, 0.2, 0.153, 2);
+        grmhd::AnalyticData::MagnetizedFmDisk disk(
+            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.0, 0.2, 0.153, 2);
       }(),
       Catch::Matchers::ContainsSubstring(
           "The grid resolution used in the magnetic field "
           "normalization must be at least 4 points."));
   CHECK_THROWS_WITH(
       []() {
-        grmhd::AnalyticData::MagnetizedFmDisk disk(0.7, 0.61, 5.4, 9.182,
-                                                   11.123, 1.44, 0.2, 0.023, 4);
+        grmhd::AnalyticData::MagnetizedFmDisk disk(
+            0.7, 0.61, 5.4, 9.182, 11.123, 1.44, 0.0, 0.2, 0.023, 4);
       }(),
       Catch::Matchers::ContainsSubstring("Max b squared is zero."));
 #endif
@@ -242,6 +245,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "MaxPressureRadius: 7.6\n"
           "PolytropicConstant: 2.42\n"
           "PolytropicExponent: 1.33\n"
+          "Noise: 0.0\n"
           "ThresholdDensity: -0.01\n"
           "InversePlasmaBeta: 0.016\n"
           "BFieldNormGridRes: 4"),
@@ -255,6 +259,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "MaxPressureRadius: 8.2\n"
           "PolytropicConstant: 41.1\n"
           "PolytropicExponent: 1.8\n"
+          "Noise: 0.0\n"
           "ThresholdDensity: 4.1\n"
           "InversePlasmaBeta: 0.03\n"
           "BFieldNormGridRes: 4"),
@@ -268,6 +273,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "MaxPressureRadius: 7.8\n"
           "PolytropicConstant: 13.5\n"
           "PolytropicExponent: 1.54\n"
+          "Noise : 0.0\n"
           "ThresholdDensity: 0.22\n"
           "InversePlasmaBeta: -0.03\n"
           "BFieldNormGridRes: 4"),
@@ -281,6 +287,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
           "MaxPressureRadius: 7.8\n"
           "PolytropicConstant: 13.5\n"
           "PolytropicExponent: 1.54\n"
+          "Noise: 0.0\n"
           "ThresholdDensity: 0.22\n"
           "InversePlasmaBeta: 0.03\n"
           "BFieldNormGridRes: 2"),
