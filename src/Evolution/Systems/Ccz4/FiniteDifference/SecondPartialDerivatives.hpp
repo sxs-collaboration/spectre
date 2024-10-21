@@ -20,10 +20,6 @@ template <typename TagsList>
 class Variables;
 /// \endcond
 
-/*!
-* \brief The finite difference second derivatives for implementing the CCZ4
-* system.
-*/
 namespace Ccz4::fd {
 /*!
  * \brief Compute the pure and mixed second logical partial derivatives using
@@ -62,7 +58,7 @@ namespace Ccz4::fd {
  * and the ascending diagonal stencil has the opposite weights.
  *
  * \note Currently the stride is always one because we transpose the data before
- * reconstruction.
+ * reconstruction. Only 3D 4-th order second derivatives are implemented.
  */
 template <size_t Dim>
 void second_logical_partial_derivatives(
@@ -89,7 +85,7 @@ void second_logical_partial_derivatives(
 template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
 void second_partial_derivatives(
     gsl::not_null<
-        Variables<db::wrap_tags_in<Tags::second_deriv, DerivativeTags,
+        Variables<db::wrap_tags_in<::Tags::second_deriv, DerivativeTags,
                                    tmpl::size_t<Dim>, DerivativeFrame>>*>
         second_partial_derivatives,
     const gsl::span<const double>& volume_vars,

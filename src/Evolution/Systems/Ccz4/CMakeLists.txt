@@ -45,15 +45,11 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
-  DomainStructure
-  ErrorHandling
-  DgSubcell
-  FiniteDifference
   GeneralRelativity
   Options
-  Spectral
   Utilities
   INTERFACE
   )
 
-add_subdirectory(FiniteDifference)
+  add_subdirectory(FiniteDifference)
+

@@ -1,9 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(LIBRARY SOCcz4)
+
+add_spectre_library(${LIBRARY})
+
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Derivatives.cpp
   SecondPartialDerivatives.cpp
   )
 
@@ -11,6 +16,26 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Derivatives.hpp
   SecondPartialDerivatives.hpp
   SecondPartialDerivatives.tpp
+  SOTimeDerivative.hpp
+  System.hpp
+  Tags.hpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Ccz4
+  DataStructures
+  DomainStructure
+  ErrorHandling
+  DgSubcell
+  FiniteDifference
+  GeneralRelativity
+  Options
+  Spectral
+  Utilities
+  INTERFACE
   )

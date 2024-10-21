@@ -4,7 +4,9 @@
 set(LIBRARY "Test_Ccz4")
 
 set(LIBRARY_SOURCES
+  FiniteDifference/Test_Derivatives.cpp
   FiniteDifference/Test_SecondPartialDerivatives.cpp
+  FiniteDifference/Test_SOTimeDerivative.cpp
   Test_ATilde.cpp
   Test_Christoffel.cpp
   Test_DerivChristoffel.cpp
@@ -28,10 +30,12 @@ target_link_libraries(
   DataStructures
   Domain
   ErrorHandling
+  Framework
   GeneralRelativity
   GeneralRelativityHelpers
   GeneralRelativitySolutions
   LinearOperators
+  SOCcz4
   Spectral
   Utilities
 )

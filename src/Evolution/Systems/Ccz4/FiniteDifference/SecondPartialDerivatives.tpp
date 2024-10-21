@@ -164,7 +164,7 @@ void second_partial_derivatives_impl(
 template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
 void second_partial_derivatives(
     const gsl::not_null<
-        Variables<db::wrap_tags_in<Tags::second_deriv, DerivativeTags,
+        Variables<db::wrap_tags_in<::Tags::second_deriv, DerivativeTags,
                                    tmpl::size_t<Dim>, DerivativeFrame>>*>
         second_partial_derivatives,
     const gsl::span<const double>& volume_vars,

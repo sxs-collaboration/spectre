@@ -281,8 +281,8 @@ void test_minkowski(const Ccz4::EvolveShift evolve_shift,
   const double kappa_2 = 0.3;
   const double kappa_3 = 0.4;
   const double mu = 0.7;
-  const double one_over_relaxation_time = 10.0;         // \tau^{-1}
-  const Scalar<DataVector> slicing_condition =          // g(\alpha)
+  const double one_over_relaxation_time = 10.0;  // \tau^{-1}
+  const Scalar<DataVector> slicing_condition =   // g(\alpha)
       get_slicing_condition(slicing_condition_type, lapse);
 
   // Choose free variables \Theta, K_0, b^i, and \eta
@@ -885,8 +885,8 @@ void test_kerrschild(const Ccz4::EvolveShift evolve_shift,
   const double kappa_2 = 0.3;
   const double kappa_3 = 0.4;
   const double mu = 0.7;
-  const double one_over_relaxation_time = 10.0;         // \tau^{-1}
-  const Scalar<DataVector> slicing_condition =          // g(\alpha)
+  const double one_over_relaxation_time = 10.0;  // \tau^{-1}
+  const Scalar<DataVector> slicing_condition =   // g(\alpha)
       get_slicing_condition(slicing_condition_type, lapse);
 
   // Choose free variables \Theta, K_0, b^i, and \eta

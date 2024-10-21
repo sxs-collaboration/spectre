@@ -22,21 +22,23 @@ namespace Ccz4 {
  * \f$\partial_j A_i\f$ are the lapse, spatial christoffel symbols of the second
  * kind, the CCZ4 auxiliary variable defined by `Ccz4::Tags::FieldA`, and its
  * spatial derivative, respectively.
+ *
+ * In second-order Ccz4, we impose symmetry of index i and j
+ * in \f$ \partial_i A_j \f$.
  */
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 void grad_grad_lapse(
     const gsl::not_null<tnsr::ij<DataType, Dim, Frame>*> result,
     const Scalar<DataType>& lapse,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
-    const tnsr::i<DataType, Dim, Frame>& field_a,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_a);
+    const tnsr::i<DataType, Dim, Frame>& field_a, const TensorType& d_field_a);
 
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 tnsr::ij<DataType, Dim, Frame> grad_grad_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
-    const tnsr::i<DataType, Dim, Frame>& field_a,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_a);
+    const tnsr::i<DataType, Dim, Frame>& field_a, const TensorType& d_field_a);
+
 /// @}
 
 /// @{

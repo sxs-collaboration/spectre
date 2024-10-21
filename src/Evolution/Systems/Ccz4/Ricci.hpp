@@ -81,8 +81,11 @@ namespace Ccz4 {
  * \f$\partial_m \tilde{\Gamma}^m_{ij} - \partial_j \tilde{\Gamma}^m_{im}\f$
  * term, and the argument `contracted_field_d_up` corresponds to the
  * \f$D_m{}^{ml}\f$ term.
+ *
+ * In second-order Ccz4, we impose symmetry of index i and j
+ * in \f$ \partial_i P_j \f$.
  */
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
@@ -95,9 +98,9 @@ void spatial_ricci_tensor(
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up,
     const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_p);
+    const TensorType& d_field_p);
 
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& contracted_christoffel_second_kind,
@@ -109,6 +112,6 @@ tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up,
     const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_p);
+    const TensorType& d_field_p);
 /// @}
 }  // namespace Ccz4

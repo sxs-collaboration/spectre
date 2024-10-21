@@ -80,10 +80,20 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::RicciScalarPlusDivergenceZ4Constraint<DataType>>(
       "RicciScalarPlusDivergenceZ4Constraint");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::Theta<DataType>>("Theta");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::b<DataType, Dim, Frame>>("b");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::GammaDriverParam>(
+      "GammaDriverParam");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::Kappa1>("Kappa1");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::Kappa2>("Kappa2");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::Kappa3>("Kappa3");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::K0<DataType>>("K0");
+  TestHelpers::db::test_simple_tag<Ccz4::Tags::Eta<DataType>>("Eta");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.Tags", "[Unit][Evolution]") {
-  test_simple_tags<double, 1, ArbitraryFrame>();
+  test_simple_tags<double, 1,
+                   ArbitraryFrame>();
   test_simple_tags<DataVector, 1, ArbitraryFrame>();
   test_simple_tags<double, 2, ArbitraryFrame>();
   test_simple_tags<DataVector, 2, ArbitraryFrame>();

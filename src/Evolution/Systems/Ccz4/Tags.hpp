@@ -45,9 +45,9 @@ struct ConformalFactorSquared : db::SimpleTag {
  * spatial metric, then we define
  * \f$\bar{\gamma}_{ij} = \phi^2 \gamma_{ij}\f$.
  */
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 using ConformalMetric =
-    gr::Tags::Conformal<gr::Tags::SpatialMetric<DataType, Dim, Frame>, 2>;
+    gr::Tags::Conformal<gr::Tags::SpatialMetric<DataType, Dim, Fr>, 2>;
 
 /*!
  * \brief The conformally scaled inverse spatial metric
@@ -363,6 +363,78 @@ struct GradSpatialZ4Constraint : db::SimpleTag {
  */
 template <typename DataType>
 struct RicciScalarPlusDivergenceZ4Constraint : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The projection of the Z4 constraint vector along the normal direction.
+ *
+ *
+ */
+template <typename DataType>
+struct Theta : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief Auxiliary variable in the gamma-driver condition.
+ *
+ */
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct b : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Fr>;
+};
+
+/*!
+ * \brief The parameter f in the gamma driver.
+ *
+ *
+ */
+struct GammaDriverParam
+    : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter related to constraint damping.
+ *
+ */
+struct Kappa1 : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter related to constraint damping.
+ *
+ */
+struct Kappa2 : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter related to constraint damping.
+ *
+ */
+struct Kappa3 : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter in 1+log slicing.
+ *
+ */
+template <typename DataType>
+struct K0 : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The parameter \f$ \eta \f$ in the gamma driver.
+ *
+ *
+ */
+template <typename DataType>
+struct Eta : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 }  // namespace Tags
