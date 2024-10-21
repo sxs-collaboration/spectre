@@ -11,6 +11,7 @@ from spectre.support.CliExceptions import RequiredChoiceError
 class Bbh(click.MultiCommand):
     def list_commands(self, ctx):
         return [
+            "eccentricity-control",
             "find-horizon",
             "generate-id",
             "postprocess-id",
@@ -19,15 +20,19 @@ class Bbh(click.MultiCommand):
         ]
 
     def get_command(self, ctx, name):
-        if name == "find-horizon":
+        if name in ["eccentricity-control", "ecc-control"]:
+            from .EccentricityControl import eccentricity_control_command
+
+            return eccentricity_control_command
+        elif name == "find-horizon":
             from .FindHorizon import find_horizon_command
 
             return find_horizon_command
-        if name == "generate-id":
+        elif name == "generate-id":
             from .InitialData import generate_id_command
 
             return generate_id_command
-        if name == "postprocess-id":
+        elif name == "postprocess-id":
             from .PostprocessId import postprocess_id_command
 
             return postprocess_id_command

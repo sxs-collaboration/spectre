@@ -19,11 +19,14 @@ Next:
 Next:
   Run: spectre.Pipelines.Bbh.EccentricityControl:eccentricity_control
   With:
-    h5_file: ./BbhReductions.h5
-    subfile_name_aha: ApparentHorizons/ControlSystemAhA_Centers.dat
-    subfile_name_ahb: ApparentHorizons/ControlSystemAhB_Centers.dat
-    output: ecc_control.pdf
+    h5_files: ./BbhReductions.h5
     id_input_file_path: {{id_input_file_path }}
+    subfile_name_aha_trajectories: ApparentHorizons/ControlSystemAhA_Centers.dat
+    subfile_name_ahb_trajectories: ApparentHorizons/ControlSystemAhB_Centers.dat
+    subfile_name_aha_quantities: ObservationAhA.dat
+    subfile_name_ahb_quantities: ObservationAhB.dat
+    target_eccentricity: 0.0
+    plot_output_dir: ./
 {% endif %}
 
 ---

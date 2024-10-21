@@ -6,7 +6,8 @@ find_package(SpEC)
 # Make SpEC scripts available in Python. These can be used until we have ported
 # them to SpECTRE.
 if (SPEC_ROOT)
-  set(PYTHONPATH "${SPEC_ROOT}/Support/Python:${PYTHONPATH}")
+  set(PYTHONPATH "${SPEC_ROOT}/Support/Python:\
+${SPEC_ROOT}/Support/DatDataManip:${PYTHONPATH}")
 endif()
 
 if (NOT SpEC_FOUND)
