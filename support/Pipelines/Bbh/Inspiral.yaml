@@ -15,6 +15,18 @@ Next:
     copy_executable: {{ copy_executable | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
     submit: True
+{% elif eccentricity_control %}
+Next:
+  Run: spectre.Pipelines.Bbh.EccentricityControl:eccentricity_control
+  With:
+    h5_files: ./BbhReductions.h5
+    id_input_file_path: {{id_input_file_path }}
+    subfile_name_aha_trajectories: ApparentHorizons/ControlSystemAhA_Centers.dat
+    subfile_name_ahb_trajectories: ApparentHorizons/ControlSystemAhB_Centers.dat
+    subfile_name_aha_quantities: ObservationAhA.dat
+    subfile_name_ahb_quantities: ObservationAhB.dat
+    target_eccentricity: 0.0
+    plot_output_dir: ./
 {% endif %}
 
 ---
