@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <memory>
 #include <pup.h>
 #include <tuple>
 #include <utility>
@@ -64,6 +65,7 @@ class Callback : public PUP::able {
    */
   virtual bool is_equal_to(const Callback& rhs) const = 0;
   virtual std::string name() const = 0;
+  virtual std::unique_ptr<Callback> get_clone() = 0;
 };
 
 /// Wraps a call to a simple action and its arguments.
@@ -115,6 +117,11 @@ class SimpleActionCallback : public Callback {
            "," + pretty_type::name<Proxy>() + ")";
   }
 
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<SimpleActionCallback<SimpleAction, Proxy, Args...>>(
+        *this);
+  }
+
  private:
   std::decay_t<Proxy> proxy_{};
   std::tuple<std::decay_t<Args>...> args_{};
@@ -154,6 +161,10 @@ class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
     // likely be really long with the template parameters which is unnecessary
     return "SimpleActionCallback(" + pretty_type::get_name<SimpleAction>() +
            "," + pretty_type::name<Proxy>() + ")";
+  }
+
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<SimpleActionCallback<SimpleAction, Proxy>>(*this);
   }
 
  private:
@@ -210,6 +221,11 @@ class ThreadedActionCallback : public Callback {
            "," + pretty_type::name<Proxy>() + ")";
   }
 
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<
+        ThreadedActionCallback<ThreadedAction, Proxy, Args...>>(*this);
+  }
+
  private:
   std::decay_t<Proxy> proxy_{};
   std::tuple<std::decay_t<Args>...> args_{};
@@ -252,6 +268,11 @@ class ThreadedActionCallback<ThreadedAction, Proxy> : public Callback {
            "," + pretty_type::name<Proxy>() + ")";
   }
 
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<ThreadedActionCallback<ThreadedAction, Proxy>>(
+        *this);
+  }
+
  private:
   std::decay_t<Proxy> proxy_{};
 };
@@ -288,6 +309,10 @@ class PerformAlgorithmCallback : public Callback {
     // Only use pretty_type::name for proxy because it'll likely be really long
     // with the template parameters which is unnecessary
     return "PerformAlgorithmCallback(" + pretty_type::name<Proxy>() + ")";
+  }
+
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<PerformAlgorithmCallback<Proxy>>(*this);
   }
 
  private:

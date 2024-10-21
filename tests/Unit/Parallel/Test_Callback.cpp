@@ -269,6 +269,12 @@ struct RunCallbacks {
     callback_3.invoke();
     callback_4.invoke();
     callback_5.invoke();
+    const auto callback_6 = callback_0.get_clone();
+    const auto callback_7 = callback_1.get_clone();
+    const auto callback_8 = callback_2.get_clone();
+    SPECTRE_PARALLEL_REQUIRE(callback_0.is_equal_to(*callback_6));
+    SPECTRE_PARALLEL_REQUIRE(callback_1.is_equal_to(*callback_7));
+    SPECTRE_PARALLEL_REQUIRE(callback_2.is_equal_to(*callback_8));
     std::vector<std::unique_ptr<Parallel::Callback>> callbacks;
     callbacks.emplace_back(
         std::make_unique<Parallel::PerformAlgorithmCallback<decltype(proxy_0)>>(
