@@ -64,12 +64,12 @@ def _constraint_damping_params(
 ) -> dict:
     total_mass = mass_left + mass_right
     return {
-        "Gamma0Constant": 0.001 / total_mass,
+        "Gamma0Constant": 0.01 / total_mass,
         "Gamma0LeftAmplitude": 4.0 / mass_left,
         "Gamma0LeftWidth": 7.0 * mass_left,
         "Gamma0RightAmplitude": 4.0 / mass_right,
         "Gamma0RightWidth": 7.0 * mass_right,
-        "Gamma0OriginAmplitude": 0.075 / total_mass,
+        "Gamma0OriginAmplitude": 0.75 / total_mass,
         "Gamma0OriginWidth": 2.5 * initial_separation,
         "Gamma1Width": 10.0 * initial_separation,
     }
@@ -147,8 +147,8 @@ def inspiral_parameters(
             / (id_input_file["Observers"]["VolumeFileName"] + "*.h5")
         ),
         # Domain geometry
-        "ExcisionRadiusA": id_domain_creator["ObjectA"]["InnerRadius"],
-        "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"],
+        "ExcisionRadiusA": id_domain_creator["ObjectA"]["InnerRadius"] * 1.0385,
+        "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"] * 1.0385,
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
         "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
