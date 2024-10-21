@@ -240,6 +240,10 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
     return "UseCkCallbackAsCallback" + std::to_string(index_);
   }
 
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<UseCkCallbackAsCallback>(callback_, index_);
+  }
+
  private:
   CkCallback callback_;
   size_t index_{};
