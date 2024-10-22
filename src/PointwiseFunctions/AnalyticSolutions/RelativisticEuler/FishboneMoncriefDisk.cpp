@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <pup.h>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -31,13 +32,15 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
                                            const double inner_edge_radius,
                                            const double max_pressure_radius,
                                            const double polytropic_constant,
-                                           const double polytropic_exponent)
+                                           const double polytropic_exponent,
+                                           const double noise)
     : bh_mass_(bh_mass),
       bh_spin_a_(bh_mass * bh_dimless_spin),
       inner_edge_radius_(bh_mass * inner_edge_radius),
       max_pressure_radius_(bh_mass * max_pressure_radius),
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_(polytropic_exponent),
+      noise_(noise),
       equation_of_state_{polytropic_constant_, polytropic_exponent_},
       background_spacetime_{
           bh_mass_, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}} {
@@ -52,6 +55,13 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
       (square(bh_spin_a_) - 2.0 * a_sqrt_m * sqrt_rmax + rmax_squared) /
       (2.0 * a_sqrt_m * rmax_sqrt_rmax +
        (rmax - 3.0 * bh_mass_) * rmax_squared);
+
+  // compute rho_max_ here:
+  const double potential_at_rmax = potential(rmax_squared, 1.0);
+  const double potential_at_rin = potential(square(inner_edge_radius_), 1.0);
+  const double h_at_rmax = exp(potential_at_rin - potential_at_rmax);
+  rho_max_ = get(equation_of_state_.rest_mass_density_from_enthalpy(
+      Scalar<double>{h_at_rmax}));
 }
 
 std::unique_ptr<evolution::initial_data::InitialData>
@@ -68,6 +78,8 @@ void FishboneMoncriefDisk::pup(PUP::er& p) {
   p | polytropic_constant_;
   p | polytropic_exponent_;
   p | angular_momentum_;
+  p | rho_max_;
+  p | noise_;
   p | equation_of_state_;
   p | background_spacetime_;
 }
@@ -140,6 +152,7 @@ FishboneMoncriefDisk::variables(
   variables_impl(vars, [&rest_mass_density, &specific_enthalpy, this](
                            const size_t s, const double /*potential_at_s*/) {
     get_element(get(rest_mass_density), s) =
+        (1 / rho_max_) *
         get(equation_of_state_.rest_mass_density_from_enthalpy(
             Scalar<double>{get_element(get(specific_enthalpy), s)}));
   });
@@ -183,14 +196,18 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/,
     gsl::not_null<IntermediateVariables<DataType>*> vars) const {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dis(-noise_, noise_);
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars));
   auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
-  variables_impl(vars, [&pressure, &rest_mass_density, this](
+  variables_impl(vars, [&pressure, &rest_mass_density, &gen, &dis, this](
                            const size_t s, const double /*potential_at_s*/) {
     get_element(get(pressure), s) =
+        (1 / rho_max_) * (1 + dis(gen)) *
         get(equation_of_state_.pressure_from_density(
-            Scalar<double>{get_element(get(rest_mass_density), s)}));
+            Scalar<double>{rho_max_ * get_element(get(rest_mass_density), s)}));
   });
   return {std::move(pressure)};
 }
@@ -208,7 +225,7 @@ FishboneMoncriefDisk::variables(
                            const size_t s, const double /*potential_at_s*/) {
     get_element(get(specific_internal_energy), s) =
         get(equation_of_state_.specific_internal_energy_from_density(
-            Scalar<double>{get_element(get(rest_mass_density), s)}));
+            Scalar<double>{rho_max_ * get_element(get(rest_mass_density), s)}));
   });
   return {std::move(specific_internal_energy)};
 }
@@ -358,7 +375,8 @@ bool operator==(const FishboneMoncriefDisk& lhs,
          lhs.inner_edge_radius_ == rhs.inner_edge_radius_ and
          lhs.max_pressure_radius_ == rhs.max_pressure_radius_ and
          lhs.polytropic_constant_ == rhs.polytropic_constant_ and
-         lhs.polytropic_exponent_ == rhs.polytropic_exponent_;
+         lhs.polytropic_exponent_ == rhs.polytropic_exponent_ and
+         lhs.noise_ == rhs.noise_ and lhs.rho_max_ == rhs.rho_max_;
 }
 
 bool operator!=(const FishboneMoncriefDisk& lhs,
