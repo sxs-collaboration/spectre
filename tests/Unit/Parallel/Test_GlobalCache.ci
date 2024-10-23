@@ -18,5 +18,6 @@ mainmodule Test_GlobalCache {
     entry void run_test_three();
     entry void run_test_four();
     entry void run_test_five();
+    entry void mutate_name();
   };
 }

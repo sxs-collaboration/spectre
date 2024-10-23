@@ -152,7 +152,7 @@ struct modify_number_of_legs {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tags = tmpl::list<name, age, height>;
+  using const_global_cache_tags = tmpl::list<age, height>;
   using mutable_global_cache_tags = tmpl::list<weight, animal>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
@@ -177,8 +177,8 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tags = tmpl::list<name>;
-  using mutable_global_cache_tags = tmpl::list<email>;
+  using const_global_cache_tags = tmpl::list<>;
+  using mutable_global_cache_tags = tmpl::list<email, name>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
@@ -219,23 +219,54 @@ class UseCkCallbackAsCallback : public Parallel::Callback {
   UseCkCallbackAsCallback() = default;
   explicit UseCkCallbackAsCallback(CkMigrateMessage* msg)
       : Parallel::Callback(msg) {}
-  explicit UseCkCallbackAsCallback(const CkCallback& callback)
-      : callback_(callback) {}
+  explicit UseCkCallbackAsCallback(const CkCallback& callback,
+                                   const size_t index)
+      : callback_(callback), index_(index) {}
   using PUP::able::register_constructor;
   void invoke() override { callback_.send(nullptr); }
   void pup(PUP::er& p) override { p | callback_; }
   // We shouldn't be pupping so registration doesn't matter
   void register_with_charm() override {}
+  bool is_equal_to(const Parallel::Callback& rhs) const override {
+    const auto* downcast_ptr =
+        dynamic_cast<const UseCkCallbackAsCallback*>(&rhs);
+    if (downcast_ptr == nullptr) {
+      return false;
+    }
+    return index_ == downcast_ptr->index_;
+  }
+
+  std::string name() const override {
+    return "UseCkCallbackAsCallback" + std::to_string(index_);
+  }
+
+  std::unique_ptr<Callback> get_clone() override {
+    return std::make_unique<UseCkCallbackAsCallback>(callback_, index_);
+  }
 
  private:
   CkCallback callback_;
+  size_t index_{};
 };
+
+size_t calls_to_test_one = 0;  // NOLINT
+
+template <typename Metavariables>
+void TestArrayChare<Metavariables>::mutate_name() {
+  auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
+
+  // Turn Nobody into Somebody
+  Parallel::mutate<name, modify_value<std::string>>(local_cache,
+                                                    std::string("Somebody"));
+}
 
 template <typename Metavariables>
 void TestArrayChare<Metavariables>::run_test_one() {
   // Test that the values are what we think they should be.
   auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
-  SPECTRE_PARALLEL_REQUIRE("Nobody" == Parallel::get<name>(local_cache));
+  const std::string expected_name =
+      calls_to_test_one == 0 ? "Nobody" : "Somebody";
+  SPECTRE_PARALLEL_REQUIRE(expected_name == Parallel::get<name>(local_cache));
   SPECTRE_PARALLEL_REQUIRE(178 == Parallel::get<age>(local_cache));
   SPECTRE_PARALLEL_REQUIRE(2.2 == Parallel::get<height>(local_cache));
   SPECTRE_PARALLEL_REQUIRE(
@@ -261,7 +292,7 @@ void TestArrayChare<Metavariables>::run_test_one() {
   serialize_and_deserialize(
       make_not_null(&serialized_and_deserialized_global_cache), local_cache);
   SPECTRE_PARALLEL_REQUIRE(
-      "Nobody" ==
+      expected_name ==
       Parallel::get<name>(serialized_and_deserialized_global_cache));
   SPECTRE_PARALLEL_REQUIRE(
       178 == Parallel::get<age>(serialized_and_deserialized_global_cache));
@@ -270,6 +301,57 @@ void TestArrayChare<Metavariables>::run_test_one() {
   SPECTRE_PARALLEL_REQUIRE(4 == Parallel::get<shape_of_nametag>(
                                     serialized_and_deserialized_global_cache)
                                     .number_of_sides());
+
+  // Only register callbacks on the first call to `run_test_one`
+  if (calls_to_test_one == 0) {
+    auto callback =
+        CkCallback(CkIndex_TestArrayChare<Metavariables>::run_test_one(),
+                   this->thisProxy[this->thisIndex]);
+    const auto array_component_id =
+        Parallel::make_array_component_id<TestArrayChare<Metavariables>>(
+            static_cast<int>(this->thisIndex));
+
+    const auto register_callback = [&](const size_t index) {
+      Parallel::mutable_cache_item_is_ready<name>(
+          local_cache, array_component_id,
+          [&callback, &index](const std::string& name_l)
+              -> std::unique_ptr<Parallel::Callback> {
+            return name_l == "Somebody"
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback, index));
+          });
+    };
+
+    // Register first callback for this function
+    register_callback(0);
+    // Register second callback for this function with different index to test
+    // that we can have two callbacks on the same element
+    register_callback(1);
+    // Try and register the first callback again. This shouldn't be registered
+    // and we should still only have two callbacks
+    register_callback(0);
+
+    // Do the mutate somehwere else so we can return here and have
+    // `run_test_one` be called again
+    this->thisProxy[0].mutate_name();
+
+    calls_to_test_one++;
+    return;
+  } else if (calls_to_test_one == 1) {
+    // Make sure we haven't mutated the weight yet, because that would move on
+    // to `run_test_two` then
+    SPECTRE_PARALLEL_REQUIRE(Parallel::get<weight>(local_cache) == 160.0);
+
+    calls_to_test_one++;
+    return;
+  } else {
+    // We have now called both registered callbacks
+    SPECTRE_PARALLEL_REQUIRE(calls_to_test_one == 2);
+
+    // The value will be checked in `run_test_two`
+    calls_to_test_one++;
+  }
 
   // Mutate the weight to 150.
   Parallel::mutate<weight, modify_value<double>>(local_cache, 150.0);
@@ -288,10 +370,14 @@ void TestArrayChare<Metavariables>::run_test_two() {
           *Parallel::local_branch(global_cache_proxy_), array_component_id,
           [&callback](
               const double& weight_l) -> std::unique_ptr<Parallel::Callback> {
-            return weight_l == 150 ? std::unique_ptr<Parallel::Callback>{}
-                                   : std::unique_ptr<Parallel::Callback>(
-                                         new UseCkCallbackAsCallback(callback));
+            return weight_l == 150
+                       ? std::unique_ptr<Parallel::Callback>{}
+                       : std::unique_ptr<Parallel::Callback>(
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
+    // One original call, and then two callbacks
+    SPECTRE_PARALLEL_REQUIRE(calls_to_test_one == 3);
+
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(local_cache));
 
@@ -319,7 +405,7 @@ void TestArrayChare<Metavariables>::run_test_three() {
             return email_l == "albert@einstein.de"
                        ? std::unique_ptr<Parallel::Callback>{}
                        : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE("albert@einstein.de" ==
@@ -346,7 +432,7 @@ void TestArrayChare<Metavariables>::run_test_four() {
             return animal_l.number_of_legs() == 8
                        ? std::unique_ptr<Parallel::Callback>{}
                        : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
@@ -373,7 +459,7 @@ void TestArrayChare<Metavariables>::run_test_five() {
             return animal_l.number_of_legs() == 30
                        ? std::unique_ptr<Parallel::Callback>{}
                        : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+                             new UseCkCallbackAsCallback(callback, 0));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(
@@ -389,21 +475,21 @@ template <typename Metavariables>
 void Test_GlobalCache<Metavariables>::run_single_core_test() {
   using const_tag_list =
       typename Parallel::get_const_global_cache_tags<TestMetavariables>;
-  static_assert(std::is_same_v<const_tag_list,
-                               tmpl::list<name, age, height, shape_of_nametag>>,
-                "Wrong const_tag_list in GlobalCache test");
+  static_assert(
+      std::is_same_v<const_tag_list, tmpl::list<age, height, shape_of_nametag>>,
+      "Wrong const_tag_list in GlobalCache test");
 
   using mutable_tag_list =
       typename Parallel::get_mutable_global_cache_tags<TestMetavariables>;
   static_assert(
-      std::is_same_v<mutable_tag_list, tmpl::list<weight, animal, email>>,
+      std::is_same_v<mutable_tag_list, tmpl::list<weight, animal, email, name>>,
       "Wrong mutable_tag_list in GlobalCache test");
 
   tuples::tagged_tuple_from_typelist<const_tag_list> const_data_to_be_cached(
-      "Nobody", 178, 2.2, std::make_unique<Square>());
+      178, 2.2, std::make_unique<Square>());
   tuples::tagged_tuple_from_typelist<mutable_tag_list>
       mutable_data_to_be_cached(160, std::make_unique<Arthropod>(6),
-                                "joe@somewhere.com");
+                                "joe@somewhere.com", "Nobody");
 
   Parallel::GlobalCache<TestMetavariables> cache(
       std::move(const_data_to_be_cached), std::move(mutable_data_to_be_cached));
@@ -458,7 +544,7 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
   using mutable_tag_list =
       typename Parallel::get_mutable_global_cache_tags<TestMetavariables>;
   static_assert(
-      std::is_same_v<mutable_tag_list, tmpl::list<weight, animal, email>>,
+      std::is_same_v<mutable_tag_list, tmpl::list<weight, animal, email, name>>,
       "Wrong mutable_tag_list in GlobalCache test");
   static_assert(
       Parallel::is_in_mutable_global_cache<TestMetavariables, animal>);
@@ -473,9 +559,9 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
 
   using const_tag_list =
       typename Parallel::get_const_global_cache_tags<TestMetavariables>;
-  static_assert(std::is_same_v<const_tag_list,
-                               tmpl::list<name, age, height, shape_of_nametag>>,
-                "Wrong const_tag_list in GlobalCache test");
+  static_assert(
+      std::is_same_v<const_tag_list, tmpl::list<age, height, shape_of_nametag>>,
+      "Wrong const_tag_list in GlobalCache test");
   static_assert(
       Parallel::is_in_const_global_cache<TestMetavariables, shape_of_nametag>);
   static_assert(
@@ -493,9 +579,9 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
   // Arthropod begins as an insect.
   tuples::tagged_tuple_from_typelist<mutable_tag_list>
       mutable_data_to_be_cached(160, std::make_unique<Arthropod>(6),
-                                "joe@somewhere.com");
+                                "joe@somewhere.com", "Nobody");
   tuples::tagged_tuple_from_typelist<const_tag_list> const_data_to_be_cached(
-      "Nobody", 178, 2.2, std::make_unique<Square>());
+      178, 2.2, std::make_unique<Square>());
   global_cache_proxy_ = Parallel::CProxy_GlobalCache<TestMetavariables>::ckNew(
       std::move(const_data_to_be_cached), std::move(mutable_data_to_be_cached),
       std::nullopt);
