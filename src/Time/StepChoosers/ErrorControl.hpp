@@ -79,7 +79,8 @@ struct ErrorControlBase : IsAnErrorControl {
  * allocation in the TimeStepper and should not have a major effect on
  * the result.)
  *
- * When no previous record of previous error is available, the step has size:
+ * When choosing a step size for LTS or when no record of previous
+ * error is available, the step has size:
  *
  * \f[
  * h_{\text{new}} = h \cdot \min\left(F_{\text{max}},
@@ -97,11 +98,10 @@ struct ErrorControlBase : IsAnErrorControl {
  * calculation. Intuitively, we should change the step less drastically for a
  * higher order stepper.
  *
- * After the first error calculation, the error \f$E\f$ is recorded in the \ref
- * DataBoxGroup "DataBox" using tag
- * `StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>`, and subsequent
- * error calculations use a simple PI scheme suggested in \cite NumericalRecipes
- * section 17.2.1:
+ * When controlling slab size, after the first error calculation, the
+ * error \f$E\f$ is recorded in the \ref DataBoxGroup "DataBox", and
+ * subsequent error calculations use a simple PI scheme suggested in
+ * \cite NumericalRecipes section 17.2.1:
  *
  * \f[
  * h_{\text{new}} = h \cdot \min\left(F_{\text{max}},
@@ -110,7 +110,11 @@ struct ErrorControlBase : IsAnErrorControl {
  * E_{\text{prev}}^{0.4 / (q + 1)}\right)\right),
  * \f]
  *
- * where \f$E_{\text{prev}}\f$ is the error computed in the previous step.
+ * where \f$E_{\text{prev}}\f$ is the error computed in the previous
+ * step.  This method is never used for choosing an LTS step because
+ * the restriction of step size changes to factors of two was found to
+ * interfere with the more gradual increase chosen by the PI
+ * controller.
  *
  * \note The template parameter `ErrorControlSelector` is used to disambiguate
  * in the input-file options between `ErrorControl` step choosers that are
@@ -208,7 +212,8 @@ class ErrorControl
       return {{}, true};
     }
     double new_step;
-    if (not errors[0].has_value() or errors[0]->order != errors[1]->order) {
+    if (std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep> or
+        not errors[0].has_value() or errors[0]->order != errors[1]->order) {
       new_step = errors[1]->step_size.value() *
                  std::clamp(safety_factor_ *
                                 pow(1.0 / std::max(errors[1]->error, 1e-14),
