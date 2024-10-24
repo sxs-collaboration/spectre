@@ -149,6 +149,7 @@ def schedule(
     submit: Optional[bool] = None,
     clean_output: bool = False,
     force: bool = False,
+    validate: Optional[bool] = True,
     extra_params: dict = {},
     **kwargs,
 ) -> Optional[subprocess.CompletedProcess]:
@@ -319,6 +320,8 @@ def schedule(
         files in the 'run_dir' before scheduling the run. (Default: 'False')
       force: Optional. When 'True', overwrite input file and submit script
         in the 'run_dir' instead of raising an error when they already exist.
+      validate: Optional. When 'True', validate that the input file is parsed
+        correctly. When 'False' skip this step.
       extra_params: Optional. Dictionary of extra parameters passed to input
         file and submit script templates. Parameters can also be passed as
         keyword arguments to this function instead.
@@ -549,9 +552,11 @@ def schedule(
     )
 
     # Validate input file
-    validate_input_file(
-        input_file_path.resolve(), executable=executable, work_dir=run_dir
-    )
+    if validate:
+        validate_input_file(
+            input_file_path.resolve(), executable=executable, work_dir=run_dir
+        )
+
     # - If the input file may request resubmissions, make sure we have a
     #   segments directory
     metadata, input_file = yaml.safe_load_all(rendered_input_file)
@@ -860,6 +865,11 @@ def scheduler_options(f):
             "Overwrite existing files in the '--run-dir' / '-o'. "
             "You may also want to use '--clean-output'."
         ),
+    )
+    @click.option(
+        "--validate/--no-validate",
+        default=True,
+        help="Validate or skip the validation of the input file.",
     )
     # Scheduling options
     @click.option(
