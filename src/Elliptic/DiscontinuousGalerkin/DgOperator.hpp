@@ -21,6 +21,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "Elliptic/Protocols/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/GetFluxesComputer.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
@@ -222,7 +223,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       tt::assert_conforms_to_v<System, elliptic::protocols::FirstOrderSystem>);
 
   static constexpr size_t Dim = System::volume_dim;
-  using FluxesComputer = typename System::fluxes_computer;
+  using FluxesComputer = elliptic::get_fluxes_computer<System, Linearized>;
   using SourcesComputer = elliptic::get_sources_computer<System, Linearized>;
 
   struct AllDirections {
@@ -511,7 +512,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         all_mortar_data->at(mortar_id).remote_insert(temporal_id,
                                                      std::move(boundary_data));
       }  // if (is_internal)
-    }    // loop directions
+    }  // loop directions
   }
 
   // --- This is essentially a break to communicate the mortar data ---

@@ -30,6 +30,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
+#include "Elliptic/Systems/GetFluxesComputer.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -82,12 +83,16 @@ struct make_neighbor_mortars_tag_impl {
  *   `elliptic::dg::subdomain_operator::InitializeSubdomain`.
  * - All `System::fluxes_computer::argument_tags` and
  *   `System::sources_computer::argument_tags` (or
+ *   `System::fluxes_computer_linearized::argument_tags` and
  *   `System::sources_computer_linearized::argument_tags` for nonlinear
  *   systems), except those listed in `ArgsTagsFromCenter`. The latter will be
  *   taken from the central element's DataBox, so they don't need to be made
  *   available on overlaps.
- * - The `System::fluxes_computer::argument_tags` on internal and external
- *   interfaces, except those listed in `System::fluxes_computer::volume_tags`.
+ * - The `System::fluxes_computer::argument_tags` (or
+ *   `System::fluxes_computer_linearized::argument_tags`) on internal and
+ *   external interfaces, except those listed in
+ *   `System::fluxes_computer::volume_tags` (or
+ *   `System::fluxes_computer_linearized::volume_tags`).
  *
  * Some of these tags may require communication between elements. For example,
  * nonlinear system fields are constant background fields for the linearized DG
@@ -174,18 +179,20 @@ struct SubdomainOperator
                       Dim>,
       ::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>,
       elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>;
-  using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
+  using fluxes_args_tags =
+      elliptic::get_fluxes_argument_tags<System, linearized>;
   using sources_args_tags =
       elliptic::get_sources_argument_tags<System, linearized>;
 
   // We need the fluxes args also on interfaces (internal and external). The
   // volume tags are the subset that don't have to be taken from interfaces.
-  using fluxes_args_volume_tags = typename System::fluxes_computer::volume_tags;
+  using fluxes_args_volume_tags =
+      elliptic::get_fluxes_volume_tags<System, linearized>;
 
   // These tags can be taken directly from the central element's DataBox, even
   // when evaluating neighbors
   using args_tags_from_center = tmpl::remove_duplicates<tmpl::push_back<
-      typename System::fluxes_computer::const_global_cache_tags,
+      elliptic::get_fluxes_const_global_cache_tags<System, linearized>,
       elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation>>;
 
   // Data on neighbors is stored in the central element's DataBox in
@@ -600,8 +607,8 @@ struct SubdomainOperator
                 .remote_insert(temporal_id, std::move(zero_mortar_data));
           }
         }  // loop over neighbor's mortars
-      }    // loop over neighbors
-    }      // loop over directions
+      }  // loop over neighbors
+    }  // loop over directions
 
     // 2. Apply the operator on all elements in the subdomain
     //
@@ -613,8 +620,7 @@ struct SubdomainOperator
               make_not_null(&central_mortar_data_), operand.element_data,
               central_primal_fluxes_, args...);
         },
-        box, temporal_id, fluxes_args_on_faces, sources_args,
-        data_is_zero);
+        box, temporal_id, fluxes_args_on_faces, sources_args, data_is_zero);
     // Apply on neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
       const auto& orientation = neighbors.orientation();
@@ -673,7 +679,7 @@ struct SubdomainOperator
             extended_results_.at(overlap_id), neighbor_mesh.extents(),
             overlap_extent, direction_from_neighbor);
       }  // loop over neighbors
-    }    // loop over directions
+    }  // loop over directions
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
