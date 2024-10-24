@@ -3,7 +3,8 @@
 
 set(LIBRARY SystemUtilities)
 
-add_spectre_library(${LIBRARY})
+# Exclude from PCH because the PCH depends on this (through ErrorHandling)
+add_spectre_library(${LIBRARY} NO_PCH)
 
 spectre_target_sources(
   ${LIBRARY}
