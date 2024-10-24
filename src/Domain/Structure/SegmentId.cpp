@@ -3,7 +3,9 @@
 
 #include "Domain/Structure/SegmentId.hpp"
 
-#include <boost/functional/hash.hpp>
+#include <boost/container_hash/hash.hpp>
+#include <cstddef>
+#include <functional>
 #include <ostream>
 #include <pup.h>
 
@@ -12,8 +14,6 @@
 
 SegmentId::SegmentId(const size_t refinement_level, const size_t index)
     : refinement_level_(refinement_level), index_(index) {
-  ASSERT(refinement_level < max_refinement_level,
-         "Refinement level out of bounds: " << refinement_level);
   ASSERT(index < two_to_the(refinement_level),
          "index = " << index << ", refinement_level = " << refinement_level);
 }

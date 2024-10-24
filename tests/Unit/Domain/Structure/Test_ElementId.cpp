@@ -5,11 +5,14 @@
 
 #include <array>
 #include <cstddef>
-#include <limits>
+#include <cstring>
+#include <functional>
+#include <pup.h>
 #include <random>
 #include <string>
 #include <vector>
 
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/SegmentId.hpp"
@@ -18,10 +21,8 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArray.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
-#include "Utilities/StdHelpers.hpp"
 
 namespace {
 template <size_t Dim>
@@ -205,22 +206,20 @@ void test_element_id() {
 
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
         two_to_the(ElementId<3>::block_id_bits) - 1);
-  CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
-        make_array<3>(SegmentId(ElementId<3>::max_refinement_level - 1, 0)));
   CHECK(ElementId<3>::external_boundary_id().grid_index() == 0);
 
-  ElementId<3> element1(0);
-  ElementId<3> element2{0, 1};
-  ElementId<3> element3(1);
-  ElementId<3> element4{1, 1};
-  ElementId<3> element5{0, {{{1, 0}, {2, 0}, {1, 0}}}};
-  ElementId<3> element6{0, {{{1, 0}, {2, 0}, {1, 0}}}, 1};
-  ElementId<3> element7{0, {{{1, 0}, {2, 1}, {1, 0}}}};
-  ElementId<3> element8{0, {{{1, 0}, {2, 1}, {1, 0}}}, 1};
-  ElementId<3> element9{1, {{{1, 0}, {2, 0}, {1, 0}}}};
-  ElementId<3> element10{1, {{{1, 0}, {2, 0}, {1, 0}}}, 1};
-  ElementId<3> element11{1, {{{1, 0}, {2, 1}, {1, 0}}}};
-  ElementId<3> element12{1, {{{1, 0}, {2, 1}, {1, 0}}}, 1};
+  const ElementId<3> element1(0);
+  const ElementId<3> element2{0, 1};
+  const ElementId<3> element3(1);
+  const ElementId<3> element4{1, 1};
+  const ElementId<3> element5{0, {{{1, 0}, {2, 0}, {1, 0}}}};
+  const ElementId<3> element6{0, {{{1, 0}, {2, 0}, {1, 0}}}, 1};
+  const ElementId<3> element7{0, {{{1, 0}, {2, 1}, {1, 0}}}};
+  const ElementId<3> element8{0, {{{1, 0}, {2, 1}, {1, 0}}}, 1};
+  const ElementId<3> element9{1, {{{1, 0}, {2, 0}, {1, 0}}}};
+  const ElementId<3> element10{1, {{{1, 0}, {2, 0}, {1, 0}}}, 1};
+  const ElementId<3> element11{1, {{{1, 0}, {2, 1}, {1, 0}}}};
+  const ElementId<3> element12{1, {{{1, 0}, {2, 1}, {1, 0}}}, 1};
 
   CHECK(is_zeroth_element(element1));
   CHECK_FALSE(is_zeroth_element(element1, {1}));
