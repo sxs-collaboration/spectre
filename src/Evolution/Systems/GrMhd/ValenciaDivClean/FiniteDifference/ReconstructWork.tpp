@@ -14,12 +14,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
@@ -71,6 +72,11 @@ void compute_conservatives_for_reconstruction(
   }
 
   // pointers to primitive variables
+  auto& spatial_velocity_one_form =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+          *vars_on_face);
+  raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
+                       spatial_velocity, spatial_metric);
   const auto& rest_mass_density =
       get<hydro::Tags::RestMassDensity<DataVector>>(*vars_on_face);
   const auto& electron_fraction =

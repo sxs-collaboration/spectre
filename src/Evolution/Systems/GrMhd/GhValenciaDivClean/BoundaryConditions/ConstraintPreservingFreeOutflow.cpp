@@ -53,6 +53,13 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> gamma2,
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity_one_form,
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> electron_fraction,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity,
     const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
         inv_spatial_metric,
 
@@ -72,6 +79,7 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
     const Scalar<DataVector>& interior_lorentz_factor,
     const Scalar<DataVector>& interior_pressure,
+    const Scalar<DataVector>& interior_temperature,
 
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*coords*/,
     const Scalar<DataVector>& interior_gamma1,
@@ -112,14 +120,16 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_ghost(
                tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux,
                tilde_b_flux, tilde_phi_flux,
 
-               lapse, shift, inv_spatial_metric,
+               lapse, shift, spatial_velocity_one_form, rest_mass_density,
+               electron_fraction, temperature, spatial_velocity,
+               inv_spatial_metric,
 
                face_mesh_velocity, normal_covector, normal_vector,
 
                interior_rest_mass_density, interior_electron_fraction,
                interior_specific_internal_energy, interior_spatial_velocity,
                interior_magnetic_field, interior_lorentz_factor,
-               interior_pressure,
+               interior_pressure, interior_temperature,
 
                *shift, *lapse, *inv_spatial_metric);
 }
@@ -153,6 +163,7 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
     const tnsr::I<DataVector, 3, Frame::Inertial>& /*interior_magnetic_field*/,
     const Scalar<DataVector>& /*interior_lorentz_factor*/,
     const Scalar<DataVector>& /*interior_pressure*/,
+    const Scalar<DataVector>& /*interior_temperature*/,
 
     // c.f. dg_interior_temporary_tags
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords,

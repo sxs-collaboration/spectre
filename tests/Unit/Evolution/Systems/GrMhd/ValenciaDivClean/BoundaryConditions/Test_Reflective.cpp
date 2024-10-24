@@ -95,11 +95,39 @@ void test_stuffs(const bool reflect_both) {
 
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
           helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, 3>>,
+          helpers::Tags::PythonFunctionName<hydro::Tags::SpatialVelocityOneForm<
+              DataVector, 3, Frame::Inertial>>,
+          helpers::Tags::PythonFunctionName<
+              hydro::Tags::RestMassDensity<DataVector>>,
+          helpers::Tags::PythonFunctionName<
+              hydro::Tags::ElectronFraction<DataVector>>,
+          helpers::Tags::PythonFunctionName<
+              hydro::Tags::Temperature<DataVector>>,
+          helpers::Tags::PythonFunctionName<
+              hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>,
+
           helpers::Tags::PythonFunctionName<
               gr::Tags::InverseSpatialMetric<DataVector, 3>>>{
-          "error", "tilde_d", "tilde_ye", "tilde_tau", "tilde_s", "tilde_b",
-          "tilde_phi", "flux_tilde_d", "flux_tilde_ye", "flux_tilde_tau",
-          "flux_tilde_s", "flux_tilde_b", "flux_tilde_phi", "lapse", "shift",
+          "error",
+          "tilde_d",
+          "tilde_ye",
+          "tilde_tau",
+          "tilde_s",
+          "tilde_b",
+          "tilde_phi",
+          "flux_tilde_d",
+          "flux_tilde_ye",
+          "flux_tilde_tau",
+          "flux_tilde_s",
+          "flux_tilde_b",
+          "flux_tilde_phi",
+          "lapse",
+          "shift",
+          "spatial_velocity_one_form",
+          "rest_mass_density",
+          "electron_fraction",
+          "temperature",
+          "spatial_velocity",
           "inv_spatial_metric"},
       "Reflective:\n"
       "  ReflectBoth: " +

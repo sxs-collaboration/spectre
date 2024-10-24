@@ -67,6 +67,13 @@ std::optional<std::string> Reflective::dg_ghost(
 
     const gsl::not_null<Scalar<DataVector>*> lapse,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity_one_form,
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> electron_fraction,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity,
     const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
         inv_spatial_metric,
 
@@ -84,6 +91,7 @@ std::optional<std::string> Reflective::dg_ghost(
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
     const Scalar<DataVector>& interior_lorentz_factor,
     const Scalar<DataVector>& interior_pressure,
+    const Scalar<DataVector>& interior_temperature,
 
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
     const Scalar<DataVector>& interior_lapse,
@@ -99,16 +107,15 @@ std::optional<std::string> Reflective::dg_ghost(
   //  * divergence cleaning field on ghost zone
   //  * spatial metric
   //  * sqrt determinant of spatial metric
-  Variables<tmpl::list<
-      ::Tags::TempScalar<0>, hydro::Tags::SpatialVelocity<DataVector, 3>,
-      ::Tags::TempScalar<1>, hydro::Tags::MagneticField<DataVector, 3>,
-      ::Tags::TempScalar<2>, gr::Tags::SpatialMetric<DataVector, 3>,
-      gr::Tags::SqrtDetSpatialMetric<DataVector>>>
+  Variables<
+      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                 hydro::Tags::MagneticField<DataVector, 3>,
+                 ::Tags::TempScalar<2>, gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>>
       temp_buffer{number_of_grid_points};
   auto& normal_dot_interior_spatial_velocity =
       get<::Tags::TempScalar<0>>(temp_buffer);
-  auto& exterior_spatial_velocity =
-      get<hydro::Tags::SpatialVelocity<DataVector, 3>>(temp_buffer);
+  auto& exterior_spatial_velocity = *spatial_velocity;
   auto& normal_dot_interior_magnetic_field =
       get<::Tags::TempScalar<1>>(temp_buffer);
   auto& exterior_magnetic_field =
@@ -232,6 +239,12 @@ std::optional<std::string> Reflective::dg_ghost(
                        interior_spatial_metric, *inv_spatial_metric,
                        interior_pressure, exterior_spatial_velocity,
                        interior_lorentz_factor, exterior_magnetic_field);
+
+  *rest_mass_density = interior_rest_mass_density;
+  *electron_fraction = interior_electron_fraction;
+  *temperature = interior_temperature;
+  raise_or_lower_index(spatial_velocity_one_form, exterior_spatial_velocity,
+                       interior_spatial_metric);
 
   return {};
 }
