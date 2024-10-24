@@ -147,14 +147,16 @@ Evolution:
   # This is the smallest interval we'd need to observe time step/constraints. If
   # you need it smaller you can edit it, but make sure to change the slab
   # intervals in the EventsAndTriggers
-  InitialSlabSize: 0.5
+  InitialSlabSize: 0.1
   StepChoosers:
     - LimitIncrease:
         Factor: 2
     - PreventRapidIncrease
     - ErrorControl:
-        AbsoluteTolerance: 1e-8
-        RelativeTolerance: 1e-6
+        # Found that 100x smaller timestep tolerances reduced the noise in the
+        # constraints significantly
+        AbsoluteTolerance: 1e-10
+        RelativeTolerance: 1e-8
         MaxFactor: 2
         MinFactor: 0.25
         SafetyFactor: 0.95
@@ -243,7 +245,7 @@ PhaseChangeAndTriggers:
         EvenlySpaced:
           # Trigger checkpoint often enough so it triggers within the last 30
           # minutes of the run
-          Interval: 20
+          Interval: 10
           Offset: 0
     PhaseChanges:
       - CheckpointAndExitAfterWallclock:
@@ -299,7 +301,7 @@ EventsAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 1
+          Interval: 5
           Offset: 0
     Events:
       - ObservationAhA
@@ -310,7 +312,7 @@ EventsAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 100
+          Interval: 2000
           Offset: 0
     Events:
       - ObserveFields:
@@ -352,7 +354,13 @@ EventsAndTriggers:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
-  # Never terminate... run until something fails!
+  # This separation has enough common horizon finds to start ringdown for q=1,
+  # spin=0, quasicircular
+  - Trigger:
+      SeparationLessThan:
+        Value: 2.138
+    Events:
+      - Completion
 
 EventsAndDenseTriggers:
   # BondiSachs output needs to be often enough for CCE to run properly. An
