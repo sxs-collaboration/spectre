@@ -4,18 +4,23 @@
 #pragma once
 
 #include <algorithm>
+#include <sstream>
+#include <string>
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/VerifyTemporalIdsAndSendPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace intrp::Actions {
@@ -80,9 +85,38 @@ struct AddTemporalIdsToInterpolationTarget {
         not db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty() and
         (std::is_same_v<LinkedMessageId<double>, TemporalId> or
          pending_temporal_ids_was_empty_on_entry)) {
+      if (Parallel::get<intrp::Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+        Parallel::printf(
+            "%s, Verifying temporal id %s.\n",
+            InterpolationTarget_detail::target_output_prefix<
+                AddTemporalIdsToInterpolationTarget, InterpolationTargetTag>(),
+            temporal_id);
+      }
+
       // Call directly
       Actions::VerifyTemporalIdsAndSendPoints<InterpolationTargetTag>::
           template apply<ParallelComponent>(box, cache, array_index);
+
+    } else if (Parallel::get<intrp::Tags::Verbosity>(cache) >= ::Verbosity::Debug) {
+      std::stringstream ss{};
+      ss << InterpolationTarget_detail::target_output_prefix<
+                AddTemporalIdsToInterpolationTarget, InterpolationTargetTag>()
+         << ", ";
+      using ::operator<<;
+      if (db::get<Tags::CurrentTemporalId<TemporalId>>(box).has_value()) {
+        ss << "Current temporal id has a value. "
+           << db::get<Tags::CurrentTemporalId<TemporalId>>(box).value();
+      } else if (db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty()) {
+        ss << "Pending temporal ids is empty after insertion.";
+      } else {
+        if constexpr (std::is_same_v<LinkedMessageId<double>, TemporalId>) {
+          ss << "Id is LinkedMessageId<double>.";
+        } else {
+          ss << "Pending temporal ids was empty on entry";
+        }
+      }
+
+      Parallel::printf("%s\n", ss.str());
     }
   }
 };

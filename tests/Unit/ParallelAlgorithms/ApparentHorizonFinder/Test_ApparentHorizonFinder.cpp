@@ -353,9 +353,10 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         radial_distribution, ShellWedges::All, std::move(time_dependence));
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
-        typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>
+        typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
+        intrp::Tags::Verbosity>
         tuple_of_opts{std::move(domain_creator->create_domain()),
-                      std::move(apparent_horizon_opts)};
+                      std::move(apparent_horizon_opts), ::Verbosity::Silent};
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
         std::move(tuple_of_opts), domain_creator->functions_of_time(),
         std::vector<size_t>{3, 2});
@@ -366,9 +367,10 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
     tuples::TaggedTuple<
         domain::Tags::Domain<3>,
-        typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>>
+        typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
+        intrp::Tags::Verbosity>
         tuple_of_opts{std::move(domain_creator->create_domain()),
-                      std::move(apparent_horizon_opts)};
+                      std::move(apparent_horizon_opts), ::Verbosity::Silent};
 
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
         std::move(tuple_of_opts), domain_creator->functions_of_time(),
