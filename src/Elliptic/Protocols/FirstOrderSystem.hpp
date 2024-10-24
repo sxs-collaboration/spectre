@@ -178,8 +178,8 @@ struct FirstOrderSystem {
 
     using fluxes_computer = typename ConformingType::fluxes_computer;
     using sources_computer = typename ConformingType::sources_computer;
-    using fluxes_argument_tags = typename fluxes_computer::argument_tags;
-    static_assert(tt::is_a_v<tmpl::list, fluxes_argument_tags>);
+    static_assert(
+        tt::is_a_v<tmpl::list, typename fluxes_computer::argument_tags>);
 
     using boundary_conditions_base =
         typename ConformingType::boundary_conditions_base;
