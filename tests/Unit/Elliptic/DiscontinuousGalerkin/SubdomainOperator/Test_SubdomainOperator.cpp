@@ -61,6 +61,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Actions/PausePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
@@ -437,16 +438,16 @@ struct ElementArray {
                   Dim, subdomain_init_tags, DummyOptionsGroup, false,
                   TemporalIdTag>,
               init_subdomain_action, init_random_subdomain_data_action,
-              Parallel::Actions::TerminatePhase,
+              Parallel::Actions::PausePhase,
               // Full DG operator
               typename dg_operator::apply_actions,
-              Parallel::Actions::TerminatePhase,
+              Parallel::Actions::PausePhase,
               // Subdomain operator
               ApplySubdomainOperator<SubdomainOperator,
                                      typename fields_tag::tags_list>,
               TestSubdomainOperatorMatrix<SubdomainOperator,
                                           typename fields_tag::tags_list>,
-              Parallel::Actions::TerminatePhase>>>;
+              Parallel::Actions::PausePhase>>>;
 };
 
 template <typename Metavariables>
@@ -605,8 +606,7 @@ void test_subdomain_operator(
           {initial_ref_levs, initial_extents, SubdomainOperator{},
            typename subdomain_operator_applied_to_fields_tag::type{},
            override_boundary_conditions});
-      while (
-          not ActionTesting::get_terminate<element_array>(runner, element_id)) {
+      for (size_t i = 0; i < 4 + tmpl::size<ExtraInitActions>::value; i++) {
         ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                   element_id);
       }

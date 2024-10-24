@@ -209,10 +209,10 @@ SPECTRE_TEST_CASE(
           std::make_unique<::TimeSteppers::DormandPrince5>()));
 
   // Run the initializations
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
   runner.set_phase(Parallel::Phase::Evolve);
