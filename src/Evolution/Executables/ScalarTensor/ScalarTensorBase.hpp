@@ -48,6 +48,7 @@
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/ScalarTensor/Constraints.hpp"
+#include "Evolution/Systems/ScalarTensor/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/Initialize.hpp"
 #include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
@@ -397,24 +398,25 @@ struct ScalarTensorTemplateBase {
           ScalarTensor::Initialization::scalar_tensor_3plus1_compute_tags<
               volume_dim>>,
       Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<volume_dim>>,
-      Initialization::Actions::AddSimpleTags<
-          CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
-              volume_dim>>,
       Parallel::Actions::TerminatePhase>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
-  using const_global_cache_tags =
-      tmpl::list<gh::gauges::Tags::GaugeCondition,
-                 evolution::initial_data::Tags::InitialData,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma0<
-                     volume_dim, Frame::Grid>,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma1<
-                     volume_dim, Frame::Grid>,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma2<
-                     volume_dim, Frame::Grid>,
-                 // Source parameters
-                 ScalarTensor::Tags::ScalarMass>;
+  using const_global_cache_tags = tmpl::list<
+      gh::gauges::Tags::GaugeCondition,
+      evolution::initial_data::Tags::InitialData,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
+                                                         Frame::Grid>,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
+                                                         Frame::Grid>,
+      gh::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
+                                                         Frame::Grid>,
+      ScalarTensor::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
+                                                                   Frame::Grid>,
+      ScalarTensor::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
+                                                                   Frame::Grid>,
+      // Source parameters
+      ScalarTensor::Tags::ScalarMass>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
