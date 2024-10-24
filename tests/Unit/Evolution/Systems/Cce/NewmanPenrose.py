@@ -34,3 +34,53 @@ def psi0(bondi_j, dy_j, dy_dy_j, bondi_k, bondi_r, one_minus_y):
             / bondi_k**3
         )
     )
+
+
+def psi1(
+    bondi_j,
+    dy_j,
+    bondi_k,
+    bondi_q,
+    dy_q,
+    bondi_r,
+    eth_r_divided_by_r,
+    dy_beta,
+    eth_beta,
+    eth_dy_beta,
+    one_minus_y,
+):
+    prefac = 1.0 / np.sqrt(128.0)
+    one_plus_k = 1.0 + bondi_k
+    eth_beta_plus_half_q = eth_beta + 0.5 * bondi_q
+    conj_j_times_dy_j = np.conj(bondi_j) * dy_j
+
+    inner_expr = bondi_j * (
+        -2.0 * np.conj(dy_q)
+        + np.conj(dy_j)
+        * (2.0 * eth_beta_plus_half_q + bondi_j * np.conj(eth_beta_plus_half_q))
+    ) + one_plus_k * (
+        eth_beta_plus_half_q * (conj_j_times_dy_j - np.conj(conj_j_times_dy_j))
+        + 2.0 * (dy_q + bondi_j * np.conj(dy_q))
+        - one_plus_k * (2.0 * dy_q + dy_j * np.conj(eth_beta_plus_half_q))
+    )
+
+    return (
+        prefac
+        * one_minus_y**2
+        / (bondi_r**2 * np.sqrt(one_plus_k))
+        * (
+            bondi_j * np.conj(eth_beta_plus_half_q)
+            - one_plus_k * eth_beta_plus_half_q
+            + one_minus_y
+            * (
+                eth_dy_beta * one_plus_k
+                - bondi_j * np.conj(eth_dy_beta)
+                + dy_beta
+                * (
+                    one_plus_k * eth_r_divided_by_r
+                    - bondi_j * np.conj(eth_r_divided_by_r)
+                )
+                + 0.25 * inner_expr / bondi_k
+            )
+        )
+    )
