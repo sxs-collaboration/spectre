@@ -1,10 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Framework/TestingFramework.hpp"
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
-#include "Framework/TestingFramework.hpp"
 #include "Informer/InfoFromBuild.hpp"
 
 namespace {
@@ -181,6 +182,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloInteractionTable",
                      gsl::at(gsl::at(scattering_opacity, ns), ng)[2]));
     }
   }
-
   test_explicit_interaction_table();
 }
