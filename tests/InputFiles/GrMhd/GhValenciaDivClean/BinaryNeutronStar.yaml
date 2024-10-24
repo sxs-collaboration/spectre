@@ -430,7 +430,7 @@ InitialData:
     Subgroup: VolumeData
     ObservationValue: Last
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsMatch: False
     GhVariables:
       Lapse: Lapse
       Shift: ShiftExcess

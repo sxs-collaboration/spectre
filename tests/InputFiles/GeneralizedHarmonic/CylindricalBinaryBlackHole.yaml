@@ -405,7 +405,7 @@ ControlSystems:
 #   coordinates of all grid points in the domain), and then load it here by
 #   selecting either the GH variables (`SpacetimeMetric`, `Pi`, `Phi`) or the
 #   ADM variables (`Lapse`, `Shift`, `SpatialMetric`, `ExtrinsicCurvature`).
-#   In this case, set `Interpolate: False` because the data is already given
+#   In this case, set `ElementsMatch: True` because the data is already given
 #   on this exact grid.
 InitialData:
   NumericInitialData:
@@ -413,7 +413,7 @@ InitialData:
     Subgroup: "VolumeData"
     ObservationValue: Last
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsMatch: False
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`
