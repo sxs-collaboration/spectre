@@ -66,6 +66,7 @@ struct component {
   using initial_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
       domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::ActiveGrid, domain::Tags::Element<Dim>,
       Particles::MonteCarlo::Tags::McGhostZoneDataTag<Dim>,
       Particles::MonteCarlo::Tags::PacketsOnElement,
@@ -188,17 +189,17 @@ void test_send_receive_actions() {
   using evolved_vars_tags = tmpl::list<Var1>;
   Variables<evolved_vars_tags> evolved_vars{
       subcell_mesh.number_of_grid_points()};
-  // Set Var1 to the logical coords, just need some data
-  get(get<Var1>(evolved_vars)) = get<0>(logical_coordinates(subcell_mesh));
 
-  Scalar<DataVector> rest_mass_density(
-      get<0>(logical_coordinates(subcell_mesh)));
-  Scalar<DataVector> electron_fraction(
-      get<0>(logical_coordinates(subcell_mesh)) / 2.0);
-  Scalar<DataVector> temperature(get<0>(logical_coordinates(subcell_mesh)) *
-                                 3.5);
-  Scalar<DataVector> cell_light_crossing_time(
-      get<0>(logical_coordinates(subcell_mesh)) * 2.0);
+  // Logical coordinates
+  const tnsr::I<DataVector, Dim, Frame::ElementLogical> mesh_coordinates =
+      logical_coordinates(subcell_mesh);
+
+  // Set Var1 to the logical coords, just need some data
+  get(get<Var1>(evolved_vars)) = get<0>(mesh_coordinates);
+  Scalar<DataVector> rest_mass_density(get<0>(mesh_coordinates));
+  Scalar<DataVector> electron_fraction(get<0>(mesh_coordinates) / 2.0);
+  Scalar<DataVector> temperature(get<0>(mesh_coordinates) * 3.5);
+  Scalar<DataVector> cell_light_crossing_time(get<0>(mesh_coordinates) * 2.0);
   std::vector<Particles::MonteCarlo::Packet> packets_on_element{};
 
   for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -211,7 +212,8 @@ void test_send_receive_actions() {
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           neighbor_id,
           {time_step_id, next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{},
-           active_grid, Element<Dim>{}, NeighborDataMap{}, packets_on_element,
+           tnsr::I<DataVector, Dim, Frame::ElementLogical>{}, active_grid,
+           Element<Dim>{}, NeighborDataMap{}, packets_on_element,
            Variables<evolved_vars_tags>{},
            typename Particles::MonteCarlo::Tags::MortarDataTag<Dim>::type{},
            Scalar<DataVector>{}, Scalar<DataVector>{}, Scalar<DataVector>{},
@@ -252,11 +254,12 @@ void test_send_receive_actions() {
 
   const size_t species = 1;
   const double number_of_neutrinos = 2.0;
-  const size_t index_of_closest_grid_point = 0;
   const double t0 = 1.2;
   const double x0 = 0.3;
   const double y0 = 0.5;
   const double z0 = -0.7;
+  const size_t index_of_closest_grid_point =
+      (Dim == 1) ? 5 : ((Dim == 2) ? 5 + 6 * 9 : 5 + 6 * 9 + 1 * 81);
   const double p_upper_t0 = 1.1;
   const double p_x0 = 0.9;
   const double p_y0 = 0.7;
@@ -290,9 +293,9 @@ void test_send_receive_actions() {
   Interps fd_to_neighbor_fd_interpolants{};
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
-      {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, active_grid,
-       element, neighbor_data, packets_on_element, evolved_vars, mortar_data,
-       rest_mass_density, electron_fraction, temperature,
+      {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, mesh_coordinates,
+       active_grid, element, neighbor_data, packets_on_element, evolved_vars,
+       mortar_data, rest_mass_density, electron_fraction, temperature,
        cell_light_crossing_time,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        fd_to_neighbor_fd_interpolants});
@@ -522,6 +525,8 @@ void test_send_receive_actions() {
 
   // Correct coordinates of packets sent east/south to get in the
   // topological coordinate of their new element.
+  // This is the unprocessed inbox, so the index of the closest
+  // point is still the same as on the old element.
   packet_east.coordinates[0] -= 2.0;
   packet_south.coordinates[1] += 2.0;
   // Current hack for edges/corners
@@ -577,6 +582,14 @@ void test_send_receive_actions() {
   // Check that we are not ready to receive yet (Inboxes unfilled)
   REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
       make_not_null(&runner), self_id));
+
+  // Now calculates the correct index for the new points, as the
+  // processing of the Inbox resets the index of the closest grid point.
+  packet_east.index_of_closest_grid_point -= 4;
+  packet_south.index_of_closest_grid_point += 18;
+  if constexpr (Dim > 2) {
+    packet_south.index_of_closest_grid_point -= 81;
+  }
 
   // Set up fake data coming from east neighbor
   {

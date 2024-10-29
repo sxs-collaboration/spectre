@@ -33,6 +33,7 @@ target_link_libraries(
   LinearOperators
   MathFunctions
   MonteCarlo
+  MonteCarloSolutions
   Observer
   Options
   Parallel

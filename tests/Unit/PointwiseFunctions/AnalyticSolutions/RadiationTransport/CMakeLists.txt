@@ -2,3 +2,4 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(M1Grey)
+add_subdirectory(MonteCarlo)

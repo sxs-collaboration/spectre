@@ -48,7 +48,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
       interaction_table.get_neutrino_energies();
 
   // Apply implicit MC corrections as needed
-  const size_t dv_size = rest_mass_density.size();
+  const size_t dv_size = get(rest_mass_density).size();
 
   // Calculate beta parameter (relative change of MC vs fluid variables)
   // For photon transport,

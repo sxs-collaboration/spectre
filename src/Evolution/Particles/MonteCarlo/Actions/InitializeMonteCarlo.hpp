@@ -15,6 +15,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
+#include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
 #include "Evolution/Particles/MonteCarlo/MortarData.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
@@ -50,6 +51,9 @@ namespace Initialization::Actions {
 /// - evolution::dg::subcell::Tags::Mesh<dim>
 /// - evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>
 /// - evolution::initial_data::Tags::InitialData
+/// - Particles::MonteCarlo::Tags::MonteCarloOptions<EnergyBins,
+/// NeutrinoSpecies>
+/// - domain::Tags::Element<dim>
 ///
 /// DataBox changes:
 /// - Adds:
@@ -57,7 +61,6 @@ namespace Initialization::Actions {
 ///   * Particles::MonteCarlo::Tags::RandomNumberGenerator
 ///   * Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
 ///                                  NeutrinoSpecies>
-///   * Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>
 ///   * Background hydro variables
 ///   * Particles::MonteCarlo::Tags::MortarDataTag<dim>
 ///   * Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>
@@ -75,7 +78,6 @@ struct InitializeMCTags {
                  Particles::MonteCarlo::Tags::RandomNumberGenerator,
                  Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
                      NeutrinoSpecies>,
-                 Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
                  hydro_variables_tag,
                  Particles::MonteCarlo::Tags::MortarDataTag<dim>,
                  Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>,
@@ -96,9 +98,9 @@ struct InitializeMCTags {
         evolution::dg::subcell::ActiveGrid::Subcell) {
       ERROR("MC requires all elements to use Subcell");
     }
-    const size_t num_grid_points =
-        db::get<evolution::dg::subcell::Tags::Mesh<dim>>(box)
-            .number_of_grid_points();
+    const Mesh<dim>& mesh =
+        db::get<evolution::dg::subcell::Tags::Mesh<dim>>(box);
+    const size_t num_grid_points = mesh.number_of_grid_points();
     using derived_classes =
         tmpl::at<typename Metavariables::factory_creation::factory_classes,
                  evolution::initial_data::InitialData>;
@@ -120,6 +122,11 @@ struct InitializeMCTags {
               make_not_null(&box), std::move(hydro_variables));
         });
 
+    // Read global options for Monte-Carlo evolution
+    const auto mc_options = db::get<
+        Particles::MonteCarlo::Tags::MonteCarloOptions<NeutrinoSpecies>>(box);
+    const auto& initial_packet_energy = mc_options.get_initial_packet_energy();
+
     typename Particles::MonteCarlo::Tags::PacketsOnElement::type all_packets;
     Initialization::mutate_assign<
         tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement>>(
@@ -132,26 +139,38 @@ struct InitializeMCTags {
         tmpl::list<Particles::MonteCarlo::Tags::RandomNumberGenerator>>(
         make_not_null(&box), std::move(rng));
 
-    // Currently hard-code energy at emission; should be set by option
+    // Initial energy of packets, read from MC options
     typename Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
         NeutrinoSpecies>::type packet_energy_at_emission =
         make_with_value<std::array<DataVector, NeutrinoSpecies>>(
-            DataVector{num_grid_points}, 1.e-12);
+            DataVector{num_grid_points}, 0.0);
+    for (size_t s = 0; s < NeutrinoSpecies; s++) {
+      packet_energy_at_emission[s] = initial_packet_energy[s];
+    }
     Initialization::mutate_assign<
         tmpl::list<Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
             NeutrinoSpecies>>>(make_not_null(&box),
                                std::move(packet_energy_at_emission));
 
-    typename Particles::MonteCarlo::Tags::CellLightCrossingTime<
-        DataVector>::type cell_light_crossing_time(num_grid_points, 1.0);
-    Initialization::mutate_assign<tmpl::list<
-        Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>>>(
-        make_not_null(&box), std::move(cell_light_crossing_time));
-
-    // Initialize empty mortar data; do we need more at initialization stage?
+    // Initialize mortar data. Currently assumes a single neighbor on each
+    // face (i.e. no h-refinement)
     using MortarData =
         typename Particles::MonteCarlo::Tags::MortarDataTag<dim>::type;
     MortarData mortar_data;
+    const Element<dim>& element = db::get<::domain::Tags::Element<dim>>(box);
+    for (const auto& [direction, neighbors] : element.neighbors()) {
+      const size_t sliced_mesh_size =
+          mesh.slice_away(direction.dimension()).number_of_grid_points();
+      DataVector zero_dv_ghost_zones(sliced_mesh_size, 0.0);
+      for (const auto& neighbor : neighbors) {
+        const DirectionalId<dim> mortar_id{direction, neighbor};
+        mortar_data.rest_mass_density.emplace(mortar_id, zero_dv_ghost_zones);
+        mortar_data.electron_fraction.emplace(mortar_id, zero_dv_ghost_zones);
+        mortar_data.temperature.emplace(mortar_id, zero_dv_ghost_zones);
+        mortar_data.cell_light_crossing_time.emplace(mortar_id,
+                                                     zero_dv_ghost_zones);
+      }
+    }
     Initialization::mutate_assign<
         tmpl::list<Particles::MonteCarlo::Tags::MortarDataTag<dim>>>(
         make_not_null(&box), std::move(mortar_data));

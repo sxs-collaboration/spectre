@@ -13,6 +13,8 @@
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DgSubcell/Actions/Initialize.hpp"
 #include "Evolution/DgSubcell/BackgroundGrVars.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
@@ -31,8 +33,11 @@
 #include "Evolution/Particles/MonteCarlo/Actions/Labels.hpp"
 #include "Evolution/Particles/MonteCarlo/Actions/TimeStepActions.hpp"
 #include "Evolution/Particles/MonteCarlo/Actions/TriggerMonteCarloEvolution.hpp"
+#include "Evolution/Particles/MonteCarlo/CellCrossingTime.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunication.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
+#include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
+#include "Evolution/Particles/MonteCarlo/NeutrinoMomentsFromMonteCarlo.hpp"
 #include "Evolution/Particles/MonteCarlo/System.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
@@ -59,6 +64,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
+#include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -70,7 +76,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/MonteCarlo/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -120,7 +126,7 @@ struct EvolutionMetavars {
   static constexpr bool use_dg_subcell = true;
 
   using initial_data_list =
-      grmhd::ValenciaDivClean::InitialData::initial_data_list;
+      RadiationTransport::MonteCarlo::Solutions::all_solutions;
   using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
 
   struct SubcellOptions {
@@ -130,13 +136,29 @@ struct EvolutionMetavars {
     static constexpr bool subcell_enabled_at_external_boundary = true;
   };
 
-  using observe_fields =
-      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Grid>,
-                 domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
-  using non_tensor_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                 ::Events::Tags::ObserverDetInvJacobianCompute<
-                     Frame::ElementLogical, Frame::Inertial>>;
+  using observe_fields = tmpl::push_back<
+      tmpl::append<tmpl::conditional_t<
+          // Use conditional template here in case we ever want
+          // something else than dg_subcell, but only add coordinates
+          // for dg_subcell (MC is not coded for DG)
+          use_dg_subcell,
+          tmpl::list<evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::ElementLogical>,
+                     evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::Grid>,
+                     evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                         volume_dim, Frame::Inertial>>,
+          tmpl::list<>>>,
+      Particles::MonteCarlo::Tags::InertialFrameEnergyDensity>;
+  using non_tensor_compute_tags = tmpl::conditional_t<
+      use_dg_subcell,
+      tmpl::list<evolution::dg::subcell::Tags::ObserverMeshCompute<volume_dim>,
+                 evolution::dg::subcell::Tags::
+                     ObserverJacobianAndDetInvJacobianCompute<
+                         volume_dim, Frame::ElementLogical, Frame::Inertial>,
+                 evolution::dg::subcell::Tags::ObserverInverseJacobianCompute<
+                     volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+      tmpl::list<>>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
@@ -147,7 +169,13 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event, tmpl::flatten<tmpl::list<Events::Completion>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       Events::Completion,
+                       ::Events::ObserveNorms<observe_fields,
+                                              non_tensor_compute_tags>,
+                       dg::Events::ObserveFields<volume_dim, observe_fields,
+                                                 non_tensor_compute_tags>>>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
@@ -188,6 +216,8 @@ struct EvolutionMetavars {
                                                 NeutrinoSpecies>,
       Initialization::Actions::AddComputeTags<tmpl::list<
           hydro::Tags::LowerSpatialFourVelocityCompute,
+          Particles::MonteCarlo::CellLightCrossingTimeCompute,
+          Particles::MonteCarlo::InertialFrameEnergyDensityCompute,
           Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
           domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>>>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
@@ -198,6 +228,9 @@ struct EvolutionMetavars {
       tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
+          Parallel::PhaseActions<Parallel::Phase::Register,
+                                 tmpl::list<dg_registration_list,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
@@ -241,6 +274,7 @@ struct EvolutionMetavars {
                  dg_element_array>;
 
   using const_global_cache_tags = tmpl::list<
+      Particles::MonteCarlo::Tags::MonteCarloOptions<NeutrinoSpecies>,
       equation_of_state_tag, evolution::initial_data::Tags::InitialData,
       Particles::MonteCarlo::Tags::InteractionRatesTable<EnergyBins,
                                                          NeutrinoSpecies>>;
