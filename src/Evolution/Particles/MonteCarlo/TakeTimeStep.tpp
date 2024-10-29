@@ -98,7 +98,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
         const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
         const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
         const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-        const Scalar<DataVector>& determinant_spatial_metric,
+        const Scalar<DataVector>& sqrt_determinant_spatial_metric,
         const Scalar<DataVector>& cell_light_crossing_time,
 
         const Mesh<3>& mesh,
@@ -137,8 +137,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   Scalar<DataVector> cell_inertial_three_volume =
       make_with_value<Scalar<DataVector>>(lapse, 0.0);
   cell_proper_four_volume_finite_difference(
-      &cell_proper_four_volume, lapse, determinant_spatial_metric, time_step,
-      mesh, det_jacobian_logical_to_inertial);
+      &cell_proper_four_volume, lapse, sqrt_determinant_spatial_metric,
+      time_step, mesh, det_jacobian_logical_to_inertial);
   cell_inertial_coordinate_three_volume_finite_difference(
       &cell_inertial_three_volume, mesh, det_jacobian_logical_to_inertial);
 

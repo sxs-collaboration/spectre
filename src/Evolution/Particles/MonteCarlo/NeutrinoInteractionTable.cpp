@@ -306,6 +306,7 @@ void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::
   const size_t n_ye_points = table_electron_fraction.size();
   double temperature_correction_factor = 0.0;
 
+  const double dye = table_electron_fraction[1] - table_electron_fraction[0];
   double ye = 0.0;
   double log_rho = 0.0;
   double log_temp = 0.0;
@@ -323,8 +324,8 @@ void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::
             ? 1.0
             : get(temperature)[p] / minimum_temperature;
 
-    ye = std::clamp(ye, table_electron_fraction[0],
-                    table_electron_fraction[n_ye_points - 1]);
+    ye = std::clamp(ye, table_electron_fraction[0] + 1.e-8 * dye,
+                    table_electron_fraction[n_ye_points - 1] - 1.e-8 * dye);
     log_rho = std::clamp(log_rho, table_log_density[0],
                          table_log_density[n_rho_points - 1]);
     log_temp = std::clamp(log_temp, table_log_temperature[0],

@@ -88,11 +88,11 @@ struct component {
                   Frame::Inertial>,
       Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
                   Frame::Inertial>,
-      Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+      Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>,
                   tmpl::size_t<Dim>, Frame::Inertial>,
       gr::Tags::SpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame::Inertial>,
-      gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
       domain::Tags::MeshVelocity<Dim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<Dim>,
@@ -185,15 +185,15 @@ void test_advance_packets() {
   spatial_metric.get(0, 0) = 1.0;
   spatial_metric.get(1, 1) = 1.0;
   spatial_metric.get(2, 2) = 1.0;
-  Scalar<DataVector> determinant_spatial_metric(n_pts, 1.0);
+  Scalar<DataVector> sqrt_determinant_spatial_metric(n_pts, 1.0);
   tnsr::I<DataVector, 3, Frame::Inertial> shift =
       make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   tnsr::i<DataVector, 3, Frame::Inertial> d_lapse =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   tnsr::iJ<DataVector, 3, Frame::Inertial> d_shift =
       make_with_value<tnsr::iJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::iJJ<DataVector, 3, Frame::Inertial> d_inv_spatial_metric =
-      make_with_value<tnsr::iJJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  tnsr::ijj<DataVector, 3, Frame::Inertial> d_spatial_metric =
+      make_with_value<tnsr::ijj<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
 
   // Fluid variables
   Scalar<DataVector> rest_mass_density(zero_dv);
@@ -313,10 +313,10 @@ void test_advance_packets() {
        shift,
        d_lapse,
        d_shift,
-       d_inv_spatial_metric,
+       d_spatial_metric,
        spatial_metric,
        inv_spatial_metric,
-       determinant_spatial_metric,
+       sqrt_determinant_spatial_metric,
        mesh_coordinates,
        mesh_velocity,
        inverse_jacobian_logical_to_inertial,

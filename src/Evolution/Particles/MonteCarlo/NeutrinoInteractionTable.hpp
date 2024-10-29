@@ -11,6 +11,7 @@
 #include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/MultiLinearSpanInterpolation.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 
@@ -27,6 +28,19 @@ class NeutrinoInteractionTable : public PUP::able {
  public:
   /// Read table from disk and stores interaction rates.
   explicit NeutrinoInteractionTable(const std::string& filename);
+
+  static constexpr Options::String help = {
+      "Tabulated neutrino-matter interactions in NuLib format.\n"
+      "Emissivity, absorption and scattering opacities are    \n"
+      "tabulated as a function of density, eletron fraction   \n"
+      "and temperature."};
+
+  struct TableFilename {
+    using type = std::string;
+    static constexpr Options::String help{"File name of the NuLib table"};
+  };
+
+  using options = tmpl::list<TableFilename>;
 
   /// Explicit instantiation from table values, for tests
   NeutrinoInteractionTable(
