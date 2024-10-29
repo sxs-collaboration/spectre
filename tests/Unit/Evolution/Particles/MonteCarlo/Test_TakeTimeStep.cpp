@@ -137,8 +137,7 @@ void test_flat_space_time_step() {
   const double start_time = 0.0;
   const double final_time = 1.6;
   const double time_step = 0.4;
-  std::array<DataVector, NeutrinoSpecies> single_packet_energy = {zero_dv,
-                                                                  zero_dv};
+  std::array<double, NeutrinoSpecies> single_packet_energy = {0.0, 0.0};
   for (size_t s = 0; s < NeutrinoSpecies; s++) {
     gsl::at(single_packet_energy,s) = 1.0;
   }
@@ -236,7 +235,7 @@ void test_flat_space_time_step() {
   while (current_time < final_time) {
     MonteCarloStruct.take_time_step_on_element(
         &packets, &coupling_tilde_tau, &coupling_tilde_rho_ye,
-        &coupling_tilde_s, &generator, &single_packet_energy, current_time,
+        &coupling_tilde_s, &generator, single_packet_energy, current_time,
         current_time + time_step, equation_of_state, interaction_table,
         electron_fraction, baryon_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,

@@ -34,8 +34,10 @@ spectre_target_headers(
   GhostZoneCommunication.hpp
   GhostZoneCommunicationStep.hpp
   GhostZoneCommunicationTags.hpp
+  GlobalReductions.hpp
   ImplicitMonteCarloCorrections.tpp
   InverseJacobianInertialToFluidCompute.hpp
+  ManagerComponent.hpp
   MonteCarloOptions.hpp
   MortarData.hpp
   NeutrinoInteractionTable.hpp

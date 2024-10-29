@@ -58,12 +58,12 @@ struct RandomNumberGenerator : db::SimpleTag {
   using type = std::mt19937;
 };
 
-/// Simple tag containing the desired energy of
-/// packets in low-density regions. The energy
-/// can be different for each neutrino species.
+/// Simple tag containing the minimum energy of
+/// packets at the current time. This can depend
+/// on neutrino species and time, but not location.
 template <size_t NeutrinoSpecies>
-struct DesiredPacketEnergyAtEmission : db::SimpleTag {
-  using type = std::array<DataVector, NeutrinoSpecies>;
+struct MinimumPacketEnergyAtEmission : db::SimpleTag {
+  using type = std::array<double, NeutrinoSpecies>;
 };
 
 /// Simple tag for the table of neutrino-matter interaction
@@ -95,11 +95,12 @@ struct MonteCarloOptions : db::SimpleTag {
   using option_tags = typename Particles::MonteCarlo::MonteCarloOptions<
       NeutrinoSpecies>::options;
   static type create_from_options(
-      const std::array<double, NeutrinoSpecies> initial_packet_energy) {
+      const std::array<double, NeutrinoSpecies> initial_packet_energy,
+      const size_t desired_packets_per_species) {
     std::unique_ptr<Particles::MonteCarlo::MonteCarloOptions<NeutrinoSpecies>>
         mc_options_ptr = std::make_unique<
             Particles::MonteCarlo::MonteCarloOptions<NeutrinoSpecies>>(
-            initial_packet_energy);
+            initial_packet_energy, desired_packets_per_species);
     return mc_options_ptr;
     ;
   }

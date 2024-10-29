@@ -36,6 +36,8 @@
 #include "Evolution/Particles/MonteCarlo/CellCrossingTime.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunication.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
+#include "Evolution/Particles/MonteCarlo/GlobalReductions.hpp"
+#include "Evolution/Particles/MonteCarlo/ManagerComponent.hpp"
 #include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoMomentsFromMonteCarlo.hpp"
 #include "Evolution/Particles/MonteCarlo/System.hpp"
@@ -169,13 +171,15 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       ::Events::ObserveNorms<observe_fields,
-                                              non_tensor_compute_tags>,
-                       dg::Events::ObserveFields<volume_dim, observe_fields,
-                                                 non_tensor_compute_tags>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                Events::MonteCarlo::GlobalReductions<
+                    NeutrinoSpecies, observe_fields, non_tensor_compute_tags>,
+                ::Events::ObserveNorms<observe_fields, non_tensor_compute_tags>,
+                dg::Events::ObserveFields<volume_dim, observe_fields,
+                                          non_tensor_compute_tags>>>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
@@ -270,8 +274,8 @@ struct EvolutionMetavars {
 
   using component_list =
       tmpl::list<observers::Observer<EvolutionMetavars>,
-                 observers::ObserverWriter<EvolutionMetavars>,
-                 dg_element_array>;
+                 observers::ObserverWriter<EvolutionMetavars>, dg_element_array,
+                 Particles::MonteCarlo::ManagerComponent<EvolutionMetavars>>;
 
   using const_global_cache_tags = tmpl::list<
       Particles::MonteCarlo::Tags::MonteCarloOptions<NeutrinoSpecies>,

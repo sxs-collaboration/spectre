@@ -79,9 +79,8 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
         const gsl::not_null<Scalar<DataVector>* > coupling_tilde_rho_ye,
         const gsl::not_null<tnsr::i<DataVector,3>* > coupling_tilde_s,
         const gsl::not_null<std::mt19937*> random_number_generator,
-        const gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
-            single_packet_energy,
 
+        const std::array<double, NeutrinoSpecies>& minimum_packet_energy,
         const double start_time, const double target_end_time,
         const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
         const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
@@ -205,7 +204,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   this->emit_packets(
       packets, random_number_generator, coupling_tilde_tau, coupling_tilde_s,
       coupling_tilde_rho_ye, start_time, time_step, mesh, num_ghost_zones,
-      emissivity_in_cell, *single_packet_energy, energy_at_bin_center,
+      emissivity_in_cell,minimum_packet_energy, energy_at_bin_center,
       lorentz_factor, lower_spatial_four_velocity, inertial_to_fluid_jacobian,
       inertial_to_fluid_inverse_jacobian, cell_proper_four_volume);
 

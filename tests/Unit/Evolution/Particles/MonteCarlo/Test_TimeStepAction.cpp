@@ -83,7 +83,7 @@ struct component {
       Particles::MonteCarlo::Tags::CouplingTildeRhoYe<DataVector>,
       Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>,
       domain::Tags::NeighborMesh<Dim>,
-      Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<3>,
+      Particles::MonteCarlo::Tags::MinimumPacketEnergyAtEmission<3>,
       hydro::Tags::LowerSpatialFourVelocity<DataVector, Dim, Frame::Inertial>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<DataVector, Dim, Frame::Inertial>,
@@ -207,10 +207,7 @@ void test_advance_packets() {
   tnsr::i<DataVector, 3, Frame::Inertial> lower_spatial_four_velocity =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   Scalar<DataVector> cell_light_crossing_time(zero_dv);
-  std::array<DataVector, 3> single_packet_energy = {zero_dv, zero_dv, zero_dv};
-  gsl::at(single_packet_energy, 0) = 1.0;
-  gsl::at(single_packet_energy, 1) = 1.0;
-  gsl::at(single_packet_energy, 2) = 1.0;
+  std::array<double, 3> single_packet_energy = {1.0, 1.0, 1.0};
   get(cell_light_crossing_time) = 1.0;
 
   // Coupling data

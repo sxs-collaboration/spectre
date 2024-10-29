@@ -30,7 +30,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
     const size_t num_ghost_zones,
     const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
         emissivity_in_cell,
-    const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
+    const std::array<double, NeutrinoSpecies>& minimum_packet_energy,
     const std::array<double, EnergyBins>& energy_at_bin_center,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::i<DataVector, 3, Frame::Inertial>& lower_spatial_four_velocity,
@@ -64,7 +64,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
               gsl::at(gsl::at(emissivity_in_cell, s), g)[extended_idx] *
               get(cell_proper_four_volume)[local_idx];
             const double packets_to_create_double =
-              emission_this_cell / gsl::at(single_packet_energy, s)[local_idx];
+              emission_this_cell / gsl::at(minimum_packet_energy, s);
             size_t packets_to_create_int = floor(packets_to_create_double);
             if (rng_uniform_zero_to_one(*random_number_generator) <
               packets_to_create_double -
@@ -137,7 +137,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
               current_packet.time =
                   time_start_step + time_normalized * time_step;
               current_packet.number_of_neutrinos =
-                  gsl::at(gsl::at(single_packet_energy, s), idx) /
+                  gsl::at(minimum_packet_energy, s) /
                   gsl::at(energy_at_bin_center, g);
               current_packet.index_of_closest_grid_point = idx;
               // 4_momentum_fluid_frame contains p^mu in an orthornormal
