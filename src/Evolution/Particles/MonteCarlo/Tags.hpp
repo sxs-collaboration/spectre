@@ -51,6 +51,18 @@ template <size_t EnergyBins, size_t NeutrinoSpecies>
 struct InteractionRatesTable : db::SimpleTag {
   using type =
       std::unique_ptr<NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>>;
+  static constexpr bool pass_metavariables = false;
+  using option_tags =
+      NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::options;
+  static type create_from_options(const std::string filename) {
+    std::unique_ptr<Particles::MonteCarlo::NeutrinoInteractionTable<
+        EnergyBins, NeutrinoSpecies>>
+        interaction_table_ptr =
+            std::make_unique<Particles::MonteCarlo::NeutrinoInteractionTable<
+                EnergyBins, NeutrinoSpecies>>(filename);
+    return interaction_table_ptr;
+    ;
+  }
 };
 
 }  // namespace Particles::MonteCarlo::Tags

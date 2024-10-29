@@ -594,6 +594,8 @@ class Variables<tmpl::list<>> {
   template <typename T>
   Variables(const T* /*pointer*/, const size_t /*size*/) {}
   static constexpr size_t size() { return 0; }
+  void assign_subset(const Variables<tmpl::list<>>& /*unused*/) {}
+  void assign_subset(const tuples::TaggedTuple<>& /*unused*/) {}
 };
 
 // gcc8 screams when the empty Variables has pup as a member function, so we

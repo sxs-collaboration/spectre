@@ -38,6 +38,7 @@ spectre_target_headers(
   NeutrinoInteractionTable.hpp
   Packet.hpp
   Scattering.hpp
+  System.hpp
   Tags.hpp
   TakeTimeStep.tpp
   TemplatedLocalFunctions.hpp

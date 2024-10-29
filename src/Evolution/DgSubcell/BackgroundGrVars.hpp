@@ -105,50 +105,62 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
       const bool did_rollback, const T& solution_or_data) {
     const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
 
-    if (gsl::at(*subcell_face_gr_vars, 0).number_of_grid_points() != 0) {
-      // Evolution phase
+    bool evolution_phase = false;
+    if constexpr (not std::is_same_v<
+                      typename SubcellFaceGrVars::value_type::tags_list,
+                      tmpl::list<>>) {
+      evolution_phase =
+          (gsl::at(*subcell_face_gr_vars, 0).number_of_grid_points() != 0);
+    }
 
-      // Check if the mesh is actually moving i.e. block coordinate map is
-      // time-dependent. If not, we can skip the evaluation of GR variables
-      // since they may stay with their values assigned at the initialization
-      // phase.
-      const auto& element_id = element.id();
-      const size_t block_id = element_id.block_id();
-      const Block<volume_dim>& block = domain.blocks()[block_id];
+    if (evolution_phase) {
+      if constexpr (not std::is_same_v<
+                        typename SubcellFaceGrVars::value_type::tags_list,
+                        tmpl::list<>>) {
+        // Evolution phase
 
-      if (block.is_time_dependent()) {
-        if (did_rollback or not ComputeOnlyOnRollback) {
-          if (did_rollback) {
-            // Right after rollback, subcell GR vars are stored in the
-            // `inactive` one.
-            ASSERT(inactive_gr_vars->number_of_grid_points() == num_subcell_pts,
-                   "The size of subcell GR variables ("
-                       << inactive_gr_vars->number_of_grid_points()
-                       << ") is not equal to the number of FD grid points ("
-                       << subcell_mesh.number_of_grid_points() << ").");
+        // Check if the mesh is actually moving i.e. block coordinate map is
+        // time-dependent. If not, we can skip the evaluation of GR variables
+        // since they may stay with their values assigned at the initialization
+        // phase.
+        const auto& element_id = element.id();
+        const size_t block_id = element_id.block_id();
+        const Block<volume_dim>& block = domain.blocks()[block_id];
 
-            cell_centered_impl(inactive_gr_vars, time, subcell_inertial_coords,
-                               solution_or_data);
+        if (block.is_time_dependent()) {
+          if (did_rollback or not ComputeOnlyOnRollback) {
+            if (did_rollback) {
+              // Right after rollback, subcell GR vars are stored in the
+              // `inactive` one.
+              ASSERT(
+                  inactive_gr_vars->number_of_grid_points() == num_subcell_pts,
+                  "The size of subcell GR variables ("
+                      << inactive_gr_vars->number_of_grid_points()
+                      << ") is not equal to the number of FD grid points ("
+                      << subcell_mesh.number_of_grid_points() << ").");
 
-          } else {
-            // In this case the element didn't rollback but started from FD.
-            // Therefore subcell GR vars are in the `active` one.
-            ASSERT(active_gr_vars->number_of_grid_points() == num_subcell_pts,
-                   "The size of subcell GR variables ("
-                       << active_gr_vars->number_of_grid_points()
-                       << ") is not equal to the number of FD grid points ("
-                       << subcell_mesh.number_of_grid_points() << ").");
+              cell_centered_impl(inactive_gr_vars, time,
+                                 subcell_inertial_coords, solution_or_data);
 
-            cell_centered_impl(active_gr_vars, time, subcell_inertial_coords,
-                               solution_or_data);
+            } else {
+              // In this case the element didn't rollback but started from FD.
+              // Therefore subcell GR vars are in the `active` one.
+              ASSERT(active_gr_vars->number_of_grid_points() == num_subcell_pts,
+                     "The size of subcell GR variables ("
+                         << active_gr_vars->number_of_grid_points()
+                         << ") is not equal to the number of FD grid points ("
+                         << subcell_mesh.number_of_grid_points() << ").");
+
+              cell_centered_impl(active_gr_vars, time, subcell_inertial_coords,
+                                 solution_or_data);
+            }
+
+            face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
+                               logical_to_grid_map, grid_to_inertial_map,
+                               subcell_mesh, solution_or_data);
           }
-
-          face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
-                             logical_to_grid_map, grid_to_inertial_map,
-                             subcell_mesh, solution_or_data);
         }
       }
-
     } else {
       // Initialization phase
       (*inactive_gr_vars).initialize(num_subcell_pts);
@@ -158,19 +170,22 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
              "The subcell mesh must have isotropic basis, quadrature. and "
              "extents but got "
                  << subcell_mesh);
-      const size_t num_face_centered_mesh_grid_pts =
-          (subcell_mesh.extents(0) + 1) * subcell_mesh.extents(1) *
-          subcell_mesh.extents(2);
-      for (size_t d = 0; d < volume_dim; ++d) {
-        gsl::at(*subcell_face_gr_vars, d)
-            .initialize(num_face_centered_mesh_grid_pts);
+      if constexpr (not std::is_same_v<
+                        typename SubcellFaceGrVars::value_type::tags_list,
+                        tmpl::list<>>) {
+        const size_t num_face_centered_mesh_grid_pts =
+            (subcell_mesh.extents(0) + 1) * subcell_mesh.extents(1) *
+            subcell_mesh.extents(2);
+        for (size_t d = 0; d < volume_dim; ++d) {
+          gsl::at(*subcell_face_gr_vars, d)
+              .initialize(num_face_centered_mesh_grid_pts);
+        }
+        face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
+                           logical_to_grid_map, grid_to_inertial_map,
+                           subcell_mesh, solution_or_data);
       }
-
       cell_centered_impl(inactive_gr_vars, time, subcell_inertial_coords,
                          solution_or_data);
-      face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
-                         logical_to_grid_map, grid_to_inertial_map,
-                         subcell_mesh, solution_or_data);
     }
   }
 

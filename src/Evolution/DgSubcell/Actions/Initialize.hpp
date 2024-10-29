@@ -46,6 +46,7 @@
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -187,17 +188,10 @@ struct SetSubcellGrid {
         },
         make_not_null(&box));
 
-    db::mutate_apply<
-        tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
-                   typename System::variables_tag, subcell::Tags::TciDecision,
-                   subcell::Tags::TciCallsSinceRollback,
-                   subcell::Tags::StepsSinceTciCall>,
-        tmpl::list<>>(
-        [&cell_is_not_on_external_boundary, &dg_mesh,
-         subcell_allowed_in_element, &subcell_mesh](
+    const auto init_non_vars =
+        [&cell_is_not_on_external_boundary, subcell_allowed_in_element](
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
-            const auto active_vars_ptr,
             const gsl::not_null<int*> tci_decision_ptr,
             const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
             const gsl::not_null<size_t*> steps_since_tci_call_ptr) {
@@ -210,17 +204,59 @@ struct SetSubcellGrid {
                subcell_enabled_at_external_boundary) and
               subcell_allowed_in_element) {
             *active_grid_ptr = ActiveGrid::Subcell;
-            active_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
           } else {
             *active_grid_ptr = ActiveGrid::Dg;
-            active_vars_ptr->initialize(dg_mesh.number_of_grid_points());
           }
 
           *tci_decision_ptr = 0;
           *tci_calls_since_rollback_ptr = 0;
           *steps_since_tci_call_ptr = 0;
+        };
+
+    db::mutate_apply<
+        tmpl::flatten<tmpl::list<
+            Tags::ActiveGrid, Tags::DidRollback,
+            tmpl::conditional_t<
+                std::is_same_v<typename System::variables_tag::tags_list,
+                               tmpl::list<>>,
+                tmpl::list<>, typename System::variables_tag>,
+            subcell::Tags::TciDecision, subcell::Tags::TciCallsSinceRollback,
+            subcell::Tags::StepsSinceTciCall>>,
+        tmpl::list<>>(
+        Overloader{
+            [&init_non_vars](
+                const gsl::not_null<ActiveGrid*> active_grid_ptr,
+                const gsl::not_null<bool*> did_rollback_ptr,
+                const gsl::not_null<int*> tci_decision_ptr,
+                const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
+                const gsl::not_null<size_t*> steps_since_tci_call_ptr) {
+              init_non_vars(active_grid_ptr, did_rollback_ptr, tci_decision_ptr,
+                            tci_calls_since_rollback_ptr,
+                            steps_since_tci_call_ptr);
+            },
+            [&init_non_vars, &dg_mesh, &subcell_mesh,
+             &cell_is_not_on_external_boundary, subcell_allowed_in_element](
+                const gsl::not_null<ActiveGrid*> active_grid_ptr,
+                const gsl::not_null<bool*> did_rollback_ptr,
+                const auto active_vars_ptr,
+                const gsl::not_null<int*> tci_decision_ptr,
+                const gsl::not_null<size_t*> tci_calls_since_rollback_ptr,
+                const gsl::not_null<size_t*> steps_since_tci_call_ptr) {
+              init_non_vars(active_grid_ptr, did_rollback_ptr, tci_decision_ptr,
+                            tci_calls_since_rollback_ptr,
+                            steps_since_tci_call_ptr);
+              if ((cell_is_not_on_external_boundary or
+                   subcell_enabled_at_external_boundary) and
+                  subcell_allowed_in_element) {
+                active_vars_ptr->initialize(
+                    subcell_mesh.number_of_grid_points());
+              } else {
+                active_vars_ptr->initialize(dg_mesh.number_of_grid_points());
+              }
+            },
         },
         make_not_null(&box));
+
     if constexpr (System::has_primitive_and_conservative_vars) {
       db::mutate<typename System::primitive_variables_tag>(
           [&dg_mesh, &subcell_mesh](const auto prim_vars_ptr,
