@@ -58,7 +58,7 @@ void fluxes_impl(
  * B^m v_m\\
  * F^i({\tilde \tau}) = &~  {\tilde \tau} v^i_{tr} + \sqrt{\gamma} \alpha \left(
  * p + p_m \right) v^i - \alpha {\tilde B}^i B^m v_m \\
- * F^i({\tilde B}^j) = &~  {\tilde B}^j v^i_{tr} - v^j_{tr} {\tilde B}^i +
+ * F^i({\tilde B}^j) = &~  {\tilde B}^j v^i_{tr} - \alpha v^j {\tilde B}^i +
  * \alpha \gamma^{ij} {\tilde \Phi} \\
  * F^i({\tilde \Phi}) = &~ \alpha {\tilde B^i} - \beta^i {\tilde \Phi}
  * \f}
