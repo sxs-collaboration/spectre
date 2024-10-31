@@ -52,7 +52,7 @@ void test_flat_space_time_step() {
   spatial_metric.get(0, 0) = 1.0;
   spatial_metric.get(1, 1) = 1.0;
   spatial_metric.get(2, 2) = 1.0;
-  Scalar<DataVector> determinant_spatial_metric(dv_size, 1.0);
+  Scalar<DataVector> sqrt_determinant_spatial_metric(dv_size, 1.0);
   tnsr::I<DataVector, 3, Frame::Inertial> shift =
       make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   tnsr::i<DataVector, 3, Frame::Inertial> d_lapse =
@@ -238,7 +238,7 @@ void test_flat_space_time_step() {
         electron_fraction, baryon_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
         d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-        determinant_spatial_metric, cell_light_crossing_time, mesh,
+        sqrt_determinant_spatial_metric, cell_light_crossing_time, mesh,
         mesh_coordinates, num_ghost_zones, mesh_velocity,
         inverse_jacobian_logical_to_inertial, det_jacobian_logical_to_inertial,
         jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid,

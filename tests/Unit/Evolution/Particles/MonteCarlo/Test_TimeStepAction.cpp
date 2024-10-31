@@ -185,7 +185,7 @@ void test_advance_packets() {
   spatial_metric.get(0, 0) = 1.0;
   spatial_metric.get(1, 1) = 1.0;
   spatial_metric.get(2, 2) = 1.0;
-  Scalar<DataVector> determinant_spatial_metric(n_pts, 1.0);
+  Scalar<DataVector> sqrt_determinant_spatial_metric(n_pts, 1.0);
   tnsr::I<DataVector, 3, Frame::Inertial> shift =
       make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   tnsr::i<DataVector, 3, Frame::Inertial> d_lapse =
@@ -316,7 +316,7 @@ void test_advance_packets() {
        d_inv_spatial_metric,
        spatial_metric,
        inv_spatial_metric,
-       determinant_spatial_metric,
+       sqrt_determinant_spatial_metric,
        mesh_coordinates,
        mesh_velocity,
        inverse_jacobian_logical_to_inertial,

@@ -234,19 +234,32 @@ size_t MultiLinearSpanInterpolation<
              << which_dimension << "\ncurrent_index: " << current_index
              << "\nnumber of points: " << number_of_points_[which_dimension]
              << "\ntarget point: " << target_points
-             << "\nrelative coordinate: " << relative_coordinate);
+             << "\nrelative coordinate: " << relative_coordinate
+             << "\nspacing: " << inverse_spacing_[which_dimension]);
+
+  // Do not trigger errors for roundoff errors in index calculation
+  if (UNLIKELY(current_index + 1 == number_of_points_[which_dimension])) {
+    if (relative_coordinate * inverse_spacing_[which_dimension] -
+            static_cast<double>(current_index) <
+        1.e-13) {
+      current_index -= 1;
+    }
+  }
 
   // We are exceeding the table bounds:
   // Use linear extrapolation based of the highest
   // two points in the table
 
-  ASSERT(allow_extrapolation_abov_data_[which_dimension] or
-             UNLIKELY(current_index + 1 < number_of_points_[which_dimension]),
-         "Interpolation exceeds upper table bounds.\nwhich_dimension: "
-             << which_dimension << "\ncurrent_index: " << current_index
-             << "\nnumber of points: " << number_of_points_[which_dimension]
-             << "\ntarget point: " << target_points
-             << "\nrelative coordinate: " << relative_coordinate);
+  ASSERT(
+      allow_extrapolation_abov_data_[which_dimension] or
+          UNLIKELY(current_index + 1 < number_of_points_[which_dimension]),
+      "Interpolation exceeds upper table bounds.\nwhich_dimension: "
+          << which_dimension << "\ncurrent_index: " << current_index
+          << "\nnumber of points: " << number_of_points_[which_dimension]
+          << "\ntarget point: " << target_points
+          << "\nrelative coordinate: " << relative_coordinate << "\nposition: "
+          << relative_coordinate * inverse_spacing_[which_dimension] -
+                 static_cast<double>(number_of_points_[which_dimension] - 1));
 
   // Enforce index ranges
   current_index = std::min(number_of_points_[which_dimension] - 2,

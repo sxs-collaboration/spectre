@@ -9,6 +9,7 @@
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Particles::MonteCarlo {
@@ -31,14 +32,8 @@ struct System {
       ::Tags::Variables<gr::tags_for_hydro<volume_dim, DataVector>>;
   using flux_spacetime_variables_tag = ::Tags::Variables<tmpl::list<>>;
   // Hydro tags needed for background metric
-  using hydro_variables_tag = ::Tags::Variables<tmpl::list<
-      hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::ElectronFraction<DataVector>,
-      hydro::Tags::Temperature<DataVector>,
-      hydro::Tags::LowerSpatialFourVelocity<DataVector, 3, Frame::Inertial>>>;
-  using primitive_variables_tag =
-      hydro_variables_tag;  //::Tags::Variables<tmpl::list<>>;
+  using hydro_variables_tag = ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
+  using primitive_variables_tag = hydro_variables_tag;
 
   using inverse_spatial_metric_tag =
       gr::Tags::InverseSpatialMetric<DataVector, 3>;

@@ -25,12 +25,11 @@ namespace Particles::MonteCarlo {
 /// in inertial coordinates, hence the need for
 /// det_jacobian_logical_to_inertial
 void cell_proper_four_volume_finite_difference(
-  gsl::not_null<Scalar<DataVector>* > cell_proper_four_volume,
-  const Scalar<DataVector>& lapse,
-  const Scalar<DataVector>& determinant_spatial_metric,
-  double time_step,
-  const Mesh<3>& mesh,
-  const Scalar<DataVector>& det_jacobian_logical_to_inertial);
+    gsl::not_null<Scalar<DataVector>*> cell_proper_four_volume,
+    const Scalar<DataVector>& lapse,
+    const Scalar<DataVector>& sqrt_determinant_spatial_metric, double time_step,
+    const Mesh<3>& mesh,
+    const Scalar<DataVector>& det_jacobian_logical_to_inertial);
 
 /// 3-volume of a cell in inertial coordinate. Note that this is
 /// the coordinate volume, not the proper volume. This quantity

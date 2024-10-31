@@ -53,7 +53,7 @@ struct InteractionRatesTable : db::SimpleTag {
       std::unique_ptr<NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>>;
   static constexpr bool pass_metavariables = false;
   using option_tags =
-      NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::options;
+      typename NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::options;
   static type create_from_options(const std::string filename) {
     std::unique_ptr<Particles::MonteCarlo::NeutrinoInteractionTable<
         EnergyBins, NeutrinoSpecies>>

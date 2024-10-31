@@ -41,7 +41,8 @@ struct TimeStepMutator {
   using return_tags =
       tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement,
                  Particles::MonteCarlo::Tags::RandomNumberGenerator,
-                 Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<3>>;
+                 Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
+                     NeutrinoSpecies>>;
   // To do : check carefully DG vs Subcell quantities... everything should
   // be on the Subcell grid!
   using argument_tags = tmpl::list<
@@ -60,11 +61,11 @@ struct TimeStepMutator {
                     Frame::Inertial>,
       ::Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
                     Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, Dim>,
-                    tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>,
       gr::Tags::SpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame::Inertial>,
-      gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
       Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
@@ -96,10 +97,10 @@ struct TimeStepMutator {
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_lapse,
       const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
-      const tnsr::iJJ<DataVector, Dim, Frame::Inertial>& d_inv_spatial_metric,
+      const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& determinant_spatial_metric,
+      const Scalar<DataVector>& sqrt_determinant_spatial_metric,
       const Scalar<DataVector>& cell_light_crossing_time, const Mesh<Dim>& mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& mesh_coordinates,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
@@ -117,8 +118,8 @@ struct TimeStepMutator {
     const size_t num_ghost_zones = 1;
     // Get information stored in various databox containers in
     // the format expected by take_time_step_on_element
-    const double start_time = current_step_id.step_time().value();
-    const double end_time = next_step_id.step_time().value();
+    const double start_time = 0.0;  // current_step_id.step_time().value();
+    const double end_time = 0.1;    // next_step_id.step_time().value();
     Scalar<DataVector> det_jacobian_logical_to_inertial(lapse);
     get(det_jacobian_logical_to_inertial) =
         1.0 / get(det_inverse_jacobian_logical_to_inertial);
@@ -131,6 +132,22 @@ struct TimeStepMutator {
     const DirectionalIdMap<Dim, std::optional<DataVector>>&
         cell_light_crossing_time_ghost = mortar_data.cell_light_crossing_time;
 
+    tnsr::iJJ<DataVector, 3, Frame::Inertial> d_inv_spatial_metric =
+        make_with_value<tnsr::iJJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+    for (size_t i = 0; i < 3; i++) {
+      for (size_t j = i; j < 3; j++) {
+        for (size_t k = 0; k < 3; k++) {
+          for (size_t l = 0; l < 3; l++) {
+            for (size_t m = 0; m < 3; m++) {
+              d_inv_spatial_metric.get(k, i, j) -=
+                  inv_spatial_metric.get(i, l) * inv_spatial_metric.get(j, m) *
+                  d_spatial_metric.get(k, l, m);
+            }
+          }
+        }
+      }
+    }
+
     TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies> templated_functions;
     templated_functions.take_time_step_on_element(
         packets, random_number_generator, single_packet_energy, start_time,
@@ -138,7 +155,7 @@ struct TimeStepMutator {
         rest_mass_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
         d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-        determinant_spatial_metric, cell_light_crossing_time, mesh,
+        sqrt_determinant_spatial_metric, cell_light_crossing_time, mesh,
         mesh_coordinates, num_ghost_zones, mesh_velocity,
         inverse_jacobian_logical_to_inertial, det_jacobian_logical_to_inertial,
         inertial_to_fluid_jacobian, inertial_to_fluid_inverse_jacobian,

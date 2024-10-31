@@ -27,6 +27,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/InitializeMonteCarlo.hpp"
 #include "Evolution/Particles/MonteCarlo/Actions/TimeStepActions.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunication.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
@@ -69,7 +70,9 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -114,7 +117,6 @@ struct EvolutionMetavars {
   using TimeStepperBase = TimeStepper;
   static constexpr bool use_dg_subcell = true;
 
-  using initial_data_tag = evolution::initial_data::Tags::InitialData;
   using initial_data_list =
       grmhd::ValenciaDivClean::InitialData::initial_data_list;
   using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
@@ -135,6 +137,10 @@ struct EvolutionMetavars {
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  ::Events::Tags::ObserverDetInvJacobianCompute<
                      Frame::ElementLogical, Frame::Inertial>>;
+
+  using analytic_variables_tags = typename system::variables_tag::tags_list;
+  using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
+      volume_dim, analytic_variables_tags, false, initial_data_list>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -204,6 +210,12 @@ struct EvolutionMetavars {
           evolution::dg::subcell::BackgroundGrVars<system, EvolutionMetavars,
                                                    true, false>>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::SwapGrTags>,
+      Initialization::Actions::InitializeMCTags<system, EnergyBins,
+                                                NeutrinoSpecies>,
+      Initialization::Actions::AddComputeTags<tmpl::list<
+          hydro::Tags::LowerSpatialFourVelocityCompute,
+          Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
+          domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>>>,
       // Initialization::TimeStepperHistory<EvolutionMetavars>
       Parallel::Actions::TerminatePhase>;
 
@@ -211,22 +223,25 @@ struct EvolutionMetavars {
       EvolutionMetavars,
       tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>
-//,
-// Parallel::PhaseActions<
-//     Parallel::Phase::InitializeTimeStepperHistory,
-//     SelfStart::self_start_procedure<step_actions, system>>,
+                                 initialization_actions>,
+          //,
+          // Parallel::PhaseActions<
+          //     Parallel::Phase::InitializeTimeStepperHistory,
+          //     SelfStart::self_start_procedure<step_actions, system>>,
 
-//  Parallel::PhaseActions<Parallel::Phase::Register,
-//                         tmpl::list<dg_registration_list,
-//                                    Parallel::Actions::TerminatePhase>>,
+          //  Parallel::PhaseActions<Parallel::Phase::Register,
+          //                         tmpl::list<dg_registration_list,
+          //                 Parallel::Actions::TerminatePhase>>,
 
-//  Parallel::PhaseActions<
-//      Parallel::Phase::Evolve,
-//      tmpl::list<evolution::Actions::RunEventsAndTriggers,
-//                 Actions::ChangeSlabSize, //step_actions,
-//                 Actions::AdvanceTime,
-//                 PhaseControl::Actions::ExecutePhaseChange>>>>;
+          Parallel::PhaseActions<
+              Parallel::Phase::Evolve,
+              tmpl::list<Particles::MonteCarlo::Actions::TakeTimeStep<
+                             EnergyBins, NeutrinoSpecies>,
+                         Parallel::Actions::TerminatePhase>>
+          //      tmpl::list<evolution::Actions::RunEventsAndTriggers,
+          //                 Actions::ChangeSlabSize, //step_actions,
+          //                 Actions::AdvanceTime,
+          //                 PhaseControl::Actions::ExecutePhaseChange>>
           >>;
 
   struct registration
@@ -240,10 +255,10 @@ struct EvolutionMetavars {
                  observers::ObserverWriter<EvolutionMetavars>,
                  dg_element_array>;
 
-  using const_global_cache_tags =
-      tmpl::list<equation_of_state_tag, initial_data_tag,
-                 Particles::MonteCarlo::Tags::InteractionRatesTable<
-                     EnergyBins, NeutrinoSpecies>>;
+  using const_global_cache_tags = tmpl::list<
+      equation_of_state_tag, evolution::initial_data::Tags::InitialData,
+      Particles::MonteCarlo::Tags::InteractionRatesTable<EnergyBins,
+                                                         NeutrinoSpecies>>;
 
   static constexpr Options::String help{
       "Evolve Monte Carlo transport (without coupling to hydro).\n\n"};

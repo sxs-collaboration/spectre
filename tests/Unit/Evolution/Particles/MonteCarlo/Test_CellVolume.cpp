@@ -17,7 +17,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloCellVolume",
   const size_t dv_size = 27;
   DataVector zero_dv(dv_size, 0.0);
   Scalar<DataVector> lapse{DataVector(dv_size, 1.2)};
-  Scalar<DataVector> determinant_spatial_metric{DataVector(dv_size, 0.9)};
+  Scalar<DataVector> sqrt_determinant_spatial_metric{DataVector(dv_size, 0.9)};
   Scalar<DataVector> det_jacobian_logical_to_inertial{DataVector(dv_size, 1.1)};
   const double time_step = 0.6;
 
@@ -25,8 +25,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloCellVolume",
   Scalar<DataVector> expected_cell_proper_four_volume{
       DataVector(dv_size, 8.0 / 27.0 * 1.2 * 0.9 * 0.6 * 1.1)};
   Particles::MonteCarlo::cell_proper_four_volume_finite_difference(
-      &cell_proper_four_volume, lapse, determinant_spatial_metric, time_step,
-      mesh, det_jacobian_logical_to_inertial);
+      &cell_proper_four_volume, lapse, sqrt_determinant_spatial_metric,
+      time_step, mesh, det_jacobian_logical_to_inertial);
 
   Scalar<DataVector> cell_inertial_three_volume{DataVector(dv_size, 0.0)};
   Scalar<DataVector> expected_cell_inertial_three_volume{
