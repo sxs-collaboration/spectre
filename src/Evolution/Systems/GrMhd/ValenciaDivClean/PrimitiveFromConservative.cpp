@@ -124,7 +124,10 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   // work because everything will get reset to atmosphere.
   if (max(get(tilde_d)) < cutoffD) {
     get(*rest_mass_density) = floorD;
-    get(*electron_fraction) = min(0.5, max(get(tilde_ye) / get(tilde_d), 0.));
+    get(*electron_fraction) =
+        min(equation_of_state.electron_fraction_upper_bound(),
+            max(get(tilde_ye) / get(tilde_d),
+                equation_of_state.electron_fraction_lower_bound()));
     if constexpr (eos_is_barotropic) {
       // Note: default construction for T and Y_e must be okay since the EOS is
       // barotropic.
@@ -187,11 +190,11 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   rest_mass_density_times_lorentz_factor =
       get(tilde_d) / get(sqrt_det_spatial_metric);
 
-  // This may need bounds
-  // limit Ye to table bounds once that is implemented
   for (size_t s = 0; s < number_of_points; ++s) {
     get(*electron_fraction)[s] =
-        std::min(0.5, std::max(get(tilde_ye)[s] / get(tilde_d)[s], 0.));
+        std::min(equation_of_state.electron_fraction_upper_bound(),
+            std::max(get(tilde_ye)[s] / get(tilde_d)[s],
+                equation_of_state.electron_fraction_lower_bound()));
 
     std::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
         primitive_data = std::nullopt;
