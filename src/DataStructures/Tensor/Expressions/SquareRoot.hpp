@@ -196,7 +196,7 @@ struct SquareRoot
     } else {
       // We haven't yet evaluated the whole subtree for this expression, so
       // return the square root of this expression's subtree
-      return sqrt(t_.template get_primary(result_component, multi_index));
+      return sqrt(t_.get_primary(result_component, multi_index));
     }
   }
 
@@ -219,7 +219,7 @@ struct SquareRoot
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t_.template evaluate_primary_subtree(result_component, multi_index);
+      t_.evaluate_primary_subtree(result_component, multi_index);
     }
 
     if constexpr (is_primary_start) {

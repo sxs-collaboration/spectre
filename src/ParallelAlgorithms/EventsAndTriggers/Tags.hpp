@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -22,7 +23,7 @@ namespace OptionTags {
 ///
 /// In yaml this is specified as a map of triggers to lists of events:
 /// \code{.yaml}
-/// EventsAndTriggers:
+/// EventsAndTriggersAtSlabs:
 ///   ? TriggerA:
 ///       OptionsForTriggerA
 ///   : - Event1:
@@ -36,6 +37,7 @@ namespace OptionTags {
 ///     - Event4:
 ///         OptionsForEvent4
 /// \endcode
+template <Triggers::WhenToCheck WhenToCheck>
 struct EventsAndTriggers {
   using type = ::EventsAndTriggers;
   static constexpr Options::String help = "Events to run at triggers";
@@ -45,7 +47,9 @@ struct EventsAndTriggers {
   // OptionParser run-time error saying that an option name is greater
   // than 21 characters.  Adding the name() function below bypasses
   // pretty_type::short_name().
-  static std::string name() { return "EventsAndTriggers"; }
+  static std::string name() {
+    return "EventsAndTriggers" + get_output(WhenToCheck);
+  }
 };
 
 namespace EventsRunAtCleanup {
@@ -80,13 +84,17 @@ struct ObservationValue {
 namespace Tags {
 /// \ingroup EventsAndTriggersGroup
 /// Contains the events and triggers
+template <Triggers::WhenToCheck WhenToCheck>
 struct EventsAndTriggers : db::SimpleTag {
   using type = ::EventsAndTriggers;
-  using option_tags = tmpl::list<::OptionTags::EventsAndTriggers>;
+  using option_tags = tmpl::list<::OptionTags::EventsAndTriggers<WhenToCheck>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_and_triggers) {
     return deserialize<type>(serialize<type>(events_and_triggers).data());
+  }
+  static std::string name() {
+    return "EventsAndTriggers" + get_output(WhenToCheck);
   }
 };
 

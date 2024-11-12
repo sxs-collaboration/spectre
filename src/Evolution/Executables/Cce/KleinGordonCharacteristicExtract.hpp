@@ -56,8 +56,7 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
       tmpl::list<Cce::Tags::ScriPlus<Cce::Tags::KleinGordonPi>>;
 
   using cce_step_choosers =
-      tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
-                 StepChoosers::Increase<StepChooserUse::LtsStep>,
+      tmpl::list<StepChoosers::Constant, StepChoosers::LimitIncrease,
                  StepChoosers::ErrorControl<StepChooserUse::LtsStep,
                                             Tags::Variables<evolved_swsh_tags>,
                                             swsh_vars_selector>,

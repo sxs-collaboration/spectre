@@ -20,6 +20,7 @@
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -135,9 +136,30 @@ struct RegisterEventsWithObservers
     (void)collect_observations;
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 10
 
-    if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndTriggers,
-                                           db::DataBox<DbTagList>>) {
-      const auto& triggers_and_events = db::get<::Tags::EventsAndTriggers>(box);
+    if constexpr (db::tag_is_retrievable_v<
+                      ::Tags::EventsAndTriggers<
+                          Triggers::WhenToCheck::AtIterations>,
+                      db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events = db::get<
+          ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtIterations>>(box);
+      triggers_and_events.for_each_event(collect_observations);
+    }
+
+    if constexpr (db::tag_is_retrievable_v<
+                      ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+                      db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events =
+          db::get<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
+              box);
+      triggers_and_events.for_each_event(collect_observations);
+    }
+
+    if constexpr (db::tag_is_retrievable_v<
+                      ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>,
+                      db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events =
+          db::get<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>(
+              box);
       triggers_and_events.for_each_event(collect_observations);
     }
 

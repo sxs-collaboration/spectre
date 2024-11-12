@@ -25,6 +25,7 @@ struct Time;
 }  // namespace Tags
 /// \endcond
 
+/// \brief Utilities for initializing the curved scalar wave system.
 namespace CurvedScalarWave::Initialization {
 /// \ingroup InitializationGroup
 /// \brief Mutator meant to be used with

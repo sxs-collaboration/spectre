@@ -242,7 +242,7 @@ struct Divide
     } else {
       // We haven't yet evaluated the whole subtree for this expression, so
       // return the quotient of the results of the two operands' subtrees
-      return t1_.template get_primary(result_component, result_multi_index) /
+      return t1_.get_primary(result_component, result_multi_index) /
              t2_.get(op2_multi_index);
     }
   }
@@ -281,8 +281,7 @@ struct Divide
       // We haven't yet evaluated the whole subtree of the primary child, so
       // first assign the result component to be the result of computing the
       // primary child's subtree
-      result_component =
-          t1_.template get_primary(result_component, result_multi_index);
+      result_component = t1_.get_primary(result_component, result_multi_index);
       // Now that the primary child's subtree has been computed, divide the
       // current result by the result of evaluating the other child's subtree
       result_component /= t2_.get(op2_multi_index);
@@ -308,8 +307,7 @@ struct Divide
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t1_.template evaluate_primary_subtree(result_component,
-                                            result_multi_index);
+      t1_.evaluate_primary_subtree(result_component, result_multi_index);
     }
     if constexpr (is_primary_start) {
       // We want to evaluate the subtree for this expression

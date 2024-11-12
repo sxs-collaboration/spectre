@@ -295,10 +295,10 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<evolution::Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>;
+              tmpl::list<
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
+                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;

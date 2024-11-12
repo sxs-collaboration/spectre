@@ -128,7 +128,7 @@ Observers:
 Interpolator:
   DumpVolumeDataOnFailure: false
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:

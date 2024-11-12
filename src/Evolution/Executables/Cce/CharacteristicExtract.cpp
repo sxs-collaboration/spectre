@@ -23,8 +23,9 @@ extern "C" void CkRegisterMainModule() {
            metavariables::evolve_ccm, metavariables::cce_boundary_component>,
        &register_derived_classes_with_charm<
            Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
-       &register_derived_classes_with_charm<
-           Cce::WorldtubeBufferUpdater<Cce::cce_bondi_input_tags>>,
+       &register_derived_classes_with_charm<Cce::WorldtubeBufferUpdater<
+           Cce::Tags::worldtube_boundary_tags_for_writing<
+               Spectral::Swsh::Tags::SwshTransform>>>,
        &register_derived_classes_with_charm<Cce::WorldtubeDataManager<
            Cce::Tags::characteristic_worldtube_boundary_tags<
                Cce::Tags::BoundaryValue>>>,

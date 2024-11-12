@@ -30,11 +30,13 @@ def position_helper(time, init_sep, newtonian, sign, no_expansion):
         else separation(time, init_sep, newtonian)
     )
     freq = orbital_frequency(time, init_sep, newtonian)
-    return [
-        sign * 0.5 * sep * np.cos(freq * time) + initial_velocity[0] * time,
-        sign * 0.5 * sep * np.sin(freq * time) + initial_velocity[1] * time,
-        initial_velocity[2] * time,
-    ]
+    return np.array(
+        [
+            sign * 0.5 * sep * np.cos(freq * time) + initial_velocity[0] * time,
+            sign * 0.5 * sep * np.sin(freq * time) + initial_velocity[1] * time,
+            initial_velocity[2] * time,
+        ]
+    )
 
 
 def positions1(time, newtonian, no_expansion):

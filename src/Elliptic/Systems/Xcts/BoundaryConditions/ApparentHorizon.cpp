@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -32,9 +32,9 @@ namespace Xcts::BoundaryConditions {
 template <Xcts::Geometry ConformalGeometry>
 ApparentHorizon<ConformalGeometry>::ApparentHorizon(
     std::array<double, 3> center, std::array<double, 3> rotation,
-    std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+    std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>
         solution_for_lapse,
-    std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+    std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>
         solution_for_negative_expansion,
     const Options::Context& /*context*/)
     : center_(center),
@@ -107,7 +107,7 @@ void normal_gradient_term_curved(
 void negative_expansion_quantities(
     const gsl::not_null<Scalar<DataVector>*> expansion,
     const gsl::not_null<Scalar<DataVector>*> beta_orthogonal_correction,
-    const std::unique_ptr<elliptic::analytic_data::AnalyticSolution>& solution,
+    const std::unique_ptr<elliptic::analytic_data::InitialGuess>& solution,
     const tnsr::I<DataVector, 3>& x,
     const tnsr::i<DataVector, 3>& conformal_face_normal,
     const Scalar<DataVector>& unnormalized_conformal_face_normal_magnitude,
@@ -200,11 +200,9 @@ void apparent_horizon_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*>
         n_dot_longitudinal_shift_excess,
     const std::array<double, 3>& center, const std::array<double, 3>& rotation,
-    const std::optional<
-        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+    const std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>&
         solution_for_lapse,
-    const std::optional<
-        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+    const std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>&
         solution_for_negative_expansion,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal,
@@ -351,11 +349,9 @@ void linearized_apparent_horizon_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*>
         n_dot_longitudinal_shift_correction,
     const std::array<double, 3>& center,
-    const std::optional<
-        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+    const std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>&
         solution_for_lapse,
-    const std::optional<
-        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+    const std::optional<std::unique_ptr<elliptic::analytic_data::InitialGuess>>&
         solution_for_negative_expansion,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal,

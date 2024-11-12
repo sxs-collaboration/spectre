@@ -20,6 +20,7 @@ struct sources_computer_linearized<
 };
 struct NoSourcesComputer {
   using argument_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<>;
 };
 }  // namespace detail
 
@@ -40,4 +41,13 @@ using get_sources_argument_tags = typename tmpl::conditional_t<
     std::is_same_v<get_sources_computer<System, Linearized>, void>,
     detail::NoSourcesComputer,
     get_sources_computer<System, Linearized>>::argument_tags;
+
+/// The `const_global_cache_tags` of either the `System::sources_computer` or
+/// the `System::sources_computer_linearized`, depending on the `Linearized`
+/// parameter, or an empty list if the sources computer is `void`.
+template <typename System, bool Linearized>
+using get_sources_const_global_cache_tags = typename tmpl::conditional_t<
+    std::is_same_v<get_sources_computer<System, Linearized>, void>,
+    detail::NoSourcesComputer,
+    get_sources_computer<System, Linearized>>::const_global_cache_tags;
 }  // namespace elliptic

@@ -68,14 +68,16 @@ struct MockElementArray {
   using extra_tags_for_subcell = tmpl::conditional_t<
       AddSubcell,
       tmpl::list<evolution::dg::subcell::Tags::ActiveGrid,
-                 evolution::dg::subcell::Tags::Coordinates<2, Frame::Inertial>>,
+                 evolution::dg::subcell::Tags::Coordinates<2, Frame::Inertial>,
+                 evolution::dg::subcell::Tags::Mesh<2>>,
       tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
                          tmpl::append<import_tags_list, extra_tags_for_subcell>,
-                         domain::Tags::Coordinates<2, Frame::Inertial>>>,
+                         domain::Tags::Coordinates<2, Frame::Inertial>,
+                         domain::Tags::Mesh<2>>>,
                      importers::Actions::RegisterWithElementDataReader>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -106,7 +108,7 @@ struct Metavariables {
 template <bool AddSubcell>
 void test_actions(const std::variant<double, importers::ObservationSelector>&
                       observation_selection,
-                  const bool subcell_is_active,
+                  const bool p_refine, const bool subcell_is_active,
                   const bool single_precision = false) {
   CAPTURE(AddSubcell);
   CAPTURE(subcell_is_active);
@@ -119,7 +121,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{importers::ImporterOptions{
       "TestVolumeData*.h5", "element_data", observation_selection,
-      Options::Auto<double>{}, false}}};
+      Options::Auto<double>{}, true}}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -135,6 +137,12 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
                                               {1, {{{1, 0}, {2, 3}}}},
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
+  const Mesh<2> source_mesh{
+      2,
+      subcell_is_active ? Spectral::Basis::FiniteDifference
+                        : Spectral::Basis::Legendre,
+      subcell_is_active ? Spectral::Quadrature::FaceCentered
+                        : Spectral::Quadrature::GaussLobatto};
   std::unordered_map<ElementId<2>,
                      tuples::tagged_tuple_from_typelist<import_tags_list>>
       all_sample_data{};
@@ -171,18 +179,27 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
 
     // Initialize element with no data, it should be populated from the volume
     // data file
+    const Mesh<2> target_mesh =
+        p_refine
+            ? Mesh<2>{3,
+                      subcell_is_active ? Spectral::Basis::FiniteDifference
+                                        : Spectral::Basis::Legendre,
+                      subcell_is_active ? Spectral::Quadrature::FaceCentered
+                                        : Spectral::Quadrature::GaussLobatto}
+            : source_mesh;
     if constexpr (AddSubcell) {
       ActionTesting::emplace_component_and_initialize<element_array>(
           make_not_null(&runner), ElementIdType{id},
           {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{},
            subcell_is_active ? evolution::dg::subcell::ActiveGrid::Subcell
                              : evolution::dg::subcell::ActiveGrid::Dg,
-           subcell_is_active ? coords : tnsr::I<DataVector, 2>{},
-           subcell_is_active ? tnsr::I<DataVector, 2>{} : coords});
+           subcell_is_active ? coords : tnsr::I<DataVector, 2>{}, target_mesh,
+           subcell_is_active ? tnsr::I<DataVector, 2>{} : coords, target_mesh});
     } else {
       ActionTesting::emplace_component_and_initialize<element_array>(
           make_not_null(&runner), ElementIdType{id},
-          {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{}, coords});
+          {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{}, coords,
+           target_mesh});
     }
 
     // Register element
@@ -207,7 +224,6 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   // into, so we can test loading volume data from multiple files.
   std::vector<std::vector<ElementVolumeData>> all_element_data(2);
   for (const auto& id : element_ids) {
-    const std::string element_name = MakeString{} << id;
     std::vector<TensorComponent> tensor_data(8);
     const auto& vector = get<VectorTag>(all_sample_data.at(id));
     // Write one component as single precision if requested
@@ -227,12 +243,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     const auto& coords = all_coords.at(id);
     tensor_data[6] = TensorComponent("InertialCoordinates_x"s, get<0>(coords));
     tensor_data[7] = TensorComponent("InertialCoordinates_y"s, get<1>(coords));
-    all_element_data[id.block_id()].push_back(
-        {element_name,
-         tensor_data,
-         {2, 2},
-         {2, Spectral::Basis::Legendre},
-         {2, Spectral::Quadrature::GaussLobatto}});
+    all_element_data[id.block_id()].emplace_back(id, tensor_data, source_mesh);
   }
   // Write the sample data into an H5 file
   for (size_t i = 0; i < all_element_data.size(); ++i) {
@@ -267,10 +278,17 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     // `ReceiveVolumeData` should be ready now
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);
     // Check the received data
-    CHECK(get_element_tag(VectorTag{}, id) ==
-          get<VectorTag>(all_sample_data.at(id)));
-    CHECK(get_element_tag(TensorTag{}, id) ==
-          get<TensorTag>(all_sample_data.at(id)));
+    if (p_refine) {
+      // Check only a corner point, which should be the same despite the
+      // p-refinement
+      CHECK(get<0>(get_element_tag(VectorTag{}, id))[0] ==
+            get<0>(get<VectorTag>(all_sample_data.at(id)))[0]);
+    } else {
+      CHECK(get_element_tag(VectorTag{}, id) ==
+            get<VectorTag>(all_sample_data.at(id)));
+      CHECK(get_element_tag(TensorTag{}, id) ==
+            get<TensorTag>(all_sample_data.at(id)));
+    }
     first_invocation = false;
   }
 
@@ -284,18 +302,27 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
 }
 }  // namespace
 
-// [[TimeOut, 10]]
+// [[TimeOut, 30]]
 SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
-  test_actions<false>(0., false);
-  test_actions<false>(importers::ObservationSelector::First, false);
-  test_actions<false>(importers::ObservationSelector::Last, false);
-  CHECK_THROWS_WITH(test_actions<false>(0., false, true),
+  test_actions<false>(0., false, false);
+  test_actions<false>(0., true, false);
+  test_actions<false>(importers::ObservationSelector::First, false, false);
+  test_actions<false>(importers::ObservationSelector::Last, false, false);
+  CHECK_THROWS_WITH(test_actions<false>(0., false, false, true),
                     Catch::Matchers::ContainsSubstring("not supported"));
 
   for (const bool subcell_is_active : {false, true}) {
-    test_actions<true>(0., subcell_is_active);
-    test_actions<true>(importers::ObservationSelector::First,
+    test_actions<true>(0., false, subcell_is_active);
+    test_actions<true>(importers::ObservationSelector::First, false,
                        subcell_is_active);
-    test_actions<true>(importers::ObservationSelector::Last, subcell_is_active);
+    test_actions<true>(importers::ObservationSelector::Last, false,
+                       subcell_is_active);
   }
+
+  // Spectral::interpolation_matrix used by intrp::RegularGrid doesn't support
+  // an FD basis at the moment. This can be added when needed.
+  CHECK_THROWS_WITH(
+      test_actions<true>(0., true, true),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot do barycentric interpolation with Basis::FiniteDifference"));
 }

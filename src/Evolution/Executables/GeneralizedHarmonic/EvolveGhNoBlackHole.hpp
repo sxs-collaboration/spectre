@@ -74,7 +74,8 @@ struct EvolutionMetavars
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<::evolution::Actions::RunEventsAndTriggers,
+              tmpl::list<::evolution::Actions::RunEventsAndTriggers<
+                             local_time_stepping>,
                          Actions::ChangeSlabSize, step_actions,
                          Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>>;

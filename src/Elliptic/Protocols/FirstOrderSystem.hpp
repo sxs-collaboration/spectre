@@ -152,7 +152,12 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   4. The `primal_fluxes`
  *
  *   The function is expected to _add_ the sources \f$S_\alpha\f$ to the
- *   output buffers.
+ *   output buffers. It must also have the following alias:
+ *
+ * - `const_global_cache_tags`: the subset of `argument_tags` that can be
+ *     retrieved from _any_ element's DataBox, because they are stored in the
+ *     global cache.
+ *
  *   The `sources_computer` may also be `void`, in which case \f$S_\alpha=0\f$.
  *
  * - `boundary_conditions_base`: A base class representing the supported
@@ -178,8 +183,8 @@ struct FirstOrderSystem {
 
     using fluxes_computer = typename ConformingType::fluxes_computer;
     using sources_computer = typename ConformingType::sources_computer;
-    using fluxes_argument_tags = typename fluxes_computer::argument_tags;
-    static_assert(tt::is_a_v<tmpl::list, fluxes_argument_tags>);
+    static_assert(
+        tt::is_a_v<tmpl::list, typename fluxes_computer::argument_tags>);
 
     using boundary_conditions_base =
         typename ConformingType::boundary_conditions_base;

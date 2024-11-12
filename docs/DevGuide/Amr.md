@@ -343,13 +343,16 @@ Amr:
     Limits:
       RefinementLevel: Auto
       NumGridPoints: Auto
+      ErrorBeyondLimits: False
   Verbosity: Verbose
 ```
 
 Note that the values `Auto` for the Limits options choose the default
-limits set by the code.
+limits set by the code. Also note that if a criterion tries to refine beyond the
+limits, whether or not the code should error is controlled by
+`ErrorBeyondLimits`.
 
-"When" AMR happens is contolled by specifying a Trigger and a list of
+"When" AMR happens is controlled by specifying a Trigger and a list of
 `PhaseChanges` in the top-level option `PhaseChangesAndTriggers`.  For
 example:
 ```

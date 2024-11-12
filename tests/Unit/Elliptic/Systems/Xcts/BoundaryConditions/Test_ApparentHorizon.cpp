@@ -38,7 +38,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -273,7 +273,7 @@ struct FactoryMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<3>,
                    tmpl::list<ApparentHorizon<Xcts::Geometry::Curved>>>,
-        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+        tmpl::pair<elliptic::analytic_data::InitialGuess,
                    tmpl::list<KerrSchild>>>;
   };
 };

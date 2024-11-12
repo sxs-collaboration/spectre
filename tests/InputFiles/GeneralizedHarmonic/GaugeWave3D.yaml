@@ -35,6 +35,7 @@ Amr:
     Limits:
       RefinementLevel: Auto
       NumGridPoints: Auto
+      ErrorBeyondLimits: False
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:
@@ -101,7 +102,7 @@ SpatialDiscretization:
   BoundaryCorrection:
     UpwindPenalty:
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:

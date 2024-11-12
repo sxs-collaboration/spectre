@@ -626,6 +626,7 @@ standard_checks+=(enable_if)
 # Check for noexcept
 noexcept() {
     whitelist "$1" \
+              "src/Utilities/StdHelpers/Bit.hpp" \
               'src/Parallel/StaticSpscQueue.hpp' \
               "src/Parallel/NodeLock..pp$" \
               "src/Evolution/DiscontinuousGalerkin/\

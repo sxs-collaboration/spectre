@@ -97,7 +97,7 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:

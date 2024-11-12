@@ -138,6 +138,7 @@ Amr:
     Limits:
       RefinementLevel: Auto
       NumGridPoints: Auto
+      ErrorBeyondLimits: False
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:
@@ -166,7 +167,7 @@ Filtering:
     BlocksToFilter: All
 
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -233,6 +234,8 @@ EventsAndTriggers:
         Value: 0.02
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 Observers:
   VolumeFileName: "GhBinaryBlackHoleVolumeData"
@@ -405,7 +408,7 @@ ControlSystems:
 #   coordinates of all grid points in the domain), and then load it here by
 #   selecting either the GH variables (`SpacetimeMetric`, `Pi`, `Phi`) or the
 #   ADM variables (`Lapse`, `Shift`, `SpatialMetric`, `ExtrinsicCurvature`).
-#   In this case, set `Interpolate: False` because the data is already given
+#   In this case, set `ElementsAreIdentical: True` because the data is already given
 #   on this exact grid.
 InitialData:
   NumericInitialData:
@@ -413,7 +416,7 @@ InitialData:
     Subgroup: "VolumeData"
     ObservationValue: Last
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsAreIdentical: False
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`

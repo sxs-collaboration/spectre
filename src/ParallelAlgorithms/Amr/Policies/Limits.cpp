@@ -21,7 +21,7 @@ Limits::Limits()
 Limits::Limits(
     const std::optional<std::array<size_t, 2>>& refinement_level_bounds,
     const std::optional<std::array<size_t, 2>>& resolution_bounds,
-    const Options::Context& context)
+    const bool error_beyond_limits, const Options::Context& context)
     : minimum_refinement_level_(refinement_level_bounds.has_value()
                                     ? refinement_level_bounds.value()[0]
                                     : 0),
@@ -33,7 +33,8 @@ Limits::Limits(
       maximum_resolution_(
           resolution_bounds.has_value()
               ? resolution_bounds.value()[1]
-              : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>) {
+              : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>),
+      error_beyond_limits_(error_beyond_limits) {
   if (minimum_refinement_level_ > ElementId<1>::max_refinement_level) {
     PARSE_ERROR(context,
                 "RefinementLevel lower bound '" +
@@ -116,17 +117,18 @@ void Limits::pup(PUP::er& p) {
   p | maximum_refinement_level_;
   p | minimum_resolution_;
   p | maximum_resolution_;
+  p | error_beyond_limits_;
 }
 
 bool operator==(const Limits& lhs, const Limits& rhs) {
   return lhs.minimum_refinement_level() == rhs.minimum_refinement_level() and
          lhs.maximum_refinement_level() == rhs.maximum_refinement_level() and
          lhs.minimum_resolution() == rhs.minimum_resolution() and
-         lhs.maximum_resolution() == rhs.maximum_resolution();
+         lhs.maximum_resolution() == rhs.maximum_resolution() and
+         lhs.error_beyond_limits() == rhs.error_beyond_limits();
 }
 
 bool operator!=(const Limits& lhs, const Limits& rhs) {
   return not(lhs == rhs);
 }
-
 }  // namespace amr

@@ -31,6 +31,9 @@ namespace amr {
 ///   their bounds, the Flag is changed to DoNothing.  Note that the minimum
 ///   resolution is Basis and Quadrature dependent, so may be higher than the
 ///   given amr_policies.refinement_limits().minimum_resolution()
+/// - If an `amr_decision` tried to go beyond the `amr::Limits` in any
+///   direction, this function will error if
+///   `amr::Limits::error_beyond_limits()` is true.
 template <size_t Dim>
 void enforce_policies(gsl::not_null<std::array<Flag, Dim>*> amr_decision,
                       const amr::Policies& amr_policies,

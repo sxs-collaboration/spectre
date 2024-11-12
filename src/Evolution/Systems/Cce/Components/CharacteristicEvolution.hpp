@@ -204,7 +204,8 @@ struct CharacteristicEvolution {
           CharacteristicEvolution<Metavariables>>,
       ::Actions::Label<CceEvolutionLabelTag>,
       tmpl::conditional_t<evolve_ccm, tmpl::list<>,
-                          evolution::Actions::RunEventsAndTriggers>,
+                          evolution::Actions::RunEventsAndTriggers<
+                              Metavariables::local_time_stepping>>,
       Actions::ReceiveWorldtubeData<
           Metavariables,
           typename Metavariables::cce_boundary_communication_tags>,
@@ -231,8 +232,8 @@ struct CharacteristicEvolution {
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
-      ::Actions::AdvanceTime,
-      Actions::ExitIfEndTimeReached, ::Actions::Goto<CceEvolutionLabelTag>>;
+      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
+      ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,

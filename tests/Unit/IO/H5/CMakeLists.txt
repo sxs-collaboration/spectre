@@ -41,15 +41,8 @@ spectre_add_python_bindings_test(
   "Test_CombineH5.py"
   "unit;IO;H5;Python"
   PyH5
+  TIMEOUT 10
   )
-
-if(${BUILD_PYTHON_BINDINGS})
-  set_tests_properties(
-    "Unit.IO.H5.CombineH5.Python"
-    PROPERTIES
-    TIMEOUT 10
-    )
-endif()
 
 spectre_add_python_bindings_test(
   "Unit.IO.H5.Python"

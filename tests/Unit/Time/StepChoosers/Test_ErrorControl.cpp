@@ -26,6 +26,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
@@ -103,11 +104,10 @@ struct Metavariables {
   using component_list = tmpl::list<>;
 };
 
-using LtsErrorControl =
-    StepChoosers::ErrorControl<StepChooserUse::LtsStep, EvolvedVariablesTag>;
-
+template <typename StepChooserUse>
 std::pair<std::optional<double>, bool> get_suggestion(
-    const LtsErrorControl& error_control,
+    const StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>&
+        error_control,
     const std::optional<StepperErrorEstimate>& error,
     const std::optional<StepperErrorEstimate>& previous_error,
     const double previous_step) {
@@ -116,8 +116,10 @@ std::pair<std::optional<double>, bool> get_suggestion(
                         Tags::StepperErrors<EvolvedVariablesTag>>>(
       Metavariables<true>{}, std::array{previous_error, error});
 
-  const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
-      error_control_base = std::make_unique<LtsErrorControl>(error_control);
+  const std::unique_ptr<StepChooser<StepChooserUse>> error_control_base =
+      std::make_unique<
+          StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>>(
+          error_control);
 
   const auto result =
       error_control(std::array{previous_error, error}, previous_step);
@@ -129,10 +131,11 @@ std::pair<std::optional<double>, bool> get_suggestion(
             ->desired_step(previous_step, box) == result);
   return {result.first.size_goal, result.second};
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
-  register_factory_classes_with_charm<Metavariables<true>>();
+template <typename StepChooserUse>
+void test_chooser() {
+  using ErrorControl =
+      StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>;
 
   const std::vector<size_t> stepper_orders{2_st, 5_st};
   for (const bool time_runs_forward : {true, false}) {
@@ -152,14 +155,14 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
 
       {
         INFO("No data available");
-        const LtsErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
+        const ErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
         const auto result = get_suggestion(error_control, {}, {}, unit_step);
         CHECK(not result.first.has_value());
         CHECK(result.second);
       }
       {
         INFO("Test successful step");
-        const LtsErrorControl error_control{5.0e-4, 1.0e-3, 2.0, 0.5, 0.95};
+        const ErrorControl error_control{5.0e-4, 1.0e-3, 2.0, 0.5, 0.95};
         CHECK(error_control.tolerances() ==
               StepperErrorTolerances{.absolute = 5.0e-4, .relative = 1.0e-3});
         const auto first_result = get_suggestion(
@@ -168,26 +171,34 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
         CHECK(approx(*first_result.first) ==
               0.95 * unit_step / pow(0.3, 1.0 / stepper_order));
         CHECK(first_result.second);
-        const auto second_result = get_suggestion(
-            error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
-            {step_errors(-1.0, 0.3)}, *first_result.first);
-        REQUIRE(second_result.first.has_value());
-        CHECK(approx(*second_result.first) ==
-              0.95 * *first_result.first /
-                  (pow(0.3, -0.4 / stepper_order) *
-                   pow(0.31, 0.7 / stepper_order)));
-        CHECK(second_result.second);
-        // Check that the suggested step size is smaller if the error in
-        // increasing faster.
-        const auto adjusted_second_result = get_suggestion(
-            error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
-            {step_errors(-1.0, 0.1)}, *first_result.first);
-        REQUIRE(adjusted_second_result.first.has_value());
-        CHECK(abs(*adjusted_second_result.first) < abs(*second_result.first));
+        if constexpr (std::is_same_v<StepChooserUse, ::StepChooserUse::Slab>) {
+          const auto second_result = get_suggestion(
+              error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
+              {step_errors(-1.0, 0.3)}, *first_result.first);
+          REQUIRE(second_result.first.has_value());
+          CHECK(approx(*second_result.first) ==
+                0.95 * *first_result.first /
+                    (pow(0.3, -0.4 / stepper_order) *
+                     pow(0.31, 0.7 / stepper_order)));
+          CHECK(second_result.second);
+          // Check that the suggested step size is smaller if the error in
+          // increasing faster.
+          const auto adjusted_second_result = get_suggestion(
+              error_control, {step_errors(0.0, 0.31, abs(*first_result.first))},
+              {step_errors(-1.0, 0.1)}, *first_result.first);
+          REQUIRE(adjusted_second_result.first.has_value());
+          CHECK(abs(*adjusted_second_result.first) < abs(*second_result.first));
+        } else {
+          // Check that the result is independent of the old error
+          const auto second_result =
+              get_suggestion(error_control, {step_errors(0.0, 0.3)},
+                             {step_errors(-1.0, 0.7)}, unit_step);
+          CHECK(first_result == second_result);
+        }
       }
       {
         INFO("Test error control step failure");
-        const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
+        const ErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
         const auto result_start = get_suggestion(
             error_control, {step_errors(0.0, 1.2)}, {}, unit_step);
         REQUIRE(result_start.first.has_value());
@@ -207,14 +218,14 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       }
       {
         INFO("Test error control clamped minimum");
-        const LtsErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
+        const ErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 10.0)}, {}, unit_step);
         CHECK(first_result.first == std::optional(0.9 * unit_step));
       }
       {
         INFO("Test error control clamped maximum");
-        const LtsErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
+        const ErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 0.01)}, {}, unit_step);
         CHECK(first_result == std::pair(std::optional(2.0 * unit_step), true));
@@ -223,8 +234,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
   }
   // test option creation
   TestHelpers::test_factory_creation<
-      StepChooser<StepChooserUse::LtsStep>,
-      StepChoosers::ErrorControl<StepChooserUse::LtsStep, EvolvedVariablesTag>>(
+      StepChooser<StepChooserUse>,
+      StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>>(
       "ErrorControl:\n"
       "  SafetyFactor: 0.95\n"
       "  AbsoluteTolerance: 1.0e-5\n"
@@ -232,8 +243,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       "  MaxFactor: 2.1\n"
       "  MinFactor: 0.5");
   TestHelpers::test_factory_creation<
-      StepChooser<StepChooserUse::LtsStep>,
-      StepChoosers::ErrorControl<StepChooserUse::LtsStep, EvolvedVariablesTag,
+      StepChooser<StepChooserUse>,
+      StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag,
                                  ErrorControlSelecter>>(
       "ErrorControl(SelectorLabel):\n"
       "  SafetyFactor: 0.95\n"
@@ -242,10 +253,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       "  MaxFactor: 2.1\n"
       "  MinFactor: 0.5");
 
-  CHECK(StepChoosers::ErrorControl<StepChooserUse::LtsStep, EvolvedVariablesTag,
+  CHECK(StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag,
                                    ErrorControlSelecter>{}
             .uses_local_data());
+}
 
+void test_tags() {
   // Test compute tags
   TestHelpers::db::test_compute_tag<
       Tags::IsUsingTimeSteppingErrorControlCompute<true>>(
@@ -403,15 +416,16 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
   {
     INFO("Compute tag GTS test");
     auto box = db::create<
-        db::AddSimpleTags<Tags::EventsAndTriggers>,
+        db::AddSimpleTags<
+            Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>,
         db::AddComputeTags<
             Tags::IsUsingTimeSteppingErrorControlCompute<false>,
             Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, false>,
             Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag,
                                                 false>>>();
-    db::mutate<Tags::EventsAndTriggers>(
-        [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
-          *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
+    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
+        [](const gsl::not_null<EventsAndTriggers*> events) {
+          *events = TestHelpers::test_creation<EventsAndTriggers,
                                                Metavariables<true, true>>(
               "- Trigger: Always\n"
               "  Events:\n"
@@ -439,9 +453,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
     CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
                   .has_value());
 
-    db::mutate<Tags::EventsAndTriggers>(
-        [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
-          *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
+    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
+        [](const gsl::not_null<EventsAndTriggers*> events) {
+          *events = TestHelpers::test_creation<EventsAndTriggers,
                                                Metavariables<true, true>>(
               "- Trigger: Always\n"
               "  Events:\n"
@@ -463,9 +477,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
     CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
                   .has_value());
 
-    db::mutate<Tags::EventsAndTriggers>(
-        [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
-          *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
+    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
+        [](const gsl::not_null<EventsAndTriggers*> events) {
+          *events = TestHelpers::test_creation<EventsAndTriggers,
                                                Metavariables<true, true>>(
               "- Trigger: Always\n"
               "  Events:\n"
@@ -481,9 +495,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
     CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
                   .has_value());
 
-    db::mutate<Tags::EventsAndTriggers>(
-        [](const gsl::not_null<Tags::EventsAndTriggers::type*> events) {
-          *events = TestHelpers::test_creation<Tags::EventsAndTriggers::type,
+    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
+        [](const gsl::not_null<EventsAndTriggers*> events) {
+          *events = TestHelpers::test_creation<EventsAndTriggers,
                                                Metavariables<true, true>>("");
         },
         make_not_null(&box));
@@ -494,3 +508,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                   .has_value());
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
+  register_factory_classes_with_charm<Metavariables<true>>();
+
+  test_chooser<StepChooserUse::Slab>();
+  test_chooser<StepChooserUse::LtsStep>();
+  test_tags();
+}
+}  // namespace

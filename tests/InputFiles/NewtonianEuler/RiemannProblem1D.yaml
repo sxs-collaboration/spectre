@@ -82,7 +82,7 @@ EvolutionSystem:
   SourceTerm:
     NoSource:
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       TimeCompares:
         Comparison: GreaterThanOrEqualTo

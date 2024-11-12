@@ -140,7 +140,9 @@ class EvolutionStatus(ExecutableStatus):
         assert (
             avg_num_slabs >= 2
         ), "Need at least 'avg_num_slabs >= 2' to estimate simulation speed."
-        observe_time_event = find_event("ObserveTimeStep", input_file)
+        observe_time_event = find_event(
+            "ObserveTimeStep", "EventsAndTriggers", input_file
+        )
         if observe_time_event is None:
             return {}
         subfile_name = observe_time_event["SubfileName"] + ".dat"
@@ -208,7 +210,9 @@ class EvolutionStatus(ExecutableStatus):
         import plotly.express as px
         import streamlit as st
 
-        observe_time_event = find_event("ObserveTimeStep", input_file)
+        observe_time_event = find_event(
+            "ObserveTimeStep", "EventsAndTriggers", input_file
+        )
         if observe_time_event is None:
             st.warning("No 'ObserveTimeStep' event found in input file.")
             return

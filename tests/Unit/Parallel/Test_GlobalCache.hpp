@@ -66,6 +66,7 @@ class TestArrayChare : public CBase_TestArrayChare<Metavariables> {
   void run_test_three();
   void run_test_four();
   void run_test_five();
+  void mutate_name();
 
  private:
   CProxy_Test_GlobalCache<Metavariables> main_proxy_;

@@ -333,10 +333,11 @@ struct Metavariables {
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Execute,
-              tmpl::list<Actions::AdvanceTime, Actions::ExportCoordinates<Dim>,
-                         Actions::FindGlobalMinimumGridSpacing,
-                         evolution::Actions::RunEventsAndTriggers,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>;
+              tmpl::list<
+                  Actions::AdvanceTime, Actions::ExportCoordinates<Dim>,
+                  Actions::FindGlobalMinimumGridSpacing,
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
+                  PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;

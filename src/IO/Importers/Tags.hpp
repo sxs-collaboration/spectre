@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/ArrayComponentId.hpp"
@@ -68,15 +69,19 @@ struct ObservationValueEpsilon {
 /*!
  * \brief Toggle interpolation of numeric data to the target domain
  */
-struct EnableInterpolation {
-  static std::string name() { return "Interpolate"; }
+struct ElementsAreIdentical {
   using type = bool;
   static constexpr Options::String help =
-      "Enable to interpolate the volume data to the target domain. Disable to "
-      "load volume data directly into elements with the same name. "
-      "For example, you can disable interpolation if you have generated data "
-      "on the target points, or if you have already interpolated your data. "
-      "When interpolation is disabled, datasets "
+      "Indicate that the elements of the source and target domain are the "
+      "same, meaning that the domains are the same and their h-refinement is "
+      "the same. In this case, data can be transferred between the source and "
+      "target elements one-to-one, and interpolations only happen if the "
+      "elements have different meshes (p-refinement). "
+      "For example, you can enable this option if you have generated data "
+      "on the target points, or if you have already interpolated your data, "
+      "or if you import data from a simulation that differs only by "
+      "p-refinement. "
+      "When this option is enabled, datasets "
       "'InertialCoordinates(_x,_y,_z)' must exist in the files. They are used "
       "to verify that the target points indeed match the source data.";
 };
@@ -88,7 +93,7 @@ struct ImporterOptions
     : tuples::TaggedTuple<OptionTags::FileGlob, OptionTags::Subgroup,
                           OptionTags::ObservationValue,
                           OptionTags::ObservationValueEpsilon,
-                          OptionTags::EnableInterpolation> {
+                          OptionTags::ElementsAreIdentical> {
   using options = tags_list;
   static constexpr Options::String help = "The volume data to load.";
   using TaggedTuple::TaggedTuple;
@@ -120,8 +125,9 @@ struct ImporterOptions : db::SimpleTag {
  */
 template <size_t Dim>
 struct RegisteredElements : db::SimpleTag {
-  using type = std::unordered_map<Parallel::ArrayComponentId,
-                                  tnsr::I<DataVector, Dim, Frame::Inertial>>;
+  using type = std::unordered_map<
+      Parallel::ArrayComponentId,
+      std::pair<tnsr::I<DataVector, Dim, Frame::Inertial>, ::Mesh<Dim>>>;
 };
 
 /// Indicates which volume data files have already been read.

@@ -33,6 +33,7 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -147,7 +148,7 @@ struct Component {
       tmpl::conditional_t<Metavariables::multiple_histories,
                           additional_history_tag, tmpl::list<>>,
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-      Tags::Next<Tags::TimeStep>, Tags::Time,
+      Tags::Next<Tags::TimeStep>, Tags::Time, Tags::StepNumberWithinSlab,
       Tags::IsUsingTimeSteppingErrorControl,
       Tags::AdaptiveSteppingDiagnostics>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
@@ -190,7 +191,7 @@ void emplace_component_and_initialize(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false,
+       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
        Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
@@ -208,7 +209,7 @@ void emplace_component_and_initialize<true, false>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false,
+       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
        Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
@@ -226,7 +227,7 @@ void emplace_component_and_initialize<false, true>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false,
+       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
        Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
@@ -244,7 +245,7 @@ void emplace_component_and_initialize<true, true>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, initial_time_step,
-       std::numeric_limits<double>::signaling_NaN(), false,
+       std::numeric_limits<double>::signaling_NaN(), uint64_t{0}, false,
        Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
@@ -313,6 +314,9 @@ void test_actions(const size_t order, const int step_denominator) {
         run_past<tt::is_a<SelfStart::Actions::Initialize, tmpl::_1>,
                  not_self_start_action>(make_not_null(&runner));
     CHECK(not jumped);
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                         Tags::StepNumberWithinSlab>(runner,
+                                                                     0) == 0);
     CHECK(
         get<0>(
             ActionTesting::get_databox_tag<Component<Metavariables<>>,
@@ -378,6 +382,9 @@ void test_actions(const size_t order, const int step_denominator) {
       ActionTesting::next_action<Component<Metavariables<>>>(
           make_not_null(&runner), 0);
     }
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                         Tags::StepNumberWithinSlab>(runner,
+                                                                     0) == 0);
     CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>, Var>(
               runner, 0) == initial_value);
     CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,

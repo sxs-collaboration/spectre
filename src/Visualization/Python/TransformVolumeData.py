@@ -682,8 +682,14 @@ def parse_kernels(kernels, exec_files, map_input_names, interactive=False):
             # A module path was specified. Import function from the module
             kernel_module_path, kernel_function = kernel.rsplit(".", maxsplit=1)
             kernel_module = importlib.import_module(kernel_module_path)
+            if ":" in kernel_function:
+                kernel_class, kernel_function = kernel_function.split(":")
+                kernel_class = getattr(kernel_module, kernel_class)
+                kernel_function = getattr(kernel_class, kernel_function)
+            else:
+                kernel_function = getattr(kernel_module, kernel_function)
             yield Kernel(
-                getattr(kernel_module, kernel_function),
+                kernel_function,
                 output_name=None,
                 map_input_names=map_input_names,
                 interactive=interactive,
@@ -717,7 +723,7 @@ def parse_kernels(kernels, exec_files, map_input_names, interactive=False):
     multiple=True,
     help=(
         "Python function to apply to the volume data. "
-        "Specify as 'path.to.module.function_name', where the "
+        "Specify as 'path.to.module:function_name', where the "
         "module must be available to import. "
         "Alternatively, specify just 'function_name' if the "
         "function is defined in one of the '--exec' / '-e' "
@@ -811,15 +817,16 @@ def transform_volume_data_command(
     'parse_kernel_arg' function for all supported argument types, and
     'parse_kernel_output' for all supported return types.
 
-    The kernels can be loaded from any available Python module. Examples of
-    useful kernels:
+    The kernels can be loaded from any available Python module. Specify them as
+    'path.to.module:function_name' or 'path.to.module.class:function_name'. You
+    can also load a Python file that defines kernels with the '--exec' / '-e'
+    option and then just specify the kernel as 'function_name'.
+    Examples of useful kernels:
 
     - Anything in 'spectre.PointwiseFunctions'
-    - 'spectre.NumericalAlgorithms.LinearOperators.relative_truncation_error'
+    - 'spectre.Spectral.Mesh3D:extents'
+    - 'spectre.NumericalAlgorithms.LinearOperators:relative_truncation_error'
       and 'absolute_truncation_error'
-
-    You can also execute a Python file that defines kernels with the '--exec' /
-    '-e' option.
 
     ## Input and output dataset names
 

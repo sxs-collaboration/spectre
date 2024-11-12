@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -114,19 +115,6 @@ using cce_metric_input_tags = tmpl::list<
     Tags::detail::Dr<Tags::detail::Shift>, ::Tags::dt<Tags::detail::Shift>,
     Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
     ::Tags::dt<Tags::detail::Lapse>>;
-
-/// the full set of tensors to be extracted from the reduced form of the
-/// worldtube h5 file
-using cce_bondi_input_tags =
-    tmpl::list<Spectral::Swsh::Tags::SwshTransform<Tags::BondiBeta>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::BondiU>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::BondiQ>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::BondiW>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::BondiJ>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::Dr<Tags::BondiJ>>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiJ>>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::BondiR>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>;
 
 using klein_gordon_input_tags =
     tmpl::list<Spectral::Swsh::Tags::SwshTransform<Tags::KleinGordonPsi>,
@@ -281,7 +269,8 @@ class MetricWorldtubeH5BufferUpdater
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube H5 file
 /// produced by the reduced SpEC format.
 class BondiWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<cce_bondi_input_tags> {
+    : public WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>> {
  public:
   // charm needs the empty constructor
   BondiWorldtubeH5BufferUpdater() = default;
@@ -302,14 +291,18 @@ class BondiWorldtubeH5BufferUpdater
   /// time-varies-fastest, Goldberg modal data and the start and end index in
   /// the member `time_buffer_` covered by the newly updated `buffers`.
   double update_buffers_for_time(
-      gsl::not_null<Variables<cce_bondi_input_tags>*> buffers,
+      gsl::not_null<Variables<Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>>*>
+          buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const override;
 
-  std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> get_clone()
-      const override {
+  std::unique_ptr<
+      WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>>>
+  get_clone() const override {
     return std::make_unique<BondiWorldtubeH5BufferUpdater>(filename_);
   }
 
@@ -361,8 +354,9 @@ class BondiWorldtubeH5BufferUpdater
   h5::H5File<h5::AccessType::ReadOnly> cce_data_file_;
   std::string filename_;
 
-  tuples::tagged_tuple_from_typelist<
-      db::wrap_tags_in<Tags::detail::InputDataSet, cce_bondi_input_tags>>
+  tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
+      Tags::detail::InputDataSet, Tags::worldtube_boundary_tags_for_writing<
+                                      Spectral::Swsh::Tags::SwshTransform>>>
       dataset_names_;
 
   // stores all the times in the input file

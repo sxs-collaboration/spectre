@@ -4,6 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
 #include <vector>
 
@@ -23,10 +25,18 @@ template <size_t Dim>
 void test_decision(const std::array<amr::Flag, Dim>& original_decision,
                    const amr::Policies& amr_policies,
                    const ElementId<Dim>& element_id, const Mesh<Dim>& mesh,
-                   const std::array<amr::Flag, Dim>& expected_decision) {
+                   const std::array<amr::Flag, Dim>& expected_decision,
+                   const bool error_beyond_limits = false) {
   auto decision = original_decision;
-  enforce_policies(make_not_null(&decision), amr_policies, element_id, mesh);
-  CHECK(decision == expected_decision);
+  if (error_beyond_limits) {
+    CHECK_THROWS_WITH((enforce_policies(make_not_null(&decision), amr_policies,
+                                        element_id, mesh)),
+                      Catch::Matchers::ContainsSubstring(
+                          "Tried refining beyond the AMR limits in element"));
+  } else {
+    enforce_policies(make_not_null(&decision), amr_policies, element_id, mesh);
+    CHECK(decision == expected_decision);
+  }
 }
 
 void test_1d() {
@@ -155,12 +165,23 @@ void test_3d() {
       std::array{amr::Flag::Split, amr::Flag::Split, amr::Flag::Split};
   amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
   amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
-  const ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
+  ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
   const Mesh<3> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
   test_decision(stay_split_split, anisotropic, element_id, mesh,
                 stay_split_split);
   test_decision(stay_split_split, isotropic, element_id, mesh,
                 split_split_split);
+
+  // Test error beyond limits
+  isotropic = amr::Policies{amr::Isotropy::Isotropic,
+                            amr::Limits{{{0, 0}}, {{2, 8}}, true}, true};
+  anisotropic = amr::Policies{amr::Isotropy::Anisotropic,
+                              amr::Limits{{{0, 0}}, {{2, 8}}, true}, true};
+  element_id = ElementId<3>{0};
+  test_decision(stay_split_split, anisotropic, element_id, mesh,
+                stay_split_split, true);
+  test_decision(stay_split_split, isotropic, element_id, mesh,
+                split_split_split, true);
 }
 }  // namespace
 

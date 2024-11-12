@@ -85,7 +85,7 @@ EvolutionSystem:
   SourceTerm:
     NoSource:
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:

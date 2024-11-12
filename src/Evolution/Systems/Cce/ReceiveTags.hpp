@@ -12,6 +12,7 @@
 #include "Time/TimeStepId.hpp"
 
 namespace Cce {
+/// \brief Tags used by CCE for communication.
 namespace ReceiveTags {
 
 /// A receive tag for the data sent to the CCE evolution component from the CCE

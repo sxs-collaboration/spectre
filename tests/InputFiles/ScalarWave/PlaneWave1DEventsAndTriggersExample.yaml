@@ -39,6 +39,7 @@ Amr:
     Limits:
       RefinementLevel: Auto
       NumGridPoints: Auto
+      ErrorBeyondLimits: False
   Verbosity: Verbose
 
 PhaseChangeAndTriggers:
@@ -80,7 +81,7 @@ SpatialDiscretization:
 EventsAndDenseTriggers:
 
 # [multiple_events]
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:

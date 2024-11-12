@@ -62,7 +62,7 @@ Limiter:
     TvbConstant: 0.0
     DisableForDebugging: false
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:

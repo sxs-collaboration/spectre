@@ -9,7 +9,10 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \ingroup EventsAndTriggersGroup
+/*!
+ * \ingroup EventsAndTriggersGroup
+ * \brief Contains the available triggers.
+ */
 namespace Triggers {}
 
 /// \ingroup EventsAndTriggersGroup

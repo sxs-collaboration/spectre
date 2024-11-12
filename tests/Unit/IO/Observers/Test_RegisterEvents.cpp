@@ -27,6 +27,8 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -86,7 +88,8 @@ struct Component {
   using component_being_mocked = void;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Testing,
       tmpl::list<observers::Actions::RegisterEventsWithObservers>>>;

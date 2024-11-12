@@ -127,6 +127,7 @@ template <size_t Dim, typename DataType>
 struct Sources<Dim, Geometry::Curved, DataType> {
   using argument_tags = tmpl::list<
       gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, Dim>>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(gsl::not_null<Scalar<DataType>*> equation_for_field,
                     const tnsr::i<DataVector, Dim>& christoffel_contracted,
                     const Scalar<DataType>& field,

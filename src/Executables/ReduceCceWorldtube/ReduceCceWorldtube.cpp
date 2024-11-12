@@ -6,6 +6,7 @@
 #include <exception>
 #include <string>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -14,10 +15,10 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Evolution/Systems/Cce/ReducedWorldtubeModeRecorder.hpp"
 #include "Evolution/Systems/Cce/SpecBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
+#include "Evolution/Systems/Cce/WorldtubeModeRecorder.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Options/Auto.hpp"
@@ -182,24 +183,9 @@ void perform_cce_worldtube_reduction(
       boundary_data_variables{
           Spectral::Swsh::number_of_swsh_collocation_points(computation_l_max)};
 
-  using reduced_boundary_tags =
-      tmpl::list<Cce::Tags::BoundaryValue<Cce::Tags::BondiBeta>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::BondiU>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::BondiQ>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::BondiW>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::BondiJ>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::Dr<Cce::Tags::BondiJ>>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiJ>>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::BondiR>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiR>>>;
-
   size_t time_span_start = 0;
   size_t time_span_end = 0;
-  Cce::ReducedWorldtubeModeRecorder recorder{output_file};
-
-  ComplexModalVector output_goldberg_mode_buffer{square(computation_l_max + 1)};
-  ComplexModalVector output_libsharp_mode_buffer{
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(computation_l_max)};
+  Cce::WorldtubeModeRecorder recorder{l_max, output_file};
 
   for (size_t i = 0; i < time_buffer.size(); ++i) {
     const double time = time_buffer[i];
@@ -248,36 +234,23 @@ void perform_cce_worldtube_reduction(
           buffer_updater.get_extraction_radius(), computation_l_max);
     }
     // loop over the tags that we want to dump.
-    tmpl::for_each<reduced_boundary_tags>(
-        [&recorder, &boundary_data_variables, &output_goldberg_mode_buffer,
-         &output_libsharp_mode_buffer, &l_max, &computation_l_max,
-         &time](auto tag_v) {
+    tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
+        [&recorder, &boundary_data_variables, &l_max, &time](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
-          SpinWeighted<ComplexModalVector, tag::type::type::spin>
-              spin_weighted_libsharp_view;
-          spin_weighted_libsharp_view.set_data_ref(
-              output_libsharp_mode_buffer.data(),
-              output_libsharp_mode_buffer.size());
-          Spectral::Swsh::swsh_transform(
-              computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
-              get(get<tag>(boundary_data_variables)));
-          SpinWeighted<ComplexModalVector, tag::type::type::spin>
-              spin_weighted_goldberg_view;
-          spin_weighted_goldberg_view.set_data_ref(
-              output_goldberg_mode_buffer.data(),
-              output_goldberg_mode_buffer.size());
-          Spectral::Swsh::libsharp_to_goldberg_modes(
-              make_not_null(&spin_weighted_goldberg_view),
-              spin_weighted_libsharp_view, computation_l_max);
 
+          const ComplexDataVector& nodal_data =
+              get(get<tag>(boundary_data_variables)).data();
           // The goldberg format type is in strictly increasing l modes, so to
           // reduce to a smaller l_max, we can just take the first (l_max + 1)^2
           // values.
-          ComplexModalVector reduced_goldberg_view{
-              output_goldberg_mode_buffer.data(), square(l_max + 1)};
-          recorder.append_worldtube_mode_data(
-              "/" + Cce::dataset_label_for_tag<tag>(), time,
-              reduced_goldberg_view, l_max, tag::type::type::spin == 0);
+          const ComplexDataVector nodal_data_view{
+              make_not_null(
+                  const_cast<ComplexDataVector&>(nodal_data).data()),  // NOLINT
+              square(l_max + 1)};
+
+          recorder.append_modal_data<tag::tag::type::type::spin>(
+              Cce::dataset_label_for_tag<typename tag::tag>(), time,
+              nodal_data_view);
         });
   }
   Parallel::printf("\n");

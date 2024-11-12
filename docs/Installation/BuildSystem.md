@@ -184,6 +184,13 @@ alphabetical order):
     and compiler optimizations. You cannot disable the checks in Debug builds,
     so this option has no effect in Debug builds.
     (default is `OFF` in release)
+- SPECTRE_OPTIMIZE_SIZE
+  - Optimize for executable size instead of speed (adds the `-Oz` compiler
+    flag). The default is `OFF`, unless on Apple Silicon machines, where the
+    default is `ON`. This is because of a bug in macOS on Apple Silicon, which
+    means executables larger than 2GB in size cannot run. Disabling this option
+    on Apple Silicon can improve debugging tests (which are small enough so the
+    bug does not affect them).
 - SPECTRE_FETCH_MISSING_DEPS
   - Download missing dependencies and build them alongside the SpECTRE source.
     (default is `OFF`)

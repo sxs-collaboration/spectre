@@ -580,28 +580,29 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
   using dg_element_array_component = DgElementArray<
       EvolutionMetavars,
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        initialization_actions>,
+      tmpl::list<
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                 initialization_actions>,
 
-                 Parallel::PhaseActions<
-                     Parallel::Phase::InitializeTimeStepperHistory,
-                     SelfStart::self_start_procedure<step_actions, system>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::InitializeTimeStepperHistory,
+              SelfStart::self_start_procedure<step_actions, system>>,
 
-                 Parallel::PhaseActions<
-                     Parallel::Phase::Register,
-                     tmpl::push_back<dg_registration_list,
-                                     Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::Register,
+              tmpl::push_back<dg_registration_list,
+                              Parallel::Actions::TerminatePhase>>,
 
-                 Parallel::PhaseActions<
-                     Parallel::Phase::Evolve,
-                     tmpl::list<evolution::Actions::RunEventsAndTriggers,
-                                Actions::ChangeSlabSize, step_actions,
-                                Actions::AdvanceTime,
-                                PhaseControl::Actions::ExecutePhaseChange>>,
-                 Parallel::PhaseActions<
-                     Parallel::Phase::PostFailureCleanup,
-                     tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
-                                Parallel::Actions::TerminatePhase>>>>;
+          Parallel::PhaseActions<
+              Parallel::Phase::Evolve,
+              tmpl::list<
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
+                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::PostFailureCleanup,
+              tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,
+                         Parallel::Actions::TerminatePhase>>>>;
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {

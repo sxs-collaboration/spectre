@@ -7,6 +7,7 @@
 
 #include "Utilities/ProtocolHelpers.hpp"
 
+/// \brief Protocols for the DataBox
 namespace db::protocols {
 
 /// \brief A DataBox mutator

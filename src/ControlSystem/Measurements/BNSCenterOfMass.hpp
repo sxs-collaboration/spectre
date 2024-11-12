@@ -14,6 +14,9 @@
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "IO/Logging/Verbosity.hpp"
@@ -26,6 +29,7 @@
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -273,9 +277,55 @@ struct PostReductionSendBNSStarCentersToControlSystem {
         center_databox, cache, measurement_id);
 
     if (Parallel::get<control_system::Tags::WriteDataToDisk>(cache)) {
-      std::vector<double> data_to_write{
+      std::vector<double> grid_data_to_write{
           measurement_id.id, center_a[0], center_a[1], center_a[2],
           center_b[0],       center_b[1], center_b[2]};
+
+      // To convert grid coords to inertial coords, we must find the block that
+      // these coords are in and use that grid to inertial map
+      const Domain<3>& domain = Parallel::get<domain::Tags::Domain<3>>(cache);
+      const domain::FunctionsOfTimeMap& functions_of_time =
+          Parallel::get<domain::Tags::FunctionsOfTime>(cache);
+      tnsr::I<DataVector, 3, Frame::Grid> grid_tnsr_center{};
+      for (size_t i = 0; i < 3; i++) {
+        grid_tnsr_center.get(i) =
+            DataVector{gsl::at(center_a, i), gsl::at(center_b, i)};
+      }
+
+      const auto block_logical_coords = block_logical_coordinates(
+          domain, grid_tnsr_center, measurement_id.id, functions_of_time);
+
+      ASSERT(alg::all_of(block_logical_coords,
+                         [](const auto& logical_coord_holder) {
+                           return logical_coord_holder.has_value();
+                         }),
+             "Grid centers of BNS ("
+                 << center_a << ", " << center_b
+                 << ") could not be mapped to the logical frame.");
+
+      const auto& blocks = domain.blocks();
+      std::vector<double> inertial_data_to_write{measurement_id.id};
+
+      ASSERT(block_logical_coords.size() == 2,
+             "There should be exactly 2 block logical coordinates for the two "
+             "centers of the BNS, but instead there are "
+                 << block_logical_coords.size());
+
+      for (size_t n = 0; n < block_logical_coords.size(); n++) {
+        const auto& logical_coord_holder = block_logical_coords[n];
+        const auto& block_id = logical_coord_holder.value().id;
+
+        const auto& block = blocks[block_id.get_index()];
+        const auto& grid_to_inertial_map =
+            block.moving_mesh_grid_to_inertial_map();
+
+        const auto inertial_center = grid_to_inertial_map(
+            tnsr::I<double, 3, Frame::Grid>{n == 0 ? center_a : center_b},
+            measurement_id.id, functions_of_time);
+        for (size_t i = 0; i < 3; i++) {
+          inertial_data_to_write.push_back(inertial_center.get(i));
+        }
+      }
 
       auto& writer_proxy = Parallel::get_parallel_component<
           observers::ObserverWriter<Metavariables>>(cache);
@@ -283,8 +333,13 @@ struct PostReductionSendBNSStarCentersToControlSystem {
       Parallel::threaded_action<
           observers::ThreadedActions::WriteReductionDataRow>(
           // Node 0 is always the writer
-          writer_proxy[0], subfile_path_, legend_,
-          std::make_tuple(std::move(data_to_write)));
+          writer_proxy[0], grid_subfile_path_, legend_,
+          std::make_tuple(std::move(grid_data_to_write)));
+      Parallel::threaded_action<
+          observers::ThreadedActions::WriteReductionDataRow>(
+          // Node 0 is always the writer
+          writer_proxy[0], inertial_subfile_path_, legend_,
+          std::make_tuple(std::move(inertial_data_to_write)));
     }
   }
 
@@ -292,7 +347,10 @@ struct PostReductionSendBNSStarCentersToControlSystem {
   const static inline std::vector<std::string> legend_{
       "Time",       "Center_A_x", "Center_A_y", "Center_A_z",
       "Center_B_x", "Center_B_y", "Center_B_z"};
-  const static inline std::string subfile_path_{"/ControlSystems/BnsCenters"};
+  const static inline std::string grid_subfile_path_{
+      "/ControlSystems/BnsGridCenters"};
+  const static inline std::string inertial_subfile_path_{
+      "/ControlSystems/BnsInertialCenters"};
 };
 }  // namespace measurements
 }  // namespace control_system

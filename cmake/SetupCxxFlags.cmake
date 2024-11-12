@@ -8,6 +8,16 @@ option(OVERRIDE_ARCH "The architecture to use. Default is native." OFF)
 option(SPECTRE_DEBUG "Enable ASSERTs and other SPECTRE_DEBUG options"
   OFF)
 
+# Because of a bug in macOS on Apple Silicon, executables larger than 2GB in
+# size cannot run. This option minimizes executable size to avoid this bug. It
+# is enabled by default on Apple Silicon.
+set(_SPECTRE_OPTIMIZE_SIZE_DEFAULT OFF)
+if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+  set(_SPECTRE_OPTIMIZE_SIZE_DEFAULT ON)
+endif()
+option(SPECTRE_OPTIMIZE_SIZE "Optimize for executable size instead of speed"
+  ${_SPECTRE_OPTIMIZE_SIZE_DEFAULT})
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SPECTRE_DEBUG ON)
 endif()
@@ -17,13 +27,10 @@ if(${SPECTRE_DEBUG})
     APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS SPECTRE_DEBUG)
 endif()
 
-if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
-  # Because of a bug in macOS on Apple Silicon, executables larger than
-  # 2GB in size cannot run. The -Oz flag minimizes executable size, to
-  # avoid this bug.
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG -Oz")
-else()
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG")
+
+if(${SPECTRE_OPTIMIZE_SIZE})
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Oz")
 endif()
 
 if(NOT ${DEBUG_SYMBOLS})

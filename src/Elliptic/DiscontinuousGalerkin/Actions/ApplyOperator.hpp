@@ -27,6 +27,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
+#include "Elliptic/Systems/GetFluxesComputer.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
@@ -123,7 +124,7 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename OperatorAppliedToFieldsTag, typename PrimalMortarFieldsTag,
           typename PrimalMortarFluxesTag,
           typename FluxesArgsTags =
-              typename System::fluxes_computer::argument_tags,
+              elliptic::get_fluxes_argument_tags<System, Linearized>,
           typename SourcesArgsTags =
               elliptic::get_sources_argument_tags<System, Linearized>>
 struct PrepareAndSendMortarData;
@@ -179,28 +180,28 @@ struct PrepareAndSendMortarData<
     const auto& boundary_conditions =
         db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(box).at(
             element_id.block_id());
-    const auto apply_boundary_condition =
-        [&box, &boundary_conditions, &element_id](
-            const Direction<Dim>& direction, auto&&... fields_and_fluxes) {
-          ASSERT(
-              boundary_conditions.contains(direction),
-              "No boundary condition is available in block "
-                  << element_id.block_id() << " in direction " << direction
-                  << ". Make sure you are setting up boundary conditions when "
-                     "creating the domain.");
-          ASSERT(dynamic_cast<const BoundaryConditionsBase*>(
-                     boundary_conditions.at(direction).get()) != nullptr,
-                 "The boundary condition in block "
-                     << element_id.block_id() << " in direction " << direction
-                     << " has an unexpected type. Make sure it derives off the "
-                        "'boundary_conditions_base' class set in the system.");
-          const auto& boundary_condition =
-              dynamic_cast<const BoundaryConditionsBase&>(
-                  *boundary_conditions.at(direction));
-          elliptic::apply_boundary_condition<Linearized>(
-              boundary_condition, box, direction,
-              std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
-        };
+    const auto apply_boundary_condition = [&box, &boundary_conditions,
+                                           &element_id](
+                                              const Direction<Dim>& direction,
+                                              auto&&... fields_and_fluxes) {
+      ASSERT(boundary_conditions.contains(direction),
+             "No boundary condition is available in block "
+                 << element_id.block_id() << " in direction " << direction
+                 << ". Make sure you are setting up boundary conditions when "
+                    "creating the domain.");
+      ASSERT(dynamic_cast<const BoundaryConditionsBase*>(
+                 boundary_conditions.at(direction).get()) != nullptr,
+             "The boundary condition in block "
+                 << element_id.block_id() << " in direction " << direction
+                 << " has an unexpected type. Make sure it derives off the "
+                    "'boundary_conditions_base' class set in the system.");
+      const auto& boundary_condition =
+          dynamic_cast<const BoundaryConditionsBase&>(
+              *boundary_conditions.at(direction));
+      elliptic::apply_boundary_condition<Linearized>(
+          boundary_condition, box, direction,
+          std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
+    };
 
     // Can't `db::get` the arguments for the boundary conditions within
     // `db::mutate`, so we extract the data to mutate and move it back in when
@@ -260,8 +261,7 @@ struct PrepareAndSendMortarData<
         // Make a copy of the local boundary data on the mortar to send to the
         // neighbor
         auto remote_boundary_data_on_mortar =
-            get<all_mortar_data_tag>(box).at(mortar_id).local_data(
-                temporal_id);
+            get<all_mortar_data_tag>(box).at(mortar_id).local_data(temporal_id);
         // Reorient the data to the neighbor orientation if necessary
         if (not orientation.is_aligned()) {
           remote_boundary_data_on_mortar.orient_on_slice(
@@ -274,7 +274,7 @@ struct PrepareAndSendMortarData<
                 ::dg::MortarId<Dim>{direction_from_neighbor, element.id()},
                 std::move(remote_boundary_data_on_mortar)));
       }  // loop over neighbors in direction
-    }    // loop over directions
+    }  // loop over directions
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -289,7 +289,7 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename OperatorAppliedToFieldsTag, typename PrimalMortarFieldsTag,
           typename PrimalMortarFluxesTag,
           typename FluxesArgsTags =
-              typename System::fluxes_computer::argument_tags,
+              elliptic::get_fluxes_argument_tags<System, Linearized>,
           typename SourcesArgsTags =
               elliptic::get_sources_argument_tags<System, Linearized>>
 struct ReceiveMortarDataAndApplyOperator;
@@ -359,9 +359,10 @@ struct ReceiveMortarDataAndApplyOperator<
     };
 
     // Apply DG operator
-    using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
+    using fluxes_args_tags =
+        typename elliptic::get_fluxes_argument_tags<System, Linearized>;
     using fluxes_args_volume_tags =
-        typename System::fluxes_computer::volume_tags;
+        typename elliptic::get_fluxes_volume_tags<System, Linearized>;
     DirectionMap<Dim, std::tuple<decltype(db::get<FluxesArgsTags>(box))...>>
         fluxes_args_on_faces{};
     for (const auto& direction : Direction<Dim>::all_directions()) {
@@ -527,7 +528,7 @@ struct DgOperator {
  */
 template <typename System, typename FixedSourcesTag,
           typename FluxesArgsTags =
-              typename System::fluxes_computer::argument_tags,
+              elliptic::get_fluxes_argument_tags<System, false>,
           typename SourcesArgsTags =
               elliptic::get_sources_argument_tags<System, false>>
 struct ImposeInhomogeneousBoundaryConditionsOnSource;
@@ -563,28 +564,28 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
     const auto& boundary_conditions =
         db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(box).at(
             element_id.block_id());
-    const auto apply_boundary_condition =
-        [&box, &boundary_conditions, &element_id](
-            const Direction<Dim>& direction, auto&&... fields_and_fluxes) {
-          ASSERT(
-              boundary_conditions.contains(direction),
-              "No boundary condition is available in block "
-                  << element_id.block_id() << " in direction " << direction
-                  << ". Make sure you are setting up boundary conditions when "
-                     "creating the domain.");
-          ASSERT(dynamic_cast<const BoundaryConditionsBase*>(
-                     boundary_conditions.at(direction).get()) != nullptr,
-                 "The boundary condition in block "
-                     << element_id.block_id() << " in direction " << direction
-                     << " has an unexpected type. Make sure it derives off the "
-                        "'boundary_conditions_base' class set in the system.");
-          const auto& boundary_condition =
-              dynamic_cast<const BoundaryConditionsBase&>(
-                  *boundary_conditions.at(direction));
-          elliptic::apply_boundary_condition<false>(
-              boundary_condition, box, direction,
-              std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
-        };
+    const auto apply_boundary_condition = [&box, &boundary_conditions,
+                                           &element_id](
+                                              const Direction<Dim>& direction,
+                                              auto&&... fields_and_fluxes) {
+      ASSERT(boundary_conditions.contains(direction),
+             "No boundary condition is available in block "
+                 << element_id.block_id() << " in direction " << direction
+                 << ". Make sure you are setting up boundary conditions when "
+                    "creating the domain.");
+      ASSERT(dynamic_cast<const BoundaryConditionsBase*>(
+                 boundary_conditions.at(direction).get()) != nullptr,
+             "The boundary condition in block "
+                 << element_id.block_id() << " in direction " << direction
+                 << " has an unexpected type. Make sure it derives off the "
+                    "'boundary_conditions_base' class set in the system.");
+      const auto& boundary_condition =
+          dynamic_cast<const BoundaryConditionsBase&>(
+              *boundary_conditions.at(direction));
+      elliptic::apply_boundary_condition<false>(
+          boundary_condition, box, direction,
+          std::forward<decltype(fields_and_fluxes)>(fields_and_fluxes)...);
+    };
 
     // Can't `db::get` the arguments for the boundary conditions within
     // `db::mutate`, so we extract the data to mutate and move it back in when
@@ -596,9 +597,10 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         },
         make_not_null(&box));
 
-    using fluxes_args_tags = typename System::fluxes_computer::argument_tags;
+    using fluxes_args_tags =
+        typename elliptic::get_fluxes_argument_tags<System, false>;
     using fluxes_args_volume_tags =
-        typename System::fluxes_computer::volume_tags;
+        elliptic::get_fluxes_volume_tags<System, false>;
     DirectionMap<Dim, std::tuple<decltype(db::get<FluxesArgsTags>(box))...>>
         fluxes_args_on_faces{};
     for (const auto& direction : Direction<Dim>::all_directions()) {

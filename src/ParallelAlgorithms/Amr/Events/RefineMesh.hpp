@@ -21,6 +21,8 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Policies/EnforcePolicies.hpp"
+#include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -98,8 +100,7 @@ class RefineMesh : public Event {
       auto decision = criterion->evaluate(observation_box, cache, element_id);
       for (size_t d = 0; d < volume_dim; ++d) {
         // Ignore h-refinement decisions
-        if (decision[d] == amr::Flag::Split and
-            decision[d] == amr::Flag::Join) {
+        if (decision[d] == amr::Flag::Split or decision[d] == amr::Flag::Join) {
           ERROR("The criterion '" << typeid(*criterion).name()
                                   << "' requested h-refinement, but RefineMesh "
                                      "only works for p-refinement.");
@@ -123,6 +124,11 @@ class RefineMesh : public Event {
     const auto& old_mesh = old_mesh_and_element.first;
     const auto& verbosity =
         db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(*box);
+
+    // Enforce policies
+    const auto& policies = db::get<amr::Tags::Policies>(*box);
+    amr::enforce_policies(make_not_null(&overall_decision), policies,
+                          element_id, old_mesh);
 
     if (alg::any_of(overall_decision, [](amr::Flag flag) {
           return (flag == amr::Flag::IncreaseResolution or

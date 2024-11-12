@@ -7,6 +7,7 @@
 #include "Elliptic/Systems/BnsInitialData/BoundaryConditions/StarSurface.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \brief Boundary conditions for binary neutron star initial data.
 namespace BnsInitialData::BoundaryConditions {
 
 template <typename System>

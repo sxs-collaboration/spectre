@@ -11,6 +11,7 @@ spectre_target_sources(
   Completion.cpp
   EventsAndTriggers.cpp
   LogicalTriggers.cpp
+  WhenToCheck.cpp
   )
 
 spectre_target_headers(
@@ -23,6 +24,7 @@ spectre_target_headers(
   LogicalTriggers.hpp
   Tags.hpp
   Trigger.hpp
+  WhenToCheck.hpp
   )
 
 target_link_libraries(

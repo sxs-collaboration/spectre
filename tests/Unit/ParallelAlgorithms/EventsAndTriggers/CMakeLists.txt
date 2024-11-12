@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_EventsAndTriggers.cpp
   Test_RunEventsOnFailure.cpp
   Test_Tags.cpp
+  Test_WhenToCheck.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

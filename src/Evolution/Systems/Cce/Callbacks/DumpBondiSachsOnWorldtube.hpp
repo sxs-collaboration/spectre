@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -20,6 +21,7 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Evolution/Systems/Cce/WorldtubeModeRecorder.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "IO/Observer/Actions/GetLockPointer.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -42,8 +44,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace intrp {
-namespace callbacks {
+namespace intrp::callbacks {
 /*!
  * \brief Post interpolation callback that dumps metric data in Bondi-Sachs form
  * on a number of extraction radii given by the `intrp::TargetPoints::Sphere`
@@ -87,13 +88,6 @@ struct DumpBondiSachsOnWorldtube
   using cce_boundary_tags = Cce::Tags::characteristic_worldtube_boundary_tags<
       Cce::Tags::BoundaryValue>;
 
-  using cce_tags_to_dump = db::wrap_tags_in<
-      Cce::Tags::BoundaryValue,
-      tmpl::list<Cce::Tags::BondiBeta, Cce::Tags::Dr<Cce::Tags::BondiJ>,
-                 Cce::Tags::Du<Cce::Tags::BondiR>, Cce::Tags::BondiH,
-                 Cce::Tags::BondiJ, Cce::Tags::BondiQ, Cce::Tags::BondiR,
-                 Cce::Tags::BondiU, Cce::Tags::BondiW>>;
-
   using gh_source_vars_for_cce =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
@@ -102,7 +96,9 @@ struct DumpBondiSachsOnWorldtube
       typename InterpolationTargetTag::vars_to_interpolate_to_target;
 
   static_assert(
-      std::is_same_v<tmpl::list_difference<cce_tags_to_dump, cce_boundary_tags>,
+      std::is_same_v<tmpl::list_difference<
+                         Cce::Tags::worldtube_boundary_tags_for_writing<>,
+                         cce_boundary_tags>,
                      tmpl::list<>>,
       "Cce tags to dump are not in the boundary tags.");
 
@@ -129,6 +125,8 @@ struct DumpBondiSachsOnWorldtube
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
+    const double time =
+        intrp::InterpolationTarget_detail::get_temporal_id_value(temporal_id);
     const auto& sphere =
         Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache);
     const auto& filename_prefix = Parallel::get<Cce::Tags::FilePrefix>(cache);
@@ -159,9 +157,16 @@ struct DumpBondiSachsOnWorldtube
 
     // Bondi data
     Variables<cce_boundary_tags> bondi_boundary_data{num_points_single_sphere};
-    ComplexModalVector goldberg_mode_buffer{square(l_max + 1)};
-    const std::vector<std::string> all_legend = build_legend(l_max, false);
-    const std::vector<std::string> real_legend = build_legend(l_max, true);
+
+    // Even though no other cores should be writing to this file, we
+    // still need to get the h5 file lock so the system hdf5 doesn't get
+    // upset
+    auto* hdf5_lock = Parallel::local_branch(
+                          Parallel::get_parallel_component<
+                              observers::ObserverWriter<Metavariables>>(cache))
+                          ->template local_synchronous_action<
+                              observers::Actions::GetLockPointer<
+                                  observers::Tags::H5FileLock>>();
 
     size_t offset = 0;
     for (const auto& radius : radii) {
@@ -188,121 +193,26 @@ struct DumpBondiSachsOnWorldtube
 
       const std::string filename =
           MakeString{} << filename_prefix << "CceR" << std::setfill('0')
-                       << std::setw(4) << std::lround(radius);
+                       << std::setw(4) << std::lround(radius) << ".h5";
 
-      tmpl::for_each<cce_tags_to_dump>(
-          [&temporal_id, &l_max, &all_legend, &real_legend, &filename,
-           &bondi_boundary_data, &goldberg_mode_buffer, &cache](auto tag_v) {
+      // Lock now and it'll be unlocked for this radius after we finish writing
+      // the data to disk
+      const std::lock_guard lock(*hdf5_lock);
+      Cce::WorldtubeModeRecorder recorder{l_max, filename};
+
+      tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
+          [&](auto tag_v) {
             using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
             constexpr int spin = tag::tag::type::type::spin;
-            // Spin = 0 does not imply a quantity is real. However, all the tags
-            // we want to print out that have spin = 0 happen to be real, so we
-            // use this as an indicator.
-            constexpr bool is_real = spin == 0;
 
-            const auto& legend = is_real ? real_legend : all_legend;
+            const ComplexDataVector& bondi_nodal_data =
+                get(get<tag>(bondi_boundary_data)).data();
 
-            // `tag` is a BoundaryValue. We want the actual tag name
-            const std::string subfile_name{
-                "/" + replace_name(db::tag_name<typename tag::tag>())};
-
-            const auto& bondi_data = get(get<tag>(bondi_boundary_data));
-
-            // Convert our modal data to goldberg modes
-            SpinWeighted<ComplexModalVector, spin> goldberg_modes;
-            goldberg_modes.set_data_ref(make_not_null(&goldberg_mode_buffer));
-            Spectral::Swsh::libsharp_to_goldberg_modes(
-                make_not_null(&goldberg_modes),
-                Spectral::Swsh::swsh_transform(l_max, 1, bondi_data), l_max);
-
-            std::vector<double> data_to_write_buffer;
-            data_to_write_buffer.reserve(number_of_components(l_max, is_real));
-            data_to_write_buffer.emplace_back(
-                intrp::InterpolationTarget_detail::get_temporal_id_value(
-                    temporal_id));
-
-            // We loop over ell and m rather than just the total number of modes
-            // because we don't print negative m or the imaginary part of m=0
-            // for real quantities.
-            for (size_t ell = 0; ell <= l_max; ell++) {
-              for (int m = is_real ? 0 : -static_cast<int>(ell);
-                   m <= static_cast<int>(ell); m++) {
-                const size_t goldberg_index =
-                    Spectral::Swsh::goldberg_mode_index(l_max, ell, m);
-                data_to_write_buffer.push_back(
-                    real(goldberg_modes.data()[goldberg_index]));
-                if (not is_real or m != 0) {
-                  data_to_write_buffer.push_back(
-                      imag(goldberg_modes.data()[goldberg_index]));
-                }
-              }
-            }
-
-            ASSERT(legend.size() == data_to_write_buffer.size(),
-                   "Legend (" << legend.size()
-                              << ") does not have the same number of "
-                                 "components as data to write ("
-                              << data_to_write_buffer.size() << ") for tag "
-                              << db::tag_name<typename tag::tag>());
-
-            // Even though no other cores should be writing to this file, we
-            // still need to get the h5 file lock so the system hdf5 doesn't get
-            // upset
-            auto* hdf5_lock =
-                Parallel::local_branch(
-                    Parallel::get_parallel_component<
-                        observers::ObserverWriter<Metavariables>>(cache))
-                    ->template local_synchronous_action<
-                        observers::Actions::GetLockPointer<
-                            observers::Tags::H5FileLock>>();
-
-            {
-              const std::lock_guard lock(*hdf5_lock);
-              observers::ThreadedActions::ReductionActions_detail::write_data(
-                  subfile_name, observers::input_source_from_cache(cache),
-                  legend, std::make_tuple(data_to_write_buffer), filename,
-                  std::index_sequence<0>{});
-            }
+            recorder.append_modal_data<spin>(
+                Cce::dataset_label_for_tag<typename tag::tag>(), time,
+                bondi_nodal_data);
           });
     }
   }
-
- private:
-  // There are exactly half the number of modes for spin = 0 quantities as their
-  // are for spin != 0
-  static size_t number_of_components(const size_t l_max, const bool is_real) {
-    return 1 + square(l_max + 1) * (is_real ? 1 : 2);
-  }
-
-  static std::vector<std::string> build_legend(const size_t l_max,
-                                               const bool is_real) {
-    std::vector<std::string> legend;
-    legend.reserve(number_of_components(l_max, is_real));
-    legend.emplace_back("Time");
-    for (int ell = 0; ell <= static_cast<int>(l_max); ++ell) {
-      for (int m = is_real ? 0 : -ell; m <= ell; ++m) {
-        legend.push_back(MakeString{} << "Re(" << ell << "," << m << ")");
-        // For real quantities, don't include the imaginary m=0
-        if (not is_real or m != 0) {
-          legend.push_back(MakeString{} << "Im(" << ell << "," << m << ")");
-        }
-      }
-    }
-    return legend;
-  }
-
-  // These match names that CCE executable expects
-  static std::string replace_name(const std::string& db_tag_name) {
-    if (db_tag_name == "BondiBeta") {
-      return "Beta";
-    } else if (db_tag_name == "Dr(J)") {
-      return "DrJ";
-    } else if (db_tag_name == "Du(R)") {
-      return "DuR";
-    } else {
-      return db_tag_name;
-    }
-  }
 };
-}  // namespace callbacks
-}  // namespace intrp
+}  // namespace intrp::callbacks

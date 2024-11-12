@@ -64,12 +64,16 @@ def _constraint_damping_params(
 ) -> dict:
     total_mass = mass_left + mass_right
     return {
-        "Gamma0Constant": 0.001 / total_mass,
+        # SpEC chooses a Gamma0Constant of 0.001, but we found 0.01 produces
+        # smaller constraints violations in the envelope/outer shell region.
+        "Gamma0Constant": 0.01 / total_mass,
         "Gamma0LeftAmplitude": 4.0 / mass_left,
         "Gamma0LeftWidth": 7.0 * mass_left,
         "Gamma0RightAmplitude": 4.0 / mass_right,
         "Gamma0RightWidth": 7.0 * mass_right,
-        "Gamma0OriginAmplitude": 0.075 / total_mass,
+        # SpEC chooses a Gamm0OriginAmplitude of 0.075, but we found that 0.75
+        # produces a smaller burst of constraints from junk radiation.
+        "Gamma0OriginAmplitude": 0.75 / total_mass,
         "Gamma0OriginWidth": 2.5 * initial_separation,
         "Gamma1Width": 10.0 * initial_separation,
     }
@@ -147,8 +151,12 @@ def inspiral_parameters(
             / (id_input_file["Observers"]["VolumeFileName"] + "*.h5")
         ),
         # Domain geometry
-        "ExcisionRadiusA": id_domain_creator["ObjectA"]["InnerRadius"],
-        "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"],
+        # This factor is to account for the ID excision not being the same shape
+        # as the final horizon found after the last iteration. Found through
+        # trial and error that increasing the excision size by this factor
+        # allowed the runs to evolve without early incoming char speeds.
+        "ExcisionRadiusA": id_domain_creator["ObjectA"]["InnerRadius"] * 1.0385,
+        "ExcisionRadiusB": id_domain_creator["ObjectB"]["InnerRadius"] * 1.0385,
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
         "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
@@ -243,8 +251,11 @@ def inspiral_parameters_spec(
         # Initial data files
         "SpecDataDirectory": str(Path(id_run_dir).resolve()),
         # Domain geometry
-        "ExcisionRadiusA": id_params["ID_rExcA"],
-        "ExcisionRadiusB": id_params["ID_rExcB"],
+        # SpEC excision in ID_Params.perl is 0.89 * horizon radius, but
+        # usually you want to excise less than the maximum. Here use 6% larger,
+        # or about 0.9434 * horizon radius.
+        "ExcisionRadiusA": id_params["ID_rExcA"] * 1.06,
+        "ExcisionRadiusB": id_params["ID_rExcB"] * 1.06,
         "XCoordA": id_params["ID_cA"][0],
         "XCoordB": id_params["ID_cB"][0],
         # COM offset in y and z is the same for both objects
@@ -290,6 +301,7 @@ def start_inspiral(
     ] = INSPIRAL_INPUT_FILE_TEMPLATE,
     id_horizons_path: Optional[Union[str, Path]] = None,
     continue_with_ringdown: bool = False,
+    eccentricity_control: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
@@ -313,6 +325,10 @@ def start_inspiral(
     logger.warning(
         "The BBH pipeline is still experimental. Please review the"
         " generated input files."
+    )
+    assert not (continue_with_ringdown and eccentricity_control), (
+        "Cannot enable both 'continue_with_ringdown' and"
+        " 'eccentricity_control'. Choose which of the two to perform next."
     )
 
     # Determine inspiral parameters from initial data
@@ -374,6 +390,8 @@ def start_inspiral(
         **inspiral_params,
         **scheduler_kwargs,
         continue_with_ringdown=continue_with_ringdown,
+        eccentricity_control=eccentricity_control,
+        id_input_file_path=Path(id_input_file_path).resolve(),
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
         segments_dir=segments_dir,
@@ -460,6 +478,14 @@ def start_inspiral(
     help=(
         "Continue with the ringdown simulation once a common horizon has"
         " formed."
+    ),
+)
+@click.option(
+    "--eccentricity-control",
+    is_flag=True,
+    help=(
+        "Perform eccentricity reduction script that finds current eccentricity"
+        "and better guesses for the input orbital parameters."
     ),
 )
 @click.option(

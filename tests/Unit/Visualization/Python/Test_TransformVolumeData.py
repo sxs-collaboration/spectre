@@ -20,6 +20,7 @@ from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
 from spectre.Spectral import Mesh
 from spectre.Visualization.TransformVolumeData import (
     Kernel,
+    parse_kernels,
     parse_pybind11_signatures,
     snake_case_to_camel_case,
     transform_volume_data,
@@ -225,6 +226,17 @@ class TestTransformVolumeData(unittest.TestCase):
         # The domain has pretty low resolution so the integral is not
         # particularly precise
         npt.assert_allclose(integrals["Sinusoid"], 64.0, rtol=1e-2)
+
+    def test_parse_kernels(self):
+        (mesh_kernel,) = list(
+            parse_kernels(
+                ["spectre.Spectral.Mesh3D:number_of_grid_points"],
+                exec_files=[],
+                map_input_names={},
+                interactive=False,
+            )
+        )
+        self.assertEqual(mesh_kernel.callable, Mesh[3].number_of_grid_points)
 
     def test_cli(self):
         runner = CliRunner()

@@ -298,7 +298,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
       "  ObservationValueEpsilon: 1e-9\n"
-      "  Interpolate: False\n"
+      "  ElementsAreIdentical: False\n"
       "  Variables:\n"
       "    SpacetimeMetric: CustomSpacetimeMetric\n"
       "    Pi: CustomPi\n",
@@ -314,7 +314,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
       "  Subgroup: VolumeData\n"
       "  ObservationValue: 0.\n"
       "  ObservationValueEpsilon: Auto\n"
-      "  Interpolate: False\n"
+      "  ElementsAreIdentical: False\n"
       "  Variables:\n"
       "    SpatialMetric: CustomSpatialMetric\n"
       "    Lapse: CustomLapse\n"

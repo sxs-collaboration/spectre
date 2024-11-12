@@ -25,7 +25,10 @@ struct Time;
 }  // namespace Tags
 /// \endcond
 
-/// \ingroup EventsAndTriggersGroup
+/*!
+ * \ingroup EventsAndTriggersGroup
+ * \brief Contains denser triggers.
+ */
 namespace DenseTriggers {}
 
 /// \ingroup EventsAndTriggersGroup

@@ -69,7 +69,7 @@ SpatialDiscretization:
   SubcellSolver:
     Reconstructor: MonotonisedCentral
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger: Always
     Events:
       - ChangeSlabSize:

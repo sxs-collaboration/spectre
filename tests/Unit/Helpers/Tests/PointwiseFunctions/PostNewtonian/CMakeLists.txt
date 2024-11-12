@@ -14,3 +14,10 @@ target_link_libraries(
   PRIVATE
   PostNewtonianHelpers
   )
+
+spectre_add_python_bindings_test(
+  "Unit.PostNewtonian.Python.BinaryTrajectories"
+  "Test_BinaryTrajectories.py"
+  "unit;Python"
+  PyPostNewtonianHelpers
+  )

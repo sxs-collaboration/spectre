@@ -18,6 +18,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -41,11 +42,10 @@ struct Component {
   using const_global_cache_tags =
       tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
 
-  using simple_tags =
-      db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                        Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time,
-                        Tags::IsUsingTimeSteppingErrorControl,
-                        Tags::AdaptiveSteppingDiagnostics>;
+  using simple_tags = db::AddSimpleTags<
+      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+      Tags::Next<Tags::TimeStep>, Tags::Time, Tags::StepNumberWithinSlab,
+      Tags::IsUsingTimeSteppingErrorControl, Tags::AdaptiveSteppingDiagnostics>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   using phase_dependent_action_list = tmpl::list<
@@ -80,10 +80,15 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
            ? TimeStepId(time_step.is_positive(), 8, start + time_step)
            : TimeStepId(time_step.is_positive(), 8, start, 1, time_step,
                         (start + substep_offsets[1]).value()),
-       time_step, time_step, start.value(), using_error_control,
+       time_step, time_step, start.value(), uint64_t{0}, using_error_control,
        AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-
+  uint64_t step_number_within_slab = 0;
+  auto current_slab_number =
+      ActionTesting::get_databox_tag<component,
+                                     Tags::AdaptiveSteppingDiagnostics>(runner,
+                                                                        0)
+          .number_of_slabs;
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < substep_offsets.size(); ++substep) {
       const auto& box = ActionTesting::get_databox<component>(runner, 0);
@@ -95,10 +100,23 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
       CHECK(db::get<Tags::TimeStep>(box) == time_step);
       CHECK(db::get<Tags::Time>(box) ==
             db::get<Tags::TimeStepId>(box).substep_time());
+      CHECK(db::get<Tags::StepNumberWithinSlab>(box) ==
+            step_number_within_slab);
       runner.next_action<component>(0);
     }
     auto& box =
         ActionTesting::get_databox<component>(make_not_null(&runner), 0);
+    if (current_slab_number ==
+        db::get<Tags::AdaptiveSteppingDiagnostics>(box).number_of_slabs) {
+      ++step_number_within_slab;
+    } else {
+      step_number_within_slab = 0;
+      ++current_slab_number;
+      ASSERT(
+          current_slab_number ==
+              db::get<Tags::AdaptiveSteppingDiagnostics>(box).number_of_slabs,
+          "Current slab number is not what I expected");
+    }
     db::mutate<Tags::Next<Tags::TimeStep>>(
         [](const gsl::not_null<TimeDelta*> next_step) { *next_step /= 2; },
         make_not_null(&box));

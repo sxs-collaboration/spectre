@@ -26,7 +26,7 @@
 class DataVector;
 /// \endcond
 
-namespace BnsInitialData ::BoundaryConditions {
+namespace BnsInitialData::BoundaryConditions {
 
 /*!
  * Impose StarSurface boundary conditions:

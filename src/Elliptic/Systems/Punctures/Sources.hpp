@@ -49,6 +49,7 @@ void add_linearized_sources(
 /// \see elliptic::protocols::FirstOrderSystem
 struct Sources {
   using argument_tags = tmpl::list<Tags::Alpha, Tags::Beta>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(gsl::not_null<Scalar<DataVector>*> puncture_equation,
                     const Scalar<DataVector>& alpha,
                     const Scalar<DataVector>& beta,
@@ -62,6 +63,7 @@ struct Sources {
 /// \see elliptic::protocols::FirstOrderSystem
 struct LinearizedSources {
   using argument_tags = tmpl::list<Tags::Alpha, Tags::Beta, Tags::Field>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> linearized_puncture_equation,
       const Scalar<DataVector>& alpha, const Scalar<DataVector>& beta,

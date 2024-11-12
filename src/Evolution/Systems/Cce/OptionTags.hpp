@@ -23,6 +23,7 @@
 #include "Utilities/PrettyType.hpp"
 
 namespace Cce {
+/// \brief %Option tags for CCE
 namespace OptionTags {
 
 /// %Option group
@@ -226,6 +227,7 @@ struct InitializeJ {
 };
 }  // namespace OptionTags
 
+/// \brief Initialization tags for CCE
 namespace InitializationTags {
 struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;

@@ -20,16 +20,19 @@ files.
 """
 
 
-def find_event(event_name: str, input_file: dict) -> dict:
-    """Find a particular event in the "EventsAndTriggers" of the input file.
+def find_event(
+    event_name: str, events_and_triggers_name: str, input_file: dict
+) -> dict:
+    """Find a particular event in the given list of events of the input file.
 
     Arguments:
       event_name: The name of an event like "ObserveTimeSteps".
+      events_and_triggers_name: The name of a list of events.
       input_file: The input file read in as a dictionary.
 
     Returns: The event as a dictionary, or None if the event wasn't found.
     """
-    for trigger_and_events in input_file["EventsAndTriggers"]:
+    for trigger_and_events in input_file[events_and_triggers_name]:
         try:
             for event in trigger_and_events["Events"]:
                 if isinstance(event, str):

@@ -27,7 +27,7 @@ namespace amr {
 ///   resolution is bounded between 1 and
 ///   Spectral::maximum_number_of_points<Spectral::Basis::Legendre>
 ///   which are limits based on the implementation details of ElementId and
-///   Mesh.
+///   Mesh. There is no error for attempting to go beyond the limits.
 /// - If you specify the limits on the refinement levels and resolutions, they
 ///   must respect the above limits.
 /// - Depending upon which Spectral::Basis is chosen, the actual minimum
@@ -49,7 +49,20 @@ class Limits {
         "Inclusive bounds on the number of grid points per dimension for AMR."};
   };
 
-  using options = tmpl::list<RefinementLevel, NumGridPoints>;
+  /// \brief Whether the code should error if EnforcePolicies has to prevent
+  /// refinement from going beyond the given limits.
+  ///
+  /// \details The Limits class is just a holder for this value, the actual
+  /// error happens in `amr::Actions::EvaluateRefinementCriteria` or
+  /// `amr::Events::RefineMesh`
+  struct ErrorBeyondLimits {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If adaptive mesh refinement tries to go beyond the RefinementLevel or "
+        "NumGridPoints limit, error"};
+  };
+
+  using options = tmpl::list<RefinementLevel, NumGridPoints, ErrorBeyondLimits>;
 
   static constexpr Options::String help = {
       "Limits on refinement level and resolution for adaptive mesh "
@@ -59,7 +72,7 @@ class Limits {
 
   Limits(const std::optional<std::array<size_t, 2>>& refinement_level_bounds,
          const std::optional<std::array<size_t, 2>>& resolution_bounds,
-         const Options::Context& context = {});
+         bool error_beyond_limits, const Options::Context& context = {});
 
   Limits(size_t minimum_refinement_level, size_t maximum_refinement_level,
          size_t minimum_resolution, size_t maximum_resolution);
@@ -68,6 +81,7 @@ class Limits {
   size_t maximum_refinement_level() const { return maximum_refinement_level_; }
   size_t minimum_resolution() const { return minimum_resolution_; }
   size_t maximum_resolution() const { return maximum_resolution_; }
+  bool error_beyond_limits() const { return error_beyond_limits_; }
 
   void pup(PUP::er& p);
 
@@ -76,6 +90,7 @@ class Limits {
   size_t maximum_refinement_level_{16};
   size_t minimum_resolution_{1};
   size_t maximum_resolution_{20};
+  bool error_beyond_limits_{false};
 };
 
 bool operator==(const Limits& lhs, const Limits& rhs);

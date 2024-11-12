@@ -259,10 +259,11 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<evolution::Actions::RunEventsAndTriggers,
-                         Actions::ChangeSlabSize, dg_step_actions,
-                         Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>;
+              tmpl::list<
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
+                  Actions::ChangeSlabSize, dg_step_actions,
+                  Actions::AdvanceTime,
+                  PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {

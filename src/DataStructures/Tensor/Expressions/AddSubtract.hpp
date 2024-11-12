@@ -689,8 +689,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
         // We haven't yet evaluated the whole subtree of the primary child, so
         // first assign the result component to be the result of computing the
         // primary child's subtree
-        result_component =
-            t1_.template get_primary(result_component, op1_multi_index);
+        result_component = t1_.get_primary(result_component, op1_multi_index);
         // Now that the primary child's subtree has been computed, add the
         // result of evaluating the other child's subtree to the current result
         result_component += t2_.get(op2_multi_index);
@@ -707,8 +706,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
         // We haven't yet evaluated the whole subtree of the primary child, so
         // first assign the result component to be the result of computing the
         // primary child's subtree
-        result_component =
-            t1_.template get_primary(result_component, op1_multi_index);
+        result_component = t1_.get_primary(result_component, op1_multi_index);
         // Now that the primary child's subtree has been computed, subtract the
         // result of evaluating the other child's subtree from the current
         // result
@@ -767,7 +765,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
       } else {
         // We haven't yet evaluated the whole subtree for this expression, so
         // return the sum of the results of the two operands' subtrees
-        return t1_.template get_primary(result_component, op1_multi_index) +
+        return t1_.get_primary(result_component, op1_multi_index) +
                t2_.get(op2_multi_index);
       }
     } else {
@@ -782,7 +780,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
         // We haven't yet evaluated the whole subtree for this expression, so
         // return the difference between the results of the two operands'
         // subtrees
-        return t1_.template get_primary(result_component, op1_multi_index) -
+        return t1_.get_primary(result_component, op1_multi_index) -
                t2_.get(op2_multi_index);
       }
     }
@@ -831,8 +829,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t1_.template evaluate_primary_subtree(result_component,
-                                            result_multi_index);
+      t1_.evaluate_primary_subtree(result_component, result_multi_index);
     }
 
     if constexpr (is_primary_start) {

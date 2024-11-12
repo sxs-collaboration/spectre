@@ -71,8 +71,8 @@ class TestInspiral(unittest.TestCase):
             params["IdFileGlob"],
             str((self.id_dir).resolve() / "BbhVolume*.h5"),
         )
-        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.116)
-        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.744)
+        self.assertAlmostEqual(params["ExcisionRadiusA"], 1.116 * 1.0385)
+        self.assertAlmostEqual(params["ExcisionRadiusB"], 0.744 * 1.0385)
         self.assertEqual(params["XCoordA"], 8.0)
         self.assertEqual(params["XCoordB"], -12.0)
         self.assertEqual(params["InitialAngularVelocity"], 0.01)
@@ -105,12 +105,12 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["SizeAMaxTimescale"], 20)
         self.assertEqual(params["SizeBMaxTimescale"], 20)
         # Constraint damping
-        self.assertEqual(params["Gamma0Constant"], 5e-4)
+        self.assertEqual(params["Gamma0Constant"], 5e-3)
         self.assertEqual(params["Gamma0LeftAmplitude"], 4.0)
         self.assertEqual(params["Gamma0LeftWidth"], 7.0)
         self.assertEqual(params["Gamma0RightAmplitude"], 4.0)
         self.assertEqual(params["Gamma0RightWidth"], 7.0)
-        self.assertEqual(params["Gamma0OriginAmplitude"], 3.75e-2)
+        self.assertEqual(params["Gamma0OriginAmplitude"], 3.75e-1)
         self.assertEqual(params["Gamma0OriginWidth"], 50.0)
         self.assertEqual(params["Gamma1Width"], 200.0)
 

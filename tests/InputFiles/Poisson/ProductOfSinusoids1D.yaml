@@ -96,6 +96,7 @@ Amr:
     Limits:
       NumGridPoints: Auto
       RefinementLevel: Auto
+      ErrorBeyondLimits: False
   Iterations: 3
 
 PhaseChangeAndTriggers:
@@ -154,7 +155,7 @@ LinearSolver:
 
 RadiallyCompressedCoordinates: None
 
-EventsAndTriggers:
+EventsAndTriggersAtIterations:
   - Trigger: Always
     Events:
       - ObserveNorms:

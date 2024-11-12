@@ -39,7 +39,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
       "    Subgroup: data.group\n"
       "    ObservationValue: 1.\n"
       "    ObservationValueEpsilon: 1e-9\n"
-      "    Interpolate: True");
+      "    ElementsAreIdentical: True");
   const auto& options =
       opts.get<importers::Tags::ImporterOptions<ExampleVolumeData>>();
   using tuples::get;
@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
       get<importers::OptionTags::ObservationValueEpsilon>(options);
   CHECK(obs_val_eps.has_value());
   CHECK(obs_val_eps.value() == 1.0e-9);
-  CHECK(get<importers::OptionTags::EnableInterpolation>(options));
+  CHECK(get<importers::OptionTags::ElementsAreIdentical>(options));
 
   CHECK(
       std::get<importers::ObservationSelector>(

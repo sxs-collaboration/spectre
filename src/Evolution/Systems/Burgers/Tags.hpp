@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 namespace Burgers {
+/// \brief Tags for the Burgers system
 namespace Tags {
 struct U : db::SimpleTag {
   using type = Scalar<DataVector>;

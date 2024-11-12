@@ -866,7 +866,7 @@ struct GhValenciaDivCleanTemplateBase<
                   VariableFixing::Actions::FixVariables<
                       VariableFixing::LimitLorentzFactor>,
                   Actions::UpdateConservatives,
-                  evolution::Actions::RunEventsAndTriggers,
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
                   PhaseControl::Actions::ExecutePhaseChange>>,
           Parallel::PhaseActions<

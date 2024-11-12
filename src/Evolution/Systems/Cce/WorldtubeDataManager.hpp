@@ -202,9 +202,9 @@ class MetricWorldtubeDataManager
  * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
  * function that handles buffer updating and boundary computation. This version
  * of the data manager handles the 9 scalars of
- * `cce_bondi_input_tags`, rather than direct metric components
- * handled by `WorldtubeDataManager`. The set of 9 scalars is a far leaner
- * (factor of ~4) data storage format.
+ * `worldtube_boundary_tags_for_writing<Spectral::Swsh::Tags::SwshTransform>`,
+ * rather than direct metric components handled by `WorldtubeDataManager`. The
+ * set of 9 scalars is a far leaner (factor of ~4) data storage format.
  */
 class BondiWorldtubeDataManager
     : public WorldtubeDataManager<
@@ -214,7 +214,9 @@ class BondiWorldtubeDataManager
   BondiWorldtubeDataManager() = default;
 
   BondiWorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>>
+      std::unique_ptr<
+          WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
+              Spectral::Swsh::Tags::SwshTransform>>>
           buffer_updater,
       size_t l_max, size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator);
@@ -230,7 +232,8 @@ class BondiWorldtubeDataManager
    *
    * \details First, if the stored buffer requires updating, it will be updated
    * via the `buffer_updater_` supplied in the constructor. Then, each of the
-   * 9 spin-weighted scalars in `cce_bondi_input_tags`
+   * 9 spin-weighted scalars in
+   * `worldtube_boundary_tags_for_writing<Spectral::Swsh::Tags::SwshTransform>`
    * are interpolated across buffer points to the requested time value (via the
    * `Interpolator` provided in the constructor). Finally, the remaining two
    * scalars not directly supplied in the input file are calculated in-line and
@@ -259,7 +262,10 @@ class BondiWorldtubeDataManager
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
-  std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> buffer_updater_;
+  std::unique_ptr<
+      WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>>>
+      buffer_updater_;
   // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t time_span_start_ = 0;
   // NOLINTNEXTLINE(spectre-mutable)
@@ -269,11 +275,15 @@ class BondiWorldtubeDataManager
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable Variables<cce_bondi_input_tags> interpolated_coefficients_;
+  mutable Variables<Tags::worldtube_boundary_tags_for_writing<
+      Spectral::Swsh::Tags::SwshTransform>>
+      interpolated_coefficients_;
 
   // note: buffers store data in an 'time-varies-fastest' manner
   // NOLINTNEXTLINE(spectre-mutable)
-  mutable Variables<cce_bondi_input_tags> coefficients_buffers_;
+  mutable Variables<Tags::worldtube_boundary_tags_for_writing<
+      Spectral::Swsh::Tags::SwshTransform>>
+      coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
 

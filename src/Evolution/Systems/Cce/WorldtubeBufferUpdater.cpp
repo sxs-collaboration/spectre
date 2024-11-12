@@ -424,12 +424,16 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
 }
 
 double BondiWorldtubeH5BufferUpdater::update_buffers_for_time(
-    const gsl::not_null<Variables<cce_bondi_input_tags>*> buffers,
+    const gsl::not_null<Variables<Tags::worldtube_boundary_tags_for_writing<
+        Spectral::Swsh::Tags::SwshTransform>>*>
+        buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
     const size_t buffer_depth) const {
-  return detail::update_buffers_for_time<cce_bondi_input_tags>(
+  return detail::update_buffers_for_time<
+      Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>>(
       buffers, time_span_start, time_span_end, time, computation_l_max, l_max_,
       interpolator_length, buffer_depth, time_buffer_, dataset_names_,
       cce_data_file_);

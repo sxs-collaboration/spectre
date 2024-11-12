@@ -12,6 +12,13 @@
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Creators/Tags/FunctionsOfTime.hpp"
+#include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
@@ -24,6 +31,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -139,15 +147,32 @@ void test_serialization() {
 }
 
 // Check that the center of mass is at the expected location for this test.
-void check_centers(const double center_a_x, const double center_a_y,
-                   const double center_a_z, const double center_b_x,
-                   const double center_b_y, const double center_b_z) {
-  CHECK(center_a_x == 1.0);
-  CHECK(center_a_y == 4.5 / 8.0);
-  CHECK(center_a_z == 3.0 / 8.0);
-  CHECK(center_b_x == -1.0);
-  CHECK(center_b_y == 1.0);
-  CHECK(center_b_z == 0.0);
+void check_centers(const std::array<double, 3>& center_a,
+                   const std::array<double, 3>& center_b,
+                   const bool grid_centers = true) {
+  const std::array<double, 3> expected_grid_center_a{1.0, 4.5 / 8.0, 3.0 / 8.0};
+  const std::array<double, 3> expected_grid_center_b{-1.0, 1.0, 0.0};
+
+  if (grid_centers) {
+    CHECK(center_a == expected_grid_center_a);
+    CHECK(center_b == expected_grid_center_b);
+  } else {
+    const std::array<double, 3> expected_inertial_center_a{
+        cos(0.1) * expected_grid_center_a[0] +
+            -sin(0.1) * expected_grid_center_a[1],
+        sin(0.1) * expected_grid_center_a[0] +
+            cos(0.1) * expected_grid_center_a[1],
+        expected_grid_center_a[2]};
+    const std::array<double, 3> expected_inertial_center_b{
+        cos(0.1) * expected_grid_center_b[0] +
+            -sin(0.1) * expected_grid_center_b[1],
+        sin(0.1) * expected_grid_center_b[0] +
+            cos(0.1) * expected_grid_center_b[1],
+        expected_grid_center_b[2]};
+
+    CHECK_ITERABLE_APPROX(center_a, expected_inertial_center_a);
+    CHECK_ITERABLE_APPROX(center_b, expected_inertial_center_b);
+  }
 }
 
 struct MockControlSystem
@@ -181,8 +206,7 @@ struct MockControlSystem
                       const std::array<double, 3> center_b,
                       Parallel::GlobalCache<Metavariables>& /*cache*/,
                       const LinkedMessageId<double>& /*measurement_id*/) {
-      check_centers(center_a[0], center_a[1], center_a[2], center_b[0],
-                    center_b[1], center_b[2]);
+      check_centers(center_a, center_b);
       // Avoid unused variable warning for deriv_order, which is required
       // as part of the control_system protocol.
       CHECK(2 == deriv_order);
@@ -194,7 +218,10 @@ template <typename Metavariables>
 struct MockControlSystemComponent {
   using component_being_mocked =
       ControlComponent<Metavariables, MockControlSystem>;
-  using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
+  using const_global_cache_tags =
+      tmpl::list<control_system::Tags::Verbosity, domain::Tags::Domain<3>>;
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
@@ -213,7 +240,8 @@ struct MockWriteReductionDataRow {
                     const std::string& subfile_name,
                     const std::vector<std::string>& file_legend,
                     const std::tuple<std::vector<double>>& data_row) {
-    CHECK(subfile_name == "/ControlSystems/BnsCenters.dat");
+    CHECK((subfile_name == "/ControlSystems/BnsGridCenters" or
+           subfile_name == "/ControlSystems/BnsInertialCenters"));
     CHECK(file_legend == std::vector<std::string>{
                              "Time", "Center_A_x", "Center_A_y", "Center_A_z",
                              "Center_B_x", "Center_B_y", "Center_B_z"});
@@ -222,7 +250,8 @@ struct MockWriteReductionDataRow {
 
     CHECK(data[0] == 1.0);
     CHECK(data.size() == file_legend.size());
-    check_centers(data[1], data[2], data[3], data[4], data[5], data[6]);
+    check_centers({data[1], data[2], data[3]}, {data[4], data[5], data[6]},
+                  subfile_name == "/ControlSystems/BnsGridCenters");
   }
 };
 
@@ -257,6 +286,8 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
                   "[ControlSystem][Unit]") {
   test_serialization();
+  domain::FunctionsOfTime::register_derived_with_charm();
+  domain::creators::register_derived_with_charm();
 
   // Part 1 of the test: calculation of the relevant integrals
   // within a (mock) element.
@@ -287,11 +318,39 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   CHECK(first_moment_a == std::array<double, 3>{8.0, 4.5, 3.0});
   CHECK(first_moment_b == std::array<double, 3>{-2.5, 2.5, 0.0});
 
+  // Use BNS domain with rotation for realistic block structure, but simple time
+  // dependent maps for testing
+  const domain::creators::bco::TimeDependentMapOptions<false> time_dep_opts{
+      0.0,
+      std::nullopt,
+      domain::creators::bco::TimeDependentMapOptions<false>::RotationMapOptions{
+          std::array{0.0, 0.0, 0.1}},
+      std::nullopt,
+      std::nullopt,
+      std::nullopt};
+  const domain::creators::BinaryCompactObject<false> binary_compact_object{
+      domain::creators::BinaryCompactObject<false>::CartesianCubeAtXCoord{20.0},
+      domain::creators::BinaryCompactObject<false>::CartesianCubeAtXCoord{
+          -20.0},
+      {0.0, 0.0},
+      100.0,
+      500.0,
+      1.0,
+      {0_st},
+      {4_st},
+      true,
+      domain::CoordinateMaps::Distribution::Projective,
+      domain::CoordinateMaps::Distribution::Linear,
+      90.0,
+      time_dep_opts};
+
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using control_system_component = MockControlSystemComponent<Metavariables>;
   using obs_writer = MockObserverWriter<Metavariables>;
 
-  MockRuntimeSystem runner{{true, ::Verbosity::Silent}};
+  MockRuntimeSystem runner{
+      {true, ::Verbosity::Silent, binary_compact_object.create_domain()},
+      {binary_compact_object.functions_of_time()}};
   ActionTesting::emplace_singleton_component<control_system_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0});
@@ -312,4 +371,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
       template apply<control_system_component>(box, cache, unused_element_id,
                                                measurement_id, mass_a, mass_b,
                                                first_moment_a, first_moment_b);
+
+  // One for grid centers, one for inertial centers
+  CHECK(ActionTesting::number_of_queued_threaded_actions<obs_writer>(runner,
+                                                                     0) == 2);
+  for (size_t i = 0; i < 2; i++) {
+    ActionTesting::invoke_queued_threaded_action<obs_writer>(
+        make_not_null(&runner), 0);
+  }
 }

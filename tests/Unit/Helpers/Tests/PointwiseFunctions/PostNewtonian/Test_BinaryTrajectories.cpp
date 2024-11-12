@@ -22,25 +22,25 @@ const std::array<double, 3> initial_velocity{0.1, -0.2, 0.3};
 //   is false.
 // - no_expansion: If it's positive, call the `positions_no_expansion` function.
 //   If it's negative, just call the `positions` function.
-std::array<double, 3> positions1(const double time, const double newtonian,
-                                 const double no_expansion) {
+tnsr::I<double, 3> positions1(const double time, const double newtonian,
+                              const double no_expansion) {
   const bool newt = newtonian > 0.0 ? true : false;
   BinaryTrajectories expected{initial_separation, initial_velocity, newt};
   if (no_expansion > 0.0) {
-    return expected.positions_no_expansion(time).first;
+    return expected.positions_no_expansion(time)[0];
   } else {
-    return expected.positions(time).first;
+    return expected.positions(time)[0];
   }
 }
 
-std::array<double, 3> positions2(const double time, const double newtonian,
-                                 const double no_expansion) {
+tnsr::I<double, 3> positions2(const double time, const double newtonian,
+                              const double no_expansion) {
   const bool newt = newtonian > 0.0 ? true : false;
   BinaryTrajectories expected{initial_separation, initial_velocity, newt};
   if (no_expansion > 0.0) {
-    return expected.positions_no_expansion(time).second;
+    return expected.positions_no_expansion(time)[1];
   } else {
-    return expected.positions(time).second;
+    return expected.positions(time)[1];
   }
 }
 }  // namespace
@@ -54,17 +54,17 @@ SPECTRE_TEST_CASE("Test.TestHelpers.PostNewtonian.BinaryTrajectories",
     const BinaryTrajectories expected{initial_separation, initial_velocity,
                                       newtonian};
     pypp::check_with_random_values<1>(
-        &BinaryTrajectories::separation,
+        &BinaryTrajectories::separation<double>,
         BinaryTrajectories{initial_separation, initial_velocity, newtonian},
         "BinaryTrajectories", {"separation"}, {{{-100.0, 100.0}}},
         std::make_tuple(initial_separation, newtonian), initial_separation);
     pypp::check_with_random_values<1>(
-        &BinaryTrajectories::orbital_frequency,
+        &BinaryTrajectories::orbital_frequency<double>,
         BinaryTrajectories{initial_separation, initial_velocity, newtonian},
         "BinaryTrajectories", {"orbital_frequency"}, {{{-100.0, 100.0}}},
         std::make_tuple(initial_separation, newtonian), initial_separation);
     pypp::check_with_random_values<1>(
-        &BinaryTrajectories::angular_velocity,
+        &BinaryTrajectories::angular_velocity<double>,
         BinaryTrajectories{initial_separation, initial_velocity, newtonian},
         "BinaryTrajectories", {"angular_velocity"}, {{{-100.0, 100.0}}},
         std::make_tuple(initial_separation, newtonian), initial_separation);

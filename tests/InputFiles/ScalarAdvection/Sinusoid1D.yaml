@@ -65,7 +65,7 @@ SpatialDiscretization:
 InitialData:
   Sinusoid:
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:

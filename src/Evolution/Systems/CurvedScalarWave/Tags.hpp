@@ -19,6 +19,9 @@ template <class>
 class Variables;
 /// \endcond
 
+/// \brief Option tags for the curved scalar wave system.
+namespace CurvedScalarWave::OptionTags {}
+
 namespace CurvedScalarWave::Tags {
 
 /*!

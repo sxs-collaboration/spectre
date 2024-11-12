@@ -132,7 +132,7 @@ LinearSolver:
             BoundaryConditions: Auto
     ObservePerCoreReductions: False
 
-EventsAndTriggers:
+EventsAndTriggersAtIterations:
   - Trigger: HasConverged
     Events:
       - ObserveNorms: &error_norms
@@ -170,6 +170,7 @@ Amr:
     Limits:
       NumGridPoints: Auto
       RefinementLevel: Auto
+      ErrorBeyondLimits: False
   Iterations: 1
 
 PhaseChangeAndTriggers: []

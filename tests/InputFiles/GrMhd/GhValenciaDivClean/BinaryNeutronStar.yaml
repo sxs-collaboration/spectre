@@ -197,7 +197,7 @@ Filtering:
     Enable: true
     BlocksToFilter: All
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   # Set time step at t=0
   - Trigger:
       Slabs:
@@ -430,7 +430,7 @@ InitialData:
     Subgroup: VolumeData
     ObservationValue: Last
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsAreIdentical: False
     GhVariables:
       Lapse: Lapse
       Shift: ShiftExcess

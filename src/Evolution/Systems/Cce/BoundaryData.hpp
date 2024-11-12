@@ -540,7 +540,11 @@ void du_j_worldtube_data(
     const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad);
 
 namespace Tags {
-/// The collection of tags mutated by `create_bondi_boundary_data`
+/*!
+ * \brief The collection of tags mutated by `create_bondi_boundary_data`
+ *
+ * \details This list is used in the evolution of `CharacteristicExtract`
+ */
 template <template <typename> class BoundaryPrefix>
 using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
     BoundaryPrefix,
@@ -548,6 +552,21 @@ using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
                Tags::BondiQ, Tags::BondiW, Tags::BondiJ, Tags::Dr<Tags::BondiJ>,
                Tags::BondiH, Tags::Du<Tags::BondiJ>, Tags::BondiR,
                Tags::Du<Tags::BondiR>, Tags::DuRDividedByR>>;
+
+/*!
+ * \brief The collection of tags for worldtube quantities that need to be
+ * written to disk during the Cauchy evolution that the `CharacateristicExtract`
+ * need.
+ *
+ * \details This list is used when writing Bondi quantities to disk.
+ */
+template <template <typename> class BoundaryPrefix = Cce::Tags::BoundaryValue>
+using worldtube_boundary_tags_for_writing = db::wrap_tags_in<
+    BoundaryPrefix,
+    tmpl::list<Cce::Tags::BondiBeta, Cce::Tags::Dr<Cce::Tags::BondiJ>,
+               Cce::Tags::Du<Cce::Tags::BondiR>, Cce::Tags::BondiJ,
+               Cce::Tags::Du<Cce::Tags::BondiJ>, Cce::Tags::BondiQ,
+               Cce::Tags::BondiR, Cce::Tags::BondiU, Cce::Tags::BondiW>>;
 
 using klein_gordon_worldtube_boundary_tags =
     tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPsi>,

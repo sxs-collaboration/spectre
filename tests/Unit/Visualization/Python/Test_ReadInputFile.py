@@ -20,8 +20,14 @@ class TestReadInputFile(unittest.TestCase):
     def test_find_event(self):
         with self.input_file.open() as open_input_file:
             _, input_file = yaml.safe_load_all(open_input_file)
-        self.assertEqual(find_event("Completion", input_file), {})
-        self.assertIsNone(find_event("NonexistentEvent", input_file))
+        self.assertEqual(
+            find_event("Completion", "EventsAndTriggersAtSlabs", input_file), {}
+        )
+        self.assertIsNone(
+            find_event(
+                "NonexistentEvent", "EventsAndTriggersAtSlabs", input_file
+            )
+        )
 
     def test_find_phase_change(self):
         with self.input_file.open() as open_input_file:

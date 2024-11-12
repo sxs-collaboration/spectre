@@ -376,7 +376,9 @@ void MetricWorldtubeDataManager::pup(PUP::er& p) {
 }
 
 BondiWorldtubeDataManager::BondiWorldtubeDataManager(
-    std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>>
+    std::unique_ptr<
+        WorldtubeBufferUpdater<Tags::worldtube_boundary_tags_for_writing<
+            Spectral::Swsh::Tags::SwshTransform>>>
         buffer_updater,
     const size_t l_max, const size_t buffer_depth,
     std::unique_ptr<intrp::SpanInterpolator> interpolator)
@@ -386,7 +388,8 @@ BondiWorldtubeDataManager::BondiWorldtubeDataManager(
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
       buffer_depth_{buffer_depth},
       interpolator_{std::move(interpolator)} {
-  detail::initialize_buffers<cce_bondi_input_tags>(
+  detail::initialize_buffers<Tags::worldtube_boundary_tags_for_writing<
+      Spectral::Swsh::Tags::SwshTransform>>(
       make_not_null(&buffer_depth_), make_not_null(&coefficients_buffers_),
       buffer_updater_->get_time_buffer().size(),
       interpolator_->required_number_of_points_before_and_after(), l_max);
@@ -403,7 +406,8 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
   }
 
   detail::populate_hypersurface_boundary_data<
-      cce_bondi_input_tags,
+      Tags::worldtube_boundary_tags_for_writing<
+          Spectral::Swsh::Tags::SwshTransform>,
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
       boundary_data_variables, make_not_null(&interpolated_coefficients_),
       make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
@@ -462,7 +466,8 @@ void BondiWorldtubeDataManager::pup(PUP::er& p) {
   p | buffer_depth_;
   p | interpolator_;
   if (p.isUnpacking()) {
-    detail::set_non_pupped_members<cce_bondi_input_tags>(
+    detail::set_non_pupped_members<Tags::worldtube_boundary_tags_for_writing<
+        Spectral::Swsh::Tags::SwshTransform>>(
         make_not_null(&time_span_start_), make_not_null(&time_span_end_),
         make_not_null(&coefficients_buffers_),
         make_not_null(&interpolated_coefficients_), buffer_depth_,

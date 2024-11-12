@@ -37,6 +37,7 @@
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/Tags.hpp"
+#include "Elliptic/Systems/GetFluxesComputer.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
 #include "Elliptic/Utilities/GetAnalyticData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -160,10 +161,10 @@ struct InitializeSubdomain {
   // necessary for the DG operator, i.e. the background fields in the
   // System::fluxes_computer::argument_tags
   using fluxes_non_background_args =
-      tmpl::list_difference<typename System::fluxes_computer::argument_tags,
+      tmpl::list_difference<elliptic::get_fluxes_argument_tags<System, true>,
                             typename System::background_fields>;
   using background_fields_internal =
-      tmpl::list_difference<typename System::fluxes_computer::argument_tags,
+      tmpl::list_difference<elliptic::get_fluxes_argument_tags<System, true>,
                             fluxes_non_background_args>;
   // Slice all background fields to external boundaries for use in boundary
   // conditions
@@ -245,7 +246,7 @@ struct InitializeSubdomain {
         // Faces on the other side of the overlapped element's mortars
         initialize_remote_faces(make_not_null(&box), overlap_id);
       }  // neighbors in direction
-    }    // directions
+    }  // directions
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
@@ -382,7 +383,7 @@ struct InitializeSubdomain {
               box, std::make_tuple(overlap_id, mortar_id));
         }
       }  // neighbors
-    }    // internal directions
+    }  // internal directions
   }
 };
 

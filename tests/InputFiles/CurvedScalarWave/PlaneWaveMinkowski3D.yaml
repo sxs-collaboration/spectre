@@ -82,7 +82,7 @@ Filtering:
     Enable: false
     BlocksToFilter: All
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:
@@ -133,6 +133,8 @@ EventsAndTriggers:
             - Name: PointwiseL2Norm(TwoIndexConstraint)
               NormType: L2Norm
               Components: Individual
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

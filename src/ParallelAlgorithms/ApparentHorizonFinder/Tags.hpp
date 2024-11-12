@@ -9,6 +9,9 @@
 class FastFlow;
 /// \endcond
 
+/*!
+ * \brief Tags for the apparent horizon finder.
+ */
 namespace ah::Tags {
 struct FastFlow : db::SimpleTag {
   using type = ::FastFlow;

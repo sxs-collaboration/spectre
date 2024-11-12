@@ -138,7 +138,7 @@ PrimitiveFromConservative:
   DensityWhenSkippingInversion: *MinimumD
   KastaunMaxLorentzFactor: 10.0
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:

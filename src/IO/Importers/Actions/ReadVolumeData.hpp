@@ -18,6 +18,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
@@ -26,6 +27,7 @@
 #include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
+#include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
@@ -153,49 +155,33 @@ tuples::tagged_tuple_from_typelist<FieldTagsList> extract_element_data(
   return element_data;
 }
 
-// Check that the source and target points are the same in case interpolation is
-// disabled. This is important to avoid hard-to-find bugs where data is loaded
+// Check that the inertial coordinates computed with the given domain are the
+// same as the ones passed to this function.
+// This is important to avoid hard-to-find bugs where data is loaded
 // to the wrong coordinates. For example, if the evolution domain deforms the
 // excision surfaces a bit but the initial data doesn't, then it would be wrong
 // to load the initial data to the evolution grid without an interpolation.
 template <size_t Dim>
 void verify_inertial_coordinates(
-    const std::pair<size_t, size_t>& source_element_data_offset_and_length,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& source_inertial_coords,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& target_inertial_coords,
-    const std::string& grid_name) {
-  for (size_t d = 0; d < Dim; ++d) {
-    const DataVector& source_coord = source_inertial_coords[d];
-    const DataVector& target_coord = target_inertial_coords[d];
-    if (target_coord.size() != source_element_data_offset_and_length.second) {
-      ERROR_NO_TRACE(
-          "The source and target coordinates don't match on grid "
-          << grid_name << ". The source coordinates stored in the file have "
-          << source_element_data_offset_and_length.second
-          << " points, but the target grid has " << target_coord.size()
-          << " points. Set 'Interpolate: True' to enable interpolation between "
-             "the grids.");
-    }
-    for (size_t j = 0; j < source_element_data_offset_and_length.second; ++j) {
-      if (not equal_within_roundoff(
-              target_coord[j],
-              source_coord[source_element_data_offset_and_length.first + j])) {
-        ERROR_NO_TRACE(
-            "The source and target coordinates don't match on grid "
-            << grid_name << " in dimension " << d << " at point " << j
-            << " (plus offset " << source_element_data_offset_and_length.first
-            << " in the data file). Source coordinate: "
-            << source_coord[source_element_data_offset_and_length.first + j]
-            << ", target coordinate: " << target_coord[j]
-            << ". Set 'Interpolate: True' to enable interpolation between the "
-               "grids.");
-      }
-    }
+    const Domain<Dim>& domain, const double time,
+    const domain::FunctionsOfTimeMap& functions_of_time,
+    const ElementId<Dim>& element_id, const Mesh<Dim>& mesh,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  const auto logical_coords = logical_coordinates(mesh);
+  ElementMap<Dim, Frame::Inertial> element_map{
+      element_id, domain.blocks()[element_id.block_id()]};
+  const auto mapped_inertial_coords =
+      element_map(logical_coords, time, functions_of_time);
+  if (not equal_within_roundoff(mapped_inertial_coords, inertial_coords)) {
+    ERROR_NO_TRACE("The source and target domain don't match on grid "
+                   << element_id
+                   << ". Set 'ElementsAreIdentical: False' to enable "
+                      "interpolation between the grids.");
   }
 }
 
 // Interpolate only the `selected_fields` in `source_element_data` to the
-// `target_logical_coords`.
+// arbitrary `target_logical_coords` (used when elements are not the same)
 template <typename FieldTagsList, size_t Dim>
 void interpolate_selected_fields(
     const gsl::not_null<tuples::tagged_tuple_from_typelist<FieldTagsList>*>
@@ -236,6 +222,39 @@ void interpolate_selected_fields(
       for (size_t j = 0; j < target_tensor_component_buffer.size(); ++j) {
         target_tensor_component[offsets[j]] = target_tensor_component_buffer[j];
       }
+    }
+  });
+}
+
+// Interpolate only the `selected_fields` in `source_element_data` to the
+// `target_mesh` (used when elements differ only by p-refinement)
+template <typename FieldTagsList, size_t Dim>
+void interpolate_selected_fields(
+    const gsl::not_null<tuples::tagged_tuple_from_typelist<FieldTagsList>*>
+        target_element_data,
+    const tuples::tagged_tuple_from_typelist<FieldTagsList>&
+        source_element_data,
+    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
+    const tuples::tagged_tuple_from_typelist<
+        db::wrap_tags_in<Tags::Selected, FieldTagsList>>& selected_fields) {
+  const intrp::RegularGrid<Dim> interpolator{source_mesh, target_mesh};
+  tmpl::for_each<FieldTagsList>([&source_element_data, &target_element_data,
+                                 &interpolator,
+                                 &selected_fields](auto field_tag_v) {
+    using field_tag = tmpl::type_from<decltype(field_tag_v)>;
+    const auto& selection = get<Tags::Selected<field_tag>>(selected_fields);
+    if (not selection.has_value()) {
+      return;
+    }
+    const auto& source_tensor_data = get<field_tag>(source_element_data);
+    auto& target_tensor_data = get<field_tag>(*target_element_data);
+    // Iterate independent components of the tensor
+    for (size_t i = 0; i < source_tensor_data.size(); ++i) {
+      const DataVector& source_tensor_component = source_tensor_data[i];
+      DataVector& target_tensor_component = target_tensor_data[i];
+      // Interpolate
+      interpolator.interpolate(make_not_null(&target_tensor_component),
+                               source_tensor_component);
     }
   });
 }
@@ -371,8 +390,8 @@ struct ReadAllVolumeDataAndDistribute {
                     tuples::tagged_tuple_from_typelist<
                         db::wrap_tags_in<Tags::Selected, FieldTagsList>>
                         selected_fields = select_all_fields(FieldTagsList{})) {
-    const bool enable_interpolation =
-        get<OptionTags::EnableInterpolation>(options);
+    const bool elements_are_identical =
+        get<OptionTags::ElementsAreIdentical>(options);
 
     // Only read and distribute the volume data once
     // This action will be invoked by `importers::Actions::ReadVolumeData` from
@@ -443,9 +462,7 @@ struct ReadAllVolumeDataAndDistribute {
     std::optional<size_t> prev_observation_id{};
     double observation_value = std::numeric_limits<double>::signaling_NaN();
     std::optional<Domain<Dim>> source_domain{};
-    std::unordered_map<std::string,
-                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-        source_domain_functions_of_time{};
+    domain::FunctionsOfTimeMap source_domain_functions_of_time{};
     for (const std::string& file_name : file_paths) {
       // Open the volume data file
       h5::H5File<h5::AccessType::ReadOnly> h5file(file_name);
@@ -491,8 +508,6 @@ struct ReadAllVolumeDataAndDistribute {
       // this node.
       std::optional<tuples::tagged_tuple_from_typelist<FieldTagsList>>
           all_tensor_data{};
-      std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>
-          source_inertial_coords{};
 
       // Retrieve the information needed to reconstruct which element the data
       // belongs to
@@ -502,24 +517,21 @@ struct ReadAllVolumeDataAndDistribute {
       const auto source_quadratures =
           volume_file.get_quadratures(observation_id);
       std::vector<ElementId<Dim>> source_element_ids{};
-      if (enable_interpolation) {
-        // Need to parse all source grid names to element IDs only if
-        // interpolation is enabled
+      if (not elements_are_identical) {
+        // Need to parse all source grid names to element IDs
         source_element_ids.reserve(source_grid_names.size());
         for (const auto& grid_name : source_grid_names) {
           source_element_ids.push_back(ElementId<Dim>(grid_name));
         }
-        // Reconstruct domain from volume data file
-        const std::optional<std::vector<char>> serialized_domain =
-            volume_file.get_domain(observation_id);
-        if (not serialized_domain.has_value()) {
-          ERROR_NO_TRACE("No serialized domain found in file '"
-                         << file_name << volume_file.subfile_path()
-                         << "'. The domain is needed for interpolation.");
-        }
+      }
+      // Reconstruct domain from volume data file
+      const std::optional<std::vector<char>> serialized_domain =
+          volume_file.get_domain(observation_id);
+      if (serialized_domain.has_value()) {
         if (source_domain.has_value()) {
 #ifdef SPECTRE_DEBUG
-          // Check that the domain is the same in all files (only in debug mode)
+          // Check that the domain is the same in all files (only in debug
+          // mode)
           const auto deserialized_domain =
               deserialize<Domain<Dim>>(serialized_domain->data());
           if (*source_domain != deserialized_domain) {
@@ -533,45 +545,57 @@ struct ReadAllVolumeDataAndDistribute {
         } else {
           source_domain = deserialize<Domain<Dim>>(serialized_domain->data());
         }
-        // Reconstruct functions of time from volume data file
-        if (source_domain_functions_of_time.empty() and
-            alg::any_of(source_domain->blocks(), [](const auto& block) {
-              return block.is_time_dependent();
-            })) {
-          const std::optional<std::vector<char>> serialized_functions_of_time =
-              volume_file.get_functions_of_time(observation_id);
-          if (not serialized_functions_of_time.has_value()) {
-            ERROR_NO_TRACE("No domain functions of time found in file '"
-                           << file_name << volume_file.subfile_path()
-                           << "'. The functions of time are needed for "
-                              "interpolating with time-dependent maps.");
-          }
-          source_domain_functions_of_time = deserialize<std::unordered_map<
-              std::string,
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>>(
-              serialized_functions_of_time->data());
+      } else {
+        if (elements_are_identical) {
+          Parallel::printf(
+              "WARNING: No serialized domain found in file. "
+              "Verification that elements in the source and target domain "
+              "match will be skipped.\n");
+        } else {
+          ERROR_NO_TRACE("No serialized domain found in file '"
+                         << file_name << volume_file.subfile_path()
+                         << "'. The domain is needed for interpolation.");
         }
+      }
+      // Reconstruct functions of time from volume data file
+      if (source_domain_functions_of_time.empty() and
+          source_domain.has_value() and
+          alg::any_of(source_domain->blocks(), [](const auto& block) {
+            return block.is_time_dependent();
+          })) {
+        const std::optional<std::vector<char>> serialized_functions_of_time =
+            volume_file.get_functions_of_time(observation_id);
+        if (not serialized_functions_of_time.has_value()) {
+          ERROR_NO_TRACE("No domain functions of time found in file '"
+                         << file_name << volume_file.subfile_path()
+                         << "'. The functions of time are needed for "
+                            "interpolating with time-dependent maps.");
+        }
+        source_domain_functions_of_time =
+            deserialize<domain::FunctionsOfTimeMap>(
+                serialized_functions_of_time->data());
       }
 
       // Distribute the tensor data to the registered (target) elements. We
-      // erase target elements when they are complete. This allows us to search
-      // only for incomplete elements in subsequent volume files, and to stop
-      // early when all registered elements are complete.
+      // erase target elements when they are complete. This allows us to
+      // search only for incomplete elements in subsequent volume files, and
+      // to stop early when all registered elements are complete.
       std::unordered_set<ElementId<Dim>> completed_target_elements{};
       for (const auto& target_element_id : target_element_ids) {
-        const auto& target_points = get<Tags::RegisteredElements<Dim>>(box).at(
-            Parallel::make_array_component_id<ReceiveComponent>(
-                target_element_id));
+        const auto& [target_points, target_mesh] =
+            get<Tags::RegisteredElements<Dim>>(box).at(
+                Parallel::make_array_component_id<ReceiveComponent>(
+                    target_element_id));
         const auto target_grid_name = get_output(target_element_id);
 
         // Proceed with the registered element only if it overlaps with the
         // volume file. It's possible that the volume file only contains data
-        // for a subset of elements, e.g., when each node of a simulation wrote
-        // volume data for its elements to a separate file.
+        // for a subset of elements, e.g., when each node of a simulation
+        // wrote volume data for its elements to a separate file.
         std::vector<ElementId<Dim>> overlapping_source_element_ids{};
         std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
             source_element_logical_coords{};
-        if (enable_interpolation) {
+        if (not elements_are_identical) {
           // Transform the target points to block logical coords in the source
           // domain
           const auto source_block_logical_coords = block_logical_coordinates(
@@ -589,8 +613,8 @@ struct ReadAllVolumeDataAndDistribute {
                 source_element_id_and_coords.first);
           }
         } else {
-          // When interpolation is disabled we process only volume files that
-          // contain the exact element
+          // When elements match we process only volume files that contain the
+          // exact element
           if (std::find(source_grid_names.begin(), source_grid_names.end(),
                         target_grid_name) == source_grid_names.end()) {
             continue;
@@ -609,6 +633,9 @@ struct ReadAllVolumeDataAndDistribute {
         // with the target element
         for (const auto& source_element_id : overlapping_source_element_ids) {
           const auto source_grid_name = get_output(source_element_id);
+          const auto source_mesh = h5::mesh_for_grid<Dim>(
+              source_grid_name, source_grid_names, source_extents, source_bases,
+              source_quadratures);
           // Find the data offset that corresponds to this element
           const auto element_data_offset_and_length =
               h5::offset_and_length_for_grid(source_grid_name,
@@ -619,10 +646,7 @@ struct ReadAllVolumeDataAndDistribute {
                   element_data_offset_and_length, *all_tensor_data,
                   selected_fields);
 
-          if (enable_interpolation) {
-            const auto source_mesh = h5::mesh_for_grid<Dim>(
-                source_grid_name, source_grid_names, source_extents,
-                source_bases, source_quadratures);
+          if (not elements_are_identical) {
             const size_t target_num_points = target_points.begin()->size();
 
             // Get and resize target buffer
@@ -656,9 +680,9 @@ struct ReadAllVolumeDataAndDistribute {
                 source_logical_coords_of_target_points.offsets.end());
 
             if (indices_of_filled_interp_points.size() == target_num_points) {
-              // Pass the (interpolated) data to the element. Now it can proceed
-              // in parallel with transforming the data, taking derivatives on
-              // the grid, etc.
+              // Pass the (interpolated) data to the element. Now it can
+              // proceed in parallel with transforming the data, taking
+              // derivatives on the grid, etc.
               if constexpr (Parallel::is_dg_element_collection_v<
                                 ReceiveComponent>) {
                 ERROR("Can't yet do numerical initial data with nodegroups");
@@ -673,23 +697,26 @@ struct ReadAllVolumeDataAndDistribute {
               all_indices_of_filled_interp_points.erase(target_element_id);
             }
           } else {
-            // Verify that the inertial coordinates of the source and target
-            // elements match. To do so we retrieve the inertial coordinates
-            // that are written alongside the tensor data in the file. This is
-            // an important check. It avoids nasty bugs where tensor data is
-            // read in to points that don't exactly match the input. Therefore
-            // we DON'T restrict this check to Debug mode.
-            if (not source_inertial_coords.has_value()) {
-              tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{};
-              detail::read_tensor_data(make_not_null(&inertial_coords),
-                                       "InertialCoordinates", volume_file,
-                                       observation_id);
-              source_inertial_coords = std::move(inertial_coords);
+            // Source and target element are the same (matching domains and
+            // same h-refinement), so no interpolation across elements is
+            // needed. We still may have to interpolate between different
+            // meshes (p-refinement). First, verify this assumption:
+            if (source_domain.has_value()) {
+              detail::verify_inertial_coordinates(
+                  *source_domain, observation_value,
+                  source_domain_functions_of_time, target_element_id,
+                  target_mesh, target_points);
             }
-            detail::verify_inertial_coordinates(
-                element_data_offset_and_length, *source_inertial_coords,
-                target_points, source_grid_name);
-            // Pass data directly to the element when interpolation is disabled
+            tuples::tagged_tuple_from_typelist<FieldTagsList>
+                target_element_data{};
+            if (source_mesh == target_mesh) {
+              target_element_data = std::move(source_element_data);
+            } else {
+              detail::interpolate_selected_fields<FieldTagsList>(
+                  make_not_null(&target_element_data), source_element_data,
+                  source_mesh, target_mesh, selected_fields);
+            }
+            // Pass data directly to the target element
             if constexpr (Parallel::is_dg_element_collection_v<
                               ReceiveComponent>) {
               ERROR("Can't yet do numerical initial data with nodegroups");
@@ -697,12 +724,12 @@ struct ReadAllVolumeDataAndDistribute {
               Parallel::receive_data<Tags::VolumeData<FieldTagsList>>(
                   Parallel::get_parallel_component<ReceiveComponent>(
                       cache)[target_element_id],
-                  volume_data_id, std::move(source_element_data));
+                  volume_data_id, std::move(target_element_data));
             }
             completed_target_elements.insert(target_element_id);
           }
         }  // loop over overlapping source elements
-      }    // loop over registered elements
+      }  // loop over registered elements
       for (const auto& completed_element_id : completed_target_elements) {
         target_element_ids.erase(completed_element_id);
       }
@@ -721,9 +748,10 @@ struct ReadAllVolumeDataAndDistribute {
       size_t num_missing_points = 0;
       for (const auto& target_element_id : target_element_ids) {
         const auto& target_inertial_coords =
-            get<Tags::RegisteredElements<Dim>>(box).at(
-                Parallel::make_array_component_id<ReceiveComponent>(
-                    target_element_id));
+            get<Tags::RegisteredElements<Dim>>(box)
+                .at(Parallel::make_array_component_id<ReceiveComponent>(
+                    target_element_id))
+                .first;
         const size_t target_num_points = target_inertial_coords.begin()->size();
         const auto& indices_of_filled_interp_points =
             all_indices_of_filled_interp_points[target_element_id];

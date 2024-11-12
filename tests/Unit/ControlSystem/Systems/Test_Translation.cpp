@@ -30,7 +30,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
-struct Distorted;
+struct Grid;
 struct Inertial;
 }  // namespace Frame
 
@@ -39,7 +39,7 @@ namespace {
 using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, TranslationMap>;
+    domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>;
 
 template <size_t DerivOrder>
 void test_translation_control_system() {
@@ -144,9 +144,14 @@ void test_translation_control_system() {
 
   const auto position_function = [&initial_separation,
                                   &velocity](const double time) {
-    const std::array<double, 3> init_pos{{0.5 * initial_separation, 0.0, 0.0}};
-    return std::pair<std::array<double, 3>, std::array<double, 3>>{
-        init_pos + velocity * time, -init_pos + velocity * time};
+    std::array<tnsr::I<double, 3>, 2> result{};
+    get<0>(result[0]) = 0.5 * initial_separation + velocity[0] * time;
+    get<1>(result[0]) = velocity[1] * time;
+    get<2>(result[0]) = velocity[2] * time;
+    get<0>(result[1]) = -0.5 * initial_separation + velocity[0] * time;
+    get<1>(result[1]) = velocity[1] * time;
+    get<2>(result[1]) = velocity[2] * time;
+    return result;
   };
 
   const auto horizon_function = [&position_function, &runner,
@@ -160,16 +165,14 @@ void test_translation_control_system() {
                                         horizon_function);
 
   // Grab results
-  std::array<double, 3> grid_position_of_a{};
-  std::array<double, 3> grid_position_of_b{};
-  std::tie(grid_position_of_a, grid_position_of_b) =
+  const auto grid_positions =
       TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
           element_component>(final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
-  const std::array<double, 3> expected_grid_position_of_a{
+  const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_a{
       {0.5 * initial_separation, 0.0, 0.0}};
-  const std::array<double, 3> expected_grid_position_of_b{
+  const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_b{
       {-0.5 * initial_separation, 0.0, 0.0}};
 
   const auto& translation_f_of_t =
@@ -190,9 +193,9 @@ void test_translation_control_system() {
   CHECK_ITERABLE_CUSTOM_APPROX(
       trans_and_2_derivs[0], DataVector(velocity * final_time), custom_approx);
 
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_a, grid_position_of_a,
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_a, grid_positions[0],
                                custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_b, grid_position_of_b,
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_b, grid_positions[1],
                                custom_approx);
 }
 

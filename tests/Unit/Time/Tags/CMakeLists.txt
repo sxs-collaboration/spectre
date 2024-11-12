@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Tags/Test_IsUsingTimeSteppingErrorControl.cpp
   Tags/Test_MinimumTimeStep.cpp
   Tags/Test_StepChoosers.cpp
+  Tags/Test_StepNumberWithinSlab.cpp
   Tags/Test_StepperErrorTolerances.cpp
   Tags/Test_StepperErrors.cpp
   Tags/Test_Time.cpp

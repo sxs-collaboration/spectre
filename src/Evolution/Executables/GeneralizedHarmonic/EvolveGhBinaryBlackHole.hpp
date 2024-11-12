@@ -616,7 +616,7 @@ struct EvolutionMetavars {
               Parallel::Phase::Evolve,
               tmpl::list<
                   ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
-                  evolution::Actions::RunEventsAndTriggers,
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 

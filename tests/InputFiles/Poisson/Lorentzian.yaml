@@ -59,6 +59,7 @@ Amr:
     Limits:
       NumGridPoints: Auto
       RefinementLevel: Auto
+      ErrorBeyondLimits: False
   Iterations: 2
 
 PhaseChangeAndTriggers:
@@ -113,7 +114,7 @@ RadiallyCompressedCoordinates:
   OuterRadius: *outer_radius
   Compression: *outer_shell_distribution
 
-EventsAndTriggers:
+EventsAndTriggersAtIterations:
   - Trigger: Always
     Events:
       - ObserveNorms:

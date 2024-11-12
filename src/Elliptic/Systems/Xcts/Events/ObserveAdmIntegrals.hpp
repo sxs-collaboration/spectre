@@ -71,14 +71,17 @@ void local_adm_integrals(
  * the domain boundary in the upper logical zeta direction.
  *
  * Writes reduction quantities:
+ * - Number of points in the domain
  * - ADM mass
- * - Linear momentum
+ * - ADM linear momentum
  * - Center of mass
  */
 template <typename ArraySectionIdTag = void>
 class ObserveAdmIntegrals : public Event {
  private:
   using ReductionData = Parallel::ReductionData<
+      // Number of points
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
       // ADM Mass
       Parallel::ReductionDatum<double, funcl::Plus<>>,
       // ADM Linear Momentum (x-component)
@@ -89,13 +92,13 @@ class ObserveAdmIntegrals : public Event {
       Parallel::ReductionDatum<double, funcl::Plus<>>,
       // Center of Mass (x-component)
       Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
-                               std::index_sequence<0>>,
+                               std::index_sequence<1>>,
       // Center of Mass (y-component)
       Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
-                               std::index_sequence<0>>,
+                               std::index_sequence<1>>,
       // Center of Mass (z-component)
       Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Divides<>,
-                               std::index_sequence<0>>>;
+                               std::index_sequence<1>>>;
 
  public:
   /// \cond
@@ -109,7 +112,10 @@ class ObserveAdmIntegrals : public Event {
       "Observe ADM integrals after the XCTS solve.\n"
       "\n"
       "Writes reduction quantities:\n"
-      "- Linear momentum";
+      "- Number of points in the domain\n"
+      "- ADM mass\n"
+      "- ADM linear momentum\n"
+      "- Center of mass";
 
   ObserveAdmIntegrals() = default;
 
@@ -184,20 +190,16 @@ class ObserveAdmIntegrals : public Event {
         conformal_face_normals);
 
     // Save components of linear momentum as reduction data
-    ReductionData reduction_data{get(adm_mass),
-                                 get<0>(adm_linear_momentum),
-                                 get<1>(adm_linear_momentum),
-                                 get<2>(adm_linear_momentum),
-                                 get<0>(center_of_mass),
-                                 get<1>(center_of_mass),
-                                 get<2>(center_of_mass)};
-    std::vector<std::string> legend{"AdmMass",
-                                    "AdmLinearMomentum_x",
-                                    "AdmLinearMomentum_y",
-                                    "AdmLinearMomentum_z",
-                                    "CenterOfMass_x",
-                                    "CenterOfMass_y",
-                                    "CenterOfMass_z"};
+    ReductionData reduction_data{
+        mesh.number_of_grid_points(), get(adm_mass),
+        get<0>(adm_linear_momentum),  get<1>(adm_linear_momentum),
+        get<2>(adm_linear_momentum),  get<0>(center_of_mass),
+        get<1>(center_of_mass),       get<2>(center_of_mass)};
+    std::vector<std::string> legend{
+        "NumberOfPoints",      "AdmMass",
+        "AdmLinearMomentum_x", "AdmLinearMomentum_y",
+        "AdmLinearMomentum_z", "CenterOfMass_x",
+        "CenterOfMass_y",      "CenterOfMass_z"};
 
     // Get information required for reduction
     auto& local_observer = *Parallel::local_branch(

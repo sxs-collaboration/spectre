@@ -28,6 +28,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/ResourceInfo.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -77,10 +78,10 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
 
 template <typename... Tags>
 auto make_mutable_cache_tag_storage(tuples::TaggedTuple<Tags...>&& input) {
-  return tuples::TaggedTuple<MutableCacheTag<Tags>...>(
-      std::make_tuple(std::move(tuples::get<Tags>(input)),
-                      std::unordered_map<Parallel::ArrayComponentId,
-                                         std::unique_ptr<Callback>>{})...);
+  return tuples::TaggedTuple<MutableCacheTag<Tags>...>(std::make_tuple(
+      std::move(tuples::get<Tags>(input)),
+      std::unordered_map<Parallel::ArrayComponentId,
+                         std::vector<std::unique_ptr<Callback>>>{})...);
 }
 
 template <typename ParallelComponent, typename ComponentList>
@@ -487,14 +488,34 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     optional_callback->register_with_charm();
     // Second mutex is for vector of callbacks
     std::mutex& mutex = tuples::get<MutexTag<tag>>(mutexes_).second;
+    const std::unique_ptr<Callback> clone_of_optional_callback =
+        optional_callback->get_clone();
     {
       // Scoped for lock guard
       const std::lock_guard<std::mutex> lock(mutex);
-      std::unordered_map<Parallel::ArrayComponentId, std::unique_ptr<Callback>>&
-          callbacks = std::get<1>(tuples::get<tag>(mutable_global_cache_));
+      std::unordered_map<Parallel::ArrayComponentId,
+                         std::vector<std::unique_ptr<Callback>>>& callbacks =
+          std::get<1>(tuples::get<tag>(mutable_global_cache_));
 
-      if (callbacks.count(array_component_id) != 1) {
-        callbacks[array_component_id] = std::move(optional_callback);
+      if (callbacks.contains(array_component_id)) {
+        // If this array component id already exists, we don't want to add
+        // multiple of the same callback, so we loop over the existing callbacks
+        // and only if none of the existing callbacks are equal to the optional
+        // callback do we move the optional callback into the vector
+        auto& vec_callbacks = callbacks.at(array_component_id);
+        if (alg::none_of(vec_callbacks,
+                         [&](const std::unique_ptr<Callback>& local_callback) {
+                           return local_callback->is_equal_to(
+                               *optional_callback);
+                         })) {
+          vec_callbacks.emplace_back(std::move(optional_callback));
+        }
+      } else {
+        // If we don't have this array component id, then we create the vector
+        // and move the optional callback into the vector
+        callbacks[array_component_id] =
+            std::vector<std::unique_ptr<Callback>>(1);
+        callbacks.at(array_component_id)[0] = std::move(optional_callback);
       }
     }
 
@@ -531,10 +552,26 @@ bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     const bool cache_item_is_ready = not callback_was_registered();
     if (cache_item_is_ready) {
       const std::lock_guard<std::mutex> lock(mutex);
-      std::unordered_map<Parallel::ArrayComponentId, std::unique_ptr<Callback>>&
-          callbacks = std::get<1>(tuples::get<tag>(mutable_global_cache_));
+      std::unordered_map<Parallel::ArrayComponentId,
+                         std::vector<std::unique_ptr<Callback>>>& callbacks =
+          std::get<1>(tuples::get<tag>(mutable_global_cache_));
 
-      callbacks.erase(array_component_id);
+      // It's possible that no new callbacks were registered, so make sure this
+      // array component id still has callbacks before trying to remove them.
+      if (callbacks.contains(array_component_id)) {
+        // If this callback was a duplicate, we'll have to search through all
+        // callbacks to determine which to remove. If it wasn't a duplicate,
+        // then it'll just be the last callback in the vector.
+        auto& vec_callbacks = callbacks.at(array_component_id);
+        std::erase_if(vec_callbacks,
+                      [&clone_of_optional_callback](const auto& t) {
+                        return t->is_equal_to(*clone_of_optional_callback);
+                      });
+
+        if (callbacks.at(array_component_id).empty()) {
+          callbacks.erase(array_component_id);
+        }
+      }
     }
 
     return cache_item_is_ready;
@@ -573,7 +610,8 @@ void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
   // Therefore, after locking it, we std::move the map of callbacks into a
   // temporary map, clear the original map, and invoke the callbacks in the
   // temporary map.
-  std::unordered_map<Parallel::ArrayComponentId, std::unique_ptr<Callback>>
+  std::unordered_map<Parallel::ArrayComponentId,
+                     std::vector<std::unique_ptr<Callback>>>
       callbacks{};
   // Second mutex is for map of callbacks
   std::mutex& mutex = tuples::get<MutexTag<tag>>(mutexes_).second;
@@ -587,9 +625,10 @@ void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
   // Invoke the callbacks.  Any new callbacks that are added to the
   // list (if a callback calls mutable_cache_item_is_ready) will be
   // saved and will not be invoked here.
-  for (auto& [array_component_id, callback] : callbacks) {
-    (void)array_component_id;
-    callback->invoke();
+  for (auto& [array_component_id, vec_callbacks] : callbacks) {
+    for (auto& callback : vec_callbacks) {
+      callback->invoke();
+    }
   }
 }
 

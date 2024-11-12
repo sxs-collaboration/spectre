@@ -23,6 +23,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -81,6 +82,8 @@ PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
 
 template <typename Metavariables>
 struct Component {
+  static constexpr bool local_time_stepping =
+      Metavariables::local_time_stepping;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
@@ -92,10 +95,13 @@ struct Component {
                      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
                  Parallel::PhaseActions<
                      Parallel::Phase::Testing,
-                     tmpl::list<evolution::Actions::RunEventsAndTriggers>>>;
+                     tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                         local_time_stepping>>>>;
 };
 
+template <bool LocalTimeStepping>
 struct Metavariables {
+  static constexpr bool local_time_stepping = LocalTimeStepping;
   using component_list = tmpl::list<Component<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -105,38 +111,12 @@ struct Metavariables {
                                             ::Triggers::OnSubsteps>>>;
   };
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndTriggers",
-                  "[Unit][ParallelAlgorithms]") {
-  register_factory_classes_with_charm<Metavariables>();
-
-  using my_component = Component<Metavariables>;
-  std::array runners{
-      ActionTesting::MockRuntimeSystem<Metavariables>{
-          TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - TestEvent\n")},
-      ActionTesting::MockRuntimeSystem<Metavariables>{
-          TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-              "- Trigger:\n"
-              "    Not: Always\n"
-              "  Events:\n"
-              "    - TestEvent\n")},
-      ActionTesting::MockRuntimeSystem<Metavariables>{
-          TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-              "- Trigger:\n"
-              "    OnSubsteps: Always\n"
-              "  Events:\n"
-              "    - TestEvent\n")},
-      ActionTesting::MockRuntimeSystem<Metavariables>{
-          TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-              "- Trigger:\n"
-              "    OnSubsteps:\n"
-              "      Not: Always\n"
-              "  Events:\n"
-              "    - TestEvent\n")}};
+template <bool LocalTimeStepping>
+void test(std::array<
+          ActionTesting::MockRuntimeSystem<Metavariables<LocalTimeStepping>>,
+          4>& runners) {
+  using my_component = Component<Metavariables<LocalTimeStepping>>;
 
   for (size_t test_case = 0; test_case < 4; ++test_case) {
     auto& runner = runners[test_case];
@@ -175,14 +155,97 @@ SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndTriggers",
   const auto step = slab.duration() / 2;
   const auto center = start + step;
 
-  test_all(TimeStepId(true, 0, start), 1.0, {}, 1.0, {});
-  test_all(TimeStepId(true, 0, center), {}, {}, {}, {});
-  test_all(TimeStepId(true, 1, start), 1.0, {}, 1.0, {});
-  test_all(TimeStepId(true, 1, center), {}, {}, {}, {});
-  test_all(TimeStepId(true, -1, start), {}, {}, {}, {});
-  test_all(TimeStepId(true, -1, center), {}, {}, {}, {});
-  test_all(TimeStepId(true, 0, start, 1, step, 1.5), {}, {}, 1000001.0, {});
-  test_all(TimeStepId(true, 0, center, 1, step, 2.0), {}, {}, {}, {});
-  test_all(TimeStepId(true, 0, start, 2, step, 1.0), {}, {}, 2000001.0, {});
-  test_all(TimeStepId(true, 0, center, 2, step, 1.5), {}, {}, {}, {});
+  if constexpr (LocalTimeStepping) {
+    test_all(TimeStepId(true, 0, start), 1.0, {}, 1.0, {});
+    test_all(TimeStepId(true, 0, center), 1.5, {}, 1.5, {});
+    test_all(TimeStepId(true, 1, start), 1.0, {}, 1.0, {});
+    test_all(TimeStepId(true, 1, center), 1.5, {}, 1.5, {});
+    test_all(TimeStepId(true, -1, start), {}, {}, {}, {});
+    test_all(TimeStepId(true, -1, center), {}, {}, {}, {});
+    test_all(TimeStepId(true, 0, start, 1, step, 1.5), {}, {}, 1000001.0, {});
+    test_all(TimeStepId(true, 0, center, 1, step, 2.0), {}, {}, 1000001.5, {});
+    test_all(TimeStepId(true, 0, start, 2, step, 1.0), {}, {}, 2000001.0, {});
+    test_all(TimeStepId(true, 0, center, 2, step, 1.5), {}, {}, 2000001.5, {});
+  } else {
+    test_all(TimeStepId(true, 0, start), 1.0, {}, 1.0, {});
+    test_all(TimeStepId(true, 0, center), {}, {}, {}, {});
+    test_all(TimeStepId(true, 1, start), 1.0, {}, 1.0, {});
+    test_all(TimeStepId(true, 1, center), {}, {}, {}, {});
+    test_all(TimeStepId(true, -1, start), {}, {}, {}, {});
+    test_all(TimeStepId(true, -1, center), {}, {}, {}, {});
+    test_all(TimeStepId(true, 0, start, 1, step, 1.5), {}, {}, 1000001.0, {});
+    test_all(TimeStepId(true, 0, center, 1, step, 2.0), {}, {}, {}, {});
+    test_all(TimeStepId(true, 0, start, 2, step, 1.0), {}, {}, 2000001.0, {});
+    test_all(TimeStepId(true, 0, center, 2, step, 1.5), {}, {}, {}, {});
+  }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndTriggers",
+                  "[Unit][ParallelAlgorithms]") {
+  register_factory_classes_with_charm<Metavariables<true>>();
+  std::array gts_runners{
+      ActionTesting::MockRuntimeSystem<Metavariables<false>>{
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<false>>(
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")},
+      ActionTesting::MockRuntimeSystem<Metavariables<false>>{
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<false>>(
+              "- Trigger:\n"
+              "    Not: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")},
+      ActionTesting::MockRuntimeSystem<Metavariables<false>>{
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<false>>(
+              "- Trigger:\n"
+              "    OnSubsteps: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")},
+      ActionTesting::MockRuntimeSystem<Metavariables<false>>{
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<false>>(
+              "- Trigger:\n"
+              "    OnSubsteps:\n"
+              "      Not: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")}};
+  test<false>(gts_runners);
+  std::array lts_runners{
+      ActionTesting::MockRuntimeSystem<Metavariables<true>>{tuples::TaggedTuple<
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>{
+          EventsAndTriggers{},
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<true>>(
+              "- Trigger: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")}},
+      ActionTesting::MockRuntimeSystem<Metavariables<true>>{tuples::TaggedTuple<
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>{
+          EventsAndTriggers{},
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<true>>(
+              "- Trigger:\n"
+              "    Not: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")}},
+      ActionTesting::MockRuntimeSystem<Metavariables<true>>{tuples::TaggedTuple<
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>{
+          EventsAndTriggers{},
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<true>>(
+              "- Trigger:\n"
+              "    OnSubsteps: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")}},
+      ActionTesting::MockRuntimeSystem<Metavariables<true>>{tuples::TaggedTuple<
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+          Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>{
+          EventsAndTriggers{},
+          TestHelpers::test_creation<EventsAndTriggers, Metavariables<true>>(
+              "- Trigger:\n"
+              "    OnSubsteps:\n"
+              "      Not: Always\n"
+              "  Events:\n"
+              "    - TestEvent\n")}}};
+  test<true>(lts_runners);
 }

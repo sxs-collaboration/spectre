@@ -8,6 +8,7 @@ spectre_target_sources(
   OnSubsteps.cpp
   SlabCompares.cpp
   Slabs.cpp
+  StepsWithinSlab.cpp
   TimeCompares.cpp
   Times.cpp
   )
@@ -20,6 +21,7 @@ spectre_target_headers(
   OnSubsteps.hpp
   SlabCompares.hpp
   Slabs.hpp
+  StepsWithinSlab.hpp
   TimeCompares.hpp
   TimeTriggers.hpp
   Times.hpp

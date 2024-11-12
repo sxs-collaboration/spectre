@@ -31,27 +31,30 @@ void test_pup() {
 void test_option_parsing() {
   INFO("Option Parsing creation");
   {
-    std::string creation_string_1 =
+    const std::string creation_string_1 =
         "RefinementLevel: [0, 3]\n"
-        "NumGridPoints: [1, 5]\n";
+        "NumGridPoints: [1, 5]\n"
+        "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_1);
     CHECK(limits == amr::Limits{0, 3, 1, 5});
   }
 
   {
-    std::string creation_string_2 =
+    const std::string creation_string_2 =
         "RefinementLevel: Auto\n"
-        "NumGridPoints: [1, 5]\n";
+        "NumGridPoints: [1, 5]\n"
+        "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_2);
     CHECK(limits == amr::Limits{0, ElementId<1>::max_refinement_level, 1, 5});
   }
 
   {
-    std::string creation_string_3 =
+    const std::string creation_string_3 =
         "RefinementLevel: [0, 3]\n"
-        "NumGridPoints: Auto\n";
+        "NumGridPoints: Auto\n"
+        "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_3);
     CHECK(limits ==
@@ -61,57 +64,74 @@ void test_option_parsing() {
   }
 
   {
-    std::string creation_string_4 =
+    const std::string creation_string_4 =
         "RefinementLevel: Auto\n"
-        "NumGridPoints: Auto\n";
+        "NumGridPoints: Auto\n"
+        "ErrorBeyondLimits: False\n";
     const auto limits =
         TestHelpers::test_creation<amr::Limits>(creation_string_4);
     CHECK(limits == amr::Limits{});
   }
 
-  std::string bad_creation_string_1 =
+  {
+    const std::string creation_string_5 =
+        "RefinementLevel: [0, 3]\n"
+        "NumGridPoints: [1, 5]\n"
+        "ErrorBeyondLimits: True\n";
+    const auto limits =
+        TestHelpers::test_creation<amr::Limits>(creation_string_5);
+    CHECK(limits == amr::Limits{{{0, 3}}, {{1, 5}}, true});
+  }
+
+  const std::string bad_creation_string_1 =
       "RefinementLevel: [255, 3]\n"
-      "NumGridPoints: [1, 5]\n";
+      "NumGridPoints: [1, 5]\n"
+      "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_1),
       Catch::Matchers::ContainsSubstring(
           "RefinementLevel lower bound '255' cannot be larger than '"));
 
-  std::string bad_creation_string_2 =
+  const std::string bad_creation_string_2 =
       "RefinementLevel: [1, 255]\n"
-      "NumGridPoints: [1, 5]\n";
+      "NumGridPoints: [1, 5]\n"
+      "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_2),
       Catch::Matchers::ContainsSubstring(
           "RefinementLevel upper bound '255' cannot be larger than '"));
 
-  std::string bad_creation_string_3 =
+  const std::string bad_creation_string_3 =
       "RefinementLevel: [0, 3]\n"
-      "NumGridPoints: [0, 5]\n";
+      "NumGridPoints: [0, 5]\n"
+      "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_3),
       Catch::Matchers::ContainsSubstring(
           "NumGridPoints lower bound '0' cannot be smaller than '1'."));
 
-  std::string bad_creation_string_4 =
+  const std::string bad_creation_string_4 =
       "RefinementLevel: [1, 3]\n"
-      "NumGridPoints: [255, 5]\n";
+      "NumGridPoints: [255, 5]\n"
+      "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_4),
       Catch::Matchers::ContainsSubstring(
           "NumGridPoints lower bound '255' cannot be larger than '"));
 
-  std::string bad_creation_string_5 =
+  const std::string bad_creation_string_5 =
       "RefinementLevel: [1, 3]\n"
-      "NumGridPoints: [1, 0]\n";
+      "NumGridPoints: [1, 0]\n"
+      "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_5),
       Catch::Matchers::ContainsSubstring(
           "NumGridPoints upper bound '0' cannot be smaller than '1'."));
 
-  std::string bad_creation_string_6 =
+  const std::string bad_creation_string_6 =
       "RefinementLevel: [1, 3]\n"
-      "NumGridPoints: [1, 255]\n";
+      "NumGridPoints: [1, 255]\n"
+      "ErrorBeyondLimits: False\n";
   CHECK_THROWS_WITH(
       TestHelpers::test_creation<amr::Limits>(bad_creation_string_6),
       Catch::Matchers::ContainsSubstring(

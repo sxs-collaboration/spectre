@@ -128,6 +128,7 @@ struct Sources {
                     Frame::Inertial>,
       Tags::Epsilon2, Tags::Epsilon4, gr::Tags::WeylElectricScalar<DataVector>,
       gr::Tags::WeylMagneticScalar<DataVector>>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> equation_for_field,
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,
@@ -157,6 +158,7 @@ struct LinearizedSources {
                  ::CurvedScalarWave::Tags::Psi, Tags::Epsilon2, Tags::Epsilon4,
                  gr::Tags::WeylElectricScalar<DataVector>,
                  gr::Tags::WeylMagneticScalar<DataVector>>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> linearized_equation_for_field,
       const tnsr::i<DataVector, 3>& conformal_christoffel_contracted,

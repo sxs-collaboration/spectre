@@ -54,7 +54,6 @@ struct ExplicitInverse {
  * cost, but all successive solves converge immediately.
  *
  * \par Advice on using this linear solver:
- *
  * - This solver is entirely agnostic to the structure of the linear operator.
  *   It is usually better to implement a linear solver that is specialized for
  *   your linear operator to take advantage of its properties. For example, if

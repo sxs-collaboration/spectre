@@ -42,7 +42,7 @@ using RotationMap = domain::CoordinateMaps::TimeDependent::Rotation<3>;
 using ExpansionMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Distorted, Frame::Inertial, ExpansionMap,
+    domain::CoordinateMap<Frame::Grid, Frame::Inertial, ExpansionMap,
                           RotationMap, TranslationMap>;
 
 std::string create_input_string(const std::string& name) {
@@ -217,16 +217,14 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
                                         horizon_function);
 
   // Grab results
-  std::array<double, 3> grid_position_of_a{};
-  std::array<double, 3> grid_position_of_b{};
-  std::tie(grid_position_of_a, grid_position_of_b) =
+  const auto grid_positions =
       TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
           element_component>(final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
-  const std::array<double, 3> expected_grid_position_of_a{
+  const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_a{
       {0.5 * initial_separation, 0.0, 0.0}};
-  const std::array<double, 3> expected_grid_position_of_b{
+  const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_b{
       {-0.5 * initial_separation, 0.0, 0.0}};
 
   const auto& rotation_f_of_t = dynamic_cast<
@@ -264,9 +262,9 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
       binary_trajectories.separation(final_time) / initial_separation,
       expansion_factor, custom_approx1);
 
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_a, grid_position_of_a,
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_a, grid_positions[0],
                                custom_approx2);
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_b, grid_position_of_b,
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_b, grid_positions[1],
                                custom_approx2);
 }
 }  // namespace

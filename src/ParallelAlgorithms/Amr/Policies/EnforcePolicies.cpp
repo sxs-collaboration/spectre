@@ -11,6 +11,7 @@
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -25,14 +26,26 @@ void enforce_policies(const gsl::not_null<std::array<Flag, Dim>*> amr_decision,
   }
 
   const auto& limits = amr_policies.limits();
+
+  const auto error_if_beyond_limits = [&](const size_t direction,
+                                          const std::string& limit_reached) {
+    if (limits.error_beyond_limits()) {
+      ERROR("Tried refining beyond the AMR limits in element "
+            << element_id << " but we are not allowed to. In direction "
+            << direction << ", reached limit " << limit_reached);
+    }
+  };
+
   const auto& levels = element_id.refinement_levels();
   for (size_t d = 0; d < Dim; ++d) {
     if (gsl::at(*amr_decision, d) == Flag::Join and
         gsl::at(levels, d) <= limits.minimum_refinement_level()) {
+      error_if_beyond_limits(d, "MinimumRefinement");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }
     if (gsl::at(*amr_decision, d) == Flag::Split and
         gsl::at(levels, d) >= limits.maximum_refinement_level()) {
+      error_if_beyond_limits(d, "MaximumRefinement");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }
     const size_t minimum_resolution = std::max(
@@ -40,10 +53,12 @@ void enforce_policies(const gsl::not_null<std::array<Flag, Dim>*> amr_decision,
                                          mesh.basis(d), mesh.quadrature(d)));
     if (gsl::at(*amr_decision, d) == Flag::DecreaseResolution and
         mesh.extents(d) <= minimum_resolution) {
+      error_if_beyond_limits(d, "MinimumResolution");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }
     if (gsl::at(*amr_decision, d) == Flag::IncreaseResolution and
         mesh.extents(d) >= limits.maximum_resolution()) {
+      error_if_beyond_limits(d, "MaximumResolution");
       gsl::at(*amr_decision, d) = Flag::DoNothing;
     }
   }

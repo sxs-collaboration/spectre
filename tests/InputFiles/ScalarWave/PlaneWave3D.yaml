@@ -32,6 +32,7 @@ Amr:
     Limits:
       RefinementLevel: Auto
       NumGridPoints: Auto
+      ErrorBeyondLimits: False
   Verbosity: Verbose
 
 PhaseChangeAndTriggers:
@@ -69,7 +70,7 @@ SpatialDiscretization:
 #     Enable: false
 #     BlocksToFilter: All
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Times:
         Specified:

@@ -100,6 +100,7 @@ struct Sources {
   using argument_tags = tmpl::list<
       Tags::DerivLogLapseTimesDensityOverSpecificEnthalpy<DataVector>,
       gr::Tags::SpatialChristoffelSecondKindContracted<DataVector, 3>>;
+  using const_global_cache_tags = tmpl::list<>;
   static void apply(gsl::not_null<Scalar<DataVector>*> equation_for_potential,
                     const tnsr::i<DataVector, 3>&
                         log_deriv_lapse_times_density_over_specific_enthalpy,

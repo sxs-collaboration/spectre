@@ -6,6 +6,8 @@
 #include <array>
 #include <utility>
 
+#include "DataStructures/Tensor/Tensor.hpp"
+
 /*!
  * \brief Class to compute post-Newtonian trajectories
  *
@@ -39,7 +41,7 @@
 class BinaryTrajectories {
  public:
   BinaryTrajectories(double initial_separation,
-                     const std::array<double, 3>& velocity =
+                     const std::array<double, 3>& center_of_mass_velocity =
                          std::array<double, 3>{{0.0, 0.0, 0.0}},
                      bool newtonian = false);
   BinaryTrajectories() = default;
@@ -50,35 +52,44 @@ class BinaryTrajectories {
   ~BinaryTrajectories() = default;
 
   /// Gives separation as function of time
-  double separation(double time) const;
+  template <typename DataType>
+  DataType separation(const DataType& time) const;
+
   /// Gives orbital frequency \f$f\f$ as a function of time calculated from
   /// Kepler's third law \f$f^2\propto\frac{1}{a^3}\f$ where \f$a\f$ is
   /// calculated from `separation`.
-  double orbital_frequency(double time) const;
+  template <typename DataType>
+  DataType orbital_frequency(const DataType& time) const;
+
   /// Gives the angular velocity of the objects as a function of time.
   /// Calculated by \f$\omega(t)=\frac{d\theta(t)}{dt}\f$ where
   /// \f$\theta(t)=f(t)t\f$.
   ///
   /// \note For the newtonian case, `orbital_frequency` and `angular_velocity`
   /// give the same result because the orbital frequency is independent of time.
-  double angular_velocity(const double time) const;
+  template <typename DataType>
+  DataType angular_velocity(const DataType& time) const;
+
   /// Gives the positions of the two objects as a function of time.
-  std::pair<std::array<double, 3>, std::array<double, 3>> positions(
-      double time) const;
+  template <typename DataType>
+  std::array<tnsr::I<DataType, 3>, 2> positions(const DataType& time) const;
+
   /// Same as `positions`, except the separation remains constant (equal to the
   /// initial separation).
   ///
   /// \note This is useful for testing the rotation control system by itself,
   /// because we want the frequency to vary, but the separation to remain the
   /// same. This way, we don't have to worry about expansion effects.
-  std::pair<std::array<double, 3>, std::array<double, 3>>
-  positions_no_expansion(double time) const;
+  template <typename DataType>
+  std::array<tnsr::I<DataType, 3>, 2> positions_no_expansion(
+      const DataType& time) const;
 
  private:
-  std::pair<std::array<double, 3>, std::array<double, 3>> position_impl(
-      double time, double separation) const;
+  template <typename DataType>
+  std::array<tnsr::I<DataType, 3>, 2> position_impl(
+      const DataType& time, const DataType& separation) const;
 
   double initial_separation_fourth_power_;
-  std::array<double, 3> velocity_;
+  std::array<double, 3> center_of_mass_velocity_;
   bool newtonian_;
 };

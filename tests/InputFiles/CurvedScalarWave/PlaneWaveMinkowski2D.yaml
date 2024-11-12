@@ -67,13 +67,15 @@ Filtering:
     Enable: false
     BlocksToFilter: All
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:
           Values: [100]
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

@@ -31,7 +31,7 @@ Observers:
   # ExtractionRadius specified below.
   ReductionFileName: "CharacteristicExtractReduction"
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   # Write the CCE time step every Slab. A Slab is a fixed length of simulation
   # time and is not influenced by the dynamically adjusted step size.
   - Trigger:
@@ -45,6 +45,8 @@ EventsAndTriggers:
           # "/SubfileName.dat"
           SubfileName: CceTimeStep
           PrintTimeToTerminal: true
+
+EventsAndTriggersAtSteps:
 
 Cce:
   Evolution:

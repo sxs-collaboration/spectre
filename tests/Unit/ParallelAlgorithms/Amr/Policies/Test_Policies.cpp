@@ -45,7 +45,8 @@ void test_option_parsing() {
         creation_string << "Isotropy: " << isotropy << "\n";
         creation_string << "Limits:\n"
                         << "  RefinementLevel: [1, 5]\n"
-                        << "  NumGridPoints: [3, 7]\n";
+                        << "  NumGridPoints: [3, 7]\n"
+                        << "  ErrorBeyondLimits: False\n";
         creation_string << "EnforceTwoToOneBalanceInNormalDirection: "
                         << std::boolalpha << enforce_two_to_one << "\n";
         const auto policies =
@@ -59,7 +60,8 @@ void test_option_parsing() {
         creation_string << "Isotropy: " << isotropy << "\n";
         creation_string << "Limits:\n"
                         << "  RefinementLevel: Auto\n"
-                        << "  NumGridPoints: Auto\n";
+                        << "  NumGridPoints: Auto\n"
+                        << "  ErrorBeyondLimits: False\n";
         creation_string << "EnforceTwoToOneBalanceInNormalDirection: "
                         << std::boolalpha << enforce_two_to_one << "\n";
         const auto policies =

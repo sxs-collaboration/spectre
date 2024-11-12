@@ -18,11 +18,11 @@ spectre_target_sources(
   LinearSolve.cpp
   NewmanPenrose.cpp
   PrecomputeCceDependencies.cpp
-  ReducedWorldtubeModeRecorder.cpp
   ScriPlusValues.cpp
   SpecBoundaryData.cpp
   WorldtubeBufferUpdater.cpp
   WorldtubeDataManager.cpp
+  WorldtubeModeRecorder.cpp
   )
 
 spectre_target_headers(
@@ -44,7 +44,6 @@ spectre_target_headers(
   PreSwshDerivatives.hpp
   PrecomputeCceDependencies.hpp
   ReceiveTags.hpp
-  ReducedWorldtubeModeRecorder.hpp
   ScriPlusInterpolationManager.hpp
   ScriPlusValues.hpp
   SpecBoundaryData.hpp
@@ -55,6 +54,7 @@ spectre_target_headers(
   Tags.hpp
   WorldtubeBufferUpdater.hpp
   WorldtubeDataManager.hpp
+  WorldtubeModeRecorder.hpp
   )
 
 target_link_libraries(

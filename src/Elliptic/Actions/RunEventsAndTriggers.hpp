@@ -8,6 +8,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -28,7 +29,8 @@ namespace elliptic::Actions {
 /// - Modifies: nothing
 template <typename ObservationId>
 struct RunEventsAndTriggers {
-  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtIterations>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -38,10 +40,11 @@ struct RunEventsAndTriggers {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) {
-    Parallel::get<Tags::EventsAndTriggers>(cache).run_events(
-        make_not_null(&box), cache, array_index, component,
-        {db::tag_name<ObservationId>(),
-         static_cast<double>(db::get<ObservationId>(box))});
+    Parallel::get<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtIterations>>(
+        cache)
+        .run_events(make_not_null(&box), cache, array_index, component,
+                    {db::tag_name<ObservationId>(),
+                     static_cast<double>(db::get<ObservationId>(box))});
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

@@ -22,6 +22,9 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+/*!
+ * \brief Contains utilities for working with tuples
+ */
 namespace tuples {
 
 #if __cplusplus >= 201402L

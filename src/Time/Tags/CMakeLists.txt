@@ -11,6 +11,7 @@ spectre_target_headers(
   IsUsingTimeSteppingErrorControl.hpp
   MinimumTimeStep.hpp
   StepChoosers.hpp
+  StepNumberWithinSlab.hpp
   StepperErrorTolerances.hpp
   StepperErrors.hpp
   Time.hpp

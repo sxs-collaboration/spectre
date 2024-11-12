@@ -24,6 +24,7 @@ spectre_target_headers(
   Exit.hpp
   ParallelInfo.hpp
   Prefetch.hpp
+  System.hpp
   )
 
 target_link_libraries(

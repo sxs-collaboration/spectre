@@ -80,6 +80,7 @@
 
 template <bool UseLts>
 struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
+  static constexpr bool local_time_stepping = UseLts;
   static constexpr size_t volume_dim = 3;
   using gh_base = GeneralizedHarmonicTemplateBase<volume_dim, UseLts>;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
@@ -260,7 +261,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
               Parallel::Phase::Evolve,
               tmpl::list<
                   ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
-                  evolution::Actions::RunEventsAndTriggers,
+                  evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 

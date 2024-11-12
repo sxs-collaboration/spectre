@@ -180,7 +180,7 @@ struct Negate
     } else {
       // We haven't yet evaluated the whole subtree for this expression, so
       // return the negation of this expression's subtree
-      return -t_.template get_primary(result_component, multi_index);
+      return -t_.get_primary(result_component, multi_index);
     }
   }
 
@@ -203,7 +203,7 @@ struct Negate
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t_.template evaluate_primary_subtree(result_component, multi_index);
+      t_.evaluate_primary_subtree(result_component, multi_index);
     }
     if constexpr (is_primary_start) {
       // We want to evaluate the subtree for this expression

@@ -33,7 +33,7 @@ Importers:
     Subgroup: "TestData"
     ObservationValue: 1.
     ObservationValueEpsilon: Auto
-    Interpolate: True
+    ElementsAreIdentical: False
 
 ResourceInfo:
   AvoidGlobalProc0: false

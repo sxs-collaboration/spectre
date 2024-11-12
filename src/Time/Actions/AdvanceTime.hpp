@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <tuple>
 
@@ -13,6 +14,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/Tags/StepNumberWithinSlab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -54,6 +56,7 @@ namespace Actions {
 /// DataBox changes:
 ///   - Tags::Next<Tags::TimeStepId>
 ///   - Tags::Next<Tags::TimeStep>
+///   - Tags::StepNumberWithinSlab
 ///   - Tags::Time
 ///   - Tags::TimeStepId
 ///   - Tags::TimeStep
@@ -76,22 +79,25 @@ struct AdvanceTime {
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time, Tags::Next<Tags::TimeStep>,
-               Tags::AdaptiveSteppingDiagnostics>(
+               Tags::StepNumberWithinSlab, Tags::AdaptiveSteppingDiagnostics>(
         [](const gsl::not_null<TimeStepId*> time_id,
            const gsl::not_null<TimeStepId*> next_time_id,
            const gsl::not_null<TimeDelta*> time_step,
            const gsl::not_null<double*> time,
            const gsl::not_null<TimeDelta*> next_time_step,
+           const gsl::not_null<uint64_t*> step_number_within_slab,
            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
            const TimeStepper& time_stepper, const bool using_error_control) {
           const bool new_step = next_time_id->substep() == 0;
           if (time_id->slab_number() != next_time_id->slab_number()) {
+            *step_number_within_slab = 0;
             ++diags->number_of_slabs;
             // Put this here instead of unconditionally doing the next
             // check because on the first call time_id doesn't have a
             // valid slab so comparing the times will FPE.
             ++diags->number_of_steps;
           } else if (new_step) {
+            ++(*step_number_within_slab);
             ++diags->number_of_steps;
           }
 

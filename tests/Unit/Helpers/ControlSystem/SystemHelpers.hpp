@@ -417,42 +417,16 @@ double initialize_translation_functions_of_time(
 
 template <typename ElementComponent, typename Metavars, typename F,
           typename CoordMap>
-std::pair<std::array<double, 3>, std::array<double, 3>>
+std::array<tnsr::I<double, 3, Frame::Grid>, 2>
 grid_frame_horizon_centers_for_basic_control_systems(
     const double time, ActionTesting::MockRuntimeSystem<Metavars>& runner,
     const F position_function, const CoordMap& coord_map) {
   auto& cache = ActionTesting::cache<ElementComponent>(runner, 0);
   const auto& functions_of_time =
       Parallel::get<domain::Tags::FunctionsOfTime>(cache);
-
-  // This whole switching between tensors and arrays is annoying and
-  // clunky, but it's the best that could be done at the moment without
-  // changing BinaryTrajectories to return tensors, which doesn't seem like
-  // a good idea.
-
-  std::pair<std::array<double, 3>, std::array<double, 3>> positions =
-      position_function(time);
-
-  // Covert arrays to tensor so we can pass them into the coordinate map
-  const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
-      positions.first);
-  const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
-      positions.second);
-
-  // Convert to "grid coordinates"
-  const auto grid_position_of_a_tnsr =
-      *coord_map.inverse(inertial_position_of_a, time, functions_of_time);
-  const auto grid_position_of_b_tnsr =
-      *coord_map.inverse(inertial_position_of_b, time, functions_of_time);
-
-  // Convert tensors back to arrays so we can pass them to the control
-  // systems. Just reuse `positions`
-  for (size_t i = 0; i < 3; i++) {
-    gsl::at(positions.first, i) = grid_position_of_a_tnsr.get(i);
-    gsl::at(positions.second, i) = grid_position_of_b_tnsr.get(i);
-  }
-
-  return positions;
+  const auto positions = position_function(time);
+  return {{*coord_map.inverse(positions[0], time, functions_of_time),
+           *coord_map.inverse(positions[1], time, functions_of_time)}};
 }
 
 template <typename ElementComponent, typename Metavars, typename F,
@@ -468,8 +442,16 @@ build_horizons_for_basic_control_systems(
 
   // Construct strahlkorpers to pass to control systems. Only the centers
   // matter.
-  ylm::Strahlkorper<Frame::Distorted> horizon_a{2, 2, 1.0, positions.first};
-  ylm::Strahlkorper<Frame::Distorted> horizon_b{2, 2, 1.0, positions.second};
+  ylm::Strahlkorper<Frame::Distorted> horizon_a{
+      2,
+      2,
+      1.0,
+      {{get<0>(positions[0]), get<1>(positions[0]), get<2>(positions[0])}}};
+  ylm::Strahlkorper<Frame::Distorted> horizon_b{
+      2,
+      2,
+      1.0,
+      {{get<0>(positions[1]), get<1>(positions[1]), get<2>(positions[1])}}};
 
   return std::make_pair<ylm::Strahlkorper<Frame::Distorted>,
                         ylm::Strahlkorper<Frame::Distorted>>(

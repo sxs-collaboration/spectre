@@ -1046,8 +1046,7 @@ struct TensorContract
     if constexpr (not is_primary_end) {
       // We need to first evaluate the subtree of the term being summed that
       // is deepest in the tree
-      result_component =
-          t_.template get_primary(result_component, lowest_multi_index);
+      result_component = t_.get_primary(result_component, lowest_multi_index);
     }
 
     if constexpr (evaluate_terms_separately) {
@@ -1147,8 +1146,7 @@ struct TensorContract
       // because, according to `compute_contraction`, the lowest multi-index is
       // the one in the last/leaf/final call to `compute_contraction` (i.e. the
       // multi-index of the final term to sum)
-      t_.template evaluate_primary_subtree(result_component,
-                                           lowest_multi_index_to_sum);
+      t_.evaluate_primary_subtree(result_component, lowest_multi_index_to_sum);
     }
     if constexpr (is_primary_start) {
       // We want to evaluate the subtree for this expression, one leg of

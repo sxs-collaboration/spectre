@@ -31,3 +31,5 @@ target_link_libraries(
   SphericalHarmonicsIO
   Utilities
   )
+
+add_subdirectory(Python)

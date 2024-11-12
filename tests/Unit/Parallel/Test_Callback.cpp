@@ -247,15 +247,34 @@ struct RunCallbacks {
     Parallel::SimpleActionCallback<MultiplyValueByFactor, decltype(proxy_2),
                                    double>
         callback_2(proxy_2, 1.5);
+    SPECTRE_PARALLEL_REQUIRE(
+        callback_0.name().find("PerformAlgorithmCallback") !=
+        std::string::npos);
+    SPECTRE_PARALLEL_REQUIRE(
+        (callback_1.name().find("SimpleActionCallback") != std::string::npos and
+         callback_1.name().find("IncrementValue") != std::string::npos));
+    SPECTRE_PARALLEL_REQUIRE(
+        (callback_2.name().find("SimpleActionCallback") != std::string::npos and
+         callback_2.name().find("MultiplyValueByFactor") != std::string::npos));
     callback_0.invoke();
     callback_1.invoke();
     callback_2.invoke();
     auto callback_3 = serialize_and_deserialize(callback_0);
     auto callback_4 = serialize_and_deserialize(callback_1);
     auto callback_5 = serialize_and_deserialize(callback_2);
+    SPECTRE_PARALLEL_REQUIRE(callback_0.is_equal_to(callback_3));
+    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_0.is_equal_to(callback_4));
+    SPECTRE_PARALLEL_REQUIRE(callback_1.is_equal_to(callback_4));
+    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_1.is_equal_to(callback_5));
     callback_3.invoke();
     callback_4.invoke();
     callback_5.invoke();
+    const auto callback_6 = callback_0.get_clone();
+    const auto callback_7 = callback_1.get_clone();
+    const auto callback_8 = callback_2.get_clone();
+    SPECTRE_PARALLEL_REQUIRE(callback_0.is_equal_to(*callback_6));
+    SPECTRE_PARALLEL_REQUIRE(callback_1.is_equal_to(*callback_7));
+    SPECTRE_PARALLEL_REQUIRE(callback_2.is_equal_to(*callback_8));
     std::vector<std::unique_ptr<Parallel::Callback>> callbacks;
     callbacks.emplace_back(
         std::make_unique<Parallel::PerformAlgorithmCallback<decltype(proxy_0)>>(
@@ -267,6 +286,7 @@ struct RunCallbacks {
     callbacks.emplace_back(
         std::make_unique<Parallel::SimpleActionCallback<
             MultiplyValueByFactor, decltype(proxy_2), double>>(proxy_2, 2.0));
+    SPECTRE_PARALLEL_REQUIRE_FALSE(callback_2.is_equal_to(*callbacks.back()));
 
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<TestNodegroup<Metavariables>>(cache);

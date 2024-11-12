@@ -91,7 +91,7 @@ LinearSolver:
         WriteMatrixToFile: None
     ObservePerCoreReductions: False
 
-EventsAndTriggers:
+EventsAndTriggersAtIterations:
   - Trigger: HasConverged
     Events:
       - ObserveNorms:
@@ -119,6 +119,7 @@ Amr:
     Limits:
       NumGridPoints: Auto
       RefinementLevel: Auto
+      ErrorBeyondLimits: False
   Iterations: 1
 
 PhaseChangeAndTriggers: []

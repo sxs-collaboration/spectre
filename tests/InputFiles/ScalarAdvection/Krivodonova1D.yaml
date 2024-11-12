@@ -65,7 +65,7 @@ SpatialDiscretization:
 InitialData:
   Krivodonova:
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         Specified:

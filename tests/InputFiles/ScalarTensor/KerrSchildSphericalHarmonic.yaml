@@ -126,7 +126,7 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan
@@ -195,6 +195,8 @@ EventsAndTriggers:
           Offset: 0
     Events:
       - SphericalSurface
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

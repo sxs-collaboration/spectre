@@ -114,7 +114,6 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  *   shells.
  *
  * \par Notes:
- *
  * - Object A is located to the right of the origin (along the positive x-axis)
  *   and Object B is located to the left of the origin.
  * - This domain offers some grid anchors. See

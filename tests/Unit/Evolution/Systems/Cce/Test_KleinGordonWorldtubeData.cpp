@@ -5,9 +5,9 @@
 
 #include <cstddef>
 
-#include "Evolution/Systems/Cce/ReducedWorldtubeModeRecorder.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
+#include "Evolution/Systems/Cce/WorldtubeModeRecorder.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
@@ -261,8 +261,8 @@ void test_klein_gordon_worldtube_buffer_updater(
   const size_t computation_l_max = 10;
 
   const std::string filename = extraction_radius_in_filename
-                                   ? "BoundaryDataH5Test_CceR0100.h5"
-                                   : "BoundaryDataH5Test.h5";
+                                   ? "KgBoundaryDataH5Test_CceR0100.h5"
+                                   : "KgBoundaryDataH5Test.h5";
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
@@ -275,7 +275,7 @@ void test_klein_gordon_worldtube_buffer_updater(
     Scalar<DataVector> kg_psi_nodal;
     Scalar<DataVector> kg_pi_nodal;
 
-    Cce::ReducedWorldtubeModeRecorder recorder{filename};
+    Cce::WorldtubeModeRecorder recorder{file_l_max, filename};
     for (size_t t = 0; t < 20; ++t) {
       const double time = 0.01 * static_cast<double>(t) + target_time - 0.1;
 
@@ -284,10 +284,8 @@ void test_klein_gordon_worldtube_buffer_updater(
           make_not_null(&kg_psi_nodal), make_not_null(&kg_pi_nodal),
           extraction_radius, amplitude, frequency, time, file_l_max);
 
-      recorder.append_worldtube_mode_data("/KGPsi", time, get(kg_psi_modal),
-                                          file_l_max, true);
-      recorder.append_worldtube_mode_data("/dtKGPsi", time, get(kg_pi_modal),
-                                          file_l_max, true);
+      recorder.append_modal_data<0>("/KGPsi", time, get(kg_psi_modal));
+      recorder.append_modal_data<0>("/dtKGPsi", time, get(kg_pi_modal));
     }
   }
 

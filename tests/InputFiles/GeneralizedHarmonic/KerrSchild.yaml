@@ -57,6 +57,7 @@ Amr:
     Limits:
       RefinementLevel: Auto
       NumGridPoints: Auto
+      ErrorBeyondLimits: False
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:
@@ -138,7 +139,7 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
-EventsAndTriggers:
+EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -210,6 +211,8 @@ EventsAndTriggers:
           Values: [3]
     Events:
       - Completion
+
+EventsAndTriggersAtSteps:
 
 EventsAndDenseTriggers:
 

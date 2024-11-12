@@ -16,6 +16,7 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace Cce {
+/// \brief Code for interfacing between the characteristic and Cachy systems.
 namespace InterfaceManagers {
 
 /// \cond
