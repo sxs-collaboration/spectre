@@ -54,6 +54,10 @@ if(NOT ${KOKKOS_CXX_COMPILER_ID} STREQUAL "NVIDIA")
   list(APPEND LIBRARY_SOURCES Test_TaggedVariant.cpp)
 endif()
 
+if (TARGET autodiff::autodiff)
+  list(APPEND LIBRARY_SOURCES Test_Autodiff.cpp)
+endif()
+
 add_subdirectory(DataBox)
 add_subdirectory(Tensor)
 
@@ -68,6 +72,10 @@ target_link_libraries(
   Options
   Utilities
   )
+
+if (TARGET autodiff::autodiff)
+  target_link_libraries(${LIBRARY} PRIVATE autodiff::autodiff)
+endif()
 
 # [example_add_pybindings_test]
 spectre_add_python_bindings_test(

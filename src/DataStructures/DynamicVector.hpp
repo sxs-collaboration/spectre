@@ -8,6 +8,10 @@
 
 #pragma once
 
+#ifdef SPECTRE_AUTODIFF
+#include <autodiff/common/numbertraits.hpp>
+#include <autodiff/common/vectortraits.hpp>
+#endif  // SPECTRE_AUTODIFF
 #include <blaze/math/DynamicVector.h>
 #include <pup.h>
 #include <type_traits>
@@ -94,3 +98,25 @@ struct Options::create_from_yaml<blaze::DynamicVector<T, TF, Tag>> {
     return result;
   }
 };
+
+#ifdef SPECTRE_AUTODIFF
+namespace autodiff {
+namespace detail {
+
+template <typename T, bool TF /* , typename Alloc, typename Tag */>
+struct VectorTraits<blaze::DynamicVector<T, TF>> {
+  using ValueType = T;
+
+  template <typename NewValueType>
+  using ReplaceValueType = blaze::DynamicVector<NewValueType, TF>;
+};
+
+template <typename T, bool TF /* , typename Alloc, typename Tag */>
+struct NumberTraits<blaze::DynamicVector<T, TF>> {
+  using NumericType = typename NumberTraits<T>::NumericType;
+  static constexpr auto Order = NumberTraits<T>::Order;
+};
+
+}  // namespace detail
+}  // namespace autodiff
+#endif  // SPECTRE_AUTODIFF
