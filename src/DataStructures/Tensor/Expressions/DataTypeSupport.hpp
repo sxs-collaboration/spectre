@@ -59,10 +59,7 @@ constexpr bool is_supported_number_datatype_v =
 ///
 /// \tparam X the `Tensor` data type
 template <typename X>
-struct is_supported_tensor_datatype
-    : std::disjunction<
-          std::is_same<X, double>, std::is_same<X, std::complex<double>>,
-          std::is_same<X, DataVector>, std::is_same<X, ComplexDataVector>> {};
+struct is_supported_tensor_datatype : std::true_type {};
 
 template <typename X>
 constexpr bool is_supported_tensor_datatype_v =
