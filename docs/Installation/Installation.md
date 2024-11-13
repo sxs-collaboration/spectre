@@ -270,6 +270,8 @@ The following dependencies will be fetched automatically if you set
   matplotlib
 * [xsimd](https://github.com/xtensor-stack/xsimd) 11.0.1 or newer - for manual
   vectorization
+* [autodiff](https://github.com/autodiff/autodiff/) 1.1.2 or newer - for
+  automatic differentiation
 * [libbacktrace](https://github.com/ianlancetaylor/libbacktrace) - to show
   source files and line numbers in backtraces of errors and asserts. Available
   by default on many systems, so you may not have to install it at all. The
