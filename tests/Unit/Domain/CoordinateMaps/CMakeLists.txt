@@ -45,6 +45,7 @@ target_link_libraries(
   DataStructures
   DataStructuresHelpers
   Domain
+  DomainHelpers
   DomainStructure
   ErrorHandling
   FunctionsOfTime

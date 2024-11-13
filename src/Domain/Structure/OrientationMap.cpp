@@ -321,6 +321,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                          std::reference_wrapper<const double> const,
                          std::reference_wrapper<const DataVector> const))
 
+#ifdef SPECTRE_AUTODIFF
+#include <autodiff/forward/dual.hpp>
+#include <autodiff/forward/real.hpp>
+#include <autodiff/reverse/var.hpp>
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
+                        (autodiff::dual, autodiff::real, autodiff::var))
+#endif  // SPECTRE_AUTODIFF
+
 #undef INSTANTIATION
 #undef DTYPE
 #undef DIM

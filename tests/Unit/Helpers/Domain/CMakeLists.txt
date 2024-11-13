@@ -31,6 +31,10 @@ target_link_libraries(
   Utilities
   )
 
+if (TARGET autodiff::autodiff)
+  target_link_libraries(${LIBRARY} INTERFACE autodiff::autodiff)
+endif()
+
 add_subdirectory(Amr)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(Structure)

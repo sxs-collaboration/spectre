@@ -75,3 +75,7 @@ target_link_libraries(
   Spectral
   Utilities
   )
+
+if (TARGET autodiff::autodiff)
+  target_link_libraries(${LIBRARY} PRIVATE autodiff::autodiff)
+endif()

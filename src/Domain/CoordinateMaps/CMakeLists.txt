@@ -105,5 +105,9 @@ target_link_libraries(
   SphericalHarmonics
   )
 
+if (TARGET autodiff::autodiff)
+  target_link_libraries(${LIBRARY} PRIVATE autodiff::autodiff)
+endif()
+
 add_subdirectory(Python)
 add_subdirectory(TimeDependent)

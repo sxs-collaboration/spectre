@@ -10,6 +10,9 @@
 
 #include <algorithm>
 #include <array>
+#ifdef SPECTRE_AUTODIFF
+#include <autodiff/reverse/var.hpp>
+#endif  // SPECTRE_AUTODIFF
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -108,6 +111,31 @@ void test_jacobian(const Map& map,
                    const std::array<double, Map::dim>& test_point) {
   INFO("Test Jacobian");
   CAPTURE(test_point);
+  constexpr size_t Dim = Map::dim;
+#ifdef SPECTRE_AUTODIFF
+  // Use reverse mode because we want the full Jacobian (all derivatives)
+  std::array<autodiff::var, Dim> x{};
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(x, i) = gsl::at(test_point, i);
+  }
+  const auto y = map(x);
+  const auto jacobian = map.jacobian(test_point);
+  for (size_t i = 0; i < Dim; ++i) {
+    std::array<double, Dim> deriv_i{};
+    if constexpr (Dim == 1) {
+      deriv_i = autodiff::derivatives(gsl::at(y, i), autodiff::wrt(x[0]));
+    } else if constexpr (Dim == 2) {
+      deriv_i = autodiff::derivatives(gsl::at(y, i), autodiff::wrt(x[0], x[1]));
+    } else if constexpr (Dim == 3) {
+      deriv_i =
+          autodiff::derivatives(gsl::at(y, i), autodiff::wrt(x[0], x[1], x[2]));
+    }
+    for (size_t j = 0; j < Dim; ++j) {
+      INFO("i: " << i << " j: " << j);
+      CHECK(jacobian.get(i, j) == approx(gsl::at(deriv_i, j)));
+    }
+  }
+#else   // SPECTRE_AUTODIFF
   // Our default approx value is too stringent for this test
   Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dx = 1e-4;
@@ -119,6 +147,7 @@ void test_jacobian(const Map& map,
       CHECK(jacobian.get(j, i) == local_approx(gsl::at(numerical_deriv_i, j)));
     }
   }
+#endif  // SPECTRE_AUTODIFF
 }
 
 template <typename Map>

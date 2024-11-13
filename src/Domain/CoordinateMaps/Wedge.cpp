@@ -22,6 +22,12 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
+#ifdef SPECTRE_AUTODIFF
+#include <autodiff/forward/dual.hpp>
+#include <autodiff/forward/real.hpp>
+#include <autodiff/reverse/var.hpp>
+#endif  // SPECTRE_AUTODIFF
+
 namespace domain::CoordinateMaps {
 namespace {
 template <size_t Dim>
@@ -251,17 +257,17 @@ template <bool FuncIsXi, typename T>
 tt::remove_cvref_wrap_t<T> Wedge<Dim>::get_cap_angular_function(
     const T& lowercase_xi_or_eta) const {
   constexpr auto cap_index = static_cast<size_t>(not FuncIsXi);
+  if (not with_equiangular_map_) {
+    return lowercase_xi_or_eta;
+  }
   if (opening_angles_.has_value() and
       opening_angles_distribution_.has_value()) {
-    return with_equiangular_map_
-               ? tan(0.5 * opening_angles_.value()[cap_index]) *
-                     tan(0.5 * opening_angles_distribution_.value()[cap_index] *
-                         lowercase_xi_or_eta) /
-                     tan(0.5 * opening_angles_distribution_.value()[cap_index])
-               : lowercase_xi_or_eta;
+    return tan(0.5 * opening_angles_.value()[cap_index]) *
+           tan(0.5 * opening_angles_distribution_.value()[cap_index] *
+               lowercase_xi_or_eta) /
+           tan(0.5 * opening_angles_distribution_.value()[cap_index]);
   } else {
-    return with_equiangular_map_ ? tan(M_PI_4 * lowercase_xi_or_eta)
-                                 : lowercase_xi_or_eta;
+    return tan(M_PI_4 * lowercase_xi_or_eta);
   }
 }
 
@@ -510,11 +516,14 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
   const bool zero_offset = not cube_half_length_.has_value();
 
   std::array<ReturnType, Dim> physical_coords{};
-  physical_coords[radial_coord] =
-      zero_offset ? generalized_z
-                  : generalized_z * (1.0 - rotated_focus[radial_coord] /
-                                               cube_half_length_.value()) +
-                        rotated_focus[radial_coord];
+  if (zero_offset) {
+    physical_coords[radial_coord] = generalized_z;
+  } else {
+    physical_coords[radial_coord] =
+        generalized_z *
+            (1.0 - rotated_focus[radial_coord] / cube_half_length_.value()) +
+        rotated_focus[radial_coord];
+  }
   if (zero_offset) {
     physical_coords[polar_coord] = generalized_z * cap[0];
   } else {
@@ -803,7 +812,6 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
     xi *= 0.5;
   }
 
-
   std::array<ReturnType, Dim - 1> cap{};
   std::array<ReturnType, Dim - 1> cap_deriv{};
   cap[0] = get_cap_angular_function<true>(xi);
@@ -1020,14 +1028,16 @@ bool operator!=(const Wedge<Dim>& lhs, const Wedge<Dim>& rhs) {
 #define INSTANTIATE_DTYPE(_, data)                                     \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
   Wedge<DIM(data)>::operator()(                                        \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  Wedge<DIM(data)>::jacobian(                                          \
-      const std::array<DTYPE(data), DIM(data)>& source_coords) const;  \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
-                    Frame::NoFrame>                                    \
-  Wedge<DIM(data)>::inv_jacobian(                                      \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const;
+
+#define INSTANTIATE_DTYPE_JAC(_, data)                                \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),  \
+                    Frame::NoFrame>                                   \
+  Wedge<DIM(data)>::jacobian(                                         \
+      const std::array<DTYPE(data), DIM(data)>& source_coords) const; \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),  \
+                    Frame::NoFrame>                                   \
+  Wedge<DIM(data)>::inv_jacobian(                                     \
       const std::array<DTYPE(data), DIM(data)>& source_coords) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (2, 3))
@@ -1035,9 +1045,19 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3),
                         (double, DataVector,
                          std::reference_wrapper<const double>,
                          std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE_JAC, (2, 3),
+                        (double, DataVector,
+                         std::reference_wrapper<const double>,
+                         std::reference_wrapper<const DataVector>))
+
+#ifdef SPECTRE_AUTODIFF
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (2, 3),
+                        (autodiff::dual, autodiff::real, autodiff::var))
+#endif  // SPECTRE_AUTODIFF
 
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE_DIM
 #undef INSTANTIATE_DTYPE
+#undef INSTANTIATE_DTYPE_JAC
 }  // namespace domain::CoordinateMaps
