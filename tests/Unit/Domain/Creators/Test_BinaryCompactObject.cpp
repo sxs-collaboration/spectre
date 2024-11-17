@@ -846,6 +846,8 @@ void test_kerr_horizon_conforming() {
   const double mass_B = 1.2;
   const std::array<double, 3> spin_A{{0.0, 0.0, 0.9}};
   const std::array<double, 3> spin_B{{0.0, 0.2, 0.4}};
+  const std::array<double, 3> boost_velocity_A{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> boost_velocity_B{{0.0, 0.0, 0.0}};
   const double r_plus_A = mass_A * (1. + sqrt(1. - dot(spin_A, spin_A)));
   const double r_plus_B = mass_B * (1. + sqrt(1. - dot(spin_B, spin_B)));
   const double inner_radius_A = r_plus_A;
@@ -874,11 +876,11 @@ void test_kerr_horizon_conforming() {
           std::nullopt,
           {{32_st,
             domain::creators::time_dependent_options::
-                KerrSchildFromBoyerLindquist{mass_A, spin_A},
+                KerrSchildFromBoyerLindquist{mass_A, spin_A, boost_velocity_A},
             std::nullopt}},
           {{32_st,
             domain::creators::time_dependent_options::
-                KerrSchildFromBoyerLindquist{mass_B, spin_B},
+                KerrSchildFromBoyerLindquist{mass_B, spin_B, boost_velocity_B},
             std::nullopt}}}};
   const auto domain = domain_creator.create_domain();
   const auto functions_of_time = domain_creator.functions_of_time();
@@ -894,10 +896,10 @@ void test_kerr_horizon_conforming() {
            make_not_null(&gen), make_not_null(&dist_phi), num_points)}};
   const auto radius_A =
       get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius_A, theta_phi, mass_A, spin_A));
+          inner_radius_A, theta_phi, mass_A, spin_A, boost_velocity_A));
   const auto radius_B =
       get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius_B, theta_phi, mass_B, spin_B));
+          inner_radius_B, theta_phi, mass_B, spin_B, boost_velocity_B));
   tnsr::I<DataVector, 3> x_A{};
   tnsr::I<DataVector, 3> x_B{};
   get<0>(x_A) =

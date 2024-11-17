@@ -143,6 +143,7 @@ DomainCreator:
         InitialValues:
           Mass: *mass_right
           Spin: *spin_right
+          BoostVelocity: [0.0, 0.0, 0.0]
         SizeInitialValues: [0, 0, 0]
         TransitionEndsAtCube: False
       ShapeMapB:
@@ -150,6 +151,7 @@ DomainCreator:
         InitialValues:
           Mass: *mass_left
           Spin: *spin_left
+          BoostVelocity: [0.0, 0.0, 0.0]
         SizeInitialValues: [0, 0, 0]
         TransitionEndsAtCube: False
 

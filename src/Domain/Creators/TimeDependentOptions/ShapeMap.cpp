@@ -29,8 +29,9 @@
 namespace domain::creators::time_dependent_options {
 KerrSchildFromBoyerLindquist::KerrSchildFromBoyerLindquist() = default;
 KerrSchildFromBoyerLindquist::KerrSchildFromBoyerLindquist(
-    const double mass_in, const std::array<double, 3> spin_in)
-    : mass(mass_in), spin(spin_in) {}
+    const double mass_in, const std::array<double, 3> spin_in,
+    const std::array<double, 3> boost_velocity_in)
+    : mass(mass_in), spin(spin_in), boost_velocity(boost_velocity_in) {}
 
 YlmsFromFile::YlmsFromFile() = default;
 YlmsFromFile::YlmsFromFile(std::string h5_filename_in,
@@ -73,13 +74,13 @@ initial_shape_and_size_funcs(
     if (std::holds_alternative<KerrSchildFromBoyerLindquist>(
             shape_options.initial_values.value())) {
       const ylm::Spherepack ylm{shape_options.l_max, shape_options.l_max};
-      const auto& mass_and_spin = std::get<KerrSchildFromBoyerLindquist>(
+      const auto& ks_from_bl_options = std::get<KerrSchildFromBoyerLindquist>(
           shape_options.initial_values.value());
       const DataVector radial_distortion =
           inner_radius -
           get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-              inner_radius, ylm.theta_phi_points(), mass_and_spin.mass,
-              mass_and_spin.spin));
+              inner_radius, ylm.theta_phi_points(), ks_from_bl_options.mass,
+              ks_from_bl_options.spin, ks_from_bl_options.boost_velocity));
       shape_funcs[0] = ylm.phys_to_spec(radial_distortion);
       // Transform from SPHEREPACK to actual Ylm for size func
       size_funcs[0][0] = shape_funcs[0][0] * sqrt(0.5 * M_PI);

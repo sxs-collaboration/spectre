@@ -23,9 +23,9 @@
 
 namespace domain::creators::time_dependent_options {
 /*!
- * \brief Mass and spin necessary for calculating the \f$ Y_{lm} \f$
- * coefficients of a Kerr horizon of certain Boyer-Lindquist radius for the
- * shape map of the Sphere domain creator.
+ * \brief Mass, spin, and boost velocity necessary for calculating the \f$
+ * Y_{lm} \f$ coefficients of a Kerr horizon of certain Boyer-Lindquist radius
+ * for the shape map of the Sphere domain creator.
  */
 struct KerrSchildFromBoyerLindquist {
   /// \brief The mass of the Kerr black hole.
@@ -39,8 +39,14 @@ struct KerrSchildFromBoyerLindquist {
     static constexpr Options::String help = {
         "The dim'less spin of the Kerr BH."};
   };
+  struct BoostVelocity {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help = {
+        "Boost velocity to transform horizon with in Cartesian Kerr-Schild "
+        "coordinates."};
+  };
 
-  using options = tmpl::list<Mass, Spin>;
+  using options = tmpl::list<Mass, Spin, BoostVelocity>;
 
   static constexpr Options::String help = {
       "Conform to an ellipsoid of constant Boyer-Lindquist radius in "
@@ -49,12 +55,17 @@ struct KerrSchildFromBoyerLindquist {
       "choose an 'InnerRadius' of r_+ = M + sqrt(M^2-a^2)."};
 
   KerrSchildFromBoyerLindquist();
-  KerrSchildFromBoyerLindquist(double mass_in, std::array<double, 3> spin_in);
+  KerrSchildFromBoyerLindquist(double mass_in, std::array<double, 3> spin_in,
+                               std::array<double, 3> boost_velocity_in);
 
   double mass{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, 3> spin{std::numeric_limits<double>::signaling_NaN(),
                              std::numeric_limits<double>::signaling_NaN(),
                              std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 3> boost_velocity{
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN(),
+      std::numeric_limits<double>::signaling_NaN()};
 };
 
 /// Label for shape map options

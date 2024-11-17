@@ -792,12 +792,13 @@ void test_shape_distortion() {
   const double time = 0.7;
   const double mass = 0.8;
   const std::array<double, 3> spin{{0.0, 0.0, 0.9}};
+  const std::array<double, 3> boost_velocity{{0.0, 0.0, 0.0}};
   const double r_plus = mass * (1. + sqrt(1. - dot(spin, spin)));
   const double inner_radius = r_plus;
 
   const DataVector radius =
       get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius, theta_phi, mass, spin));
+          inner_radius, theta_phi, mass, spin, boost_velocity));
   // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
   tnsr::I<DataVector, 3> x{};
   get<0>(x) = radius * sin(get<0>(theta_phi)) * cos(get<1>(theta_phi));
@@ -822,7 +823,7 @@ void test_shape_distortion() {
     time_dependent_options = domain::creators::sphere::TimeDependentMapOptions{
         time,
         {{l_max, domain::creators::time_dependent_options::
-                     KerrSchildFromBoyerLindquist{mass, spin}}},
+                     KerrSchildFromBoyerLindquist{mass, spin, boost_velocity}}},
         std::nullopt,
         std::nullopt,
         std::nullopt};

@@ -38,10 +38,12 @@ std::string create_option_string(const std::optional<bool> use_non_zero_shape) {
                 "  LMax: 8\n"
                 "  SizeInitialValues: Auto\n"
                 "  InitialValues:" +
-                    (use_non_zero_shape.value() ? "\n"
-                                                  "    Mass: 1.0\n"
-                                                  "    Spin: [0.0, 0.0, 0.0]\n"s
-                                                : " Spherical\n"s)
+                    (use_non_zero_shape.value()
+                         ? "\n"
+                           "    Mass: 1.0\n"
+                           "    Spin: [0.0, 0.0, 0.0]\n"
+                           "    BoostVelocity: [0.0, 0.0, 0.0]\n"s
+                         : " Spherical\n"s)
               : " None\n") +
          "RotationMap: None\n"
          "ExpansionMap: None\n"

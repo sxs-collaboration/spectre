@@ -11,6 +11,7 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzBoostMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace gr::Solutions {
@@ -104,9 +105,35 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrHorizon",
     const DataVector phi{M_PI_2 * 0.4, M_PI * 0.55, M_PI_4, M_PI_4 * 1.2, M_PI};
     const std::array<DataVector, 2> theta_phi{
         {std::move(theta), std::move(phi)}};
-    CHECK_ITERABLE_APPROX(kerr_schild_radius_from_boyer_lindquist(
-                              r_plus, theta_phi, mass, dimless_spin),
-                          kerr_horizon_radius(theta_phi, mass, dimless_spin));
+    const std::array<double, 3> no_boost_velocity = {0.0, 0.0, 0.0};
+    CHECK_ITERABLE_APPROX(
+        kerr_schild_radius_from_boyer_lindquist(
+            r_plus, theta_phi, mass, dimless_spin, no_boost_velocity),
+        kerr_horizon_radius(theta_phi, mass, dimless_spin));
+
+    const Scalar<DataVector> unboosted_radius =
+        kerr_horizon_radius(theta_phi, mass, dimless_spin);
+    tnsr::I<DataVector, 3> unboosted_coords = {};
+    get<0>(unboosted_coords) = get(unboosted_radius) * cos(phi) * sin(theta);
+    get<1>(unboosted_coords) = get(unboosted_radius) * sin(phi) * sin(theta);
+    get<2>(unboosted_coords) = get(unboosted_radius) * cos(theta);
+    const std::array<double, 3> boost_velocity = {0.1, -0.05, 0.07};
+    tnsr::I<DataVector, 3> boosted_coords =
+        make_with_value<tnsr::I<DataVector, 3>>(
+            get<0>(unboosted_coords),
+            std::numeric_limits<double>::signaling_NaN());
+    sr::lorentz_boost(make_not_null(&boosted_coords), unboosted_coords, 0.0,
+                      boost_velocity);
+    Scalar<DataVector> boosted_radius = Scalar<DataVector>{
+        sqrt(square(get<0>(boosted_coords)) + square(get<1>(boosted_coords)) +
+             square(get<2>(boosted_coords)))};
+    // Test for boosted Kerr horizon.
+    // Boosted horizon should be equivalent to applying Lorentz transformation
+    // on unboosted coordinates.
+    CHECK_ITERABLE_APPROX(
+        kerr_schild_radius_from_boyer_lindquist(r_plus, theta_phi, mass,
+                                                dimless_spin, boost_velocity),
+        boosted_radius);
   }
 }
 }  // namespace gr::Solutions

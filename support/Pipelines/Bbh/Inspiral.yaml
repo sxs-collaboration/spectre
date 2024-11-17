@@ -131,6 +131,7 @@ DomainCreator:
             - {{ ExcisionAShapeSpin_x }}
             - {{ ExcisionAShapeSpin_y }}
             - {{ ExcisionAShapeSpin_z }}
+          BoostVelocity: [0.0, 0.0, 0.0]
 {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
@@ -145,6 +146,7 @@ DomainCreator:
             - {{ ExcisionBShapeSpin_x }}
             - {{ ExcisionBShapeSpin_y }}
             - {{ ExcisionBShapeSpin_z }}
+          BoostVelocity: [0.0, 0.0, 0.0]
 {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true

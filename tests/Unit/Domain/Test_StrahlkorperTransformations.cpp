@@ -91,7 +91,8 @@ void test_strahlkorper_in_different_frame() {
     const DataVector new_radius =
         get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
             2.0, ylm.theta_phi_points(), 1.0,
-            std::array<double, 3>{{0.1, 0.2, 0.3}}));
+            std::array<double, 3>{{0.1, 0.2, 0.3}},
+            std::array<double, 3>{{0.0, 0.0, 0.0}}));
     strahlkorper_expected.reset(new ylm::Strahlkorper<DestFrame>(
         l_max, l_max, new_radius, strahlkorper_src_center));
   } else if constexpr (std::is_same_v<SrcFrame, ::Frame::Inertial>) {

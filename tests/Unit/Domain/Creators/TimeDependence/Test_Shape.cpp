@@ -117,7 +117,8 @@ void test_r_theta_phi(const tnsr::I<double, 3, SourceFrame>& input,
   CHECK(input_theta_phi[1] == approx(output_centered_spherical[2]));
   const double kerr_schild_radius =
       gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius, input_theta_phi, mass, spin)
+          inner_radius, input_theta_phi, mass, spin,
+          std::array<double, 3>{0.0, 0.0, 0.0})
           .get();
   const double radius = magnitude(input_centered).get();
   const double transition_factor =

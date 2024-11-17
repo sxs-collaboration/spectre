@@ -43,12 +43,25 @@ namespace gr::Solutions {
  * \f]
  * where the angles are encoded in \f$\hat x\f$ and everything else on the
  * right-hand side is constant.
+ *
+ * The Kerr-Schild radius can be Lorentz boosted in an arbitrary direction
+ * \f$\vec{\beta}\f$. We apply a Lorentz transformation on the Cartesian
+ * Kerr-Schild coordinates and find that the boosted Kerr-Schild radius \f$r'\f$
+ * as a function of angles satisfies
+ * \f[
+ * r'^2 = r^2 (1 + \gamma^2 \left( \beta_x\cos\phi\sin\theta +
+ * \beta_y\sin\phi\sin\theta + \beta_z\cos\theta \right)^2)
+ * \f]
+ * where \f$\gamma = \frac{1}{\sqrt{1 - \beta^2}}\f$ is the Lorentz factor, and
+ * the components of \f$\vec{\beta}\f$ are given in Cartesian Kerr-Schild
+ * coordinates.
  */
 template <typename DataType>
 Scalar<DataType> kerr_schild_radius_from_boyer_lindquist(
     const double boyer_lindquist_radius,
     const std::array<DataType, 2>& theta_phi, double mass,
-    const std::array<double, 3>& dimensionless_spin);
+    const std::array<double, 3>& dimensionless_spin,
+    const std::array<double, 3>& boost_velocity);
 /*!
  * \brief The Kerr-Schild radius corresponding to a Kerr horizon.
  *

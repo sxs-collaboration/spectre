@@ -153,7 +153,8 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
   const DataVector radial_distortion =
       inner_radius_ -
       get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist(
-          inner_radius_, ylm.theta_phi_points(), mass_, spin_));
+          inner_radius_, ylm.theta_phi_points(), mass_, spin_,
+          std::array<double, 3>({0.0, 0.0, 0.0})));
   const auto radial_distortion_coefs = ylm.phys_to_spec(radial_distortion);
   const DataVector zeros =
       make_with_value<DataVector>(radial_distortion_coefs, 0.0);
