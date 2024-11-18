@@ -27,6 +27,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -59,7 +60,8 @@ void reconstruct_prims_work(
     const DirectionalIdMap<3, Variables<PrimsTagsSentByNeighbor>>&
         neighbor_data,
     const Mesh<3>& subcell_mesh, const size_t ghost_zone_size,
-    const bool compute_conservatives) {
+    const bool compute_conservatives,
+    const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere) {
   ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
                  subcell_mesh.quadrature(0)) == subcell_mesh,
          "The subcell mesh should be isotropic but got " << subcell_mesh);
@@ -224,9 +226,11 @@ void reconstruct_prims_work(
 
     if (compute_conservatives) {
       ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
-          make_not_null(&gsl::at(*vars_on_lower_face, i)), eos);
+          make_not_null(&gsl::at(*vars_on_lower_face, i)), eos,
+          fix_to_atmosphere);
       ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
-          make_not_null(&gsl::at(*vars_on_upper_face, i)), eos);
+          make_not_null(&gsl::at(*vars_on_upper_face, i)), eos,
+          fix_to_atmosphere);
     }
   }
 }
@@ -255,7 +259,8 @@ void reconstruct_fd_neighbor_work(
     const Element<3>& element,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
-    const size_t ghost_zone_size, const bool compute_conservatives) {
+    const size_t ghost_zone_size, const bool compute_conservatives,
+    const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere) {
   const DirectionalId<3> mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
@@ -363,8 +368,8 @@ void reconstruct_fd_neighbor_work(
     spacetime_vars_for_grmhd(vars_on_face);
   }
   if (compute_conservatives) {
-    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(vars_on_face,
-                                                                   eos);
+    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
+        vars_on_face, eos, fix_to_atmosphere);
   }
 }
 }  // namespace grmhd::GhValenciaDivClean::fd

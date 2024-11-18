@@ -49,6 +49,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
@@ -249,6 +251,7 @@ double test(const size_t num_dg_pts) {
           evolution::dg::subcell::Tags::Mesh<3>, fd::Tags::Reconstructor,
           evolution::Tags::BoundaryCorrection<grmhd::ValenciaDivClean::System>,
           hydro::Tags::GrmhdEquationOfState,
+          ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>,
           typename System::spacetime_variables_tag,
           typename System::primitive_variables_tag, variables_tag,
           evolution::dg::subcell::Tags::OnSubcellFaces<
@@ -268,8 +271,9 @@ double test(const size_t num_dg_pts) {
           grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<
               grmhd::ValenciaDivClean::BoundaryCorrections::Hll>()},
-      soln.equation_of_state().promote_to_3d_eos(), dg_spacetime_vars,
-      dg_prim_vars,
+      soln.equation_of_state().promote_to_3d_eos(),
+      VariableFixing::FixToAtmosphere<3>{1.0e-16, 1.1e-16, 1.0e-15, 1.0},
+      dg_spacetime_vars, dg_prim_vars,
       typename variables_tag::type{dg_mesh.number_of_grid_points()},
       face_centered_gr_tags(subcell_mesh, time, element_map, moving_mesh_map,
                             functions_of_time, soln),

@@ -128,9 +128,9 @@ class FixToAtmosphere {
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::Temperature<DataVector>>;
-  using argument_tags = tmpl::list<hydro::Tags::ElectronFraction<DataVector>,
-                                   gr::Tags::SpatialMetric<DataVector, Dim>,
+                 hydro::Tags::Temperature<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>>;
+  using argument_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,
                                    hydro::Tags::EquationOfStateBase>;
 
   // for use in `db::mutate_apply`
@@ -143,7 +143,7 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,
       gsl::not_null<Scalar<DataVector>*> temperature,
-      const Scalar<DataVector>& electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state) const;
@@ -155,7 +155,7 @@ class FixToAtmosphere {
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
       gsl::not_null<Scalar<DataVector>*> temperature,
       gsl::not_null<Scalar<DataVector>*> pressure,
-      const Scalar<DataVector>& electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state,
       size_t grid_index) const;

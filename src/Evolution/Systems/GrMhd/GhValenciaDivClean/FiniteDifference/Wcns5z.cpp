@@ -25,6 +25,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
@@ -92,7 +93,8 @@ void Wcns5zPrim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
-    const Mesh<dim>& subcell_mesh) const {
+    const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const {
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
 
@@ -144,7 +146,8 @@ void Wcns5zPrim::reconstruct(
             shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true,
+      fix_to_atmosphere);
 }
 
 template <size_t ThermodynamicDim, typename TagsList>
@@ -158,6 +161,7 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
     const Element<3>& element,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
     const Direction<3>& direction_to_reconstruct) const {
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
@@ -242,7 +246,7 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
-      true);
+      true, fix_to_atmosphere);
 }
 
 bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
@@ -273,7 +277,8 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
       const Element<3>& element,                                            \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh) const;                                   \
+      const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
   template void Wcns5zPrim::reconstruct_fd_neighbor(                        \
       gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
           vars_on_face,                                                     \
@@ -286,6 +291,7 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
       const Direction<3>& direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

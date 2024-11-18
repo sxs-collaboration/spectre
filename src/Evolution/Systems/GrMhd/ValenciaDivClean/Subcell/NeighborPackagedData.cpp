@@ -77,6 +77,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
   const Mesh<3>& subcell_mesh =
       db::get<evolution::dg::subcell::Tags::Mesh<3>>(box);
   const Mesh<3>& dg_mesh = db::get<domain::Tags::Mesh<3>>(box);
+  const VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere =
+      db::get<::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>>(box);
   const auto& subcell_options =
       db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(box);
 
@@ -99,7 +101,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
                                                 &neighbor_package_data,
                                                 &ghost_subcell_data, &recons,
                                                 &subcell_mesh, &subcell_options,
-                                                &volume_prims](
+                                                &volume_prims,
+                                                &fix_to_atmosphere](
                                                    auto derived_correction_v) {
     using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
     if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
@@ -154,12 +157,13 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
         call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                          Reconstructor::creatable_classes>(
-            &recons,
-            [&element, &eos, &mortar_id, &ghost_subcell_data, &subcell_mesh,
-             &vars_on_face, &volume_prims](const auto& reconstructor) {
+            &recons, [&element, &eos, &mortar_id, &ghost_subcell_data,
+                      &subcell_mesh, &vars_on_face, &volume_prims,
+                      &fix_to_atmosphere](const auto& reconstructor) {
               reconstructor->reconstruct_fd_neighbor(
                   make_not_null(&vars_on_face), volume_prims, eos, element,
-                  ghost_subcell_data, subcell_mesh, mortar_id.direction());
+                  ghost_subcell_data, subcell_mesh, fix_to_atmosphere,
+                  mortar_id.direction());
             });
 
         // Get the mesh velocity if needed
