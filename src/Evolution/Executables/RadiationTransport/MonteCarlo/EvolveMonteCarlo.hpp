@@ -178,19 +178,20 @@ struct EvolutionMetavars {
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
-      Particles::MonteCarlo::Actions::SendDataForMcCommunication<
-          volume_dim,
-          // No local time stepping
-          false, Particles::MonteCarlo::CommunicationStep::PreStep>,
-      Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
-          volume_dim, Particles::MonteCarlo::CommunicationStep::PreStep>,
+      // Actions::RecordTimeStepperData<system>,
+      // Particles::MonteCarlo::Actions::SendDataForMcCommunication<
+      //   volume_dim,
+      //  No local time stepping
+      //    false, Particles::MonteCarlo::CommunicationStep::PreStep>,
+      // Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
+      //    volume_dim, Particles::MonteCarlo::CommunicationStep::PreStep>,
       Particles::MonteCarlo::Actions::TakeTimeStep<EnergyBins, NeutrinoSpecies>,
-      Particles::MonteCarlo::Actions::SendDataForMcCommunication<
-          volume_dim,
-          // No local time stepping
-          false, Particles::MonteCarlo::CommunicationStep::PostStep>,
-      Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
-          volume_dim, Particles::MonteCarlo::CommunicationStep::PostStep>,
+      // Particles::MonteCarlo::Actions::SendDataForMcCommunication<
+      //     volume_dim,
+      //  No local time stepping
+      //    false, Particles::MonteCarlo::CommunicationStep::PostStep>,
+      // Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
+      //    volume_dim, Particles::MonteCarlo::CommunicationStep::PostStep>,
       // Actions::RecordTimeStepperData<system>,
       // evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
       Actions::CleanHistory<system, false>>>;
@@ -201,7 +202,9 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim>>,
+          evolution::dg::Initialization::Domain<volume_dim>  //,
+          // Initialization::TimeStepperHistory<EvolutionMetavars>
+          >,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
       evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim, system,
@@ -224,7 +227,6 @@ struct EvolutionMetavars {
       tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          //,
           // Parallel::PhaseActions<
           //     Parallel::Phase::InitializeTimeStepperHistory,
           //     SelfStart::self_start_procedure<step_actions, system>>,
@@ -235,9 +237,27 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
-              tmpl::list<Particles::MonteCarlo::Actions::TakeTimeStep<
-                             EnergyBins, NeutrinoSpecies>,
-                         Parallel::Actions::TerminatePhase>>
+              tmpl::list<
+                  Actions::AdvanceTime, Actions::AdvanceTime,
+                  Actions::AdvanceTime,
+                  Particles::MonteCarlo::Actions::SendDataForMcCommunication<
+                      volume_dim,
+                      // No local time stepping
+                      false, Particles::MonteCarlo::CommunicationStep::PreStep>,
+                  Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
+                      volume_dim,
+                      Particles::MonteCarlo::CommunicationStep::PreStep>,
+                  Particles::MonteCarlo::Actions::TakeTimeStep<EnergyBins,
+                                                               NeutrinoSpecies>,
+                  Particles::MonteCarlo::Actions::SendDataForMcCommunication<
+                      volume_dim,
+                      // No local time stepping
+                      false,
+                      Particles::MonteCarlo::CommunicationStep::PostStep>,
+                  Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
+                      volume_dim,
+                      Particles::MonteCarlo::CommunicationStep::PostStep>,
+                  Parallel::Actions::TerminatePhase>>
           //      tmpl::list<evolution::Actions::RunEventsAndTriggers,
           //                 Actions::ChangeSlabSize, //step_actions,
           //                 Actions::AdvanceTime,

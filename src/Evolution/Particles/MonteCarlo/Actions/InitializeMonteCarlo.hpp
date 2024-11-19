@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
+#include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
 #include "Evolution/Particles/MonteCarlo/MortarData.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
@@ -51,6 +52,7 @@ namespace Initialization::Actions {
 ///   * Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>
 ///   * Background hydro variables
 ///   * Particles::MonteCarlo::Tags::MortarDataTag<dim>
+///   * Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
@@ -67,7 +69,8 @@ struct InitializeMCTags {
                      NeutrinoSpecies>,
                  Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
                  hydro_variables_tag,
-                 Particles::MonteCarlo::Tags::MortarDataTag<dim>>;
+                 Particles::MonteCarlo::Tags::MortarDataTag<dim>,
+                 Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>>;
 
   using compute_tags = tmpl::list<>;
 
@@ -141,6 +144,13 @@ struct InitializeMCTags {
     Initialization::mutate_assign<
         tmpl::list<Particles::MonteCarlo::Tags::MortarDataTag<dim>>>(
         make_not_null(&box), std::move(mortar_data));
+
+    using GhostZoneData =
+        typename Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>::type;
+    GhostZoneData ghost_zone_data{};
+    Initialization::mutate_assign<
+        tmpl::list<Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>>>(
+        make_not_null(&box), std::move(ghost_zone_data));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

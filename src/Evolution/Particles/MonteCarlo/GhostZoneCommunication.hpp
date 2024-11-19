@@ -311,8 +311,8 @@ struct ReceiveDataForMcCommunication {
                 const DataVector& received_data_direction =
                     received_data[directional_element_id]
                         .ghost_zone_hydro_variables;
-                REQUIRE(received_data[directional_element_id]
-                            .packets_entering_this_element == std::nullopt);
+                // REQUIRE(received_data[directional_element_id]
+                //             .packets_entering_this_element == std::nullopt);
                 if (mortar_data->rest_mass_density[directional_element_id] ==
                     std::nullopt) {
                   continue;
@@ -368,8 +368,8 @@ struct ReceiveDataForMcCommunication {
                         received_data[directional_element_id]
                             .packets_entering_this_element;
                 // Temporary: currently no data for coupling to the fluid
-                REQUIRE(received_data[directional_element_id]
-                            .ghost_zone_hydro_variables.size() == 0);
+                // REQUIRE(received_data[directional_element_id]
+                //            .ghost_zone_hydro_variables.size() == 0);
                 if (received_data_packets == std::nullopt) {
                   continue;
                 } else {

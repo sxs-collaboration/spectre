@@ -118,8 +118,8 @@ struct TimeStepMutator {
     const size_t num_ghost_zones = 1;
     // Get information stored in various databox containers in
     // the format expected by take_time_step_on_element
-    const double start_time = 0.0;  // current_step_id.step_time().value();
-    const double end_time = 0.1;    // next_step_id.step_time().value();
+    const double start_time = current_step_id.step_time().value();
+    const double end_time = next_step_id.step_time().value();
     Scalar<DataVector> det_jacobian_logical_to_inertial(lapse);
     get(det_jacobian_logical_to_inertial) =
         1.0 / get(det_inverse_jacobian_logical_to_inertial);
