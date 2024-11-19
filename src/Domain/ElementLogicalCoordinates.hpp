@@ -32,6 +32,11 @@ class IdPair;
  * have element logical coordinates of -1 or 1. See the other function overload
  * for handling multiple points and disambiguating points on shared element
  * boundaries.
+ *
+ * Points with block-logical coordinates outside [-1, 1] are considered to
+ * belong to the outermost element of the block in that direction, and will
+ * therefore return an element logical coordinate outside of [-1, 1] as well.
+ * This is useful for extrapolation.
  */
 template <size_t Dim>
 std::optional<tnsr::I<double, Dim, Frame::ElementLogical>>

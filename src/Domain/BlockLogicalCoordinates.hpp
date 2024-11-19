@@ -21,6 +21,8 @@ template <size_t VolumeDim>
 class Domain;
 template <size_t VolumeDim>
 class Block;
+template <size_t VolumeDim>
+class ExcisionSphere;
 /// \endcond
 
 template <size_t Dim>
@@ -69,10 +71,32 @@ auto block_logical_coordinates(
     const domain::FunctionsOfTimeMap& functions_of_time = {})
     -> std::vector<BlockLogicalCoords<Dim>>;
 
+/// \par Extrapolation
+/// If `allow_extrapolation` is `true` (default is `false`), then the function
+/// can return block-logical coordinates outside of [-1, 1]. This is useful for
+/// extrapolating into excision regions.
 template <size_t Dim, typename Fr>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
 block_logical_coordinates_single_point(
     const tnsr::I<double, Dim, Fr>& input_point, const Block<Dim>& block,
     double time = std::numeric_limits<double>::signaling_NaN(),
-    const domain::FunctionsOfTimeMap& functions_of_time = {});
+    const domain::FunctionsOfTimeMap& functions_of_time = {},
+    bool allow_extrapolation = false);
 /// @}
+
+/*!
+ * \brief Finds the block-logical coordinates of a point in an excision sphere.
+ *
+ * The point will be reported to belong to the nearest block that abuts the
+ * excision sphere and will have a logical coordinate outside the range [-1, 1]
+ * in the radial direction. This is useful for extrapolating into excision
+ * regions using the Lagrange polynomial basis of the nearest element. If the
+ * point is not within the excision sphere, the return value is std::nullopt.
+ */
+template <size_t Dim, typename Frame>
+BlockLogicalCoords<Dim> block_logical_coordinates_in_excision(
+    const tnsr::I<double, Dim, Frame>& input_point,
+    const ExcisionSphere<Dim>& excision_sphere,
+    const std::vector<Block<Dim>>& blocks,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const domain::FunctionsOfTimeMap& functions_of_time = {});

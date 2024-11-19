@@ -27,35 +27,28 @@ element_logical_coordinates(
     const ElementId<Dim>& element_id) {
   tnsr::I<double, Dim, Frame::ElementLogical> x_element_logical{};
   for (size_t d = 0; d < Dim; ++d) {
-    // Check if the point is outside the element
-    const double up = element_id.segment_id(d).endpoint(Side::Upper);
-    const double lo = element_id.segment_id(d).endpoint(Side::Lower);
-    if (x_block_logical.get(d) < lo or x_block_logical.get(d) > up) {
+    // Check if the point is inside the element in this dimension.
+    // The following conditions are valid:
+    // - The block-logical coordinates are within the element's bounds.
+    // - The block-logical coordinate is outside the block and we're in the
+    //   outermost element in that direction. This means we want to extrapolate
+    //   out of the block.
+    const auto& segment_id = element_id.segment_id(d);
+    const double up = segment_id.endpoint(Side::Upper);
+    const double lo = segment_id.endpoint(Side::Lower);
+    if ((x_block_logical.get(d) >= lo and x_block_logical.get(d) <= up) or
+        (x_block_logical.get(d) < -1. and segment_id.index() == 0) or
+        (x_block_logical.get(d) > 1. and
+         segment_id.index() == two_to_the(segment_id.refinement_level()) - 1)) {
+      // Map to element logical coords
+      x_element_logical.get(d) =
+          (2.0 * x_block_logical.get(d) - up - lo) / (up - lo);
+    } else {
       return std::nullopt;
     }
-    // Map to element logical coords
-    x_element_logical.get(d) =
-        (2.0 * x_block_logical.get(d) - up - lo) / (up - lo);
   }
   return x_element_logical;
 }
-
-namespace {
-// The segments bounds are binary fractions (i.e. the numerator is an
-// integer and the denominator is a power of 2) so these floating point
-// comparisons should be safe from roundoff problems
-// Need to return true if on upper face of block
-// Otherwise return true if point is within the segment or on the lower bound
-bool segment_contains(const double x_block_logical,
-                      const double lower_bound_block_logical,
-                      const double upper_bound_block_logical) {
-  if (UNLIKELY(x_block_logical == upper_bound_block_logical)) {
-    return (upper_bound_block_logical == 1.0);
-  }
-  return (x_block_logical >= lower_bound_block_logical and
-          x_block_logical < upper_bound_block_logical);
-}
-}  // namespace
 
 template <size_t Dim>
 std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
@@ -90,13 +83,15 @@ element_logical_coordinates(
         if (not x_elem.has_value()) {
           continue;
         }
-        // Disambiguate points on shared element boundaries
+        // Disambiguate points on shared element boundaries. To do this,
+        // associate boundary points with the element with the lower index.
         bool is_contained = true;
         for (size_t d = 0; d < Dim; ++d) {
-          const double up = element_id.segment_id(d).endpoint(Side::Upper);
-          const double lo = element_id.segment_id(d).endpoint(Side::Lower);
-          const double x_block_log = x_block_logical.get(d);
-          if (not segment_contains(x_block_log, lo, up)) {
+          const auto& segment_id = element_id.segment_id(d);
+          const double up = segment_id.endpoint(Side::Upper);
+          if (x_block_logical.get(d) == up and
+              segment_id.index() !=
+                  two_to_the(segment_id.refinement_level()) - 1) {
             is_contained = false;
             break;
           }
