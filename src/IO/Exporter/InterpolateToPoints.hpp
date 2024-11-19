@@ -37,7 +37,8 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_to_points(
     const std::string& subfile_name,
     const std::variant<ObservationId, ObservationStep>& observation,
     const tnsr::I<DataType, Dim>& target_points,
-    bool extrapolate_into_excisions = false,
+    ExcisionExtrapolationMode excision_extrapolation_mode =
+        ExcisionExtrapolationMode::NoExtrapolation,
     std::optional<size_t> num_threads = std::nullopt) {
   // Convert target_points to an array of vectors
   // Possible performance optimization: avoid copying the data by allowing
@@ -65,7 +66,7 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_to_points(
   // Interpolate!
   const auto interpolated_data = interpolate_to_points(
       volume_files_or_glob, subfile_name, observation, tensor_components,
-      target_points_array, extrapolate_into_excisions, num_threads);
+      target_points_array, excision_extrapolation_mode, num_threads);
   // Convert the interpolated data to a tagged_tuple
   tuples::tagged_tuple_from_typelist<Tags> result{};
   size_t component_index = 0;

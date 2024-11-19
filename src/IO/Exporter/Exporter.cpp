@@ -21,12 +21,67 @@
 #include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/PolynomialInterpolation.hpp"
+#include "Options/Context.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
+
+namespace spectre::Exporter {
+
+std::ostream& operator<<(std::ostream& os,
+                         const ExcisionExtrapolationMode& mode) {
+  switch (mode) {
+    case ExcisionExtrapolationMode::NoExtrapolation:
+      os << "NoExtrapolation";
+      break;
+    case ExcisionExtrapolationMode::NearestElement:
+      os << "NearestElement";
+      break;
+    case ExcisionExtrapolationMode::RadialAnchors:
+      os << "RadialAnchors";
+      break;
+    default:
+      os << "Unknown";
+      break;
+  }
+  return os;
+}
+
+}  // namespace spectre::Exporter
+
+template <>
+spectre::Exporter::ExcisionExtrapolationMode
+Options::create_from_yaml<spectre::Exporter::ExcisionExtrapolationMode>::create<
+    void>(const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  for (const auto value :
+       {spectre::Exporter::ExcisionExtrapolationMode::NoExtrapolation,
+        spectre::Exporter::ExcisionExtrapolationMode::NearestElement,
+        spectre::Exporter::ExcisionExtrapolationMode::RadialAnchors}) {
+    if (type_read == get_output(value)) {
+      return value;
+    }
+  }
+  PARSE_ERROR(
+      options.context(),
+      "Failed to convert \""
+          << type_read
+          << "\" to spectre::Exporter::ExcisionExtrapolationMode.\nMust be one "
+             "of "
+          << get_output(
+                 spectre::Exporter::ExcisionExtrapolationMode::NoExtrapolation)
+          << ", "
+          << get_output(
+                 spectre::Exporter::ExcisionExtrapolationMode::NearestElement)
+          << ", or "
+          << get_output(
+                 spectre::Exporter::ExcisionExtrapolationMode::RadialAnchors)
+          << ".");
+}
 
 // Ignore OpenMP pragmas when OpenMP is not enabled
 #pragma GCC diagnostic push
@@ -329,7 +384,7 @@ std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<ObservationId, ObservationStep>& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
-    const bool extrapolate_into_excisions,
+    const ExcisionExtrapolationMode excision_extrapolation_mode,
     const std::optional<size_t> num_threads) {
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
@@ -446,19 +501,37 @@ std::vector<std::vector<double>> interpolate_to_points(
         }
       }  // for blocks
       if (block_logical_coords[s].has_value() or
-          not extrapolate_into_excisions) {
+          excision_extrapolation_mode ==
+              ExcisionExtrapolationMode::NoExtrapolation) {
         continue;
       }
-      // The point wasn't found in any block. Check if it's in an excision and
-      // set up extrapolation if requested.
+      // The point wasn't found in any block. Extrapolate if requested.
       for (const auto& [name, excision_sphere] : domain.excision_spheres()) {
-        if (add_extrapolation_anchors(
-                make_not_null(&extra_block_logical_coords),
-                make_not_null(&extra_extrapolation_info), excision_sphere,
-                domain, target_point, time, functions_of_time,
-                extrapolation_spacing)) {
-          extra_extrapolation_info.back().target_index = s;
-          break;
+        if (excision_extrapolation_mode ==
+            ExcisionExtrapolationMode::NearestElement) {
+          // Get the block-logical coordinates for the nearest element (the
+          // coordinates will be outside [-1, 1], so Lagrange extrapolation will
+          // happen)
+          block_logical_coords[s] = block_logical_coordinates_in_excision(
+              target_point, excision_sphere, domain.blocks(), time,
+              functions_of_time);
+          if (block_logical_coords[s].has_value()) {
+            break;
+          }
+        } else if (excision_extrapolation_mode ==
+                   ExcisionExtrapolationMode::RadialAnchors) {
+          // Set up extrapolation anchors for this point
+          if (add_extrapolation_anchors(
+                  make_not_null(&extra_block_logical_coords),
+                  make_not_null(&extra_extrapolation_info), excision_sphere,
+                  domain, target_point, time, functions_of_time,
+                  extrapolation_spacing)) {
+            extra_extrapolation_info.back().target_index = s;
+            break;
+          }
+        } else {
+          ERROR("Invalid excision extrapolation mode: "
+                << excision_extrapolation_mode);
         }
       }
     }  // omp for target points
@@ -503,7 +576,7 @@ std::vector<std::vector<double>> interpolate_to_points(
     }
   }
 
-  if (extrapolate_into_excisions) {
+  if (excision_extrapolation_mode == ExcisionExtrapolationMode::RadialAnchors) {
     // Extrapolate into excisions from the anchor points
 #pragma omp parallel for num_threads(resolved_num_threads)
     for (const auto& extrapolation : extrapolation_info) {
@@ -540,7 +613,7 @@ std::vector<std::vector<double>> interpolate_to_points(
       const std::variant<ObservationId, ObservationStep>& observation,        \
       const std::vector<std::string>& tensor_components,                      \
       const std::array<std::vector<double>, DIM(data)>& target_points,        \
-      bool extrapolate_into_excisions,                                        \
+      ExcisionExtrapolationMode excision_extrapolation_mode,                  \
       const std::optional<size_t> num_threads);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

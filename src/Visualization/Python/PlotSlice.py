@@ -14,7 +14,7 @@ import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
-from spectre.IO.Exporter import interpolate_to_points
+from spectre.IO.Exporter import ExcisionExtrapolationMode, interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles,
     open_volfiles_command,
@@ -85,7 +85,7 @@ def plot_slice(
     slice_extent,
     slice_normal,
     slice_up,
-    extrapolate_into_excisions=False,
+    excision_extrapolation_mode=ExcisionExtrapolationMode.NoExtrapolation,
     num_samples=[200, 200],
     num_threads=None,
     title=None,
@@ -201,7 +201,7 @@ def plot_slice(
                 observation_id=obs_id,
                 tensor_components=[var_name],
                 target_points=target_coords.reshape(3, np.prod(num_samples)),
-                extrapolate_into_excisions=extrapolate_into_excisions,
+                excision_extrapolation_mode=excision_extrapolation_mode,
                 num_threads=num_threads,
             )[0]
         ).reshape(num_samples)
@@ -291,12 +291,20 @@ def plot_slice(
 )
 @click.option(
     "--extrapolate-into-excisions",
-    is_flag=True,
+    "excision_extrapolation_mode",
+    type=click.Choice(ExcisionExtrapolationMode.__members__),
+    default=ExcisionExtrapolationMode.NoExtrapolation.name,
+    show_default=True,
+    callback=lambda ctx, param, value: getattr(
+        ExcisionExtrapolationMode, value
+    ),
     help=(
-        "Enables extrapolation into excision regions of the domain. "
-        "This can be useful to fill the excision region with "
-        "(constraint-violating but smooth) data so it can be imported into "
-        "moving puncture codes."
+        "Enables extrapolation into excision regions of the domain. This can be"
+        " useful to fill the excision region with (constraint-violating but"
+        " smooth) data so it can be imported into moving puncture codes (set to"
+        " 'AnchorPoints'), or to extrapolate a little bit into the excision to"
+        " help the evolution find and track the apparent horizon (set to"
+        " 'NearestElement')."
     ),
 )
 @click.option(

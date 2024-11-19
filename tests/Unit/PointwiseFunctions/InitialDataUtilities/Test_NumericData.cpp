@@ -21,8 +21,8 @@ void test_numeric_data() {
                                     "ObservationStep: -1\n"
                                     "ExtrapolateIntoExcisions: False\n";
   const auto created = TestHelpers::test_creation<Subclass>(option_string);
-  const elliptic::analytic_data::NumericData numeric_data{
-      file_name, "element_data", -1, false};
+  const elliptic::analytic_data::NumericData numeric_data{file_name,
+                                                          "element_data", -1};
   CHECK(created == numeric_data);
   test_serialization(numeric_data);
   test_copy_semantics(numeric_data);

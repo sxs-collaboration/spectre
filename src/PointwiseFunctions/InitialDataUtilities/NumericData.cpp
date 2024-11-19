@@ -9,18 +9,19 @@
 #include <string>
 #include <utility>
 
-NumericData::NumericData(std::string file_glob, std::string subgroup,
-                         int observation_step, bool extrapolate_into_excisions)
+NumericData::NumericData(
+    std::string file_glob, std::string subgroup, int observation_step,
+    spectre::Exporter::ExcisionExtrapolationMode excision_extrapolation_mode)
     : file_glob_(std::move(file_glob)),
       subgroup_(std::move(subgroup)),
       observation_step_(observation_step),
-      extrapolate_into_excisions_(extrapolate_into_excisions) {}
+      excision_extrapolation_mode_(excision_extrapolation_mode) {}
 
 bool operator==(const NumericData& lhs, const NumericData& rhs) {
   return lhs.file_glob() == rhs.file_glob() and
          lhs.subgroup() == rhs.subgroup() and
          lhs.observation_step() == rhs.observation_step() and
-         lhs.extrapolate_into_excisions() == rhs.extrapolate_into_excisions();
+         lhs.excision_extrapolation_mode() == rhs.excision_extrapolation_mode();
 }
 
 bool operator!=(const NumericData& lhs, const NumericData& rhs) {
@@ -31,7 +32,7 @@ void NumericData::pup(PUP::er& p) {
   p | file_glob_;
   p | subgroup_;
   p | observation_step_;
-  p | extrapolate_into_excisions_;
+  p | excision_extrapolation_mode_;
 }
 
 namespace elliptic::analytic_data {

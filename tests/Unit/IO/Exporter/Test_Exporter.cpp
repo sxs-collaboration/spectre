@@ -16,9 +16,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "Framework/TestCreation.hpp"
 #include "IO/Exporter/Exporter.hpp"
 #include "IO/Exporter/InterpolateToPoints.hpp"
 #include "IO/H5/File.hpp"
@@ -26,16 +30,38 @@
 #include "IO/H5/VolumeData.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 
 namespace spectre::Exporter {
 
 SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
+  {
+    INFO("ExcisionExtrapolationMode enum");
+    CHECK(get_output(ExcisionExtrapolationMode::NoExtrapolation) ==
+          "NoExtrapolation");
+    CHECK(get_output(ExcisionExtrapolationMode::NearestElement) ==
+          "NearestElement");
+    CHECK(get_output(ExcisionExtrapolationMode::RadialAnchors) ==
+          "RadialAnchors");
+    for (const auto mode : {ExcisionExtrapolationMode::NoExtrapolation,
+                            ExcisionExtrapolationMode::NearestElement,
+                            ExcisionExtrapolationMode::RadialAnchors}) {
+      const auto created =
+          TestHelpers::test_creation<ExcisionExtrapolationMode>(
+              get_output(mode));
+      CHECK(created == mode);
+    }
+  }
+
 #ifdef _OPENMP
   // Disable OpenMP multithreading since multiple unit tests may run in parallel
   omp_set_num_threads(1);
 #endif
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
   {
     INFO("Bundled volume data files");
     const auto interpolated_data = interpolate_to_points<3>(
@@ -119,6 +145,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
   {
     INFO("Extrapolation into BBH excisions");
     using Object = domain::creators::BinaryCompactObject<false>::Object;
+    const std::array<double, 3> spin{{0.0, 0.0, 0.3}};
     const domain::creators::BinaryCompactObject domain_creator{
         Object{1., 4., 8., true, true},
         Object{0.8, 2.5, -6., true, true},
@@ -131,7 +158,17 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         true,
         domain::CoordinateMaps::Distribution::Projective,
         domain::CoordinateMaps::Distribution::Inverse,
-        120.};
+        120.,
+        domain::creators::bco::TimeDependentMapOptions<false>{
+            0.0,
+            std::nullopt,
+            std::nullopt,
+            std::nullopt,
+            {{12,
+              domain::creators::time_dependent_options::
+                  KerrSchildFromBoyerLindquist{1.0, spin},
+              std::nullopt}},
+            std::nullopt}};
     const auto domain = domain_creator.create_domain();
     const auto functions_of_time = domain_creator.functions_of_time();
     const double time = 1.0;
@@ -171,9 +208,13 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
                                 serialize(functions_of_time));
     }
     // Interpolate
-    tnsr::I<DataVector, 3> target_points{{{{8.5, 8.6, 8.7, 8.9, 9., 10.},
-                                           {0., 0., 0., 0., 0., 0.},
-                                           {0., 0., 0., 0., 0., 0.}}}};
+    const double deformed_radius =
+        get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist<double>(
+            1.0, {{M_PI_2, 0.0}}, 1.0, spin));
+    tnsr::I<DataVector, 3> target_points{
+        {{{8.5, 8.6, 8.7, 8.9, deformed_radius, 10.},
+          {0., 0., 0., 0., 0., 0.},
+          {0., 0., 0., 0., 0., 0.}}}};
     const size_t num_target_points = get<0>(target_points).size();
     std::array<std::vector<double>, 3> target_points_array{};
     for (size_t d = 0; d < 3; ++d) {
@@ -182,31 +223,45 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         gsl::at(target_points_array, d)[i] = target_points.get(d)[i];
       }
     }
-    const auto interpolated_data = interpolate_to_points<3>(
-        h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"},
-        target_points_array, true);
-    CHECK(interpolated_data.size() == 1);
-    CHECK(interpolated_data[0].size() == num_target_points);
-    // Check result
-    DataVector psi_interpolated(num_target_points);
-    DataVector psi_expected(num_target_points);
-    for (size_t i = 0; i < num_target_points; ++i) {
-      psi_interpolated[i] = interpolated_data[0][i];
-      tnsr::I<double, 3> x_target{
-          {{get<0>(target_points)[i], get<1>(target_points)[i],
-            get<2>(target_points)[i]}}};
-      psi_expected[i] = func(x_target);
+    for (const auto extrapolation_mode :
+         {ExcisionExtrapolationMode::NearestElement,
+          ExcisionExtrapolationMode::RadialAnchors}) {
+      CAPTURE(extrapolation_mode);
+      const auto interpolated_data = interpolate_to_points<3>(
+          h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"},
+          target_points_array, extrapolation_mode);
+      CHECK(interpolated_data.size() == 1);
+      CHECK(interpolated_data[0].size() == num_target_points);
+      // Check result
+      DataVector psi_interpolated(num_target_points);
+      DataVector psi_expected(num_target_points);
+      for (size_t i = 0; i < num_target_points; ++i) {
+        psi_interpolated[i] = interpolated_data[0][i];
+        const tnsr::I<double, 3> x_target{
+            {{get<0>(target_points)[i], get<1>(target_points)[i],
+              get<2>(target_points)[i]}}};
+        psi_expected[i] = func(x_target);
+      }
+      // These points are extrapolated and therefore less precise
+      const Approx approx_extrapolated =
+          Approx::custom().epsilon(1.e-1).scale(1.0);
+      for (size_t i = 0; i < 4; ++i) {
+        if (i < 2 and
+            extrapolation_mode == ExcisionExtrapolationMode::NearestElement) {
+          // These points are too far away from the excision surface to be
+          // extrapolated precisely enough with the nearest element method
+          continue;
+        }
+        CAPTURE(i);
+        CHECK(psi_interpolated[i] == approx_extrapolated(psi_expected[i]));
+      }
+      // This point is exact
+      CHECK(psi_interpolated[4] == approx(psi_expected[4]));
+      // This point is interpolated
+      const Approx approx_interpolated =
+          Approx::custom().epsilon(1.e-6).scale(1.0);
+      CHECK(psi_interpolated[5] == approx_interpolated(psi_expected[5]));
     }
-    // These points are extrapolated and therefore less precise
-    Approx approx_extrapolated = Approx::custom().epsilon(1.e-1).scale(1.0);
-    for (size_t i = 0; i < 4; ++i) {
-      CHECK(psi_interpolated[i] == approx_extrapolated(psi_expected[i]));
-    }
-    // This point is exact
-    CHECK(psi_interpolated[4] == approx(psi_expected[4]));
-    // This point is interpolated
-    Approx approx_interpolated = Approx::custom().epsilon(1.e-6).scale(1.0);
-    CHECK(psi_interpolated[5] == approx_interpolated(psi_expected[5]));
     // Delete the test file
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);

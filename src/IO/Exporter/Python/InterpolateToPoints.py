@@ -8,7 +8,7 @@ import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
-from spectre.IO.Exporter import interpolate_to_points
+from spectre.IO.Exporter import ExcisionExtrapolationMode, interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles_command,
     parse_points,
@@ -43,12 +43,20 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "--extrapolate-into-excisions",
-    is_flag=True,
+    "excision_extrapolation_mode",
+    type=click.Choice(ExcisionExtrapolationMode.__members__),
+    default=ExcisionExtrapolationMode.NoExtrapolation.name,
+    show_default=True,
+    callback=lambda ctx, param, value: ExcisionExtrapolationMode.__members__[
+        value
+    ],
     help=(
-        "Enables extrapolation into excision regions of the domain. "
-        "This can be useful to fill the excision region with "
-        "(constraint-violating but smooth) data so it can be imported into "
-        "moving puncture codes."
+        "Enables extrapolation into excision regions of the domain. This can be"
+        " useful to fill the excision region with (constraint-violating but"
+        " smooth) data so it can be imported into moving puncture codes (set to"
+        " 'AnchorPoints'), or to extrapolate a little bit into the excision to"
+        " help the evolution find and track the apparent horizon (set to"
+        " 'NearestElement')."
     ),
 )
 @click.option(
