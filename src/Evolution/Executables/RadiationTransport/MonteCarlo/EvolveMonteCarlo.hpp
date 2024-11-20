@@ -128,11 +128,9 @@ struct EvolutionMetavars {
     static constexpr bool subcell_enabled_at_external_boundary = true;
   };
 
-  using observe_fields = tmpl::list<
-      // tmpl::push_back<
-      // tmpl::append<typename system::mc_variables_tag::tags_list>,
-      domain::Tags::Coordinates<volume_dim, Frame::Grid>,
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using observe_fields =
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+                 domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  ::Events::Tags::ObserverDetInvJacobianCompute<
@@ -147,21 +145,14 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, observe_fields,
-                    non_tensor_compute_tags>  //,
-                                              // Events::time_events<system>
-                >>>,
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<Events::Completion>>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
             grmhd::AnalyticData::InitialMagneticFields::
                 initial_magnetic_fields>,
-        tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
                    StepChoosers::standard_slab_choosers<system, false, false>>,
         tmpl::pair<TimeSequence<double>,
@@ -169,32 +160,12 @@ struct EvolutionMetavars {
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+        tmpl::pair<Trigger, Triggers::time_triggers>>;
   };
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
-
-  using step_actions = tmpl::flatten<tmpl::list<
-      // Actions::RecordTimeStepperData<system>,
-      // Particles::MonteCarlo::Actions::SendDataForMcCommunication<
-      //   volume_dim,
-      //  No local time stepping
-      //    false, Particles::MonteCarlo::CommunicationStep::PreStep>,
-      // Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
-      //    volume_dim, Particles::MonteCarlo::CommunicationStep::PreStep>,
-      Particles::MonteCarlo::Actions::TakeTimeStep<EnergyBins, NeutrinoSpecies>,
-      // Particles::MonteCarlo::Actions::SendDataForMcCommunication<
-      //     volume_dim,
-      //  No local time stepping
-      //    false, Particles::MonteCarlo::CommunicationStep::PostStep>,
-      // Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
-      //    volume_dim, Particles::MonteCarlo::CommunicationStep::PostStep>,
-      // Actions::RecordTimeStepperData<system>,
-      // evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-      Actions::CleanHistory<system, false>>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -203,7 +174,6 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>  //,
-          // Initialization::TimeStepperHistory<EvolutionMetavars>
           >,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
@@ -219,7 +189,7 @@ struct EvolutionMetavars {
           hydro::Tags::LowerSpatialFourVelocityCompute,
           Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
           domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>>>,
-      // Initialization::TimeStepperHistory<EvolutionMetavars>
+      evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = DgElementArray<
@@ -227,19 +197,15 @@ struct EvolutionMetavars {
       tmpl::list<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
-          // Parallel::PhaseActions<
-          //     Parallel::Phase::InitializeTimeStepperHistory,
-          //     SelfStart::self_start_procedure<step_actions, system>>,
-
-          //  Parallel::PhaseActions<Parallel::Phase::Register,
-          //                         tmpl::list<dg_registration_list,
-          //                 Parallel::Actions::TerminatePhase>>,
-
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
-                  Actions::AdvanceTime, Actions::AdvanceTime,
                   Actions::AdvanceTime,
+                  evolution::Actions::RunEventsAndTriggers,
+                  Actions::AdvanceTime,
+                  evolution::Actions::RunEventsAndTriggers,
+                  Actions::AdvanceTime,
+                  evolution::Actions::RunEventsAndTriggers,
                   Particles::MonteCarlo::Actions::SendDataForMcCommunication<
                       volume_dim,
                       // No local time stepping
@@ -257,12 +223,7 @@ struct EvolutionMetavars {
                   Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
                       volume_dim,
                       Particles::MonteCarlo::CommunicationStep::PostStep>,
-                  Parallel::Actions::TerminatePhase>>
-          //      tmpl::list<evolution::Actions::RunEventsAndTriggers,
-          //                 Actions::ChangeSlabSize, //step_actions,
-          //                 Actions::AdvanceTime,
-          //                 PhaseControl::Actions::ExecutePhaseChange>>
-          >>;
+                  PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   struct registration
       : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {

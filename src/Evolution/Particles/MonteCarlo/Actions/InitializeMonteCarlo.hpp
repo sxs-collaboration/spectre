@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <random>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
@@ -115,8 +117,10 @@ struct InitializeMCTags {
         tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement>>(
         make_not_null(&box), std::move(all_packets));
 
-    // Currently seeds with 0 for testing...
-    typename Particles::MonteCarlo::Tags::RandomNumberGenerator::type rng(0);
+    unsigned long seed =
+        std::random_device{}();  // static_cast<unsigned long>(time(NULL));
+    typename Particles::MonteCarlo::Tags::RandomNumberGenerator::type rng(seed);
+
     Initialization::mutate_assign<
         tmpl::list<Particles::MonteCarlo::Tags::RandomNumberGenerator>>(
         make_not_null(&box), std::move(rng));

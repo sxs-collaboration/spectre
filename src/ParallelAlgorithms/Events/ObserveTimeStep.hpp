@@ -165,17 +165,18 @@ class ObserveTimeStep : public Event {
   // We obtain the grid size from the variables, rather than the mesh,
   // so that this observer is not DG-specific.
   using argument_tags =
-      tmpl::list<::Tags::TimeStep, typename System::variables_tag>;
+      tmpl::list<::Tags::TimeStep>;  //, typename System::variables_tag>;
 
   template <typename ArrayIndex, typename ParallelComponent,
             typename Metavariables>
   void operator()(const TimeDelta& time_step,
-                  const typename System::variables_tag::type& variables,
+                  // const typename System::variables_tag::type& variables,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/,
                   const ObservationValue& observation_value) const {
-    const size_t number_of_grid_points = variables.number_of_grid_points();
+    const size_t number_of_grid_points =
+        1;  // variables.number_of_grid_points();
     const double slab_size = time_step.slab().duration().value();
     const double step_size = abs(time_step.value());
     const double wall_time = sys::wall_time();
