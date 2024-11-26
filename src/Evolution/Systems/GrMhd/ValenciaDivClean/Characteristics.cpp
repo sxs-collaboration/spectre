@@ -6,11 +6,11 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -31,12 +31,6 @@ void compute_characteristic_speeds(
   if (char_speeds[0].size() != num_grid_points) {
     char_speeds[0] = DataVector(num_grid_points);
   }
-  Scalar<DataVector> temp0(char_speeds[0].data(), num_grid_points);
-  dot_product(make_not_null(&temp0), normal, shift);
-  char_speeds[0] *= -1.0;
-  char_speeds[8] = char_speeds[0] + get(lapse);
-
-  char_speeds[0] -= get(lapse);
   // Mapping of indices between GRMHD char speeds and relativistic Euler char
   // speeds arrays.
   //
@@ -48,33 +42,59 @@ void compute_characteristic_speeds(
   //   5           1
   //   6           1
   //   7           4
-  //
-  // Create an array of non-owning DataVectors to be passed to the Relativistic
-  // Euler char speed computation as a not_null<array<DataVectors>>.
-  std::array<DataVector, 5> rel_euler_char_speeds{};
-  for (size_t i = 0; i < 4; ++i) {
-    if (gsl::at(char_speeds, i + 1).size() != num_grid_points) {
-      gsl::at(char_speeds, i + 1) = DataVector(num_grid_points);
-    }
-    gsl::at(rel_euler_char_speeds, i)
-        .set_data_ref(&gsl::at(char_speeds, i + 1));
-  }
-  if (gsl::at(char_speeds, 7).size() != num_grid_points) {
-    gsl::at(char_speeds, 7) = DataVector(num_grid_points);
-  }
-  rel_euler_char_speeds[4].set_data_ref(&(char_speeds[7]));
+  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                       ::Tags::TempScalar<4>, ::Tags::TempScalar<5>>>
+      temp_tensors{num_grid_points};
 
-  RelativisticEuler::Valencia::characteristic_speeds(
-      make_not_null(&rel_euler_char_speeds), lapse, shift, spatial_velocity,
-      spatial_velocity_squared,
-      Scalar<DataVector>{get(sound_speed_squared) +
-                         get(alfven_speed_squared) *
-                             (1.0 - get(sound_speed_squared))},
-      normal);
-
-  for (size_t i = 5; i < 7; ++i) {
-    gsl::at(char_speeds, i) = rel_euler_char_speeds[1];
+  // Because we don't require char_speeds to be of the correct size we use a
+  // temp buffer for the dot product, then multiply by -1 assigning the result
+  // to char_speeds.
+  {
+    Scalar<DataVector>& normal_shift = get<::Tags::TempScalar<0>>(temp_tensors);
+    dot_product(make_not_null(&normal_shift), normal, shift);
+    char_speeds[0] = -1.0 * get(normal_shift);
+    char_speeds[1] = char_speeds[0];
   }
+  Scalar<DataVector>& scaled_sound_speed_squared =
+      get<::Tags::TempScalar<5>>(temp_tensors);
+  get(scaled_sound_speed_squared) =
+      get(sound_speed_squared) +
+      get(alfven_speed_squared) * (1.0 - get(sound_speed_squared));
+  // Dim-fold degenerate eigenvalue, reuse normal_shift allocation
+  Scalar<DataVector>& normal_velocity =
+      get<::Tags::TempScalar<0>>(temp_tensors);
+  dot_product(make_not_null(&normal_velocity), normal, spatial_velocity);
+  char_speeds[2] = char_speeds[1] + get(lapse) * get(normal_velocity);
+  char_speeds[3] = char_speeds[2];
+  char_speeds[4] = char_speeds[3];
+  char_speeds[5] = char_speeds[2];
+  char_speeds[6] = char_speeds[2];
+
+  Scalar<DataVector>& one_minus_v_sqrd_cs_sqrd =
+      get<::Tags::TempScalar<1>>(temp_tensors);
+  get(one_minus_v_sqrd_cs_sqrd) =
+      1.0 - get(spatial_velocity_squared) * get(scaled_sound_speed_squared);
+  Scalar<DataVector>& vn_times_one_minus_cs_sqrd =
+      get<::Tags::TempScalar<2>>(temp_tensors);
+  get(vn_times_one_minus_cs_sqrd) =
+      get(normal_velocity) * (1.0 - get(scaled_sound_speed_squared));
+
+  Scalar<DataVector>& first_term = get<::Tags::TempScalar<3>>(temp_tensors);
+  get(first_term) = get(lapse) / get(one_minus_v_sqrd_cs_sqrd);
+  Scalar<DataVector>& second_term = get<::Tags::TempScalar<4>>(temp_tensors);
+  get(second_term) =
+      get(first_term) * sqrt(get(scaled_sound_speed_squared)) *
+      sqrt((1.0 - get(spatial_velocity_squared)) *
+           (get(one_minus_v_sqrd_cs_sqrd) -
+            get(normal_velocity) * get(vn_times_one_minus_cs_sqrd)));
+  get(first_term) *= get(vn_times_one_minus_cs_sqrd);
+
+  char_speeds[7] = char_speeds[1] + get(first_term) + get(second_term);
+  char_speeds[1] += get(first_term) - get(second_term);
+
+  char_speeds[8] = char_speeds[0] + get(lapse);
+  char_speeds[0] -= get(lapse);
 }
 }  // namespace
 
