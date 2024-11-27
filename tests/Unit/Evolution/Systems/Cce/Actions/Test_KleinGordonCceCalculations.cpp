@@ -357,16 +357,26 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
 
   // tests for `ComputeKGWorldtubeConstraint`
   {
-    db::mutate_apply<ComputeKGWorldtubeConstraint>(
-        make_not_null(&expected_box));
+    auto expected_boundary_value_psi =
+        db::get<Tags::BoundaryValue<Tags::KleinGordonPsi>>(expected_box);
+    auto expected_volume_value_psi =
+        db::get<Tags::KleinGordonPsi>(expected_box);
+    const SpinWeighted<ComplexDataVector, 0> surface_psi;
+    make_const_view(make_not_null(&surface_psi), get(expected_volume_value_psi),
+                    0,
+                    Spectral::Swsh::number_of_swsh_collocation_points(l_max));
+
     auto computed_result =
         ActionTesting::get_databox_tag<component,
                                        Tags::KleinGordonWorldtubeConstraint>(
             runner, 0);
 
-    auto expected_result =
-        db::get<Tags::KleinGordonWorldtubeConstraint>(expected_box);
-    CHECK(computed_result == expected_result);
+    auto expected_result = get(expected_boundary_value_psi) - surface_psi;
+
+    Approx custom_approx = Approx::custom().epsilon(1.0e-14).scale(1.0);
+
+    CHECK_ITERABLE_CUSTOM_APPROX(get(computed_result).data(),
+                                 expected_result.data(), custom_approx);
   }
 }
 }  // namespace
