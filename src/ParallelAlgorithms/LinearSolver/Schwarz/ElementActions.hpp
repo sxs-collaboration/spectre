@@ -538,7 +538,7 @@ struct ReceiveOverlapSolution {
     }
 
     // Add solutions on overlaps to this element's solution in a weighted sum
-    const auto received_overlap_solutions =
+    auto received_overlap_solutions =
         std::move(tuples::get<overlap_solution_inbox_tag>(inboxes)
                       .extract(iteration_id)
                       .mapped());
@@ -548,16 +548,17 @@ struct ReceiveOverlapSolution {
             const std::array<size_t, Dim>& all_intruding_extents,
             const DirectionMap<Dim, Scalar<DataVector>>&
                 all_intruding_overlap_weights) {
-          for (const auto& [overlap_id, overlap_solution] :
+          for (auto& [overlap_id, overlap_solution] :
                received_overlap_solutions) {
             const auto& direction = overlap_id.direction();
             const auto& intruding_extents =
                 gsl::at(all_intruding_extents, direction.dimension());
             const auto& overlap_weight =
                 all_intruding_overlap_weights.at(direction);
+            overlap_solution *= get(overlap_weight);
             LinearSolver::Schwarz::add_overlap_data(
-                fields, overlap_solution * get(overlap_weight), full_extents,
-                intruding_extents, direction);
+                fields, overlap_solution, full_extents, intruding_extents,
+                direction);
           }
         },
         make_not_null(&box), db::get<domain::Tags::Mesh<Dim>>(box).extents(),
