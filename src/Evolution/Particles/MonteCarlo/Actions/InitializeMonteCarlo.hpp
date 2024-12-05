@@ -9,6 +9,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
 #include "Evolution/Particles/MonteCarlo/MortarData.hpp"
@@ -44,13 +46,15 @@ namespace Initialization::Actions {
 ///
 /// Uses:
 /// - evolution::dg::subcell::Tags::Mesh<dim>
+/// - evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>
+/// - evolution::initial_data::Tags::InitialData
 ///
 /// DataBox changes:
 /// - Adds:
 ///   * Particles::MonteCarlo::Tags::PacketsOnElement
 ///   * Particles::MonteCarlo::Tags::RandomNumberGenerator
-///   * Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission
-///       <NeutrinoSpecies>
+///   * Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
+///                                  NeutrinoSpecies>
 ///   * Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>
 ///   * Background hydro variables
 ///   * Particles::MonteCarlo::Tags::MortarDataTag<dim>
@@ -96,7 +100,7 @@ struct InitializeMCTags {
         &db::get<evolution::initial_data::Tags::InitialData>(box),
         [&box](const auto* const data_or_solution) {
           static constexpr size_t dim = System::volume_dim;
-          const double initial_time = 0.0;  // db::get<::Tags::Time>(box);
+          const double initial_time = db::get<::Tags::Time>(box);
           const size_t num_grid_points =
               db::get<evolution::dg::subcell::Tags::Mesh<dim>>(box)
                   .number_of_grid_points();
@@ -117,7 +121,7 @@ struct InitializeMCTags {
         tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement>>(
         make_not_null(&box), std::move(all_packets));
 
-    unsigned long seed =
+    const unsigned long seed =
         std::random_device{}();  // static_cast<unsigned long>(time(NULL));
     typename Particles::MonteCarlo::Tags::RandomNumberGenerator::type rng(seed);
 

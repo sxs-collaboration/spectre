@@ -15,10 +15,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloCellVolume",
                      Spectral::Quadrature::CellCentered);
 
   const size_t dv_size = 27;
-  DataVector zero_dv(dv_size, 0.0);
-  Scalar<DataVector> lapse{DataVector(dv_size, 1.2)};
-  Scalar<DataVector> sqrt_determinant_spatial_metric{DataVector(dv_size, 0.9)};
-  Scalar<DataVector> det_jacobian_logical_to_inertial{DataVector(dv_size, 1.1)};
+  const DataVector zero_dv(dv_size, 0.0);
+  const Scalar<DataVector> lapse{DataVector(dv_size, 1.2)};
+  const Scalar<DataVector> sqrt_determinant_spatial_metric
+    {DataVector(dv_size, 0.9)};
+  const Scalar<DataVector> det_jacobian_logical_to_inertial
+    {DataVector(dv_size, 1.1)};
   const double time_step = 0.6;
 
   Scalar<DataVector> cell_proper_four_volume{DataVector(dv_size, 0.0)};

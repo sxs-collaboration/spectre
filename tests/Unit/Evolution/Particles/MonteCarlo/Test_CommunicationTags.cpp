@@ -524,6 +524,10 @@ void test_send_receive_actions() {
   // topological coordinate of their new element.
   packet_east.coordinates[0] -= 2.0;
   packet_south.coordinates[1] += 2.0;
+  // Current hack for edges/corners
+  if constexpr (Dim > 2){
+    packet_south.coordinates[2] = -2.0 - packet_south.coordinates[2];
+  }
   {
     const auto& east_data = ActionTesting::get_inbox_tag<
         comp, Particles::MonteCarlo::McGhostZoneDataInboxTag<

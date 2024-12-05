@@ -201,11 +201,11 @@ struct EvolutionMetavars {
               Parallel::Phase::Evolve,
               tmpl::list<
                   Actions::AdvanceTime,
-                  evolution::Actions::RunEventsAndTriggers,
+                  evolution::Actions::RunEventsAndTriggers<false>,
                   Actions::AdvanceTime,
-                  evolution::Actions::RunEventsAndTriggers,
+                  evolution::Actions::RunEventsAndTriggers<false>,
                   Actions::AdvanceTime,
-                  evolution::Actions::RunEventsAndTriggers,
+                  evolution::Actions::RunEventsAndTriggers<false>,
                   Particles::MonteCarlo::Actions::SendDataForMcCommunication<
                       volume_dim,
                       // No local time stepping
