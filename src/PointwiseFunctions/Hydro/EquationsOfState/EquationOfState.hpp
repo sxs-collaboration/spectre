@@ -568,7 +568,7 @@ class EquationOfState<IsRelativistic, 3> : public PUP::able {
       const EquationOfState<IsRelativistic, 3>& rhs) const = 0;
 
   virtual std::unique_ptr<EquationOfState<IsRelativistic, 3>>
-  promote_to_3d_eos() {
+  promote_to_3d_eos() const {
     return this->get_clone();
   }
 

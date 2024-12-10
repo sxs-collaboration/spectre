@@ -68,7 +68,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/MonteCarlo/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -118,7 +118,7 @@ struct EvolutionMetavars {
   static constexpr bool use_dg_subcell = true;
 
   using initial_data_list =
-      grmhd::ValenciaDivClean::InitialData::initial_data_list;
+      RadiationTransport::MonteCarlo::Solutions::all_solutions;
   using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
 
   struct SubcellOptions {
