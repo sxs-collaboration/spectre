@@ -93,6 +93,7 @@ LinearSolver:
       ExplicitInverse:
         WriteMatrixToFile: None
     ObservePerCoreReductions: False
+    OutputVolumeData: True
 
 RadiallyCompressedCoordinates: None
 

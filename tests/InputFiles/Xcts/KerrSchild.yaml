@@ -199,6 +199,7 @@ LinearSolver:
             BoundaryConditions: Auto
     SkipResets: True
     ObservePerCoreReductions: False
+    OutputVolumeData: False
 
 RadiallyCompressedCoordinates: None
 

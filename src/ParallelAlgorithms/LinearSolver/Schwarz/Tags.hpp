@@ -180,6 +180,14 @@ struct SummedIntrudingOverlapWeights : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/// Buffer for recording volume data
+template <typename SubdomainDataType, typename OptionsGroup>
+struct VolumeDataForOutput : db::SimpleTag {
+  using type = SubdomainDataType;
+  static std::string name() {
+    return "VolumeDataForOutput(" + pretty_type::name<OptionsGroup>() + ")";
+  }
+};
 }  // namespace Tags
 }  // namespace LinearSolver::Schwarz
 

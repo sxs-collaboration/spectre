@@ -152,6 +152,7 @@ LinearSolver:
       ExplicitInverse:
         WriteMatrixToFile: "SubdomainMatrix"
     ObservePerCoreReductions: False
+    OutputVolumeData: False
 
 RadiallyCompressedCoordinates: None
 
