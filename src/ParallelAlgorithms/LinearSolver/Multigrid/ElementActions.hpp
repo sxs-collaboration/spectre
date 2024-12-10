@@ -67,12 +67,12 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
                  Tags::ParentMesh<Dim>,
                  observers::Tags::ObservationKey<Tags::MultigridLevel>,
                  observers::Tags::ObservationKey<Tags::IsFinestGrid>,
-                 Tags::ObservationId<OptionsGroup>,
+                 LinearSolver::Tags::ObservationId<OptionsGroup>,
                  Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>;
   using compute_tags = tmpl::list<>;
   using const_global_cache_tags =
       tmpl::list<Tags::MaxLevels<OptionsGroup>,
-                 Tags::OutputVolumeData<OptionsGroup>>;
+                 LinearSolver::Tags::OutputVolumeData<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -90,7 +90,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
   using argument_tags =
       tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::InitialRefinementLevels<Dim>,
-                 Tags::OutputVolumeData<OptionsGroup>>;
+                 LinearSolver::Tags::OutputVolumeData<OptionsGroup>>;
   using return_tags = tmpl::append<simple_tags, simple_tags_from_options>;
 
   template <typename... AmrData>
@@ -146,11 +146,12 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       // Preserve state of observation ID
       if constexpr (tt::is_a_v<tuples::TaggedTuple, AmrData...>) {
         // h-refinement: copy from the parent
-        *observation_id = get<Tags::ObservationId<OptionsGroup>>(amr_data...);
+        *observation_id =
+            get<LinearSolver::Tags::ObservationId<OptionsGroup>>(amr_data...);
       } else if constexpr (tt::is_a_v<std::unordered_map, AmrData...>) {
         // h-coarsening: copy from one of the children (doesn't matter which)
-        *observation_id =
-            get<Tags::ObservationId<OptionsGroup>>(amr_data.begin()->second...);
+        *observation_id = get<LinearSolver::Tags::ObservationId<OptionsGroup>>(
+            amr_data.begin()->second...);
       } else {
         (void)observation_id;
       }
@@ -234,7 +235,7 @@ struct PreparePreSmoothing {
     }
 
     // Record pre-smoothing initial fields and source
-    if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
+    if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           [](const auto volume_data, const auto& initial_fields,
              const auto& source) {
@@ -292,7 +293,7 @@ struct SkipPostSmoothingAtBottom {
         not db::get<Tags::ParentId<Dim>>(box).has_value();
 
     // Record pre-smoothing result fields and residual
-    if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
+    if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           [](const auto volume_data, const auto& result_fields,
              const auto& residuals) {
@@ -361,7 +362,7 @@ struct SendCorrectionToFinerGrid {
     const auto& child_ids = db::get<Tags::ChildIds<Dim>>(box);
 
     // Record post-smoothing result fields and residual
-    if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
+    if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           [](const auto volume_data, const auto& result_fields,
              const auto& residuals) {
@@ -474,7 +475,7 @@ struct ReceiveCorrectionFromCoarserGrid {
         make_not_null(&box));
 
     // Record post-smoothing initial fields and source
-    if (db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
+    if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
       db::mutate<Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>(
           [](const auto volume_data, const auto& initial_fields,
              const auto& source) {

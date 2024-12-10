@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
@@ -122,7 +123,8 @@ template <typename OptionsGroup>
 struct OutputVolumeData : db::SimpleTag {
   using type = bool;
   static constexpr bool pass_metavariables = false;
-  using option_tags = tmpl::list<OptionTags::OutputVolumeData<OptionsGroup>>;
+  using option_tags =
+      tmpl::list<LinearSolver::OptionTags::OutputVolumeData<OptionsGroup>>;
   static type create_from_options(const type value) { return value; };
   static std::string name() {
     return "OutputVolumeData(" + pretty_type::name<OptionsGroup>() + ")";
@@ -189,16 +191,6 @@ struct ParentMesh : db::SimpleTag {
   using type = std::optional<Mesh<Dim>>;
 };
 
-// The following tags are related to volume data output
-
-/// Continuously incrementing ID for volume observations
-template <typename OptionsGroup>
-struct ObservationId : db::SimpleTag {
-  using type = size_t;
-  static std::string name() {
-    return "ObservationId(" + pretty_type::name<OptionsGroup>() + ")";
-  }
-};
 /// @{
 /// Prefix tag for recording volume data in
 /// `LinearSolver::multigrid::Tags::VolumeDataForOutput`

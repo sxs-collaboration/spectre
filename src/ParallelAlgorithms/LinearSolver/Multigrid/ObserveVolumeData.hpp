@@ -69,12 +69,12 @@ struct ObserveVolumeData {
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if (not db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
+    if (not db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     const auto& volume_data = db::get<volume_data_tag>(box);
     const auto& observation_id =
-        db::get<Tags::ObservationId<OptionsGroup>>(box);
+        db::get<LinearSolver::Tags::ObservationId<OptionsGroup>>(box);
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const auto& inertial_coords =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
@@ -124,7 +124,7 @@ struct ObserveVolumeData {
         ElementVolumeData{element_id, std::move(components), mesh});
 
     // Increment observation ID
-    db::mutate<Tags::ObservationId<OptionsGroup>>(
+    db::mutate<LinearSolver::Tags::ObservationId<OptionsGroup>>(
         [](const auto local_observation_id) { ++(*local_observation_id); },
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
