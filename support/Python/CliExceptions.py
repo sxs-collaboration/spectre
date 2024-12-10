@@ -26,6 +26,6 @@ class RequiredChoiceError(click.UsageError):
             for choice in self.choices:
                 table.add_row(choice)
             console.print(table)
-        choices_cols = capture.get()
+        choices_cols = capture.get().strip("\n")
 
-        return f"{self.message} Available choices:\n\n{choices_cols.strip()}"
+        return f"{self.message} Available choices:\n\n{choices_cols}"
