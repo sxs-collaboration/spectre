@@ -30,17 +30,19 @@ ResourceInfo:
   Singletons: Auto
 
 DomainCreator:
-  Brick:
-    LowerBound: [-0.5, -0.5, -0.5]
-    UpperBound: [0.5, 0.5, 0.5]
-    Distribution: [Linear, Linear, Linear]
-    IsPeriodicIn: [false, false, false]
-    InitialRefinement: [0, 0, 0]
-    InitialGridPoints: [3, 3, 3]
-    TimeDependence:
-      UniformTranslation:
-        InitialTime: 0.0
-        Velocity: [0.5, 0.0, 0.0]
+  Sphere:
+    InnerRadius: 2.
+    OuterRadius: 10.
+    Interior: Excise
+    InitialRefinement: 0
+    InitialGridPoints: 12
+    UseEquiangularMap: True
+    EquatorialCompression: None
+    WhichWedges: All
+    RadialPartitioning: [4.]
+    RadialDistribution: [Linear, Logarithmic]
+    ShellType: [Cubed, Spherical]
+    TimeDependentMaps: None
 
 SpatialDiscretization:
   ActiveGrid: Dg

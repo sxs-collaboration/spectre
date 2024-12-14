@@ -40,6 +40,7 @@ spectre_target_headers(
   CreateInitialElement.hpp
   Domain.hpp
   DomainHelpers.hpp
+  DomainHelpers.tpp
   ElementDistribution.hpp
   ElementLogicalCoordinates.hpp
   ElementMap.hpp

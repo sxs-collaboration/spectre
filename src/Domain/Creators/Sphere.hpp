@@ -15,6 +15,9 @@
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/ShellType.hpp"
+#include "Domain/CoordinateMaps/SphericalToCartesianPfaffian.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependentOptions/Sphere.hpp"
@@ -178,10 +181,17 @@ class Sphere : public DomainCreator<3> {
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
   using BulgedCube = CoordinateMaps::BulgedCube;
+  using LogicalToSphericalMap = domain::CoordinateMaps::ProductOf3Maps<
+      domain::CoordinateMaps::Interval, domain::CoordinateMaps::Identity<1>,
+      domain::CoordinateMaps::Identity<1>>;
 
  public:
   using maps_list = tmpl::append<
       tmpl::list<
+          domain::CoordinateMap<
+              Frame::BlockLogical, Frame::Inertial, LogicalToSphericalMap,
+              domain::CoordinateMaps::SphericalToCartesianPfaffian,
+              domain::CoordinateMaps::EquatorialCompression>,
           // Inner cube
           domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                 BulgedCube>,
@@ -311,6 +321,22 @@ class Sphere : public DomainCreator<3> {
         "partitions."};
   };
 
+  struct ShellType {
+    using type = std::variant<domain::CoordinateMaps::ShellType,
+                              std::vector<domain::CoordinateMaps::ShellType>>;
+    static constexpr Options::String help = {
+        "Select type of each spherical shell. Specify a list of N+1 shell "
+        "types for N radial partitions, i.e., one for each shell."
+        "The shell type can be 'Cubed' to create six wedges that compose the "
+        "shell, or 'Spherical' to create a single spherical shell with "
+        "spherical harmonics. The 'Spherical' option "
+        "is not widely supported yet, so it is unlikely to work. "
+        "If the interior of the sphere is filled with a cube, the innermost "
+        "shell must have a 'Cubed' shell type. You can also specify just a "
+        "single shell type (not in a vector) which will use the same shell "
+        "type for all partitions."};
+  };
+
   struct WhichWedges {
     using type = ShellWedges;
     static constexpr Options::String help = {
@@ -340,7 +366,7 @@ class Sphere : public DomainCreator<3> {
   using basic_options =
       tmpl::list<InnerRadius, OuterRadius, Interior, InitialRefinement,
                  InitialGridPoints, UseEquiangularMap, EquatorialCompression,
-                 RadialPartitioning, RadialDistribution, WhichWedges,
+                 RadialPartitioning, RadialDistribution, ShellType, WhichWedges,
                  TimeDependentMaps>;
 
   template <typename Metavariables>
@@ -371,6 +397,8 @@ class Sphere : public DomainCreator<3> {
       std::vector<double> radial_partitioning = {},
       const typename RadialDistribution::type& radial_distribution =
           domain::CoordinateMaps::Distribution::Linear,
+      const typename ShellType::type& shell_type =
+          domain::CoordinateMaps::ShellType::Cubed,
       ShellWedges which_wedges = ShellWedges::All,
       std::optional<TimeDepOptionType> time_dependent_options = std::nullopt,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -428,6 +456,7 @@ class Sphere : public DomainCreator<3> {
   std::optional<EquatorialCompressionOptions> equatorial_compression_{};
   std::vector<double> radial_partitioning_{};
   std::vector<domain::CoordinateMaps::Distribution> radial_distribution_{};
+  std::vector<domain::CoordinateMaps::ShellType> shell_types_{};
   ShellWedges which_wedges_ = ShellWedges::All;
   std::optional<TimeDepOptionType> time_dependent_options_{};
   bool use_hard_coded_maps_{false};
@@ -435,7 +464,7 @@ class Sphere : public DomainCreator<3> {
       outer_boundary_condition_;
   size_t num_shells_;
   size_t num_blocks_;
-  size_t num_blocks_per_shell_;
+  size_t num_blocks_per_cubed_shell_;
   std::vector<std::string> block_names_{};
   std::unordered_map<std::string, std::unordered_set<std::string>>
       block_groups_{};
