@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
@@ -19,10 +20,12 @@ template <size_t Dim>
 FixToAtmosphere<Dim>::FixToAtmosphere(
     const double density_of_atmosphere, const double density_cutoff,
     const std::optional<VelocityLimitingOptions> velocity_limiting,
+    const std::optional<KappaLimitingOptions> kappa_limiting,
     const Options::Context& context)
     : density_of_atmosphere_(density_of_atmosphere),
       density_cutoff_(density_cutoff),
-      velocity_limiting_(velocity_limiting) {
+      velocity_limiting_(velocity_limiting),
+      kappa_limiting_(kappa_limiting) {
   if (density_of_atmosphere_ > density_cutoff_) {
     PARSE_ERROR(context, "The cutoff density ("
                              << density_cutoff_
@@ -80,6 +83,22 @@ FixToAtmosphere<Dim>::FixToAtmosphere(
                                << ").");
     }
   }
+
+  if (kappa_limiting_.has_value()) {
+    if (kappa_limiting_->density_lower_bound >
+        kappa_limiting_->density_upper_bound) {
+      PARSE_ERROR(context,
+                  "The DensityLowerBound ("
+                      << kappa_limiting_->density_lower_bound
+                      << ") must be less than or equal to DensityUpperBound("
+                      << kappa_limiting_->density_upper_bound << ").");
+    }
+    if (kappa_limiting_->min_temperature.has_value() and
+        kappa_limiting_->min_temperature.value() < 0.0) {
+      PARSE_ERROR(context, "The MinTemperature must be non-negative but is "
+                               << kappa_limiting_->min_temperature.value());
+    }
+  }
 }
 
 template <size_t Dim>
@@ -88,6 +107,7 @@ void FixToAtmosphere<Dim>::pup(PUP::er& p) {
   p | density_of_atmosphere_;
   p | density_cutoff_;
   p | velocity_limiting_;
+  p | kappa_limiting_;
 }
 
 template <size_t Dim>
@@ -132,6 +152,12 @@ void FixToAtmosphere<Dim>::operator()(
           get(*temperature)[i] > max_temperature) {
         get(*temperature)[i] = max_temperature;
         changed_temperature = true;
+      }
+
+      if (kappa_limiting_.has_value()) {
+        changed_temperature |=
+            apply_kappa_limit(temperature, *rest_mass_density,
+                              electron_fraction, equation_of_state, i);
       }
 
       if (changed_temperature) {
@@ -272,11 +298,92 @@ void FixToAtmosphere<Dim>::apply_velocity_limit(
 }
 
 template <size_t Dim>
+template <size_t ThermodynamicDim>
+bool FixToAtmosphere<Dim>::apply_kappa_limit(
+    const gsl::not_null<Scalar<DataVector>*> temperature,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state,
+    const size_t grid_index) const {
+  const KappaLimitingOptions& opts = kappa_limiting_.value();
+  double& temp = temperature->get()[grid_index];
+  const double& density = rest_mass_density.get()[grid_index];
+  const double& y_e = electron_fraction.get()[grid_index];
+  const double min_temperature = kappa_limiting_->min_temperature.value_or(
+      equation_of_state.temperature_lower_bound());
+
+  const auto get_pressure = [&density, &equation_of_state,
+                             &y_e](const double local_temperature) -> double {
+    if constexpr (ThermodynamicDim == 2) {
+      (void)y_e;
+      return get(equation_of_state.pressure_from_density_and_energy(
+          Scalar<double>{density},
+          equation_of_state
+              .specific_internal_energy_from_density_and_temperature(
+                  Scalar<double>{density}, Scalar<double>{local_temperature})));
+    } else {
+      return get(equation_of_state.pressure_from_density_and_temperature(
+          Scalar<double>{density}, Scalar<double>{local_temperature},
+          Scalar<double>{y_e}));
+    }
+  };
+
+  const auto impl = [&get_pressure, &min_temperature, &temp,
+                     &y_e](const double local_kappa_max) -> bool {
+    const double p_temp = get_pressure(temp);
+    const double p_min = get_pressure(min_temperature);
+    const double p_max = p_min * local_kappa_max;
+    if (p_temp > p_max) {
+      if (UNLIKELY((p_temp - p_max) * (p_min - p_max) > 0.0)) {
+        ERROR(
+            "The root for the pressure function while applying the kappa "
+            "limiting strategy was not bound.\n"
+            "T_min="
+            << min_temperature << "\np_min=" << p_min << "\nT=" << temp
+            << "\np_temp=" << p_temp << "\np_max=" << p_max << "\nYe=" << y_e);
+      }
+      if (temp - min_temperature > 1.0e-13) {
+        temp = RootFinder::toms748(
+            [&get_pressure, &p_max](const double local_temperature) {
+              return get_pressure(local_temperature) - p_max;
+            },
+            min_temperature, temp, 1e-50, 1.0e-13);
+      } else {
+        temp = 0.5 * (temp + min_temperature);
+      }
+      return true;
+    }
+    return false;
+  };
+
+  using std::abs;
+  if (density < opts.density_lower_bound) {
+    if (abs(temp - min_temperature) > opts.eplison_kappa_minus * abs(temp)) {
+      temp = min_temperature;
+    }
+    return true;
+  } else if (density < opts.density_upper_bound) {
+    const double kappa_max =
+        1.0 +
+        opts.epsilon_kappa_max *
+            std::min((density - opts.density_lower_bound) /
+                         (opts.density_upper_bound - opts.density_lower_bound),
+                     1.0);
+    return impl(kappa_max);
+  } else if (kappa_limiting_.value().limit_above_density_upper_bound) {
+    return impl(1.0 + opts.epsilon_kappa_max);
+  }
+  return false;
+}
+
+template <size_t Dim>
 bool operator==(const FixToAtmosphere<Dim>& lhs,
                 const FixToAtmosphere<Dim>& rhs) {
   return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_ and
          lhs.density_cutoff_ == rhs.density_cutoff_ and
-         lhs.velocity_limiting_ == rhs.velocity_limiting_;
+         lhs.velocity_limiting_ == rhs.velocity_limiting_ and
+         lhs.kappa_limiting_ == rhs.kappa_limiting_;
 }
 
 template <size_t Dim>
@@ -305,6 +412,33 @@ bool FixToAtmosphere<Dim>::VelocityLimitingOptions::operator==(
 template <size_t Dim>
 bool FixToAtmosphere<Dim>::VelocityLimitingOptions::operator!=(
     const VelocityLimitingOptions& rhs) const {
+  return not(*this == rhs);
+}
+
+template <size_t Dim>
+void FixToAtmosphere<Dim>::KappaLimitingOptions::pup(PUP::er& p) {
+  p | density_lower_bound;
+  p | eplison_kappa_minus;
+  p | density_upper_bound;
+  p | epsilon_kappa_max;
+  p | min_temperature;
+  p | limit_above_density_upper_bound;
+}
+
+template <size_t Dim>
+bool FixToAtmosphere<Dim>::KappaLimitingOptions::operator==(
+    const KappaLimitingOptions& rhs) const {
+  return density_lower_bound == rhs.density_lower_bound and
+         eplison_kappa_minus == rhs.eplison_kappa_minus and
+         density_upper_bound == rhs.density_upper_bound and
+         epsilon_kappa_max == rhs.epsilon_kappa_max and
+         min_temperature == rhs.min_temperature and
+         limit_above_density_upper_bound == rhs.limit_above_density_upper_bound;
+}
+
+template <size_t Dim>
+bool FixToAtmosphere<Dim>::KappaLimitingOptions::operator!=(
+    const KappaLimitingOptions& rhs) const {
   return not(*this == rhs);
 }
 
