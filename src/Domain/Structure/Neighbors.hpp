@@ -10,6 +10,7 @@
 #include <iosfwd>
 #include <unordered_set>
 
+#include "Domain/Structure/BlockGeometry.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 
 /// \cond
@@ -34,8 +35,11 @@ class Neighbors {
   /// \param orientation This OrientationMap takes objects in the logical
   /// coordinate frame of the host Element and maps them to the logical
   /// coordinate frame of the neighbor Element.
+  /// \param geometry the geometry of the neighboring block.
   Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-            OrientationMap<VolumeDim> orientation);
+            OrientationMap<VolumeDim> orientation,
+            // todo: remove default
+            domain::BlockGeometry geometry = domain::BlockGeometry::Cube);
 
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
@@ -48,6 +52,8 @@ class Neighbors {
   const std::unordered_set<ElementId<VolumeDim>>& ids() const { return ids_; }
 
   const OrientationMap<VolumeDim>& orientation() const { return orientation_; }
+
+  const domain::BlockGeometry& geometry() const { return geometry_; }
 
   /// Reset the ids of the neighbors.
   void set_ids_to(const std::unordered_set<ElementId<VolumeDim>> new_ids) {
@@ -96,6 +102,7 @@ class Neighbors {
  private:
   std::unordered_set<ElementId<VolumeDim>> ids_;
   OrientationMap<VolumeDim> orientation_;
+  domain::BlockGeometry geometry_;
 };
 
 /// Output operator for Neighborss.

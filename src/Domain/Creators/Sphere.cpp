@@ -30,6 +30,7 @@
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/DomainHelpers.tpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -37,6 +38,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Overloader.hpp"
 
 namespace Frame {
 struct Inertial;
@@ -79,7 +81,7 @@ Sphere::Sphere(
     std::optional<EquatorialCompressionOptions> equatorial_compression,
     std::vector<double> radial_partitioning,
     const typename RadialDistribution::type& radial_distribution,
-    ShellWedges which_wedges,
+    const typename ShellType::type& shell_type, ShellWedges which_wedges,
     std::optional<TimeDepOptionType> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
         outer_boundary_condition,
@@ -153,22 +155,72 @@ Sphere::Sphere(
                 "Add entries to 'RadialPartitioning' to add outer shells for "
                 "which you can select different radial distributions.");
   }
+  shell_types_ = std::visit(
+      Overloader{
+          [&num_shells = num_shells_](
+              const domain::CoordinateMaps::ShellType& uniform_shell_type) {
+            return std::vector<domain::CoordinateMaps::ShellType>(
+                num_shells, uniform_shell_type);
+          },
+          [](const std::vector<domain::CoordinateMaps::ShellType>&
+                 shell_types) { return shell_types; }},
+      shell_type);
+  if (shell_types_.size() != num_shells_) {
+    PARSE_ERROR(context,
+                "Specify a 'ShellType' for every spherical shell. You "
+                "specified "
+                    << shell_types_.size() << " items, but the domain has "
+                    << num_shells_ << " shells.");
+  }
+  if (fill_interior_ and
+      shell_types_.front() != domain::CoordinateMaps::ShellType::Cubed) {
+    PARSE_ERROR(context,
+                "The 'ShellType' must be 'Cubed' for the innermost "
+                "shell filled with a cube. "
+                "Add entries to 'RadialPartitioning' to add outer shells for "
+                "which you can select different shell types.");
+  }
+  if (which_wedges_ != ShellWedges::All and
+      shell_types_ !=
+          std::vector<domain::CoordinateMaps::ShellType>{
+              num_shells_, domain::CoordinateMaps::ShellType::Cubed}) {
+    PARSE_ERROR(context,
+                "To specify 'ShellWedges' other than 'All', you must specify "
+                "'ShellType' as 'Cubed' for all shells.");
+  }
 
   // Create grid anchors
   grid_anchors_["Center"] =
       tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}};
 
   // Determine number of blocks
-  num_blocks_per_shell_ = which_wedges_ == ShellWedges::All             ? 6
-                          : which_wedges_ == ShellWedges::FourOnEquator ? 4
+  num_blocks_per_cubed_shell_ = which_wedges_ == ShellWedges::All ? 6
+                                : which_wedges_ == ShellWedges::FourOnEquator
+                                    ? 4
                                                                         : 1;
-  num_blocks_ = num_blocks_per_shell_ * num_shells_ + (fill_interior_ ? 1 : 0);
+  num_blocks_ = alg::accumulate(
+      shell_types_, 0_st,
+      [num_blocks_per_cubed_shell = num_blocks_per_cubed_shell_](
+          const size_t num_blocks,
+          const domain::CoordinateMaps::ShellType shell_type) {
+        if (shell_type == domain::CoordinateMaps::ShellType::Cubed) {
+          return num_blocks + num_blocks_per_cubed_shell;
+        } else if (shell_type == domain::CoordinateMaps::ShellType::Spherical) {
+          return num_blocks + 1;
+        } else {
+          ERROR("Unknown ShellType");
+        }
+      });
+  if (fill_interior_) {
+    ++num_blocks_;
+  }
 
   // Create block names and groups
   static std::array<std::string, 6> wedge_directions{
       "UpperZ", "LowerZ", "UpperY", "LowerY", "UpperX", "LowerX"};
   for (size_t shell = 0; shell < num_shells_; ++shell) {
     std::string shell_prefix = "Shell" + std::to_string(shell);
+    if (shell_types_[shell] == domain::CoordinateMaps::ShellType::Cubed) {
     for (size_t direction = which_wedge_index(which_wedges_); direction < 6;
          ++direction) {
       const std::string wedge_name =
@@ -176,6 +228,11 @@ Sphere::Sphere(
       block_names_.emplace_back(wedge_name);
       block_groups_[shell_prefix].insert(wedge_name);
       block_groups_["Wedges"].insert(wedge_name);
+      }
+    } else if (shell_types_[shell] ==
+               domain::CoordinateMaps::ShellType::Spherical) {
+      block_names_.emplace_back(shell_prefix);
+      block_groups_["SphericalShells"].insert(shell_prefix);
     }
   }
   if (fill_interior_) {
@@ -264,10 +321,9 @@ Sphere::Sphere(
 }
 
 Domain<3> Sphere::create_domain() const {
-  std::vector<std::array<size_t, 8>> corners =
-      corners_for_radially_layered_domains(num_shells_, fill_interior_,
-                                           {{1, 2, 3, 4, 5, 6, 7, 8}},
-                                           which_wedges_);
+  std::vector<Block<3>> blocks{};
+  blocks.reserve(num_blocks_);
+
   double aspect_ratio = 1.0;
   size_t index_polar_axis = 2;
   if (equatorial_compression_.has_value()) {
@@ -277,14 +333,48 @@ Domain<3> Sphere::create_domain() const {
   const domain::CoordinateMaps::EquatorialCompression compression{
       aspect_ratio, index_polar_axis};
 
-  auto coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                            Frame::Inertial, 3>(
-      sph_wedge_coordinate_maps(
+  auto coord_maps =
+      spherical_shells_coordinate_maps<Frame::BlockLogical, Frame::Inertial>(
           inner_radius_, outer_radius_,
           fill_interior_ ? std::get<InnerCube>(interior_).sphericity : 1.0, 1.0,
           use_equiangular_map_, std::nullopt, false, radial_partitioning_,
-          radial_distribution_, which_wedges_),
-      compression);
+          radial_distribution_, shell_types_, which_wedges_, M_PI, compression);
+
+  // Assuming only the outer shell is a spherical shell
+  const auto corners_of_wedges = corners_for_radially_layered_domains(
+      num_shells_ - 1, fill_interior_, {{1, 2, 3, 4, 5, 6, 7, 8}},
+      which_wedges_);
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_wedges{};
+  set_internal_boundaries<3>(make_not_null(&neighbors_of_wedges),
+                             corners_of_wedges);
+  std::unordered_set<BlockNeighbor<3>> neighbors_of_outer_shell{};
+  for (size_t i = 0; i < coord_maps.size() - 1; i++) {
+    if (fill_interior_ and i < 7) {
+      // Adjacent to the inner cube
+      neighbors_of_wedges[i][Direction<3>::lower_zeta()] = BlockNeighbor<3>{
+          num_blocks_ - 1,
+          neighbors_of_wedges[i][Direction<3>::lower_zeta()].orientation()};
+    }
+    if (i >= coord_maps.size() - 7) {
+      // Adjacent to the outer shell
+      // Account for different ordering of logical coordinates in wedges [theta,
+      // phi, r] and spherical shells  [r, theta, phi]
+      const OrientationMap<3> orientation{
+          {{Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+            Direction<3>::upper_eta()}},
+          {{Direction<3>::upper_xi(), Direction<3>::upper_eta(),
+            Direction<3>::upper_zeta()}}};
+      neighbors_of_wedges[i][Direction<3>::upper_zeta()] =
+          BlockNeighbor<3>{coord_maps.size() - 1, orientation};
+      neighbors_of_outer_shell.emplace(i, orientation.inverse_map());
+    }
+    blocks.emplace_back(std::move(coord_maps[i]), i,
+                        std::move(neighbors_of_wedges[i]), block_names_[i]);
+  }
+  blocks.emplace_back(Block<3>(
+      std::move(coord_maps.back()), coord_maps.size() - 1,
+      {{Direction<3>::lower_xi(), std::move(neighbors_of_outer_shell)}},
+      block_names_[coord_maps.size() - 1]));
 
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
@@ -318,6 +408,9 @@ Domain<3> Sphere::create_domain() const {
               BulgedCube{inner_radius_, inner_cube_sphericity,
                          use_equiangular_map_}));
     }
+    blocks.emplace_back(std::move(coord_maps.back()), num_blocks_ - 1,
+                        std::move(neighbors_of_wedges.back()),
+                        block_names_.back());
   } else {
     // Set up excision sphere only for ShellWedges::All
     // - The first 6 blocks enclose the excised sphere, see
@@ -338,14 +431,14 @@ Domain<3> Sphere::create_domain() const {
     }
   }
 
-  Domain<3> domain{std::move(coord_maps),       corners,      {},
-                   std::move(excision_spheres), block_names_, block_groups_};
+  Domain<3> domain{std::move(blocks), std::move(excision_spheres),
+                   block_groups_};
   ASSERT(domain.blocks().size() == num_blocks_,
          "Unexpected number of blocks. Expected "
              << num_blocks_ << " but created " << domain.blocks().size()
              << ".");
 
-  if (time_dependent_options_.has_value()) {
+  if (time_dependent_options_.has_value()) { // TODO
     std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>
         block_maps_grid_to_inertial{num_blocks_};
@@ -362,18 +455,18 @@ Domain<3> Sphere::create_domain() const {
               time_dependent_options_.value());
 
       const size_t first_block_outer_shell =
-          (num_shells_ - 1) * num_blocks_per_shell_;
+          (num_shells_ - 1) * num_blocks_per_cubed_shell_;
       for (size_t block_id = 0; block_id < num_blocks_; block_id++) {
         const bool is_outer_shell =
             block_id >= first_block_outer_shell and
-            block_id < (first_block_outer_shell + num_blocks_per_shell_);
+            block_id < (first_block_outer_shell + num_blocks_per_cubed_shell_);
         const bool is_inner_cube =
             fill_interior_ and (block_id == num_blocks_ - 1);
         // Correct for 'which_wedges' option
-        const size_t shell = block_id / num_blocks_per_shell_;
+        const size_t shell = block_id / num_blocks_per_cubed_shell_;
         const size_t block_number = shell * 6 +
                                     which_wedge_index(which_wedges_) +
-                                    block_id % num_blocks_per_shell_;
+                                    block_id % num_blocks_per_cubed_shell_;
         block_maps_grid_to_distorted[block_id] =
             hard_coded_options.grid_to_distorted_map(block_number,
                                                      is_inner_cube);

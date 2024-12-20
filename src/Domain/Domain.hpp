@@ -98,7 +98,12 @@ namespace domain {}
 template <size_t VolumeDim>
 class Domain {
  public:
-  explicit Domain(std::vector<Block<VolumeDim>> blocks);
+  explicit Domain(
+      std::vector<Block<VolumeDim>> blocks,
+      std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+          excision_spheres = {},
+      std::unordered_map<std::string, std::unordered_set<std::string>>
+          block_groups = {});
 
   /*!
    * \brief Create a Domain using CoordinateMaps to encode the Orientations.

@@ -97,18 +97,18 @@ void InitializeGeometry<Dim>::apply(
     const Domain<Dim>& domain,
     const domain::FunctionsOfTimeMap& functions_of_time,
     const Spectral::Quadrature quadrature, const ElementId<Dim>& element_id) {
+  const auto& block = domain.blocks()[element_id.block_id()];
   // Mesh
   ASSERT(quadrature == Spectral::Quadrature::GaussLobatto or
              quadrature == Spectral::Quadrature::Gauss,
          "The elliptic DG scheme supports Gauss and Gauss-Lobatto "
          "grids, but the chosen quadrature is: "
              << quadrature);
-  *mesh = domain::Initialization::create_initial_mesh(initial_extents,
-                                                      element_id, quadrature);
+  *mesh = domain::Initialization::create_initial_mesh(
+      initial_extents, element_id, block.geometry(), quadrature);
   // Element
-  const auto& block = domain.blocks()[element_id.block_id()];
-  *element = domain::Initialization::create_initial_element(element_id, block,
-                                                            initial_refinement);
+  *element = domain::Initialization::create_initial_element(
+      element_id, domain.blocks(), initial_refinement);
   // Neighbor meshes
   for (const auto& [direction, neighbors] : element->neighbors()) {
     for (const auto& neighbor_id : neighbors) {

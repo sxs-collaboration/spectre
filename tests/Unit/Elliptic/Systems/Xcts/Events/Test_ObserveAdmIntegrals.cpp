@@ -105,7 +105,7 @@ void test_local_adm_integrals(const double& distance,
     // Get element information.
     const auto& current_block = blocks.at(element_id.block_id());
     const auto current_element = domain::Initialization::create_initial_element(
-        element_id, current_block, initial_ref_levels);
+        element_id, blocks, initial_ref_levels);
     const ElementMap<3, Frame::Inertial> logical_to_inertial_map(
         element_id, current_block.stationary_map().get_clone());
 

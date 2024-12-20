@@ -82,10 +82,11 @@ struct InitializeElementFacesGridCoordinates {
       for (const auto element_id : element_ids) {
         const auto direction = excision_sphere.abutting_direction(element_id);
         if (direction.has_value()) {
-          const auto mesh = ::domain::Initialization::create_initial_mesh(
-              initial_extents, element_id, quadrature);
-          const auto face_mesh = mesh.slice_away(direction.value().dimension());
           const auto& current_block = blocks.at(block_id);
+          const auto mesh = ::domain::Initialization::create_initial_mesh(
+              initial_extents, element_id, current_block.geometry(),
+              quadrature);
+          const auto face_mesh = mesh.slice_away(direction.value().dimension());
           const ElementMap<Dim, Frame::Grid> element_map{
               element_id,
               current_block.is_time_dependent()

@@ -21,8 +21,14 @@ struct BlockLogical;
 }  // namespace Frame
 
 template <size_t VolumeDim>
-Domain<VolumeDim>::Domain(std::vector<Block<VolumeDim>> blocks)
-    : blocks_(std::move(blocks)) {}
+Domain<VolumeDim>::Domain(
+    std::vector<Block<VolumeDim>> blocks,
+    std::unordered_map<std::string, ExcisionSphere<VolumeDim>> excision_spheres,
+    std::unordered_map<std::string, std::unordered_set<std::string>>
+        block_groups)
+    : blocks_(std::move(blocks)),
+      excision_spheres_(std::move(excision_spheres)),
+      block_groups_(std::move(block_groups)) {}
 
 template <size_t VolumeDim>
 Domain<VolumeDim>::Domain(

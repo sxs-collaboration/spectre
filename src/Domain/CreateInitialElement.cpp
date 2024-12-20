@@ -12,6 +12,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
@@ -25,18 +26,82 @@
 namespace domain::Initialization {
 template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
-    const ElementId<VolumeDim>& element_id, const Block<VolumeDim>& block,
+    const ElementId<VolumeDim>& element_id,
+    const std::vector<Block<VolumeDim>>& blocks,
     const std::vector<std::array<size_t, VolumeDim>>&
         initial_refinement_levels) {
+  const auto& block = blocks[element_id.block_id()];
   const auto& neighbors_of_block = block.neighbors();
   const auto segment_ids = element_id.segment_ids();
 
   // Declare two helper lambdas for setting the neighbors of an element
   const auto compute_element_neighbor_in_other_block =
-      [&block, &initial_refinement_levels, &neighbors_of_block, &segment_ids,
-       grid_index =
-           element_id.grid_index()](const Direction<VolumeDim>& direction) {
-        const auto& block_neighbor = neighbors_of_block.at(direction);
+      [&block, &blocks, &initial_refinement_levels, &neighbors_of_block,
+       &segment_ids, grid_index = element_id.grid_index()](
+          const Direction<VolumeDim>& direction) {
+        const auto& block_neighbors = neighbors_of_block.at(direction);
+
+        // Handle spherical shells. We assume that spherical shells have no
+        // angular h-refinement. That makes the logic here quite simple:
+        // The single-element shell is the neighbor of all radial neighbors.
+        if (block.geometry() == domain::BlockGeometry::SphericalShell or
+            (block_neighbors.size() == 1 and
+             blocks[block_neighbors.begin()->id()].geometry() ==
+                 domain::BlockGeometry::SphericalShell)) {
+#ifdef SPECTRE_DEBUG
+          const auto check_angular_refinement =
+              [&initial_refinement_levels,
+               &direction](const Block<VolumeDim>& test_block) {
+                if (test_block.geometry() !=
+                    domain::BlockGeometry::SphericalShell) {
+                  return;
+                }
+                const auto& refinement_levels =
+                    initial_refinement_levels[test_block.id()];
+                for (size_t d = 0; d < VolumeDim; ++d) {
+                  if (d == direction.dimension()) {
+                    continue;
+                  }
+                  ASSERT(refinement_levels[d] == 0,
+                         "Spherical shells are assumed here to have no angular "
+                         "refinement in angular directions.");
+                }
+              };
+          check_angular_refinement(block);
+#endif  // SPECTRE_DEBUG
+          std::unordered_set<ElementId<VolumeDim>> neighbor_ids;
+          for (const auto& block_neighbor : block_neighbors) {
+#ifdef SPECTRE_DEBUG
+            check_angular_refinement(blocks[block_neighbor.id()]);
+#endif  // SPECTRE_DEBUG
+            const auto& orientation = block_neighbor.orientation();
+            const auto direction_from_neighbor =
+                orientation(direction.opposite());
+            const auto& refinement_of_neighbor =
+                initial_refinement_levels[block_neighbor.id()];
+            const size_t index_of_neighbor =
+                direction_from_neighbor.side() == Side::Lower
+                    ? 0
+                    : (two_to_the(refinement_of_neighbor[direction_from_neighbor
+                                                             .dimension()]) -
+                       1);
+            for (const auto& neighbor_id : initial_element_ids(
+                     block_neighbor.id(), refinement_of_neighbor, grid_index)) {
+              if (neighbor_id.segment_id(direction_from_neighbor.dimension())
+                      .index() == index_of_neighbor) {
+                neighbor_ids.insert(neighbor_id);
+              }
+            }
+          }
+          return std::make_pair(
+              direction, Neighbors<VolumeDim>(
+                             std::move(neighbor_ids),
+                             // TODO: may have to set this orientation
+                             OrientationMap<VolumeDim>::create_aligned(),
+                             blocks[block_neighbors.begin()->id()].geometry()));
+        }
+
+        const auto& block_neighbor = *block_neighbors.begin();
         const auto& orientation = block_neighbor.orientation();
         const auto direction_in_neighbor = orientation(direction);
 
@@ -131,29 +196,28 @@ Element<VolumeDim> create_initial_element(
         }
         return std::make_pair(
             direction,
-            Neighbors<VolumeDim>(std::move(neighbor_ids), orientation));
+            Neighbors<VolumeDim>(std::move(neighbor_ids), orientation,
+                                 blocks[block_neighbor.id()].geometry()));
       };
 
-  const auto compute_element_neighbor_in_same_block = [&element_id,
-                                                       &segment_ids](
-                                                          const Direction<
-                                                              VolumeDim>&
-                                                              direction) {
-    auto segment_ids_of_neighbor = segment_ids;
-    auto& perpendicular_segment_id =
-        gsl::at(segment_ids_of_neighbor, direction.dimension());
-    const auto index = perpendicular_segment_id.index();
-    perpendicular_segment_id =
-        SegmentId(perpendicular_segment_id.refinement_level(),
-                  direction.side() == Side::Upper ? index + 1 : index - 1);
-    return std::make_pair(
-        direction,
-        Neighbors<VolumeDim>(
-            {{ElementId<VolumeDim>{element_id.block_id(),
-                                   std::move(segment_ids_of_neighbor),
-                                   element_id.grid_index()}}},
-            OrientationMap<VolumeDim>::create_aligned()));
-  };
+  const auto compute_element_neighbor_in_same_block =
+      [&element_id, &segment_ids,
+       geometry = block.geometry()](const Direction<VolumeDim>& direction) {
+        auto segment_ids_of_neighbor = segment_ids;
+        auto& perpendicular_segment_id =
+            gsl::at(segment_ids_of_neighbor, direction.dimension());
+        const auto index = perpendicular_segment_id.index();
+        perpendicular_segment_id =
+            SegmentId(perpendicular_segment_id.refinement_level(),
+                      direction.side() == Side::Upper ? index + 1 : index - 1);
+        return std::make_pair(
+            direction,
+            Neighbors<VolumeDim>(
+                {{ElementId<VolumeDim>{element_id.block_id(),
+                                       std::move(segment_ids_of_neighbor),
+                                       element_id.grid_index()}}},
+                OrientationMap<VolumeDim>::create_aligned(), geometry));
+      };
 
   typename Element<VolumeDim>::Neighbors_t neighbors_of_element;
   for (size_t d = 0; d < VolumeDim; ++d) {
@@ -186,10 +250,10 @@ Element<VolumeDim> create_initial_element(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                 \
-  template Element<DIM(data)>                                \
-  domain::Initialization::create_initial_element<DIM(data)>( \
-      const ElementId<DIM(data)>&, const Block<DIM(data)>&,  \
+#define INSTANTIATE(_, data)                                             \
+  template Element<DIM(data)>                                            \
+  domain::Initialization::create_initial_element<DIM(data)>(             \
+      const ElementId<DIM(data)>&, const std::vector<Block<DIM(data)>>&, \
       const std::vector<std::array<size_t, DIM(data)>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

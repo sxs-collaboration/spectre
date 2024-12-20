@@ -131,16 +131,17 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
                 ::RelativisticEuler::Solutions::TovStar>>(soln))
             .get_clone();
   }
-  Block<3> block{test_non_diagonal_jacobian
-                     ? domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                        Frame::Inertial>(
-                           ::domain::CoordinateMaps::Rotation<3>(0.7, 0, 0.))
-                     : domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                        Frame::Inertial>(
-                           Affine3D{affine_map, affine_map, affine_map}),
-                 0,
-                 {}};
-
+  std::vector<Block<3>> blocks{};
+  blocks.push_back({test_non_diagonal_jacobian
+                        ? domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                           Frame::Inertial>(
+                              ::domain::CoordinateMaps::Rotation<3>(0.7, 0, 0.))
+                        : domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                           Frame::Inertial>(
+                              Affine3D{affine_map, affine_map, affine_map}),
+                    0,
+                    {}});
+  const auto& block = blocks[0];
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
@@ -153,7 +154,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           ::domain::CoordinateMaps::Identity<3>{});
   const auto element = domain::Initialization::create_initial_element(
-      element_id, block,
+      element_id, blocks,
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 
   const double time = 0.0;

@@ -54,6 +54,22 @@ class BlockNeighbor {
   OrientationMap<VolumeDim> orientation_;
 };
 
+template <size_t VolumeDim>
+size_t hash_value(const BlockNeighbor<VolumeDim>& block_neighbor) {
+  // Hashing only the Block ID because we assume it uniquely identifies the
+  // block neighbor; the orientation map is just extra information.
+  return std::hash<size_t>{}(block_neighbor.id());
+}
+
+namespace std {
+template <size_t VolumeDim>
+struct hash<BlockNeighbor<VolumeDim>> {
+  size_t operator()(const BlockNeighbor<VolumeDim>& block_neighbor) const {
+    return hash_value(block_neighbor);
+  }
+};
+}  // namespace std
+
 /// Output operator for BlockNeighbor.
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,

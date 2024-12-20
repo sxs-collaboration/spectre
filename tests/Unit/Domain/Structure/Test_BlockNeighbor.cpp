@@ -43,6 +43,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockNeighbor", "[Domain][Unit]") {
   // Test serialization:
   test_serialization(custom_neighbor);
 
+  // Test hash:
+  CHECK(hash_value(custom_neighbor) ==
+        hash_value(serialize_and_deserialize(custom_neighbor)));
+  CHECK(hash_value(custom_neighbor) != hash_value(BlockNeighbor<3>{1, {}}));
+
   // Test semantics:
   const auto custom_copy = custom_neighbor;
   test_copy_semantics(custom_neighbor);

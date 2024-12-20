@@ -130,13 +130,13 @@ struct ExportCoordinates {
     const double time = get<Tags::Time>(box);
 
     const auto& mesh = get<domain::Tags::Mesh<Dim>>(box);
-    const auto& inv_jacobian =
-        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                              Frame::Inertial>>(box);
+    // const auto& inv_jacobian =
+    //     db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+    //                                           Frame::Inertial>>(box);
     const auto& inertial_coordinates =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
-    const auto deriv_inertial_coordinates =
-        partial_derivative(inertial_coordinates, mesh, inv_jacobian);
+    // const auto deriv_inertial_coordinates =
+    //     partial_derivative(inertial_coordinates, mesh, inv_jacobian);
     // Collect volume data
     // Remove tensor types, only storing individual components
     std::vector<TensorComponent> components;
@@ -148,13 +148,13 @@ struct ExportCoordinates {
                               inertial_coordinates.get(d));
     }
 
-    for (size_t i = 0; i < deriv_inertial_coordinates.size(); ++i) {
-      components.emplace_back(
-          "DerivInertialCoordinates_" +
-              deriv_inertial_coordinates.component_name(
-                  deriv_inertial_coordinates.get_tensor_index(i)),
-          deriv_inertial_coordinates[i]);
-    }
+    // for (size_t i = 0; i < deriv_inertial_coordinates.size(); ++i) {
+    //   components.emplace_back(
+    //       "DerivInertialCoordinates_" +
+    //           deriv_inertial_coordinates.component_name(
+    //               deriv_inertial_coordinates.get_tensor_index(i)),
+    //       deriv_inertial_coordinates[i]);
+    // }
 
     // Also output the determinant of the inverse jacobian, which measures
     // the expansion and compression of the grid
@@ -169,27 +169,27 @@ struct ExportCoordinates {
     // Also output the jacobian diagnostic, which compares the analytic
     // Jacobian (via the CoordinateMap) to the numerical Jacobian
     // (computed via logical_partial_derivative)
-    const auto& jacobian = determinant_and_inverse(inv_jacobian).second;
-    tnsr::i<DataVector, Dim, Frame::ElementLogical> jac_diag{
-        mesh.number_of_grid_points(), 0.0};
-    domain::jacobian_diagnostic(make_not_null(&jac_diag), jacobian,
-                                inertial_coordinates, mesh);
-    for (size_t i = 0; i < Dim; ++i) {
-      components.emplace_back(
-          "JacobianDiagnostic_" +
-              jac_diag.component_name(jac_diag.get_tensor_index(i)),
-          jac_diag.get(i));
-    }
+    // const auto& jacobian = determinant_and_inverse(inv_jacobian).second;
+    // tnsr::i<DataVector, Dim, Frame::ElementLogical> jac_diag{
+    //     mesh.number_of_grid_points(), 0.0};
+    // domain::jacobian_diagnostic(make_not_null(&jac_diag), jacobian,
+    //                             inertial_coordinates, mesh);
+    // for (size_t i = 0; i < Dim; ++i) {
+    //   components.emplace_back(
+    //       "JacobianDiagnostic_" +
+    //           jac_diag.component_name(jac_diag.get_tensor_index(i)),
+    //       jac_diag.get(i));
+    // }
 
     // Also output the computation domain metric
-    const auto& flat_logical_metric =
-        db::get<domain::Tags::FlatLogicalMetric<Dim>>(box);
-    for (size_t i = 0; i < flat_logical_metric.size(); ++i) {
-      components.emplace_back(
-          db::tag_name<domain::Tags::FlatLogicalMetric<Dim>>() +
-              flat_logical_metric.component_suffix(i),
-          flat_logical_metric[i]);
-    }
+    // const auto& flat_logical_metric =
+    //     db::get<domain::Tags::FlatLogicalMetric<Dim>>(box);
+    // for (size_t i = 0; i < flat_logical_metric.size(); ++i) {
+    //   components.emplace_back(
+    //       db::tag_name<domain::Tags::FlatLogicalMetric<Dim>>() +
+    //           flat_logical_metric.component_suffix(i),
+    //       flat_logical_metric[i]);
+    // }
 
     // Send data to volume observer
     auto& local_observer = *Parallel::local_branch(

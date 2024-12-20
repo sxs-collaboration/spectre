@@ -174,7 +174,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
       const size_t grid_size = mesh.number_of_grid_points();
       const auto& my_block = blocks.at(element_id.block_id());
       auto element = domain::Initialization::create_initial_element(
-          element_id, my_block, initial_refinements);
+          element_id, blocks, initial_refinements);
 
       // we set lapse and shift to Minkowski so dt Psi = - Pi
       Scalar<DataVector> lapse(grid_size, 1.);

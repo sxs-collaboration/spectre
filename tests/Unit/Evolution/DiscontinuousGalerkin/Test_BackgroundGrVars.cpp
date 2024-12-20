@@ -131,7 +131,7 @@ void test(const gsl::not_null<std::mt19937*> gen) {
   const auto domain = brick.create_domain();
   const auto element_id = ElementId<3>{0};
   Element<3> element = domain::Initialization::create_initial_element(
-      element_id, domain.blocks().at(0),
+      element_id, domain.blocks(),
       std::vector<std::array<size_t, 3>>{{0, 0, 0}});
 
   const Mesh<3> mesh{num_dg_pts, Spectral::Basis::Legendre,

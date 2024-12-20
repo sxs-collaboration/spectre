@@ -141,11 +141,12 @@ std::array<double, 5> test(const size_t num_dg_pts,
   const Affine affine_map{-1.0, 1.0, 1.0, 15.0};
   const auto element = domain::Initialization::create_initial_element(
       ElementId<3>{0, {SegmentId{2, 2}, SegmentId{2, 2}, SegmentId{2, 2}}},
-      Block<3>{domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Inertial>(
-                   Affine3D{affine_map, affine_map, affine_map}),
-               0,
-               {}},
+      std::vector<Block<3>>{
+          {domain::make_coordinate_map_base<Frame::BlockLogical,
+                                            Frame::Inertial>(
+               Affine3D{affine_map, affine_map, affine_map}),
+           0,
+           {}}},
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
   const ElementMap<3, Frame::Grid> element_map{
       element.id(),

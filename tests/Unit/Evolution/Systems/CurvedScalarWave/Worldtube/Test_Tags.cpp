@@ -137,7 +137,7 @@ void test_compute_face_coordinates_grid() {
     for (const auto& element_id : element_ids) {
       const auto& my_block = blocks.at(element_id.block_id());
       const auto element = domain::Initialization::create_initial_element(
-          element_id, my_block, initial_refinements);
+          element_id, blocks, initial_refinements);
       const ElementMap element_map(
           element_id, my_block.stationary_map().get_to_grid_frame());
       const auto mesh_1 = domain::Initialization::create_initial_mesh(
@@ -210,7 +210,7 @@ void test_compute_face_coordinates() {
   for (const auto& element_id : element_ids) {
     const auto& my_block = blocks.at(element_id.block_id());
     const auto element = domain::Initialization::create_initial_element(
-        element_id, my_block, initial_refinements);
+        element_id, blocks, initial_refinements);
     const auto mesh = domain::Initialization::create_initial_mesh(
         initial_extents, element_id, quadrature);
     const ElementMap element_map(
@@ -544,7 +544,7 @@ void test_face_quantities_compute() {
   for (const auto& element_id : element_ids) {
     const auto& my_block = blocks.at(element_id.block_id());
     const auto element = domain::Initialization::create_initial_element(
-        element_id, my_block, initial_refinements);
+        element_id, blocks, initial_refinements);
     const auto mesh = domain::Initialization::create_initial_mesh(
         initial_extents, element_id, quadrature);
     const ElementMap element_map(element_id,
