@@ -175,7 +175,13 @@ class ObserveTimeStep : public Event {
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/,
                   const ObservationValue& observation_value) const {
-    const size_t number_of_grid_points = variables.number_of_grid_points();
+    // For empty vars, we use 1 grid point to avoid divisions by zero
+    // after reduction.
+    size_t number_of_grid_points = 1;
+    if constexpr (not std::is_same_v<typename System::variables_tag::tags_list,
+                                       tmpl::list<>>) {
+      number_of_grid_points = variables.number_of_grid_points();
+    }
     const double slab_size = time_step.slab().duration().value();
     const double step_size = abs(time_step.value());
     const double wall_time = sys::wall_time();
