@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_ApparentHorizon.cpp
   Test_Flatness.cpp
   Test_Robin.cpp
+  Test_SuperposedBoostedBinary.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

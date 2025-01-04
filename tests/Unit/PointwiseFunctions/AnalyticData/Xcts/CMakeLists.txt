@@ -5,6 +5,7 @@ set(LIBRARY "Test_XctsAnalyticData")
 
 set(LIBRARY_SOURCES
   Test_Binary.cpp
+  Test_BinaryWithGravitationalWaves.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
