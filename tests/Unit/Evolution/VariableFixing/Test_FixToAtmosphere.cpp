@@ -16,6 +16,14 @@
 
 namespace {
 
+void test_fix_reconstructed_state_to_atmosphere() {
+  using Frs = VariableFixing::FixReconstructedStateToAtmosphere;
+  for (const auto t :
+       {Frs::Always, Frs::AtDgFdInterfaceOnly, Frs::OnFdOnly, Frs::Never}) {
+    CHECK(t == TestHelpers::test_creation<Frs>(get_output(t)));
+  }
+}
+
 template <size_t Dim>
 void test_variable_fixer(
     const VariableFixing::FixToAtmosphere<Dim>& variable_fixer,
@@ -236,6 +244,7 @@ void test_variable_fixer() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.FixToAtmosphere",
                   "[VariableFixing][Unit]") {
+  test_fix_reconstructed_state_to_atmosphere();
   test_variable_fixer<1>();
   test_variable_fixer<2>();
   test_variable_fixer<3>();

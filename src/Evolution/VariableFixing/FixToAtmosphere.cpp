@@ -5,17 +5,59 @@
 
 #include <limits>
 #include <optional>
+#include <ostream>
 #include <pup.h>
+#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "Options/Options.hpp"
 #include "Options/ParseError.hpp"
+#include "Options/ParseOptions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace VariableFixing {
+std::ostream& operator<<(std::ostream& os,
+                         const FixReconstructedStateToAtmosphere& t) {
+  switch (t) {
+    case FixReconstructedStateToAtmosphere::Always:
+      return os << "Always";
+    case FixReconstructedStateToAtmosphere::AtDgFdInterfaceOnly:
+      return os << "AtDgFdInterfaceOnly";
+    case FixReconstructedStateToAtmosphere::OnFdOnly:
+      return os << "OnFdOnly";
+    case FixReconstructedStateToAtmosphere::Never:
+      return os << "Never";
+    default:
+      ERROR("Unknown floating point type, must be Float or Double");
+  }
+}
+}  // namespace VariableFixing
 
+template <>
+VariableFixing::FixReconstructedStateToAtmosphere
+Options::create_from_yaml<VariableFixing::FixReconstructedStateToAtmosphere>::
+    create<void>(const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  for (const auto t :
+       {VariableFixing::FixReconstructedStateToAtmosphere::Always,
+        VariableFixing::FixReconstructedStateToAtmosphere::AtDgFdInterfaceOnly,
+        VariableFixing::FixReconstructedStateToAtmosphere::OnFdOnly,
+        VariableFixing::FixReconstructedStateToAtmosphere::Never}) {
+    if (type_read == get_output(t)) {
+      return t;
+    }
+  }
+  PARSE_ERROR(options.context(),
+              "Failed to convert \""
+                  << type_read << "\" to FixReconstructedStateToAtmosphere.");
+}
+
+namespace VariableFixing {
 template <size_t Dim>
 FixToAtmosphere<Dim>::FixToAtmosphere(
     const double density_of_atmosphere, const double density_cutoff,

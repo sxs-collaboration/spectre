@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <iosfwd>
 #include <limits>
 #include <optional>
 
@@ -21,13 +22,46 @@
 /// \cond
 class DataVector;
 
+namespace Options {
+class Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
+
 namespace PUP {
 class er;
 }  // namespace PUP
 /// \endcond
 
 namespace VariableFixing {
+/// \brief How to apply atmosphere to the reconstructed state.
+enum class FixReconstructedStateToAtmosphere : uint8_t {
+  Always,
+  AtDgFdInterfaceOnly,
+  OnFdOnly,
+  Never
+};
 
+std::ostream& operator<<(std::ostream& os,
+                         const FixReconstructedStateToAtmosphere& t);
+}  // namespace VariableFixing
+
+template <>
+struct Options::create_from_yaml<
+    VariableFixing::FixReconstructedStateToAtmosphere> {
+  template <typename Metavariables>
+  static VariableFixing::FixReconstructedStateToAtmosphere create(
+      const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+VariableFixing::FixReconstructedStateToAtmosphere
+Options::create_from_yaml<VariableFixing::FixReconstructedStateToAtmosphere>::
+    create<void>(const Options::Option& options);
+
+namespace VariableFixing {
 /*!
  * \ingroup VariableFixingGroup
  * \brief Fix the primitive variables to an atmosphere in low density regions
