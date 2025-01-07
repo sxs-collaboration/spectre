@@ -7,6 +7,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PositivityPreservingAdaptiveOrder.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PrimReconstructor.hpp"
@@ -24,7 +25,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
       "  Alpha5: 3.7\n"
       "  Alpha7: None\n"
       "  Alpha9: None\n"
-      "  LowOrderReconstructor: MonotonisedCentral\n");
+      "  LowOrderReconstructor: MonotonisedCentral\n"
+      "  AtmosphereTreatment: Never\n");
   const auto ppao_deserialized =
       serialize_and_deserialize(ppao_from_options_base);
   auto* const ppao_from_options =
@@ -32,16 +34,27 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
                        PositivityPreservingAdaptiveOrderPrim*>(
           ppao_deserialized.get());
   REQUIRE(ppao_from_options != nullptr);
+  CHECK(grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+            3.7, std::nullopt, std::nullopt,
+            fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always} !=
+        grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+            3.7, std::nullopt, std::nullopt,
+            fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   CHECK(*ppao_from_options ==
         grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
             3.7, std::nullopt, std::nullopt,
-            fd::reconstruction::FallbackReconstructorType::MonotonisedCentral});
+            fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   test_move_semantics(
       grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
           3.7, std::nullopt, std::nullopt,
-          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral},
+          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never},
       grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
           3.7, std::nullopt, std::nullopt,
-          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral});
+          fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   helpers::test_prim_reconstructor(10, *ppao_from_options);
 }

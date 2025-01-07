@@ -45,11 +45,15 @@ Wcns5zPrim::Wcns5zPrim(const size_t nonlinear_weight_exponent,
                        const double epsilon,
                        const ::fd::reconstruction::FallbackReconstructorType
                            fallback_reconstructor,
-                       const size_t max_number_of_extrema)
+                       const size_t max_number_of_extrema,
+                       const ::VariableFixing::FixReconstructedStateToAtmosphere
+                           fix_reconstructed_state_to_atmosphere)
     : nonlinear_weight_exponent_(nonlinear_weight_exponent),
       epsilon_(epsilon),
       fallback_reconstructor_(fallback_reconstructor),
-      max_number_of_extrema_(max_number_of_extrema) {
+      max_number_of_extrema_(max_number_of_extrema),
+      fix_reconstructed_state_to_atmosphere_(
+          fix_reconstructed_state_to_atmosphere) {
   std::tie(reconstruct_, reconstruct_lower_neighbor_,
            reconstruct_upper_neighbor_) =
       ::fd::reconstruction::wcns5z_function_pointers<3>(
@@ -68,6 +72,7 @@ void Wcns5zPrim::pup(PUP::er& p) {
   p | epsilon_;
   p | fallback_reconstructor_;
   p | max_number_of_extrema_;
+  p | fix_reconstructed_state_to_atmosphere_;
   if (p.isUnpacking()) {
     std::tie(reconstruct_, reconstruct_lower_neighbor_,
              reconstruct_upper_neighbor_) =
@@ -92,7 +97,9 @@ void Wcns5zPrim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
-    const Mesh<dim>& subcell_mesh) const {
+    const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const {
+  using ::VariableFixing::FixReconstructedStateToAtmosphere;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
 
@@ -144,7 +151,13 @@ void Wcns5zPrim::reconstruct(
             shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true,
+      (fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::Always or
+               fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::OnFdOnly
+           ? &fix_to_atmosphere
+           : nullptr));
 }
 
 template <size_t ThermodynamicDim, typename TagsList>
@@ -158,7 +171,9 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
     const Element<3>& element,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
     const Direction<3>& direction_to_reconstruct) const {
+  using ::VariableFixing::FixReconstructedStateToAtmosphere;
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
@@ -242,7 +257,13 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
-      true);
+      true,
+      (fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::Always or
+               fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::AtDgFdInterfaceOnly
+           ? &fix_to_atmosphere
+           : nullptr));
 }
 
 bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
@@ -251,7 +272,9 @@ bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
   return lhs.nonlinear_weight_exponent_ == rhs.nonlinear_weight_exponent_ and
          lhs.epsilon_ == rhs.epsilon_ and
          lhs.fallback_reconstructor_ == rhs.fallback_reconstructor_ and
-         lhs.max_number_of_extrema_ == rhs.max_number_of_extrema_;
+         lhs.max_number_of_extrema_ == rhs.max_number_of_extrema_ and
+         lhs.fix_reconstructed_state_to_atmosphere_ ==
+             rhs.fix_reconstructed_state_to_atmosphere_;
 }
 
 bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
@@ -273,7 +296,8 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
       const Element<3>& element,                                            \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh) const;                                   \
+      const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
   template void Wcns5zPrim::reconstruct_fd_neighbor(                        \
       gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
           vars_on_face,                                                     \
@@ -286,6 +310,7 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
       const Direction<3>& direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

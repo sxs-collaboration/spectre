@@ -56,9 +56,13 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
     const std::optional<double> alpha_9,
     const ::fd::reconstruction::FallbackReconstructorType
         low_order_reconstructor,
+    const ::VariableFixing::FixReconstructedStateToAtmosphere
+        fix_reconstructed_state_to_atmosphere,
     const Options::Context& context)
     : four_to_the_alpha_5_(pow(4.0, alpha_5)),
-      low_order_reconstructor_(low_order_reconstructor) {
+      low_order_reconstructor_(low_order_reconstructor),
+      fix_reconstructed_state_to_atmosphere_(
+          fix_reconstructed_state_to_atmosphere) {
   if (low_order_reconstructor_ ==
       ::fd::reconstruction::FallbackReconstructorType::None) {
     PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
@@ -98,6 +102,7 @@ void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   p | six_to_the_alpha_7_;
   p | eight_to_the_alpha_9_;
   p | low_order_reconstructor_;
+  p | fix_reconstructed_state_to_atmosphere_;
   if (p.isUnpacking()) {
     set_function_pointers();
   }
@@ -120,7 +125,9 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
-    const Mesh<dim>& subcell_mesh) const {
+    const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const {
+  using ::VariableFixing::FixReconstructedStateToAtmosphere;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
 
@@ -178,15 +185,14 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
             shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), false);
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), false, nullptr);
 
   reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>>,
                          non_positive_tags>(
       vars_on_lower_face, vars_on_upper_face,
-      [this](
-          auto upper_face_vars_ptr, auto lower_face_vars_ptr,
-          const auto& volume_vars, const auto& ghost_cell_vars,
-          const auto& subcell_extents, const size_t number_of_variables) {
+      [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
+             const auto& volume_vars, const auto& ghost_cell_vars,
+             const auto& subcell_extents, const size_t number_of_variables) {
         reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
                      ghost_cell_vars, subcell_extents, number_of_variables,
                      four_to_the_alpha_5_,
@@ -227,7 +233,13 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
             shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true,
+      (fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::Always or
+               fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::OnFdOnly
+           ? &fix_to_atmosphere
+           : nullptr));
 }
 
 // The current implementation does not use positivity-preserving
@@ -245,7 +257,9 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
     const Direction<dim> direction_to_reconstruct) const {
+  using ::VariableFixing::FixReconstructedStateToAtmosphere;
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
@@ -336,7 +350,13 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
-      true);
+      true,
+      (fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::Always or
+               fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::AtDgFdInterfaceOnly
+           ? &fix_to_atmosphere
+           : nullptr));
 }
 
 bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
@@ -346,7 +366,9 @@ bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
   return lhs.four_to_the_alpha_5_ == rhs.four_to_the_alpha_5_ and
          lhs.six_to_the_alpha_7_ == rhs.six_to_the_alpha_7_ and
          lhs.eight_to_the_alpha_9_ == rhs.eight_to_the_alpha_9_ and
-         lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_;
+         lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_ and
+         lhs.fix_reconstructed_state_to_atmosphere_ ==
+             rhs.fix_reconstructed_state_to_atmosphere_;
 }
 
 bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
@@ -372,7 +394,8 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
       const Element<3>& element,                                            \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh) const;                                   \
+      const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
   template void                                                             \
   PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(           \
       gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
@@ -386,6 +409,7 @@ bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

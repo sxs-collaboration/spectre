@@ -278,7 +278,8 @@ double test(const size_t num_dg_pts) {
           gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>,
           ::gh::gauges::Tags::GaugeCondition,
           grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
-          evolution::dg::subcell::Tags::SubcellOptions<3>>,
+          evolution::dg::subcell::Tags::SubcellOptions<3>,
+          ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>,
       db::AddComputeTags<
           ::domain::Tags::LogicalCoordinates<3>,
           ::domain::Tags::MappedCoordinates<
@@ -326,7 +327,10 @@ double test(const size_t num_dg_pts) {
       evolution::dg::subcell::SubcellOptions{
           4.0, 1_st, 1.0e-3, 1.0e-4, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
-          std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
+          std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1},
+      // Just use a default-constructed fixer and have the reconstructor not
+      // call it.
+      ::VariableFixing::FixToAtmosphere<3>{});
 
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));

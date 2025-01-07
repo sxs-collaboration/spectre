@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -26,6 +27,7 @@
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -37,7 +39,8 @@ namespace grmhd::ValenciaDivClean::fd {
 template <typename TagsList, size_t ThermodynamicDim>
 void compute_conservatives_for_reconstruction(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const VariableFixing::FixToAtmosphere<3>* const fix_to_atmosphere) {
   // Computes:
   // 1. W v^i
   // 2. Lorentz factor as sqrt(1 + Wv^i Wv^j\gamma_{ij})
@@ -69,6 +72,19 @@ void compute_conservatives_for_reconstruction(
           lorentz_factor_times_spatial_velocity;
   for (size_t i = 0; i < 3; ++i) {
     spatial_velocity.get(i) /= get(lorentz_factor);
+  }
+
+  if (fix_to_atmosphere != nullptr) {
+    fix_to_atmosphere->operator()(
+        get<hydro::Tags::RestMassDensity<DataVector>>(vars_on_face),
+        get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vars_on_face),
+        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(vars_on_face),
+        get<hydro::Tags::LorentzFactor<DataVector>>(vars_on_face),
+        get<hydro::Tags::Pressure<DataVector>>(vars_on_face),
+        get<hydro::Tags::Temperature<DataVector>>(vars_on_face),
+
+        get<hydro::Tags::ElectronFraction<DataVector>>(*vars_on_face),
+        spatial_metric, eos);
   }
 
   // pointers to primitive variables
@@ -235,9 +251,9 @@ void reconstruct_prims_work(
 
   for (size_t i = 0; compute_conservatives and i < 3; ++i) {
     compute_conservatives_for_reconstruction(
-        make_not_null(&gsl::at(*vars_on_lower_face, i)), eos);
+        make_not_null(&gsl::at(*vars_on_lower_face, i)), eos, nullptr);
     compute_conservatives_for_reconstruction(
-        make_not_null(&gsl::at(*vars_on_upper_face, i)), eos);
+        make_not_null(&gsl::at(*vars_on_upper_face, i)), eos, nullptr);
   }
 }
 
@@ -321,7 +337,7 @@ void reconstruct_fd_neighbor_work(
       });
 
   if (compute_conservatives) {
-    compute_conservatives_for_reconstruction(vars_on_face, eos);
+    compute_conservatives_for_reconstruction(vars_on_face, eos, nullptr);
   }
 }
 }  // namespace grmhd::ValenciaDivClean::fd
