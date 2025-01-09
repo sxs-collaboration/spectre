@@ -117,7 +117,13 @@ void test_history() {
                          make_deriv(-10.0));
   // [(0, -1, -10)] []
   CHECK(const_history.size() == 1);
-  CHECK(&const_history.complete_step_start() == &const_history[0]);
+  CHECK(&const_history.step_start(0.0) == &const_history[0]);
+  CHECK(&const_history.step_start(0.1) == &const_history[0]);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      const_history.step_start(-0.1),
+      Catch::Matchers::ContainsSubstring("before start of history"));
+#endif  // SPECTRE_DEBUG
   history.insert_initial(
       TimeStepId(true, -1, slab.start() - Slab(-1.0, 0.0).duration() / 4),
       History::no_value, make_deriv(-20.0));
@@ -142,7 +148,14 @@ void test_history() {
   CHECK(const_history[2].derivative == make_deriv(-10.0));
   CHECK(const_history.latest_value() == *const_history.back().value);
   CHECK(&const_history.latest_value() == &*const_history.back().value);
-  CHECK(&const_history.complete_step_start() == &const_history[2]);
+  CHECK(&const_history.step_start(0.0) == &const_history[2]);
+  CHECK(&const_history.step_start(0.1) == &const_history[2]);
+  CHECK(&const_history.step_start(-0.1) == &const_history[1]);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      const_history.step_start(-1.0),
+      Catch::Matchers::ContainsSubstring("before start of history"));
+#endif  // SPECTRE_DEBUG
 
   history[0].derivative = make_deriv(-300.0);
   // [(-1/2, -3, -300), (-1/4, X, -20), (0, -1, -10)] []
@@ -297,7 +310,10 @@ void test_history() {
   CHECK(as_const(const_history.substeps()).size() == 1);
   CHECK(as_const(const_history.substeps())[0].derivative == make_deriv(40.0));
   CHECK(as_const(history.substeps()).size() == 1);
-  CHECK(&const_history.complete_step_start() == &const_history[1]);
+  CHECK(&const_history.step_start(0.5) == &const_history[1]);
+  CHECK(&const_history.step_start(0.7) == &const_history[1]);
+  CHECK(&const_history.step_start(0.3) == &const_history[0]);
+
   as_const(history.substeps())[0].derivative = make_deriv(400.0);
   // [(1/4, X, 10), (1/2, 2, 20)] [1/2: (1, 4, 400)]
   CHECK(as_const(const_history.substeps())[0].derivative == make_deriv(400.0));
@@ -395,7 +411,10 @@ void test_history() {
   CHECK(const_history.at_step_start());
   CHECK(static_cast<const ConstUntyped&>(const_history.untyped())
             .at_step_start());
-  CHECK(&const_history.complete_step_start() == &const_history[1]);
+  CHECK(&const_history.step_start(0.5) == &const_history[1]);
+  CHECK(&const_history.step_start(0.7) == &const_history[1]);
+  CHECK(&const_history.step_start(1.1) == &const_history[2]);
+  CHECK(&const_history.step_start(1.0) == &const_history[2]);
 
   // Test transform when the substeps are not associated with the last
   // step.  This causes errors in a naive implementation.

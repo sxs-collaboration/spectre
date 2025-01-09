@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/MathWrapper.hpp"
 #include "DataStructures/StaticDeque.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ContainsAllocations.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -622,10 +623,10 @@ class History
   /// the time steppers can manage their history.
   const Vars& latest_value() const;
 
-  /// Get the record for the start of the latest complete step.  This
-  /// is the step with substeps stored if there is one, and otherwise
-  /// the most recent step.
-  const StepRecord<Vars>& complete_step_start() const;
+  /// Get the record for the start of the step containing the passed
+  /// time.  If the time matches a step time exactly, the record for
+  /// that step is returned.
+  const StepRecord<Vars>& step_start(double time) const;
 
   /// Check whether we are at the start of a step, i.e, the most
   /// recent entry in the history is not a substep.
@@ -792,16 +793,22 @@ const Vars& History<Vars>::latest_value() const {
 }
 
 template <typename Vars>
-const StepRecord<Vars>& History<Vars>::complete_step_start() const {
-  ASSERT(not this->empty(), "History is empty");
-  if (substep_values_.empty()) {
-    return this->back();
-  } else {
-    const TimeStepId substep_id = substep_values_.front().time_step_id;
-    const TimeStepId step_id(substep_id.time_runs_forward(),
-                             substep_id.slab_number(), substep_id.step_time());
-    return (*this)[step_id];
+const StepRecord<Vars>& History<Vars>::step_start(const double time) const {
+  // Search starting at the end to handle self-start correctly (and
+  // because the result under usual use is one of the last two
+  // entries).
+  const auto first_step = this->begin();
+  auto step = this->end();
+  ASSERT(step != first_step, "History is empty");
+  --step;
+  const evolution_less<double> before{step->time_step_id.time_runs_forward()};
+  while (before(time, step->time_step_id.step_time().value())) {
+    ASSERT(step != first_step,
+           "Start of step at time " << time << " is before start of history "
+           << first_step->time_step_id);
+    --step;
   }
+  return *step;
 }
 
 template <typename Vars>
