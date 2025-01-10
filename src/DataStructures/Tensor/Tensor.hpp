@@ -11,11 +11,6 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-#include "DataStructures/ComplexDataVector.hpp"
-#include "DataStructures/ComplexModalVector.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/ModalVector.hpp"
-#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Expressions/AddSubtract.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
@@ -103,18 +98,6 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "If you are sure you need rank 5 or higher Tensor's please "
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
-  static_assert(
-      std::is_same_v<X, std::complex<double>> or std::is_same_v<X, double> or
-          std::is_same_v<X, ComplexDataVector> or
-          std::is_same_v<X, ComplexModalVector> or
-          std::is_same_v<X, DataVector> or std::is_same_v<X, ModalVector> or
-          is_spin_weighted_of_v<ComplexDataVector, X> or
-          is_spin_weighted_of_v<ComplexModalVector, X> or
-          simd::is_batch<X>::value,
-      "Unsupported type. While other types are technically possible it is not "
-      "clear that Tensor is the correct container for them. Please seek advice "
-      "on the topic by discussing with the SpECTRE developers.");
-
  public:
   /// The type of the sequence that holds the data
   using storage_type =
