@@ -11,7 +11,7 @@
 
 namespace ScalarWave {
 template <size_t Dim>
-void TimeDerivative<Dim>::apply(
+evolution::dg::TimeDerivativeDecisions<Dim> TimeDerivative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_psi,
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
@@ -42,6 +42,7 @@ void TimeDerivative<Dim>::apply(
   for (size_t d = 0; d < Dim; ++d) {
     dt_phi->get(d) = -d_pi.get(d) + get(gamma2) * (d_psi.get(d) - phi.get(d));
   }
+  return {true};
 }
 
 template class TimeDerivative<1>;

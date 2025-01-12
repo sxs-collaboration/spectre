@@ -20,7 +20,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean {
-void TimeDerivativeTerms::apply(
+evolution::dg::TimeDerivativeDecisions<3> TimeDerivativeTerms::apply(
     const gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_d*/,
     const gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_ye*/,
     const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_tilde_tau,
@@ -154,5 +154,6 @@ void TimeDerivativeTerms::apply(
 
       rest_mass_density, electron_fraction, pressure, specific_internal_energy,
       extrinsic_curvature, constraint_damping_parameter);
+  return {true};
 }
 }  // namespace grmhd::ValenciaDivClean

@@ -30,8 +30,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
-#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
@@ -45,7 +45,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/PassVariables.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -54,6 +54,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -205,7 +206,7 @@ struct TimeDerivativeTerms {
 
   // Conservative system
   /// [dt_con]
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
       const gsl::not_null<Scalar<DataVector>*> dt_var1,
@@ -242,11 +243,12 @@ struct TimeDerivativeTerms {
         }
       }
     }
+    return {true};
   }
   /// [dt_con]
 
   // with prims
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       const gsl::not_null<Scalar<DataVector>*> dt_var1,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> dt_var2,
 
@@ -262,11 +264,12 @@ struct TimeDerivativeTerms {
     apply(dt_var1, dt_var2, flux_var1, flux_var2, square_var3, var1, var2,
           var3);
     get(*dt_var1) += get(prim_var1);
+    return {true};
   }
 
   // Nonconservative system
   /// [dt_nc]
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
       const gsl::not_null<Scalar<DataVector>*> dt_var1,
@@ -295,11 +298,12 @@ struct TimeDerivativeTerms {
         dt_var2->get(d) -= get(var1) * var2.get(i) * d_var2.get(i, d);
       }
     }
+    return {true};
   }
   /// [dt_nc]
 
   // Mixed system
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       const gsl::not_null<Scalar<DataVector>*> dt_var1,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> dt_var2,
 
@@ -331,9 +335,10 @@ struct TimeDerivativeTerms {
         }
       }
     }
+    return {true};
   }
   /// [dt_mp]
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       const gsl::not_null<Scalar<DataVector>*> dt_var1,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> dt_var2,
 
@@ -349,6 +354,7 @@ struct TimeDerivativeTerms {
       const Scalar<DataVector>& var3, const Scalar<DataVector>& prim_var1) {
     apply(dt_var1, dt_var2, flux_var2, square_var3, d_var1, var1, var2, var3);
     get(*dt_var1) += get(prim_var1);
+    return {true};
   }
   /// [dt_mp]
 };
@@ -368,7 +374,7 @@ struct TimeDerivativeTermsWithVariables
   using flux_var2 = ::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>;
 
   /// [dt_con_variables]
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
       const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
@@ -389,11 +395,12 @@ struct TimeDerivativeTermsWithVariables
     base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
                 get<flux_var1>(flux_vars), get<flux_var2>(flux_vars),
                 get<Var3Squared>(temporaries), var1, var2, var3);
+    return {true};
   }
   /// [dt_con_variables]
 
   // with prims
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
 
       const gsl::not_null<Variables<tmpl::list<flux_var1, flux_var2>>*>
@@ -407,11 +414,12 @@ struct TimeDerivativeTermsWithVariables
     base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
                 get<flux_var1>(flux_vars), get<flux_var2>(flux_vars),
                 get<Var3Squared>(temporaries), var1, var2, var3, prim_var1);
+    return {true};
   }
 
   // Nonconservative system
   /// [dt_nc_variables]
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
       const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
@@ -432,11 +440,12 @@ struct TimeDerivativeTermsWithVariables
     base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
                 get<Var3Squared>(temporaries), d_var1, d_var2, var1, var2,
                 var3);
+    return {true};
   }
   /// [dt_nc_variables]
 
   // Mixed system
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
 
       const gsl::not_null<Variables<tmpl::list<flux_var2>>*> flux_vars,
@@ -452,10 +461,11 @@ struct TimeDerivativeTermsWithVariables
     base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
                 get<flux_var2>(flux_vars), get<Var3Squared>(temporaries),
                 d_var1, var1, var2, var3);
+    return {true};
   }
 
   /// [dt_mp_variables]
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<Dim> apply(
       const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
 
       const gsl::not_null<Variables<tmpl::list<flux_var2>>*> flux_vars,
@@ -471,6 +481,7 @@ struct TimeDerivativeTermsWithVariables
     base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
                 get<flux_var2>(flux_vars), get<Var3Squared>(temporaries),
                 d_var1, var1, var2, var3, prim_var1);
+    return {true};
   }
   /// [dt_mp_variables]
 };

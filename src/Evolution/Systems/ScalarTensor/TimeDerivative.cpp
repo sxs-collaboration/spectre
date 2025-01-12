@@ -34,7 +34,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarTensor {
-void TimeDerivative::apply(
+evolution::dg::TimeDerivativeDecisions<3> TimeDerivative::apply(
     // GH dt variables
     const gsl::not_null<tnsr::aa<DataVector, dim>*> dt_spacetime_metric,
     const gsl::not_null<tnsr::aa<DataVector, dim>*> dt_pi,
@@ -173,6 +173,7 @@ void TimeDerivative::apply(
   add_stress_energy_term_to_dt_pi(dt_pi, *stress_energy, lapse_scalar);
 
   add_scalar_source_to_dt_pi_scalar(dt_pi_scalar, scalar_source, lapse_scalar);
+  return {true};
 }
 }  // namespace ScalarTensor
 

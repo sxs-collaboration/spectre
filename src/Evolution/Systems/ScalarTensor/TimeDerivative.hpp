@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
@@ -68,7 +69,7 @@ struct TimeDerivative {
       tmpl::append<gh_arg_tags, scalar_arg_tags,
                    tmpl::list<ScalarTensor::Tags::ScalarSource>>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<3> apply(
       // GH dt variables
       gsl::not_null<tnsr::aa<DataVector, dim>*> dt_spacetime_metric,
       gsl::not_null<tnsr::aa<DataVector, dim>*> dt_pi,

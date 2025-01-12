@@ -16,7 +16,7 @@
 
 namespace ForceFree {
 
-void TimeDerivativeTerms::apply(
+evolution::dg::TimeDerivativeDecisions<3> TimeDerivativeTerms::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         non_flux_terms_dt_tilde_e,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -107,6 +107,7 @@ void TimeDerivativeTerms::apply(
                        tilde_psi, tilde_phi, tilde_q, *tilde_j_drift, kappa_psi,
                        kappa_phi, lapse, d_lapse, d_shift, inv_spatial_metric,
                        extrinsic_curvature);
+  return {true};
 }
 
 }  // namespace ForceFree

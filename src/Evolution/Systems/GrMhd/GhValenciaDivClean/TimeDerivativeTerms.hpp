@@ -11,6 +11,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/PassVariables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Harmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
@@ -68,7 +69,7 @@ struct TimeDerivativeTermsImpl<
     tmpl::list<TraceReversedStressResultTags...>,
     tmpl::list<TraceReversedStressArgumentTags...>> {
   template <typename TemporaryTagsList, typename... ExtraTags>
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<3> apply(
       const gsl::not_null<
           Variables<tmpl::list<GhDtTags..., ValenciaDtTags...>>*>
           dt_vars_ptr,
@@ -174,6 +175,7 @@ struct TimeDerivativeTermsImpl<
         get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
             *temps_ptr),
         get<gr::Tags::Lapse<DataVector>>(*temps_ptr));
+    return evolution::dg::TimeDerivativeDecisions<3>{true};
   }
 };
 }  // namespace detail
@@ -271,7 +273,7 @@ struct TimeDerivativeTerms : evolution::PassVariables {
                    d_spatial_metric>;
 
   template <typename... Args>
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<3> apply(
       const gsl::not_null<Variables<dt_tags>*> dt_vars_ptr,
       const gsl::not_null<Variables<db::wrap_tags_in<
           ::Tags::Flux, typename ValenciaDivClean::System::flux_variables,
@@ -317,7 +319,7 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       }
     }
 
-    detail::TimeDerivativeTermsImpl<
+    return detail::TimeDerivativeTermsImpl<
         gh_dt_tags, valencia_dt_tags, valencia_flux_tags, gh_temp_tags,
         valencia_temp_tags, gh_gradient_tags, gh_arg_tags, valencia_arg_tags,
         typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags,

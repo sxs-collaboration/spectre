@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Fluxes.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Sources.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
@@ -44,7 +45,7 @@ struct TimeDerivativeTerms {
                     Frame::Inertial>,
       gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
 
-  static void apply(
+  static ::evolution::dg::TimeDerivativeDecisions<3> apply(
       const gsl::not_null<typename Tags::TildeE<
           Frame::Inertial,
           NeutrinoSpecies>::type*>... non_flux_terms_dt_tilde_e,
@@ -90,6 +91,7 @@ struct TimeDerivativeTerms {
         non_flux_terms_dt_tilde_e, non_flux_terms_dt_tilde_s, tilde_e, tilde_s,
         tilde_p, source_n, source_i, lapse, d_lapse, d_shift, d_spatial_metric,
         inv_spatial_metric, extrinsic_curvature));
+    return {true};
   }
 };
 }  // namespace RadiationTransport::M1Grey

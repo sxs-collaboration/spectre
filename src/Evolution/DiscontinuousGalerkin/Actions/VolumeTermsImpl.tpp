@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdlib>
 #include <optional>
 #include <ostream>
 #include <type_traits>
@@ -14,6 +15,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/PassVariables.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
@@ -112,8 +114,7 @@ void volume_terms(
       "are defined, and that at least one of them is a non-empty list of "
       "tags.");
 
-  using flux_variables =
-      tmpl::list<FluxVariablesTags...>;
+  using flux_variables = tmpl::list<FluxVariablesTags...>;
 
   // Compute d_i u_\alpha for nonconservative products
   if constexpr (has_partial_derivs) {
@@ -124,25 +125,26 @@ void volume_terms(
   // For now just zero dt_vars. If this is a performance bottle neck we
   // can re-evaluate in the future.
   dt_vars_ptr->initialize(mesh.number_of_grid_points(), 0.0);
+  evolution::dg::TimeDerivativeDecisions<Dim> time_derivative_decisions{};
 
   // Compute volume du/dt and fluxes
   if constexpr (std::is_base_of_v<evolution::PassVariables,
                                   ComputeVolumeTimeDerivativeTerms>) {
     if constexpr (sizeof...(FluxVariablesTags) != 0) {
-      ComputeVolumeTimeDerivativeTerms::apply(
+      time_derivative_decisions = ComputeVolumeTimeDerivativeTerms::apply(
           dt_vars_ptr, volume_fluxes, temporaries,
           get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>,
                             Frame::Inertial>>(*partial_derivs)...,
           time_derivative_args...);
     } else {
-      ComputeVolumeTimeDerivativeTerms::apply(
+      time_derivative_decisions = ComputeVolumeTimeDerivativeTerms::apply(
           dt_vars_ptr, temporaries,
           get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>,
                             Frame::Inertial>>(*partial_derivs)...,
           time_derivative_args...);
     }
   } else {
-    ComputeVolumeTimeDerivativeTerms::apply(
+    time_derivative_decisions = ComputeVolumeTimeDerivativeTerms::apply(
         make_not_null(&get<::Tags::dt<VariablesTags>>(*dt_vars_ptr))...,
         make_not_null(&get<::Tags::Flux<FluxVariablesTags, tmpl::size_t<Dim>,
                                         Frame::Inertial>>(*volume_fluxes))...,
@@ -154,6 +156,9 @@ void volume_terms(
 
   // Add volume terms for moving meshes
   if (mesh_velocity.has_value()) {
+    if (not time_derivative_decisions.compute_flux_divergence) {
+      goto end_of_flux_mesh_velocity;  // NOLINT(cppcoreguidelines-avoid-goto)
+    }
     tmpl::for_each<flux_variables>([&div_mesh_velocity, &dt_vars_ptr,
                                     &evolved_vars, &mesh_velocity,
                                     &volume_fluxes](auto tag_v) {
@@ -193,6 +198,7 @@ void volume_terms(
             get(*div_mesh_velocity);
       }
     });
+  end_of_flux_mesh_velocity:
 
     // We add the mesh velocity to all equations that don't have flux terms.
     // This doesn't need to be equal to the equations that have partial
@@ -237,6 +243,9 @@ void volume_terms(
   // Add the flux divergence term to du_\alpha/dt, which must be done
   // after the corrections for the moving mesh are made.
   if constexpr (has_fluxes) {
+    if (not time_derivative_decisions.compute_flux_divergence) {
+      goto end_of_flux_div_calculation;  // NOLINT(cppcoreguidelines-avoid-goto)
+    }
     if (dg_formulation == ::dg::Formulation::StrongInertial) {
       divergence(div_fluxes, *volume_fluxes, mesh,
                  logical_to_inertial_inverse_jacobian);
@@ -289,6 +298,8 @@ void volume_terms(
             }
           }
         });
+  end_of_flux_div_calculation:
+    (void)5;  // null statement required after label at end of block until C++23
   } else {
     (void)dg_formulation;
   }

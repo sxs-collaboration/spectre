@@ -5,6 +5,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/TMPL.hpp"
@@ -28,7 +29,7 @@ struct TimeDerivative {
   using argument_tags =
       tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::ConstraintGamma2>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
       gsl::not_null<Scalar<DataVector>*> dt_psi,

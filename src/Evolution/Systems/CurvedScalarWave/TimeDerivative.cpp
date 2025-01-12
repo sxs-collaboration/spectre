@@ -16,7 +16,7 @@
 
 namespace CurvedScalarWave {
 template <size_t Dim>
-void TimeDerivative<Dim>::apply(
+evolution::dg::TimeDerivativeDecisions<Dim> TimeDerivative<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_psi,
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
@@ -62,6 +62,7 @@ void TimeDerivative<Dim>::apply(
                   gamma2() * lapse() * (d_psi(ti::i) - phi(ti::i)) -
                   pi() * deriv_lapse(ti::i) +
                   phi(ti::j) * deriv_shift(ti::i, ti::J));
+  return {true};
 }
 }  // namespace CurvedScalarWave
 // Generate explicit instantiations of partial_derivatives function as well as

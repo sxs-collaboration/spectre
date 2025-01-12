@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -22,7 +23,7 @@ struct TimeDerivativeTerms {
   using temporary_tags = tmpl::list<Tags::VelocityField<Dim>>;
   using argument_tags = tmpl::list<Tags::U, Tags::VelocityField<Dim>>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. No source terms or
       // nonconservative products, so not used. All the tags in the
       // variables_tag in the system struct.

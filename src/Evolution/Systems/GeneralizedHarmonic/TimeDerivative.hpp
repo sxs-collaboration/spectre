@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
@@ -140,7 +141,7 @@ struct TimeDerivative {
                                                Frame::Inertial>,
                  domain::Tags::MeshVelocity<Dim, Frame::Inertial>>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<Dim> apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_pi,
       gsl::not_null<tnsr::iaa<DataVector, Dim>*> dt_phi,

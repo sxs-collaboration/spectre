@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
 #include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
@@ -30,7 +31,8 @@
 
 namespace gh {
 template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
-void TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
+evolution::dg::TimeDerivativeDecisions<Dim>
+TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_pi,
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> dt_phi,
@@ -406,5 +408,6 @@ void TimeDerivative<AllSolutionsForChristoffelAnalytic, Dim>::apply(
       }
     }
   }
+  return {true};
 }
 }  // namespace gh
