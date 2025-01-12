@@ -14,7 +14,6 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
-  GeneralRelativity
   Utilities
   )
 
