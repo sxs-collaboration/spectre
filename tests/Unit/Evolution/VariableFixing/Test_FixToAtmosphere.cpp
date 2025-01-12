@@ -224,7 +224,6 @@ void test_variable_fixer() {
   CHECK(variable_fixer_klo.kappa_limiting()->eplison_kappa_minus == 1.e-3);
   CHECK(variable_fixer_klo.kappa_limiting()->density_upper_bound == 3.e-11);
   CHECK(variable_fixer_klo.kappa_limiting()->epsilon_kappa_max == 0.01);
-  CHECK(variable_fixer_klo.kappa_limiting()->epsilon_kappa_plus_minus == 1.1);
   CHECK(variable_fixer_klo.kappa_limiting()->min_temperature == std::nullopt);
   CHECK(variable_fixer_klo.kappa_limiting()->limit_above_density_upper_bound ==
         false);

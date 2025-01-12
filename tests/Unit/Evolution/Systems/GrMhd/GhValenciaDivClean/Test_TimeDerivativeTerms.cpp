@@ -19,6 +19,8 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
@@ -133,7 +135,9 @@ SPECTRE_TEST_CASE(
   using d_SpatialMetricTag =
       ::Tags::deriv<SpatialMetricTag, tmpl::size_t<3>, Frame::Inertial>;
   using arg_variables_type = tuples::tagged_tuple_from_typelist<
-      tmpl::remove<tmpl::append<gh_arg_tags, valencia_arg_tags>,
+      tmpl::remove<tmpl::append<gh_arg_tags, valencia_arg_tags,
+                                tmpl::list<::Tags::VariableFixer<
+                                    ::VariableFixing::FixToAtmosphere<3>>>>,
                    gr::Tags::SpatialMetric<DataVector, 3>>>;
 
   const size_t element_size = 10_st;
@@ -203,6 +207,14 @@ SPECTRE_TEST_CASE(
       metric.get(i + 1, 0) *= 0.01;
     }
   }
+  using Vlo =
+      typename VariableFixing::FixToAtmosphere<3>::VelocityLimitingOptions;
+  using Klo = typename VariableFixing::FixToAtmosphere<3>::KappaLimitingOptions;
+  const VariableFixing::FixToAtmosphere<3> variable_fixer_klo{
+      1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11},
+      Klo{3.e-12, 1.e-3, 3.e-11, 0.01, std::nullopt, false}};
+  tuples::get<::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>(
+      arg_variables) = variable_fixer_klo;
 
   ComputeVolumeTimeDerivativeTermsHelper<
       gh::TimeDerivative<ghmhd::GhValenciaDivClean::InitialData::
@@ -336,6 +348,15 @@ SPECTRE_TEST_CASE(
       tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3_st>>(arg_variables),
       get<gr::Tags::Shift<DataVector, 3_st>>(expected_temp_variables),
       get<gr::Tags::Lapse<DataVector>>(expected_temp_variables));
+  dt_variables_type expected_dt_vars_no_stress_tensor{
+      expected_dt_variables.number_of_grid_points(), 0.0};
+  tmpl::for_each<gh_dt_variables_tags>(
+      [&expected_dt_vars_no_stress_tensor,
+       &expected_dt_variables]<class Tag>(tmpl::type_<Tag> /*meta*/) {
+        get<Tag>(expected_dt_vars_no_stress_tensor) =
+            get<Tag>(expected_dt_variables);
+      });
+
   // apply the correction to dt pi for the expected variables
   grmhd::GhValenciaDivClean::add_stress_energy_term_to_dt_pi(
       make_not_null(&get<::Tags::dt<gh::Tags::Pi<DataVector, 3_st>>>(
@@ -360,4 +381,40 @@ SPECTRE_TEST_CASE(
   CHECK_VARIABLES_APPROX(dt_variables, expected_dt_variables);
   CHECK_VARIABLES_APPROX(flux_variables, expected_flux_variables);
   CHECK_VARIABLES_APPROX(temp_variables, expected_temp_variables);
+
+  {
+    INFO(
+        "Check that having tiny density means we skip computing the MHD "
+        "system.");
+    get(tuples::get<hydro::Tags::RestMassDensity<DataVector>>(arg_variables)) =
+        0.0;
+    tmpl::for_each<valencia_flux_tags>([&flux_variables]<class Tag>(
+                                           tmpl::type_<Tag> /*meta*/) {
+      for (size_t storage_index = 0;
+           storage_index < get<Tag>(flux_variables).size(); ++storage_index) {
+        get<Tag>(flux_variables)[storage_index] = 1.0e300;
+      }
+    });
+
+    dt_variables.initialize(dt_variables.number_of_grid_points(), 0.0);
+
+    ComputeVolumeTimeDerivativeTermsHelper<
+        grmhd::GhValenciaDivClean::TimeDerivativeTerms, 3_st,
+        tmpl::append<gh_variables_tags, valencia_variables_tags>,
+        typename flux_variables_type::tags_list,
+        typename temp_variables_type::tags_list,
+        typename gradient_variables_type::tags_list,
+        tmpl::remove<tmpl::remove<typename arg_variables_type::tags_list,
+                                  SpatialMetricTag>,
+                     d_SpatialMetricTag>>::
+        apply_packed(
+            make_not_null(&dt_variables), make_not_null(&flux_variables),
+            make_not_null(&temp_variables), gradient_variables, arg_variables);
+
+    expected_flux_variables.initialize(
+        expected_flux_variables.number_of_grid_points(), 0.0);
+    CHECK_VARIABLES_APPROX(flux_variables, expected_flux_variables);
+
+    CHECK_VARIABLES_APPROX(dt_variables, expected_dt_vars_no_stress_tensor);
+  }
 }

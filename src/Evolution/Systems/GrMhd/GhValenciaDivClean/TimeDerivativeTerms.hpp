@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <utility>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -22,6 +23,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 // Tag obtained from gh::TimeDerivative needs to be complete here to
 // be used in TemporaryReference.
@@ -92,6 +95,39 @@ struct TimeDerivativeTermsImpl<
                      d_phi,
                      get<Tags::detail::TemporaryReference<GhArgTags>>(
                          arguments)...);
+
+    // If we are in the atmosphere, then we can skip the evolution
+    // of the GRMHD system completely. This inevitably depends on parameters
+    // of the FixToAtmosphere code, so we grab those directly.
+    if (const auto& fix_to_atmosphere = get<Tags::detail::TemporaryReference<
+            ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>>(
+            arguments);
+        max(get(get<Tags::detail::TemporaryReference<
+                    hydro::Tags::RestMassDensity<DataVector>>>(arguments))) <=
+        std::min({fix_to_atmosphere.density_of_atmosphere(),
+                  (fix_to_atmosphere.velocity_limiting().has_value()
+                       ? fix_to_atmosphere.velocity_limiting()
+                             ->atmosphere_density_cutoff
+                       : std::numeric_limits<double>::infinity()),
+                  (fix_to_atmosphere.kappa_limiting().has_value()
+                       ? fix_to_atmosphere.kappa_limiting()->density_lower_bound
+                       : std::numeric_limits<double>::infinity())}) *
+            (1.0 + 10.0 * std::numeric_limits<double>::epsilon())) {
+      // Point into the right memory, then set it to zero.
+      ASSERT(
+          max(get(get<tmpl::front<tmpl::list<ValenciaDtTags...>>>(
+              *dt_vars_ptr))) == 0.0,
+          "GH+GRMHD assumes the time derivatives are set to zero in general."
+          " If this is no longer the case, please set them to zero in "
+          "atmosphere by changing the code where this ASSERT was triggered.");
+      // Code that we could use to set the sources to zero if needed.
+      // Variables<tmpl::list<ValenciaDtTags...>> dt_div_clean(
+      //     get<tmpl::front<tmpl::list<ValenciaDtTags...>>>(*dt_vars_ptr)[0]
+      //         .data(),
+      //     0.0);
+      fluxes_ptr->initialize(fluxes_ptr->number_of_grid_points(), 0.0);
+      return evolution::dg::TimeDerivativeDecisions<3>{false};
+    }
 
     if (get<Tags::detail::TemporaryReference<gh::gauges::Tags::GaugeCondition>>(
             arguments)
@@ -265,12 +301,15 @@ struct TimeDerivativeTerms : evolution::PassVariables {
           gh_temp_tags, valencia_temp_tags, valencia_extra_temp_tags,
           trace_reversed_stress_result_tags, extra_temp_tags>>,
       gr::Tags::SpatialMetric<DataVector, 3>>;
-  using argument_tags =
-      tmpl::remove<tmpl::remove<tmpl::append<gh_arg_tags,
+  using argument_tags = tmpl::remove<
+      tmpl::remove<tmpl::append<gh_arg_tags,
 
-                                             valencia_arg_tags>,
-                                gr::Tags::SpatialMetric<DataVector, 3>>,
-                   d_spatial_metric>;
+                                valencia_arg_tags,
+
+                                tmpl::list<::Tags::VariableFixer<
+                                    ::VariableFixing::FixToAtmosphere<3>>>>,
+                   gr::Tags::SpatialMetric<DataVector, 3>>,
+      d_spatial_metric>;
 
   template <typename... Args>
   static evolution::dg::TimeDerivativeDecisions<3> apply(
