@@ -47,6 +47,7 @@ target_link_libraries(
   Brigand
   Charmxx::charmxx
   Charmxx::pup
+  ErrorHandling
   HDF5::HDF5
   SpectreFlags
   SpectreKokkos
