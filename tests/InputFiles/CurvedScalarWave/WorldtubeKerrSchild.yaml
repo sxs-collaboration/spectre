@@ -12,14 +12,10 @@ Parallelization:
   ElementDistribution: NumGridPoints
 
 AnalyticData:
-  PlaneWave:
-    WaveVector: [0., 0., 0.]
-    Center: [1., 0., 0.]
-    Profile:
-      Sinusoid:
-        Amplitude: 0.
-        Wavenumber: 1.
-        Phase: 1.
+  ZerothOrderPuncture:
+    ParticlePosition: [&XCoordWorldtube 10., 0., 0.]
+    ParticleVelocity: [0., 0.01, 0.]
+    ParticleCharge: &Charge 0.5
 
 BackgroundSpacetime:
   KerrSchild:
@@ -55,7 +51,7 @@ DomainCreator:
     ObjectA:
       InnerRadius: 1.6
       OuterRadius: 2.
-      XCoord: 5.
+      XCoord: *XCoordWorldtube
       Interior:
         ExciseWithBoundaryCondition: Worldtube
       UseLogarithmicMap: false
@@ -76,7 +72,7 @@ DomainCreator:
         AsymptoticVelocityOuterBoundary: 0.
         DecayTimescaleOuterBoundary: 1.
       RotationMap:
-        InitialAngularVelocity: [0., 0., 0.08944271909999159]
+        InitialAngularVelocity: [0., 0., 0.001]
       TranslationMap:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
       SkewMap: None
@@ -142,7 +138,7 @@ EventsAndTriggersAtSlabs:
 Worldtube:
   ExcisionSphere: ExcisionSphereA
   ExpansionOrder: 1
-  Charge: 0.5
+  Charge: *Charge
   SelfForceOptions: None
   ObserveCoefficientsTrigger:
     Slabs:
