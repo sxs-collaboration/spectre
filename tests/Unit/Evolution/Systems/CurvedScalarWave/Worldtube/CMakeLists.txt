@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_KerrSchildDerivatives.cpp
   Test_PunctureField.cpp
   Test_RadiusFunctions.cpp
+  Test_PunctureInitialData.cpp
   Test_SelfForce.cpp
   Test_Tags.cpp
   Test_Triggers.cpp
