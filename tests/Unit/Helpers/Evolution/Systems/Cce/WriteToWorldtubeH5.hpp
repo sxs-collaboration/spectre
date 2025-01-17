@@ -22,10 +22,10 @@ namespace Cce::TestHelpers {
 struct WorldtubeModeRecorder {
  public:
   WorldtubeModeRecorder(const size_t l_max, const std::string& filename)
-      : l_max_(l_max), output_file_{filename} {
+      : l_max_(l_max), output_file_{filename, true} {
     // write the .ver that indicates that the derivatives are correctly
     // normalized.
-    output_file_.insert<h5::Version>(
+    output_file_.try_insert<h5::Version>(
         "/VersionHist", "Bugfix in CCE radial derivatives (ticket 1096).");
     output_file_.close_current_object();
     all_modal_file_legend_.emplace_back("time");

@@ -359,10 +359,6 @@ a bit on why we chose some of those parameters.
   we also recommend running CCE over several worldtube radii and checking which
   is the best based on the Bianchi identity violations. There isn't necessarily
   a "best radius" to extract waveforms at.
-- If the worldtube data is in the [Bondi-Sachs](#bondi_sachs) form, set
-  `Cce.H5IsBondiData` to `True`. If the worldtube data is the
-  [cartesian_metric](#cartesian_metric_and_derivatives) form, set
-  `Cce.H5IsBondiData` to `False`.
 
 ### Initial data on the null hypersurface
 

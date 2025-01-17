@@ -44,77 +44,6 @@ double compute_time(const double target_time, const size_t time_index) {
   return 0.1 * static_cast<double>(time_index) + target_time - 1.5;
 }
 
-template <bool Modal, typename Solution>
-void write_bondi_test_file(const std::string& worldtube_filename,
-                           const size_t l_max, const double target_time,
-                           const double extraction_radius,
-                           const Solution& solution, const double amplitude,
-                           const double frequency) {
-  const size_t number_of_angular_points =
-      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
-      Cce::Tags::BoundaryValue>>
-      boundary_data_variables{number_of_angular_points};
-
-  const size_t libsharp_size =
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
-  tnsr::ii<ComplexModalVector, 3> spatial_metric_coefficients{libsharp_size};
-  tnsr::ii<ComplexModalVector, 3> dt_spatial_metric_coefficients{libsharp_size};
-  tnsr::ii<ComplexModalVector, 3> dr_spatial_metric_coefficients{libsharp_size};
-  tnsr::I<ComplexModalVector, 3> shift_coefficients{libsharp_size};
-  tnsr::I<ComplexModalVector, 3> dt_shift_coefficients{libsharp_size};
-  tnsr::I<ComplexModalVector, 3> dr_shift_coefficients{libsharp_size};
-  Scalar<ComplexModalVector> lapse_coefficients{libsharp_size};
-  Scalar<ComplexModalVector> dt_lapse_coefficients{libsharp_size};
-  Scalar<ComplexModalVector> dr_lapse_coefficients{libsharp_size};
-
-  using RecorderType =
-      tmpl::conditional_t<Modal, Cce::WorldtubeModeRecorder,
-                          Cce::TestHelpers::WorldtubeModeRecorder>;
-  RecorderType recorder{l_max, worldtube_filename};
-  for (size_t t = 0; t < number_of_times; ++t) {
-    const double time = compute_time(target_time, t);
-    Cce::TestHelpers::create_fake_time_varying_data(
-        make_not_null(&spatial_metric_coefficients),
-        make_not_null(&dt_spatial_metric_coefficients),
-        make_not_null(&dr_spatial_metric_coefficients),
-        make_not_null(&shift_coefficients),
-        make_not_null(&dt_shift_coefficients),
-        make_not_null(&dr_shift_coefficients),
-        make_not_null(&lapse_coefficients),
-        make_not_null(&dt_lapse_coefficients),
-        make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
-        amplitude, frequency, time, l_max, false);
-
-    Cce::create_bondi_boundary_data(
-        make_not_null(&boundary_data_variables), spatial_metric_coefficients,
-        dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
-        shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
-        lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-        extraction_radius, l_max);
-
-    // loop over the tags that we want to dump.
-    tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
-        [&](auto tag_v) {
-          using tag = typename decltype(tag_v)::type;
-
-          const ComplexDataVector& nodal_data =
-              get(get<tag>(boundary_data_variables)).data();
-
-          if constexpr (Modal) {
-            recorder.template append_modal_data<tag::type::type::spin>(
-                Cce::dataset_label_for_tag<typename tag::tag>(), time,
-                nodal_data, l_max);
-          } else {
-            // This will write nodal data
-            recorder.append_worldtube_mode_data(
-                Cce::dataset_label_for_tag<typename tag::tag>(), time,
-                nodal_data, l_max);
-          }
-        });
-  }
-}
-
 using modal_tags = Cce::Tags::worldtube_boundary_tags_for_writing<
     Spectral::Swsh::Tags::SwshTransform>;
 using ExpectedDataType = std::vector<Variables<modal_tags>>;
@@ -395,26 +324,26 @@ int main() {
       "Test_OutputBondiNodal_R0123.h5"};
 
   // Write metric data
-  Cce::TestHelpers::write_test_file<ComplexModalVector>(
+  Cce::TestHelpers::write_test_file<ComplexModalVector, false>(
       solution, metric_modal_input_worldtube_filename, target_time,
       worldtube_radius, frequency, amplitude, l_max, false);
-  Cce::TestHelpers::write_test_file<DataVector>(
+  Cce::TestHelpers::write_test_file<DataVector, false>(
       solution, metric_nodal_1_input_worldtube_filename, target_time,
       worldtube_radius, frequency, amplitude, l_max, false);
-  Cce::TestHelpers::write_test_file<DataVector>(
+  Cce::TestHelpers::write_test_file<DataVector, false>(
       solution, metric_nodal_2_input_worldtube_filename, second_target_time,
       worldtube_radius, frequency, amplitude, l_max, false);
 
   // Write bondi data
-  write_bondi_test_file<true>(bondi_modal_1_input_worldtube_filename, l_max,
-                              target_time, worldtube_radius, solution,
-                              amplitude, frequency);
-  write_bondi_test_file<true>(bondi_modal_2_input_worldtube_filename, l_max,
-                              second_target_time, worldtube_radius, solution,
-                              amplitude, frequency);
-  write_bondi_test_file<false>(bondi_nodal_input_worldtube_filename, l_max,
-                               target_time, worldtube_radius, solution,
-                               amplitude, frequency);
+  Cce::TestHelpers::write_test_file<ComplexModalVector, true>(
+      solution, bondi_modal_1_input_worldtube_filename, target_time,
+      worldtube_radius, frequency, amplitude, l_max, false);
+  Cce::TestHelpers::write_test_file<ComplexModalVector, true>(
+      solution, bondi_modal_2_input_worldtube_filename, second_target_time,
+      worldtube_radius, frequency, amplitude, l_max, false);
+  Cce::TestHelpers::write_test_file<DataVector, true>(
+      solution, bondi_nodal_input_worldtube_filename, target_time,
+      worldtube_radius, frequency, amplitude, l_max, false);
 
   // Write input file
   write_input_file("MetricModal", {metric_modal_input_worldtube_filename},
@@ -450,6 +379,8 @@ int main() {
                                        input_data_format + ".yaml > " +
                                        input_data_format + ".out 2>&1";
 
+        CAPTURE_FOR_ERROR(input_data_format);
+        CAPTURE_FOR_ERROR(to_execute);
         const int exit_code = std::system(to_execute.c_str());  // NOLINT
 
         SPECTRE_PARALLEL_REQUIRE(exit_code == 0);

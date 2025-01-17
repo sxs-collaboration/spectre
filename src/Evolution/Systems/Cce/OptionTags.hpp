@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <optional>
+#include <stdexcept>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -118,8 +119,7 @@ struct StandaloneExtractionRadius {
   static constexpr Options::String help{
       "Extraction radius of the CCE system for a standalone run. This may be "
       "set to \"Auto\" to infer the radius from the filename (often used for "
-      "SpEC worldtube data). This option is unused if `H5IsBondiData` is "
-      "`true`, and should be \"Auto\" for such runs."};
+      "SpEC worldtube data)."};
   using group = Cce;
 };
 
@@ -165,27 +165,6 @@ struct H5Interpolator {
   using type = std::unique_ptr<intrp::SpanInterpolator>;
   static constexpr Options::String help{
       "The interpolator for imported h5 worldtube data."};
-  using group = Cce;
-};
-
-struct H5IsBondiData {
-  using type = bool;
-  static constexpr Options::String help{
-      "true for boundary data in Bondi form, false for metric data. Metric "
-      "data is more readily available from Cauchy simulations, so historically "
-      "has been the typical format provided by SpEC simulations. Bondi data is "
-      "much more efficient for storage size and performance, but both must be "
-      "supported for compatibility with current CCE data sources."};
-  using group = Cce;
-};
-
-struct FixSpecNormalization {
-  using type = bool;
-  static constexpr Options::String help{
-      "Set to true if corrections for SpEC data impurities should be applied "
-      "automatically based on the `VersionHist.ver` data set in the H5. "
-      "Typically, this should be set to true if the metric data is created "
-      "from SpEC, and false otherwise."};
   using group = Cce;
 };
 
@@ -319,7 +298,6 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
                  OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
-                 OptionTags::H5IsBondiData, OptionTags::FixSpecNormalization,
                  OptionTags::StandaloneExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
@@ -327,37 +305,28 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
       const size_t l_max, const std::string& filename,
       const size_t number_of_lookahead_times,
       const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
-      const bool h5_is_bondi_data, const bool fix_spec_normalization,
       const std::optional<double> extraction_radius) {
-    if (h5_is_bondi_data) {
-      if (static_cast<bool>(extraction_radius)) {
+    const std::string text_radius_str = Cce::get_text_radius(filename);
+    try {
+      // If this doesn't throw an exception, then an extraction radius was
+      // supplied in the filename. We don't actually need the value.
+      const double text_radius = std::stod(text_radius_str);
+      (void)text_radius;
+      if (extraction_radius.has_value()) {
         Parallel::printf(
             "Warning: Option ExtractionRadius is set to a specific value and "
-            "H5IsBondiData is set to `true` -- the ExtractionRadius will not "
-            "be used, because all radius information is specified in the input "
-            "file for the Bondi worldtube data format. It is recommended to "
-            "set `ExtractionRadius` to `\"Auto\"` to make the input file "
-            "clearer.\n");
+            "there is an extraction radius in the H5 filename. The value in "
+            "the file name will be ignored.It is recommended to set "
+            "`ExtractionRadius` to `\"Auto\"` if the H5 filename has the "
+            "extraction radius in it to make the input file clearer.\n");
       }
-      return std::make_unique<BondiWorldtubeDataManager>(
-          std::make_unique<BondiWorldtubeH5BufferUpdater<ComplexModalVector>>(
-              filename, extraction_radius),
-          l_max, number_of_lookahead_times, interpolator->get_clone());
-    } else {
-      Parallel::printf(
-          "\nDEPRECATION WARNING: Reading worldtube H5 files that are in the "
-          "Metric data format (i.e. cartesian components of the metric and "
-          "derivs expressed in modal coefficients) is deprecated. Convert your "
-          "data to the Bondi modal format using the 'PreprocessCceWorldtube' "
-          "executable. See https://spectre-code.org/tutorial_cce.html for "
-          "details. Support for reading the Metric data format will be "
-          "dropped in January 2025.\n");
-      return std::make_unique<MetricWorldtubeDataManager>(
-          std::make_unique<MetricWorldtubeH5BufferUpdater<ComplexModalVector>>(
-              filename, extraction_radius),
-          l_max, number_of_lookahead_times, interpolator->get_clone(),
-          fix_spec_normalization);
+    } catch (const std::invalid_argument&) {
     }
+
+    return std::make_unique<BondiWorldtubeDataManager>(
+        std::make_unique<BondiWorldtubeH5BufferUpdater<ComplexModalVector>>(
+            filename, extraction_radius),
+        l_max, number_of_lookahead_times, interpolator->get_clone());
   }
 };
 
@@ -453,26 +422,20 @@ struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
   using type = double;
   using option_tags =
       tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename,
-                 OptionTags::H5IsBondiData>;
+                 OptionTags::StandaloneExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const std::optional<double> start_time,
-                                    const std::string& filename,
-                                    const bool is_bondi_data) {
-    if (start_time) {
+  static double create_from_options(
+      const std::optional<double> start_time, const std::string& filename,
+      const std::optional<double>& extraction_radius) {
+    if (start_time.has_value()) {
       return *start_time;
     }
-    if (is_bondi_data) {
-      BondiWorldtubeH5BufferUpdater<ComplexModalVector> h5_boundary_updater{
-          filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      return time_buffer[0];
-    } else {
-      MetricWorldtubeH5BufferUpdater<ComplexModalVector> h5_boundary_updater{
-          filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      return time_buffer[0];
-    }
+
+    BondiWorldtubeH5BufferUpdater<ComplexModalVector> h5_boundary_updater{
+        filename, extraction_radius};
+    const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+    return time_buffer[0];
   }
 };
 
@@ -504,26 +467,19 @@ struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
   using type = double;
   using option_tags =
       tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename,
-                 OptionTags::H5IsBondiData>;
+                 OptionTags::StandaloneExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const std::optional<double> end_time,
-                                    const std::string& filename,
-                                    const bool is_bondi_data) {
+  static double create_from_options(
+      const std::optional<double> end_time, const std::string& filename,
+      const std::optional<double>& extraction_radius) {
     if (end_time) {
       return *end_time;
     }
-    if (is_bondi_data) {
-      BondiWorldtubeH5BufferUpdater<ComplexModalVector> h5_boundary_updater{
-          filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      return time_buffer[time_buffer.size() - 1];
-    } else {
-      MetricWorldtubeH5BufferUpdater<ComplexModalVector> h5_boundary_updater{
-          filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      return time_buffer[time_buffer.size() - 1];
-    }
+    BondiWorldtubeH5BufferUpdater<ComplexModalVector> h5_boundary_updater{
+        filename, extraction_radius};
+    const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+    return time_buffer[time_buffer.size() - 1];
   }
 };
 

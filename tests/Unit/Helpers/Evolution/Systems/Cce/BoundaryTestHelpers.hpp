@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
+#include "Evolution/Systems/Cce/WorldtubeModeRecorder.hpp"
 #include "Helpers/Evolution/Systems/Cce/WriteToWorldtubeH5.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -288,7 +289,8 @@ void create_fake_time_varying_data(
   }
 }
 
-template <typename T = ComplexModalVector, typename AnalyticSolution>
+template <typename T = ComplexModalVector, bool WriteBondi = true,
+          typename AnalyticSolution>
 void write_test_file(const AnalyticSolution& solution,
                      const std::string& filename, const double target_time,
                      const double extraction_radius, const double frequency,
@@ -298,6 +300,9 @@ void write_test_file(const AnalyticSolution& solution,
   const size_t size =
       is_modal ? square(l_max + 1)
                : Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  (void)number_of_angular_points;
   tnsr::ii<T, 3> spatial_metric_coefficients{size};
   tnsr::ii<T, 3> dt_spatial_metric_coefficients{size};
   tnsr::ii<T, 3> dr_spatial_metric_coefficients{size};
@@ -307,6 +312,12 @@ void write_test_file(const AnalyticSolution& solution,
   Scalar<T> lapse_coefficients{size};
   Scalar<T> dt_lapse_coefficients{size};
   Scalar<T> dr_lapse_coefficients{size};
+  Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
+      Cce::Tags::BoundaryValue>>
+      boundary_data_variables{};
+  if constexpr (WriteBondi) {
+    boundary_data_variables.initialize(number_of_angular_points);
+  }
 
   // write times to file for several steps before and after the target time
   if (file_system::check_if_file_exists(filename)) {
@@ -314,7 +325,11 @@ void write_test_file(const AnalyticSolution& solution,
   }
   // scoped to close the file
   {
-    TestHelpers::WorldtubeModeRecorder recorder{l_max, filename};
+    using RecorderType =
+        tmpl::conditional_t<WriteBondi and is_modal, Cce::WorldtubeModeRecorder,
+                            Cce::TestHelpers::WorldtubeModeRecorder>;
+    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+    RecorderType recorder{l_max, filename};
     for (size_t t = 0; t < 30; ++t) {
       const double time = 0.1 * static_cast<double>(t) + target_time - 1.5;
       TestHelpers::create_fake_time_varying_data(
@@ -327,38 +342,70 @@ void write_test_file(const AnalyticSolution& solution,
           make_not_null(&lapse_coefficients),
           make_not_null(&dt_lapse_coefficients),
           make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
-          amplitude, frequency, time, l_max);
-      for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = i; j < 3; ++j) {
+          amplitude, frequency, time, l_max, not WriteBondi);
+
+      if constexpr (WriteBondi) {
+        (void)spec_format;
+        Cce::create_bondi_boundary_data(
+            make_not_null(&boundary_data_variables),
+            spatial_metric_coefficients, dt_spatial_metric_coefficients,
+            dr_spatial_metric_coefficients, shift_coefficients,
+            dt_shift_coefficients, dr_shift_coefficients, lapse_coefficients,
+            dt_lapse_coefficients, dr_lapse_coefficients, extraction_radius,
+            l_max);
+
+        // loop over the tags that we want to dump.
+        tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
+            [&](auto tag_v) {
+              (void)tag_v;
+              using tag = typename decltype(tag_v)::type;
+
+              const ComplexDataVector& nodal_data =
+                  get(get<tag>(boundary_data_variables)).data();
+
+              if constexpr (is_modal) {
+                recorder.template append_modal_data<tag::type::type::spin>(
+                    Cce::dataset_label_for_tag<typename tag::tag>(), time,
+                    nodal_data, l_max);
+              } else {
+                recorder.append_worldtube_mode_data(
+                    Cce::dataset_label_for_tag<typename tag::tag>(), time,
+                    nodal_data, l_max);
+              }
+            });
+      } else {
+        for (size_t i = 0; i < 3; ++i) {
+          for (size_t j = i; j < 3; ++j) {
+            recorder.append_worldtube_mode_data(
+                detail::dataset_name_for_component("/g", i, j), time,
+                spatial_metric_coefficients.get(i, j), spec_format);
+            recorder.append_worldtube_mode_data(
+                detail::dataset_name_for_component("/Drg", i, j), time,
+                dr_spatial_metric_coefficients.get(i, j), spec_format);
+            recorder.append_worldtube_mode_data(
+                detail::dataset_name_for_component("/Dtg", i, j), time,
+                dt_spatial_metric_coefficients.get(i, j), spec_format);
+          }
           recorder.append_worldtube_mode_data(
-              detail::dataset_name_for_component("/g", i, j), time,
-              spatial_metric_coefficients.get(i, j), spec_format);
+              detail::dataset_name_for_component("/Shift", i), time,
+              shift_coefficients.get(i), spec_format);
           recorder.append_worldtube_mode_data(
-              detail::dataset_name_for_component("/Drg", i, j), time,
-              dr_spatial_metric_coefficients.get(i, j), spec_format);
+              detail::dataset_name_for_component("/DrShift", i), time,
+              dr_shift_coefficients.get(i), spec_format);
           recorder.append_worldtube_mode_data(
-              detail::dataset_name_for_component("/Dtg", i, j), time,
-              dt_spatial_metric_coefficients.get(i, j), spec_format);
+              detail::dataset_name_for_component("/DtShift", i), time,
+              dt_shift_coefficients.get(i), spec_format);
         }
         recorder.append_worldtube_mode_data(
-            detail::dataset_name_for_component("/Shift", i), time,
-            shift_coefficients.get(i), spec_format);
+            detail::dataset_name_for_component("/Lapse"), time,
+            get(lapse_coefficients), spec_format);
         recorder.append_worldtube_mode_data(
-            detail::dataset_name_for_component("/DrShift", i), time,
-            dr_shift_coefficients.get(i), spec_format);
+            detail::dataset_name_for_component("/DrLapse"), time,
+            get(dr_lapse_coefficients), spec_format);
         recorder.append_worldtube_mode_data(
-            detail::dataset_name_for_component("/DtShift", i), time,
-            dt_shift_coefficients.get(i), spec_format);
+            detail::dataset_name_for_component("/DtLapse"), time,
+            get(dt_lapse_coefficients), spec_format);
       }
-      recorder.append_worldtube_mode_data(
-          detail::dataset_name_for_component("/Lapse"), time,
-          get(lapse_coefficients), spec_format);
-      recorder.append_worldtube_mode_data(
-          detail::dataset_name_for_component("/DrLapse"), time,
-          get(dr_lapse_coefficients), spec_format);
-      recorder.append_worldtube_mode_data(
-          detail::dataset_name_for_component("/DtLapse"), time,
-          get(dt_lapse_coefficients), spec_format);
     }
   }
 }
