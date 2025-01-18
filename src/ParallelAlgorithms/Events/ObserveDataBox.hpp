@@ -8,10 +8,12 @@
 #include <tuple>
 #include <vector>
 
+#include "DataStructures/DataBox/Access.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Parallel/DistributedObject.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -103,6 +105,8 @@ struct ContributeDataBoxSize {
 /// of each parallel component.  There will be a column for each item in the
 /// DataBox that is not a subitem or reference item.
 class ObserveDataBox : public Event {
+  struct DoNotWrite {};
+
  public:
   /// \cond
   explicit ObserveDataBox(CkMigrateMessage* m);
@@ -110,23 +114,30 @@ class ObserveDataBox : public Event {
   WRAPPED_PUPable_decl_template(ObserveDataBox);  // NOLINT
   /// \endcond
 
-  using options = tmpl::list<>;
+  struct WriteTagNamesToFile {
+    using type = ::Options::Auto<std::string, DoNotWrite>;
+    static constexpr Options::String help = {
+        "The text file to write the names of the DataBox tags to."};
+  };
+
+  using options = tmpl::list<WriteTagNamesToFile>;
   static constexpr Options::String help = {
       "Observe size (in MB) of each item (except reference items) in each "
       "DataBox"};
 
   ObserveDataBox() = default;
+  explicit ObserveDataBox(std::optional<std::string> file_name_for_tag_names);
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
   using return_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<::Tags::DataBox>;
+  using argument_tags = tmpl::list<::Tags::ObservationBox>;
 
-  template <typename DataBoxType, typename ArrayIndex,
-            typename ParallelComponent, typename Metavariables>
-  void operator()(const DataBoxType& box,
+  template <typename DataBoxType, size_t VolumeDim, typename ParallelComponent,
+            typename Metavariables, typename ComputeTagsList>
+  void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
                   Parallel::GlobalCache<Metavariables>& /*cache*/,
-                  const ArrayIndex& array_index,
+                  const ElementId<VolumeDim>& array_index,
                   const ParallelComponent* /*meta*/,
                   const ObservationValue& observation_value) const;
 
@@ -143,13 +154,23 @@ class ObserveDataBox : public Event {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
+
+ private:
+  template <size_t VolumeDim>
+  void impl(const db::Access& box_access,
+            const ElementId<VolumeDim>& array_index,
+            const ObservationValue& observation_value) const;
+
+  std::optional<std::string> file_name_for_tag_names_;
 };
 
-template <typename DataBoxType, typename ArrayIndex, typename ParallelComponent,
-          typename Metavariables>
+template <typename DataBoxType, size_t VolumeDim, typename ParallelComponent,
+          typename Metavariables, typename ComputeTagsList>
 void ObserveDataBox::operator()(
-    const DataBoxType& /*box*/, Parallel::GlobalCache<Metavariables>& cache,
-    const ArrayIndex& array_index, const ParallelComponent* const /*meta*/,
+    const ObservationBox<DataBoxType, ComputeTagsList>& box,
+    Parallel::GlobalCache<Metavariables>& cache,
+    const ElementId<VolumeDim>& array_index,
+    const ParallelComponent* const /*meta*/,
     const ObservationValue& observation_value) const {
   if (is_zeroth_element(array_index)) {
     using component_list =
@@ -162,5 +183,6 @@ void ObserveDataBox::operator()(
           target_proxy, observation_value.value);
     });
   }
+  impl(box.databox(), array_index, observation_value);
 }
 }  // namespace Events
