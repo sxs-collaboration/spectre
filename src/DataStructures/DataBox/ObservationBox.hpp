@@ -67,8 +67,11 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
   template <typename Tag>
   const auto& get() const;
 
+  /// @{
   /// Retrieve the underlying DataBox.
   DataBoxType& databox() { return *databox_; }
+  const DataBoxType& databox() const { return *databox_; }
+  /// @}
 
   /// Reset all the compute items, forcing reevaluation.
   void reset();
