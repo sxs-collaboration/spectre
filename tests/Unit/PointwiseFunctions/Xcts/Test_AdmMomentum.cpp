@@ -375,6 +375,7 @@ void test_infinite_volume_integral(const double distance, const double mass,
 
 }  // namespace
 
+// [[Timeout, 10]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.AdmLinearMomentum",
                   "[Unit][PointwiseFunctions]") {
   {
