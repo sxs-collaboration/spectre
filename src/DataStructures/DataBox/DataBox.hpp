@@ -313,6 +313,9 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   /// \endcond
 
   /// Print the expanded type aliases
+  std::string print_tags() const override;
+
+  /// Print the expanded type aliases
   std::string print_types() const override;
 
   /// Print the items
@@ -501,6 +504,40 @@ template <typename... Tags>
 const typename DataBox<tmpl::list<Tags...>>::TagGraphs
     DataBox<tmpl::list<Tags...>>::tag_graphs_ =
         DataBox<tmpl::list<Tags...>>::compute_tag_graphs();
+
+template <typename... Tags>
+std::string DataBox<tmpl::list<Tags...>>::print_tags() const {
+  std::ostringstream os;
+  os << "Simple tags("
+     << tmpl::size<mutable_item_creation_tags>::value << ")  = [\n";
+  tmpl::for_each<mutable_item_creation_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "Simple tags subitems(" << tmpl::size<mutable_subitem_tags>::value
+     << ") = [\n";
+  tmpl::for_each<mutable_subitem_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "Compute tags(" << tmpl::size<compute_item_tags>::value
+     << ") = [\n";
+  tmpl::for_each<compute_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "Reference tags(" << tmpl::size<reference_item_tags>::value
+     << ") = [\n";
+  tmpl::for_each<reference_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  return os.str();
+}
 
 template <typename... Tags>
 std::string DataBox<tmpl::list<Tags...>>::print_types() const {

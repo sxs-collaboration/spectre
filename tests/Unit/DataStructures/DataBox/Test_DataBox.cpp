@@ -3216,6 +3216,25 @@ void test_output() {
   remove_whitespace(expected_types);
   CHECK(output_types == expected_types);
 
+  std::string output_tags = db::as_access(box).print_tags();
+  std::string expected_tags =
+      "Simpletags(3)=["
+      "(anonymousnamespace)::test_databox_tags::Tag0,"
+      "(anonymousnamespace)::test_databox_tags::Tag1,"
+      "(anonymousnamespace)::test_databox_tags::Tag2,"
+      "];"
+      "Simpletagssubitems(0)=[];"
+      "Computetags(2)=["
+      "(anonymousnamespace)::test_databox_tags::Tag4Compute,"
+      "(anonymousnamespace)::test_databox_tags::Tag5Compute,"
+      "];Referencetags(1)=["
+      "(anonymousnamespace)::test_databox_tags::Tag0Reference,"
+      "];";
+  // Remove whitespace since it may vary between compilers
+  remove_whitespace(output_tags);
+  remove_whitespace(expected_tags);
+  CHECK(output_tags == expected_tags);
+
   std::string output_mutable_items = box.print_items<false>();
   std::string expected_mutable_items =
       "Items:\n"
