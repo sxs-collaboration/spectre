@@ -28,10 +28,13 @@ class TestInspiral(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_a=0.6,
-            mass_b=0.4,
-            dimensionless_spin_a=[0.0, 0.0, 0.0],
-            dimensionless_spin_b=[0.0, 0.0, 0.0],
+            {
+                "MassRatio": 1.5,
+                "MassA": 0.6,
+                "MassB": 0.4,
+                "DimensionlessSpinA": [0.0, 0.0, 0.0],
+                "DimensionlessSpinB": [0.0, 0.0, 0.0],
+            },
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,
@@ -59,9 +62,10 @@ class TestInspiral(unittest.TestCase):
 
     def test_inspiral_parameters(self):
         with open(self.id_dir / "InitialData.yaml") as open_input_file:
-            _, id_input_file = yaml.safe_load_all(open_input_file)
+            id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
         params = inspiral_parameters(
             id_input_file=id_input_file,
+            id_metadata=id_metadata,
             id_run_dir=self.id_dir,
             id_horizons_path=self.horizons_filename,
             refinement_level=1,

@@ -4,7 +4,7 @@
 import glob
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Sequence, Union
+from typing import List, Optional, Union
 
 import click
 import yaml
@@ -12,7 +12,7 @@ import yaml
 from spectre.Pipelines.Bbh.ControlId import (
     DEFAULT_MAX_ITERATIONS,
     DEFAULT_RESIDUAL_TOLERANCE,
-    SupportedParams,
+    TargetParams,
     control_id,
 )
 from spectre.Pipelines.Bbh.FindHorizon import find_horizon, vec_to_string
@@ -35,7 +35,7 @@ def postprocess_id(
     control_max_iterations: int = DEFAULT_MAX_ITERATIONS,
     control_refinement_level: int = 1,
     control_polynomial_order: int = 6,
-    control_params: Dict[SupportedParams, Union[float, Sequence[float]]] = {},
+    control_params: List[TargetParams] = [],
     evolve: bool = False,
     eccentricity_control: bool = False,
     pipeline_dir: Optional[Union[str, Path]] = None,
@@ -76,7 +76,7 @@ def postprocess_id(
       control_max_iterations: Maximum of iterations allowed for control.
       control_refinement_level: h-refinement used for control.
       control_polynomial_order: p-refinement used for control.
-      control_params: Dictionary used to customize control. See ControlId.py
+      control_params: List of parameters to control. See ControlId.py
         for details.
       evolve: Evolve the initial data after postprocessing (default: False).
       pipeline_dir: Directory where steps in the pipeline are created.

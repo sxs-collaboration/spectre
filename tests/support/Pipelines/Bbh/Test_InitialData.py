@@ -29,10 +29,10 @@ class TestInitialData(unittest.TestCase):
 
     def test_generate_id(self):
         params = id_parameters(
-            mass_a=0.6,
-            mass_b=0.4,
-            dimensionless_spin_a=[0.1, 0.2, 0.3],
-            dimensionless_spin_b=[0.4, 0.5, 0.6],
+            conformal_mass_a=0.6,
+            conformal_mass_b=0.4,
+            conformal_spin_a=[0.1, 0.2, 0.3],
+            conformal_spin_b=[0.4, 0.5, 0.6],
             center_of_mass_offset=[0.1, 0.2, 0.3],
             linear_velocity=[0.1, 0.2, 0.3],
             separation=20.0,
@@ -41,8 +41,8 @@ class TestInitialData(unittest.TestCase):
             refinement_level=1,
             polynomial_order=5,
         )
-        self.assertEqual(params["MassRight"], 0.6)
-        self.assertEqual(params["MassLeft"], 0.4)
+        self.assertEqual(params["ConformalMassRight"], 0.6)
+        self.assertEqual(params["ConformalMassLeft"], 0.4)
         self.assertEqual(params["XRight"], 8.0 + 0.1)
         self.assertEqual(params["XLeft"], -12.0 + 0.1)
         self.assertEqual(
@@ -58,11 +58,11 @@ class TestInitialData(unittest.TestCase):
         self.assertEqual(params["OrbitalAngularVelocity"], 0.01)
         self.assertEqual(params["RadialExpansionVelocity"], -1.0e-5)
         self.assertEqual(
-            [params[f"DimensionlessSpinRight_{xyz}"] for xyz in "xyz"],
+            [params[f"ConformalSpinRight_{xyz}"] for xyz in "xyz"],
             [0.1, 0.2, 0.3],
         )
         self.assertEqual(
-            [params[f"DimensionlessSpinLeft_{xyz}"] for xyz in "xyz"],
+            [params[f"ConformalSpinLeft_{xyz}"] for xyz in "xyz"],
             [0.4, 0.5, 0.6],
         )
         npt.assert_allclose(
@@ -79,8 +79,8 @@ class TestInitialData(unittest.TestCase):
         self.assertEqual(params["P"], 5)
         # Newtonian center of mass (without offset) is zero
         self.assertAlmostEqual(
-            params["MassRight"] * (params["XRight"] - 0.1)
-            + params["MassLeft"] * (params["XLeft"] - 0.1),
+            params["ConformalMassRight"] * (params["XRight"] - 0.1)
+            + params["ConformalMassLeft"] * (params["XLeft"] - 0.1),
             0.0,
         )
 
@@ -147,6 +147,22 @@ class TestInitialData(unittest.TestCase):
         ) as open_input_file:
             metadata = next(yaml.safe_load_all(open_input_file))
         self.assertEqual(
+            metadata["TargetParams"],
+            {
+                "MassRatio": 1.5,
+                "MassA": 0.6,
+                "MassB": 0.4,
+                "DimensionlessSpinA": [0.1, 0.2, 0.3],
+                "DimensionlessSpinB": [0.4, 0.5, 0.6],
+                "CenterOfMass": [0.0, 0.0, 0.0],
+                "LinearMomentum": [0.0, 0.0, 0.0],
+                "Eccentricity": 0.0,
+                "MeanAnomalyFraction": None,
+                "NumOrbits": None,
+                "TimeToMerger": None,
+            },
+        )
+        self.assertEqual(
             metadata["Next"],
             {
                 "Run": "spectre.Pipelines.Bbh.PostprocessId:postprocess_id",
@@ -157,14 +173,14 @@ class TestInitialData(unittest.TestCase):
                     "control": True,
                     "control_refinement_level": 1,
                     "control_polynomial_order": 5,
-                    "control_params": {
-                        "mass_A": 0.6,
-                        "mass_B": 0.4,
-                        "spin_A": [0.1, 0.2, 0.3],
-                        "spin_B": [0.4, 0.5, 0.6],
-                        "center_of_mass": [0.0, 0.0, 0.0],
-                        "linear_momentum": [0.0, 0.0, 0.0],
-                    },
+                    "control_params": [
+                        "MassA",
+                        "MassB",
+                        "DimensionlessSpinA",
+                        "DimensionlessSpinB",
+                        "CenterOfMass",
+                        "LinearMomentum",
+                    ],
                     "evolve": True,
                     "eccentricity_control": True,
                     "scheduler": "None",

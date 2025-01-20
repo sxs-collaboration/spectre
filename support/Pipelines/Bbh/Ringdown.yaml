@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 Executable: EvolveGhSingleBlackHole
+{{ TargetParams }}
 
 ---
 

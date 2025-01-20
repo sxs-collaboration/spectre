@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 Executable: EvolveGhBinaryBlackHole
+{{ TargetParams }}
 {% if continue_with_ringdown %}
 Next:
   Run: spectre.Pipelines.Bbh.Ringdown:start_ringdown

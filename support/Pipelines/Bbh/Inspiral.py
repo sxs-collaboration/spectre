@@ -82,6 +82,7 @@ def _constraint_damping_params(
 
 def inspiral_parameters(
     id_input_file: dict,
+    id_metadata: dict,
     id_run_dir: Union[str, Path],
     id_horizons_path: Optional[Union[str, Path]],
     refinement_level: int,
@@ -93,6 +94,7 @@ def inspiral_parameters(
 
     Arguments:
       id_input_file: Initial data input file as a dictionary.
+      id_metadata: Metadata of the initial data input file as a dictionary.
       id_run_dir: Directory of the initial data run. Paths in the input file
         are relative to this directory.
       id_horizons_path: Path to H5 file containing information about the
@@ -102,6 +104,7 @@ def inspiral_parameters(
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
     """
+    target_params = id_metadata["TargetParams"]
     id_domain_creator = id_input_file["DomainCreator"]["BinaryCompactObject"]
     id_shape_A = id_domain_creator["TimeDependentMaps"]["ShapeMapA"]
     id_shape_B = id_domain_creator["TimeDependentMaps"]["ShapeMapB"]
@@ -199,6 +202,11 @@ def inspiral_parameters(
             spin_magnitude_right=spin_magnitude_right,
         )
     )
+
+    # Store target parameters in the input file
+    params["TargetParams"] = yaml.safe_dump(
+        {"TargetParams": target_params}
+    ).strip()
 
     return params
 
@@ -346,9 +354,10 @@ def start_inspiral(
     else:
         # Load SpECTRE initial data
         with open(id_input_file_path, "r") as open_input_file:
-            _, id_input_file = yaml.safe_load_all(open_input_file)
+            id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
         inspiral_params = inspiral_parameters(
             id_input_file,
+            id_metadata,
             id_run_dir,
             id_horizons_path=id_horizons_path,
             refinement_level=refinement_level,

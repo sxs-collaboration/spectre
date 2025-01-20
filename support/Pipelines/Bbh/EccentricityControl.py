@@ -70,13 +70,12 @@ def eccentricity_control(
     # Read and process the initial data input file
     with open(id_input_file_path, "r") as open_input_file:
         id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
-    binary_data = id_input_file["Background"]["Binary"]
+    target_params = id_metadata["TargetParams"]
+    assert (
+        target_params["Eccentricity"] is not None
+    ), "For eccentricity control the target eccentricity must be set."
     id_params = id_metadata["Next"]["With"]
-    control_params = id_params["control_params"]
-    mass_A = control_params["mass_A"]
-    mass_B = control_params["mass_B"]
-    spin_A = control_params["spin_A"]
-    spin_B = control_params["spin_B"]
+    binary_data = id_input_file["Background"]["Binary"]
     x_B, x_A = binary_data["XCoords"]
     separation = x_A - x_B
 
@@ -125,10 +124,7 @@ def eccentricity_control(
 
     # Generate new initial data based on updated orbital parameters
     generate_id(
-        mass_a=mass_A,
-        mass_b=mass_B,
-        dimensionless_spin_a=spin_A,
-        dimensionless_spin_b=spin_B,
+        target_params,
         # Orbital parameters
         separation=separation,
         orbital_angular_velocity=new_orbital_params["Omega0"],

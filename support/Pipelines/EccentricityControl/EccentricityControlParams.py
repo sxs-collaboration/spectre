@@ -39,8 +39,6 @@ def eccentricity_control_params(
     subfile_name_ahb_quantities: str = "ObservationAhB.dat",
     tmin: Optional[float] = None,
     tmax: Optional[float] = None,
-    target_eccentricity: float = 0.0,
-    target_mean_anomaly_fraction: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
 ) -> Tuple[float, float, Dict[OrbitalParams, float]]:
     """Get new orbital parameters for a binary system to control eccentricity.
@@ -68,14 +66,6 @@ def eccentricity_control_params(
         Used to remove initial junk and transients in the data.
       tmax: (Optional) The upper time bound for the eccentricity estimate.
         A reasonable value would include 2-3 orbits.
-      target_eccentricity: (Optional) The target eccentricity to drive the
-        orbit to. Default is 0.0 (circular orbit).
-      target_mean_anomaly_fraction: (Optional) The target mean anomaly of the
-        orbit divided by 2 pi, so it is a number between 0 and 1. The value 0
-        corresponds to the pericenter of the orbit (closest approach), the value
-        0.5 corresponds to the apocenter of the orbit (farthest distance), and
-        the value 1 corresponds to the pericenter again. Currently this is
-        unused because only an eccentricity of 0 is supported.
       plot_output_dir: (Optional) Output directory for plots.
 
     Returns:
@@ -94,9 +84,6 @@ def eccentricity_control_params(
             "'-D SPEC_ROOT' to a SpEC installation when configuring the build "
             "with CMake."
         )
-    assert (
-        target_eccentricity == 0.0
-    ), "Only circular orbits are currently supported for eccentricity control."
 
     # Make sure h5_files is a sequence
     if isinstance(h5_files, (str, Path)):
@@ -104,7 +91,12 @@ def eccentricity_control_params(
 
     # Read initial data parameters from input file
     with open(id_input_file_path, "r") as open_input_file:
-        _, id_input_file = yaml.safe_load_all(open_input_file)
+        id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
+    target_params = id_metadata["TargetParams"]
+    target_eccentricity = target_params["Eccentricity"]
+    assert (
+        target_eccentricity == 0.0
+    ), "Only circular orbits are currently supported for eccentricity control."
     id_binary = id_input_file["Background"]["Binary"]
     Omega0 = id_binary["AngularVelocity"]
     adot0 = id_binary["Expansion"]
@@ -147,8 +139,8 @@ def eccentricity_control_params(
             "No horizon data found in time range. "
             "Using initial data masses and ignoring spins."
         )
-        mA = id_binary["ObjectRight"]["KerrSchild"]["Mass"]
-        mB = id_binary["ObjectLeft"]["KerrSchild"]["Mass"]
+        mA = target_params["MassA"]
+        mB = target_params["MassB"]
         sA = sB = None
     else:
         mA = horizon_params["AhA ChristodoulouMass"].iloc[0]

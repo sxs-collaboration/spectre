@@ -28,6 +28,7 @@ RINGDOWN_INPUT_FILE_TEMPLATE = Path(__file__).parent / "Ringdown.yaml"
 
 def ringdown_parameters(
     inspiral_input_file: dict,
+    inspiral_metadata: dict,
     inspiral_run_dir: Union[str, Path],
     fot_vol_subfile: str,
     refinement_level: int,
@@ -55,6 +56,10 @@ def ringdown_parameters(
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
+        # Store target parameters in the input file
+        "TargetParams": yaml.safe_dump(
+            {"TargetParams": inspiral_metadata["TargetParams"]}
+        ).strip(),
     }
 
 
@@ -144,7 +149,9 @@ def start_ringdown(
         fot_vol_h5_path = inspiral_run_dir / "BbhVolume0.h5"
 
     with open(inspiral_input_file, "r") as open_input_file:
-        _, inspiral_input_file = yaml.safe_load_all(open_input_file)
+        inspiral_metadata, inspiral_input_file = yaml.safe_load_all(
+            open_input_file
+        )
 
     # Resolve directories
     if pipeline_dir:
@@ -157,8 +164,9 @@ def start_ringdown(
 
     ringdown_params = ringdown_parameters(
         inspiral_input_file,
+        inspiral_metadata,
         inspiral_run_dir,
-        fot_vol_subfile,
+        fot_vol_subfile=fot_vol_subfile,
         refinement_level=refinement_level,
         polynomial_order=polynomial_order,
     )

@@ -11,16 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 def initial_orbital_parameters(
-    mass_ratio: float,
-    dimensionless_spin_a: Sequence[float],
-    dimensionless_spin_b: Sequence[float],
-    eccentricity: Optional[float] = None,
-    mean_anomaly_fraction: Optional[float] = None,
+    target_params: dict,
     separation: Optional[float] = None,
     orbital_angular_velocity: Optional[float] = None,
     radial_expansion_velocity: Optional[float] = None,
-    num_orbits: Optional[float] = None,
-    time_to_merger: Optional[float] = None,
 ) -> Tuple[float, float, float]:
     """Estimate initial orbital parameters from a Post-Newtonian approximation.
 
@@ -57,25 +51,33 @@ def initial_orbital_parameters(
     Returns: Tuple of the initial separation 'D_0', orbital angular velocity
       'Omega_0', and radial expansion velocity 'adot_0'.
     """
-    dimensionless_spin_a = np.asarray(dimensionless_spin_a)
-    dimensionless_spin_b = np.asarray(dimensionless_spin_b)
-    if eccentricity is not None and eccentricity != 0.0:
+    # If all orbital parameters are already specified, return early
+    if (
+        separation is not None
+        and orbital_angular_velocity is not None
+        and radial_expansion_velocity is not None
+    ):
+        return separation, orbital_angular_velocity, radial_expansion_velocity
+
+    mass_ratio = target_params["MassRatio"]
+    dimensionless_spin_a = np.asarray(target_params["DimensionlessSpinA"])
+    dimensionless_spin_b = np.asarray(target_params["DimensionlessSpinB"])
+    eccentricity = target_params["Eccentricity"]
+    mean_anomaly_fraction = target_params.get("MeanAnomalyFraction")
+    num_orbits = target_params.get("NumOrbits")
+    time_to_merger = target_params.get("TimeToMerger")
+
+    # Check input parameters for consistency
+    assert eccentricity is not None, (
+        "Specify all orbital parameters 'separation',"
+        " 'orbital_angular_velocity', and 'radial_expansion_velocity', or"
+        " specify an 'eccentricity' plus one orbital parameter."
+    )
+    if eccentricity != 0.0:
         assert mean_anomaly_fraction is not None, (
             "If you specify a nonzero 'eccentricity' you must also specify a"
             " 'mean_anomaly_fraction'."
         )
-    if eccentricity is None:
-        assert (
-            separation is not None
-            and orbital_angular_velocity is not None
-            and radial_expansion_velocity is not None
-        ), (
-            "Specify all orbital parameters 'separation',"
-            " 'orbital_angular_velocity', and 'radial_expansion_velocity', or"
-            " specify an 'eccentricity' plus one orbital parameter."
-        )
-        return separation, orbital_angular_velocity, radial_expansion_velocity
-
     # The functions from SpEC currently work only for zero eccentricity. We will
     # need to generalize this for eccentric orbits.
     assert eccentricity == 0.0, (
