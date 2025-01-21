@@ -73,7 +73,10 @@ void test_variable_fixer(
 template <size_t Dim>
 void test_variable_fixer(
     const VariableFixing::FixToAtmosphere<Dim>& variable_fixer,
-    const EquationsOfState::EquationOfState<true, 2>& equation_of_state) {
+    const EquationsOfState::EquationOfState<true, 2>& equation_of_state,
+    const bool use_kappa_limiting, const double min_temperature) {
+  CAPTURE(use_kappa_limiting);
+  CAPTURE(min_temperature);
   Scalar<DataVector> density{DataVector{2.e-12, 2.e-11, 4.e-12, 2.e-11}};
   Scalar<DataVector> specific_internal_energy{DataVector{
       2., 3., 3.,
@@ -105,12 +108,46 @@ void test_variable_fixer(
 
   Scalar<DataVector> expected_density{
       DataVector{1.e-12, 2.e-11, 4.e-12, 2.e-11}};
+  const auto compute_temperature = [&equation_of_state, &expected_density,
+                                    &min_temperature](const size_t i) {
+    const double density_lower_bound = 3.e-12;
+    const double density_upper_bound = 3.e-11;
+    const double epsilon_kappa_pm = 1.1;
+    const bool below =
+        get(expected_density)[i] < epsilon_kappa_pm * density_lower_bound;
+    const double p_min = get(equation_of_state.pressure_from_density_and_energy(
+        Scalar<double>{get(expected_density)[i]},
+        equation_of_state.specific_internal_energy_from_density_and_temperature(
+            Scalar<double>{get(expected_density)[i]},
+            Scalar<double>{min_temperature})));
+    return get(equation_of_state.temperature_from_density_and_energy(
+        Scalar<double>{get(expected_density)[i]},
+        equation_of_state.specific_internal_energy_from_density_and_pressure(
+            Scalar<double>{get(expected_density)[i]},
+            Scalar<double>{
+                p_min * (1.0 + 0.01 * (below ? 1.0
+                                             : (get(expected_density)[i] -
+                                                density_lower_bound) /
+                                                   (density_upper_bound -
+                                                    density_lower_bound)))})));
+  };
+
   Scalar<DataVector> expected_specific_internal_energy{
-      DataVector{0.0, 3.0, 3.0,
+      use_kappa_limiting
+          ? (min_temperature == 0.0 ? DataVector{4, 0.}
+                                    :  // do more complicated kappa limiting
                  get(equation_of_state
                          .specific_internal_energy_from_density_and_temperature(
-                             Scalar<double>(get(expected_density)[3]),
-                             Scalar<double>(0.)))}};
+                             expected_density,
+                             Scalar<DataVector>{DataVector{
+                                 min_temperature, compute_temperature(1),
+                                 compute_temperature(2), 0.0}})))
+          : DataVector{
+                0.0, 3.0, 3.0,
+                get(equation_of_state
+                        .specific_internal_energy_from_density_and_temperature(
+                            Scalar<double>(get(expected_density)[3]),
+                            Scalar<double>(0.)))}};
   auto expected_pressure = equation_of_state.pressure_from_density_and_energy(
       expected_density, expected_specific_internal_energy);
   auto expected_temperature =
@@ -144,12 +181,19 @@ template <size_t Dim>
 void test_variable_fixer() {
   using Vlo =
       typename VariableFixing::FixToAtmosphere<Dim>::VelocityLimitingOptions;
+  using Klo =
+      typename VariableFixing::FixToAtmosphere<Dim>::KappaLimitingOptions;
   // Test for representative 1-d equation of state
+  const VariableFixing::FixToAtmosphere<Dim> variable_fixer_klo{
+      1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11},
+      Klo{3.e-12, 1.e-3, 3.e-11, 0.01, std::nullopt, false}};
   const VariableFixing::FixToAtmosphere<Dim> variable_fixer{
-      1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11}};
+      1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11}, std::nullopt};
   EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
   test_variable_fixer<Dim>(variable_fixer, polytrope);
+  test_variable_fixer<Dim>(variable_fixer_klo, polytrope);
   test_serialization(variable_fixer);
+  test_serialization(variable_fixer_klo);
 
   const auto fixer_from_options =
       TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim>>(
@@ -159,15 +203,34 @@ void test_variable_fixer() {
           "  AtmosphereMaxVelocity: 0\n"
           "  NearAtmosphereMaxVelocity: 1.0e-4\n"
           "  AtmosphereDensityCutoff: 3.0e-12\n"
-          "  TransitionDensityBound: 1.0e-11\n");
+          "  TransitionDensityBound: 1.0e-11\n"
+          "KappaLimiting: Disabled\n");
+  const auto fixer_from_options_klo =
+      TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim>>(
+          "DensityOfAtmosphere: 1.0e-12\n"
+          "DensityCutoff: 3.0e-12\n"
+          "VelocityLimiting:\n"
+          "  AtmosphereMaxVelocity: 0\n"
+          "  NearAtmosphereMaxVelocity: 1.0e-4\n"
+          "  AtmosphereDensityCutoff: 3.0e-12\n"
+          "  TransitionDensityBound: 1.0e-11\n"
+          "KappaLimiting:\n"
+          "  DensityLowerBound: 3.0e-12\n"
+          "  EplisonKappaMinus: 1.0e-3\n"
+          "  DensityUpperBound: 3.0e-11\n"
+          "  EpsilonKappaMax: 0.01\n"
+          "  MinTemperature: 1.0e-3\n"
+          "  LimitAboveDensityUpperBound: False\n");
   test_variable_fixer(fixer_from_options, polytrope);
+  test_variable_fixer(fixer_from_options_klo, polytrope);
 
   // Test for representative 2-d equation of state
   EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
-  test_variable_fixer<Dim>(variable_fixer, ideal_fluid);
-  test_serialization(variable_fixer);
+  test_variable_fixer<Dim>(variable_fixer, ideal_fluid, false, 0.0);
+  test_variable_fixer<Dim>(variable_fixer_klo, ideal_fluid, true, 0.0);
 
-  test_variable_fixer<Dim>(fixer_from_options, ideal_fluid);
+  test_variable_fixer<Dim>(fixer_from_options, ideal_fluid, false, 1.0e-3);
+  test_variable_fixer<Dim>(fixer_from_options_klo, ideal_fluid, true, 1.0e-3);
 }
 }  // namespace
 

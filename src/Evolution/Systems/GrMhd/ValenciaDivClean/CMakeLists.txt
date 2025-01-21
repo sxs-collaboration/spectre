@@ -74,7 +74,6 @@ target_link_libraries(
   Options
   RelativisticEulerSolutions
   Utilities
-  Valencia
   VariableFixing
   PRIVATE
   RootFinding

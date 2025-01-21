@@ -119,6 +119,13 @@ VariableFixing:
       NearAtmosphereMaxVelocity: 1.0e-4
       AtmosphereDensityCutoff: 3.0e-12
       TransitionDensityBound: 1.0e-11
+    KappaLimiting:
+      DensityLowerBound: 2.0e-11
+      EplisonKappaMinus: 1.0e-3
+      DensityUpperBound: 2.0e-10
+      EpsilonKappaMax: 0.01
+      LimitAboveDensityUpperBound: False
+      MinTemperature: FromEos
 
 PrimitiveFromConservative:
   CutoffDForInversion: *CutoffD
