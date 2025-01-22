@@ -600,9 +600,9 @@ void test_metric_worldtube_buffer_updater_impl(
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
-  TestHelpers::write_test_file<T>(solution, filename, target_time,
-                                  extraction_radius, frequency, amplitude,
-                                  file_l_max);
+  TestHelpers::write_test_file<T, false>(solution, filename, target_time,
+                                         extraction_radius, frequency,
+                                         amplitude, file_l_max);
 
   // request an appropriate buffer
   auto buffer_updater =

@@ -86,8 +86,6 @@ jobs:
 
           sed -i 's/CceR0257/Tests\/BondiSachsCceR0200/g' \
           ./CceExecutables/CharacteristicExtract.yaml
-          sed -i 's/H5IsBondiData: False/H5IsBondiData: True/g' \
-          ./CceExecutables/CharacteristicExtract.yaml
 
           cd ./CceExecutables/
 

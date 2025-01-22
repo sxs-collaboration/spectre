@@ -185,11 +185,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   }
   Cce::TestHelpers::write_test_file(
       gr::Solutions::KerrSchild{1.0, {{0.2, 0.2, 0.2}}, {{0.0, 0.0, 0.0}}},
-      filename, 4.0, 100.0, 0.0, 0.1, 8);
+      filename, 4.0, 100.0, 0.1, 0.1, 8);
 
   CHECK(Cce::Tags::H5WorldtubeBoundaryDataManager::create_from_options(
             8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>(),
-            false, true, std::nullopt)
+            std::nullopt)
             ->get_l_max() == 8);
 
   CHECK(Cce::Tags::FilePrefix::create_from_options("Shrek 2") == "Shrek 2");

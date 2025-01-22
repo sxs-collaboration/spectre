@@ -254,7 +254,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(
           l_max, filename, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
-          false, false, std::optional<double>{}));
+          std::optional<double>{}));
 
   // this should run the initializations
   for (size_t i = 0; i < 5; ++i) {

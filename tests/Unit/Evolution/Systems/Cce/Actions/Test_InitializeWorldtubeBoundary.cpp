@@ -125,7 +125,7 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(
           l_max, filename, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
-          false, false, std::optional<double>{}));
+          std::optional<double>{}));
 
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {

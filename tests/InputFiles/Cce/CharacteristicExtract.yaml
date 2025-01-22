@@ -117,17 +117,11 @@ Cce:
   #   ExtractionRadius: 257
   BoundaryDataFilename: CceR0257.h5
   ExtractionRadius: Auto
-  # Assume data is metric & derivs. This is wrong for SpECTRE & SpEC
-  # output, but likely correct for other codes.
-  H5IsBondiData: False
   # How we interpolate the worldtube data in time for CCE.
   H5Interpolator:
     BarycentricRationalSpanInterpolator:
       MinOrder: 10
       MaxOrder: 10
-  # Unless you are using data from an old version of the Spectral Einstein Code,
-  # leave FixSpecNormalization as False.
-  FixSpecNormalization: False
 
   # Loads this many time steps in from the HDF5 files at once. Fewer file system
   # accesses improve performance, but requires more RAM.
