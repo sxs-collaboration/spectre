@@ -19,6 +19,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
@@ -103,8 +105,15 @@ class Wcns5zPrim : public Reconstructor {
         "FallbackReconstructor=None, this option is ignored"};
   };
 
-  using options = tmpl::list<NonlinearWeightExponent, Epsilon,
-                             FallbackReconstructor, MaxNumberOfExtrema>;
+  struct AtmosphereTreatment {
+    using type = ::VariableFixing::FixReconstructedStateToAtmosphere;
+    static constexpr Options::String help = {
+        "What reconstructed states to fix to their atmosphere values."};
+  };
+
+  using options =
+      tmpl::list<NonlinearWeightExponent, Epsilon, FallbackReconstructor,
+                 MaxNumberOfExtrema, AtmosphereTreatment>;
 
   static constexpr Options::String help{
       "WCNS 5Z reconstruction scheme using primitive variables."};
@@ -118,7 +127,9 @@ class Wcns5zPrim : public Reconstructor {
 
   Wcns5zPrim(size_t nonlinear_weight_exponent, double epsilon,
              FallbackReconstructorType fallback_reconstructor,
-             size_t max_number_of_extrema);
+             size_t max_number_of_extrema,
+             ::VariableFixing::FixReconstructedStateToAtmosphere
+                 fix_reconstructed_state_to_atmosphere);
 
   explicit Wcns5zPrim(CkMigrateMessage* msg);
 
@@ -137,7 +148,8 @@ class Wcns5zPrim : public Reconstructor {
                  typename System::variables_tag,
                  hydro::Tags::GrmhdEquationOfState, domain::Tags::Element<dim>,
                  evolution::dg::subcell::Tags::GhostDataForReconstruction<dim>,
-                 evolution::dg::subcell::Tags::Mesh<dim>>;
+                 evolution::dg::subcell::Tags::Mesh<dim>,
+                 ::Tags::VariableFixer<VariableFixing::FixToAtmosphere<dim>>>;
 
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct(
@@ -150,7 +162,8 @@ class Wcns5zPrim : public Reconstructor {
       const Element<dim>& element,
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
-      const Mesh<dim>& subcell_mesh) const;
+      const Mesh<dim>& subcell_mesh,
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const;
 
   template <size_t ThermodynamicDim, typename TagsList>
   void reconstruct_fd_neighbor(
@@ -164,6 +177,7 @@ class Wcns5zPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
       const Direction<dim>& direction_to_reconstruct) const;
 
  private:
@@ -176,6 +190,9 @@ class Wcns5zPrim : public Reconstructor {
   FallbackReconstructorType fallback_reconstructor_ =
       FallbackReconstructorType::None;
   size_t max_number_of_extrema_ = 0;
+  ::VariableFixing::FixReconstructedStateToAtmosphere
+      fix_reconstructed_state_to_atmosphere_{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never};
 
   void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        gsl::not_null<std::array<gsl::span<double>, dim>*>,

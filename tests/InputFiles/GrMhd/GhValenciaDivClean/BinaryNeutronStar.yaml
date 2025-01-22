@@ -200,6 +200,7 @@ SpatialDiscretization:
         Alpha7: None
         Alpha9: None
         LowOrderReconstructor: MonotonisedCentral
+        AtmosphereTreatment: Never
     FilterOptions:
       SpacetimeDissipation: 0.1
 

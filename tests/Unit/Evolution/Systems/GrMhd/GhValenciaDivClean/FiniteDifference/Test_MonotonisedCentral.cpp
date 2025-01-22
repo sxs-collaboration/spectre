@@ -6,6 +6,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/MonotonisedCentral.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PrimReconstructor.hpp"
@@ -19,15 +20,24 @@ SPECTRE_TEST_CASE(
   const auto mc_from_options_base = TestHelpers::test_factory_creation<
       grmhd::GhValenciaDivClean::fd::Reconstructor,
       grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor>(
-      "MonotonisedCentralPrim:\n");
+      "MonotonisedCentralPrim:\n"
+      "  AtmosphereTreatment: Never\n");
   const auto mc_deserialized = serialize_and_deserialize(mc_from_options_base);
   auto* const mc_from_options = dynamic_cast<
       const grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim*>(
       mc_deserialized.get());
   REQUIRE(mc_from_options != nullptr);
+  CHECK(grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always} !=
+        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   CHECK(*mc_from_options ==
-        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{});
-  test_move_semantics(grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{},
-                      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{});
+        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+  test_move_semantics(
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never},
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   helpers::test_prim_reconstructor(5, *mc_from_options);
 }

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -28,11 +27,13 @@
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -170,7 +171,8 @@ template <size_t ThermodynamicDim, typename Reconstructor>
 void test_prim_reconstructor_impl(
     const size_t points_per_dimension,
     const Reconstructor& derived_reconstructor,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
+    const VariableFixing::FixToAtmosphere<3>& fix_to_atmopshere) {
   // 1. Create linear prims to reconstruct
   // 2. send through reconstruction
   // 3. check prims and cons were computed correctly
@@ -293,7 +295,8 @@ void test_prim_reconstructor_impl(
         .reconstruct(make_not_null(&vars_on_lower_face),
                      make_not_null(&vars_on_upper_face),
                      make_not_null(&reconstruction_order), volume_prims,
-                     volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+                     volume_cons_vars, eos, element, ghost_data, subcell_mesh,
+                     fix_to_atmopshere);
     for (size_t d = 0; d < 3; ++d) {
       CAPTURE(d);
       for (size_t i = 0; i < gsl::at(reconstruction_order_storage, d).size();
@@ -307,7 +310,8 @@ void test_prim_reconstructor_impl(
     dynamic_cast<const Reconstructor&>(reconstructor)
         .reconstruct(make_not_null(&vars_on_lower_face),
                      make_not_null(&vars_on_upper_face), volume_prims,
-                     volume_cons_vars, eos, element, ghost_data, subcell_mesh);
+                     volume_cons_vars, eos, element, ghost_data, subcell_mesh,
+                     fix_to_atmopshere);
   }
 
   for (size_t dim = 0; dim < 3; ++dim) {
@@ -457,19 +461,19 @@ void test_prim_reconstructor_impl(
         num_pts_on_mortar};
     if (dim != 2) {
       dynamic_cast<const Reconstructor&>(reconstructor)
-          .reconstruct_fd_neighbor(make_not_null(&upper_side_vars_on_mortar),
-                                   volume_prims, volume_spacetime_vars, eos,
-                                   element, ghost_data, subcell_mesh,
-                                   Direction<3>{dim, Side::Upper});
+          .reconstruct_fd_neighbor(
+              make_not_null(&upper_side_vars_on_mortar), volume_prims,
+              volume_spacetime_vars, eos, element, ghost_data, subcell_mesh,
+              fix_to_atmopshere, Direction<3>{dim, Side::Upper});
     }
 
     Variables<dg_package_data_argument_tags> lower_side_vars_on_mortar{
         num_pts_on_mortar};
     dynamic_cast<const Reconstructor&>(reconstructor)
-        .reconstruct_fd_neighbor(make_not_null(&lower_side_vars_on_mortar),
-                                 volume_prims, volume_spacetime_vars, eos,
-                                 element, ghost_data, subcell_mesh,
-                                 Direction<3>{dim, Side::Lower});
+        .reconstruct_fd_neighbor(
+            make_not_null(&lower_side_vars_on_mortar), volume_prims,
+            volume_spacetime_vars, eos, element, ghost_data, subcell_mesh,
+            fix_to_atmopshere, Direction<3>{dim, Side::Lower});
 
     tmpl::for_each<tmpl::append<tags_to_test, spacetime_tags>>(
         [dim, &expected_lower_face_values, &expected_upper_face_values,
@@ -496,11 +500,12 @@ void test_prim_reconstructor_impl(
 template <typename Reconstructor>
 void test_prim_reconstructor(const size_t points_per_dimension,
                              const Reconstructor& derived_reconstructor) {
-  detail::test_prim_reconstructor_impl(points_per_dimension,
-                                       derived_reconstructor,
-                                       EquationsOfState::IdealFluid<true>{1.4});
+  VariableFixing::FixToAtmosphere<3> fix_to_atmosphere{};
   detail::test_prim_reconstructor_impl(
       points_per_dimension, derived_reconstructor,
-      EquationsOfState::PolytropicFluid<true>{1.0, 2.0});
+      EquationsOfState::IdealFluid<true>{1.4}, fix_to_atmosphere);
+  detail::test_prim_reconstructor_impl(
+      points_per_dimension, derived_reconstructor,
+      EquationsOfState::PolytropicFluid<true>{1.0, 2.0}, fix_to_atmosphere);
 }
 }  // namespace TestHelpers::grmhd::GhValenciaDivClean::fd

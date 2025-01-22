@@ -168,6 +168,7 @@ SpatialDiscretization:
   SubcellSolver:
     Reconstructor:
       MonotonisedCentralPrim:
+        AtmosphereTreatment: Never
     FilterOptions:
       SpacetimeDissipation: 0.1
 

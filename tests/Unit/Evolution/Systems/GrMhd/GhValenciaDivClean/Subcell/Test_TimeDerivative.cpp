@@ -61,6 +61,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -668,7 +670,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>,
           ::gh::gauges::Tags::GaugeCondition,
-          grmhd::GhValenciaDivClean::fd::Tags::FilterOptions>,
+          grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
+          ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>,
           ::domain::Tags::MappedCoordinates<
@@ -731,7 +734,10 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       gamma1->get_clone(), gamma2->get_clone(),
       std::unique_ptr<gh::gauges::GaugeCondition>(
           std::make_unique<gh::gauges::AnalyticChristoffel>(soln.get_clone())),
-      grmhd::GhValenciaDivClean::fd::FilterOptions{0.001});
+      grmhd::GhValenciaDivClean::fd::FilterOptions{0.001},
+      // Just use a default-constructed fixer and have the reconstructor not
+      // call it.
+      ::VariableFixing::FixToAtmosphere<3>{});
 
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));

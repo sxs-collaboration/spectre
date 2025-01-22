@@ -44,6 +44,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -107,13 +109,16 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
       db::get<grmhd::GhValenciaDivClean::fd::Tags::Reconstructor>(box);
   const auto& base_boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<System>>(box);
+  const auto& fix_to_atmosphere =
+      db::get<::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>(box);
   using derived_boundary_corrections = typename std::decay_t<
       decltype(base_boundary_correction)>::creatable_classes;
   call_with_dynamic_type<void, derived_boundary_corrections>(
       &base_boundary_correction,
-      [&box, &dg_mesh, &mortars_to_reconstruct_to, &neighbor_package_data,
-       &ghost_subcell_data, &recons, &subcell_mesh, &subcell_options,
-       &volume_prims, &volume_spacetime_vars](const auto* gh_grmhd_correction) {
+      [&box, &dg_mesh, &fix_to_atmosphere, &mortars_to_reconstruct_to,
+       &neighbor_package_data, &ghost_subcell_data, &recons, &subcell_mesh,
+       &subcell_options, &volume_prims,
+       &volume_spacetime_vars](const auto* gh_grmhd_correction) {
         using DerivedCorrection = std::decay_t<decltype(*gh_grmhd_correction)>;
         const auto& boundary_correction =
             dynamic_cast<const DerivedCorrection&>(*gh_grmhd_correction);
@@ -156,13 +161,14 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
           call_with_dynamic_type<void, typename grmhd::GhValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
-              &recons, [&element, &eos, &mortar_id, &ghost_subcell_data,
-                        &subcell_mesh, &vars_on_face, &volume_prims,
-                        &volume_spacetime_vars](const auto& reconstructor) {
+              &recons,
+              [&element, &eos, &fix_to_atmosphere, &mortar_id,
+               &ghost_subcell_data, &subcell_mesh, &vars_on_face, &volume_prims,
+               &volume_spacetime_vars](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims,
                     volume_spacetime_vars, eos, element, ghost_subcell_data,
-                    subcell_mesh, mortar_id.direction());
+                    subcell_mesh, fix_to_atmosphere, mortar_id.direction());
               });
 
           // Get the mesh velocity if needed

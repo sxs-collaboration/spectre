@@ -43,6 +43,12 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
+MonotonisedCentralPrim::MonotonisedCentralPrim(
+    const ::VariableFixing::FixReconstructedStateToAtmosphere
+        fix_reconstructed_state_to_atmosphere)
+    : fix_reconstructed_state_to_atmosphere_(
+          fix_reconstructed_state_to_atmosphere) {}
+
 MonotonisedCentralPrim::MonotonisedCentralPrim(CkMigrateMessage* const msg)
     : Reconstructor(msg) {}
 
@@ -50,7 +56,10 @@ std::unique_ptr<Reconstructor> MonotonisedCentralPrim::get_clone() const {
   return std::make_unique<MonotonisedCentralPrim>(*this);
 }
 
-void MonotonisedCentralPrim::pup(PUP::er& p) { Reconstructor::pup(p); }
+void MonotonisedCentralPrim::pup(PUP::er& p) {
+  Reconstructor::pup(p);
+  p | fix_reconstructed_state_to_atmosphere_;
+}
 
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
@@ -67,7 +76,9 @@ void MonotonisedCentralPrim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
-    const Mesh<dim>& subcell_mesh) const {
+    const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const {
+  using ::VariableFixing::FixReconstructedStateToAtmosphere;
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
@@ -121,7 +132,13 @@ void MonotonisedCentralPrim::reconstruct(
             shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true,
+      (fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::Always or
+               fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::OnFdOnly
+           ? &fix_to_atmosphere
+           : nullptr));
 }
 
 template <size_t ThermodynamicDim, typename TagsList>
@@ -135,7 +152,9 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
     const Element<dim>& element,
     const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<dim>& subcell_mesh,
+    const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
     const Direction<dim> direction_to_reconstruct) const {
+  using ::VariableFixing::FixReconstructedStateToAtmosphere;
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
   using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
@@ -222,12 +241,19 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
-      true);
+      true,
+      (fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::Always or
+               fix_reconstructed_state_to_atmosphere_ ==
+                   FixReconstructedStateToAtmosphere::AtDgFdInterfaceOnly
+           ? &fix_to_atmosphere
+           : nullptr));
 }
 
-bool operator==(const MonotonisedCentralPrim& /*lhs*/,
-                const MonotonisedCentralPrim& /*rhs*/) {
-  return true;
+bool operator==(const MonotonisedCentralPrim& lhs,
+                const MonotonisedCentralPrim& rhs) {
+  return lhs.fix_reconstructed_state_to_atmosphere_ ==
+         rhs.fix_reconstructed_state_to_atmosphere_;
 }
 
 bool operator!=(const MonotonisedCentralPrim& lhs,
@@ -250,7 +276,8 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
       const Element<3>& element,                                            \
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh) const;                                   \
+      const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
   template void MonotonisedCentralPrim::reconstruct_fd_neighbor(            \
       gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
           vars_on_face,                                                     \
@@ -263,6 +290,7 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
       const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
           ghost_data,                                                       \
       const Mesh<3>& subcell_mesh,                                          \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
