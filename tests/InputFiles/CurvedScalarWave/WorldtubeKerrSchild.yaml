@@ -79,6 +79,7 @@ DomainCreator:
         InitialAngularVelocity: [0., 0., 0.08944271909999159]
       TranslationMap:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+      SkewMap: None
       ShapeMapA:
         LMax: 8
         InitialValues: Spherical

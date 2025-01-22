@@ -9,6 +9,7 @@ spectre_target_sources(
   FromVolumeFile.cpp
   RotationMap.cpp
   ShapeMap.cpp
+  SkewMap.cpp
   Sphere.cpp
   TranslationMap.cpp
 )
@@ -22,6 +23,7 @@ spectre_target_headers(
   FromVolumeFile.hpp
   RotationMap.hpp
   ShapeMap.hpp
+  SkewMap.hpp
   Sphere.hpp
   TranslationMap.hpp
   )

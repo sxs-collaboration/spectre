@@ -59,7 +59,8 @@ create_grid_anchors(const std::array<double, 3>& center_a,
       tnsr::I<double, 3, Frame::Grid>{center_a};
   result["Center" + get_output(ObjectLabel::B)] =
       tnsr::I<double, 3, Frame::Grid>{center_b};
-  result["Center"] = tnsr::I<double, 3, Frame::Grid>{std::array{0.0, 0.0, 0.0}};
+  result["Center"] =
+      tnsr::I<double, 3, Frame::Grid>{0.5 * (center_a + center_b)};
 
   return result;
 }
@@ -388,8 +389,11 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
                               center_of_mass_offset_[1]},
                    std::array{x_coord_b_, center_of_mass_offset_[0],
                               center_of_mass_offset_[1]}},
-        cube_A_center, cube_B_center, radii_A, radii_B, not is_excised_a_,
-        not is_excised_b_, envelope_radius_, outer_radius_);
+        cube_A_center, cube_B_center,
+        std::array{translation_, center_of_mass_offset[0],
+                   center_of_mass_offset[1]},
+        radii_A, radii_B, not is_excised_a_, not is_excised_b_,
+        envelope_radius_, outer_radius_);
   }
 }
 

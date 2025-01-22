@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   TimeDependentOptions/Test_FromVolumeFile.cpp
   TimeDependentOptions/Test_RotationMap.cpp
   TimeDependentOptions/Test_ShapeMap.cpp
+  TimeDependentOptions/Test_Skew.cpp
   TimeDependentOptions/Test_Sphere.cpp
   TimeDependentOptions/Test_TranslationMap.cpp
   PARENT_SCOPE)

@@ -15,6 +15,7 @@
 #include "Domain/Creators/TimeDependentOptions/ExpansionMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/RotationMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/SkewMap.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/IntegratedFunctionOfTime.hpp"
@@ -42,6 +43,9 @@ using RotMapOptions =
 template <bool IsCylindrical>
 using TransMapOptions =
     typename TimeDependentMapOptions<IsCylindrical>::TranslationMapOptionType;
+template <bool IsCylindrical>
+using SkewMapOptions =
+    typename TimeDependentMapOptions<IsCylindrical>::SkewMapOptionType;
 template <bool IsCylindrical>
 using ShapeMapAOptions = typename TimeDependentMapOptions<
     IsCylindrical>::template ShapeMapOptionType<domain::ObjectLabel::A>;
@@ -115,18 +119,21 @@ static_assert(check_maps_list_v<combo_maps_4_expected, combo_maps_4>);
 
 template <bool IsCylindrical>
 void test(const bool include_expansion, const bool include_rotation,
-          const bool include_translation, const bool include_shape_a,
-          const bool include_shape_b, const bool transition_ends_at_cube_A,
+          const bool include_translation, const bool include_skew,
+          const bool include_shape_a, const bool include_shape_b,
+          const bool transition_ends_at_cube_A,
           const bool transition_ends_at_cube_B) {
   CAPTURE(IsCylindrical);
   CAPTURE(include_expansion);
   CAPTURE(include_rotation);
   CAPTURE(include_translation);
+  CAPTURE(include_skew);
   CAPTURE(include_shape_a);
   CAPTURE(include_shape_b);
   ExpMapOptions<IsCylindrical> exp_map_options{};
   RotMapOptions<IsCylindrical> rot_map_options{};
   TransMapOptions<IsCylindrical> trans_map_options{};
+  SkewMapOptions<IsCylindrical> skew_map_options{};
   ShapeMapAOptions<IsCylindrical> shape_map_a_options{};
   ShapeMapBOptions<IsCylindrical> shape_map_b_options{};
 
@@ -149,6 +156,13 @@ void test(const bool include_expansion, const bool include_rotation,
       std::array{0.0, 0.0, 0.0}};
   if (include_translation) {
     trans_map_options = TransMapOptions<IsCylindrical>{translation_values};
+  }
+
+  const std::array<std::array<double, 3>, 2> skew_values{
+      std::array{-0.1, 0.0, 0.0}, std::array{-0.1, 0.0, 0.0}};
+  if (include_skew) {
+    skew_map_options =
+        time_dependent_options::SkewMapOptions{skew_values[0], skew_values[1]};
   }
 
   const std::array<double, 3> size_A_values{0.9, 0.08, 0.007};
@@ -183,12 +197,12 @@ void test(const bool include_expansion, const bool include_rotation,
 
   const double initial_time = 1.5;
   if ((not include_expansion) and (not include_rotation) and
-      (not include_translation) and (not include_shape_a) and
-      (not include_shape_b)) {
+      (not include_translation) and (not include_skew) and
+      (not include_shape_a) and (not include_shape_b)) {
     CHECK_THROWS_WITH(
         (TimeDependentMapOptions<IsCylindrical>{
             initial_time, exp_map_options, rot_map_options, trans_map_options,
-            shape_map_a_options, shape_map_b_options}),
+            skew_map_options, shape_map_a_options, shape_map_b_options}),
         Catch::Matchers::ContainsSubstring(
             "Time dependent map options were specified, but all options "
             "were 'None'. If you don't want time dependent maps, specify "
@@ -198,8 +212,9 @@ void test(const bool include_expansion, const bool include_rotation,
   }
 
   TimeDependentMapOptions<IsCylindrical> time_dep_options{
-      initial_time,      exp_map_options,     rot_map_options,
-      trans_map_options, shape_map_a_options, shape_map_b_options};
+      initial_time,       exp_map_options,  rot_map_options,
+      trans_map_options,  skew_map_options, shape_map_a_options,
+      shape_map_b_options};
 
   CHECK(time_dep_options.has_distorted_frame_options(domain::ObjectLabel::A) ==
         include_shape_a);
@@ -212,6 +227,8 @@ void test(const bool include_expansion, const bool include_rotation,
        std::numeric_limits<double>::infinity()},
       {TimeDependentMapOptions<IsCylindrical>::translation_name,
        std::numeric_limits<double>::infinity()},
+      {TimeDependentMapOptions<IsCylindrical>::skew_name,
+       std::numeric_limits<double>::infinity()},
       {gsl::at(TimeDependentMapOptions<IsCylindrical>::size_names, 0), 15.5},
       {gsl::at(TimeDependentMapOptions<IsCylindrical>::size_names, 1),
        std::numeric_limits<double>::infinity()},
@@ -223,6 +240,7 @@ void test(const bool include_expansion, const bool include_rotation,
   using ExpBdryFoT = domain::FunctionsOfTime::FixedSpeedCubic;
   using RotFoT = domain::FunctionsOfTime::QuaternionFunctionOfTime<3>;
   using TransFoT = domain::FunctionsOfTime::PiecewisePolynomial<2>;
+  using SkewFoT = domain::FunctionsOfTime::PiecewisePolynomial<2>;
   using SizeFoT = domain::FunctionsOfTime::PiecewisePolynomial<3>;
   using ShapeFoT = ExpFoT;
   ExpFoT expansion{
@@ -247,6 +265,12 @@ void test(const bool include_expansion, const bool include_rotation,
                  DataVector{translation_values[2]}},
       expiration_times.at(
           TimeDependentMapOptions<IsCylindrical>::translation_name)};
+  SkewFoT skew{
+      initial_time,
+      std::array{DataVector{skew_values[0][0], skew_values[1][0]},
+                 DataVector{skew_values[0][1], skew_values[1][1]},
+                 DataVector{skew_values[0][2], skew_values[1][2]}},
+      expiration_times.at(TimeDependentMapOptions<IsCylindrical>::skew_name)};
   SizeFoT size_A{initial_time,
                  std::array<DataVector, 4>{{{gsl::at(size_A_values, 0)},
                                             {gsl::at(size_A_values, 1)},
@@ -277,7 +301,7 @@ void test(const bool include_expansion, const bool include_rotation,
           gsl::at(TimeDependentMapOptions<IsCylindrical>::shape_names, 1))};
 
   const std::array<std::array<double, 3>, 2> centers{
-      std::array{5.0, 0.01, 0.02}, std::array{-5.0, -0.01, -0.02}};
+      std::array{5.0, -0.01, -0.02}, std::array{-5.0, -0.01, -0.02}};
   const std::optional<std::array<double, 3>> cube_a_center =
       IsCylindrical ? std::optional<std::array<double, 3>>{}
                     : std::array<double, 3>{{4.25, -0.3, 0.2}};
@@ -288,11 +312,12 @@ void test(const bool include_expansion, const bool include_rotation,
   const double domain_outer_radius = 20.0;
 
   const auto anchors = create_grid_anchors(centers[0], centers[1]);
+  const std::array<double, 3> center_of_mass = 0.5 * (centers[0] + centers[1]);
   CHECK(anchors.count("Center") == 1);
   CHECK(anchors.count("CenterA") == 1);
   CHECK(anchors.count("CenterB") == 1);
   CHECK(anchors.at("Center") ==
-        tnsr::I<double, 3, Frame::Grid>(std::array{0.0, 0.0, 0.0}));
+        tnsr::I<double, 3, Frame::Grid>(center_of_mass));
   CHECK(anchors.at("CenterA") == tnsr::I<double, 3, Frame::Grid>(centers[0]));
   CHECK(anchors.at("CenterB") == tnsr::I<double, 3, Frame::Grid>(centers[1]));
 
@@ -314,15 +339,16 @@ void test(const bool include_expansion, const bool include_rotation,
     } else {
       inner_outer_radii_B = std::array{0.5, 0.9, 2.1};
     }
-    const auto build_maps = [&time_dep_options, &centers, &inner_outer_radii_A,
-                             &inner_outer_radii_B, &domain_envelope_radius,
-                             &domain_outer_radius, &cube_a_center,
-                             &cube_b_center, filled_A = not excise_A,
+    const auto build_maps = [&time_dep_options, &centers, &center_of_mass,
+                             &inner_outer_radii_A, &inner_outer_radii_B,
+                             &domain_envelope_radius, &domain_outer_radius,
+                             &cube_a_center, &cube_b_center,
+                             filled_A = not excise_A,
                              filled_B = not excise_B]() {
       time_dep_options.build_maps(centers, cube_a_center, cube_b_center,
-                                  inner_outer_radii_A, inner_outer_radii_B,
-                                  filled_A, filled_B, domain_envelope_radius,
-                                  domain_outer_radius);
+                                  center_of_mass, inner_outer_radii_A,
+                                  inner_outer_radii_B, filled_A, filled_B,
+                                  domain_envelope_radius, domain_outer_radius);
     };
 
     if constexpr (not IsCylindrical) {
@@ -379,14 +405,16 @@ void test(const bool include_expansion, const bool include_rotation,
     }
 
     if ((not include_rotation) and (not include_expansion) and
-        (not include_translation) and (not include_shape_a)) {
+        (not include_translation) and (not include_skew) and
+        (not include_shape_a)) {
       CHECK(time_dep_options
                 .template grid_to_inertial_map<domain::ObjectLabel::A>(
                     include_distorted_map_A, true) == nullptr);
       continue;
     }
     if ((not include_rotation) and (not include_expansion) and
-        (not include_translation) and (not include_shape_b)) {
+        (not include_translation) and (not include_skew) and
+        (not include_shape_b)) {
       CHECK(time_dep_options
                 .template grid_to_inertial_map<domain::ObjectLabel::B>(
                     include_distorted_map_B, true) == nullptr);
@@ -453,13 +481,15 @@ void test(const bool include_expansion, const bool include_rotation,
       INFO("distorted_to_inertial_map_A");
       check_map(distorted_to_inertial_map_A, not include_shape_a,
                 (not include_rotation) and (not include_expansion) and
-                    (not include_translation) and include_shape_a);
+                    (not include_translation) and (not include_skew) and
+                    include_shape_a);
     }
     {
       INFO("distorted_to_inertial_map_B");
       check_map(distorted_to_inertial_map_B, not include_shape_b,
                 (not include_rotation) and (not include_expansion) and
-                    (not include_translation) and include_shape_b);
+                    (not include_translation) and (not include_skew) and
+                    include_shape_b);
     }
     // Test functions of time
     const auto functions_of_time =
@@ -508,6 +538,17 @@ void test(const bool include_expansion, const bool include_rotation,
     } else {
       CHECK(functions_of_time.count(
                 TimeDependentMapOptions<IsCylindrical>::translation_name) == 0);
+    }
+    if (include_skew) {
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<IsCylindrical>::skew_name) == 1);
+      CHECK(dynamic_cast<TransFoT&>(
+                *functions_of_time
+                     .at(TimeDependentMapOptions<IsCylindrical>::skew_name)
+                     .get()) == skew);
+    } else {
+      CHECK(functions_of_time.count(
+                TimeDependentMapOptions<IsCylindrical>::skew_name) == 0);
     }
     if (include_shape_a) {
       CHECK(functions_of_time.count(gsl::at(
@@ -566,6 +607,7 @@ void check_names() {
   CHECK(TimeDependentMapOptions<IsCylindrical>::rotation_name == "Rotation"s);
   CHECK(TimeDependentMapOptions<IsCylindrical>::translation_name ==
         "Translation"s);
+  CHECK(TimeDependentMapOptions<IsCylindrical>::skew_name == "Skew"s);
   CHECK(TimeDependentMapOptions<IsCylindrical>::size_names ==
         std::array{"SizeA"s, "SizeB"s});
   CHECK(TimeDependentMapOptions<IsCylindrical>::shape_names ==
@@ -578,7 +620,7 @@ void test_errors() {
   CAPTURE(IsCylindrical);
   CHECK_THROWS_WITH(
       (TimeDependentMapOptions<IsCylindrical>{
-          1.0, std::nullopt, std::nullopt, std::nullopt,
+          1.0, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
           time_dependent_options::ShapeMapOptions<
               not IsCylindrical, domain::ObjectLabel::A>{1, {}},
           time_dependent_options::ShapeMapOptions<
@@ -586,7 +628,7 @@ void test_errors() {
       Catch::Matchers::ContainsSubstring("Initial LMax for object"));
   CHECK_THROWS_WITH(
       (TimeDependentMapOptions<IsCylindrical>{
-          1.0, std::nullopt, std::nullopt, std::nullopt,
+          1.0, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
           time_dependent_options::ShapeMapOptions<
               not IsCylindrical, domain::ObjectLabel::A>{6, {}},
           time_dependent_options::ShapeMapOptions<
@@ -594,7 +636,7 @@ void test_errors() {
       Catch::Matchers::ContainsSubstring("Initial LMax for object"));
   CHECK_THROWS_WITH((TimeDependentMapOptions<IsCylindrical>{
                         1.0, std::nullopt, std::nullopt, std::nullopt,
-                        std::nullopt, std::nullopt}),
+                        std::nullopt, std::nullopt, std::nullopt}),
                     Catch::Matchers::ContainsSubstring(
                         "Time dependent map options were "
                         "specified, but all options were 'None'."));
@@ -613,14 +655,15 @@ void test_errors() {
               std::nullopt,
               std::nullopt,
               std::nullopt,
+              std::nullopt,
               time_dependent_options::ShapeMapOptions<not IsCylindrical,
                                                       domain::ObjectLabel::A>{
                   8, std::nullopt},
               std::nullopt};
           time_dep_opts.build_maps(
               std::array{std::array{5.0, 0.0, 0.0}, std::array{-5.0, 0.0, 0.0}},
-              {{7.5, 0.0, 0.0}}, {{-7.5, 0.0, 0.0}}, radii, radii, false, false,
-              25.0, 100.0);
+              {{7.5, 0.0, 0.0}}, {{-7.5, 0.0, 0.0}}, std::array{0.0, 0.0, 0.0},
+              radii, radii, false, false, 25.0, 100.0);
         }()),
         Catch::Matchers::ContainsSubstring(
             "When using the CylindricalBinaryCompactObject domain creator, "
@@ -650,6 +693,7 @@ void test_worldtube_fots() {
           1.0},
       time_dependent_options::RotationMapOptions<false>{
           std::array{0.0, 0.0, 1.0}},
+      std::nullopt,
       std::nullopt,
       time_dependent_options::ShapeMapOptions<true, domain::ObjectLabel::A>{
           2, {}, std::make_optional(size_a_opts)},
@@ -738,22 +782,22 @@ SPECTRE_TEST_CASE(
     "Unit.Domain.Creators.TimeDependentOptions.BinaryCompactObject",
     "[Domain][Unit]") {
   for (const auto& [include_expansion, include_rotation, include_translation,
-                    include_shape_a, include_shape_b, transition_ends_at_cube_A,
-                    transition_ends_at_cube_B] :
+                    include_skew, include_shape_a, include_shape_b,
+                    transition_ends_at_cube_A, transition_ends_at_cube_B] :
        cartesian_product(make_array(true, false), make_array(true, false),
                          make_array(true, false), make_array(true, false),
                          make_array(true, false), make_array(true, false),
-                         make_array(true, false))) {
+                         make_array(true, false), make_array(true, false))) {
     test<false>(include_expansion, include_rotation, include_translation,
-                include_shape_a, include_shape_b, transition_ends_at_cube_A,
-                transition_ends_at_cube_B);
+                include_skew, include_shape_a, include_shape_b,
+                transition_ends_at_cube_A, transition_ends_at_cube_B);
     // Filter out cases that are not valid for the cylindrical domain
     if (transition_ends_at_cube_A or transition_ends_at_cube_B) {
       continue;
     }
     test<true>(include_expansion, include_rotation, include_translation,
-               include_shape_a, include_shape_b, transition_ends_at_cube_A,
-               transition_ends_at_cube_B);
+               include_skew, include_shape_a, include_shape_b,
+               transition_ends_at_cube_A, transition_ends_at_cube_B);
   }
   check_names<true>();
   check_names<false>();

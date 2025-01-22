@@ -17,9 +17,11 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Skew.hpp"
 #include "Domain/Creators/TimeDependentOptions/ExpansionMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/RotationMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/SkewMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/TranslationMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -115,6 +117,7 @@ struct TimeDependentMapOptions {
   using Expansion = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
   using Rotation = domain::CoordinateMaps::TimeDependent::Rotation<3>;
   using RotScaleTrans = domain::CoordinateMaps::TimeDependent::RotScaleTrans<3>;
+  using Skew = domain::CoordinateMaps::TimeDependent::Skew;
   using Shape = domain::CoordinateMaps::TimeDependent::Shape;
   using Identity = domain::CoordinateMaps::Identity<3>;
 
@@ -134,7 +137,11 @@ struct TimeDependentMapOptions {
                                Rotation>,
       detail::produce_all_maps<Frame::Grid, Frame::Inertial, Shape,
                                RotScaleTrans>,
+      detail::produce_all_maps<Frame::Grid, Frame::Inertial, Shape, Skew,
+                               RotScaleTrans>,
       detail::produce_all_maps<Frame::Distorted, Frame::Inertial,
+                               RotScaleTrans>,
+      detail::produce_all_maps<Frame::Distorted, Frame::Inertial, Skew,
                                RotScaleTrans>>;
 
   /// \brief The initial time of the functions of time.
@@ -165,6 +172,11 @@ struct TimeDependentMapOptions {
   using TranslationMapOptionType =
       typename TranslationMapOptions::type::value_type;
 
+  /// \brief Options for the Skew map
+  using SkewMapOptions =
+      domain::creators::time_dependent_options::SkewMapOptions;
+  using SkewMapOptionType = typename SkewMapOptions::type::value_type;
+
   /// \brief Options for the shape map
   template <domain::ObjectLabel Object>
   using ShapeMapOptions =
@@ -175,7 +187,8 @@ struct TimeDependentMapOptions {
 
   using options =
       tmpl::list<InitialTime, ExpansionMapOptions, RotationMapOptions,
-                 TranslationMapOptions, ShapeMapOptions<domain::ObjectLabel::A>,
+                 TranslationMapOptions, SkewMapOptions,
+                 ShapeMapOptions<domain::ObjectLabel::A>,
                  ShapeMapOptions<domain::ObjectLabel::B>>;
   static constexpr Options::String help{
       "The options for all time dependent maps in a binary compact object "
@@ -187,6 +200,7 @@ struct TimeDependentMapOptions {
       double initial_time, ExpansionMapOptionType expansion_map_options,
       RotationMapOptionType rotation_map_options,
       TranslationMapOptionType translation_map_options,
+      SkewMapOptionType skew_map_options,
       ShapeMapOptionType<domain::ObjectLabel::A> shape_options_A,
       ShapeMapOptionType<domain::ObjectLabel::B> shape_options_B,
       const Options::Context& context = {});
@@ -197,6 +211,7 @@ struct TimeDependentMapOptions {
    *
    * Currently, this will add:
    *
+   * - Skew: `PiecewisePolynomial<2>`
    * - Expansion: `PiecewisePolynomial<2>`
    * - ExpansionOuterBoundary: `FixedSpeedCubic`
    * - Rotation: `QuaternionFunctionOfTime<3>`
@@ -206,6 +221,7 @@ struct TimeDependentMapOptions {
    *
    *  When `UseWorldtube` is set to true, they are
    *
+   * - Skew: None
    * - Expansion: `IntegratedFunctionOfTime`
    * - ExpansionOuterBoundary: `FixedSpeedCubic`
    * - Rotation: `IntegratedFunctionOfTime`
@@ -224,6 +240,7 @@ struct TimeDependentMapOptions {
    *
    * Currently, this constructs a:
    *
+   * - Skew: `domain::CoordinateMaps::TimeDependent::Skew`
    * - Rotation, Expansion, Translation: `RotScaleTrans<3>`
    * - ShapeA/B: `Shape` (with size FunctionOfTime)
    *
@@ -249,6 +266,7 @@ struct TimeDependentMapOptions {
       const std::array<std::array<double, 3>, 2>& object_centers,
       const std::optional<std::array<double, 3>>& cube_A_center,
       const std::optional<std::array<double, 3>>& cube_B_center,
+      const std::array<double, 3>& center_of_mass,
       const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
           object_A_radii,
       const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
@@ -325,6 +343,7 @@ struct TimeDependentMapOptions {
       "ExpansionOuterBoundary"};
   inline static const std::string rotation_name{"Rotation"};
   inline static const std::string translation_name{"Translation"};
+  inline static const std::string skew_name{"Skew"};
   inline static const std::array<std::string, 2> size_names{{"SizeA", "SizeB"}};
   inline static const std::array<std::string, 2> shape_names{
       {"ShapeA", "ShapeB"}};
@@ -336,6 +355,7 @@ struct TimeDependentMapOptions {
   ExpansionMapOptionType expansion_map_options_;
   RotationMapOptionType rotation_map_options_;
   TranslationMapOptionType translation_map_options_;
+  SkewMapOptionType skew_map_options_;
   ShapeMapOptionType<domain::ObjectLabel::A> shape_options_A_{};
   ShapeMapOptionType<domain::ObjectLabel::B> shape_options_B_{};
   std::array<std::optional<double>, 2> deformed_radii_{};
@@ -344,6 +364,7 @@ struct TimeDependentMapOptions {
   std::optional<Expansion> expansion_map_{};
   std::optional<Rotation> rotation_map_{};
   std::optional<std::pair<RotScaleTrans, RotScaleTrans>> rot_scale_trans_map_{};
+  std::optional<Skew> skew_map_{};
   using ShapeMapType =
       tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
                           std::array<std::array<std::optional<Shape>, 12>, 2>>;
