@@ -123,7 +123,10 @@ def plot_control_system(
     control_system_components = {
         system: get_control_system_components(reduction_files[0], system)
         for system in control_systems
-        if "Shape" not in system or with_shape
+        if (
+            ("Shape" not in system or with_shape)
+            and not system.endswith(".dat")
+        )
     }
 
     # Open every h5file. For each h5file, turn each component of each control
