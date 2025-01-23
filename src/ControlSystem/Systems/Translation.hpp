@@ -113,8 +113,8 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
           ControlComponent<Metavariables, Translation>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::None>, MeasurementQueue,
-          UpdateControlSystem<Translation>>>(
+          MeasurementQueue, UpdateControlSystem<Translation>,
+          QueueTags::Center<::domain::ObjectLabel::None>>>(
           control_sys_proxy, measurement_id,
           DataVector{strahlkorper.physical_center()});
 
@@ -137,9 +137,9 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
       DataVector center(strahlkorper.physical_center());
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<Horizon>, MeasurementQueue,
-          UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
-                                             std::move(center));
+          MeasurementQueue, UpdateControlSystem<Translation>,
+          QueueTags::Center<Horizon>>>(control_sys_proxy, measurement_id,
+                                       std::move(center));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
@@ -159,13 +159,11 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
           ControlComponent<Metavariables, Translation>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::A>, MeasurementQueue,
-          UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
-                                             DataVector(center_a));
-      Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::B>, MeasurementQueue,
-          UpdateControlSystem<Translation>>>(control_sys_proxy, measurement_id,
-                                             DataVector(center_b));
+          MeasurementQueue, UpdateControlSystem<Translation>,
+          QueueTags::Center<::domain::ObjectLabel::A>,
+          QueueTags::Center<::domain::ObjectLabel::B>>>(
+          control_sys_proxy, measurement_id, DataVector(center_a),
+          DataVector(center_b));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",

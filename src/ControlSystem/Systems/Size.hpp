@@ -129,8 +129,8 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
           measurement_id.id);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::SizeExcisionQuantities<Frame::Distorted>, MeasurementQueue,
-          UpdateControlSystem<Size>>>(
+          MeasurementQueue, UpdateControlSystem<Size>,
+          QueueTags::SizeExcisionQuantities<Frame::Distorted>>>(
           control_sys_proxy, measurement_id,
           QueueTags::SizeExcisionQuantities<Frame::Distorted>::type{
               std::move(distorted_excision_surface), lapse, shifty_quantity,
@@ -154,8 +154,8 @@ struct Size : tt::ConformsTo<protocols::ControlSystem> {
       }
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::SizeHorizonQuantities<Frame::Distorted>, MeasurementQueue,
-          UpdateControlSystem<Size>>>(
+          MeasurementQueue, UpdateControlSystem<Size>,
+          QueueTags::SizeHorizonQuantities<Frame::Distorted>>>(
           control_sys_proxy, measurement_id,
           QueueTags::SizeHorizonQuantities<Frame::Distorted>::type{
               horizon, time_deriv_horizon});

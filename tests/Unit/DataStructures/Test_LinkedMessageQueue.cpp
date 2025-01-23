@@ -27,9 +27,8 @@ void test_queue() {
   LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>> queue{};
   CHECK(not queue.next_ready_id().has_value());
 
-  queue.insert<MyQueue<Label1>>({1, {}}, std::make_unique<double>(1.1));
-  CHECK(not queue.next_ready_id().has_value());
-  queue.insert<MyQueue<Label2>>({1, {}}, std::make_unique<double>(-1.1));
+  queue.insert<MyQueue<Label1>, MyQueue<Label2>>(
+      {1, {}}, std::make_unique<double>(1.1), std::make_unique<double>(-1.1));
 
   CHECK(queue.next_ready_id() == std::optional{1});
   {

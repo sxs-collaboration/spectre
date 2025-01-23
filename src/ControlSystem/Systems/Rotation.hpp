@@ -123,9 +123,9 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
       DataVector center(strahlkorper.physical_center());
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<Horizon>, MeasurementQueue,
-          UpdateControlSystem<Rotation>>>(control_sys_proxy, measurement_id,
-                                          std::move(center));
+          MeasurementQueue, UpdateControlSystem<Rotation>,
+          QueueTags::Center<Horizon>>>(control_sys_proxy, measurement_id,
+                                       std::move(center));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
@@ -146,13 +146,11 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
           cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::A>, MeasurementQueue,
-          UpdateControlSystem<Rotation>>>(control_sys_proxy, measurement_id,
-                                          DataVector(center_a));
-      Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::B>, MeasurementQueue,
-          UpdateControlSystem<Rotation>>>(control_sys_proxy, measurement_id,
-                                          DataVector(center_b));
+          MeasurementQueue, UpdateControlSystem<Rotation>,
+          QueueTags::Center<::domain::ObjectLabel::A>,
+          QueueTags::Center<::domain::ObjectLabel::B>>>(
+          control_sys_proxy, measurement_id, DataVector(center_a),
+          DataVector(center_b));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",

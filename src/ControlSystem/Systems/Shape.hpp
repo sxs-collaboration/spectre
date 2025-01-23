@@ -120,9 +120,9 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
           ControlComponent<Metavariables, Shape>>(cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Horizon<Frame::Distorted>, MeasurementQueue,
-          UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
-                                       strahlkorper);
+          MeasurementQueue, UpdateControlSystem<Shape>,
+          QueueTags::Horizon<Frame::Distorted>>>(control_sys_proxy,
+                                                 measurement_id, strahlkorper);
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
@@ -145,9 +145,9 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
             ControlComponent<Metavariables, Shape>>(cache);
 
         Parallel::simple_action<::Actions::UpdateMessageQueue<
-            QueueTags::Horizon<Frame::Distorted>, MeasurementQueue,
-            UpdateControlSystem<Shape>>>(control_sys_proxy, measurement_id,
-                                         strahlkorper);
+            MeasurementQueue, UpdateControlSystem<Shape>,
+            QueueTags::Horizon<Frame::Distorted>>>(
+            control_sys_proxy, measurement_id, strahlkorper);
 
         if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
           Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
