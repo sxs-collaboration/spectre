@@ -88,10 +88,10 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
     const double current_expansion_factor =
         functions_of_time.at(function_of_time_name)->func(time)[0][0];
 
-    using center_A =
-        control_system::QueueTags::Center<::domain::ObjectLabel::A>;
-    using center_B =
-        control_system::QueueTags::Center<::domain::ObjectLabel::B>;
+    using center_A = control_system::QueueTags::Center<::domain::ObjectLabel::A,
+                                                       Frame::Grid>;
+    using center_B = control_system::QueueTags::Center<::domain::ObjectLabel::B,
+                                                       Frame::Grid>;
 
     const double grid_position_of_A =
         Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::A>>(
