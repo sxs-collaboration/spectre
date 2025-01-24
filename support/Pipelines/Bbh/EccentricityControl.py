@@ -28,6 +28,7 @@ def eccentricity_control(
     tmax: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
     # Scheduler options
+    evolve: bool = True,
     **scheduler_kwargs,
 ):
     """Eccentricity reduction post inspiral.
@@ -59,6 +60,9 @@ def eccentricity_control(
       h5_files: files that contain the trajectory data
       id_input_file_path: path to the input file of the initial data run
       pipeline_dir : directory where the pipeline outputs are stored.
+      evolve: Evolve the initial data after generation to continue eccentricity
+        control. You can disable this to generate only the new initial data if
+        you want to manually start the next inspiral.
 
     See the 'eccentricity_control_params' function for details on the other
     arguments, as well as the 'schedule' function for the scheduling options.
@@ -133,7 +137,7 @@ def eccentricity_control(
         refinement_level=id_params["control_refinement_level"],
         polynomial_order=id_params["control_polynomial_order"],
         control=True,
-        evolve=True,
+        evolve=evolve,
         eccentricity_control=True,
         pipeline_dir=pipeline_dir,
         **scheduler_kwargs,
@@ -150,6 +154,15 @@ def eccentricity_control(
         path_type=Path,
     ),
     help="Directory where steps in the pipeline are created.",
+)
+@click.option(
+    "--evolve/--no-evolve",
+    default=True,
+    help=(
+        "Evolve the initial data after generation to continue eccentricity "
+        "control. You can disable this to generate only the new initial data "
+        "if you want to manually start the next inspiral."
+    ),
 )
 @scheduler_options
 def eccentricity_control_command(**kwargs):
