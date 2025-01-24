@@ -78,6 +78,12 @@ void test_empty_variables() {
   CHECK(get_output(tuple_with_empty_vars) == "(3,hello,{})");
 
   CHECK(not contains_allocations(empty_vars));
+  // Functions do nothing, but need to compile
+  empty_vars.initialize(0);
+  const Variables<tmpl::list<>> input_vars;
+  empty_vars.assign_subset(input_vars);
+  CHECK(empty_vars.number_of_grid_points() == 0);
+  CHECK(empty_vars.size() == 0);
 }
 
 template <typename VectorType>

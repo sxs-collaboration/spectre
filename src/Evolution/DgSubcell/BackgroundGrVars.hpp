@@ -142,10 +142,13 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
             cell_centered_impl(active_gr_vars, time, subcell_inertial_coords,
                                solution_or_data);
           }
-
-          face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
-                             logical_to_grid_map, grid_to_inertial_map,
-                             subcell_mesh, solution_or_data);
+          if constexpr (not std::is_same_v<
+                        typename SubcellFaceGrVars::value_type::tags_list,
+                        tmpl::list<>>){
+            face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
+                               logical_to_grid_map, grid_to_inertial_map,
+                               subcell_mesh, solution_or_data);
+          }
         }
       }
 
@@ -158,19 +161,23 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
              "The subcell mesh must have isotropic basis, quadrature. and "
              "extents but got "
                  << subcell_mesh);
-      const size_t num_face_centered_mesh_grid_pts =
-          (subcell_mesh.extents(0) + 1) * subcell_mesh.extents(1) *
-          subcell_mesh.extents(2);
-      for (size_t d = 0; d < volume_dim; ++d) {
-        gsl::at(*subcell_face_gr_vars, d)
-            .initialize(num_face_centered_mesh_grid_pts);
+      if constexpr (not std::is_same_v<
+                    typename SubcellFaceGrVars::value_type::tags_list,
+                    tmpl::list<>>){
+        const size_t num_face_centered_mesh_grid_pts =
+            (subcell_mesh.extents(0) + 1) * subcell_mesh.extents(1) *
+            subcell_mesh.extents(2);
+        for (size_t d = 0; d < volume_dim; ++d) {
+          gsl::at(*subcell_face_gr_vars, d)
+              .initialize(num_face_centered_mesh_grid_pts);
+        }
+        face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
+                           logical_to_grid_map, grid_to_inertial_map,
+                           subcell_mesh, solution_or_data);
       }
 
       cell_centered_impl(inactive_gr_vars, time, subcell_inertial_coords,
                          solution_or_data);
-      face_centered_impl(subcell_face_gr_vars, time, functions_of_time,
-                         logical_to_grid_map, grid_to_inertial_map,
-                         subcell_mesh, solution_or_data);
     }
   }
 

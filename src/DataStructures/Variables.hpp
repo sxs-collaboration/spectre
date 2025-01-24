@@ -594,6 +594,11 @@ class Variables<tmpl::list<>> {
   template <typename T>
   Variables(const T* /*pointer*/, const size_t /*size*/) {}
   static constexpr size_t size() { return 0; }
+  static constexpr size_t number_of_grid_points() { return 0; }
+  void assign_subset(const Variables<tmpl::list<>>& /*unused*/) {}
+  void assign_subset(const tuples::TaggedTuple<>& /*unused*/) {}
+  // Initialization for empty variables should ignore any input.
+  void initialize(size_t /*number_of_grid_points*/) {}
 };
 
 // gcc8 screams when the empty Variables has pup as a member function, so we
