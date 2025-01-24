@@ -130,9 +130,9 @@ def eccentricity_control(
         orbital_angular_velocity=new_orbital_params["Omega0"],
         radial_expansion_velocity=new_orbital_params["adot0"],
         # Scheduling options
-        control=id_params["control"],
         refinement_level=id_params["control_refinement_level"],
         polynomial_order=id_params["control_polynomial_order"],
+        control=True,
         evolve=True,
         eccentricity_control=True,
         pipeline_dir=pipeline_dir,
