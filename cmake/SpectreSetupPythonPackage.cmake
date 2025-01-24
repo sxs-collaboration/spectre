@@ -37,9 +37,17 @@ if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
   string(APPEND PYTHON_EXEC_ENV_VARS
     " LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
 endif()
-if(PARAVIEW_PYTHON_ENV_VARS)
-  string(APPEND PYTHON_EXEC_ENV_VARS " ${PARAVIEW_PYTHON_ENV_VARS}")
-endif()
+# ParaView needs specific environment variables set, e.g. 'LD_LIBRARY_PATH', but
+# they can interfere with simulations, e.g. when they point to ParaView's
+# bundled MPI which may be different to the MPI we built with. Therefore we
+# disable this for now. This means we can't use the pre-built ParaView binaries
+# that bundle their own MPI and Python, unless we find a way to set the needed
+# environment variables only when running ParaView. Everything should work
+# when using a ParaView built with the same MPI and Python as the rest of
+# SpECTRE.
+# if(PARAVIEW_PYTHON_ENV_VARS)
+#   string(APPEND PYTHON_EXEC_ENV_VARS " ${PARAVIEW_PYTHON_ENV_VARS}")
+# endif()
 configure_file(
   "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
   "${CMAKE_BINARY_DIR}/tmp/spectre")
