@@ -313,6 +313,9 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   /// \endcond
 
   /// Print the expanded type aliases
+  std::string print_tags() const override;
+
+  /// Print the expanded type aliases
   std::string print_types() const override;
 
   /// Print the items
@@ -503,22 +506,84 @@ const typename DataBox<tmpl::list<Tags...>>::TagGraphs
         DataBox<tmpl::list<Tags...>>::compute_tag_graphs();
 
 template <typename... Tags>
+std::string DataBox<tmpl::list<Tags...>>::print_tags() const {
+  std::ostringstream os;
+  os << "Simple tags("
+     << tmpl::size<mutable_item_creation_tags>::value << ")  = [\n";
+  tmpl::for_each<mutable_item_creation_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "Simple tags subitems(" << tmpl::size<mutable_subitem_tags>::value
+     << ") = [\n";
+  tmpl::for_each<mutable_subitem_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "Compute tags(" << tmpl::size<compute_item_tags>::value
+     << ") = [\n";
+  tmpl::for_each<compute_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "Reference tags(" << tmpl::size<reference_item_tags>::value
+     << ") = [\n";
+  tmpl::for_each<reference_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "    " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  return os.str();
+}
+
+template <typename... Tags>
 std::string DataBox<tmpl::list<Tags...>>::print_types() const {
   std::ostringstream os;
   os << "DataBox type aliases:\n";
-  os << "using tags_list = " << pretty_type::get_name<tags_list>() << ";\n";
-  os << "using immutable_item_tags = "
-     << pretty_type::get_name<immutable_item_tags>() << ";\n";
-  os << "using immutable_item_creation_tags = "
-     << pretty_type::get_name<immutable_item_creation_tags>() << ";\n";
-  os << "using mutable_item_tags = "
-     << pretty_type::get_name<mutable_item_tags>() << ";\n";
-  os << "using mutable_subitem_tags = "
-     << pretty_type::get_name<mutable_subitem_tags>() << ";\n";
-  os << "using compute_item_tags = "
-     << pretty_type::get_name<compute_item_tags>() << ";\n";
-  os << "using reference_item_tags = "
-     << pretty_type::get_name<reference_item_tags>() << ";\n";
+  os << "using tags_list = [";
+  tmpl::for_each<tags_list>([&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+    os << "  " << pretty_type::get_name<Tag>() << ",\n";
+  });
+  os << "];\n";
+  os << "using immutable_item_tags = [";
+  tmpl::for_each<immutable_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "  " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "using immutable_item_creation_tags = [";
+  tmpl::for_each<immutable_item_creation_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "  " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "using mutable_item_tags = [";
+  tmpl::for_each<mutable_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "  " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "using mutable_subitem_tags = [";
+  tmpl::for_each<mutable_subitem_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "  " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "using compute_item_tags = [";
+  tmpl::for_each<compute_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "  " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
+  os << "using reference_item_tags = [";
+  tmpl::for_each<reference_item_tags>(
+      [&os]<class Tag>(const tmpl::type_<Tag> /*meta*/) {
+        os << "  " << pretty_type::get_name<Tag>() << ",\n";
+      });
+  os << "];\n";
   os << "using edge_list = " << pretty_type::get_name<edge_list>() << ";\n";
   return os.str();
 }

@@ -30,6 +30,9 @@ class Access {
   virtual ~Access() = default;
 
   /// Print the expanded type aliases of the derived `db::DataBox`
+  virtual std::string print_tags() const = 0;
+
+  /// Print the expanded type aliases of the derived `db::DataBox`
   virtual std::string print_types() const = 0;
 
  private:

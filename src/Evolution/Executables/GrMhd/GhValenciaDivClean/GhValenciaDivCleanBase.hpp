@@ -146,6 +146,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
+#include "ParallelAlgorithms/Events/ObserveDataBox.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/DenseTriggers/Factory.hpp"
@@ -601,7 +602,7 @@ struct GhValenciaDivCleanTemplateBase<
                 domain_creators<volume_dim>>>,
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
-                       Events::Completion,
+                       Events::Completion, ::Events::ObserveDataBox,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::ObserveAtExtremum<observe_fields,

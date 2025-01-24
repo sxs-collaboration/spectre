@@ -3164,34 +3164,38 @@ void test_output() {
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   std::string output_types = db::as_access(box).print_types();
   std::string expected_types =
-      "DataBox type aliases:\n"
-      "using tags_list = brigand::list<(anonymous "
-      "namespace)::test_databox_tags::Tag0, (anonymous "
-      "namespace)::test_databox_tags::Tag1, (anonymous "
-      "namespace)::test_databox_tags::Tag2, (anonymous "
-      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag0Reference>;\n"
-      "using immutable_item_tags "
-      "= brigand::list<(anonymous namespace)::test_databox_tags::Tag4Compute, "
-      "(anonymous namespace)::test_databox_tags::Tag5Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag0Reference>;\n"
-      "using immutable_item_creation_tags = brigand::list<(anonymous "
-      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag0Reference>;\n"
-      "using mutable_item_tags = brigand::list<(anonymous "
-      "namespace)::test_databox_tags::Tag0, (anonymous "
-      "namespace)::test_databox_tags::Tag1, (anonymous "
-      "namespace)::test_databox_tags::Tag2>;\n"
-      "using mutable_subitem_tags = brigand::list<>;\n"
-      "using compute_item_tags = brigand::list<(anonymous "
-      "namespace)::test_databox_tags::Tag4Compute, (anonymous "
-      "namespace)::test_databox_tags::Tag5Compute>;\n"
-      "using reference_item_tags = brigand::list<(anonymous "
-      "namespace)::test_databox_tags::Tag0Reference>;\n"
-      "using edge_list = "
-      "brigand::list<brigand::edge<(anonymous "
+      "      DataBox type aliases:"
+      "      using tags_list = [(anonymous namespace)::test_databox_tags::Tag0,"
+      "(anonymous namespace)::test_databox_tags::Tag1,"
+      "(anonymous namespace)::test_databox_tags::Tag2,"
+      "(anonymous namespace)::test_databox_tags::Tag4Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag5Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag0Reference,"
+      "];"
+      "      using immutable_item_tags = ["
+      "(anonymous namespace)::test_databox_tags::Tag4Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag5Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag0Reference,"
+      "];"
+      "      using immutable_item_creation_tags = ["
+      "(anonymous namespace)::test_databox_tags::Tag4Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag5Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag0Reference,"
+      "];"
+      "      using mutable_item_tags = ["
+      "(anonymous namespace)::test_databox_tags::Tag0,"
+      "(anonymous namespace)::test_databox_tags::Tag1,"
+      "(anonymous namespace)::test_databox_tags::Tag2,"
+      "];"
+      "      using mutable_subitem_tags = [];"
+      "      using compute_item_tags = ["
+      "(anonymous namespace)::test_databox_tags::Tag4Compute,"
+      "(anonymous namespace)::test_databox_tags::Tag5Compute,"
+      "];"
+      "      using reference_item_tags = ["
+      "(anonymous namespace)::test_databox_tags::Tag0Reference,"
+      "];"
+      "      using edge_list = brigand::list<brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag0, (anonymous "
       "namespace)::test_databox_tags::Tag4Compute, "
       "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
@@ -3203,7 +3207,7 @@ void test_output() {
       "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag0, (anonymous "
       "namespace)::test_databox_tags::Tag0Reference, "
-      "brigand::integral_constant<int, 1> > >;\n";
+      "brigand::integral_constant<int, 1> > >;";
   // Remove whitespace since it may vary between compilers
   auto remove_whitespace = [](std::string& str) {
     str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
@@ -3211,6 +3215,25 @@ void test_output() {
   remove_whitespace(output_types);
   remove_whitespace(expected_types);
   CHECK(output_types == expected_types);
+
+  std::string output_tags = db::as_access(box).print_tags();
+  std::string expected_tags =
+      "Simpletags(3)=["
+      "(anonymousnamespace)::test_databox_tags::Tag0,"
+      "(anonymousnamespace)::test_databox_tags::Tag1,"
+      "(anonymousnamespace)::test_databox_tags::Tag2,"
+      "];"
+      "Simpletagssubitems(0)=[];"
+      "Computetags(2)=["
+      "(anonymousnamespace)::test_databox_tags::Tag4Compute,"
+      "(anonymousnamespace)::test_databox_tags::Tag5Compute,"
+      "];Referencetags(1)=["
+      "(anonymousnamespace)::test_databox_tags::Tag0Reference,"
+      "];";
+  // Remove whitespace since it may vary between compilers
+  remove_whitespace(output_tags);
+  remove_whitespace(expected_tags);
+  CHECK(output_tags == expected_tags);
 
   std::string output_mutable_items = box.print_items<false>();
   std::string expected_mutable_items =
