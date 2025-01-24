@@ -423,21 +423,21 @@ ApparentHorizons:
       DivergenceTol: 1.2
       DivergenceIter: 5
       MaxIts: 100
-    Verbosity: Quiet
+    Verbosity: Silent
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *LMax
       Radius: {{ ExcisionRadiusB * 1.5 }}
       Center: [*XCoordB, *YOffset, *ZOffset]
     FastFlow: *DefaultFastFlow
-    Verbosity: Quiet
+    Verbosity: Silent
   ObservationAhC:
     InitialGuess:
       LMax: 33
       Radius: 10.0
       Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
-    Verbosity: Quiet
+    Verbosity: Silent
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA

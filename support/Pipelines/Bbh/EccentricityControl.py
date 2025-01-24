@@ -28,6 +28,7 @@ def eccentricity_control(
     tmax: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
     # Scheduler options
+    edit_readme: Optional[bool] = False,
     **scheduler_kwargs,
 ):
     """Eccentricity reduction post inspiral.
@@ -59,6 +60,9 @@ def eccentricity_control(
       h5_files: files that contain the trajectory data
       id_input_file_path: path to the input file of the initial data run
       pipeline_dir : directory where the pipeline outputs are stored.
+      edit_readme: Edit the README.md file in the pipeline directory or run
+        directory. If not specified, a prompt will ask whether to edit the
+        README.
 
     See the 'eccentricity_control_params' function for details on the other
     arguments, as well as the 'schedule' function for the scheduling options.
@@ -120,7 +124,7 @@ def eccentricity_control(
         return
 
     # Generate new initial data based on updated orbital parameters
-    generate_id(
+    job = generate_id(
         mass_a=mass_A,
         mass_b=mass_B,
         dimensionless_spin_a=spin_A,
@@ -139,6 +143,14 @@ def eccentricity_control(
         **scheduler_kwargs,
     )
 
+    # Edit README
+    readme = Path(pipeline_dir) / "README.md"
+    if edit_readme or (
+        edit_readme is None and click.confirm(f"Edit {readme}?", default=True)
+    ):
+        click.edit(filename=readme)
+    return job
+
 
 @click.command(name="eccentricity-control", help=eccentricity_control.__doc__)
 @eccentricity_control_params_options
@@ -150,6 +162,14 @@ def eccentricity_control(
         path_type=Path,
     ),
     help="Directory where steps in the pipeline are created.",
+)
+@click.option(
+    "--edit-readme/--no-edit-readme",
+    default=None,
+    help=(
+        "Edit the README file in the pipeline directory or run directory. "
+        "If not specified, a prompt will ask whether to edit the README."
+    ),
 )
 @scheduler_options
 def eccentricity_control_command(**kwargs):

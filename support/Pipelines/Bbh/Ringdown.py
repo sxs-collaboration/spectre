@@ -79,6 +79,7 @@ def start_ringdown(
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
+    edit_readme: Optional[bool] = False,
     **scheduler_kwargs,
 ):
     """Schedule a ringdown simulation from the inspiral.
@@ -96,34 +97,37 @@ def start_ringdown(
     disk that the ringdown input file will point to.
 
     Arguments:
-        inspiral_run_dir: Path to the last segment in the inspiral run
+      inspiral_run_dir: Path to the last segment in the inspiral run
         directory.
-        number_of_ahc_finds_for_fit: The number of ahc finds that will be used
+      number_of_ahc_finds_for_fit: The number of ahc finds that will be used
         in the fit.
-        match_time: The time to match the time dependent maps at.
-        settling_timescale: The settling timescale for the rotation and
+      match_time: The time to match the time dependent maps at.
+      settling_timescale: The settling timescale for the rotation and
         expansion maps.
-        zero_coefs_eps: "If the sum of a given coefficient over all
+      zero_coefs_eps: "If the sum of a given coefficient over all
         'number_of_ahc_finds_for_fit' is less than 'zero_coefs_eps', set that
         coefficient to 0.0 exactly."
-        refinement_level: The initial h refinement level for ringdown.
-        polynomial_order: The initial p refinement level for ringdown.
-        inspiral_input_file: The input file used for during the Inspiral,
+      refinement_level: The initial h refinement level for ringdown.
+      polynomial_order: The initial p refinement level for ringdown.
+      inspiral_input_file: The input file used for during the Inspiral,
         defaults to the Inspiral.yaml inside the inspiral_run_dir.
-        ahc_reductions_path: The full path to the BbhReductions file that
+      ahc_reductions_path: The full path to the BbhReductions file that
         contains AhC data, defaults to BbhReductions.h5 in the inspiral_run_dir.
-        ahc_subfile: Subfile containing reduction data at times of AhC finds,
+      ahc_subfile: Subfile containing reduction data at times of AhC finds,
         defaults to 'ObservationAhC_Ylm'.
-        fot_vol_h5_path: The full path to any volume data containing the
+      fot_vol_h5_path: The full path to any volume data containing the
         functions of time at the time of AhC finds, defaults to BbhVolume0.h5 in
         the inspiral_run_dir.
-        fot_vol_subfile: Subfile containing volume data at times of AhC finds,
+      fot_vol_subfile: Subfile containing volume data at times of AhC finds,
         defaults to 'ForContinuation'.
-        path_to_output_h5: H5 file to output horizon coefficients needed for
+      path_to_output_h5: H5 file to output horizon coefficients needed for
         Ringdown.
-        output_subfile_prefix: Subfile prefix for output data, defaults to
+      output_subfile_prefix: Subfile prefix for output data, defaults to
         'Distorted'.
-        ringdown_input_file_template: Yaml to insert ringdown coefficients into.
+      ringdown_input_file_template: Yaml to insert ringdown coefficients into.
+      edit_readme: Edit the README.md file in the pipeline directory or run
+        directory. If not specified, a prompt will ask whether to edit the
+        README.
     """
     logger.warning(
         "The BBH pipeline is still experimental. Please review the"
@@ -279,7 +283,7 @@ def start_ringdown(
     logger.debug(f"Ringdown parameters: {pretty_repr(ringdown_params)}")
 
     # Schedule!
-    return schedule(
+    job = schedule(
         ringdown_input_file_template,
         **ringdown_params,
         **scheduler_kwargs,
@@ -287,6 +291,17 @@ def start_ringdown(
         run_dir=run_dir,
         segments_dir=segments_dir,
     )
+
+    # Edit README
+    readme = (
+        Path(pipeline_dir or segments_dir or run_dir or Path.cwd())
+        / "README.md"
+    )
+    if edit_readme or (
+        edit_readme is None and click.confirm(f"Edit {readme}?", default=True)
+    ):
+        click.edit(filename=readme)
+    return job
 
 
 @click.command(name="start-ringdown", help=start_ringdown.__doc__)
@@ -447,6 +462,14 @@ def start_ringdown(
         path_type=Path,
     ),
     help="Directory where steps in the pipeline are created.",
+)
+@click.option(
+    "--edit-readme/--no-edit-readme",
+    default=None,
+    help=(
+        "Edit the README file in the pipeline directory or run directory. "
+        "If not specified, a prompt will ask whether to edit the README."
+    ),
 )
 @scheduler_options
 def start_ringdown_command(**kwargs):

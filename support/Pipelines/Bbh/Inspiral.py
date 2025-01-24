@@ -306,6 +306,7 @@ def start_inspiral(
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
+    edit_readme: Optional[bool] = False,
     **scheduler_kwargs,
 ):
     """Schedule an inspiral simulation from initial data.
@@ -392,7 +393,7 @@ def start_inspiral(
         scheduler_kwargs["num_nodes"] = 4
 
     # Schedule!
-    return schedule(
+    job = schedule(
         inspiral_input_file_template,
         **inspiral_params,
         **scheduler_kwargs,
@@ -403,6 +404,17 @@ def start_inspiral(
         run_dir=run_dir,
         segments_dir=segments_dir,
     )
+
+    # Edit README
+    readme = (
+        Path(pipeline_dir or segments_dir or run_dir or Path.cwd())
+        / "README.md"
+    )
+    if edit_readme or (
+        edit_readme is None and click.confirm(f"Edit {readme}?", default=True)
+    ):
+        click.edit(filename=readme)
+    return job
 
 
 @click.command(name="start-inspiral", help=start_inspiral.__doc__)
@@ -503,6 +515,14 @@ def start_inspiral(
         path_type=Path,
     ),
     help="Directory where steps in the pipeline are created.",
+)
+@click.option(
+    "--edit-readme/--no-edit-readme",
+    default=None,
+    help=(
+        "Edit the README file in the pipeline directory or run directory. "
+        "If not specified, a prompt will ask whether to edit the README."
+    ),
 )
 @scheduler_options
 def start_inspiral_command(**kwargs):

@@ -130,6 +130,7 @@ def generate_id(
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
+    edit_readme: Optional[bool] = False,
     out_file_name: str = "spectre.out",
     **scheduler_kwargs,
 ):
@@ -176,6 +177,9 @@ def generate_id(
         with 'pipeline_dir'.
       segments_dir: Directory where the evolution data is generated. Mutually
         exclusive with 'pipeline_dir' and 'run_dir'.
+      edit_readme: Edit the README.md file in the pipeline directory or run
+        directory. If not specified, a prompt will ask whether to edit the
+        README.
       out_file_name: Optional. Name of the log file. (Default: "spectre.out")
     """
     logger.warning(
@@ -233,7 +237,7 @@ def generate_id(
     logger.debug(f"Initial data parameters: {pretty_repr(id_params)}")
 
     # Schedule!
-    return schedule(
+    job = schedule(
         id_input_file_template,
         **id_params,
         **scheduler_kwargs,
@@ -245,6 +249,14 @@ def generate_id(
         segments_dir=segments_dir,
         out_file_name=out_file_name,
     )
+
+    # Edit README
+    readme = Path(pipeline_dir or run_dir or Path.cwd()) / "README.md"
+    if edit_readme or (
+        edit_readme is None and click.confirm(f"Edit {readme}?", default=True)
+    ):
+        click.edit(filename=readme)
+    return job
 
 
 @click.command(name="generate-id", help=generate_id.__doc__)
@@ -392,6 +404,14 @@ def generate_id(
         path_type=Path,
     ),
     help="Directory where steps in the pipeline are created.",
+)
+@click.option(
+    "--edit-readme/--no-edit-readme",
+    default=None,
+    help=(
+        "Edit the README file in the pipeline directory or run directory. "
+        "If not specified, a prompt will ask whether to edit the README."
+    ),
 )
 @scheduler_options
 def generate_id_command(
