@@ -31,6 +31,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
@@ -582,7 +583,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   tnsr::a<DataVector, Dim> gauge_h{mesh.number_of_grid_points()};
   tnsr::ab<DataVector, Dim> d4_gauge_h{mesh.number_of_grid_points()};
 
-  gh::gauges::dispatch(
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       sqrt_det_spatial_metric, inverse_spatial_metric, da_spacetime_metric,
       half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi, mesh,
@@ -629,7 +630,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gr::Tags::SpacetimeNormalVector<DataVector, Dim>>>
       buffer(mesh.number_of_grid_points());
 
-  gh::TimeDerivative<Dim>::apply(
+  gh::TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
       make_not_null(
@@ -731,7 +732,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
     }
   }
 
-  gh::TimeDerivative<Dim>::apply(
+  gh::TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
       make_not_null(
@@ -788,7 +789,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       mesh.number_of_grid_points());
   tnsr::iaa<DataVector, Dim, Frame::Inertial> dt_phi_moving_mesh(
       mesh.number_of_grid_points());
-  gh::TimeDerivative<Dim>::apply(
+  gh::TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>::apply(
       make_not_null(&dt_spacetime_metric_moving_mesh),
       make_not_null(&dt_pi_moving_mesh), make_not_null(&dt_phi_moving_mesh),
       make_not_null(

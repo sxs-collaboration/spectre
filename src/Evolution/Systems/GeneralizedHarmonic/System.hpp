@@ -9,6 +9,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -40,7 +41,8 @@ struct System {
                  Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>;
   using gradients_tags = gradient_variables;
 
-  using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
+  using compute_volume_time_derivative_terms =
+      TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 
   using compute_largest_characteristic_speed =

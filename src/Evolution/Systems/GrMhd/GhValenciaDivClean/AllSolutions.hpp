@@ -3,8 +3,12 @@
 
 #pragma once
 
-#include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
+#include "PointwiseFunctions/AnalyticData/GhGrMhd/Factory.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GhGrMhd/Factory.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
+#include "Utilities/TMPL.hpp"
 
 // Check if SpEC is linked and therefore we can load SpEC initial data
 #ifdef HAS_SPEC_EXPORTER
@@ -26,7 +30,10 @@ using FukaInitialDataList = NoSuchType;
 
 namespace ghmhd::GhValenciaDivClean::InitialData {
 // These are solutions that can be used for analytic prescriptions
-using analytic_solutions_and_data_list = gh::ghmhd_solutions;
+using analytic_solutions_and_data_list =
+    tmpl::append<gh::RelativisticEuler::Solutions::all_solutions,
+                 gh::grmhd::Solutions::all_solutions,
+                 gh::grmhd::AnalyticData::all_analytic_data>;
 using initial_data_list = tmpl::flatten<tmpl::list<
     analytic_solutions_and_data_list,
     tmpl::flatten<tmpl::list<

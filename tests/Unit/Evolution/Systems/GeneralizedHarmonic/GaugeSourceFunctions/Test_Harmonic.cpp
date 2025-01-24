@@ -17,6 +17,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
@@ -47,9 +48,9 @@ void test() {
 
   // Used dispatch with defaulted arguments that we don't need for Harmonic
   // gauge.
-  gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {},
-                       {}, {}, {}, {}, {}, {}, {}, {}, Mesh<Dim>{},
-                       time, inertial_coords, {}, *gauge_condition);
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
+      {}, {}, {}, {}, Mesh<Dim>{}, time, inertial_coords, {}, *gauge_condition);
   CHECK(gauge_h == tnsr::a<DataVector, Dim, Frame::Inertial>(num_points, 0.0));
   CHECK(d4_gauge_h ==
         tnsr::ab<DataVector, Dim, Frame::Inertial>(num_points, 0.0));

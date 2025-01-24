@@ -12,14 +12,23 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.tpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.tpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.tpp"
 #include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
 #include "Evolution/Systems/ScalarTensor/System.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
+#include "PointwiseFunctions/AnalyticData/GhScalarTensor/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
@@ -116,26 +125,28 @@ void TimeDerivative::apply(
 
     const Scalar<DataVector>& scalar_source) {
   // Compute sourceless part of the RHS of the metric equations
-  gh::TimeDerivative<dim>::apply(
-      // GH dt variables
-      dt_spacetime_metric, dt_pi, dt_phi,
+  gh::TimeDerivative<gh::ScalarTensor::AnalyticData::all_analytic_data, dim>::
+      apply(
+          // GH dt variables
+          dt_spacetime_metric, dt_pi, dt_phi,
 
-      // GH temporal variables
-      temp_gamma1, temp_gamma2, temp_gauge_function,
-      temp_spacetime_deriv_gauge_function, gamma1gamma2,
-      half_half_pi_two_normals, normal_dot_gauge_constraint, gamma1_plus_1,
-      pi_one_normal, gauge_constraint, half_phi_two_normals,
-      shift_dot_three_index_constraint,
-      mesh_velocity_dot_three_index_constraint, phi_one_normal, pi_2_up,
-      three_index_constraint, phi_1_up, phi_3_up, christoffel_first_kind_3_up,
-      lapse, shift, inverse_spatial_metric, det_spatial_metric,
-      sqrt_det_spatial_metric, inverse_spacetime_metric, christoffel_first_kind,
-      christoffel_second_kind, trace_christoffel, normal_spacetime_vector,
+          // GH temporal variables
+          temp_gamma1, temp_gamma2, temp_gauge_function,
+          temp_spacetime_deriv_gauge_function, gamma1gamma2,
+          half_half_pi_two_normals, normal_dot_gauge_constraint, gamma1_plus_1,
+          pi_one_normal, gauge_constraint, half_phi_two_normals,
+          shift_dot_three_index_constraint,
+          mesh_velocity_dot_three_index_constraint, phi_one_normal, pi_2_up,
+          three_index_constraint, phi_1_up, phi_3_up,
+          christoffel_first_kind_3_up, lapse, shift, inverse_spatial_metric,
+          det_spatial_metric, sqrt_det_spatial_metric, inverse_spacetime_metric,
+          christoffel_first_kind, christoffel_second_kind, trace_christoffel,
+          normal_spacetime_vector,
 
-      // GH argument variables
-      d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
-      gamma1, gamma2, gauge_condition, mesh, time, inertial_coords,
-      inverse_jacobian, mesh_velocity);
+          // GH argument variables
+          d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
+          gamma1, gamma2, gauge_condition, mesh, time, inertial_coords,
+          inverse_jacobian, mesh_velocity);
 
   // Compute sourceless part of the RHS of the scalar equation
   CurvedScalarWave::TimeDerivative<dim>::apply(
@@ -164,3 +175,23 @@ void TimeDerivative::apply(
   add_scalar_source_to_dt_pi_scalar(dt_pi_scalar, scalar_source, lapse_scalar);
 }
 }  // namespace ScalarTensor
+
+template struct gh::TimeDerivative<
+    gh::ScalarTensor::AnalyticData::all_analytic_data, 3>;
+
+template class gh::gauges::Tags::GaugeAndDerivativeCompute<
+    3, gh::ScalarTensor::AnalyticData::all_analytic_data>;
+
+template class gh::gauges::SetPiAndPhiFromConstraints<
+    gh::ScalarTensor::AnalyticData::all_analytic_data, 3>;
+
+namespace gh::gauges {
+#define GH_GAUGE_DISPATCH_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define GH_GAUGE_DISPATCH_SOLUTION(data) \
+  gh::ScalarTensor::AnalyticData::all_analytic_data
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_GH_GAUGE_DISPATCH, (3))
+
+#undef GH_GAUGE_DISPATCH_SOLUTION
+#undef GH_GAUGE_DISPATCH_DIM
+}  // namespace gh::gauges

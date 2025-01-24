@@ -19,7 +19,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AllSolutions.hpp
   Characteristics.hpp
   Constraints.hpp
   DuDtTempTags.hpp
@@ -29,6 +28,7 @@ spectre_target_headers(
   Tags.hpp
   TagsDeclarations.hpp
   TimeDerivative.hpp
+  TimeDerivative.tpp
   )
 
 target_link_libraries(
@@ -43,7 +43,6 @@ target_link_libraries(
   GeneralRelativity
   GeneralRelativitySolutions
   GhGrMhdAnalyticData
-  GhScalarTensorAnalyticData
   GhGrMhdSolutions
   GhRelativisticEulerSolutions
   IO

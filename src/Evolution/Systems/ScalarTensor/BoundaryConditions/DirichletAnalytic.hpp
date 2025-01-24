@@ -5,22 +5,15 @@
 
 #include <memory>
 #include <optional>
-#include <pup.h>
 #include <string>
-#include <type_traits>
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/ScalarTensor/BoundaryConditions/BoundaryCondition.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/AnalyticData/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -36,13 +29,12 @@ struct Coordinates;
 }  // namespace domain::Tags
 /// \endcond
 
-namespace gh::BoundaryConditions {
+namespace ScalarTensor::BoundaryConditions {
 /*!
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
  */
-template <size_t Dim>
-class DirichletAnalytic final : public BoundaryCondition<Dim> {
+class DirichletAnalytic final : public BoundaryCondition {
  public:
   /// \brief What analytic solution/data to prescribe.
   struct AnalyticPrescription {
@@ -50,13 +42,16 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
         "What analytic solution/data to prescribe.";
     using type = std::unique_ptr<evolution::initial_data::InitialData>;
   };
+  struct Amplitude {
+    using type = double;
+    static constexpr Options::String help = {
+        "Amplitude of the scalar at the boundary"};
+  };
 
-  using options = tmpl::list<AnalyticPrescription>;
+  using options = tmpl::list<AnalyticPrescription, Amplitude>;
 
   static constexpr Options::String help{
-      "DirichletAnalytic boundary conditions setting the value of the "
-      "spacetime metric and its derivatives Phi and Pi to the analytic "
-      "solution or analytic data."};
+      "DirichletAnalytic boundary conditions."};
 
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) = default;
@@ -65,9 +60,9 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
 
-  explicit DirichletAnalytic(
-      std::unique_ptr<evolution::initial_data::InitialData>
-          analytic_prescription);
+  DirichletAnalytic(std::unique_ptr<evolution::initial_data::InitialData>
+                        analytic_prescription,
+                    double amplitude);
 
   explicit DirichletAnalytic(CkMigrateMessage* msg);
 
@@ -84,38 +79,48 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
-      tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
+      tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
                  ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
+                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+                 ::CurvedScalarWave::Tags::ConstraintGamma1,
+                 ::CurvedScalarWave::Tags::ConstraintGamma2>;
   using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
   std::optional<std::string> dg_ghost(
-      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
-          spacetime_metric,
-      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
-      gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*> phi,
+      // GH evolved variables
+      gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> spacetime_metric,
+      gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
+      gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
+      // Scalar evolved variables
+      gsl::not_null<Scalar<DataVector>*> psi_scalar,
+      gsl::not_null<Scalar<DataVector>*> pi_scalar,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> phi_scalar,
+      // GH temporary variables
       gsl::not_null<Scalar<DataVector>*> gamma1,
       gsl::not_null<Scalar<DataVector>*> gamma2,
       gsl::not_null<Scalar<DataVector>*> lapse,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
-      gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> shift,
+      // Scalar temporary variables
+      gsl::not_null<Scalar<DataVector>*> gamma1_scalar,
+      gsl::not_null<Scalar<DataVector>*> gamma2_scalar,
+      // Inverse metric
+      gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
           inv_spatial_metric,
-      const std::optional<
-          tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& /*normal_covector*/,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& /*normal_vector*/,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
+      // Mesh variables
+      const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
+          face_mesh_velocity,
+      const tnsr::i<DataVector, 3, Frame::Inertial>& normal_covector,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& normal_vector,
+      // GH interior variables
+      const tnsr::I<DataVector, 3, Frame::Inertial>& coords,
       const Scalar<DataVector>& interior_gamma1,
-      const Scalar<DataVector>& interior_gamma2, double time) const;
+      const Scalar<DataVector>& interior_gamma2,
+      // Scalar interior variables
+      const Scalar<DataVector>& gamma1_interior_scalar,
+      const Scalar<DataVector>& gamma2_interior_scalar, double time) const;
 
  private:
-  void lapse_shift_and_inv_spatial_metric(
-      gsl::not_null<Scalar<DataVector>*> lapse,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> shift,
-      gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
-          inv_spatial_metric,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric) const;
-
   std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
+  double amplitude_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace gh::BoundaryConditions
+}  // namespace ScalarTensor::BoundaryConditions

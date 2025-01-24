@@ -34,6 +34,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Derivatives.hpp"
@@ -112,7 +113,9 @@ struct ComputeTimeDerivImpl<
         tmpl::list<deriv_lapse, deriv_shift, deriv_spatial_metric,
                    gr::Tags::ExtrinsicCurvature<DataVector, 3>>;
     using temporary_tags = tmpl::remove_duplicates<tmpl::append<
-        typename gh::TimeDerivative<3_st>::temporary_tags,
+        typename gh::TimeDerivative<ghmhd::GhValenciaDivClean::InitialData::
+                                        analytic_solutions_and_data_list,
+                                    3_st>::temporary_tags,
         tmpl::push_front<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              temporary_tags,
                          ::gh::ConstraintDamping::Tags::ConstraintGamma0>,
@@ -177,17 +180,20 @@ struct ComputeTimeDerivImpl<
       }
     }
 
-    gh::TimeDerivative<3_st>::apply(
-        get<::Tags::dt<GhDtTags>>(dt_vars_ptr)...,
-        get<GhTemporaries>(temp_tags_ptr)...,
-        get<::Tags::deriv<GhGradientTags, tmpl::size_t<3>, Frame::Inertial>>(
-            gh_derivs)...,
-        get<GhExtraTags>(evolved_vars, temp_tags)...,
+    gh::TimeDerivative<
+        ghmhd::GhValenciaDivClean::InitialData::
+            analytic_solutions_and_data_list,
+        3_st>::apply(get<::Tags::dt<GhDtTags>>(dt_vars_ptr)...,
+                     get<GhTemporaries>(temp_tags_ptr)...,
+                     get<::Tags::deriv<GhGradientTags, tmpl::size_t<3>,
+                                       Frame::Inertial>>(gh_derivs)...,
+                     get<GhExtraTags>(evolved_vars, temp_tags)...,
 
-        db::get<::gh::gauges::Tags::GaugeCondition>(*box),
-        db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box), time,
-        inertial_coords, cell_centered_logical_to_inertial_inv_jacobian,
-        mesh_velocity_subcell);
+                     db::get<::gh::gauges::Tags::GaugeCondition>(*box),
+                     db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box), time,
+                     inertial_coords,
+                     cell_centered_logical_to_inertial_inv_jacobian,
+                     mesh_velocity_subcell);
     if (get<gh::gauges::Tags::GaugeCondition>(*box).is_harmonic()) {
       get(get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*temp_tags_ptr)) =
           sqrt(

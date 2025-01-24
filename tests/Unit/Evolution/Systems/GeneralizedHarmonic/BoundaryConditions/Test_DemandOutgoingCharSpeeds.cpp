@@ -43,7 +43,7 @@ void test() {
 }  // namespace
 SPECTRE_TEST_CASE(
     "Unit.GeneralizedHarmonic.BoundaryConditions.DemandOutgoingCharSpeeds",
-    "[Unit][GrMhd]") {
+    "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/"};
   test<1>();

@@ -60,7 +60,7 @@ struct SetPiAndPhiFromConstraintsCacheMutator {
  * This is necessary to ensure the initial data is in the desired evolution
  * gauge and that the 1- and 3-index constraints are satisfied.
  */
-template <size_t Dim>
+template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
 struct SetPiAndPhiFromConstraints {
  public:
   using return_tags =

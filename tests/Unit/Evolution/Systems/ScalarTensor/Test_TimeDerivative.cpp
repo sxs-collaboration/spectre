@@ -20,6 +20,7 @@
 #include "Evolution/Systems/ScalarTensor/TimeDerivative.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "PointwiseFunctions/AnalyticData/GhScalarTensor/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
@@ -111,96 +112,107 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
   // combined system
 
   // The time derivative function for GeneralizedHarmonic is
-  gh::TimeDerivative<3>::apply(
-      // GH evolved variables
-      make_not_null(&get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
-          expected_dt_variables)),
-      make_not_null(
-          &get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(expected_dt_variables)),
-      make_not_null(&get<::Tags::dt<gh::Tags::Phi<DataVector, 3>>>(
-          expected_dt_variables)),
-      // GH temporaries
-      make_not_null(&get<gh::ConstraintDamping::Tags::ConstraintGamma1>(
-          expected_temp_variables)),
-      make_not_null(&get<gh::ConstraintDamping::Tags::ConstraintGamma2>(
-          expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::GaugeH<DataVector, 3>>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(
-          expected_temp_variables)),
-      make_not_null(&get<gh::Tags::Gamma1Gamma2>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::HalfPiTwoNormals>(expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::NormalDotOneIndexConstraint>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::Gamma1Plus1>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::PiOneNormal<3>>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::GaugeConstraint<DataVector, 3>>(
-          expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::HalfPhiTwoNormals<3>>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::ShiftDotThreeIndexConstraint<3>>(
-          expected_temp_variables)),
-      make_not_null(&get<gh::Tags::MeshVelocityDotThreeIndexConstraint<3>>(
-          expected_temp_variables)),
-      make_not_null(&get<gh::Tags::PhiOneNormal<3>>(expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::PiSecondIndexUp<3>>(expected_temp_variables)),
-      make_not_null(&get<gh::Tags::ThreeIndexConstraint<DataVector, 3>>(
-          expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::PhiFirstIndexUp<3>>(expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::PhiThirdIndexUp<3>>(expected_temp_variables)),
-      make_not_null(
-          &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>>(
+  gh::TimeDerivative<gh::ScalarTensor::AnalyticData::all_analytic_data, 3>::
+      apply(
+          // GH evolved variables
+          make_not_null(
+              &get<::Tags::dt<gr::Tags::SpacetimeMetric<DataVector, 3>>>(
+                  expected_dt_variables)),
+          make_not_null(&get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(
+              expected_dt_variables)),
+          make_not_null(&get<::Tags::dt<gh::Tags::Phi<DataVector, 3>>>(
+              expected_dt_variables)),
+          // GH temporaries
+          make_not_null(&get<gh::ConstraintDamping::Tags::ConstraintGamma1>(
               expected_temp_variables)),
-      make_not_null(&get<gr::Tags::Lapse<DataVector>>(expected_temp_variables)),
-      make_not_null(
-          &get<gr::Tags::Shift<DataVector, 3>>(expected_temp_variables)),
-      make_not_null(&get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
-          expected_temp_variables)),
-      make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(
-          expected_temp_variables)),
-      make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
-          expected_temp_variables)),
-      make_not_null(&get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(
-          expected_temp_variables)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(
+          make_not_null(&get<gh::ConstraintDamping::Tags::ConstraintGamma2>(
               expected_temp_variables)),
-      make_not_null(
-          &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>>(
+          make_not_null(
+              &get<gh::Tags::GaugeH<DataVector, 3>>(expected_temp_variables)),
+          make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(
               expected_temp_variables)),
-      make_not_null(
-          &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
+          make_not_null(&get<gh::Tags::Gamma1Gamma2>(expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::HalfPiTwoNormals>(expected_temp_variables)),
+          make_not_null(&get<gh::Tags::NormalDotOneIndexConstraint>(
               expected_temp_variables)),
-      make_not_null(&get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
-          expected_temp_variables)),
-      // GH gradient tags
-      get<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                        tmpl::size_t<3>, Frame::Inertial>>(gradient_variables),
-      get<::Tags::deriv<gh::Tags::Pi<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(gradient_variables),
-      get<::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(gradient_variables),
-      // GH argument tags
-      tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3>>(arg_variables),
-      tuples::get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
-      tuples::get<gh::Tags::Phi<DataVector, 3>>(arg_variables),
-      tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma0>(arg_variables),
-      tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma1>(arg_variables),
-      tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma2>(arg_variables),
+          make_not_null(&get<gh::Tags::Gamma1Plus1>(expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::PiOneNormal<3>>(expected_temp_variables)),
+          make_not_null(&get<gh::Tags::GaugeConstraint<DataVector, 3>>(
+              expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::HalfPhiTwoNormals<3>>(expected_temp_variables)),
+          make_not_null(&get<gh::Tags::ShiftDotThreeIndexConstraint<3>>(
+              expected_temp_variables)),
+          make_not_null(&get<gh::Tags::MeshVelocityDotThreeIndexConstraint<3>>(
+              expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::PhiOneNormal<3>>(expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::PiSecondIndexUp<3>>(expected_temp_variables)),
+          make_not_null(&get<gh::Tags::ThreeIndexConstraint<DataVector, 3>>(
+              expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::PhiFirstIndexUp<3>>(expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::PhiThirdIndexUp<3>>(expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>>(
+                  expected_temp_variables)),
+          make_not_null(
+              &get<gr::Tags::Lapse<DataVector>>(expected_temp_variables)),
+          make_not_null(
+              &get<gr::Tags::Shift<DataVector, 3>>(expected_temp_variables)),
+          make_not_null(&get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
+              expected_temp_variables)),
+          make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(
+              expected_temp_variables)),
+          make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(
+              expected_temp_variables)),
+          make_not_null(&get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(
+              expected_temp_variables)),
+          make_not_null(
+              &get<gr::Tags::SpacetimeChristoffelFirstKind<DataVector, 3>>(
+                  expected_temp_variables)),
+          make_not_null(
+              &get<gr::Tags::SpacetimeChristoffelSecondKind<DataVector, 3>>(
+                  expected_temp_variables)),
+          make_not_null(
+              &get<gr::Tags::TraceSpacetimeChristoffelFirstKind<DataVector, 3>>(
+                  expected_temp_variables)),
+          make_not_null(&get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+              expected_temp_variables)),
+          // GH gradient tags
+          get<::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                            tmpl::size_t<3>, Frame::Inertial>>(
+              gradient_variables),
+          get<::Tags::deriv<gh::Tags::Pi<DataVector, 3>, tmpl::size_t<3>,
+                            Frame::Inertial>>(gradient_variables),
+          get<::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
+                            Frame::Inertial>>(gradient_variables),
+          // GH argument tags
+          tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3>>(arg_variables),
+          tuples::get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
+          tuples::get<gh::Tags::Phi<DataVector, 3>>(arg_variables),
+          tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma0>(
+              arg_variables),
+          tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma1>(
+              arg_variables),
+          tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma2>(
+              arg_variables),
 
-      *tuples::get<gh::gauges::Tags::GaugeCondition>(arg_variables),
+          *tuples::get<gh::gauges::Tags::GaugeCondition>(arg_variables),
 
-      tuples::get<domain::Tags::Mesh<3>>(arg_variables),
-      tuples::get<::Tags::Time>(arg_variables),
-      tuples::get<domain::Tags::Coordinates<3, Frame::Inertial>>(arg_variables),
-      tuples::get<domain::Tags::InverseJacobian<3, Frame::ElementLogical,
-                                                Frame::Inertial>>(
-          arg_variables),
-      tuples::get<domain::Tags::MeshVelocity<3, Frame::Inertial>>(
-          arg_variables));
+          tuples::get<domain::Tags::Mesh<3>>(arg_variables),
+          tuples::get<::Tags::Time>(arg_variables),
+          tuples::get<domain::Tags::Coordinates<3, Frame::Inertial>>(
+              arg_variables),
+          tuples::get<domain::Tags::InverseJacobian<3, Frame::ElementLogical,
+                                                    Frame::Inertial>>(
+              arg_variables),
+          tuples::get<domain::Tags::MeshVelocity<3, Frame::Inertial>>(
+              arg_variables));
 
   // The time derivative function for CurvedScalarWave is
   CurvedScalarWave::TimeDerivative<3>::apply(

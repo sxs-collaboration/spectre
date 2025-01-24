@@ -13,4 +13,5 @@ spectre_target_headers(
   HEADERS
   DhGaugeParameters.hpp
   GaugeCondition.hpp
+  GaugeCondition.tpp
   )

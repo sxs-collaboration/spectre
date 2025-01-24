@@ -21,7 +21,7 @@ namespace gh::gauges {
  * condition, but since that is a runtime choice we need support for all gauge
  * conditions.
  */
-template <size_t Dim>
+template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
 void dispatch(
     gsl::not_null<tnsr::a<DataVector, Dim, Frame::Inertial>*> gauge_h,
     gsl::not_null<tnsr::ab<DataVector, Dim, Frame::Inertial>*> d4_gauge_h,

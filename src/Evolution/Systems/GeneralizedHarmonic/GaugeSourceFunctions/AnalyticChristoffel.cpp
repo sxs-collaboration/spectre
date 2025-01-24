@@ -11,20 +11,14 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/AllSolutions.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "PointwiseFunctions/AnalyticData/GhGrMhd/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GhGrMhd/Factory.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/CallWithDynamicType.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -61,41 +55,18 @@ std::unique_ptr<GaugeCondition> AnalyticChristoffel::get_clone() const {
 }
 
 template <size_t SpatialDim>
-void AnalyticChristoffel::gauge_and_spacetime_derivative(
+void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
     const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame::Inertial>*>
         gauge_h,
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>*>
         d4_gauge_h,
-    const Mesh<SpatialDim>& mesh, const double time,
-    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& inertial_coords,
+    const Mesh<SpatialDim>& mesh,
     const InverseJacobian<DataVector, SpatialDim, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian) const {
-  ASSERT(analytic_prescription_ != nullptr,
-         "The analytic prescription cannot be nullptr.");
-  using solution_tags =
-      tmpl::list<gh::Tags::Pi<DataVector, SpatialDim>,
-                 gh::Tags::Phi<DataVector, SpatialDim>,
-                 gr::Tags::SpacetimeMetric<DataVector, SpatialDim>,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<DataVector, SpatialDim>,
-                 gr::Tags::SpatialMetric<DataVector, SpatialDim>>;
+                          Frame::Inertial>& inverse_jacobian,
+    const tuples::tagged_tuple_from_typelist<solution_tags<SpatialDim>>&
+        solution_vars) const {
   const auto [pi, phi, spacetime_metric, lapse, shift, spatial_metric] =
-      call_with_dynamic_type<tuples::tagged_tuple_from_typelist<solution_tags>,
-                             solutions_including_matter<SpatialDim>>(
-          analytic_prescription_.get(),
-          [&inertial_coords,
-           &time](const auto* const analytic_solution_or_data) {
-            if constexpr (is_analytic_solution_v<std::decay_t<
-                              decltype(*analytic_solution_or_data)>>) {
-              return analytic_solution_or_data->variables(inertial_coords, time,
-                                                          solution_tags{});
-
-            } else {
-              (void)time;
-              return analytic_solution_or_data->variables(inertial_coords,
-                                                          solution_tags{});
-            }
-          });
+      solution_vars;
   // Now compute Gamma_a
   Variables<
       tmpl::list<gr::Tags::SpacetimeNormalVector<DataVector, SpatialDim>,
@@ -153,16 +124,17 @@ PUP::able::PUP_ID AnalyticChristoffel::my_PUP_ID = 0;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void AnalyticChristoffel::gauge_and_spacetime_derivative(          \
-      const gsl::not_null<tnsr::a<DataVector, DIM(data), Frame::Inertial>*>   \
-          gauge_h,                                                            \
-      const gsl::not_null<tnsr::ab<DataVector, DIM(data), Frame::Inertial>*>  \
-          d4_gauge_h,                                                         \
-      const Mesh<DIM(data)>& mesh, double time,                               \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords, \
-      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,     \
-                            Frame::Inertial>& inverse_jacobian) const;
+#define INSTANTIATE(_, data)                                                 \
+  template void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(    \
+      const gsl::not_null<tnsr::a<DataVector, DIM(data), Frame::Inertial>*>  \
+          gauge_h,                                                           \
+      const gsl::not_null<tnsr::ab<DataVector, DIM(data), Frame::Inertial>*> \
+          d4_gauge_h,                                                        \
+      const Mesh<DIM(data)>& mesh,                                           \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,    \
+                            Frame::Inertial>& inverse_jacobian,              \
+      const tuples::tagged_tuple_from_typelist<solution_tags<DIM(data)>>&    \
+          solution_vars) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

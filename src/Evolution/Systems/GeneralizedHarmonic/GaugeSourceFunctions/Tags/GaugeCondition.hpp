@@ -53,7 +53,7 @@ struct GaugeCondition : db::SimpleTag {
 
 /// \brief Gauge condition \f$H_a\f$ and its spacetime derivative
 /// \f$\partial_b H_a\f$
-template <size_t Dim>
+template <size_t Dim, class AllSolutions>
 struct GaugeAndDerivativeCompute
     : ::Tags::Variables<
           tmpl::list<::gh::Tags::GaugeH<DataVector, Dim>,

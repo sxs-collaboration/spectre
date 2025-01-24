@@ -15,6 +15,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
@@ -204,8 +205,10 @@ SPECTRE_TEST_CASE(
   }
 
   ComputeVolumeTimeDerivativeTermsHelper<
-      gh::TimeDerivative<3_st>, 3_st, gh_variables_tags, gh_flux_tags,
-      gh_temp_tags, gh_gradient_tags,
+      gh::TimeDerivative<ghmhd::GhValenciaDivClean::InitialData::
+                             analytic_solutions_and_data_list,
+                         3_st>,
+      3_st, gh_variables_tags, gh_flux_tags, gh_temp_tags, gh_gradient_tags,
       tmpl::remove<gh_arg_tags, gr::Tags::SpatialMetric<DataVector, 3>>>::
       apply(make_not_null(&expected_dt_variables),
             make_not_null(&expected_flux_variables),

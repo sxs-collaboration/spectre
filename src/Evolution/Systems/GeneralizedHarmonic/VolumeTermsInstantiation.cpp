@@ -9,13 +9,15 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                 \
-  template void evolution::dg::Actions::detail::volume_terms<                  \
-      ::gh::TimeDerivative<DIM(data)>>(                                        \
+  template void                                                                \
+  evolution::dg::Actions::detail::volume_terms<::gh::TimeDerivative<           \
+      gh::Solutions::all_solutions<DIM(data)>, DIM(data)>>(                    \
       const gsl::not_null<Variables<db::wrap_tags_in<                          \
           ::Tags::dt,                                                          \
           typename ::gh::System<DIM(data)>::variables_tag::tags_list>>*>       \

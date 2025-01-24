@@ -18,14 +18,15 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 
 namespace {
 template <size_t Dim>
 void test() {
-  TestHelpers::db::test_compute_tag<
-      gh::gauges::Tags::GaugeAndDerivativeCompute<Dim>>(
+  TestHelpers::db::test_compute_tag<gh::gauges::Tags::GaugeAndDerivativeCompute<
+      Dim, gh::Solutions::all_solutions<Dim>>>(
       "Variables(GaugeH,SpacetimeDerivGaugeH)");
 
   // Use Harmonic gauge since then we don't need to set any values and we can
@@ -45,7 +46,8 @@ void test() {
           ::Events::Tags::ObserverInverseJacobian<Dim, Frame::ElementLogical,
                                                   Frame::Inertial>,
           gh::gauges::Tags::GaugeCondition>,
-      db::AddComputeTags<gh::gauges::Tags::GaugeAndDerivativeCompute<Dim>>>(
+      db::AddComputeTags<gh::gauges::Tags::GaugeAndDerivativeCompute<
+          Dim, gh::Solutions::all_solutions<Dim>>>>(
       Scalar<DataVector>{}, tnsr::I<DataVector, Dim, Frame::Inertial>{},
       tnsr::a<DataVector, Dim, Frame::Inertial>{},
       tnsr::A<DataVector, Dim, Frame::Inertial>{}, Scalar<DataVector>{},

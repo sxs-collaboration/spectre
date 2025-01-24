@@ -15,6 +15,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Harmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/StressEnergy.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
@@ -82,10 +83,14 @@ struct TimeDerivativeTermsImpl<
       const tnsr::ijaa<DataVector, 3>& d_phi,
 
       const tuples::TaggedTuple<ExtraTags...>& arguments) {
-    gh::TimeDerivative<3_st>::apply(
-        get<GhDtTags>(dt_vars_ptr)..., get<GhTempTags>(temps_ptr)...,
-        d_spacetime_metric, d_pi, d_phi,
-        get<Tags::detail::TemporaryReference<GhArgTags>>(arguments)...);
+    gh::TimeDerivative<
+        ghmhd::GhValenciaDivClean::InitialData::
+            analytic_solutions_and_data_list,
+        3_st>::apply(get<GhDtTags>(dt_vars_ptr)...,
+                     get<GhTempTags>(temps_ptr)..., d_spacetime_metric, d_pi,
+                     d_phi,
+                     get<Tags::detail::TemporaryReference<GhArgTags>>(
+                         arguments)...);
 
     if (get<Tags::detail::TemporaryReference<gh::gauges::Tags::GaugeCondition>>(
             arguments)
@@ -214,9 +219,13 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       tmpl::bind<::Tags::Flux, tmpl::_1, tmpl::pin<tmpl::size_t<3_st>>,
                  tmpl::pin<Frame::Inertial>>>;
 
-  using gh_temp_tags = typename gh::TimeDerivative<3_st>::temporary_tags;
+  using gh_temp_tags = typename gh::TimeDerivative<
+      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
+      3_st>::temporary_tags;
   using gh_gradient_tags = typename gh::System<3_st>::gradients_tags;
-  using gh_arg_tags = typename gh::TimeDerivative<3_st>::argument_tags;
+  using gh_arg_tags = typename gh::TimeDerivative<
+      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
+      3_st>::argument_tags;
 
   using valencia_temp_tags =
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::temporary_tags;

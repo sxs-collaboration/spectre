@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
@@ -103,9 +104,10 @@ void test_gauge_wave(const Mesh<Dim>& mesh) {
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
   // Used dispatch with defaulted arguments that we don't need for Analytic
   // gauge.
-  gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {},
-                       {}, {}, {}, {}, {}, {}, {}, {}, mesh, time,
-                       inertial_coords, inverse_jacobian, *gauge_condition);
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
+      {}, {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      *gauge_condition);
 
   CHECK_ITERABLE_APPROX(
       gauge_h, (tnsr::a<DataVector, Dim, Frame::Inertial>(num_points, 0.0)));
@@ -140,9 +142,10 @@ void test_ks(const Mesh<3>& mesh) {
   tnsr::ab<DataVector, 3, Frame::Inertial> d4_gauge_h(num_points);
   // Used dispatch with defaulted arguments that we don't need for Analytic
   // gauge.
-  gh::gauges::dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {},
-                       {}, {}, {}, {}, {}, {}, {}, {}, mesh, time,
-                       inertial_coords, inverse_jacobian, *gauge_condition);
+  gh::gauges::dispatch<gh::Solutions::all_solutions<3>>(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
+      {}, {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      *gauge_condition);
 
   const gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> kerr_schild{
       1.2, {0.1, 0.2, 0.3}, {-0.1, -0.2, -0.4}};

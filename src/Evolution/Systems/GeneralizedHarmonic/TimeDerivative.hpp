@@ -103,7 +103,7 @@ namespace gh {
  * gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial, DataVector>
  * are not computed. In Debug mode, they are filled with with signaling NaNs.
  */
-template <size_t Dim>
+template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
 struct TimeDerivative {
  public:
   using temporary_tags = tmpl::list<

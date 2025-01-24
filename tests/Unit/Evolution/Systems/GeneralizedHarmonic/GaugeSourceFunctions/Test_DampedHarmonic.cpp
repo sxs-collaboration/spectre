@@ -29,6 +29,7 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Options/ParseOptions.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
@@ -276,7 +277,7 @@ void test_derived_class(const Mesh<Dim>& mesh) {
 
   // Used dispatch with defaulted arguments that we don't need for
   // DampedHarmonic gauge.
-  gh::gauges::dispatch(
+  gh::gauges::dispatch<gh::Solutions::all_solutions<Dim>>(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
       half_pi_two_normals, half_phi_two_normals, spacetime_metric, phi, mesh,
