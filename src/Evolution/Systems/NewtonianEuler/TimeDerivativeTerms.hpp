@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/Source.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -60,7 +61,7 @@ struct TimeDerivativeTerms {
                  domain::Tags::Coordinates<Dim, Frame::Inertial>, ::Tags::Time,
                  NewtonianEuler::Tags::SourceTerm<Dim>>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
       const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_mass_density,
@@ -101,6 +102,7 @@ struct TimeDerivativeTerms {
            non_flux_terms_dt_energy_density, mass_density_cons,
            momentum_density, energy_density, velocity, pressure,
            specific_internal_energy, *eos_2d, coords, time);
+    return {true};
   }
 };
 

@@ -349,6 +349,19 @@ class FixToAtmosphere {
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state) const;
 
+  /// @{
+  /// \brief Other algorithmic decisions may depend on the atmosphere treatment
+  /// so provide access to the values.
+  double density_of_atmosphere() const { return density_of_atmosphere_; }
+  double density_cutoff() const { return density_cutoff_; }
+  const std::optional<VelocityLimitingOptions>& velocity_limiting() const {
+    return velocity_limiting_;
+  }
+  const std::optional<KappaLimitingOptions>& kappa_limiting() const {
+    return kappa_limiting_;
+  }
+  /// @}
+
  private:
   template <size_t ThermodynamicDim>
   void set_density_to_atmosphere(

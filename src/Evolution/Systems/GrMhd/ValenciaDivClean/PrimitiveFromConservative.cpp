@@ -113,6 +113,44 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   for (size_t i = 0; i < 3; ++i) {
     magnetic_field->get(i) = tilde_b.get(i) / get(sqrt_det_spatial_metric);
   }
+
+  // Parameters for quick exit from inversion
+  const double cutoffD =
+      primitive_from_conservative_options.cutoff_d_for_inversion();
+  const double floorD =
+      primitive_from_conservative_options.density_when_skipping_inversion();
+
+  // If the max over the grid is below the cutoff, then just don't do any
+  // work because everything will get reset to atmosphere.
+  if (max(get(tilde_d)) < cutoffD) {
+    get(*rest_mass_density) = floorD;
+    get(*electron_fraction) = min(0.5, max(get(tilde_ye) / get(tilde_d), 0.));
+    if constexpr (eos_is_barotropic) {
+      // Note: default construction for T and Y_e must be okay since the EOS is
+      // barotropic.
+      *specific_internal_energy =
+          equation_of_state
+              .specific_internal_energy_from_density_and_temperature(
+                  *rest_mass_density, Scalar<DataVector>{},
+                  Scalar<DataVector>{});
+    } else {
+      const auto num_points = get(*rest_mass_density).size();
+      for (size_t i = 0; i < num_points; ++i) {
+        get(*specific_internal_energy)[i] =
+            equation_of_state.specific_internal_energy_lower_bound(
+                get(*rest_mass_density)[i], get(*electron_fraction)[i]);
+      }
+    }
+    *temperature = equation_of_state.temperature_from_density_and_energy(
+        *rest_mass_density, *specific_internal_energy, *electron_fraction);
+    *pressure = equation_of_state.pressure_from_density_and_temperature(
+        *rest_mass_density, *temperature, *electron_fraction);
+    get(*lorentz_factor) = 1.0;
+    for (size_t i = 0; i < 3; ++i) {
+      spatial_velocity->get(i) = 0.0;
+    }
+  }
+
   const size_t number_of_points = get<0>(tilde_b).size();
   Variables<
       tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
@@ -148,12 +186,6 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       get(get<::Tags::TempScalar<4>>(temp_buffer));
   rest_mass_density_times_lorentz_factor =
       get(tilde_d) / get(sqrt_det_spatial_metric);
-
-  // Parameters for quick exit from inversion
-  const double cutoffD =
-      primitive_from_conservative_options.cutoff_d_for_inversion();
-  const double floorD =
-      primitive_from_conservative_options.density_when_skipping_inversion();
 
   // This may need bounds
   // limit Ye to table bounds once that is implemented

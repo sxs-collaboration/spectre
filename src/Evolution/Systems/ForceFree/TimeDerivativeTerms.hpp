@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
@@ -67,7 +68,7 @@ struct TimeDerivativeTerms {
       ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
                     Frame::Inertial>>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<3> apply(
       // Time derivatives returned by reference.
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           non_flux_terms_dt_tilde_e,

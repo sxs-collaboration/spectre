@@ -203,6 +203,31 @@ void test_variable_fixer() {
   test_serialization(variable_fixer);
   test_serialization(variable_fixer_klo);
 
+  const auto check_velocity_limiting_options = [](const auto& var_fixer) {
+    CHECK(var_fixer.density_of_atmosphere() == 1.e-12);
+    CHECK(var_fixer.density_cutoff() == 3.e-12);
+    REQUIRE(var_fixer.velocity_limiting().has_value());
+    CHECK(var_fixer.velocity_limiting().value().atmosphere_max_velocity == 0.);
+    CHECK(var_fixer.velocity_limiting().value().near_atmosphere_max_velocity ==
+          1.e-4);
+    CHECK(var_fixer.velocity_limiting().value().atmosphere_density_cutoff ==
+          3.e-12);
+    CHECK(var_fixer.velocity_limiting().value().transition_density_bound ==
+          1.e-11);
+  };
+  check_velocity_limiting_options(variable_fixer);
+  check_velocity_limiting_options(variable_fixer_klo);
+
+  CHECK(not variable_fixer.kappa_limiting().has_value());
+  REQUIRE(variable_fixer_klo.kappa_limiting().has_value());
+  CHECK(variable_fixer_klo.kappa_limiting()->density_lower_bound == 3.e-12);
+  CHECK(variable_fixer_klo.kappa_limiting()->eplison_kappa_minus == 1.e-3);
+  CHECK(variable_fixer_klo.kappa_limiting()->density_upper_bound == 3.e-11);
+  CHECK(variable_fixer_klo.kappa_limiting()->epsilon_kappa_max == 0.01);
+  CHECK(variable_fixer_klo.kappa_limiting()->min_temperature == std::nullopt);
+  CHECK(variable_fixer_klo.kappa_limiting()->limit_above_density_upper_bound ==
+        false);
+
   const auto fixer_from_options =
       TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim>>(
           "DensityOfAtmosphere: 1.0e-12\n"

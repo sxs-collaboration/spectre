@@ -8,6 +8,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 
 namespace evolution::dg::Actions::detail {
 template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
@@ -72,5 +73,6 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
-    const double& constraint_damping_parameter);
+    const double& constraint_damping_parameter,
+    const ::VariableFixing::FixToAtmosphere<3>& fix_to_atmosphere);
 }  // namespace evolution::dg::Actions::detail

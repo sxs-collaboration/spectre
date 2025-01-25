@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -70,7 +71,7 @@ struct TimeDerivative {
                  gr::Tags::TraceExtrinsicCurvature<DataVector>,
                  Tags::ConstraintGamma1, Tags::ConstraintGamma2>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<Dim> apply(
       gsl::not_null<Scalar<DataVector>*> dt_psi,
       gsl::not_null<Scalar<DataVector>*> dt_pi,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,

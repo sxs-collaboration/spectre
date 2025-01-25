@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
@@ -102,7 +103,7 @@ struct TimeDerivativeTerms {
                  gr::Tags::ExtrinsicCurvature<DataVector, 3>,
                  grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<3> apply(
       gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_d*/,
       gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_ye*/,
       gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_tilde_tau,

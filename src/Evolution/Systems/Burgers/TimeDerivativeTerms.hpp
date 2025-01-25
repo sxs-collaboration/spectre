@@ -5,6 +5,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -30,7 +31,7 @@ struct TimeDerivativeTerms {
   using temporary_tags = tmpl::list<>;
   using argument_tags = tmpl::list<Tags::U>;
 
-  static void apply(
+  static evolution::dg::TimeDerivativeDecisions<1> apply(
       // Time derivatives returned by reference. No source terms or
       // nonconservative products, so not used. All the tags in the
       // variables_tag in the system struct.
