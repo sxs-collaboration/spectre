@@ -289,7 +289,7 @@ long_lines() {
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
               'eos.*' \
-              'external/Licenses/.*License.txt' \
+              'external/*' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \
               'tools/CheckFiles.sh$' && \
@@ -369,7 +369,7 @@ standard_checks+=(boost_none)
 
 # Check for files containing tabs
 tabs() {
-    whitelist "$1" '.h5' '.ico' '.jpg' '.png' '.patch' &&
+    whitelist "$1" '.h5' '.ico' '.jpg' '.png' '.patch' 'external/*' &&
     staged_grep -q -F $'\t' "$1"
 }
 tabs_report() {
@@ -384,7 +384,7 @@ standard_checks+=(tabs)
 
 # Check for end-of-line spaces
 trailing_space() {
-    whitelist "$1" '.h5' '.ico' '.jpg' '.png' '.patch' 'eos.*' &&
+    whitelist "$1" '.h5' '.ico' '.jpg' '.png' '.patch' 'eos.*' 'external/*' &&
     staged_grep -q -E ' +$' "$1"
 }
 trailing_space_report() {

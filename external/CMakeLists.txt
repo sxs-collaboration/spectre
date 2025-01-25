@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(brigand)
+add_subdirectory(EffectiveSource)
 add_subdirectory(SPHEREPACK)
 
 set(LIBRARY Libsharp)
