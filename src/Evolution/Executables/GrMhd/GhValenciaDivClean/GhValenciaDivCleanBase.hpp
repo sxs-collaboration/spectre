@@ -12,6 +12,7 @@
 #include "ControlSystem/Measurements/BNSCenterOfMass.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
+#include "ControlSystem/Systems/GridCenters.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Trigger.hpp"
@@ -374,7 +375,8 @@ struct GhValenciaDivCleanTemplateBase<
       use_control_systems,
       tmpl::list<control_system::Systems::Rotation<3, measurement>,
                  control_system::Systems::Expansion<2, measurement>,
-                 control_system::Systems::Translation<2, measurement, 2>>,
+                 control_system::Systems::Translation<2, measurement, 2>,
+                 control_system::Systems::GridCenters<2, measurement>>,
       tmpl::list<>>;
 
   using interpolator_source_vars =
