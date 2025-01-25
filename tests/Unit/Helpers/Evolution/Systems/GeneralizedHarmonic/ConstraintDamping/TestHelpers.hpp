@@ -75,16 +75,31 @@ void check_impl(
                   std::string,
                   std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
                   functions_of_time{};
-              for (auto function_of_time_name : function_of_time_names) {
-                // The randomly selected time will be between the
-                // random_value_bounds, so set the earliest time of the
-                // function_of_times to the lower bound in random_value_bounds.
-                functions_of_time[function_of_time_name] = std::make_unique<
-                    ::domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-                    std::min(gsl::at(random_value_bounds, 0).first,
-                             gsl::at(random_value_bounds, 0).second),
-                    std::array<DataVector, 4>{{{1.0}, {0.2}, {0.06}, {0.024}}},
-                    std::numeric_limits<double>::max());
+              for (const auto& function_of_time_name : function_of_time_names) {
+                if (function_of_time_name == "GridCenters") {
+                  functions_of_time[function_of_time_name] = std::make_unique<
+                      ::domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+                      std::min(gsl::at(random_value_bounds, 0).first,
+                               gsl::at(random_value_bounds, 0).second),
+                      std::array<DataVector, 4>{
+                          {{16.0, 0.0, 0.0, -16.0, 0.0, 0.0},
+                           {-0.001, 0.0, 0.0, 0.002, 0.0, 0.0},
+                           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                           {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}},
+                      std::numeric_limits<double>::max());
+                } else {
+                  // The randomly selected time will be between the
+                  // random_value_bounds, so set the earliest time of the
+                  // function_of_times to the lower bound in
+                  // random_value_bounds.
+                  functions_of_time[function_of_time_name] = std::make_unique<
+                      ::domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+                      std::min(gsl::at(random_value_bounds, 0).first,
+                               gsl::at(random_value_bounds, 0).second),
+                      std::array<DataVector, 4>{
+                          {{1.0}, {0.2}, {0.06}, {0.024}}},
+                      std::numeric_limits<double>::max());
+                }
               }
               // Default-construct the scalar, to test that the damping
               // function's call operator correctly resizes it
