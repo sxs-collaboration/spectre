@@ -115,13 +115,13 @@ create_grid_anchors(const std::array<double, 3>& center_a,
  *
  * \par Notes:
  * - Object A is located to the right of the origin (along the positive x-axis)
- *   and Object B is located to the left of the origin.
+ *   and Object B is located to the left of the origin in the Grid frame.
  * - This domain offers some grid anchors. See
  *   `domain::creators::bco::create_grid_anchors` for which ones are offered.
  * - "Cutting plane" refers to the plane along which the domain divides into two
  *   hemispheres. The cutting plane always intersects the x-axis at the origin.
  * - The x-coordinate locations of the two objects should be chosen such that
- *   the center of mass is located at x=0.
+ *   the center of mass is located at x=0 at the initial time (typically t=0).
  * - The cubes are first constructed at the origin. Then, they are translated
  *   left/right by their Object's x-coordinate and offset depending on the cube
  *   length.
