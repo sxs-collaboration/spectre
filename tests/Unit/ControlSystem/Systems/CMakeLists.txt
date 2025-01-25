@@ -4,6 +4,7 @@
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
   Systems/Test_Expansion.cpp
+  Systems/Test_GridCenters.cpp
   Systems/Test_Shape.cpp
   Systems/Test_Size.cpp
   Systems/Test_Skew.cpp
