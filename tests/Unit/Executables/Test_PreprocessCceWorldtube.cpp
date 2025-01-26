@@ -241,9 +241,11 @@ void check_expected_data(const std::string& output_filename, const size_t l_max,
 }
 
 void write_input_file(const std::string& input_data_format,
+                      const std::string& input_file_name,
                       const std::vector<std::string>& input_worldtube_filenames,
                       const std::string& output_filename,
-                      const std::optional<double>& worldtube_radius) {
+                      const std::optional<double>& worldtube_radius,
+                      const bool descending_m) {
   std::string input_file =
       "# Distributed under the MIT License.\n"
       "# See LICENSE.txt for details.\n"
@@ -272,12 +274,13 @@ void write_input_file(const std::string& input_data_format,
       (worldtube_radius.has_value() ? std::to_string(worldtube_radius.value())
                                     : "Auto") +
       "\n";
+  input_file += "DescendingM: "s + (descending_m ? "True\n" : "False\n");
   input_file +=
       "FixSpecNormalization: False\n"
       "BufferDepth: Auto\n"
       "LMaxFactor: 3\n";
 
-  std::ofstream yaml_file(input_data_format + ".yaml");
+  std::ofstream yaml_file(input_file_name);
   yaml_file << input_file;
   yaml_file.close();
 }
@@ -302,6 +305,8 @@ int main() {
   // option
   const std::string metric_modal_input_worldtube_filename{
       "Test_InputMetricModal_R0123.h5"};
+  const std::string metric_modal_spec_input_worldtube_filename{
+      "Test_InputMetricModalSpec_R0123.h5"};
   const std::string metric_nodal_1_input_worldtube_filename{
       "Test_InputMetricNodal_1.h5"};
   const std::string metric_nodal_2_input_worldtube_filename{
@@ -316,6 +321,8 @@ int main() {
   // Output worldtube H5 filenames
   const std::string metric_modal_output_worldtube_filename{
       "Test_OutputMetricModal_R0123.h5"};
+  const std::string metric_modal_spec_output_worldtube_filename{
+      "Test_OutputMetricModalSpec_R0123.h5"};
   const std::string metric_nodal_output_worldtube_filename{
       "Test_OutputMetricNodal.h5"};
   const std::string bondi_modal_output_worldtube_filename{
@@ -327,6 +334,9 @@ int main() {
   Cce::TestHelpers::write_test_file<ComplexModalVector, false>(
       solution, metric_modal_input_worldtube_filename, target_time,
       worldtube_radius, frequency, amplitude, l_max, false);
+  Cce::TestHelpers::write_test_file<ComplexModalVector, false>(
+      solution, metric_modal_spec_input_worldtube_filename, target_time,
+      worldtube_radius, frequency, amplitude, l_max, true);
   Cce::TestHelpers::write_test_file<DataVector, false>(
       solution, metric_nodal_1_input_worldtube_filename, target_time,
       worldtube_radius, frequency, amplitude, l_max, false);
@@ -346,18 +356,25 @@ int main() {
       worldtube_radius, frequency, amplitude, l_max, false);
 
   // Write input file
-  write_input_file("MetricModal", {metric_modal_input_worldtube_filename},
-                   metric_modal_output_worldtube_filename, std::nullopt);
-  write_input_file("MetricNodal",
+  write_input_file("MetricModal", "MetricModal.yaml",
+                   {metric_modal_input_worldtube_filename},
+                   metric_modal_output_worldtube_filename, std::nullopt, false);
+  write_input_file("MetricModal", "MetricModalSpec.yaml",
+                   {metric_modal_spec_input_worldtube_filename},
+                   metric_modal_spec_output_worldtube_filename, std::nullopt,
+                   true);
+  write_input_file("MetricNodal", "MetricNodal.yaml",
                    {metric_nodal_1_input_worldtube_filename,
                     metric_nodal_2_input_worldtube_filename},
-                   metric_nodal_output_worldtube_filename, {worldtube_radius});
-  write_input_file("BondiModal",
+                   metric_nodal_output_worldtube_filename, {worldtube_radius},
+                   false);
+  write_input_file("BondiModal", "BondiModal.yaml",
                    {bondi_modal_1_input_worldtube_filename,
                     bondi_modal_2_input_worldtube_filename},
-                   bondi_modal_output_worldtube_filename, std::nullopt);
-  write_input_file("BondiNodal", {bondi_nodal_input_worldtube_filename},
-                   bondi_nodal_output_worldtube_filename, {worldtube_radius});
+                   bondi_modal_output_worldtube_filename, std::nullopt, false);
+  write_input_file(
+      "BondiNodal", "BondiNodal.yaml", {bondi_nodal_input_worldtube_filename},
+      bondi_nodal_output_worldtube_filename, {worldtube_radius}, false);
 
 // Get path to executable with a macro set in CMakeLists.txt
 #ifdef BINDIR
@@ -374,12 +391,12 @@ int main() {
   executable += "bin/PreprocessCceWorldtube";
 
   const auto call_preprocess_cce_worldtube =
-      [&](const std::string& input_data_format) {
+      [&](const std::string& input_file_name) {
         const std::string to_execute = executable + " --input-file " +
-                                       input_data_format + ".yaml > " +
-                                       input_data_format + ".out 2>&1";
+                                       input_file_name + ".yaml > " +
+                                       input_file_name + ".out 2>&1";
 
-        CAPTURE_FOR_ERROR(input_data_format);
+        CAPTURE_FOR_ERROR(input_file_name);
         CAPTURE_FOR_ERROR(to_execute);
         const int exit_code = std::system(to_execute.c_str());  // NOLINT
 
@@ -389,6 +406,7 @@ int main() {
 
   // Call PreprocessCceWorldtube in a shell
   call_preprocess_cce_worldtube("MetricModal");
+  call_preprocess_cce_worldtube("MetricModalSpec");
   call_preprocess_cce_worldtube("MetricNodal");
   call_preprocess_cce_worldtube("BondiModal");
   call_preprocess_cce_worldtube("BondiNodal");

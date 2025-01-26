@@ -292,6 +292,9 @@ Here are some notes about the different options in the YAML input file:
   simulation that provided the boundary dataset.
 - `FixSpecNormalization` should always be `False` unless you are using a
   particualy old version of SpEC
+- `DescendingM` should always be `False`. This option is to support metric modal
+  data from SpEC. Our [data format](#input_worldtube_data_format) is always in
+  *ascending* m.
 - `BufferDepth` is an advanced option that lets you load more data into RAM at
   once so there are fewer filesystem accesses.
 

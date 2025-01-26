@@ -161,9 +161,9 @@ void perform_cce_worldtube_reduction(
     const std::string& input_file, const std::string& output_file,
     const size_t input_buffer_depth, const size_t l_max_factor,
     const std::optional<double>& extraction_radius,
-    const bool fix_spec_normalization) {
+    const bool fix_spec_normalization, const bool descending_m) {
   Cce::MetricWorldtubeH5BufferUpdater<ComplexModalVector> buffer_updater{
-      input_file, extraction_radius, fix_spec_normalization};
+      input_file, extraction_radius, descending_m};
   const size_t l_max = buffer_updater.get_l_max();
   // Perform the boundary computation to scalars at some factor > 1 of the input
   // l_max to be absolutely certain that there are no problems associated with
@@ -439,6 +439,17 @@ struct FixSpecNormalization {
       "NR code but in the SpECTRE format, then this option must be 'False'";
 };
 
+struct DescendingM {
+  using type = bool;
+  static constexpr Options::String help =
+      "Whether the order of 'm' modes of the data for a given 'l' are stored "
+      "in descending order (m goes from +l to -l) or not (m goes from -l to "
+      "+l). This option must be 'False' when using worldtube data from SpECTRE "
+      "or another NR code in the SpECTRE format. This should only be 'True' if "
+      "your worldtube file is from the SpEC code.";
+  static bool suggested_value() { return false; }
+};
+
 struct BufferDepth {
   using type = Options::Auto<size_t>;
   static constexpr Options::String help =
@@ -459,8 +470,8 @@ struct LMaxFactor {
 using option_tags =
     tmpl::list<OptionTags::InputH5Files, OptionTags::InputDataFormat,
                OptionTags::OutputH5File, OptionTags::ExtractionRadius,
-               OptionTags::FixSpecNormalization, OptionTags::BufferDepth,
-               OptionTags::LMaxFactor>;
+               OptionTags::FixSpecNormalization, OptionTags::DescendingM,
+               OptionTags::BufferDepth, OptionTags::LMaxFactor>;
 using OptionTuple = tuples::tagged_tuple_from_typelist<option_tags>;
 
 namespace ReduceCceTags {
@@ -521,6 +532,13 @@ struct FixSpecNormalization : db::SimpleTag {
   static type create_from_options(const bool option) { return option; }
 };
 
+struct DescendingM : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::DescendingM>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const bool option) { return option; }
+};
+
 struct BufferDepth : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::BufferDepth>;
@@ -543,8 +561,8 @@ struct LMaxFactor : db::SimpleTag {
 using tags =
     tmpl::list<ReduceCceTags::InputH5Files, ReduceCceTags::InputDataFormat,
                ReduceCceTags::OutputH5File, ReduceCceTags::ExtractionRadius,
-               ReduceCceTags::FixSpecNormalization, ReduceCceTags::BufferDepth,
-               ReduceCceTags::LMaxFactor>;
+               ReduceCceTags::FixSpecNormalization, ReduceCceTags::DescendingM,
+               ReduceCceTags::BufferDepth, ReduceCceTags::LMaxFactor>;
 using TagsTuple = tuples::tagged_tuple_from_typelist<tags>;
 }  // namespace
 
@@ -659,11 +677,17 @@ int main(int argc, char** argv) {
           "done and running PreprocessCceWorldtube is unnecessary.");
     }
 
-    if (tuples::get<ReduceCceTags::FixSpecNormalization>(inputs) and
-        input_data_format != InputDataFormat::MetricModal) {
-      ERROR_NO_TRACE(
-          "The option FixSpecNormalization can only be 'true' when the input "
-          "data format is MetricModal. Otherwise, it must be 'false'");
+    if (tuples::get<ReduceCceTags::FixSpecNormalization>(inputs)) {
+      if (input_data_format != InputDataFormat::MetricModal) {
+        ERROR_NO_TRACE(
+            "The option FixSpecNormalization can only be 'true' when the input "
+            "data format is MetricModal. Otherwise, it must be 'false'");
+      }
+      if (not tuples::get<ReduceCceTags::DescendingM>(inputs)) {
+        ERROR_NO_TRACE(
+            "The option FixSpecNormalization can only be 'true' if "
+            "'DescendingM' is true as well.");
+      }
     }
 
     const auto input_worldtube_filename = [&]() -> const std::string& {
@@ -697,7 +721,8 @@ int main(int argc, char** argv) {
             tuples::get<ReduceCceTags::BufferDepth>(inputs),
             tuples::get<ReduceCceTags::LMaxFactor>(inputs),
             tuples::get<ReduceCceTags::ExtractionRadius>(inputs),
-            tuples::get<ReduceCceTags::FixSpecNormalization>(inputs));
+            tuples::get<ReduceCceTags::FixSpecNormalization>(inputs),
+            tuples::get<ReduceCceTags::DescendingM>(inputs));
 
         clean_temporary_file();
         return 0;
