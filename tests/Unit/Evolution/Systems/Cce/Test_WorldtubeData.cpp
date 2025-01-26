@@ -424,7 +424,7 @@ namespace {
 template <typename DataManager, typename DummyUpdater, typename Generator>
 void test_data_manager_with_bondi_buffer_updater(
     const gsl::not_null<Generator*> gen,
-    const bool apply_normalization_bug = false, const bool is_spec_input = true,
+    const bool apply_normalization_bug = false, const bool descending_m = true,
     const std::optional<double> extraction_radius = std::nullopt) {
   // note that the default_extraction_radius is what will be reported
   // from the buffer updater when the extraction_radius is the default
@@ -457,12 +457,12 @@ void test_data_manager_with_bondi_buffer_updater(
   if constexpr (std::is_same_v<DataManager, MetricWorldtubeDataManager>) {
     if (not apply_normalization_bug) {
       boundary_data_manager = DataManager{
-          std::make_unique<DummyUpdater>(
-              time_buffer, solution, extraction_radius, amplitude, frequency,
-              l_max, false, is_spec_input),
+          std::make_unique<DummyUpdater>(time_buffer, solution,
+                                         extraction_radius, amplitude,
+                                         frequency, l_max, false, descending_m),
           l_max, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
-          is_spec_input};
+          descending_m};
     } else {
       boundary_data_manager = DataManager{
           std::make_unique<DummyUpdater>(time_buffer, solution,
@@ -470,13 +470,13 @@ void test_data_manager_with_bondi_buffer_updater(
                                          frequency, l_max, true, false),
           l_max, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
-          is_spec_input};
+          descending_m};
     }
   } else {
     // avoid compiler warnings in the case where the normalization bug booleans
     // aren't used.
     (void)apply_normalization_bug;
-    (void)is_spec_input;
+    (void)descending_m;
     boundary_data_manager = DataManager{
         std::make_unique<DummyUpdater>(time_buffer, solution, extraction_radius,
                                        amplitude, frequency, l_max, false),

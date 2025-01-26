@@ -307,10 +307,10 @@ double update_buffers_for_time(
 template <typename T>
 MetricWorldtubeH5BufferUpdater<T>::MetricWorldtubeH5BufferUpdater(
     const std::string& cce_data_filename,
-    const std::optional<double> extraction_radius, const bool file_is_from_spec)
+    const std::optional<double> extraction_radius, const bool descending_m)
     : cce_data_file_{cce_data_filename},
       filename_{cce_data_filename},
-      file_is_from_spec_(file_is_from_spec) {
+      descending_m_(descending_m) {
   get<Tags::detail::InputDataSet<Tags::detail::SpatialMetric<T>>>(
       dataset_names_) = "/g";
   get<Tags::detail::InputDataSet<
@@ -447,7 +447,7 @@ void MetricWorldtubeH5BufferUpdater<T>::pup(PUP::er& p) {
   p | time_buffer_;
   p | has_version_history_;
   p | filename_;
-  p | file_is_from_spec_;
+  p | descending_m_;
   p | l_max_;
   p | extraction_radius_;
   p | dataset_names_;
@@ -501,7 +501,7 @@ void MetricWorldtubeH5BufferUpdater<T>::update_buffer(
            l <= static_cast<int>(std::min(computation_l_max, l_max_)); ++l) {
         for (int m = -l; m <= l; ++m) {
           // -m because SpEC format is stored in decending m.
-          const int em = file_is_from_spec_ ? -m : m;
+          const int em = descending_m_ ? -m : m;
           const size_t matrix_mode_index = Spectral::Swsh::goldberg_mode_index(
               l_max_, static_cast<size_t>(l), em);
           const size_t buffer_mode_index = Spectral::Swsh::goldberg_mode_index(

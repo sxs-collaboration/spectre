@@ -69,7 +69,7 @@ struct WorldtubeModeRecorder {
   void append_worldtube_mode_data(const std::string& dataset_path,
                                   const double time,
                                   const ComplexModalVector& modes,
-                                  const bool is_spec_data = true,
+                                  const bool descending_m = true,
                                   const bool is_real = false) {
     const size_t modal_size = square(l_max_ + 1);
     ASSERT(modes.size() == modal_size, "Expected modes of size "
@@ -82,7 +82,7 @@ struct WorldtubeModeRecorder {
     data_to_write[0] = time;
     for (int l = 0; l <= static_cast<int>(l_max_); ++l) {
       for (int m = (is_real ? 0 : -l); m <= l; ++m) {
-        const int em = is_spec_data ? -m : m;
+        const int em = descending_m ? -m : m;
         const size_t to_write_index =
             is_real ? static_cast<size_t>(m == 0 ? square(l) + 1
                                                  : square(l) + 2 * abs(m))
