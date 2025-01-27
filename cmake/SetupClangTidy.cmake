@@ -25,6 +25,7 @@ if (CLANG_TIDY_BIN)
   message(STATUS "clang-tidy: ${CLANG_TIDY_BIN}")
   set(MODULES_TO_DEPEND_ON
     module_All
+    Libsharp
     )
   if (TARGET SpectrePch)
     list(APPEND MODULES_TO_DEPEND_ON SpectrePch)
