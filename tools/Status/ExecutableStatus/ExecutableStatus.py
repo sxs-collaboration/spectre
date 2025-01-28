@@ -21,12 +21,18 @@ logger = logging.getLogger(__name__)
 def list_reduction_files(job: dict, input_file: dict):
     reductions_file_name = input_file["Observers"]["ReductionFileName"] + ".h5"
     if job["SegmentsDir"]:
-        return [
+        reduction_files = [
             segment_dir.path / reductions_file_name
             for segment_dir in list_segments(job["SegmentsDir"])
         ]
     else:
-        return [Path(job["WorkDir"]) / reductions_file_name]
+        reduction_files = [Path(job["WorkDir"]) / reductions_file_name]
+    return list(
+        filter(
+            lambda reduction_file: reduction_file.exists(),
+            reduction_files,
+        )
+    )
 
 
 class ExecutableStatus:
@@ -204,9 +210,13 @@ class EvolutionStatus(ExecutableStatus):
             return f"{value:g}"
         raise ValueError
 
-    def render_time_steps(self, input_file: dict, reduction_files: list):
+    def render_time_steps(self, input_file: dict, reduction_files: List[Path]):
         import plotly.express as px
         import streamlit as st
+
+        if not reduction_files:
+            st.warning("No data yet.")
+            return
 
         try:
             observe_time_event = find_event(

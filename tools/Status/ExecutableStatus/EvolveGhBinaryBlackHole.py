@@ -116,6 +116,9 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
 
         run_dir = Path(job["WorkDir"])
         reduction_files = list_reduction_files(job=job, input_file=input_file)
+        if not reduction_files:
+            st.warning("No data yet.")
+            return
 
         # Common horizon
         with h5py.File(run_dir / reduction_files[-1], "r") as open_h5file:
