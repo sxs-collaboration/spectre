@@ -19,6 +19,7 @@ spectre_target_sources(
   OptimizerHacks.cpp
   PrettyType.cpp
   Rational.cpp
+  UtcTime.cpp
   WrapText.cpp
   )
 
@@ -83,6 +84,7 @@ spectre_target_headers(
   Tuple.hpp
   TupleSlice.hpp
   TypeTraits.hpp
+  UtcTime.hpp
   VectorAlgebra.hpp
   WrapText.hpp
   )

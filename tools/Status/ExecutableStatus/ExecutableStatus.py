@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import datetime
 import logging
 import os
 from pathlib import Path
@@ -33,6 +34,24 @@ def list_reduction_files(job: dict, input_file: dict):
             reduction_files,
         )
     )
+
+
+def get_start_time(spectre_out: Path):
+    with open(spectre_out, "r") as f:
+        for line in f:
+            if (
+                "Date and time at startup:" in line
+                or "Restarting from checkpoint. Date and time:" in line
+            ):
+                dt = pd.to_datetime(line.split(":", 1)[-1].strip())
+                if dt.tzinfo:
+                    # Convert to local time zone
+                    dt = dt.tz_convert(
+                        datetime.datetime.now().astimezone().tzinfo
+                    )
+                return dt
+
+    return None
 
 
 class ExecutableStatus:
@@ -248,7 +267,8 @@ class EvolutionStatus(ExecutableStatus):
         )
 
         st.subheader("Time steps")
-        time_steps = pd.concat(map(get_time_steps, reduction_files))
+        all_time_steps = list(map(get_time_steps, reduction_files))
+        time_steps = pd.concat(all_time_steps)
         fig = px.line(
             time_steps,
             y=[
@@ -268,7 +288,10 @@ class EvolutionStatus(ExecutableStatus):
         run_speed = (
             time_steps.index.diff() / time_steps["Maximum Walltime"].diff()
         ) * 3600
-        fig = px.line(run_speed.rolling(30, min_periods=1).mean())
+        avg_run_speed = run_speed.rolling(30, min_periods=1).mean()
+
+        # Plot simulation speed
+        fig = px.line(avg_run_speed)
         fig.add_scatter(
             x=run_speed.index,
             y=run_speed,
@@ -279,6 +302,33 @@ class EvolutionStatus(ExecutableStatus):
         fig.update_layout(
             xaxis_title="Time [M]",
             yaxis_title="Simulation speed [M/h]",
+            showlegend=False,
+        )
+        st.plotly_chart(fig)
+
+        # Plot simulation speed over calendar time
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        for reduction_file, time_steps in zip(reduction_files, all_time_steps):
+            spectre_out = reduction_file.parent / "spectre.out"
+            start_time = get_start_time(spectre_out)
+            if not start_time:
+                continue
+            calendar_time = start_time + pd.to_timedelta(
+                time_steps["Maximum Walltime"], unit="s"
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=calendar_time,
+                    y=time_steps.index,
+                    mode="lines",
+                    name=reduction_file.parent.name,
+                )
+            )
+        fig.update_layout(
+            xaxis_title="Calendar day",
+            yaxis_title="Simulation time [M]",
             showlegend=False,
         )
         st.plotly_chart(fig)
