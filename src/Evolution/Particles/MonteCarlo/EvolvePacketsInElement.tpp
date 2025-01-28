@@ -162,6 +162,22 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::evolve_packets(
     initial_time = packet.time;
     dt_end_step = final_time - initial_time;
 
+    // Find closest grid point to packet at current time, using
+    // extents for live points only.
+    {
+      std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
+      for (size_t d = 0; d < 3; d++) {
+        gsl::at(closest_point_index_3d, d) =
+          std::floor((packet.coordinates[d] - gsl::at(bottom_coord_mesh, d)) /
+                         gsl::at(dx_mesh, d) +
+                     0.5);
+      }
+      packet.index_of_closest_grid_point =
+          closest_point_index_3d[0] +
+          extents[0] * (closest_point_index_3d[1] +
+                        extents[1] * closest_point_index_3d[2]);
+    }
+
     // Get quantities that we do NOT update if the packet
     // changes cell.
     // local_idx is the index on the mesh without ghost zones

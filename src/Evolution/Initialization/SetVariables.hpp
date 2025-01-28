@@ -155,15 +155,18 @@ struct SetVariables {
       using variables_tag = typename system::variables_tag;
 
       // Set initial data from analytic solution
-      using Vars = typename variables_tag::type;
-      db::mutate<variables_tag>(
-          [&initial_time, &inertial_coords,
-           &solution_or_data](const gsl::not_null<Vars*> vars) {
-            vars->assign_subset(evolution::Initialization::initial_data(
-                solution_or_data, inertial_coords, initial_time,
-                typename Vars::tags_list{}));
-          },
-          box);
+      if constexpr (not std::is_same_v<typename variables_tag::tags_list,
+                                       tmpl::list<>>) {
+        using Vars = typename variables_tag::type;
+        db::mutate<variables_tag>(
+            [&initial_time, &inertial_coords,
+             &solution_or_data](const gsl::not_null<Vars*> vars) {
+              vars->assign_subset(evolution::Initialization::initial_data(
+                  solution_or_data, inertial_coords, initial_time,
+                  typename Vars::tags_list{}));
+            },
+            box);
+      }
     }
   }
 };

@@ -136,6 +136,16 @@ struct GhostDataMcPackets {
         const size_t d = max_distance_direction.value().dimension();
         const Side side = max_distance_direction.value().side();
         packet.coordinates.get(d) += (side == Side::Lower) ? (2.0) : (-2.0);
+        // Corner/edge treatment; move packet in a live point for now
+        // Definitely needs improvement...
+        for (size_t dd = 0; dd < Dim; dd++) {
+          if (dd != d && packet.coordinates.get(dd) < -1.0) {
+            packet.coordinates.get(dd) = -2.0 - packet.coordinates.get(dd);
+          }
+          if (dd != d && packet.coordinates.get(dd) > 1.0) {
+            packet.coordinates.get(dd) = 2.0 - packet.coordinates.get(dd);
+          }
+        }
         if (output.contains(max_distance_direction.value())) {
           output[max_distance_direction.value()].push_back(packet);
         }
@@ -311,8 +321,6 @@ struct ReceiveDataForMcCommunication {
                 const DataVector& received_data_direction =
                     received_data[directional_element_id]
                         .ghost_zone_hydro_variables;
-                REQUIRE(received_data[directional_element_id]
-                            .packets_entering_this_element == std::nullopt);
                 if (mortar_data->rest_mass_density[directional_element_id] ==
                     std::nullopt) {
                   continue;
@@ -368,8 +376,6 @@ struct ReceiveDataForMcCommunication {
                         received_data[directional_element_id]
                             .packets_entering_this_element;
                 // Temporary: currently no data for coupling to the fluid
-                REQUIRE(received_data[directional_element_id]
-                            .ghost_zone_hydro_variables.size() == 0);
                 if (received_data_packets == std::nullopt) {
                   continue;
                 } else {

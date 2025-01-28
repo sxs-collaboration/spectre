@@ -33,15 +33,15 @@ void test_flat_space_time_step() {
   const size_t num_ghost_zones = 1;
 
   const size_t dv_size = cube(size_1d);
-  DataVector zero_dv(dv_size, 0.0);
+  const DataVector zero_dv(dv_size, 0.0);
   const size_t dv_size_with_ghost = cube(size_1d + 2 * num_ghost_zones);
-  DataVector zero_dv_with_ghost(dv_size_with_ghost, 0.0);
+  const DataVector zero_dv_with_ghost(dv_size_with_ghost, 0.0);
   const size_t dv_size_in_ghost = square(size_1d) * num_ghost_zones;
-  DataVector zero_dv_in_ghost(dv_size_in_ghost, 0.0);
-  DataVector one_dv_in_ghost(dv_size_in_ghost, 1.0);
+  const DataVector zero_dv_in_ghost(dv_size_in_ghost, 0.0);
+  const DataVector one_dv_in_ghost(dv_size_in_ghost, 1.0);
 
   // Minkowski metric
-  Scalar<DataVector> lapse{DataVector(dv_size, 1.0)};
+  const Scalar<DataVector> lapse{DataVector(dv_size, 1.0)};
   tnsr::II<DataVector, 3, Frame::Inertial> inv_spatial_metric =
       make_with_value<tnsr::II<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   inv_spatial_metric.get(0, 0) = 1.0;
@@ -52,14 +52,14 @@ void test_flat_space_time_step() {
   spatial_metric.get(0, 0) = 1.0;
   spatial_metric.get(1, 1) = 1.0;
   spatial_metric.get(2, 2) = 1.0;
-  Scalar<DataVector> determinant_spatial_metric(dv_size, 1.0);
-  tnsr::I<DataVector, 3, Frame::Inertial> shift =
+  const Scalar<DataVector> sqrt_determinant_spatial_metric(dv_size, 1.0);
+  const tnsr::I<DataVector, 3, Frame::Inertial> shift =
       make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::i<DataVector, 3, Frame::Inertial> d_lapse =
+  const tnsr::i<DataVector, 3, Frame::Inertial> d_lapse =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::iJ<DataVector, 3, Frame::Inertial> d_shift =
+  const tnsr::iJ<DataVector, 3, Frame::Inertial> d_shift =
       make_with_value<tnsr::iJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::iJJ<DataVector, 3, Frame::Inertial> d_inv_spatial_metric =
+  const tnsr::iJJ<DataVector, 3, Frame::Inertial> d_inv_spatial_metric =
       make_with_value<tnsr::iJJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
 
   // Mesh velocity set to std::null for now
@@ -90,7 +90,7 @@ void test_flat_space_time_step() {
   inverse_jacobian_logical_to_inertial.get(0, 0) = 1.0;
   inverse_jacobian_logical_to_inertial.get(1, 1) = 1.0;
   inverse_jacobian_logical_to_inertial.get(2, 2) = 1.0;
-  Scalar<DataVector> det_jacobian_logical_to_inertial(dv_size, 1.0);
+  const Scalar<DataVector> det_jacobian_logical_to_inertial(dv_size, 1.0);
 
   // Coordinates
   tnsr::I<DataVector, 3, Frame::ElementLogical> mesh_coordinates =
@@ -238,7 +238,7 @@ void test_flat_space_time_step() {
         electron_fraction, baryon_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
         d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-        determinant_spatial_metric, cell_light_crossing_time, mesh,
+        sqrt_determinant_spatial_metric, cell_light_crossing_time, mesh,
         mesh_coordinates, num_ghost_zones, mesh_velocity,
         inverse_jacobian_logical_to_inertial, det_jacobian_logical_to_inertial,
         jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid,

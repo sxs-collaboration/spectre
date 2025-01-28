@@ -85,7 +85,7 @@ struct TemplatedLocalFunctions {
       const tnsr::iJJ<DataVector, 3, Frame::Inertial>& d_inv_spatial_metric,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const Scalar<DataVector>& determinant_spatial_metric,
+      const Scalar<DataVector>& sqrt_determinant_spatial_metric,
       const Scalar<DataVector>& cell_light_crossing_time, const Mesh<3>& mesh,
       const tnsr::I<DataVector, 3, Frame::ElementLogical>& mesh_coordinates,
       size_t num_ghost_zones,
