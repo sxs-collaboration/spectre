@@ -236,7 +236,7 @@ class MetricWorldtubeH5BufferUpdater
   explicit MetricWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename,
       std::optional<double> extraction_radius = std::nullopt,
-      bool file_is_from_spec = true);
+      bool descending_m = true);
 
   // NOLINTNEXTLINE
   WRAPPED_PUPable_decl_base_template(
@@ -299,7 +299,7 @@ class MetricWorldtubeH5BufferUpdater
 
   h5::H5File<h5::AccessType::ReadOnly> cce_data_file_;
   std::string filename_;
-  bool file_is_from_spec_ = true;
+  bool descending_m_ = true;
 
   tuples::tagged_tuple_from_typelist<
       db::wrap_tags_in<Tags::detail::InputDataSet, cce_metric_input_tags<T>>>
