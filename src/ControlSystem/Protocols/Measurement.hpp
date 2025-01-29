@@ -23,6 +23,9 @@ namespace control_system::protocols {
  * Here's an example for a class conforming to this protocol:
  *
  * \snippet Helpers/ControlSystem/Examples.hpp Measurement
+ *
+ * A measurement may optionally specify a `const_global_cache_tags` type alias
+ * that is a list of the tags to add to the const GlobalCache.
  */
 struct Measurement {
   template <typename ConformingType>

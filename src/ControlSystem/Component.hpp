@@ -48,6 +48,10 @@ struct ControlComponent {
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<
+          tmpl::list<ControlSystem, typename ControlSystem::measurement>>;
+
   static void execute_next_phase(
       const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
