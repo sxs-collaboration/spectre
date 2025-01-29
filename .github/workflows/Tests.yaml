@@ -269,7 +269,7 @@ jobs:
           -D BUILD_PYTHON_BINDINGS=ON
           $GITHUB_WORKSPACE
 
-          make -j4 module_All
+          make -j4 module_All Libsharp-external
       - name: Check clang-tidy
         run: >
           UPSTREAM_HASH=$(git merge-base HEAD upstream/develop)
