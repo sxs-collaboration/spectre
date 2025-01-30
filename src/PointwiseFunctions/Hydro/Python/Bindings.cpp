@@ -22,6 +22,16 @@ namespace {
 template <typename DataType>
 void bind_comoving_magnetic_field_impl(py::module& m) {
   // Wrapper for calculating Co-moving magnetic fields
+  m.def("comoving_magnetic_field",
+        static_cast<tnsr::A<DataType, 3> (*)(
+            const tnsr::I<DataType, 3>&, const tnsr::I<DataType, 3>&,
+            const Scalar<DataType>&, const Scalar<DataType>&,
+            const tnsr::I<DataType, 3>&, const Scalar<DataType>&)>(
+            &hydro::comoving_magnetic_field<DataType>),
+        py::arg("spatial_velocity"),
+        py::arg("magnetic_field"),
+        py::arg("magnetic_field_dot_spatial_velocity"),
+        py::arg("lorentz_factor"), py::arg("shift"), py::arg("lapse"));
   m.def("comoving_magnetic_field_one_form",
         static_cast<tnsr::a<DataType, 3> (*)(
             const tnsr::i<DataType, 3>&, const tnsr::i<DataType, 3>&,
