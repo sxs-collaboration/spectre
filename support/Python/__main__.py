@@ -25,6 +25,7 @@ class Cli(click.MultiCommand):
             "clean-output",
             "combine-h5",
             "delete-subfiles",
+            "eccentricity-control-params",
             "extend-connectivity",
             "extract-dat",
             "extract-input",
@@ -66,6 +67,12 @@ class Cli(click.MultiCommand):
             from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
 
             return delete_subfiles_command
+        elif name in ["eccentricity-control-params", "ecc-control-params"]:
+            from spectre.Pipelines.EccentricityControl.EccentricityControlParams import (
+                eccentricity_control_params_command,
+            )
+
+            return eccentricity_control_params_command
         elif name == "extend-connectivity":
             from spectre.IO.H5.ExtendConnectivityData import (
                 extend_connectivity_data_command,

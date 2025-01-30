@@ -28,6 +28,9 @@ class TestEccentricityControlParams(unittest.TestCase):
         self.h5_filename = os.path.join(
             self.test_dir, "TestEccentricityControlData.h5"
         )
+        self.out_filename = os.path.join(
+            self.test_dir, "TestEccentricityParams.yaml"
+        )
         shutil.rmtree(self.test_dir, ignore_errors=True)
         os.makedirs(self.test_dir, exist_ok=True)
 
@@ -95,14 +98,17 @@ class TestEccentricityControlParams(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_ecc_control_params(self):
-        ecc, ecc_std_dev, param_updates = eccentricity_control_params(
+        ecc_params = eccentricity_control_params(
             h5_files=self.test_dir + "/TestEccentricity*.h5",
             id_input_file_path=self.id_input_file_path,
             tmin=0.0,
             tmax=1200.0,
             plot_output_dir=self.test_dir,
+            ecc_params_output_file=self.out_filename,
         )
-        self.assertAlmostEqual(ecc, 0.0, delta=1e-5)
+        self.assertAlmostEqual(ecc_params["Eccentricity"], 0.0, delta=1e-5)
+        with open(self.out_filename, "r") as open_output_file:
+            self.assertEqual(yaml.safe_load(open_output_file), ecc_params)
 
 
 if __name__ == "__main__":

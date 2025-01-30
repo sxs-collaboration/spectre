@@ -16,7 +16,6 @@ import jinja2.meta
 import numpy as np
 import yaml
 from rich.pretty import pretty_repr
-from yaml.representer import SafeRepresenter
 
 from spectre.support.DirectoryStructure import (
     Checkpoint,
@@ -26,6 +25,7 @@ from spectre.support.DirectoryStructure import (
 )
 from spectre.support.Machines import this_machine
 from spectre.support.RunNext import run_next
+from spectre.support.Yaml import SafeDumper
 from spectre.tools.ValidateInputFile import validate_input_file
 from spectre.Visualization.ReadInputFile import find_phase_change
 
@@ -117,18 +117,6 @@ def _copy_submit_script_template(
         )
         _copy_to_dir(referenced_template_src, dest_dir, force=force)
     return dest
-
-
-# Write `pathlib.Path` objects to YAML as plain strings
-def _path_representer(dumper: yaml.Dumper, path: Path) -> yaml.nodes.ScalarNode:
-    return dumper.represent_scalar("tag:yaml.org,2002:str", str(path))
-
-
-# Write `numpy.float64` as regular floats
-def _numpy_representer(
-    dumper: yaml.Dumper, value: np.float64
-) -> yaml.nodes.ScalarNode:
-    return dumper.represent_scalar("tag:yaml.org,2002:float", str(value))
 
 
 def schedule(
@@ -665,10 +653,7 @@ def schedule(
     # Write context to file to support resubmissions
     if segments_dir:
         with open(run_dir / context_file_name, "w") as open_context_file:
-            yaml_dumper = yaml.SafeDumper
-            yaml_dumper.add_multi_representer(Path, _path_representer)
-            yaml_dumper.add_multi_representer(np.float64, _numpy_representer)
-            yaml.dump(context, open_context_file, Dumper=yaml_dumper)
+            yaml.dump(context, open_context_file, Dumper=SafeDumper)
 
     # Submit
     if submit or (
