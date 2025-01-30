@@ -98,8 +98,13 @@ class TestEccentricityControl(unittest.TestCase):
                         -self.initial_separation / 2.0,
                         self.initial_separation / 2.0,
                     ],
-                    "ObjectLeft": {"KerrSchild": {"Mass": 0.5}},
-                    "ObjectRight": {"KerrSchild": {"Mass": 0.5}},
+                    "ObjectLeft": {
+                        "KerrSchild": {"Mass": 0.5, "Spin": [0.0, 0.0, 0.0]}
+                    },
+                    "ObjectRight": {
+                        "KerrSchild": {"Mass": 0.5, "Spin": [0.0, 0.0, 0.0]}
+                    },
+                    "CenterOfMassOffset": [0.0, 0.0],
                 },
             }
         }

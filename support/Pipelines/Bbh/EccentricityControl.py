@@ -74,10 +74,6 @@ def eccentricity_control(
     assert (
         target_params["Eccentricity"] is not None
     ), "For eccentricity control the target eccentricity must be set."
-    id_params = id_metadata["Next"]["With"]
-    binary_data = id_input_file["Background"]["Binary"]
-    x_B, x_A = binary_data["XCoords"]
-    separation = x_A - x_B
 
     # Find the current eccentricity and determine new parameters to put into
     # generate-id
@@ -123,12 +119,25 @@ def eccentricity_control(
         return
 
     # Generate new initial data based on updated orbital parameters
+    id_params = id_metadata["Next"]["With"]
+    binary_data = id_input_file["Background"]["Binary"]
+    x_B, x_A = binary_data["XCoords"]
+    separation = x_A - x_B
+    x_offset = x_A - target_params["MassB"] * separation
+    y_offset, z_offset = binary_data["CenterOfMassOffset"]
     generate_id(
         target_params,
-        # Orbital parameters
+        # New orbital parameters
         separation=separation,
         orbital_angular_velocity=new_orbital_params["Omega0"],
         radial_expansion_velocity=new_orbital_params["adot0"],
+        # Initial guesses for ID control
+        conformal_mass_a=binary_data["ObjectRight"]["KerrSchild"]["Mass"],
+        conformal_mass_b=binary_data["ObjectLeft"]["KerrSchild"]["Mass"],
+        conformal_spin_a=binary_data["ObjectRight"]["KerrSchild"]["Spin"],
+        conformal_spin_b=binary_data["ObjectLeft"]["KerrSchild"]["Spin"],
+        center_of_mass_offset=[x_offset, y_offset, z_offset],
+        linear_velocity=binary_data["LinearVelocity"],
         # Scheduling options
         refinement_level=id_params["control_refinement_level"],
         polynomial_order=id_params["control_polynomial_order"],
