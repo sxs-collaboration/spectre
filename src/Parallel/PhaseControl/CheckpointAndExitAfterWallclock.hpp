@@ -24,6 +24,7 @@
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/UtcTime.hpp"
 
 namespace PhaseControl {
 
@@ -235,6 +236,8 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
     } else {
       // if current_phase is WriteCheckpoint, we follow with updating options
       if (current_phase == Parallel::Phase::WriteCheckpoint) {
+        Parallel::printf("Restarting from checkpoint. Date and time: %s\n",
+                         utc_time());
         return std::make_pair(
             Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
             ArbitrationStrategy::PermitAdditionalJumps);

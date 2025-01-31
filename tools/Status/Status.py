@@ -65,7 +65,10 @@ def fetch_job_data(
     except subprocess.CalledProcessError as err:
         raise ValueError(completed_process.stderr) from err
     job_data = pd.read_table(
-        StringIO(completed_process.stdout), sep="|", keep_default_na=False
+        StringIO(completed_process.stdout),
+        sep="|",
+        keep_default_na=False,
+        on_bad_lines="warn",
     )
     # Parse dates and times. Do this in postprocessing because
     # `pd.read_table(parse_dates=...)` doesn't handle NaN values well.
