@@ -24,16 +24,10 @@ class StepperErrorTolerances;
  * where $v$ is \p values, $e$ is \p errors, and $a$ and $r$ are the
  * tolerances from \p tolerances.  For vector types, calculates the
  * largest error over all the points.
+ *
+ * Instantiated for `double`, `std::complex<double>`, `DataVector`,
+ * and `ComplexDataVector`.
  */
-/// @{
-double largest_stepper_error(double values, double errors,
+template <typename T>
+double largest_stepper_error(const T& values, const T& errors,
                              const StepperErrorTolerances& tolerances);
-double largest_stepper_error(const std::complex<double>& values,
-                             const std::complex<double>& errors,
-                             const StepperErrorTolerances& tolerances);
-double largest_stepper_error(const DataVector& values, const DataVector& errors,
-                             const StepperErrorTolerances& tolerances);
-double largest_stepper_error(const ComplexDataVector& values,
-                             const ComplexDataVector& errors,
-                             const StepperErrorTolerances& tolerances);
-/// @}

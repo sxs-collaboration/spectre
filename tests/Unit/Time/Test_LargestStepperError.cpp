@@ -44,9 +44,10 @@ SPECTRE_TEST_CASE("Unit.Time.LargestStepperError", "[Unit][Time]") {
                                    std::complex<double>{1.0, 3.0}};
     const StepperErrorTolerances mostly_abs{.absolute = 2.0, .relative = 0.1};
     const StepperErrorTolerances mostly_rel{.absolute = 0.1, .relative = 2.0};
+    // Vectorized complex math may not be identical to std::complex operations.
     CHECK(largest_stepper_error(values, errors, mostly_abs) ==
-          largest_stepper_error(values[0], errors[0], mostly_abs));
+          approx(largest_stepper_error(values[0], errors[0], mostly_abs)));
     CHECK(largest_stepper_error(values, errors, mostly_rel) ==
-          largest_stepper_error(values[1], errors[1], mostly_rel));
+          approx(largest_stepper_error(values[1], errors[1], mostly_rel)));
   }
 }
