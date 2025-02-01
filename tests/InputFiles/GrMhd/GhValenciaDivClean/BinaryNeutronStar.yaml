@@ -28,6 +28,21 @@ Evolution:
       Order: 3
 
 PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          # Trigger checkpoint often enough so it triggers within
+          # the last 30 minutes of the run
+          Interval: 20
+          Offset: 0
+    PhaseChanges:
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 119.0
+  - Trigger:
+      SeparationLessThan:
+        Value: &RotationOffSeparation 5
+    PhaseChanges:
+      - VisitAndReturn(DisableRotationControl):
 
 # Values taken from the Xcts/HeadOnBns.yaml input file
 EquationOfState: &eos
@@ -390,6 +405,9 @@ EventsRunAtCleanup:
 
 # Control systems are disabled by default
 ControlSystems:
+  DisableRotationWhen:
+    DisableAtSeparation: *RotationOffSeparation
+    RotationDecayTimescale: 60.0
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
   Verbosity: Silent
