@@ -9,7 +9,9 @@
 # - $3: directory name
 # - $4: space-separated list of expected exit codes
 # - $5: "true" to check output files or "false" to skip the check
-# - $6: additional command-line arguments forwarded to the executable
+# - $6: "true" to check output files are present or "false" to skip
+# - $7: additional command-line arguments forwarded to the executable
+# - $8: extra files to copy
 
 # Set up test directory
 test_dir=@CMAKE_BINARY_DIR@/tests/InputFiles/$3
@@ -17,11 +19,22 @@ rm -rf $test_dir
 mkdir -p $test_dir
 cd $test_dir
 
+input_file=$2
+check_output_values=$5
+check_output_present=$6
+
+input_dir=`dirname $input_file`
+for file in $8;
+do
+    cp $input_dir/$file $test_dir
+done
+
 # Run the executable
 restart=
 for expected_code in $4 ; do
     if [ -z "$restart" ] ; then
-        @SPECTRE_TEST_RUNNER@ @CMAKE_BINARY_DIR@/bin/$1 --input-file $2 ${6}
+        @SPECTRE_TEST_RUNNER@ @CMAKE_BINARY_DIR@/bin/$1 --input-file \
+                            $input_file $7
         exit_code=$?
         restart=0
     else
@@ -41,12 +54,14 @@ for expected_code in $4 ; do
 done
 
 # Check output and clean up
-if [ "$5" = "true" ]; then
+if [ "$check_output_values" = "true" ]; then
     @Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/tools/CheckOutputFiles.py \
-        --input-file $2 --run-directory $test_dir \
+        --input-file $input_file --run-directory $test_dir \
         || exit 1
 fi
-@Python_EXECUTABLE@ -m spectre.tools.CleanOutput \
-    --output-dir $test_dir $2 \
-    || exit 1
+if [ "$check_output_present" = "true" ]; then
+    @Python_EXECUTABLE@ -m spectre.tools.CleanOutput \
+                      --output-dir $test_dir $input_file \
+        || exit 1
+fi
 rm -rf $test_dir

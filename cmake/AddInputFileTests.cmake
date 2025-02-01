@@ -33,72 +33,85 @@ list(APPEND _INPUT_FILE_TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 # - Set PYTHONPATH to find Python modules
 list(APPEND _INPUT_FILE_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
 
-function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
-                                    CHECK_TYPE TIMEOUT EXPECTED_EXIT_CODE)
+function(add_single_input_file_test)
+  cmake_parse_arguments(
+    ARG ""
+    "INPUT_FILE;EXECUTABLE;CHECK_TYPE;TIMEOUT"
+    "COMMAND_LINE_ARGS;EXPECTED_EXIT_CODE;COPY_FILES"
+    ${ARGN})
   # Extract just the name of the input file
   get_filename_component(INPUT_FILE_NAME "${INPUT_FILE}" NAME)
+  get_filename_component(INPUT_FILE_DIR "${INPUT_FILE}" DIRECTORY)
 
   # Extract the main subdirectory name
-  string(FIND "${INPUT_FILE}" "tests/InputFiles/" POSITION_OF_INPUT_FILE_DIR)
+  string(FIND "${ARG_INPUT_FILE}" "tests/InputFiles/"
+    POSITION_OF_INPUT_FILE_DIR)
   math(EXPR
     POSITION_OF_INPUT_FILE_DIR
     ${POSITION_OF_INPUT_FILE_DIR}+17
     # 17 is the length of "tests/InputFiles/"
     )
-  string(SUBSTRING "${INPUT_FILE}" ${POSITION_OF_INPUT_FILE_DIR}
+  string(SUBSTRING "${ARG_INPUT_FILE}" ${POSITION_OF_INPUT_FILE_DIR}
     -1 TEMP)
   string(FIND "${TEMP}" "/" POSITION_OF_SLASH)
   string(SUBSTRING "${TEMP}" 0 ${POSITION_OF_SLASH}
       EXECUTABLE_DIR_NAME)
 
   # Set tags for the test
-  set(TAGS "InputFiles;${EXECUTABLE_DIR_NAME};${CHECK_TYPE}")
+  set(TAGS "InputFiles;${EXECUTABLE_DIR_NAME};${ARG_CHECK_TYPE}")
   string(TOLOWER "${TAGS}" TAGS)
   # Add the executable name as label, without converting to lower case. This
   # allows running all input file tests for a particular executable.
-  list(APPEND TAGS ${EXECUTABLE})
+  list(APPEND TAGS ${ARG_EXECUTABLE})
 
   set(
     CTEST_NAME
-    "InputFiles.${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${CHECK_TYPE}"
+    "InputFiles.${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${ARG_CHECK_TYPE}"
     )
   set(
     RUN_DIRECTORY
-    "${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${CHECK_TYPE}"
+    "${EXECUTABLE_DIR_NAME}.${INPUT_FILE_NAME}.${ARG_CHECK_TYPE}"
     )
-  if("${CHECK_TYPE}" STREQUAL "execute_check_output")
+  if("${ARG_CHECK_TYPE}" STREQUAL "execute_check_output")
     set(_CHECK_OUTPUT_FILES "true")
   else()
     set(_CHECK_OUTPUT_FILES "false")
   endif()
 
-  if ("${CHECK_TYPE}" STREQUAL "parse")
+  if ("${ARG_CHECK_TYPE}" STREQUAL "parse")
     add_test(
       NAME ${CTEST_NAME}
-      COMMAND ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE}
-      --check-options --input-file ${INPUT_FILE}
+      # This script is written below, and only once
+      COMMAND sh
+      ${PROJECT_BINARY_DIR}/tmp/RunInputFileTest.sh ${ARG_EXECUTABLE}
+      ${ARG_INPUT_FILE} ${RUN_DIRECTORY} 0 false false
+      "${ARG_COMMAND_LINE_ARGS} --check-options"
+      "${ARG_COPY_FILES}"
       )
-  elseif("${CHECK_TYPE}" STREQUAL "execute" OR
-         "${CHECK_TYPE}" STREQUAL "execute_check_output")
+  elseif("${ARG_CHECK_TYPE}" STREQUAL "execute" OR
+         "${ARG_CHECK_TYPE}" STREQUAL "execute_check_output")
     add_test(
       NAME ${CTEST_NAME}
       # This script is written below, and only once
       COMMAND sh ${PROJECT_BINARY_DIR}/tmp/RunInputFileTest.sh
-      ${EXECUTABLE} ${INPUT_FILE} ${RUN_DIRECTORY}
-      ${EXPECTED_EXIT_CODE} ${_CHECK_OUTPUT_FILES}
-      "${COMMAND_LINE_ARGS}"
+      ${ARG_EXECUTABLE} ${ARG_INPUT_FILE} ${RUN_DIRECTORY}
+      ${ARG_EXPECTED_EXIT_CODE} ${_CHECK_OUTPUT_FILES} true
+      "${ARG_COMMAND_LINE_ARGS}"
+      "${ARG_COPY_FILES}"
       )
   else()
-    message(FATAL_ERROR "Unknown check for input file: ${CHECK_TYPE}."
+    message(FATAL_ERROR "Unknown check for input file: ${ARG_CHECK_TYPE}."
       "Known checks are: execute")
   endif()
 
   # Triple timeout if address sanitizer is enabled.
   if (ASAN)
-    math(EXPR TIMEOUT "3 * ${TIMEOUT}")
+    math(EXPR TIMEOUT "3 * ${ARG_TIMEOUT}")
+  else()
+    set(TIMEOUT ${ARG_TIMEOUT})
   endif()
 
-  spectre_test_timeout(TIMEOUT INPUT_FILE ${TIMEOUT})
+  spectre_test_timeout(TIMEOUT ARG_INPUT_FILE ${TIMEOUT})
 
   set_tests_properties(
     ${CTEST_NAME}
@@ -225,14 +238,26 @@ function(add_input_file_tests INPUT_FILE_DIR INPUT_FILE_WHITELIST)
       string(STRIP "${INPUT_FILE_TIMEOUT}" INPUT_FILE_TIMEOUT)
     endif()
 
+    # Read out the semicolon list of of files to copy to the run directory.
+    # The files are currently restricted to being in the same location
+    # as the input file. This can be relaxed if necessary.
+    set(COPY_FILES "")
+    string(REGEX MATCH "CopyFiles:[^\n]+"
+      COPY_FILES "${INPUT_FILE_CONTENTS}")
+    if(NOT "${COPY_FILES}" STREQUAL "")
+      string(REPLACE "CopyFiles: " "" COPY_FILES ${COPY_FILES})
+      string(REPLACE "CopyFiles:" "" COPY_FILES ${COPY_FILES})
+    endif()
+
     foreach(CHECK_TYPE ${INPUT_FILE_CHECKS})
       add_single_input_file_test(
-        ${INPUT_FILE}
-        ${INPUT_FILE_EXECUTABLE}
-        "${COMMAND_LINE_ARGS}"
-        ${CHECK_TYPE}
-        ${INPUT_FILE_TIMEOUT}
-        ${EXPECTED_EXIT_CODE}
+        INPUT_FILE ${INPUT_FILE}
+        EXECUTABLE ${INPUT_FILE_EXECUTABLE}
+        COMMAND_LINE_ARGS "${COMMAND_LINE_ARGS}"
+        CHECK_TYPE ${CHECK_TYPE}
+        TIMEOUT ${INPUT_FILE_TIMEOUT}
+        EXPECTED_EXIT_CODE ${EXPECTED_EXIT_CODE}
+        COPY_FILES "${COPY_FILES}"
         )
     endforeach()
     add_dependencies(test-executables ${INPUT_FILE_EXECUTABLE})
