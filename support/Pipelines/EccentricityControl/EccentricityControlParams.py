@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from spectre.support.CheckSpecImport import check_spec_import
 from spectre.support.Yaml import SafeDumper
 from spectre.Visualization.PlotTrajectories import import_A_and_B
 from spectre.Visualization.ReadH5 import to_dataframe
@@ -88,18 +89,14 @@ def eccentricity_control_params(
         Dictionary with the keys listed in 'EccentricityParams'.
     """
     # Import functions from SpEC until we have ported them over
-    try:
-        from OmegaDotEccRemoval import (
-            ComputeOmegaAndDerivsFromFile,
-            FindTmin,
-            performAllFits,
-        )
-    except ImportError:
-        raise ImportError(
-            "Importing from SpEC failed. Make sure you have pointed "
-            "'-D SPEC_ROOT' to a SpEC installation when configuring the build "
-            "with CMake."
-        )
+    check_spec_import(
+        contains_commit="ecfabf1ce78daeacbdd026625a02215c8e84af0e",
+    )
+    from OmegaDotEccRemoval import (
+        ComputeOmegaAndDerivsFromFile,
+        FindTmin,
+        performAllFits,
+    )
 
     # Make sure h5_files is a sequence
     if isinstance(h5_files, str):
