@@ -88,12 +88,12 @@ struct Initialize {
       control_system::Tags::MeasurementsPerUpdate,
       control_system::Tags::WriteDataToDisk,
       control_system::Tags::ObserveCenters, control_system::Tags::Verbosity,
-      control_system::Tags::IsActiveMap,
       typename detail::get_center_tags<
           typename ControlSystem::control_error::object_centers>::type>>;
 
   using mutable_global_cache_tags =
-      tmpl::list<control_system::Tags::MeasurementTimescales>;
+      tmpl::list<control_system::Tags::MeasurementTimescales,
+                 control_system::Tags::IsActiveMap>;
 
   using compute_tags = tmpl::list<>;
 
