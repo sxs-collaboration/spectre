@@ -13,6 +13,7 @@ class PlotCommands(click.MultiCommand):
             "cce",
             "control-system",
             "dat",
+            "eccentricity-control",
             "elliptic-convergence",
             "memory-monitors",
             "power-monitors",
@@ -42,6 +43,12 @@ class PlotCommands(click.MultiCommand):
             from spectre.Visualization.PlotDatFile import plot_dat_command
 
             return plot_dat_command
+        elif name in ["eccentricity-control", "ecc-control"]:
+            from spectre.Visualization.PlotEccentricityControl import (
+                plot_eccentricity_control_command,
+            )
+
+            return plot_eccentricity_control_command
         elif name == "elliptic-convergence":
             from spectre.Visualization.PlotEllipticConvergence import (
                 plot_elliptic_convergence_command,

@@ -42,6 +42,13 @@ spectre_add_python_bindings_test(
   TIMEOUT 10)
 
 spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.PlotEccentricityControl"
+  Test_PlotEccentricityControl.py
+  "unit;visualization;python"
+  None
+  TIMEOUT 10)
+
+spectre_add_python_bindings_test(
   "Unit.Visualization.Python.PlotEllipticConvergence"
   Test_PlotEllipticConvergence.py
   "unit;visualization;python"
