@@ -178,13 +178,16 @@ template <typename T>
 bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
                                      const ConstUntypedHistory<T>& history,
                                      const double time) const {
+  const double step_start = history.front().time_step_id.step_time().value();
+  if (time == step_start) {
+    return true;
+  }
   if (not history.at_step_start()) {
     return false;
   }
-  const double step_start = history.front().time_step_id.step_time().value();
   const double step_end = history.back().time_step_id.step_time().value();
   const evolution_less<double> before{step_end > step_start};
-  if (history.size() == 1 or before(step_end, time)) {
+  if (history.size() == 1 or not before(time, step_end)) {
     return false;
   }
   const double step_size = step_end - step_start;

@@ -161,7 +161,7 @@ class TimeStepper : public PUP::able {
   ///
   /// The change from the partial step will be added to the initial
   /// value, so \p u should generally be initialized to
-  /// `*history.complete_step_start().value`.  (TimeStepper
+  /// `*history.step_start(time).value`.  (TimeStepper
   /// implementations are required to keep this value in the history.)
   ///
   /// Derived classes must implement this as a function with signature

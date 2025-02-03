@@ -381,9 +381,9 @@ void check_dense_output(
         history.insert(time_id, y, y);
         if (before(time, (time_id.step_time() + step).value())) {
           // Make sure the initial value is preserved.
-          y = 2.0 * *history.complete_step_start().value;
+          y = 2.0 * *history.step_start(time).value;
           if (stepper.dense_update_u(make_not_null(&y), history, time)) {
-            return y - *history.complete_step_start().value;
+            return y - *history.step_start(time).value;
           }
           REQUIRE(not before(time, time_id.step_time().value()));
           CHECK(not stepper.monotonic());

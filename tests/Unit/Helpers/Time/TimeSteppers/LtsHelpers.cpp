@@ -221,7 +221,7 @@ class Element {
 
   double dense_output(const double time) {
     REQUIRE(process_messages(time));
-    double dense_result = *volume_history_.complete_step_start().value;
+    double dense_result = *volume_history_.step_start(time).value;
     // Can skip the volume update because all derivatives are zero.
     stepper_->boundary_dense_output(make_not_null(&dense_result),
                                     boundary_history_, time, coupling_);
