@@ -243,6 +243,26 @@ std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
                     history.integration_order() - 1,
                     evaluate_error(u, history, *tolerances, update_coefficients,
                                    predictor_coefficients));
+
+      if (not order_.has_value()) {
+        for (size_t error_order = history.integration_order() - 2;
+             error_order != std::numeric_limits<size_t>::max();
+             --error_order) {
+          const auto error_corrector = adams_coefficients::coefficients(
+              control_times.end() -
+                  static_cast<decltype(control_times)::difference_type>(
+                      error_order + 1),
+              control_times.end(), step_start, time);
+          const auto error_predictor = adams_coefficients::coefficients(
+              control_times.end() -
+                  static_cast<decltype(control_times)::difference_type>(
+                      error_order + 1),
+              control_times.end() - 1, step_start, time);
+          gsl::at(error->errors, error_order)
+              .emplace(evaluate_error(u, history, *tolerances, error_corrector,
+                                      error_predictor));
+        }
+      }
     }
 
     // Dense output adds to the existing value, but the main step overwrites.

@@ -429,6 +429,40 @@ void test_variable_order() {
 
   TimeStepperTestUtils::lts::test_variable_order_boundary_consistency(
       TimeSteppers::AdamsMoultonPc<Monotonic>(std::nullopt));
+
+  // Check that the variable-order errors look reasonable
+  {
+    const double step = 1.0e-2;
+    const Slab slab(0.0, step);
+    const TimeSteppers::AdamsMoultonPc<Monotonic> variable_stepper(
+        std::nullopt);
+    TimeSteppers::History<double> history{4};
+    TimeStepperTestUtils::initialize_history(
+        slab.end(), make_not_null(&history),
+        [](const double t) { return exp(t); },
+        [](const double y, const double /*t*/) { return y; }, slab.duration(),
+        history.integration_order() - 1);
+    history.insert(TimeStepId(true, 0, slab.start(), 1, slab.duration(), step),
+                   exp(step), exp(step));
+    double y = std::numeric_limits<double>::signaling_NaN();
+    const auto errors =
+        variable_stepper.update_u(make_not_null(&y), history, slab.duration(),
+                                  StepperErrorTolerances{1.0, 0.0});
+    REQUIRE(errors.has_value());
+    // Truncation error for AM is |implicit_corrector_coef| step^{k+1} f^(k).
+    // As with many time-stepper things, the quoted order is the
+    // equivalent global order even though this is a purely local
+    // quantity, hence the +1 in the exponent.
+    const std::array expected_coefs{1.0, 1.0 / 2.0, 5.0 / 12.0, 3.0 / 8.0};
+    // Error is dominated by finite-difference error in f^(k)
+    auto truncation_approx = Approx::custom().epsilon(2.0 * step);
+    for (size_t order = 0; order < expected_coefs.size(); ++order) {
+      REQUIRE(gsl::at(errors->errors, order).has_value());
+      CHECK(*gsl::at(errors->errors, order) ==
+            truncation_approx(gsl::at(expected_coefs, order) *
+                              std::pow(step, order + 1)));
+    }
+  }
 }
 
 // [[Timeout, 60]]
