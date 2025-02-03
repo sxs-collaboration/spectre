@@ -175,10 +175,10 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
     if (tolerances.has_value()) {
       const auto lower_order_coefficients = adams_coefficients::coefficients(
           control_times.begin() + 1, control_times.end(), step_start, time);
-      error.emplace(StepperErrorEstimate{
-          step_start, time - step_start, history.integration_order() - 1,
-          evaluate_error(u, history, *tolerances, update_coefficients,
-                         lower_order_coefficients)});
+      error.emplace(step_start, time - step_start,
+                    history.integration_order() - 1,
+                    evaluate_error(u, history, *tolerances, update_coefficients,
+                                   lower_order_coefficients));
     }
 
     // Dense output adds to the existing value, but the main step overwrites.

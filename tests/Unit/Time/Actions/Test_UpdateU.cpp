@@ -254,7 +254,7 @@ void test_stepper_error() {
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
 
-  const auto first_step_error = db::get<error_tag>(box)[1]->error;
+  const auto first_step_errors = db::get<error_tag>(box)[1]->errors;
   const auto second_step = slab.start() + initial_time_step;
   do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
@@ -269,8 +269,8 @@ void test_stepper_error() {
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[0]->step_time == slab.start());
   CHECK(db::get<error_tag>(box)[1]->step_time == second_step);
-  CHECK(db::get<error_tag>(box)[0]->error == first_step_error);
-  CHECK(db::get<error_tag>(box)[1]->error != first_step_error);
+  CHECK(db::get<error_tag>(box)[0]->errors == first_step_errors);
+  CHECK(db::get<error_tag>(box)[1]->errors != first_step_errors);
 }
 }  // namespace
 

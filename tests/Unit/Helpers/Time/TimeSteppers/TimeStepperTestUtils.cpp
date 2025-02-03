@@ -82,7 +82,7 @@ void take_step_and_check_error(
     if (error.has_value()) {
       CHECK(error->step_time == time_id.step_time());
       CHECK(error->step_size == step_size);
-      *y_error = error->error;
+      *y_error = error->step_error();
       REQUIRE(*y_error >= 0.0);
     }
     time_id = stepper.next_time_id_for_error(time_id, step_size);

@@ -239,10 +239,10 @@ std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
     if (corrector and tolerances.has_value()) {
       const auto predictor_coefficients = adams_coefficients::coefficients(
           control_times.begin(), control_times.end() - 1, step_start, time);
-      error.emplace(StepperErrorEstimate{
-          step_start, time - step_start, history.integration_order() - 1,
-          evaluate_error(u, history, *tolerances, update_coefficients,
-                         predictor_coefficients)});
+      error.emplace(step_start, time - step_start,
+                    history.integration_order() - 1,
+                    evaluate_error(u, history, *tolerances, update_coefficients,
+                                   predictor_coefficients));
     }
 
     // Dense output adds to the existing value, but the main step overwrites.

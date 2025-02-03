@@ -101,9 +101,9 @@ std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
          (2.0 / 3.0) * time_step.value() * history.substeps()[1].derivative -
          0.5 * *history.substeps()[0].value -
          0.5 * time_step.value() * history.substeps()[0].derivative;
-    error.emplace(StepperErrorEstimate{
+    error.emplace(
         history.back().time_step_id.step_time(), time_step, 2,
-        largest_stepper_error(*history.back().value, *u, *tolerances)});
+        largest_stepper_error(*history.back().value, *u, *tolerances));
   }
 
   update_u_impl(u, history, time_step);

@@ -14,6 +14,7 @@
 #include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 
 namespace TimeSteppers {
@@ -150,10 +151,10 @@ std::optional<StepperErrorEstimate> RungeKutta::update_u_impl(
   if (substep == number_of_substeps - 1 and tolerances.has_value()) {
     const double dt = time_step.value();
     step_error(u, history, dt, tableau);
-    error.emplace(StepperErrorEstimate{
+    error.emplace(
         history.back().time_step_id.step_time(), time_step,
         get<Tags::FixedOrder>(order()) - 1,
-        largest_stepper_error(*history.back().value, *u, *tolerances)});
+        largest_stepper_error(*history.back().value, *u, *tolerances));
   }
 
   update_u_impl_with_tableau(u, history, time_step, tableau,

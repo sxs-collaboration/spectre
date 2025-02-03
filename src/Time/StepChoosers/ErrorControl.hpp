@@ -216,11 +216,12 @@ class ErrorControl
     double new_step;
     if (std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep> or
         not errors[0].has_value() or errors[0]->order != errors[1]->order) {
-      new_step = errors[1]->step_size.value() *
-                 std::clamp(safety_factor_ *
-                                pow(1.0 / std::max(errors[1]->error, 1e-14),
-                                    1.0 / (errors[1]->order + 1)),
-                            min_factor_, max_factor_);
+      new_step =
+          errors[1]->step_size.value() *
+          std::clamp(safety_factor_ *
+                         pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
+                             1.0 / (errors[1]->order + 1)),
+                     min_factor_, max_factor_);
     } else {
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
@@ -230,8 +231,9 @@ class ErrorControl
           errors[1]->step_size.value() *
           std::clamp(
               safety_factor_ *
-                  pow(1.0 / std::max(errors[1]->error, 1e-14), alpha_factor) *
-                  pow(std::max(errors[0]->error, 1e-14), beta_factor),
+                  pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
+                      alpha_factor) *
+                  pow(std::max(errors[0]->step_error(), 1e-14), beta_factor),
               min_factor_, max_factor_);
     }
     return ::TimeStepRequest{.size_goal = new_step};
