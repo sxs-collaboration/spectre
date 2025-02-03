@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "ControlSystem/Tags/IsActiveMap.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
@@ -52,7 +53,8 @@ struct TestSingleton {
                  // Usually this is constant, but we have it mutable for this
                  // test because we need to change its value to test some
                  // ASSERTs
-                 control_system::Tags::SystemToCombinedNames>;
+                 control_system::Tags::SystemToCombinedNames,
+                 control_system::Tags::IsActiveMap>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<
@@ -102,7 +104,8 @@ void test_mutates() {
   ActionTesting::MockRuntimeSystem<TestingMetavariables> runsys{
       {},
       {std::move(f_of_t_map), std::move(measurement_timescales),
-       std::unordered_map<std::string, std::string>{}}};
+       std::unordered_map<std::string, std::string>{},
+       std::unordered_map<std::string, bool>{}}};
   ActionTesting::emplace_singleton_component_and_initialize<
       TestSingleton<TestingMetavariables>>(make_not_null(&runsys),
                                            ActionTesting::NodeId{0},
@@ -177,6 +180,9 @@ void test_update_aggregator() {
   signals["Illinois"] = DataVector{3.0};
   signals["Florida"] = DataVector{2.0};
   signals["California"] = DataVector{1.0};
+  std::unordered_map<std::string, bool> active_map{
+      {"Alaska", false},  {"California", true}, {"Florida", true},
+      {"Illinois", true}, {"Texas", true},      {"Wisconsin", true}};
 
   control_system::UpdateAggregator unserialized_aggregator{combined_name,
                                                            names};
@@ -187,15 +193,15 @@ void test_update_aggregator() {
 
   aggregator.insert("Wisconsin", DataVector{1.0}, 10.0, signals.at("Wisconsin"),
                     5.0);
-  CHECK_FALSE(aggregator.is_ready());
+  CHECK_FALSE(aggregator.is_ready(active_map));
   aggregator.insert("Texas", DataVector{2.0}, 9.0, signals.at("Texas"), 4.0);
-  CHECK_FALSE(aggregator.is_ready());
+  CHECK_FALSE(aggregator.is_ready(active_map));
   aggregator.insert("Illinois", DataVector{3.0}, 8.0, signals.at("Illinois"),
                     3.0);
-  CHECK_FALSE(aggregator.is_ready());
+  CHECK_FALSE(aggregator.is_ready(active_map));
   aggregator.insert("Florida", DataVector{4.0}, 7.0, signals.at("Florida"),
                     2.0);
-  CHECK_FALSE(aggregator.is_ready());
+  CHECK_FALSE(aggregator.is_ready(active_map));
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       aggregator.insert("Florida", DataVector{}, 1.0, DataVector{}, 1.0),
@@ -206,16 +212,20 @@ void test_update_aggregator() {
       Catch::Matchers::ContainsSubstring("Received expiration time data for a "
                                          "non-active control system 'Alaska'"));
 #endif
+  active_map.at("California") = false;
+  CHECK(aggregator.is_ready(active_map));
+  active_map.at("California") = true;
+  CHECK_FALSE(aggregator.is_ready(active_map));
   aggregator.insert("California", DataVector{5.0}, 6.0,
                     signals.at("California"), 1.0);
-  CHECK(aggregator.is_ready());
+  CHECK(aggregator.is_ready(active_map));
 
   const std::unordered_map<std::string, std::pair<DataVector, double>>
-      combined_fot = aggregator.combined_fot_expiration_times();
-  CHECK(aggregator.is_ready());
+      combined_fot = aggregator.combined_fot_expiration_times(active_map);
+  CHECK(aggregator.is_ready(active_map));
   const std::pair<double, double> combined_measurements =
-      aggregator.combined_measurement_expiration_time();
-  CHECK_FALSE(aggregator.is_ready());
+      aggregator.combined_measurement_expiration_time(active_map);
+  CHECK_FALSE(aggregator.is_ready(active_map));
 
   CHECK(combined_fot.size() == names.size());
   for (const auto& name : names) {
@@ -298,6 +308,8 @@ void test_aggregate_update_action() {
   aggregators["FoT1FoT3"] = aggregator13;
   aggregators["FoT2"] = aggregator2;
   auto aggregators_copy = aggregators;
+  const std::unordered_map<std::string, bool> active_map{
+      {"FoT1", true}, {"FoT3", true}, {"FoT2", true}};
 
   std::unordered_map<std::string, std::string> system_to_combined_names{};
   system_to_combined_names["FoT1"] = "FoT1FoT3";
@@ -308,7 +320,7 @@ void test_aggregate_update_action() {
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {},
       {std::move(f_of_t_map), std::move(measurement_map),
-       std::move(system_to_combined_names_copy)}};
+       std::move(system_to_combined_names_copy), active_map}};
   ActionTesting::emplace_singleton_component_and_initialize<component1>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, {std::move(aggregators_copy)});
@@ -416,8 +428,8 @@ void test_aggregate_update_action() {
 
   // The aggregators will never "be ready" to use because when they actually are
   // ready, they are reset immediately during the simple action
-  CHECK_FALSE(box_aggregator13.is_ready());
-  CHECK_FALSE(box_aggregator2.is_ready());
+  CHECK_FALSE(box_aggregator13.is_ready(active_map));
+  CHECK_FALSE(box_aggregator2.is_ready(active_map));
   CHECK(box_aggregators_component2.empty());
   CHECK(box_aggregators_component3.empty());
 
@@ -428,8 +440,8 @@ void test_aggregate_update_action() {
       old_measurement_expiration13, new_measurement_expiration1, control_signal,
       old_fot_expiration13, new_fot_expiration1);
 
-  CHECK_FALSE(box_aggregator13.is_ready());
-  CHECK_FALSE(box_aggregator2.is_ready());
+  CHECK_FALSE(box_aggregator13.is_ready(active_map));
+  CHECK_FALSE(box_aggregator2.is_ready(active_map));
   CHECK(box_aggregators_component2.empty());
   CHECK(box_aggregators_component3.empty());
 
@@ -441,8 +453,8 @@ void test_aggregate_update_action() {
       old_measurement_expiration2, new_measurement_expiration2, control_signal,
       old_fot_expiration2, new_fot_expiration2);
 
-  CHECK_FALSE(box_aggregator13.is_ready());
-  CHECK_FALSE(box_aggregator2.is_ready());
+  CHECK_FALSE(box_aggregator13.is_ready(active_map));
+  CHECK_FALSE(box_aggregator2.is_ready(active_map));
   CHECK(box_aggregators_component2.empty());
   CHECK(box_aggregators_component3.empty());
 
@@ -481,8 +493,8 @@ void test_aggregate_update_action() {
       old_measurement_expiration13, new_measurement_expiration3, control_signal,
       old_fot_expiration13, new_fot_expiration3);
 
-  CHECK_FALSE(box_aggregator13.is_ready());
-  CHECK_FALSE(box_aggregator2.is_ready());
+  CHECK_FALSE(box_aggregator13.is_ready(active_map));
+  CHECK_FALSE(box_aggregator2.is_ready(active_map));
   CHECK(box_aggregators_component2.empty());
   CHECK(box_aggregators_component3.empty());
 
