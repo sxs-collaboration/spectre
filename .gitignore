@@ -10,6 +10,7 @@
 .vscode
 compile_commands.json
 .idea
+CMakeUserPresets.json
 
 # Spack
 /support/spack/
@@ -34,6 +35,7 @@ compile_commands.json
 .ycm_extra_conf.py
 .clangd
 .cache
+.projectile-cache.eld
 
 # TeX products
 *.aux
