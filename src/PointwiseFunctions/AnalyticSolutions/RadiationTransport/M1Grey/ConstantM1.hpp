@@ -14,7 +14,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -34,7 +34,8 @@ namespace RadiationTransport::M1Grey::Solutions {
  * (i.e. comoving, with an isotropic pressure P=J/3)
  *
  */
-class ConstantM1 : public evolution::initial_data::InitialData,
+
+class ConstantM1 : public virtual evolution::initial_data::InitialData,
                    public MarkAsAnalyticSolution {
  public:
   /// The mean flow velocity.
@@ -68,11 +69,9 @@ class ConstantM1 : public evolution::initial_data::InitialData,
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
-  /// \cond
   explicit ConstantM1(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ConstantM1);
-  /// \endcond
 
   /// @{
   /// Retrieve fluid and neutrino variables at `(x, t)`

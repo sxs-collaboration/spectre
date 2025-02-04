@@ -13,10 +13,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace RadiationTransport::M1Grey::Solutions {
+
+ConstantM1::ConstantM1(CkMigrateMessage* msg) : InitialData(msg) {}
 
 ConstantM1::ConstantM1(const std::array<double, 3>& mean_velocity,
                        const double comoving_energy_density)
@@ -29,16 +32,14 @@ std::unique_ptr<evolution::initial_data::InitialData> ConstantM1::get_clone()
   return std::make_unique<ConstantM1>(*this);
 }
 
-ConstantM1::ConstantM1(CkMigrateMessage* msg) : InitialData(msg) {}
-
 void ConstantM1::pup(PUP::er& p) {
   InitialData::pup(p);
   p | mean_velocity_;
   p | comoving_energy_density_;
   p | background_spacetime_;
 }
-
-PUP::able::PUP_ID ConstantM1::my_PUP_ID = 0;  // NOLINT
+// NOLINTNEXTLINE
+PUP::able::PUP_ID ConstantM1::my_PUP_ID = 0;
 
 // Variables templated on neutrino species.
 template <typename NeutrinoSpecies>
@@ -148,7 +149,7 @@ bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) {
           tmpl::list<TAG(data) < Frame::Inertial, NTYPE(data) < EBIN(data)> >> \
           /*meta*/) const;
 
-#define temp_list \
+#define TEMP_LIST \
   (BOOST_PP_REPEAT(MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS, GENERATE_LIST, _))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION_WITH_FRAME,
@@ -157,9 +158,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION_WITH_FRAME,
                         (neutrinos::ElectronNeutrinos,
                          neutrinos::ElectronAntiNeutrinos,
                          neutrinos::HeavyLeptonNeutrinos),
-                        temp_list)
+                        TEMP_LIST)
 
-#undef temp_list
+#undef TEMP_LIST
 #undef INSTANTIATE_M1_FUNCTION_WITH_FRAME
 #undef TAG
 #undef NTYPE
@@ -178,7 +179,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION_WITH_FRAME,
           tmpl::list<TAG(data) < NTYPE(data) < EBIN(data)> >>           \
           /*meta*/) const;
 
-#define temp_list \
+#define TEMP_LIST \
   (BOOST_PP_REPEAT(MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS, GENERATE_LIST, _))
 
 GENERATE_INSTANTIATIONS(
@@ -188,10 +189,10 @@ GENERATE_INSTANTIATIONS(
      RadiationTransport::M1Grey::Tags::GreyScatteringOpacity),
     (neutrinos::ElectronNeutrinos, neutrinos::ElectronAntiNeutrinos,
      neutrinos::HeavyLeptonNeutrinos),
-    temp_list)
+    TEMP_LIST)
 
 #undef INSTANTIATE_M1_FUNCTION
-#undef temp_list
+#undef TEMP_LIST
 #undef TAG
 #undef NTYPE
 #undef EBIN

@@ -27,13 +27,18 @@ void forward_to_time_deriv(
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-
-    const Scalar<DataVector>& source_n,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& source_i,
     const tnsr::i<DataVector, 3>& d_lapse,
     const tnsr::iJ<DataVector, 3>& d_shift,
     const tnsr::ijj<DataVector, 3>& d_spatial_metric,
-    const tnsr::ii<DataVector, 3>& extrinsic_curvature) {
+    const tnsr::ii<DataVector, 3>& extrinsic_curvature,
+    const Scalar<DataVector>& emissivity,
+    const Scalar<DataVector>& absorption_opacity,
+    const Scalar<DataVector>& scattering_opacity,
+    const Scalar<DataVector>& tilde_j, const Scalar<DataVector>& tilde_h_normal,
+    const tnsr::i<DataVector, 3>& tilde_h_spatial,
+    const tnsr::I<DataVector, 3>& spatial_velocity,
+    const Scalar<DataVector>& lorentz,
+    const Scalar<DataVector>& sqrt_det_spatial_metric) {
   Variables<tmpl::list<typename RadiationTransport::M1Grey::TimeDerivativeTerms<
                            neutrinos::ElectronNeutrinos<1>>::TildeSUp,
                        gr::Tags::InverseSpatialMetric<DataVector, 3>>>
@@ -51,10 +56,10 @@ void forward_to_time_deriv(
               &get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(temp)),
 
           tilde_e, tilde_s, tilde_p, lapse, shift, spatial_metric,
-          inv_spatial_metric,
-
-          source_n, source_i, d_lapse, d_shift, d_spatial_metric,
-          extrinsic_curvature);
+          inv_spatial_metric, d_lapse, d_shift, d_spatial_metric,
+          extrinsic_curvature, emissivity, absorption_opacity,
+          scattering_opacity, tilde_j, tilde_h_normal, tilde_h_spatial,
+          spatial_velocity, lorentz, sqrt_det_spatial_metric);
 }
 }  // namespace
 
