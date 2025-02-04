@@ -1,0 +1,39 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "MbotClang",
+            "displayName": "Mbot Clang config",
+            "generator": "Ninja",
+            "environment": {
+                "I_MPI_ROOT": "/opt/sxs/software/gcc-11.4.0/intel/mpi/2021.11/mpi/2021.11",
+                "CC": "/opt/sxs/software/gcc-11.4.0/llvm/17.0.6/bin/clang",
+                "CXX": "/opt/sxs/software/gcc-11.4.0/llvm/17.0.6/bin/clang++",
+                "FC": "/opt/sxs/software/gcc-11.4.0/llvm/17.0.6/bin/gfortran",
+                "PYTHONPATH": "/opt/sxs/software/gcc-11.4.0/python/3.10.3/lib/python3.10/site-packages/:/opt/sxs/software/gcc-11.4.0/spectre-python/3.10.3/lib/python3.10/site-packages",
+                "VIRTUAL_ENV": "/opt/sxs/software/gcc-11.4.0/spectre-python/3.10.3"
+            },
+            "toolchainFile": "./support/Environments/Mbot/MbotCommon.cmake"
+        },
+        {
+            "name": "MbotGcc",
+            "displayName": "Debug config on Mbot cluster",
+            "description": "Debug build using Ninja and clang",
+            "generator": "Ninja",
+            "environment": {
+                "I_MPI_ROOT": "/opt/sxs/software/gcc-11.4.0/intel/mpi/2021.11/mpi/2021.11",
+                "CC": "/opt/sxs/software/gcc/11.4.0/bin/gcc",
+                "CXX": "/opt/sxs/software/gcc/11.4.0/bin/g++",
+                "FC": "/opt/sxs/software/gcc/11.4.0/bin/gfortran",
+                "PYTHONPATH": "/opt/sxs/software/gcc-11.4.0/python/3.10.3/lib/python3.10/site-packages/:/opt/sxs/software/gcc-11.4.0/spectre-python/3.10.3/lib/python3.10/site-packages",
+                "VIRTUAL_ENV": "/opt/sxs/software/gcc-11.4.0/spectre-python/3.10.3"
+            },
+            "toolchainFile": "./support/Environments/Mbot/MbotCommon.cmake"
+        }
+    ]
+}
