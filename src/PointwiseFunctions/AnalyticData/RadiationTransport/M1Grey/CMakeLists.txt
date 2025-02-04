@@ -1,23 +1,23 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY M1GreySolutions)
+set(LIBRARY M1GreyAnalyticData)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  ConstantM1.cpp
+  HomogeneousSphere.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  ConstantM1.hpp
+  AnalyticData.hpp
   Factory.hpp
-  Solutions.hpp
+  HomogeneousSphere.hpp
   )
 
 target_link_libraries(

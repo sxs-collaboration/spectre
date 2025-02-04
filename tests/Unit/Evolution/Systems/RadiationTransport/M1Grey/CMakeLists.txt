@@ -27,6 +27,7 @@ target_link_libraries(
   DiscontinuousGalerkin
   Domain
   M1Grey
+  M1GreyAnalyticData
   M1GreySolutions
   Parallel
   Spectral

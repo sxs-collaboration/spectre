@@ -68,12 +68,15 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/RadiationTransport/M1Grey/AnalyticData.hpp"
+#include "PointwiseFunctions/AnalyticData/RadiationTransport/M1Grey/Factory.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -110,9 +113,6 @@ class CProxy_GlobalCache;
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
 
-  using initial_data_list =
-      RadiationTransport::M1Grey::Solutions::all_solutions;
-
   // Set list of neutrino species to be used by M1 code
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>>;
 
@@ -123,6 +123,10 @@ struct EvolutionMetavars {
   static constexpr bool local_time_stepping =
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
+
+  using initial_data_list =
+      tmpl::append<RadiationTransport::M1Grey::AnalyticData::all_data,
+                   RadiationTransport::M1Grey::Solutions::all_solutions>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using limiter = Tags::Limiter<
@@ -156,7 +160,6 @@ struct EvolutionMetavars {
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
         tmpl::pair<ImexTimeStepper, TimeSteppers::imex_time_steppers>,
-        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<RadiationTransport::M1Grey::BoundaryConditions::
                        BoundaryCondition<neutrino_species>,
@@ -173,7 +176,8 @@ struct EvolutionMetavars {
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+                                         Triggers::time_triggers>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>>;
   };
 
   using observed_reduction_data_tags =
@@ -269,8 +273,7 @@ struct EvolutionMetavars {
   using const_global_cache_tags =
       tmpl::list<evolution::initial_data::Tags::InitialData>;
 
-  static constexpr Options::String help{
-      "Evolve the M1Grey system (without coupling to hydro).\n\n"};
+  static constexpr Options::String help{"Evolve the M1Grey system. \n\n"};
 
   static constexpr std::array<Parallel::Phase, 5> default_phase_order{
       {Parallel::Phase::Initialization,

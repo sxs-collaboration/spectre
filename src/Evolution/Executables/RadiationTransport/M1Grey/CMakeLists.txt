@@ -29,6 +29,7 @@ target_link_libraries(
   LinearOperators
   MathFunctions
   M1Grey
+  M1GreyAnalyticData
   M1GreySolutions
   Observer
   Options
