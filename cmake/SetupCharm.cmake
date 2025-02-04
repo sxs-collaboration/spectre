@@ -113,3 +113,36 @@ if(NOT APPLE AND CHARM_VERSION VERSION_EQUAL 7.0.0 AND BUILD_PYTHON_BINDINGS)
       "Missing file ${CHARM_CHECK_FILE}")
   endif()
 endif()
+
+if (CHARM_USE_MPI)
+  if(NOT DEFINED SPECTRE_MPI_LAUNCHER)
+    get_filename_component(SPECTRE_MPI_LAUNCHER ${MPIEXEC_EXECUTABLE} NAME)
+  endif()
+  if(NOT DEFINED SPECTRE_MPI_LAUNCHER_DIR)
+    get_filename_component(SPECTRE_MPI_LAUNCHER_DIR ${MPIEXEC_EXECUTABLE}
+      DIRECTORY)
+  endif()
+  if(NOT EXISTS ${SPECTRE_MPI_LAUNCHER_DIR})
+    message(FATAL_ERROR
+      "The SPECTRE_MPI_LAUNCHER_DIR is set to ${SPECTRE_MPI_LAUNCHER_DIR} "
+      "but that directory doesn't exist.")
+  endif()
+  if(NOT EXISTS ${SPECTRE_MPI_LAUNCHER_DIR}/${SPECTRE_MPI_LAUNCHER})
+    message(FATAL_ERROR
+      "The SPECTRE_MPI_LAUNCHER is set to ${SPECTRE_MPI_LAUNCHER} but the file "
+      "${SPECTRE_MPI_LAUNCHER_DIR}/${SPECTRE_MPI_LAUNCHER} doesn't exist.")
+  endif()
+
+  file(WRITE
+    ${CMAKE_BINARY_DIR}/bin/mpirun
+    "#!/bin/sh -e\n\n${SPECTRE_MPI_LAUNCHER_DIR}/${SPECTRE_MPI_LAUNCHER} $@\n"
+  )
+  file(CHMOD ${CMAKE_BINARY_DIR}/bin/mpirun
+    PERMISSIONS
+    OWNER_EXECUTE
+    OWNER_READ
+    OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+  )
+endif()
