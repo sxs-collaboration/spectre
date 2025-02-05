@@ -4,6 +4,7 @@
 # See LICENSE.txt for details.
 
 import functools
+import glob
 import logging
 from pathlib import Path
 from typing import Dict, Literal, Optional, Sequence, Tuple, Union
@@ -52,7 +53,7 @@ def eccentricity_control_params(
 
     Arguments:
       h5_files: Paths to the H5 files containing the trajectory data (e.g.
-        BbhReductions.h5).
+        BbhReductions.h5). Can also be a glob pattern.
       id_input_file_path: Path to the initial data input file from which the
         evolution started. This file contains the initial data parameters that
         are being controlled.
@@ -99,7 +100,9 @@ def eccentricity_control_params(
     ), "Only circular orbits are currently supported for eccentricity control."
 
     # Make sure h5_files is a sequence
-    if isinstance(h5_files, (str, Path)):
+    if isinstance(h5_files, str):
+        h5_files = glob.glob(h5_files)
+    if isinstance(h5_files, Path):
         h5_files = [h5_files]
 
     # Read initial data parameters from input file

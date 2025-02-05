@@ -205,7 +205,7 @@ class TestInspiral(unittest.TestCase):
             {
                 "Run": modulename + ":eccentricity_control",
                 "With": {
-                    "h5_files": "./BbhReductions.h5",
+                    "h5_files": "../Segment_*/BbhReductions.h5",
                     "plot_output_dir": "./",
                     "id_input_file_path": str(
                         self.id_dir.resolve() / "InitialData.yaml"

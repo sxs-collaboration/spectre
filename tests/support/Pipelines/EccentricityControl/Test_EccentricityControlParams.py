@@ -87,7 +87,7 @@ class TestEccentricityControlParams(unittest.TestCase):
 
     def test_ecc_control_params(self):
         ecc, ecc_std_dev, param_updates = eccentricity_control_params(
-            h5_files=[self.h5_filename],
+            h5_files=self.test_dir + "/TestEccentricity*.h5",
             id_input_file_path=self.id_input_file_path,
             tmin=0.0,
             tmax=1200.0,
