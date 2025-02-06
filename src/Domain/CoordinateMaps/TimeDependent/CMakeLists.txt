@@ -9,6 +9,7 @@ spectre_target_sources(
   RotationMatrixHelpers.cpp
   RotScaleTrans.cpp
   Shape.cpp
+  Skew.cpp
   SphericalCompression.cpp
   Translation.cpp
   )
@@ -24,6 +25,7 @@ spectre_target_headers(
   RotationMatrixHelpers.hpp
   RotScaleTrans.hpp
   Shape.hpp
+  Skew.hpp
   SphericalCompression.hpp
   Translation.hpp
   )
