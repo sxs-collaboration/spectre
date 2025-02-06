@@ -46,22 +46,6 @@ struct RestartPhase {
   using main_combine_method = combine_method;
 };
 
-/// Storage in the phase change decision tuple so that the Main chare can record
-/// the elapsed wallclock time since the start of the run.
-///
-/// \note This tag is not intended to participate in any of the reduction
-/// procedures, so will error if the combine method is called.
-struct WallclockHoursAtCheckpoint {
-  using type = std::optional<double>;
-
-  struct combine_method {
-    [[noreturn]] std::optional<double> operator()(
-        const std::optional<double> /*first_time*/,
-        const std::optional<double>& /*second_time*/);
-  };
-  using main_combine_method = combine_method;
-};
-
 /// Stores whether the checkpoint and exit has been requested.
 ///
 /// Combinations are performed via `funcl::Or`, as the phase in question should
@@ -146,8 +130,7 @@ struct CheckpointAndExitAfterWallclock : public PhaseChange {
   using return_tags = tmpl::list<>;
 
   using phase_change_tags_and_combines =
-      tmpl::list<Tags::RestartPhase, Tags::WallclockHoursAtCheckpoint,
-                 Tags::CheckpointAndExitRequested>;
+      tmpl::list<Tags::RestartPhase, Tags::CheckpointAndExitRequested>;
 
   template <typename Metavariables>
   using participating_components = typename Metavariables::component_list;
@@ -174,6 +157,15 @@ struct CheckpointAndExitAfterWallclock : public PhaseChange {
 
  private:
   std::optional<double> wallclock_hours_for_checkpoint_and_exit_ = std::nullopt;
+  // This flag is set during arbitration when the class decides to
+  // halt the run.  As it is not checkpointed, this distinguishes the
+  // state immediately after writing the checkpoint from that
+  // immediately after reading it during the restart.
+  //
+  // Phase arbitration is only run from Main, so there are no
+  // threading issues here.
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable bool halting_ = false;
 };
 
 template <typename... DecisionTags>
@@ -181,8 +173,6 @@ void CheckpointAndExitAfterWallclock::initialize_phase_data_impl(
     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
         phase_change_decision_data) const {
   tuples::get<Tags::RestartPhase>(*phase_change_decision_data) = std::nullopt;
-  tuples::get<Tags::WallclockHoursAtCheckpoint>(*phase_change_decision_data) =
-      std::nullopt;
   tuples::get<Tags::CheckpointAndExitRequested>(*phase_change_decision_data) =
       false;
 }
@@ -214,21 +204,12 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
 
   auto& restart_phase =
       tuples::get<Tags::RestartPhase>(*phase_change_decision_data);
-  auto& wallclock_hours_at_checkpoint =
-      tuples::get<Tags::WallclockHoursAtCheckpoint>(
-          *phase_change_decision_data);
   auto& exit_code =
       tuples::get<Parallel::Tags::ExitCode>(*phase_change_decision_data);
   if (restart_phase.has_value()) {
-    ASSERT(wallclock_hours_at_checkpoint.has_value(),
-           "Consistency error: Should have recorded the Wallclock time "
-           "while recording a phase to restart from.");
     // This `if` branch, where restart_phase has a value, is the
-    // post-checkpoint call to arbitrate_phase_change. Depending on the time
-    // elapsed so far in this run, next phase is...
-    // - Exit, if the time is large
-    // - restart_phase, if the time is small
-    if (elapsed_hours >= wallclock_hours_at_checkpoint.value()) {
+    // post-checkpoint call to arbitrate_phase_change.
+    if (halting_) {
       // Preserve restart_phase for use after restarting from the checkpoint
       exit_code = Parallel::ExitCode::ContinueFromCheckpoint;
       return std::make_pair(Parallel::Phase::Exit,
@@ -245,7 +226,6 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
       // Reset restart_phase until it is needed for the next checkpoint
       const auto result = restart_phase;
       restart_phase.reset();
-      wallclock_hours_at_checkpoint.reset();
       return std::make_pair(result.value(),
                             ArbitrationStrategy::PermitAdditionalJumps);
     }
@@ -260,7 +240,8 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
                              std::numeric_limits<double>::infinity())) {
       // Record phase and actual elapsed time for determining following phase
       restart_phase = current_phase;
-      wallclock_hours_at_checkpoint = elapsed_hours;
+      ASSERT(not halting_, "Halting for checkpoint recursively");
+      halting_ = true;
       return std::make_pair(Parallel::Phase::WriteCheckpoint,
                             ArbitrationStrategy::RunPhaseImmediately);
     }
