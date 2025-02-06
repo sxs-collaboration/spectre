@@ -41,11 +41,11 @@ template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 struct BinaryWithGravitationalWavesProxy {
   tuples::tagged_tuple_from_typelist<test_tags> test_variables(
       const tnsr::I<DataVector, 3, Frame::Inertial>& x) const {
-    return BinaryWithGravitationalWaves_ptr->variables(x, test_tags{});
+    return binary_with_gravitational_waves->variables(x, test_tags{});
   }
 
   BinaryWithGravitationalWaves<IsolatedObjectBase, IsolatedObjectClasses>*
-      BinaryWithGravitationalWaves_ptr;
+      binary_with_gravitational_waves;
 };
 
 struct Metavariables {

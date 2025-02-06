@@ -32,10 +32,21 @@ class DataVector;
 namespace Xcts::BoundaryConditions {
 
 /*!
- * \brief Impose supperposed boosted binary system on the boundary.
+ * \brief Impose superposed boosted binary system on the boundary.
  *
  * This takes two isolated objects and after applying a boost to each of them,
- * superposes them. The superposed system is then imposed on the boundary, with
+ * the isolated lapses and shifts are extracted and superposed, following
+ *
+ * \f{align}
+ *  \alpha = \alpha^1 \alpha^2
+ *  \text{ and }
+ *  \beta^i = \beta^i_1 + \beta^i_2.
+ * \f}
+ *
+ * The conformal factor is set to 1 and the background spatial
+ * metric should contain the boosted isolated objects.
+ *
+ * The superposed system is then imposed on the boundary with
  * Dirichlet boundary conditions.
  *
  */

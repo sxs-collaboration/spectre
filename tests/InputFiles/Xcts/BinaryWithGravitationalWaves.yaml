@@ -1,0 +1,246 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: SolveXcts
+Testing:
+  Check: parse
+  Timeout: 30
+  Priority: High
+ExpectedOutput:
+  - BwGWReductions.h5
+  - BwGWVolume0.h5
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Background: &background
+  BinaryWithGravitationalWaves:
+    Masses: [&mass_left .5, &mass_right .5]
+    XCoords: [&x_left -6.0, &x_right 6.0]
+    MomentumLeft: [0., &momentum_left -0.08, 0.]
+    MomentumRight: [0., &momentum_right 0.08, 0.]
+    CenterOfMassOffset: &center_offset [&y_center 0.0, &z_center 0.0]
+    ObjectLeft: &object_left
+      Schwarzschild:
+        Mass: *mass_left
+        Coordinates: MaximalIsotropic
+    ObjectRight: &object_right
+      Schwarzschild:
+        Mass: *mass_right
+        Coordinates: MaximalIsotropic
+    AttenuationParameter: 1.
+    AttenuationRadius: 100.
+
+InitialGuess: *background
+
+RandomizeInitialGuess: None
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: .3
+      OuterRadius: 4.
+      XCoord: *x_right
+      Interior:
+        ExciseWithBoundaryCondition:
+          SuperposedBoostedBinary:
+            Masses: [*mass_left, *mass_right]
+            XCoords: [*x_left, *x_right]
+            MomentumLeft: [0., *momentum_left, 0.]
+            MomentumRight: [0., *momentum_right, 0.]
+            CenterOfMassOffset: *center_offset
+            ObjectLeft: *object_left
+            ObjectRight: *object_right
+      UseLogarithmicMap: True
+    ObjectB:
+      InnerRadius: .3
+      OuterRadius: 4.
+      XCoord: *x_left
+      Interior:
+        ExciseWithBoundaryCondition:
+          SuperposedBoostedBinary:
+            Masses: [*mass_left, *mass_right]
+            XCoords: [*x_left, *x_right]
+            MomentumLeft: [0., *momentum_left, 0.]
+            MomentumRight: [0., *momentum_right, 0.]
+            CenterOfMassOffset: *center_offset
+            ObjectLeft: *object_left
+            ObjectRight: *object_right
+      UseLogarithmicMap: True
+    CenterOfMassOffset: *center_offset
+    CubeScale: 1.0
+    Envelope:
+      Radius: &outer_shell_inner_radius 60.
+      RadialDistribution: Logarithmic
+    OuterShell:
+      Radius: &outer_radius 70.
+      RadialDistribution: &outer_shell_distribution Linear
+      OpeningAngle: 120.0
+      BoundaryCondition: Robin
+    UseEquiangularMap: True
+    InitialRefinement:
+      ObjectAShell:     [0, 0, 0]
+      ObjectBShell:     [0, 0, 0]
+      ObjectACube:      [0, 0, 0]
+      ObjectBCube:      [0, 0, 0]
+      Envelope:         [0, 0, 1]
+      OuterShell:       [0, 0, 2]
+    # This p-refinement represents a crude manual optimization of the domain. We
+    # will need AMR to optimize the domain further.
+    InitialGridPoints:
+      ObjectAShell:   [6, 6, 10]
+      ObjectBShell:   [6, 6, 10]
+      ObjectACube:    [6, 6, 7]
+      ObjectBCube:    [6, 6, 7]
+      Envelope:       [6, 6, 6]
+      OuterShell:     [6, 6, 6]
+    TimeDependentMaps: None
+
+Amr:
+  Verbosity: Verbose
+  Criteria: []
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: False
+  Iterations: 1
+
+PhaseChangeAndTriggers: []
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.5
+    Massive: True
+    Quadrature: GaussLobatto
+    Formulation: WeakInertial
+
+Observers:
+  VolumeFileName: "BwGWVolume"
+  ReductionFileName: "BwGWReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 1.e-10
+      AbsoluteResidual: 1.e-11
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Verbose
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 100
+      RelativeResidual: 1.e-4
+      AbsoluteResidual: 1.e-14
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: True
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    MaxOverlap: 2
+    Iterations: 3
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-10
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver:
+              ExplicitInverse:
+                WriteMatrixToFile: None
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+
+RadiallyCompressedCoordinates:
+  InnerRadius: *outer_shell_inner_radius
+  OuterRadius: *outer_radius
+  Compression: *outer_shell_distribution
+
+EventsAndTriggersAtIterations:
+  - Trigger:
+      EveryNIterations:
+        N: 1000000000
+        Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: BackgroundData
+          VariablesToObserve:
+            - Conformal(SpatialMetric)
+            - TraceExtrinsicCurvature
+            - Lapse
+            - Shift
+            - ShiftBackground
+            - LongitudinalShiftBackgroundMinusDtConformalMetric
+            - dt(TraceExtrinsicCurvature)
+            - HamiltonianConstraint
+            - MomentumConstraint
+          BlocksToObserve: All
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - Trigger: HasConverged
+    Events:
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: ConformalFactor
+              NormType: Max
+              Components: Individual
+            - Name: Lapse
+              NormType: Min
+              Components: Individual
+            - Name: Magnitude(ShiftExcess)
+              NormType: Max
+              Components: Individual
+            - Name: HamiltonianConstraint
+              NormType: L2Norm
+              Components: Individual
+            - Name: MomentumConstraint
+              NormType: L2Norm
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - ShiftExcess
+            - SpatialMetric
+            - InverseSpatialMetric
+            - SpatialChristoffelSecondKind
+            - ExtrinsicCurvature
+            - SpatialRicci
+            - RadiallyCompressedCoordinates
+            - HamiltonianConstraint
+            - MomentumConstraint
+          BlocksToObserve: All
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+      - ObserveAdmIntegrals
+
+

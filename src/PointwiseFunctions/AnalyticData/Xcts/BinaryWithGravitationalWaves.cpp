@@ -120,7 +120,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
         "Numeric differentiation only works with DataVectors because it needs "
         "a grid.");
   }
-  // Third order
+  // Third order backwards finite difference
   get(*dt_trace_extrinsic_curvature) =
       (11. * get(trace_extrinsic_curvature) -
        18. * get(trace_extrinsic_curvature_back) +
@@ -156,7 +156,7 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
   tnsr::ii<DataType, 3> dt_conformal_metric{get_size(x.get(0))};
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      // Third order
+      // Third order backwards finite difference
       dt_conformal_metric.get(i, j) =
           (11. * conformal_metric.get(i, j) -
            18. * conformal_metric_back.get(i, j) +
@@ -166,18 +166,19 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
     }
   }
 
+  const auto auxiliar_one = tenex::evaluate<ti::I, ti::J>(
+      inv_conformal_metric(ti::I, ti::K) * inv_conformal_metric(ti::J, ti::L) *
+      dt_conformal_metric(ti::k, ti::l));
+  const auto auxiliar_two = tenex::evaluate<ti::I, ti::J>(
+      inv_conformal_metric(ti::I, ti::K) * inv_conformal_metric(ti::J, ti::L) *
+      conformal_metric(ti::k, ti::l));
+
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      for (size_t k = 0; k < 3; ++k) {
-        for (size_t l = 0; l < 3; ++l) {
-          longitudinal_shift_background_minus_dt_conformal_metric->get(i, j) -=
-              inv_conformal_metric.get(i, k) * inv_conformal_metric.get(j, l) *
-              (dt_conformal_metric.get(k, l) -
-               (1. / 3.) *
-                   get(trace(dt_conformal_metric, inv_conformal_metric)) *
-                   conformal_metric.get(k, l));
-        }
-      }
+      longitudinal_shift_background_minus_dt_conformal_metric->get(i, j) -=
+          (auxiliar_one.get(i, j) -
+           (1. / 3.) * get(trace(dt_conformal_metric, inv_conformal_metric)) *
+               auxiliar_two.get(i, j));
     }
   }
 }
@@ -240,7 +241,7 @@ Scalar<DataType> BinaryWithGravitationalWavesVariables<DataType>::
 
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
-      // Third order
+      // Third order backwards finite difference (over -2 alpha)
       extrinsic_curvature.get(i, j) +=
           (11. * conformal_metric.get(i, j) -
            18. * conformal_metric_back.get(i, j) +
@@ -290,6 +291,22 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_conformal_metric(
 }
 
 template <typename DataType>
+DataType
+BinaryWithGravitationalWavesVariables<DataType>::get_t_attenuation_function(
+    DataType t) const {
+  const auto distance_left_t = get_t_distance_left(t);
+  const auto distance_right_t = get_t_distance_right(t);
+  double turn_off = .5;
+  if (attenuation_parameter == 0) {
+    turn_off = 1.;
+  }
+  return (turn_off + .5 * tanh(attenuation_parameter *
+                               (get(distance_left_t) - attenuation_radius))) *
+         (turn_off + .5 * tanh(attenuation_parameter *
+                               (get(distance_right_t) - attenuation_radius)));
+}
+
+template <typename DataType>
 tnsr::ii<DataType, 3>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_radiative_term(
     DataType t) const {
@@ -299,18 +316,12 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_radiative_term(
   const auto present_term_t = get_t_present_term(t);
   const auto past_term_t = get_t_past_term(t);
   const auto integral_term_t = get_t_integral_term(t);
-  double turn_off = .5;
-  if (attenuation_parameter == 0) {
-    turn_off = 1.;
-  }
+  const auto attenuation_t = get_t_attenuation_function(t);
   tnsr::ii<DataType, 3> radiative_term_t{t.size()};
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       radiative_term_t.get(i, j) =
-          (turn_off + .5 * tanh(attenuation_parameter *
-                                (get(distance_left_t) - attenuation_radius))) *
-          (turn_off + .5 * tanh(attenuation_parameter *
-                                (get(distance_right_t) - attenuation_radius))) *
+          attenuation_t *
           (near_zone_term_t.get(i, j) + present_term_t.get(i, j) +
            past_term_t.get(i, j) + integral_term_t.get(i, j));
     }
@@ -370,6 +381,7 @@ Scalar<DataType> BinaryWithGravitationalWavesVariables<DataType>::get_t_lapse(
   const auto separation_t = get_t_separation(t);
   const auto momentum_left_t = get_t_momentum_left(t);
   const auto momentum_right_t = get_t_momentum_right(t);
+  const auto attenuation_t = get_t_attenuation_function(t);
   get(lapse_t) =
       1 - mass_left / get(distance_left_t) -
       mass_right / get(distance_right_t) +
@@ -383,15 +395,7 @@ Scalar<DataType> BinaryWithGravitationalWavesVariables<DataType>::get_t_lapse(
                        (get(distance_left_t) * mass_left) +
                    get(dot_product(momentum_right_t, momentum_right_t)) /
                        (get(distance_right_t) * mass_right)));
-  double turn_off = .5;
-  if (attenuation_parameter == 0) {
-    turn_off = 1.;
-  }
-  get(lapse_t) *=
-      (turn_off + .5 * tanh(attenuation_parameter *
-                            (get(distance_left_t) - attenuation_radius))) *
-      (turn_off + .5 * tanh(attenuation_parameter *
-                            (get(distance_right_t) - attenuation_radius)));
+  get(lapse_t) *= attenuation_t;
 
   // Boosted lapse in the inner zone
   const auto spacetime_metric_left = get_t_boosted_spacetime_metric_left(t);
@@ -409,14 +413,7 @@ Scalar<DataType> BinaryWithGravitationalWavesVariables<DataType>::get_t_lapse(
   const auto shift_right =
       gr::shift(spacetime_metric_right, inv_conformal_metric_right);
   const auto lapse_right = gr::lapse(shift_right, spacetime_metric_right);
-  get(lapse_t) +=
-      (1. -
-       (turn_off + .5 * tanh(attenuation_parameter *
-                             (get(distance_left_t) - attenuation_radius))) *
-           (turn_off +
-            .5 * tanh(attenuation_parameter *
-                      (get(distance_right_t) - attenuation_radius)))) *
-      get(lapse_left) * get(lapse_right);
+  get(lapse_t) += (1. - attenuation_t) * get(lapse_left) * get(lapse_right);
   return lapse_t;
 }
 
@@ -434,6 +431,7 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_shift(DataType t) const {
   const auto momentum_right_t = get_t_momentum_right(present_time);
   const auto normal_left_t = get_t_normal_left(present_time);
   const auto normal_right_t = get_t_normal_right(present_time);
+  const auto attenuation_t = get_t_attenuation_function(present_time);
   for (size_t i = 0; i < 3; ++i) {
     shift_t.get(i) -= 4. * (momentum_left_t.get(i) / get(distance_left_t) +
                             momentum_right_t.get(i) / get(distance_right_t));
@@ -449,16 +447,8 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_shift(DataType t) const {
                       0.5 * momentum_right_t.get(i) / get(distance_right_t);
   }
 
-  double turn_off = .5;
-  if (attenuation_parameter == 0) {
-    turn_off = 1.;
-  }
   for (size_t i = 0; i < 3; ++i) {
-    shift_t.get(i) *=
-        (turn_off + .5 * tanh(attenuation_parameter *
-                              (get(distance_left_t) - attenuation_radius))) *
-        (turn_off + .5 * tanh(attenuation_parameter *
-                              (get(distance_right_t) - attenuation_radius)));
+    shift_t.get(i) *= attenuation_t;
   }
 
   // Boosted shifts in the inner zone
@@ -479,13 +469,7 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_shift(DataType t) const {
   const auto lapse_right = gr::lapse(shift_right, spacetime_metric_right);
   for (size_t i = 0; i < 3; ++i) {
     shift_t.get(i) +=
-        (1. -
-         (turn_off + .5 * tanh(attenuation_parameter *
-                               (get(distance_left_t) - attenuation_radius))) *
-             (turn_off +
-              .5 * tanh(attenuation_parameter *
-                        (get(distance_right_t) - attenuation_radius)))) *
-        (shift_left.get(i) + shift_right.get(i));
+        (1. - attenuation_t) * (shift_left.get(i) + shift_right.get(i));
   }
   return shift_t;
 }

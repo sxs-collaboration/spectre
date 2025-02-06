@@ -273,6 +273,7 @@ struct BinaryWithGravitationalWavesVariables
       DataType t, Mesh<3> local_mesh,
       InverseJacobian<DataType, 3, Frame::ElementLogical, Frame::Inertial>
           local_inv_jacobian) const;
+  DataType get_t_attenuation_function(DataType t) const;
   tnsr::ii<DataType, 3> get_t_conformal_metric(DataType t) const;
   tnsr::ii<DataType, 3> get_t_radiative_term(DataType t) const;
   tnsr::ii<DataType, 3> get_t_near_zone_term(DataType t) const;
@@ -294,12 +295,12 @@ struct BinaryWithGravitationalWavesVariables
  * The main goal of this implementation is to improve the extracted
  * wave forms, for example, by minimizing junk radiation.
  * The data is only valid for black holes without spin. Even so, there is some
- * work done to describe such systems that could later be implemented.
- * The objects are constructed from a superposition of two isolated objects that
- * are boosted with respect to each other. The radiative data is constructed
- * from Post-Newtonian expansions for the inspiral phase, in orders of
- * \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky. In ADMTT gauge it is
- * possible to get the 3-metric as \f$\gamma^{PN}_{ij} = \psi^{4}_{PN}
+ * work done to describe such systems that could later be implemented, \cite
+ * Steinhoff2008zr. The objects are constructed from a superposition of two
+ * isolated objects that are boosted with respect to each other. The radiative
+ * data is constructed from Post-Newtonian expansions for the inspiral phase, in
+ * orders of \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky. In ADMTT gauge it
+ * is possible to get the 3-metric as \f$\gamma^{PN}_{ij} = \psi^{4}_{PN}
  * \delta_{ij} + h^{TT}_{ij}\f$ where \f$h^{TT}_{ij}\f$ is the radiative part
  * and the non-radiative Post-Newtonian conformal factor is given by
  *
