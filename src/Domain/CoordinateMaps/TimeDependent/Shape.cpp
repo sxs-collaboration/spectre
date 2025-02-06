@@ -11,6 +11,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
@@ -21,10 +22,12 @@
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace domain::CoordinateMaps::TimeDependent {
@@ -47,8 +50,7 @@ void Shape::jacobian_helper(
     gsl::not_null<tnsr::Ij<T, 3, Frame::NoFrame>*> result,
     const ylm::Spherepack::InterpolationInfo<T>& interpolation_info,
     const DataVector& extended_coefs, const std::array<T, 3>& centered_coords,
-    const T& radial_distortion, const T& one_over_radius,
-    const T& transition_func_over_radius) const {
+    const T& radial_distortion, const T& transition_func) const {
   const auto angular_gradient =
       extended_ylm_.gradient_from_coefs(extended_coefs);
 
@@ -77,92 +79,43 @@ void Shape::jacobian_helper(
 
   get<2>(cartesian_gradient) = -sin(col_thetas) * get<0>(angular_gradient);
 
-  // re-use allocation
-  auto& target_gradient_x = get<2, 0>(*result);
-  auto& target_gradient_y = get<2, 1>(*result);
-  auto& target_gradient_z = get<2, 2>(*result);
+  // re-use allocations. The specific buffers that are reused are important to
+  // avoid overwriting anything
+  std::array<T, 3> target_gradient{};
+  for (size_t i = 0; i < 3; i++) {
+    if constexpr (std::is_same_v<T, DataVector>) {
+      gsl::at(target_gradient, i)
+          .set_data_ref(make_not_null(&result->get(2, i)));
+    } else {
+      gsl::at(target_gradient, i) = result->get(2, i);
+    }
 
-  // interpolate the cartesian gradient to the thetas and phis of the
-  // `source_coords`
-  extended_ylm_.interpolate(make_not_null(&target_gradient_x),
-                            get<0>(cartesian_gradient).data(),
-                            interpolation_info);
-  extended_ylm_.interpolate(make_not_null(&target_gradient_y),
-                            get<1>(cartesian_gradient).data(),
-                            interpolation_info);
-  extended_ylm_.interpolate(make_not_null(&target_gradient_z),
-                            get<2>(cartesian_gradient).data(),
-                            interpolation_info);
+    // interpolate the cartesian gradient to the thetas and phis of the
+    // `source_coords`
+    extended_ylm_.interpolate(make_not_null(&gsl::at(target_gradient, i)),
+                              cartesian_gradient.get(i).data(),
+                              interpolation_info);
+  }
 
-  auto transition_func_over_square_radius =
-      transition_func_over_radius * one_over_radius;
-  auto transition_func_over_cube_radius =
-      transition_func_over_square_radius * one_over_radius;
-  auto transition_func_gradient_over_radius =
-      transition_func_->gradient(centered_coords) * one_over_radius;
+  // G / r
+  auto transition_func_over_radius =
+      transition_func_->operator()(centered_coords, {1});
+  auto transition_func_gradient_times_distortion =
+      transition_func_->gradient(centered_coords) * radial_distortion;
 
-  auto& target_gradient_x_times_spatial_part = target_gradient_x;
-  auto& target_gradient_y_times_spatial_part = target_gradient_y;
-  auto& target_gradient_z_times_spatial_part = target_gradient_z;
-  target_gradient_x_times_spatial_part *= transition_func_over_square_radius;
-  target_gradient_y_times_spatial_part *= transition_func_over_square_radius;
-  target_gradient_z_times_spatial_part *= transition_func_over_square_radius;
+  auto& target_gradient_times_spatial_part = target_gradient;
+  target_gradient_times_spatial_part *= transition_func_over_radius;
 
-  const auto& [x_transition_gradient_over_radius,
-               y_transition_gradient_over_radius,
-               z_transition_gradient_over_radius] =
-      transition_func_gradient_over_radius;
-  const auto& [x_centered, y_centered, z_centered] = centered_coords;
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      result->get(i, j) =
+          -gsl::at(centered_coords, i) *
+          (gsl::at(transition_func_gradient_times_distortion, j) +
+           gsl::at(target_gradient_times_spatial_part, j));
+    }
 
-  get<0, 0>(*result) =
-      -x_centered * ((x_transition_gradient_over_radius -
-                      x_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_x_times_spatial_part);
-  get<0, 1>(*result) =
-      -x_centered * ((y_transition_gradient_over_radius -
-                      y_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_y_times_spatial_part);
-  get<0, 2>(*result) =
-      -x_centered * ((z_transition_gradient_over_radius -
-                      z_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_z_times_spatial_part);
-  get<1, 0>(*result) =
-      -y_centered * ((x_transition_gradient_over_radius -
-                      x_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_x_times_spatial_part);
-  get<1, 1>(*result) =
-      -y_centered * ((y_transition_gradient_over_radius -
-                      y_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_y_times_spatial_part);
-  get<1, 2>(*result) =
-      -y_centered * ((z_transition_gradient_over_radius -
-                      z_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_z_times_spatial_part);
-  get<2, 0>(*result) =
-      -z_centered * ((x_transition_gradient_over_radius -
-                      x_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_x_times_spatial_part);
-  get<2, 1>(*result) =
-      -z_centered * ((y_transition_gradient_over_radius -
-                      y_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_y_times_spatial_part);
-  get<2, 2>(*result) =
-      -z_centered * ((z_transition_gradient_over_radius -
-                      z_centered * transition_func_over_cube_radius) *
-                         radial_distortion +
-                     target_gradient_z_times_spatial_part);
-
-  get<0, 0>(*result) += 1. - radial_distortion * transition_func_over_radius;
-  get<1, 1>(*result) += 1. - radial_distortion * transition_func_over_radius;
-  get<2, 2>(*result) += 1. - radial_distortion * transition_func_over_radius;
+    result->get(i, i) += 1.0 - radial_distortion * transition_func;
+  }
 }
 
 Shape::Shape(
@@ -227,8 +180,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 #ifdef SPECTRE_DEBUG
   using ReturnType = tt::remove_cvref_wrap_t<T>;
   const ReturnType shift_radii =
-      radial_distortion * transition_func_->operator()(centered_coords) *
-      check_and_compute_one_over_radius(centered_coords);
+      radial_distortion *
+      transition_func_->operator()(centered_coords, std::nullopt);
   if constexpr (std::is_same_v<ReturnType, double>) {
     ASSERT(shift_radii < 1., "Coordinates mapped through the center!");
   } else {
@@ -240,9 +193,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::operator()(
 
   return center_ +
          centered_coords *
-             (1. - radial_distortion *
-                       transition_func_->operator()(centered_coords) *
-                       check_and_compute_one_over_radius(centered_coords));
+             (1. - radial_distortion * transition_func_->operator()(
+                                           centered_coords, std::nullopt));
 }
 
 std::optional<std::array<double, 3>> Shape::inverse(
@@ -282,8 +234,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Shape::frame_velocity(
   ylm_.interpolate_from_coefs(make_not_null(&radii_velocities), coef_derivs,
                               interpolation_info);
   return -centered_coords * radii_velocities *
-         transition_func_->operator()(centered_coords) *
-         check_and_compute_one_over_radius(centered_coords);
+         transition_func_->operator()(centered_coords, std::nullopt);
 }
 
 template <typename T>
@@ -313,7 +264,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   ylm::SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
   ylm::SpherepackIterator iter(l_max_, m_max_);
   for (size_t l = 0; l <= l_max_; ++l) {
-    const int m_max = std::min(l, m_max_);
+    const int m_max = static_cast<int>(std::min(l, m_max_));
     for (int m = -m_max; m <= m_max; ++m) {
       iter.set(l, m);
       extended_iter.set(l, m);
@@ -328,16 +279,13 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
                                        extended_coefs, interpolation_info);
 
   using ReturnType = tt::remove_cvref_wrap_t<T>;
-  const ReturnType one_over_radius =
-      check_and_compute_one_over_radius(centered_coords);
-  const ReturnType transition_func_over_radius =
-      transition_func_->operator()(centered_coords) * one_over_radius;
+  const ReturnType transition_func =
+      transition_func_->operator()(centered_coords, std::nullopt);
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> result(
       get_size(centered_coords[0]));
 
   jacobian_helper(make_not_null(&result), interpolation_info, extended_coefs,
-                  centered_coords, radial_distortion, one_over_radius,
-                  transition_func_over_radius);
+                  centered_coords, radial_distortion, transition_func);
   return result;
 }
 
@@ -356,9 +304,8 @@ void Shape::coords_frame_velocity_jacobian(
       jac->get(i, j).destructive_resize(size);
     }
   }
-  Variables<
-      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
-                 ::Tags::TempScalar<2>, ::Tags::TempI<0, 3, Frame::Inertial>>>
+  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempI<0, 3, Frame::Inertial>>>
       temps(size);
 
   std::array<DataVector, 3> centered_coords{};
@@ -404,25 +351,20 @@ void Shape::coords_frame_velocity_jacobian(
   extended_ylm_.interpolate_from_coefs(make_not_null(&radial_distortion),
                                        extended_coefs, interpolation_info);
 
-  auto& one_over_radius = get(get<::Tags::TempScalar<1>>(temps));
-  one_over_radius = check_and_compute_one_over_radius(centered_coords);
-  auto& transition_func_over_radius = get(get<::Tags::TempScalar<2>>(temps));
-  transition_func_over_radius =
-      transition_func_->operator()(centered_coords) * one_over_radius;
+  auto& transition_func = get(get<::Tags::TempScalar<1>>(temps));
+  transition_func = transition_func_->operator()(centered_coords, std::nullopt);
   *source_and_target_coords =
-      center_ +
-      centered_coords * (1. - radial_distortion * transition_func_over_radius);
+      center_ + centered_coords * (1. - radial_distortion * transition_func);
 
   auto& radii_velocities = get<0, 1>(*jac);
   extended_ylm_.interpolate_from_coefs(make_not_null(&radii_velocities),
                                        extended_coefs_derivs,
                                        interpolation_info);
-  *frame_vel =
-      -centered_coords * radii_velocities * transition_func_over_radius;
+  *frame_vel = -centered_coords * radii_velocities * transition_func;
 
   jacobian_helper<DataVector>(jac, interpolation_info, extended_coefs,
                               centered_coords, radial_distortion,
-                              one_over_radius, transition_func_over_radius);
+                              transition_func);
 }
 
 template <typename T>
@@ -473,24 +415,6 @@ void Shape::check_size(const gsl::not_null<DataVector*>& coefs,
     // Need to multiply lambda_00 by sqrt(2/pi)
     (*coefs)[0] = M_SQRT1_2 * M_2_SQRTPI * l0m0_spherical_harmonic_coef;
   }
-}
-
-template <typename T>
-T Shape::check_and_compute_one_over_radius(
-    const std::array<T, 3>& centered_coords) const {
-  const T radius = magnitude(centered_coords);
-#ifdef SPECTRE_DEBUG
-  for (size_t i = 0; i < get_size(radius); ++i) {
-    if (get_element(radius, i) == 0.0) {
-      ERROR(
-          "The shape map does not support a (centered) point with radius zero. "
-          "All centered coordinates: "
-          << centered_coords);
-    }
-  }
-#endif  // SPECTRE_DEBUG
-
-  return 1.0 / radius;
 }
 
 bool operator==(const Shape& lhs, const Shape& rhs) {

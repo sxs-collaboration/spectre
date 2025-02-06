@@ -338,7 +338,7 @@ std::array<DataVector, 3> calculate_analytical_map(
         lambda_00_coef, l_max, m_max);
   }
   const DataVector spatial_part =
-      transition_func(centered_coords) / magnitude(centered_coords);
+      transition_func(centered_coords, std::nullopt);
   return target_points - centered_coords * angular_part * spatial_part;
 }
 
@@ -420,10 +420,10 @@ tnsr::Ij<DataVector, 3, Frame::NoFrame> calculate_analytical_jacobian(
 
   // this part essentially duplicates the code from the map
   const DataVector radius = magnitude(centered_coords);
-  const DataVector spatial_part = transition_func(centered_coords) / radius;
+  const DataVector spatial_part =
+      transition_func(centered_coords, std::nullopt);
   const std::array<DataVector, 3> spatial_gradient =
-      transition_func.gradient(centered_coords) / radius -
-      centered_coords * spatial_part / square(radius);
+      transition_func.gradient(centered_coords);
   tnsr::Ij<DataVector, 3, Frame::NoFrame> result(num_points);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {

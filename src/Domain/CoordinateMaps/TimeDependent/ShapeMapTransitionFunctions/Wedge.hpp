@@ -16,16 +16,23 @@
 
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 /*!
- * \brief A transition function that falls off linearly from an inner surface of
- * a wedge to an outer surface of a wedge. Meant to be used in
- * `domain::CoordinateMaps::Wedge` blocks.
+ * \brief A transition function $G(r,\theta,\phi)$ with $f(r,\theta,\phi)$ that
+ * falls off linearly from an inner surface of a wedge to an outer surface of a
+ * wedge. Meant to be used in `domain::CoordinateMaps::Wedge` blocks.
  *
  * \details The functional form of this transition is
  *
  * \begin{equation}
- * f(r, \theta, \phi) = \frac{D_{\text{out}}(r, \theta, \phi) -
- * r}{D_{\text{out}}(r, \theta, \phi) - D_{\text{in}}(r, \theta, \phi)},
- * \label{eq:transition_func}
+ *     G(r,\theta,\phi) = \frac{f(r,\theta,\phi)}{r}
+ *     \label{eq:transition_func}
+ * \end{equation}
+ *
+ * where
+ *
+ * \begin{equation}
+ *     f(r, \theta, \phi) = \frac{D_{\text{out}}(r, \theta, \phi) -
+ *     r}{D_{\text{out}}(r, \theta, \phi) - D_{\text{in}}(r, \theta, \phi)},
+ * \label{eq:linear_transition_func}
  * \end{equation}
  *
  * where, in general,
@@ -37,22 +44,6 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * \label{eq:distance}
  * \end{equation}
  *
- * \note If \p reverse is true, then the functional form of the transition is
- * actually
- * \begin{equation}
- * f(r, \theta, \phi) = 1 - \frac{D_{\text{out}}(r, \theta, \phi) -
- * r}{D_{\text{out}}(r, \theta, \phi) - D_{\text{in}}(r, \theta, \phi)} =
- * \frac{r - \frac{D_{\text{in}}(r, \theta, \phi)}
- * {D_{\text{out}}(r, \theta, \phi) - D_{\text{in}}(r, \theta, \phi)}.
- * \label{eq:transition_func_reverse}
- * \end{equation}
- *
- * The function is also defined beyond $D_{\text{in}}(r, \theta, \phi)$ and
- * $D_{\text{out}}(r, \theta, \phi)$, but slighly differently. Within
- * $D_{\text{in}}(r, \theta, \phi)$, $f(r, \theta, \phi) = 1$ and beyond
- * $D_{\text{out}}(r, \theta, \phi)$, $f(r, \theta, \phi) = 0$. If \p reverse is
- * true, this logic is flipped.
- *
  * Here, $s$ is the sphericity of the surface which goes from 0 (flat) to 1
  * (spherical), $R$ is the radius of the spherical surface, $\text{out}$ is the
  * outer surface, and $\text{in}$ is the inner surface. If the sphericity is 1,
@@ -61,18 +52,48 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * `domain::CoordinateMaps::Wedge` for more of an explanation of these boundary
  * surfaces and their sphericities.
  *
+ * \note If \p reverse is true, then the functional form of the transition is
+ * actually
+ * \begin{equation}
+ * f(r, \theta, \phi) = 1 - \frac{D_{\text{out}}(r, \theta, \phi) -
+ * r}{D_{\text{out}}(r, \theta, \phi) - D_{\text{in}}(r, \theta, \phi)} =
+ * \frac{r - D_{\text{in}}(r, \theta, \phi)}
+ * {D_{\text{out}}(r, \theta, \phi) - D_{\text{in}}(r, \theta, \phi)}.
+ * \label{eq:linear_transition_func_reverse}
+ * \end{equation}
+ *
+ * \parblock
+ *
  * \note Because the shape map distorts only radii and does not affect angles,
  * $D$ is not a function of $r$ so we have that $D(r,\theta,\phi) =
  * D(\theta, \phi)$.
+ *
+ * \endparblock
+ *
+ * The transition function is also defined within $D_{\text{in}}(r, \theta,
+ * \phi)$ if the axis is `Axis::Interior`. Within $D_{\text{in}}(r, \theta,
+ * \phi)$, the transition function is
+ *
+ * \begin{equation}
+ *     \label{eq:interior_transition_func}
+ *     G(r,\theta,\phi) = \frac{r^2}{D_{\text{in}}(r, \theta, \phi)^3} =
+ *     \frac{r^3}{R_0^3}
+ * \end{equation}
+ *
+ * and none of the vector formulation is necessary. This is chosen to match Eq.
+ * $\ref{eq:transition_func}$ at $D_{\text{in}}(r, \theta, \phi)$ and go to 0 at
+ * $r=0$. The second equality is explained by one of the following bullets.
  *
  * There are several assumptions made for this mapping:
  *
  * - The coordinates $r, \theta, \phi$ are assumed to be from the center of the
  *   inner surface, not the center of the computational domain.
  * - The wedges are concentric. (see the constructor) This is also enforced by
- *   the center of the inner surface being within the outer surface
+ *   the center of the inner surface being within the outer surface.
  * - If the centers of the inner and outer surface are different, then the inner
- *   sphericity must be 1 (i.e. $D_{\text{in}} = R$)
+ *   sphericity must be 1 (i.e. $D_{\text{in}} = R$).
+ * - If the axis is `Axis::Interior`, then the inner sphericity must be 1 and
+ *    \p reverse must be false.
  * - The $\max$ in the denominator of $\ref{eq:distance}$ can be simplified a
  *   bit to $\max(|x|, |y|, |z|)/r$. It was written the other way in
  *   $\ref{eq:distance}$ to emphasize that $D$ has no radial dependence.
@@ -92,9 +113,9 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * intersects the outer surface along the same ray as $\vec x - \vec P$. Any
  * cube has a side length of $2L$.
  *
- * In this way, we can reformulate Eq. $\ref{eq:transition_func}$ as
+ * In this way, we can reformulate Eq. $\ref{eq:linear_transition_func}$ as
  *
- * \begin{equation}\label{eq:transition_func_vec}
+ * \begin{equation}\label{eq:linear_transition_func_vec}
  *     f(\vec x) = \frac{|\vec x_1 - \vec P| - r}{|\vec x_1 - \vec P| - |\vec
  * x_0 - \vec P|}
  * \end{equation}
@@ -224,10 +245,22 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  *
  * \begin{equation}
  * \frac{r}{\tilde{r}} =
- * \frac{1}{1-\frac{f(r,\theta,\phi)}{r}\Sigma(\theta,\phi)}
+ * \frac{1}{1-G(r)\Sigma(\theta,\phi)}
  * \end{equation}
  *
- * After plugging in the transition and solving, we get
+ * If the axis is `Axis::Interior`, this formula becomes (after simplification
+ * and because the inner surface must be spherical)
+ *
+ * \begin{equation}
+ *    0 = \left(\frac{r}{\tilde{r}}\right)^3 - \left(\frac{r}{\tilde{r}}\right)
+ *    \frac{R_0^3}{\tilde{r}^2\Sigma(\theta,\phi)} +
+ *    \frac{R_0^3}{\tilde{r}^2\Sigma(\theta,\phi)}
+ * \end{equation}
+ *
+ * This is a special case of a cubic root, so we use the method outlined in
+ * \cite NumericalRecipes on pg 228.
+ *
+ * For other axes, after plugging in $f(r,\theta,\phi)/r$ and solving, we get
  *
  * \begin{equation}
  * \frac{r}{\tilde{r}} = \frac{1 + \frac{|\vec x_1 - \vec P|\Sigma(\theta,
@@ -243,26 +276,21 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  * \parblock
  *
  * \note If \p reverse is true, then the value multiplying $\Sigma$ in the
- * numerator is now $-|\vec x_0 - \vec P|$ and in the denomintor $\Sigma$ picks
+ * numerator is now $-|\vec x_0 - \vec P|$ and in the denominator $\Sigma$ picks
  * up a minus sign factor.
- *
- * \endparblock
- *
- * \parblock
- *
- * \note If we are inside the inner surface, then this simplifies to
- * \begin{equation}
- * \frac{r}{\tilde{r}} = 1 + \frac{\Sigma(\theta, \phi)}{\tilde{r}}
- * \end{equation}
- * because $f(r, \theta, \phi) = 1$. If we are outside the outer surface, then
- * $r/\tilde{r} = 1$ because $f(r, \theta, \phi) = 0$. If \p reverse is true,
- * this logic is reversed.
  *
  * \endparblock
  *
  * ## Gradient
  *
  * The cartesian gradient of the transition function is
+ *
+ * \begin{equation}
+ *     \frac{\partial G}{\partial x_i} = \frac{1}{r}\frac{\partial f}{\partial
+ *     \xi^i} - \frac{f \xi_i}{r^3}
+ * \end{equation}
+ *
+ * where
  *
  * \begin{equation}
  * \frac{\partial f}{\partial x_i} = \frac{\frac{\partial
@@ -275,14 +303,14 @@ namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
  *
  * \note If \p reverse is true, the gradient picks up an overall factor of -1.0.
  *
- * \parblock
+ * If the axis is `Axis::Interior`, then the gradient is
  *
- * \note The gradient is not supported if points lie beyond the inner or outer
- * surface.
+ * \begin{equation}
+ * \frac{\partial G}{\partial x_i} = \frac{2(x_i-P_i)}{R_0^3}
+ * \end{equation}
  *
- * \endparblock
- *
- * Therefore, we need to compute the gradients of $\vec x_0$ and $\vec x_1$.
+ * For the other axes, we need to compute the gradients of $\vec x_0$ and $\vec
+ * x_1$.
  *
  * ### Gradient of vector to inner surface
  *
@@ -397,15 +425,18 @@ class Wedge final : public ShapeMapTransitionFunction {
   /*!
    * \brief Class to represent the direction of the wedge relative to the outer
    * center.
+   *
+   * \details \p Interior means within inner surface.
    */
   enum class Axis : int {
+    Interior = 4,
     PlusZ = 3,
     MinusZ = -3,
     PlusY = 2,
     MinusY = -2,
     PlusX = 1,
     MinusX = -1,
-    None = 0
+    None = 0,
   };
 
   friend std::ostream& operator<<(std::ostream& os, Axis axis);
@@ -425,7 +456,8 @@ class Wedge final : public ShapeMapTransitionFunction {
    * the outermost wedge.
    *
    * \note If \p inner_center and \p outer_center are different, then
-   * \p inner_sphericity must be 1.0.
+   * \p inner_sphericity must be 1.0. if the \p axis is `Axis::Interior`, then
+   * \p inner_sphericity must be 1.0 and \p reverse must be false.
    *
    * \param inner_center Center of the inner surface
    * \param inner_radius Inner radius of innermost wedge
@@ -434,7 +466,7 @@ class Wedge final : public ShapeMapTransitionFunction {
    * \param outer_radius Outermost radius of outermost wedge
    * \param outer_sphericity Sphericity of outermost surface of outermost wedge
    * \param axis The direction that this wedge is in.
-   * \param reverse If true, the transition function will be 0 at the inner
+   * \param reverse If true, the function $f$ will be 0 at the inner
    * boundary and 1 at the outer boundary (useful for deforming star surfaces).
    * Otherwise, it will be 1 at the inner boundary and 0 at the outer boundary
    * (useful for deforming black hole excision surfaces).
@@ -444,9 +476,12 @@ class Wedge final : public ShapeMapTransitionFunction {
         double outer_radius, double outer_sphericity, Axis axis,
         bool reverse = false);
 
-  double operator()(const std::array<double, 3>& source_coords) const override;
+  double operator()(
+      const std::array<double, 3>& source_coords,
+      const std::optional<size_t>& one_over_radius_power) const override;
   DataVector operator()(
-      const std::array<DataVector, 3>& source_coords) const override;
+      const std::array<DataVector, 3>& source_coords,
+      const std::optional<size_t>& one_over_radius_power) const override;
 
   std::optional<double> original_radius_over_radius(
       const std::array<double, 3>& target_coords,
@@ -470,7 +505,8 @@ class Wedge final : public ShapeMapTransitionFunction {
 
  private:
   template <typename T>
-  T call_impl(const std::array<T, 3>& source_coords) const;
+  T call_impl(const std::array<T, 3>& source_coords,
+              const std::optional<size_t>& one_over_radius_power) const;
 
   template <typename T>
   std::array<T, 3> gradient_impl(const std::array<T, 3>& source_coords) const;
@@ -520,8 +556,8 @@ class Wedge final : public ShapeMapTransitionFunction {
                        const std::array<T, 3>& source_coords,
                        bool check_bounds) const;
 
-  Surface inner_surface_{};
-  Surface outer_surface_{};
+  Surface inner_surface_;
+  Surface outer_surface_;
   std::array<double, 3> projection_center_{};
   Axis axis_{};
   bool reverse_{false};
