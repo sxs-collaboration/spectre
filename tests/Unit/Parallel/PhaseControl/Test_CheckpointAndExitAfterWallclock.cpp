@@ -94,19 +94,18 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
         decision_result ==
         std::make_pair(Parallel::Phase::WriteCheckpoint,
                        PhaseControl::ArbitrationStrategy::RunPhaseImmediately));
-    // It's impossible to know what the elapsed wallclock time will be, so we
-    // check the tags one by one...
-    CHECK(tuples::get<PhaseControl::Tags::RestartPhase>(
-              phase_change_decision_data) == Parallel::Phase::Execute);
     // Check recorded time in range: 0 second < time < 1 second
     // (this assumes test run duration falls in this time window)
-    CHECK(tuples::get<PhaseControl::Tags::WallclockHoursAtCheckpoint>(
-              phase_change_decision_data) > 0.0);
+    const double recorded_time =
+        tuples::get<PhaseControl::Tags::WallclockHoursAtCheckpoint>(
+            phase_change_decision_data)
+            .value();
+    CHECK(recorded_time > 0.0);
     const double one_second = 1.0 / 3600.0;
-    CHECK(tuples::get<PhaseControl::Tags::WallclockHoursAtCheckpoint>(
-              phase_change_decision_data) < one_second);
-    CHECK(tuples::get<PhaseControl::Tags::CheckpointAndExitRequested>(
-              phase_change_decision_data) == false);
+    CHECK(recorded_time < one_second);
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{Parallel::Phase::Execute, recorded_time,
+                                  false, true, Parallel::ExitCode::Complete});
   }
   {
     INFO("Restarting from checkpoint");
