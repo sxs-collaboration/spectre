@@ -72,18 +72,21 @@ class TestEccentricityControl(unittest.TestCase):
     def create_yaml_file(self):
         # Define YAML data and write it to the file
         metadata = {
+            "TargetParams": {
+                "MassRatio": 1.0,
+                "MassA": 0.5,
+                "MassB": 0.5,
+                "DimensionlessSpinA": [0.0, 0.0, 0.0],
+                "DimensionlessSpinB": [0.0, 0.0, 0.0],
+                "Eccentricity": 0.0,
+            },
             "Next": {
                 "With": {
-                    "control_params": {
-                        "mass_A": 1.0,
-                        "mass_B": 1.0,
-                        "spin_A": [0.0, 0.0, 0.0],
-                        "spin_B": [0.0, 0.0, 0.0],
-                    },
-                    "refinement_level": 1,
-                    "polynomial_order": 10,
+                    "control": True,
+                    "control_refinement_level": 1,
+                    "control_polynomial_order": 10,
                 }
-            }
+            },
         }
 
         data1 = {
@@ -92,11 +95,16 @@ class TestEccentricityControl(unittest.TestCase):
                     "AngularVelocity": self.angular_velocity,
                     "Expansion": -1e-6,
                     "XCoords": [
-                        self.initial_separation / 2.0,
                         -self.initial_separation / 2.0,
+                        self.initial_separation / 2.0,
                     ],
-                    "ObjectLeft": {"KerrSchild": {"Mass": 0.5}},
-                    "ObjectRight": {"KerrSchild": {"Mass": 0.5}},
+                    "ObjectLeft": {
+                        "KerrSchild": {"Mass": 0.5, "Spin": [0.0, 0.0, 0.0]}
+                    },
+                    "ObjectRight": {
+                        "KerrSchild": {"Mass": 0.5, "Spin": [0.0, 0.0, 0.0]}
+                    },
+                    "CenterOfMassOffset": [0.0, 0.0],
                 },
             }
         }
@@ -112,6 +120,8 @@ class TestEccentricityControl(unittest.TestCase):
             id_input_file_path=self.id_input_file_path,
             pipeline_dir=self.test_dir,
             plot_output_dir=self.test_dir,
+            scheduler=None,
+            submit=False,
         )
 
     def test_cli(self):
@@ -126,6 +136,8 @@ class TestEccentricityControl(unittest.TestCase):
                 self.test_dir,
                 "--plot-output-dir",
                 self.test_dir,
+                "--no-schedule",
+                "--no-submit",
             ],
             catch_exceptions=False,
         )

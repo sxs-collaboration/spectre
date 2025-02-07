@@ -88,8 +88,8 @@ def _render_page(job):
             st.markdown(readme_file.read_text())
 
     # Organize into tabs
-    status_tab, input_file_tab, outfile_tab = st.tabs(
-        ["Status", Path(job["InputFile"]).name, "spectre.out"]
+    status_tab, input_file_tab, submit_script_tab, outfile_tab = st.tabs(
+        ["Status", Path(job["InputFile"]).name, "Submit.sh", "spectre.out"]
     )
 
     # Print input file
@@ -97,6 +97,14 @@ def _render_page(job):
         st.code(
             Path(job["InputFile"]).read_text(),
             language="yaml",
+            line_numbers=True,
+        )
+
+    # Print submit script
+    with submit_script_tab:
+        st.code(
+            (run_dir / "Submit.sh").read_text(),
+            language="bash",
             line_numbers=True,
         )
 

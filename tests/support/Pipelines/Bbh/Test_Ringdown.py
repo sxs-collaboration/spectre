@@ -39,10 +39,13 @@ class TestInitialData(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_a=0.6,
-            mass_b=0.4,
-            dimensionless_spin_a=[0.0, 0.0, 0.0],
-            dimensionless_spin_b=[0.0, 0.0, 0.0],
+            {
+                "MassRatio": 1.5,
+                "MassA": 0.6,
+                "MassB": 0.4,
+                "DimensionlessSpinA": [0.0, 0.0, 0.0],
+                "DimensionlessSpinB": [0.0, 0.0, 0.0],
+            },
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,
@@ -172,11 +175,14 @@ class TestInitialData(unittest.TestCase):
 
     def test_ringdown_parameters(self):
         with open(self.inspiral_dir / "Inspiral.yaml") as open_input_file:
-            _, inspiral_input_file = yaml.safe_load_all(open_input_file)
+            inspiral_metadata, inspiral_input_file = yaml.safe_load_all(
+                open_input_file
+            )
         params = ringdown_parameters(
             inspiral_input_file,
+            inspiral_metadata,
             self.inspiral_dir,
-            "ForContinuation",
+            fot_vol_subfile="ForContinuation",
             refinement_level=1,
             polynomial_order=5,
         )

@@ -3,10 +3,11 @@
 
 import logging
 from pathlib import Path
-from typing import Optional, Sequence, Union
+from typing import Dict, Literal, Optional, Sequence, Union
 
 import click
 import numpy as np
+import yaml
 from rich.pretty import pretty_repr
 
 from spectre.Pipelines.EccentricityControl.InitialOrbitalParameters import (
@@ -19,6 +20,20 @@ logger = logging.getLogger(__name__)
 
 ID_INPUT_FILE_TEMPLATE = Path(__file__).parent / "InitialData.yaml"
 
+TargetParams = Literal[
+    "MassRatio",
+    "MassA",
+    "MassB",
+    "DimensionlessSpinA",
+    "DimensionlessSpinB",
+    "CenterOfMass",
+    "LinearMomentum",
+    "Eccentricity",
+    "MeanAnomalyFraction",
+    "NumOrbits",
+    "TimeToMerger",
+]
+
 
 def L1_distance(m1, m2, separation):
     """Distance of the L1 Lagrangian point from m1, in Newtonian gravity"""
@@ -26,10 +41,10 @@ def L1_distance(m1, m2, separation):
 
 
 def id_parameters(
-    mass_a: float,
-    mass_b: float,
-    dimensionless_spin_a: Sequence[float],
-    dimensionless_spin_b: Sequence[float],
+    conformal_mass_a: float,
+    conformal_mass_b: float,
+    conformal_spin_a: Sequence[float],
+    conformal_spin_b: Sequence[float],
     center_of_mass_offset: Sequence[float],
     linear_velocity: Sequence[float],
     separation: float,
@@ -43,10 +58,10 @@ def id_parameters(
     These parameters fill the 'ID_INPUT_FILE_TEMPLATE'.
 
     Arguments:
-      mass_a: Mass of the larger black hole.
-      mass_b: Mass of the smaller black hole.
-      dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
-      dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
+      conformal_mass_a: Mass parameter of the larger black hole.
+      conformal_mass_b: Mass parameter of the smaller black hole.
+      conformal_spin_a: Spin parameter of the larger black hole, chi_A.
+      conformal_spin_b: Spin parameter of the smaller black hole, chi_B.
       center_of_mass_offset: Offset from the Newtonian center of mass.
       linear_velocity: Velocity added to the shift boundary condition.
       separation: Coordinate separation D of the black holes.
@@ -55,27 +70,29 @@ def id_parameters(
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
     """
-
-    x_A = mass_b / (mass_a + mass_b) * separation + center_of_mass_offset[0]
+    x_A = (
+        conformal_mass_b / (conformal_mass_a + conformal_mass_b) * separation
+        + center_of_mass_offset[0]
+    )
     x_B = x_A - separation
 
     # Spins
-    chi_A = np.asarray(dimensionless_spin_a)
-    r_plus_A = mass_a * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
+    chi_A = np.asarray(conformal_spin_a)
+    r_plus_A = conformal_mass_a * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
     Omega_A = -0.5 * chi_A / r_plus_A
     Omega_A[2] += orbital_angular_velocity
-    chi_B = np.asarray(dimensionless_spin_b)
-    r_plus_B = mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
+    chi_B = np.asarray(conformal_spin_b)
+    r_plus_B = conformal_mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
     Omega_B = -0.5 * chi_B / r_plus_B
     Omega_B[2] += orbital_angular_velocity
     # Falloff widths of superposition
-    L1_dist_A = L1_distance(mass_a, mass_b, separation)
+    L1_dist_A = L1_distance(conformal_mass_a, conformal_mass_b, separation)
     L1_dist_B = separation - L1_dist_A
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
     return {
-        "MassRight": mass_a,
-        "MassLeft": mass_b,
+        "ConformalMassRight": conformal_mass_a,
+        "ConformalMassLeft": conformal_mass_b,
         "XRight": x_A,
         "XLeft": x_B,
         "CenterOfMassOffset_y": center_of_mass_offset[1],
@@ -87,12 +104,12 @@ def id_parameters(
         "ExcisionRadiusLeft": 0.93 * r_plus_B,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
-        "DimensionlessSpinRight_x": chi_A[0],
-        "DimensionlessSpinRight_y": chi_A[1],
-        "DimensionlessSpinRight_z": chi_A[2],
-        "DimensionlessSpinLeft_x": chi_B[0],
-        "DimensionlessSpinLeft_y": chi_B[1],
-        "DimensionlessSpinLeft_z": chi_B[2],
+        "ConformalSpinRight_x": chi_A[0],
+        "ConformalSpinRight_y": chi_A[1],
+        "ConformalSpinRight_z": chi_A[2],
+        "ConformalSpinLeft_x": chi_B[0],
+        "ConformalSpinLeft_y": chi_B[1],
+        "ConformalSpinLeft_z": chi_B[2],
         "HorizonRotationRight_x": Omega_A[0],
         "HorizonRotationRight_y": Omega_A[1],
         "HorizonRotationRight_z": Omega_A[2],
@@ -108,15 +125,16 @@ def id_parameters(
 
 
 def generate_id(
-    mass_a: float,
-    mass_b: float,
-    dimensionless_spin_a: Sequence[float],
-    dimensionless_spin_b: Sequence[float],
+    target_params: Dict[TargetParams, Union[float, Sequence[float]]],
     # Orbital parameters
-    separation: float,
-    orbital_angular_velocity: float,
-    radial_expansion_velocity: float,
+    separation: Optional[float] = None,
+    orbital_angular_velocity: Optional[float] = None,
+    radial_expansion_velocity: Optional[float] = None,
     # Control parameters
+    conformal_mass_a: Optional[float] = None,
+    conformal_mass_b: Optional[float] = None,
+    conformal_spin_a: Optional[Sequence[float]] = None,
+    conformal_spin_b: Optional[Sequence[float]] = None,
     center_of_mass_offset: Sequence[float] = [0.0, 0.0, 0.0],
     linear_velocity: Sequence[float] = [0.0, 0.0, 0.0],
     # Resolution
@@ -139,26 +157,30 @@ def generate_id(
     'id_input_file_template'. The remaining options are forwarded to the
     'schedule' command. See 'schedule' docs for details.
 
-    The orbital parameters can be computed with the function
+    The 'target_params' are the parameters that the simulation should converge
+    to. These values will never change during the simulation. Two control loops
+    will try to drive the simulation towards these values, i.e., ID control
+    (enable with 'control=True') and eccentricity control (enable with
+    'eccentricity_control=True').
+
+    ## ID control
+
+    The ID control loop adjusts the conformal masses and spins to drive the
+    horizon masses and spins to the specified values in a series of consecutive
+    initial data solves. See 'support.Pipelines.Bbh.ControlId' for details. If
+    unspecified, initial guesses for the conformal masses and spins default to
+    the target masses and spins.
+
+    ## Eccentricity control
+
+    The eccentricity control loop adjusts the orbital parameters (initial
+    coordinate separation D_0, orbital angular velocity Omega_0, and radial
+    expansion velocity adot_0) to drive the eccentricity to the specified value
+    in a series of short evolutions. See
+    'support.Pipelines.Bbh.EccentricityControl' for details. If unspecified,
+    initial guesses for the orbital parameters are obtained with the function
     'initial_orbital_parameters' in
     'support.Pipelines.EccentricityControl.InitialOrbitalParameters'.
-
-    Intrinsic parameters:
-      mass_a: Mass of the larger black hole.
-      mass_b: Mass of the smaller black hole.
-      dimensionless_spin_a: Dimensionless spin of the larger black hole, chi_A.
-      dimensionless_spin_b: Dimensionless spin of the smaller black hole, chi_B.
-
-    Orbital parameters:
-      separation: Coordinate separation D of the black holes.
-      orbital_angular_velocity: Omega_0.
-      radial_expansion_velocity: adot_0.
-
-    Control parameters:
-      center_of_mass_offset: Offset from the Newtonian center of mass.
-        (default: [0., 0., 0.])
-      linear_velocity: Velocity added to the shift boundary condition.
-        (default: [0., 0., 0.])
 
     Scheduling options:
       id_input_file_template: Input file template where parameters are inserted.
@@ -216,12 +238,35 @@ def generate_id(
         run_dir = f"{run_dir}/ControlParams_000"
         out_file_name = f"../{out_file_name}"
 
+    # Determine orbital parameters
+    if (
+        separation is None
+        or orbital_angular_velocity is None
+        or radial_expansion_velocity is None
+    ):
+        separation, orbital_angular_velocity, radial_expansion_velocity = (
+            initial_orbital_parameters(
+                target_params,
+                separation=separation,
+                orbital_angular_velocity=orbital_angular_velocity,
+                radial_expansion_velocity=radial_expansion_velocity,
+            )
+        )
+    if eccentricity_control:
+        assert (
+            target_params["Eccentricity"] is not None
+        ), "For eccentricity control the target eccentricity must be set."
+
     # Determine initial data parameters from options
     id_params = id_parameters(
-        mass_a=mass_a,
-        mass_b=mass_b,
-        dimensionless_spin_a=dimensionless_spin_a,
-        dimensionless_spin_b=dimensionless_spin_b,
+        conformal_mass_a=conformal_mass_a or target_params["MassA"],
+        conformal_mass_b=conformal_mass_b or target_params["MassB"],
+        conformal_spin_a=(
+            conformal_spin_a or target_params["DimensionlessSpinA"]
+        ),
+        conformal_spin_b=(
+            conformal_spin_b or target_params["DimensionlessSpinB"]
+        ),
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,
@@ -231,6 +276,11 @@ def generate_id(
         polynomial_order=polynomial_order,
     )
     logger.debug(f"Initial data parameters: {pretty_repr(id_params)}")
+
+    # Store target parameters in the input file
+    id_params["TargetParams"] = yaml.safe_dump(
+        {"TargetParams": target_params}
+    ).strip()
 
     # Schedule!
     return schedule(
@@ -408,30 +458,26 @@ def generate_id_command(
     **kwargs,
 ):
     _rich_traceback_guard = True  # Hide traceback until here
-    # Determine orbital parameters
-    separation, orbital_angular_velocity, radial_expansion_velocity = (
-        initial_orbital_parameters(
-            mass_ratio=mass_ratio,
-            dimensionless_spin_a=dimensionless_spin_a,
-            dimensionless_spin_b=dimensionless_spin_b,
-            separation=separation,
-            orbital_angular_velocity=orbital_angular_velocity,
-            radial_expansion_velocity=radial_expansion_velocity,
-            eccentricity=eccentricity,
-            mean_anomaly_fraction=mean_anomaly_fraction,
-            num_orbits=num_orbits,
-            time_to_merger=time_to_merger,
-        )
-    )
-
-    mass_a = mass_ratio / (1.0 + mass_ratio)
-    mass_b = 1.0 / (1.0 + mass_ratio)
+    target_params = {
+        "MassRatio": mass_ratio,
+        "MassA": mass_ratio / (1.0 + mass_ratio),
+        "MassB": 1.0 / (1.0 + mass_ratio),
+        "DimensionlessSpinA": dimensionless_spin_a,
+        "DimensionlessSpinB": dimensionless_spin_b,
+        "Eccentricity": eccentricity,
+        "MeanAnomalyFraction": mean_anomaly_fraction,
+        "NumOrbits": num_orbits,
+        "TimeToMerger": time_to_merger,
+        "CenterOfMass": [0.0, 0.0, 0.0],
+        "LinearMomentum": [0.0, 0.0, 0.0],
+    }
+    if kwargs["eccentricity_control"]:
+        # Only circular orbits are currently supported for eccentricity control,
+        # so set target eccentricity to zero
+        target_params["Eccentricity"] = 0.0
 
     generate_id(
-        mass_a=mass_a,
-        mass_b=mass_b,
-        dimensionless_spin_a=dimensionless_spin_a,
-        dimensionless_spin_b=dimensionless_spin_b,
+        target_params,
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,

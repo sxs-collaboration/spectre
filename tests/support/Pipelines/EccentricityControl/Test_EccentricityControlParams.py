@@ -63,15 +63,24 @@ class TestEccentricityControlParams(unittest.TestCase):
         with open(self.id_input_file_path, "w") as open_input_file:
             yaml.safe_dump_all(
                 [
-                    {},
+                    {
+                        "TargetParams": {
+                            "MassRatio": 1.0,
+                            "MassA": 0.5,
+                            "MassB": 0.5,
+                            "DimensionlessSpinA": [0.0, 0.0, 0.0],
+                            "DimensionlessSpinB": [0.0, 0.0, 0.0],
+                            "Eccentricity": 0.0,
+                        }
+                    },
                     {
                         "Background": {
                             "Binary": {
                                 "AngularVelocity": self.angular_velocity,
                                 "Expansion": -1e-6,
                                 "XCoords": [
-                                    self.initial_separation / 2.0,
                                     -self.initial_separation / 2.0,
+                                    self.initial_separation / 2.0,
                                 ],
                                 "ObjectLeft": {"KerrSchild": {"Mass": 0.5}},
                                 "ObjectRight": {"KerrSchild": {"Mass": 0.5}},

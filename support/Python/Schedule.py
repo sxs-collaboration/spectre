@@ -372,6 +372,7 @@ def schedule(
     template_env = jinja2.Environment(
         undefined=jinja2.StrictUndefined,
         trim_blocks=True,
+        lstrip_blocks=True,
         keep_trailing_newline=True,
     )
 

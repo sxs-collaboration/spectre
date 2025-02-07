@@ -28,10 +28,13 @@ class TestInspiral(unittest.TestCase):
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.bin_dir = Path(unit_test_build_path(), "../../bin").resolve()
         generate_id(
-            mass_a=0.6,
-            mass_b=0.4,
-            dimensionless_spin_a=[0.0, 0.0, 0.0],
-            dimensionless_spin_b=[0.0, 0.0, 0.0],
+            {
+                "MassRatio": 1.5,
+                "MassA": 0.6,
+                "MassB": 0.4,
+                "DimensionlessSpinA": [0.0, 0.0, 0.0],
+                "DimensionlessSpinB": [0.0, 0.0, 0.0],
+            },
             separation=20.0,
             orbital_angular_velocity=0.01,
             radial_expansion_velocity=-1.0e-5,
@@ -59,9 +62,10 @@ class TestInspiral(unittest.TestCase):
 
     def test_inspiral_parameters(self):
         with open(self.id_dir / "InitialData.yaml") as open_input_file:
-            _, id_input_file = yaml.safe_load_all(open_input_file)
+            id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
         params = inspiral_parameters(
             id_input_file=id_input_file,
+            id_metadata=id_metadata,
             id_run_dir=self.id_dir,
             id_horizons_path=self.horizons_filename,
             refinement_level=1,
@@ -94,23 +98,23 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["P"], 5)
         # Control system
         self.assertEqual(params["MaxDampingTimescale"], 20.0)
-        self.assertEqual(params["KinematicTimescale"], 0.4)
-        self.assertAlmostEqual(params["SizeATimescale"], 0.04)
-        self.assertAlmostEqual(params["SizeBTimescale"], 0.04)
-        self.assertAlmostEqual(params["ShapeATimescale"], 2.0)
-        self.assertAlmostEqual(params["ShapeBTimescale"], 2.0)
+        self.assertEqual(params["KinematicTimescale"], 0.2)
+        self.assertAlmostEqual(params["SizeATimescale"], 0.024)
+        self.assertAlmostEqual(params["SizeBTimescale"], 0.016)
+        self.assertAlmostEqual(params["ShapeATimescale"], 1.0)
+        self.assertAlmostEqual(params["ShapeBTimescale"], 1.0)
         self.assertEqual(params["SizeIncreaseThreshold"], 1e-3)
-        self.assertEqual(params["DecreaseThreshold"], 1e-4)
-        self.assertEqual(params["IncreaseThreshold"], 2.5e-5)
+        self.assertEqual(params["DecreaseThreshold"], 6 / 130 * 2e-3)
+        self.assertEqual(params["IncreaseThreshold"], 1.5 / 130 * 2e-3)
         self.assertEqual(params["SizeAMaxTimescale"], 20)
         self.assertEqual(params["SizeBMaxTimescale"], 20)
         # Constraint damping
-        self.assertEqual(params["Gamma0Constant"], 5e-3)
-        self.assertEqual(params["Gamma0LeftAmplitude"], 4.0)
-        self.assertEqual(params["Gamma0LeftWidth"], 7.0)
-        self.assertEqual(params["Gamma0RightAmplitude"], 4.0)
-        self.assertEqual(params["Gamma0RightWidth"], 7.0)
-        self.assertEqual(params["Gamma0OriginAmplitude"], 3.75e-1)
+        self.assertEqual(params["Gamma0Constant"], 0.01)
+        self.assertEqual(params["Gamma0LeftAmplitude"], 4.0 / 0.4)
+        self.assertEqual(params["Gamma0LeftWidth"], 7.0 * 0.4)
+        self.assertEqual(params["Gamma0RightAmplitude"], 4.0 / 0.6)
+        self.assertEqual(params["Gamma0RightWidth"], 7.0 * 0.6)
+        self.assertEqual(params["Gamma0OriginAmplitude"], 0.75)
         self.assertEqual(params["Gamma0OriginWidth"], 50.0)
         self.assertEqual(params["Gamma1Width"], 200.0)
 
