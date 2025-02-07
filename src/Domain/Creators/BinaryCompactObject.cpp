@@ -40,6 +40,7 @@
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
+#include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -713,20 +714,22 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
         time_dependent_options_
             ->grid_to_inertial_map<domain::ObjectLabel::None>(std::nullopt,
                                                               true);
-    // Inside the excision sphere we add the grid to inertial map from the
-    // envelope. This allows the center of the excisions/horizons to be mapped
-    // properly to the inertial frame.
+    // Inside the excision sphere we add a special grid to inertial map that can
+    // be evaluated at the center. This allows the center of the
+    // excisions/horizons to be mapped properly to the inertial frame.
     if (is_excised_a_ and
         grid_to_inertial_block_maps[number_of_blocks_ - 1] != nullptr) {
       domain.inject_time_dependent_map_for_excision_sphere(
           "ExcisionSphereA",
-          grid_to_inertial_block_maps[final_block_envelope]->get_clone());
+          time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::A>(
+              {0}, true, true));
     }
     if (is_excised_b_ and
         grid_to_inertial_block_maps[number_of_blocks_ - 1] != nullptr) {
       domain.inject_time_dependent_map_for_excision_sphere(
           "ExcisionSphereB",
-          grid_to_inertial_block_maps[final_block_envelope]->get_clone());
+          time_dependent_options_->grid_to_inertial_map<domain::ObjectLabel::B>(
+              {0}, true, true));
     }
 
     const size_t first_block_object_B = use_single_block_a_ ? 1 : 12;

@@ -622,8 +622,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       *binary_compact_object, with_boundary_conditions, false, times_to_check);
 
-  const auto& blocks = domain.blocks();
-  const auto& final_envelope_block = excise_B ? blocks[33] : blocks[21];
+  const auto& excision_spheres = domain.excision_spheres();
 
   std::unordered_map<std::string, ExcisionSphere<3>>
       expected_excision_spheres{};
@@ -638,10 +637,13 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                          {4, Direction<3>::lower_zeta()},
                          {5, Direction<3>::lower_zeta()}}});
   if (with_time_dependence) {
+    // Unfortunately, it'd be very hard to create the grid to inertial map
+    // necessary for the excision outside of the TimeDependentOptions class so
+    // we just clone the actual one here.
     expected_excision_spheres.at("ExcisionSphereA")
-        .inject_time_dependent_maps(
-            final_envelope_block.moving_mesh_grid_to_inertial_map()
-                .get_clone());
+        .inject_time_dependent_maps(excision_spheres.at("ExcisionSphereA")
+                                        .moving_mesh_grid_to_inertial_map()
+                                        .get_clone());
   }
   if (excise_B) {
     expected_excision_spheres.emplace(
@@ -655,14 +657,16 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                            {16, Direction<3>::lower_zeta()},
                            {17, Direction<3>::lower_zeta()}}});
     if (with_time_dependence) {
+      // Unfortunately, it'd be very hard to create the grid to inertial map
+      // necessary for the excision outside of the TimeDependentOptions class so
+      // we just clone the actual one here.
       expected_excision_spheres.at("ExcisionSphereB")
-          .inject_time_dependent_maps(
-              final_envelope_block.moving_mesh_grid_to_inertial_map()
-                  .get_clone());
+          .inject_time_dependent_maps(excision_spheres.at("ExcisionSphereB")
+                                          .moving_mesh_grid_to_inertial_map()
+                                          .get_clone());
     }
   }
 
-  const auto& excision_spheres = domain.excision_spheres();
   CHECK(excision_spheres == expected_excision_spheres);
 
   const auto check_excision_sphere_map =

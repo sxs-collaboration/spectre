@@ -329,12 +329,18 @@ struct TimeDependentMapOptions {
    * `Shape` (with size FunctionOfTime) and `RotScaleTrans` map. If
    * not, there will only be a `RotScaleTrans` map.
    *
+   * If \p return_excision_map is true, this will use a special shape map within
+   * the excision. Also if \p return_excision_map is true, then
+   * \p include_distorted_map must be either 'true' (if \p IsCylindrical is
+   * true) or have a value less than 6, but it doesn't matter what value
+   * (because inside the excision isn't a specific block).
+   *
    * \see IncludeDistortedMapType
    */
   template <domain::ObjectLabel Object>
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      const IncludeDistortedMapType& include_distorted_map,
-      bool use_rigid_map) const;
+      const IncludeDistortedMapType& include_distorted_map, bool use_rigid_map,
+      bool return_excision_map = false) const;
 
   // Names are public because they need to be used when constructing maps in the
   // BCO domain creators themselves
@@ -366,8 +372,8 @@ struct TimeDependentMapOptions {
   std::optional<std::pair<RotScaleTrans, RotScaleTrans>> rot_scale_trans_map_{};
   std::optional<Skew> skew_map_{};
   using ShapeMapType =
-      tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 2>,
-                          std::array<std::array<std::optional<Shape>, 12>, 2>>;
+      tmpl::conditional_t<IsCylindrical, std::array<std::optional<Shape>, 4>,
+                          std::array<std::array<std::optional<Shape>, 13>, 2>>;
   ShapeMapType shape_maps_{};
 
   // helper function that creates the functions of time used by the worldtube

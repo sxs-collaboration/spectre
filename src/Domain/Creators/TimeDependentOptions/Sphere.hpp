@@ -183,7 +183,7 @@ struct TimeDependentMapOptions {
    * transition to zero.
    */
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      size_t block_number, bool is_outer_shell, bool is_inner_cube) const;
+      size_t block_number, bool is_outer_shell, bool is_central_region) const;
 
   /*!
    * \brief Whether or not the distorted frame is being used. I.e. whether or

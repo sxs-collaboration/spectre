@@ -433,6 +433,12 @@ void test(const bool include_expansion, const bool include_rotation,
     const auto grid_to_inertial_map_B =
         time_dep_options.template grid_to_inertial_map<domain::ObjectLabel::B>(
             include_distorted_map_B, true);
+    const auto grid_to_inertial_map_excision_A =
+        time_dep_options.template grid_to_inertial_map<domain::ObjectLabel::A>(
+            include_distorted_map_A, true, true);
+    const auto grid_to_inertial_map_excision_B =
+        time_dep_options.template grid_to_inertial_map<domain::ObjectLabel::B>(
+            include_distorted_map_B, true, true);
     // Even though the distorted to inertial map is not tied to a specific
     // object, we use `excise_?` to determine if the distorted map is
     // included just for testing.
@@ -476,6 +482,14 @@ void test(const bool include_expansion, const bool include_rotation,
     {
       INFO("grid_to_inertial_map_B");
       check_map(grid_to_inertial_map_B, false, false);
+    }
+    {
+      INFO("grid_to_inertial_map_excision_A");
+      check_map(grid_to_inertial_map_excision_A, false, false);
+    }
+    {
+      INFO("grid_to_inertial_map_excision_B");
+      check_map(grid_to_inertial_map_excision_B, false, false);
     }
     {
       INFO("distorted_to_inertial_map_A");

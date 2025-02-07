@@ -383,6 +383,13 @@ Domain<3> Sphere::create_domain() const {
             hard_coded_options.grid_to_inertial_map(
                 block_number, is_outer_shell, is_inner_cube);
       }
+
+      // Inject time dependent map into the excision
+      if (not fill_interior_ and which_wedges_ == ShellWedges::All) {
+        domain.inject_time_dependent_map_for_excision_sphere(
+            "ExcisionSphere",
+            hard_coded_options.grid_to_inertial_map(0, false, true));
+      }
     } else {
       const auto& time_dependence = std::get<std::unique_ptr<
           domain::creators::time_dependence::TimeDependence<3>>>(

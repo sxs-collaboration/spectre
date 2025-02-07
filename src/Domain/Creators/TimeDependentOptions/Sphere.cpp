@@ -168,6 +168,15 @@ void TimeDependentMapOptions::build_maps(
       shape_maps_[0] =
           ShapeMap{center,     l_max,    l_max, std::move(transition_func),
                    shape_name, size_name};
+
+      // Interior map
+      transition_func =
+          std::make_unique<domain::CoordinateMaps::ShapeMapTransitionFunctions::
+                               SphereTransition>(
+              inner_radius, shape_outer_radius, false, true);
+      shape_maps_[1] =
+          ShapeMap{center,     l_max,    l_max, std::move(transition_func),
+                   shape_name, size_name};
     }
   }
 
@@ -250,12 +259,12 @@ TimeDependentMapOptions::grid_to_distorted_map(const size_t block_number,
 }
 
 TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>
-TimeDependentMapOptions::grid_to_inertial_map(const size_t block_number,
-                                              const bool is_outer_shell,
-                                              const bool is_inner_cube) const {
+TimeDependentMapOptions::grid_to_inertial_map(
+    const size_t block_number, const bool is_outer_shell,
+    const bool is_central_region) const {
   const bool block_has_shape_map = shape_map_options_.has_value() and
                                    block_number < (filled_ ? 12 : 6) and
-                                   not is_inner_cube;
+                                   not(is_central_region and filled_);
   if (block_has_shape_map) {
     // If the interior is not filled we use the SphereTransition function and
     // build only one shape map at index 0 (see `build_maps` above). Otherwise,
@@ -263,7 +272,8 @@ TimeDependentMapOptions::grid_to_inertial_map(const size_t block_number,
     // direction, so we have to use the block number here to get the correct
     // shape map.
     return std::make_unique<GridToInertialComposition>(
-        gsl::at(shape_maps_, filled_ ? block_number : 0),
+        gsl::at(shape_maps_,
+                filled_ ? block_number : (is_central_region ? 1 : 0)),
         inner_rot_scale_trans_map_);
   } else if (is_outer_shell and transition_rot_scale_trans_) {
     return std::make_unique<GridToInertialSimple>(
