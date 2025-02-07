@@ -55,7 +55,8 @@ using all_tags = measurement_queue::type::queue_tags_list;
 
 size_t message_queue_call_count = 0;
 
-template <typename QueueTag, typename LinkedMessageQueueTag, typename Processor>
+template <typename LinkedMessageQueueTag, typename Processor,
+          typename... QueueTags>
 struct MockUpdateMessageQueue {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
@@ -65,7 +66,7 @@ struct MockUpdateMessageQueue {
       const ArrayIndex& /*array_index*/,
       const LinkedMessageId<typename LinkedMessageQueueTag::type::IdType>&
       /*id_and_previous*/,
-      typename QueueTag::type /*message*/) {
+      typename QueueTags::type... /*message*/) {
     ++message_queue_call_count;
   }
 };
@@ -73,13 +74,13 @@ struct MockUpdateMessageQueue {
 // The Nvidia compiler crashes if we define these lists inside the MockComponent
 // struct.
 using replace_these_simple_actions_mock_component = tmpl::transform<
-    all_tags, tmpl::bind<::Actions::UpdateMessageQueue, tmpl::_1,
-                         tmpl::pin<measurement_queue>,
-                         tmpl::pin<control_system::UpdateControlSystem<size>>>>;
+    all_tags,
+    tmpl::bind<::Actions::UpdateMessageQueue, tmpl::pin<measurement_queue>,
+               tmpl::pin<control_system::UpdateControlSystem<size>>, tmpl::_1>>;
 using with_these_simple_actions_mock_component = tmpl::transform<
     all_tags,
-    tmpl::bind<MockUpdateMessageQueue, tmpl::_1, tmpl::pin<measurement_queue>,
-               tmpl::pin<control_system::UpdateControlSystem<size>>>>;
+    tmpl::bind<MockUpdateMessageQueue, tmpl::pin<measurement_queue>,
+               tmpl::pin<control_system::UpdateControlSystem<size>>, tmpl::_1>>;
 
 template <typename Metavariables>
 struct MockComponent

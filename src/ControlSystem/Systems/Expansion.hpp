@@ -20,6 +20,7 @@
 #include "ControlSystem/UpdateControlSystem.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -117,9 +118,9 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
       DataVector center(horizon_strahlkorper.physical_center());
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<Horizon>, MeasurementQueue,
-          UpdateControlSystem<Expansion>>>(control_sys_proxy, measurement_id,
-                                           std::move(center));
+          MeasurementQueue, UpdateControlSystem<Expansion>,
+          QueueTags::Center<Horizon>>>(control_sys_proxy, measurement_id,
+                                       std::move(center));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
@@ -140,13 +141,11 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
           cache);
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::A>, MeasurementQueue,
-          UpdateControlSystem<Expansion>>>(control_sys_proxy, measurement_id,
-                                           DataVector(center_a));
-      Parallel::simple_action<::Actions::UpdateMessageQueue<
-          QueueTags::Center<::domain::ObjectLabel::B>, MeasurementQueue,
-          UpdateControlSystem<Expansion>>>(control_sys_proxy, measurement_id,
-                                           DataVector(center_b));
+          MeasurementQueue, UpdateControlSystem<Expansion>,
+          QueueTags::Center<::domain::ObjectLabel::A>,
+          QueueTags::Center<::domain::ObjectLabel::B>>>(
+          control_sys_proxy, measurement_id, DataVector(center_a),
+          DataVector(center_b));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",

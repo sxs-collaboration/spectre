@@ -118,8 +118,8 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
                                            const LinkedMessageId<int>& id,
                                            auto data) -> decltype(auto) {
     ActionTesting::simple_action<
-        component, Actions::UpdateMessageQueue<
-                       decltype(queue_v), LinkedMessageQueueTag, Processor>>(
+        component, Actions::UpdateMessageQueue<LinkedMessageQueueTag, Processor,
+                                               decltype(queue_v)>>(
         make_not_null(&runner), 0, id, std::move(data));
     return db::mutate<ProcessorCalls>(
         [](const gsl::not_null<ProcessorCalls::type*> calls) {
@@ -131,9 +131,20 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
             &ActionTesting::get_databox<component>(make_not_null(&runner), 0)));
   };
 
-  CHECK(processed_by_call(Queue1{}, {0, {}}, 1.23).empty());
   {
-    const auto processed = processed_by_call(Queue2{}, {0, {}}, 2.34);
+    // Test two tags at once
+    ActionTesting::simple_action<
+        component, Actions::UpdateMessageQueue<LinkedMessageQueueTag, Processor,
+                                               Queue1, Queue2>>(
+        make_not_null(&runner), 0, LinkedMessageId<int>{0, {}}, 1.23, 2.34);
+    const auto processed = db::mutate<ProcessorCalls>(
+        [](const gsl::not_null<ProcessorCalls::type*> calls) {
+          auto ret = std::move(*calls);
+          calls->clear();
+          return ret;
+        },
+        make_not_null(
+            &ActionTesting::get_databox<component>(make_not_null(&runner), 0)));
     CHECK(processed.size() == 1);
 
     CHECK(processed[0].first == 0);

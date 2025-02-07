@@ -64,9 +64,10 @@ struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
       auto& control_system_proxy = Parallel::get_parallel_component<
           ControlComponent<Metavariables, System>>(cache);
       Parallel::simple_action<::Actions::UpdateMessageQueue<
-          SubmeasurementQueueTag, MeasurementQueue,
-          control_system::TestHelpers::SomeControlSystemUpdater>>(
-          control_system_proxy, measurement_id, measurement_result);
+          MeasurementQueue,
+          control_system::TestHelpers::SomeControlSystemUpdater,
+          SubmeasurementQueueTag>>(control_system_proxy, measurement_id,
+                                   measurement_result);
     }
   };
 };

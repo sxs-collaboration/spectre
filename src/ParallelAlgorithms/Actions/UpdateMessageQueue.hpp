@@ -34,7 +34,8 @@ namespace Actions {
 /// `Queue1` and `Queue2` with ID type `int` is:
 ///
 /// \snippet Test_UpdateMessageQueue.cpp Processor::apply
-template <typename QueueTag, typename LinkedMessageQueueTag, typename Processor>
+template <typename LinkedMessageQueueTag, typename Processor,
+          typename... QueueTags>
 struct UpdateMessageQueue {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
@@ -43,16 +44,18 @@ struct UpdateMessageQueue {
       const ArrayIndex& array_index,
       const LinkedMessageId<typename LinkedMessageQueueTag::type::IdType>&
           id_and_previous,
-      typename QueueTag::type message) {
+      typename QueueTags::type... messages) {
     if (not domain::functions_of_time_are_ready_simple_action_callback<
             domain::Tags::FunctionsOfTime, UpdateMessageQueue>(
             cache, array_index, std::add_pointer_t<ParallelComponent>{nullptr},
-            id_and_previous.id, std::nullopt, id_and_previous, message)) {
+            id_and_previous.id, std::nullopt, id_and_previous,
+            std::move(messages)...)) {
       return;
     }
     auto& queue =
         db::get_mutable_reference<LinkedMessageQueueTag>(make_not_null(&box));
-    queue.template insert<QueueTag>(id_and_previous, std::move(message));
+    queue.template insert<QueueTags...>(id_and_previous,
+                                        std::move(messages)...);
     while (auto id = queue.next_ready_id()) {
       Processor::apply(make_not_null(&box), cache, array_index, *id,
                        queue.extract());

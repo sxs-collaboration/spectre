@@ -6,6 +6,7 @@
 #include <optional>
 #include <ostream>
 #include <pup.h>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -42,6 +43,17 @@ class LinkedMessageQueue<Id, tmpl::list<QueueTags...>> {
   template <typename Tag>
   void insert(const LinkedMessageId<Id>& id_and_previous,
               typename Tag::type message);
+
+  /// Insert multiple data at once into a given queue at a given ID.  All queues
+  /// must receive data with the same collection of \p id_and_previous, but are
+  /// not required to receive them in the same order.
+  ///
+  /// \details Tags are inserted in the order they are passed in. Duplicate tags
+  /// are not allowed.
+  template <typename Tag1, typename Tag2, typename... Tags>
+  void insert(const LinkedMessageId<Id>& id_and_previous,
+              typename Tag1::type message_1, typename Tag2::type message_2,
+              typename Tags::type... messages);
 
   /// The next ID in the received sequence, if all queues have
   /// received messages at that ID.
@@ -84,14 +96,37 @@ void LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::insert(
                    std::pair{id_and_previous.id, OptionalTuple{}}})
           .first;
   auto& [id, tuple] = entry->second;
-  ASSERT(id_and_previous.id == id,
-         "Received messages with different ids (" << id << " and "
-         << id_and_previous.id << ") but the same previous id ("
-         << id_and_previous.previous << ").");
+  ASSERT(id_and_previous.id == id, "Received messages with different ids ("
+                                       << id << " and " << id_and_previous.id
+                                       << ") but the same previous id ("
+                                       << id_and_previous.previous << ").");
   ASSERT(not tuples::get<Optional<Tag>>(tuple).has_value(),
-         "Received duplicate messages at id " << id << " and previous id "
-         << id_and_previous.previous << ".");
+         "Received duplicate messages at id "
+             << id << " and previous id " << id_and_previous.previous << ".");
   tuples::get<Optional<Tag>>(tuple) = std::move(message);
+}
+
+template <typename Id, typename... QueueTags>
+template <typename Tag1, typename Tag2, typename... Tags>
+void LinkedMessageQueue<Id, tmpl::list<QueueTags...>>::insert(
+    const LinkedMessageId<Id>& id_and_previous, typename Tag1::type message_1,
+    typename Tag2::type message_2, typename Tags::type... messages) {
+  static_assert(
+      tmpl::size<
+          tmpl::remove_duplicates<tmpl::list<Tag1, Tag2, Tags...>>>::value ==
+          sizeof...(Tags) + 2,
+      "Must have unique tags in LinkedMessageQueue insert.");
+  insert<Tag1>(id_and_previous, std::move(message_1));
+  insert<Tag2>(id_and_previous, std::move(message_2));
+
+  [[maybe_unused]] const auto insert_pack =
+      [this, &id_and_previous](const auto& tag_v, auto message) {
+        (void)this;
+        using tag = std::decay_t<decltype(tag_v)>;
+        insert<tag>(id_and_previous, std::move(message));
+      };
+
+  EXPAND_PACK_LEFT_TO_RIGHT(insert_pack(Tags{}, std::move(messages)));
 }
 
 template <typename Id, typename... QueueTags>
