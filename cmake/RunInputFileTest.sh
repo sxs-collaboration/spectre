@@ -35,6 +35,7 @@ for expected_code in $4 ; do
         restart=$(expr $restart + 1)
     fi
     if [ $exit_code -ne $expected_code ]; then
+        echo "ERROR: Exited with ${exit_code} instead of ${expected_code}" >&2
         exit 1
     fi
 done

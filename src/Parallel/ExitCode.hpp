@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <iosfwd>
+
 #include "DataStructures/DataBox/Tag.hpp"
 
 namespace Parallel {
@@ -22,6 +24,8 @@ enum class ExitCode : int {
   /// Program is incomplete and should be continued from the last checkpoint
   ContinueFromCheckpoint = 2
 };
+
+std::ostream& operator<<(std::ostream& os, const ExitCode& code);
 
 namespace Tags {
 

@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ExitCode.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -56,14 +57,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
   {
     INFO("Test initialize phase change decision data");
     PhaseChangeDecisionData phase_change_decision_data{
-        Parallel::Phase::Execute, true, 1.0, true,
-        Parallel::ExitCode::Complete};
+        Parallel::Phase::Execute, true, true, Parallel::ExitCode::Complete};
     phase_change0.initialize_phase_data<Metavariables>(
         make_not_null(&phase_change_decision_data));
-    // extra parens in the check prevent Catch from trying to stream the tuple
-    CHECK((phase_change_decision_data ==
-           PhaseChangeDecisionData{std::nullopt, std::nullopt, false, true,
-                                   Parallel::ExitCode::Complete}));
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{std::nullopt, false, true,
+                                  Parallel::ExitCode::Complete});
   }
   {
     INFO("Wallclock time < big trigger time");
@@ -72,14 +71,14 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     // the PhaseChange with a big trigger time.
     // (this assumes the test doesn't take 1h to get here)
     PhaseChangeDecisionData phase_change_decision_data{
-        std::nullopt, std::nullopt, true, true, Parallel::ExitCode::Complete};
+        std::nullopt, true, true, Parallel::ExitCode::Complete};
     const auto decision_result = phase_change1.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Execute,
         cache);
-    CHECK((decision_result == std::nullopt));
-    CHECK((phase_change_decision_data ==
-           PhaseChangeDecisionData{std::nullopt, std::nullopt, false, true,
-                                   Parallel::ExitCode::Complete}));
+    CHECK(decision_result == std::nullopt);
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{std::nullopt, false, true,
+                                  Parallel::ExitCode::Complete});
   }
   {
     INFO("Wallclock time > small trigger time");
@@ -87,78 +86,61 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     // the PhaseChange with a tiny trigger time.
     // (this assumes the test takes at least a few cycles to get here)
     PhaseChangeDecisionData phase_change_decision_data{
-        std::nullopt, std::nullopt, true, true, Parallel::ExitCode::Complete};
+        std::nullopt, true, true, Parallel::ExitCode::Complete};
     const auto decision_result = phase_change0.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data), Parallel::Phase::Execute,
         cache);
-    CHECK((decision_result ==
-           std::make_pair(
-               Parallel::Phase::WriteCheckpoint,
-               PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
-    // It's impossible to know what the elapsed wallclock time will be, so we
-    // check the tags one by one...
-    CHECK((tuples::get<PhaseControl::Tags::RestartPhase>(
-               phase_change_decision_data) == Parallel::Phase::Execute));
-    // Check recorded time in range: 0 second < time < 1 second
-    // (this assumes test run duration falls in this time window)
-    CHECK(tuples::get<PhaseControl::Tags::WallclockHoursAtCheckpoint>(
-              phase_change_decision_data) > 0.0);
-    const double one_second = 1.0 / 3600.0;
-    CHECK(tuples::get<PhaseControl::Tags::WallclockHoursAtCheckpoint>(
-              phase_change_decision_data) < one_second);
-    CHECK(tuples::get<PhaseControl::Tags::CheckpointAndExitRequested>(
-              phase_change_decision_data) == false);
+    CHECK(
+        decision_result ==
+        std::make_pair(Parallel::Phase::WriteCheckpoint,
+                       PhaseControl::ArbitrationStrategy::RunPhaseImmediately));
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{Parallel::Phase::Execute, false, true,
+                                  Parallel::ExitCode::Complete});
   }
   {
     INFO("Restarting from checkpoint");
     // Check behavior following the checkpoint phase
-    // First check case where wallclock time < recorded time, which corresponds
-    // to restarting from a checkpoint. Should update options next.
-    // (this assumes the test doesn't take 1h to get here)
+    const PhaseControl::CheckpointAndExitAfterWallclock phase_change_restart =
+        serialize_and_deserialize(phase_change0);
     PhaseChangeDecisionData phase_change_decision_data{
-        Parallel::Phase::Execute, 1.0, false, true,
-        Parallel::ExitCode::Complete};
-    auto decision_result = phase_change0.arbitrate_phase_change(
+        Parallel::Phase::Execute, false, true, Parallel::ExitCode::Complete};
+    auto decision_result = phase_change_restart.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
         Parallel::Phase::WriteCheckpoint, cache);
-    CHECK((decision_result ==
-           std::make_pair(
-               Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
-               PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
-    CHECK((phase_change_decision_data ==
-           PhaseChangeDecisionData{Parallel::Phase::Execute, 1.0, false, true,
-                                   Parallel::ExitCode::Complete}));
+    CHECK(decision_result ==
+          std::make_pair(
+              Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
+              PhaseControl::ArbitrationStrategy::PermitAdditionalJumps));
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{Parallel::Phase::Execute, false, true,
+                                  Parallel::ExitCode::Complete});
 
     // Now, from update phase, go back to Execute
-    decision_result = phase_change0.arbitrate_phase_change(
+    decision_result = phase_change_restart.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
         Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint, cache);
-    CHECK((decision_result ==
-           std::make_pair(
-               Parallel::Phase::Execute,
-               PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
-    CHECK((phase_change_decision_data ==
-           PhaseChangeDecisionData{std::nullopt, std::nullopt, false, true,
-                                   Parallel::ExitCode::Complete}));
+    CHECK(decision_result ==
+          std::make_pair(
+              Parallel::Phase::Execute,
+              PhaseControl::ArbitrationStrategy::PermitAdditionalJumps));
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{std::nullopt, false, true,
+                                  Parallel::ExitCode::Complete});
   }
   {
     INFO("Exiting after checkpoint");
-    // Now check case where wallclock time > recorded time, which corresponds to
-    // having just written a checkpoint. We want to exit with exit code 2 now.
-    // (this assumes the test takes at least a few cycles to get here)
     PhaseChangeDecisionData phase_change_decision_data{
-        Parallel::Phase::Execute, 1e-15, false, true,
-        Parallel::ExitCode::Complete};
+        Parallel::Phase::Execute, false, true, Parallel::ExitCode::Complete};
     const auto decision_result = phase_change0.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
         Parallel::Phase::WriteCheckpoint, cache);
-    CHECK((decision_result ==
-           std::make_pair(
-               Parallel::Phase::Exit,
-               PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
     CHECK(
-        (phase_change_decision_data ==
-         PhaseChangeDecisionData{Parallel::Phase::Execute, 1e-15, false, true,
-                                 Parallel::ExitCode::ContinueFromCheckpoint}));
+        decision_result ==
+        std::make_pair(Parallel::Phase::Exit,
+                       PhaseControl::ArbitrationStrategy::RunPhaseImmediately));
+    CHECK(phase_change_decision_data ==
+          PhaseChangeDecisionData{Parallel::Phase::Execute, false, true,
+                                  Parallel::ExitCode::ContinueFromCheckpoint});
   }
 }

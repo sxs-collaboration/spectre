@@ -165,6 +165,7 @@ set(LIBRARY "Test_Parallel")
 set(LIBRARY_SOURCES
   Test_ArrayComponentId.cpp
   Test_DomainDiagnosticInfo.cpp
+  Test_ExitCode.cpp
   Test_GlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
   Test_MemoryMonitor.cpp

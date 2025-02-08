@@ -21,15 +21,6 @@ std::optional<Parallel::Phase> RestartPhase::combine_method::operator()(
       "arbitration in the Main chare, so no reduction data should be "
       "provided.");
 }
-
-std::optional<double> WallclockHoursAtCheckpoint::combine_method::operator()(
-    const std::optional<double> /*first_time*/,
-    const std::optional<double>& /*second_time*/) {
-  ERROR(
-      "The wallclock time at which a checkpoint was requested should "
-      "only be altered by the phase change arbitration in the Main "
-      "chare, so no reduction data should be provided.");
-}
 }  // namespace Tags
 
 CheckpointAndExitAfterWallclock::CheckpointAndExitAfterWallclock(
