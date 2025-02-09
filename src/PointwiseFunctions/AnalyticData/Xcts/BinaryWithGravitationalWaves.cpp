@@ -169,16 +169,13 @@ void BinaryWithGravitationalWavesVariables<DataType>::operator()(
   const auto auxiliar_one = tenex::evaluate<ti::I, ti::J>(
       inv_conformal_metric(ti::I, ti::K) * inv_conformal_metric(ti::J, ti::L) *
       dt_conformal_metric(ti::k, ti::l));
-  const auto auxiliar_two = tenex::evaluate<ti::I, ti::J>(
-      inv_conformal_metric(ti::I, ti::K) * inv_conformal_metric(ti::J, ti::L) *
-      conformal_metric(ti::k, ti::l));
 
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j <= i; ++j) {
       longitudinal_shift_background_minus_dt_conformal_metric->get(i, j) -=
           (auxiliar_one.get(i, j) -
            (1. / 3.) * get(trace(dt_conformal_metric, inv_conformal_metric)) *
-               auxiliar_two.get(i, j));
+               inv_conformal_metric.get(i, j));
     }
   }
 }

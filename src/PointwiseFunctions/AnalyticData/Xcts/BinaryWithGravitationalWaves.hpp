@@ -295,14 +295,15 @@ struct BinaryWithGravitationalWavesVariables
  * The main goal of this implementation is to improve the extracted
  * wave forms, for example, by minimizing junk radiation.
  * The data is only valid for black holes without spin. Even so, there is some
- * work done to describe such systems that could later be implemented, \cite
- * Steinhoff2008zr. The objects are constructed from a superposition of two
- * isolated objects that are boosted with respect to each other. The radiative
- * data is constructed from Post-Newtonian expansions for the inspiral phase, in
- * orders of \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky. In ADMTT gauge it
- * is possible to get the 3-metric as \f$\gamma^{PN}_{ij} = \psi^{4}_{PN}
- * \delta_{ij} + h^{TT}_{ij}\f$ where \f$h^{TT}_{ij}\f$ is the radiative part
- * and the non-radiative Post-Newtonian conformal factor is given by
+ * work done to describe such systems that could later be implemented
+ * \cite Steinhoff2008zr. The objects are constructed from a superposition of
+ * two isolated objects that are boosted with respect to each other. The
+ * radiative data is constructed from Post-Newtonian expansions for the
+ * inspiral phase, in orders of \f$\epsilon = 1/c\f$, in \cite Jaranowski1997ky.
+ * In ADMTT gauge it is possible to get the 3-metric as
+ * \f$\gamma^{PN}_{ij} = \psi^{4}_{PN} \delta_{ij} + h^{TT}_{ij}\f$ where
+ * \f$h^{TT}_{ij}\f$ is the radiative part and the non-radiative Post-Newtonian
+ * conformal factor is given by
  *
  * \f{equation}{
  * \psi_{PN} = 1 + \sum_{a=1}^{2} \frac{E_a}{2 r_a} + O(\epsilon^6)
