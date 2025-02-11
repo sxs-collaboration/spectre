@@ -413,10 +413,15 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 
   if (time_dependent_options_.has_value()) {
     const double inner_common_radius = 3.0 * (center_A_[2] - center_B_[2]);
+    const auto center_A_aligned = rotate_from_z_to_x_axis(center_A_);
+    const auto center_B_aligned = rotate_from_z_to_x_axis(center_B_);
     time_dependent_options_->build_maps(
-        std::array{rotate_from_z_to_x_axis(center_A_),
-                   rotate_from_z_to_x_axis(center_B_)},
-        std::nullopt, std::nullopt, std::array{radius_A_, outer_radius_A_},
+        std::array{center_A_aligned, center_B_aligned}, std::nullopt,
+        std::nullopt,
+        std::array{z_cutting_plane_,
+                   0.5 * (center_A_aligned[1] + center_B_aligned[1]),
+                   0.5 * (center_A_aligned[2] + center_B_aligned[2])},
+        std::array{radius_A_, outer_radius_A_},
         std::array{radius_B_, outer_radius_B_}, false, false,
         inner_common_radius, outer_radius_);
   }

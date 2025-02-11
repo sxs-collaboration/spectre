@@ -134,6 +134,7 @@ DomainCreator:
       ExpansionMap: None
       RotationMap: None
       TranslationMap: None
+      SkewMap: None
       ShapeMapA:
         LMax: 20
         InitialValues:

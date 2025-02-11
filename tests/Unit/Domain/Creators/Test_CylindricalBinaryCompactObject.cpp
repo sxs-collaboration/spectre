@@ -249,6 +249,7 @@ std::string create_option_string(
                             "    RotationMap:\n"
                             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
                             "    TranslationMap: None\n"
+                            "    SkewMap: None\n"
                             "    ShapeMapA:\n"
                             "      LMax: 8\n"
                             "      InitialValues: Spherical\n"
@@ -407,6 +408,7 @@ TimeDepOptions construct_time_dependent_options() {
           std::array{initial_angular_velocity[0], initial_angular_velocity[1],
                      initial_angular_velocity[2]}},
       std::nullopt,
+      std::nullopt,
       domain::creators::time_dependent_options::ShapeMapOptions<
           false, domain::ObjectLabel::A>{
           8_st,
@@ -484,7 +486,7 @@ void test_parse_errors() {
               0.0, std::nullopt,
               domain::creators::time_dependent_options::RotationMapOptions<
                   false>{std::array{0.0, 0.0, 0.0}},
-              std::nullopt, std::nullopt, std::nullopt},
+              std::nullopt, std::nullopt, std::nullopt, std::nullopt},
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(

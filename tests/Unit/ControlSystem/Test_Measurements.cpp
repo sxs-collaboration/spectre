@@ -328,6 +328,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
           std::array{0.0, 0.0, 0.1}},
       std::nullopt,
       std::nullopt,
+      std::nullopt,
       std::nullopt};
   const domain::creators::BinaryCompactObject<false> binary_compact_object{
       domain::creators::BinaryCompactObject<false>::CartesianCubeAtXCoord{20.0},

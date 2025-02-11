@@ -412,7 +412,10 @@ std::string create_option_string(
             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
             "    TranslationMap:\n"
             "      InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], "
-            "      [0.0, 0.0, 0.0]]\n"s +
+            "      [0.0, 0.0, 0.0]]\n"s
+            "    SkewMap:\n"
+            "      InitialValuesY: [0.0, -0.01, 0.0]\n"
+            "      InitialValuesZ: [0.0, -0.01, 0.0]\n" +
                 (excise_A ? "    ShapeMapA:\n"
                             "      LMax: 8\n"
                             "      InitialValues: Spherical\n"
@@ -873,7 +876,7 @@ void test_kerr_horizon_conforming() {
       Distribution::Inverse,
       120.,
       domain::creators::bco::TimeDependentMapOptions<false>{
-          0., std::nullopt, std::nullopt, std::nullopt,
+          0., std::nullopt, std::nullopt, std::nullopt, std::nullopt,
           HardcodedShape<domain::ObjectLabel::A>{
               32_st, domain::creators::time_dependent_options::
                          KerrSchildFromBoyerLindquist{mass_A, spin_A}},

@@ -19,6 +19,7 @@
 #include "Domain/Creators/TimeDependentOptions/ExpansionMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/RotationMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/SkewMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/TranslationMap.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -41,6 +42,7 @@ TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
     double initial_time, ExpansionMapOptionType expansion_map_options,
     RotationMapOptionType rotation_map_options,
     TranslationMapOptionType translation_map_options,
+    SkewMapOptionType skew_map_options,
     ShapeMapOptionType<domain::ObjectLabel::A> shape_options_A,
     ShapeMapOptionType<domain::ObjectLabel::B> shape_options_B,
     const Options::Context& context)
@@ -48,12 +50,14 @@ TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
       expansion_map_options_(std::move(expansion_map_options)),
       rotation_map_options_(std::move(rotation_map_options)),
       translation_map_options_(std::move(translation_map_options)),
+      skew_map_options_(std::move(skew_map_options)),
       shape_options_A_(std::move(shape_options_A)),
       shape_options_B_(std::move(shape_options_B)) {
   if (not(expansion_map_options_.has_value() or
           rotation_map_options_.has_value() or
           translation_map_options_.has_value() or
-          shape_options_A_.has_value() or shape_options_B_.has_value())) {
+          skew_map_options_.has_value() or shape_options_A_.has_value() or
+          shape_options_B_.has_value())) {
     PARSE_ERROR(context,
                 "Time dependent map options were specified, but all options "
                 "were 'None'. If you don't want time dependent maps, specify "
@@ -86,6 +90,9 @@ TimeDependentMapOptions<IsCylindrical>::create_worldtube_functions_of_time()
     const {
   if (translation_map_options_.has_value()) {
     ERROR("Translation map is not implemented for worldtube evolutions.");
+  }
+  if (skew_map_options_.has_value()) {
+    ERROR("Skew map is not implemented for worldtube evolutions.");
   }
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -192,6 +199,7 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
       {expansion_name, std::numeric_limits<double>::infinity()},
       {rotation_name, std::numeric_limits<double>::infinity()},
       {translation_name, std::numeric_limits<double>::infinity()},
+      {skew_name, std::numeric_limits<double>::infinity()},
       {gsl::at(size_names, 0), std::numeric_limits<double>::infinity()},
       {gsl::at(size_names, 1), std::numeric_limits<double>::infinity()},
       {gsl::at(shape_names, 0), std::numeric_limits<double>::infinity()},
@@ -226,6 +234,13 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
     result[translation_name] = time_dependent_options::get_translation(
         translation_map_options_.value(), initial_time_,
         expiration_times.at(translation_name));
+  }
+
+  // SkewMap FunctionOfTime
+  if (skew_map_options_.has_value()) {
+    result[skew_name] = time_dependent_options::get_skew(
+        skew_map_options_.value(), initial_time_,
+        expiration_times.at(skew_name));
   }
 
   // Size and Shape FunctionOfTime for objects A and B
@@ -266,6 +281,7 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
     const std::array<std::array<double, 3>, 2>& object_centers,
     const std::optional<std::array<double, 3>>& cube_A_center,
     const std::optional<std::array<double, 3>>& cube_B_center,
+    const std::array<double, 3>& center_of_mass,
     const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
         object_A_radii,
     const std::optional<std::array<double, IsCylindrical ? 2 : 3>>&
@@ -297,6 +313,9 @@ void TimeDependentMapOptions<IsCylindrical>::build_maps(
             envelope_radius, domain_outer_radius,
             domain::CoordinateMaps::TimeDependent::RotScaleTrans<
                 3>::BlockRegion::Transition});
+  }
+  if (skew_map_options_.has_value()) {
+    skew_map_ = Skew{skew_name, center_of_mass, envelope_radius};
   }
 
   for (size_t i = 0; i < 2; i++) {
@@ -469,8 +488,21 @@ TimeDependentMapOptions<IsCylindrical>::distorted_to_inertial_map(
                                     : RotScaleTrans{};
 
   if (block_has_shape_map) {
-    if (rot_scale_trans_map_.has_value()) {
+    // The skew map is only applied within the envelope, which is also where we
+    // apply the rigid RotScaleTrans map, so `use_rigid_map` is a sentinel
+    // for where we put the skew map (if we have one).
+    if (not use_rigid_map) {
+      ERROR(
+          "'use_rigid_map' must be true when requesting the distorted to "
+          "inertial map with a shape map.");
+    }
+    if (rot_scale_trans_map_.has_value() and skew_map_.has_value()) {
+      return std::make_unique<detail::di_map<Skew, RotScaleTrans>>(
+          skew_map_.value(), rot_scale_trans);
+    } else if (rot_scale_trans_map_.has_value()) {
       return std::make_unique<detail::di_map<RotScaleTrans>>(rot_scale_trans);
+    } else if (skew_map_.has_value()) {
+      return std::make_unique<detail::di_map<Skew>>(skew_map_.value());
     } else {
       return std::make_unique<detail::di_map<Identity>>(Identity{});
     }
@@ -576,15 +608,38 @@ TimeDependentMapOptions<IsCylindrical>::grid_to_inertial_map(
           &gsl::at(gsl::at(shape_maps_, index), include_distorted_map.value());
     }
     ASSERT(shape->has_value(), "Shape map was requested but not built.");
-    if (rot_scale_trans_map_.has_value()) {
+    // The skew map is only applied within the envelope, which is also where we
+    // apply the rigid RotScaleTrans map, so `use_rigid_map` is a sentinel
+    // for where we put the skew map (if we have one).
+    if (not use_rigid_map) {
+      ERROR(
+          "'use_rigid_map' must be true when requesting the grid to inertial "
+          "map with a shape map.");
+    }
+    if (rot_scale_trans_map_.has_value() and skew_map_.has_value()) {
+      return std::make_unique<detail::gi_map<Shape, Skew, RotScaleTrans>>(
+          shape->value(), skew_map_.value(), rot_scale_trans);
+    } else if (rot_scale_trans_map_.has_value()) {
       return std::make_unique<detail::gi_map<Shape, RotScaleTrans>>(
           shape->value(), rot_scale_trans);
+    } else if (skew_map_.has_value()) {
+      return std::make_unique<detail::gi_map<Shape, Skew>>(shape->value(),
+                                                           skew_map_.value());
     } else {
       return std::make_unique<detail::gi_map<Shape>>(shape->value());
     }
   } else {
-    if (rot_scale_trans_map_.has_value()) {
+    // The skew map is only applied within the envelope, which is also where we
+    // apply the rigid RotScaleTrans map, so use `use_rigid_map` as a sentinel
+    // for where we put the skew map (if we have one).
+    if (rot_scale_trans_map_.has_value() and
+        (use_rigid_map and skew_map_.has_value())) {
+      return std::make_unique<detail::gi_map<Skew, RotScaleTrans>>(
+          skew_map_.value(), rot_scale_trans);
+    } else if (rot_scale_trans_map_.has_value()) {
       return std::make_unique<detail::gi_map<RotScaleTrans>>(rot_scale_trans);
+    } else if (use_rigid_map and skew_map_.has_value()) {
+      return std::make_unique<detail::gi_map<Skew>>(skew_map_.value());
     } else {
       return nullptr;
     }

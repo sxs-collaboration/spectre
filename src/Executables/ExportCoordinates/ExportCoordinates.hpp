@@ -180,6 +180,23 @@ struct ExportCoordinates {
               jac_diag.component_name(jac_diag.get_tensor_index(i)),
           jac_diag.get(i));
     }
+    for (size_t i = 0; i < Dim; i++) {
+      for (size_t j = 0; j < Dim; j++) {
+        components.emplace_back(
+            "Jacobian_" + jacobian.component_name(jacobian.get_tensor_index(
+                              jacobian.get_storage_index(i, j))),
+            jacobian.get(i, j));
+      }
+    }
+    for (size_t i = 0; i < Dim; i++) {
+      for (size_t j = 0; j < Dim; j++) {
+        components.emplace_back(
+            "InvJacobian_" +
+                inv_jacobian.component_name(inv_jacobian.get_tensor_index(
+                    inv_jacobian.get_storage_index(i, j))),
+            inv_jacobian.get(i, j));
+      }
+    }
 
     // Also output the computation domain metric
     const auto& flat_logical_metric =
