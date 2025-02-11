@@ -125,11 +125,11 @@ void test_definite_integral_spherical_shell(const size_t n_r, const size_t L) {
       CAPTURE(pow_ny);
       for (size_t pow_nz = 0; pow_nz <= L - pow_nx - pow_ny; ++pow_nz) {
         CAPTURE(pow_nz);
-        const YlmTestFunctions::ProductOfPolynomials y_lm{
-            n_r, L, L, pow_nx, pow_ny, pow_nz};
+        const YlmTestFunctions::ProductOfPolynomials f{pow_nx, pow_ny, pow_nz};
 
-        const DataVector integrand = r * y_lm.f();
-        CHECK(4.0 * y_lm.definite_integral() ==
+        const DataVector integrand =
+            r * f(get<1>(xi_vector), get<2>(xi_vector));
+        CHECK(4.0 * f.definite_integral() ==
               approx(definite_integral(integrand, mesh)));
       }
     }
