@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   BarycentricRational.cpp
   BarycentricRationalSpanInterpolator.cpp
+  CardinalInterpolator.cpp
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
   InterpolationWeights.cpp
@@ -30,6 +31,7 @@ spectre_target_headers(
   HEADERS
   BarycentricRational.hpp
   BarycentricRationalSpanInterpolator.hpp
+  CardinalInterpolator.hpp
   CubicSpanInterpolator.hpp
   CubicSpline.hpp
   InterpolationWeights.hpp

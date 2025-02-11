@@ -7,6 +7,7 @@ set(LIBRARY "Test_NumericalInterpolation")
 
 set(LIBRARY_SOURCES
   Test_BarycentricRational.cpp
+  Test_CardinalInterpolator.cpp
   Test_CubicSpline.cpp
   Test_InterpolationWeights.cpp
   Test_IrregularInterpolant.cpp
@@ -40,6 +41,7 @@ target_link_libraries(
   ParallelInterpolation
   RelativisticEulerSolutions
   Spectral
+  SphericalHarmonicsHelpers
   SpinWeightedSphericalHarmonics
   Utilities
   )
