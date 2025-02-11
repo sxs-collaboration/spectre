@@ -30,6 +30,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -47,6 +48,26 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+// Polynomial of given degree with leading coefficinet \f$a_0\f$, and with
+// \f$a_{n+1} = a_n / falloff
+class Polynomial {
+ public:
+  Polynomial(const size_t degree, const double a_0, const double falloff)
+      : coefficients_(degree + 1) {
+    double n = falloff * a_0;
+    std::generate(coefficients_.begin(), coefficients_.end(), [&falloff, &n]() {
+      n /= falloff;
+      return n;
+    });
+  }
+  Polynomial() = default;
+  DataVector operator()(const DataVector& x) const {
+    return evaluate_polynomial(coefficients_, x);
+  }
+
+ private:
+  std::vector<double> coefficients_;
+};
 
 using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -411,6 +432,81 @@ void test_tov() {
   }
 }
 
+void test_2d_spherical(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 2, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = acos(make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target));
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_z = 0; n_z < 4; ++n_z) {
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          const Mesh<2> source_mesh{
+              std::array{n_x + n_y + n_z + 2, 2 * (n_x + n_y) + 3},
+              std::array{Spectral::Basis::SphericalHarmonic,
+                         Spectral::Basis::SphericalHarmonic},
+              std::array{Spectral::Quadrature::Gauss,
+                         Spectral::Quadrature::Equiangular}};
+          const YlmTestFunctions::ProductOfPolynomials f(n_x, n_y, n_z);
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source = f(xi_source);
+          const DataVector f_expected = f(xi_target);
+          const intrp::Irregular<2> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+      }
+    }
+  }
+}
+
+void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = acos(make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target));
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_r = 2; n_r < 4; ++n_r) {
+      for (size_t n_z = 0; n_z < 4; ++n_z) {
+        for (size_t n_y = 0; n_y < 4; ++n_y) {
+          for (size_t n_x = 0; n_x < 4; ++n_x) {
+            const Mesh<3> source_mesh{
+                std::array{n_r, n_x + n_y + n_z + 2, 2 * (n_x + n_y) + 3},
+                std::array{Spectral::Basis::Legendre,
+                           Spectral::Basis::SphericalHarmonic,
+                           Spectral::Basis::SphericalHarmonic},
+                std::array{Spectral::Quadrature::GaussLobatto,
+                           Spectral::Quadrature::Gauss,
+                           Spectral::Quadrature::Equiangular}};
+            const Polynomial f_r{n_r - 1, 1.5, 2.0};
+            const YlmTestFunctions::ProductOfPolynomials f_a(n_x, n_y, n_z);
+            const auto xi_source = logical_coordinates(source_mesh);
+            const DataVector f_source =
+                f_r(get<0>(xi_source)) *
+                f_a(get<1>(xi_source), get<2>(xi_source));
+            const DataVector f_expected =
+                f_r(get<0>(xi_target)) *
+                f_a(get<1>(xi_target), get<2>(xi_target));
+            const intrp::Irregular<3> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+        }
+      }
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
@@ -429,4 +525,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   test_polynomial_interpolant<3, 1>({{11, 9, 9}});
   test_polynomial_interpolant<3, 1>({{11, 9, 13}});
   test_tov();
+  MAKE_GENERATOR(generator);
+  test_2d_spherical(make_not_null(&generator));
+  test_3d_spherical(make_not_null(&generator));
 }

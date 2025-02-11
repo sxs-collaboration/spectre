@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -105,9 +106,26 @@ Matrix interpolation_matrix(
       }
     }
     return result;
+  } else if (mesh.basis()[0] == Spectral::Basis::SphericalHarmonic) {
+    ASSERT(mesh.basis()[1] == Spectral::Basis::SphericalHarmonic,
+           "Expected both dimensions to have spherical harmonic basis. Mesh = "
+               << mesh);
+    const intrp::Cardinal cardinal_interpolator(mesh, points);
+    const auto [n_th, n_ph] = mesh.extents().indices();
+    const auto& [m_th, m_ph] = cardinal_interpolator.interpolation_matrices();
+    for (size_t i_ph = 0, s = 0; i_ph < n_ph; ++i_ph) {
+      for (size_t i_th = 0; i_th < n_th; ++i_th) {
+        for (size_t k = 0; k < number_of_target_points; ++k) {
+          result(k, s) = m_th(k, i_th) * m_ph(2 * k, i_ph) +
+                         m_th(k, i_th + n_th) * m_ph(2 * k + 1, i_ph);
+        }
+        ++s;
+      }
+    }
+    return result;
   }
 
-  // Not FD, so use spectral interpolation
+  // Not FD or special basis, so use 1D spectral interpolation matrices
   const std::array<Matrix, 2> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
        Spectral::interpolation_matrix(mesh.slice_through(1), get<1>(points))}};
@@ -175,9 +193,31 @@ Matrix interpolation_matrix(
       }
     }
     return result;
+  } else if (mesh.basis()[1] == Spectral::Basis::SphericalHarmonic) {
+    ASSERT(mesh.basis()[2] == Spectral::Basis::SphericalHarmonic,
+           "Expected last two dimensions to each have spherical harmonic "
+           "basis. Mesh = "
+               << mesh);
+    const intrp::Cardinal cardinal_interpolator(mesh, points);
+    const auto [n_r, n_th, n_ph] = mesh.extents().indices();
+    const auto& [m_r, m_th, m_ph] =
+        cardinal_interpolator.interpolation_matrices();
+    for (size_t i_ph = 0, s = 0; i_ph < n_ph; ++i_ph) {
+      for (size_t i_th = 0; i_th < n_th; ++i_th) {
+        for (size_t i_r = 0; i_r < n_r; ++i_r) {
+          for (size_t k = 0; k < number_of_target_points; ++k) {
+            result(k, s) =
+                m_r(k, i_r) * (m_th(k, i_th) * m_ph(2 * k, i_ph) +
+                               m_th(k, i_th + n_th) * m_ph(2 * k + 1, i_ph));
+          }
+          ++s;
+        }
+      }
+    }
+    return result;
   }
 
-  // Not FD, so use spectral interpolation
+  // Not FD or special basis, so use 1D spectral interpolation matrices
   const std::array<Matrix, 3> matrices{
       {Spectral::interpolation_matrix(mesh.slice_through(0), get<0>(points)),
        Spectral::interpolation_matrix(mesh.slice_through(1), get<1>(points)),
