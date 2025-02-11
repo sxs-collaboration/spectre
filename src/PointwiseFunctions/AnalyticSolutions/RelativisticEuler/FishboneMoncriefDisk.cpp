@@ -236,15 +236,16 @@ FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/,
     gsl::not_null<IntermediateVariables<DataType>*> vars) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars));
-
+  const auto specific_internal_energy =
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
+          x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{},
+          vars));
   auto temperature = make_with_value<Scalar<DataType>>(x, 0.0);
-  variables_impl(vars, [&temperature, &rest_mass_density, this](
+  variables_impl(vars, [&temperature, &specific_internal_energy, this](
                            const size_t s, const double /*potential_at_s*/) {
     get_element(get(temperature), s) =
-        get(equation_of_state_.temperature_from_density(
-            Scalar<double>{get_element(get(rest_mass_density), s)}));
+        (polytropic_exponent_ - 1.0) *
+        get_element(get(specific_internal_energy), s);
   });
   return {std::move(temperature)};
 }
