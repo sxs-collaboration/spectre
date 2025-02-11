@@ -33,49 +33,47 @@ static_assert(
     "CcsnCollapse should be analytic_data and not an analytic_solution");
 
 // Make sure different parameters give different answers
-void test_equality(std::string progenitor_filename, double polytropic_constant,
-                   double adiabatic_index, double central_angular_velocity,
-                   double diff_rot_parameter, double max_dens_ratio) {
+void test_equality(const std::string& progenitor_filename,
+                   double central_angular_velocity, double diff_rot_parameter,
+                   double max_dens_ratio, const std::string& eos_filename,
+                   const std::string& eos_subfilename) {
   register_classes_with_charm<grmhd::AnalyticData::CcsnCollapse>();
   // Base case for comparison
   const CcsnCollapse ccsn_progenitor_original{
-      progenitor_filename,      polytropic_constant, adiabatic_index,
-      central_angular_velocity, diff_rot_parameter,  max_dens_ratio};
+      progenitor_filename, central_angular_velocity,
+      diff_rot_parameter,  max_dens_ratio,
+      eos_filename,        eos_subfilename};
+  // Different progenitor name
+  CHECK_THROWS_WITH(CcsnCollapse(progenitor_filename + "bad_name",
+                                 central_angular_velocity, diff_rot_parameter,
+                                 max_dens_ratio, eos_filename, eos_subfilename),
+                    Catch::Matchers::ContainsSubstring("Data file not found"));
 
-  CHECK_THROWS_WITH(
-      CcsnCollapse(progenitor_filename + "bad_name", polytropic_constant,
-                   adiabatic_index, central_angular_velocity,
-                   diff_rot_parameter, max_dens_ratio),
-      Catch::Matchers::ContainsSubstring("Data file not found"));
-
+  // Control case
   const auto ccsn_progenitor =
       serialize_and_deserialize(ccsn_progenitor_original);
   CHECK(ccsn_progenitor == CcsnCollapse(progenitor_filename,
-                                        polytropic_constant, adiabatic_index,
                                         central_angular_velocity,
-                                        diff_rot_parameter, max_dens_ratio));
-  CHECK(ccsn_progenitor !=
-        CcsnCollapse(progenitor_filename, polytropic_constant + 0.1,
-                     adiabatic_index, central_angular_velocity,
-                     diff_rot_parameter, max_dens_ratio));
-  CHECK(ccsn_progenitor !=
-        CcsnCollapse(progenitor_filename, polytropic_constant,
-                     adiabatic_index + 0.1, central_angular_velocity,
-                     diff_rot_parameter, max_dens_ratio));
+                                        diff_rot_parameter, max_dens_ratio,
+                                        eos_filename, eos_subfilename));
+  // Different central angular velocity
   CHECK(ccsn_progenitor != CcsnCollapse(progenitor_filename,
-                                        polytropic_constant, adiabatic_index,
                                         central_angular_velocity + 0.1,
-                                        diff_rot_parameter, max_dens_ratio));
+                                        diff_rot_parameter, max_dens_ratio,
+                                        eos_filename, eos_subfilename));
+  // Different differential rotation parameter
   CHECK(ccsn_progenitor !=
-        CcsnCollapse(progenitor_filename, polytropic_constant, adiabatic_index,
-                     central_angular_velocity, diff_rot_parameter + 100,
-                     max_dens_ratio));
+        CcsnCollapse(progenitor_filename, central_angular_velocity,
+                     diff_rot_parameter + 100, max_dens_ratio, eos_filename,
+                     eos_subfilename));
 }
 
-void test_ccsn_collapse(std::string progenitor_filename,
-                        double polytropic_constant, double adiabatic_index,
-                        double central_angular_velocity,
-                        double diff_rot_parameter, double max_dens_ratio) {
+void test_ccsn_collapse(const std::string& progenitor_filename,
+                        const double central_angular_velocity,
+                        const double diff_rot_parameter,
+                        const double max_dens_ratio,
+                        const std::string& eos_filename,
+                        const std::string& eos_subfilename) {
   register_classes_with_charm<grmhd::AnalyticData::CcsnCollapse>();
 
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
@@ -86,20 +84,20 @@ void test_ccsn_collapse(std::string progenitor_filename,
           "  ProgenitorFilename: " +
           progenitor_filename +
           "\n"
-          "  AdiabaticIndex: " +
-          std::to_string(adiabatic_index) +
-          "\n"
           "  CentralAngularVelocity: " +
           std::to_string(central_angular_velocity) +
           "\n"
           "  DifferentialRotationParameter: " +
           std::to_string(diff_rot_parameter) +
           "\n"
-          "  PolytropicConstant: " +
-          std::to_string(polytropic_constant) +
-          "\n"
           "  MaxDensityRatioForLinearInterpolation: " +
-          std::to_string(max_dens_ratio) + "\n")
+          std::to_string(max_dens_ratio) +
+          "\n"
+          "  TableFilename: " +
+          eos_filename +
+          "\n"
+          "  TableSubFilename: " +
+          eos_subfilename + "\n")
           ->get_clone();
 
   const auto deserialized_option_solution =
@@ -152,8 +150,8 @@ void test_ccsn_collapse(std::string progenitor_filename,
                  ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
                                tmpl::size_t<3>, Frame::Inertial>>{});
 
-  // Check velocity > c check and provide small interpolation ratio test
-  // coverage
+// Check velocity > c check and provide small interpolation ratio test
+// coverage
 #ifdef SPECTRE_DEBUG
   const std::unique_ptr<evolution::initial_data::InitialData>
       v_grtr_than_c_solution =
@@ -164,15 +162,14 @@ void test_ccsn_collapse(std::string progenitor_filename,
               "  ProgenitorFilename: " +
               progenitor_filename +
               "\n"
-              "  AdiabaticIndex: " +
-              std::to_string(adiabatic_index) +
-              "\n"
               "  CentralAngularVelocity: 147669\n"
               "  DifferentialRotationParameter: 1.0e20\n"
-              "  PolytropicConstant: " +
-              std::to_string(polytropic_constant) +
+              "  MaxDensityRatioForLinearInterpolation: 0.0\n"
+              "  TableFilename: " +
+              eos_filename +
               "\n"
-              "  MaxDensityRatioForLinearInterpolation: 0.0\n")
+              "  TableSubFilename: " +
+              eos_subfilename + "\n")
               ->get_clone();
 
   const auto deserialized_v_grtr_than_c_solution =
@@ -191,7 +188,7 @@ void test_ccsn_collapse(std::string progenitor_filename,
   CHECK_THROWS_WITH(ccsn_progenitor.variables(
                         in_coords_large_radius,
                         tmpl::list<hydro::Tags::RestMassDensity<DataVector>>{}),
-                    Catch::Matchers::ContainsSubstring("Requested radius "));
+                    Catch::Matchers::ContainsSubstring("Requested radius"));
 
   // Ensure density is positive
   const auto& rest_mass_density =
@@ -230,20 +227,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.CcsnCollapse",
       unit_test_src_path() +
       "PointwiseFunctions/AnalyticData/GrMhd/"
       "CcsnCollapseID.dat";
-  const double polytropic_constant = 0.11943;
-  const double adiabatic_index = 1.3;
   const double central_angular_velocity = 1.0e-5;
   const double diff_rot_parameter = 339.0;
   const double max_dens_ratio = 100.0;
+  const std::string eos_filename{
+      unit_test_src_path() +
+      "PointwiseFunctions/Hydro/EquationsOfState/dd2_unit_test.h5"};
+  const std::string eos_subfilename = "dd2";
 
   // Test if (de)serialized data are equal
-  test_equality(progenitor_filename, polytropic_constant, adiabatic_index,
-                central_angular_velocity, diff_rot_parameter, max_dens_ratio);
+  test_equality(progenitor_filename, central_angular_velocity,
+                diff_rot_parameter, max_dens_ratio, eos_filename,
+                eos_subfilename);
 
   // Check physicality of interpolated data
-  test_ccsn_collapse(progenitor_filename, polytropic_constant, adiabatic_index,
-                     central_angular_velocity, diff_rot_parameter,
-                     max_dens_ratio);
+  test_ccsn_collapse(progenitor_filename, central_angular_velocity,
+                     diff_rot_parameter, max_dens_ratio, eos_filename,
+                     eos_subfilename);
 }
 
 }  // namespace

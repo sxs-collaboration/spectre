@@ -18,6 +18,9 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/EosTable.hpp"
+#include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/Interpolation/PolynomialInterpolation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -77,8 +80,11 @@ ProgenitorProfile::ProgenitorProfile(const std::string& filename) {
   }
   radius_ *= c2g_length_;
   rest_mass_density_ *= c2g_dens_;
-  temperature_ *= c2g_temp_;
+  // Kelvin to MeV conversion.
+  const double K_to_MeV = 8.621738e-11;
+  temperature_ = temperature_ * K_to_MeV;
   fluid_velocity_ /= speed_of_light_cgs_;
+  fluid_velocity_ = abs(fluid_velocity_);
   maximum_radius_ = max(radius_);
 }
 
@@ -153,8 +159,9 @@ std::array<double, 6> ProgenitorProfile::interpolate(
   }
   using std::abs;
 
-  auto radius_index =
-      static_cast<size_t>(num_radial_points_ * target_radius / maximum_radius_);
+  const auto radius_index = static_cast<size_t>(std::distance(
+      radius_.begin(),
+      std::lower_bound(radius_.begin(), radius_.end(), target_radius)));
 
   if (const size_t grid_index = num_angular_points_ * radius_index;
       UNLIKELY(grid_index > num_grid_points_)) {
@@ -286,18 +293,20 @@ void compute_angular_coordinates(
 }  // namespace detail
 
 CcsnCollapse::CcsnCollapse(std::string progenitor_filename,
-                           double polytropic_constant, double adiabatic_index,
                            double central_angular_velocity,
                            double diff_rot_parameter,
-                           double max_dens_ratio_interp)
+                           double max_dens_ratio_interp,
+                           const std::string& eos_filename,
+                           const std::string& eos_subfilename)
     : progenitor_filename_(std::move(progenitor_filename)),
       prog_data_{progenitor_filename_},
-      polytropic_constant_(polytropic_constant),
-      polytropic_exponent_(adiabatic_index),
-      equation_of_state_(polytropic_constant_, polytropic_exponent_),
       central_angular_velocity_(central_angular_velocity),
       inv_diff_rot_parameter_(1.0 / diff_rot_parameter) {
   CcsnCollapse::prog_data_.set_dens_ratio(max_dens_ratio_interp);
+  const h5::H5File<h5::AccessType::ReadOnly> eos_file{eos_filename};
+  const auto& compose_eos = eos_file.get<h5::EosTable>(eos_subfilename);
+
+  equation_of_state_.initialize(compose_eos);
 }
 
 CcsnCollapse::CcsnCollapse(CkMigrateMessage* msg) : InitialData(msg) {}
@@ -311,8 +320,6 @@ void CcsnCollapse::pup(PUP::er& p) {
   InitialData::pup(p);
   p | progenitor_filename_;
   p | prog_data_;
-  p | polytropic_constant_;
-  p | polytropic_exponent_;
   p | equation_of_state_;
   p | central_angular_velocity_;
   p | inv_diff_rot_parameter_;
@@ -493,32 +500,23 @@ CcsnCollapse::variables(
   return {Scalar<DataType>{vars->rest_mass_density.value()}};
 }
 
-// Specific enthalpy
+// Electron fraction
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
 CcsnCollapse::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
-    const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  using std::max;
-  return {hydro::relativistic_specific_enthalpy(
-      Scalar<DataType>{DataType{max(1.0e-300, get(rest_mass_density))}},
-      equation_of_state_.specific_internal_energy_from_density(
-          rest_mass_density),
-      equation_of_state_.pressure_from_density(rest_mass_density))};
+    const tnsr::I<DataType, 3>& /*x*/,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
+  return {Scalar<DataType>{vars->electron_fraction.value()}};
 }
 
-// Pressure
+// Temperature
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> CcsnCollapse::variables(
+tuples::TaggedTuple<hydro::Tags::Temperature<DataType>> CcsnCollapse::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
-    const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
-  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
-      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
-  return {equation_of_state_.pressure_from_density(rest_mass_density)};
+    const tnsr::I<DataType, 3>& /*x*/,
+    tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const {
+  return {Scalar<DataType>{vars->temperature.value()}};
 }
 
 // Specific internal energy
@@ -530,39 +528,55 @@ CcsnCollapse::variables(
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const {
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
+  const auto electron_fraction =
+      get<hydro::Tags::ElectronFraction<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::ElectronFraction<DataType>>{}));
+  const auto temperature = get<hydro::Tags::Temperature<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::Temperature<DataType>>{}));
 
-  // Eventually, below will call for piecewise polytrope or tabulated EOS
-  //  auto temperature = vars->temperature;
-  //  auto electron_fraction = vars->electron_fraction;
-  // return{equation_of_state_.
-  // specific_internal_energy_from_density_and_temperature_and_ye_impl(
-  // rest_mass_density, temperature, electron_fraction)};
-
-  return {equation_of_state_.specific_internal_energy_from_density(
-      rest_mass_density)};
+  return {
+      equation_of_state_.specific_internal_energy_from_density_and_temperature(
+          rest_mass_density, temperature, electron_fraction)};
 }
 
-// Electron fraction
+// Pressure
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> CcsnCollapse::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> vars,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const {
+  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
+  const auto temperature = get<hydro::Tags::Temperature<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::Temperature<DataType>>{}));
+  const auto electron_fraction =
+      get<hydro::Tags::ElectronFraction<DataType>>(variables(
+          vars, x, tmpl::list<hydro::Tags::ElectronFraction<DataType>>{}));
+  return {equation_of_state_.pressure_from_density_and_temperature(
+      rest_mass_density, temperature, electron_fraction)};
+}
+
+// Specific enthalpy
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 CcsnCollapse::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
-    const tnsr::I<DataType, 3>& /*x*/,
-    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
-  return {Scalar<DataType>{vars->electron_fraction.value()}};
-}
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
+  const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}));
+  const auto specific_internal_energy =
+      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
+          vars, x,
+          tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{}));
+  const auto pressure = get<hydro::Tags::Pressure<DataType>>(
+      variables(vars, x, tmpl::list<hydro::Tags::Pressure<DataType>>{}));
 
-// Once temperature is added to hydro tags for the grmhd system,
-// temperature will be stored similar to below
-// // Temperature
-// template <typename DataType>
-// tuples::TaggedTuple<hydro::Tags::Temperature<DataType>>
-// CcsnCollapse::variables(
-//     const gsl::not_null<IntermediateVariables<DataType>*> vars,
-//     const tnsr::I<DataType, 3>& /*x*/,
-//     tmpl::list<hydro::Tags::Temperature<DataType>> /*meta*/) const {
-//   return {Scalar<DataType>{vars->temperature.value()}};
-// }
+  using std::max;
+  return {hydro::relativistic_specific_enthalpy(
+      Scalar<DataType>{DataType{max(1.0e-300, get(rest_mass_density))}},
+      specific_internal_energy, pressure)};
+}
 
 // Velocity (typical spherical coord system rotating around z axis)
 template <typename DataType>
@@ -594,17 +608,17 @@ CcsnCollapse::variables(
 
   // vx = vr*sin(theta)*cos(phi) - vphi*sin(phi)
   get<0>(spatial_velocity) =
-      vars->fluid_velocity.value() * vars->sin_theta * cos(vars->phi) -
+      (-vars->fluid_velocity.value()) * vars->sin_theta * cos(vars->phi) -
       get<2>(spatial_velocity) * sin(vars->phi);
 
   // vy = vr*sin(theta)*sin(phi) + vphi*cos(phi)
   get<1>(spatial_velocity) =
-      vars->fluid_velocity.value() * vars->sin_theta * sin(vars->phi) +
+      (-vars->fluid_velocity.value()) * vars->sin_theta * sin(vars->phi) +
       get<2>(spatial_velocity) * cos(vars->phi);
 
   // vz = vr*cos(theta)
   get<2>(spatial_velocity) =
-      vars->fluid_velocity.value() * sqrt(1.0 - square(vars->sin_theta));
+      (-vars->fluid_velocity.value()) * sqrt(1.0 - square(vars->sin_theta));
 
   return {std::move(spatial_velocity)};
 }
@@ -844,8 +858,7 @@ bool operator==(const CcsnCollapse& lhs, const CcsnCollapse& rhs) {
   // polytropic_constant_ are the same, then the solution and
   // EOS should be too.
   return lhs.progenitor_filename_ == rhs.progenitor_filename_ and
-         lhs.polytropic_constant_ == rhs.polytropic_constant_ and
-         lhs.polytropic_exponent_ == rhs.polytropic_exponent_ and
+         lhs.equation_of_state_ == rhs.equation_of_state_ and
          lhs.central_angular_velocity_ == rhs.central_angular_velocity_ and
          lhs.inv_diff_rot_parameter_ == rhs.inv_diff_rot_parameter_;
 }
@@ -889,8 +902,8 @@ GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
     (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
      hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
-     hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
-     hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
+     hydro::Tags::Temperature, hydro::Tags::DivergenceCleaningField,
+     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
      gr::Tags::SqrtDetSpatialMetric))
 
 #undef INSTANTIATE_SCALARS
@@ -951,12 +964,12 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_DT, (double, DataVector),
 
 #undef INSTANTIATE_SCALAR_DT
 
-#define INSTANTIATE_METRIC_DERIVS(_, data)                              \
-  template auto CcsnCollapse::variables(                                \
-      const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,    \
-      const tnsr::I<DTYPE(data), 3>& x,                                 \
-      tmpl::list < TAG(data) < DTYPE(data) >>                           \
-      /*meta*/) const->tuples::TaggedTuple < TAG(data) < DTYPE(data) >> \
+#define INSTANTIATE_METRIC_DERIVS(_, data)                                \
+  template auto CcsnCollapse::variables(                                  \
+      const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,      \
+      const tnsr::I<DTYPE(data), 3>& x,                                   \
+      tmpl::list < TAG(data) < DTYPE(data) >>                             \
+      /*meta*/) const -> tuples::TaggedTuple < TAG(data) < DTYPE(data) >> \
       ;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_DERIVS, (double, DataVector),
