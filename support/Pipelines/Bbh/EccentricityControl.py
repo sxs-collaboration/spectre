@@ -27,6 +27,7 @@ def eccentricity_control(
     tmin: Optional[float] = 500,
     tmax: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
+    ecc_params_output_file: Optional[Union[str, Path]] = None,
     # Scheduler options
     evolve: bool = True,
     **scheduler_kwargs,
@@ -47,8 +48,6 @@ def eccentricity_control(
     - Get the new orbital parameters by calling the function
       'eccentricity_control_params' in
       'spectre.Pipelines.EccentricityControl.EccentricityControl'.
-
-    - Displays the fit results in a tabular format using a pandas DataFrame.
 
     - If the eccentricity is below a threshold, it prints "Success" and
       indicates that the simulation can continue.
@@ -77,42 +76,17 @@ def eccentricity_control(
 
     # Find the current eccentricity and determine new parameters to put into
     # generate-id
-    (
-        eccentricity,
-        ecc_std_dev,
-        new_orbital_params,
-    ) = eccentricity_control_params(
+    ecc_params = eccentricity_control_params(
         h5_files,
         id_input_file_path,
         tmin=tmin,
         tmax=tmax,
         plot_output_dir=plot_output_dir,
+        ecc_params_output_file=ecc_params_output_file,
     )
 
-    # Create DataFrame to display data in tabular format
-    data = {
-        "Attribute": [
-            "Eccentricity",
-            "Eccentricity error",
-            "Updated Omega0",
-            "Updated adot0",
-        ],
-        "Value": [
-            eccentricity,
-            ecc_std_dev,
-            new_orbital_params["Omega0"],
-            new_orbital_params["adot0"],
-        ],
-    }
-    df = pd.DataFrame(data)
-    # Print header line
-    print("=" * 40)
-    # Display table
-    print(df.to_string(index=False))
-    print("=" * 40)
-
     # Stop eccentricity control if eccentricity is below threshold
-    if eccentricity < 0.001:
+    if ecc_params["Eccentricity"] < 0.001:
         print("Success")
         # Should continue the simulation either by restarting from a
         # checkpoint, or from the volume data - will do later
@@ -129,8 +103,8 @@ def eccentricity_control(
         target_params,
         # New orbital parameters
         separation=separation,
-        orbital_angular_velocity=new_orbital_params["Omega0"],
-        radial_expansion_velocity=new_orbital_params["adot0"],
+        orbital_angular_velocity=ecc_params["NewOmega0"],
+        radial_expansion_velocity=ecc_params["NewAdot0"],
         # Initial guesses for ID control
         conformal_mass_a=binary_data["ObjectRight"]["KerrSchild"]["Mass"],
         conformal_mass_b=binary_data["ObjectLeft"]["KerrSchild"]["Mass"],
@@ -163,6 +137,7 @@ def eccentricity_control(
 @click.option(
     "--evolve/--no-evolve",
     default=True,
+    show_default=True,
     help=(
         "Evolve the initial data after generation to continue eccentricity "
         "control. You can disable this to generate only the new initial data "

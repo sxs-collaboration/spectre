@@ -21,8 +21,9 @@ Next:
   Run: spectre.Pipelines.Bbh.EccentricityControl:eccentricity_control
   With:
     h5_files: "../Segment_*/BbhReductions.h5"
-    plot_output_dir: ./
     id_input_file_path: {{id_input_file_path }}
+    plot_output_dir: ./
+    ecc_params_output_file: "../EccentricityParams.yaml"
     pipeline_dir: {{ pipeline_dir }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}

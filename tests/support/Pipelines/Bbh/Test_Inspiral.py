@@ -210,10 +210,11 @@ class TestInspiral(unittest.TestCase):
                 "Run": modulename + ":eccentricity_control",
                 "With": {
                     "h5_files": "../Segment_*/BbhReductions.h5",
-                    "plot_output_dir": "./",
                     "id_input_file_path": str(
                         self.id_dir.resolve() / "InitialData.yaml"
                     ),
+                    "plot_output_dir": "./",
+                    "ecc_params_output_file": "../EccentricityParams.yaml",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
                     "scheduler": "None",
                     "copy_executable": "None",

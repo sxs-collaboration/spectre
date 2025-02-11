@@ -14,6 +14,7 @@ spectre_python_add_module(
   Resubmit.py
   RunNext.py
   Schedule.py
+  Yaml.py
 )
 
 if(MACHINE)

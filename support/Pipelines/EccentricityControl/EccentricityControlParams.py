@@ -15,16 +15,27 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from spectre.support.Yaml import SafeDumper
 from spectre.Visualization.PlotTrajectories import import_A_and_B
 from spectre.Visualization.ReadH5 import to_dataframe
 
 logger = logging.getLogger(__name__)
 
-# Input orbital parameters that can be controlled
-OrbitalParams = Literal[
+# Keys of the dictionary returned by eccentricity_control_params
+EccentricityParams = Literal[
+    "Eccentricity",
+    "EccentricityError",
     "Omega0",
-    "adot0",
+    "Adot0",
     "D0",
+    "DeltaOmega0",
+    "DeltaAdot0",
+    "DeltaD0",
+    "NewOmega0",
+    "NewAdot0",
+    "NewD0",
+    "Tmin",
+    "Tmax",
 ]
 
 DEFAULT_AHA_TRAJECTORIES = "ApparentHorizons/ControlSystemAhA_Centers.dat"
@@ -41,7 +52,8 @@ def eccentricity_control_params(
     tmin: Optional[float] = None,
     tmax: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
-) -> Tuple[float, float, Dict[OrbitalParams, float]]:
+    ecc_params_output_file: Optional[Union[str, Path]] = None,
+) -> Dict[EccentricityParams, float]:
     """Get new orbital parameters for a binary system to control eccentricity.
 
     The eccentricity is estimated from the trajectories of the binary objects
@@ -68,10 +80,10 @@ def eccentricity_control_params(
       tmax: (Optional) The upper time bound for the eccentricity estimate.
         A reasonable value would include 2-3 orbits.
       plot_output_dir: (Optional) Output directory for plots.
+      ecc_params_output_file: (Optional) Output file for the results.
 
     Returns:
-        Tuple of eccentricity estimate, eccentricity error, and dictionary of
-        new orbital parameters with the keys listed in 'OrbitalParams'.
+        Dictionary with the keys listed in 'EccentricityParams'.
     """
     # Import functions from SpEC until we have ported them over
     try:
@@ -206,15 +218,26 @@ def eccentricity_control_params(
         f"adot0 += {delta_adot0:e} -> {adot0 + delta_adot0:e}\n"
         f"D0 += {delta_D0:e} -> {D0 + delta_D0:.8g}"
     )
-    return (
-        eccentricity,
-        ecc_std_dev,
-        {
-            "Omega0": Omega0 + delta_Omega0,
-            "adot0": adot0 + delta_adot0,
-            "D0": D0 + delta_D0,
-        },
-    )
+    # These keys must correspond to 'EccentricityParams'
+    ecc_params = {
+        "Eccentricity": eccentricity,
+        "EccentricityError": ecc_std_dev,
+        "Omega0": Omega0,
+        "Adot0": adot0,
+        "D0": D0,
+        "DeltaOmega0": delta_Omega0,
+        "DeltaAdot0": delta_adot0,
+        "DeltaD0": delta_D0,
+        "NewOmega0": Omega0 + delta_Omega0,
+        "NewAdot0": adot0 + delta_adot0,
+        "NewD0": D0 + delta_D0,
+        "Tmin": tmin,
+        "Tmax": tmax,
+    }
+    if ecc_params_output_file:
+        with open(ecc_params_output_file, "w") as open_file:
+            yaml.dump(ecc_params, open_file, Dumper=SafeDumper)
+    return ecc_params
 
 
 def eccentricity_control_params_options(f):
@@ -251,7 +274,7 @@ def eccentricity_control_params_options(f):
     )
     @click.option(
         "--subfile-name-aha-quantities",
-        default="ObservationsAhA.dat",
+        default="ObservationAhA.dat",
         show_default=True,
         help=(
             "Name of subfile containing the quantities measured on apparent"
@@ -260,7 +283,7 @@ def eccentricity_control_params_options(f):
     )
     @click.option(
         "--subfile-name-ahb-quantities",
-        default="ObservationsAhB.dat",
+        default="ObservationAhB.dat",
         show_default=True,
         help=(
             "Name of subfile containing the quantities measured on apparent"
@@ -295,8 +318,22 @@ def eccentricity_control_params_options(f):
         type=click.Path(writable=True),
         help="Output directory for plots.",
     )
+    @click.option(
+        "--ecc-params-output-file",
+        type=click.Path(writable=True),
+        help="Output file for the new orbital parameters.",
+    )
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         return f(*args, **kwargs)
 
     return wrapper
+
+
+@click.command(
+    name="eccentricity-control-params", help=eccentricity_control_params.__doc__
+)
+@eccentricity_control_params_options
+def eccentricity_control_params_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    eccentricity_control_params(**kwargs)
