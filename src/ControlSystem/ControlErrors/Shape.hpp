@@ -100,6 +100,11 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
       "Computes the control error for shape control. This should not take any "
       "options."};
 
+  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+  std::optional<double> get_suggested_timescale() const { return std::nullopt; }
+
+  void reset() {}
+
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... TupleTags>

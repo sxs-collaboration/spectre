@@ -260,7 +260,7 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
 
   /// Returns the internal `control_system::size::Info::suggested_time_scale`. A
   /// std::nullopt means that no timescale is suggested.
-  const std::optional<double>& get_suggested_timescale() const;
+  std::optional<double> get_suggested_timescale() const;
 
   /*!
    * \brief Check if the `control_system::size::control_error` has decided to

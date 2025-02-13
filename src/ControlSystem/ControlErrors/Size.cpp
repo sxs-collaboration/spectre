@@ -87,8 +87,8 @@ Size<DerivOrder, Horizon>::Size(
 }
 
 template <size_t DerivOrder, ::domain::ObjectLabel Horizon>
-const std::optional<double>&
-Size<DerivOrder, Horizon>::get_suggested_timescale() const {
+std::optional<double> Size<DerivOrder, Horizon>::get_suggested_timescale()
+    const {
   return info_.suggested_time_scale;
 }
 

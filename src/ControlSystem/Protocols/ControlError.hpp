@@ -11,6 +11,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 template <bool AllowDecrease>
 struct TimescaleTuner;
@@ -31,6 +32,10 @@ struct has_signature
                           const Parallel::GlobalCache<DummyMetavariables>&,
                           const double, const std::string&,
                           const tuples::TaggedTuple<DummyTupleTags>&> {};
+CREATE_IS_CALLABLE(get_suggested_timescale)
+CREATE_IS_CALLABLE_V(get_suggested_timescale)
+CREATE_IS_CALLABLE(reset)
+CREATE_IS_CALLABLE_V(reset)
 }  // namespace detail
 /// \brief Definition of a control error
 ///
@@ -45,6 +50,11 @@ struct has_signature
 ///   `domain::ObjectLabel`s. These are the objects that will require the
 ///   `domain::Tags::ObjectCenter`s tags to be in the GlobalCache for this
 ///   control system to work.
+/// - a function with signature `std::optional<double> get_suggested_timescale()
+///   const;` which returns a potential suggested timescale. To use the
+///   timescale from the timescale tuner, return `std::nullopt`.
+/// - a function with signature `void reset();` which will reset the control
+///   error after `get_suggested_timescale()` is called.
 ///
 /// \note The TimescaleTuner can have it's template parameter be either `true`
 /// or `false`.
@@ -57,6 +67,10 @@ struct ControlError {
 
     static_assert(detail::has_signature<ConformingType, true>::value or
                   detail::has_signature<ConformingType, false>::value);
+
+    static_assert(
+        detail::is_get_suggested_timescale_callable_v<ConformingType>);
+    static_assert(detail::is_reset_callable_v<ConformingType>);
   };
 };
 }  // namespace control_system::protocols

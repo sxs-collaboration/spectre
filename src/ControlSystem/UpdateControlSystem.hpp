@@ -18,6 +18,7 @@
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
+#include "ControlSystem/UpdateTimescaleTuner.hpp"
 #include "ControlSystem/WriteData.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -81,10 +82,10 @@ namespace control_system {
  *    time to update, exit now. Once we determine that it is time to update, set
  *    the current measurement back to 0.
  * 6. Compute the control signal using the control error and its derivatives and
- *    update the damping timescales in the TimescaleTuner. If this is \link
- *    control_system::Systems::Size size \endlink control, there is an extra
- *    step after we update the damping timescale. See
- *    `control_system::size::update_tuner` for this step.
+ *    update the damping timescales in the TimescaleTuner. If this control
+ *    system can suggest a damping timescale, there is an extra step after we
+ *    update the damping timescale. See `control_system::update_timescale_tuner`
+ *    for this step.
  * 7. Calculate the new measurement timescale based off the updated damping
  *    timescales and the number of measurements per update.
  * 8. Determine the new expiration times for the
@@ -219,10 +220,9 @@ struct UpdateControlSystem {
 
     tuner.update_timescale(q_and_dtq);
 
-    if constexpr (size::is_size_v<ControlSystem>) {
-      size::update_tuner(make_not_null(&tuner), make_not_null(&control_error),
-                         cache, time, function_of_time_name);
-    }
+    update_timescale_tuner(make_not_null(&tuner), make_not_null(&control_error),
+                           Parallel::get<Tags::Verbosity>(cache), time,
+                           function_of_time_name);
 
     // Begin step 7
     // Calculate new measurement timescales with updated damping timescales
