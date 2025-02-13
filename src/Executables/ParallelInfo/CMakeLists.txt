@@ -18,7 +18,9 @@ add_spectre_executable(
 
 add_dependencies(
   ${EXECUTABLE}
+  module_AlgorithmSingleton
   module_GlobalCache
+  module_Main
   module_ParallelInfo
   )
 
@@ -28,6 +30,7 @@ target_link_libraries(
   Charmxx::main
   ErrorHandling
   Informer
+  Parallel
   Printf
   SystemUtilities
   )
