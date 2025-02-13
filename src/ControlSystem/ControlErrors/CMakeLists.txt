@@ -7,6 +7,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Size.cpp
+  Skew.cpp
 )
 
 spectre_target_headers(
@@ -17,5 +18,6 @@ spectre_target_headers(
   Rotation.hpp
   Shape.hpp
   Size.hpp
+  Skew.hpp
   Translation.hpp
   )
