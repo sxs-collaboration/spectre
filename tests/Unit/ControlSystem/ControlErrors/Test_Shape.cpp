@@ -171,8 +171,8 @@ void test_shape_control_error() {
       make_not_null(&generator), coef_dist, fake_ah_coefs);
   fake_ah_coefs = measurement_coefs;
 
-  using QueueTuple =
-      tuples::TaggedTuple<control_system::QueueTags::Horizon<Frame::Distorted>>;
+  using QueueTuple = tuples::TaggedTuple<control_system::QueueTags::Horizon<
+      Frame::Distorted, ::domain::ObjectLabel::A>>;
   QueueTuple fake_measurement_tuple{fake_ah};
 
   const DataVector control_error =
