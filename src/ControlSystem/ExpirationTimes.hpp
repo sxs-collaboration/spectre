@@ -125,7 +125,7 @@ template <size_t Dim, typename... OptionHolders>
 std::unordered_map<std::string, double> initial_expiration_times(
     const double initial_time, const int measurements_per_update,
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
-    const OptionHolders&... option_holders) {
+    const std::optional<OptionHolders>&... option_holders) {
   std::unordered_map<std::string, double> initial_expiration_times{};
 
   using control_systems = tmpl::list<typename OptionHolders::control_system...>;
@@ -149,31 +149,29 @@ std::unordered_map<std::string, double> initial_expiration_times(
       [&initial_time, &measurements_per_update, &domain_creator, &map_of_names,
        &combined_expiration_times,
        &infinite_expiration_times](const auto& option_holder) {
-        const std::string& control_system_name =
-            std::decay_t<decltype(option_holder)>::control_system::name();
+        const std::string& control_system_name = std::decay_t<
+            decltype(option_holder)>::value_type::control_system::name();
         const std::string& combined_name = map_of_names[control_system_name];
 
-        auto tuner = option_holder.tuner;
+        // If not active, leave the expiration time as infinity
+        if (not option_holder.has_value()) {
+          infinite_expiration_times.insert(control_system_name);
+          return;
+        }
+
+        auto tuner = option_holder->tuner;
         Tags::detail::initialize_tuner(make_not_null(&tuner), domain_creator,
                                        initial_time, control_system_name);
 
-        const auto& controller = option_holder.controller;
+        const auto& controller = option_holder->controller;
         const DataVector measurement_timescales =
             calculate_measurement_timescales(controller, tuner,
                                              measurements_per_update);
         const double min_measurement_timescale = min(measurement_timescales);
 
-        double initial_expiration_time = function_of_time_expiration_time(
+        const double initial_expiration_time = function_of_time_expiration_time(
             initial_time, DataVector{1, 0.0},
             DataVector{1, min_measurement_timescale}, measurements_per_update);
-        initial_expiration_time = option_holder.is_active
-                                      ? initial_expiration_time
-                                      : std::numeric_limits<double>::infinity();
-
-        if (initial_expiration_time ==
-            std::numeric_limits<double>::infinity()) {
-          infinite_expiration_times.insert(control_system_name);
-        }
 
         combined_expiration_times[combined_name] = std::min(
             combined_expiration_times[combined_name], initial_expiration_time);
@@ -185,7 +183,7 @@ std::unordered_map<std::string, double> initial_expiration_times(
   // time
   for (const auto& [control_system_name, combined_name] : map_of_names) {
     initial_expiration_times[control_system_name] =
-        infinite_expiration_times.count(control_system_name) == 1
+        infinite_expiration_times.contains(control_system_name)
             ? std::numeric_limits<double>::infinity()
             : combined_expiration_times[combined_name];
   }

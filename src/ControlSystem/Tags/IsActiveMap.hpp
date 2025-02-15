@@ -11,6 +11,7 @@
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Tags/OptionTags.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Options/Auto.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -26,14 +27,14 @@ namespace control_system::Tags {
 namespace detail {
 template <typename... OptionHolders>
 std::unordered_map<std::string, bool> create_is_active_map(
-    const OptionHolders&... option_holders) {
+    const std::optional<OptionHolders>&... option_holders) {
   std::unordered_map<std::string, bool> result{};
 
   [[maybe_unused]] const auto add_to_result =
       [&result](const auto& option_holder) {
-        using control_system =
-            typename std::decay_t<decltype(option_holder)>::control_system;
-        result[control_system::name()] = option_holder.is_active;
+        using control_system = typename std::decay_t<
+            decltype(option_holder)>::value_type::control_system;
+        result[control_system::name()] = option_holder.has_value();
       };
 
   EXPAND_PACK_LEFT_TO_RIGHT(add_to_result(option_holders));
@@ -65,7 +66,16 @@ struct IsActiveMap : db::SimpleTag {
       metafunctions::all_control_components<Metavariables>, system<tmpl::_1>>>;
 
   template <typename Metavariables, typename... OptionHolders>
-  static type create_from_options(const OptionHolders&... option_holders) {
+  static type create_from_options(
+      const Options::Auto<OptionHolders,
+                          Options::AutoLabel::None>&... option_holders) {
+    return create_from_options<Metavariables>(
+        static_cast<const std::optional<OptionHolders>>(option_holders)...);
+  }
+
+  template <typename Metavariables, typename... OptionHolders>
+  static type create_from_options(
+      const std::optional<OptionHolders>&... option_holders) {
     return detail::create_is_active_map(option_holders...);
   }
 };
