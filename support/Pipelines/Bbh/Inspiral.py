@@ -44,10 +44,16 @@ def _control_system_params(
         0.1 * decrease_threshold_base / (mass_ratio + 1.0 / mass_ratio)
     )
     increase_threshold_fraction = 0.25
+    min_kinematic_timescale = 1e-2
 
     return {
+        "MinKinematicTimescale": min_kinematic_timescale,
         "MaxDampingTimescale": max_damping_timescale,
         "KinematicTimescale": kinematic_timescale,
+        "MinSkewTimescale": 5.0 * min_kinematic_timescale,
+        "SkewTimescale": 0.5 * (
+            5.0 * min_kinematic_timescale + max_damping_timescale
+        ),
         "SizeATimescale": damping_time_base * 0.2 * mass_right,
         "SizeBTimescale": damping_time_base * 0.2 * mass_left,
         "ShapeATimescale": 5.0 * kinematic_timescale,

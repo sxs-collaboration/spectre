@@ -157,7 +157,9 @@ DomainCreator:
         InitialAngularVelocity: [0.0, 0.0, {{ InitialAngularVelocity }}]
       TranslationMap:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-      SkewMap: None
+      SkewMap:
+        InitialValuesY: [0.0, 0.0, 0.0]
+        InitialValuesZ: [0.0, 0.0, 0.0]
       ShapeMapA:
         LMax: &ShapeLMax 10
   {% if SpecDataDirectory is defined %}
@@ -512,7 +514,7 @@ ControlSystems:
       UpdateFraction: 0.3
     TimescaleTuner: &KinematicTuner
       InitialTimescales: {{ KinematicTimescale }}
-      MinTimescale: &MinTimescale 1.0e-2
+      MinTimescale: &MinTimescale {{ MinKinematicTimescale }}
       MaxTimescale: &MaxTimescale {{ MaxDampingTimescale }}
       IncreaseThreshold: &IncreaseThreshold {{ IncreaseThreshold }}
       DecreaseThreshold: &DecreaseThreshold {{ DecreaseThreshold }}
@@ -521,6 +523,18 @@ ControlSystems:
     ControlError:
   Rotation: *KinematicControlSystem
   Translation: None
+  Skew:
+    Averager: *KinematicAverager
+    Controller: *KinematicController
+    TimescaleTuner:
+      InitialTimescales: {{ SkewTimescale }}
+      MinTimescale: {{ MinSkewTimescale }}
+      MaxTimescale: *MaxTimescale
+      IncreaseThreshold: *IncreaseThreshold
+      DecreaseThreshold: *DecreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+      DecreaseFactor: *DecreaseFactor
+    ControlError:
   ShapeA:
     Averager: &SizeShapeAverager
       AverageTimescaleFraction: *AvgTimescaleFrac
