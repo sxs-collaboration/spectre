@@ -151,13 +151,13 @@ class TimescaleTuner {
 
   DataVector timescale_;
   bool timescales_have_been_set_{false};
-  double initial_timescale_{std::numeric_limits<double>::signaling_NaN()};
-  double max_timescale_;
-  double min_timescale_;
-  double decrease_timescale_threshold_;
-  double increase_timescale_threshold_;
-  double increase_factor_;
-  double decrease_factor_;
+  double initial_timescale_{0.0};
+  double max_timescale_{0.0};
+  double min_timescale_{0.0};
+  double decrease_timescale_threshold_{0.0};
+  double increase_timescale_threshold_{0.0};
+  double increase_factor_{0.0};
+  double decrease_factor_{0.0};
 };
 
 template <bool AllowDecrease>

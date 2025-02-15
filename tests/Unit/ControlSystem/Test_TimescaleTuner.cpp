@@ -364,9 +364,13 @@ void test_equality_and_serialization() {
       increase_timescale_threshold, increase_factor,
       decrease_timescale_threshold, decrease_factor);
 
+  TimescaleTuner<AllowDecrease> tst3{};
+
   CHECK(tst1 == tst1);
   CHECK(tst1 != tst2);
   CHECK(serialize_and_deserialize(tst1) == tst1);
+  CHECK(tst1 != tst3);
+  CHECK(serialize_and_deserialize(tst3) == tst3);
 }
 
 void test_errors() {
