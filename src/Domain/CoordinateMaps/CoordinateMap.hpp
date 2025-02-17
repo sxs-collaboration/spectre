@@ -24,6 +24,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 /// \cond
 class DataVector;
@@ -37,11 +38,50 @@ namespace TimeDependent {}
 template <typename FirstMap, typename... Maps>
 constexpr size_t map_dim = FirstMap::dim;
 }  // namespace CoordinateMaps
+
 namespace CoordinateMap_detail {
+CREATE_IS_CALLABLE(function_of_time_names)
+CREATE_IS_CALLABLE_V(function_of_time_names)
+
+template <typename T>
+struct map_type {
+  using type = T;
+};
+
+template <typename T>
+struct map_type<std::unique_ptr<T>> {
+  using type = T;
+};
+
+template <typename T>
+using map_type_t = typename map_type<T>::type;
+
 template <typename... Maps, size_t... Is>
 std::unordered_set<std::string> initialize_names(
-    const std::tuple<Maps...>& maps, std::index_sequence<Is...> /*meta*/);
+    const std::tuple<Maps...>& maps, std::index_sequence<Is...> /*meta*/) {
+  std::unordered_set<std::string> function_of_time_names{};
+  const auto add_names = [&function_of_time_names, &maps](auto index) {
+    const auto& map = std::get<decltype(index)::value>(maps);
+    using TupleMap = std::decay_t<decltype(map)>;
+    constexpr bool map_is_unique_ptr = tt::is_a_v<std::unique_ptr, TupleMap>;
+    using Map = map_type_t<TupleMap>;
+    if constexpr (is_function_of_time_names_callable_v<Map>) {
+      if constexpr (map_is_unique_ptr) {
+        const auto& names = map->function_of_time_names();
+        function_of_time_names.insert(names.begin(), names.end());
+      } else {
+        const auto& names = map.function_of_time_names();
+        function_of_time_names.insert(names.begin(), names.end());
+      }
+    } else {
+      (void)function_of_time_names;
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(add_names(std::integral_constant<size_t, Is>{}));
+
+  return function_of_time_names;
 }
+}  // namespace CoordinateMap_detail
 
 /*!
  * \ingroup CoordinateMapsGroup

@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/KerrHorizonConforming.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
