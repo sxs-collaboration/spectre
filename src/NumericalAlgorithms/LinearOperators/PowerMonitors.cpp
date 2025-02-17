@@ -21,6 +21,12 @@ namespace PowerMonitors {
 template <size_t Dim>
 void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
                     const DataVector& u, const Mesh<Dim>& mesh) {
+  ASSERT(u.size() == mesh.number_of_grid_points(),
+         "The number of grid points per element ("
+             << mesh.number_of_grid_points()
+             << ") must match the size of the "
+                "vector ("
+             << u.size() << ").");
   // Get modal coefficients
   const ModalVector modal_coefficients = to_modal_coefficients(u, mesh);
 
