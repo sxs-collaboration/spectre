@@ -153,11 +153,11 @@ void test(const bool use_moving_mesh) {
 }
 }  // namespace WithInverseSpatialMetricTag
 
-template <SystemType system_type>
+template <SystemType system_type, bool UsePrims>
 void test_wrapper() {
-  test<system_type, 1>();
-  test<system_type, 2>();
-  test<system_type, 3>();
+  test<system_type, UsePrims, 1>();
+  test<system_type, UsePrims, 2>();
+  test<system_type, UsePrims, 3>();
 }
 
 // [[TimeOut, 10]]
@@ -215,9 +215,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
   // Note that because the test is quite expensive to build, we have split the
   // compilation across multiple translation units by having the test be defined
   // in ComputeTimeDerivativeImpl.tpp.
-  test_wrapper<SystemType::Conservative>();
-  test_wrapper<SystemType::Nonconservative>();
-  test_wrapper<SystemType::Mixed>();
+  test_wrapper<SystemType::Conservative, false>();
+  test_wrapper<SystemType::Conservative, true>();
+  test_wrapper<SystemType::Nonconservative, false>();
+  test_wrapper<SystemType::Mixed, false>();
+  test_wrapper<SystemType::Mixed, true>();
 
   for (const bool use_moving_mesh : {true, false}) {
     WithInverseSpatialMetricTag::test<1>(use_moving_mesh);

@@ -6,9 +6,9 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AdvanceTime.hpp
-  ChangeStepSize.hpp
   CleanHistory.hpp
   RecordTimeStepperData.hpp
   SelfStartActions.hpp
+  TakeLtsStep.hpp
   UpdateU.hpp
   )

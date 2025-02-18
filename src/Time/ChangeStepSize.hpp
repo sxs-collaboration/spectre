@@ -4,19 +4,15 @@
 #pragma once
 
 #include <bit>
-#include <limits>
+#include <cmath>
+#include <cstddef>
 #include <optional>
-#include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "Parallel/AlgorithmExecution.hpp"
-#include "Time/Actions/UpdateU.hpp"
-#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
-#include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/MinimumTimeStep.hpp"
+#include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Time/TimeStepRequestProcessor.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -24,21 +20,12 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 struct AllStepChoosers;
-class TimeDelta;
-class TimeStepId;
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
-namespace StepChooserUse {
-struct LtsStep;
-}  // namespace StepChooserUse
 namespace Tags {
 struct FixedLtsRatio;
+struct MinimumTimeStep;
 template <typename Tag>
 struct Next;
 struct StepChoosers;
@@ -47,7 +34,6 @@ struct TimeStepId;
 template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
-
 /// \endcond
 
 /// \brief Adjust the step size for local time stepping, returning true if the
@@ -208,72 +194,3 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
     return false;
   }
 }
-
-namespace Actions {
-/// \ingroup ActionsGroup
-/// \ingroup TimeGroup
-/// \brief Adjust the step size for local time stepping
-///
-/// \details The optional template parameter `StepChoosersToUse` may be used to
-/// indicate a subset of the constructable step choosers to use for the current
-/// application of `ChangeStepSize`. Passing `AllStepChoosers` (default)
-/// indicates that any constructible step chooser may be used. This option is
-/// used when multiple components need to invoke `ChangeStepSize` with step
-/// choosers that may not be compatible with all components.
-///
-/// Uses:
-/// - DataBox:
-///   - Tags::StepChoosers
-///   - Tags::HistoryEvolvedVariables
-///   - Tags::TimeStep
-///   - Tags::TimeStepId
-///   - Tags::TimeStepper<LtsTimeStepper>
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
-template <typename StepChoosersToUse = AllStepChoosers>
-struct ChangeStepSize {
-  using const_global_cache_tags = tmpl::list<::Tags::MinimumTimeStep>;
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    static_assert(
-        tmpl::any<ActionList, tt::is_a<Actions::UpdateU, tmpl::_1>>::value,
-        "The ChangeStepSize action requires that you also use the UpdateU "
-        "action to permit step-unwinding. If you are stepping within "
-        "an action that is not UpdateU, consider using the take_step function "
-        "to handle both stepping and step-choosing instead of the "
-        "ChangeStepSize action.");
-    if (db::get<Tags::TimeStepId>(box).substep() != 0) {
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    }
-    const bool step_successful =
-        change_step_size<StepChoosersToUse>(make_not_null(&box));
-    // We should update
-    // AdaptiveSteppingDiagnostics::number_of_step_fraction_changes,
-    // but with the inter-action step unwinding it's hard to tell
-    // whether that happened.  Most executables use take_step instead
-    // of this action, anyway.
-    if (step_successful) {
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    } else {
-      db::mutate<Tags::AdaptiveSteppingDiagnostics>(
-          [](const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
-            ++diags->number_of_step_rejections;
-          },
-          make_not_null(&box));
-      return {Parallel::AlgorithmExecution::Continue,
-              tmpl::index_if<ActionList,
-                             tt::is_a<Actions::UpdateU, tmpl::_1>>::value};
-    }
-  }
-};
-}  // namespace Actions

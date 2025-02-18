@@ -7,10 +7,10 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/ChangeStepSize.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/Gsl.hpp"

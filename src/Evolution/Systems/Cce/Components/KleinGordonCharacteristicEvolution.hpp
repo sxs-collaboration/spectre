@@ -16,6 +16,7 @@
 #include "Parallel/Phase.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/TakeLtsStep.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -153,9 +154,8 @@ struct KleinGordonCharacteristicEvolution
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       Actions::FilterSwshVolumeQuantity<Tags::KleinGordonPi>,
       compute_scri_quantities_and_observe,
-      ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>,
-      ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
+      ::Actions::TakeLtsStep<cce_system,
+                             typename Metavariables::cce_step_choosers>,
       ::Actions::CleanHistory<cce_system, false>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.

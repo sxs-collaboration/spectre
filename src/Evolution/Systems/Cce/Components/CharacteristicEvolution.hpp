@@ -35,10 +35,10 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
-#include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/TakeLtsStep.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -223,9 +223,8 @@ struct CharacteristicEvolution {
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe,
-      ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>,
-      ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
+      ::Actions::TakeLtsStep<cce_system,
+                             typename Metavariables::cce_step_choosers>,
       ::Actions::CleanHistory<cce_system, false>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
