@@ -13,6 +13,7 @@ using factory_creatable_classes =
     tmpl::list<VisitAndReturn<Parallel::Phase::EvaluateAmrCriteria>,
                VisitAndReturn<Parallel::Phase::AdjustDomain>,
                VisitAndReturn<Parallel::Phase::CheckDomain>,
+               VisitAndReturn<Parallel::Phase::DisableRotationControl>,
                VisitAndReturn<Parallel::Phase::LoadBalancing>,
                VisitAndReturn<Parallel::Phase::WriteCheckpoint>,
                CheckpointAndExitAfterWallclock>;

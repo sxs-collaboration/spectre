@@ -50,6 +50,9 @@ enum class Phase {
   CheckDomain,
   ///  a cleanup phase
   Cleanup,
+  ///  a phase in which the rotation control system is disable and the
+  ///  rotation function of time is switched to settling to a constant.
+  DisableRotationControl,
   ///  phase in which AMR criteria are evaluated
   EvaluateAmrCriteria,
   ///  phase in which time steps are taken for an evolution executable
