@@ -1981,7 +1981,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
 }
 
-template <SystemType system_type, size_t Dim>
+template <SystemType system_type, bool UsePrims, size_t Dim>
 void test() {
   // The test impl is structured in the following way:
   // - the static mesh volume contributions are computed "by-hand" and used more
@@ -2046,36 +2046,21 @@ void test() {
          const ::dg::Formulation local_dg_formulation) {
         const auto moving_mesh_helper = [&local_dg_formulation,
                                          &quadrature](auto moving_mesh) {
-          const auto prim_helper = [&local_dg_formulation, &moving_mesh,
-                                    &quadrature](auto use_prims) {
-            // Clang doesn't want moving mesh to be captured, but GCC requires
-            // it. Silence the Clang warning by "using" it.
-            (void)moving_mesh;
-            if constexpr (not(decltype(use_prims)::value and
-                              system_type == SystemType::Nonconservative)) {
-              // PassVariables == false
-              test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, std::decay_t<decltype(use_prims)>::value,
-                        false, use_nodegroup_dg_elements>(quadrature,
-                                                          local_dg_formulation);
-              test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, std::decay_t<decltype(use_prims)>::value,
-                        false, use_nodegroup_dg_elements>(quadrature,
-                                                          local_dg_formulation);
+          // PassVariables == false
+          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                    system_type, UsePrims, false, use_nodegroup_dg_elements>(
+              quadrature, local_dg_formulation);
+          test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                    system_type, UsePrims, false, use_nodegroup_dg_elements>(
+              quadrature, local_dg_formulation);
 
-              // PassVariables == true
-              test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, std::decay_t<decltype(use_prims)>::value,
-                        true, use_nodegroup_dg_elements>(quadrature,
-                                                         local_dg_formulation);
-              test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, std::decay_t<decltype(use_prims)>::value,
-                        true, use_nodegroup_dg_elements>(quadrature,
-                                                         local_dg_formulation);
-            }
-          };
-          prim_helper(std::integral_constant<bool, false>{});
-          prim_helper(std::integral_constant<bool, true>{});
+          // PassVariables == true
+          test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                    system_type, UsePrims, true, use_nodegroup_dg_elements>(
+              quadrature, local_dg_formulation);
+          test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                    system_type, UsePrims, true, use_nodegroup_dg_elements>(
+              quadrature, local_dg_formulation);
         };
         moving_mesh_helper(std::integral_constant<bool, false>{});
         moving_mesh_helper(std::integral_constant<bool, true>{});

@@ -8,6 +8,6 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 
 namespace TestHelpers::evolution::dg::Actions {
-template <SystemType system_type, size_t Dim>
+template <SystemType system_type, bool UsePrims, size_t Dim>
 void test();
 }  // namespace TestHelpers::evolution::dg::Actions

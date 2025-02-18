@@ -9,9 +9,15 @@ set(LIBRARY_SOURCES
   InstantiateCons1d.cpp
   InstantiateCons2d.cpp
   InstantiateCons3d.cpp
+  InstantiateConsPrim1d.cpp
+  InstantiateConsPrim2d.cpp
+  InstantiateConsPrim3d.cpp
   InstantiateMixed1d.cpp
   InstantiateMixed2d.cpp
   InstantiateMixed3d.cpp
+  InstantiateMixedPrim1d.cpp
+  InstantiateMixedPrim2d.cpp
+  InstantiateMixedPrim3d.cpp
   InstantiateNoncons1d.cpp
   InstantiateNoncons2d.cpp
   InstantiateNoncons3d.cpp
