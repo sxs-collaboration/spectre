@@ -292,6 +292,7 @@ long_lines() {
               'external/*' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \
+              'support/Environments/setup/mbot_install.sh' \
               'tools/CheckFiles.sh$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
