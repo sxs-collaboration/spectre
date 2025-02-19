@@ -34,6 +34,7 @@ target_link_libraries(
   DomainCreators
   DomainHelpers
   H5
+  Informer
   SphericalHarmonics
   SphericalHarmonicsIO
   )

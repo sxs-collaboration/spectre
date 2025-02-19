@@ -39,6 +39,7 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Informer/InfoFromBuild.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -242,21 +243,27 @@ std::string create_option_string(
     const double inner_radius_objectA, const double inner_radius_objectB,
     const double outer_radius) {
   const std::string time_dependence{
-      add_time_dependence ? "  TimeDependentMaps:\n"
-                            "    InitialTime: 1.0\n"
-                            "    ExpansionMap: None\n"
-                            "    RotationMap:\n"
-                            "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-                            "    TranslationMap: None\n"
-                            "    SkewMap: None\n"
-                            "    ShapeMapA:\n"
-                            "      LMax: 8\n"
-                            "      InitialValues: Spherical\n"
-                            "      SizeInitialValues: [1.1, 0.0, 0.0]\n"
-                            "    ShapeMapB:\n"
-                            "      LMax: 8\n"
-                            "      InitialValues: Spherical\n"
-                            "      SizeInitialValues: [1.2, 0.0, 0.0]\n"
+      add_time_dependence ? ("  TimeDependentMaps:\n"
+                             "    GridCenters:\n"
+                             "      ScaleInspiralRateBy: 0.8\n"
+                             "      SpecEvolutionParametersPerlFile: "s +
+                             unit_test_src_path() +
+                             "/../InputFiles/GrMhd/GhValenciaDivClean/"
+                             "EvolutionParameters.perl\n"
+                             "    InitialTime: 1.0\n"
+                             "    ExpansionMap: None\n"
+                             "    RotationMap:\n"
+                             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
+                             "    TranslationMap: None\n"
+                             "    SkewMap: None\n"
+                             "    ShapeMapA:\n"
+                             "      LMax: 8\n"
+                             "      InitialValues: Spherical\n"
+                             "      SizeInitialValues: [1.1, 0.0, 0.0]\n"
+                             "    ShapeMapB:\n"
+                             "      LMax: 8\n"
+                             "      InitialValues: Spherical\n"
+                             "      SizeInitialValues: [1.2, 0.0, 0.0]\n")
                           : "  TimeDependentMaps: None\n"};
 
   const std::string boundary_conditions{
@@ -419,7 +426,8 @@ TimeDepOptions construct_time_dependent_options() {
           8_st,
           std::nullopt,
           {{initial_size_B_coefs[0][0], initial_size_B_coefs[1][0],
-            initial_size_B_coefs[1][0]}}}};
+            initial_size_B_coefs[1][0]}}},
+      std::nullopt};
 }
 
 void test_parse_errors() {
@@ -485,7 +493,8 @@ void test_parse_errors() {
               0.0, std::nullopt,
               domain::creators::time_dependent_options::RotationMapOptions<
                   false>{std::array{0.0, 0.0, 0.0}},
-              std::nullopt, std::nullopt, std::nullopt, std::nullopt},
+              std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+              std::nullopt},
           create_inner_boundary_condition(), create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(

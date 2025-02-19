@@ -90,6 +90,7 @@ DomainCreator:
         InitialValues: Spherical
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
+      GridCenters: None
 
 SpatialDiscretization:
   ActiveGrid: Dg

@@ -17,6 +17,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/Wedge.hpp"
 #include "Domain/Creators/TimeDependentOptions/ExpansionMap.hpp"
+#include "Domain/Creators/TimeDependentOptions/GridCenters.hpp"
 #include "Domain/Creators/TimeDependentOptions/RotationMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/ShapeMap.hpp"
 #include "Domain/Creators/TimeDependentOptions/SkewMap.hpp"
@@ -45,19 +46,20 @@ TimeDependentMapOptions<IsCylindrical>::TimeDependentMapOptions(
     SkewMapOptionType skew_map_options,
     ShapeMapOptionType<domain::ObjectLabel::A> shape_options_A,
     ShapeMapOptionType<domain::ObjectLabel::B> shape_options_B,
-    const Options::Context& context)
+    GridCentersOptionType grid_centers, const Options::Context& context)
     : initial_time_(initial_time),
       expansion_map_options_(std::move(expansion_map_options)),
       rotation_map_options_(std::move(rotation_map_options)),
       translation_map_options_(std::move(translation_map_options)),
       skew_map_options_(std::move(skew_map_options)),
       shape_options_A_(std::move(shape_options_A)),
-      shape_options_B_(std::move(shape_options_B)) {
+      shape_options_B_(std::move(shape_options_B)),
+      grid_centers_options_(std::move(grid_centers)) {
   if (not(expansion_map_options_.has_value() or
           rotation_map_options_.has_value() or
           translation_map_options_.has_value() or
           skew_map_options_.has_value() or shape_options_A_.has_value() or
-          shape_options_B_.has_value())) {
+          shape_options_B_.has_value() or grid_centers_options_.has_value())) {
     PARSE_ERROR(context,
                 "Time dependent map options were specified, but all options "
                 "were 'None'. If you don't want time dependent maps, specify "
@@ -200,6 +202,7 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
       {rotation_name, std::numeric_limits<double>::infinity()},
       {translation_name, std::numeric_limits<double>::infinity()},
       {skew_name, std::numeric_limits<double>::infinity()},
+      {grid_centers_name, std::numeric_limits<double>::infinity()},
       {gsl::at(size_names, 0), std::numeric_limits<double>::infinity()},
       {gsl::at(size_names, 1), std::numeric_limits<double>::infinity()},
       {gsl::at(shape_names, 0), std::numeric_limits<double>::infinity()},
@@ -271,6 +274,12 @@ TimeDependentMapOptions<IsCylindrical>::create_functions_of_time(
         *deformed_radii_[1]);
 
     result.merge(shape_and_size);
+  }
+
+  if (grid_centers_options_.has_value()) {
+    result[grid_centers_name] = time_dependent_options::get_grid_centers(
+        grid_centers_options_.value(), initial_time_,
+        expiration_times.at(grid_centers_name));
   }
 
   return result;

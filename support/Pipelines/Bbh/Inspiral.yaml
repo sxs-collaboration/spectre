@@ -147,6 +147,7 @@ DomainCreator:
         SubfileName: "VolumeData"
         LMax: Auto
         TransitionEndsAtCube: True
+      GridCenters: None
 {% else %}
     TimeDependentMaps:
       InitialTime: &InitialTime 0.0
@@ -189,6 +190,7 @@ DomainCreator:
   {% endif %}
         SizeInitialValues: [0.0, 0.0, 0.0]
         TransitionEndsAtCube: true
+      GridCenters: None
 {% endif %}
 
 Evolution:

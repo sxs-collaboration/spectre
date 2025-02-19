@@ -74,6 +74,7 @@ DomainCreator:
         LMax: *LMax
         InitialValues: Spherical
         SizeInitialValues: [0.0, 0.0, 0.0]
+      GridCenters: None
 
 EventsAndDenseTriggers:
 

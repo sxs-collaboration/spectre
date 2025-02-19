@@ -336,6 +336,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
       std::nullopt,
       std::nullopt,
       std::nullopt,
+      std::nullopt,
       std::nullopt};
   const domain::creators::BinaryCompactObject<false> binary_compact_object{
       domain::creators::BinaryCompactObject<false>::CartesianCubeAtXCoord{20.0},
@@ -370,7 +371,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
   auto& cache = ActionTesting::cache<control_system_component>(runner, 0);
 
   LinkedMessageId<double> measurement_id{1.0, 0.0};
-  ElementId<3> unused_element_id;
+  const ElementId<3> unused_element_id{};
 
   using ControlSystems = tmpl::list<MockControlSystem>;
   auto box = db::create<db::AddSimpleTags<Tags::Time>>(1.0);

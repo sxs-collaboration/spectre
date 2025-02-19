@@ -39,6 +39,7 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Informer/InfoFromBuild.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/CartesianProduct.hpp"
@@ -437,32 +438,38 @@ std::string create_option_string(
       (excise_A and excise_B and opening_angle == 90) ? "1.5" : "1.0";
   const std::string time_dependence{
       add_time_dependence
-          ? "  TimeDependentMaps:\n"
-            "    InitialTime: 1.0\n"
-            "    ExpansionMap: \n"
-            "      InitialValues: [1.0, -0.1, 0.0]\n"
-            "      AsymptoticVelocityOuterBoundary: -0.1\n"
-            "      DecayTimescaleOuterBoundary: 5.0\n"
-            "    RotationMap:\n"
-            "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
-            "    TranslationMap:\n"
-            "      InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], "
-            "      [0.0, 0.0, 0.0]]\n"s
-            "    SkewMap:\n"
-            "      InitialValuesY: [0.0, -0.01, 0.0]\n"
-            "      InitialValuesZ: [0.0, -0.01, 0.0]\n" +
-                (excise_A ? "    ShapeMapA:\n"
-                            "      LMax: 8\n"
-                            "      InitialValues: Spherical\n"
-                            "      SizeInitialValues: [0.0, -0.1, 0.01]\n"
-                            "      TransitionEndsAtCube: false\n"s
-                          : "    ShapeMapA: None\n"s) +
-                (excise_B ? "    ShapeMapB:\n"
-                            "      LMax: 8\n"
-                            "      InitialValues: Spherical\n"
-                            "      SizeInitialValues: [0.0, -0.2, 0.02]\n"
-                            "      TransitionEndsAtCube: true"s
-                          : "    ShapeMapB: None"s)
+          ? ("  TimeDependentMaps:\n"
+             "    GridCenters:\n"
+             "      ScaleInspiralRateBy: 0.8\n"
+             "      SpecEvolutionParametersPerlFile: "s +
+             unit_test_src_path() +
+             "/../InputFiles/GrMhd/GhValenciaDivClean/"
+             "EvolutionParameters.perl\n"
+             "    InitialTime: 1.0\n"
+             "    ExpansionMap: \n"
+             "      InitialValues: [1.0, -0.1, 0.0]\n"
+             "      AsymptoticVelocityOuterBoundary: -0.1\n"
+             "      DecayTimescaleOuterBoundary: 5.0\n"
+             "    RotationMap:\n"
+             "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
+             "    TranslationMap:\n"
+             "      InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], "
+             "      [0.0, 0.0, 0.0]]\n"s
+             "    SkewMap:\n"
+             "      InitialValuesY: [0.0, -0.01, 0.0]\n"
+             "      InitialValuesZ: [0.0, -0.01, 0.0]\n" +
+             (excise_A ? "    ShapeMapA:\n"
+                         "      LMax: 8\n"
+                         "      InitialValues: Spherical\n"
+                         "      SizeInitialValues: [0.0, -0.1, 0.01]\n"
+                         "      TransitionEndsAtCube: false\n"s
+                       : "    ShapeMapA: None\n"s) +
+             (excise_B ? "    ShapeMapB:\n"
+                         "      LMax: 8\n"
+                         "      InitialValues: Spherical\n"
+                         "      SizeInitialValues: [0.0, -0.2, 0.02]\n"
+                         "      TransitionEndsAtCube: true"s
+                       : "    ShapeMapB: None"s))
           : "  TimeDependentMaps: None"};
   const std::string interior_A{
       add_boundary_condition
@@ -748,6 +755,8 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
     if (excise_B) {
       check_excision_sphere_map(excision_spheres.at("ExcisionSphereB"));
     }
+    const auto functions_of_time = binary_compact_object->functions_of_time();
+    CHECK(functions_of_time.find("GridCenters") != functions_of_time.end());
   }
 }
 
@@ -992,7 +1001,8 @@ void test_kerr_horizon_conforming() {
                          KerrSchildFromBoyerLindquist{mass_A, spin_A}},
           HardcodedShape<domain::ObjectLabel::B>{
               32_st, domain::creators::time_dependent_options::
-                         KerrSchildFromBoyerLindquist{mass_B, spin_B}}}};
+                         KerrSchildFromBoyerLindquist{mass_B, spin_B}},
+          std::nullopt}};
   const auto domain = domain_creator.create_domain();
   const auto functions_of_time = domain_creator.functions_of_time();
   // Set up coordinates on an ellipsoid of constant Boyer-Lindquist radius
