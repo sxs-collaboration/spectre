@@ -775,6 +775,13 @@ void Main<Metavariables>::execute_next_phase() {
         current_phase_ = next_phase.value();
       }
     } else {
+      if (current_phase_ ==
+          Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint) {
+        ERROR(
+            "Failed to find the next phase after overlaying options during a "
+            "restart. This is caused by removing the phase change that caused "
+            "the restart.");
+      }
       const auto& default_order = Metavariables::default_phase_order;
       auto it = alg::find(default_order, current_phase_);
       using ::operator<<;

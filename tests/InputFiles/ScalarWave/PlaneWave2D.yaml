@@ -4,6 +4,7 @@
 Executable: EvolveScalarWave2D
 Testing:
   Check: parse;execute
+  Timeout: 20
 ExpectedExitCode: 2 0
 ExpectedOutput:
   - Checkpoints/Checkpoint_0000
