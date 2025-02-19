@@ -83,7 +83,7 @@ DomainCreator:
         Type: ConstraintPreservingPhysical
 
 Evolution:
-  InitialTime: 0.0
+  InitialTime: *InitialTime
   InitialTimeStep: 0.0001
   MinimumTimeStep: 1e-7
   # This is the smallest interval we'd need to observe time step/constraints. If
