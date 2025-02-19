@@ -9,13 +9,12 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace domain {
-template <typename SourceFrame, typename TargetFrame, size_t Dim>
-class CoordinateMapBase;
 namespace FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace FunctionsOfTime
@@ -125,10 +124,6 @@ TimeDependence<MeshDim>::~TimeDependence() = default;
 }  // namespace time_dependence
 }  // namespace domain::creators
 
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"

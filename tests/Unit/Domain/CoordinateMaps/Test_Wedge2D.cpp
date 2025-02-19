@@ -9,6 +9,8 @@
 #include <random>
 
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/Direction.hpp"

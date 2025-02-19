@@ -14,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CreateInitialElement.hpp"
