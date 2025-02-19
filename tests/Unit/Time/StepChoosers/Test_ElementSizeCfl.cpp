@@ -131,6 +131,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
             domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.1));
     const ElementId<1> element_id(0, {{{2, 3}}});
     ElementMap<1, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
+    // NOLINTNEXTLINE(bugprone-use-after-move) - confused by CHECK
     CHECK(approx(get_suggestion(0.8, 2.0, std::move(logical_to_grid_map))) ==
           0.04);
   }
@@ -144,6 +145,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
                      Affine(-1.0, 1.0, -0.5, 1.1)});
     const ElementId<2> element_id(0, {{{1, 0}, {2, 3}}});
     ElementMap<2, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
+    // NOLINTNEXTLINE(bugprone-use-after-move) - confused by CHECK
     CHECK(approx(get_suggestion(0.8, 2.0, std::move(logical_to_grid_map))) ==
           0.005);
   }
@@ -158,6 +160,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
                      Affine(-1.0, 1.0, 12.0, 12.4)});
     const ElementId<3> element_id(0, {{{2, 3}, {1, 0}, {3, 4}}});
     ElementMap<3, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
+    // NOLINTNEXTLINE(bugprone-use-after-move) - confused by CHECK
     CHECK(approx(get_suggestion(0.8, 2.0, std::move(logical_to_grid_map))) ==
           0.005 / 3.0);
   }
