@@ -39,6 +39,22 @@ def mass_weighted_coords_b(tilde_d, grid_coords, compute_coords):
 # Functions testing the MassWeightedFluidItems
 
 
+def comoving_magnetic_field(
+    spatial_velocity,
+    magnetic_field,
+    magnetic_field_dot_spatial_velocity,
+    lorentz_factor,
+    shift,
+    lapse,
+):
+    b_0 = lorentz_factor * magnetic_field_dot_spatial_velocity / lapse
+    b_i = magnetic_field / lorentz_factor + (
+        lapse * b_0 * (spatial_velocity - shift / lapse)
+    )
+
+    return np.concatenate([[b_0], b_i])
+
+
 def comoving_magnetic_field_one_form(
     spatial_velocity_one_form,
     magnetic_field_one_form,
@@ -112,62 +128,3 @@ def relativistic_specific_enthalpy(
 
 
 # End functions for testing SpecificEnthalpy.cpp
-
-
-def energy_density(
-    rest_mass_density,
-    specific_enthalpy,
-    pressure,
-    lorentz_factor,
-    magnetic_field_dot_spatial_velocity,
-    comoving_magnetic_field_squared,
-):
-    return (
-        rest_mass_density * specific_enthalpy * lorentz_factor**2
-        - pressure
-        + comoving_magnetic_field_squared * (lorentz_factor**2 - 0.5)
-        - (lorentz_factor * magnetic_field_dot_spatial_velocity) ** 2
-    )
-
-
-def momentum_density(
-    rest_mass_density,
-    specific_enthalpy,
-    spatial_velocity,
-    lorentz_factor,
-    magnetic_field,
-    magnetic_field_dot_spatial_velocity,
-    comoving_magnetic_field_squared,
-):
-    return (
-        rest_mass_density
-        * specific_enthalpy
-        * lorentz_factor**2
-        * spatial_velocity
-        + comoving_magnetic_field_squared
-        * lorentz_factor**2
-        * spatial_velocity
-        - magnetic_field_dot_spatial_velocity * magnetic_field
-        - magnetic_field_dot_spatial_velocity**2
-        * lorentz_factor**2
-        * spatial_velocity
-    )
-
-
-def stress_trace(
-    rest_mass_density,
-    specific_enthalpy,
-    pressure,
-    spatial_velocity_squared,
-    lorentz_factor,
-    magnetic_field_dot_spatial_velocity,
-    comoving_magnetic_field_squared,
-):
-    return (
-        3.0 * pressure
-        + rest_mass_density * specific_enthalpy * (lorentz_factor**2 - 1.0)
-        + comoving_magnetic_field_squared
-        * (lorentz_factor**2 * spatial_velocity_squared + 0.5)
-        - magnetic_field_dot_spatial_velocity**2
-        * (lorentz_factor**2 * spatial_velocity_squared + 1.0)
-    )

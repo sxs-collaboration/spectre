@@ -35,6 +35,7 @@ target_link_libraries(
   Domain
   GeneralRelativity
   GeneralRelativityHelpers
+  GhValenciaDivClean
   Hydro
   HydroHelpers
   LinearOperators

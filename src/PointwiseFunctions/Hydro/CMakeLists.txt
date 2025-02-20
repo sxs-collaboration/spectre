@@ -51,10 +51,10 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   H5
+  GeneralRelativity
   Options
   Serialization
   INTERFACE
-  GeneralRelativity
   )
 
 add_subdirectory(EquationsOfState)

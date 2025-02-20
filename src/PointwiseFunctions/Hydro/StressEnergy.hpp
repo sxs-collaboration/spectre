@@ -132,4 +132,28 @@ void stress_trace(gsl::not_null<Scalar<DataType>*> result,
                   const Scalar<DataType>& magnetic_field_dot_spatial_velocity,
                   const Scalar<DataType>& comoving_magnetic_field_squared);
 
+/*!
+ * \brief Stress Energy Tesnor, $T^{ab}=
+ * (\rho h)^{*} u^a u ^b + p^{*} g^{ab} - b^{a} b^{b}$,
+ *
+ * where $(\rho h)^{*} = \rho h + b^{2}$ and $p^{*} = p + b^{2}/2$
+ * are the enthalpy density and fluid pressure augmented by contributions of
+ * magnetic pressure $p_{mag}$ = b^{2}/2, respectively.
+ *
+ * $b$ refers to magnetic field measured in the comoving frame of the fluid
+ * $b^{a} = ^{*}F^{ab} u_{b}$.
+ */
+template <typename DataType>
+void stress_energy_tensor(
+    gsl::not_null<tnsr::AA<DataType, 3>*> result,
+    const Scalar<DataType>& rest_mass_density,
+    const Scalar<DataType>& specific_internal_energy,
+    const Scalar<DataType>& pressure, const Scalar<DataType>& lorentz_factor,
+    const Scalar<DataType>& lapse,
+    const Scalar<DataType>& comoving_magnetic_field_magnitude,
+    const tnsr::I<DataType, 3>& spatial_velocity,
+    const tnsr::I<DataType, 3>& shift,
+    const tnsr::I<DataType, 3>& magnetic_field,
+    const tnsr::ii<DataType, 3>& spatial_metric,
+    const tnsr::II<DataType, 3>& inverse_spatial_metric);
 }  // namespace hydro
