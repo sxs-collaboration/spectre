@@ -37,7 +37,7 @@ namespace BnsInitialData {
  * i.e.
  * constant throughout an iterative elliptic solve.  Additionally a background
  * lapse (\f$\alpha\f$) and
- * shift (\f$\beta\f$) must be provided.  Finally, a ``rotational killing
+ * shift (\f$\beta\f$) must be provided.  Finally, a "rotational killing
  * vector" \f$k^i\f$ (with magnitude
  * proportional to the angular velocity of the orbital motion) is provided.  The
  * rotational shift is defined as \f$B^i = \beta^i + k^i\f$ which is
@@ -53,7 +53,7 @@ namespace BnsInitialData {
  * \f}
  *
  * \f{align*}
- * F^i &=  D_i \phi - \frac{B^j D_j \phi}{\alpha^2}B^i  \\
+ * F^i &=  D^i \phi - \frac{B^j D_j \phi}{\alpha^2}B^i  \\
  * S &= -F^iD_i \left( \ln \frac{\alpha \rho}{h}\right) -\Gamma^i_{ij}F^j \\
  * f &= -D_i \left(\frac{C B^i}{\alpha^2}\right) -
  * \frac{C}{\alpha^2}B^iD_i\left(
