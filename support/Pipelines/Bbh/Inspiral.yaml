@@ -416,12 +416,12 @@ EventsAndTriggersAtSlabs:
         Value: 2.138
     Events:
       - Completion
-  # If running eccentricity control, only run short inspiral
 {% if eccentricity_control %}
+  # If running eccentricity control, only run short inspiral
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan
-        Value: 2000
+        Value: {{ FinalTime }}
     Events:
       - Completion
 {% endif %}

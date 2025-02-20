@@ -378,6 +378,14 @@ def start_inspiral(
             refinement_level=refinement_level,
             polynomial_order=polynomial_order,
         )
+
+    # Set final time for eccentricity control to 2-3 orbits. This can be set
+    # more dynamically in the future.
+    if eccentricity_control:
+        inspiral_params["FinalTime"] = (
+            500 + 5 * np.pi / inspiral_params["InitialAngularVelocity"]
+        )
+
     logger.debug(f"Inspiral parameters: {pretty_repr(inspiral_params)}")
 
     # Resolve directories
