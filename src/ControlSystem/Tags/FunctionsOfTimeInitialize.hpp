@@ -17,6 +17,7 @@
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Options/Auto.hpp"
 #include "Time/OptionTags/InitialTime.hpp"
 #include "Time/OptionTags/InitialTimeStep.hpp"
 #include "Utilities/TMPL.hpp"
@@ -74,14 +75,27 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
           tmpl::list<>>,
       domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
 
+  /// @{
   /// This version of create_from_options is used if the metavariables did
   /// define control systems
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
-      const int measurements_per_update,
-     const double initial_time, const OptionHolders&... option_holders) {
+      const int measurements_per_update, const double initial_time,
+      const Options::Auto<OptionHolders,
+                          Options::AutoLabel::None>&... option_holders) {
+    return create_from_options<Metavariables>(
+        domain_creator, measurements_per_update, initial_time,
+        static_cast<const std::optional<OptionHolders>&>(option_holders)...);
+  }
+
+  template <typename Metavariables, typename... OptionHolders>
+  static type create_from_options(
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const int measurements_per_update, const double initial_time,
+      const std::optional<OptionHolders>&... option_holders) {
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
             initial_time, measurements_per_update, domain_creator,
@@ -99,12 +113,13 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
 
     return functions_of_time;
   }
+  /// @}
 
   /// This version of create_from_options is used if the metavariables did not
   /// define control systems
   template <typename Metavariables>
   static type create_from_options(
-     const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator) {
     return domain_creator->functions_of_time();
   }

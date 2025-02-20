@@ -217,12 +217,11 @@ void test_functions_of_time_tag() {
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(false, averager, controller, tuner1,
-                                 control_error);
-  OptionHolder<2> option_holder2(true, averager, controller, tuner1,
-                                 control_error);
-  OptionHolder<3> option_holder3(true, averager, controller, tuner2,
-                                 control_error);
+  const std::optional<OptionHolder<1>> option_holder1 = std::nullopt;
+  const std::optional<OptionHolder<2>> option_holder2 =
+      OptionHolder<2>{averager, controller, tuner1, control_error};
+  const std::optional<OptionHolder<3>> option_holder3 =
+      OptionHolder<3>{averager, controller, tuner2, control_error};
 
   // First test construction with only control systems
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
@@ -267,11 +266,11 @@ void test_functions_of_time_tag() {
         fot_tag::create_from_options<MetavariablesNoControlSystems>(
             not_controlled_creator);
     CHECK(no_control_sys_fot.size() == 1);
-    CHECK(no_control_sys_fot.count("Uncontrolled") == 1);
+    CHECK(no_control_sys_fot.contains("Uncontrolled"));
     // -3.0 comes from the TestCreator above
     CHECK(no_control_sys_fot.at("Uncontrolled")
               ->func_and_2_derivs(initial_time)[2][0] == -3.0);
-    CHECK(no_control_sys_fot.count("Controlled2") == 0);
+    CHECK_FALSE(no_control_sys_fot.contains("Controlled2"));
   }
 }
 
@@ -288,14 +287,22 @@ void not_controlling(const bool is_active) {
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(is_active, averager, controller, tuner,
-                                 control_error);
-  OptionHolder<2> option_holder2(is_active, averager, controller, tuner,
-                                 control_error);
-  OptionHolder<3> option_holder3(is_active, averager, controller, tuner,
-                                 control_error);
-  OptionHolder<4> option_holder4(is_active, averager, controller, tuner,
-                                 control_error);
+  const std::optional<OptionHolder<1>> option_holder1 =
+      is_active ? std::optional{OptionHolder<1>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
+  const std::optional<OptionHolder<2>> option_holder2 =
+      is_active ? std::optional{OptionHolder<2>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
+  const std::optional<OptionHolder<3>> option_holder3 =
+      is_active ? std::optional{OptionHolder<3>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
+  const std::optional<OptionHolder<4>> option_holder4 =
+      is_active ? std::optional{OptionHolder<4>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
 
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
@@ -313,12 +320,18 @@ void incompatible(const bool is_active) {
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(is_active, averager, controller, tuner,
-                                 control_error);
-  OptionHolder<2> option_holder2(is_active, averager, controller, tuner,
-                                 control_error);
-  OptionHolder<3> option_holder3(is_active, averager, controller, tuner,
-                                 control_error);
+  const std::optional<OptionHolder<1>> option_holder1 =
+      is_active ? std::optional{OptionHolder<1>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
+  const std::optional<OptionHolder<2>> option_holder2 =
+      is_active ? std::optional{OptionHolder<2>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
+  const std::optional<OptionHolder<3>> option_holder3 =
+      is_active ? std::optional{OptionHolder<3>{averager, controller, tuner,
+                                                control_error}}
+                : std::nullopt;
 
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(

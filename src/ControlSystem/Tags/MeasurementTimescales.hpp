@@ -23,6 +23,7 @@
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Options/Auto.hpp"
 #include "Time/OptionTags/InitialTime.hpp"
 #include "Time/OptionTags/InitialTimeStep.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -83,7 +84,21 @@ struct MeasurementTimescales : db::SimpleTag {
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time, const double initial_time_step,
-      const OptionHolders&... option_holders) {
+      const Options::Auto<OptionHolders,
+                          Options::AutoLabel::None>&... option_holders) {
+    return create_from_options<Metavariables>(
+        measurements_per_update, domain_creator, initial_time,
+        initial_time_step,
+        static_cast<std::optional<OptionHolders>>(option_holders)...);
+  }
+
+  template <typename Metavariables, typename... OptionHolders>
+  static type create_from_options(
+      const int measurements_per_update,
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const double initial_time, const double initial_time_step,
+      const std::optional<OptionHolders>&... option_holders) {
     std::unordered_map<std::string,
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         timescales{};
@@ -121,25 +136,27 @@ struct MeasurementTimescales : db::SimpleTag {
                 "evolutions.");
           }
 
-          const std::string& control_system_name =
-              std::decay_t<decltype(option_holder)>::control_system::name();
+          const std::string& control_system_name = std::decay_t<
+              decltype(option_holder)>::value_type::control_system::name();
           const std::string& combined_name = map_of_names[control_system_name];
-
-          auto tuner = option_holder.tuner;
-          ::control_system::Tags::detail::initialize_tuner(
-              make_not_null(&tuner), domain_creator, initial_time,
-              control_system_name);
-
-          const auto& controller = option_holder.controller;
-          DataVector measurement_timescales = calculate_measurement_timescales(
-              controller, tuner, measurements_per_update);
-
-          double min_measurement_timescale = min(measurement_timescales);
 
           // If the control system isn't active, set measurement timescale and
           // expiration time to be infinity.
-          if (not option_holder.is_active) {
-            min_measurement_timescale = std::numeric_limits<double>::infinity();
+          double min_measurement_timescale =
+              std::numeric_limits<double>::infinity();
+
+          if (option_holder.has_value()) {
+            auto tuner = option_holder->tuner;
+            ::control_system::Tags::detail::initialize_tuner(
+                make_not_null(&tuner), domain_creator, initial_time,
+                control_system_name);
+
+            const auto& controller = option_holder->controller;
+            DataVector measurement_timescales =
+                calculate_measurement_timescales(controller, tuner,
+                                                 measurements_per_update);
+
+            min_measurement_timescale = min(measurement_timescales);
           }
 
           min_measurement_timescales[combined_name] =

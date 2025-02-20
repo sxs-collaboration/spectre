@@ -12,6 +12,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -23,6 +24,8 @@ namespace control_system {
 /// This struct collects all the options for a given control system during
 /// option parsing. Then during initialization, the options can be retrieved via
 /// their public member names and assigned to their corresponding DataBox tags.
+///
+/// This class should only be used if a control system is active.
 template <typename ControlSystem>
 struct OptionHolder {
  private:
@@ -34,13 +37,6 @@ struct OptionHolder {
                 ControlSystem, control_system::protocols::ControlSystem>);
   using control_system = ControlSystem;
   static constexpr size_t deriv_order = control_system::deriv_order;
-  struct IsActive {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Whether the control system is actually active. If it isn't active, no "
-        "measurements (horizon finds) will be done and the functions of time "
-        "will never expire."};
-  };
 
   struct Averager {
     using type = ::Averager<deriv_order - 1>;
@@ -71,16 +67,14 @@ struct OptionHolder {
   };
 
   using options =
-      tmpl::list<IsActive, Averager, Controller, TimescaleTuner, ControlError>;
+      tmpl::list<Averager, Controller, TimescaleTuner, ControlError>;
   static constexpr Options::String help = {"Options for a control system."};
 
-  OptionHolder(const bool input_is_active,
-               ::Averager<deriv_order - 1> input_averager,
+  OptionHolder(::Averager<deriv_order - 1> input_averager,
                ::Controller<deriv_order> input_controller,
                ::TimescaleTuner<not is_size> input_tuner,
                typename ControlSystem::control_error input_control_error)
-      : is_active(input_is_active),
-        averager(std::move(input_averager)),
+      : averager(std::move(input_averager)),
         controller(std::move(input_controller)),
         tuner(std::move(input_tuner)),
         control_error(std::move(input_control_error)) {}
@@ -94,7 +88,6 @@ struct OptionHolder {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
-    p | is_active;
     p | averager;
     p | controller;
     p | tuner;
@@ -103,7 +96,6 @@ struct OptionHolder {
 
   // These members are specifically made public for easy access during
   // initialization
-  bool is_active{true};
   ::Averager<deriv_order - 1> averager{};
   ::Controller<deriv_order> controller{};
   ::TimescaleTuner<not is_size> tuner{};
@@ -127,9 +119,12 @@ struct ControlSystemGroup {
 /// Option tag for each individual control system. The name of this option is
 /// the name of the \p ControlSystem struct it is templated on. This way all
 /// control systems will have a unique name.
+///
+/// \details If `None` is specified, this control system is not active.
 template <typename ControlSystem>
 struct ControlSystemInputs {
-  using type = control_system::OptionHolder<ControlSystem>;
+  using type = Options::Auto<control_system::OptionHolder<ControlSystem>,
+                             Options::AutoLabel::None>;
   static constexpr Options::String help{"Options for a control system."};
   static std::string name() { return ControlSystem::name(); }
   using group = ControlSystemGroup;

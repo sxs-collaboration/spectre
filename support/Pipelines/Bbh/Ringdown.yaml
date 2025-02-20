@@ -326,7 +326,6 @@ ControlSystems:
   MeasurementsPerUpdate: 4
   Verbosity: Silent
   Translation:
-    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
@@ -342,7 +341,6 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   Shape:
-    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       # This is different from inspiral but same as SpEC.
@@ -360,7 +358,6 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   Size:
-    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: true

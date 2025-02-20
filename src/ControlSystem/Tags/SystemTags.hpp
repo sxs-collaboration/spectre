@@ -82,6 +82,8 @@ struct ObserveCenters : ::ah::Tags::ObserveCentersBase, db::SimpleTag {
 ///
 /// To compute the `deriv_order`th derivative of a control error, the max
 /// derivative we need from the averager is the `deriv_order - 1`st derivative.
+///
+/// If the option holder is nullopt, constructs a default Averager.
 template <typename ControlSystem>
 struct Averager : db::SimpleTag {
   using type = ::Averager<ControlSystem::deriv_order - 1>;
@@ -90,8 +92,9 @@ struct Averager : db::SimpleTag {
       tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(
-      const control_system::OptionHolder<ControlSystem>& option_holder) {
-    return option_holder.averager;
+      const std::optional<control_system::OptionHolder<ControlSystem>>&
+          option_holder) {
+    return option_holder.has_value() ? option_holder->averager : type{};
   }
 };
 
@@ -106,6 +109,8 @@ void initialize_tuner(
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the timescale tuner
+///
+/// If the option holder is nullopt, constructs a default TimescaleTuner.
 template <typename ControlSystem>
 struct TimescaleTuner : db::SimpleTag {
  private:
@@ -124,11 +129,16 @@ struct TimescaleTuner : db::SimpleTag {
 
   template <typename Metavariables>
   static type create_from_options(
-      const control_system::OptionHolder<ControlSystem>& option_holder,
+      const std::optional<control_system::OptionHolder<ControlSystem>>&
+          option_holder,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time) {
-    auto tuner = option_holder.tuner;
+    if (not option_holder.has_value()) {
+      return type{};
+    }
+
+    auto tuner = option_holder->tuner;
     detail::initialize_tuner(make_not_null(&tuner), domain_creator,
                              initial_time, ControlSystem::name());
     return tuner;
@@ -138,6 +148,8 @@ struct TimescaleTuner : db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the controller
+///
+/// If the option holder is nullopt, constructs a default Controller.
 template <typename ControlSystem>
 struct Controller : db::SimpleTag {
   using type = ::Controller<ControlSystem::deriv_order>;
@@ -151,12 +163,17 @@ struct Controller : db::SimpleTag {
 
   template <typename Metavariables>
   static type create_from_options(
-      const control_system::OptionHolder<ControlSystem>& option_holder,
+      const std::optional<control_system::OptionHolder<ControlSystem>>&
+          option_holder,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time) {
-    type controller = option_holder.controller;
-    auto tuner = option_holder.tuner;
+    if (not option_holder.has_value()) {
+      return type{};
+    }
+
+    type controller = option_holder->controller;
+    auto tuner = option_holder->tuner;
     detail::initialize_tuner(make_not_null(&tuner), domain_creator,
                              initial_time, ControlSystem::name());
 
@@ -170,6 +187,8 @@ struct Controller : db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the control error
+///
+/// If the option holder is nullopt, constructs a default ControlError.
 template <typename ControlSystem>
 struct ControlError : db::SimpleTag {
   using type = typename ControlSystem::control_error;
@@ -179,8 +198,9 @@ struct ControlError : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
 
   static type create_from_options(
-      const control_system::OptionHolder<ControlSystem>& option_holder) {
-    return option_holder.control_error;
+      const std::optional<control_system::OptionHolder<ControlSystem>>&
+          option_holder) {
+    return option_holder.has_value() ? option_holder->control_error : type{};
   }
 };
 

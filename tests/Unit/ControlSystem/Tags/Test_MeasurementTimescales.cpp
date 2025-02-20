@@ -118,20 +118,17 @@ void test_measurement_tag() {
     tuner2.resize_timescales(2);
     const TimescaleTuner<true> tuner4 = tuner2;
     const TimescaleTuner<true>& tuner5 = tuner1;
-    const TimescaleTuner<true>& tuner6 = tuner1;
 
-    OptionHolder<1> option_holder1(true, averager, controller, tuner1,
-                                   control_error);
+    const std::optional<OptionHolder<1>> option_holder1 =
+        OptionHolder<1>{averager, controller, tuner1, control_error};
     // Control system 2 is not active so the measurement timescale and
     // expiration time should both be infinity
-    OptionHolder<2> option_holder2(false, averager, controller, tuner2,
-                                   control_error);
-    OptionHolder<4> option_holder4(true, averager, controller, tuner4,
-                                   control_error);
-    OptionHolder<5> option_holder5(true, averager, controller, tuner5,
-                                   control_error);
-    OptionHolder<6> option_holder6(false, averager, controller, tuner6,
-                                   control_error);
+    const std::optional<OptionHolder<2>> option_holder2 = std::nullopt;
+    const std::optional<OptionHolder<4>> option_holder4 =
+        OptionHolder<4>{averager, controller, tuner4, control_error};
+    const std::optional<OptionHolder<5>> option_holder5 =
+        OptionHolder<5>{averager, controller, tuner5, control_error};
+    const std::optional<OptionHolder<6>> option_holder6 = std::nullopt;
 
     const std::unique_ptr<DomainCreator<3>> creator =
         std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{
@@ -210,12 +207,12 @@ void test_measurement_tag() {
         const Controller<2> controller(0.3);
         const control_system::TestHelpers::ControlError control_error{};
 
-        OptionHolder<1> option_holder1(true, averager, controller, tuner1,
-                                       control_error);
-        OptionHolder<2> option_holder2(true, averager, controller, tuner1,
-                                       control_error);
-        OptionHolder<3> option_holder3(true, averager, controller, tuner2,
-                                       control_error);
+        std::optional<OptionHolder<1>> option_holder1 =
+            OptionHolder<1>{averager, controller, tuner1, control_error};
+        std::optional<OptionHolder<2>> option_holder2 =
+            OptionHolder<2>{averager, controller, tuner1, control_error};
+        std::optional<OptionHolder<3>> option_holder3 =
+            OptionHolder<3>{averager, controller, tuner2, control_error};
 
         const std::unique_ptr<DomainCreator<3>> creator =
             std::make_unique<FakeCreator>(

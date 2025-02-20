@@ -500,8 +500,7 @@ ControlSystems:
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
   Verbosity: Silent
-  Expansion:
-    IsActive: true
+  Expansion: &KinematicControlSystem
     Averager: &KinematicAverager
       AverageTimescaleFraction: &AvgTimescaleFrac 0.25
       Average0thDeriv: false
@@ -517,20 +516,9 @@ ControlSystems:
       IncreaseFactor: &IncreaseFactor 1.01
       DecreaseFactor: &DecreaseFactor 0.98
     ControlError:
-  Rotation:
-    IsActive: true
-    Averager: *KinematicAverager
-    Controller: *KinematicController
-    TimescaleTuner: *KinematicTuner
-    ControlError:
-  Translation:
-    IsActive: false
-    Averager: *KinematicAverager
-    Controller: *KinematicController
-    TimescaleTuner: *KinematicTuner
-    ControlError:
+  Rotation: *KinematicControlSystem
+  Translation: None
   ShapeA:
-    IsActive: true
     Averager: &SizeShapeAverager
       AverageTimescaleFraction: *AvgTimescaleFrac
       Average0thDeriv: true
@@ -545,7 +533,6 @@ ControlSystems:
       DecreaseFactor: *DecreaseFactor
     ControlError:
   ShapeB:
-    IsActive: true
     Averager: *SizeShapeAverager
     Controller: *KinematicController
     TimescaleTuner:
@@ -558,7 +545,6 @@ ControlSystems:
       DecreaseFactor: *DecreaseFactor
     ControlError:
   SizeA:
-    IsActive: true
     Averager: *SizeShapeAverager
     Controller: &SizeController
       UpdateFraction: 0.2
@@ -582,7 +568,6 @@ ControlSystems:
         IncreaseFactor: *IncreaseFactor
         DecreaseFactor: *DecreaseFactor
   SizeB:
-    IsActive: true
     Averager: *SizeShapeAverager
     Controller: *SizeController
     TimescaleTuner:

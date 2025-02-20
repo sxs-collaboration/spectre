@@ -75,12 +75,11 @@ void test_expiration_time_construction() {
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(true, averager, controller, tuner1,
-                                 control_error);
-  OptionHolder<2> option_holder2(true, averager, controller, tuner2,
-                                 control_error);
-  OptionHolder<3> option_holder3(false, averager, controller, tuner1,
-                                 control_error);
+  const std::optional<OptionHolder<1>> option_holder1 =
+      OptionHolder<1>{averager, controller, tuner1, control_error};
+  const std::optional<OptionHolder<2>> option_holder2 =
+      OptionHolder<2>{averager, controller, tuner2, control_error};
+  const std::optional<OptionHolder<3>> option_holder3 = std::nullopt;
 
   using FakeCreator = control_system::TestHelpers::FakeCreator;
 

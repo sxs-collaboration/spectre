@@ -104,7 +104,6 @@ void test_control_sys_inputs() {
 
   const auto input_holder = TestHelpers::test_option_tag<
       control_system::OptionTags::ControlSystemInputs<system>>(
-      "IsActive: false\n"
       "Averager:\n"
       "  AverageTimescaleFraction: 0.25\n"
       "  Average0thDeriv: true\n"
@@ -119,12 +118,13 @@ void test_control_sys_inputs() {
       "  IncreaseFactor: 1.01\n"
       "  DecreaseFactor: 0.99\n"
       "ControlError:\n");
-  CHECK_FALSE(input_holder.is_active);
-  CHECK(expected_averager == input_holder.averager);
-  CHECK(expected_controller == input_holder.controller);
-  CHECK(expected_tuner == input_holder.tuner);
-  CHECK(expected_name ==
-        std::decay_t<decltype(input_holder)>::control_system::name());
+  REQUIRE(input_holder.has_value());
+  CHECK(expected_averager == input_holder->averager);
+  CHECK(expected_controller == input_holder->controller);
+  CHECK(expected_tuner == input_holder->tuner);
+  CHECK(
+      expected_name ==
+      std::decay_t<decltype(input_holder)>::value_type::control_system::name());
 
   const auto write_data =
       TestHelpers::test_option_tag<control_system::OptionTags::WriteDataToDisk>(
@@ -153,22 +153,21 @@ void test_individual_tags() {
   };
 
   const auto tuner_str = [](const bool is_active) -> std::string {
-    return "IsActive: " + (is_active ? "true"s : "false"s) +
-           "\n"
-           "Averager:\n"
-           "  AverageTimescaleFraction: 0.25\n"
-           "  Average0thDeriv: true\n"
-           "Controller:\n"
-           "  UpdateFraction: 0.3\n"
-           "TimescaleTuner:\n"
-           "  InitialTimescales: 1.\n"
-           "  MinTimescale: 1e-3\n"
-           "  MaxTimescale: 10.\n"
-           "  DecreaseThreshold: 1e-2\n"
-           "  IncreaseThreshold: 1e-4\n"
-           "  IncreaseFactor: 1.01\n"
-           "  DecreaseFactor: 0.99\n"
-           "ControlError:\n";
+    return is_active ? "Averager:\n"
+                       "  AverageTimescaleFraction: 0.25\n"
+                       "  Average0thDeriv: true\n"
+                       "Controller:\n"
+                       "  UpdateFraction: 0.3\n"
+                       "TimescaleTuner:\n"
+                       "  InitialTimescales: 1.\n"
+                       "  MinTimescale: 1e-3\n"
+                       "  MaxTimescale: 10.\n"
+                       "  DecreaseThreshold: 1e-2\n"
+                       "  IncreaseThreshold: 1e-4\n"
+                       "  IncreaseFactor: 1.01\n"
+                       "  DecreaseFactor: 0.99\n"
+                       "ControlError:\n"
+                     : "None";
   };
 
   using tuner_tag = control_system::Tags::TimescaleTuner<system>;
@@ -203,7 +202,7 @@ void test_individual_tags() {
 
   CHECK(created_tuner == create_expected_tuner(2));
   CHECK(quat_created_tuner == create_expected_tuner(3));
-  CHECK(inactive_created_tuner == create_expected_tuner(1));
+  CHECK(inactive_created_tuner == TimescaleTuner<true>{});
 
   using control_error_tag = control_system::Tags::ControlError<system>;
   using control_error_tag2 = control_system::Tags::ControlError<system2>;
