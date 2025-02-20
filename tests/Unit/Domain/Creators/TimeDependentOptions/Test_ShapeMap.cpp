@@ -299,6 +299,7 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
       const auto shape_map_options = TestHelpers::test_option_tag<
           domain::creators::time_dependent_options::ShapeMapOptions<
               false, domain::ObjectLabel::B>>(
+          "LMax: 6\n"
           "TransitionEndsAtCube: false\n"
           "H5Filename: TotalEclipseOfTheHeart.h5\n"
           "SubfileName: VolumeData\n");
@@ -308,6 +309,10 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
               FromVolumeFileShapeSize<domain::ObjectLabel::B>>(
           shape_map_options.value()));
 
+      CHECK(std::get<FromVolumeFileShapeSize<domain::ObjectLabel::B>>(
+                shape_map_options.value())
+                .l_max == 6);
+
       const FunctionsOfTimeMap shape_and_size = get_shape_and_size(
           shape_map_options.value(), 0.2, 1.1, 1.2, inner_radius);
 
@@ -316,8 +321,32 @@ void test_funcs(const gsl::not_null<Generator*> generator) {
       CHECK(shape_and_size.at(size_name)->time_bounds() ==
             std::array{0.2, 1.2});
 
-      CHECK(shape_and_size.at(shape_name)->func_and_2_derivs(0.2) ==
-            functions_of_time.at(shape_name)->func_and_2_derivs(0.2));
+      const auto shape = shape_and_size.at(shape_name)->func_and_2_derivs(0.2);
+      const auto expected_shape = functions_of_time.at(shape_name)
+                                      ->create_at_time(0.2, 1.1)
+                                      ->func_and_2_derivs(0.2);
+
+      // We restricted from LMax = 8 to LMax = 6
+      const size_t expected_l_max = l_max - 2;
+      const size_t expected_size =
+          ylm::Spherepack::spectral_size(expected_l_max, expected_l_max);
+      ylm::SpherepackIterator file_iter{l_max, l_max};
+      ylm::SpherepackIterator iter{expected_l_max, expected_l_max};
+
+      for (size_t i = 0; i < 3; i++) {
+        CAPTURE(i);
+        CHECK(gsl::at(shape, i).size() == expected_size);
+
+        // Loop pointwise so we only check the coefficients that matter
+        for (size_t l = 0; l <= expected_l_max; l++) {
+          CAPTURE(l);
+          for (int m = -static_cast<int>(l); m <= static_cast<int>(l); m++) {
+            CAPTURE(m);
+            CHECK(gsl::at(shape, i)[iter.set(l, m)()] ==
+                  gsl::at(expected_shape, i)[file_iter.set(l, m)()]);
+          }
+        }
+      }
       CHECK(shape_and_size.at(size_name)->func_and_2_derivs(0.2) ==
             functions_of_time.at(size_name)->func_and_2_derivs(0.2));
     }

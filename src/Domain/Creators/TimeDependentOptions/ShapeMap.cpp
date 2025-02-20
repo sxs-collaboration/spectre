@@ -9,6 +9,7 @@
 #include <istream>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -27,6 +28,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace domain::creators::time_dependent_options {
@@ -60,21 +62,26 @@ YlmsFromSpEC::YlmsFromSpEC(std::string dat_filename_in,
 
 template <ObjectLabel Object>
 FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
+    const std::optional<size_t>& l_max_in,
     const bool transition_ends_at_cube_in, std::string h5_filename,
     std::string subfile_name)
     : FromVolumeFile(std::move(h5_filename), std::move(subfile_name)),
       transition_ends_at_cube(transition_ends_at_cube_in) {
-  const auto shape_fot_map = retrieve_function_of_time(
-      {std::string{"Shape" + name(Object)}}, std::nullopt);
-  const auto& shape_fot = shape_fot_map.at("Shape" + name(Object));
+  if (l_max_in.has_value()) {
+    l_max = l_max_in.value();
+  } else {
+    const auto shape_fot_map = retrieve_function_of_time(
+        {std::string{"Shape" + name(Object)}}, std::nullopt);
+    const auto& shape_fot = shape_fot_map.at("Shape" + name(Object));
 
-  const double initial_time = shape_fot->time_bounds()[0];
-  const auto function = shape_fot->func(initial_time);
+    const double initial_time = shape_fot->time_bounds()[0];
+    const auto function = shape_fot->func(initial_time);
 
-  // num_components = 2 * (l_max + 1)**2 if l_max == m_max which it is for the
-  // shape map. This is why we can divide by 2 and take the sqrt without
-  // worrying about odd numbers or non-perfect squares
-  l_max = -1 + sqrt(function[0].size() / 2);
+    // num_components = 2 * (l_max + 1)**2 if l_max == m_max which it is for the
+    // shape map. This is why we can divide by 2 and take the sqrt without
+    // worrying about odd numbers or non-perfect squares
+    l_max = -1 + sqrt(function[0].size() / 2);
+  }
 }
 
 template <bool IncludeTransitionEndsAtCube, domain::ObjectLabel Object>
@@ -130,9 +137,32 @@ FunctionsOfTimeMap get_shape_and_size(
     check_fot.template operator()<2>(shape_name);
     check_fot.template operator()<3>(size_name);
 
-    result[shape_name] =
+    // Not const in case we move it below
+    auto temporary_shape_fot =
         volume_fots.at(shape_name)
             ->create_at_time(initial_time, shape_expiration_time);
+    const auto shape_funcs =
+        temporary_shape_fot->func_and_2_derivs(initial_time);
+
+    const size_t file_l_max = -1 + sqrt(shape_funcs[0].size() / 2);
+
+    // Prolong or restrict if necessary, otherwise just use the exact function
+    // of time from the volume file
+    if (file_l_max != l_max) {
+      std::array<DataVector, 3> new_shape_funcs{};
+      const ylm::Spherepack file_spherepack{file_l_max, file_l_max};
+      const ylm::Spherepack new_spherepack{l_max, l_max};
+      for (size_t i = 0; i < shape_funcs.size(); i++) {
+        gsl::at(new_shape_funcs, i) = file_spherepack.prolong_or_restrict(
+            gsl::at(shape_funcs, i), new_spherepack);
+      }
+
+      result[shape_name] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+              initial_time, std::move(new_shape_funcs), shape_expiration_time);
+    } else {
+      result[shape_name] = std::move(temporary_shape_fot);
+    }
     result[size_name] = volume_fots.at(size_name)->create_at_time(
         initial_time, size_expiration_time);
 
