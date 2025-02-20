@@ -193,7 +193,7 @@ RUN apt-get update -y \
     && make ${PARALLEL_MAKE_ARG} && make install \
     && cd ../.. && rm -rf ./0.8.0.tar.gz ./yaml-cpp-0.8.0; \
     else \
-    apt-get install -y libjemalloc2 libjemalloc-dev libyaml-cpp-dev; \
+    apt-get install -y libyaml-cpp-dev; \
     fi
 
 # Install Python packages
@@ -347,6 +347,16 @@ RUN wget https://github.com/catchorg/Catch2/archive/refs/tags/v3.4.0.tar.gz -O c
 COPY --from=xbuild /root/ccache/build/ccache /usr/local/bin
 # - Doxygen
 COPY --from=xbuild /root/doxygen/build/bin/doxygen /usr/local/bin
+# - jemalloc
+RUN wget https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 \
+        -O jemalloc.tar.bz2 \
+    && tar -xjf jemalloc.tar.bz2 \
+    && mv jemalloc-* jemalloc \
+    && cd jemalloc \
+    && ./configure --prefix=/usr/local --disable-initial-exec-tls \
+    && make $PARALLEL_MAKE_ARG && make install \
+    && cd .. \
+    && rm -rf jemalloc jemalloc.tar.bz2
 # - Libbacktrace
 RUN git clone https://github.com/ianlancetaylor/libbacktrace \
     && cd libbacktrace \

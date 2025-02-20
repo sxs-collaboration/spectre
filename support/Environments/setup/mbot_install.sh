@@ -1410,7 +1410,7 @@ else
     tar -xzf ${_JEMALLOC_VERSION}.tar.gz
     cd jemalloc-${_JEMALLOC_VERSION}
     mkdir -p ${LOCATION}
-    ./autogen.sh --prefix=${LOCATION}
+    ./autogen.sh --prefix=${LOCATION} --disable-initial-exec-tls
     make CFLAGS=-fPIC -j${PARALLEL_MAKE_ARG}
     make install
     cd ..

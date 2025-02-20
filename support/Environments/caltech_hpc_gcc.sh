@@ -13,12 +13,12 @@ spectre_setup_modules() {
 
 spectre_load_modules() {
     module use /central/groups/sxs/modules/
-    module load libraries/spectre-deps/skylake-2024-06
+    module load libraries/spectre-deps/skylake-2025-02
 }
 
 spectre_unload_modules() {
     module use /central/groups/sxs/modules/
-    module unload libraries/spectre-deps/skylake-2024-06
+    module unload libraries/spectre-deps/skylake-2025-02
 }
 
 spectre_run_cmake() {

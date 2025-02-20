@@ -73,15 +73,6 @@ scripts:
   . BUILD_DIR/bin/LoadPython.sh
   ```
 
-  Note that by default SpECTRE uses `jemalloc` which needs to be pre-loaded for
-  the Python bindings to work. Therefore, you need to run
-  `LD_PRELOAD=/path/to/libjemalloc.so python` to execute Python scripts or start
-  Python consoles. The path to your preferred jemalloc installation is printed
-  out at the end of the `cmake` configuration or can be found by running the
-  script `BUILD_DIR/bin/LoadPython.sh`. Alternatively, you can use your system's
-  memory allocator by appending the flag `-D MEMORY_ALLOCATOR=SYSTEM` to the
-  `cmake` command. In this case you will not need to pre-load any libraries.
-
 Using any of the above options you should be able to import the `spectre` Python
 modules in your scripts or notebooks. You can try it like this:
 
@@ -92,6 +83,25 @@ import spectre
 For an overview of all available Python modules see the
 [Python modules documentation](py/_autosummary/spectre.html). For an example
 what you can do with them see the tutorial on \ref tutorial_vis_python.
+
+## Issues with jemalloc
+
+By default SpECTRE uses `jemalloc`, which can cause issues in Python. If you get
+errors such as "cannot allocate memory in static TLS block" when importing
+Python bindings, you have these options:
+
+1. Use the system allocator instead of jemalloc by configuring the build with
+   `-D MEMORY_ALLOCATOR=SYSTEM`. This is the easiest solution on development
+   machines where you may not care about the absolute fastest memory allocator.
+2. Compile jemalloc with the flag `--disable-initial-exec-tls` (see
+   https://github.com/jemalloc/jemalloc/blob/dev/INSTALL.md). This is the
+   easiest solution if you want to run with jemalloc and this is what we
+   do on shared clusters where we install jemalloc for everyone.
+3. Preload jemalloc when running Python scripts. To do this, prepend
+   `LD_PRELOAD=/path/to/libjemalloc.so` to your commands when executing Python
+   scripts or starting Python consoles. The path to your jemalloc installation
+   is printed out during CMake configuration. This can be done if you must use
+   a precompiled version of jemalloc for some reason.
 
 ## Running Jupyter within the Docker container
 

@@ -33,10 +33,15 @@ configure_or_symlink_py_file(
 # Also link the main entry point to bin/
 set(PYTHON_EXE_COMMAND "-m spectre")
 set(PYTHON_EXEC_ENV_VARS "")
-if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
-  string(APPEND PYTHON_EXEC_ENV_VARS
-    " LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
-endif()
+# At some point we needed to _preload_ jemalloc for the Python bindings to work,
+# otherwise we got "cannot allocate memory in static TLS block" errors. This is
+# fixed by compiling jemalloc with the flag `--disable-initial-exec-tls`, or by
+# using the system allocator (configure with `-D MEMORY_ALLOCATOR=SYSTEM`).
+# if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
+#   string(APPEND PYTHON_EXEC_ENV_VARS
+#     " LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
+# endif()
+#
 # ParaView needs specific environment variables set, e.g. 'LD_LIBRARY_PATH', but
 # they can interfere with simulations, e.g. when they point to ParaView's
 # bundled MPI which may be different to the MPI we built with. Therefore we
@@ -87,20 +92,11 @@ configure_or_symlink_py_file(
   "${CMAKE_SOURCE_DIR}/setup.cfg"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
 
-set(_JEMALLOC_MESSAGE "")
-if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
-  set(_JEMALLOC_MESSAGE
-    "echo 'You must run python as:'\n"
-    "echo 'LD_PRELOAD=${JEMALLOC_LIBRARIES} python ...'\n")
-  string(REPLACE ";" "" _JEMALLOC_MESSAGE "${_JEMALLOC_MESSAGE}")
-endif()
-
 # Write a file to be able to set up the new python path.
 file(WRITE
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "#!/bin/sh\n"
   "export PYTHONPATH=${PYTHONPATH}\n"
-  ${_JEMALLOC_MESSAGE}
   )
 configure_file(
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
@@ -335,13 +331,6 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
   spectre_test_timeout(TIMEOUT PYTHON ${TIMEOUT})
 
   set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
-  if(BUILD_PYTHON_BINDINGS AND
-      "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
-    list(APPEND
-      _PY_TEST_ENV_VARS
-      "LD_PRELOAD=${JEMALLOC_LIBRARIES}"
-      )
-  endif()
 
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.

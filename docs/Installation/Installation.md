@@ -230,7 +230,9 @@ The following dependencies will be fetched automatically if you set
 
 * [Pybind11](https://pybind11.readthedocs.io) 2.7.0 or later for SpECTRE Python
   bindings. Included in `support/Python/requirements.txt`.  \cite Pybind11
-* [jemalloc](https://github.com/jemalloc/jemalloc)
+* [jemalloc](https://github.com/jemalloc/jemalloc) - for faster memory
+  allocations. Compile with `--disable-initial-exec-tls` for Python bindings to
+  work with jemalloc.
 * [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 to 1.9.6 — to
   generate documentation
 * Python dev dependencies listed in `support/Python/dev_requirements.txt`
