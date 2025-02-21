@@ -150,7 +150,7 @@ void test_specific_points() {
     auto expected_jacobian = identity<3>(0.0);
     // Because the angles are pi/4
     get<0, 1>(expected_jacobian) =
-        0.5 * (1.0 + cos(M_PI / square(outer_radius)));
+        -0.5 * (1.0 + cos(M_PI / square(outer_radius)));
     get<0, 2>(expected_jacobian) = get<0, 1>(expected_jacobian);
     CHECK_ITERABLE_APPROX(jacobian, expected_jacobian);
   }
@@ -161,7 +161,7 @@ void test_specific_points() {
 
     const auto mapped_point = skew_map(test_point, time, f_of_t_list);
     const double falloff = 0.25 * (2.0 + sqrt(2.0));
-    const double tan_sum = test_point[1];
+    const double tan_sum = -test_point[1];
     // Should be exact
     CHECK_ITERABLE_APPROX(
         mapped_point,
@@ -173,7 +173,7 @@ void test_specific_points() {
 
     const auto jacobian = skew_map.jacobian(test_point, time, f_of_t_list);
     auto expected_jacobian = identity<3>(0.0);
-    get<0, 2>(expected_jacobian) = falloff;
+    get<0, 2>(expected_jacobian) = -falloff;
     get<0, 1>(expected_jacobian) =
         -0.5 * M_PI * tan_sum / (sqrt(2.0) * outer_radius) +
         get<0, 2>(expected_jacobian);
@@ -215,10 +215,10 @@ void test_errors() {
   const std::string function_of_time_name{"Skew"};
   const double time = 0.0;
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-  // Use values close to PI/2 to trigger the error
+  // Use values close to -PI/2 to trigger the error
   f_of_t_list[function_of_time_name] = std::make_unique<Polynomial>(
       time,
-      std::array{DataVector{2, M_PI_2 - 1.e-3}, DataVector{2, 0.0},
+      std::array{DataVector{2, -M_PI_2 + 1.e-3}, DataVector{2, 0.0},
                  DataVector{2, 0.0}},
       std::numeric_limits<double>::infinity());
 

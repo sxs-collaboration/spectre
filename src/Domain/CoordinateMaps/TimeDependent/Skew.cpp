@@ -80,8 +80,9 @@ std::optional<std::array<double, 3>> Skew::inverse(
   }
 
   // Another short circuit. Target y & z are the same as source y & z
-  const double tan_sum = tan(func[0]) * (target_coords[1] - center_[1]) +
-                         tan(func[1]) * (target_coords[2] - center_[2]);
+  const double tan_sum =
+      -1.0 * (tan(func[0]) * (target_coords[1] - center_[1]) +
+              tan(func[1]) * (target_coords[2] - center_[2]));
   if (equal_within_roundoff(tan_sum, 0.0)) {
     return target_coords;
   }
@@ -94,11 +95,11 @@ std::optional<std::array<double, 3>> Skew::inverse(
     return source_coord_x + width * tan_sum - target_coords[0];
   };
 
-  // \bar{x} -> x + w * (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)) and 0<=w<=1, then
-  // x <= \bar{x} <= x + (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
-  // 0 <= \bar{x} - x <= (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
-  // -\bar{x} <= - x <= -\bar{x} + (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
-  // \bar{x} >= x >= \bar{x} - (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C))
+  // \bar{x} -> x - w * (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)) and 0<=w<=1, then
+  // x <= \bar{x} <= x - (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
+  // 0 <= \bar{x} - x <= -(tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
+  // -\bar{x} <= - x <= -\bar{x} - (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
+  // \bar{x} >= x >= \bar{x} + (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C))
   // This last line is our bracket for the root
 
   // We give a small epsilon to give the root find a little buffer. It is highly
@@ -162,7 +163,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::jacobian(
 
   auto result = identity<3>(dereference_wrapper(source_coords[0]));
 
-  const DataVector tan_func = tan(func);
+  const DataVector tan_func = -1.0 * tan(func);
   // Temporarily use component to avoid allocation
   auto& tan_sum = get<0, 2>(result);
   tan_sum = tan_func[0] * (source_coords[1] - center_[1]) +
@@ -288,12 +289,13 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::map_and_velocity_helper(
     const auto& func = func_and_deriv[0];
     const auto& deriv = func_and_deriv[1];
 
-    result[0] = width * (deriv[0] * (1.0 + square(tan(func[0]))) *
-                             (source_coords[1] - center_[1]) +
-                         deriv[1] * (1.0 + square(tan(func[1]))) *
-                             (source_coords[2] - center_[2]));
+    result[0] = -1.0 * width *
+                (deriv[0] * (1.0 + square(tan(func[0]))) *
+                     (source_coords[1] - center_[1]) +
+                 deriv[1] * (1.0 + square(tan(func[1]))) *
+                     (source_coords[2] - center_[2]));
   } else {
-    result[0] +=
+    result[0] -=
         width * (tan(func_and_deriv[0][0]) * (source_coords[1] - center_[1]) +
                  tan(func_and_deriv[0][1]) * (source_coords[2] - center_[2]));
   }
@@ -338,8 +340,9 @@ void Skew::check_for_singular_map(
   const auto func = function_of_time->func_and_deriv(time)[0];
   ASSERT(func.size() == 2, "Expected a function of time with size 2, not "
                                << func.size() << " in the Skew map.");
-  const ResultT tan_sum = tan(func[0]) * (source_coords[1] - center_[1]) +
-                          tan(func[1]) * (source_coords[2] - center_[2]);
+  const ResultT tan_sum =
+      -1.0 * (tan(func[0]) * (source_coords[1] - center_[1]) +
+              tan(func[1]) * (source_coords[2] - center_[2]));
 
   const ResultT x_deriv_of_mapped_x_coord =
       1.0 - M_PI * one_over_outer_radius_squared_ * tan_sum *
