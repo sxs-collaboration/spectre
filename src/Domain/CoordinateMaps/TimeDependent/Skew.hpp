@@ -213,8 +213,8 @@ class Skew {
 
  private:
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_width(
-      const std::array<T, 3>& source_coords) const;
+  tt::remove_cvref_wrap_t<T> get_width(const std::array<T, 3>& source_coords,
+                                       bool ignore_error = false) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> get_width_deriv(

@@ -91,7 +91,10 @@ std::optional<std::array<double, 3>> Skew::inverse(
 
   const auto root_func = [&](const double source_coord_x) -> double {
     temporary_source_coord[0] = source_coord_x;
-    const double width = get_width(temporary_source_coord);
+    // Sometimes the temporary point is outside the outer radius, but we still
+    // need to continue with the root find, so allow evaluation of the width
+    // outside the outer radius without an error
+    const double width = get_width(temporary_source_coord, true);
     return source_coord_x + width * tan_sum - target_coords[0];
   };
 
@@ -187,7 +190,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::inv_jacobian(
 
 template <typename T>
 tt::remove_cvref_wrap_t<T> Skew::get_width(
-    const std::array<T, 3>& source_coords) const {
+    const std::array<T, 3>& source_coords, const bool ignore_error) const {
   using ResultT = tt::remove_cvref_wrap_t<T>;
   // Will be reused for result
   ResultT lambda =
@@ -201,7 +204,8 @@ tt::remove_cvref_wrap_t<T> Skew::get_width(
       get_element(result, i) = 1.0;
     } else if (equal_within_roundoff(get_element(lambda, i), 1.0)) {
       get_element(result, i) = 0.0;
-    } else if (get_element(lambda, i) > 0.0 and get_element(lambda, i) < 1.0) {
+    } else if (ignore_error or (get_element(lambda, i) > 0.0 and
+                                get_element(lambda, i) < 1.0)) {
       get_element(result, i) = 0.5 * (1.0 + cos(M_PI * get_element(lambda, i)));
     } else {
       using ::operator<<;
@@ -393,7 +397,8 @@ bool operator!=(const Skew& lhs, const Skew& rhs) { return not(lhs == rhs); }
       const std::array<DTYPE(data), 3>& source_coords, double time,            \
       const domain::FunctionsOfTimeMap& functions_of_time) const;              \
   template tt::remove_cvref_wrap_t<DTYPE(data)> Skew::get_width(               \
-      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+      const std::array<DTYPE(data), 3>& source_coords,                         \
+      const bool ignore_error) const;                                          \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
   Skew::get_width_deriv(const std::array<DTYPE(data), 3>& source_coords)       \
       const;                                                                   \

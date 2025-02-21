@@ -31,6 +31,12 @@ constexpr size_t deriv_order = 2;
 using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
 using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
 
+template <typename T>
+std::array<T, 3> sph_to_cart(const T& radius, const T& theta, const T& phi) {
+  return std::array<T, 3>{radius * sin(theta) * cos(phi),
+                          radius * sin(theta) * sin(phi), radius * cos(theta)};
+}
+
 template <typename Generator>
 void test(const gsl::not_null<Generator*> generator) {
   const double initial_time = 0.5;
@@ -41,24 +47,29 @@ void test(const gsl::not_null<Generator*> generator) {
   const std::string function_of_time_name{"Skew"};
 
   // NOLINTBEGIN
-  std::uniform_real_distribution<double> fot_dist{-0.01, 0.01};
+  std::uniform_real_distribution<double> fot_dist{-0.1, 0.1};
   std::uniform_real_distribution<double> outer_radius_dist{50.0, 150.0};
-  std::uniform_real_distribution<double> point_dist{-5.0, 5.0};
+  std::uniform_real_distribution<double> angle_dist{0.0, 2.0 * M_PI};
   // NOLINTEND
 
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
   f_of_t_list[function_of_time_name] = std::make_unique<Polynomial>(
       initial_time,
-      std::array{make_with_random_values<DataVector>(
-                     generator, make_not_null(&fot_dist), DataVector{2, 0.0}),
-                 make_with_random_values<DataVector>(
-                     generator, make_not_null(&fot_dist), DataVector{2, 0.0}),
-                 DataVector{2, 0.0}},
+      std::array<DataVector, 3>{
+          make_with_random_values<DataVector>(
+              generator, make_not_null(&fot_dist), DataVector{2, 0.0}),
+          0.1 * make_with_random_values<DataVector>(
+                    generator, make_not_null(&fot_dist), DataVector{2, 0.0}),
+          DataVector{2, 0.0}},
       expiration_time);
 
   const double outer_radius = outer_radius_dist(*generator);
-  const std::array<double, 3> center{
-      point_dist(*generator), point_dist(*generator), point_dist(*generator)};
+  // Subtracting 1e-3 from outer radius ensures that the jacobian test helper
+  // only evaluates the map within the outer radius
+  std::uniform_real_distribution<double> radius_dist{0.0, outer_radius - 1.e-3};
+  const std::array<double, 3> center =
+      50.0 * std::array{fot_dist(*generator), fot_dist(*generator),
+                        fot_dist(*generator)};
   CAPTURE(outer_radius);
 
   const CoordinateMaps::TimeDependent::Skew skew_map{function_of_time_name,
@@ -73,16 +84,24 @@ void test(const gsl::not_null<Generator*> generator) {
 
   while (t < expiration_time) {
     CAPTURE(t);
-    const std::array<double, 3> point_xi{
-        point_dist(*generator), point_dist(*generator), point_dist(*generator)};
+    const std::array<double, 3> point_xi = [&]() {
+      const double radius = radius_dist(*generator);
+      const double theta = 0.5 * angle_dist(*generator);
+      const double phi = angle_dist(*generator);
+      return sph_to_cart(radius, theta, phi);
+    }();
 
-    const std::array<DataVector, 3> dv_point_xi{
-        make_with_random_values<DataVector>(
-            generator, make_not_null(&point_dist), DataVector{10, 0.0}),
-        make_with_random_values<DataVector>(
-            generator, make_not_null(&point_dist), DataVector{10, 0.0}),
-        make_with_random_values<DataVector>(
-            generator, make_not_null(&point_dist), DataVector{10, 0.0})};
+    const std::array<DataVector, 3> dv_point_xi = [&]() {
+      const auto radii = make_with_random_values<DataVector>(
+          generator, make_not_null(&radius_dist), DataVector{10, 0.0});
+      const DataVector thetas =
+          0.5 * make_with_random_values<DataVector>(
+                    generator, make_not_null(&angle_dist), DataVector{10, 0.0});
+      const auto phis = make_with_random_values<DataVector>(
+          generator, make_not_null(&angle_dist), DataVector{10, 0.0});
+
+      return sph_to_cart(radii, thetas, phis);
+    }();
 
     const auto run_checks = [&](const auto& points) {
       CAPTURE(points);
