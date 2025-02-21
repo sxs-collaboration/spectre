@@ -38,8 +38,11 @@ Skew::Skew(std::string function_of_time_name,
     : f_of_t_name_(std::move(function_of_time_name)),
       center_(center),
       outer_radius_(outer_radius),
-      outer_radius_squared_(square(outer_radius_)),
       f_of_t_names_({f_of_t_name_}) {
+  if (outer_radius_ <= 0.0) {
+    ERROR("Skew map outer radius must be positive, but is " << outer_radius_);
+  }
+  one_over_outer_radius_squared_ = 1.0 / square(outer_radius_);
   if (magnitude(center_) >= outer_radius) {
     ERROR("Center of Skew map "
           << center_ << " with radius " << magnitude(center_)
@@ -186,7 +189,8 @@ tt::remove_cvref_wrap_t<T> Skew::get_width(
     const std::array<T, 3>& source_coords) const {
   using ResultT = tt::remove_cvref_wrap_t<T>;
   // Will be reused for result
-  ResultT lambda = dot(source_coords, source_coords) / outer_radius_squared_;
+  ResultT lambda =
+      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   ResultT& result = lambda;
 
@@ -220,14 +224,14 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::get_width_deriv(
   using ResultT = tt::remove_cvref_wrap_t<T>;
 
   const ResultT lambda =
-      dot(source_coords, source_coords) / outer_radius_squared_;
+      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   std::array<ResultT, 3> grad_width{};
   for (size_t i = 0; i < 3; i++) {
     gsl::at(grad_width, i) = gsl::at(source_coords, i);
   }
   // Factors of two cancel from grad lambda and pi/2
-  grad_width *= -M_PI / outer_radius_squared_ * sin(M_PI * lambda);
+  grad_width *= -one_over_outer_radius_squared_ * M_PI * sin(M_PI * lambda);
 
   for (size_t i = 0; i < get_size(lambda); i++) {
     // sin(lambda * M_PI) is zero at both lambda=0 and lambda=1
@@ -311,7 +315,7 @@ void Skew::pup(PUP::er& p) {
 
   // No need to pup these because they are uniquely determined
   if (p.isUnpacking()) {
-    outer_radius_squared_ = square(outer_radius_);
+    one_over_outer_radius_squared_ = 1.0 / square(outer_radius_);
     f_of_t_names_.clear();
     f_of_t_names_.insert(f_of_t_name_);
   }
@@ -328,7 +332,7 @@ void Skew::check_for_singular_map(
 #ifdef SPECTRE_DEBUG
   using ResultT = tt::remove_cvref_wrap_t<T>;
   const ResultT lambda =
-      dot(source_coords, source_coords) / outer_radius_squared_;
+      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   const auto& function_of_time = functions_of_time.at(f_of_t_name_);
   const auto func = function_of_time->func_and_deriv(time)[0];
@@ -338,8 +342,8 @@ void Skew::check_for_singular_map(
                           tan(func[1]) * (source_coords[2] - center_[2]);
 
   const ResultT x_deriv_of_mapped_x_coord =
-      1.0 - tan_sum * M_PI * dereference_wrapper(source_coords[0]) /
-                outer_radius_squared_ * sin(M_PI * lambda);
+      1.0 - M_PI * one_over_outer_radius_squared_ * tan_sum *
+                dereference_wrapper(source_coords[0]) * sin(M_PI * lambda);
 
   for (size_t i = 0; i < get_size(lambda); i++) {
     if (get_element(x_deriv_of_mapped_x_coord, i) < 0.0) {

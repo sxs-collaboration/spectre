@@ -236,7 +236,7 @@ class Skew {
   std::string f_of_t_name_;
   std::array<double, 3> center_{};
   double outer_radius_{};
-  double outer_radius_squared_{};
+  double one_over_outer_radius_squared_{};
   std::unordered_set<std::string> f_of_t_names_;
 };
 
