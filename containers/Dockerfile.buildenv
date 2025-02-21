@@ -362,7 +362,7 @@ RUN if [ "$TARGETARCH" = "arm64" ] ; then \
         && cd .. \
         && rm -rf libxsmm; \
     else \
-        wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz \
+        wget https://github.com/libxsmm/libxsmm/archive/1.16.1.tar.gz \
             -O libxsmm.tar.gz \
         && tar -xzf libxsmm.tar.gz \
         && mv libxsmm-* libxsmm \
