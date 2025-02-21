@@ -91,6 +91,7 @@ spectre_run_cmake() {
           -D CMAKE_CXX_COMPILER=g++ \
           -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
           -D USE_PCH=ON \
+          -D MEMORY_ALLOCATOR=JEMALLOC \
           -D BUILD_PYTHON_BINDINGS=ON \
           -D MACHINE=Ocean \
           -D BOOTSTRAP_PY_DEPS=ON \

@@ -15,8 +15,8 @@ add_library(SpectreAllocator INTERFACE)
 # around the allocator setup.
 
 option(MEMORY_ALLOCATOR
-  "Which allocator to use: SYSTEM, TCMALLOC, JEMALLOC (default)"
-  OFF)
+  "Which allocator to use: SYSTEM (default), TCMALLOC, JEMALLOC"
+  "SYSTEM")
 
 set(JEMALLOC_LIB_TYPE "")
 
@@ -46,8 +46,7 @@ set(JEMALLOC_LIB_TYPE "")
 #     )
 #
 # These need to be the first call to target_link_libraries of the target.
-if("${MEMORY_ALLOCATOR}" STREQUAL "JEMALLOC"
-    OR "${MEMORY_ALLOCATOR}" STREQUAL "OFF")
+if("${MEMORY_ALLOCATOR}" STREQUAL "JEMALLOC")
   include(SetupJemalloc)
   target_link_libraries(
     SpectreAllocator
@@ -79,11 +78,12 @@ elseif("${MEMORY_ALLOCATOR}" STREQUAL "TCMALLOC")
     PROPERTY
     SPECTRE_ALLOCATOR_LIBRARY
     ${SPECTRE_ALLOCATOR_LIBRARY})
-elseif(NOT "${MEMORY_ALLOCATOR}" STREQUAL "SYSTEM")
+elseif(NOT "${MEMORY_ALLOCATOR}" STREQUAL "SYSTEM"
+    AND NOT "${MEMORY_ALLOCATOR}" STREQUAL "OFF")
   message(FATAL_ERROR
     "Unknown memory allocator specified '${MEMORY_ALLOCATOR}'. "
     "Known options are:\n"
-    "  SYSTEM, TCMALLOC, JEMALLOC (default)")
+    "  SYSTEM (default), TCMALLOC, JEMALLOC")
 else()
   message(STATUS "Using system default memory allocator.")
 endif()
