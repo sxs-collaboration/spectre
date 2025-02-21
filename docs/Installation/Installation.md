@@ -126,7 +126,6 @@ The easiest way of installing SpECTRE natively on a new machine is this:
     -D CMAKE_BUILD_TYPE=<Debug or Release> \
     -D CHARM_ROOT=$CHARM_ROOT \
     -D SPECTRE_FETCH_MISSING_DEPS=ON \
-    -D MEMORY_ALLOCATOR=SYSTEM \
     $SPECTRE_HOME
   ```
 

@@ -162,12 +162,13 @@ alphabetical order):
     a submit script template named MACHINE.sh must exist in
     support/SubmitScripts.
 - MEMORY_ALLOCATOR
-  - Set which memory allocator to use. If there are unexplained segfaults or
+  - Set which memory allocator to use. Options are `SYSTEM`, `JEMALLOC`, and
+    `TCMALLOC`. If there are unexplained segfaults or
     other memory issues, it would be worth setting `MEMORY_ALLOCATOR=SYSTEM` to
     see if that resolves the issue. It could be the case that different
     third-party libraries accidentally end up using different allocators, which
     is undefined behavior and will result in complete chaos.
-    (default is `JEMALLOC`)
+    (default is `SYSTEM`)
 - PY_DEV_MODE
   - Enable development mode for the Python package, meaning that Python files
     are symlinked rather than copied to the build directory. Allows to edit and
