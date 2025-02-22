@@ -10,47 +10,32 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Time/StepperErrorTolerances.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 
-double largest_stepper_error(const double values, const double errors,
+template <typename T>
+double largest_stepper_error(const T& values, const T& errors,
                              const StepperErrorTolerances& tolerances) {
-  return std::abs(errors) /
-         (tolerances.absolute +
-          tolerances.relative * std::max(abs(values), abs(values + errors)));
+  using std::abs;
+  // Outer call to max() may be from blaze or an identity function
+  // from ContainerHelpers.hpp for doubles.
+  using ::max;
+  // Inner max() is either blaze or std::max.
+  using std::max;
+  return max(abs(errors) /
+             (tolerances.absolute +
+              tolerances.relative * max(abs(values), abs(values + errors))));
 }
 
-double largest_stepper_error(const std::complex<double>& values,
-                             const std::complex<double>& errors,
-                             const StepperErrorTolerances& tolerances) {
-  return std::abs(errors) /
-         (tolerances.absolute +
-          tolerances.relative * std::max(abs(values), abs(values + errors)));
-}
+#define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-double largest_stepper_error(const DataVector& values, const DataVector& errors,
-                             const StepperErrorTolerances& tolerances) {
-  double result = 0.0;
-  for (auto val_it = values.begin(), err_it = errors.begin();
-       val_it != values.end(); ++val_it, ++err_it) {
-    const double recursive_call_result =
-        largest_stepper_error(*val_it, *err_it, tolerances);
-    if (recursive_call_result > result) {
-      result = recursive_call_result;
-    }
-  }
-  return result;
-}
+#define INSTANTIATE(_, data)                                \
+  template double largest_stepper_error(                    \
+      const TYPE(data) & values, const TYPE(data) & errors, \
+      const StepperErrorTolerances& tolerances);
 
-double largest_stepper_error(const ComplexDataVector& values,
-                             const ComplexDataVector& errors,
-                             const StepperErrorTolerances& tolerances) {
-  double result = 0.0;
-  for (auto val_it = values.begin(), err_it = errors.begin();
-       val_it != values.end(); ++val_it, ++err_it) {
-    const double recursive_call_result =
-        largest_stepper_error(*val_it, *err_it, tolerances);
-    if (recursive_call_result > result) {
-      result = recursive_call_result;
-    }
-  }
-  return result;
-}
+GENERATE_INSTANTIATIONS(INSTANTIATE, (double, std::complex<double>, DataVector,
+                                      ComplexDataVector))
+
+#undef INSTANTIATE
+#undef TYPE
