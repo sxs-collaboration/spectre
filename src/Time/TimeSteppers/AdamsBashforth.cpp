@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <pup.h>
 
@@ -157,6 +158,8 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
          "Incorrect data to take an order-" << history.integration_order()
          << " step.  Have " << history.size() << " times, need at least "
          << history.integration_order());
+  ASSERT(history.integration_order() <= order_.value_or(maximum_order),
+         "Requested integration order higher than integrator order");
 
   const auto& step_start = history.back().time_step_id.step_time();
   const auto history_start =
@@ -173,12 +176,29 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
   std::optional<StepperErrorEstimate> error{};
   if constexpr (not DenseOutput) {
     if (tolerances.has_value()) {
-      const auto lower_order_coefficients = adams_coefficients::coefficients(
+      auto lower_order_coefficients = adams_coefficients::coefficients(
           control_times.begin() + 1, control_times.end(), step_start, time);
       error.emplace(step_start, time - step_start,
                     history.integration_order() - 1,
                     evaluate_error(u, history, *tolerances, update_coefficients,
                                    lower_order_coefficients));
+
+      if (not order_.has_value()) {
+        for (size_t error_order = history.integration_order() - 2;
+             error_order != std::numeric_limits<size_t>::max();
+             --error_order) {
+          const auto higher_order_coefficients = lower_order_coefficients;
+          lower_order_coefficients = adams_coefficients::coefficients(
+              control_times.end() -
+                  static_cast<decltype(control_times)::difference_type>(
+                      error_order),
+              control_times.end(), step_start, time);
+          gsl::at(error->errors, error_order)
+              .emplace(evaluate_error(u, history, *tolerances,
+                                      higher_order_coefficients,
+                                      lower_order_coefficients));
+        }
+      }
     }
 
     // Dense output adds to the existing value, but the main step overwrites.
