@@ -397,7 +397,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 
-#if defined(__clang__) && __clang_major__ >= 15 && __clang_major__ < 17
+// Some versions of clang (but not AppleClang) had trouble instantiating the
+// above templates
+#if defined(__clang__) && __clang_major__ >= 15 && __clang_major__ < 17 && \
+    not defined(__apple_build_version__)
 #define INSTANTIATE2(_, data)                                                  \
   template domain::CoordinateMaps::Composition<                                \
       brigand::list<Frame::BlockLogical, Frame::Grid, Frame::Distorted>,       \
@@ -532,7 +535,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3))
 
 #undef INSTANTIATE2
-#endif /* defined(__clang__) && __clang_major__ >= 16 */
+#endif /* defined(__clang__) && ... */
 
 #undef DIM
 
