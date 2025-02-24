@@ -18,7 +18,7 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class Mesh;
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename IdType>
 class Neighbors;
 /// \endcond
 
@@ -37,7 +37,8 @@ namespace amr {
 template <size_t VolumeDim>
 std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
     const ElementId<VolumeDim>& my_id, const Direction<VolumeDim>& direction,
-    const Neighbors<VolumeDim>& previous_neighbors_in_direction,
+    const Neighbors<VolumeDim, ElementId<VolumeDim>>&
+        previous_neighbors_in_direction,
     const std::unordered_map<ElementId<VolumeDim>, Info<VolumeDim>>&
         previous_neighbors_amr_info);
 }  // namespace amr

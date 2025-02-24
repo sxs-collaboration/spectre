@@ -13,9 +13,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-template <size_t VolumeDim>
-Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-                                OrientationMap<VolumeDim> orientation)
+template <size_t VolumeDim, typename IdType>
+Neighbors<VolumeDim, IdType>::Neighbors(std::unordered_set<IdType> ids,
+                                        OrientationMap<VolumeDim> orientation)
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {
   // Assuming a maximum 2-to-1 refinement between neighboring elements:
   ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
@@ -25,9 +25,9 @@ Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
          "Cannot use a default-constructed OrientationMap in Neighbors.");
 }
 
-template <size_t VolumeDim>
-void Neighbors<VolumeDim>::add_ids(
-    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) {
+template <size_t VolumeDim, typename IdType>
+void Neighbors<VolumeDim, IdType>::add_ids(
+    const std::unordered_set<IdType>& additional_ids) {
   for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
@@ -37,26 +37,27 @@ void Neighbors<VolumeDim>::add_ids(
                        << " dimensions");
 }
 
-template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n) {
+template <size_t VolumeDim, typename IdType>
+std::ostream& operator<<(std::ostream& os,
+                         const Neighbors<VolumeDim, IdType>& n) {
   os << "Ids = " << n.ids() << "; orientation = " << n.orientation();
   return os;
 }
 
-template <size_t VolumeDim>
-bool operator==(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs) {
+template <size_t VolumeDim, typename IdType>
+bool operator==(const Neighbors<VolumeDim, IdType>& lhs,
+                const Neighbors<VolumeDim, IdType>& rhs) {
   return (lhs.ids() == rhs.ids() and lhs.orientation() == rhs.orientation());
 }
 
-template <size_t VolumeDim>
-bool operator!=(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs) {
+template <size_t VolumeDim, typename IdType>
+bool operator!=(const Neighbors<VolumeDim, IdType>& lhs,
+                const Neighbors<VolumeDim, IdType>& rhs) {
   return not(lhs == rhs);
 }
 
-template <size_t VolumeDim>
-void Neighbors<VolumeDim>::pup(PUP::er& p) {
+template <size_t VolumeDim, typename IdType>
+void Neighbors<VolumeDim, IdType>::pup(PUP::er& p) {
   p | ids_;
   p | orientation_;
 }
