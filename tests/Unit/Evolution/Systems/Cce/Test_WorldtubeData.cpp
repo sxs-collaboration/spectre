@@ -547,11 +547,13 @@ void test_data_manager_with_bondi_buffer_updater(
 template <typename T, typename Generator>
 void test_metric_worldtube_buffer_updater_impl(
     const gsl::not_null<Generator*> gen,
-    const bool extraction_radius_in_filename, const bool time_varies_fastest) {
+    const bool extraction_radius_in_filename, const bool time_varies_fastest,
+    const std::optional<bool>& extra_adm = std::nullopt) {
   constexpr bool is_modal = std::is_same_v<T, ComplexModalVector>;
   CAPTURE(is_modal);
   CAPTURE(extraction_radius_in_filename);
   CAPTURE(time_varies_fastest);
+  CAPTURE(extra_adm);
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -569,7 +571,9 @@ void test_metric_worldtube_buffer_updater_impl(
   // acceptable parameters for the fake sinusoid variation in the input
   // parameters
   const double frequency = 0.1 * value_dist(*gen);
-  const double amplitude = 0.1 * value_dist(*gen);
+  // If using adm options, need amplitude to be zero since this will change the
+  // coordinates that the variables are at, and we assume a constant radius
+  const double amplitude = extra_adm.has_value() ? 0.0 : 0.1 * value_dist(*gen);
   const double target_time = 50.0 * value_dist(*gen);
   CAPTURE(frequency);
   CAPTURE(amplitude);
@@ -600,16 +604,36 @@ void test_metric_worldtube_buffer_updater_impl(
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
-  TestHelpers::write_test_file<T, false>(solution, filename, target_time,
-                                         extraction_radius, frequency,
-                                         amplitude, file_l_max);
+  TestHelpers::write_test_file<T, false>(
+      solution, filename, target_time, extraction_radius, frequency, amplitude,
+      file_l_max, true, extra_adm.has_value());
 
+  using AdmOptions = typename MetricWorldtubeH5BufferUpdater<T>::AdmOptions;
+  std::optional<AdmOptions> adm_options{};
+
+  if (extra_adm.has_value()) {
+    using Lapse = typename AdmOptions::Lapse;
+    using Shift = typename AdmOptions::Shift;
+    const Lapse lapse{true};
+    if (extra_adm.value()) {
+      using option_list = tmpl::list<typename AdmOptions::Advective,
+                                     typename Shift::FirstOrderDriverFactor>;
+      const Shift shift{option_list{}, true, 0.75};
+      adm_options = AdmOptions{lapse, shift};
+    } else {
+      using option_list = tmpl::list<typename AdmOptions::Advective,
+                                     typename Shift::SecondOrderDriverEta>;
+      const Shift shift{option_list{}, true, 2.0};
+      adm_options = AdmOptions{lapse, shift};
+    }
+  }
   // request an appropriate buffer
   auto buffer_updater =
       extraction_radius_in_filename
-          ? MetricWorldtubeH5BufferUpdater<T>{filename, std::nullopt, true}
-          : MetricWorldtubeH5BufferUpdater<T>{filename, extraction_radius,
-                                              true};
+          ? MetricWorldtubeH5BufferUpdater<T>{filename, std::nullopt, true,
+                                              adm_options}
+          : MetricWorldtubeH5BufferUpdater<T>{filename, extraction_radius, true,
+                                              adm_options};
   auto serialized_and_deserialized_updater =
       serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;
@@ -626,6 +650,17 @@ void test_metric_worldtube_buffer_updater_impl(
             "MetricWorldtubeH5BufferUpdater was constructed with"));
     time_span_start = 0;
     time_span_end = 0;
+    if (extra_adm.has_value()) {
+      CHECK_THROWS_WITH(
+          buffer_updater.update_buffers_for_time(
+              make_not_null(&coefficients_buffers_from_file),
+              make_not_null(&time_span_start), make_not_null(&time_span_end),
+              target_time, computation_l_max, interpolator_length, buffer_size,
+              true),
+          Catch::Matchers::ContainsSubstring("Time must not vary fastest"));
+      time_span_start = 0;
+      time_span_end = 0;
+    }
   }
   buffer_updater.update_buffers_for_time(
       make_not_null(&coefficients_buffers_from_file),
@@ -671,8 +706,17 @@ void test_metric_worldtube_buffer_updater_impl(
   // check that the data in the buffer matches the expected analytic data.
   tmpl::for_each<cce_metric_input_tags<T>>(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
-       &coefficients_buffers_from_serialized](auto tag_v) {
+       &coefficients_buffers_from_serialized, &extra_adm](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
+        // Since we don't have an expected value for the time derivatives of the
+        // lapse or shift because of the 1+log slicing and gamma-driver
+        // conditions, we just don't check them here. All other values should be
+        // the same though
+        if (extra_adm.has_value() and
+            (std::is_same_v<tag, ::Tags::dt<Tags::detail::Shift<T>>> or
+             std::is_same_v<tag, ::Tags::dt<Tags::detail::Lapse<T>>>)) {
+          return;
+        }
         INFO(db::tag_name<tag>());
         const auto& test_lhs = get<tag>(expected_coefficients_buffers);
         const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
@@ -908,6 +952,17 @@ void test_metric_worldtube_buffer_updater(const gsl::not_null<Generator*> gen) {
     test_metric_worldtube_buffer_updater_impl<DataVector>(
         gen, extraction_radius_in_filename, time_varies_fastest);
   }
+
+  {
+    INFO("First order form");
+    test_metric_worldtube_buffer_updater_impl<DataVector>(gen, true, false,
+                                                          {true});
+  }
+  {
+    INFO("Conformal Christoffel form");
+    test_metric_worldtube_buffer_updater_impl<DataVector>(gen, true, false,
+                                                          {false});
+  }
 }
 
 template <typename Generator>
@@ -924,9 +979,9 @@ void test_bondi_worldtube_buffer_updater(const gsl::not_null<Generator*> gen) {
 }  // namespace
 
 // An increased timeout because this test seems to have high variance in
-// duration. It usually finishes within ~6 seconds. The high variance may be due
-// to the comparatively high magnitude of disk operations in this test.
-// [[TimeOut, 40]]
+// duration. The high variance may be due to the comparatively high magnitude of
+// disk operations in this test.
+// [[TimeOut, 60]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
   register_derived_classes_with_charm<

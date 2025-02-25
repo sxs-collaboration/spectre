@@ -24,6 +24,7 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/Version.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
+#include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -41,6 +42,18 @@ template <typename T>
 using Shift = gr::Tags::Shift<T, 3>;
 template <typename T>
 using Lapse = gr::Tags::Lapse<T>;
+// This is B^i in the 3+1 equations
+template <typename T>
+struct AuxiliaryShift : db::SimpleTag {
+  using type = tnsr::I<T, 3, ::Frame::Inertial>;
+};
+// This is \Gamma^i in the Z4c equations
+template <typename T>
+struct ConformalChristoffel : db::SimpleTag {
+  using type = tnsr::I<T, 3, ::Frame::Inertial>;
+};
+template <typename T>
+using ExtrinsicCurvature = gr::Tags::ExtrinsicCurvature<T, 3>;
 
 // The three metric quantities we read in from disk (no derivatives)
 template <typename T>
@@ -52,6 +65,25 @@ struct Dr : db::SimpleTag, db::PrefixTag {
   using type = typename Tag::type;
   using tag = Tag;
 };
+// For cartesian derivs. Each dataset is stored separately in the file, so it
+// doesn't make sense to use ::Tags::deriv here
+template <typename Tag>
+struct Dx : db::SimpleTag, db::PrefixTag {
+  static constexpr size_t index = 0;
+  using type = typename Tag::type;
+};
+template <typename Tag>
+struct Dy : db::SimpleTag, db::PrefixTag {
+  static constexpr size_t index = 1;
+  using type = typename Tag::type;
+};
+template <typename Tag>
+struct Dz : db::SimpleTag, db::PrefixTag {
+  static constexpr size_t index = 2;
+  using type = typename Tag::type;
+};
+template <typename Tag>
+using cartesian_derivs_t = tmpl::list<Dx<Tag>, Dy<Tag>, Dz<Tag>>;
 
 // tag for the string for accessing the quantity associated with `Tag` in
 // worldtube h5 file
@@ -68,6 +100,16 @@ struct apply_derivs {
 };
 template <typename Tag>
 using apply_derivs_t = typename apply_derivs<Tag>::type;
+
+// Puts `Tag`, `::Tags::dt<Tag>`, `Dx<Tag>`, `Dy<Tag>`, `Dz<Tag>` into a
+// `tmpl::list`
+template <typename Tag>
+struct apply_derivs_adm {
+  using type =
+      tmpl::flatten<tmpl::list<Tag, ::Tags::dt<Tag>, cartesian_derivs_t<Tag>>>;
+};
+template <typename Tag>
+using apply_derivs_adm_t = typename apply_derivs_adm<Tag>::type;
 }  // namespace Tags::detail
 
 namespace detail {
@@ -127,6 +169,13 @@ template <typename T>
 using cce_metric_input_tags =
     tmpl::flatten<tmpl::transform<Tags::detail::metric_tags<T>,
                                   Tags::detail::apply_derivs<tmpl::_1>>>;
+
+template <typename T>
+using cce_metric_adm_input_tags = tmpl::flatten<tmpl::push_back<
+    tmpl::transform<Tags::detail::metric_tags<T>,
+                    Tags::detail::apply_derivs_adm<tmpl::_1>>,
+    Tags::detail::ExtrinsicCurvature<T>, Tags::detail::AuxiliaryShift<T>,
+    Tags::detail::ConformalChristoffel<T>>>;
 
 using klein_gordon_input_tags =
     tmpl::list<Spectral::Swsh::Tags::SwshTransform<Tags::KleinGordonPsi>,
@@ -224,6 +273,99 @@ class MetricWorldtubeH5BufferUpdater
  public:
   static constexpr bool is_modal = std::is_same_v<T, ComplexModalVector>;
 
+  /*!
+   * \brief Options needed when reading in the extrinsic curvature and auxiliary
+   * shift (BSSN) or the trace of the conformal christoffel (Z4c) from a non-GH
+   * evolution code.
+   *
+   * \details Can also be used as an option tag
+   */
+  struct AdmOptions {
+    static std::string name() { return "AdmMetricNodal"; }
+
+    struct Advective {
+      using type = bool;
+      static constexpr Options::String help =
+          "Add advective term to time derivative.";
+    };
+
+    struct Lapse {
+      using type = Lapse;
+      Lapse() = default;
+      using options = tmpl::list<Advective>;
+      static constexpr Options::String help =
+          "Options for 1+log slicing of the lapse.";
+      explicit Lapse(const bool advective) : is_advective(advective) {}
+
+      void pup(PUP::er& p) { p | is_advective; }
+
+      bool is_advective;
+    };
+
+    struct Shift {
+      using type = Shift;
+      struct SecondOrderDriverEta {
+        using type = double;
+        static constexpr Options::String help =
+            "Factor 'eta' in front of shift vector in Eq. 12 of Hilditch 2013 "
+            "(typically 2/M). To use this, the trace conformal christoffel "
+            "must be dumped. Here mu_S is assumed to be 1/lapse^2.";
+      };
+      struct FirstOrderDriverFactor {
+        using type = double;
+        static constexpr Options::String help =
+            "Factor in front of auxiliary shift vector B^i in left Eq. 4.89 of "
+            "B&S (typically 0.75). To use this, the auxiliary shift vector B^i "
+            "must be dumped. Here mu_S is assumed to be 1/lapse^2.";
+      };
+      Shift() = default;
+      using options =
+          tmpl::list<Advective,
+                     Options::Alternatives<tmpl::list<SecondOrderDriverEta>,
+                                           tmpl::list<FirstOrderDriverFactor>>>;
+
+      static constexpr Options::String help =
+          "Options for Gamma driver shift condition.";
+      Shift(tmpl::list<Advective, SecondOrderDriverEta> /*meta*/,
+            const bool advective, const double factor)
+          : is_advective(advective),
+            is_first_order(false),
+            extra_factor(factor) {}
+      Shift(tmpl::list<Advective, FirstOrderDriverFactor> /*meta*/,
+            const bool advective, const double factor)
+          : is_advective(advective),
+            is_first_order(true),
+            extra_factor(factor) {}
+
+      void pup(PUP::er& p) {
+        p | is_advective;
+        p | is_first_order;
+        p | extra_factor;
+      }
+
+      bool is_advective;
+      bool is_first_order;
+      double extra_factor;
+    };
+
+    using options = tmpl::list<Lapse, Shift>;
+    static constexpr Options::String help =
+        "Gauge options when reading in extrinsic curvature additional variable "
+        "from non-GH evolutions.";
+
+    AdmOptions() = default;
+    AdmOptions(const Lapse& lapse_in, const Shift& shift_in)
+        : lapse(lapse_in), shift(shift_in) {}
+
+    void pup(PUP::er& p) {
+      p | lapse;
+      p | shift;
+    }
+
+    Lapse lapse;
+    Shift shift;
+  };
+
   // charm needs the empty constructor
   MetricWorldtubeH5BufferUpdater() = default;
 
@@ -236,7 +378,8 @@ class MetricWorldtubeH5BufferUpdater
   explicit MetricWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename,
       std::optional<double> extraction_radius = std::nullopt,
-      bool descending_m = true);
+      bool descending_m = true,
+      const std::optional<AdmOptions>& adm_options = std::nullopt);
 
   // NOLINTNEXTLINE
   WRAPPED_PUPable_decl_base_template(
@@ -288,6 +431,16 @@ class MetricWorldtubeH5BufferUpdater
   void pup(PUP::er& p) override;
 
  private:
+  void update_radial_formulation(
+      gsl::not_null<Variables<cce_metric_input_tags<T>>*> buffers,
+      size_t computation_l_max, size_t time_span_start, size_t time_span_end,
+      bool time_varies_fastest) const;
+  template <typename U = T>
+  typename std::enable_if_t<std::is_same_v<U, DataVector>>
+  update_adm_formulation(
+      gsl::not_null<Variables<cce_metric_input_tags<DataVector>>*> buffers,
+      size_t computation_l_max, size_t time_span_start, size_t time_span_end,
+      bool time_varies_fastest) const;
   void update_buffer(gsl::not_null<T*> buffer_to_update,
                      const h5::Dat& read_data, size_t computation_l_max,
                      size_t time_span_start, size_t time_span_end,
@@ -300,9 +453,12 @@ class MetricWorldtubeH5BufferUpdater
   h5::H5File<h5::AccessType::ReadOnly> cce_data_file_;
   std::string filename_;
   bool descending_m_ = true;
+  std::optional<AdmOptions> adm_options_;
 
-  tuples::tagged_tuple_from_typelist<
-      db::wrap_tags_in<Tags::detail::InputDataSet, cce_metric_input_tags<T>>>
+  tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
+      Tags::detail::InputDataSet,
+      tmpl::remove_duplicates<tmpl::append<cce_metric_input_tags<T>,
+                                           cce_metric_adm_input_tags<T>>>>>
       dataset_names_;
 
   // stores all the times in the input file

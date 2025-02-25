@@ -21,8 +21,10 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce::TestHelpers {
@@ -120,6 +122,7 @@ void create_fake_time_varying_gh_nodal_data(
          dt_spatial_metric, *phi);
 }
 
+// Overload for all quantities, including Adm and Z4c quantities
 template <typename AnalyticSolution, typename T = ComplexModalVector>
 void create_fake_time_varying_data(
     const gsl::not_null<tnsr::ii<T, 3>*> spatial_metric_coefficients,
@@ -131,6 +134,12 @@ void create_fake_time_varying_data(
     const gsl::not_null<Scalar<T>*> lapse_coefficients,
     const gsl::not_null<Scalar<T>*> dt_lapse_coefficients,
     const gsl::not_null<Scalar<T>*> dr_lapse_coefficients,
+    const gsl::not_null<tnsr::ii<T, 3>*> extrinsic_curvature_coefficients,
+    const gsl::not_null<tnsr::I<T, 3>*> auxiliary_shift_coefficients,
+    const gsl::not_null<tnsr::I<T, 3>*> conformal_christoffel_coefficients,
+    const gsl::not_null<tnsr::ijj<T, 3>*> deriv_spatial_metric_coefficients,
+    const gsl::not_null<tnsr::iJ<T, 3>*> deriv_shift_coefficients,
+    const gsl::not_null<tnsr::i<T, 3>*> deriv_lapse_coefficients,
     const AnalyticSolution& solution, const double extraction_radius,
     const double amplitude, const double frequency, const double time,
     const size_t l_max, const bool convert_to_goldberg = true,
@@ -180,6 +189,21 @@ void create_fake_time_varying_data(
           kerr_schild_variables);
   const auto& d_spatial_metric =
       get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
+          kerr_schild_variables);
+
+  const auto& extrinsic_curvature =
+      get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(kerr_schild_variables);
+  const auto auxiliary_shift = [&shift]() {
+    auto result = shift;
+    get<0>(result) = 0.5;
+    get<1>(result) = 0.5;
+    get<2>(result) = 0.5;
+    return result;
+  }();
+  // The value in the KerrSchild vars isn't conformal, but this is just a test
+  // so we don't care
+  const auto& conformal_christoffel =
+      get<gr::Tags::TraceSpatialChristoffelSecondKind<DataVector, 3>>(
           kerr_schild_variables);
 
   DataVector normalization_factor{number_of_angular_points, 1.0};
@@ -270,6 +294,12 @@ void create_fake_time_varying_data(
           TestHelpers::tensor_to_libsharp_coefficients(dr_spatial_metric,
                                                        l_max);
     }
+    (void)extrinsic_curvature_coefficients;
+    (void)auxiliary_shift_coefficients;
+    (void)conformal_christoffel_coefficients;
+    (void)deriv_spatial_metric_coefficients;
+    (void)deriv_shift_coefficients;
+    (void)deriv_lapse_coefficients;
   } else {
     get(*lapse_coefficients) = get(lapse);
     get(*dt_lapse_coefficients) = get(dt_lapse);
@@ -279,14 +309,64 @@ void create_fake_time_varying_data(
       shift_coefficients->get(i) = shift.get(i);
       dt_shift_coefficients->get(i) = dt_shift.get(i);
       dr_shift_coefficients->get(i) = dr_shift.get(i);
+      auxiliary_shift_coefficients->get(i) = auxiliary_shift.get(i);
+      conformal_christoffel_coefficients->get(i) = conformal_christoffel.get(i);
+      deriv_lapse_coefficients->get(i) = d_lapse.get(i);
 
-      for (size_t j = i; j < 3; j++) {
+      for (size_t j = 0; j < 3; j++) {
+        deriv_shift_coefficients->get(i, j) = d_shift.get(i, j);
+        if (j < i) {
+          continue;
+        }
         spatial_metric_coefficients->get(i, j) = spatial_metric.get(i, j);
         dt_spatial_metric_coefficients->get(i, j) = dt_spatial_metric.get(i, j);
         dr_spatial_metric_coefficients->get(i, j) = dr_spatial_metric.get(i, j);
+        extrinsic_curvature_coefficients->get(i, j) =
+            extrinsic_curvature.get(i, j);
+
+        for (size_t k = 0; k < 3; k++) {
+          deriv_spatial_metric_coefficients->get(k, i, j) =
+              d_spatial_metric.get(k, i, j);
+        }
       }
     }
   }
+}
+
+// Overload for only the strictly necessary quantities (time and radial derivs)
+template <typename AnalyticSolution, typename T = ComplexModalVector>
+void create_fake_time_varying_data(
+    const gsl::not_null<tnsr::ii<T, 3>*> spatial_metric_coefficients,
+    const gsl::not_null<tnsr::ii<T, 3>*> dt_spatial_metric_coefficients,
+    const gsl::not_null<tnsr::ii<T, 3>*> dr_spatial_metric_coefficients,
+    const gsl::not_null<tnsr::I<T, 3>*> shift_coefficients,
+    const gsl::not_null<tnsr::I<T, 3>*> dt_shift_coefficients,
+    const gsl::not_null<tnsr::I<T, 3>*> dr_shift_coefficients,
+    const gsl::not_null<Scalar<T>*> lapse_coefficients,
+    const gsl::not_null<Scalar<T>*> dt_lapse_coefficients,
+    const gsl::not_null<Scalar<T>*> dr_lapse_coefficients,
+    const AnalyticSolution& solution, const double extraction_radius,
+    const double amplitude, const double frequency, const double time,
+    const size_t l_max, const bool convert_to_goldberg = true,
+    const bool apply_normalization_bug = false) {
+  tnsr::ii<T, 3> extrinsic_curvature_coefficients{};
+  tnsr::I<T, 3> auxiliary_shift_coefficients{};
+  tnsr::I<T, 3> conformal_christoffel_coefficients{};
+  tnsr::ijj<T, 3> deriv_spatial_metric_coefficients{};
+  tnsr::iJ<T, 3> deriv_shift_coefficients{};
+  tnsr::i<T, 3> deriv_lapse_coefficients{};
+  create_fake_time_varying_data(
+      spatial_metric_coefficients, dt_spatial_metric_coefficients,
+      dr_spatial_metric_coefficients, shift_coefficients, dt_shift_coefficients,
+      dr_shift_coefficients, lapse_coefficients, dt_lapse_coefficients,
+      dr_lapse_coefficients, make_not_null(&extrinsic_curvature_coefficients),
+      make_not_null(&auxiliary_shift_coefficients),
+      make_not_null(&conformal_christoffel_coefficients),
+      make_not_null(&deriv_spatial_metric_coefficients),
+      make_not_null(&deriv_shift_coefficients),
+      make_not_null(&deriv_lapse_coefficients), solution, extraction_radius,
+      amplitude, frequency, time, l_max, convert_to_goldberg,
+      apply_normalization_bug);
 }
 
 template <typename T = ComplexModalVector, bool WriteBondi = true,
@@ -295,7 +375,8 @@ void write_test_file(const AnalyticSolution& solution,
                      const std::string& filename, const double target_time,
                      const double extraction_radius, const double frequency,
                      const double amplitude, const size_t l_max,
-                     const bool descending_m = true) {
+                     const bool descending_m = true,
+                     const bool write_extra_adm_vars = false) {
   const bool is_modal = std::is_same_v<T, ComplexModalVector>;
   const size_t size =
       is_modal ? square(l_max + 1)
@@ -312,6 +393,12 @@ void write_test_file(const AnalyticSolution& solution,
   Scalar<T> lapse_coefficients{size};
   Scalar<T> dt_lapse_coefficients{size};
   Scalar<T> dr_lapse_coefficients{size};
+  tnsr::ii<T, 3> extrinsic_curvature_coefficients{size};
+  tnsr::I<T, 3> auxiliary_shift_coefficients{size};
+  tnsr::I<T, 3> conformal_christoffel_coefficients{size};
+  tnsr::ijj<T, 3> deriv_spatial_metric_coefficients{size};
+  tnsr::iJ<T, 3> deriv_shift_coefficients{size};
+  tnsr::i<T, 3> deriv_lapse_coefficients{size};
   Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
       Cce::Tags::BoundaryValue>>
       boundary_data_variables{};
@@ -341,7 +428,13 @@ void write_test_file(const AnalyticSolution& solution,
           make_not_null(&dr_shift_coefficients),
           make_not_null(&lapse_coefficients),
           make_not_null(&dt_lapse_coefficients),
-          make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
+          make_not_null(&dr_lapse_coefficients),
+          make_not_null(&extrinsic_curvature_coefficients),
+          make_not_null(&auxiliary_shift_coefficients),
+          make_not_null(&conformal_christoffel_coefficients),
+          make_not_null(&deriv_spatial_metric_coefficients),
+          make_not_null(&deriv_shift_coefficients),
+          make_not_null(&deriv_lapse_coefficients), solution, extraction_radius,
           amplitude, frequency, time, l_max, not WriteBondi);
 
       if constexpr (WriteBondi) {
@@ -374,8 +467,20 @@ void write_test_file(const AnalyticSolution& solution,
               }
             });
       } else {
+        const auto deriv_str = [](const std::string& var, const size_t index) {
+          return "/D"s + (index == 0 ? "x"s : (index == 1 ? "y"s : "z"s)) + var;
+        };
         for (size_t i = 0; i < 3; ++i) {
-          for (size_t j = i; j < 3; ++j) {
+          for (size_t j = 0; j < 3; ++j) {
+            if (write_extra_adm_vars) {
+              recorder.append_worldtube_mode_data(
+                  detail::dataset_name_for_component(deriv_str("Shift", i), j),
+                  time, deriv_shift_coefficients.get(i, j), descending_m);
+            }
+
+            if (j < i) {
+              continue;
+            }
             recorder.append_worldtube_mode_data(
                 detail::dataset_name_for_component("/g", i, j), time,
                 spatial_metric_coefficients.get(i, j), descending_m);
@@ -385,6 +490,18 @@ void write_test_file(const AnalyticSolution& solution,
             recorder.append_worldtube_mode_data(
                 detail::dataset_name_for_component("/Dtg", i, j), time,
                 dt_spatial_metric_coefficients.get(i, j), descending_m);
+
+            if (write_extra_adm_vars) {
+              recorder.append_worldtube_mode_data(
+                  detail::dataset_name_for_component("/K", i, j), time,
+                  extrinsic_curvature_coefficients.get(i, j), descending_m);
+
+              for (size_t k = 0; k < 3; k++) {
+                recorder.append_worldtube_mode_data(
+                    detail::dataset_name_for_component(deriv_str("g", k), i, j),
+                    time, deriv_spatial_metric_coefficients.get(k, i, j));
+              }
+            }
           }
           recorder.append_worldtube_mode_data(
               detail::dataset_name_for_component("/Shift", i), time,
@@ -395,6 +512,18 @@ void write_test_file(const AnalyticSolution& solution,
           recorder.append_worldtube_mode_data(
               detail::dataset_name_for_component("/DtShift", i), time,
               dt_shift_coefficients.get(i), descending_m);
+
+          if (write_extra_adm_vars) {
+            recorder.append_worldtube_mode_data(
+                detail::dataset_name_for_component("/AuxiliaryShift", i), time,
+                auxiliary_shift_coefficients.get(i), descending_m);
+            recorder.append_worldtube_mode_data(
+                detail::dataset_name_for_component("/ConformalChristoffel", i),
+                time, conformal_christoffel_coefficients.get(i), descending_m);
+            recorder.append_worldtube_mode_data(
+                detail::dataset_name_for_component(deriv_str("Lapse", i)), time,
+                deriv_lapse_coefficients.get(i), descending_m);
+          }
         }
         recorder.append_worldtube_mode_data(
             detail::dataset_name_for_component("/Lapse"), time,
