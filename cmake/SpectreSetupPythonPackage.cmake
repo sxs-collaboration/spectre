@@ -35,8 +35,26 @@ set(PYTHON_EXE_COMMAND "-m spectre")
 set(PYTHON_EXEC_ENV_VARS "")
 if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
   string(APPEND PYTHON_EXEC_ENV_VARS
-    " LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
+    " \\\nLD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
 endif()
+# TODO: it would be good to figure out if there's a more general way to do this,
+#       and for example if we need to do it for _all_ dependencies. It probably
+#       wouldn't hurt to do it for more dependencies, e.g. MPI.
+unset(_PRELOAD_DIRS)
+foreach(_LIB ${HDF5_C_LIBRARIES})
+  get_filename_component(_LIB_DIR ${_LIB} DIRECTORY)
+  list(FIND _PRELOAD_DIRS ${_LIB_DIR} _FOUND)
+  if(${_FOUND} EQUAL -1)
+    list(APPEND
+      _PRELOAD_DIRS
+      ${_LIB_DIR}
+    )
+  endif()
+endforeach()
+string(REPLACE ";" ":" _PRELOAD_DIRS "${_PRELOAD_DIRS}")
+string(APPEND PYTHON_EXEC_ENV_VARS
+  " \\\nLD_LIBRARY_PATH=\$LD_LIBRARY_PATH:${_PRELOAD_DIRS}")
+
 # ParaView needs specific environment variables set, e.g. 'LD_LIBRARY_PATH', but
 # they can interfere with simulations, e.g. when they point to ParaView's
 # bundled MPI which may be different to the MPI we built with. Therefore we
