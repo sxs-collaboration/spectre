@@ -7,6 +7,7 @@
 
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/RadiusFunctions.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/InsideHorizon.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/OrbitRadius.hpp"
 #include "Framework/TestHelpers.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -43,9 +44,33 @@ void test_inside_horizon() {
   CHECK(inside_horizon_trigger(pos_vel_inside, wt_radius_params_small) == true);
 }
 
+void test_orbit_radius() {
+  const std::vector<double> radii{3., 17., 23.};
+  const Triggers::OrbitRadius orbit_radius_trigger(radii);
+
+  const tnsr::I<double, 3> position_0{{2.99, 0., 0.}};
+  const tnsr::I<double, 3> velocity_0{{0.01, 0., 0.}};
+
+  const std::array<tnsr::I<double, 3>, 2> pos_vel_0{position_0,
+                                                  velocity_0};
+  const Slab large_slab(0., 1.);
+  const Slab small_slab(0., 0.1);
+
+  CHECK(orbit_radius_trigger(pos_vel_0, large_slab.duration()));
+  CHECK_FALSE(orbit_radius_trigger(pos_vel_0, small_slab.duration()));
+
+  const tnsr::I<double, 3> position_1{{0., 0., 17.01}};
+  const tnsr::I<double, 3> velocity_1{{0., 0., -0.01}};
+  const std::array<tnsr::I<double, 3>, 2> pos_vel_1{position_1,
+    velocity_1};
+  CHECK(orbit_radius_trigger(pos_vel_1, large_slab.duration()));
+  CHECK_FALSE(orbit_radius_trigger(pos_vel_1, small_slab.duration()));
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Triggers",
                   "[Unit][Evolution]") {
   test_inside_horizon();
+  test_orbit_radius();
 }
 }  // namespace
 }  // namespace CurvedScalarWave::Worldtube
