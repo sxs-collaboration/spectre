@@ -91,15 +91,17 @@ void step_error(const gsl::not_null<T*> u_error,
                  [](const auto& r) { return r.time_step_id.step_time(); });
   control_times.push_back(history.back().time_step_id.step_time() +
                           history.substeps().front().time_step_id.step_size());
+  // We can't use the predictor value from the history because it
+  // might have been modified by variable fixing and filtering and
+  // such.
   auto coefficients = adams_coefficients::coefficients(
       control_times.begin(), control_times.end(),
       history.back().time_step_id.step_time(), step_end);
-  control_times.erase(control_times.begin());
-  const auto lower_order_coefficients = adams_coefficients::coefficients(
-      control_times.begin(), control_times.end(),
+  const auto predictor_coefficients = adams_coefficients::coefficients(
+      control_times.begin(), control_times.end() - 1,
       history.back().time_step_id.step_time(), step_end);
-  for (size_t i = 0; i < lower_order_coefficients.size(); ++i) {
-    coefficients[i + 1] -= lower_order_coefficients[i];
+  for (size_t i = 0; i < predictor_coefficients.size(); ++i) {
+    coefficients[i] -= predictor_coefficients[i];
   }
 
   *u_error = coefficients.back() * history.substeps().front().derivative;
