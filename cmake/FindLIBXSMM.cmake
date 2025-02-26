@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Find LIBXSMM: https://github.com/hfp/libxsmm
+# Find LIBXSMM: https://github.com/libxsmm/libxsmm
 # If not in one of the default paths specify -D LIBXSMM_ROOT=/path/to/LIBXSMM
 # to search there as well.
 

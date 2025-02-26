@@ -1076,7 +1076,7 @@ LOCATION=${INSTALL_GCC_LOCATION}/libxsmm/${_LIBXSMM_VERSION}
 if [ -d ${LOCATION} ]; then
     echo "LIBXSMM ${_LIBXSMM_VERSION} already installed."
 else
-    wget https://github.com/hfp/libxsmm/archive/${_LIBXSMM_VERSION}.tar.gz -O libxsmm.tar.gz
+    wget https://github.com/libxsmm/libxsmm/archive/${_LIBXSMM_VERSION}.tar.gz -O libxsmm.tar.gz
     tar -xzf libxsmm.tar.gz && rm libxsmm.tar.gz && cd libxsmm-*
     make AVX=2 PREFIX=${LOCATION} install -j${PARALLEL_MAKE_ARG}
     cd ../

@@ -109,7 +109,7 @@ popd
 
 # Install libxsmm
 # Need master branch of libxsmm to support Apple Silicon
-git clone https://github.com/hfp/libxsmm.git
+git clone https://github.com/libxsmm/libxsmm.git
 pushd libxsmm
 make
 popd

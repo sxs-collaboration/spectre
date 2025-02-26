@@ -111,7 +111,7 @@ if [ -f libxsmm/lib/libxsmm.a ]; then
 else
     echo "Installing LIBXSMM..."
     rm -rf $dep_dir/libxsmm
-    wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz
+    wget https://github.com/libxsmm/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz
     tar -xzf libxsmm.tar.gz
     mv libxsmm-* libxsmm
     cd libxsmm
