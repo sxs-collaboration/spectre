@@ -50,3 +50,8 @@ else()
 endif()
 
 mark_as_advanced(JEMALLOC_LIB_TYPE)
+
+if("${JEMALLOC_LIB_TYPE}" STREQUAL STATIC)
+  message(WARNING "It's probably a better idea to use jemalloc as a shared "
+    "library. Statically linking jemalloc might work but has not been tested.")
+endif()

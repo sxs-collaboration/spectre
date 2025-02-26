@@ -33,10 +33,15 @@ configure_or_symlink_py_file(
 # Also link the main entry point to bin/
 set(PYTHON_EXE_COMMAND "-m spectre")
 set(PYTHON_EXEC_ENV_VARS "")
-if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
-  string(APPEND PYTHON_EXEC_ENV_VARS
-    " LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
-endif()
+# At some point we needed to preload jemalloc for the Python bindings to work,
+# otherwise we got "cannot allocate memory in static TLS block" errors when
+# using jemalloc. This is fixed by avoiding to link jemalloc into libraries in
+# the first place (we only dynamically link it into executables). If we want to
+# link jemalloc into libraries again (e.g. to use jemalloc features explicitly
+# in the code), the best way to do this would be to build jemalloc with a prefix
+# and use it as a custom allocator where needed, instead of generically
+# replacing the system allocator.
+#
 # ParaView needs specific environment variables set, e.g. 'LD_LIBRARY_PATH', but
 # they can interfere with simulations, e.g. when they point to ParaView's
 # bundled MPI which may be different to the MPI we built with. Therefore we
@@ -87,20 +92,11 @@ configure_or_symlink_py_file(
   "${CMAKE_SOURCE_DIR}/setup.cfg"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
 
-set(_JEMALLOC_MESSAGE "")
-if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
-  set(_JEMALLOC_MESSAGE
-    "echo 'You must run python as:'\n"
-    "echo 'LD_PRELOAD=${JEMALLOC_LIBRARIES} python ...'\n")
-  string(REPLACE ";" "" _JEMALLOC_MESSAGE "${_JEMALLOC_MESSAGE}")
-endif()
-
 # Write a file to be able to set up the new python path.
 file(WRITE
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "#!/bin/sh\n"
   "export PYTHONPATH=${PYTHONPATH}\n"
-  ${_JEMALLOC_MESSAGE}
   )
 configure_file(
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
@@ -141,18 +137,6 @@ add_custom_target(all-pybindings)
 #                 ${CMAKE_SOURCE_DIR}/src) to add to the module. Omit if
 #                 no python files are to be provided.
 function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
-  if(BUILD_PYTHON_BINDINGS AND
-      "${JEMALLOC_LIB_TYPE}" STREQUAL STATIC
-      AND BUILD_SHARED_LIBS)
-    message(FATAL_ERROR
-      "Cannot build python bindings when using a static library JEMALLOC and "
-      "building SpECTRE with shared libraries. Either disable the python "
-      "bindings using -D BUILD_PYTHON_BINDINGS=OFF, switch to a shared/dynamic "
-      "JEMALLOC library, use the system allocator by passing "
-      "-D MEMORY_ALLOCATOR=SYSTEM to CMake, or build SpECTRE using static "
-      "libraries by passing -D BUILD_SHARED_LIBS=OFF to CMake.")
-  endif()
-
   set(SINGLE_VALUE_ARGS MODULE_PATH LIBRARY_NAME)
   set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES)
   cmake_parse_arguments(
@@ -335,13 +319,6 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
   spectre_test_timeout(TIMEOUT PYTHON ${TIMEOUT})
 
   set(_PY_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
-  if(BUILD_PYTHON_BINDINGS AND
-      "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
-    list(APPEND
-      _PY_TEST_ENV_VARS
-      "LD_PRELOAD=${JEMALLOC_LIBRARIES}"
-      )
-  endif()
 
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.

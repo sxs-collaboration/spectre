@@ -73,15 +73,6 @@ scripts:
   . BUILD_DIR/bin/LoadPython.sh
   ```
 
-  Note that by default SpECTRE uses `jemalloc` which needs to be pre-loaded for
-  the Python bindings to work. Therefore, you need to run
-  `LD_PRELOAD=/path/to/libjemalloc.so python` to execute Python scripts or start
-  Python consoles. The path to your preferred jemalloc installation is printed
-  out at the end of the `cmake` configuration or can be found by running the
-  script `BUILD_DIR/bin/LoadPython.sh`. Alternatively, you can use your system's
-  memory allocator by appending the flag `-D MEMORY_ALLOCATOR=SYSTEM` to the
-  `cmake` command. In this case you will not need to pre-load any libraries.
-
 Using any of the above options you should be able to import the `spectre` Python
 modules in your scripts or notebooks. You can try it like this:
 
