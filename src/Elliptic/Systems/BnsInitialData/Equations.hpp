@@ -41,8 +41,9 @@ void fluxes_on_face(
     const Scalar<DataVector>& velocity_potential);
 
 /*!
- * \brief Compute the generic fluxes \f$ F^i = D^i \Phi - B^jD_j\Phi /\alpha^2
- * B^i \f$ for the Irrotational BNS equation for the velocity potential.
+ * \brief Compute the generic fluxes \f$ F^i = D^i \Phi -
+ * \frac{B^jD_j\Phi}{\alpha^2} B^i \f$ for the Irrotational BNS equation for the
+ * velocity potential.
  */
 void potential_fluxes(
     gsl::not_null<tnsr::I<DataVector, 3>*> flux_for_potential,
@@ -51,7 +52,7 @@ void potential_fluxes(
     const tnsr::i<DataVector, 3>& velocity_potential_gradient);
 
 /*!
- * \brief Add the sources \f$S=-\Gamma^i_{ij}F^j - \D_j \left(\alpha \rho /
+ * \brief Add the sources \f$S=-\Gamma^i_{ij}F^j - \D_j \left(\ln\alpha \rho /
  * h\right)  F^j\f$ for the curved-space Irrotational BNS equation on a spatial
  * metric \f$\gamma_{ij}\f$.
  *

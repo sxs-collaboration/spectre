@@ -34,7 +34,7 @@ tnsr::I<DataType, 3> rotational_shift(
 /// scheme.)
 ///
 ///
-/// \f[\Sigma^i_j = \frac{1}{2}\frac{B^iB_j}{\alpha^2}\f]
+/// \f[\Sigma^{ij} = \frac{B^iB^j}{\alpha^2}\f]
 ///
 template <typename DataType>
 void rotational_shift_stress(gsl::not_null<tnsr::II<DataType, 3>*> result,

@@ -30,7 +30,7 @@ struct RotationalShift : db::SimpleTag {
  * \brief The stress-energy corresponding to the rotation shift
  *
  *
- * \f[\Sigma^i_j = \frac{1}{2}\frac{B^iB_j}{\alpha^2}\f]
+ * \f[\Sigma^{ij} = \frac{B^iB^j}{\alpha^2}\f]
  */
 template <typename DataType>
 struct RotationalShiftStress : db::SimpleTag {
