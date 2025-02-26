@@ -268,7 +268,28 @@ void write_input_file(const std::string& input_data_format,
   }
 
   input_file += "\nOutputH5File: " + output_filename + "\n";
-  input_file += "InputDataFormat: " + input_data_format + "\n";
+  input_file += "InputDataFormat:";
+  if (input_data_format == "FirstOrderMetricNodal") {
+    input_file +=
+        "\n"
+        "  AdmMetricNodal:\n"
+        "    Lapse:\n"
+        "      Advective: True\n"
+        "    Shift:\n"
+        "      Advective: True\n"
+        "      FirstOrderDriverFactor: 0.75\n";
+  } else if (input_data_format == "ChristoffelMetricNodal") {
+    input_file +=
+        "\n"
+        "  AdmMetricNodal:\n"
+        "    Lapse:\n"
+        "      Advective: True\n"
+        "    Shift:\n"
+        "      Advective: True\n"
+        "      SecondOrderDriverEta: 2.0\n";
+  } else {
+    input_file += " " + input_data_format + "\n";
+  }
   input_file +=
       "ExtractionRadius: " +
       (worldtube_radius.has_value() ? std::to_string(worldtube_radius.value())
@@ -307,6 +328,10 @@ int main() {
       "Test_InputMetricModal_R0123.h5"};
   const std::string metric_modal_spec_input_worldtube_filename{
       "Test_InputMetricModalSpec_R0123.h5"};
+  const std::string first_order_metric_nodal_input_worldtube_filename{
+      "Test_InputFirstOrderMetricNodal.h5"};
+  const std::string christoffel_metric_nodal_input_worldtube_filename{
+      "Test_InputChristoffelMetricNodal.h5"};
   const std::string metric_nodal_1_input_worldtube_filename{
       "Test_InputMetricNodal_1.h5"};
   const std::string metric_nodal_2_input_worldtube_filename{
@@ -323,6 +348,10 @@ int main() {
       "Test_OutputMetricModal_R0123.h5"};
   const std::string metric_modal_spec_output_worldtube_filename{
       "Test_OutputMetricModalSpec_R0123.h5"};
+  const std::string first_order_metric_nodal_output_worldtube_filename{
+      "Test_OutputFirstOrderMetricNodal.h5"};
+  const std::string christoffel_metric_nodal_output_worldtube_filename{
+      "Test_OutputChristoffelMetricNodal.h5"};
   const std::string metric_nodal_output_worldtube_filename{
       "Test_OutputMetricNodal.h5"};
   const std::string bondi_modal_output_worldtube_filename{
@@ -337,6 +366,12 @@ int main() {
   Cce::TestHelpers::write_test_file<ComplexModalVector, false>(
       solution, metric_modal_spec_input_worldtube_filename, target_time,
       worldtube_radius, frequency, amplitude, l_max, true);
+  Cce::TestHelpers::write_test_file<DataVector, false>(
+      solution, first_order_metric_nodal_input_worldtube_filename, target_time,
+      worldtube_radius, frequency, amplitude, l_max, false, true);
+  Cce::TestHelpers::write_test_file<DataVector, false>(
+      solution, christoffel_metric_nodal_input_worldtube_filename, target_time,
+      worldtube_radius, frequency, amplitude, l_max, false, true);
   Cce::TestHelpers::write_test_file<DataVector, false>(
       solution, metric_nodal_1_input_worldtube_filename, target_time,
       worldtube_radius, frequency, amplitude, l_max, false);
@@ -363,6 +398,14 @@ int main() {
                    {metric_modal_spec_input_worldtube_filename},
                    metric_modal_spec_output_worldtube_filename, std::nullopt,
                    true);
+  write_input_file("FirstOrderMetricNodal", "FirstOrderMetricNodal.yaml",
+                   {first_order_metric_nodal_input_worldtube_filename},
+                   first_order_metric_nodal_output_worldtube_filename,
+                   {worldtube_radius}, false);
+  write_input_file("ChristoffelMetricNodal", "ChristoffelMetricNodal.yaml",
+                   {christoffel_metric_nodal_input_worldtube_filename},
+                   christoffel_metric_nodal_output_worldtube_filename,
+                   {worldtube_radius}, false);
   write_input_file("MetricNodal", "MetricNodal.yaml",
                    {metric_nodal_1_input_worldtube_filename,
                     metric_nodal_2_input_worldtube_filename},
@@ -407,6 +450,8 @@ int main() {
   // Call PreprocessCceWorldtube in a shell
   call_preprocess_cce_worldtube("MetricModal");
   call_preprocess_cce_worldtube("MetricModalSpec");
+  call_preprocess_cce_worldtube("FirstOrderMetricNodal");
+  call_preprocess_cce_worldtube("ChristoffelMetricNodal");
   call_preprocess_cce_worldtube("MetricNodal");
   call_preprocess_cce_worldtube("BondiModal");
   call_preprocess_cce_worldtube("BondiNodal");
@@ -419,7 +464,10 @@ int main() {
                            solution, amplitude, frequency);
 
   // Check that the expected bondi modal data is what was written in the output
-  // files for the different InputDataFormats
+  // files for the different InputDataFormats. We don't check
+  // FirstOrderMetricNodal or ChristoffelMetricNodal because our expected data
+  // uses a different gauge than is assumed (1+log and gamma driver), and so
+  // some time derivatives will be incorrect.
   check_expected_data(metric_modal_output_worldtube_filename, l_max,
                       expected_data, second_expected_data, target_time,
                       second_target_time, false);

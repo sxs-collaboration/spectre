@@ -56,6 +56,8 @@ using modal_bondi_input_tags = Cce::Tags::worldtube_boundary_tags_for_writing<
 using nodal_bondi_input_tags =
     Cce::Tags::worldtube_boundary_tags_for_writing<Cce::Tags::BoundaryValue>;
 
+using AdmOptions = Cce::MetricWorldtubeH5BufferUpdater<DataVector>::AdmOptions;
+
 // from a data-varies-fastest set of buffers provided by
 // `MetricWorldtubeH5BufferUpdater` extract the set of coefficients for a
 // particular time given by `buffer_time_offset` into the `time_span` size of
@@ -326,12 +328,13 @@ void bondi_nodal_to_bondi_modal(
   }
 }
 
-void metric_nodal_to_bondi_modal(
-    const std::string& input_file, const std::string& output_file,
-    const size_t input_buffer_depth,
-    const std::optional<double>& extraction_radius) {
+void metric_nodal_to_bondi_modal(const std::string& input_file,
+                                 const std::string& output_file,
+                                 const size_t input_buffer_depth,
+                                 const std::optional<double>& extraction_radius,
+                                 const std::optional<AdmOptions>& adm_options) {
   Cce::MetricWorldtubeH5BufferUpdater<DataVector> buffer_updater{
-      input_file, extraction_radius, false};
+      input_file, extraction_radius, false, adm_options};
   const size_t l_max = buffer_updater.get_l_max();
 
   const size_t number_of_angular_points =
@@ -377,7 +380,50 @@ void metric_nodal_to_bondi_modal(
   }
 }
 
-enum class InputDataFormat { MetricNodal, MetricModal, BondiNodal, BondiModal };
+// If we use the AdmOptions class directly in an option tag, the input file
+// would look like:
+//
+// InputDataFormat:
+//   AdvectiveLapse: True
+//   AdvectiveShift: True
+//   AuxiliaryShiftFactor: False
+//
+// However, this doesn't have the name `AdmMetricNodal`. This is consistent with
+// how our options work, but is confusing (especially for users who are
+// unfamiliar with spectre) since the actual input data format isn't shown. This
+// class now changes the input file to look like:
+//
+// InputDataFormat:
+//   AdmMetricNodal:
+//     AdvectiveLapse: True
+//     AdvectiveShift: True
+//     AuxiliaryShiftFactor: False
+//
+// which is much clearer.
+struct AdmMetricNodalOptions {
+  struct AdmMetricNodal {
+    using type = ::AdmOptions;
+    static constexpr Options::String help = ::AdmOptions::help;
+  };
+
+  using options = tmpl::list<AdmMetricNodal>;
+  static constexpr Options::String help = ::AdmOptions::help;
+
+  AdmMetricNodalOptions() = default;
+  // NOLINTNEXTLINE
+  AdmMetricNodalOptions(::AdmOptions adm_metric_nodal_in)
+      : adm_metric_nodal(adm_metric_nodal_in) {}
+
+  ::AdmOptions adm_metric_nodal;
+};
+
+enum class InputDataFormat {
+  AdmMetricNodal,
+  MetricNodal,
+  MetricModal,
+  BondiNodal,
+  BondiModal
+};
 
 std::ostream& operator<<(std::ostream& os,
                          const InputDataFormat input_data_format) {
@@ -407,10 +453,11 @@ struct InputH5Files {
 };
 
 struct InputDataFormat {
-  using type = ::InputDataFormat;
+  using type = std::variant<::InputDataFormat, AdmMetricNodalOptions>;
   static constexpr Options::String help =
-      "The type of data stored in the 'InputH5Files'. Can be  'MetricNodal', "
-      "'MetricModal', 'BondiNodal', or 'BondiModal'.";
+      "The type of data stored in the 'InputH5Files'. Can be 'AdmMetricNodal' "
+      "with additional options, 'MetricNodal', 'MetricModal', 'BondiNodal', or "
+      "'BondiModal'.";
 };
 
 struct OutputH5File {
@@ -496,11 +543,23 @@ struct InputH5Files : db::SimpleTag {
 };
 
 struct InputDataFormat : db::SimpleTag {
-  using type = ::InputDataFormat;
+ private:
+  using option_type = std::variant<::InputDataFormat, AdmMetricNodalOptions>;
+
+ public:
+  using type = std::variant<::InputDataFormat, AdmOptions>;
   using option_tags = tmpl::list<OptionTags::InputDataFormat>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(type input_data_format) {
-    return input_data_format;
+  static type create_from_options(option_type input_data_format) {
+    type result{};
+    if (std::holds_alternative<::InputDataFormat>(input_data_format)) {
+      result = std::get<::InputDataFormat>(input_data_format);
+    } else {
+      result =
+          std::get<AdmMetricNodalOptions>(input_data_format).adm_metric_nodal;
+    }
+
+    return result;
   }
 };
 
@@ -582,8 +641,8 @@ struct Options::create_from_yaml<InputDataFormat> {
       return InputDataFormat::BondiModal;
     }
     PARSE_ERROR(options.context(),
-                "InputDataFormat must be 'MetricNodal', 'MetricModal', "
-                "'BondiNodal', or 'BondiModal'");
+                "InputDataFormat must be 'AdmMetricNodal', 'MetricNodal', "
+                "'MetricModal', 'BondiNodal', or 'BondiModal'");
   }
 };
 
@@ -638,8 +697,12 @@ int main(int argc, char** argv) {
     const TagsTuple inputs =
         Parallel::create_from_options<void>(options, tags{});
 
-    const InputDataFormat input_data_format =
+    const auto& input_data_format =
         tuples::get<ReduceCceTags::InputDataFormat>(inputs);
+    const InputDataFormat input_data_format_enum =
+        std::holds_alternative<InputDataFormat>(input_data_format)
+            ? std::get<InputDataFormat>(input_data_format)
+            : InputDataFormat::AdmMetricNodal;
     const std::vector<std::string>& input_files =
         tuples::get<ReduceCceTags::InputH5Files>(inputs);
     const std::string& output_h5_file =
@@ -651,7 +714,7 @@ int main(int argc, char** argv) {
       // If the input format is BondiModal, then we don't actually have to do
       // any transformations, only combining H5 files. So the temporary file
       // name is just the output file
-      if (input_data_format == InputDataFormat::BondiModal) {
+      if (input_data_format_enum == InputDataFormat::BondiModal) {
         temporary_combined_h5_file = output_h5_file;
       } else {
         // Otherwise we have to do a transformation so a temporary H5 file is
@@ -668,7 +731,7 @@ int main(int argc, char** argv) {
       // Now combine the h5 files into a single file
       h5::combine_h5_dat(input_files, temporary_combined_h5_file.value(),
                          Verbosity::Quiet);
-    } else if (input_data_format == InputDataFormat::BondiModal) {
+    } else if (input_data_format_enum == InputDataFormat::BondiModal) {
       // Error here if the input data format is BondiModal since there's nothing
       // to do
       ERROR_NO_TRACE(
@@ -678,7 +741,7 @@ int main(int argc, char** argv) {
     }
 
     if (tuples::get<ReduceCceTags::FixSpecNormalization>(inputs)) {
-      if (input_data_format != InputDataFormat::MetricModal) {
+      if (input_data_format_enum != InputDataFormat::MetricModal) {
         ERROR_NO_TRACE(
             "The option FixSpecNormalization can only be 'true' when the input "
             "data format is MetricModal. Otherwise, it must be 'false'");
@@ -702,12 +765,13 @@ int main(int argc, char** argv) {
       }
     };
 
-    switch (input_data_format) {
-      case InputDataFormat::BondiModal:
+    switch (input_data_format_enum) {
+      case InputDataFormat::BondiModal: {
         // Nothing to do here because this is the desired output format and the
         // H5 files were combined above
         return 0;
-      case InputDataFormat::BondiNodal:
+      }
+      case InputDataFormat::BondiNodal: {
         bondi_nodal_to_bondi_modal(
             input_worldtube_filename(), output_h5_file,
             tuples::get<ReduceCceTags::BufferDepth>(inputs),
@@ -715,7 +779,8 @@ int main(int argc, char** argv) {
 
         clean_temporary_file();
         return 0;
-      case InputDataFormat::MetricModal:
+      }
+      case InputDataFormat::MetricModal: {
         perform_cce_worldtube_reduction(
             input_worldtube_filename(), output_h5_file,
             tuples::get<ReduceCceTags::BufferDepth>(inputs),
@@ -726,16 +791,25 @@ int main(int argc, char** argv) {
 
         clean_temporary_file();
         return 0;
-      case InputDataFormat::MetricNodal:
+      }
+      case InputDataFormat::AdmMetricNodal: {
+        [[fallthrough]];
+      }
+      case InputDataFormat::MetricNodal: {
+        const std::optional<AdmOptions> adm_options =
+            std::holds_alternative<AdmOptions>(input_data_format)
+                ? std::optional{std::get<AdmOptions>(input_data_format)}
+                : std::nullopt;
         metric_nodal_to_bondi_modal(
             input_worldtube_filename(), output_h5_file,
             tuples::get<ReduceCceTags::BufferDepth>(inputs),
-            tuples::get<ReduceCceTags::ExtractionRadius>(inputs));
+            tuples::get<ReduceCceTags::ExtractionRadius>(inputs), adm_options);
 
         clean_temporary_file();
         return 0;
+      }
       default:
-        ERROR("Unknown input data format " << input_data_format);
+        ERROR("Unknown input data format " << input_data_format_enum);
     }
   } catch (const std::exception& exception) {
     Parallel::printf("%s\n", exception.what());

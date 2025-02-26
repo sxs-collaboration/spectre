@@ -67,6 +67,14 @@ jobs:
           ./tests/InputFiles/PreprocessCceWorldtube/PreprocessCceWorldtube.yaml
           ./CceExecutables/PreprocessCceWorldtube/PreprocessCceWorldtube.yaml
 
+          cp
+          ./tests/InputFiles/PreprocessCceWorldtube/AdmFirstOrderDriverPreprocessCceWorldtube.yaml
+          ./CceExecutables/PreprocessCceWorldtube/AdmFirstOrderDriverPreprocessCceWorldtube.yaml
+
+          cp
+          ./tests/InputFiles/PreprocessCceWorldtube/AdmSecondOrderDriverPreprocessCceWorldtube.yaml
+          ./CceExecutables/PreprocessCceWorldtube/AdmSecondOrderDriverPreprocessCceWorldtube.yaml
+
           docker cp
           static-execs:/work/spectre/build/bin/CharacteristicExtract
           ./CceExecutables/
