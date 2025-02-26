@@ -15,6 +15,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+struct ApproximateTime;
 struct StepperErrorTolerances;
 class TimeDelta;
 namespace PUP {
@@ -252,12 +253,12 @@ class AdamsBashforth : public LtsTimeStepper {
  private:
   friend bool operator==(const AdamsBashforth& lhs, const AdamsBashforth& rhs);
 
-  // Some of the private methods take a parameter of type "Delta" or
-  // "TimeType".  Delta is expected to be a TimeDelta or an
-  // ApproximateTimeDelta, and TimeType is expected to be a Time or an
-  // ApproximateTime.  The former cases will detect and optimize the
-  // constant-time-step case, while the latter are necessary for dense
-  // output.
+  template <bool DenseOutput, typename T>
+  std::optional<StepperErrorEstimate> update_u_common(
+      gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+      const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
+      const std::optional<StepperErrorTolerances>& tolerances) const;
+
   template <typename T>
   void update_u_impl(gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
@@ -275,16 +276,6 @@ class AdamsBashforth : public LtsTimeStepper {
   bool dense_update_u_impl(gsl::not_null<T*> u,
                            const ConstUntypedHistory<T>& history,
                            double time) const;
-
-  template <typename T, typename Delta>
-  void update_u_common(gsl::not_null<T*> u,
-                       const ConstUntypedHistory<T>& history,
-                       const Delta& time_step) const;
-
-  template <typename T>
-  void step_error(gsl::not_null<T*> u_error,
-                  const ConstUntypedHistory<T>& history,
-                  const TimeDelta& time_step) const;
 
   template <typename T>
   bool can_change_step_size_impl(const TimeStepId& time_id,
