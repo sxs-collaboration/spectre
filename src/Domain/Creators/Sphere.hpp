@@ -433,7 +433,7 @@ class Sphere : public DomainCreator<3> {
   bool use_hard_coded_maps_{false};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
-  size_t num_shells_;
+  size_t num_shells_{};
   size_t num_blocks_;
   size_t num_blocks_per_shell_;
   std::vector<std::string> block_names_{};

@@ -20,6 +20,7 @@ spectre_target_sources(
   RotatedBricks.cpp
   RotatedIntervals.cpp
   RotatedRectangles.cpp
+  ShellDistribution.cpp
   Sphere.cpp
   )
 
@@ -46,6 +47,7 @@ spectre_target_headers(
   RotatedBricks.hpp
   RotatedIntervals.hpp
   RotatedRectangles.hpp
+  ShellDistribution.hpp
   Sphere.hpp
   )
 

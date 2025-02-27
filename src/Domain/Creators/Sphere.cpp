@@ -27,6 +27,7 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/ExpandOverBlocks.hpp"
+#include "Domain/Creators/ShellDistribution.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -35,6 +36,7 @@
 #include "Options/ParseError.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -50,24 +52,6 @@ Excision::Excision(
         local_boundary_condition)
     : boundary_condition(std::move(local_boundary_condition)) {}
 }  // namespace detail
-
-namespace {
-struct DistributionVisitor {
-  size_t num_shells;
-
-  std::vector<domain::CoordinateMaps::Distribution> operator()(
-      const domain::CoordinateMaps::Distribution distribution) const {
-    return std::vector<domain::CoordinateMaps::Distribution>(num_shells,
-                                                             distribution);
-  }
-
-  std::vector<domain::CoordinateMaps::Distribution> operator()(
-      const std::vector<domain::CoordinateMaps::Distribution>& distributions)
-      const {
-    return distributions;
-  }
-};
-}  // namespace
 
 Sphere::Sphere(
     double inner_radius, double outer_radius,
@@ -106,44 +90,10 @@ Sphere::Sphere(
                 "not with a filled sphere.");
   }
   // Validate radial partitions
-  if (not std::is_sorted(radial_partitioning_.begin(),
-                         radial_partitioning_.end())) {
-    PARSE_ERROR(context,
-                "Specify radial partitioning in ascending order. Specified "
-                "radial partitioning is: " +
-                    get_output(radial_partitioning_));
-  }
-  if (not radial_partitioning_.empty()) {
-    if (radial_partitioning_.front() <= inner_radius_) {
-      PARSE_ERROR(context,
-                  "First radial partition must be larger than inner "
-                  "radius, but is: " +
-                      std::to_string(inner_radius_));
-    }
-    if (radial_partitioning_.back() >= outer_radius_) {
-      PARSE_ERROR(context,
-                  "Last radial partition must be smaller than outer "
-                  "radius, but is: " +
-                      std::to_string(outer_radius_));
-    }
-    const auto duplicate = std::adjacent_find(radial_partitioning_.begin(),
-                                              radial_partitioning_.end());
-    if (duplicate != radial_partitioning_.end()) {
-      PARSE_ERROR(context, "Radial partitioning contains duplicate element: "
-                               << *duplicate);
-    }
-  }
-  num_shells_ = 1 + radial_partitioning_.size();
-  radial_distribution_ =
-      std::visit(DistributionVisitor{num_shells_}, radial_distribution);
-  if (radial_distribution_.size() != num_shells_) {
-    PARSE_ERROR(context,
-                "Specify a 'RadialDistribution' for every spherical shell. You "
-                "specified "
-                    << radial_distribution_.size()
-                    << " items, but the domain has " << num_shells_
-                    << " shells.");
-  }
+  set_shell_distribution(
+      make_not_null(&num_shells_), make_not_null(&radial_distribution_),
+      radial_partitioning_, radial_distribution, inner_radius_, outer_radius_,
+      "inner", "outer", context);
   if (fill_interior_ and radial_distribution_.front() !=
                              domain::CoordinateMaps::Distribution::Linear) {
     PARSE_ERROR(context,
