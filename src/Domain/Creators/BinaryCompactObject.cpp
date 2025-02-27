@@ -95,23 +95,20 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       radial_distribution_envelope_(radial_distribution_envelope),
       radial_distribution_outer_shell_(radial_distribution_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
+      x_coord_a_(
+          std::visit([](const auto& arg) { return arg.x_coord; }, object_A_)),
+      x_coord_b_(
+          std::visit([](const auto& arg) { return arg.x_coord; }, object_B_)),
+      is_excised_a_(std::visit([](const auto& arg) { return arg.is_excised(); },
+                               object_A_)),
+      is_excised_b_(std::visit([](const auto& arg) { return arg.is_excised(); },
+                               object_B_)),
+      use_single_block_a_(
+          std::holds_alternative<CartesianCubeAtXCoord>(object_A_)),
+      use_single_block_b_(
+          std::holds_alternative<CartesianCubeAtXCoord>(object_B_)),
       time_dependent_options_(std::move(time_dependent_options)),
       opening_angle_(M_PI * opening_angle_in_degrees / 180.0) {
-  // Get useful information about the type of grid used around each compact
-  // object
-  x_coord_a_ =
-      std::visit([](const auto& arg) { return arg.x_coord; }, object_A_);
-  x_coord_b_ =
-      std::visit([](const auto& arg) { return arg.x_coord; }, object_B_);
-  is_excised_a_ =
-      std::visit([](const auto& arg) { return arg.is_excised(); }, object_A_);
-  is_excised_b_ =
-      std::visit([](const auto& arg) { return arg.is_excised(); }, object_B_);
-  use_single_block_a_ =
-      std::holds_alternative<CartesianCubeAtXCoord>(object_A_);
-  use_single_block_b_ =
-      std::holds_alternative<CartesianCubeAtXCoord>(object_B_);
-
   // Determination of parameters for domain construction:
   const double tan_half_opening_angle = tan(0.5 * opening_angle_);
   translation_ = 0.5 * (x_coord_a_ + x_coord_b_);

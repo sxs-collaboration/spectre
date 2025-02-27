@@ -64,8 +64,7 @@ struct BlockLogical;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 namespace bco {
 /*!
  * \brief Create a set of centers of objects for the binary domains.
@@ -299,13 +298,13 @@ class BinaryCompactObject : public DomainCreator<3> {
     /// working with boundary conditions).
     bool is_excised() const;
 
-    double inner_radius;
-    double outer_radius;
-    double x_coord;
+    double inner_radius{};
+    double outer_radius{};
+    double x_coord{};
     std::optional<
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
         inner_boundary_condition;
-    bool use_logarithmic_map;
+    bool use_logarithmic_map{};
   };
 
   // Simpler version of an object: a single cube centered on (xCoord,0,0)
@@ -558,8 +557,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   std::array<double, 2> center_of_mass_offset_{};
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
-  std::vector<std::array<size_t, 3>> initial_refinement_{};
-  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
+  std::vector<std::array<size_t, 3>> initial_refinement_;
+  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_;
   bool use_equiangular_map_ = true;
   CoordinateMaps::Distribution radial_distribution_envelope_ =
       CoordinateMaps::Distribution::Projective;
@@ -572,11 +571,11 @@ class BinaryCompactObject : public DomainCreator<3> {
   size_t first_outer_shell_block_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
-  std::vector<std::string> block_names_{};
+  std::vector<std::string> block_names_;
   std::unordered_map<std::string, std::unordered_set<std::string>>
-      block_groups_{};
+      block_groups_;
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
-      grid_anchors_{};
+      grid_anchors_;
   double offset_x_coord_a_{};
   double offset_x_coord_b_{};
 
@@ -587,8 +586,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool is_excised_b_ = false;
   bool use_single_block_a_ = false;
   bool use_single_block_b_ = false;
-  std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_{};
+  std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_;
   double opening_angle_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators
