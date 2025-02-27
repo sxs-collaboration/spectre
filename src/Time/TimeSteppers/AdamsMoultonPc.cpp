@@ -31,89 +31,6 @@ namespace TimeSteppers {
 static_assert(adams_coefficients::maximum_order ==
               AdamsMoultonPc<false>::maximum_order);
 
-namespace {
-template <typename T, typename TimeType>
-void update_u_common(const gsl::not_null<T*> u,
-                     const ConstUntypedHistory<T>& history,
-                     const TimeType& step_end, const bool corrector) {
-  const auto method_order = history.integration_order();
-  ASSERT(history.size() >= method_order - 1, "Insufficient history");
-  // Pass in whether to run the predictor or corrector even though we
-  // can compute it as a sanity check.
-  ASSERT(corrector != history.substeps().empty(),
-         "Applying predictor or corrector when expecting the other.");
-  ASSERT(corrector != history.at_step_start(), "Unexpected new data");
-
-  const auto used_history_begin =
-      history.end() -
-      static_cast<typename ConstUntypedHistory<T>::difference_type>(
-          method_order - 1);
-  adams_coefficients::OrderVector<Time> control_times{};
-  std::transform(used_history_begin, history.end(),
-                 std::back_inserter(control_times),
-                 [](const auto& r) { return r.time_step_id.step_time(); });
-  if (corrector) {
-    control_times.push_back(
-        history.back().time_step_id.step_time() +
-        history.substeps().front().time_step_id.step_size());
-  }
-  const auto coefficients = adams_coefficients::coefficients(
-      control_times.begin(), control_times.end(),
-      history.back().time_step_id.step_time(), step_end);
-
-  auto coefficient = coefficients.begin();
-  for (auto history_entry = used_history_begin;
-       history_entry != history.end();
-       ++history_entry, ++coefficient) {
-    *u += *coefficient * history_entry->derivative;
-  }
-  if (corrector) {
-    *u += coefficients.back() * history.substeps().front().derivative;
-  }
-}
-
-template <typename T>
-void step_error(const gsl::not_null<T*> u_error,
-                const ConstUntypedHistory<T>& history, const Time& step_end) {
-  const auto method_order = history.integration_order();
-  ASSERT(history.size() >= method_order - 1, "Insufficient history");
-  ASSERT(not history.substeps().empty(),
-         "step_error called without substep data.");
-  ASSERT(not history.at_step_start(), "Unexpected new data");
-
-  const auto used_history_begin =
-      history.end() -
-      static_cast<typename ConstUntypedHistory<T>::difference_type>(
-          method_order - 1);
-  adams_coefficients::OrderVector<Time> control_times{};
-  std::transform(used_history_begin, history.end(),
-                 std::back_inserter(control_times),
-                 [](const auto& r) { return r.time_step_id.step_time(); });
-  control_times.push_back(history.back().time_step_id.step_time() +
-                          history.substeps().front().time_step_id.step_size());
-  // We can't use the predictor value from the history because it
-  // might have been modified by variable fixing and filtering and
-  // such.
-  auto coefficients = adams_coefficients::coefficients(
-      control_times.begin(), control_times.end(),
-      history.back().time_step_id.step_time(), step_end);
-  const auto predictor_coefficients = adams_coefficients::coefficients(
-      control_times.begin(), control_times.end() - 1,
-      history.back().time_step_id.step_time(), step_end);
-  for (size_t i = 0; i < predictor_coefficients.size(); ++i) {
-    coefficients[i] -= predictor_coefficients[i];
-  }
-
-  *u_error = coefficients.back() * history.substeps().front().derivative;
-  auto coefficient = coefficients.begin();
-  for (auto history_entry = used_history_begin;
-       history_entry != history.end();
-       ++history_entry, ++coefficient) {
-    *u_error += *coefficient * history_entry->derivative;
-  }
-}
-}  // namespace
-
 template <bool Monotonic>
 AdamsMoultonPc<Monotonic>::AdamsMoultonPc(const size_t order) : order_(order) {
   ASSERT(order >= minimum_order and order <= maximum_order,
@@ -236,35 +153,115 @@ void AdamsMoultonPc<Monotonic>::pup(PUP::er& p) {
   p | order_;
 }
 
+namespace {
+template <typename T>
+double evaluate_error(
+    const gsl::not_null<T*> scratch, const ConstUntypedHistory<T>& history,
+    const StepperErrorTolerances& tolerances,
+    const adams_coefficients::OrderVector<double>& corrector_coefficients,
+    const adams_coefficients::OrderVector<double>& predictor_coefficients) {
+  // We can't use the predictor value from the history because it
+  // might have been modified by variable fixing and filtering and
+  // such.
+  auto error_coefficients = corrector_coefficients;
+  for (size_t i = 0; i < predictor_coefficients.size(); ++i) {
+    error_coefficients[i] -= predictor_coefficients[i];
+  }
+
+  auto coefficient = error_coefficients.rbegin();
+  *scratch = *coefficient * history.substeps().front().derivative;
+  ++coefficient;
+  auto history_entry = history.rbegin();
+  while (coefficient != error_coefficients.rend()) {
+    *scratch += *coefficient * history_entry->derivative;
+    ++coefficient;
+    ++history_entry;
+  }
+
+  return largest_stepper_error(*history.back().value, *scratch, tolerances);
+}
+}  // namespace
+
+template <bool Monotonic>
+template <bool DenseOutput, typename T>
+std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
+    const bool corrector,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
+  ASSERT(not(DenseOutput and tolerances.has_value()),
+         "Can't compute errors in dense output.");
+  ASSERT(history.size() >= history.integration_order() - 1,
+         "Insufficient history");
+  // Pass in whether to run the predictor or corrector even though we
+  // can compute it as a sanity check.
+  ASSERT(corrector != history.substeps().empty(),
+         "Applying predictor or corrector when expecting the other.");
+  ASSERT(corrector != history.at_step_start(), "Unexpected new data");
+
+  const auto& step_start = history.back().time_step_id.step_time();
+  const auto history_start =
+      history.end() -
+      static_cast<typename ConstUntypedHistory<T>::difference_type>(
+          history.integration_order() - 1);
+  adams_coefficients::OrderVector<Time> control_times{};
+  std::transform(history_start, history.end(),
+                 std::back_inserter(control_times),
+                 [](const auto& r) { return r.time_step_id.step_time(); });
+  if (corrector) {
+    control_times.push_back(
+        step_start + history.substeps().front().time_step_id.step_size());
+  }
+  const auto update_coefficients = adams_coefficients::coefficients(
+      control_times.begin(), control_times.end(), step_start, time);
+
+  std::optional<StepperErrorEstimate> error{};
+  if constexpr (not DenseOutput) {
+    if (corrector and tolerances.has_value()) {
+      const auto predictor_coefficients = adams_coefficients::coefficients(
+          control_times.begin(), control_times.end() - 1, step_start, time);
+      error.emplace(StepperErrorEstimate{
+          step_start, time - step_start, history.integration_order() - 1,
+          evaluate_error(u, history, *tolerances, update_coefficients,
+                         predictor_coefficients)});
+    }
+
+    // Dense output adds to the existing value, but the main step overwrites.
+    *u = *history.back().value;
+  }
+
+  auto coefficient = update_coefficients.begin();
+  for (auto history_entry = history_start;
+       history_entry != history.end();
+       ++history_entry, ++coefficient) {
+    *u += *coefficient * history_entry->derivative;
+  }
+  if (corrector) {
+    *u += update_coefficients.back() * history.substeps().front().derivative;
+  }
+
+  return error;
+}
+
 template <bool Monotonic>
 template <typename T>
 void AdamsMoultonPc<Monotonic>::update_u_impl(
     const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step) const {
   const Time next_time = history.back().time_step_id.step_time() + time_step;
-  *u = *history.back().value;
-  update_u_common(u, history, next_time, not history.at_step_start());
+  update_u_common<false>(u, history, next_time, not history.at_step_start(),
+                         std::nullopt);
 }
 
 template <bool Monotonic>
 template <typename T>
 std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_impl(
-    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step,
     const std::optional<StepperErrorTolerances>& tolerances) const {
-  const bool corrector = not history.at_step_start();
   const Time next_time = history.back().time_step_id.step_time() + time_step;
-  std::optional<StepperErrorEstimate> error{};
-  if (corrector and tolerances.has_value()) {
-    step_error(u, history, next_time);
-    error.emplace(StepperErrorEstimate{
-        history.back().time_step_id.step_time(), time_step,
-        history.integration_order() - 1,
-        largest_stepper_error(*history.back().value, *u, *tolerances)});
-  }
-  *u = *history.back().value;
-  update_u_common(u, history, next_time, corrector);
-  return error;
+  return update_u_common<false>(u, history, next_time,
+                                not history.at_step_start(), tolerances);
 }
 
 template <bool Monotonic>
@@ -297,13 +294,15 @@ bool AdamsMoultonPc<Monotonic>::dense_update_u_impl(
     if (not history.at_step_start()) {
       return false;
     }
-    update_u_common(u, history, ApproximateTime{time}, false);
+    update_u_common<true>(u, history, ApproximateTime{time}, false,
+                          std::nullopt);
     return true;
   } else {
     if (history.at_step_start()) {
       return false;
     }
-    update_u_common(u, history, ApproximateTime{time}, true);
+    update_u_common<true>(u, history, ApproximateTime{time}, true,
+                          std::nullopt);
     return true;
   }
 }
