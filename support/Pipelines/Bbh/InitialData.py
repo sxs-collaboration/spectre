@@ -27,7 +27,9 @@ TargetParams = Literal[
     "DimensionlessSpinA",
     "DimensionlessSpinB",
     "CenterOfMass",
-    "LinearMomentum",
+    "AdmLinearMomentum",
+    "AdmMass",
+    "AdmAngularMomentumZ",
     "Eccentricity",
     "MeanAnomalyFraction",
     "NumOrbits",
@@ -469,7 +471,7 @@ def generate_id_command(
         "NumOrbits": num_orbits,
         "TimeToMerger": time_to_merger,
         "CenterOfMass": [0.0, 0.0, 0.0],
-        "LinearMomentum": [0.0, 0.0, 0.0],
+        "AdmLinearMomentum": [0.0, 0.0, 0.0],
     }
     if kwargs["eccentricity_control"]:
         # Only circular orbits are currently supported for eccentricity control,

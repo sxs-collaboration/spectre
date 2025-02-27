@@ -30,12 +30,23 @@ FreeDataFromParams: Dict[TargetParams, str] = {
     "DimensionlessSpinA": "conformal_spin_a",
     "DimensionlessSpinB": "conformal_spin_b",
     "CenterOfMass": "center_of_mass_offset",
-    "LinearMomentum": "linear_velocity",
+    "AdmLinearMomentum": "linear_velocity",
+    "AdmMass": "radial_expansion_velocity",
+    "AdmAngularMomentumZ": "orbital_angular_velocity",
 }
 
 # Quantites (free data or parameters) that are scalars
 # Note: this is useful for switching between dictionaries and arrays below.
-ScalarQuantities = ["MassA", "MassB", "conformal_mass_a", "conformal_mass_b"]
+ScalarQuantities = [
+    "MassA",
+    "MassB",
+    "conformal_mass_a",
+    "conformal_mass_b",
+    "AdmMass",
+    "AdmAngularMomentumZ",
+    "radial_expansion_velocity",
+    "orbital_angular_velocity",
+]
 
 
 def control_id(
@@ -71,7 +82,7 @@ def control_id(
       DimensionlessSpinA: Dimensionless spin of the larger black hole.
       DimensionlessSpinB: Dimensionless spin of the smaller black hole.
       CenterOfMass: Center of mass integral in general relativity.
-      LinearMomentum: ADM linear momentum.
+      AdmLinearMomentum: ADM linear momentum.
 
     A subset of these parameters can be chosen as the 'control_params'. The
     input file metadata must contain a 'TargetParams' dictionary with the
@@ -85,7 +96,7 @@ def control_id(
         DimensionlessSpinA: [0., 0., 0.]
         DimensionlessSpinB: [0., 0., 0.]
         CenterOfMass: [0., 0., 0.]
-        LinearMomentum: [0., 0., 0.]
+        AdmLinearMomentum: [0., 0., 0.]
     ```
 
     Arguments:
@@ -130,11 +141,9 @@ def control_id(
         conformal_spin_b=binary_data["ObjectLeft"]["KerrSchild"]["Spin"],
         center_of_mass_offset=[x_offset, y_offset, z_offset],
         linear_velocity=binary_data["LinearVelocity"],
+        radial_expansion_velocity=binary_data["Expansion"],
+        orbital_angular_velocity=binary_data["AngularVelocity"],
     )
-
-    # Get orbital velocities
-    orbital_angular_velocity = binary_data["AngularVelocity"]
-    radial_expansion_velocity = binary_data["Expansion"]
 
     # File to write control diagnostic data
     data_file = open(f"{id_run_dir}/../ControlParamsData.txt", "w")
@@ -171,8 +180,6 @@ def control_id(
                 target_params,
                 **free_data,
                 separation=separation,
-                orbital_angular_velocity=orbital_angular_velocity,
-                radial_expansion_velocity=radial_expansion_velocity,
                 run_dir=control_run_dir,
                 control=False,
                 evolve=False,
@@ -235,14 +242,20 @@ def control_id(
                         adm_integrals["CenterOfMass_z"],
                     ]
                 )
-            if "LinearMomentum" in control_params:
-                measured_params["LinearMomentum"] = np.array(
+            if "AdmLinearMomentum" in control_params:
+                measured_params["AdmLinearMomentum"] = np.array(
                     [
                         adm_integrals["AdmLinearMomentum_x"],
                         adm_integrals["AdmLinearMomentum_y"],
                         adm_integrals["AdmLinearMomentum_z"],
                     ]
                 )
+            if "AdmMass" in control_params:
+                measured_params["AdmMass"] = adm_integrals["AdmMass"]
+            if "AdmAngularMomentumZ" in control_params:
+                measured_params["AdmAngularMomentumZ"] = adm_integrals[
+                    "AdmAngularMomentum_z"
+                ]
 
         # Compute residual of physical parameters
         residual = np.array([])
@@ -278,6 +291,32 @@ def control_id(
     # Initialize Jacobian as an identity matrix
     J = np.identity(len(u))
 
+    # Adjust non-unity components of the Jacobian
+    q = target_params["MassRatio"]
+    # The expression below is the reduced mass of the system, which shows up in
+    # the Newtonian expressions further below.
+    eta = q / (q + 1) ** 2
+    param_index = 0
+    for param in control_params:
+        if param == "AdmMass":
+            # The expression below comes from differentiating the Newtonian
+            # approximation E_ADM ~ 1 + 1/2 eta adot0^2 D0^2, where adot0 is the
+            # initial radial expansion velocity and D0 is the initial
+            # separation.
+            J[param_index, param_index] = (
+                eta
+                * initial_free_data["radial_expansion_velocity"]
+                * separation**2
+            )
+        elif param == "AdmAngularMomentumZ":
+            # The expression below comes from differentiating the Newtonian
+            # approximation J_ADM ~ eta D0^2 Omega0, where D0 is the initial
+            # separation and Omega0 is the initial angular orbital velocity.
+            J[param_index, param_index] = eta * separation**2
+        # Note: We can also set cross terms here to start with a more realistic
+        # Jacobian.
+        param_index += 1 if param in ScalarQuantities else 3
+
     # Indices of parameters for which the control is delayed in the first
     # iterations to avoid going off-bounds
     #
@@ -288,7 +327,12 @@ def control_id(
     # space, we should try to find a more robust approach that works for
     # multiple configurations.
     delayed_indices = np.array([], dtype=bool)
-    delayed_params = ["CenterOfMass", "LinearMomentum"]
+    delayed_params = [
+        "CenterOfMass",
+        "AdmLinearMomentum",
+        "AdmMass",
+        "AdmAngularMomentumZ",
+    ]
     max_delayed_iteration = 1
     for key in control_params:
         if key in ScalarQuantities:
@@ -300,7 +344,7 @@ def control_id(
                 delayed_indices, [key in delayed_params] * 3
             )
 
-    while iteration < max_iterations and np.max(np.abs(F)) > residual_tolerance:
+    while iteration < max_iterations:
         iteration += 1
 
         # Update the free parameters using a quasi-Newton-Raphson method
@@ -309,7 +353,10 @@ def control_id(
             Delta_u[delayed_indices] = 0.0
         u += Delta_u
 
+        # Compute residual and check stopping condition
         F = Residual(u)
+        if np.max(np.abs(F)) < residual_tolerance:
+            break
         if iteration <= max_delayed_iteration:
             F[delayed_indices] = 0.0
 
