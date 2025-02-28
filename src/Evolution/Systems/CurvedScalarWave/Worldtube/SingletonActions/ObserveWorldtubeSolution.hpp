@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -36,7 +37,8 @@ namespace CurvedScalarWave::Worldtube::Actions {
 /*!
  * \brief When Tags::ObserveCoefficientsTrigger is triggered, write the
  * coefficients of the Taylor expansion of the regular field as well as the
- * current particle's position, velocity and acceleration to file.
+ * current particle's position, velocity and acceleration to file. A brief
+ * summary is printed to stdout.
  */
 struct ObserveWorldtubeSolution {
   using reduction_data = Parallel::ReductionData<
@@ -118,6 +120,14 @@ struct ObserveWorldtubeSolution {
         }
       }();
       const auto current_time = db::get<::Tags::Time>(box);
+      if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Quiet) {
+        Parallel::printf(
+            "Time: %.16f, field value: %.16f, worldtube radius: %.16f, orbital "
+            "radius: %.16f\n",
+            current_time, psi_coefs[9], db::get<Tags::WorldtubeRadius>(box),
+            get(magnitude(inertial_particle_position))[0]);
+      }
+
       const auto observation_id =
           observers::ObservationId(current_time, "/Worldtube");
       auto& reduction_writer = Parallel::get_parallel_component<

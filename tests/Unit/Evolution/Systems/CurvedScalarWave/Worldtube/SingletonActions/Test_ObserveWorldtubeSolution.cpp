@@ -19,6 +19,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -73,7 +74,8 @@ struct MockMetavariables {
   using component_list = tmpl::list<
       MockWorldtubeSingleton<MockMetavariables<Dim>>,
       TestHelpers::observers::MockObserverWriter<MockMetavariables<Dim>>>;
-  using const_global_cache_tags = tmpl::list<Tags::ExpansionOrder>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ExpansionOrder, Tags::WorldtubeRadius, Tags::Verbosity>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
@@ -121,7 +123,7 @@ void check_observe_worldtube_solution(
       wt_radius, tnsr::I<double, Dim, Frame::Grid>{{0., 0., 0.}}, {});
 
   ActionTesting::MockRuntimeSystem<MockMetavariables<Dim>> runner{
-      {expansion_order}};
+      {expansion_order, wt_radius, ::Verbosity::Silent}};
 
   // this should NOT trigger because the initial time is too low and the substep
   // is not 0
