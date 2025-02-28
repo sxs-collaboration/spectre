@@ -33,6 +33,7 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/ExpandOverBlocks.hpp"
+#include "Domain/Creators/ShellDistribution.hpp"
 #include "Domain/Creators/TimeDependentOptions/BinaryCompactObject.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -43,6 +44,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Options/ParseError.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -80,7 +82,9 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     const typename InitialGridPoints::type& initial_number_of_grid_points,
     const bool use_equiangular_map,
     const CoordinateMaps::Distribution radial_distribution_envelope,
-    const CoordinateMaps::Distribution radial_distribution_outer_shell,
+    const std::vector<double>& radial_partitioning_outer_shell,
+    const typename RadialDistributionOuterShell::type&
+        radial_distribution_outer_shell,
     const double opening_angle_in_degrees,
     std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options,
     std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -93,7 +97,7 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       outer_radius_(outer_radius),
       use_equiangular_map_(use_equiangular_map),
       radial_distribution_envelope_(radial_distribution_envelope),
-      radial_distribution_outer_shell_(radial_distribution_outer_shell),
+      radial_partitioning_outer_shell_(radial_partitioning_outer_shell),
       outer_boundary_condition_(std::move(outer_boundary_condition)),
       x_coord_a_(
           std::visit([](const auto& arg) { return arg.x_coord; }, object_A_)),
@@ -135,10 +139,16 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
         x_coord_b_ - (x_coord_a_ + x_coord_b_ - length_inner_cube_) * 0.5;
   }
 
+  set_shell_distribution(make_not_null(&number_of_outer_shells_),
+                         make_not_null(&radial_distribution_outer_shell_),
+                         radial_partitioning_outer_shell_,
+                         radial_distribution_outer_shell, envelope_radius_,
+                         outer_radius_, "envelope", "outer", context);
+
   // Calculate number of blocks
   // Object cubes and shells have 6 blocks each, for a total for 24 blocks.
-  // The envelope and outer shell have another 10 blocks each.
-  number_of_blocks_ = 44;
+  // The envelope and each outer shell have another 10 blocks each.
+  number_of_blocks_ = 34 + 10 * number_of_outer_shells_;
   // For each object whose interior is not excised, add 1 block
   if ((not use_single_block_a_) and (not is_excised_a_)) {
     number_of_blocks_++;
@@ -323,7 +333,9 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
   }
   add_outer_region("Envelope");  // 10 blocks
   first_outer_shell_block_ += 10;
-  add_outer_region("OuterShell");  // 10 blocks
+  for (size_t shell = 0; shell < number_of_outer_shells_; shell++) {
+    add_outer_region("OuterShell" + std::to_string(shell));  // 10 blocks
+  }
 
   if ((not use_single_block_a_) and (not is_excised_a_)) {
     add_object_interior("ObjectA");  // 1 block
@@ -544,14 +556,12 @@ Domain<3> BinaryCompactObject<UseWorldtube>::create_domain() const {
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
-  // --- Outer spherical shell (10 blocks) ---
-  Maps maps_outer_shell =
-      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                              Frame::Inertial, 3>(
-          sph_wedge_coordinate_maps(envelope_radius_, outer_radius_, 1.0, 1.0,
-                                    use_equiangular_map_, std::nullopt, true,
-                                    {}, {radial_distribution_outer_shell_},
-                                    ShellWedges::All, opening_angle_));
+  // --- Outer spherical shell (10*num_outer_shells blocks) ---
+  Maps maps_outer_shell = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
+      envelope_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_,
+      std::nullopt, true, radial_partitioning_outer_shell_,
+      radial_distribution_outer_shell_, ShellWedges::All, opening_angle_));
   std::move(maps_outer_shell.begin(), maps_outer_shell.end(),
             std::back_inserter(maps));
 
@@ -841,9 +851,10 @@ BinaryCompactObject<UseWorldtube>::external_boundary_conditions() const {
   }
   // Outer boundary
   const size_t offset_outer_blocks =
-      (use_single_block_a_ and use_single_block_b_)
-          ? 12
-          : ((use_single_block_a_ or use_single_block_b_) ? 23 : 34);
+      ((use_single_block_a_ and use_single_block_b_)
+           ? 12
+           : ((use_single_block_a_ or use_single_block_b_) ? 23 : 34)) +
+      10 * (number_of_outer_shells_ - 1);
   for (size_t i = 0; i < 10; ++i) {
     boundary_conditions[i + offset_outer_blocks][Direction<3>::upper_zeta()] =
         outer_boundary_condition_->get_clone();

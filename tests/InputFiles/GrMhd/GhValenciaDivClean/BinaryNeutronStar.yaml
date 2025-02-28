@@ -50,6 +50,7 @@ DomainCreator:
     OuterShell:
       OpeningAngle: 90
       Radius: 250.0
+      RadialPartitioning: []
       RadialDistribution: Linear
       BoundaryCondition:
         ConstraintPreservingFreeOutflow:
@@ -60,7 +61,7 @@ DomainCreator:
       ObjectA: [4, 4, 4]
       ObjectB: [4, 4, 4]
       Envelope: [3, 3, 3]
-      OuterShell: [2 ,2 ,3]
+      OuterShell0: [2 ,2 ,3]
     InitialGridPoints: 5
     TimeDependentMaps:
       InitialTime: 0.0

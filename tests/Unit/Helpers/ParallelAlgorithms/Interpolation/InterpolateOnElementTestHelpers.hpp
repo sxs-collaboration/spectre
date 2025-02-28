@@ -290,7 +290,7 @@ void test_interpolate_on_element(
                 {"ObjectBShell", std::array{2_st, 2_st, 2_st}},
                 {"ObjectBCube", std::array{2_st, 2_st, 2_st}},
                 {"Envelope", std::array{0_st, 0_st, 0_st}},
-                {"OuterShell", std::array{0_st, 0_st, 0_st}}},
+                {"OuterShell0", std::array{0_st, 0_st, 0_st}}},
             7_st);
       } else {
         return std::make_unique<domain::creators::Sphere>(

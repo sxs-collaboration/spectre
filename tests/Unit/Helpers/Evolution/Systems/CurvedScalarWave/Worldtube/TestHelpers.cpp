@@ -54,6 +54,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "    RadialDistribution: Linear\n"
       "  OuterShell:\n"
       "    Radius: 50.0\n"
+      "    RadialPartitioning: []\n"
       "    RadialDistribution: Linear\n"
       "    OpeningAngle: 90.0\n"
       "    BoundaryCondition:\n"

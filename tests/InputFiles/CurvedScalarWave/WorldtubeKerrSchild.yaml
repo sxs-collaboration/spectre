@@ -62,6 +62,7 @@ DomainCreator:
       Radius: 50.
     OuterShell:
       Radius: 400.
+      RadialPartitioning: []
       RadialDistribution: Linear
       OpeningAngle: 90.0
       BoundaryCondition: ConstraintPreservingSphericalRadiation
