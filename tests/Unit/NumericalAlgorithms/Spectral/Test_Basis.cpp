@@ -32,5 +32,5 @@ SPECTRE_TEST_CASE("Unit.Spectral.Basis", "[NumericalAlgorithms][Unit]") {
       Catch::Matchers::ContainsSubstring(
           MakeString{} << "Failed to convert \"Bad basis name\" to "
                           "Spectral::Basis.\nMust be one of "
-                       << all_bases() << "."));
+                       << Spectral::all_bases() << "."));
 }

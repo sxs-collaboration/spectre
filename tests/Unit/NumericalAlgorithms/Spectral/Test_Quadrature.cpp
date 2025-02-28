@@ -34,5 +34,5 @@ SPECTRE_TEST_CASE("Unit.SpatialDiscreitization.Quadrature",
       Catch::Matchers::ContainsSubstring(
           MakeString{} << "Failed to convert \"Bad quadrature name\" to "
                           "Spectral::Quadrature.\nMust be one of "
-                       << all_quadratures() << "."));
+                       << Spectral::all_quadratures() << "."));
 }
