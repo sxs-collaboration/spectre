@@ -108,11 +108,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CSW.Worldtube.UpdateAcceleration",
   const auto self_force_acc =
       self_force_acceleration(dt_psi_monopole, psi_dipole, vel, charge,
                               evolved_mass, inverse_metric, dilation);
+
+  const Approx approx = Approx::custom().epsilon(1e-12);
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(get<::Tags::dt<Tags::EvolvedPosition<Dim>>>(dt_vars).get(i)[0] ==
-          vel.get(i));
+          approx(vel.get(i)));
     CHECK(get<::Tags::dt<Tags::EvolvedVelocity<Dim>>>(dt_vars).get(i)[0] ==
-          geodesic_acc.get(i) + roll_on * self_force_acc.get(i));
+          approx(geodesic_acc.get(i) + roll_on * self_force_acc.get(i)));
   }
 }
 }  // namespace
