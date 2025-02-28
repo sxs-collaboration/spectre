@@ -139,8 +139,7 @@ struct SelfForceOptions {
 template <bool IsWorldtube>
 struct RadiusOptions {
   static constexpr Options::String help = {
-      "Options for the scalar self-force. Select `None` for a purely geodesic "
-      "evolution"};
+      "Options for the radii of the excision spheres"};
   using group = Worldtube;
   using type = RadiusOptions;
 
