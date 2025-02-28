@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
@@ -16,6 +17,8 @@
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "Utilities/MakeArray.hpp"
 
 /// \cond
 namespace Frame {
@@ -49,10 +52,15 @@ class Block {
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
   /// \param name Human-readable name for the block
+  /// \param dg_basis Spectral::Basis in each dimension used for Elements in
+  /// the Block when using discontinuous Galerkin methods (default value is
+  /// Spectral::Basis::Legendre)
   Block(std::unique_ptr<domain::CoordinateMapBase<
             Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
         size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
-        std::string name = "");
+        std::string name = "",
+        std::array<Spectral::Basis, VolumeDim> dg_basis =
+            make_array<VolumeDim>(Spectral::Basis::Legendre));
 
   Block() = default;
   ~Block() = default;
@@ -159,6 +167,12 @@ class Block {
 
   const std::string& name() const { return name_; }
 
+  /// The basis functions used in each dimension for Elements of this Block
+  /// when using discontinuous Galerkin methods
+  const std::array<Spectral::Basis, VolumeDim>& dg_basis() const {
+    return dg_basis_;
+  }
+
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -189,6 +203,7 @@ class Block {
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
   std::string name_;
+  std::array<Spectral::Basis, VolumeDim> dg_basis_;
 };
 
 template <size_t VolumeDim>

@@ -24,11 +24,12 @@ Block<VolumeDim>::Block(
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
     const size_t id,
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
-    std::string name)
+    std::string name, std::array<Spectral::Basis, VolumeDim> dg_basis)
     : stationary_map_(std::move(stationary_map)),
       id_(id),
       neighbors_(std::move(neighbors)),
-      name_(std::move(name)) {
+      name_(std::move(name)),
+      dg_basis_(std::move(dg_basis)) {
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
@@ -118,7 +119,7 @@ void Block<VolumeDim>::inject_time_dependent_map(
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::pup(PUP::er& p) {
-  size_t version = 1;
+  size_t version = 2;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -135,6 +136,11 @@ void Block<VolumeDim>::pup(PUP::er& p) {
   }
   if (version >= 1) {
     p | name_;
+  }
+  if (version < 2) {
+    dg_basis_ = make_array<VolumeDim>(Spectral::Basis::Legendre);
+  } else {
+    p | dg_basis_;
   }
 }
 
@@ -153,6 +159,7 @@ bool operator==(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
       (lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
        lhs.external_boundaries() == rhs.external_boundaries() and
        lhs.name() == rhs.name() and
+       lhs.dg_basis() == rhs.dg_basis() and
        lhs.is_time_dependent() == rhs.is_time_dependent() and
        lhs.has_distorted_frame() == rhs.has_distorted_frame());
 
