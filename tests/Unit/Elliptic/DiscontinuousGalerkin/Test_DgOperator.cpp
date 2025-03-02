@@ -253,6 +253,91 @@ struct Metavariables {
   void pup(PUP::er& /*p*/) {}
 };
 
+template <size_t Dim>
+struct ModifiedPoissonSystem
+    : Poisson::FirstOrderSystem<Dim, Poisson::Geometry::FlatCartesian> {
+  struct modify_boundary_data {
+    using argument_tags = tmpl::list<
+        domain::Tags::Element<Dim>,
+        ::Tags::Mortars<domain::Tags::Coordinates<Dim, Frame::Inertial>, Dim>>;
+    static void apply(
+        const gsl::not_null<Scalar<DataVector>*> field,
+        const gsl::not_null<Scalar<DataVector>*> normal_dot_flux,
+        const DirectionalId<Dim>& mortar_id, const Element<Dim>& element,
+        const DirectionalIdMap<Dim, tnsr::I<DataVector, Dim, Frame::Inertial>>&
+            all_mortar_coords) {
+      // Assuming that in the region x > 0.5 (block 1) we decompose the field as
+      // u = u_R + u_P with u_P = 2x + 3y
+      const auto& element_id = element.id();
+      const bool element_is_modified = element_id.block_id() == 1;
+      const bool neighbor_is_modified = mortar_id.id().block_id() == 1;
+      if (element_is_modified == neighbor_is_modified) {
+        return;
+      }
+      const auto& x = all_mortar_coords.at(mortar_id);
+      const DataVector singular_field = 2. * get<0>(x) + 3. * get<1>(x);
+      const auto& direction = mortar_id.direction();
+      // Assuming rectilinear grid to simplify the normal vector
+      const double singular_normal_dot_flux =
+          (direction.dimension() == 0 ? 2. : 3.) * direction.sign();
+      // In modified elements, the field is u_R = u - u_P
+      const double sign = element_is_modified ? -1. : 1.;
+      get(*field) += sign * singular_field;
+      // Minus sign because we are modifying the _received_ fluxes, which were
+      // computed using the neighbor's face normal
+      get(*normal_dot_flux) -= sign * singular_normal_dot_flux;
+    }
+  };
+};
+
+template <size_t Dim>
+struct ModifiedPoissonSolution : Poisson::Solutions::ProductOfSinusoids<Dim> {
+  using Poisson::Solutions::ProductOfSinusoids<Dim>::ProductOfSinusoids;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<ModifiedPoissonSolution>(*this);
+  }
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(ModifiedPoissonSolution);  // NOLINT
+
+  template <typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataVector, Dim>& x,
+      tmpl::list<RequestedTags...> /*meta*/) const {
+    auto vars = Poisson::Solutions::ProductOfSinusoids<Dim>::variables(
+        x, tmpl::list<RequestedTags...>{});
+    // Using coordinates to determine in which block we are. This only works for
+    // Gauss points, because GaussLobatto points are duplicate on boundaries.
+    const bool element_is_modified = get<0>(x)[0] > 0.5;
+    if (not element_is_modified) {
+      return vars;
+    }
+    const DataVector singular_field = 2. * get<0>(x) + 3. * get<1>(x);
+    if constexpr (tmpl::list_contains_v<tmpl::list<RequestedTags...>,
+                                        Poisson::Tags::Field<DataVector>>) {
+      get(get<Poisson::Tags::Field<DataVector>>(vars)) -= singular_field;
+    }
+    using deriv_field = ::Tags::deriv<Poisson::Tags::Field<DataVector>,
+                                      tmpl::size_t<Dim>, Frame::Inertial>;
+    if constexpr (tmpl::list_contains_v<tmpl::list<RequestedTags...>,
+                                        deriv_field>) {
+      get<0>(get<deriv_field>(vars)) -= 2.;
+      get<1>(get<deriv_field>(vars)) -= 3.;
+    }
+    using flux_tag = ::Tags::Flux<Poisson::Tags::Field<DataVector>,
+                                  tmpl::size_t<Dim>, Frame::Inertial>;
+    if constexpr (tmpl::list_contains_v<tmpl::list<RequestedTags...>,
+                                        flux_tag>) {
+      get<0>(get<flux_tag>(vars)) -= 2.;
+      get<1>(get<flux_tag>(vars)) -= 3.;
+    }
+    return vars;
+  }
+};
+
+template <size_t Dim>
+PUP::able::PUP_ID ModifiedPoissonSolution<Dim>::my_PUP_ID = 0;  // NOLINT
+
 template <
     typename System, bool Linearized, typename AnalyticSolution,
     size_t Dim = System::volume_dim,
@@ -1417,6 +1502,41 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Operator", "[Unit][Elliptic]") {
           domain_creator, penalty_parameter, true, quadrature, dg_formulation,
           analytic_solution, analytic_solution_aux_approx,
           analytic_solution_operator_approx, {}, true);
+    }
+  }
+  {
+    INFO("2D with modified boundary data");
+    using system = ModifiedPoissonSystem<2>;
+    const ModifiedPoissonSolution<2> analytic_solution{{{M_PI, M_PI}}};
+    const auto dirichlet_bc =
+        elliptic::BoundaryConditions::AnalyticSolution<system>{
+            analytic_solution.get_clone(),
+            elliptic::BoundaryConditionType::Dirichlet};
+    // In block 1 (x > 0.5) we decompose u = U_R + u_P with u_P = 2x + 3y and
+    // solve for u_R.
+    const domain::creators::AlignedLattice<2> domain_creator{
+        {{{0., 0.5, 1.}, {0., 1.}}},
+        {{1, 1}},
+        {{12, 12}},
+        {},
+        {},
+        {},
+        {{{{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}},
+          {{dirichlet_bc.get_clone(), dirichlet_bc.get_clone()}}}}};
+    Approx analytic_solution_aux_approx =
+        Approx::custom().epsilon(1.e-4).scale(1.);
+    Approx analytic_solution_operator_approx =
+        Approx::custom().epsilon(1.e-4).scale(1.);
+    for (const auto& [dg_formulation, massive] :
+         cartesian_product(make_array(::dg::Formulation::StrongInertial,
+                                      ::dg::Formulation::StrongLogical,
+                                      ::dg::Formulation::WeakInertial),
+                           make_array(true, false))) {
+      test_dg_operator<system, true>(
+          domain_creator, penalty_parameter, massive,
+          Spectral::Quadrature::Gauss, dg_formulation, analytic_solution,
+          analytic_solution_aux_approx, analytic_solution_operator_approx, {},
+          true);
     }
   }
 }

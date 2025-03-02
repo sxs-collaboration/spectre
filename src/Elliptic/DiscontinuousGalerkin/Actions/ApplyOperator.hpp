@@ -29,6 +29,7 @@
 #include "Elliptic/DiscontinuousGalerkin/Initialization.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Elliptic/Systems/GetFluxesComputer.hpp"
+#include "Elliptic/Systems/GetModifyBoundaryData.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
@@ -535,15 +536,17 @@ template <typename System, typename FixedSourcesTag,
           typename FluxesArgsTags =
               elliptic::get_fluxes_argument_tags<System, false>,
           typename SourcesArgsTags =
-              elliptic::get_sources_argument_tags<System, false>>
+              elliptic::get_sources_argument_tags<System, false>,
+          typename ModifyBoundaryDataArgsTags =
+              elliptic::get_modify_boundary_data_args_tags<System>>
 struct ImposeInhomogeneousBoundaryConditionsOnSource;
 
 /// \cond
 template <typename System, typename FixedSourcesTag, typename... FluxesArgsTags,
-          typename... SourcesArgsTags>
+          typename... SourcesArgsTags, typename... ModifyBoundaryDataArgsTags>
 struct ImposeInhomogeneousBoundaryConditionsOnSource<
     System, FixedSourcesTag, tmpl::list<FluxesArgsTags...>,
-    tmpl::list<SourcesArgsTags...>>
+    tmpl::list<SourcesArgsTags...>, tmpl::list<ModifyBoundaryDataArgsTags...>>
     : tt::ConformsTo<::amr::protocols::Projector> {
  private:
   static constexpr size_t Dim = System::volume_dim;
@@ -643,12 +646,16 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
                                                    Frame::Inertial>>>(box),
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box),
         db::get<::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>(box),
+        db::get<::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
+                                    Frame::ElementLogical, Frame::Inertial>,
+                                Dim>>(box),
         db::get<::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>(box),
         db::get<elliptic::dg::Tags::Massive>(box),
         db::get<elliptic::dg::Tags::Formulation>(box), apply_boundary_condition,
         std::forward_as_tuple(db::get<FluxesArgsTags>(box)...),
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...),
-        fluxes_args_on_faces);
+        fluxes_args_on_faces,
+        std::forward_as_tuple(db::get<ModifyBoundaryDataArgsTags>(box)...));
 
     // Move the mutated data back into the DataBox
     db::mutate<FixedSourcesTag>(

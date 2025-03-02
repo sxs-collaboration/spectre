@@ -274,12 +274,14 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
                      // external boundaries.
                      ::Tags::deriv<domain::Tags::UnnormalizedFaceNormal<Dim>,
                                    tmpl::size_t<Dim>, Frame::Inertial>>>,
-      tmpl::list<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
-                 ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
-                 ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
-                                     Frame::ElementLogical, Frame::Inertial>,
-                                 Dim>,
-                 ::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>>;
+      tmpl::list<
+          ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
+          ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
+          ::Tags::Mortars<domain::Tags::Coordinates<Dim, Frame::Inertial>, Dim>,
+          ::Tags::Mortars<domain::Tags::DetSurfaceJacobian<
+                              Frame::ElementLogical, Frame::Inertial>,
+                          Dim>,
+          ::Tags::Mortars<elliptic::dg::Tags::PenaltyFactor, Dim>>>;
   using argument_tags = tmpl::append<
       tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::NeighborMesh<Dim>, domain::Tags::ElementMap<Dim>,
@@ -318,6 +320,8 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
       const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
       const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
           mortar_sizes,
+      const gsl::not_null<::dg::MortarMap<Dim, tnsr::I<DataVector, Dim>>*>
+          all_mortar_inertial_coords,
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
           mortar_jacobians,
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
@@ -333,9 +337,10 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
     apply(face_directions, faces_inertial_coords, face_normals,
           face_normal_vectors, face_normal_magnitudes, face_jacobians,
           face_jacobian_times_inv_jacobian, deriv_unnormalized_face_normals,
-          mortar_meshes, mortar_sizes, mortar_jacobians, penalty_factors, mesh,
-          element, neighbor_meshes, element_map, inv_jacobian, domain,
-          functions_of_time, penalty_parameter, nullptr, nullptr, amr_data...);
+          mortar_meshes, mortar_sizes, all_mortar_inertial_coords,
+          mortar_jacobians, penalty_factors, mesh, element, neighbor_meshes,
+          element_map, inv_jacobian, domain, functions_of_time,
+          penalty_parameter, nullptr, nullptr, amr_data...);
   }
   template <typename Background, typename Metavariables, typename... AmrData>
   static void apply(
@@ -359,6 +364,8 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
       const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_meshes,
       const gsl::not_null<::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>*>
           mortar_sizes,
+      const gsl::not_null<::dg::MortarMap<Dim, tnsr::I<DataVector, Dim>>*>
+          all_mortar_inertial_coords,
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
           mortar_jacobians,
       const gsl::not_null<::dg::MortarMap<Dim, Scalar<DataVector>>*>
@@ -450,6 +457,7 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
     // Mortars (internal directions)
     mortar_meshes->clear();
     mortar_sizes->clear();
+    all_mortar_inertial_coords->clear();
     mortar_jacobians->clear();
     penalty_factors->clear();
     const auto& element_id = element.id();
@@ -471,8 +479,11 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
         const auto& mortar_size = mortar_sizes->at(mortar_id);
         const auto mortar_logical_coords = detail::mortar_logical_coordinates(
             mortar_mesh, mortar_size, direction);
-        const auto mortar_inertial_coords =
-            element_map(mortar_logical_coords, 0., functions_of_time);
+        const auto& mortar_inertial_coords =
+            all_mortar_inertial_coords
+                ->emplace(mortar_id, element_map(mortar_logical_coords, 0.,
+                                                 functions_of_time))
+                .first->second;
         Scalar<DataVector> perpendicular_element_size{};
         if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
           auto& mortar_jacobian = (*mortar_jacobians)[mortar_id];
