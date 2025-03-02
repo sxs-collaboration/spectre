@@ -25,6 +25,13 @@ void bind_segment_id(py::module& m) {
            py::arg("index"))
       .def_property("refinement_level", &SegmentId::refinement_level, nullptr)
       .def_property("index", &SegmentId::index, nullptr)
+      .def_property(
+          "endpoints",
+          [](const SegmentId& segment_id) {
+            return std::array<double, 2>{{segment_id.endpoint(Side::Lower),
+                                          segment_id.endpoint(Side::Upper)}};
+          },
+          nullptr)
       .def("__repr__",
            [](const SegmentId& segment_id) { return get_output(segment_id); })
       // NOLINTNEXTLINE(misc-redundant-expression)
