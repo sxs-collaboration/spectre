@@ -83,5 +83,6 @@ target_link_libraries(
   PRIVATE
   ${LIBS_TO_LINK}
   ${INTERPOLATION_LIBS_TO_LINK}
+  ControlSystem
   ScalarWaveWorldtube
   )

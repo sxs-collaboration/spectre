@@ -43,6 +43,8 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/SendToWorldtube.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/InsideHorizon.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/OrbitRadius.hpp"
 #include "Evolution/Tags/Filter.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -63,6 +65,7 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/FilterAction.hpp"
+#include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -79,6 +82,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveLineSegment.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
@@ -172,29 +176,23 @@ struct EvolutionMetavars {
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  deriv_compute>;
 
-  template <size_t Number>
-  struct PsiAlongAxis
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    static std::string name() {
-      return "PsiAlongAxis" + std::to_string(Number);
-    }
+  struct Spheres : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    static std::string name() { return "Spheres"; }
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<CurvedScalarWave::Tags::Psi,
                    domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::TargetPoints::LineSegment<PsiAlongAxis<Number>, volume_dim,
-                                         Frame::Grid>;
+        intrp::TargetPoints::Sphere<Spheres, Frame::Inertial>;
     using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::ObserveLineSegment<
-            vars_to_interpolate_to_target, PsiAlongAxis<Number>>>;
+        tmpl::list<intrp::callbacks::ObserveSurfaceData<
+            tmpl::list<CurvedScalarWave::Tags::Psi>, Spheres, Frame::Inertial>>;
     template <typename metavariables>
     using interpolating_component = typename metavariables::dg_element_array;
   };
 
-  using interpolation_target_tags =
-      tmpl::list<PsiAlongAxis<1>, PsiAlongAxis<2>>;
+  using interpolation_target_tags = tmpl::list<Spheres>;
   using interpolator_source_vars =
       tmpl::list<CurvedScalarWave::Tags::Psi,
                  domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
@@ -210,15 +208,13 @@ struct EvolutionMetavars {
                 CurvedScalarWave::BoundaryConditions::Worldtube<volume_dim>>>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>,
-                   tmpl::list<domain::creators::BinaryCompactObject<false>>>,
+                   tmpl::list<domain::creators::BinaryCompactObject<true>>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
                 Events::time_events<system>, Events::Completion,
                 intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, PsiAlongAxis<1>, interpolator_source_vars>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, PsiAlongAxis<2>, interpolator_source_vars>,
+                    volume_dim, Spheres, interpolator_source_vars>,
                 dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>>>>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
@@ -236,8 +232,10 @@ struct EvolutionMetavars {
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+        tmpl::pair<Trigger,
+                   tmpl::flatten<tmpl::list<
+                       Triggers::logical_triggers, Triggers::time_triggers,
+                       Triggers::OrbitRadius, Triggers::InsideHorizon>>>>;
   };
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
@@ -271,6 +269,8 @@ struct EvolutionMetavars {
       Tags::AnalyticData<InitialData>,
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
+      CurvedScalarWave::Worldtube::Tags::WorldtubeRadiusParameters,
+      CurvedScalarWave::Worldtube::Tags::BlackHoleRadiusParameters,
       CurvedScalarWave::Worldtube::Tags::Charge,
       CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnTime,
       CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnInterval,
@@ -329,6 +329,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
+                  domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
                   evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
                   PhaseControl::Actions::ExecutePhaseChange>>>>;
@@ -342,8 +343,7 @@ struct EvolutionMetavars {
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
-      intrp::InterpolationTarget<EvolutionMetavars, PsiAlongAxis<1>>,
-      intrp::InterpolationTarget<EvolutionMetavars, PsiAlongAxis<2>>,
+      intrp::InterpolationTarget<EvolutionMetavars, Spheres>,
       CurvedScalarWave::Worldtube::WorldtubeSingleton<EvolutionMetavars>,
       dg_element_array>>;
 
