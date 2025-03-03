@@ -31,6 +31,7 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
@@ -197,6 +198,7 @@ struct Solver {
           typename db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
                                       fields_tag>::tags_list>,
       tmpl::append<
+          typename fixed_sources_tag::tags_list,
           typename nonlinear_solver::linear_solver_fields_tag::tags_list,
           typename nonlinear_solver::linear_solver_source_tag::tags_list>>;
 
@@ -246,9 +248,16 @@ struct Solver {
           elliptic::amr::Actions::Initialize>,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
-      elliptic::Actions::InitializeFixedSources<system, background_tag>,
       init_analytic_solution_action,
       elliptic::dg::Actions::initialize_operator<system, background_tag>,
+      // Actions below may use faces and normals
+      elliptic::Actions::InitializeFixedSources<system, background_tag>,
+      tmpl::conditional_t<is_linear,
+                          tmpl::list<::Actions::MutateApply<
+                              elliptic::dg::Actions::
+                                  ImposeInhomogeneousBoundaryConditionsOnSource<
+                                      system, fixed_sources_tag>>>,
+                          tmpl::list<>>,
       tmpl::conditional_t<
           is_linear, tmpl::list<>,
           ::Initialization::Actions::AddComputeTags<tmpl::list<
@@ -360,10 +369,6 @@ struct Solver {
                   system, true, linear_solver_iteration_id, fields_tag,
                   fluxes_vars_tag, operator_applied_to_fields_tag, vars_tag,
                   fluxes_vars_tag>::apply_actions,
-              // Modify fixed sources with boundary conditions
-              elliptic::dg::Actions::
-                  ImposeInhomogeneousBoundaryConditionsOnSource<
-                      system, fixed_sources_tag>,
               // Krylov solve
               linear_solve_actions<tmpl::list<>>>,
           // Nonlinear solve
@@ -401,6 +406,14 @@ struct Solver {
       typename dg_operator<true>::amr_projectors,
       tmpl::conditional_t<is_linear, typename build_matrix::amr_projectors,
                           typename dg_operator<false>::amr_projectors>,
+      // Actions below may use faces and normals
+      elliptic::Actions::InitializeFixedSources<system, background_tag>,
+      tmpl::conditional_t<
+          is_linear,
+          tmpl::list<elliptic::dg::Actions::
+                         ImposeInhomogeneousBoundaryConditionsOnSource<
+                             system, fixed_sources_tag>>,
+          tmpl::list<>>,
       elliptic::amr::Actions::Initialize>>;
 
   using component_list = tmpl::flatten<

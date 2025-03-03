@@ -46,6 +46,7 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
@@ -151,9 +152,10 @@ struct ElementArray {
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<::elliptic::dg::Actions::
-                         ImposeInhomogeneousBoundaryConditionsOnSource<
-                             System, fixed_sources_tag>,
+          tmpl::list<::Actions::MutateApply<
+                         ::elliptic::dg::Actions::
+                             ImposeInhomogeneousBoundaryConditionsOnSource<
+                                 System, fixed_sources_tag>>,
                      ::Actions::Label<ApplyOperatorStart>,
                      typename dg_operator::apply_actions, IncrementTemporalId,
                      Parallel::Actions::TerminatePhase>>>;
