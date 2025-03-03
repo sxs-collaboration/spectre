@@ -116,8 +116,7 @@ EventsAndTriggersAtSlabs:
           Interval: 1000
           Offset: 0
     Events:
-      - PsiAlongAxis1
-      - PsiAlongAxis2
+      - Spheres
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan
@@ -157,14 +156,11 @@ Worldtube:
         Offset: 0
 
 InterpolationTargets:
-  PsiAlongAxis1:
-    Begin: [0., 0., 0.]
-    End: [0., 0., 400.]
-    NumberOfPoints: 1000
-  PsiAlongAxis2:
-    Begin: [0., 0., 0.]
-    End: [400., 0., 0.]
-    NumberOfPoints: 1000
+  Spheres:
+    LMax: 10
+    Center: [0.,0.,0.]
+    Radius: [400.]
+    AngularOrdering: Strahlkorper
 
 Filtering:
   ExpFilter0:
@@ -178,3 +174,4 @@ EventsAndDenseTriggers:
 Observers:
   VolumeFileName: "Volume"
   ReductionFileName: "Reductions"
+  SurfaceFileName: "Surfaces"
