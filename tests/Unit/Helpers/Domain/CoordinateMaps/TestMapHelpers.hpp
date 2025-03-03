@@ -32,6 +32,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -199,12 +200,14 @@ void test_jacobian(
   }
   for (size_t i = 0; i < Map::dim; ++i) {
     for (size_t k = 0; k < test_point[0].size(); k++) {
+      CAPTURE(dv_to_double_vector[k]);
+      CAPTURE(magnitude(dv_to_double_vector[k]));
       const auto numerical_deriv_i = numerical_derivative(
           compute_map_point, dv_to_double_vector[k], i, dx);
       for (size_t j = 0; j < Map::dim; ++j) {
-        INFO("i: " << i << " j: " << j);
-        CHECK(jacobian.get(j, i)[k] ==
-              local_approx(gsl::at(numerical_deriv_i, j)));
+        INFO("i: " << i << " j: " << j << " k: " << k);
+        REQUIRE(jacobian.get(j, i)[k] ==
+                local_approx(gsl::at(numerical_deriv_i, j)));
       }
     }
   }
@@ -550,13 +553,15 @@ void test_inverse_map(
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time) {
+        functions_of_time,
+    Approx local_approx = approx) {
   INFO("Test inverse map time dependent");
   CAPTURE(test_point);
   const auto expected_test_point = map.inverse(
       map(test_point, time, functions_of_time), time, functions_of_time);
   REQUIRE(expected_test_point.has_value());
-  CHECK_ITERABLE_APPROX(test_point, expected_test_point.value());
+  CHECK_ITERABLE_CUSTOM_APPROX(test_point, expected_test_point.value(),
+                               local_approx);
 }
 /// @}
 
@@ -676,16 +681,16 @@ void test_suite_for_map_on_sphere(const Map& map,
   test_helper(map2);
 }
 
-  /*!
-   * \ingroup TestingFrameworkGroup
-   * \brief Given a Map `map`, tests the map functions, including map inverse,
-   * jacobian, and inverse jacobian, for a series of points.
-   * These points are chosen in a right cylinder with cylindrical radius 1
-   * and z-axis extending from -1 to +1. The
-   * map is expected to be valid on the boundary of that cylinder as well as
-   * in its interior.
-   * This test works only in 3 dimensions.
-   */
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Given a Map `map`, tests the map functions, including map inverse,
+ * jacobian, and inverse jacobian, for a series of points.
+ * These points are chosen in a right cylinder with cylindrical radius 1
+ * and z-axis extending from -1 to +1. The
+ * map is expected to be valid on the boundary of that cylinder as well as
+ * in its interior.
+ * This test works only in 3 dimensions.
+ */
 template <typename Map>
 void test_suite_for_map_on_cylinder(
     const Map& map, const double inner_radius, const double outer_radius,
@@ -791,7 +796,7 @@ void test_suite_for_map_on_cylinder(
           const std::array<double, 3> random_bdry_point_outer_minus_roundoff{
               {(outer_radius - rho_roundoff) * cos(phi),
                (outer_radius - rho_roundoff) * sin(phi), height}};
-          if(inner_radius != 0.0) {
+          if (inner_radius != 0.0) {
             const std::array<double, 3> random_bdry_point_inner_minus_roundoff{
                 {(inner_radius - rho_roundoff) * cos(phi),
                  (inner_radius - rho_roundoff) * sin(phi), height}};
