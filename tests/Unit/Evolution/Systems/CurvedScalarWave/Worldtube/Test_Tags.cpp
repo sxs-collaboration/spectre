@@ -768,6 +768,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "BackgroundQuantities");
   TestHelpers::db::test_simple_tag<Tags::AccelerationTerms>(
       "AccelerationTerms");
+  TestHelpers::db::test_simple_tag<Tags::Verbosity>("Verbosity");
   test_excision_sphere_tag();
   test_self_force_options();
   test_radius_options();

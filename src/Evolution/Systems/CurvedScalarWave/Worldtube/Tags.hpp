@@ -24,6 +24,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
@@ -229,6 +230,16 @@ struct ExpansionOrder {
   static size_t upper_bound() { return 1; }
   using group = Worldtube;
 };
+
+/*!
+ * \brief The verbosity of the worldtube executable.
+ */
+struct Verbosity {
+  using type = ::Verbosity;
+  static constexpr Options::String help{
+      "Gives the verbosity of the worldtube executable."};
+  using group = Worldtube;
+};
 }  // namespace OptionTags
 
 /*!
@@ -356,6 +367,18 @@ struct MaxIterations : db::SimpleTag {
   static size_t create_from_options(
       const std::optional<OptionTags::SelfForceOptions>& self_force_options) {
     return self_force_options.has_value() ? self_force_options->iterations : 0;
+  }
+};
+
+/*!
+ * \brief The verbosity of the worldtube executable.
+ */
+struct Verbosity : db::SimpleTag {
+  using type = ::Verbosity;
+  using option_tags = tmpl::list<OptionTags::Verbosity>;
+  static constexpr bool pass_metavariables = false;
+  static ::Verbosity create_from_options(const ::Verbosity& verbosity) {
+    return verbosity;
   }
 };
 
