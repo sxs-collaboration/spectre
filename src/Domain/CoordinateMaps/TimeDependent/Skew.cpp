@@ -19,9 +19,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -344,23 +346,94 @@ void Skew::check_for_singular_map(
   const auto func = function_of_time->func_and_deriv(time)[0];
   ASSERT(func.size() == 2, "Expected a function of time with size 2, not "
                                << func.size() << " in the Skew map.");
+  const double tan_func0 = tan(func[0]);
+  const double tan_func1 = tan(func[1]);
+
+  CAPTURE_FOR_ERROR(tan_func0);
+  CAPTURE_FOR_ERROR(tan_func1);
+
   const ResultT tan_sum =
       -1.0 * (tan(func[0]) * (source_coords[1] - center_[1]) +
               tan(func[1]) * (source_coords[2] - center_[2]));
 
-  const ResultT x_deriv_of_mapped_x_coord =
-      1.0 - M_PI * one_over_outer_radius_squared_ * tan_sum *
-                dereference_wrapper(source_coords[0]) * sin(M_PI * lambda);
+  std::array<double, 3> temporary_point{
+      get_element(dereference_wrapper(source_coords[0]), 0),
+      get_element(dereference_wrapper(source_coords[1]), 0),
+      get_element(dereference_wrapper(source_coords[2]), 0)};
 
+  // We can check if the map is singular by checking if the x-deriv of the map
+  // is negative. If it is, then it means the map is not one-to-one and our grid
+  // is being stretched over itself. In order to check this, we use a property
+  // of the analytic functions used in the map that the second x-deriv of the
+  // map will cross zero exactly once for +x and once for -x. We use the
+  // x-values of this zero-crossing to evaluate the first x-deriv and check if
+  // it is negative. This is not a global check as it only checks along the
+  // y=z=const line, but if there is an issue, some point within the domain
+  // should error.
   for (size_t i = 0; i < get_size(lambda); i++) {
-    if (get_element(x_deriv_of_mapped_x_coord, i) < 0.0) {
+    // No need to check this point if the map is the identity
+    if (equal_within_roundoff(get_element(tan_sum, i), 0.0)) {
+      continue;
+    }
+
+    temporary_point[0] = get_element(dereference_wrapper(source_coords[0]), i);
+    temporary_point[1] = get_element(dereference_wrapper(source_coords[1]), i);
+    temporary_point[2] = get_element(dereference_wrapper(source_coords[2]), i);
+
+    // Can't check if x=0 and we are at the outer boundary, because then the
+    // largest_x below is just zero and we won't be able to find roots.
+    if (equal_within_roundoff(temporary_point[0], 0.0) and
+        equal_within_roundoff(magnitude(temporary_point), outer_radius_)) {
+      continue;
+    }
+
+    CAPTURE_FOR_ERROR(get_element(tan_sum, i));
+
+    const auto first_deriv = [&](const double x) {
+      temporary_point[0] = x;
+      const double temporary_lambda = one_over_outer_radius_squared_ *
+                                      dot(temporary_point, temporary_point);
+      return 1.0 + M_PI * x * one_over_outer_radius_squared_ *
+                       get_element(tan_sum, i) * sin(M_PI * temporary_lambda);
+    };
+    const auto second_deriv = [&](const double x) -> double {
+      temporary_point[0] = x;
+      const double temporary_lambda = one_over_outer_radius_squared_ *
+                                      dot(temporary_point, temporary_point);
+      return M_PI * one_over_outer_radius_squared_ * get_element(tan_sum, i) *
+             (sin(M_PI * temporary_lambda) +
+              2.0 * M_PI * one_over_outer_radius_squared_ * square(x) *
+                  cos(M_PI * temporary_lambda));
+    };
+
+    const double eps = std::numeric_limits<double>::epsilon() * 100.0;
+    // The endpoint of the y=z=const line given that the outer boundary is a
+    // sphere.
+    const double largest_x =
+        sqrt(square(outer_radius_) - square(temporary_point[1]) -
+             square(temporary_point[2]));
+
+    CAPTURE_FOR_ERROR(temporary_point);
+    CAPTURE_FOR_ERROR(largest_x);
+
+    // Positive and negative zeros of the second deriv
+    const double negative_candidate = RootFinder::toms748<true>(
+        second_deriv, -largest_x, -eps, second_deriv(-largest_x),
+        second_deriv(-eps), eps, eps);
+    const double positive_candidate = RootFinder::toms748<true>(
+        second_deriv, eps, largest_x, second_deriv(eps),
+        second_deriv(largest_x), eps, eps);
+
+    CAPTURE_FOR_ERROR(negative_candidate);
+    CAPTURE_FOR_ERROR(positive_candidate);
+
+    if (first_deriv(negative_candidate) <= 0.0 or
+        first_deriv(positive_candidate) <= 0.0) {
       using ::operator<<;
-      const std::vector<double> bad_point{
-          get_element(dereference_wrapper(source_coords[0]), i),
-          get_element(dereference_wrapper(source_coords[1]), i),
-          get_element(dereference_wrapper(source_coords[2]), i)};
       ERROR("Skew map is singular. Found for point "
-            << bad_point << ". Important values are:\n Outer radius, R = "
+            << temporary_point
+            << " (y and z coords are the important ones). Important values "
+               "are:\n Outer radius, R = "
             << outer_radius_ << "\n |x|^2/R^2 = " << get_element(lambda, i)
             << "\n tan(F_y)*y + tan(F_z)*z = " << tan_sum
             << "\n F_y = " << func[0] << "\n F_z = " << func[1]

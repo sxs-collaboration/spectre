@@ -22,6 +22,7 @@
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -71,6 +72,7 @@ void test(const gsl::not_null<Generator*> generator) {
       50.0 * std::array{fot_dist(*generator), fot_dist(*generator),
                         fot_dist(*generator)};
   CAPTURE(outer_radius);
+  CAPTURE(center);
 
   const CoordinateMaps::TimeDependent::Skew skew_map{function_of_time_name,
                                                      center, outer_radius};
@@ -82,8 +84,15 @@ void test(const gsl::not_null<Generator*> generator) {
   CHECK(skew_map_deserialized.function_of_time_names().contains(
       function_of_time_name));
 
+  const Approx deriv_approx = Approx::custom().epsilon(1.e-9).scale(1.0);
+  const Approx inv_approx = Approx::custom().epsilon(5.e-14).scale(1.0);
+
   while (t < expiration_time) {
     CAPTURE(t);
+    const auto func_and_derivs =
+        f_of_t_list.at(function_of_time_name)->func_and_2_derivs(t);
+    CAPTURE(func_and_derivs);
+
     const std::array<double, 3> point_xi = [&]() {
       const double radius = radius_dist(*generator);
       const double theta = 0.5 * angle_dist(*generator);
@@ -92,34 +101,39 @@ void test(const gsl::not_null<Generator*> generator) {
     }();
 
     const std::array<DataVector, 3> dv_point_xi = [&]() {
+      const DataVector for_size{10, 0.0};
       const auto radii = make_with_random_values<DataVector>(
-          generator, make_not_null(&radius_dist), DataVector{10, 0.0});
+          generator, make_not_null(&radius_dist), for_size);
       const DataVector thetas =
           0.5 * make_with_random_values<DataVector>(
-                    generator, make_not_null(&angle_dist), DataVector{10, 0.0});
+                    generator, make_not_null(&angle_dist), for_size);
       const auto phis = make_with_random_values<DataVector>(
-          generator, make_not_null(&angle_dist), DataVector{10, 0.0});
+          generator, make_not_null(&angle_dist), for_size);
 
       return sph_to_cart(radii, thetas, phis);
     }();
 
-    const auto run_checks = [&](const auto& points) {
-      CAPTURE(points);
-      test_jacobian(skew_map, points, t, f_of_t_list);
-      test_inv_jacobian(skew_map, points, t, f_of_t_list);
-      test_frame_velocity(skew_map, points, t, f_of_t_list);
+    CAPTURE(dv_point_xi);
 
-      test_jacobian(skew_map_deserialized, points, t, f_of_t_list);
+    const auto run_checks = [&](const auto& points) {
+      test_jacobian(skew_map, points, t, f_of_t_list, deriv_approx);
+      test_inv_jacobian(skew_map, points, t, f_of_t_list);
+      test_frame_velocity(skew_map, points, t, f_of_t_list, deriv_approx);
+
+      test_jacobian(skew_map_deserialized, points, t, f_of_t_list,
+                    deriv_approx);
       test_inv_jacobian(skew_map_deserialized, points, t, f_of_t_list);
-      test_frame_velocity(skew_map_deserialized, points, t, f_of_t_list);
+      test_frame_velocity(skew_map_deserialized, points, t, f_of_t_list,
+                          deriv_approx);
     };
 
     run_checks(point_xi);
     test_coordinate_map_argument_types(skew_map, point_xi, t, f_of_t_list);
     test_coordinate_map_argument_types(skew_map_deserialized, point_xi, t,
                                        f_of_t_list);
-    test_inverse_map(skew_map, point_xi, t, f_of_t_list);
-    test_inverse_map(skew_map_deserialized, point_xi, t, f_of_t_list);
+    test_inverse_map(skew_map, point_xi, t, f_of_t_list, inv_approx);
+    test_inverse_map(skew_map_deserialized, point_xi, t, f_of_t_list,
+                     inv_approx);
     run_checks(dv_point_xi);
 
     t += dt;
