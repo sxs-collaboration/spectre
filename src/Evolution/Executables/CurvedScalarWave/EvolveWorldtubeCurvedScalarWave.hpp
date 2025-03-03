@@ -43,6 +43,8 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/ElementActions/SendToWorldtube.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/InsideHorizon.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/Triggers/OrbitRadius.hpp"
 #include "Evolution/Tags/Filter.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -236,8 +238,10 @@ struct EvolutionMetavars {
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+        tmpl::pair<Trigger,
+                   tmpl::flatten<tmpl::list<
+                       Triggers::logical_triggers, Triggers::time_triggers,
+                       Triggers::OrbitRadius, Triggers::InsideHorizon>>>>;
   };
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
@@ -271,6 +275,8 @@ struct EvolutionMetavars {
       Tags::AnalyticData<InitialData>,
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
+      CurvedScalarWave::Worldtube::Tags::WorldtubeRadiusParameters,
+      CurvedScalarWave::Worldtube::Tags::BlackHoleRadiusParameters,
       CurvedScalarWave::Worldtube::Tags::Charge,
       CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnTime,
       CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnInterval,

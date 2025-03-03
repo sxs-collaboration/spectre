@@ -140,6 +140,16 @@ Worldtube:
   ExpansionOrder: 1
   Charge: *Charge
   SelfForceOptions: None
+  WorldtubeRadiusOptions:
+    Amplitude: 2.
+    TransitionRadius: 10.
+    TransitionWidth: 0.05
+    Exponent: 1.5
+  BlackHoleRadiusOptions:
+    Amplitude: 1.9
+    TransitionRadius: 10.
+    TransitionWidth: 0.05
+    Exponent: 1.
   ObserveCoefficientsTrigger:
     Slabs:
       EvenlySpaced:
