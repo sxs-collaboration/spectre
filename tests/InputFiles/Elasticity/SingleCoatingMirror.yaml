@@ -185,3 +185,4 @@ ResourceInfo:
 BuildMatrix:
   MatrixSubfileName: Matrix
   Verbosity: Verbose
+  EnableDirectSolve: True

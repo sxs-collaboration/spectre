@@ -219,7 +219,8 @@ struct Solver {
                           operator_applied_to_fields_tag>>;
 
   using build_matrix = LinearSolver::Actions::BuildMatrix<
-      linear_solver_iteration_id, vars_tag, operator_applied_to_vars_tag,
+      typename dg_operator<true>::temporal_id_tag, fields_tag,
+      fixed_sources_tag, vars_tag, operator_applied_to_vars_tag,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
       LinearSolver::multigrid::Tags::IsFinestGrid>;
 
@@ -416,13 +417,15 @@ struct Solver {
           tmpl::list<>>,
       elliptic::amr::Actions::Initialize>>;
 
-  using component_list = tmpl::flatten<
-      tmpl::list<tmpl::conditional_t<is_linear, tmpl::list<>,
-                                     typename nonlinear_solver::component_list>,
-                 typename linear_solver::component_list,
-                 typename multigrid::component_list,
-                 typename schwarz_smoother::component_list,
-                 ::amr::Component<Metavariables>>>;
+  using component_list = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<
+          is_linear,
+          typename build_matrix::template component_list<Metavariables>,
+          typename nonlinear_solver::component_list>,
+      typename linear_solver::component_list,
+      typename multigrid::component_list,
+      typename schwarz_smoother::component_list,
+      ::amr::Component<Metavariables>>>;
 };
 
 }  // namespace elliptic

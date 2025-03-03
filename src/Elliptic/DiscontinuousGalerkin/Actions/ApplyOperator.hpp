@@ -334,7 +334,7 @@ struct ReceiveMortarDataAndApplyOperator<
     const auto& temporal_id = get<TemporalIdTag>(box);
     const auto& element = get<domain::Tags::Element<Dim>>(box);
 
-    if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
+    if (not::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
             temporal_id, element, inboxes)) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
@@ -500,6 +500,9 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename PrimalMortarFieldsTag = PrimalFieldsTag,
           typename PrimalMortarFluxesTag = PrimalFluxesTag>
 struct DgOperator {
+  using system = System;
+  using temporal_id_tag = TemporalIdTag;
+
  private:
   static constexpr size_t Dim = System::volume_dim;
 

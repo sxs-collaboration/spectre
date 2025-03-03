@@ -130,3 +130,4 @@ PhaseChangeAndTriggers: []
 BuildMatrix:
   MatrixSubfileName: Matrix
   Verbosity: Verbose
+  EnableDirectSolve: True
