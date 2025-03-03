@@ -65,6 +65,7 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/FilterAction.hpp"
+#include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -207,7 +208,7 @@ struct EvolutionMetavars {
                 CurvedScalarWave::BoundaryConditions::Worldtube<volume_dim>>>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>,
-                   tmpl::list<domain::creators::BinaryCompactObject<false>>>,
+                   tmpl::list<domain::creators::BinaryCompactObject<true>>>,
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
@@ -328,6 +329,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
+                  domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
                   evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
                   PhaseControl::Actions::ExecutePhaseChange>>>>;

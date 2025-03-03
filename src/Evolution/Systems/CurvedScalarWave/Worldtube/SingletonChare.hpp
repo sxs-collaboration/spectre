@@ -16,6 +16,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendAccelerationTerms.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateAcceleration.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateFunctionsOfTime.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -25,6 +26,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -87,14 +89,16 @@ struct WorldtubeSingleton {
         tmpl::list<Tags::EvolvedPosition<Dim>, Tags::EvolvedVelocity<Dim>>>;
   };
   using step_actions =
-      tmpl::list<Actions::ChangeSlabSize, Actions::ReceiveElementData,
+      tmpl::list<Actions::UpdateFunctionsOfTime, Actions::ChangeSlabSize,
+                 Actions::ReceiveElementData,
                  ::Actions::MutateApply<IterateAccelerationTerms>,
                  Actions::SendAccelerationTerms<Metavariables>,
                  ::Actions::MutateApply<UpdateAcceleration>,
                  ::Actions::RecordTimeStepperData<worldtube_system>,
                  ::Actions::UpdateU<worldtube_system>,
                  ::Actions::CleanHistory<worldtube_system, false>,
-                 Actions::SendToElements<Metavariables>>;
+                 Actions::SendToElements<Metavariables>,
+                 domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialization_actions>,
