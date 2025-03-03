@@ -27,9 +27,11 @@ namespace Spectral {
  * spectral or DG method, integrals using \f$N\f$ collocation points with Gauss
  * quadrature are exact to polynomial order \f$p=2N-1\f$. Gauss-Lobatto
  * quadrature is exact only to polynomial order \f$p=2N-3\f$, but includes
- * collocation points at the domain boundary.  For a finite difference
- * method, one needs to choose the order of the scheme (and hence the
- * weights, differentiation matrix, integration weights, and
+ * collocation points at the Element boundary.  Gauss-Radau
+ * quadrature is exact only to polynomial order \f$p=2N-2\f$, but includes a
+ * collocation points at the lower or upper boundary of the Element.  For a
+ * finite difference method, one needs to choose the order of the scheme (and
+ * hence the weights, differentiation matrix, integration weights, and
  * interpolant) locally in space and time to handle discontinuous
  * solutions.
  *
@@ -39,8 +41,14 @@ namespace Spectral {
  * \note Choose `CellCentered` or `FaceCentered` when using
  * Basis::FiniteDifference.
  *
+ * \note Choose `Equiangular` when using Basis::Fourier.
+ *
  * \note When using Basis::SphericalHarmonic in consecutive dimensions, choose
  * `Gauss` for the first dimension and `Equiangular` in the second dimension.
+ *
+ * \note When using Basis::B2Marcus in consecutive dimensions, choose
+ * `GaussRadauUpper` for the first dimension and `Equiangular` in the second
+ * dimension.
  *
  * \note We store these effectively as a 4-bit integer using the lowest 4
  * bits of a uint8_t. Unlike Basis, this does not need a bitshift. We cannot
@@ -53,11 +61,13 @@ enum class Quadrature : uint8_t {
   GaussLobatto,
   CellCentered,
   FaceCentered,
-  Equiangular
+  Equiangular,
+  GaussRadauLower,
+  GaussRadauUpper
 };
 
 /// All possible values of Quadrature
-std::array<Quadrature, 6> all_quadratures();
+std::array<Quadrature, 8> all_quadratures();
 
 /// Convert a string to a Quadrature enum.
 Quadrature to_quadrature(const std::string& quadrature);

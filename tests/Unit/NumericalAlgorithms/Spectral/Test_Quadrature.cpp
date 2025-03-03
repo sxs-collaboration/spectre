@@ -12,11 +12,14 @@
 
 SPECTRE_TEST_CASE("Unit.SpatialDiscreitization.Quadrature",
                   "[NumericalAlgorithms][Unit]") {
+  CHECK(get_output(Spectral::Quadrature::Uninitialized) == "Uninitialized");
   CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
   CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
   CHECK(get_output(Spectral::Quadrature::CellCentered) == "CellCentered");
   CHECK(get_output(Spectral::Quadrature::FaceCentered) == "FaceCentered");
   CHECK(get_output(Spectral::Quadrature::Equiangular) == "Equiangular");
+  CHECK(get_output(Spectral::Quadrature::GaussRadauLower) == "GaussRadauLower");
+  CHECK(get_output(Spectral::Quadrature::GaussRadauUpper) == "GaussRadauUpper");
 
   for (const auto quadrature : Spectral::all_quadratures()) {
     CHECK(quadrature == TestHelpers::test_creation<Spectral::Quadrature>(
@@ -31,5 +34,5 @@ SPECTRE_TEST_CASE("Unit.SpatialDiscreitization.Quadrature",
       Catch::Matchers::ContainsSubstring(
           MakeString{} << "Failed to convert \"Bad quadrature name\" to "
                           "Spectral::Quadrature.\nMust be one of "
-                       << all_quadratures() << "."));
+                       << Spectral::all_quadratures() << "."));
 }

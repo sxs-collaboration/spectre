@@ -41,10 +41,21 @@ constexpr uint8_t basis_shift = 4;
  * \note Choose `Legendre` for a general-purpose spectral or DG mesh, unless
  * you have a particular reason for choosing `Chebyshev`.
  *
+ * \note Choose `Fourier` for a dimension that is spatially periodic and in
+ * which the expected solution is smooth.  A Mesh with this Basis cannot be
+ * split by h-refinement in this dimension.
+ *
  * \note Choose two consecutive dimensions to have `SphericalHarmonic` to choose
  * a spherical harmonic basis.  By convention, the first dimension represents
  * the polar/zentith angle (or colatitude), while the second dimension
- * represents the azimuthal angle (or longitude)
+ * represents the azimuthal angle (or longitude).  A Mesh with this Basis cannot
+ * be split by h-refinement in these dimensions.
+ *
+ * \note Choose two consecutive dimensions to have `B2Marcus` to choose
+ * a basis used on a disk or cross-section of a cylinder.  By convention, the
+ * first dimension represents the radial direction, while the second dimension
+ * represents the azimuthal angle. A Mesh with this Basis cannot
+ * be split by h-refinement in these dimensions.
  *
  * \note We store these effectively as a 4-bit integer using the highest 4
  * bits of a uint8_t, which is why we do the left shift.  We cannot
@@ -57,11 +68,13 @@ enum class Basis : uint8_t {
   Chebyshev = 1 << basis_shift,
   Legendre = 2 << basis_shift,
   FiniteDifference = 3 << basis_shift,
-  SphericalHarmonic = 4 << basis_shift
+  SphericalHarmonic = 4 << basis_shift,
+  Fourier = 5 << basis_shift,
+  B2Marcus = 6 << basis_shift
 };
 
 /// All possible values of Basis
-std::array<Basis, 5> all_bases();
+std::array<Basis, 7> all_bases();
 
 /// Convert a string to a Basis enum.
 Basis to_basis(const std::string& basis);

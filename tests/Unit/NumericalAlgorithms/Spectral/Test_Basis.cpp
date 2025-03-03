@@ -10,12 +10,14 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
 
-SPECTRE_TEST_CASE("Unit.SpatialDiscreitization.Basis",
-                  "[NumericalAlgorithms][Unit]") {
+SPECTRE_TEST_CASE("Unit.Spectral.Basis", "[NumericalAlgorithms][Unit]") {
+  CHECK(get_output(Spectral::Basis::Uninitialized) == "Uninitialized");
   CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
   CHECK(get_output(Spectral::Basis::Chebyshev) == "Chebyshev");
   CHECK(get_output(Spectral::Basis::FiniteDifference) == "FiniteDifference");
   CHECK(get_output(Spectral::Basis::SphericalHarmonic) == "SphericalHarmonic");
+  CHECK(get_output(Spectral::Basis::Fourier) == "Fourier");
+  CHECK(get_output(Spectral::Basis::B2Marcus) == "B2Marcus");
 
   for (const auto basis : Spectral::all_bases()) {
     CHECK(basis ==
@@ -30,5 +32,5 @@ SPECTRE_TEST_CASE("Unit.SpatialDiscreitization.Basis",
       Catch::Matchers::ContainsSubstring(
           MakeString{} << "Failed to convert \"Bad basis name\" to "
                           "Spectral::Basis.\nMust be one of "
-                       << all_bases() << "."));
+                       << Spectral::all_bases() << "."));
 }
