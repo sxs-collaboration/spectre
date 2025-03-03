@@ -8,72 +8,59 @@
 
 namespace YlmTestFunctions {
 
-ProductOfPolynomials::ProductOfPolynomials(const size_t n_r, const size_t L,
-                                           const size_t M, const size_t pow_nx,
+ProductOfPolynomials::ProductOfPolynomials(const size_t pow_nx,
                                            const size_t pow_ny,
                                            const size_t pow_nz)
-    : pow_nx_{pow_nx}, pow_ny_{pow_ny}, pow_nz_{pow_nz} {
-  ASSERT(std::hypot(pow_nx_, pow_ny_, pow_nz_) <= L,
-         "Cannot represent function on mesh");
-  ASSERT(std::hypot(pow_nx_, pow_ny_) <= M,
-         "Cannot represent function on mesh");
-  const Mesh<3> mesh{
-      {n_r, L + 1, 2 * M + 1},
-      {Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
-       Spectral::Basis::SphericalHarmonic},
-      {Spectral::Quadrature::Gauss, Spectral::Quadrature::Gauss,
-       Spectral::Quadrature::Equiangular}};
-  const auto xi = logical_coordinates(mesh);
-  n_pts_ = mesh.number_of_grid_points();
-  theta_ = xi.get(1);
-  phi_ = xi.get(2);
+    : pow_nx_{pow_nx}, pow_ny_{pow_ny}, pow_nz_{pow_nz} {}
+
+DataVector ProductOfPolynomials::operator()(const DataVector& theta,
+                                            const DataVector& phi) const {
+  return pow(sin(theta), pow_nx_ + pow_ny_) * pow(cos(theta), pow_nz_) *
+         pow(cos(phi), pow_nx_) * pow(sin(phi), pow_ny_);
 }
 
-DataVector ProductOfPolynomials::f() const {
-  return pow(sin(theta_), pow_nx_ + pow_ny_) * pow(cos(theta_), pow_nz_) *
-         pow(cos(phi_), pow_nx_) * pow(sin(phi_), pow_ny_);
-}
-
-DataVector ProductOfPolynomials::df_dth() const {
+DataVector ProductOfPolynomials::df_dth(const DataVector& theta,
+                                        const DataVector& phi) const {
   if (pow_nx_ + pow_ny_ + pow_nz_ == 0) {
-    return DataVector{n_pts_, 0.0};
+    return DataVector{theta.size(), 0.0};
   }
   if (pow_nx_ + pow_ny_ == 0) {
-    return -static_cast<double>(pow_nz_) * sin(theta_) *
-           pow(cos(theta_), pow_nz_ - 1) * pow(cos(phi_), pow_nx_) *
-           pow(sin(phi_), pow_ny_);
+    return -static_cast<double>(pow_nz_) * sin(theta) *
+           pow(cos(theta), pow_nz_ - 1) * pow(cos(phi), pow_nx_) *
+           pow(sin(phi), pow_ny_);
   }
   if (pow_nz_ == 0) {
     return static_cast<double>(pow_nx_ + pow_ny_) *
-           pow(sin(theta_), pow_nx_ + pow_ny_ - 1) * cos(theta_) *
-           pow(cos(phi_), pow_nx_) * pow(sin(phi_), pow_ny_);
+           pow(sin(theta), pow_nx_ + pow_ny_ - 1) * cos(theta) *
+           pow(cos(phi), pow_nx_) * pow(sin(phi), pow_ny_);
   }
   return (static_cast<double>(pow_nx_ + pow_ny_) *
-              pow(sin(theta_), pow_nx_ + pow_ny_ - 1) *
-              pow(cos(theta_), pow_nz_ + 1) -
+              pow(sin(theta), pow_nx_ + pow_ny_ - 1) *
+              pow(cos(theta), pow_nz_ + 1) -
           static_cast<double>(pow_nz_) *
-              pow(sin(theta_), pow_nx_ + pow_ny_ + 1) *
-              pow(cos(theta_), pow_nz_ - 1)) *
-         pow(cos(phi_), pow_nx_) * pow(sin(phi_), pow_ny_);
+              pow(sin(theta), pow_nx_ + pow_ny_ + 1) *
+              pow(cos(theta), pow_nz_ - 1)) *
+         pow(cos(phi), pow_nx_) * pow(sin(phi), pow_ny_);
 }
 
-DataVector ProductOfPolynomials::df_dph() const {
+DataVector ProductOfPolynomials::df_dph(const DataVector& theta,
+                                        const DataVector& phi) const {
   if (pow_nx_ + pow_ny_ == 0) {
-    return DataVector{n_pts_, 0.0};
+    return DataVector{theta.size(), 0.0};
   }
   if (pow_nx_ == 0) {
-    return static_cast<double>(pow_ny_) * pow(sin(theta_), pow_nx_ + pow_ny_) *
-           pow(cos(theta_), pow_nz_) * cos(phi_) * pow(sin(phi_), pow_ny_ - 1);
+    return static_cast<double>(pow_ny_) * pow(sin(theta), pow_nx_ + pow_ny_) *
+           pow(cos(theta), pow_nz_) * cos(phi) * pow(sin(phi), pow_ny_ - 1);
   }
   if (pow_ny_ == 0) {
-    return -static_cast<double>(pow_nx_) * pow(sin(theta_), pow_nx_ + pow_ny_) *
-           pow(cos(theta_), pow_nz_) * pow(cos(phi_), pow_nx_ - 1) * sin(phi_);
+    return -static_cast<double>(pow_nx_) * pow(sin(theta), pow_nx_ + pow_ny_) *
+           pow(cos(theta), pow_nz_) * pow(cos(phi), pow_nx_ - 1) * sin(phi);
   }
-  return pow(sin(theta_), pow_nx_ + pow_ny_) * pow(cos(theta_), pow_nz_) *
-         (static_cast<double>(pow_ny_) * pow(cos(phi_), pow_nx_ + 1) *
-              pow(sin(phi_), pow_ny_ - 1) -
-          static_cast<double>(pow_nx_) * *pow(cos(phi_), pow_nx_ - 1) *
-              pow(sin(phi_), pow_ny_ + 1));
+  return pow(sin(theta), pow_nx_ + pow_ny_) * pow(cos(theta), pow_nz_) *
+         (static_cast<double>(pow_ny_) * pow(cos(phi), pow_nx_ + 1) *
+              pow(sin(phi), pow_ny_ - 1) -
+          static_cast<double>(pow_nx_) * *pow(cos(phi), pow_nx_ - 1) *
+              pow(sin(phi), pow_ny_ + 1));
 }
 
 double ProductOfPolynomials::definite_integral() const {

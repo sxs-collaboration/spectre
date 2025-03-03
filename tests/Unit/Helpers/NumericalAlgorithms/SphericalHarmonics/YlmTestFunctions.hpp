@@ -18,23 +18,41 @@
 
 namespace YlmTestFunctions {
 
+/*!
+ * \brief Product of polynomials regular on the surface of a sphere
+ *
+ * \details Computes \f$ n_x^{k_x} n_y^{k_y} n_z^{k_z} \f$ where \f$n_x = \sin
+ * \theta \cos \phi\f$, \f$n_y = \sin \theta \sin \phi\f$, and \f$n_z = \cos
+ * \theta\f$.  The function and its first derivatives are exactly representable
+ * by spherical harmonics of order \f$(L,M)\f$ if \f$L > k_x + k_y + k_z\f$ and
+ * \f$M > k_x + k_y\f$.
+ *
+ */
 class ProductOfPolynomials {
  public:
-  ProductOfPolynomials(size_t n_r, size_t L, size_t M, size_t pow_nx,
-                       size_t pow_ny, size_t pow_nz);
-  DataVector f() const;
-  DataVector df_dth() const;
+  ProductOfPolynomials(size_t pow_nx, size_t pow_ny, size_t pow_nz);
+  DataVector operator()(const DataVector& theta, const DataVector& phi) const;
+  template <typename Fr>
+  DataVector operator()(const tnsr::I<DataVector, 2, Fr>& theta_and_phi) const {
+    return operator()(get<0>(theta_and_phi), get<1>(theta_and_phi));
+  }
+  DataVector df_dth(const DataVector& theta, const DataVector& phi) const;
+  template <typename Fr>
+  DataVector df_dth(const tnsr::I<DataVector, 2, Fr>& theta_and_phi) const {
+    return df_dth(get<0>(theta_and_phi), get<1>(theta_and_phi));
+  }
   // This is the Pfaffiaan derivative (extra factor 1/sin(th))
-  DataVector df_dph() const;
+  DataVector df_dph(const DataVector& theta, const DataVector& phi) const;
+  template <typename Fr>
+  DataVector df_dph(const tnsr::I<DataVector, 2, Fr>& theta_and_phi) const {
+    return df_dph(get<0>(theta_and_phi), get<1>(theta_and_phi));
+  }
   double definite_integral() const;
 
  private:
-  size_t n_pts_;
   size_t pow_nx_;
   size_t pow_ny_;
   size_t pow_nz_;
-  DataVector theta_;
-  DataVector phi_;
 };
 
 template <size_t l, int m>

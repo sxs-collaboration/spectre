@@ -1,0 +1,248 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "Framework/TestingFramework.hpp"
+
+#include <algorithm>
+#include <array>
+#include <random>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
+#include "NumericalAlgorithms/Interpolation/CardinalInterpolator.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Math.hpp"
+
+namespace {
+// Polynomial of given degree with leading coefficinet \f$a_0\f$, and with
+// \f$a_{n+1} = a_n / falloff
+class Polynomial {
+ public:
+  Polynomial(const size_t degree, const double a_0, const double falloff)
+      : coefficients_(degree + 1) {
+    double n = falloff * a_0;
+    std::generate(coefficients_.begin(), coefficients_.end(), [&falloff, &n]() {
+      n /= falloff;
+      return n;
+    });
+  }
+  Polynomial() = default;
+  DataVector operator()(const DataVector& x) const {
+    return evaluate_polynomial(coefficients_, x);
+  }
+
+ private:
+  std::vector<double> coefficients_;
+};
+
+template <size_t Dim>
+class ProductOfPolynomials {
+ public:
+  ProductOfPolynomials(const std::array<size_t, Dim>& degree,
+                       const std::array<double, Dim>& a_0,
+                       const std::array<double, Dim>& falloff) {
+    for (size_t d = 0; d < Dim; ++d) {
+      gsl::at(polynomials_, d) =
+          Polynomial{gsl::at(degree, d), gsl::at(a_0, d), gsl::at(falloff, d)};
+    }
+  }
+  DataVector operator()(
+      const tnsr::I<DataVector, Dim, Frame::ElementLogical>& x) const {
+    DataVector result = polynomials_[0](get<0>(x));
+    for (size_t d = 1; d < Dim; ++d) {
+      result *= gsl::at(polynomials_, d)(x.get(d));
+    }
+    return result;
+  }
+
+ private:
+  std::array<Polynomial, Dim> polynomials_;
+};
+
+void test_1d(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  for (size_t n_target_points = 1; n_target_points < 101;
+       n_target_points += 11) {
+    const auto xi_target =
+        make_with_random_values<tnsr::I<DataVector, 1, Frame::ElementLogical>>(
+            generator, make_not_null(&xi_distribution), n_target_points);
+    for (const auto basis :
+         std::array{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+      for (const auto quadrature :
+           std::array{Spectral::Quadrature::Gauss,
+                      Spectral::Quadrature::GaussLobatto}) {
+        for (size_t n_xi = 2; n_xi < 21; ++n_xi) {
+          const Mesh<1> source_mesh{n_xi, basis, quadrature};
+          const Polynomial f{n_xi - 1, 1.5, 2.0};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source = f(get<0>(xi_source));
+          const DataVector f_expected = f(get<0>(xi_target));
+          const intrp::Cardinal<1> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+      }
+    }
+  }
+}
+
+void test_2d_cartesian(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  const auto bases =
+      std::array{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev};
+  const auto quadratures = std::array{Spectral::Quadrature::Gauss,
+                                      Spectral::Quadrature::GaussLobatto};
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    const auto xi_target =
+        make_with_random_values<tnsr::I<DataVector, 2, Frame::ElementLogical>>(
+            generator, make_not_null(&xi_distribution), n_target_points);
+    for (const auto xi_basis : bases) {
+      for (const auto xi_quadrature : quadratures) {
+        for (const auto eta_basis : bases) {
+          for (const auto eta_quadrature : quadratures) {
+            for (size_t n_xi = 2; n_xi < 21; n_xi += 3) {
+              for (size_t n_eta = 2; n_eta < 21; n_eta += 3) {
+                const Mesh<2> source_mesh{
+                    std::array{n_xi, n_eta}, std::array{xi_basis, eta_basis},
+                    std::array{xi_quadrature, eta_quadrature}};
+                const ProductOfPolynomials<2> f{std::array{n_xi - 1, n_eta - 1},
+                                                std::array{1.5, 2.5},
+                                                std::array{2.0, 4.0}};
+                const auto xi_source = logical_coordinates(source_mesh);
+                const DataVector f_source = f(xi_source);
+                const DataVector f_expected = f(xi_target);
+                const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
+                const DataVector f_interpolated =
+                    interpolator.interpolate(f_source);
+                CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void test_2d_spherical(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 2, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = acos(make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target));
+    get<1>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_z = 0; n_z < 4; ++n_z) {
+      for (size_t n_y = 0; n_y < 4; ++n_y) {
+        for (size_t n_x = 0; n_x < 4; ++n_x) {
+          const Mesh<2> source_mesh{
+              std::array{n_x + n_y + n_z + 2, 2 * (n_x + n_y) + 3},
+              std::array{Spectral::Basis::SphericalHarmonic,
+                         Spectral::Basis::SphericalHarmonic},
+              std::array{Spectral::Quadrature::Gauss,
+                         Spectral::Quadrature::Equiangular}};
+          const YlmTestFunctions::ProductOfPolynomials f(n_x, n_y, n_z);
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source = f(xi_source);
+          const DataVector f_expected = f(xi_target);
+          const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+      }
+    }
+  }
+}
+
+void test_3d_cartesian(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    const auto xi_target =
+        make_with_random_values<tnsr::I<DataVector, 3, Frame::ElementLogical>>(
+            generator, make_not_null(&xi_distribution), n_target_points);
+    for (size_t n_xi = 2; n_xi < 21; n_xi += 3) {
+      for (size_t n_eta = 2; n_eta < 21; n_eta += 3) {
+        for (size_t n_zeta = 2; n_zeta < 21; n_zeta += 3) {
+          const Mesh<3> source_mesh{std::array{n_xi, n_eta, n_zeta},
+                                    Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto};
+          const ProductOfPolynomials<3> f{
+              std::array{n_xi - 1, n_eta - 1, n_zeta - 1},
+              std::array{1.5, 2.5, 3.5}, std::array{2.0, 4.0, 2.5}};
+          const auto xi_source = logical_coordinates(source_mesh);
+          const DataVector f_source = f(xi_source);
+          const DataVector f_expected = f(xi_target);
+          const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
+          const DataVector f_interpolated = interpolator.interpolate(f_source);
+          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+        }
+      }
+    }
+  }
+}
+
+void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
+  for (size_t n_target_points = 1; n_target_points < 13;
+       n_target_points += 11) {
+    tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{n_target_points};
+    get<0>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target);
+    get<1>(xi_target) = acos(make_with_random_values<DataVector>(
+        generator, make_not_null(&xi_distribution), xi_target));
+    get<2>(xi_target) = make_with_random_values<DataVector>(
+        generator, make_not_null(&phi_distribution), xi_target);
+    for (size_t n_r = 2; n_r < 4; ++n_r) {
+      for (size_t n_z = 0; n_z < 4; ++n_z) {
+        for (size_t n_y = 0; n_y < 4; ++n_y) {
+          for (size_t n_x = 0; n_x < 4; ++n_x) {
+            const Mesh<3> source_mesh{
+                std::array{n_r, n_x + n_y + n_z + 2, 2 * (n_x + n_y) + 3},
+                std::array{Spectral::Basis::Legendre,
+                           Spectral::Basis::SphericalHarmonic,
+                           Spectral::Basis::SphericalHarmonic},
+                std::array{Spectral::Quadrature::GaussLobatto,
+                           Spectral::Quadrature::Gauss,
+                           Spectral::Quadrature::Equiangular}};
+            const Polynomial f_r{n_r - 1, 1.5, 2.0};
+            const YlmTestFunctions::ProductOfPolynomials f_a(n_x, n_y, n_z);
+            const auto xi_source = logical_coordinates(source_mesh);
+            const DataVector f_source =
+                f_r(get<0>(xi_source)) *
+                f_a(get<1>(xi_source), get<2>(xi_source));
+            const DataVector f_expected =
+                f_r(get<0>(xi_target)) *
+                f_a(get<1>(xi_target), get<2>(xi_target));
+            const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+        }
+      }
+    }
+  }
+}
+}  // namespace
+
+// [[Timeout, 20]]
+SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.Cardinal",
+                  "[Unit][NumericalAlgorithms]") {
+  MAKE_GENERATOR(generator);
+  test_1d(make_not_null(&generator));
+  test_2d_cartesian(make_not_null(&generator));
+  test_2d_spherical(make_not_null(&generator));
+  test_3d_cartesian(make_not_null(&generator));
+  test_3d_spherical(make_not_null(&generator));
+}
