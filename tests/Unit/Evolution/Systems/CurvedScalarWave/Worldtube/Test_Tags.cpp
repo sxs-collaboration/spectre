@@ -664,69 +664,6 @@ void test_puncture_field() {
   CHECK(not puncture_field_nullopt.has_value());
 }
 
-void test_check_input_file() {
-  const auto bbh_correct =
-      TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
-          false>(7., 0.2, pow(7., -1.5));
-  const gr::Solutions::KerrSchild kerr_schild_correct(
-      1., make_array(0., 0., 0.), make_array(0., 0., 0.));
-  CHECK(Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::create_from_options(
-      bbh_correct, "ExcisionSphereA", kerr_schild_correct));
-  {
-    const auto bbh_incorrect = TestHelpers::CurvedScalarWave::Worldtube::
-        worldtube_binary_compact_object<false>(7., 0.2, 1.);
-    CHECK_THROWS_WITH(
-        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
-             create_from_options(bbh_incorrect, "ExcisionSphereA",
-                                 kerr_schild_correct)),
-        Catch::Matchers::ContainsSubstring(
-            "Only circular orbits are implemented at the moment so the "
-            "angular velocity should be [0., 0., orbital_radius^(-3/2)] = "));
-  }
-  {
-    const std::unique_ptr<DomainCreator<3>> shell =
-        std::make_unique<domain::creators::Sphere>(
-            1.5, 3., domain::creators::Sphere::Excision{}, size_t(1), size_t(6),
-            true);
-    CHECK_THROWS_WITH(
-        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
-             create_from_options(shell, "ExcisionSphere", kerr_schild_correct)),
-        Catch::Matchers::ContainsSubstring(
-            "Expected functions of time to contain 'Rotation'."));
-  }
-  {
-    const gr::Solutions::KerrSchild kerr_schild_off_center(
-        1., make_array(0., 0., 0.), make_array(0.1, 0., 0.));
-    CHECK_THROWS_WITH(
-        (Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
-             create_from_options(bbh_correct, "ExcisionSphere",
-                                 kerr_schild_off_center)),
-        Catch::Matchers::ContainsSubstring(
-            "The central black hole must be centered at [0., 0., 0.]."));
-  }
-  {
-    const gr::Solutions::KerrSchild kerr_schild_spinning(
-        1., make_array(0.1, 0., 0.), make_array(0., 0., 0.));
-    CHECK_THROWS_WITH((Tags::CheckInputFile<3, gr::Solutions::KerrSchild>::
-                           create_from_options(bbh_correct, "ExcisionSphere",
-                                               kerr_schild_spinning)),
-                      Catch::Matchers::ContainsSubstring(
-                          "Black hole spin is not implemented yet but "
-                          "you requested non-zero spin."));
-  }
-  {
-    const gr::Solutions::KerrSchild kerr_schild_2M(2., make_array(0., 0., 0.),
-                                                   make_array(0., 0., 0.));
-    CHECK_THROWS_WITH(
-        (Tags::CheckInputFile<
-            3, gr::Solutions::KerrSchild>::create_from_options(bbh_correct,
-                                                               "ExcisionSphere",
-                                                               kerr_schild_2M)),
-        Catch::Matchers::ContainsSubstring(
-            "The central black hole must have mass 1."));
-  }
-}
-
 void test_self_force_options() {
   const auto options = TestHelpers::test_creation<OptionTags::SelfForceOptions>(
       "Mass: 0.1\n"
@@ -821,8 +758,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   TestHelpers::db::test_simple_tag<Tags::PunctureField<3>>("PunctureField");
   TestHelpers::db::test_simple_tag<Tags::IteratedPunctureField<3>>(
       "IteratedPunctureField");
-  TestHelpers::db::test_simple_tag<
-      Tags::CheckInputFile<3, gr::Solutions::KerrSchild>>("CheckInputFile");
   TestHelpers::db::test_simple_tag<Tags::ObserveCoefficientsTrigger>(
       "ObserveCoefficientsTrigger");
   TestHelpers::db::test_simple_tag<Tags::GeodesicAcceleration<3>>(
@@ -833,6 +768,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
       "BackgroundQuantities");
   TestHelpers::db::test_simple_tag<Tags::AccelerationTerms>(
       "AccelerationTerms");
+  TestHelpers::db::test_simple_tag<Tags::Verbosity>("Verbosity");
   test_excision_sphere_tag();
   test_self_force_options();
   test_radius_options();
@@ -845,7 +781,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Worldtube.Tags",
   test_background_quantities_compute();
   test_face_quantities_compute();
   test_puncture_field();
-  test_check_input_file();
   test_constraint_gammas_compute();
 }
 }  // namespace CurvedScalarWave::Worldtube

@@ -276,7 +276,8 @@ struct EvolutionMetavars {
       CurvedScalarWave::Worldtube::Tags::SelfForceTurnOnInterval,
       CurvedScalarWave::Worldtube::Tags::Mass,
       CurvedScalarWave::Worldtube::Tags::MaxIterations,
-      CurvedScalarWave::Worldtube::Tags::ObserveCoefficientsTrigger>;
+      CurvedScalarWave::Worldtube::Tags::ObserveCoefficientsTrigger,
+      CurvedScalarWave::Worldtube::Tags::Verbosity>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
