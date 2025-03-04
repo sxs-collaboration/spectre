@@ -193,15 +193,24 @@ struct TransitionEndsAtCube {
  * \brief Specialized version of `FromVolumeFile` for the shape map
  *
  * \details This is needed because the regular `FromVolumeFile` doesn't have
- * options for domain settings like `TransitionEndsAtCube`.
+ * options for domain settings like `TransitionEndsAtCube` or `LMax`.
  */
 template <ObjectLabel Object>
 struct FromVolumeFileShapeSize : public FromVolumeFile {
-  using options =
-      tmpl::push_front<FromVolumeFile::options, detail::TransitionEndsAtCube>;
+ public:
+  struct LMax {
+    using type = Options::Auto<size_t>;
+    static constexpr Options::String help = {
+        "LMax used for the number of spherical harmonic coefficients of the "
+        "distortion map. If set to 'Auto', will use the LMax from the shape "
+        "function of time in the volume file."};
+  };
+  using options = tmpl::push_front<FromVolumeFile::options, LMax,
+                                   detail::TransitionEndsAtCube>;
 
   FromVolumeFileShapeSize() = default;
-  FromVolumeFileShapeSize(bool transition_ends_at_cube_in,
+  FromVolumeFileShapeSize(const std::optional<size_t>& l_max_in,
+                          bool transition_ends_at_cube_in,
                           std::string h5_filename, std::string subfile_name);
 
   size_t l_max{};

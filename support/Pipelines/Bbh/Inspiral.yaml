@@ -139,10 +139,12 @@ DomainCreator:
       ShapeMapA:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "VolumeData"
+        LMax: Auto
         TransitionEndsAtCube: True
       ShapeMapB:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "VolumeData"
+        LMax: Auto
         TransitionEndsAtCube: True
 {% else %}
     TimeDependentMaps:
