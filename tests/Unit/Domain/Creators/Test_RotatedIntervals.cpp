@@ -24,7 +24,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -46,7 +46,7 @@ void test_rotated_intervals_construction(
     const std::array<double, 1>& upper_bound,
     const std::vector<std::array<size_t, 1>>& expected_extents,
     const std::vector<std::array<size_t, 1>>& expected_refinement_level,
-    const std::vector<DirectionMap<1, BlockNeighbor<1>>>&
+    const std::vector<DirectionMap<1, BlockNeighbors<1>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<1>>>&
         expected_external_boundaries,
@@ -106,7 +106,7 @@ void test_rotated_intervals() {
         test_rotated_intervals_construction(
             rotated_intervals, lower_bound, midpoint, upper_bound, grid_points,
             refinement_level,
-            std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+            std::vector<DirectionMap<1, BlockNeighbors<1>>>{
                 {{Direction<1>::upper_xi(), {1, flipped}}},
                 {{Direction<1>::upper_xi(), {0, flipped}}}},
             std::vector<std::unordered_set<Direction<1>>>{
@@ -121,7 +121,7 @@ void test_rotated_intervals() {
         test_rotated_intervals_construction(
             periodic_rotated_intervals, lower_bound, midpoint, upper_bound,
             grid_points, refinement_level,
-            std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+            std::vector<DirectionMap<1, BlockNeighbors<1>>>{
                 {{Direction<1>::lower_xi(), {1, flipped}},
                  {Direction<1>::upper_xi(), {1, flipped}}},
                 {{Direction<1>::lower_xi(), {0, flipped}},
@@ -261,7 +261,7 @@ void test_rotated_intervals_factory() {
     test_rotated_intervals_construction(
         *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
         {{{2}}, {{2}}},
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+        std::vector<DirectionMap<1, BlockNeighbors<1>>>{
             {{Direction<1>::lower_xi(), {1, flipped}},
              {Direction<1>::upper_xi(), {1, flipped}}},
             {{Direction<1>::lower_xi(), {0, flipped}},
@@ -297,7 +297,7 @@ void test_rotated_intervals_factory() {
     test_rotated_intervals_construction(
         *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
         {{{2}}, {{2}}},
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+        std::vector<DirectionMap<1, BlockNeighbors<1>>>{
             {{Direction<1>::upper_xi(), {1, flipped}}},
             {{Direction<1>::upper_xi(), {0, flipped}}}},
         expected_external_boundaries, {}, {}, true);
@@ -332,7 +332,7 @@ void test_rotated_intervals_factory() {
     test_rotated_intervals_construction(
         *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
         {{{2}}, {{2}}},
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+        std::vector<DirectionMap<1, BlockNeighbors<1>>>{
             {{Direction<1>::lower_xi(), {1, flipped}},
              {Direction<1>::upper_xi(), {1, flipped}}},
             {{Direction<1>::lower_xi(), {0, flipped}},
@@ -353,7 +353,7 @@ void test_rotated_intervals_factory() {
     test_rotated_intervals_construction(
         *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
         {{{2}}, {{2}}},
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+        std::vector<DirectionMap<1, BlockNeighbors<1>>>{
             {{Direction<1>::lower_xi(), {1, flipped}},
              {Direction<1>::upper_xi(), {1, flipped}}},
             {{Direction<1>::lower_xi(), {0, flipped}},
@@ -409,7 +409,7 @@ void test_rotated_intervals_factory() {
     test_rotated_intervals_construction(
         *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
         {{{2}}, {{2}}},
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+        std::vector<DirectionMap<1, BlockNeighbors<1>>>{
             {{Direction<1>::upper_xi(), {1, flipped}}},
             {{Direction<1>::upper_xi(), {0, flipped}}}},
         expected_external_boundaries,
@@ -428,7 +428,7 @@ void test_rotated_intervals_factory() {
     test_rotated_intervals_construction(
         *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
         {{{2}}, {{2}}},
-        std::vector<DirectionMap<1, BlockNeighbor<1>>>{
+        std::vector<DirectionMap<1, BlockNeighbors<1>>>{
             {{Direction<1>::upper_xi(), {1, flipped}}},
             {{Direction<1>::upper_xi(), {0, flipped}}}},
         expected_external_boundaries,

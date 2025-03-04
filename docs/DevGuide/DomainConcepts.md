@@ -57,8 +57,8 @@ See LICENSE.txt for details.
   The information of how the Block Logical Coordinates of neighboring Blocks are
   related.
 
-* \ref BlockNeighbor "Block Neighbor":<br>
-  The identity and Orientation of a neighboring Block of a given Block.
+* \ref BlockNeighbors "Block Neighbors":<br>
+  The identity and Orientation of neighboring Blocks of a given Block.
 
 * Element:<br> A reference cell that is a refined subregion of a Block
   defined by its Segments in each dimension. The properties of the
@@ -95,8 +95,8 @@ See LICENSE.txt for details.
   A boundary that is not an External Boundary.
 
 * Neighbors:<br>
-  The identities and Orientation of the neighboring Elements of a given Element
-  in a particular Direction .
+  The identities and Orientation of the neighboring Blocks or Elements of a
+  given Block or Element in a particular Direction .
 
 * External Boundary Condition:<br>
   A prescription for updating the solution on an External Boundary. Each

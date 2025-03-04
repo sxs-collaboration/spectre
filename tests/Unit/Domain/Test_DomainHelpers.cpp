@@ -25,7 +25,7 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -43,7 +43,7 @@ namespace {
 void test_periodic_same_block() {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
+  std::vector<DirectionMap<3, BlockNeighbors<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(&neighbors_of_all_blocks, corners_of_all_blocks);
 
   const OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
@@ -58,11 +58,11 @@ void test_periodic_same_block() {
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
 
-  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
-      {{Direction<3>::upper_xi(), {0, aligned}},
-       {Direction<3>::lower_xi(), {0, aligned}},
-       {Direction<3>::lower_zeta(), {1, aligned}}},
-      {{Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<DirectionMap<3, BlockNeighbors<3>>>
+      expected_block_neighbors{{{Direction<3>::upper_xi(), {0, aligned}},
+                                {Direction<3>::lower_xi(), {0, aligned}},
+                                {Direction<3>::lower_zeta(), {1, aligned}}},
+                               {{Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
@@ -70,7 +70,7 @@ void test_periodic_same_block() {
 void test_periodic_different_blocks() {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
+  std::vector<DirectionMap<3, BlockNeighbors<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(&neighbors_of_all_blocks, corners_of_all_blocks);
 
   const OrientationMap<3> aligned = OrientationMap<3>::create_aligned();
@@ -84,11 +84,11 @@ void test_periodic_different_blocks() {
                                &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
-  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
-      {{Direction<3>::upper_xi(), {1, aligned}},
-       {Direction<3>::lower_zeta(), {1, aligned}}},
-      {{Direction<3>::lower_xi(), {0, aligned}},
-       {Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<DirectionMap<3, BlockNeighbors<3>>>
+      expected_block_neighbors{{{Direction<3>::upper_xi(), {1, aligned}},
+                                {Direction<3>::lower_zeta(), {1, aligned}}},
+                               {{Direction<3>::lower_xi(), {0, aligned}},
+                                {Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
@@ -1563,23 +1563,24 @@ void test_set_cartesian_periodic_boundaries_3() {
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
       false);
 
-  const std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
-      {{Direction<2>::upper_xi(), {1, flipped}},
-       {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
-       {Direction<2>::lower_xi(), {1, flipped}},
-       {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
-      {{Direction<2>::upper_xi(), {0, flipped}},
-       {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
-       {Direction<2>::lower_xi(), {0, flipped}},
-       {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
-      {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
-       {Direction<2>::upper_eta(), {3, flipped}},
-       {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
-       {Direction<2>::lower_eta(), {3, flipped}}},
-      {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
-       {Direction<2>::upper_eta(), {2, flipped}},
-       {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
-       {Direction<2>::lower_eta(), {2, flipped}}}};
+  const std::vector<DirectionMap<2, BlockNeighbors<2>>>
+      expected_block_neighbors{
+          {{Direction<2>::upper_xi(), {1, flipped}},
+           {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
+           {Direction<2>::lower_xi(), {1, flipped}},
+           {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, flipped}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
+           {Direction<2>::lower_xi(), {0, flipped}},
+           {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
+          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {3, flipped}},
+           {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
+           {Direction<2>::lower_eta(), {3, flipped}}},
+          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::upper_eta(), {2, flipped}},
+           {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
+           {Direction<2>::lower_eta(), {2, flipped}}}};
   const std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 2>>>
       expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Inertial>(

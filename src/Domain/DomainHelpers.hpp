@@ -24,7 +24,7 @@
 
 /// \cond
 template <size_t VolumeDim>
-class BlockNeighbor;
+class BlockNeighbors;
 namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
@@ -69,7 +69,7 @@ struct PairOfFaces {
 template <size_t VolumeDim>
 void set_internal_boundaries(
     gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks);
@@ -82,7 +82,7 @@ void set_internal_boundaries(
 template <size_t VolumeDim>
 void set_internal_boundaries(
     gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps);
@@ -97,7 +97,7 @@ void set_identified_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks);
 
 /// \ingroup ComputationalDomainGroup

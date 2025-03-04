@@ -21,7 +21,7 @@
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/RotatedRectangles.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -41,7 +41,7 @@ void test_rotated_rectangles_construction(
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
-    const std::vector<DirectionMap<2, BlockNeighbor<2>>>&
+    const std::vector<DirectionMap<2, BlockNeighbors<2>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
         expected_external_boundaries,
@@ -115,7 +115,7 @@ void test_rotated_rectangles() {
   test_rotated_rectangles_construction(
       rotated_rectangles, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
-      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbors<2>>>{
           {{Direction<2>::upper_xi(), {1, half_turn}},
            {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
           {{Direction<2>::upper_xi(), {0, half_turn}},
@@ -144,7 +144,7 @@ void test_rotated_rectangles() {
   test_rotated_rectangles_construction(
       rotated_rectangles_boundary_conditions, lower_bound, midpoint,
       upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbors<2>>>{
           {{Direction<2>::upper_xi(), {1, half_turn}},
            {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
           {{Direction<2>::upper_xi(), {0, half_turn}},
@@ -171,7 +171,7 @@ void test_rotated_rectangles() {
   test_rotated_rectangles_construction(
       rotated_periodic_rectangles, lower_bound, midpoint, upper_bound,
       grid_points, refinement_level,
-      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbors<2>>>{
           {{Direction<2>::upper_xi(), {1, half_turn}},
            {Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
            {Direction<2>::lower_xi(), {1, half_turn}},
@@ -204,7 +204,7 @@ void test_rotated_rectangles() {
   test_rotated_rectangles_construction(
       periodic_rotated_rectangles_boundary_conditions, lower_bound, midpoint,
       upper_bound, grid_points, refinement_level,
-      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbors<2>>>{
           {{Direction<2>::upper_xi(), {1, half_turn}},
            {Direction<2>::upper_eta(), {2, quarter_turn_ccw}},
            {Direction<2>::lower_xi(), {1, half_turn}},
@@ -267,7 +267,7 @@ void test_rotated_rectangles_factory() {
         *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
         {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
         {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
             {{Direction<2>::upper_xi(), {1, half_turn}},
              {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
             {{Direction<2>::upper_xi(), {0, half_turn}},
@@ -305,7 +305,7 @@ void test_rotated_rectangles_factory() {
         *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
         {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},
         {{{2, 1}}, {{2, 1}}, {{1, 2}}, {{1, 2}}},
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
             {{Direction<2>::upper_xi(), {1, half_turn}},
              {Direction<2>::upper_eta(), {2, quarter_turn_ccw}}},
             {{Direction<2>::upper_xi(), {0, half_turn}},

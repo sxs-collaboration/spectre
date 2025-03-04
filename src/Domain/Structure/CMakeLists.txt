@@ -9,7 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   BlockGroups.cpp
-  BlockNeighbor.cpp
+  BlockNeighbors.cpp
   ChildSize.cpp
   CreateInitialMesh.cpp
   Direction.cpp
@@ -34,7 +34,7 @@ spectre_target_headers(
   HEADERS
   BlockGroups.hpp
   BlockId.hpp
-  BlockNeighbor.hpp
+  BlockNeighbors.hpp
   ChildSize.hpp
   CreateInitialMesh.hpp
   Direction.hpp

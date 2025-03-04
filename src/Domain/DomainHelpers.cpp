@@ -28,7 +28,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -347,7 +347,7 @@ void set_cartesian_periodic_boundaries(
         corners_of_all_blocks,
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     const gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks) {
   if (orientations_of_all_blocks.size() != corners_of_all_blocks.size()) {
     ERROR("Each block must have an OrientationMap relative to an edifice.");
@@ -445,13 +445,13 @@ void set_cartesian_periodic_boundaries(
 template <size_t VolumeDim>
 void set_internal_boundaries(
     const gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks) {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
        block1_index++) {
-    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
+    DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>> neighbor;
     for (size_t block2_index = 0; block2_index < corners_of_all_blocks.size();
          block2_index++) {
       if (block1_index != block2_index and
@@ -463,7 +463,7 @@ void set_internal_boundaries(
             obtain_correspondence_between_blocks<VolumeDim>(
                 block1_index, block2_index, corners_of_all_blocks);
         neighbor.emplace(std::move((orientation_helper.first)[0]),
-                         BlockNeighbor<VolumeDim>(
+                         BlockNeighbors<VolumeDim>(
                              block2_index, OrientationMap<VolumeDim>(
                                                orientation_helper.first,
                                                orientation_helper.second)));
@@ -476,12 +476,12 @@ void set_internal_boundaries(
 template <size_t VolumeDim>
 void set_internal_boundaries(
     const gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>>& maps) {
   for (size_t block1_index = 0; block1_index < maps.size(); block1_index++) {
-    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
+    DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>> neighbor;
     for (size_t block2_index = 0; block2_index < maps.size(); block2_index++) {
       const auto corners_for_blocks1_and_2 =
           corners_from_two_maps(maps[block1_index], maps[block2_index]);
@@ -494,7 +494,7 @@ void set_internal_boundaries(
                 0, 1, corners_for_blocks1_and_2);
 
         neighbor.emplace(std::move((orientation_helper.first)[0]),
-                         BlockNeighbor<VolumeDim>(
+                         BlockNeighbors<VolumeDim>(
                              block2_index, OrientationMap<VolumeDim>(
                                                orientation_helper.first,
                                                orientation_helper.second)));
@@ -510,7 +510,7 @@ void set_identified_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     const gsl::not_null<
-        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>*>
         neighbors_of_all_blocks) {
   for (const auto& pair : identifications) {
     const auto& face1 = pair.first;
@@ -548,9 +548,9 @@ void set_identified_boundaries(
         obtain_correspondence_between_blocks2.first,
         obtain_correspondence_between_blocks2.second);
     (*neighbors_of_all_blocks)[id1].emplace(
-        face1_normal_dir, BlockNeighbor<VolumeDim>(id2, connect1));
+        face1_normal_dir, BlockNeighbors<VolumeDim>(id2, connect1));
     (*neighbors_of_all_blocks)[id2].emplace(
-        face2_normal_dir, BlockNeighbor<VolumeDim>(id1, connect2));
+        face2_normal_dir, BlockNeighbors<VolumeDim>(id1, connect2));
   }
 }
 
@@ -1418,7 +1418,7 @@ Domain<VolumeDim> rectilinear_domain(
     corners_of_all_blocks[i] =
         discrete_rotation(rotations_of_all_blocks[i], corners_of_all_blocks[i]);
   }
-  std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
+  std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks,
                                      corners_of_all_blocks);
@@ -1528,13 +1528,13 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
 #define INSTANTIATE(_, data)                                                \
   template void set_internal_boundaries(                                    \
       const gsl::not_null<                                                  \
-          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>  \
+          std::vector<DirectionMap<DIM(data), BlockNeighbors<DIM(data)>>>*> \
           neighbors_of_all_blocks,                                          \
       const std::vector<std::array<size_t, two_to_the(DIM(data))>>&         \
           corners_of_all_blocks);                                           \
   template void set_internal_boundaries(                                    \
       const gsl::not_null<                                                  \
-          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>  \
+          std::vector<DirectionMap<DIM(data), BlockNeighbors<DIM(data)>>>*> \
           neighbors_of_all_blocks,                                          \
       const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
           Frame::BlockLogical, Frame::Inertial, DIM(data)>>>& maps);        \
@@ -1543,12 +1543,12 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
       const std::vector<std::array<size_t, two_to_the(DIM(data))>>&         \
           corners_of_all_blocks,                                            \
       const gsl::not_null<                                                  \
-          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>  \
+          std::vector<DirectionMap<DIM(data), BlockNeighbors<DIM(data)>>>*> \
           neighbors_of_all_blocks);                                         \
   template auto indices_for_rectilinear_domains(                            \
       const Index<DIM(data)>& domain_extents,                               \
       const std::vector<Index<DIM(data)>>& block_indices_to_exclude)        \
-      ->std::vector<Index<DIM(data)>>;                                      \
+      -> std::vector<Index<DIM(data)>>;                                     \
   template std::vector<std::array<size_t, two_to_the(DIM(data))>>           \
   corners_for_rectilinear_domains(                                          \
       const Index<DIM(data)>& domain_extents,                               \

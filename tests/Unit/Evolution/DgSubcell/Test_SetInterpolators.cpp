@@ -15,7 +15,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
@@ -108,18 +108,18 @@ void test() {
   }
   const Element<Dim> element{element_id, element_neighbors};
 
-  DirectionMap<Dim, BlockNeighbor<Dim>> block0_neighbors{};
+  DirectionMap<Dim, BlockNeighbors<Dim>> block0_neighbors{};
   block0_neighbors[Direction<Dim>::lower_xi()] =
-      BlockNeighbor<Dim>{1, orientation};
+      BlockNeighbors<Dim>{1, orientation};
   Block<Dim> block0{make_grid_map<Dim, Frame::Inertial>(0), 0,
                     block0_neighbors};
   block0.inject_time_dependent_map(
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{}));
 
-  DirectionMap<Dim, BlockNeighbor<Dim>> block1_neighbors{};
+  DirectionMap<Dim, BlockNeighbors<Dim>> block1_neighbors{};
   block1_neighbors[Direction<Dim>::lower_xi()] =
-      BlockNeighbor<Dim>{0, orientation.inverse_map()};
+      BlockNeighbors<Dim>{0, orientation.inverse_map()};
   Block<Dim> block1{make_grid_map<Dim, Frame::Inertial>(1), 1,
                     block1_neighbors};
   block1.inject_time_dependent_map(

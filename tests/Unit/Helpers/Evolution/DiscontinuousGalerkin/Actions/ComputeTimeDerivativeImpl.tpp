@@ -1120,15 +1120,15 @@ void test_impl(const Spectral::Quadrature quadrature,
         Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
         boundary_conditions{2};
     std::vector<Block<Dim>> blocks{2};
-    DirectionMap<Dim, BlockNeighbor<Dim>> neighbors_block0{};
-    DirectionMap<Dim, BlockNeighbor<Dim>> neighbors_block1{};
+    DirectionMap<Dim, BlockNeighbors<Dim>> neighbors_block0{};
+    DirectionMap<Dim, BlockNeighbors<Dim>> neighbors_block1{};
     if constexpr (Dim > 1) {
-      neighbors_block0[Direction<Dim>::lower_eta()] = BlockNeighbor<Dim>{
+      neighbors_block0[Direction<Dim>::lower_eta()] = BlockNeighbors<Dim>{
           1, element.neighbors().at(Direction<Dim>::lower_eta()).orientation()};
       neighbors_block1[element.neighbors()
                            .at(Direction<Dim>::lower_eta())
                            .orientation()(Direction<Dim>::lower_eta())] =
-          BlockNeighbor<Dim>{0, element.neighbors()
+          BlockNeighbors<Dim>{0, element.neighbors()
                                     .at(Direction<Dim>::lower_eta())
                                     .orientation()
                                     .inverse_map()};

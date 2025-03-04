@@ -46,7 +46,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
@@ -147,11 +147,11 @@ void test_1d_domains() {
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
                                                   {{Direction<1>::upper_xi()}}};
 
-    const std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_neighbors{
+    const std::vector<DirectionMap<1, BlockNeighbors<1>>> expected_neighbors{
         {{Direction<1>::upper_xi(),
-          BlockNeighbor<1>{1, unaligned_orientation}}},
+          BlockNeighbors<1>{1, unaligned_orientation}}},
         {{Direction<1>::upper_xi(),
-          BlockNeighbor<1>{0, unaligned_orientation}}}};
+          BlockNeighbors<1>{0, unaligned_orientation}}}};
 
     const std::vector<std::unordered_set<Direction<1>>> expected_boundaries{
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
@@ -345,9 +345,9 @@ void test_1d_domains() {
     const auto expected_neighbors = []() {
       OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
                                     {{Direction<1>::lower_xi()}}};
-      return std::vector<DirectionMap<1, BlockNeighbor<1>>>{
-          {{Direction<1>::lower_xi(), BlockNeighbor<1>{0, orientation}},
-           {Direction<1>::upper_xi(), BlockNeighbor<1>{0, orientation}}}};
+      return std::vector<DirectionMap<1, BlockNeighbors<1>>>{
+          {{Direction<1>::lower_xi(), BlockNeighbors<1>{0, orientation}},
+           {Direction<1>::upper_xi(), BlockNeighbors<1>{0, orientation}}}};
     }();
 
     test_domain_construction(domain, expected_neighbors,
@@ -366,7 +366,7 @@ void test_1d_rectilinear_domains() {
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, {}, {{false}}, {}, true);
     const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
-    std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
+    std::vector<DirectionMap<1, BlockNeighbors<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, aligned}}},
         {{Direction<1>::lower_xi(), {0, aligned}},
          {Direction<1>::upper_xi(), {2, aligned}}},
@@ -391,7 +391,7 @@ void test_1d_rectilinear_domains() {
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
         {{false}}, {}, true);
-    std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
+    std::vector<DirectionMap<1, BlockNeighbors<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, antialigned}}},
         {{Direction<1>::lower_xi(), {2, antialigned}},
          {Direction<1>::upper_xi(), {0, antialigned}}},
@@ -429,7 +429,7 @@ void test_2d_rectilinear_domains() {
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks);
-  std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
+  std::vector<DirectionMap<2, BlockNeighbors<2>>> expected_block_neighbors{
       {{Direction<2>::upper_xi(), {1, half_turn}},
        {Direction<2>::upper_eta(), {2, quarter_turn_cw}}},
       {{Direction<2>::upper_xi(), {0, half_turn}},
@@ -468,7 +468,7 @@ void test_3d_rectilinear_domains() {
                             std::array<std::vector<double>, 3>{
                                 {{0.0, 1.0, 2.0}, {0.0, 1.0}, {0.0, 1.0}}},
                             {}, orientations_of_all_blocks);
-  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+  std::vector<DirectionMap<3, BlockNeighbors<3>>> expected_block_neighbors{
       {{Direction<3>::upper_xi(), {1, quarter_turn_cw_xi}}},
       {{Direction<3>::lower_xi(), {0, quarter_turn_cw_xi.inverse_map()}}}};
   for (size_t i = 0; i < domain.blocks().size(); i++) {

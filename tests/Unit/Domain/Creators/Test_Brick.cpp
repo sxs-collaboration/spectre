@@ -28,7 +28,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -53,7 +53,7 @@ void test_brick_construction(
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const std::vector<DirectionMap<3, BlockNeighbor<3>>>&
+    const std::vector<DirectionMap<3, BlockNeighbors<3>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<3>>>&
         expected_external_boundaries,
@@ -114,7 +114,7 @@ void test_brick() {
                                 std::array<bool, 3>{{false, false, false}}};
     test_brick_construction(brick, lower_bound, upper_bound, grid_points,
                             refinement_level,
-                            std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
+                            std::vector<DirectionMap<3, BlockNeighbors<3>>>{{}},
                             std::vector<std::unordered_set<Direction<3>>>{
                                 {{Direction<3>::lower_xi()},
                                  {Direction<3>::upper_xi()},
@@ -135,7 +135,7 @@ void test_brick() {
           {{create_boundary_condition(), create_boundary_condition()}}}}};
     test_brick_construction(brick_boundary_condition, lower_bound, upper_bound,
                             grid_points, refinement_level,
-                            std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
+                            std::vector<DirectionMap<3, BlockNeighbors<3>>>{{}},
                             std::vector<std::unordered_set<Direction<3>>>{
                                 {{Direction<3>::lower_xi()},
                                  {Direction<3>::upper_xi()},
@@ -152,7 +152,7 @@ void test_brick() {
                         grid_points[0],
                         std::array<bool, 3>{{true, false, false}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<3>>>{
@@ -170,7 +170,7 @@ void test_brick() {
               {{create_boundary_condition(), create_boundary_condition()}},
               {{create_boundary_condition(), create_boundary_condition()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<3>>>{
@@ -187,7 +187,7 @@ void test_brick() {
                         grid_points[0],
                         std::array<bool, 3>{{false, true, false}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_eta(), {0, aligned_orientation}},
              {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<3>>>{
@@ -205,7 +205,7 @@ void test_brick() {
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
               {{create_boundary_condition(), create_boundary_condition()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_eta(), {0, aligned_orientation}},
              {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<3>>>{
@@ -222,7 +222,7 @@ void test_brick() {
                         grid_points[0],
                         std::array<bool, 3>{{false, false, true}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
              {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<3>>>{
@@ -240,7 +240,7 @@ void test_brick() {
               {{create_boundary_condition(), create_boundary_condition()}},
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
              {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<3>>>{
@@ -257,7 +257,7 @@ void test_brick() {
                         grid_points[0],
                         std::array<bool, 3>{{true, true, false}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}},
              {Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -274,7 +274,7 @@ void test_brick() {
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
               {{create_boundary_condition(), create_boundary_condition()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}},
              {Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -291,7 +291,7 @@ void test_brick() {
     test_brick_construction(
         periodic_yz_brick, lower_bound, upper_bound, grid_points,
         refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_eta(), {0, aligned_orientation}},
              {Direction<3>::upper_eta(), {0, aligned_orientation}},
              {Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -310,7 +310,7 @@ void test_brick() {
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_eta(), {0, aligned_orientation}},
              {Direction<3>::upper_eta(), {0, aligned_orientation}},
              {Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -327,7 +327,7 @@ void test_brick() {
     test_brick_construction(
         periodic_xz_brick, lower_bound, upper_bound, grid_points,
         refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}},
              {Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -344,7 +344,7 @@ void test_brick() {
               {{create_boundary_condition(), create_boundary_condition()}},
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}},
              {Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -361,7 +361,7 @@ void test_brick() {
     test_brick_construction(
         periodic_xyz_brick, lower_bound, upper_bound, grid_points,
         refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}},
              {Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -379,7 +379,7 @@ void test_brick() {
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}},
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(), {0, aligned_orientation}},
              {Direction<3>::upper_xi(), {0, aligned_orientation}},
              {Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -451,7 +451,7 @@ void test_brick_factory() {
     test_brick_construction(
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(),
               {0, OrientationMap<3>::create_aligned()}},
              {Direction<3>::upper_xi(),
@@ -519,7 +519,7 @@ void test_brick_factory() {
     test_brick_construction(
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(),
               {0, OrientationMap<3>::create_aligned()}},
              {Direction<3>::upper_xi(),
@@ -543,7 +543,7 @@ void test_brick_factory() {
     test_brick_construction(
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
         {{{2, 3, 2}}},
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::lower_xi(),
               {0, OrientationMap<3>::create_aligned()}},
              {Direction<3>::upper_xi(),

@@ -30,7 +30,6 @@
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Options/ParseError.hpp"

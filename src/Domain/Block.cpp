@@ -11,7 +11,7 @@
 #include <typeinfo>
 #include <utility>
 
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -24,7 +24,7 @@ Block<VolumeDim>::Block(
     std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
     const size_t id,
-    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
+    DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>> neighbors,
     std::string name, std::array<domain::Topology, VolumeDim> topologies)
     : stationary_map_(std::move(stationary_map)),
       id_(id),

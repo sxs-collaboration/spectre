@@ -14,7 +14,7 @@
 #include <unordered_set>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Topology.hpp"
@@ -57,7 +57,7 @@ class Block {
   /// domain::Topology::I1)
   Block(std::unique_ptr<domain::CoordinateMapBase<
             Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
-        size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
+        size_t id, DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>> neighbors,
         std::string name = "",
         std::array<domain::Topology, VolumeDim> topologies =
             make_array<VolumeDim>(domain::Topology::I1));
@@ -156,7 +156,7 @@ class Block {
   size_t id() const { return id_; }
 
   /// Information about the neighboring Blocks.
-  const DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>& neighbors() const {
+  const DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>& neighbors() const {
     return neighbors_;
   }
 
@@ -200,7 +200,7 @@ class Block {
       moving_mesh_distorted_to_inertial_map_{nullptr};
 
   size_t id_{0};
-  DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
+  DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
   std::string name_;
   std::array<domain::Topology, VolumeDim> topologies_;
