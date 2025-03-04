@@ -188,10 +188,10 @@ void test_refinement_levels_of_neighbors(
 template <size_t VolumeDim>
 bool blocks_are_neighbors(const Block<VolumeDim>& host_block,
                           const Block<VolumeDim>& neighbor_block) {
-  return alg::any_of(host_block.neighbors(),
-                     [&neighbor_block](const auto& neighbor) {
-                       return neighbor.second.id() == neighbor_block.id();
-                     });
+  return alg::any_of(
+      host_block.neighbors(), [&neighbor_block](const auto& neighbor) {
+        return neighbor.second.ids().contains(neighbor_block.id());
+      });
 }
 
 // Finds the OrientationMap of a neighboring Block relative to a host Block.
@@ -200,7 +200,7 @@ OrientationMap<VolumeDim> find_neighbor_orientation(
     const Block<VolumeDim>& host_block,
     const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
-    if (neighbor.second.id() == neighbor_block.id()) {
+    if (neighbor.second.ids().contains(neighbor_block.id())) {
       return neighbor.second.orientation();
     }
   }
@@ -213,7 +213,7 @@ Direction<VolumeDim> find_direction_to_neighbor(
     const Block<VolumeDim>& host_block,
     const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
-    if (neighbor.second.id() == neighbor_block.id()) {
+    if (neighbor.second.ids().contains(neighbor_block.id())) {
       return neighbor.first;
     }
   }

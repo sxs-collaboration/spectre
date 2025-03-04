@@ -380,7 +380,10 @@ void set_cartesian_periodic_boundaries(
               opposite_block.end()) {
             continue;
           } else {
-            opposite_block_id = opposite_block[opposite_block_direction].id();
+            ASSERT(opposite_block[opposite_block_direction].size() == 1,
+                   "Multiple block neighbors not supported by this function.");
+            opposite_block_id =
+                *(opposite_block[opposite_block_direction].begin());
             opposite_block = (*neighbors_of_all_blocks)[opposite_block_id];
             opposite_block_direction =
                 orientations_of_all_blocks[opposite_block_id](direction)

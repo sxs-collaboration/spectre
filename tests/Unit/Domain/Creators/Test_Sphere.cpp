@@ -302,7 +302,7 @@ void test_sphere_construction(
   // verify if adjacent to inner cube
   const auto abuts_inner_cube =
       [&num_blocks](const auto& direction_and_neighbor) {
-        return direction_and_neighbor.second.id() == num_blocks - 1;
+        return *direction_and_neighbor.second.begin() == num_blocks - 1;
       };
 
   for (size_t block_id = 0; block_id < num_blocks; ++block_id) {
@@ -382,7 +382,7 @@ void test_sphere_construction(
         for (const auto& [direction, neighbor_id] : block.neighbors()) {
           CAPTURE(direction);
           if (direction.axis() != Direction<3>::Axis::Zeta) {
-            CHECK(blocks[neighbor_id.id()].external_boundaries() ==
+            CHECK(blocks[*neighbor_id.begin()].external_boundaries() ==
                   external_boundaries);
           }
         }

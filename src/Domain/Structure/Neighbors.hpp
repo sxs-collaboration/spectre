@@ -1,13 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class template Neighbors.
-
 #pragma once
 
 #include <cstddef>
 #include <iosfwd>
+#include <type_traits>
 #include <unordered_set>
 
 #include "Domain/Structure/OrientationMap.hpp"
@@ -21,20 +19,25 @@ class ElementId;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
-/// Information about the neighbors of a host Element in a particular direction.
+/// Information about the neighbors of a host Element or Block in a particular
+/// direction.
 ///
 /// \tparam VolumeDim the volume dimension.
-/// \tparam IdType the type of the Id of the neighbor
+/// \tparam IdType the type of the Id of the neighbor (either ElementId or
+/// size_t for a Block)
 template <size_t VolumeDim, typename IdType = ElementId<VolumeDim>>
 class Neighbors {
+  static_assert(std::is_same_v<IdType, size_t> or
+                std::is_same_v<IdType, ElementId<VolumeDim>>);
+
  public:
   /// Construct with the ids and orientation of the neighbors relative to the
   /// host.
   ///
   /// \param ids the ids of the neighbors.
   /// \param orientation This OrientationMap takes objects in the logical
-  /// coordinate frame of the host Element and maps them to the logical
-  /// coordinate frame of the neighbor Element.
+  /// coordinate frame of the host and maps them to the logical coordinate frame
+  /// of the neighbor.
   Neighbors(std::unordered_set<IdType> ids,
             OrientationMap<VolumeDim> orientation);
 
@@ -103,7 +106,7 @@ class Neighbors {
 /// Output operator for Neighbors.
 template <size_t VolumeDim, typename IdType>
 std::ostream& operator<<(std::ostream& os,
-                         const Neighbors<VolumeDim, IdType>& n);
+                         const Neighbors<VolumeDim, IdType>& neighbors);
 
 template <size_t VolumeDim, typename IdType>
 bool operator==(const Neighbors<VolumeDim, IdType>& lhs,

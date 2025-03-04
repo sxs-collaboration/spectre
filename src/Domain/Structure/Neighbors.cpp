@@ -44,8 +44,9 @@ void Neighbors<VolumeDim, IdType>::add_ids(
 
 template <size_t VolumeDim, typename IdType>
 std::ostream& operator<<(std::ostream& os,
-                         const Neighbors<VolumeDim, IdType>& n) {
-  os << "Ids = " << n.ids() << "; orientation = " << n.orientation();
+                         const Neighbors<VolumeDim, IdType>& neighbors) {
+  os << "Ids = " << neighbors.ids()
+     << "; orientation = " << neighbors.orientation();
   return os;
 }
 
@@ -63,16 +64,38 @@ bool operator!=(const Neighbors<VolumeDim, IdType>& lhs,
 
 template <size_t VolumeDim, typename IdType>
 void Neighbors<VolumeDim, IdType>::pup(PUP::er& p) {
-  p | ids_;
-  p | orientation_;
+  if constexpr (std::is_same_v<IdType, size_t>) {
+    size_t version = 1;
+    p | version;
+    if (version == 0) {
+      // Deserialize old BlockNeighbor class
+      size_t id = 0;
+      p | id;
+      ids_.clear();
+      ids_.emplace(id);
+    } else {
+      p | ids_;
+    }
+    p | orientation_;
+  } else {
+    p | ids_;
+    p | orientation_;
+  }
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                              \
+  template class Neighbors<GET_DIM(data), size_t>;                          \
+  template std::ostream& operator<<(                                        \
+      std::ostream& os, const Neighbors<GET_DIM(data), size_t>& neighbors); \
+  template bool operator==(const Neighbors<GET_DIM(data), size_t>& lhs,     \
+                           const Neighbors<GET_DIM(data), size_t>& rhs);    \
+  template bool operator!=(const Neighbors<GET_DIM(data), size_t>& lhs,     \
+                           const Neighbors<GET_DIM(data), size_t>& rhs);    \
   template class Neighbors<GET_DIM(data)>;                                  \
-  template std::ostream& operator<<(std::ostream& os,                       \
-                                    const Neighbors<GET_DIM(data)>& block); \
+  template std::ostream& operator<<(                                        \
+      std::ostream& os, const Neighbors<GET_DIM(data)>& neighbors);         \
   template bool operator==(const Neighbors<GET_DIM(data)>& lhs,             \
                            const Neighbors<GET_DIM(data)>& rhs);            \
   template bool operator!=(const Neighbors<GET_DIM(data)>& lhs,             \

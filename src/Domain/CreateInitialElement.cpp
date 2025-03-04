@@ -42,8 +42,10 @@ Element<VolumeDim> create_initial_element(
 
         // SegmentIds of the current element using the neighbor's axes.
         auto segment_ids_of_unrefined_neighbor = orientation(segment_ids);
+        ASSERT(block_neighbor.size() == 1,
+               "Multiple block neighbors not supported by this function.");
         const auto& refinement_of_neighbor =
-            initial_refinement_levels[block_neighbor.id()];
+            initial_refinement_levels[*block_neighbor.begin()];
 
         // Check whether each dimension will have multiple neighbors
         // because the neighboring block is more refined.  For dimensions
@@ -73,7 +75,7 @@ Element<VolumeDim> create_initial_element(
                     << gsl::at(refinement_of_neighbor, d) << " and "
                     << gsl::at(segment_ids_of_unrefined_neighbor, d)
                            .refinement_level()
-                    << " in blocks " << block_neighbor.id() << " and "
+                    << " in blocks " << *block_neighbor.begin() << " and "
                     << block.id() << " differ by more than one.");
           }
         }
@@ -126,7 +128,7 @@ Element<VolumeDim> create_initial_element(
             }
           }
           neighbor_ids.insert(
-              {block_neighbor.id(), segment_ids_of_neighbor, grid_index});
+              {*block_neighbor.begin(), segment_ids_of_neighbor, grid_index});
         next_index:;
         }
         return std::make_pair(
