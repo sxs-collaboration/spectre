@@ -403,18 +403,30 @@ def render_1d_command(
     if not animate:
         return fig
 
+    # Close current volume files
+    for h5_file in open_h5_files:
+        h5_file.close_current_object()
+
+    # The volume files need to be local within the function, not captured from
+    # the global scope
     def update_plot(frame):
+        local_volfiles = [
+            h5file.get_vol(subfile_name) for h5file in open_h5_files
+        ]
         obs_id = obs_ids[frame]
-        obs_value = volfiles[0].get_observation_value(obs_id)
+        obs_value = local_volfiles[0].get_observation_value(obs_id)
         if domain.is_time_dependent():
             functions_of_time = deserialize_functions_of_time(
-                volfiles[0].get_functions_of_time(obs_id)
+                local_volfiles[0].get_functions_of_time(obs_id)
             )
             plot_element_kwargs["functions_of_time"] = functions_of_time
             plot_element_kwargs["time"] = obs_value
         title_handle.set_text(title if title else f"t = {obs_value:g}")
-        for element, vars_data in iter_elements(volfiles, obs_id, vars):
+        for element, vars_data in iter_elements(local_volfiles, obs_id, vars):
             plot_element(element, vars_data, **plot_element_kwargs)
+
+        for h5_file in open_h5_files:
+            h5_file.close_current_object()
 
     return matplotlib.animation.FuncAnimation(
         fig=fig,
