@@ -24,7 +24,9 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace domain {
@@ -53,6 +55,7 @@ void test_block_time_independent() {
     // Test id:
     CHECK((block.id()) == 7);
     CHECK(block.name() == "Identity");
+    CHECK(block.dg_basis() == make_array<Dim>(Spectral::Basis::Legendre));
 
     // Test that the block's coordinate_map is Identity:
     const auto& map = block.stationary_map();
@@ -136,6 +139,7 @@ void test_block_time_dependent() {
 
     // Test id:
     CHECK((block.id()) == 7);
+    CHECK(block.dg_basis() == make_array<Dim>(Spectral::Basis::Legendre));
 
     // Test that the block's coordinate_map is Identity:
     const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
@@ -248,6 +252,7 @@ void test_block_time_dependent_distorted() {
 
     // Test id:
     CHECK((block.id()) == 7);
+    CHECK(block.dg_basis() == make_array<Dim>(Spectral::Basis::Legendre));
 
     // Test that the block's coordinate_map is Identity:
     const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
@@ -327,6 +332,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   // Test id:
   CHECK((block.id()) == 3);
   CHECK(block.name() == "Identity");
+  CHECK(block.dg_basis() == make_array<2>(Spectral::Basis::Legendre));
 
   // Test output:
   CHECK(get_output(block) ==
@@ -349,6 +355,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   }
   {
     const Block<2> rhs(identity_map.get_clone(), 0, neighbors, "Identity");
+    CHECK(block != rhs);
+  }
+  {
+    const Block<2> rhs(
+        identity_map.get_clone(), 3, neighbors, "Identity",
+        {{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre}});
+    CHECK(rhs.dg_basis() ==
+          std::array{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre});
     CHECK(block != rhs);
   }
 }
