@@ -279,8 +279,8 @@ struct FindApparentHorizon
       const auto& info = status_and_info.second;
       const auto has_converged = converged(status);
 
-      if (verbosity > ::Verbosity::Quiet or
-          (verbosity > ::Verbosity::Silent and has_converged)) {
+      if (verbosity >= ::Verbosity::Verbose or
+          (verbosity >= ::Verbosity::Quiet and has_converged)) {
         Parallel::printf(
             "%s: t=%.6g: its=%d: %.1e<R<%.0e, |R|=%.1g, "
             "|R_grid|=%.1g, %.4g<r<%.4g\n",

@@ -274,6 +274,7 @@ Observers:
 
 Interpolator:
   DumpVolumeDataOnFailure: false
+  Verbosity: Silent
 
 EventsAndDenseTriggers:
 

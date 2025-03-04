@@ -441,6 +441,7 @@ EventsRunAtCleanup:
 
 Interpolator:
   DumpVolumeDataOnFailure: false
+  Verbosity: Silent
 
 ApparentHorizons:
   ObservationAhA: &AhA
