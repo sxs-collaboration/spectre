@@ -147,12 +147,11 @@ Element<VolumeDim> create_initial_element(
         SegmentId(perpendicular_segment_id.refinement_level(),
                   direction.side() == Side::Upper ? index + 1 : index - 1);
     return std::make_pair(
-        direction,
-        Neighbors<VolumeDim>(
-            {{ElementId<VolumeDim>{element_id.block_id(),
-                                   std::move(segment_ids_of_neighbor),
-                                   element_id.grid_index()}}},
-            OrientationMap<VolumeDim>::create_aligned()));
+        direction, Neighbors<VolumeDim>(
+                       {ElementId<VolumeDim>{element_id.block_id(),
+                                             std::move(segment_ids_of_neighbor),
+                                             element_id.grid_index()}},
+                       OrientationMap<VolumeDim>::create_aligned()));
   };
 
   typename Element<VolumeDim>::Neighbors_t neighbors_of_element;

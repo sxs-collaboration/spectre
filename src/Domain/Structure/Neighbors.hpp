@@ -38,6 +38,15 @@ class Neighbors {
   Neighbors(std::unordered_set<IdType> ids,
             OrientationMap<VolumeDim> orientation);
 
+  /// Construct with the id and orientation of a single neighbor relative to the
+  /// host.
+  ///
+  /// \param id the id of the neighbors.
+  /// \param orientation This OrientationMap takes objects in the logical
+  /// coordinate frame of the host Element and maps them to the logical
+  /// coordinate frame of the neighbor Element.
+  Neighbors(IdType id, OrientationMap<VolumeDim> orientation);
+
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
   ~Neighbors() = default;

@@ -37,11 +37,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.BoundaryConditions.BoundaryFields",
     const Element<Dim> element{
         ElementId<Dim>{0},
         {{Direction<Dim>::upper_xi(),
-          {{{ElementId<Dim>{1}}}, OrientationMap<Dim>::create_aligned()}},
+          {{ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()}},
          {Direction<Dim>::lower_eta(),
-          {{{ElementId<Dim>{1}}}, OrientationMap<Dim>::create_aligned()}},
+          {{ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()}},
          {Direction<Dim>::upper_eta(),
-          {{{ElementId<Dim>{1}}}, OrientationMap<Dim>::create_aligned()}}}};
+          {{ElementId<Dim>{1}}, OrientationMap<Dim>::create_aligned()}}}};
     tnsr::i<DataVector, Dim> face_normal{size_t{3}, 0.};
     get<0>(face_normal) = -1.;
     DirectionMap<Dim, tnsr::i<DataVector, Dim>> face_normals{

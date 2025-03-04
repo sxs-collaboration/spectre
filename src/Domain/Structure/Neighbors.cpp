@@ -26,6 +26,11 @@ Neighbors<VolumeDim, IdType>::Neighbors(std::unordered_set<IdType> ids,
 }
 
 template <size_t VolumeDim, typename IdType>
+Neighbors<VolumeDim, IdType>::Neighbors(const IdType id,
+                                        OrientationMap<VolumeDim> orientation)
+    : Neighbors(std::unordered_set{std::move(id)}, std::move(orientation)) {}
+
+template <size_t VolumeDim, typename IdType>
 void Neighbors<VolumeDim, IdType>::add_ids(
     const std::unordered_set<IdType>& additional_ids) {
   for (const auto& id : additional_ids) {
