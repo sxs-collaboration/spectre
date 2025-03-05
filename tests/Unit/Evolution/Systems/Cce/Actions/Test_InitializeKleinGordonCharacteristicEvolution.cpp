@@ -183,7 +183,7 @@ void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
       target_step_size, scri_plus_interpolation_order);
 
   // go through the action list
-  for (size_t i = 0; i < 7; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);

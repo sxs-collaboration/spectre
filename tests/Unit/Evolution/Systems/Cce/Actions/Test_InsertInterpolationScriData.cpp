@@ -289,7 +289,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component<MockObserver<test_metavariables>>(&runner,
                                                                      0);
   // the initialization actions
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
   runner.set_phase(Parallel::Phase::Evolve);
