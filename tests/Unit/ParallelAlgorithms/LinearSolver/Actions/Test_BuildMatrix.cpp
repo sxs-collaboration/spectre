@@ -38,6 +38,9 @@ namespace {
 struct IterationIdLabel {};
 
 struct TestResult {
+  using const_global_cache_tags =
+      tmpl::list<helpers_distributed::ExpectedResult>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
@@ -70,6 +73,30 @@ struct TestResult {
       }
       SPECTRE_PARALLEL_REQUIRE(row == linear_operator.rows());
     }
+    // Also check the matrix stored in the DataBox
+    const auto& matrix_slice = db::get<LinearSolver::Tags::Matrix<double>>(box);
+    for (size_t row = 0; row < num_points; ++row) {
+      for (const auto& element_data : get<2>(matrix_data[0])) {
+        const size_t col_offset = helpers_distributed::get_index(
+                                      ElementId<1>(element_data.element_name)) *
+                                  num_points;
+        for (size_t col = 0; col < num_points; ++col) {
+          const auto& row_data = get<DataVector>(
+              get<2>(matrix_data[col_offset + col])[element_index]
+                  .tensor_components.front()
+                  .data);
+          SPECTRE_PARALLEL_REQUIRE(row_data[row] ==
+                                   matrix_slice(row, col_offset + col));
+        }
+      }
+    }
+    // Check solution
+    const auto& expected_result =
+        gsl::at(get<helpers_distributed::ExpectedResult>(box), element_index);
+    const auto& result = db::get<helpers_distributed::fields_tag>(box);
+    for (size_t i = 0; i < expected_result.size(); i++) {
+      SPECTRE_PARALLEL_REQUIRE(result.data()[i] == approx(expected_result[i]));
+    }
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
@@ -90,6 +117,8 @@ struct Metavariables {
 
   using build_matrix = LinearSolver::Actions::BuildMatrix<
       Convergence::Tags::IterationId<IterationIdLabel>,
+      helpers_distributed::fields_tag,
+      db::add_tag_prefix<::Tags::FixedSource, helpers_distributed::fields_tag>,
       helpers_distributed::fields_tag,
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
                          helpers_distributed::fields_tag>,
@@ -116,10 +145,11 @@ struct Metavariables {
                  Parallel::PhaseActions<Parallel::Phase::Testing,
                                         tmpl::list<TestResult>>>>;
 
-  using component_list =
-      tmpl::list<element_array, observers::Observer<Metavariables>,
-                 observers::ObserverWriter<Metavariables>,
-                 helpers::OutputCleaner<Metavariables, false, true>>;
+  using component_list = tmpl::flatten<tmpl::list<
+      element_array, typename build_matrix::component_list<Metavariables>,
+      observers::Observer<Metavariables>,
+      observers::ObserverWriter<Metavariables>,
+      helpers::OutputCleaner<Metavariables, false, true>>>;
   using observed_reduction_data_tags = tmpl::list<>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
   static constexpr std::array<Parallel::Phase, 6> default_phase_order{

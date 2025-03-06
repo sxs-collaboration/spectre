@@ -138,6 +138,7 @@ EventsAndTriggersAtIterations:
 BuildMatrix:
   MatrixSubfileName: Matrix
   Verbosity: Verbose
+  EnableDirectSolve: True
 
 Parallelization:
   ElementDistribution: NumGridPoints

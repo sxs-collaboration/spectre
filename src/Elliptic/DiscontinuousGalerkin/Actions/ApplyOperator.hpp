@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
@@ -39,6 +40,7 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -332,7 +334,7 @@ struct ReceiveMortarDataAndApplyOperator<
     const auto& temporal_id = get<TemporalIdTag>(box);
     const auto& element = get<domain::Tags::Element<Dim>>(box);
 
-    if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
+    if (not::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
             temporal_id, element, inboxes)) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
@@ -498,6 +500,9 @@ template <typename System, bool Linearized, typename TemporalIdTag,
           typename PrimalMortarFieldsTag = PrimalFieldsTag,
           typename PrimalMortarFluxesTag = PrimalFluxesTag>
 struct DgOperator {
+  using system = System;
+  using temporal_id_tag = TemporalIdTag;
+
  private:
   static constexpr size_t Dim = System::volume_dim;
 
@@ -538,25 +543,27 @@ template <typename System, typename FixedSourcesTag, typename... FluxesArgsTags,
           typename... SourcesArgsTags>
 struct ImposeInhomogeneousBoundaryConditionsOnSource<
     System, FixedSourcesTag, tmpl::list<FluxesArgsTags...>,
-    tmpl::list<SourcesArgsTags...>> {
+    tmpl::list<SourcesArgsTags...>>
+    : tt::ConformsTo<::amr::protocols::Projector> {
  private:
   static constexpr size_t Dim = System::volume_dim;
   using BoundaryConditionsBase = typename System::boundary_conditions_base;
 
- public:
+ public:  // DataBox mutator, amr::protocols::Projector
   using const_global_cache_tags =
       tmpl::list<elliptic::dg::Tags::PenaltyParameter,
                  elliptic::dg::Tags::Massive, elliptic::dg::Tags::Formulation,
                  domain::Tags::ExternalBoundaryConditions<Dim>>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<Dim>& element_id, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
+  using return_tags = tmpl::list<::Tags::DataBox>;
+  using argument_tags = tmpl::list<>;
+
+  template <typename DbTagsList, typename... AmrData>
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box_ptr,
+                    const AmrData&... /*amr_data*/) {
+    // Just to get the same semantics as in actions
+    auto& box = *box_ptr;
+    const auto& element_id = db::get<domain::Tags::Element<Dim>>(box).id();
     // Used to retrieve items out of the DataBox to forward to functions
     const auto get_items = [](const auto&... args) {
       return std::forward_as_tuple(args...);
@@ -649,7 +656,6 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
           *local_fixed_sources = std::move(fixed_sources);
         },
         make_not_null(&box));
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 /// \endcond
