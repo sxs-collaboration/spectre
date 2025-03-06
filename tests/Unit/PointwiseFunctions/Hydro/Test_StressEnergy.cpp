@@ -169,10 +169,10 @@ void consistency_check(const DataVector& used_for_size) {
               inverse_spacetime_metric_v(ti::C, ti::D) *
               stress_energy_tensor_lowered(ti::d, ti::c));
 
-  // Test cases sometimes fail with the default epsilon value due to
-  // catastrophic cancellation in the computation.
-  // Therefore, we use a higher epsilon value here.
-  Approx approx = Approx::custom().epsilon(1.e-10);
+  // Test cases sometimes fail with the default scale/epsilon value due to
+  // catastrophic cancellation in the computation for the test.
+  // Therefore, we use a custom scale and epsilon values here.
+  Approx approx = Approx::custom().epsilon(1.e-11).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(trace_reversed_stress_energy_tensor_calc,
                                trace_reversed_stress_energy_tensor_v, approx);
 }
@@ -185,6 +185,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.StressEnergy",
   pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/Hydro/Python/");
   const DataVector used_for_size(5);
+  const double tolerance(1.e-11);
   pypp::check_with_random_values<1>(&energy_density<DataVector>,
                                     "Test_StressEnergy", {"energy_density"},
                                     {{{0.0, 1.0}}}, used_for_size);
@@ -196,7 +197,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.StressEnergy",
                                     {{{0.0, 1.0}}}, used_for_size);
   pypp::check_with_random_values<1>(
       &stress_energy_tensor<DataVector>, "Test_StressEnergy",
-      {"stress_energy_tensor"}, {{{0.0, 1.0}}}, used_for_size);
+      {"stress_energy_tensor"}, {{{0.0, 1.0}}}, used_for_size, tolerance);
 
   consistency_check(used_for_size);
 }
