@@ -36,7 +36,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  *
  * \begin{align}
  *   \label{eq:map}
- *   \bar{x} &= x + W(\vec{x})\left(\tan(F_y(t))(y-y_C) +
+ *   \bar{x} &= x - W(\vec{x})\left(\tan(F_y(t))(y-y_C) +
  *       \tan(F_z(t))(z-z_C)\right) \\
  *   \bar{y} &= y \\
  *   \bar{z} &= z
@@ -95,7 +95,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  * of is
  *
  * \begin{equation}
- *   0 = x + W(\vec{x})\left(\tan(F_y(t))(y-y_C) + \tan(F_z(t))(z-z_C)\right) -
+ *   0 = x - W(\vec{x})\left(\tan(F_y(t))(y-y_C) + \tan(F_z(t))(z-z_C)\right) -
  *   \bar{x}
  * \end{equation}
  *
@@ -104,10 +104,10 @@ namespace domain::CoordinateMaps::TimeDependent {
  * we can turn into bounds on $x$:
  *
  * \begin{align}
- *   x &<=& \bar{x} &<=& x + (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C)) \\
- *   0 &<=& \bar{x} - x &<=& (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C)) \\
- *   -\bar{x} &<=& - x &<=& -\bar{x} + (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C)) \\
- *   \bar{x} &>=& x &>=& \bar{x} - (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C))
+ *   x &<=& \bar{x} &<=& x - (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C)) \\
+ *   0 &<=& \bar{x} - x &<=& -(\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C)) \\
+ *   -\bar{x} &<=& - x &<=& -\bar{x} - (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C)) \\
+ *   \bar{x} &>=& x &>=& \bar{x} + (\tan(F_y)(y-y_C) + \tan(F_z)(z-z_C))
  * \end{align}
  *
  * where on each line we just made simple arithmetic operations. We pad each
@@ -120,7 +120,7 @@ namespace domain::CoordinateMaps::TimeDependent {
  *
  * \begin{align}
  *   \label{eq:frame_vel}
- *   \dot{\bar{x}} &= W(\vec{x})\left(\dot{F}_y(t)(1 + \tan^2(F_y(t)))(y-y_C) +
+ *   \dot{\bar{x}} &= -W(\vec{x})\left(\dot{F}_y(t)(1 + \tan^2(F_y(t)))(y-y_C) +
  *     \dot{F}_z(t)(1 + \tan^2(F_z(t))(z-z_C))\right) \\
  *   \dot{\bar{y}} &= 0 \\
  *   \dot{\bar{z}} &= 0
@@ -138,16 +138,16 @@ namespace domain::CoordinateMaps::TimeDependent {
  * where all components of ${W^i}_j$ are zero except the following
  *
  * \begin{align}
- *   {W^0}_0 &= \frac{\partial(\bar{x}-x)}{\partial x} &= \frac{\partial
+ *   {W^0}_0 &= \frac{\partial(\bar{x}-x)}{\partial x} &= -\frac{\partial
  *     W(\vec{x})}{\partial x}&\left(\tan(F_y(t))(y-y_C) +
  *     \tan(F_z(t))(z-z_C)\right), \\
- *   {W^0}_1 &= \frac{\partial(\bar{x}-x)}{\partial y} &= \frac{\partial
+ *   {W^0}_1 &= \frac{\partial(\bar{x}-x)}{\partial y} &= -\frac{\partial
  *     W(\vec{x})}{\partial y}&\left(\tan(F_y(t))(y-y_C) +
- *     \tan(F_z(t))(z-z_C)\right) +
+ *     \tan(F_z(t))(z-z_C)\right) -
  *     W\tan(F_y(t)), \\
- *   {W^0}_2 &= \frac{\partial(\bar{x}-x)}{\partial z} &= \frac{\partial
+ *   {W^0}_2 &= \frac{\partial(\bar{x}-x)}{\partial z} &= -\frac{\partial
  *     W(\vec{x})}{\partial z}&\left(\tan(F_y(t))(y-y_C) +
- *     \tan(F_z(t))(z-z_C)\right) + W\tan(F_z(t)).
+ *     \tan(F_z(t))(z-z_C)\right) - W\tan(F_z(t)).
  * \end{align}
  *
  * The gradient of $W(\vec{x})$ (Eq. $\ref{eq:W}$) is given by
@@ -213,8 +213,8 @@ class Skew {
 
  private:
   template <typename T>
-  tt::remove_cvref_wrap_t<T> get_width(
-      const std::array<T, 3>& source_coords) const;
+  tt::remove_cvref_wrap_t<T> get_width(const std::array<T, 3>& source_coords,
+                                       bool ignore_error = false) const;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> get_width_deriv(
@@ -236,7 +236,7 @@ class Skew {
   std::string f_of_t_name_;
   std::array<double, 3> center_{};
   double outer_radius_{};
-  double outer_radius_squared_{};
+  double one_over_outer_radius_squared_{};
   std::unordered_set<std::string> f_of_t_names_;
 };
 

@@ -19,9 +19,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -38,8 +40,11 @@ Skew::Skew(std::string function_of_time_name,
     : f_of_t_name_(std::move(function_of_time_name)),
       center_(center),
       outer_radius_(outer_radius),
-      outer_radius_squared_(square(outer_radius_)),
       f_of_t_names_({f_of_t_name_}) {
+  if (outer_radius_ <= 0.0) {
+    ERROR("Skew map outer radius must be positive, but is " << outer_radius_);
+  }
+  one_over_outer_radius_squared_ = 1.0 / square(outer_radius_);
   if (magnitude(center_) >= outer_radius) {
     ERROR("Center of Skew map "
           << center_ << " with radius " << magnitude(center_)
@@ -77,8 +82,9 @@ std::optional<std::array<double, 3>> Skew::inverse(
   }
 
   // Another short circuit. Target y & z are the same as source y & z
-  const double tan_sum = tan(func[0]) * (target_coords[1] - center_[1]) +
-                         tan(func[1]) * (target_coords[2] - center_[2]);
+  const double tan_sum =
+      -1.0 * (tan(func[0]) * (target_coords[1] - center_[1]) +
+              tan(func[1]) * (target_coords[2] - center_[2]));
   if (equal_within_roundoff(tan_sum, 0.0)) {
     return target_coords;
   }
@@ -87,15 +93,18 @@ std::optional<std::array<double, 3>> Skew::inverse(
 
   const auto root_func = [&](const double source_coord_x) -> double {
     temporary_source_coord[0] = source_coord_x;
-    const double width = get_width(temporary_source_coord);
+    // Sometimes the temporary point is outside the outer radius, but we still
+    // need to continue with the root find, so allow evaluation of the width
+    // outside the outer radius without an error
+    const double width = get_width(temporary_source_coord, true);
     return source_coord_x + width * tan_sum - target_coords[0];
   };
 
-  // \bar{x} -> x + w * (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)) and 0<=w<=1, then
-  // x <= \bar{x} <= x + (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
-  // 0 <= \bar{x} - x <= (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
-  // -\bar{x} <= - x <= -\bar{x} + (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
-  // \bar{x} >= x >= \bar{x} - (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C))
+  // \bar{x} -> x - w * (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)) and 0<=w<=1, then
+  // x <= \bar{x} <= x - (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
+  // 0 <= \bar{x} - x <= -(tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
+  // -\bar{x} <= - x <= -\bar{x} - (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C)), ==>
+  // \bar{x} >= x >= \bar{x} + (tan(f_y)*(y-y_C) + tan(f_z)*(z-z_C))
   // This last line is our bracket for the root
 
   // We give a small epsilon to give the root find a little buffer. It is highly
@@ -159,7 +168,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::jacobian(
 
   auto result = identity<3>(dereference_wrapper(source_coords[0]));
 
-  const DataVector tan_func = tan(func);
+  const DataVector tan_func = -1.0 * tan(func);
   // Temporarily use component to avoid allocation
   auto& tan_sum = get<0, 2>(result);
   tan_sum = tan_func[0] * (source_coords[1] - center_[1]) +
@@ -183,10 +192,11 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Skew::inv_jacobian(
 
 template <typename T>
 tt::remove_cvref_wrap_t<T> Skew::get_width(
-    const std::array<T, 3>& source_coords) const {
+    const std::array<T, 3>& source_coords, const bool ignore_error) const {
   using ResultT = tt::remove_cvref_wrap_t<T>;
   // Will be reused for result
-  ResultT lambda = dot(source_coords, source_coords) / outer_radius_squared_;
+  ResultT lambda =
+      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   ResultT& result = lambda;
 
@@ -196,7 +206,8 @@ tt::remove_cvref_wrap_t<T> Skew::get_width(
       get_element(result, i) = 1.0;
     } else if (equal_within_roundoff(get_element(lambda, i), 1.0)) {
       get_element(result, i) = 0.0;
-    } else if (get_element(lambda, i) > 0.0 and get_element(lambda, i) < 1.0) {
+    } else if (ignore_error or (get_element(lambda, i) > 0.0 and
+                                get_element(lambda, i) < 1.0)) {
       get_element(result, i) = 0.5 * (1.0 + cos(M_PI * get_element(lambda, i)));
     } else {
       using ::operator<<;
@@ -220,14 +231,14 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::get_width_deriv(
   using ResultT = tt::remove_cvref_wrap_t<T>;
 
   const ResultT lambda =
-      dot(source_coords, source_coords) / outer_radius_squared_;
+      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   std::array<ResultT, 3> grad_width{};
   for (size_t i = 0; i < 3; i++) {
     gsl::at(grad_width, i) = gsl::at(source_coords, i);
   }
   // Factors of two cancel from grad lambda and pi/2
-  grad_width *= -M_PI / outer_radius_squared_ * sin(M_PI * lambda);
+  grad_width *= -one_over_outer_radius_squared_ * M_PI * sin(M_PI * lambda);
 
   for (size_t i = 0; i < get_size(lambda); i++) {
     // sin(lambda * M_PI) is zero at both lambda=0 and lambda=1
@@ -284,12 +295,13 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Skew::map_and_velocity_helper(
     const auto& func = func_and_deriv[0];
     const auto& deriv = func_and_deriv[1];
 
-    result[0] = width * (deriv[0] * (1.0 + square(tan(func[0]))) *
-                             (source_coords[1] - center_[1]) +
-                         deriv[1] * (1.0 + square(tan(func[1]))) *
-                             (source_coords[2] - center_[2]));
+    result[0] = -1.0 * width *
+                (deriv[0] * (1.0 + square(tan(func[0]))) *
+                     (source_coords[1] - center_[1]) +
+                 deriv[1] * (1.0 + square(tan(func[1]))) *
+                     (source_coords[2] - center_[2]));
   } else {
-    result[0] +=
+    result[0] -=
         width * (tan(func_and_deriv[0][0]) * (source_coords[1] - center_[1]) +
                  tan(func_and_deriv[0][1]) * (source_coords[2] - center_[2]));
   }
@@ -311,7 +323,7 @@ void Skew::pup(PUP::er& p) {
 
   // No need to pup these because they are uniquely determined
   if (p.isUnpacking()) {
-    outer_radius_squared_ = square(outer_radius_);
+    one_over_outer_radius_squared_ = 1.0 / square(outer_radius_);
     f_of_t_names_.clear();
     f_of_t_names_.insert(f_of_t_name_);
   }
@@ -328,28 +340,100 @@ void Skew::check_for_singular_map(
 #ifdef SPECTRE_DEBUG
   using ResultT = tt::remove_cvref_wrap_t<T>;
   const ResultT lambda =
-      dot(source_coords, source_coords) / outer_radius_squared_;
+      one_over_outer_radius_squared_ * dot(source_coords, source_coords);
 
   const auto& function_of_time = functions_of_time.at(f_of_t_name_);
   const auto func = function_of_time->func_and_deriv(time)[0];
   ASSERT(func.size() == 2, "Expected a function of time with size 2, not "
                                << func.size() << " in the Skew map.");
-  const ResultT tan_sum = tan(func[0]) * (source_coords[1] - center_[1]) +
-                          tan(func[1]) * (source_coords[2] - center_[2]);
+  const double tan_func0 = tan(func[0]);
+  const double tan_func1 = tan(func[1]);
 
-  const ResultT x_deriv_of_mapped_x_coord =
-      1.0 - tan_sum * M_PI * dereference_wrapper(source_coords[0]) /
-                outer_radius_squared_ * sin(M_PI * lambda);
+  CAPTURE_FOR_ERROR(tan_func0);
+  CAPTURE_FOR_ERROR(tan_func1);
 
+  const ResultT tan_sum =
+      -1.0 * (tan(func[0]) * (source_coords[1] - center_[1]) +
+              tan(func[1]) * (source_coords[2] - center_[2]));
+
+  std::array<double, 3> temporary_point{
+      get_element(dereference_wrapper(source_coords[0]), 0),
+      get_element(dereference_wrapper(source_coords[1]), 0),
+      get_element(dereference_wrapper(source_coords[2]), 0)};
+
+  // We can check if the map is singular by checking if the x-deriv of the map
+  // is negative. If it is, then it means the map is not one-to-one and our grid
+  // is being stretched over itself. In order to check this, we use a property
+  // of the analytic functions used in the map that the second x-deriv of the
+  // map will cross zero exactly once for +x and once for -x. We use the
+  // x-values of this zero-crossing to evaluate the first x-deriv and check if
+  // it is negative. This is not a global check as it only checks along the
+  // y=z=const line, but if there is an issue, some point within the domain
+  // should error.
   for (size_t i = 0; i < get_size(lambda); i++) {
-    if (get_element(x_deriv_of_mapped_x_coord, i) < 0.0) {
+    // No need to check this point if the map is the identity
+    if (equal_within_roundoff(get_element(tan_sum, i), 0.0)) {
+      continue;
+    }
+
+    temporary_point[0] = get_element(dereference_wrapper(source_coords[0]), i);
+    temporary_point[1] = get_element(dereference_wrapper(source_coords[1]), i);
+    temporary_point[2] = get_element(dereference_wrapper(source_coords[2]), i);
+
+    // Can't check if x=0 and we are at the outer boundary, because then the
+    // largest_x below is just zero and we won't be able to find roots.
+    if (equal_within_roundoff(temporary_point[0], 0.0) and
+        equal_within_roundoff(magnitude(temporary_point), outer_radius_)) {
+      continue;
+    }
+
+    CAPTURE_FOR_ERROR(get_element(tan_sum, i));
+
+    const auto first_deriv = [&](const double x) {
+      temporary_point[0] = x;
+      const double temporary_lambda = one_over_outer_radius_squared_ *
+                                      dot(temporary_point, temporary_point);
+      return 1.0 + M_PI * x * one_over_outer_radius_squared_ *
+                       get_element(tan_sum, i) * sin(M_PI * temporary_lambda);
+    };
+    const auto second_deriv = [&](const double x) -> double {
+      temporary_point[0] = x;
+      const double temporary_lambda = one_over_outer_radius_squared_ *
+                                      dot(temporary_point, temporary_point);
+      return M_PI * one_over_outer_radius_squared_ * get_element(tan_sum, i) *
+             (sin(M_PI * temporary_lambda) +
+              2.0 * M_PI * one_over_outer_radius_squared_ * square(x) *
+                  cos(M_PI * temporary_lambda));
+    };
+
+    const double eps = std::numeric_limits<double>::epsilon() * 100.0;
+    // The endpoint of the y=z=const line given that the outer boundary is a
+    // sphere.
+    const double largest_x =
+        sqrt(square(outer_radius_) - square(temporary_point[1]) -
+             square(temporary_point[2]));
+
+    CAPTURE_FOR_ERROR(temporary_point);
+    CAPTURE_FOR_ERROR(largest_x);
+
+    // Positive and negative zeros of the second deriv
+    const double negative_candidate = RootFinder::toms748<true>(
+        second_deriv, -largest_x, -eps, second_deriv(-largest_x),
+        second_deriv(-eps), eps, eps);
+    const double positive_candidate = RootFinder::toms748<true>(
+        second_deriv, eps, largest_x, second_deriv(eps),
+        second_deriv(largest_x), eps, eps);
+
+    CAPTURE_FOR_ERROR(negative_candidate);
+    CAPTURE_FOR_ERROR(positive_candidate);
+
+    if (first_deriv(negative_candidate) <= 0.0 or
+        first_deriv(positive_candidate) <= 0.0) {
       using ::operator<<;
-      const std::vector<double> bad_point{
-          get_element(dereference_wrapper(source_coords[0]), i),
-          get_element(dereference_wrapper(source_coords[1]), i),
-          get_element(dereference_wrapper(source_coords[2]), i)};
       ERROR("Skew map is singular. Found for point "
-            << bad_point << ". Important values are:\n Outer radius, R = "
+            << temporary_point
+            << " (y and z coords are the important ones). Important values "
+               "are:\n Outer radius, R = "
             << outer_radius_ << "\n |x|^2/R^2 = " << get_element(lambda, i)
             << "\n tan(F_y)*y + tan(F_z)*z = " << tan_sum
             << "\n F_y = " << func[0] << "\n F_z = " << func[1]
@@ -386,7 +470,8 @@ bool operator!=(const Skew& lhs, const Skew& rhs) { return not(lhs == rhs); }
       const std::array<DTYPE(data), 3>& source_coords, double time,            \
       const domain::FunctionsOfTimeMap& functions_of_time) const;              \
   template tt::remove_cvref_wrap_t<DTYPE(data)> Skew::get_width(               \
-      const std::array<DTYPE(data), 3>& source_coords) const;                  \
+      const std::array<DTYPE(data), 3>& source_coords,                         \
+      const bool ignore_error) const;                                          \
   template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 3>                 \
   Skew::get_width_deriv(const std::array<DTYPE(data), 3>& source_coords)       \
       const;                                                                   \
