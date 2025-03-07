@@ -55,7 +55,7 @@ void test_block_time_independent() {
     // Test id:
     CHECK((block.id()) == 7);
     CHECK(block.name() == "Identity");
-    CHECK(block.dg_basis() == make_array<Dim>(Spectral::Basis::Legendre));
+    CHECK(block.topologies() == make_array<Dim>(domain::Topology::I1));
 
     // Test that the block's coordinate_map is Identity:
     const auto& map = block.stationary_map();
@@ -139,7 +139,7 @@ void test_block_time_dependent() {
 
     // Test id:
     CHECK((block.id()) == 7);
-    CHECK(block.dg_basis() == make_array<Dim>(Spectral::Basis::Legendre));
+    CHECK(block.topologies() == make_array<Dim>(domain::Topology::I1));
 
     // Test that the block's coordinate_map is Identity:
     const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
@@ -252,7 +252,7 @@ void test_block_time_dependent_distorted() {
 
     // Test id:
     CHECK((block.id()) == 7);
-    CHECK(block.dg_basis() == make_array<Dim>(Spectral::Basis::Legendre));
+    CHECK(block.topologies() == make_array<Dim>(domain::Topology::I1));
 
     // Test that the block's coordinate_map is Identity:
     const auto& grid_to_inertial_map = block.moving_mesh_grid_to_inertial_map();
@@ -332,11 +332,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   // Test id:
   CHECK((block.id()) == 3);
   CHECK(block.name() == "Identity");
-  CHECK(block.dg_basis() == make_array<2>(Spectral::Basis::Legendre));
+  CHECK(block.topologies() == make_array<2>(domain::Topology::I1));
 
   // Test output:
   CHECK(get_output(block) ==
         "Block 3 (Identity):\n"
+        "Topology: (I1,I1)\n"
         "Neighbors: "
         "([+0,Id = 1; orientation = (+0, +1)],"
         "[-1,Id = 2; orientation = (-0, +1)])\n"
@@ -358,11 +359,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
     CHECK(block != rhs);
   }
   {
-    const Block<2> rhs(
-        identity_map.get_clone(), 3, neighbors, "Identity",
-        {{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre}});
-    CHECK(rhs.dg_basis() ==
-          std::array{Spectral::Basis::Chebyshev, Spectral::Basis::Legendre});
+    const Block<2> rhs(identity_map.get_clone(), 3, neighbors, "Identity",
+                       {{domain::Topology::S1, domain::Topology::I1}});
+    CHECK(rhs.topologies() ==
+          std::array{domain::Topology::S1, domain::Topology::I1});
     CHECK(block != rhs);
   }
 }

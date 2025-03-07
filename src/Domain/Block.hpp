@@ -17,7 +17,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
-#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -52,15 +52,15 @@ class Block {
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
   /// \param name Human-readable name for the block
-  /// \param dg_basis Spectral::Basis in each dimension used for Elements in
+  /// \param topologies domain::Topology in each dimension used for Elements in
   /// the Block when using discontinuous Galerkin methods (default value is
-  /// Spectral::Basis::Legendre)
+  /// domain::Topology::I1)
   Block(std::unique_ptr<domain::CoordinateMapBase<
             Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
         size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
         std::string name = "",
-        std::array<Spectral::Basis, VolumeDim> dg_basis =
-            make_array<VolumeDim>(Spectral::Basis::Legendre));
+        std::array<domain::Topology, VolumeDim> topologies =
+            make_array<VolumeDim>(domain::Topology::I1));
 
   Block() = default;
   ~Block() = default;
@@ -169,8 +169,8 @@ class Block {
 
   /// The basis functions used in each dimension for Elements of this Block
   /// when using discontinuous Galerkin methods
-  const std::array<Spectral::Basis, VolumeDim>& dg_basis() const {
-    return dg_basis_;
+  const std::array<domain::Topology, VolumeDim>& topologies() const {
+    return topologies_;
   }
 
   /// Serialization for Charm++
@@ -203,7 +203,7 @@ class Block {
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
   std::string name_;
-  std::array<Spectral::Basis, VolumeDim> dg_basis_;
+  std::array<domain::Topology, VolumeDim> topologies_;
 };
 
 template <size_t VolumeDim>
