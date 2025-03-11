@@ -3,6 +3,7 @@
 
 Executable: SolveElasticity2D
 Testing:
+  Timeout: 5
   Check: parse;execute_check_output
 ExpectedOutput:
   - ElasticBentBeam2DReductions.h5
