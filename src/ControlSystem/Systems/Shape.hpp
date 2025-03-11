@@ -57,12 +57,11 @@ namespace control_system::Systems {
  * - Currently this control system can only be used with the \link
  *   control_system::ControlErrors::Shape Shape \endlink control error
  */
-template <::domain::ObjectLabel Horizon, size_t DerivOrder,
-          typename Measurement>
+template <::domain::ObjectLabel Object, size_t DerivOrder, typename Measurement>
 struct Shape : tt::ConformsTo<protocols::ControlSystem> {
   static constexpr size_t deriv_order = DerivOrder;
 
-  static std::string name() { return "Shape"s + ::domain::name(Horizon); }
+  static std::string name() { return "Shape"s + ::domain::name(Object); }
 
   static std::optional<std::string> component_name(
       const size_t i, const size_t num_components) {
@@ -86,22 +85,21 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
 
   using measurement = Measurement;
   static_assert(
-      std::is_same_v<measurement, measurements::SingleHorizon<Horizon>> or
+      std::is_same_v<measurement, measurements::SingleHorizon<Object>> or
           std::is_same_v<measurement, measurements::BothHorizons>,
       "Must use either SingleHorizon or BothHorizon measurement for Shape "
       "control system.");
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
-  using control_error = ControlErrors::Shape<Horizon>;
+  using control_error = ControlErrors::Shape<Object>;
   static_assert(tt::conforms_to_v<control_error,
                                   control_system::protocols::ControlError>);
 
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {
-    using type =
-        LinkedMessageQueue<double,
-                           tmpl::list<QueueTags::Horizon<Frame::Distorted>>>;
+    using type = LinkedMessageQueue<
+        double, tmpl::list<QueueTags::Horizon<Frame::Distorted, Object>>>;
   };
 
   using simple_tags = tmpl::list<MeasurementQueue>;
@@ -112,7 +110,7 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
 
     template <typename Metavariables>
     static void apply(typename measurements::SingleHorizon<
-                          Horizon>::Submeasurement submeasurement,
+                          Object>::Submeasurement submeasurement,
                       const ylm::Strahlkorper<Frame::Distorted>& strahlkorper,
                       Parallel::GlobalCache<Metavariables>& cache,
                       const LinkedMessageId<double>& measurement_id) {
@@ -121,8 +119,8 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           MeasurementQueue, UpdateControlSystem<Shape>,
-          QueueTags::Horizon<Frame::Distorted>>>(control_sys_proxy,
-                                                 measurement_id, strahlkorper);
+          QueueTags::Horizon<Frame::Distorted, Object>>>(
+          control_sys_proxy, measurement_id, strahlkorper);
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
@@ -140,13 +138,13 @@ struct Shape : tt::ConformsTo<protocols::ControlSystem> {
       // The measurement event will call this for both horizons, but we only
       // need one of the horizons. So if it is called for the wrong horizon,
       // just do nothing.
-      if constexpr (MeasureHorizon == Horizon) {
+      if constexpr (MeasureHorizon == Object) {
         auto& control_sys_proxy = Parallel::get_parallel_component<
             ControlComponent<Metavariables, Shape>>(cache);
 
         Parallel::simple_action<::Actions::UpdateMessageQueue<
             MeasurementQueue, UpdateControlSystem<Shape>,
-            QueueTags::Horizon<Frame::Distorted>>>(
+            QueueTags::Horizon<Frame::Distorted, Object>>>(
             control_sys_proxy, measurement_id, strahlkorper);
 
         if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {

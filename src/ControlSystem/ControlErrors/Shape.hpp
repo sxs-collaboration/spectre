@@ -34,8 +34,7 @@ struct Distorted;
 }  // namespace Frame
 /// \endcond
 
-namespace control_system {
-namespace ControlErrors {
+namespace control_system::ControlErrors {
 namespace detail {
 template <::domain::ObjectLabel Horizon>
 std::string excision_sphere_name() {
@@ -90,15 +89,20 @@ std::string size_name() {
  * - Currently this control error can only be used with the \link
  *   control_system::Systems::Shape Shape \endlink control system
  */
-template <::domain::ObjectLabel Horizon>
+template <::domain::ObjectLabel Object>
 struct Shape : tt::ConformsTo<protocols::ControlError> {
   // Shape needs an excision sphere
-  using object_centers = domain::object_list<Horizon>;
+  using object_centers = domain::object_list<Object>;
 
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for shape control. This should not take any "
       "options."};
+
+  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+  std::optional<double> get_suggested_timescale() const { return std::nullopt; }
+
+  void reset() {}
 
   void pup(PUP::er& /*p*/) {}
 
@@ -113,10 +117,11 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
     const DataVector lambda_lm_coefs =
         functions_of_time.at(function_of_time_name)->func(time)[0];
     const double lambda_00_coef =
-        functions_of_time.at(detail::size_name<Horizon>())->func(time)[0][0];
+        functions_of_time.at(detail::size_name<Object>())->func(time)[0][0];
 
     const auto& ah =
-        get<control_system::QueueTags::Horizon<Frame::Distorted>>(measurements);
+        get<control_system::QueueTags::Horizon<Frame::Distorted, Object>>(
+            measurements);
     const auto& ah_coefs = ah.coefficients();
 
     ASSERT(lambda_lm_coefs.size() == ah_coefs.size(),
@@ -129,13 +134,13 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
     const auto& excision_spheres = domain.excision_spheres();
 
     ASSERT(domain.excision_spheres().count(
-               detail::excision_sphere_name<Horizon>()) == 1,
-           "Excision sphere " << detail::excision_sphere_name<Horizon>()
+               detail::excision_sphere_name<Object>()) == 1,
+           "Excision sphere " << detail::excision_sphere_name<Object>()
                               << " not in the domain but is needed to "
                                  "compute Shape control error.");
 
     const double radius_excision_sphere_grid_frame =
-        excision_spheres.at(detail::excision_sphere_name<Horizon>()).radius();
+        excision_spheres.at(detail::excision_sphere_name<Object>()).radius();
 
     const double Y00 = sqrt(0.25 / M_PI);
     ylm::SpherepackIterator iter{ah.l_max(), ah.m_max()};
@@ -162,5 +167,4 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
     return Q;
   }
 };
-}  // namespace ControlErrors
-}  // namespace control_system
+}  // namespace control_system::ControlErrors

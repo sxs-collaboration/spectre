@@ -108,7 +108,7 @@ class TestEvent : public ::Event {
 
   bool needs_evolved_variables() const override { return true; }
 
-  static size_t call_count; // NOLINT
+  static size_t call_count;  // NOLINT
 };
 
 // NOLINTBEGIN
@@ -118,8 +118,7 @@ size_t TestEvent<Label, ControlSystems, CallRunCallbacks>::call_count = 0;
 /// \cond
 template <typename Label, typename ControlSystems, bool CallRunCallbacks>
 PUP::able::PUP_ID
-    TestEvent<Label, ControlSystems, CallRunCallbacks>::my_PUP_ID =
-        0;
+    TestEvent<Label, ControlSystems, CallRunCallbacks>::my_PUP_ID = 0;
 /// \endcond
 // NOLINTEND
 
@@ -130,6 +129,11 @@ struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
 
 struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
   using object_centers = domain::object_list<>;
+  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
+  std::optional<double> get_suggested_timescale() const { return std::nullopt; }
+
+  void reset() {}
+
   void pup(PUP::er& /*p*/) {}
 
   using options = tmpl::list<>;

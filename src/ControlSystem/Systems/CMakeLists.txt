@@ -9,5 +9,6 @@ spectre_target_headers(
   Rotation.hpp
   Shape.hpp
   Size.hpp
+  Skew.hpp
   Translation.hpp
   )

@@ -24,6 +24,7 @@
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "ControlSystem/UpdateTimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/ExcisionSphere.hpp"
@@ -280,9 +281,9 @@ void test_size_error_one_step(
 
     size_error error_class_copied = error_class;
 
-    // We test the update_averager and update_tuner functions here because we
-    // already have the nice infrastructure of a cache and the control error
-    // class.
+    // We test the update_averager and update_timescale_tuner functions here
+    // because we already have the nice infrastructure of a cache and the
+    // control error class.
     Averager<1> averager{0.25, true};
     const DataVector timescale{1, 0.1};
     // Populate the averager so it will have data
@@ -307,9 +308,9 @@ void test_size_error_one_step(
 
     const DataVector old_timescale = tuner.current_timescale();
 
-    control_system::size::update_tuner(make_not_null(&tuner),
-                                       make_not_null(&error_class), cache, time,
-                                       "Size"s);
+    control_system::update_timescale_tuner(make_not_null(&tuner),
+                                           make_not_null(&error_class),
+                                           ::Verbosity::Silent, time, "Size"s);
 
     // Since there is no suggested timescale, the tuner keeps its old timescale.
     // However the control error is always reset.

@@ -837,7 +837,8 @@ struct SystemHelper {
                   double,
                   tmpl::conditional_t<
                       std::is_same_v<system, typename Metavars::shape_system>,
-                      tmpl::list<QueueTags::Horizon<::Frame::Distorted>>,
+                      tmpl::list<QueueTags::Horizon<::Frame::Distorted,
+                                                    ::domain::ObjectLabel::A>>,
                       tmpl::list<
                           QueueTags::Center<::domain::ObjectLabel::A>,
                           QueueTags::Center<::domain::ObjectLabel::B>>>>{}};

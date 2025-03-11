@@ -36,7 +36,7 @@ struct Center {
 
 /// \ingroup ControlSystemGroup
 /// Holds a full strahlkorper from measurements that represents a horizon
-template <typename Frame>
+template <typename Frame, ::domain::ObjectLabel Object>
 struct Horizon {
   using type = ylm::Strahlkorper<Frame>;
 };

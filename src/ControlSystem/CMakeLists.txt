@@ -36,6 +36,7 @@ spectre_target_headers(
   Trigger.hpp
   UpdateControlSystem.hpp
   UpdateFunctionOfTime.hpp
+  UpdateTimescaleTuner.hpp
   WriteData.hpp
   )
 

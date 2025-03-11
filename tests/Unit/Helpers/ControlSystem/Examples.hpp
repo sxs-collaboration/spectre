@@ -99,6 +99,12 @@ struct ExampleControlError
     : tt::ConformsTo<control_system::protocols::ControlError> {
   using object_centers = domain::object_list<domain::ObjectLabel::A>;
 
+  std::optional<double> get_suggested_timescale() const {
+    return suggested_timescale_;
+  }
+
+  void reset() { suggested_timescale_ = std::nullopt; }
+
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... QueueTags>
@@ -112,6 +118,7 @@ struct ExampleControlError
     const double current_map_value =
         functions_of_time.at(function_of_time_name)->func(time)[0][0];
     const double measured_value = 0.0;
+    suggested_timescale_ = 1.0;
     // Would do something like get<QueueTag>(measurements) here
     (void)measurements;
     // Size control needs the timescale tuner
@@ -119,6 +126,9 @@ struct ExampleControlError
 
     return {current_map_value - measured_value};
   }
+
+ private:
+  std::optional<double> suggested_timescale_;
 };
 /// [ControlError]
 
