@@ -21,7 +21,7 @@ Next:
       - DimensionlessSpinA
       - DimensionlessSpinB
       - CenterOfMass
-      - LinearMomentum
+      - AdmLinearMomentum
     evolve: {{ evolve }}
     eccentricity_control: {{ eccentricity_control }}
     scheduler: {{ scheduler | default("None") }}
