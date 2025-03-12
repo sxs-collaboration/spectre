@@ -16,6 +16,7 @@ spectre_target_sources(
   DirectionalId.cpp
   Element.cpp
   ElementId.cpp
+  HasBoundary.cpp
   Hypercube.cpp
   InitialElementIds.cpp
   Neighbors.cpp
@@ -43,6 +44,7 @@ spectre_target_headers(
   DirectionMap.hpp
   Element.hpp
   ElementId.hpp
+  HasBoundary.hpp
   Hypercube.hpp
   IndexToSliceAt.hpp
   InitialElementIds.hpp

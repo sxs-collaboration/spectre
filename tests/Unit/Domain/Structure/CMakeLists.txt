@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_DirectionalId.cpp
   Test_Element.cpp
   Test_ElementId.cpp
+  Test_HasBoundary.cpp
   Test_Hypercube.cpp
   Test_IndexToSliceAt.cpp
   Test_InitialElementIds.cpp
