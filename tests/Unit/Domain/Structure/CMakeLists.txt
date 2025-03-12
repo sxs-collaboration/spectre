@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Test_OrientationMapHelpers.cpp
   Test_SegmentId.cpp
   Test_Side.cpp
+  Test_Topology.cpp
   Test_TrimMap.cpp
   Test_ZCurve.cpp
   )

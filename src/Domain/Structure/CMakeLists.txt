@@ -24,6 +24,7 @@ spectre_target_sources(
   OrientationMapHelpers.cpp
   SegmentId.cpp
   Side.cpp
+  Topology.cpp
   ZCurve.cpp
   )
 
@@ -52,6 +53,7 @@ spectre_target_headers(
   OrientationMapHelpers.hpp
   SegmentId.hpp
   Side.hpp
+  Topology.hpp
   TrimMap.hpp
   ZCurve.hpp
   )

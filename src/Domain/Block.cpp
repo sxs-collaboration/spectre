@@ -14,6 +14,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -24,12 +25,12 @@ Block<VolumeDim>::Block(
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
     const size_t id,
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
-    std::string name, std::array<Spectral::Basis, VolumeDim> dg_basis)
+    std::string name, std::array<domain::Topology, VolumeDim> topologies)
     : stationary_map_(std::move(stationary_map)),
       id_(id),
       neighbors_(std::move(neighbors)),
       name_(std::move(name)),
-      dg_basis_(std::move(dg_basis)) {
+      topologies_(std::move(topologies)) {
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
@@ -119,7 +120,7 @@ void Block<VolumeDim>::inject_time_dependent_map(
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::pup(PUP::er& p) {
-  size_t version = 2;
+  size_t version = 3;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -137,16 +138,21 @@ void Block<VolumeDim>::pup(PUP::er& p) {
   if (version >= 1) {
     p | name_;
   }
-  if (version < 2) {
-    dg_basis_ = make_array<VolumeDim>(Spectral::Basis::Legendre);
+  if (version == 2) {
+    auto basis = make_array<VolumeDim>(Spectral::Basis::Uninitialized);
+    p | basis;
+  }
+  if (version < 3) {
+    topologies_ = make_array<VolumeDim>(domain::Topology::I1);
   } else {
-    p | dg_basis_;
+    p | topologies_;
   }
 }
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os, const Block<VolumeDim>& block) {
   os << "Block " << block.id() << " (" << block.name() << "):\n";
+  os << "Topology: " << block.topologies() << '\n';
   os << "Neighbors: " << block.neighbors() << '\n';
   os << "External boundaries: " << block.external_boundaries() << '\n';
   os << "Is time dependent: " << std::boolalpha << block.is_time_dependent();
@@ -158,8 +164,7 @@ bool operator==(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
   bool blocks_are_equal =
       (lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
        lhs.external_boundaries() == rhs.external_boundaries() and
-       lhs.name() == rhs.name() and
-       lhs.dg_basis() == rhs.dg_basis() and
+       lhs.name() == rhs.name() and lhs.topologies() == rhs.topologies() and
        lhs.is_time_dependent() == rhs.is_time_dependent() and
        lhs.has_distorted_frame() == rhs.has_distorted_frame());
 

@@ -1,0 +1,49 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#pragma once
+
+#include <cstdint>
+#include <iosfwd>
+
+namespace domain {
+
+/// \brief  The topology of a Block or Element in a particular dimension
+///
+/// \details The Topology is used to determine the geometry of the Block or
+/// Element, which can be used to determine:
+/// - Whether there is an interface (with a neighbor or external boundary) in a
+/// given direction
+/// - The block (element) logical coordinate bounds
+/// - The appropriate Basis and Quadrature for a Mesh on an Element
+/// - Whether or not h-refinement is allowed in the given dimension
+/// - Whether or not the hybrid DG-Subcell scheme can be used
+///
+/// \note Choose I1 to represent an open interval \f$[-1, 1]\f$
+///
+/// \note Choose S1 to represent a periodic interval \f$[0, 2 \pi)\f$
+///
+/// \note In consecutive dimensions, choose S2Colatitude and S2Longitude to
+/// represent the surface of a sphere
+///
+/// \note In consecutive dimensions, choose B2Radial and B2Angular to represent
+/// a disk (including the center) or cross-section of a cylinder
+///
+/// \note Currently h-refinement can only be done in dimensions with
+/// Topology::I1
+///
+/// \note Currently the hybrid DG-Subcell scheme can be used only in Elements
+/// for which all dimensions have Topology::I1
+enum class Topology : uint8_t {
+  Uninitialized = 0,
+  I1 = 1,
+  S1 = 2,
+  S2Colatitude = 3,
+  S2Longitude = 4,
+  B2Radial = 5,
+  B2Angular = 6
+};
+
+/// Output operator for a Topology.
+std::ostream& operator<<(std::ostream& os, Topology topology);
+}  // namespace domain
