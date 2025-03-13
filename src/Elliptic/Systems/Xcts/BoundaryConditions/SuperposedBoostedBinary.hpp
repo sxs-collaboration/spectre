@@ -68,11 +68,6 @@ class SuperposedBoostedBinary
         "The masses of each object, first left and second right";
     using type = std::array<double, 2>;
   };
-  struct MomentumLeft {
-    static constexpr Options::String help =
-        "The momentum assigned to the left object.";
-    using type = std::array<double, 3>;
-  };
   struct MomentumRight {
     static constexpr Options::String help =
         "The momentum assigned to the right object.";
@@ -95,8 +90,8 @@ class SuperposedBoostedBinary
     using type = std::unique_ptr<IsolatedObjectBase>;
   };
 
-  using options = tmpl::list<XCoords, Masses, MomentumLeft, MomentumRight,
-                             CenterOfMassOffset, ObjectLeft, ObjectRight>;
+  using options = tmpl::list<XCoords, Masses, MomentumRight, CenterOfMassOffset,
+                             ObjectLeft, ObjectRight>;
   static constexpr Options::String help =
       "Impose supperposed boosted binary system on the boundary.";
 
@@ -118,8 +113,7 @@ class SuperposedBoostedBinary
     const std::array<double, 2> center_of_mass_offset = {
         {y_offset_, z_offset_}};
     return std::make_unique<SuperposedBoostedBinary>(
-        xcoords_, masses_, momentum_left_, momentum_right_,
-        center_of_mass_offset,
+        xcoords_, masses_, momentum_right_, center_of_mass_offset,
         superposed_objects_[0].has_value()
             ? std::make_optional(
                   deserialize<std::unique_ptr<IsolatedObjectBase>>(
@@ -134,7 +128,6 @@ class SuperposedBoostedBinary
 
   SuperposedBoostedBinary(
       const std::array<double, 2> xcoords, const std::array<double, 2> masses,
-      const std::array<double, 3> momentum_left,
       const std::array<double, 3> momentum_right,
       const std::array<double, 2> center_of_mass_offset,
       std::optional<std::unique_ptr<IsolatedObjectBase>> object_left,
@@ -142,7 +135,7 @@ class SuperposedBoostedBinary
       const Options::Context& context = {})
       : xcoords_(xcoords),
         masses_(masses),
-        momentum_left_(momentum_left),
+        momentum_left_(-momentum_right),
         momentum_right_(momentum_right),
         y_offset_(center_of_mass_offset[0]),
         z_offset_(center_of_mass_offset[1]),

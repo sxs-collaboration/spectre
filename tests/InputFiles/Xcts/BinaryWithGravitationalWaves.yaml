@@ -23,8 +23,11 @@ Background: &background
   BinaryWithGravitationalWaves:
     Masses: [&mass_left .5, &mass_right .5]
     XCoords: [&x_left -6.0, &x_right 6.0]
-    MomentumLeft: [0., &momentum_left -0.08, 0.]
-    MomentumRight: [0., &momentum_right 0.08, 0.]
+    MomentumRight: &momentum_right [
+                                    -0.008503179084485054,
+                                    0.07652861176036548,
+                                    0.
+                                   ]
     CenterOfMassOffset: &center_offset [&y_center 0.0, &z_center 0.0]
     ObjectLeft: &object_left
       Schwarzschild:
@@ -36,6 +39,8 @@ Background: &background
         Coordinates: MaximalIsotropic
     AttenuationParameter: 1.
     AttenuationRadius: 100.
+    OuterRadius: &outer_radius 70.
+    WriteEvolutionOption: True
 
 InitialGuess: *background
 
@@ -52,8 +57,7 @@ DomainCreator:
           SuperposedBoostedBinary:
             Masses: [*mass_left, *mass_right]
             XCoords: [*x_left, *x_right]
-            MomentumLeft: [0., *momentum_left, 0.]
-            MomentumRight: [0., *momentum_right, 0.]
+            MomentumRight: *momentum_right
             CenterOfMassOffset: *center_offset
             ObjectLeft: *object_left
             ObjectRight: *object_right
@@ -67,8 +71,7 @@ DomainCreator:
           SuperposedBoostedBinary:
             Masses: [*mass_left, *mass_right]
             XCoords: [*x_left, *x_right]
-            MomentumLeft: [0., *momentum_left, 0.]
-            MomentumRight: [0., *momentum_right, 0.]
+            MomentumRight: *momentum_right
             CenterOfMassOffset: *center_offset
             ObjectLeft: *object_left
             ObjectRight: *object_right
@@ -79,7 +82,7 @@ DomainCreator:
       Radius: &outer_shell_inner_radius 60.
       RadialDistribution: Logarithmic
     OuterShell:
-      Radius: &outer_radius 70.
+      Radius: *outer_radius
       RadialDistribution: &outer_shell_distribution Linear
       OpeningAngle: 120.0
       BoundaryCondition: Robin

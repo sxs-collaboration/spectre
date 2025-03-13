@@ -3,11 +3,14 @@
 
 #include "PointwiseFunctions/AnalyticData/Xcts/BinaryWithGravitationalWaves.hpp"
 
+#include <boost/math/interpolators/cubic_hermite.hpp>
 #include <brigand/brigand.hpp>
 
 #include <array>
 #include <cstddef>
+#include <iomanip>
 
+#include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -33,6 +36,10 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+
+// Boost MultiArray is used internally in odeint, so odeint must be included
+// later
+#include <boost/numeric/odeint.hpp>
 
 namespace Xcts::AnalyticData::detail {
 
@@ -475,13 +482,10 @@ template <typename DataType>
 Scalar<DataType>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_distance_left(
     const DataType time) const {
-  // later it will depend on t by interpolation of past history
   tnsr::I<DataType, 3> v = x;
-  const std::array<double, 3> position_left = {xcoords[0], offset[0],
-                                               offset[1]};
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] = x.get(j)[i] - gsl::at(position_left, j);
+      v.get(j)[i] = x.get(j)[i] - interpolation_position_left.at(j)(time[i]);
     }
   }
   return magnitude(v);
@@ -491,13 +495,10 @@ template <typename DataType>
 Scalar<DataType>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_distance_right(
     const DataType time) const {
-  // later it will depend on t by interpolation of past history
   tnsr::I<DataType, 3> v = x;
-  const std::array<double, 3> position_right = {xcoords[1], offset[0],
-                                                offset[1]};
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] = x.get(j)[i] - gsl::at(position_right, j);
+      v.get(j)[i] = x.get(j)[i] - interpolation_position_right.at(j)(time[i]);
     }
   }
   return magnitude(v);
@@ -507,12 +508,11 @@ template <typename DataType>
 Scalar<DataType>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_separation(
     const DataType time) const {
-  // later it will depend on t by interpolation of past history
   tnsr::I<DataType, 3> v = x;
-  const std::array<double, 3> separation = {xcoords[1] - xcoords[0], 0., 0.};
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] = gsl::at(separation, j);
+      v.get(j)[i] = interpolation_position_right.at(j)(time[i]) -
+                    interpolation_position_left.at(j)(time[i]);
     }
   }
   return magnitude(v);
@@ -522,11 +522,10 @@ template <typename DataType>
 tnsr::I<DataType, 3>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_momentum_left(
     const DataType time) const {
-  // later it will depend on t by interpolation of past history
   tnsr::I<DataType, 3> v = x;
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] = gsl::at(momentum_left, j);
+      v.get(j)[i] = gsl::at(interpolation_momentum_left, j)(time[i]);
     }
   }
   return v;
@@ -536,11 +535,10 @@ template <typename DataType>
 tnsr::I<DataType, 3>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_momentum_right(
     const DataType time) const {
-  // later it will depend on t by interpolation of past history
   tnsr::I<DataType, 3> v = x;
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] = gsl::at(momentum_right, j);
+      v.get(j)[i] = gsl::at(interpolation_momentum_right, j)(time[i]);
     }
   }
   return v;
@@ -552,12 +550,10 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_normal_left(
     const DataType time) const {
   tnsr::I<DataType, 3> v = x;
   const Scalar<DataType> distance_left = get_t_distance_left(time);
-  const std::array<double, 3> position_left = {xcoords[0], offset[0],
-                                               offset[1]};
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] =
-          (x.get(j)[i] - gsl::at(position_left, j)) / get(distance_left)[i];
+      v.get(j)[i] = (x.get(j)[i] - interpolation_position_left.at(j)(time[i])) /
+                    get(distance_left)[i];
     }
   }
   return v;
@@ -569,12 +565,11 @@ BinaryWithGravitationalWavesVariables<DataType>::get_t_normal_right(
     const DataType time) const {
   tnsr::I<DataType, 3> v = x;
   const Scalar<DataType> distance_right = get_t_distance_right(time);
-  const std::array<double, 3> position_right = {xcoords[1], offset[0],
-                                                offset[1]};
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
       v.get(j)[i] =
-          (x.get(j)[i] - gsl::at(position_right, j)) / get(distance_right)[i];
+          (x.get(j)[i] - interpolation_position_right.at(j)(time[i])) /
+          get(distance_right)[i];
     }
   }
 
@@ -586,11 +581,12 @@ tnsr::I<DataType, 3>
 BinaryWithGravitationalWavesVariables<DataType>::get_t_normal_lr(
     const DataType time) const {
   tnsr::I<DataType, 3> v = x;
-  std::array<double, 3> separation = {xcoords[1] - xcoords[0], 0., 0.};
   Scalar<DataType> separation_norm = get_t_separation(time);
   for (size_t i = 0; i < time.size(); ++i) {
     for (size_t j = 0; j < 3; ++j) {
-      v.get(j)[i] = gsl::at(separation, j) / get(separation_norm)[i];
+      v.get(j)[i] = (interpolation_position_right.at(j)(time[i]) -
+                     interpolation_position_left.at(j)(time[i])) /
+                    get(separation_norm)[i];
     }
   }
   return v;
@@ -729,7 +725,766 @@ tnsr::aa<DataType, 3> BinaryWithGravitationalWavesVariables<
   return superposed_spacetime_metric;
 }
 
+template <typename DataType>
+void BinaryWithGravitationalWavesVariables<
+    DataType>::interpolate_past_history() {
+  // Now interpolate the past history
+  using boost::math::interpolators::cardinal_cubic_hermite;
+
+  for (size_t i = 0; i < 3; ++i) {
+    // static_cast being used because boost requires non-const arrays
+    interpolation_position_left.at(i) = cardinal_cubic_hermite(
+        static_cast<std::vector<double>>(past_position_left.at(i)),
+        static_cast<std::vector<double>>(past_dt_position_left.at(i)),
+        past_time.front(), std::abs(past_time.at(0) - past_time.at(1)));
+    interpolation_position_right.at(i) = cardinal_cubic_hermite(
+        static_cast<std::vector<double>>(past_position_right.at(i)),
+        static_cast<std::vector<double>>(past_dt_position_right.at(i)),
+        past_time.front(), std::abs(past_time.at(0) - past_time.at(1)));
+    interpolation_momentum_left.at(i) = cardinal_cubic_hermite(
+        static_cast<std::vector<double>>(past_momentum_left.at(i)),
+        static_cast<std::vector<double>>(past_dt_momentum_left.at(i)),
+        past_time.front(), std::abs(past_time.at(0) - past_time.at(1)));
+    interpolation_momentum_right.at(i) = cardinal_cubic_hermite(
+        static_cast<std::vector<double>>(past_momentum_right.at(i)),
+        static_cast<std::vector<double>>(past_dt_momentum_right.at(i)),
+        past_time.front(), std::abs(past_time.at(0) - past_time.at(1)));
+  }
+  // Get the domain of the interpolation to not trigger domain error on 0
+  // (zero). The maximum time varies by machine roundoff. The interpolation is
+  // done again because above is casted as std::function which does not have
+  // access to the domain.
+  present_time = make_with_value<DataVector>(
+      x, cardinal_cubic_hermite(
+             static_cast<std::vector<double>>(past_position_left.at(2)),
+             static_cast<std::vector<double>>(past_dt_position_left.at(2)),
+             past_time.front(), std::abs(past_time.at(0) - past_time.at(1)))
+             .domain()
+             .second);
+}
+
 template class BinaryWithGravitationalWavesVariables<DataVector>;
+
+void BinaryWithGravitationalWavesHistory::reverse_vector() {
+  std::reverse(past_time_.begin(), past_time_.end());
+  for (size_t i = 0; i < 3; ++i) {
+    reverse(past_position_left_.at(i).begin(), past_position_left_.at(i).end());
+    reverse(past_position_right_.at(i).begin(),
+            past_position_right_.at(i).end());
+    reverse(past_momentum_left_.at(i).begin(), past_momentum_left_.at(i).end());
+    reverse(past_momentum_right_.at(i).begin(),
+            past_momentum_right_.at(i).end());
+    reverse(past_dt_position_left_.at(i).begin(),
+            past_dt_position_left_.at(i).end());
+    reverse(past_dt_position_right_.at(i).begin(),
+            past_dt_position_right_.at(i).end());
+    reverse(past_dt_momentum_left_.at(i).begin(),
+            past_dt_momentum_left_.at(i).end());
+    reverse(past_dt_momentum_right_.at(i).begin(),
+            past_dt_momentum_right_.at(i).end());
+  }
+}
+
+void BinaryWithGravitationalWavesHistory::initialize() {
+  const double separation = xcoords[1] - xcoords[0];
+
+  total_mass = masses[0] + masses[1];
+  reduced_mass = masses[0] * masses[1] / total_mass;
+  reduced_mass_over_total_mass = reduced_mass / total_mass;
+
+  initial_state_position = {{separation / total_mass, 0., 0.}};
+  initial_state_momentum = {{-momentum_right[0] / reduced_mass,
+                             -momentum_right[1] / reduced_mass,
+                             -momentum_right[2] / reduced_mass}};
+
+  // Reserve vector capacity
+  for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
+    past_position_left_.at(i).reserve(number_of_steps + 1);
+    past_position_right_.at(i).reserve(number_of_steps + 1);
+    past_momentum_left_.at(i).reserve(number_of_steps + 1);
+    past_momentum_right_.at(i).reserve(number_of_steps + 1);
+    past_dt_position_left_.at(i).reserve(number_of_steps + 1);
+    past_dt_position_right_.at(i).reserve(number_of_steps + 1);
+    past_dt_momentum_left_.at(i).reserve(number_of_steps + 1);
+    past_dt_momentum_right_.at(i).reserve(number_of_steps + 1);
+  }
+  past_time_.reserve(number_of_steps + 1);
+}
+
+void BinaryWithGravitationalWavesHistory::hamiltonian_system(
+    const BinaryWithGravitationalWavesHistory::state_type& x,
+    BinaryWithGravitationalWavesHistory::state_type& dpdt) const {
+  // H = H_Newt + H_1PN + H_2PN + H_3PN
+
+  const double pdotp = x[3] * x[3] + x[4] * x[4] + x[5] * x[5];
+  const double qdotq = x[0] * x[0] + x[1] * x[1] + x[2] * x[2];
+  const double qdotp = x[0] * x[3] + x[1] * x[4] + x[2] * x[5];
+
+  const double dH_dp0_Newt = x[3];
+  const double dH_dp0_1 =
+      0.5 * x[3] * pdotp * (-1. + 3. * reduced_mass_over_total_mass) -
+      (x[0] * (x[4] * x[1] + x[5] * x[2]) * reduced_mass_over_total_mass +
+       x[3] * (x[1] * x[1] + x[2] * x[2]) *
+           (3. + reduced_mass_over_total_mass) +
+       x[3] * x[0] * x[0] * (3. + 2. * reduced_mass_over_total_mass)) /
+          std::sqrt(qdotq * qdotq * qdotq);
+  const double dH_dp0_2 =
+      0.125 *
+      (3. * x[3] * pdotp * pdotp *
+           (1. - 5. * reduced_mass_over_total_mass +
+            5. * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
+       (8. * (3. * x[0] * qdotp * reduced_mass_over_total_mass +
+              x[3] * qdotq * (5. + 8. * reduced_mass_over_total_mass))) /
+           (qdotq * qdotq) +
+       (1. / std::sqrt(qdotq)) *
+           (-(12. * x[0] * qdotp * qdotp * qdotp *
+              reduced_mass_over_total_mass * reduced_mass_over_total_mass) /
+                (qdotq * qdotq) -
+            (4. * pdotp * x[0] * qdotp * reduced_mass_over_total_mass *
+             reduced_mass_over_total_mass) /
+                qdotq -
+            (4. * x[3] * qdotp * qdotp * reduced_mass_over_total_mass *
+             reduced_mass_over_total_mass) /
+                qdotq -
+            4. * x[3] * pdotp *
+                (-5. + 20. * reduced_mass_over_total_mass +
+                 3. * reduced_mass_over_total_mass *
+                     reduced_mass_over_total_mass)));
+  const double dH_dp0_3 =
+      0.0625 *
+      (5. * x[3] * pdotp * pdotp * pdotp *
+           (-1. + 7. * (-1. + reduced_mass_over_total_mass) *
+                      (-1. + reduced_mass_over_total_mass) *
+                      reduced_mass_over_total_mass) +
+       1.0 / (3. * qdotq * qdotq * qdotq) * 2 *
+           (3. * pdotp * x[0] * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17 + 30 * reduced_mass_over_total_mass) +
+            3. * x[3] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17 + 30 * reduced_mass_over_total_mass) +
+            8. * x[0] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5 + 43 * reduced_mass_over_total_mass) +
+            6. * x[3] * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) -
+       (3. * x[0] * qdotp * reduced_mass_over_total_mass *
+            (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+        x[3] * qdotq *
+            (600. + reduced_mass_over_total_mass *
+                        (1340. - 3. * M_PI * M_PI +
+                         552. * reduced_mass_over_total_mass))) /
+           (6. * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
+       2. / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
+           (pdotp * pdotp * x[0] * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+            2. * x[3] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            6. * pdotp * x[0] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * x[3] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1 + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            15. * x[0] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+                reduced_mass_over_total_mass -
+            3. * x[3] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass)))));
+
+  const double dH_dp1_Newt = x[4];
+  const double dH_dp1_1 =
+      0.5 * x[4] * pdotp * (-1 + 3 * reduced_mass_over_total_mass) -
+      (x[1] * (x[3] * x[0] + x[5] * x[2]) * reduced_mass_over_total_mass +
+       x[4] * (x[0] * x[0] + x[2] * x[2]) * (3 + reduced_mass_over_total_mass) +
+       x[4] * x[1] * x[1] * (3 + 2 * reduced_mass_over_total_mass)) /
+          std::sqrt(qdotq * qdotq * qdotq);
+  const double dH_dp1_2 =
+      0.125 *
+      (3. * x[4] * pdotp * pdotp *
+           (1. - 5. * reduced_mass_over_total_mass +
+            5. * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
+       (8. * (3. * x[1] * qdotp * reduced_mass_over_total_mass +
+              x[4] * qdotq * (5. + 8. * reduced_mass_over_total_mass))) /
+           (qdotq * qdotq) +
+       (1. / std::sqrt(qdotq)) *
+           (-(12. * x[1] * qdotp * qdotp * qdotp *
+              reduced_mass_over_total_mass * reduced_mass_over_total_mass) /
+                (qdotq * qdotq) -
+            (4. * pdotp * x[1] * qdotp * reduced_mass_over_total_mass *
+             reduced_mass_over_total_mass) /
+                qdotq -
+            (8. * x[4] * qdotp * qdotp * reduced_mass_over_total_mass *
+             reduced_mass_over_total_mass) /
+                qdotq -
+            4. * x[4] * pdotp *
+                (-5. + 20. * reduced_mass_over_total_mass +
+                 3. * reduced_mass_over_total_mass *
+                     reduced_mass_over_total_mass)));
+  const double dH_dp1_3 =
+      0.0625 *
+      (5. * x[4] * pdotp * pdotp * pdotp *
+           (-1. + 7. * (-1. + reduced_mass_over_total_mass) *
+                      (-1. + reduced_mass_over_total_mass) *
+                      reduced_mass_over_total_mass) +
+       1.0 / (3. * qdotq * qdotq * qdotq) * 2 *
+           (3. * pdotp * x[1] * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            3. * x[4] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[1] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            6. * x[4] * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) -
+       (3. * x[1] * qdotp * reduced_mass_over_total_mass *
+            (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+        x[4] * qdotq *
+            (600. + reduced_mass_over_total_mass *
+                        (1340. - 3. * M_PI * M_PI +
+                         552. * reduced_mass_over_total_mass))) /
+           (6. * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
+       2. / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
+           (pdotp * pdotp * x[1] * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+            2. * x[4] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            6. * pdotp * x[1] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * x[4] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            15. * x[1] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+                reduced_mass_over_total_mass -
+            3. * x[4] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass)))));
+
+  const double dH_dp2_Newt = x[5];
+  const double dH_dp2_1 =
+      0.5 * x[5] * pdotp * (-1 + 3 * reduced_mass_over_total_mass) -
+      (x[2] * (x[4] * x[1] + x[3] * x[0]) * reduced_mass_over_total_mass +
+       x[5] * (x[0] * x[0] + x[1] * x[1]) *
+           (3. + reduced_mass_over_total_mass) +
+       x[5] * x[2] * x[2] * (3. + 2. * reduced_mass_over_total_mass)) /
+          std::sqrt(qdotq * qdotq * qdotq);
+  const double dH_dp2_2 =
+      0.125 *
+      (3. * x[5] * pdotp * pdotp *
+           (1. - 5. * reduced_mass_over_total_mass +
+            5 * reduced_mass_over_total_mass * reduced_mass_over_total_mass) +
+       (8. * (3. * x[2] * qdotp * reduced_mass_over_total_mass +
+              x[5] * qdotq * (5. + 8. * reduced_mass_over_total_mass))) /
+           (qdotq * qdotq) +
+       (1. / std::sqrt(qdotq)) *
+           (-(12. * x[2] * qdotp * qdotp * qdotp *
+              reduced_mass_over_total_mass * reduced_mass_over_total_mass) /
+                (qdotq * qdotq) -
+            (4. * pdotp * x[2] * qdotp * reduced_mass_over_total_mass *
+             reduced_mass_over_total_mass) /
+                qdotq -
+            (8. * x[5] * qdotp * qdotp * reduced_mass_over_total_mass *
+             reduced_mass_over_total_mass) /
+                qdotq -
+            4. * x[5] * pdotp *
+                (-5. + 20. * reduced_mass_over_total_mass +
+                 3. * reduced_mass_over_total_mass *
+                     reduced_mass_over_total_mass)));
+  const double dH_dp2_3 =
+      0.0625 *
+      (5. * x[5] * pdotp * pdotp * pdotp *
+           (-1. + 7. * (-1. + reduced_mass_over_total_mass) *
+                      (-1. + reduced_mass_over_total_mass) *
+                      reduced_mass_over_total_mass) +
+       1.0 / (3. * qdotq * qdotq * qdotq) * 2. *
+           (3. * pdotp * x[2] * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            3. * x[5] * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[2] * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            6. * x[5] * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) -
+       (3. * x[2] * qdotp * reduced_mass_over_total_mass *
+            (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+        x[5] * qdotq *
+            (600. + reduced_mass_over_total_mass *
+                        (1340. - 3. * M_PI * M_PI +
+                         552. * reduced_mass_over_total_mass))) /
+           (6. * sqrt(qdotq * qdotq * qdotq * qdotq * qdotq)) +
+       2. / (sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq)) *
+           (pdotp * pdotp * x[2] * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+            2. * x[5] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            6. * pdotp * x[2] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * x[5] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            15. * x[2] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+                reduced_mass_over_total_mass -
+            3. * x[5] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass)))));
+
+  const double dH_dq0_Newt = x[0] / std::sqrt(qdotq * qdotq * qdotq);
+  const double dH_dq0_1 =
+      (-2. * x[0] * std::sqrt(qdotq) +
+       3. * x[0] * qdotp * qdotp * reduced_mass_over_total_mass -
+       2. * x[3] * qdotp * qdotq * reduced_mass_over_total_mass +
+       pdotp * x[0] * qdotq * (3. + reduced_mass_over_total_mass)) /
+      (2. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
+  const double dH_dq0_2 =
+      (-48. * x[0] * qdotp * qdotp * std::sqrt(qdotq) *
+           reduced_mass_over_total_mass +
+       24. * x[3] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
+           reduced_mass_over_total_mass +
+       15. * x[0] * qdotp * qdotp * qdotp * qdotp *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * pdotp * x[0] * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       12. * x[3] * qdotp * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       4. * x[3] * pdotp * qdotp * qdotq * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * x[0] * qdotq * (1. + 3. * reduced_mass_over_total_mass) -
+       8. * pdotp * x[0] * std::sqrt(qdotq * qdotq * qdotq) *
+           (5. + 8. * reduced_mass_over_total_mass) +
+       pdotp * pdotp * x[0] * qdotq * qdotq *
+           (-5. + reduced_mass_over_total_mass *
+                      (20. + 3. * reduced_mass_over_total_mass))) /
+      (8. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
+  const double dH_dq0_3 =
+      (3. / 2. * qdotp * qdotq *
+           (x[0] * (x[1] * x[4] + x[2] * x[5]) -
+            x[3] * (x[1] * x[1] + x[2] * x[2])) *
+           reduced_mass_over_total_mass *
+           (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+       2. * x[0] * std::sqrt(qdotq * qdotq * qdotq) *
+           (-12. + (-872. + 63. * M_PI * M_PI) * reduced_mass_over_total_mass) -
+       6. * qdotp * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass *
+           (pdotp * pdotp * x[0] * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) -
+            6. * pdotp * x[0] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) +
+            6. * x[3] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (-1. + reduced_mass_over_total_mass) -
+            15. * x[0] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass +
+            15. * x[3] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                reduced_mass_over_total_mass +
+            x[3] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (-2. + 3. * reduced_mass_over_total_mass)) -
+       2. * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
+           (3. * pdotp * x[0] * qdotp * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) -
+            3. * x[3] * pdotp * qdotq * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[0] * qdotp * qdotp * qdotp *
+                (5. + 43. * reduced_mass_over_total_mass) -
+            8. * x[3] * qdotp * qdotp * qdotq *
+                (5. + 43. * reduced_mass_over_total_mass)) -
+       2. * x[0] * std::sqrt(qdotq) *
+           (3. * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            4. * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            3. * pdotp * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) +
+       0.75 * x[0] * qdotq *
+           (3. * qdotp * qdotp * reduced_mass_over_total_mass *
+                (340. + 3. * M_PI * M_PI +
+                 112. * reduced_mass_over_total_mass) +
+            pdotp * qdotq *
+                (600. + reduced_mass_over_total_mass *
+                            (1340. - 3. * M_PI * M_PI +
+                             552. * reduced_mass_over_total_mass))) -
+       3. * x[0] *
+           (pdotp * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            5. * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+                reduced_mass_over_total_mass -
+            pdotp * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass))))) /
+      (48. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
+                       qdotq * qdotq));
+
+  const double dH_dq1_Newt = x[1] / std::sqrt(qdotq * qdotq * qdotq);
+  const double dH_dq1_1 =
+      (-2. * x[1] * std::sqrt(qdotq) +
+       3. * x[1] * qdotp * qdotp * reduced_mass_over_total_mass -
+       2. * x[4] * qdotp * qdotq * reduced_mass_over_total_mass +
+       pdotp * x[1] * qdotq * (3. + reduced_mass_over_total_mass)) /
+      (2. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
+  const double dH_dq1_2 =
+      (-48. * x[1] * qdotp * qdotp * std::sqrt(qdotq) *
+           reduced_mass_over_total_mass +
+       24. * x[4] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
+           reduced_mass_over_total_mass +
+       15. * x[1] * qdotp * qdotp * qdotp * qdotp *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * pdotp * x[1] * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       12. * x[4] * qdotp * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       4. * x[4] * pdotp * qdotp * qdotq * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * x[1] * qdotq * (1. + 3. * reduced_mass_over_total_mass) -
+       8. * pdotp * x[1] * std::sqrt(qdotq * qdotq * qdotq) *
+           (5. + 8. * reduced_mass_over_total_mass) +
+       pdotp * pdotp * x[1] * qdotq * qdotq *
+           (-5. + reduced_mass_over_total_mass *
+                      (20. + 3. * reduced_mass_over_total_mass))) /
+      (8. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
+  const double dH_dq1_3 =
+      (3. / 2. * qdotp * qdotq *
+           (x[1] * (x[0] * x[3] + x[2] * x[5]) -
+            x[4] * (x[0] * x[0] + x[2] * x[2])) *
+           reduced_mass_over_total_mass *
+           (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+       2. * x[1] * std::sqrt(qdotq * qdotq * qdotq) *
+           (-12 + (-872. + 63. * M_PI * M_PI) * reduced_mass_over_total_mass) -
+       6. * qdotp * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass *
+           (pdotp * pdotp * x[1] * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) -
+            6. * pdotp * x[1] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) +
+            6. * x[4] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (-1. + reduced_mass_over_total_mass) -
+            15. * x[1] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass +
+            15. * x[4] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                reduced_mass_over_total_mass +
+            x[4] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (-2. + 3. * reduced_mass_over_total_mass)) -
+       2. * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
+           (3. * pdotp * x[1] * qdotp * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) -
+            3. * x[4] * pdotp * qdotq * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[1] * qdotp * qdotp * qdotp *
+                (5. + 43. * reduced_mass_over_total_mass) -
+            8. * x[4] * qdotp * qdotp * qdotq *
+                (5. + 43. * reduced_mass_over_total_mass)) -
+       2. * x[1] * std::sqrt(qdotq) *
+           (3. * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            4. * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            3. * pdotp * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) +
+       0.75 * x[1] * qdotq *
+           (3. * qdotp * qdotp * reduced_mass_over_total_mass *
+                (340. + 3. * M_PI * M_PI +
+                 112. * reduced_mass_over_total_mass) +
+            pdotp * qdotq *
+                (600. + reduced_mass_over_total_mass *
+                            (1340. - 3. * M_PI * M_PI +
+                             552. * reduced_mass_over_total_mass))) -
+       3. * x[1] *
+           (pdotp * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            5. * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+                reduced_mass_over_total_mass -
+            pdotp * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass))))) /
+      (48. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
+                       qdotq * qdotq));
+
+  const double dH_dq2_Newt = x[2] / std::sqrt(qdotq * qdotq * qdotq);
+  const double dH_dq2_1 =
+      (-2. * x[2] * std::sqrt(qdotq) +
+       3. * x[2] * qdotp * qdotp * reduced_mass_over_total_mass -
+       2. * x[5] * qdotp * qdotq * reduced_mass_over_total_mass +
+       pdotp * x[2] * qdotq * (3. + reduced_mass_over_total_mass)) /
+      (2. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq));
+  const double dH_dq2_2 =
+      (-48. * x[2] * qdotp * qdotp * std::sqrt(qdotq) *
+           reduced_mass_over_total_mass +
+       24. * x[5] * qdotp * std::sqrt(qdotq * qdotq * qdotq) *
+           reduced_mass_over_total_mass +
+       15. * x[2] * qdotp * qdotp * qdotp * qdotp *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * pdotp * x[2] * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       12. * x[5] * qdotp * qdotp * qdotp * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+       4. * x[5] * pdotp * qdotp * qdotq * qdotq *
+           reduced_mass_over_total_mass * reduced_mass_over_total_mass +
+       6. * x[2] * qdotq * (1. + 3. * reduced_mass_over_total_mass) -
+       8. * pdotp * x[2] * std::sqrt(qdotq * qdotq * qdotq) *
+           (5. + 8. * reduced_mass_over_total_mass) +
+       pdotp * pdotp * x[2] * qdotq * qdotq *
+           (-5. + reduced_mass_over_total_mass *
+                      (20. + 3. * reduced_mass_over_total_mass))) /
+      (8. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq));
+  const double dH_dq2_3 =
+      (3. / 2. * qdotp * qdotq *
+           (x[2] * (x[0] * x[3] + x[1] * x[3]) -
+            x[5] * (x[0] * x[0] + x[1] * x[1])) *
+           reduced_mass_over_total_mass *
+           (340. + 3. * M_PI * M_PI + 112. * reduced_mass_over_total_mass) +
+       2. * x[2] * std::sqrt(qdotq * qdotq * qdotq) *
+           (-12. + (-872. + 63. * M_PI * M_PI) * reduced_mass_over_total_mass) -
+       6. * qdotp * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass *
+           (pdotp * pdotp * x[2] * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) -
+            6. * pdotp * x[2] * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) +
+            6. * x[5] * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (-1. + reduced_mass_over_total_mass) -
+            15. * x[2] * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass +
+            15. * x[5] * qdotp * qdotp * qdotp * qdotp * qdotq *
+                reduced_mass_over_total_mass +
+            x[5] * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (-2. + 3. * reduced_mass_over_total_mass)) -
+       2. * qdotp * std::sqrt(qdotq) * reduced_mass_over_total_mass *
+           (3. * pdotp * x[2] * qdotp * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) -
+            3. * x[5] * pdotp * qdotq * qdotq *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            8. * x[2] * qdotp * qdotp * qdotp *
+                (5. + 43. * reduced_mass_over_total_mass) -
+            8. * x[5] * qdotp * qdotp * qdotq *
+                (5. + 43. * reduced_mass_over_total_mass)) -
+       2. * x[2] * std::sqrt(qdotq) *
+           (3. * pdotp * qdotp * qdotp * qdotq * reduced_mass_over_total_mass *
+                (17. + 30. * reduced_mass_over_total_mass) +
+            4. * qdotp * qdotp * qdotp * qdotp * reduced_mass_over_total_mass *
+                (5. + 43. * reduced_mass_over_total_mass) +
+            3. * pdotp * pdotp * qdotq * qdotq *
+                (-27. + reduced_mass_over_total_mass *
+                            (136. + 109. * reduced_mass_over_total_mass))) +
+       0.75 * x[2] * qdotq *
+           (3. * qdotp * qdotp * reduced_mass_over_total_mass *
+                (340. + 3. * M_PI * M_PI +
+                 112. * reduced_mass_over_total_mass) +
+            pdotp * qdotq *
+                (600. + reduced_mass_over_total_mass *
+                            (1340. - 3. * M_PI * M_PI +
+                             552. * reduced_mass_over_total_mass))) -
+       3. * x[2] *
+           (pdotp * pdotp * qdotp * qdotp * qdotq * qdotq *
+                (2. - 3. * reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            3. * pdotp * qdotp * qdotp * qdotp * qdotp * qdotq *
+                (-1. + reduced_mass_over_total_mass) *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass -
+            5. * qdotp * qdotp * qdotp * qdotp * qdotp * qdotp *
+                reduced_mass_over_total_mass * reduced_mass_over_total_mass *
+                reduced_mass_over_total_mass -
+            pdotp * pdotp * pdotp * qdotq * qdotq * qdotq *
+                (7. +
+                 reduced_mass_over_total_mass *
+                     (-42. + reduced_mass_over_total_mass *
+                                 (53. + 5. * reduced_mass_over_total_mass))))) /
+      (48. * std::sqrt(qdotq * qdotq * qdotq * qdotq * qdotq * qdotq * qdotq *
+                       qdotq * qdotq));
+
+  const double L =
+      total_mass * reduced_mass *
+      sqrt((x[1] * x[5] - x[2] * x[4]) * (x[1] * x[5] - x[2] * x[4]) +
+           (x[2] * x[3] - x[0] * x[5]) * (x[2] * x[3] - x[0] * x[5]) +
+           (x[0] * x[4] - x[1] * x[3]) * (x[0] * x[4] - x[1] * x[3]));
+  const double w = L / (square(total_mass) * qdotq);
+  const double vw = std::cbrt(total_mass * w);
+  const double gamma_Euler =
+      0.57721566490153286060651209008240243104215933593992;
+
+  const double f2 =
+      -(1247. / 336.) - (35. / 12.) * reduced_mass_over_total_mass;
+  const double f3 = 4 * M_PI;
+  const double f4 =
+      -(44711. / 9072.) + (9271. / 504.) * reduced_mass_over_total_mass +
+      (65. / 18.) * reduced_mass_over_total_mass * reduced_mass_over_total_mass;
+  const double f5 =
+      -(8191. / 672. + 583. / 24. * reduced_mass_over_total_mass) * M_PI;
+  const double f6 = (6643739519. / 69854400.) + (16. / 3.) * M_PI * M_PI -
+                    (1712. / 105.) * gamma_Euler +
+                    (-134543. / 7776. + (41. / 48.) * M_PI * M_PI) *
+                        reduced_mass_over_total_mass -
+                    (94403. / 3024.) * reduced_mass_over_total_mass *
+                        reduced_mass_over_total_mass -
+                    (775. / 324.) * reduced_mass_over_total_mass *
+                        reduced_mass_over_total_mass *
+                        reduced_mass_over_total_mass;
+  const double fl6 = -1712. / 105.;
+  const double f7 =
+      (-16285. / 504. + 214745. / 1728. * reduced_mass_over_total_mass +
+       193385. / 3024. * reduced_mass_over_total_mass *
+           reduced_mass_over_total_mass) *
+      M_PI;
+
+  const double dE_dt =
+      -(32. / 5.) * reduced_mass_over_total_mass *
+      reduced_mass_over_total_mass * vw * vw * vw * vw * vw * vw * vw * vw *
+      vw * vw *
+      (1. + f2 * vw * vw + f3 * vw * vw * vw + f4 * vw * vw * vw * vw +
+       f5 * vw * vw * vw * vw * vw + f6 * vw * vw * vw * vw * vw * vw +
+       fl6 * vw * vw * vw * vw * vw * vw * std::log(4. * vw) +
+       f7 * vw * vw * vw * vw * vw * vw * vw);
+
+  const std::array<double, 3> F{1. / (w * L) * dE_dt * x[3],
+                                1. / (w * L) * dE_dt * x[4],
+                                1. / (w * L) * dE_dt * x[5]};
+
+  dpdt[0] = (1. / total_mass) *
+            (dH_dp0_Newt + dH_dp0_1 + dH_dp0_2 + dH_dp0_3);  // dX0/dt = dH/dP0
+  dpdt[1] = (1. / total_mass) *
+            (dH_dp1_Newt + dH_dp1_1 + dH_dp1_2 + dH_dp1_3);  // dX1/dt = dH/dP1
+  dpdt[2] = (1. / total_mass) *
+            (dH_dp2_Newt + dH_dp2_1 + dH_dp2_2 + dH_dp2_3);  // dX2/dt = dH/dP2
+
+  dpdt[3] =
+      -(1. / total_mass) * (dH_dq0_Newt + dH_dq0_1 + dH_dq0_2 + dH_dq0_3) +
+      F[0];  // dP0/dt = -dH/dX0 + F0
+  dpdt[4] =
+      -(1. / total_mass) * (dH_dq1_Newt + dH_dq1_1 + dH_dq1_2 + dH_dq1_3) +
+      F[1];  // dP1/dt = -dH/dX1 + F1
+  dpdt[5] =
+      -(1. / total_mass) * (dH_dq2_Newt + dH_dq2_1 + dH_dq2_2 + dH_dq2_3) +
+      F[2];  // dP2/dt = -dH/dX2 + F2
+}
+
+void BinaryWithGravitationalWavesHistory::observer_vector(
+    const BinaryWithGravitationalWavesHistory::state_type& x, const double t) {
+  past_time_.push_back(t);
+
+  std::array<double, 3> x_cm = {
+      (xcoords[1] * masses[1] + xcoords[0] * masses[0]) / total_mass, offset[0],
+      offset[1]};
+
+  for (size_t i = 0; i < 3; ++i) {
+    past_position_left_.at(i).push_back(x_cm.at(i) - masses[1] * x.at(i));
+    past_position_right_.at(i).push_back(x_cm.at(i) + masses[0] * x.at(i));
+  }
+  for (size_t i = 3; i < 6; ++i) {
+    past_momentum_left_.at(i - 3).push_back(x.at(i) * reduced_mass);
+    past_momentum_right_.at(i - 3).push_back(-x.at(i) * reduced_mass);
+  }
+
+  state_type dxdt;
+  hamiltonian_system(x, dxdt);
+
+  for (size_t i = 0; i < 3; ++i) {
+    past_dt_position_left_.at(i).push_back(-dxdt.at(i) * masses[1]);
+    past_dt_position_right_.at(i).push_back(dxdt.at(i) * masses[0]);
+  }
+  for (size_t i = 3; i < 6; ++i) {
+    past_dt_momentum_left_.at(i - 3).push_back(dxdt.at(i) * reduced_mass);
+    past_dt_momentum_right_.at(i - 3).push_back(-dxdt.at(i) * reduced_mass);
+  }
+}
+
+void BinaryWithGravitationalWavesHistory::integrate_hamiltonian_system() {
+  BinaryWithGravitationalWavesHistory::state_type ini = {
+      initial_state_position.at(0),
+      initial_state_position.at(1),
+      initial_state_position.at(2),
+      initial_state_momentum.at(0),
+      initial_state_momentum.at(1),
+      initial_state_momentum.at(2)};  // initial conditions
+
+  auto hamiltonian_system_lambda = [this](auto&& PH1, auto&& PH2,
+                                          const double /*t*/) {
+    hamiltonian_system(std::forward<decltype(PH1)>(PH1),
+                       std::forward<decltype(PH2)>(PH2));
+  };
+
+  auto observer = [this](auto&& PH1, auto&& PH2) {
+    observer_vector(std::forward<decltype(PH1)>(PH1),
+                    std::forward<decltype(PH2)>(PH2));
+  };
+
+  // Integrate the Hamiltonian system
+  boost::numeric::odeint::integrate_const(
+      boost::numeric::odeint::runge_kutta4<
+          BinaryWithGravitationalWavesHistory::state_type>(),
+      hamiltonian_system_lambda, ini, initial_time, final_time, -time_step,
+      observer);
+}
+
+void BinaryWithGravitationalWavesHistory::write_evolution_to_file() const {
+  if (write_evolution_option) {
+    std::ofstream file;
+    file.open("PastHistoryEvolution.csv");
+    file << "time, position_left_x, position_left_y, position_left_z, "
+            "momentum_left_x, momentum_left_y, momentum_left_z, "
+            "position_right_x, position_right_y, position_right_z, "
+            "momentum_right_x, momentum_right_y, momentum_right_z, "
+            "dt_momentum_left_x, dt_momentum_left_y, dt_momentum_left_z, "
+            "dt_momentum_right_x, dt_momentum_right_y, dt_momentum_right_z, "
+         << std::endl;
+    for (size_t i = 0; i <= number_of_steps; ++i) {
+      file << std::fixed << std::setprecision(4) << past_time_.at(i) << ", ";
+      for (size_t j = 0; j < 3; ++j) {
+        file << std::fixed << std::setprecision(16)
+             << past_position_left_.at(j).at(i) << ", ";
+      }
+      for (size_t j = 0; j < 3; ++j) {
+        file << std::fixed << std::setprecision(16)
+             << past_momentum_left_.at(j).at(i) << ", ";
+      }
+      for (size_t j = 0; j < 3; ++j) {
+        file << std::fixed << std::setprecision(16)
+             << past_position_right_.at(j).at(i) << ", ";
+      }
+      for (size_t j = 0; j < 3; ++j) {
+        file << std::fixed << std::setprecision(16)
+             << past_momentum_right_.at(j).at(i) << ", ";
+      }
+      for (size_t j = 0; j < 3; ++j) {
+        file << std::fixed << std::setprecision(16)
+             << past_dt_momentum_left_.at(j).at(i) << ", ";
+      }
+      for (size_t j = 0; j < 3; ++j) {
+        file << std::fixed << std::setprecision(16)
+             << past_dt_momentum_right_.at(j).at(i) << ", ";
+      }
+      file << std::endl;
+    }
+    file.close();
+  }
+}
 
 }  // namespace Xcts::AnalyticData::detail
 

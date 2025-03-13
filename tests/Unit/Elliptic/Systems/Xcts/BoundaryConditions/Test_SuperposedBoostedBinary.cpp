@@ -165,7 +165,6 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.SuperposedBoostedBinary",
       "SuperposedBoostedBinary:\n"
       "  XCoords: [-5., 6.]\n"
       "  Masses: [1.1, 0.43]\n"
-      "  MomentumLeft: [0.01, 0.01, 0.01]\n"
       "  MomentumRight: [-0.01, -0.01, -0.01]\n"
       "  CenterOfMassOffset: [0.02, 0.01]\n"
       "  ObjectLeft:\n"

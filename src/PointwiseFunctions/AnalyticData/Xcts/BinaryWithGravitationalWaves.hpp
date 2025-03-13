@@ -104,7 +104,16 @@ struct BinaryWithGravitationalWavesVariables
       std::array<tuples::tagged_tuple_from_typelist<superposed_tags>, 2>
           local_isolated_vars,
       std::array<tuples::tagged_tuple_from_typelist<boost_tags>, 2>
-          local_boost_vars)
+          local_boost_vars,
+      const std::array<std::vector<double>, 3>& local_past_position_left,
+      const std::array<std::vector<double>, 3>& local_past_position_right,
+      const std::array<std::vector<double>, 3>& local_past_dt_position_left,
+      const std::array<std::vector<double>, 3>& local_past_dt_position_right,
+      const std::array<std::vector<double>, 3>& local_past_momentum_left,
+      const std::array<std::vector<double>, 3>& local_past_momentum_right,
+      const std::array<std::vector<double>, 3>& local_past_dt_momentum_left,
+      const std::array<std::vector<double>, 3>& local_past_dt_momentum_right,
+      const std::vector<double>& local_past_time)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         mesh(std::move(local_mesh)),
         inv_jacobian(std::move(local_inv_jacobian)),
@@ -120,7 +129,18 @@ struct BinaryWithGravitationalWavesVariables
         x_isolated(std::move(local_x_isolated)),
         flat_vars(std::move(local_flat_vars)),
         isolated_vars(std::move(local_isolated_vars)),
-        boost_vars(std::move(local_boost_vars)) {}
+        boost_vars(std::move(local_boost_vars)),
+        past_position_left(local_past_position_left),
+        past_position_right(local_past_position_right),
+        past_dt_position_left(local_past_dt_position_left),
+        past_dt_position_right(local_past_dt_position_right),
+        past_momentum_left(local_past_momentum_left),
+        past_momentum_right(local_past_momentum_right),
+        past_dt_momentum_left(local_past_dt_momentum_left),
+        past_dt_momentum_right(local_past_dt_momentum_right),
+        past_time(local_past_time) {
+    interpolate_past_history();
+  }
 
   std::optional<std::reference_wrapper<const Mesh<Dim>>> mesh;
   std::optional<std::reference_wrapper<const InverseJacobian<
@@ -141,6 +161,21 @@ struct BinaryWithGravitationalWavesVariables
   std::array<tuples::tagged_tuple_from_typelist<superposed_tags>, 2>
       isolated_vars;
   std::array<tuples::tagged_tuple_from_typelist<boost_tags>, 2> boost_vars;
+
+  std::array<std::vector<double>, 3> past_position_left{};
+  std::array<std::vector<double>, 3> past_position_right{};
+  std::array<std::vector<double>, 3> past_dt_position_left{};
+  std::array<std::vector<double>, 3> past_dt_position_right{};
+  std::array<std::vector<double>, 3> past_momentum_left{};
+  std::array<std::vector<double>, 3> past_momentum_right{};
+  std::array<std::vector<double>, 3> past_dt_momentum_left{};
+  std::array<std::vector<double>, 3> past_dt_momentum_right{};
+  std::vector<double> past_time{};
+
+  std::array<std::function<double(double)>, 3> interpolation_position_left{};
+  std::array<std::function<double(double)>, 3> interpolation_position_right{};
+  std::array<std::function<double(double)>, 3> interpolation_momentum_left{};
+  std::array<std::function<double(double)>, 3> interpolation_momentum_right{};
 
   double time_displacement = 0.01;
   DataType present_time = make_with_value<DataVector>(x, 1.);
@@ -256,7 +291,7 @@ struct BinaryWithGravitationalWavesVariables
   }
 
  private:
-  // void interpolate_past_history();
+  void interpolate_past_history();
   // DataType find_retarded_time_left(DataType t0) const;
   // DataType find_retarded_time_right(DataType t0) const;
   Scalar<DataType> get_t_distance_left(DataType t) const;
@@ -286,6 +321,131 @@ struct BinaryWithGravitationalWavesVariables
   tnsr::aa<DataType, 3> get_t_boosted_spacetime_metric_right(DataType t) const;
   tnsr::aa<DataType, 3> get_t_superposed_spacetime_metric(DataType t) const;
 };
+
+struct BinaryWithGravitationalWavesHistory {
+  BinaryWithGravitationalWavesHistory(
+      const std::array<double, 2>& local_masses,
+      const std::array<double, 2>& local_xcoords,
+      const std::array<double, 3>& local_momentum_right,
+      const double local_y_offset, const double local_z_offset,
+      const bool local_write_evolution_option, const double local_initial_time,
+      const double local_final_time, const double local_time_step,
+      const size_t local_number_of_steps)
+      : masses(local_masses),
+        xcoords(local_xcoords),
+        momentum_right(local_momentum_right),
+        offset({local_y_offset, local_z_offset}),
+        write_evolution_option(local_write_evolution_option),
+        initial_time(local_initial_time),
+        final_time(local_final_time),
+        time_step(local_time_step),
+        number_of_steps(local_number_of_steps) {
+    // Set the past history data
+    initialize();
+    integrate_hamiltonian_system();
+    write_evolution_to_file();
+    reverse_vector();
+  }
+
+  void get_past_position_left(std::vector<double>* past_position_left,
+                              size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_position_left->push_back(past_position_left_.at(i).at(j));
+    }
+  };
+  void get_past_position_right(std::vector<double>* past_position_right,
+                               size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_position_right->push_back(past_position_right_.at(i).at(j));
+    }
+  };
+  void get_past_dt_position_left(std::vector<double>* past_dt_position_left,
+                                 size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_dt_position_left->push_back(past_dt_position_left_.at(i).at(j));
+    }
+  };
+  void get_past_dt_position_right(std::vector<double>* past_dt_position_right,
+                                  size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_dt_position_right->push_back(past_dt_position_right_.at(i).at(j));
+    }
+  };
+  void get_past_momentum_left(std::vector<double>* past_momentum_left,
+                              size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_momentum_left->push_back(past_momentum_left_.at(i).at(j));
+    }
+  };
+  void get_past_momentum_right(std::vector<double>* past_momentum_right,
+                               size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_momentum_right->push_back(past_momentum_right_.at(i).at(j));
+    }
+  };
+  void get_past_dt_momentum_left(std::vector<double>* past_dt_momentum_left,
+                                 size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_dt_momentum_left->push_back(past_dt_momentum_left_.at(i).at(j));
+    }
+  };
+  void get_past_dt_momentum_right(std::vector<double>* past_dt_momentum_right,
+                                  size_t i) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_dt_momentum_right->push_back(past_dt_momentum_right_.at(i).at(j));
+    }
+  };
+  void get_past_time(std::vector<double>* past_time) {
+    for (size_t j = 0; j <= number_of_steps; ++j) {
+      past_time->push_back(past_time_[j]);
+    }
+  };
+
+ private:
+  std::array<double, 2> masses;
+  std::array<double, 2> xcoords;
+  std::array<double, 3> momentum_right;
+  std::array<double, 2> offset;
+  bool write_evolution_option = false;
+
+  double total_mass = 0.;
+  double reduced_mass = 0.;
+  double reduced_mass_over_total_mass = 0.;
+  std::array<double, 3> initial_state_position{};
+  std::array<double, 3> initial_state_momentum{};
+
+  std::array<std::vector<double>, 3> past_position_left_{};
+  std::array<std::vector<double>, 3> past_position_right_{};
+  std::array<std::vector<double>, 3> past_dt_position_left_{};
+  std::array<std::vector<double>, 3> past_dt_position_right_{};
+  std::array<std::vector<double>, 3> past_momentum_left_{};
+  std::array<std::vector<double>, 3> past_momentum_right_{};
+  std::array<std::vector<double>, 3> past_dt_momentum_left_{};
+  std::array<std::vector<double>, 3> past_dt_momentum_right_{};
+  std::vector<double> past_time_{};
+
+  double initial_time = 0.;
+  double final_time = 0.;
+  double time_step = 0.;
+  size_t number_of_steps = 0;
+
+  void initialize();
+
+  using state_type = std::array<double, 6>;
+
+  // Hamiltonian system
+  void hamiltonian_system(const state_type& x, state_type& dpdt) const;
+
+  // Observer: store state in vectors
+  void observer_vector(const state_type& x, double t);
+
+  // Integration of the Hamiltonian system
+  void integrate_hamiltonian_system();
+  void write_evolution_to_file() const;
+
+  void reverse_vector();
+};
+
 }  // namespace detail
 
 /*!
@@ -346,9 +506,9 @@ struct BinaryWithGravitationalWavesVariables
  * where \f$\hat{n}_a\f$ is the unit normal vector pointing to the black hole
  * center of mass, \f$\hat{n}_{ab}\f$ is the unit normal vector pointing from
  * black hole \f$a\f$ to black hole \f$b\f$ and \f$s_{ab} = r_a + r_b +
- * r_{ab}\f$. The term \f$h^{TT}_{(5)ij}\f$ is a spatially constant field that
- * just varies in time, for initial data we can choose an initial time such that
- * \f$h^{TT}_{(5)ij} = 0\f$.
+ * r_{ab}\f$. The term \f$h^{TT}_{(5)ij}\f$ is a spatially constapast_time_nt
+ * field that just varies in time, for initial data we can choose an initial
+ * time such that \f$h^{TT}_{(5)ij} = 0\f$.
  *
  * Looking at \cite Kelly2007uc, the remainder term in itself is decomposed in
  * general computations for specific vectors as
@@ -449,18 +609,14 @@ class BinaryWithGravitationalWaves
  public:
   struct XCoords {
     static constexpr Options::String help =
-        "The coordinates on the x-axis where the two objects are placed.";
+        "The coordinates on the x-axis where the two objects are placed, first "
+        "left and second right.";
     using type = std::array<double, 2>;
   };
   struct Masses {
     static constexpr Options::String help =
         "The mass of each object, first left and second right.";
     using type = std::array<double, 2>;
-  };
-  struct MomentumLeft {
-    static constexpr Options::String help =
-        "The momentum assigned to the left object.";
-    using type = std::array<double, 3>;
   };
   struct MomentumRight {
     static constexpr Options::String help =
@@ -495,10 +651,21 @@ class BinaryWithGravitationalWaves
         "function.";
     using type = double;
   };
+  struct OuterRadius {
+    static constexpr Options::String help =
+        "The radius of the outer boundary of the computational domain.";
+    using type = double;
+  };
+  struct WriteEvolutionOption {
+    static constexpr Options::String help =
+        "Option to write the evolution of the past history to a file.";
+    using type = bool;
+  };
 
-  using options = tmpl::list<XCoords, Masses, MomentumLeft, MomentumRight,
-                             CenterOfMassOffset, ObjectLeft, ObjectRight,
-                             AttenuationParameter, AttenuationRadius>;
+  using options =
+      tmpl::list<XCoords, Masses, MomentumRight, CenterOfMassOffset, ObjectLeft,
+                 ObjectRight, AttenuationParameter, AttenuationRadius,
+                 OuterRadius, WriteEvolutionOption>;
   static constexpr Options::String help =
       "Binary black hole initial data with realistic wave background, "
       "constructed in Post-Newtonian approximations. ";
@@ -514,22 +681,24 @@ class BinaryWithGravitationalWaves
 
   BinaryWithGravitationalWaves(
       const std::array<double, 2> xcoords, const std::array<double, 2> masses,
-      const std::array<double, 3> momentum_left,
       const std::array<double, 3> momentum_right,
       const std::array<double, 2> center_of_mass_offset,
       std::unique_ptr<IsolatedObjectBase> object_left,
       std::unique_ptr<IsolatedObjectBase> object_right,
       const double attenuation_parameter, const double attenuation_radius,
+      const double outer_radius, const bool write_evolution_option,
       const Options::Context& context = {})
       : xcoords_(xcoords),
         masses_(masses),
-        momentum_left_(momentum_left),
+        momentum_left_(-momentum_right),
         momentum_right_(momentum_right),
         y_offset_(center_of_mass_offset[0]),
         z_offset_(center_of_mass_offset[1]),
         superposed_objects_({std::move(object_left), std::move(object_right)}),
         attenuation_parameter_(attenuation_parameter),
-        attenuation_radius_(attenuation_radius) {
+        attenuation_radius_(attenuation_radius),
+        outer_radius_(outer_radius),
+        write_evolution_option_(write_evolution_option) {
     if (masses_[0] <= 0. || masses_[1] <= 0.) {
       PARSE_ERROR(context, "The masses must be positive.");
     }
@@ -542,6 +711,52 @@ class BinaryWithGravitationalWaves
     if (attenuation_radius_ <= 0.) {
       PARSE_ERROR(context, "'AttenuationRadius' must be positive.");
     }
+    if (outer_radius_ <= 0.) {
+      PARSE_ERROR(context, "'OuterRadius' must be positive.");
+    }
+
+    const double time_step = .01;
+    const double initial_time = 0.;
+    const double final_time =
+        std::round(-2 * outer_radius_ / time_step) * time_step;
+    const auto number_of_steps = static_cast<size_t>(
+        std::round((initial_time - final_time) / time_step));
+
+    detail::BinaryWithGravitationalWavesHistory history{
+        masses,
+        xcoords,
+        momentum_right,
+        center_of_mass_offset[0],
+        center_of_mass_offset[1],
+        write_evolution_option,
+        initial_time,
+        final_time,
+        time_step,
+        number_of_steps};
+    // Reserve vector capacity
+    for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
+      past_position_left_.at(i).reserve(number_of_steps + 1);
+      past_position_right_.at(i).reserve(number_of_steps + 1);
+      past_momentum_left_.at(i).reserve(number_of_steps + 1);
+      past_momentum_right_.at(i).reserve(number_of_steps + 1);
+      past_dt_position_left_.at(i).reserve(number_of_steps + 1);
+      past_dt_position_right_.at(i).reserve(number_of_steps + 1);
+      past_dt_momentum_left_.at(i).reserve(number_of_steps + 1);
+      past_dt_momentum_right_.at(i).reserve(number_of_steps + 1);
+    }
+    past_time_.reserve(number_of_steps + 1);
+
+    for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
+      history.get_past_position_left((&(past_position_left_.at(i))), i);
+      history.get_past_position_right((&(past_position_right_.at(i))), i);
+      history.get_past_momentum_left((&(past_momentum_left_.at(i))), i);
+      history.get_past_momentum_right((&(past_momentum_right_.at(i))), i);
+      history.get_past_dt_position_left((&(past_dt_position_left_.at(i))), i);
+      history.get_past_dt_position_right((&(past_dt_position_right_.at(i))), i);
+      history.get_past_dt_momentum_left((&(past_dt_momentum_left_.at(i))), i);
+      history.get_past_dt_momentum_right((&(past_dt_momentum_right_.at(i))), i);
+    }
+    history.get_past_time((&past_time_));
   }
 
   explicit BinaryWithGravitationalWaves(CkMigrateMessage* m)
@@ -580,6 +795,32 @@ class BinaryWithGravitationalWaves
     p | superposed_objects_;
     p | attenuation_parameter_;
     p | attenuation_radius_;
+    p | outer_radius_;
+    for (auto& vec : past_position_left_) {
+      p | vec;
+    }
+    for (auto& vec : past_position_right_) {
+      p | vec;
+    }
+    for (auto& vec : past_dt_position_left_) {
+      p | vec;
+    }
+    for (auto& vec : past_dt_position_right_) {
+      p | vec;
+    }
+    for (auto& vec : past_momentum_left_) {
+      p | vec;
+    }
+    for (auto& vec : past_momentum_right_) {
+      p | vec;
+    }
+    for (auto& vec : past_dt_momentum_left_) {
+      p | vec;
+    }
+    for (auto& vec : past_dt_momentum_right_) {
+      p | vec;
+    }
+    p | past_time_;
   }
 
   /// Coordinates of the objects, ascending left to right
@@ -601,6 +842,33 @@ class BinaryWithGravitationalWaves
   }
   double attenuation_parameter() const { return attenuation_parameter_; }
   double attenuation_radius() const { return attenuation_radius_; }
+  double outer_radius() const { return outer_radius_; }
+  bool write_evolution_option() const { return write_evolution_option_; }
+  std::array<std::vector<double>, 3> past_position_left() const {
+    return past_position_left_;
+  }
+  std::array<std::vector<double>, 3> past_position_right() const {
+    return past_position_right_;
+  }
+  std::array<std::vector<double>, 3> past_dt_position_left() const {
+    return past_dt_position_left_;
+  }
+  std::array<std::vector<double>, 3> past_dt_position_right() const {
+    return past_dt_position_right_;
+  }
+  std::array<std::vector<double>, 3> past_momentum_left() const {
+    return past_momentum_left_;
+  }
+  std::array<std::vector<double>, 3> past_momentum_right() const {
+    return past_momentum_right_;
+  }
+  std::array<std::vector<double>, 3> past_dt_momentum_left() const {
+    return past_dt_momentum_left_;
+  }
+  std::array<std::vector<double>, 3> past_dt_momentum_right() const {
+    return past_dt_momentum_right_;
+  }
+  std::vector<double> past_time() const { return past_time_; }
 
  private:
   std::array<double, 2> xcoords_{};
@@ -613,6 +881,18 @@ class BinaryWithGravitationalWaves
   Xcts::Solutions::Flatness flatness_{};
   double attenuation_parameter_{};
   double attenuation_radius_{};
+  double outer_radius_{};
+  bool write_evolution_option_{};
+
+  std::array<std::vector<double>, 3> past_position_left_{};
+  std::array<std::vector<double>, 3> past_position_right_{};
+  std::array<std::vector<double>, 3> past_dt_position_left_{};
+  std::array<std::vector<double>, 3> past_dt_position_right_{};
+  std::array<std::vector<double>, 3> past_momentum_left_{};
+  std::array<std::vector<double>, 3> past_momentum_right_{};
+  std::array<std::vector<double>, 3> past_dt_momentum_left_{};
+  std::array<std::vector<double>, 3> past_dt_momentum_right_{};
+  std::vector<double> past_time_{};
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables_impl(
@@ -670,7 +950,16 @@ class BinaryWithGravitationalWaves
                                 std::move(x_isolated),
                                 std::move(flat_vars),
                                 std::move(isolated_vars),
-                                std::move(boost_vars)};
+                                std::move(boost_vars),
+                                past_position_left_,
+                                past_position_right_,
+                                past_dt_position_left_,
+                                past_dt_position_right_,
+                                past_momentum_left_,
+                                past_momentum_right_,
+                                past_dt_momentum_left_,
+                                past_dt_momentum_right_,
+                                past_time_};
     return {cache.get_var(computer, RequestedTags{})...};
   }
 

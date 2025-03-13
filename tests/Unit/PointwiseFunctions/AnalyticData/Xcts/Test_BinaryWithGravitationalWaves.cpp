@@ -26,12 +26,12 @@
 namespace Xcts::AnalyticData {
 namespace {
 
+const std::string py_module{"BinaryWithGravitationalWaves"};
+
 using test_tags = tmpl::list<
     Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
     Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
     Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
-    Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
-                                                            Frame::Inertial>,
     Tags::ConformalFactorMinusOne<DataVector>,
     gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
     gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
@@ -63,11 +63,11 @@ struct Metavariables {
 
 void test_data(const std::array<double, 2>& x_coords,
                const std::array<double, 2>& masses,
-               const std::array<double, 3>& momentum_left,
                const std::array<double, 3>& momentum_right,
                const std::array<double, 2>& center_of_mass_offset,
                const double& attenuation_parameter,
-               const double& attenuation_radius,
+               const double& attenuation_radius, const double& outer_radius,
+               const bool& write_evolution_option,
                const std::string& py_functions_suffix,
                const std::string& options_string) {
   using IsolatedObjectBase = elliptic::analytic_data::AnalyticSolution;
@@ -87,8 +87,10 @@ void test_data(const std::array<double, 2>& x_coords,
     CHECK(BinaryWithGravitationalWaves.x_coords() == x_coords);
     CHECK(BinaryWithGravitationalWaves.y_offset() == center_of_mass_offset[0]);
     CHECK(BinaryWithGravitationalWaves.z_offset() == center_of_mass_offset[1]);
-    CHECK(BinaryWithGravitationalWaves.momentum_left() == momentum_left);
     CHECK(BinaryWithGravitationalWaves.momentum_right() == momentum_right);
+    CHECK(BinaryWithGravitationalWaves.outer_radius() == outer_radius);
+    CHECK(BinaryWithGravitationalWaves.write_evolution_option() ==
+          write_evolution_option);
     const auto& superposed_objects =
         BinaryWithGravitationalWaves.superposed_objects();
     CHECK(dynamic_cast<const Xcts::Solutions::Schwarzschild&>(
@@ -112,13 +114,24 @@ void test_data(const std::array<double, 2>& x_coords,
         proxy, "BinaryWithGravitationalWaves",
         {"conformal_metric_" + py_functions_suffix,
          "inv_conformal_metric_" + py_functions_suffix, "shift_background",
-         "longitudinal_shift_background_" + py_functions_suffix,
          "conformal_factor_minus_one_" + py_functions_suffix,
          "energy_density_" + py_functions_suffix,
          "stress_trace_" + py_functions_suffix,
          "momentum_density_" + py_functions_suffix},
-        {{{x_coords[0] * 2, x_coords[1] * 2}}}, std::make_tuple(),
+        {{{x_coords[0] * 0.5, x_coords[1] * 0.5}}}, std::make_tuple(),
         DataVector(5));
+  }
+  {
+    const auto position_left =
+        pypp::call<tnsr::ij<double, 3>>(py_module, "position_left");
+    const auto position_right =
+        pypp::call<tnsr::ij<double, 3>>(py_module, "position_right");
+    for (size_t i = 0; i < 3; ++i) {
+      CHECK(BinaryWithGravitationalWaves.past_position_left().at(i).at(3998) ==
+            approx(position_left.get(i, 2)));
+      CHECK(BinaryWithGravitationalWaves.past_position_right().at(i).at(3998) ==
+            approx(position_right.get(i, 2)));
+    }
   }
 }
 
@@ -129,12 +142,11 @@ SPECTRE_TEST_CASE(
     "[PointwiseFunctions][Unit]") {
   const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/Xcts"};
-  test_data({{-5., 6.}}, {{1.1, 0.43}}, {{-0.01, -0.01, -0.01}},
-            {{0.01, 0.01, 0.01}}, {{0.02, 0.01}}, 1.1, 3.6, "bbh_isotropic",
+  test_data({{-4., 2.}}, {{1.1, 0.43}}, {{0.01, 0.01, 0.01}}, {{0.02, 0.01}},
+            1.1, 3.6, 20., false, "bbh_isotropic",
             "BinaryWithGravitationalWaves:\n"
-            "  XCoords: [-5., 6.]\n"
+            "  XCoords: [-4., 2.]\n"
             "  Masses: [1.1, 0.43]\n"
-            "  MomentumLeft: [-0.01, -0.01, -0.01]\n"
             "  MomentumRight: [0.01, 0.01, 0.01]\n"
             "  CenterOfMassOffset: [0.02, 0.01]\n"
             "  ObjectLeft:\n"
@@ -146,7 +158,9 @@ SPECTRE_TEST_CASE(
             "      Mass: 0.43\n"
             "      Coordinates: Isotropic\n"
             "  AttenuationParameter: 1.1\n"
-            "  AttenuationRadius: 3.6");
+            "  AttenuationRadius: 3.6\n"
+            "  OuterRadius: 20.\n"
+            "  WriteEvolutionOption: False");
 }
 
 }  // namespace Xcts::AnalyticData
