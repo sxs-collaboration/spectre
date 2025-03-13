@@ -8,24 +8,24 @@
 #include <type_traits>
 #include <utility>
 
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockNeighbor", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockNeighbors", "[Domain][Unit]") {
   // Test default constructor, only used for Charm++ serialization so no CHECK
   // calls:
-  BlockNeighbor<3> test_block_neighbor;
+  BlockNeighbors<3> test_block_neighbor;
 
   // Test constructor:
   OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
        Direction<3>::upper_xi()}});
-  BlockNeighbor<3> custom_neighbor(0, custom_orientation);
-  CHECK(custom_neighbor.id() == 0);
+  BlockNeighbors<3> custom_neighbor(0, custom_orientation);
+  CHECK(*(custom_neighbor.begin()) == 0);
   CHECK(custom_neighbor.orientation()(Direction<3>::upper_xi()) ==
         Direction<3>::upper_eta());
   CHECK(custom_neighbor.orientation()(Direction<3>::upper_eta()) ==
@@ -34,7 +34,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockNeighbor", "[Domain][Unit]") {
         Direction<3>::upper_xi());
 
   // Test output operator:
-  CHECK(get_output(custom_neighbor) == "Id = 0; orientation = (+1, +2, +0)");
+  CHECK(get_output(custom_neighbor) == "Ids = (0); orientation = (+1, +2, +0)");
 
   // Test comparison operator:
   CHECK(test_block_neighbor != custom_neighbor);
@@ -47,5 +47,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockNeighbor", "[Domain][Unit]") {
   const auto custom_copy = custom_neighbor;
   test_copy_semantics(custom_neighbor);
   // clang-tidy: std::move does nothing
-  test_move_semantics(std::move(custom_neighbor), custom_copy); // NOLINT
+  test_move_semantics(std::move(custom_neighbor), custom_copy);  // NOLINT
 }

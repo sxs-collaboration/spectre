@@ -20,7 +20,7 @@
 template <size_t VolumeDim>
 class Block;
 template <size_t VolumeDim>
-class BlockNeighbor;
+class BlockNeighbors;
 namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
@@ -47,7 +47,7 @@ class BoundaryCondition;
 template <size_t VolumeDim, typename TargetFrameGridOrInertial>
 void test_domain_construction(
     const Domain<VolumeDim>& domain,
-    const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
+    const std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,

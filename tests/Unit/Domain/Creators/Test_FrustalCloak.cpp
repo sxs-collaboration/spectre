@@ -18,7 +18,6 @@
 #include "Domain/Creators/FrustalCloak.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"

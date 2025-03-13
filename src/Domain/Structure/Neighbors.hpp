@@ -1,13 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class template Neighbors.
-
 #pragma once
 
 #include <cstddef>
 #include <iosfwd>
+#include <type_traits>
 #include <unordered_set>
 
 #include "Domain/Structure/OrientationMap.hpp"
@@ -21,42 +19,57 @@ class ElementId;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
-/// Information about the neighbors of a host Element in a particular direction.
+/// Information about the neighbors of a host Element or Block in a particular
+/// direction.
 ///
 /// \tparam VolumeDim the volume dimension.
-template <size_t VolumeDim>
+/// \tparam IdType the type of the Id of the neighbor (either ElementId or
+/// size_t for a Block)
+template <size_t VolumeDim, typename IdType = ElementId<VolumeDim>>
 class Neighbors {
+  static_assert(std::is_same_v<IdType, size_t> or
+                std::is_same_v<IdType, ElementId<VolumeDim>>);
+
  public:
   /// Construct with the ids and orientation of the neighbors relative to the
   /// host.
   ///
   /// \param ids the ids of the neighbors.
   /// \param orientation This OrientationMap takes objects in the logical
+  /// coordinate frame of the host and maps them to the logical coordinate frame
+  /// of the neighbor.
+  Neighbors(std::unordered_set<IdType> ids,
+            OrientationMap<VolumeDim> orientation);
+
+  /// Construct with the id and orientation of a single neighbor relative to the
+  /// host.
+  ///
+  /// \param id the id of the neighbors.
+  /// \param orientation This OrientationMap takes objects in the logical
   /// coordinate frame of the host Element and maps them to the logical
   /// coordinate frame of the neighbor Element.
-  Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-            OrientationMap<VolumeDim> orientation);
+  Neighbors(IdType id, OrientationMap<VolumeDim> orientation);
 
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
   ~Neighbors() = default;
-  Neighbors(const Neighbors<VolumeDim>& neighbor) = default;
-  Neighbors(Neighbors<VolumeDim>&&) = default;
+  Neighbors(const Neighbors& neighbor) = default;
+  Neighbors(Neighbors&&) = default;
   Neighbors& operator=(const Neighbors& rhs) = default;
   Neighbors& operator=(Neighbors&&) = default;
 
-  const std::unordered_set<ElementId<VolumeDim>>& ids() const { return ids_; }
+  const std::unordered_set<IdType>& ids() const { return ids_; }
 
   const OrientationMap<VolumeDim>& orientation() const { return orientation_; }
 
   /// Reset the ids of the neighbors.
-  void set_ids_to(const std::unordered_set<ElementId<VolumeDim>> new_ids) {
+  void set_ids_to(const std::unordered_set<IdType> new_ids) {
     ids_ = std::move(new_ids);
   }
 
   /// Add ids of neighbors.
   /// Adding an existing neighbor is allowed.
-  void add_ids(const std::unordered_set<ElementId<VolumeDim>>& additional_ids);
+  void add_ids(const std::unordered_set<IdType>& additional_ids);
 
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
@@ -65,47 +78,40 @@ class Neighbors {
   /// The number of neighbors
   size_t size() const { return ids_.size(); }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::iterator begin() {
+  typename std::unordered_set<IdType>::iterator begin() { return ids_.begin(); }
+
+  typename std::unordered_set<IdType>::iterator end() { return ids_.end(); }
+
+  typename std::unordered_set<IdType>::const_iterator begin() const {
     return ids_.begin();
   }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::iterator end() {
+  typename std::unordered_set<IdType>::const_iterator end() const {
     return ids_.end();
   }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator begin()
-      const {
+  typename std::unordered_set<IdType>::const_iterator cbegin() const {
     return ids_.begin();
   }
 
-  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator end()
-      const {
-    return ids_.end();
-  }
-
-  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator cbegin()
-      const {
-    return ids_.begin();
-  }
-
-  typename std::unordered_set<ElementId<VolumeDim>>::const_iterator cend()
-      const {
+  typename std::unordered_set<IdType>::const_iterator cend() const {
     return ids_.end();
   }
 
  private:
-  std::unordered_set<ElementId<VolumeDim>> ids_;
+  std::unordered_set<IdType> ids_;
   OrientationMap<VolumeDim> orientation_;
 };
 
-/// Output operator for Neighborss.
-template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n);
+/// Output operator for Neighbors.
+template <size_t VolumeDim, typename IdType>
+std::ostream& operator<<(std::ostream& os,
+                         const Neighbors<VolumeDim, IdType>& neighbors);
 
-template <size_t VolumeDim>
-bool operator==(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs);
+template <size_t VolumeDim, typename IdType>
+bool operator==(const Neighbors<VolumeDim, IdType>& lhs,
+                const Neighbors<VolumeDim, IdType>& rhs);
 
-template <size_t VolumeDim>
-bool operator!=(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs);
+template <size_t VolumeDim, typename IdType>
+bool operator!=(const Neighbors<VolumeDim, IdType>& lhs,
+                const Neighbors<VolumeDim, IdType>& rhs);

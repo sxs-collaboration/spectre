@@ -24,7 +24,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -57,23 +57,24 @@ void test_disk_construction(
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}});
   const OrientationMap<2> quarter_turn_cw(std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}});
-  const std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
-      {{Direction<2>::lower_eta(), {3, aligned_orientation}},
-       {Direction<2>::upper_eta(), {1, aligned_orientation}},
-       {Direction<2>::lower_xi(), {4, aligned_orientation}}},
-      {{Direction<2>::lower_eta(), {0, aligned_orientation}},
-       {Direction<2>::upper_eta(), {2, aligned_orientation}},
-       {Direction<2>::lower_xi(), {4, quarter_turn_cw}}},
-      {{Direction<2>::lower_eta(), {1, aligned_orientation}},
-       {Direction<2>::upper_eta(), {3, aligned_orientation}},
-       {Direction<2>::lower_xi(), {4, half_turn}}},
-      {{Direction<2>::lower_eta(), {2, aligned_orientation}},
-       {Direction<2>::upper_eta(), {0, aligned_orientation}},
-       {Direction<2>::lower_xi(), {4, quarter_turn_ccw}}},
-      {{Direction<2>::upper_xi(), {0, aligned_orientation}},
-       {Direction<2>::upper_eta(), {1, quarter_turn_ccw}},
-       {Direction<2>::lower_xi(), {2, half_turn}},
-       {Direction<2>::lower_eta(), {3, quarter_turn_cw}}}};
+  const std::vector<DirectionMap<2, BlockNeighbors<2>>>
+      expected_block_neighbors{
+          {{Direction<2>::lower_eta(), {3, aligned_orientation}},
+           {Direction<2>::upper_eta(), {1, aligned_orientation}},
+           {Direction<2>::lower_xi(), {4, aligned_orientation}}},
+          {{Direction<2>::lower_eta(), {0, aligned_orientation}},
+           {Direction<2>::upper_eta(), {2, aligned_orientation}},
+           {Direction<2>::lower_xi(), {4, quarter_turn_cw}}},
+          {{Direction<2>::lower_eta(), {1, aligned_orientation}},
+           {Direction<2>::upper_eta(), {3, aligned_orientation}},
+           {Direction<2>::lower_xi(), {4, half_turn}}},
+          {{Direction<2>::lower_eta(), {2, aligned_orientation}},
+           {Direction<2>::upper_eta(), {0, aligned_orientation}},
+           {Direction<2>::lower_xi(), {4, quarter_turn_ccw}}},
+          {{Direction<2>::upper_xi(), {0, aligned_orientation}},
+           {Direction<2>::upper_eta(), {1, quarter_turn_ccw}},
+           {Direction<2>::lower_xi(), {2, half_turn}},
+           {Direction<2>::lower_eta(), {3, quarter_turn_cw}}}};
   const std::vector<std::unordered_set<Direction<2>>>
       expected_external_boundaries{{{Direction<2>::upper_xi()}},
                                    {{Direction<2>::upper_xi()}},

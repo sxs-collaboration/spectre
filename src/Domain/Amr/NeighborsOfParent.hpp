@@ -24,7 +24,7 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class Mesh;
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename IdType>
 class Neighbors;
 /// \endcond
 
@@ -33,7 +33,7 @@ namespace amr {
 /// \brief returns the neighbors and their Mesh%es of the Element with ElementId
 /// `parent_id`, that is created from its `children_elements_and_neighbor_info`
 template <size_t VolumeDim>
-std::pair<DirectionMap<VolumeDim, Neighbors<VolumeDim>>,
+std::pair<DirectionMap<VolumeDim, Neighbors<VolumeDim, ElementId<VolumeDim>>>,
           DirectionalIdMap<VolumeDim, Mesh<VolumeDim>>>
 neighbors_of_parent(
     const ElementId<VolumeDim>& parent_id,

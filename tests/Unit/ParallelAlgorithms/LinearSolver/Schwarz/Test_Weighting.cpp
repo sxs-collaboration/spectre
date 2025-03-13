@@ -111,9 +111,9 @@ void test_weights(const Mesh<Dim>& mesh, const size_t max_overlap) {
     for (const auto& side : std::array<Side, 2>{{Side::Lower, Side::Upper}}) {
       auto& direction_neighbors =
           neighbors
-              .emplace(
-                  Direction<Dim>{d, side},
-                  Neighbors<Dim>{{}, OrientationMap<Dim>::create_aligned()})
+              .emplace(Direction<Dim>{d, side},
+                       Neighbors<Dim>{std::unordered_set<ElementId<Dim>>{},
+                                      OrientationMap<Dim>::create_aligned()})
               .first->second;
       for (size_t i = 0; i < two_to_the(Dim - 1); ++i) {
         direction_neighbors.add_ids({ElementId<Dim>{i + 1}});

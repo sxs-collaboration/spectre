@@ -19,7 +19,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -306,16 +306,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   test_block_time_dependent_distorted<2>();
   test_block_time_dependent_distorted<3>();
 
-  // Create DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>
+  // Create DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>
 
-  // Each BlockNeighbor is an id and an OrientationMap:
-  const BlockNeighbor<2> block_neighbor1(
+  // Each BlockNeighbors is an id and an OrientationMap:
+  const BlockNeighbors<2> block_neighbor1(
       1, OrientationMap<2>(std::array<Direction<2>, 2>{
              {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}));
-  const BlockNeighbor<2> block_neighbor2(
+  const BlockNeighbors<2> block_neighbor2(
       2, OrientationMap<2>(std::array<Direction<2>, 2>{
              {Direction<2>::lower_xi(), Direction<2>::upper_eta()}}));
-  const DirectionMap<2, BlockNeighbor<2>> neighbors{
+  const DirectionMap<2, BlockNeighbors<2>> neighbors{
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
   using coordinate_map = CoordinateMap<Frame::BlockLogical, Frame::Inertial,
@@ -339,8 +339,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
         "Block 3 (Identity):\n"
         "Topology: (I1,I1)\n"
         "Neighbors: "
-        "([+0,Id = 1; orientation = (+0, +1)],"
-        "[-1,Id = 2; orientation = (-0, +1)])\n"
+        "([+0,Ids = (1); orientation = (+0, +1)],"
+        "[-1,Ids = (2); orientation = (-0, +1)])\n"
         "External boundaries: (+1,-0)\n"
         "Is time dependent: false");
 

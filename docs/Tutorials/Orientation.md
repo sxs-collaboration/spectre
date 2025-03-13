@@ -7,6 +7,11 @@ See LICENSE.txt for details.
 \tableofcontents
 
 ### Introduction
+
+This tutorial only applies to a Domain (or a region of the Domain) that is
+constructed from Blocks that are logical hypercubes where each Block has at
+most a single neighboring Block in each direction.
+
 Each element in a domain has a set of internal directions which it uses
 for computations in its own local coordinate system. These are referred to
 as the logical directions \f$\xi\f$, \f$\eta\f$, and \f$\zeta\f$, where
@@ -22,8 +27,8 @@ This class is OrientationMap.
 ### %OrientationMaps between %Blocks
 Each Block in a Domain has a set of BlockNeighbors, which each hold an
 OrientationMap. In this scenario, the Block is referred to as the host, and
-the OrientationMap held by each BlockNeighbor is referred to as "the
-orientation the BlockNeighbor has with respect to the host Block." This is
+the OrientationMap held by each BlockNeighbors is referred to as "the
+orientation the BlockNeighbors has with respect to the host Block." This is
 a convention, so we give an example of constructing and assigning the correct
 OrientationMaps:
 
@@ -33,7 +38,7 @@ In the image above, we see a domain decomposition into two Blocks, which have
 their logical axes rotated relative to one another. With the left block as
 the host Block, we see that it has a neighbor in the \f$+\xi\f$ direction.
 The host Block holds a `std::unordered_map` from Directions to BlockNeighbors;
-the BlockNeighbor itself holds an OrientationMap that determines the mapping
+the BlockNeighbors itself holds an OrientationMap that determines the mapping
 from each logical direction in the host Block to that in the neighboring Block.
 That is, the OrientationMap takes as input local information (i.e. logical
 directions in the host's coordinate system) and returns neighbor information
@@ -42,20 +47,20 @@ OrientationMap is constructed by passing in the block neighbor directions that
 correspond to the \f$+\xi\f$, \f$+\eta\f$, \f$+\zeta\f$ directions in the host.
 In this case, these directions in the host map to the \f$+\zeta\f$,
 \f$+\xi\f$, \f$+\eta\f$ directions in the neighbor, respectively.
-This BlockNeighbor thus holds the OrientationMap constructed with the list
+This BlockNeighbors thus holds the OrientationMap constructed with the list
 (\f$+\zeta\f$, \f$+\xi\f$, \f$+\eta\f$). With the right block as the host
-block, we see that it has a BlockNeighbor in the \f$-\zeta\f$ direction, and
-the OrientationMap held by this BlockNeighbor is the one constructed with the
+block, we see that it has a BlockNeighbors in the \f$-\zeta\f$ direction, and
+the OrientationMap held by this BlockNeighbors is the one constructed with the
 array (\f$+\eta\f$, \f$+\zeta\f$, \f$+\xi\f$). For convenience, OrientationMap
 has a method `inverse_map` which returns the OrientationMap that takes as input
 neighbor information and returns local information.
 
-OrientationMaps need to be provided for each BlockNeighbor in each direction
+OrientationMaps need to be provided for each BlockNeighbors in each direction
 for each Block. This quickly becomes too large of a number to determine by
 hand as the number of Blocks and the number of dimensions increases. A remedy
 to this problem is the corner numbering scheme.
 
-### Encoding BlockNeighbor information using Corner Orderings and Numberings
+### Encoding BlockNeighbors information using Corner Orderings and Numberings
 The orientation of the \f${dim}\f$ logical directions within each element
 determines an ordering of the \f$2^{dim}\f$ vertices of that element. This is
 called the local corner numbering scheme (Local CNS) with respect to that

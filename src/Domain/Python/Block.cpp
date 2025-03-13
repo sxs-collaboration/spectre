@@ -29,7 +29,10 @@ void bind_block_impl(py::module& m) {  // NOLINT
           [](const Block<Dim>& block) {
             std::unordered_map<Direction<Dim>, size_t> neighbors{};
             for (const auto& [direction, neighbor] : block.neighbors()) {
-              neighbors[direction] = neighbor.id();
+              ASSERT(
+                  neighbor.size() == 1,
+                  "Multiple block neighbors not supported by this function.");
+              neighbors[direction] = *neighbor.begin();
             }
             return neighbors;
           })

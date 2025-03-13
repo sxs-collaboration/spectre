@@ -26,7 +26,7 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/InterfaceLogicalCoordinates.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
@@ -188,10 +188,10 @@ void test_refinement_levels_of_neighbors(
 template <size_t VolumeDim>
 bool blocks_are_neighbors(const Block<VolumeDim>& host_block,
                           const Block<VolumeDim>& neighbor_block) {
-  return alg::any_of(host_block.neighbors(),
-                     [&neighbor_block](const auto& neighbor) {
-                       return neighbor.second.id() == neighbor_block.id();
-                     });
+  return alg::any_of(
+      host_block.neighbors(), [&neighbor_block](const auto& neighbor) {
+        return neighbor.second.ids().contains(neighbor_block.id());
+      });
 }
 
 // Finds the OrientationMap of a neighboring Block relative to a host Block.
@@ -200,7 +200,7 @@ OrientationMap<VolumeDim> find_neighbor_orientation(
     const Block<VolumeDim>& host_block,
     const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
-    if (neighbor.second.id() == neighbor_block.id()) {
+    if (neighbor.second.ids().contains(neighbor_block.id())) {
       return neighbor.second.orientation();
     }
   }
@@ -213,7 +213,7 @@ Direction<VolumeDim> find_direction_to_neighbor(
     const Block<VolumeDim>& host_block,
     const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
-    if (neighbor.second.id() == neighbor_block.id()) {
+    if (neighbor.second.ids().contains(neighbor_block.id())) {
       return neighbor.first;
     }
   }
@@ -455,7 +455,7 @@ void dispatch_check_if_maps_are_equal(
 template <size_t VolumeDim, typename TargetFrameGridOrInertial>
 void test_domain_construction(
     const Domain<VolumeDim>& domain,
-    const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
+    const std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
@@ -644,7 +644,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #define INSTANTIATE(_, data)                                                 \
   template void test_domain_construction<DIM(data), GET_FRAME(data)>(        \
       const Domain<DIM(data)>& domain,                                       \
-      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>&  \
+      const std::vector<DirectionMap<DIM(data), BlockNeighbors<DIM(data)>>>& \
           expected_block_neighbors,                                          \
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&           \
           expected_external_boundaries,                                      \

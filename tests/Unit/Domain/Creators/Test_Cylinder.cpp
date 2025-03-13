@@ -24,7 +24,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -106,14 +106,14 @@ void test_cylinder_construction(
   const OrientationMap<3> quarter_turn_cw(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
        Direction<3>::upper_zeta()}});
-  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{};
+  std::vector<DirectionMap<3, BlockNeighbors<3>>> expected_block_neighbors{};
   std::vector<std::unordered_set<Direction<3>>> expected_external_boundaries{};
   using TargetFrame = Frame::Inertial;
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       coord_maps{};
   if (not is_periodic_in_z) {
-    expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+    expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbors<3>>>{
         {{Direction<3>::upper_xi(), {1, aligned_orientation}},
          {Direction<3>::upper_eta(), {2, quarter_turn_ccw}},
          {Direction<3>::lower_xi(), {3, half_turn}},
@@ -142,7 +142,7 @@ void test_cylinder_construction(
             {{Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
               Direction<3>::lower_zeta()}}};
   } else {
-    expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+    expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbors<3>>>{
         {{Direction<3>::upper_xi(), {1, aligned_orientation}},
          {Direction<3>::upper_eta(), {2, quarter_turn_ccw}},
          {Direction<3>::lower_xi(), {3, half_turn}},
@@ -504,14 +504,14 @@ void test_refined_cylinder_boundaries(
   const OrientationMap<3> quarter_turn_cw(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
        Direction<3>::upper_zeta()}});
-  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{};
+  std::vector<DirectionMap<3, BlockNeighbors<3>>> expected_block_neighbors{};
   std::vector<std::unordered_set<Direction<3>>> expected_external_boundaries{};
   using TargetFrame = Frame::Inertial;
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       coord_maps{};
   // This specific domain consists of two stacked discs with 9 blocks each.
-  expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+  expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbors<3>>>{
       // Block 0 - layer 0 center 0
       {{Direction<3>::upper_xi(), {1, aligned_orientation}},
        {Direction<3>::upper_eta(), {2, quarter_turn_ccw}},
@@ -882,13 +882,13 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
   const OrientationMap<3> quarter_turn_cw(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
        Direction<3>::upper_zeta()}});
-  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{};
+  std::vector<DirectionMap<3, BlockNeighbors<3>>> expected_block_neighbors{};
   std::vector<std::unordered_set<Direction<3>>> expected_external_boundaries{};
   using TargetFrame = Frame::Inertial;
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
       coord_maps{};
-  expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+  expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbors<3>>>{
       // Block 0 - layer 0 center 0
       {{Direction<3>::upper_xi(), {1, aligned_orientation}},
        {Direction<3>::upper_eta(), {2, quarter_turn_ccw}},

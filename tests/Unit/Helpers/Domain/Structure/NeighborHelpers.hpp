@@ -14,7 +14,7 @@ template <size_t Dim>
 class Direction;
 template <size_t Dim>
 class ElementId;
-template <size_t Dim>
+template <size_t Dim, typename IdType>
 class Neighbors;
 class SegmentId;
 namespace gsl {
@@ -76,7 +76,7 @@ std::vector<SegmentId> valid_neighbor_segments(const SegmentId& segment_id,
 /// The `generator` is used to assign a random orientation if the neighbor is
 /// in a different block, i.e. `face_type == FaceType::Block`.
 template <size_t Dim>
-std::vector<Neighbors<Dim>> valid_neighbors(
+std::vector<Neighbors<Dim, ElementId<Dim>>> valid_neighbors(
     gsl::not_null<std::mt19937*> generator, const ElementId<Dim>& element_id,
     const Direction<Dim>& direction,
     const FaceType face_type = FaceType::Internal);
@@ -88,7 +88,7 @@ std::vector<Neighbors<Dim>> valid_neighbors(
 /// parallel to the face between the Element  and the neighbor.  The set is
 /// complete if there are neighboring Element%s they completely cover the face.
 template <size_t Dim>
-void check_neighbors(const Neighbors<Dim>& neighbors,
+void check_neighbors(const Neighbors<Dim, ElementId<Dim>>& neighbors,
                      const ElementId<Dim>& element_id,
                      const Direction<Dim>& direction);
 }  // namespace TestHelpers::domain

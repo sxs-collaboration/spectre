@@ -16,7 +16,7 @@ struct Info;
 }  // namespace amr
 template <size_t Dim>
 class ElementId;
-template <size_t Dim>
+template <size_t Dim, typename IdType>
 class Neighbors;
 /// \endcond
 
@@ -33,5 +33,5 @@ template <size_t Dim>
 valid_info_t<Dim> valid_neighbor_info(
     const ElementId<Dim>& element_id,
     const std::array<::amr::Flag, Dim>& element_flags,
-    const Neighbors<Dim>& neighbors);
+    const Neighbors<Dim, ElementId<Dim>>& neighbors);
 }  // namespace TestHelpers::amr

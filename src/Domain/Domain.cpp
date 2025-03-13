@@ -8,7 +8,7 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -35,7 +35,7 @@ Domain<VolumeDim>::Domain(
         block_groups)
     : excision_spheres_(std::move(excision_spheres)),
       block_groups_(std::move(block_groups)) {
-  std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
+  std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks, maps);
   ASSERT(block_names.empty() or block_names.size() == maps.size(),
@@ -67,7 +67,7 @@ Domain<VolumeDim>::Domain(
       "Must pass same number of maps as block corner sets, but maps.size() == "
           << maps.size() << " and corners_of_all_blocks.size() == "
           << corners_of_all_blocks.size());
-  std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
+  std::vector<DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks,
                                      corners_of_all_blocks);

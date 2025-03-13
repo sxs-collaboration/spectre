@@ -6,7 +6,7 @@ set(LIBRARY "Test_DomainStructure")
 set(LIBRARY_SOURCES
   Test_BlockGroups.cpp
   Test_BlockId.cpp
-  Test_BlockNeighbor.cpp
+  Test_BlockNeighbors.cpp
   Test_ChildSize.cpp
   Test_CreateInitialMesh.cpp
   Test_Direction.cpp

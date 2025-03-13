@@ -29,7 +29,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -54,7 +54,7 @@ void test_rectangle_construction(
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
-    const std::vector<DirectionMap<2, BlockNeighbor<2>>>&
+    const std::vector<DirectionMap<2, BlockNeighbors<2>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
         expected_external_boundaries,
@@ -107,7 +107,7 @@ void test_rectangle() {
         {lower_bound, upper_bound, refinement_level[0], grid_points[0],
          std::array<bool, 2>{{false, false}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{{}},
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{{}},
         std::vector<std::unordered_set<Direction<2>>>{
             {{Direction<2>::lower_xi()},
              {Direction<2>::upper_xi()},
@@ -132,7 +132,7 @@ void test_rectangle() {
             {{{{test_bc.get_clone(), test_bc.get_clone()}},
               {{test_bc.get_clone(), test_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{{}},
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{{}},
         std::vector<std::unordered_set<Direction<2>>>{
             {{Direction<2>::lower_xi()},
              {Direction<2>::upper_xi()},
@@ -148,7 +148,7 @@ void test_rectangle() {
                                     refinement_level[0], grid_points[0],
                                     std::array<bool, 2>{{true, false}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
             {{Direction<2>::lower_xi(), {0, aligned_orientation}},
              {Direction<2>::upper_xi(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<2>>>{
@@ -162,7 +162,7 @@ void test_rectangle() {
                                     refinement_level[0], grid_points[0],
                                     std::array<bool, 2>{{false, true}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
             {{Direction<2>::lower_eta(), {0, aligned_orientation}},
              {Direction<2>::upper_eta(), {0, aligned_orientation}}}},
         std::vector<std::unordered_set<Direction<2>>>{
@@ -176,7 +176,7 @@ void test_rectangle() {
                                     refinement_level[0], grid_points[0],
                                     std::array<bool, 2>{{true, true}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
             {{Direction<2>::lower_xi(), {0, aligned_orientation}},
              {Direction<2>::upper_xi(), {0, aligned_orientation}},
              {Direction<2>::lower_eta(), {0, aligned_orientation}},
@@ -195,7 +195,7 @@ void test_rectangle() {
             {{{{periodic_bc.get_clone(), periodic_bc.get_clone()}},
               {{periodic_bc.get_clone(), periodic_bc.get_clone()}}}}},
         lower_bound, upper_bound, grid_points, refinement_level,
-        std::vector<DirectionMap<2, BlockNeighbor<2>>>{
+        std::vector<DirectionMap<2, BlockNeighbors<2>>>{
             {{Direction<2>::lower_xi(), {0, aligned_orientation}},
              {Direction<2>::upper_xi(), {0, aligned_orientation}},
              {Direction<2>::lower_eta(), {0, aligned_orientation}},
@@ -229,7 +229,7 @@ void test_rectangle_factory() {
            Direction<2>::lower_eta(), Direction<2>::upper_eta()}};
 
   // for periodic domains:
-  const std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_neighbors{
+  const std::vector<DirectionMap<2, BlockNeighbors<2>>> expected_neighbors{
       {{Direction<2>::lower_xi(), {0, OrientationMap<2>::create_aligned()}},
        {Direction<2>::upper_xi(), {0, OrientationMap<2>::create_aligned()}}}};
 

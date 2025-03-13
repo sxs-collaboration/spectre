@@ -13,9 +13,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-template <size_t VolumeDim>
-Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
-                                OrientationMap<VolumeDim> orientation)
+template <size_t VolumeDim, typename IdType>
+Neighbors<VolumeDim, IdType>::Neighbors(std::unordered_set<IdType> ids,
+                                        OrientationMap<VolumeDim> orientation)
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {
   // Assuming a maximum 2-to-1 refinement between neighboring elements:
   ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
@@ -25,9 +25,14 @@ Neighbors<VolumeDim>::Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
          "Cannot use a default-constructed OrientationMap in Neighbors.");
 }
 
-template <size_t VolumeDim>
-void Neighbors<VolumeDim>::add_ids(
-    const std::unordered_set<ElementId<VolumeDim>>& additional_ids) {
+template <size_t VolumeDim, typename IdType>
+Neighbors<VolumeDim, IdType>::Neighbors(const IdType id,
+                                        OrientationMap<VolumeDim> orientation)
+    : Neighbors(std::unordered_set{std::move(id)}, std::move(orientation)) {}
+
+template <size_t VolumeDim, typename IdType>
+void Neighbors<VolumeDim, IdType>::add_ids(
+    const std::unordered_set<IdType>& additional_ids) {
   for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
@@ -37,36 +42,60 @@ void Neighbors<VolumeDim>::add_ids(
                        << " dimensions");
 }
 
-template <size_t VolumeDim>
-std::ostream& operator<<(std::ostream& os, const Neighbors<VolumeDim>& n) {
-  os << "Ids = " << n.ids() << "; orientation = " << n.orientation();
+template <size_t VolumeDim, typename IdType>
+std::ostream& operator<<(std::ostream& os,
+                         const Neighbors<VolumeDim, IdType>& neighbors) {
+  os << "Ids = " << neighbors.ids()
+     << "; orientation = " << neighbors.orientation();
   return os;
 }
 
-template <size_t VolumeDim>
-bool operator==(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs) {
+template <size_t VolumeDim, typename IdType>
+bool operator==(const Neighbors<VolumeDim, IdType>& lhs,
+                const Neighbors<VolumeDim, IdType>& rhs) {
   return (lhs.ids() == rhs.ids() and lhs.orientation() == rhs.orientation());
 }
 
-template <size_t VolumeDim>
-bool operator!=(const Neighbors<VolumeDim>& lhs,
-                const Neighbors<VolumeDim>& rhs) {
+template <size_t VolumeDim, typename IdType>
+bool operator!=(const Neighbors<VolumeDim, IdType>& lhs,
+                const Neighbors<VolumeDim, IdType>& rhs) {
   return not(lhs == rhs);
 }
 
-template <size_t VolumeDim>
-void Neighbors<VolumeDim>::pup(PUP::er& p) {
-  p | ids_;
-  p | orientation_;
+template <size_t VolumeDim, typename IdType>
+void Neighbors<VolumeDim, IdType>::pup(PUP::er& p) {
+  if constexpr (std::is_same_v<IdType, size_t>) {
+    size_t version = 1;
+    p | version;
+    if (version == 0) {
+      // Deserialize old BlockNeighbor class
+      size_t id = 0;
+      p | id;
+      ids_.clear();
+      ids_.emplace(id);
+    } else {
+      p | ids_;
+    }
+    p | orientation_;
+  } else {
+    p | ids_;
+    p | orientation_;
+  }
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                              \
+  template class Neighbors<GET_DIM(data), size_t>;                          \
+  template std::ostream& operator<<(                                        \
+      std::ostream& os, const Neighbors<GET_DIM(data), size_t>& neighbors); \
+  template bool operator==(const Neighbors<GET_DIM(data), size_t>& lhs,     \
+                           const Neighbors<GET_DIM(data), size_t>& rhs);    \
+  template bool operator!=(const Neighbors<GET_DIM(data), size_t>& lhs,     \
+                           const Neighbors<GET_DIM(data), size_t>& rhs);    \
   template class Neighbors<GET_DIM(data)>;                                  \
-  template std::ostream& operator<<(std::ostream& os,                       \
-                                    const Neighbors<GET_DIM(data)>& block); \
+  template std::ostream& operator<<(                                        \
+      std::ostream& os, const Neighbors<GET_DIM(data)>& neighbors);         \
   template bool operator==(const Neighbors<GET_DIM(data)>& lhs,             \
                            const Neighbors<GET_DIM(data)>& rhs);            \
   template bool operator!=(const Neighbors<GET_DIM(data)>& lhs,             \

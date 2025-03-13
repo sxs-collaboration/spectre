@@ -20,7 +20,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CreateInitialElement.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -402,8 +402,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           domain::CoordinateMaps::Identity<2>{}),
       0,
-      {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},
-       {Direction<2>::upper_eta(), BlockNeighbor<2>{2, unaligned}}});
+      {{Direction<2>::upper_xi(), BlockNeighbors<2>{1, aligned}},
+       {Direction<2>::upper_eta(), BlockNeighbors<2>{2, unaligned}}});
   std::vector<std::array<size_t, 2>> refinement{{{2, 3}}, {{2, 3}}, {{3, 2}}};
 
   // interior element

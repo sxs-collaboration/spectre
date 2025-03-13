@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Creators/Rectilinear.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -14,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -22,6 +22,7 @@
 #include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"

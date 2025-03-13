@@ -21,7 +21,7 @@
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -48,7 +48,7 @@ void test_rotated_bricks_construction(
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const std::vector<DirectionMap<3, BlockNeighbor<3>>>&
+    const std::vector<DirectionMap<3, BlockNeighbors<3>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<3>>>&
         expected_external_boundaries,
@@ -179,7 +179,7 @@ void test_rotated_bricks() {
     test_rotated_bricks_construction(
         rotated_bricks, lower_bound, midpoint, upper_bound, grid_points,
         refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::upper_xi(), {1, rotation_F}},
              {Direction<3>::upper_eta(), {2, rotation_R}},
              {Direction<3>::upper_zeta(), {4, rotation_U}}},
@@ -253,7 +253,7 @@ void test_rotated_bricks() {
     test_rotated_bricks_construction(
         rotated_periodic_bricks, lower_bound, midpoint, upper_bound,
         grid_points, refinement_level,
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::upper_xi(), {1, rotation_F}},
              {Direction<3>::upper_eta(), {2, rotation_R}},
              {Direction<3>::upper_zeta(), {4, rotation_U}},
@@ -391,7 +391,7 @@ void test_rotated_bricks_factory() {
          {{0, 2, 1}},
          {{1, 0, 2}},
          {{2, 1, 0}}},
-        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        std::vector<DirectionMap<3, BlockNeighbors<3>>>{
             {{Direction<3>::upper_xi(), {1, rotation_F}},
              {Direction<3>::upper_eta(), {2, rotation_R}},
              {Direction<3>::upper_zeta(), {4, rotation_U}}},
