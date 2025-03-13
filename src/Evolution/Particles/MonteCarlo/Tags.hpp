@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 
@@ -61,6 +62,24 @@ struct InteractionRatesTable : db::SimpleTag {
             std::make_unique<Particles::MonteCarlo::NeutrinoInteractionTable<
                 EnergyBins, NeutrinoSpecies>>(filename);
     return interaction_table_ptr;
+    ;
+  }
+};
+
+template <size_t NeutrinoSpecies>
+struct MonteCarloOptions : db::SimpleTag {
+  using type = std::unique_ptr<
+      Particles::MonteCarlo::MonteCarloOptions<NeutrinoSpecies>>;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = typename Particles::MonteCarlo::MonteCarloOptions<
+      NeutrinoSpecies>::options;
+  static type create_from_options(
+      const std::array<double, NeutrinoSpecies> initial_packet_energy) {
+    std::unique_ptr<Particles::MonteCarlo::MonteCarloOptions<NeutrinoSpecies>>
+        mc_options_ptr = std::make_unique<
+            Particles::MonteCarlo::MonteCarloOptions<NeutrinoSpecies>>(
+            initial_packet_energy);
+    return mc_options_ptr;
     ;
   }
 };

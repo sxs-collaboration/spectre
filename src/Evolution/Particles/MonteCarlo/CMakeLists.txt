@@ -13,7 +13,9 @@ spectre_target_sources(
   CouplingTermsForPropagation.cpp
   EvolvePackets.cpp
   InverseJacobianInertialToFluidCompute.cpp
+  MonteCarloOptions.cpp
   NeutrinoInteractionTable.cpp
+  NeutrinoMomentsFromMonteCarlo.cpp
   Packet.cpp
   Scattering.cpp
   TemplatedLocalFunctions.cpp
@@ -34,8 +36,10 @@ spectre_target_headers(
   GhostZoneCommunicationTags.hpp
   ImplicitMonteCarloCorrections.tpp
   InverseJacobianInertialToFluidCompute.hpp
+  MonteCarloOptions.hpp
   MortarData.hpp
   NeutrinoInteractionTable.hpp
+  NeutrinoMomentsFromMonteCarlo.hpp
   Packet.hpp
   Scattering.hpp
   System.hpp

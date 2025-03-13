@@ -23,6 +23,7 @@
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationStep.hpp"
@@ -329,6 +330,8 @@ struct ReceiveDataForMcCommunication {
                     mortar_data->rest_mass_density[directional_element_id]
                         .value()
                         .size();
+                ASSERT(received_data_direction.size() == mortar_data_size * 4,
+                       "Inconsistent sizes between inbox and mortar data");
                 std::copy(received_data_direction.data(),
                           std::next(received_data_direction.data(),
                                     static_cast<int>(mortar_data_size)),
@@ -362,16 +365,19 @@ struct ReceiveDataForMcCommunication {
           },
           make_not_null(&box));
     } else {
+      const Mesh<Dim>& subcell_mesh =
+          db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
       // TO DO: Deal with data coupling neutrinos back to fluid evolution
       db::mutate<Particles::MonteCarlo::Tags::PacketsOnElement>(
-          [&element, &received_data](
+          [&element, &received_data, &subcell_mesh](
               const gsl::not_null<std::vector<Particles::MonteCarlo::Packet>*>
                   packet_list) {
+            const Index<Dim>& extents = subcell_mesh.extents();
             for (const auto& [direction, neighbors_in_direction] :
                  element.neighbors()) {
               for (const auto& neighbor : neighbors_in_direction) {
                 DirectionalId<Dim> directional_element_id{direction, neighbor};
-                const std::optional<std::vector<Particles::MonteCarlo::Packet>>&
+                std::optional<std::vector<Particles::MonteCarlo::Packet>>&
                     received_data_packets =
                         received_data[directional_element_id]
                             .packets_entering_this_element;
@@ -381,6 +387,21 @@ struct ReceiveDataForMcCommunication {
                 } else {
                   const size_t n_packets = received_data_packets.value().size();
                   for (size_t p = 0; p < n_packets; p++) {
+                    // Find closest grid point to received packet at current
+                    // time, using extents for live points only.
+                    Packet& packet = received_data_packets.value()[p];
+                    Index<Dim> closest_point_index_3d;
+                    for (size_t d = 0; d < Dim; d++) {
+                      closest_point_index_3d[d] =
+                          std::floor((packet.coordinates[d] + 1.0) *
+                                     static_cast<double>(extents[d]) / 2.0);
+                      if (UNLIKELY(closest_point_index_3d[d] == extents[d])) {
+                        closest_point_index_3d[d]--;
+                      }
+                    }
+                    packet.index_of_closest_grid_point =
+                        collapsed_index(closest_point_index_3d, extents);
+                    // Now add packets to list in current element
                     packet_list->push_back(received_data_packets.value()[p]);
                   }
                 }
@@ -389,7 +410,6 @@ struct ReceiveDataForMcCommunication {
           },
           make_not_null(&box));
     }
-
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

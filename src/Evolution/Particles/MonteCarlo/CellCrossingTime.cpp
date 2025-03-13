@@ -25,6 +25,7 @@ void cell_light_crossing_time(
       inertial_coordinates.get(1)[step[1]] - inertial_coordinates.get(1)[0],
       inertial_coordinates.get(2)[step[2]] - inertial_coordinates.get(2)[0]};
 
+  get(*cell_light_crossing_time) = DataVector(n_pts);
   // Estimate light-crossing time in the cell.
   for (size_t i = 0; i < n_pts; i++) {
     double& min_crossing_time = get(*cell_light_crossing_time)[i];
