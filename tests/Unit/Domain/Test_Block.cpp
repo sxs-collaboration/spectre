@@ -23,8 +23,8 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -291,9 +291,73 @@ void test_block_time_dependent_distorted() {
       translation_distorted_to_inertial_map.get_clone());
   test_move_semantics(std::move(original_block), block_copy);
 }
+
+void test_spherical_shell() {
+  const Block<3> spherical_shell(
+      nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{}, "Shell",
+      std::array{domain::Topology::I1, domain::Topology::S2Colatitude,
+                 domain::Topology::S2Longitude});
+  CHECK(spherical_shell.external_boundaries().size() == 2);
+  CHECK(
+      spherical_shell.external_boundaries().contains(Direction<3>::lower_xi()));
+  CHECK(
+      spherical_shell.external_boundaries().contains(Direction<3>::upper_xi()));
+  CHECK(spherical_shell.neighbors().empty());
+}
+
+void test_cylindrical_shell() {
+  const Block<3> cylindrical_shell(
+      nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{}, "CylindricalShell",
+      std::array{domain::Topology::I1, domain::Topology::S1,
+                 domain::Topology::I1});
+  CHECK(cylindrical_shell.external_boundaries().size() == 4);
+  CHECK(cylindrical_shell.external_boundaries().contains(
+      Direction<3>::lower_xi()));
+  CHECK(cylindrical_shell.external_boundaries().contains(
+      Direction<3>::upper_xi()));
+  CHECK(cylindrical_shell.external_boundaries().contains(
+      Direction<3>::lower_zeta()));
+  CHECK(cylindrical_shell.external_boundaries().contains(
+      Direction<3>::upper_zeta()));
+  CHECK(cylindrical_shell.neighbors().empty());
+}
+
+void test_full_cylinder() {
+  const Block<3> full_cylinder(
+      nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{}, "Cylinder",
+      std::array{domain::Topology::B2Radial, domain::Topology::B2Angular,
+                 domain::Topology::I1});
+  CHECK(full_cylinder.external_boundaries().size() == 3);
+  CHECK(full_cylinder.external_boundaries().contains(Direction<3>::upper_xi()));
+  CHECK(
+      full_cylinder.external_boundaries().contains(Direction<3>::lower_zeta()));
+  CHECK(
+      full_cylinder.external_boundaries().contains(Direction<3>::upper_zeta()));
+  CHECK(full_cylinder.neighbors().empty());
+}
+
+void test_errors() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        const BlockNeighbors<1> block_neighbors(
+            1, OrientationMap<1>::create_aligned());
+        const DirectionMap<1, BlockNeighbors<1>> neighbors{
+            {Direction<1>::lower_xi(), block_neighbors}};
+        const Block<1> loop(nullptr, 2, neighbors, "Loop",
+                            std::array{domain::Topology::S1});
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot specify a neighbor in a direction with no boundary"));
+#endif
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
+  test_spherical_shell();
+  test_cylindrical_shell();
+  test_full_cylinder();
+  test_errors();
   test_block_time_independent<1>();
   test_block_time_independent<2>();
   test_block_time_independent<3>();
@@ -359,10 +423,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
     CHECK(block != rhs);
   }
   {
-    const Block<2> rhs(identity_map.get_clone(), 3, neighbors, "Identity",
-                       {{domain::Topology::S1, domain::Topology::I1}});
+    const DirectionMap<2, BlockNeighbors<2>> annulus_neighbors{
+        {Direction<2>::upper_xi(), block_neighbor1}};
+
+    const Block<2> rhs(identity_map.get_clone(), 3, annulus_neighbors,
+                       "Identity",
+                       {{domain::Topology::I1, domain::Topology::S1}});
     CHECK(rhs.topologies() ==
-          std::array{domain::Topology::S1, domain::Topology::I1});
+          std::array{domain::Topology::I1, domain::Topology::S1});
+    CHECK(rhs.external_boundaries().size() == 1);
+    CHECK(rhs.neighbors().size() == 1);
     CHECK(block != rhs);
   }
 }

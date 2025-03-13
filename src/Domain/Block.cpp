@@ -14,6 +14,7 @@
 #include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/HasBoundary.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -34,8 +35,17 @@ Block<VolumeDim>::Block(
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
+    const bool has_boundary_in_this_direction = has_boundary(
+        gsl::at(topologies_, direction.dimension()), direction.side());
     if (neighbors_.find(direction) == neighbors_.end()) {
-      external_boundaries_.emplace(direction);
+      if (has_boundary_in_this_direction) {
+        external_boundaries_.emplace(direction);
+      }
+    } else {
+      ASSERT(has_boundary_in_this_direction,
+             "Cannot specify a neighbor in a direction with no boundary.  "
+             "Topologies: "
+                 << topologies_ << "; Direction: " << direction);
     }
   }
 }
