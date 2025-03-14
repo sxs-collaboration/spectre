@@ -84,7 +84,7 @@ class NumericData {
   struct ExtrapolateIntoExcisions {
     static constexpr Options::String help = {
         "Whether to extrapolate data into excised regions"};
-    using type = bool;
+    using type = spectre::Exporter::ExcisionExtrapolationMode;
   };
   using options =
       tmpl::list<FileGlob, Subgroup, ObservationStep, ExtrapolateIntoExcisions>;
@@ -98,8 +98,10 @@ class NumericData {
   NumericData& operator=(NumericData&&) = default;
   ~NumericData() = default;
 
-  NumericData(std::string file_glob, std::string subgroup, int observation_step,
-              bool extrapolate_into_excisions);
+  NumericData(
+      std::string file_glob, std::string subgroup, int observation_step,
+      spectre::Exporter::ExcisionExtrapolationMode excision_extrapolation_mode =
+          spectre::Exporter::ExcisionExtrapolationMode::NoExtrapolation);
 
   const std::string& file_glob() const { return file_glob_; }
 
@@ -107,8 +109,9 @@ class NumericData {
 
   int observation_step() const { return observation_step_; }
 
-  bool extrapolate_into_excisions() const {
-    return extrapolate_into_excisions_;
+  spectre::Exporter::ExcisionExtrapolationMode excision_extrapolation_mode()
+      const {
+    return excision_extrapolation_mode_;
   }
 
   template <typename DataType, size_t Dim, typename... RequestedTags>
@@ -119,7 +122,7 @@ class NumericData {
         tmpl::list<RequestedTags...>>(
         file_glob_, subgroup_,
         spectre::Exporter::ObservationStep{observation_step_}, x,
-        extrapolate_into_excisions_);
+        excision_extrapolation_mode_);
   }
 
   template <size_t Dim, typename... RequestedTags>
@@ -138,7 +141,7 @@ class NumericData {
   std::string file_glob_{};
   std::string subgroup_{};
   int observation_step_{};
-  bool extrapolate_into_excisions_{};
+  spectre::Exporter::ExcisionExtrapolationMode excision_extrapolation_mode_{};
 };
 
 bool operator==(const NumericData& lhs, const NumericData& rhs);

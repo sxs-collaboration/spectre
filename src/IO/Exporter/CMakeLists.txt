@@ -34,6 +34,7 @@ target_link_libraries(
   FunctionsOfTime
   H5
   Interpolation
+  Options
   Serialization
   Utilities
   )

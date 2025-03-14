@@ -33,6 +33,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -817,6 +818,86 @@ void test_block_logical_coordinates_with_roundoff_error() {
   CHECK(get<1>(block_logical_coords[5]->data) < 1.0);
   CHECK(get<0>(block_logical_coords[6]->data) < 1.0);
 }
+
+void test_excision_spheres(const bool time_dependent) {
+  CAPTURE(time_dependent);
+  const auto shell = domain::creators::Sphere(
+      1., 3., domain::creators::Sphere::Excision{}, 0_st, 3_st, true,
+      std::nullopt, {}, domain::CoordinateMaps::Distribution::Linear,
+      ShellWedges::All,
+      time_dependent
+          ? std::make_optional(domain::creators::Sphere::TimeDepOptionType{
+                domain::creators::sphere::TimeDependentMapOptions{
+                    0.0,
+                    {{12,
+                      domain::creators::time_dependent_options::
+                          KerrSchildFromBoyerLindquist{1.0, {{0.0, 0.0, 0.9}}},
+                      std::nullopt}},
+                    std::nullopt,
+                    std::nullopt,
+                    std::nullopt,
+                    false}})
+          : std::nullopt);
+  const auto domain = shell.create_domain();
+  const auto& excision_sphere = domain.excision_spheres().at("ExcisionSphere");
+  const double time = 0.0;
+  const auto functions_of_time = shell.functions_of_time();
+
+  std::vector<std::pair<tnsr::I<double, 3>, BlockLogicalCoords<3>>> test_data{};
+  // Outside the excision sphere
+  test_data.push_back({tnsr::I<double, 3>{{2., 0., 0.}}, std::nullopt});
+  if (time_dependent) {
+    // On the boundary of the excision sphere
+    test_data.push_back(
+        {tnsr::I<double, 3>{
+             {get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist<
+                  double>(1.0, {{M_PI_2, 0.0}}, 1.0, {{0.0, 0.0, 0.9}})),
+              0., 0.}},
+         {{domain::BlockId{4},
+           tnsr::I<double, 3, Frame::BlockLogical>{{0., 0., -1.}}}}});
+    // Inside the excision sphere
+    test_data.push_back(
+        {tnsr::I<double, 3>{
+             {get(gr::Solutions::kerr_schild_radius_from_boyer_lindquist<
+                  double>(0.5, {{M_PI_2, 0.0}}, 1.0, {{0.0, 0.0, 0.9}})),
+              0., 0.}},
+         {{domain::BlockId{4},
+           // If the shape map preserved the BL-KS transformation within the
+           // excision, the result should be -1.5. However, apparently it
+           // doesn't.
+           tnsr::I<double, 3, Frame::BlockLogical>{
+               {0., 0., -1.31579939060867179}}}}});
+  } else {
+    // On the boundary of the excision sphere
+    test_data.push_back(
+        {tnsr::I<double, 3>{{1., 0., 0.}},
+         {{domain::BlockId{4},
+           tnsr::I<double, 3, Frame::BlockLogical>{{0., 0., -1.}}}}});
+    // Inside the excision sphere
+    test_data.push_back(
+        {tnsr::I<double, 3>{{0.5, 0., 0.}},
+         {{domain::BlockId{4},
+           tnsr::I<double, 3, Frame::BlockLogical>{{0., 0., -1.5}}}}});
+  }
+
+  for (const auto& [input_point, expected] : test_data) {
+    CAPTURE(input_point);
+    const auto result = block_logical_coordinates_in_excision(
+        input_point, excision_sphere, domain.blocks(), time, functions_of_time);
+    CHECK(result.has_value() == expected.has_value());
+    if (result.has_value()) {
+      CHECK(result->id.get_index() == expected->id.get_index());
+      CHECK_ITERABLE_APPROX(result->data, expected->data);
+      const auto element_logical_coords = element_logical_coordinates(
+          result->data, ElementId<3>{result->id.get_index()});
+      REQUIRE(element_logical_coords.has_value());
+      const tnsr::I<double, 3, Frame::ElementLogical> expected_element_logical{
+          {get<0>(expected->data), get<1>(expected->data),
+           get<2>(expected->data)}};
+      CHECK_ITERABLE_APPROX(*element_logical_coords, expected_element_logical);
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
@@ -834,4 +915,6 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   test_block_logical_coordinates1fail();
   test_element_ids_are_uniquely_determined();
   test_block_logical_coordinates_with_roundoff_error();
+  test_excision_spheres(false);
+  test_excision_spheres(true);
 }

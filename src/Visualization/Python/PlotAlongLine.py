@@ -11,7 +11,7 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectre.IO.Exporter import interpolate_to_points
+from spectre.IO.Exporter import ExcisionExtrapolationMode, interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles,
     open_volfiles_command,
@@ -54,7 +54,7 @@ def plot_along_line(
     vars,
     line_start,
     line_end,
-    extrapolate_into_excisions=False,
+    excision_extrapolation_mode=ExcisionExtrapolationMode.NoExtrapolation,
     num_samples=200,
     num_threads=None,
     x_logscale=False,
@@ -148,7 +148,7 @@ def plot_along_line(
             observation_id=obs_id,
             tensor_components=vars,
             target_points=target_coords,
-            extrapolate_into_excisions=extrapolate_into_excisions,
+            excision_extrapolation_mode=excision_extrapolation_mode,
             num_threads=num_threads,
         )
         for y, var_name, line in zip(vars_on_line, vars, lines):
@@ -197,12 +197,20 @@ def plot_along_line(
 )
 @click.option(
     "--extrapolate-into-excisions",
-    is_flag=True,
+    "excision_extrapolation_mode",
+    type=click.Choice(ExcisionExtrapolationMode.__members__),
+    default=ExcisionExtrapolationMode.NoExtrapolation.name,
+    show_default=True,
+    callback=lambda ctx, param, value: getattr(
+        ExcisionExtrapolationMode, value
+    ),
     help=(
-        "Enables extrapolation into excision regions of the domain. "
-        "This can be useful to fill the excision region with "
-        "(constraint-violating but smooth) data so it can be imported into "
-        "moving puncture codes."
+        "Enables extrapolation into excision regions of the domain. This can be"
+        " useful to fill the excision region with (constraint-violating but"
+        " smooth) data so it can be imported into moving puncture codes (set to"
+        " 'AnchorPoints'), or to extrapolate a little bit into the excision to"
+        " help the evolution find and track the apparent horizon (set to"
+        " 'NearestElement')."
     ),
 )
 @click.option(

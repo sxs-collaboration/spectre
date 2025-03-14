@@ -65,10 +65,12 @@ std::optional<double> SphereTransition::original_radius_over_radius(
   if ((original_radius + eps_) >= r_min_ and
       (original_radius - eps_) <= r_max_) {
     return std::optional<double>{original_radius / mag};
-  } else if ((a_ > 0.0 and mag > r_max_) or (a_ < 0.0 and mag < r_min_)) {
+  } else if ((a_ > 0.0 and original_radius > r_max_) or
+             (a_ < 0.0 and original_radius < r_min_)) {
     // a_ being positive is a sentinel for reverse (see constructor)
     return {1.0 + radial_distortion / mag};
-  } else if ((a_ < 0.0 and mag > r_max_) or (a_ > 0.0 and mag < r_min_)) {
+  } else if ((a_ < 0.0 and original_radius > r_max_) or
+             (a_ > 0.0 and original_radius < r_min_)) {
     return {1.0};
   } else {
     return std::nullopt;

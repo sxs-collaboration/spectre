@@ -21,7 +21,8 @@ template <size_t Dim, typename Fr>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
 block_logical_coordinates_single_point(
     const tnsr::I<double, Dim, Fr>& input_point, const Block<Dim>& block,
-    const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
+    const double time, const domain::FunctionsOfTimeMap& functions_of_time,
+    const bool allow_extrapolation) {
   std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>> logical_point{};
   if (block.is_time_dependent()) {
     if constexpr (std::is_same_v<Fr, ::Frame::Inertial>) {
@@ -125,12 +126,55 @@ block_logical_coordinates_single_point(
       logical_point->get(d) = -1.0;
       continue;
     }
-    if (abs(logical_point->get(d)) > 1.0) {
+    if (abs(logical_point->get(d)) > 1.0 and not allow_extrapolation) {
       return std::nullopt;
     }
   }
 
   return logical_point;
+}
+
+template <size_t Dim, typename Fr>
+BlockLogicalCoords<Dim> block_logical_coordinates_in_excision(
+    const tnsr::I<double, Dim, Fr>& input_point,
+    const ExcisionSphere<Dim>& excision_sphere,
+    const std::vector<Block<Dim>>& blocks, const double time,
+    const domain::FunctionsOfTimeMap& functions_of_time) {
+  // Comment by NV (Apr 2024): This function can be made more robust by first
+  // checking if the point is inside the excision sphere at all, but the
+  // excision sphere doesn't currently have this information. It needs the
+  // grid-to-inertial map including the deformation of the excision sphere to
+  // determine this.
+  for (const auto& [block_id, direction] :
+       excision_sphere.abutting_directions()) {
+    auto x_logical = block_logical_coordinates_single_point(
+        input_point, blocks[block_id], time, functions_of_time, true);
+    if (not x_logical.has_value()) {
+      continue;
+    }
+    // Discard block if the point has angular logical coordinates outside the
+    // range [-1, 1]
+    for (size_t d = 0; d < Dim; ++d) {
+      if (d != direction.dimension() and std::abs(x_logical->get(d)) > 1.) {
+        x_logical = std::nullopt;
+        break;
+      }
+    }
+    if (not x_logical.has_value()) {
+      continue;
+    }
+    // Discard block if the point is radially inside the block or on the other
+    // side of the excision sphere
+    const double radial_distance_this_block =
+        x_logical->get(direction.dimension()) * direction.sign();
+    if (radial_distance_this_block < 1.) {
+      continue;
+    }
+    // The checks above should leave only 1 valid block, so return that
+    return make_id_pair(domain::BlockId(block_id),
+                        std::move(x_logical.value()));
+  }
+  return std::nullopt;
 }
 
 template <size_t Dim, typename Fr>
@@ -174,11 +218,18 @@ std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
   block_logical_coordinates_single_point(                                      \
       const tnsr::I<double, DIM(data), FRAME(data)>& input_point,              \
       const Block<DIM(data)>& block, const double time,                        \
-      const domain::FunctionsOfTimeMap& functions_of_time);                    \
+      const domain::FunctionsOfTimeMap& functions_of_time,                     \
+      bool allow_extrapolation);                                               \
   template std::vector<BlockLogicalCoords<DIM(data)>>                          \
   block_logical_coordinates(                                                   \
       const Domain<DIM(data)>& domain,                                         \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& x, const double time, \
+      const domain::FunctionsOfTimeMap& functions_of_time);                    \
+  template BlockLogicalCoords<DIM(data)>                                       \
+  block_logical_coordinates_in_excision(                                       \
+      const tnsr::I<double, DIM(data), FRAME(data)>& input_point,              \
+      const ExcisionSphere<DIM(data)>& excision_sphere,                        \
+      const std::vector<Block<DIM(data)>>& blocks, const double time,          \
       const domain::FunctionsOfTimeMap& functions_of_time);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
