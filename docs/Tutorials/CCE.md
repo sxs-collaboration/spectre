@@ -10,7 +10,7 @@ See LICENSE.txt for details.
 
 There are a couple different ways to acquire the CCE module/executable.
 
-### From a release
+### From a release {#cce_from_release}
 
 Starting from late May 2024, in every
 [Release of SpECTRE](https://github.com/sxs-collaboration/spectre/releases) we
@@ -26,7 +26,7 @@ release). Inside this tarball is
 - example output from CCE in the `Tests/` directory
 - a `PreprocessCceWorldtube` executable and YAML file for converting between
    [worldtube data formats](#input_worldtube_data_format) in the
-   `PreprocessCceWorldtube/` diretory
+   `PreprocessCceWorldtube/` directory
 - a `WriteCceWorldtubeCoordsToFile` executable that writes
    [grid points on a sphere](#spherical_nodes) to a text file in the
    `PreprocessCceWorldtube/` directory
@@ -57,6 +57,16 @@ on the following machines (in addition to the ones above):
 
 - Frontera
 - Delta
+
+### From Docker
+
+You can download a docker image `sxscollaboration/spectre:deploy` which has a
+few pre-built executables within, including the ones listed above in the
+[release](#cce_from_release) section. See the containerized releases section of
+our \ref installation instructions for how start the container.
+
+The input files can be found within the container at
+`/work/spectre/tests/InputFiles/`.
 
 ### From source
 
