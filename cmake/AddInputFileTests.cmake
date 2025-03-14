@@ -104,9 +104,9 @@ function(add_single_input_file_test)
       "Known checks are: execute")
   endif()
 
-  # Triple timeout if address sanitizer is enabled.
+  # Increase timeout if address sanitizer is enabled.
   if (ASAN)
-    math(EXPR TIMEOUT "3 * ${ARG_TIMEOUT}")
+    math(EXPR TIMEOUT "4 * ${ARG_TIMEOUT}")
   else()
     set(TIMEOUT ${ARG_TIMEOUT})
   endif()

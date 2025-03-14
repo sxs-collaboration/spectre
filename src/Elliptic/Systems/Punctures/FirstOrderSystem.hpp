@@ -42,6 +42,7 @@ struct FirstOrderSystem
 
   using boundary_conditions_base =
       elliptic::BoundaryConditions::BoundaryCondition<3>;
+  using modify_boundary_data = void;
 };
 
 }  // namespace Punctures

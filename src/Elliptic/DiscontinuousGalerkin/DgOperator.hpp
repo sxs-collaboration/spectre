@@ -517,11 +517,11 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
   // --- This is essentially a break to communicate the mortar data ---
 
-  template <bool AllDataIsZero, typename... OperatorTags,
-            typename... PrimalVars, typename... PrimalFluxesVars,
-            typename... PrimalMortarVars, typename... PrimalMortarFluxes,
-            typename TemporalId, typename... FluxesArgs,
-            typename... SourcesArgs, typename DataIsZero = NoDataIsZero,
+  template <typename... OperatorTags, typename... PrimalVars,
+            typename... PrimalFluxesVars, typename... PrimalMortarVars,
+            typename... PrimalMortarFluxes, typename TemporalId,
+            typename... FluxesArgs, typename... SourcesArgs,
+            typename DataIsZero = NoDataIsZero,
             typename DirectionsPredicate = AllDirections>
   static void apply_operator(
       const gsl::not_null<Variables<tmpl::list<OperatorTags...>>*>
@@ -686,11 +686,6 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const auto& neighbor_id = mortar_id.id();
       const bool is_internal =
           (neighbor_id != ElementId<Dim>::external_boundary_id());
-      if constexpr (AllDataIsZero) {
-        if (is_internal) {
-          continue;
-        }
-      }
       if (not directions_predicate(direction)) {
         continue;
       }
@@ -992,6 +987,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
   template <typename... FixedSourcesTags, typename ApplyBoundaryCondition,
             typename... FluxesArgs, typename... SourcesArgs,
+            typename... ModifyBoundaryDataArgs,
             bool LocalLinearized = Linearized,
             // This function adds nothing to the fixed sources if the operator
             // is linearized, so it shouldn't be used in that case
@@ -1016,23 +1012,23 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
           face_jacobian_times_inv_jacobians,
       const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& all_mortar_meshes,
       const ::dg::MortarMap<Dim, ::dg::MortarSize<Dim - 1>>& all_mortar_sizes,
+      const ::dg::MortarMap<Dim, Scalar<DataVector>>& mortar_jacobians,
       const ::dg::MortarMap<Dim, Scalar<DataVector>>& penalty_factors,
       const bool massive, const ::dg::Formulation formulation,
       const ApplyBoundaryCondition& apply_boundary_condition,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
-      const DirectionMap<Dim, std::tuple<FluxesArgs...>>&
-          fluxes_args_on_faces) {
+      const DirectionMap<Dim, std::tuple<FluxesArgs...>>& fluxes_args_on_faces,
+      const std::tuple<ModifyBoundaryDataArgs...>& modify_boundary_data_args) {
     // We just feed zero variables through the nonlinear operator to extract the
     // constant contribution at external boundaries. Since the variables are
     // zero the operator simplifies quite a lot. The simplification is probably
     // not very important for performance because this function will only be
     // called when solving a linear elliptic system and only once during
     // initialization, but we specialize the operator for zero data nonetheless
-    // just so we can ignore internal boundaries. For internal boundaries we
-    // would unnecessarily have to copy mortar data around to emulate the
-    // communication step, so by just skipping internal boundaries we avoid
-    // that.
+    // just so we can ignore internal boundaries. Only when the system modifies
+    // boundary data do we need to handle internal boundaries (see below),
+    // otherwise we can skip them.
     const size_t num_points = mesh.number_of_grid_points();
     const Variables<tmpl::list<PrimalFields...>> zero_primal_vars{num_points,
                                                                   0.};
@@ -1042,7 +1038,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
         unused_deriv_vars_buffer{};
     Variables<tmpl::list<FixedSourcesTags...>> operator_applied_to_zero_vars{
         num_points};
-    // Set up data on mortars. We only need them at external boundaries.
+    // Set up data on mortars
     ::dg::MortarMap<Dim, MortarData<size_t, tmpl::list<PrimalFields...>,
                                     tmpl::list<PrimalFluxes...>>>
         all_mortar_data{};
@@ -1054,15 +1050,53 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                               element, mesh, inv_jacobian, face_normals,
                               all_mortar_meshes, all_mortar_sizes, temporal_id,
                               apply_boundary_condition, fluxes_args);
-    apply_operator<true>(
-        make_not_null(&operator_applied_to_zero_vars),
-        make_not_null(&all_mortar_data), zero_primal_vars, primal_fluxes_buffer,
-        element, mesh, inv_jacobian, det_inv_jacobian, det_jacobian,
-        det_times_inv_jacobian, face_normals, face_normal_vectors,
-        face_normal_magnitudes, face_jacobians,
-        face_jacobian_times_inv_jacobians, all_mortar_meshes, all_mortar_sizes,
-        {}, penalty_factors, massive, formulation, temporal_id,
-        fluxes_args_on_faces, sources_args);
+    // Modify internal boundary data if needed, e.g. to transform from one
+    // variable to another when crossing element boundaries. This is a nonlinear
+    // operation in the sense that feeding zero through the operator is nonzero,
+    // so we evaluate it here and add the contribution to the fixed sources,
+    // just like inhomogeneous external boundary conditions.
+    if constexpr (not std::is_same_v<typename System::modify_boundary_data,
+                                     void>) {
+      for (const auto& [direction, neighbors] : element.neighbors()) {
+        for (const auto& neighbor_id : neighbors) {
+          const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
+          ASSERT(not all_mortar_data.contains(mortar_id),
+                 "Mortar data with ID " << mortar_id << " already exists.");
+          auto& mortar_data = all_mortar_data[mortar_id];
+          // Manufacture zero mortar data, store as local data, then treat as
+          // received from neighbor and apply modifications
+          BoundaryData<tmpl::list<PrimalFields...>, tmpl::list<PrimalFluxes...>>
+              remote_boundary_data_on_mortar{};
+          remote_boundary_data_on_mortar.field_data.initialize(
+              all_mortar_meshes.at(mortar_id).number_of_grid_points(), 0.);
+          mortar_data.local_insert(temporal_id, remote_boundary_data_on_mortar);
+          // Modify "received" mortar data
+          std::apply(
+              [&remote_boundary_data_on_mortar,
+               &mortar_id](const auto&... args) {
+                System::modify_boundary_data::apply(
+                    make_not_null(&get<PrimalFields>(
+                        remote_boundary_data_on_mortar.field_data))...,
+                    make_not_null(&get<::Tags::NormalDotFlux<PrimalFields>>(
+                        remote_boundary_data_on_mortar.field_data))...,
+                    mortar_id, args...);
+              },
+              modify_boundary_data_args);
+          // Insert as remote mortar data
+          mortar_data.remote_insert(temporal_id,
+                                    std::move(remote_boundary_data_on_mortar));
+        }
+      }
+    }
+    apply_operator(make_not_null(&operator_applied_to_zero_vars),
+                   make_not_null(&all_mortar_data), zero_primal_vars,
+                   primal_fluxes_buffer, element, mesh, inv_jacobian,
+                   det_inv_jacobian, det_jacobian, det_times_inv_jacobian,
+                   face_normals, face_normal_vectors, face_normal_magnitudes,
+                   face_jacobians, face_jacobian_times_inv_jacobians,
+                   all_mortar_meshes, all_mortar_sizes, mortar_jacobians,
+                   penalty_factors, massive, formulation, temporal_id,
+                   fluxes_args_on_faces, sources_args);
     // Impose the nonlinear (constant) boundary contribution as fixed sources on
     // the RHS of the equations
     *fixed_sources -= operator_applied_to_zero_vars;
@@ -1094,7 +1128,7 @@ void prepare_mortar_data(Args&&... args) {
  */
 template <typename System, bool Linearized, typename... Args>
 void apply_operator(Args&&... args) {
-  detail::DgOperatorImpl<System, Linearized>::template apply_operator<false>(
+  detail::DgOperatorImpl<System, Linearized>::apply_operator(
       std::forward<Args>(args)...);
 }
 

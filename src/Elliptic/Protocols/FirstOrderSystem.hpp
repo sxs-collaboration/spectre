@@ -154,7 +154,7 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   The function is expected to _add_ the sources \f$S_\alpha\f$ to the
  *   output buffers. It must also have the following alias:
  *
- * - `const_global_cache_tags`: the subset of `argument_tags` that can be
+ *   - `const_global_cache_tags`: the subset of `argument_tags` that can be
  *     retrieved from _any_ element's DataBox, because they are stored in the
  *     global cache.
  *
@@ -164,6 +164,35 @@ struct test_fields_and_fluxes<Dim, tmpl::list<PrimalFields...>,
  *   boundary conditions. Boundary conditions can be factory-created from this
  *   base class. Currently this should be a specialization of
  *   `elliptic::BoundaryConditions::BoundaryCondition`.
+ *
+ * - `modify_boundary_data` (optional, can be `void`): A class that can modify
+ *   boundary data received from a neighboring element, e.g. to transform from
+ *   one variable to another across element boundaries. This can be used to
+ *   solve for different variables in some regions of the domain to absorb
+ *   singularities. For example, when solving $-\Delta u = f$ we could define
+ *   $u=u_R + u_P$ in some region of the domain with a known (often singular)
+ *   field $u_P$ and solve only for the regular field $u_R$ in this region. So,
+ *   when receiving boundary data from outside this region, we subtract $u_P$,
+ *   and when receiving boundary data from inside this region, we add $u_P$. We
+ *   also add $\Delta u_P$ to the volume fixed sources $f$ inside the
+ *   regularized region.
+ *
+ *   The `modify_boundary_data` must have an `argument_tags` type alias and an
+ *   `apply` function that takes these arguments in this order:
+ *
+ *   1. The primal fields and the normal-dot-fluxes on the mortar as not-null
+ *      pointer. These hold the received data from the neighbor and can be
+ *      modified. Note: the normal-dot-fluxes have been computed with the
+ *      neighbor's normal, so from the perspective of the receiving element they
+ *      are $-n_i F^i$ where $n_i$ is the face normal of the receiving element.
+ *   2. The `const DirectionalId<Dim>& mortar_id` identifying the mortar.
+ *   3. The `argument_tags`.
+ *
+ *   Currently, modification made by this function must not depend on the
+ *   variables, meaning that the modification can only be adding or subtracting
+ *   a precomputed field. This is a simplification so the linearized operator is
+ *   not modified at all and can be relaxed if needed (then we also need
+ *   `modify_boundary_data_linearized`).
  */
 struct FirstOrderSystem {
   template <typename ConformingType>
@@ -191,6 +220,7 @@ struct FirstOrderSystem {
     static_assert(
         std::is_base_of_v<domain::BoundaryConditions::BoundaryCondition,
                           boundary_conditions_base>);
+    using modify_boundary_data = typename ConformingType::modify_boundary_data;
   };
 };
 
