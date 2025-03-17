@@ -1,0 +1,19 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+InputH5File: InputFilename.h5
+OutputH5File: ReducedWorldtubeR0292.h5
+# [first_order_input_data_format_example]
+InputDataFormat:
+  AdmMetricNodal:
+    Lapse:
+      Advective: True
+    Shift:
+      Advective: True
+      FirstOrderDriverFactor: 0.75 # Eq. 4.89 B&S
+# [first_order_input_data_format_example]
+ExtractionRadius: 292
+FixSpecNormalization: False
+DescendingM: False
+BufferDepth: Auto
+LMaxFactor: 3

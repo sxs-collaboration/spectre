@@ -10,7 +10,7 @@ See LICENSE.txt for details.
 
 There are a couple different ways to acquire the CCE module/executable.
 
-### From a release
+### From a release {#cce_from_release}
 
 Starting from late May 2024, in every
 [Release of SpECTRE](https://github.com/sxs-collaboration/spectre/releases) we
@@ -24,9 +24,9 @@ release). Inside this tarball is
 - an example set of Bondi-Sachs worldtube data in the `Tests/` directory (see
    [Input worldtube data formats](#input_worldtube_data_format) section)
 - example output from CCE in the `Tests/` directory
-- a `PreprocessCceWorldtube` executable and YAML file for converting between
+- a `PreprocessCceWorldtube` executable and YAML files for converting between
    [worldtube data formats](#input_worldtube_data_format) in the
-   `PreprocessCceWorldtube/` diretory
+   `PreprocessCceWorldtube/` directory
 - a `WriteCceWorldtubeCoordsToFile` executable that writes
    [grid points on a sphere](#spherical_nodes) to a text file in the
    `PreprocessCceWorldtube/` directory
@@ -57,6 +57,16 @@ on the following machines (in addition to the ones above):
 
 - Frontera
 - Delta
+
+### From Docker
+
+You can download a docker image `sxscollaboration/spectre:deploy` which has a
+few pre-built executables within, including the ones listed above in the
+[release](#cce_from_release) section. See the containerized releases section of
+our \ref installation instructions for how start the container.
+
+The input files can be found within the container at
+`/work/spectre/tests/InputFiles/`.
 
 ### From source
 
@@ -181,13 +191,13 @@ complex modes in m-varies-fastest format. That is,
 Each dataset in the H5 file must also have an attribute
 named `Legend` which is an ASCII-encoded null-terminated variable-length string.
 
-##### Spherical harmonic nodes {#spherical_nodes}
+#### Spherical harmonic nodes {#spherical_nodes}
 
 When we refer to a "nodal" data format, we mean that the worldtube data are
-stored as complex values at specially chosen collocation points (a.k.a. grid
-points or nodes). This allows SpECTRE to perform integrals, derivatives, and
-interpolation exactly on the input data. These grid points are Gauss-Legendre in
-$cos(\theta)$ and equally spaced in $\phi$.
+stored as values at specially chosen collocation points (a.k.a. grid points or
+nodes). This allows SpECTRE to perform integrals, derivatives, and interpolation
+exactly on the input data. These grid points are Gauss-Legendre in $cos(\theta)$
+and equally spaced in $\phi$.
 
 Below is a routine for computing the spherical
 harmonic $\theta$ and $\phi$ values. These can be used to compute the Cartesian
@@ -223,6 +233,51 @@ named `Legend` which is an ASCII-encoded null-terminated variable-length string.
 \note Nodal data is likely the easiest to write out since no conversion to
 spherical harmonic coefficients is necessary.
 
+#### ADM Cartesian metric and derivatives {#adm_cartesian_metric_and_derivatives}
+
+For worldtube data stored in an H5 file in the "ADM metric nodal" format, there
+must be the following datasets with these exact names (including the `.dat`
+suffix):
+
+- `gxx.dat`, `gxy.dat`, `gxz.dat`, `gyy.dat`, `gyz.dat`, `gzz.dat`
+- `Dxgxx.dat`, `Dxgxy.dat`, `Dxgxz.dat`, `Dxgyy.dat`, `Dxgyz.dat`, `Dxgzz.dat`
+- `Dygxx.dat`, `Dygxy.dat`, `Dygxz.dat`, `Dygyy.dat`, `Dygyz.dat`, `Dygzz.dat`
+- `Dzgxx.dat`, `Dzgxy.dat`, `Dzgxz.dat`, `Dzgyy.dat`, `Dzgyz.dat`, `Dzgzz.dat`
+- `Shiftx.dat`, `Shifty.dat`, `Shiftz.dat`
+- `DxShiftx.dat`, `DxShifty.dat`, `DxShiftz.dat`
+- `DyShiftx.dat`, `DyShifty.dat`, `DyShiftz.dat`
+- `DzShiftx.dat`, `DzShifty.dat`, `DzShiftz.dat`
+- `Lapse.dat`, `DxLapse.dat`, `DyLapse.dat`, `DzLapse.dat`
+- `Kxx.dat`, `Kxy.dat`, `Kxz.dat`, `Kyy.dat`, `Kyz.dat`, `Kzz.dat`
+- Either: `AuxiliaryShiftx.dat`, `AuxiliaryShifty.dat`, `AuxiliaryShiftz.dat`
+- Or: `ConformalChristoffelx.dat`, `ConformalChristoffely.dat`,
+  `ConformalChristoffelz.dat`
+
+Here `g` represents the spacetime metric, but we only require the spatial
+components (e.g. `gxx.dat`, `gxy.dat`, etc...) so in practice, those are the
+tensor components of the spatial metric. The temporal components of the
+spacetime metric are stored separately in the lapse and shift. Each of the
+spatial metric, lapse, and shift must also have their cartesian derivatives. `K`
+is the extrinsic curvature, `AuxiliaryShift` is the auxiliary shift vector used
+in the first-order form of the Gamma-driver condition, and
+`ConformalChristoffel` is the trace of the conformal second_order symbols. We
+will compute the time derivative of the spatial metric using Eq. (2.134) of
+\cite BaumgarteShapiro, the time derivative of the lapse using the `1+log`
+slicing condition from Eq. (4.87) of \cite BaumgarteShapiro, and the time
+derivative of the shift using either the first order reduction form of the
+Gamma-driver condition from Eq. (4.89) of \cite BaumgarteShapiro or using the
+integrated Gamma-driver condition from Eq. (12) of \cite Hilditch:2012fp.
+
+\warning If your worldtube data is in the ADM metric nodal format but you have
+not used `1+log` slicing and the Gamma-driver conditions specified above, your
+time derivatives will be **wrong**. If you'd like us to support other commonly
+used gauge conditions (or variants of `1+log` or Gamma-driver), please open an
+issue on our
+[GitHub](https://github.com/sxs-collaboration/spectre).
+
+The layout of each of these datasets must be
+[spherical harmonic nodes](#spherical_nodes).
+
 #### Cartesian metric and derivatives {#cartesian_metric_and_derivatives}
 
 For worldtube data stored in an H5 file in either the "metric nodal" or "metric
@@ -251,7 +306,8 @@ each of these datasets must be in either
 
 In the "bondi nodal" format, you must have the same Bondi variables as the
 [required format](#required_h5_worldtube_data_format), but each variable layout
-must be the [spherical harmonic nodal layout](#spherical_nodes).
+must be the [spherical harmonic nodal layout](#spherical_nodes) with complex
+values interleaved as `Re`, `Im`, `Re`, `Im`, ...
 
 If you already have data in the
 [required "bondi modal" format](#required_h5_worldtube_data_format), then
@@ -297,6 +353,12 @@ Here are some notes about the different options in the YAML input file:
   *ascending* m.
 - `BufferDepth` is an advanced option that lets you load more data into RAM at
   once so there are fewer filesystem accesses.
+- If using the ADM metric nodal input data format with a first-order form gamma
+  driver, specify the `InputDataFormat:` like so:
+\snippet AdmFirstOrderDriverPreprocessCceWorldtube.yaml first_order_input_data_format_example
+- If using the ADM metric nodal input data format with an integrated gamma
+  driver, specify the `InputDataFormat:` like so:
+\snippet AdmSecondOrderDriverPreprocessCceWorldtube.yaml second_order_input_data_format_example
 
 ### What Worldtube data "should" look like {#worldtube_data_looks}
 
@@ -310,7 +372,8 @@ The 2,2 modes are oscillatory and capture the orbits of the two objects. The
 real part of the 2,0 mode contains the gravitational memory of the system. Then
 for this system, all the other modes are subdominant.
 
-If you are using the [cartesian metric](#cartesian_metric_and_derivatives)
+If you are using the [cartesian metric](#cartesian_metric_and_derivatives) or
+[adm cartesian metric](#adm_cartesian_metric_and_derivatives)
 worldtube format, here is a plot of the imaginary part of the 2,2 mode of the
 lapse and its radial and time derivative during inspiral.
 

@@ -21,6 +21,8 @@ that have no official support (yet).
 
 ### Running containerized releases
 
+#### CLI Entrypoint
+
 A quick way to run the code without installing anything at all is with our
 containerized releases:
 
@@ -56,6 +58,17 @@ available in the precompiled containers are:
 - Generating initial data
 - Running CCE (see \ref tutorial_cce)
 - Running Python support code with the SpECTRE CLI (see \ref tutorial_cli)
+
+#### Starting a container {#start_deploy_container}
+
+If you'd rather use an image to start a container, you can run
+
+```
+docker run --name spectre -i --entrypoint /bin/bash
+  -t sxscollaboration/spectre:deploy
+```
+
+\note The `--entrypoint /bin/bash` is important so you don't run the CLI.
 
 ### Running static binaries
 

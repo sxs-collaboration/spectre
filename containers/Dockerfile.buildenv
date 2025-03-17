@@ -477,6 +477,8 @@ RUN if [ "$TARGETARCH" = "$BUILDARCH" ] ; then \
         cd spectre/build \
         && make ${PARALLEL_MAKE_ARG} cli \
         && make ${PARALLEL_MAKE_ARG} CharacteristicExtract \
+        && make ${PARALLEL_MAKE_ARG} PreprocessCceWorldtube \
+        && make ${PARALLEL_MAKE_ARG} WriteCceWorldtubeCoordsToFile \
         && make ${PARALLEL_MAKE_ARG} SolveXcts \
     ; fi
 

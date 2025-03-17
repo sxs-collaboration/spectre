@@ -17,7 +17,12 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/TempBuffer.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/Trace.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VectorImpl.hpp"
 #include "Evolution/Systems/Cce/ExtractionRadius.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/H5/Dat.hpp"
@@ -27,6 +32,7 @@
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpatialMetric.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -307,15 +313,32 @@ double update_buffers_for_time(
 template <typename T>
 MetricWorldtubeH5BufferUpdater<T>::MetricWorldtubeH5BufferUpdater(
     const std::string& cce_data_filename,
-    const std::optional<double> extraction_radius, const bool descending_m)
+    const std::optional<double> extraction_radius, const bool descending_m,
+    const std::optional<AdmOptions>& adm_options)
     : cce_data_file_{cce_data_filename},
       filename_{cce_data_filename},
-      descending_m_(descending_m) {
+      descending_m_(descending_m),
+      adm_options_(adm_options) {
+  if (is_modal and adm_options_.has_value()) {
+    ERROR(
+        "Cannot read in modal data with ADM quantities (like extrinsic "
+        "curvature).");
+  }
+
   get<Tags::detail::InputDataSet<Tags::detail::SpatialMetric<T>>>(
       dataset_names_) = "/g";
   get<Tags::detail::InputDataSet<
       Tags::detail::Dr<Tags::detail::SpatialMetric<T>>>>(dataset_names_) =
       "/Drg";
+  get<Tags::detail::InputDataSet<
+      Tags::detail::Dx<Tags::detail::SpatialMetric<T>>>>(dataset_names_) =
+      "/Dxg";
+  get<Tags::detail::InputDataSet<
+      Tags::detail::Dy<Tags::detail::SpatialMetric<T>>>>(dataset_names_) =
+      "/Dyg";
+  get<Tags::detail::InputDataSet<
+      Tags::detail::Dz<Tags::detail::SpatialMetric<T>>>>(dataset_names_) =
+      "/Dzg";
   get<Tags::detail::InputDataSet<::Tags::dt<Tags::detail::SpatialMetric<T>>>>(
       dataset_names_) = "/Dtg";
 
@@ -323,6 +346,12 @@ MetricWorldtubeH5BufferUpdater<T>::MetricWorldtubeH5BufferUpdater(
       "/Shift";
   get<Tags::detail::InputDataSet<Tags::detail::Dr<Tags::detail::Shift<T>>>>(
       dataset_names_) = "/DrShift";
+  get<Tags::detail::InputDataSet<Tags::detail::Dx<Tags::detail::Shift<T>>>>(
+      dataset_names_) = "/DxShift";
+  get<Tags::detail::InputDataSet<Tags::detail::Dy<Tags::detail::Shift<T>>>>(
+      dataset_names_) = "/DyShift";
+  get<Tags::detail::InputDataSet<Tags::detail::Dz<Tags::detail::Shift<T>>>>(
+      dataset_names_) = "/DzShift";
   get<Tags::detail::InputDataSet<::Tags::dt<Tags::detail::Shift<T>>>>(
       dataset_names_) = "/DtShift";
 
@@ -330,8 +359,21 @@ MetricWorldtubeH5BufferUpdater<T>::MetricWorldtubeH5BufferUpdater(
       "/Lapse";
   get<Tags::detail::InputDataSet<Tags::detail::Dr<Tags::detail::Lapse<T>>>>(
       dataset_names_) = "/DrLapse";
+  get<Tags::detail::InputDataSet<Tags::detail::Dx<Tags::detail::Lapse<T>>>>(
+      dataset_names_) = "/DxLapse";
+  get<Tags::detail::InputDataSet<Tags::detail::Dy<Tags::detail::Lapse<T>>>>(
+      dataset_names_) = "/DyLapse";
+  get<Tags::detail::InputDataSet<Tags::detail::Dz<Tags::detail::Lapse<T>>>>(
+      dataset_names_) = "/DzLapse";
   get<Tags::detail::InputDataSet<::Tags::dt<Tags::detail::Lapse<T>>>>(
       dataset_names_) = "/DtLapse";
+
+  get<Tags::detail::InputDataSet<Tags::detail::ExtrinsicCurvature<T>>>(
+      dataset_names_) = "/K";
+  get<Tags::detail::InputDataSet<Tags::detail::AuxiliaryShift<T>>>(
+      dataset_names_) = "/AuxiliaryShift";
+  get<Tags::detail::InputDataSet<Tags::detail::ConformalChristoffel<T>>>(
+      dataset_names_) = "/ConformalChristoffel";
 
   // 'VersionHist' is a feature written by SpEC to indicate the details of the
   // file format. This line determines whether or not the radial derivatives
@@ -382,6 +424,24 @@ double MetricWorldtubeH5BufferUpdater<T>::update_buffers_for_time(
   *time_span_start = new_span_pair.first;
   *time_span_end = new_span_pair.second;
   // load the desired time spans into the buffers
+  if (not adm_options_.has_value()) {
+    update_radial_formulation(buffers, computation_l_max, *time_span_start,
+                              *time_span_end, time_varies_fastest);
+  } else if constexpr (not is_modal) {
+    update_adm_formulation(buffers, computation_l_max, *time_span_start,
+                           *time_span_end, time_varies_fastest);
+  }
+
+  // the next time an update will be required
+  return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
+                               time_buffer_.size() - 1)];
+}
+
+template <typename T>
+void MetricWorldtubeH5BufferUpdater<T>::update_radial_formulation(
+    const gsl::not_null<Variables<cce_metric_input_tags<T>>*> buffers,
+    const size_t computation_l_max, const size_t time_span_start,
+    const size_t time_span_end, const bool time_varies_fastest) const {
   // spatial metric
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
@@ -394,7 +454,7 @@ double MetricWorldtubeH5BufferUpdater<T>::update_buffers_for_time(
                 cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
                     get<Tags::detail::InputDataSet<tag>>(dataset_names_), i,
                     j)),
-                computation_l_max, *time_span_start, *time_span_end,
+                computation_l_max, time_span_start, time_span_end,
                 time_varies_fastest);
             cce_data_file_.close_current_object();
           });
@@ -407,7 +467,7 @@ double MetricWorldtubeH5BufferUpdater<T>::update_buffers_for_time(
               make_not_null(&get<tag>(*buffers).get(i)),
               cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
                   get<Tags::detail::InputDataSet<tag>>(dataset_names_), i)),
-              computation_l_max, *time_span_start, *time_span_end,
+              computation_l_max, time_span_start, time_span_end,
               time_varies_fastest);
           cce_data_file_.close_current_object();
         });
@@ -420,13 +480,282 @@ double MetricWorldtubeH5BufferUpdater<T>::update_buffers_for_time(
             make_not_null(&get(get<tag>(*buffers))),
             cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
                 get<Tags::detail::InputDataSet<tag>>(dataset_names_))),
-            computation_l_max, *time_span_start, *time_span_end,
+            computation_l_max, time_span_start, time_span_end,
             time_varies_fastest);
         cce_data_file_.close_current_object();
       });
-  // the next time an update will be required
-  return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
-                               time_buffer_.size() - 1)];
+}
+
+template <typename T>
+template <typename U>
+typename std::enable_if_t<std::is_same_v<U, DataVector>>
+MetricWorldtubeH5BufferUpdater<T>::update_adm_formulation(
+    const gsl::not_null<Variables<cce_metric_input_tags<DataVector>>*> buffers,
+    const size_t computation_l_max, const size_t time_span_start,
+    const size_t time_span_end, const bool time_varies_fastest) const {
+  // This makes the code much less complicated because of contiguous memory for
+  // a given time
+  if (UNLIKELY(time_varies_fastest)) {
+    ERROR(
+        "Time must not vary fastest when using ADM quantities for the metric "
+        "worldtube buffer updater.");
+  }
+  const size_t number_of_times = time_span_end - time_span_start;
+  const size_t size_of_individual_time =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max_);
+  const size_t size_of_full_buffer =
+      get<0, 0>(get<Tags::detail::SpatialMetric<DataVector>>(*buffers)).size();
+
+  TempBuffer<tmpl::list<
+      ::Tags::Tempi<0, 3>,
+      ::Tags::Tempi<1, 2, ::Frame::Spherical<::Frame::Inertial>>,
+      ::Tags::Tempi<2, 3>, ::Tags::TempiJ<0, 3>, ::Tags::Tempijj<0, 3>,
+      ::Tags::Tempii<0, 3>, ::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+      ::Tags::TempII<0, 3>, ::Tags::TempI<0, 3>, ::Tags::TempI<1, 3>>>
+      temp_buffer{size_of_full_buffer};
+  auto& cartesian_cauchy_coordinates_buffer =
+      get<::Tags::Tempi<0, 3>>(temp_buffer);
+  auto& unused_angular_cauchy_coordinates_buffer =
+      get<::Tags::Tempi<1, 2, ::Frame::Spherical<::Frame::Inertial>>>(
+          temp_buffer);
+
+  // Have to compute angular coordinates for each time independently
+  for (size_t i = 0; i < number_of_times; i++) {
+    tnsr::i<DataVector, 3> cartesian_cauchy_coordinates{};
+    tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
+        unused_angular_cauchy_coordinates{};
+    // NOLINTBEGIN
+    for (size_t j = 0; j < 3; j++) {
+      cartesian_cauchy_coordinates[j].set_data_ref(
+          cartesian_cauchy_coordinates_buffer[j].data() +
+              i * size_of_individual_time,
+          size_of_individual_time);
+      if (j < 2) {
+        unused_angular_cauchy_coordinates[j].set_data_ref(
+            unused_angular_cauchy_coordinates_buffer[j].data() +
+                i * size_of_individual_time,
+            size_of_individual_time);
+      }
+      // NOLINTEND
+    }
+
+    // Calling this function is easier than calling the individual parts
+    // that only compute the cartesian coords
+    Spectral::Swsh::create_angular_and_cartesian_coordinates(
+        make_not_null(&cartesian_cauchy_coordinates),
+        make_not_null(&unused_angular_cauchy_coordinates), l_max_);
+  }
+
+  // Need lots of temporaries to convert quantities
+  auto& cartesian_deriv_lapse = get<::Tags::Tempi<2, 3>>(temp_buffer);
+  auto& cartesian_deriv_shift = get<::Tags::TempiJ<0, 3>>(temp_buffer);
+  auto& cartesian_deriv_spatial_metric =
+      get<::Tags::Tempijj<0, 3>>(temp_buffer);
+  auto& extrinsic_curvature = get<::Tags::Tempii<0, 3>>(temp_buffer);
+  auto& trace_extrinsic_curvature = get<::Tags::TempScalar<0>>(temp_buffer);
+  auto& determinant_spatial_metric = get<::Tags::TempScalar<1>>(temp_buffer);
+  auto& inverse_spatial_metric = get<::Tags::TempII<0, 3>>(temp_buffer);
+  auto& auxiliary_shift = get<::Tags::TempI<0, 3>>(temp_buffer);
+  auto& conformal_christoffel = get<::Tags::TempI<1, 3>>(temp_buffer);
+
+  const auto set_radial_deriv =
+      [&cartesian_cauchy_coordinates_buffer](
+          const gsl::not_null<DataVector*> radial_deriv,
+          const DataVector& x_deriv, const DataVector& y_deriv,
+          const DataVector& z_deriv) {
+        // These are unit coords of the collocation points. So
+        // sin(theta)*cos(phi) = x/r = x, when the coords are unit (etc...)
+        (*radial_deriv) =
+            get<0>(cartesian_cauchy_coordinates_buffer) * x_deriv +
+            get<1>(cartesian_cauchy_coordinates_buffer) * y_deriv +
+            get<2>(cartesian_cauchy_coordinates_buffer) * z_deriv;
+      };
+
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {
+      // extrinsic curvature
+      this->update_buffer(
+          make_not_null(&extrinsic_curvature.get(i, j)),
+          cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+              get<Tags::detail::InputDataSet<
+                  Tags::detail::ExtrinsicCurvature<T>>>(dataset_names_),
+              i, j)),
+          computation_l_max, time_span_start, time_span_end,
+          time_varies_fastest);
+      cce_data_file_.close_current_object();
+
+      // spatial metric
+      this->update_buffer(
+          make_not_null(
+              &get<Tags::detail::SpatialMetric<DataVector>>(*buffers).get(i,
+                                                                          j)),
+          cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+              get<Tags::detail::InputDataSet<Tags::detail::SpatialMetric<T>>>(
+                  dataset_names_),
+              i, j)),
+          computation_l_max, time_span_start, time_span_end,
+          time_varies_fastest);
+      cce_data_file_.close_current_object();
+
+      // dx spatial metric
+      tmpl::for_each<Tags::detail::cartesian_derivs_t<
+          Tags::detail::SpatialMetric<DataVector>>>([&, this](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        constexpr size_t index = tag::index;
+        this->update_buffer(
+            make_not_null(&cartesian_deriv_spatial_metric.get(index, i, j)),
+            cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+                get<Tags::detail::InputDataSet<tag>>(dataset_names_), i, j)),
+            computation_l_max, time_span_start, time_span_end,
+            time_varies_fastest);
+        cce_data_file_.close_current_object();
+      });
+
+      // dr spatial metric
+      set_radial_deriv(
+          make_not_null(
+              &get<Tags::detail::Dr<Tags::detail::SpatialMetric<DataVector>>>(
+                   *buffers)
+                   .get(i, j)),
+          cartesian_deriv_spatial_metric.get(0, i, j),
+          cartesian_deriv_spatial_metric.get(1, i, j),
+          cartesian_deriv_spatial_metric.get(2, i, j));
+    }
+
+    // auxiliary shift (first order) or conformal christoffel (other)
+    if (adm_options_->shift.is_first_order) {
+      this->update_buffer(
+          make_not_null(&auxiliary_shift.get(i)),
+          cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+              get<Tags::detail::InputDataSet<Tags::detail::AuxiliaryShift<T>>>(
+                  dataset_names_),
+              i)),
+          computation_l_max, time_span_start, time_span_end,
+          time_varies_fastest);
+      cce_data_file_.close_current_object();
+    } else {
+      this->update_buffer(
+          make_not_null(&conformal_christoffel.get(i)),
+          cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+              get<Tags::detail::InputDataSet<
+                  Tags::detail::ConformalChristoffel<T>>>(dataset_names_),
+              i)),
+          computation_l_max, time_span_start, time_span_end,
+          time_varies_fastest);
+      cce_data_file_.close_current_object();
+    }
+
+    // shift
+    this->update_buffer(
+        make_not_null(&get<Tags::detail::Shift<DataVector>>(*buffers).get(i)),
+        cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+            get<Tags::detail::InputDataSet<Tags::detail::Shift<T>>>(
+                dataset_names_),
+            i)),
+        computation_l_max, time_span_start, time_span_end, time_varies_fastest);
+    cce_data_file_.close_current_object();
+
+    // dx shift
+    tmpl::for_each<
+        Tags::detail::cartesian_derivs_t<Tags::detail::Shift<DataVector>>>(
+        [&, this](auto tag_v) {
+          using tag = typename decltype(tag_v)::type;
+          constexpr size_t index = tag::index;
+          this->update_buffer(
+              make_not_null(&cartesian_deriv_shift.get(index, i)),
+              cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+                  get<Tags::detail::InputDataSet<tag>>(dataset_names_), i)),
+              computation_l_max, time_span_start, time_span_end,
+              time_varies_fastest);
+          cce_data_file_.close_current_object();
+        });
+
+    // dr shift
+    set_radial_deriv(
+        make_not_null(
+            &get<Tags::detail::Dr<Tags::detail::Shift<DataVector>>>(*buffers)
+                 .get(i)),
+        cartesian_deriv_shift.get(0, i), cartesian_deriv_shift.get(1, i),
+        cartesian_deriv_shift.get(2, i));
+  }
+
+  // lapse
+  this->update_buffer(
+      make_not_null(&get(get<Tags::detail::Lapse<DataVector>>(*buffers))),
+      cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+          get<Tags::detail::InputDataSet<Tags::detail::Lapse<T>>>(
+              dataset_names_))),
+      computation_l_max, time_span_start, time_span_end, time_varies_fastest);
+  cce_data_file_.close_current_object();
+
+  // dx lapse
+  tmpl::for_each<
+      Tags::detail::cartesian_derivs_t<Tags::detail::Lapse<DataVector>>>(
+      [&, this](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        constexpr size_t index = tag::index;
+        this->update_buffer(
+            make_not_null(&get<index>(cartesian_deriv_lapse)),
+            cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
+                get<Tags::detail::InputDataSet<tag>>(dataset_names_))),
+            computation_l_max, time_span_start, time_span_end,
+            time_varies_fastest);
+        cce_data_file_.close_current_object();
+      });
+
+  // dr lapse
+  set_radial_deriv(
+      make_not_null(&get(
+          get<Tags::detail::Dr<Tags::detail::Lapse<DataVector>>>(*buffers))),
+      get<0>(cartesian_deriv_lapse), get<1>(cartesian_deriv_lapse),
+      get<2>(cartesian_deriv_lapse));
+
+  const auto& spatial_metric =
+      get<Tags::detail::SpatialMetric<DataVector>>(*buffers);
+  const auto& lapse = get<Tags::detail::Lapse<DataVector>>(*buffers);
+  const auto& shift = get<Tags::detail::Shift<DataVector>>(*buffers);
+  auto& time_deriv_spatial_metric =
+      get<::Tags::dt<Tags::detail::SpatialMetric<DataVector>>>(*buffers);
+  auto& time_deriv_lapse =
+      get<::Tags::dt<Tags::detail::Lapse<DataVector>>>(*buffers);
+  auto& time_deriv_shift =
+      get<::Tags::dt<Tags::detail::Shift<DataVector>>>(*buffers);
+
+  // time deriv of spatial metric
+  gr::time_derivative_of_spatial_metric(
+      make_not_null(&time_deriv_spatial_metric), lapse, shift,
+      cartesian_deriv_shift, spatial_metric, cartesian_deriv_spatial_metric,
+      extrinsic_curvature);
+
+  determinant_and_inverse(make_not_null(&determinant_spatial_metric),
+                          make_not_null(&inverse_spatial_metric),
+                          spatial_metric);
+
+  // trace of extrinsic curvature
+  trace(make_not_null(&trace_extrinsic_curvature), extrinsic_curvature,
+        inverse_spatial_metric);
+
+  // time deriv of lapse and shift
+  get(time_deriv_lapse) = -2.0 * get(lapse) * get(trace_extrinsic_curvature);
+  for (size_t i = 0; i < 3; i++) {
+    if (adm_options_->shift.is_first_order) {
+      time_deriv_shift.get(i) =
+          adm_options_->shift.extra_factor * auxiliary_shift.get(i);
+    } else {
+      time_deriv_shift.get(i) = conformal_christoffel.get(i) -
+                                adm_options_->shift.extra_factor * shift.get(i);
+    }
+
+    if (adm_options_->lapse.is_advective) {
+      get(time_deriv_lapse) += shift.get(i) * cartesian_deriv_lapse.get(i);
+    }
+    if (adm_options_->shift.is_advective) {
+      for (size_t j = 0; j < 3; j++) {
+        time_deriv_shift.get(i) +=
+            shift.get(j) * cartesian_deriv_shift.get(j, i);
+      }
+    }
+  }
 }
 
 template <typename T>
@@ -451,6 +780,7 @@ void MetricWorldtubeH5BufferUpdater<T>::pup(PUP::er& p) {
   p | l_max_;
   p | extraction_radius_;
   p | dataset_names_;
+  p | adm_options_;
   if (p.isUnpacking()) {
     cce_data_file_ = h5::H5File<h5::AccessType::ReadOnly>{filename_};
   }

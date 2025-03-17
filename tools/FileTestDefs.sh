@@ -265,6 +265,7 @@ long_lines() {
     whitelist "$1" \
               '.cmake$' \
               '.css$' \
+              '.github/workflows/*' \
               '.h5$' \
               '.html$' \
               '.ipynb$' \
@@ -606,6 +607,8 @@ enable_if() {
     is_c++ "$1" && \
         whitelist "$1" \
                   'src/DataStructures/Tensor/Structure.hpp$' \
+                  'src/Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp$'\
+                  'src/Evolution/Systems/Cce/WorldtubeBufferUpdater.cpp$'\
                   'src/IO/H5/File.hpp$' \
                   'src/Utilities/Requires.hpp$' \
                   'src/Utilities/TMPL.hpp$' \
