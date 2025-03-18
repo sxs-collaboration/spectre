@@ -43,7 +43,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     const TimeDelta initial_step = initial_slab.duration();
     const TimeStepId next_id =
         time_stepper.next_time_id(initial_id, initial_step);
-    const TimeDelta next_step{};  // overwritten by function
     const AdaptiveSteppingDiagnostics diagnostics{20, 30, 40, 50, 60};
     TimeSteppers::History<Vars1::type> history1{};
     TimeSteppers::History<Vars2::type> history2{};
@@ -53,14 +52,14 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
         db::AddSimpleTags<
             Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
             Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-            Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+            Tags::AdaptiveSteppingDiagnostics,
             Tags::HistoryEvolvedVariables<Vars1>,
             Tags::HistoryEvolvedVariables<Vars2>, ::Tags::MinimumTimeStep>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
-        initial_id, initial_step, next_id, next_step, diagnostics,
-        std::move(history1), std::move(history2), 1e-8);
+        initial_id, initial_step, next_id, diagnostics, std::move(history1),
+        std::move(history2), 1e-8);
 
     change_slab_size(make_not_null(&box), 5.0);
 
@@ -69,7 +68,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     const TimeDelta expected_step = new_slab.duration();
     const TimeStepId expected_next_id =
         time_stepper.next_time_id(expected_id, expected_step);
-    const TimeDelta expected_next_step = expected_step;
     auto expected_diagnostics = diagnostics;
     ++expected_diagnostics.number_of_slab_size_changes;
     TimeSteppers::History<Vars1::type> expected_history1{};
@@ -79,7 +77,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     CHECK(db::get<Tags::TimeStepId>(box) == expected_id);
     CHECK(db::get<Tags::TimeStep>(box) == expected_step);
     CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) == expected_next_id);
-    CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_next_step);
     CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
           expected_diagnostics);
     CHECK(db::get<Tags::HistoryEvolvedVariables<Vars1>>(box) ==
@@ -96,7 +93,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     const TimeDelta initial_step = -initial_slab.duration();
     const TimeStepId next_id =
         time_stepper.next_time_id(initial_id, initial_step);
-    const TimeDelta next_step{};  // overwritten by function
     const AdaptiveSteppingDiagnostics diagnostics{20, 30, 40, 50, 60};
     TimeSteppers::History<Vars1::type> history1{};
     TimeSteppers::History<Vars2::type> history2{};
@@ -106,14 +102,14 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
         db::AddSimpleTags<
             Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
             Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-            Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+            Tags::AdaptiveSteppingDiagnostics,
             Tags::HistoryEvolvedVariables<Vars1>,
             Tags::HistoryEvolvedVariables<Vars2>, ::Tags::MinimumTimeStep>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::Rk3HesthavenSsp>(time_stepper)),
-        initial_id, initial_step, next_id, next_step, diagnostics,
-        std::move(history1), std::move(history2), 1e-8);
+        initial_id, initial_step, next_id, diagnostics, std::move(history1),
+        std::move(history2), 1e-8);
 
     change_slab_size(make_not_null(&box), -1.0);
 
@@ -122,7 +118,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     const TimeDelta expected_step = -new_slab.duration();
     const TimeStepId expected_next_id =
         time_stepper.next_time_id(expected_id, expected_step);
-    const TimeDelta expected_next_step = expected_step;
     auto expected_diagnostics = diagnostics;
     ++expected_diagnostics.number_of_slab_size_changes;
     TimeSteppers::History<Vars1::type> expected_history1{};
@@ -132,7 +127,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     CHECK(db::get<Tags::TimeStepId>(box) == expected_id);
     CHECK(db::get<Tags::TimeStep>(box) == expected_step);
     CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) == expected_next_id);
-    CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == expected_next_step);
     CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
           expected_diagnostics);
     CHECK(db::get<Tags::HistoryEvolvedVariables<Vars1>>(box) ==
@@ -149,7 +143,6 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
     const TimeDelta initial_step = initial_slab.duration();
     const TimeStepId next_id =
         time_stepper.next_time_id(initial_id, initial_step);
-    const TimeDelta next_step = initial_step / 2;
     const AdaptiveSteppingDiagnostics diagnostics{20, 30, 40, 50, 60};
     TimeSteppers::History<Vars1::type> history1{};
     TimeSteppers::History<Vars2::type> history2{};
@@ -159,21 +152,20 @@ SPECTRE_TEST_CASE("Unit.Time.ChangeSlabSize", "[Unit][Time]") {
         db::AddSimpleTags<
             Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
             Tags::TimeStep, Tags::Next<Tags::TimeStepId>,
-            Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+            Tags::AdaptiveSteppingDiagnostics,
             Tags::HistoryEvolvedVariables<Vars1>,
             Tags::HistoryEvolvedVariables<Vars2>, ::Tags::MinimumTimeStep>,
         time_stepper_ref_tags<TimeStepper>>(
         static_cast<std::unique_ptr<TimeStepper>>(
             std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
-        initial_id, initial_step, next_id, next_step, diagnostics, history1,
-        history2, 1e-8);
+        initial_id, initial_step, next_id, diagnostics, history1, history2,
+        1e-8);
 
     change_slab_size(make_not_null(&box), 3.0);
 
     CHECK(db::get<Tags::TimeStepId>(box) == initial_id);
     CHECK(db::get<Tags::TimeStep>(box) == initial_step);
     CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) == next_id);
-    CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == next_step);
     CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) == diagnostics);
     CHECK(db::get<Tags::HistoryEvolvedVariables<Vars1>>(box) == history1);
     CHECK(db::get<Tags::HistoryEvolvedVariables<Vars2>>(box) == history2);

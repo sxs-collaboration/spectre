@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <pup.h>
-#include <utility>
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -15,9 +14,8 @@
 namespace StepChoosers {
 Maximum::Maximum(const double value) : value_(value) {}
 
-std::pair<TimeStepRequest, bool> Maximum::operator()(
-    const double last_step) const {
-  return {{.size = std::copysign(value_, last_step)}, true};
+TimeStepRequest Maximum::operator()(const double last_step) const {
+  return {.size = std::copysign(value_, last_step)};
 }
 
 bool Maximum::uses_local_data() const { return false; }

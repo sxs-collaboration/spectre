@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <limits>
 #include <pup.h>
-#include <utility>
 
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
@@ -73,9 +72,9 @@ class Random : public StepChooser<StepChooserUse::Slab>,
   using argument_tags =
       tmpl::list<domain::Tags::Element<VolumeDim>, Tags::TimeStepId>;
 
-  std::pair<TimeStepRequest, bool> operator()(const Element<VolumeDim>& element,
-                                              const TimeStepId& time_step_id,
-                                              double last_step) const;
+  TimeStepRequest operator()(const Element<VolumeDim>& element,
+                             const TimeStepId& time_step_id,
+                             double last_step) const;
 
   bool uses_local_data() const override;
   bool can_be_delayed() const override;

@@ -911,9 +911,9 @@ struct component {
 
   using simple_tags = tmpl::flatten<tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
-      ::Tags::AdaptiveSteppingDiagnostics, ::evolution::dg::Tags::Quadrature,
-      variables_tag, db::add_tag_prefix<::Tags::dt, variables_tag>,
+      ::Tags::Time, ::Tags::AdaptiveSteppingDiagnostics,
+      ::evolution::dg::Tags::Quadrature, variables_tag,
+      db::add_tag_prefix<::Tags::dt, variables_tag>,
       ::Tags::HistoryEvolvedVariables<variables_tag>, Var3,
       domain::Tags::Mesh<Metavariables::volume_dim>,
       ::domain::Tags::FunctionsOfTimeInitialize,
@@ -1316,7 +1316,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   }();
 
   const Slab time_slab{0.2, 3.4};
-  const TimeDelta time_step{time_slab, {4, 128}};
+  const TimeDelta time_step{time_slab, {1, 128}};
   const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 128}}};
   const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
   // Our moving mesh map doesn't actually move (we set a mesh velocity, etc.
@@ -1332,12 +1332,12 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (metavars::local_time_stepping) {
     std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
         step_choosers;
-    step_choosers.emplace_back(std::make_unique<StepChoosers::Constant>(0.128));
+    step_choosers.emplace_back(std::make_unique<StepChoosers::Constant>(
+        time_step.value()));
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id,
          next_time_step_id,
-         time_step,
          time_step,
          time_step_id.step_time().value(),
          AdaptiveSteppingDiagnostics{},
@@ -1369,7 +1369,6 @@ void test_impl(const Spectral::Quadrature quadrature,
             &runner, neighbor_id,
             {time_step_id,
              next_time_step_id,
-             time_step,
              time_step,
              time_step_id.step_time().value(),
              AdaptiveSteppingDiagnostics{},
@@ -1403,7 +1402,6 @@ void test_impl(const Spectral::Quadrature quadrature,
         {time_step_id,
          next_time_step_id,
          time_step,
-         time_step,
          time_step_id.step_time().value(),
          AdaptiveSteppingDiagnostics{},
          quadrature,
@@ -1433,7 +1431,6 @@ void test_impl(const Spectral::Quadrature quadrature,
             &runner, neighbor_id,
             {time_step_id,
              next_time_step_id,
-             time_step,
              time_step,
              time_step_id.step_time().value(),
              AdaptiveSteppingDiagnostics{},

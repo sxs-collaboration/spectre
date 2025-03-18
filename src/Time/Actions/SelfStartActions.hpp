@@ -155,12 +155,12 @@ using vars_to_save = typename vars_to_save_impl<
 /// time step and \f$N\f$ the number of history points to be
 /// generated.
 ///
-/// The original `Tags::TimeStep` and `Tags::Next<Tags::TimeStep>` are
-/// temporarily stored separately during the self-start procedure, and restored
-/// to their original values at the conclusion of the self-start procedure in
-/// preparation for the main evolution, so that the initial time steps during
-/// the evolution are appropriately set according to `Initialization` phase
-/// values.
+/// The original `Tags::TimeStep` is temporarily stored separately
+/// during the self-start procedure, and restored to its original
+/// value at the conclusion of the self-start procedure in preparation
+/// for the main evolution, so that the initial time steps during the
+/// evolution are appropriately set according to `Initialization`
+/// phase values.
 ///
 /// Uses:
 /// - GlobalCache: nothing
@@ -196,9 +196,8 @@ struct Initialize {
   };
 
  public:
-  using simple_tags = typename StoreInitialValues<
-      tmpl::push_back<detail::vars_to_save<System>, ::Tags::TimeStep,
-                      ::Tags::Next<::Tags::TimeStep>>>::simple_tags;
+  using simple_tags = typename StoreInitialValues<tmpl::push_back<
+      detail::vars_to_save<System>, ::Tags::TimeStep>>::simple_tags;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -229,14 +228,11 @@ struct Initialize {
     // first real step.
     const TimeDelta self_start_step = initial_step / (values_needed + 1);
 
-    StoreInitialValues<
-        tmpl::push_back<detail::vars_to_save<System>, ::Tags::TimeStep,
-                        ::Tags::Next<::Tags::TimeStep>>>::apply(box);
-    db::mutate<::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>(
-        [&self_start_step](const gsl::not_null<::TimeDelta*> time_step,
-                           const gsl::not_null<::TimeDelta*> next_time_step) {
+    StoreInitialValues<tmpl::push_back<detail::vars_to_save<System>,
+                                       ::Tags::TimeStep>>::apply(box);
+    db::mutate<::Tags::TimeStep>(
+        [&self_start_step](const gsl::not_null<::TimeDelta*> time_step) {
           *time_step = self_start_step;
-          *next_time_step = self_start_step;
         },
         make_not_null(&box));
 
@@ -411,16 +407,12 @@ struct Cleanup {
       const ParallelComponent* const /*meta*/) {
     // Reset the time step to the value requested by the user.  The
     // variables were reset in CheckForCompletion.
-    db::mutate<::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>(
+    db::mutate<::Tags::TimeStep>(
         [](const gsl::not_null<::TimeDelta*> time_step,
-           const gsl::not_null<::TimeDelta*> next_time_step,
-           const std::tuple<::TimeDelta>& initial_step,
-           const std::tuple<::TimeDelta>& initial_next_step) {
+           const std::tuple<::TimeDelta>& initial_step) {
           *time_step = get<0>(initial_step);
-          *next_time_step = get<0>(initial_next_step);
         },
-        make_not_null(&box), db::get<initial_step_tag>(box),
-        db::get<Tags::InitialValue<::Tags::Next<::Tags::TimeStep>>>(box));
+        make_not_null(&box), db::get<initial_step_tag>(box));
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
     // reset each tag to default constructed values to reduce memory usage (Data
     // structures like `DataVector`s and `Tensor`s have negligible memory usage

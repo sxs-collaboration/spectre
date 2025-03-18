@@ -80,12 +80,13 @@ struct Component {
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales,
                  FunctionsOfTimeTag>;
-  using simple_tags = db::AddSimpleTags<
-      control_system::Tags::FutureMeasurements<systemsA>,
-      control_system::Tags::FutureMeasurements<systemsB>,
-      Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
-      Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Tags::Next<Tags::TimeStep>,
-      Tags::AdaptiveSteppingDiagnostics, Tags::HistoryEvolvedVariables<Var>>;
+  using simple_tags =
+      db::AddSimpleTags<control_system::Tags::FutureMeasurements<systemsA>,
+                        control_system::Tags::FutureMeasurements<systemsB>,
+                        Tags::ConcreteTimeStepper<TimeStepper>,
+                        Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                        Tags::TimeStep, Tags::AdaptiveSteppingDiagnostics,
+                        Tags::HistoryEvolvedVariables<Var>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -178,7 +179,7 @@ void test(const std::string& test_label, const double initial_time,
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, element_id,
       {std::move(measurementsA), std::move(measurementsBC), std::move(stepper),
-       initial_id, TimeStepId{}, initial_slab.duration(), TimeDelta{},
+       initial_id, TimeStepId{}, initial_slab.duration(),
        AdaptiveSteppingDiagnostics{}, std::move(history)});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <pup.h>
-#include <utility>
 
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepRequest.hpp"
@@ -13,9 +12,8 @@
 namespace StepChoosers {
 LimitIncrease::LimitIncrease(const double factor) : factor_(factor) {}
 
-std::pair<TimeStepRequest, bool> LimitIncrease::operator()(
-    const double last_step) const {
-  return {{.size = last_step * factor_}, true};
+TimeStepRequest LimitIncrease::operator()(const double last_step) const {
+  return {.size = last_step * factor_};
 }
 
 bool LimitIncrease::uses_local_data() const { return false; }

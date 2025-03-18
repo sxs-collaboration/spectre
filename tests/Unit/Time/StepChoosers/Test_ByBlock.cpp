@@ -4,9 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <memory>
-#include <type_traits>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -56,15 +55,13 @@ void test_by_block() {
     const TimeStepRequest expected{.size_goal =
                                        0.5 * static_cast<double>(block + 5)};
 
-    CHECK(by_block(element, current_step) == std::make_pair(expected, true));
+    CHECK(by_block(element, current_step) == expected);
     CHECK(serialize_and_deserialize(by_block)(element, current_step) ==
-          std::make_pair(expected, true));
+          expected);
 
-    CHECK(by_block_base->desired_step(current_step, box) ==
-          std::make_pair(expected, true));
+    CHECK(by_block_base->desired_step(current_step, box) == expected);
     CHECK(serialize_and_deserialize(by_block_base)
-              ->desired_step(current_step, box) ==
-          std::make_pair(expected, true));
+              ->desired_step(current_step, box) == expected);
   }
 
   TestHelpers::test_factory_creation<StepChooser<Use>, ByBlock>(

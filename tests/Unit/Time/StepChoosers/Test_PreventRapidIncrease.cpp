@@ -111,8 +111,7 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       const std::unique_ptr<StepChooser<Use>> relax_base =
           std::make_unique<StepChoosers::PreventRapidIncrease>(relax);
 
-      const std::pair<TimeStepRequest, bool> expected{{.size = expected_size},
-                                                      true};
+      const TimeStepRequest expected{.size = expected_size};
       CHECK(relax(history, current_step) == expected);
       CHECK(serialize_and_deserialize(relax)(history, current_step) ==
             expected);
@@ -162,7 +161,7 @@ void check_substep_methods() {
                             (slab.start() + slab.duration() / 2).value()),
                  0.0, 0.0);
   const StepChoosers::PreventRapidIncrease relax{};
-  CHECK(relax(history, 3.14) == std::pair(TimeStepRequest{}, true));
+  CHECK(relax(history, 3.14) == TimeStepRequest{});
 }
 }  // namespace
 

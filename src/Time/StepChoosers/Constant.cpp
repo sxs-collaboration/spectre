@@ -5,7 +5,6 @@
 
 #include <cmath>
 #include <pup.h>
-#include <utility>
 
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -15,9 +14,8 @@
 namespace StepChoosers {
 Constant::Constant(const double value) : value_(value) {}
 
-std::pair<TimeStepRequest, bool> Constant::operator()(
-    const double last_step) const {
-  return {{.size_goal = std::copysign(value_, last_step)}, true};
+TimeStepRequest Constant::operator()(const double last_step) const {
+  return {.size_goal = std::copysign(value_, last_step)};
 }
 
 bool Constant::uses_local_data() const { return false; }

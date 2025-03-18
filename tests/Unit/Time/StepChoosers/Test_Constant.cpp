@@ -3,9 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <limits>
 #include <memory>
-#include <type_traits>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
@@ -43,7 +42,7 @@ void test_use() {
       std::make_unique<StepChoosers::Constant>(constant);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const std::pair<TimeStepRequest, bool> expected{{.size_goal = 5.4}, true};
+  const TimeStepRequest expected{.size_goal = 5.4};
   CHECK(constant(current_step) == expected);
   CHECK(serialize_and_deserialize(constant)(current_step) == expected);
   CHECK(constant_base->desired_step(current_step, box) == expected);

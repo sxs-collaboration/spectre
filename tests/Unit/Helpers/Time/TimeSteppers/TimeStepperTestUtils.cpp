@@ -104,8 +104,6 @@ void check_substep_properties(const TimeStepper& stepper) {
   TimeStepId id(true, 3, slab.start() + slab.duration() / 2);
   TimeSteppers::History<double> history{stepper.order()};
   CHECK(stepper.can_change_step_size(id, history));
-  history.insert(id, 0.0, 0.0);
-  id = stepper.next_time_id(id, slab.duration() / 2);
 }
 
 void integrate_test(const TimeStepper& stepper, const size_t order,

@@ -72,9 +72,8 @@ struct AllStepChoosers {};
 /// `TimeStepRequest` for details on how the results are used.
 ///
 /// Concrete StepChoosers should define `operator()` returning the
-/// information described as the return type of `desired_step` and
-/// taking the `last_step` and arguments specified by the class's
-/// `argument_tags` type alias.
+/// desired step and taking the `last_step` and arguments specified by
+/// the class's `argument_tags` type alias.
 ///
 /// Derived classes must indicate whether the chooser is usable as a
 /// step chooser, slab chooser, or both by inheriting from StepChooser
@@ -114,19 +113,6 @@ class StepChooser : public virtual PUP::able {
   /// adjusted.  It may be the step size or the slab size, or may be
   /// infinite if the appropriate size cannot be determined.
   ///
-  /// The return value of this function contains the desired step size
-  /// and a `bool` indicating whether the step should be accepted.
-  /// When adjusting LTS step sizes, if the `bool` is `false`, the
-  /// current time step will be recomputed with a step size informed
-  /// by the desired step value returned by this function.  We do not
-  /// have the capability to reject a slab, so the `bool` is ignored
-  /// for slab adjustment.
-  ///
-  /// The implementations of the call operator in derived classes
-  /// should always return a strictly smaller step than the
-  /// `last_step` when they return `false` for the second member of
-  /// the pair (indicating step rejection).
-  ///
   /// The optional template parameter `StepChoosersToUse` may be used to
   /// indicate a subset of the constructable step choosers to use for the
   /// current application of `ChangeStepSize`. Passing `AllStepChoosers`
@@ -134,8 +120,8 @@ class StepChooser : public virtual PUP::able {
   /// option is used when multiple components need to invoke `ChangeStepSize`
   /// with step choosers that may not be compatible with all components.
   template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
-  std::pair<TimeStepRequest, bool> desired_step(
-      const double last_step, const db::DataBox<DbTags>& box) const {
+  TimeStepRequest desired_step(const double last_step,
+                               const db::DataBox<DbTags>& box) const {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
@@ -143,23 +129,22 @@ class StepChooser : public virtual PUP::able {
         tmpl::conditional_t<std::is_same_v<StepChoosersToUse, AllStepChoosers>,
                             tmpl::at<factory_classes, StepChooser>,
                             StepChoosersToUse>;
-    const auto result =
-        call_with_dynamic_type<std::pair<TimeStepRequest, bool>, step_choosers>(
-            this, [&last_step, &box](const auto* const chooser) {
-              return db::apply(*chooser, box, last_step);
-            });
-    ASSERT(not result.first.size_goal.has_value() or
-               (*result.first.size_goal > 0.) == (last_step > 0.),
-           "Step size changed sign: " << *result.first.size_goal);
-    ASSERT(not result.first.size.has_value() or
-               (*result.first.size > 0.) == (last_step > 0.),
-           "Step size changed sign: " << *result.first.size);
-    ASSERT(not result.first.size_hard_limit.has_value() or
-               (*result.first.size_hard_limit > 0.) == (last_step > 0.),
-           "Step size changed sign: " << *result.first.size_hard_limit);
-    ASSERT(not(result.first.end.has_value() and can_be_delayed()),
+    const auto result = call_with_dynamic_type<TimeStepRequest, step_choosers>(
+        this, [&last_step, &box](const auto* const chooser) {
+          return db::apply(*chooser, box, last_step);
+        });
+    ASSERT(not result.size_goal.has_value() or
+               (*result.size_goal > 0.) == (last_step > 0.),
+           "Step size changed sign: " << *result.size_goal);
+    ASSERT(
+        not result.size.has_value() or (*result.size > 0.) == (last_step > 0.),
+        "Step size changed sign: " << *result.size);
+    ASSERT(not result.size_hard_limit.has_value() or
+               (*result.size_hard_limit > 0.) == (last_step > 0.),
+           "Step size changed sign: " << *result.size_hard_limit);
+    ASSERT(not(result.end.has_value() and can_be_delayed()),
            "Delayable end limits are not allowed.");
-    ASSERT(not(result.first.end_hard_limit.has_value() and can_be_delayed()),
+    ASSERT(not(result.end_hard_limit.has_value() and can_be_delayed()),
            "Delayable end limits are not allowed.");
     return result;
   }

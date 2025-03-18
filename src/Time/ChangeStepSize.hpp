@@ -37,21 +37,19 @@ struct TimeStepper;
 /// \endcond
 
 /// \brief Adjust the step size for local time stepping, returning true if the
-/// step just completed is accepted, and false if it is rejected.
+/// step just completed is accepted, and false if it changed.
 ///
 /// \details
 /// Usually, the new step size is chosen by calling the StepChoosers from
 /// `Tags::StepChoosers`, restricted based on the allowed step sizes at the
-/// current (if rejected) or next (if not rejected) time, and limits from
-/// history initialization.
+/// current time, and limits from history initialization.
 ///
 /// If `Tags::FixedLtsRatio` is present in the DataBox and not empty, the
 /// StepChoosers are not called and instead the desired step is taken to be the
-/// slab size over that value, without rejecting the step.  Early in the
-/// evolution, the actual chosen step may differ from this because of
-/// restrictions on the allowed step, but all such restrictions are global and
-/// will not result in different decisions for different elements with the same
-/// desired fixed ratio.
+/// slab size over that value.  Early in the evolution, the actual chosen step
+/// may differ from this because of restrictions on the allowed step, but all
+/// such restrictions are global and will not result in different decisions for
+/// different elements with the same desired fixed ratio.
 ///
 /// The optional template parameter `StepChoosersToUse` may be used to
 /// indicate a subset of the constructable step choosers to use for the current
@@ -90,7 +88,6 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   }
 
   TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
-  bool step_accepted = true;
   if (fixed_lts_ratio.has_value()) {
     ASSERT(std::popcount(*fixed_lts_ratio) == 1,
            "fixed_lts_ratio must be a power of 2, not " << *fixed_lts_ratio);
@@ -100,11 +97,10 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   } else {
     const double last_step_size = current_step.value();
     for (const auto& step_chooser : step_choosers) {
-      const auto [step_request, step_choice_accepted] =
+      const auto step_request =
           step_chooser->template desired_step<StepChoosersToUse>(last_step_size,
                                                                  *box);
       step_requests.process(step_request);
-      step_accepted = step_accepted and step_choice_accepted;
     }
   }
 
@@ -147,8 +143,14 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
         << ".");
   }
 
-  const auto new_step = choose_lts_step_size(
-      time_step_id.step_time() + current_step, desired_step);
+  const auto new_step =
+      choose_lts_step_size(time_step_id.step_time(), desired_step);
+  step_requests.error_on_hard_limit(
+      new_step.value(), (time_step_id.step_time() + new_step).value());
+
+  if (new_step == current_step) {
+    return true;
+  }
 
   if (std::abs(new_step.value()) < db::get<::Tags::MinimumTimeStep>(*box)) {
     ERROR_NO_TRACE(
@@ -164,33 +166,13 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
            "you are using DG.");
   }
 
-  db::mutate<Tags::Next<Tags::TimeStep>>(
-      [&new_step](const gsl::not_null<TimeDelta*> next_step) {
-        *next_step = new_step;
+  db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
+      [&](const gsl::not_null<TimeStepId*> local_next_time_id,
+          const gsl::not_null<TimeDelta*> time_step) {
+        *time_step = new_step;
+        *local_next_time_id =
+            time_stepper.next_time_id(time_step_id, *time_step);
       },
       box);
-  // if step accepted, just proceed. Otherwise, change Time::Next and jump
-  // back to the first instance of `UpdateU`.
-  if (step_accepted) {
-    step_requests.error_on_hard_limit(
-        current_step.value(),
-        (time_step_id.step_time() + current_step).value());
-    return true;
-  } else {
-    db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
-        [&](const gsl::not_null<TimeStepId*> local_next_time_id,
-            const gsl::not_null<TimeDelta*> time_step) {
-          *time_step =
-              choose_lts_step_size(time_step_id.step_time(), desired_step);
-          ASSERT(*time_step != current_step,
-                 "Step was rejected, but not changed."
-                     << "\ntime_step_id = " << time_step_id
-                     << "\ndesired_step = " << desired_step
-                     << "\ntime_step = " << *time_step);
-          *local_next_time_id =
-              time_stepper.next_time_id(time_step_id, *time_step);
-        },
-        box);
-    return false;
-  }
+  return false;
 }

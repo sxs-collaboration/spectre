@@ -21,13 +21,13 @@ template <size_t Dim>
 ByBlock<Dim>::ByBlock(std::vector<double> sizes) : sizes_(std::move(sizes)) {}
 
 template <size_t Dim>
-std::pair<TimeStepRequest, bool> ByBlock<Dim>::operator()(
-    const Element<Dim>& element, const double last_step) const {
+TimeStepRequest ByBlock<Dim>::operator()(const Element<Dim>& element,
+                                         const double last_step) const {
   const size_t block = element.id().block_id();
   if (block >= sizes_.size()) {
     ERROR("Step size not specified for block " << block);
   }
-  return {{.size_goal = std::copysign(sizes_[block], last_step)}, true};
+  return {.size_goal = std::copysign(sizes_[block], last_step)};
 }
 
 template <size_t Dim>

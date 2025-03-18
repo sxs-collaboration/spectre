@@ -7,8 +7,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <type_traits>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -72,10 +70,9 @@ struct Metavariables {
 };
 
 template <typename Use>
-std::pair<double, bool> get_suggestion(const size_t stepper_order,
-                                       const double safety_factor,
-                                       const double characteristic_speed,
-                                       const DataVector& coordinates) {
+double get_suggestion(const size_t stepper_order, const double safety_factor,
+                      const double characteristic_speed,
+                      const DataVector& coordinates) {
   using Cfl = Metavariables::Cfl;
 
   auto box = db::create<
@@ -106,27 +103,23 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
 
   const double current_step = std::numeric_limits<double>::infinity();
   const auto result = cfl(grid_spacing, time_stepper, speed, current_step);
-  REQUIRE(result.first.size_goal.has_value());
-  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
+  REQUIRE(result.size_goal.has_value());
+  CHECK(result == TimeStepRequest{.size_goal = result.size_goal});
   CHECK(serialize_and_deserialize(cfl)(grid_spacing, time_stepper, speed,
                                        current_step) == result);
-  CHECK_FALSE(result.second);
-  const auto accepted_step_result =
-      cfl(grid_spacing, time_stepper, speed, *result.first.size_goal * 0.7);
-  CHECK(accepted_step_result.second);
   CHECK(cfl_base->desired_step(current_step, box) == result);
   CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step, box) ==
         result);
-  return {*result.first.size_goal, result.second};
+  return *result.size_goal;
 }
 
 template <typename Use>
 void test_use() {
-  CHECK(get_suggestion<Use>(1, 1., 1., {0., 2., 3., 5.}).first == approx(1.));
-  CHECK(get_suggestion<Use>(2, 1., 1., {0., 2., 3., 5.}).first < 1.);
-  CHECK(get_suggestion<Use>(1, 2., 1., {0., 2., 3., 5.}).first == approx(2.));
-  CHECK(get_suggestion<Use>(1, 1., 2., {0., 2., 3., 5.}).first == approx(0.5));
-  CHECK(get_suggestion<Use>(1, 1., 1., {0., 2., 2.5, 5.}).first == approx(0.5));
+  CHECK(get_suggestion<Use>(1, 1., 1., {0., 2., 3., 5.}) == approx(1.));
+  CHECK(get_suggestion<Use>(2, 1., 1., {0., 2., 3., 5.}) < 1.);
+  CHECK(get_suggestion<Use>(1, 2., 1., {0., 2., 3., 5.}) == approx(2.));
+  CHECK(get_suggestion<Use>(1, 1., 2., {0., 2., 3., 5.}) == approx(0.5));
+  CHECK(get_suggestion<Use>(1, 1., 1., {0., 2., 2.5, 5.}) == approx(0.5));
 
   TestHelpers::test_creation<std::unique_ptr<StepChooser<Use>>, Metavariables>(
       "Cfl:\n"

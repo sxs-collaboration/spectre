@@ -63,7 +63,7 @@ struct Component {
 
   using simple_tags =
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                 Tags::Next<Tags::TimeStep>, Tags::HistoryEvolvedVariables<Var>,
+                 Tags::HistoryEvolvedVariables<Var>,
                  Tags::AdaptiveSteppingDiagnostics,
                  ::Tags::ChangeSlabSize::SlabSizeGoal>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
@@ -111,19 +111,17 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
     };
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Next<Tags::TimeStep>, Tags::AdaptiveSteppingDiagnostics,
+               Tags::AdaptiveSteppingDiagnostics,
                ::Tags::ChangeSlabSize::SlabSizeGoal>(
         [&get_step, &start_time, &time_runs_forward](
             const gsl::not_null<TimeStepId*> id,
             const gsl::not_null<TimeStepId*> next_id,
             const gsl::not_null<TimeDelta*> step,
-            const gsl::not_null<TimeDelta*> next_step,
             const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
             const gsl::not_null<double*> slab_size_goal,
             const TimeStepper& stepper) {
           *id = TimeStepId(time_runs_forward, 3, start_time);
           *step = get_step(*id);
-          *next_step = get_step(*id);
           *next_id = stepper.next_time_id(*id, *step);
           *diags = AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5};
           // Step is slab/2 for test

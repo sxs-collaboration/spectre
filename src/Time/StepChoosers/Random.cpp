@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <pup.h>
 #include <random>
-#include <utility>
 
 #include "Domain/Structure/Element.hpp"
 #include "Options/Context.hpp"
@@ -36,9 +35,9 @@ Random<VolumeDim>::Random(const double minimum, const double maximum,
 }
 
 template <size_t VolumeDim>
-std::pair<TimeStepRequest, bool> Random<VolumeDim>::operator()(
-    const Element<VolumeDim>& element, const TimeStepId& time_step_id,
-    const double last_step) const {
+TimeStepRequest Random<VolumeDim>::operator()(const Element<VolumeDim>& element,
+                                              const TimeStepId& time_step_id,
+                                              const double last_step) const {
   size_t local_seed = seed_;
   boost::hash_combine(local_seed, element.id());
   boost::hash_combine(local_seed, time_step_id);
@@ -48,7 +47,7 @@ std::pair<TimeStepRequest, bool> Random<VolumeDim>::operator()(
     const double step = exp(dist(rng));
     // Don't produce out-of-range values because of roundoff.
     if (step >= minimum_ and step <= maximum_) {
-      return {{.size_goal = std::copysign(step, last_step)}, true};
+      return {.size_goal = std::copysign(step, last_step)};
     }
   }
 }

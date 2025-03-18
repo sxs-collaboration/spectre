@@ -58,20 +58,18 @@ void check_case(const double now, std::vector<double> times,
         Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::Time>>(
         Metavariables{}, local_now);
 
-    const auto answer = step_to_times(local_now, last_step);
-    CHECK(answer.second);
+    const auto request = step_to_times(local_now, last_step);
 
-    const auto& request = answer.first;
     CHECK(request.end == request.end_hard_limit);
     REQUIRE(request.size.has_value() == request.end.has_value());
     CHECK(not request.size_goal.has_value());
     CHECK(not request.size_hard_limit.has_value());
 
-    CHECK(step_to_times_base->desired_step(last_step, box) == answer);
+    CHECK(step_to_times_base->desired_step(last_step, box) == request);
     CHECK(serialize_and_deserialize(step_to_times)(local_now, last_step) ==
-          answer);
+          request);
     CHECK(serialize_and_deserialize(step_to_times_base)
-              ->desired_step(last_step, box) == answer);
+              ->desired_step(last_step, box) == request);
     return request.end.has_value()
                ? std::optional(std::pair(*request.end, *request.size))
                : std::nullopt;

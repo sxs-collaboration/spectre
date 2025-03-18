@@ -49,13 +49,11 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - Tags::Next<Tags::TimeStep>
 ///   - Tags::Next<Tags::TimeStepId>
 ///   - Tags::TimeStepper<TimeStepper>
 ///
 /// DataBox changes:
 ///   - Tags::Next<Tags::TimeStepId>
-///   - Tags::Next<Tags::TimeStep>
 ///   - Tags::StepNumberWithinSlab
 ///   - Tags::Time
 ///   - Tags::TimeStepId
@@ -78,13 +76,12 @@ struct AdvanceTime {
     }
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-               Tags::Time, Tags::Next<Tags::TimeStep>,
-               Tags::StepNumberWithinSlab, Tags::AdaptiveSteppingDiagnostics>(
+               Tags::Time, Tags::StepNumberWithinSlab,
+               Tags::AdaptiveSteppingDiagnostics>(
         [](const gsl::not_null<TimeStepId*> time_id,
            const gsl::not_null<TimeStepId*> next_time_id,
            const gsl::not_null<TimeDelta*> time_step,
            const gsl::not_null<double*> time,
-           const gsl::not_null<TimeDelta*> next_time_step,
            const gsl::not_null<uint64_t*> step_number_within_slab,
            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
            const TimeStepper& time_stepper, const bool using_error_control) {
@@ -102,15 +99,7 @@ struct AdvanceTime {
           }
 
           *time_id = *next_time_id;
-
-          if (new_step) {
-            if (time_step->fraction() != next_time_step->fraction()) {
-              ++diags->number_of_step_fraction_changes;
-            }
-
-            *time_step = next_time_step->with_slab(time_id->step_time().slab());
-            *next_time_step = *time_step;
-          }
+          *time_step = time_step->with_slab(time_id->step_time().slab());
 
           if (using_error_control) {
             *next_time_id =

@@ -81,8 +81,8 @@ struct InitializeCharacteristicEvolutionTime {
   using evolved_swsh_variables_tag = ::Tags::Variables<EvolvedSwshTag>;
   using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
-      ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
+      ::Tags::Time, ::Tags::StepNumberWithinSlab,
+      ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
   using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
@@ -127,15 +127,15 @@ struct InitializeCharacteristicEvolutionTime {
         swsh_history(starting_order);
     Initialization::mutate_assign<tmpl::list<
         ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-        ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+        ::Tags::Time,
         ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
         ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>>(
         make_not_null(&box), TimeStepId{},
         TimeStepId{true,
                    -static_cast<int64_t>(time_stepper.number_of_past_steps()),
                    initial_time},
-        initial_time_step, initial_time_step, initial_time_value,
-        std::move(coordinate_history), std::move(swsh_history));
+        initial_time_step, initial_time_value, std::move(coordinate_history),
+        std::move(swsh_history));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

@@ -12,7 +12,6 @@
 #include <pup.h>
 #include <string>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -206,13 +205,13 @@ class ErrorControl
 
   using argument_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
-  std::pair<TimeStepRequest, bool> operator()(
+  TimeStepRequest operator()(
       const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
-      const double previous_step) const {
+      const double /*previous_step*/) const {
     // Do not request that the step size be changed if there isn't a new error
     // estimate
     if (not errors[1].has_value()) {
-      return {{}, true};
+      return {};
     }
     double new_step;
     if (std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep> or
@@ -235,11 +234,7 @@ class ErrorControl
                   pow(std::max(errors[0]->error, 1e-14), beta_factor),
               min_factor_, max_factor_);
     }
-    // If the error is out-of-date we can still reject a step, but it
-    // won't improve the reported error, so make sure to only do it
-    // if we actually request a smaller step.
-    return {::TimeStepRequest{.size_goal = new_step},
-            abs(new_step) >= abs(previous_step) or errors[1]->error <= 1.0};
+    return ::TimeStepRequest{.size_goal = new_step};
   }
 
   bool uses_local_data() const override { return true; }

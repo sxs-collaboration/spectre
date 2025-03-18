@@ -71,9 +71,9 @@ struct Metavariables {
 };
 
 template <size_t Dim>
-std::pair<double, bool> get_suggestion(
-    const double safety_factor, const double characteristic_speed,
-    ElementMap<Dim, Frame::Grid>&& element_map) {
+double get_suggestion(const double safety_factor,
+                      const double characteristic_speed,
+                      ElementMap<Dim, Frame::Grid>&& element_map) {
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,
                         CharacteristicSpeed,
@@ -108,18 +108,14 @@ std::pair<double, bool> get_suggestion(
   const double current_step = std::numeric_limits<double>::infinity();
   const auto result =
       element_size_cfl(time_stepper, element_size, speed, current_step);
-  REQUIRE(result.first.size_goal.has_value());
-  CHECK(result.first == TimeStepRequest{.size_goal = result.first.size_goal});
-  CHECK_FALSE(result.second);
-  const auto accepted_step_result = element_size_cfl(
-      time_stepper, element_size, speed, *result.first.size_goal * 0.7);
-  CHECK(accepted_step_result.second);
+  REQUIRE(result.size_goal.has_value());
+  CHECK(result == TimeStepRequest{.size_goal = result.size_goal});
   CHECK(element_size_base->desired_step(current_step, box) == result);
   CHECK(serialize_and_deserialize(element_size_cfl)(
             time_stepper, element_size, speed, current_step) == result);
   CHECK(serialize_and_deserialize(element_size_base)
             ->desired_step(current_step, box) == result);
-  return {*result.first.size_goal, result.second};
+  return *result.size_goal;
 }
 }  // namespace
 
@@ -135,8 +131,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
             domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.1));
     const ElementId<1> element_id(0, {{{2, 3}}});
     ElementMap<1, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
-    CHECK(approx(
-              get_suggestion(0.8, 2.0, std::move(logical_to_grid_map)).first) ==
+    // NOLINTNEXTLINE(bugprone-use-after-move) - confused by CHECK
+    CHECK(approx(get_suggestion(0.8, 2.0, std::move(logical_to_grid_map))) ==
           0.04);
   }
   {
@@ -149,8 +145,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
                      Affine(-1.0, 1.0, -0.5, 1.1)});
     const ElementId<2> element_id(0, {{{1, 0}, {2, 3}}});
     ElementMap<2, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
-    CHECK(approx(
-              get_suggestion(0.8, 2.0, std::move(logical_to_grid_map)).first) ==
+    // NOLINTNEXTLINE(bugprone-use-after-move) - confused by CHECK
+    CHECK(approx(get_suggestion(0.8, 2.0, std::move(logical_to_grid_map))) ==
           0.005);
   }
   {
@@ -164,8 +160,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
                      Affine(-1.0, 1.0, 12.0, 12.4)});
     const ElementId<3> element_id(0, {{{2, 3}, {1, 0}, {3, 4}}});
     ElementMap<3, Frame::Grid> logical_to_grid_map(element_id, std::move(map));
-    CHECK(approx(
-              get_suggestion(0.8, 2.0, std::move(logical_to_grid_map)).first) ==
+    // NOLINTNEXTLINE(bugprone-use-after-move) - confused by CHECK
+    CHECK(approx(get_suggestion(0.8, 2.0, std::move(logical_to_grid_map))) ==
           0.005 / 3.0);
   }
 
