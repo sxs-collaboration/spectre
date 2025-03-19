@@ -3,6 +3,7 @@
 
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/Wedge.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <limits>
@@ -10,7 +11,9 @@
 #include <pup.h>
 #include <pup_stl.h>
 #include <type_traits>
+#include <vector>
 
+#include "DataStructures/Blaze/IntegerPow.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/ShapeMapTransitionFunction.hpp"
@@ -47,14 +50,25 @@ void Wedge::Surface::pup(PUP::er& p) {
 }
 
 size_t Wedge::axis_index(const Axis axis) {
+  if (axis == Axis::Interior or axis == Axis::None) {
+    ERROR("Cannot get the index of the axis " << axis);
+  }
   return static_cast<size_t>(abs(static_cast<int>(axis)) - 1);
 }
 
 double Wedge::axis_sgn(const Axis axis) {
+  if (axis == Axis::Interior or axis == Axis::None) {
+    ERROR("Cannot get the sign of the axis " << axis);
+  }
   return static_cast<double>(sgn(static_cast<int>(axis)));
 }
 
 std::ostream& operator<<(std::ostream& os, const Wedge::Axis axis) {
+  if (axis == Wedge::Axis::Interior or axis == Wedge::Axis::None) {
+    os << (axis == Wedge::Axis::Interior ? "Interior" : "None");
+    return os;
+  }
+
   os << (Wedge::axis_sgn(axis) < 0.0 ? "-" : "+") << Wedge::axis_index(axis);
   return os;
 }
@@ -91,6 +105,12 @@ Wedge::Wedge(const std::array<double, 3>& inner_center,
     ERROR(
         "Axis for Wedge shape map transition function cannot be 'None'. Please "
         "choose another.");
+  }
+  if (axis_ == Axis::Interior and
+      (inner_surface_.sphericity != 1.0 or reverse)) {
+    ERROR(
+        "When the axis is 'Interior', the inner surface must be a sphere "
+        "(sphericity 1.0) and reverse must be 'false'.");
   }
 }
 
@@ -313,26 +333,76 @@ std::array<T, 3> Wedge::compute_lambda_gradient(
   return result;
 }
 
-double Wedge::operator()(const std::array<double, 3>& source_coords) const {
-  return call_impl<double>(source_coords);
+double Wedge::operator()(
+    const std::array<double, 3>& source_coords,
+    const std::optional<size_t>& one_over_radius_power) const {
+  return call_impl<double>(source_coords, one_over_radius_power);
 }
 
 DataVector Wedge::operator()(
-    const std::array<DataVector, 3>& source_coords) const {
-  return call_impl<DataVector>(source_coords);
+    const std::array<DataVector, 3>& source_coords,
+    const std::optional<size_t>& one_over_radius_power) const {
+  return call_impl<DataVector>(source_coords, one_over_radius_power);
 }
 
 template <typename T>
-T Wedge::call_impl(const std::array<T, 3>& source_coords) const {
+T Wedge::call_impl(const std::array<T, 3>& source_coords,
+                   const std::optional<size_t>& one_over_radius_power) const {
   // The source coords are centered
   const T centered_coords_magnitude = magnitude(source_coords);
 
+#ifdef SPECTRE_DEBUG
+  using ::operator<<;
+  if (UNLIKELY(one_over_radius_power.value_or(0_st) >= 3)) {
+    for (size_t i = 0; i < get_size(source_coords[0]); i++) {
+      if (UNLIKELY(equal_within_roundoff(
+              get_element(centered_coords_magnitude, i), 0.0))) {
+        const std::array<double, 3> point{get_element(source_coords[0], i),
+                                          get_element(source_coords[1], i),
+                                          get_element(source_coords[2], i)};
+        ERROR("Trying to divide by a point "
+              << point << " with radius zero in Wedge transition operator.");
+      }
+    }
+  }
+#endif
+
+  // If the axis is the interior, short circuit
+  if (axis_ == Axis::Interior) {
+    return 1.0 / cube(inner_surface_.radius) *
+           (one_over_radius_power.value_or(0_st) < 3
+                ? T{integer_pow(centered_coords_magnitude,
+                                static_cast<int>(
+                                    2 - one_over_radius_power.value_or(0_st)))}
+                : 1.0 / integer_pow(centered_coords_magnitude,
+                                    static_cast<int>(
+                                        one_over_radius_power.value() - 2)));
+  }
+
+  // First check if we are at the inner center to avoid dividing by zero below
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < get_size(source_coords[0]); i++) {
+    if (UNLIKELY(equal_within_roundoff(
+            get_element(centered_coords_magnitude, i), 0.0))) {
+      const std::array<double, 3> point{get_element(source_coords[0], i),
+                                        get_element(source_coords[1], i),
+                                        get_element(source_coords[2], i)};
+      ERROR(
+          "The Wedge transition was called with a point that has zero "
+          "centered "
+          "radius, but the axis isn't the 'Interior'. Point is "
+          << point << ", axis is " << axis_);
+    }
+  }
+#endif
+
+  // Now we can safely compute lambda without worrying about dividing by zero
   const T lambda =
       compute_lambda(source_coords, centered_coords_magnitude, {axis_});
 
   const T inner_distance =
       inner_surface_.sphericity == 1.0
-          ? make_with_value<T>(lambda, inner_surface_.radius)
+          ? make_with_value<T>(centered_coords_magnitude, inner_surface_.radius)
           : magnitude(compute_inner_surface_vector(
                 source_coords, centered_coords_magnitude, {axis_}));
 
@@ -340,28 +410,45 @@ T Wedge::call_impl(const std::array<T, 3>& source_coords) const {
       compute_outer_surface_vector(source_coords, lambda);
   const T outer_distance = magnitude(outer_surface_vector);
 
-  check_distances(inner_distance, outer_distance, centered_coords_magnitude,
-                  source_coords, false);
-
-  T result = (outer_distance - centered_coords_magnitude) /
-             (outer_distance - inner_distance);
-
-  if (projection_center_ != std::array{0.0, 0.0, 0.0} and
-      (min(result) < -eps_ or max(result) > 1.0 + eps_)) {
-    ERROR(
-        "The Wedge transition cannot be called inside the inner surface or "
-        "outside the outer surface if the centers of the inner and outer "
-        "surface are different. Min function value "
-        << min(result) << ", max function value " << max(result));
+  // Check if the point we were passed is within the transition region
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < get_size(source_coords[0]); i++) {
+    const std::array<double, 3> point{get_element(source_coords[0], i),
+                                      get_element(source_coords[1], i),
+                                      get_element(source_coords[2], i)};
+    if (get_element(centered_coords_magnitude, i) <
+        (1.0 - eps_) * get_element(inner_distance, i)) {
+      ERROR("Wedge transition called with centered coordinate "
+            << point << " (with radius "
+            << get_element(centered_coords_magnitude, i)
+            << ") which is inside the inner surface ("
+            << get_element(inner_distance, i)
+            << ") while the axis was not 'Interior' (" << axis_ << ")");
+    } else if (get_element(centered_coords_magnitude, i) >
+               (1.0 + eps_) * get_element(outer_distance, i)) {
+      ERROR("Wedge transition called with centered coordinate "
+            << point << " (with radius "
+            << get_element(centered_coords_magnitude, i)
+            << ") which is outside the outer surface ("
+            << get_element(outer_distance, i) << ").");
+    }
   }
+#endif
 
-  result = blaze::clamp(result, 0.0, 1.0);
+  T linear_transition_func = (outer_distance - centered_coords_magnitude) /
+                             (outer_distance - inner_distance);
 
   if (reverse_) {
-    return 1.0 - result;
-  } else {
-    return result;
+    linear_transition_func = 1.0 - linear_transition_func;
   }
+
+  // Accounts for roundoff
+  linear_transition_func = blaze::clamp(linear_transition_func, 0.0, 1.0);
+
+  return linear_transition_func /
+         integer_pow(
+             centered_coords_magnitude,
+             static_cast<int>(1 + one_over_radius_power.value_or(0_st)));
 }
 
 std::optional<double> Wedge::original_radius_over_radius(
@@ -373,10 +460,20 @@ std::optional<double> Wedge::original_radius_over_radius(
   CAPTURE_FOR_ERROR(radial_distortion);
   CAPTURE_FOR_ERROR(centered_coords_magnitude);
 
-  // Couple protections that would make a point completely outside of the domain
-  // of validity for any wedge
+  // There are a number of different special cases that can (and should) be
+  // accounted for before we go to the general inverse formula. To denote all
+  // these special cases we introduce the following notation. For the 3 possible
+  // regions, we use Int (Interior), Ext (Exterior), and Mid
+  // (middle/transition). For the boundaries between these regions we'll combine
+  // them: IntMid (inner surface) and MidExt (outer surface). Then for reverse,
+  // we'll add 'R+' (e.g. R+Ext accounts for a point in the exterior region when
+  // the transition is reversed). The absence of 'R+' means this is the
+  // "regular" transition.
+
+  // Int: Protect against point that wouldn't have any radial distortion
   if (equal_within_roundoff(centered_coords_magnitude, 0.0)) {
-    return std::nullopt;
+    return (axis_ == Axis::Interior and not reverse_) ? std::optional{1.0}
+                                                      : std::nullopt;
   }
 
   const double inner_distance =
@@ -385,36 +482,94 @@ std::optional<double> Wedge::original_radius_over_radius(
           : magnitude(compute_inner_surface_vector(
                 target_coords, centered_coords_magnitude, std::nullopt));
 
+  if (not reverse_) {
+    // Check if we are within the interior region or at the inner surface. The
+    // formula is simplified at the inner surface
+    if (centered_coords_magnitude + radial_distortion <
+        (1.0 - eps_) * inner_distance) {
+      // Int: Unless the axis_ is Interior, this block doesn't contain this
+      // point
+      if (axis_ != Axis::Interior) {
+        return std::nullopt;
+      }
+
+      const double factor =
+          cube(inner_surface_.radius) /
+          (square(centered_coords_magnitude) * radial_distortion);
+
+      // The following variable names are defined in Numerical Recipes (3rd
+      // edition) pg 228. We choose to keep them as they appear in NR for better
+      // comparison with the book.
+
+      // Numerical Recipes (3rd edition) pg 228, eq 5.6.10
+      const double R = 0.5 * factor;
+      const double Q = factor / 3.0;
+      const bool multiple_real_roots = square(R) < cube(Q);
+
+      if (multiple_real_roots) {
+        // Numerical Recipes (3rd edition) pg 228, eqs 5.6.11 - 5.6.12
+        const double theta = acos(R / sqrt(cube(Q)));
+        std::vector<double> roots{
+            -2.0 * sqrt(Q) * cos(theta / 3.0),
+            -2.0 * sqrt(Q) * cos((theta + 2.0 * M_PI) / 3.0),
+            -2.0 * sqrt(Q) * cos((theta - 2.0 * M_PI) / 3.0)};
+
+        // Radii are positive
+        std::erase_if(roots, [](const double root) { return root < 0.0; });
+
+        // Since the root of this is the original radius over target radius, it
+        // will be of order unity and not something super large, so we take the
+        // smallest of the positive roots. If this turns out to not be robust
+        // enough we can change this.
+        return *alg::min_element(roots);
+      } else {
+        // Numerical Recipes (3rd edition) pg 228, eqs 5.6.13 - 5.6.17
+        const double A = -sgn(R) * cbrt(abs(R) + sqrt(square(R) - cube(Q)));
+        const double B = A == 0.0 ? 0.0 : Q / A;
+
+        return A + B;
+      }
+    } else if (equal_within_roundoff(
+                   centered_coords_magnitude + radial_distortion,
+                   inner_distance)) {
+      // IntMid: Since the point is on the boundary, we can't tell if this is
+      // the interior or not, but either map will work.
+      return std::optional{inner_distance /
+                           (inner_distance - radial_distortion)};
+    }
+  }
+
   const double lambda =
       compute_lambda(target_coords, centered_coords_magnitude, std::nullopt);
 
   const double outer_distance =
       magnitude(compute_outer_surface_vector(target_coords, lambda));
 
-  // First we check the extremal case of being outside the outer distance. We
-  // can check the outermost distance because its surface doesn't move. We can't
-  // check the innermost surface because the inner bound is the origin which we
-  // already checked above. This logic is reversed if we are in reverse mode.
-  if ((not reverse_ and (centered_coords_magnitude > outer_distance + eps_)) or
-      (reverse_ and (centered_coords_magnitude < inner_distance - eps_))) {
-    return projection_center_ == std::array{0.0, 0.0, 0.0} ? std::optional{1.0}
-                                                           : std::nullopt;
+  // Ext,R+Int: First we check the extremal cases where we are outside the
+  // transition region. If we are reversed and inside the inner surface, we
+  // return nullopt. If we aren't reversed and beyond the outer surface we
+  // return nullopt because we could still be in the interior region.
+  if ((not reverse_ and
+       centered_coords_magnitude > (1.0 + eps_) * outer_distance) or
+      (reverse_ and
+       centered_coords_magnitude < (1.0 - eps_) * inner_distance)) {
+    return std::nullopt;
   }
 
-  // If distorted radius is 0, this means the map is the identity so the radius
-  // and the original radius are equal. Also we don't want to divide by 0 below.
-  // We do this check after we check if the point is beyond the outer distance
-  // because if a point is outside the distorted frame, this function should
-  // return nullopt.
+  // All remaining cases: If distorted radius is 0, this means the map is the
+  // identity so the radius and the original radius are equal. Also we don't
+  // want to divide by 0 below. We do this check after we check if the point is
+  // beyond the outer distance because if a point is outside the distorted
+  // frame, this function should return nullopt.
   if (equal_within_roundoff(radial_distortion, 0.0)) {
     return std::optional{1.0};
   }
 
-  // If we are at the overall outer distance, then the transition function is 0
-  // so the map is again the identity so the radius and original radius are
-  // equal. We can't check the overall inner distance because that has been
-  // distorted so we don't know where the mapped inner distance is.
-  // This logic is reversed if we are in reverse mode.
+  // MidExt,R+IntMid: If we are at the overall outer distance, then the
+  // transition function is 0 so the map is again the identity so the radius and
+  // original radius are equal. We can't check the overall inner distance
+  // because that has been distorted so we don't know where the mapped inner
+  // distance is. This logic is reversed if we are in reverse mode.
   if ((not reverse_ and
        equal_within_roundoff(centered_coords_magnitude, outer_distance)) or
       (reverse_ and
@@ -437,27 +592,18 @@ std::optional<double> Wedge::original_radius_over_radius(
   const double original_radius =
       original_radius_over_radius * centered_coords_magnitude;
 
-  // If we are within the inner distance and the outer distance, doesn't matter
-  // if we are reverse, we just return the value we calculated. If the centers
-  // are the same, then if we are reverse and the point is outside the outer
-  // distance or we aren't reversed and the point is inside the inner distance,
-  // then we return a simplified formula since the transition function is 1 in
-  // this region. If the above conditions aren't true, then we are in the region
-  // where the transition function is 0, so we return 1.0. Otherwise we return
-  // nullopt.
-  if ((original_radius + eps_) >= inner_distance and
-      (original_radius - eps_) <= outer_distance) {
-    return std::optional{original_radius_over_radius};
-  } else if (projection_center_ == std::array{0.0, 0.0, 0.0}) {
-    if ((not reverse_ and original_radius < inner_distance) or
-        (reverse_ and original_radius > outer_distance)) {
-      return std::optional{1.0 + radial_distortion / centered_coords_magnitude};
-    } else {
-      return std::optional{1.0};
+  // R+MidExt,R+Ext: Extremal transition at outer boundary for reverse has a
+  // simplified formula.
+  if (reverse_) {
+    if (equal_within_roundoff(original_radius, outer_distance)) {
+      return {1.0 + radial_distortion / centered_coords_magnitude};
+    } else if (original_radius > (1.0 + eps_) * outer_distance) {
+      return std::nullopt;
     }
-  } else {
-    return std::nullopt;
   }
+
+  // Mid,R+Mid
+  return {original_radius_over_radius};
 }
 
 std::array<double, 3> Wedge::gradient(
@@ -474,6 +620,26 @@ std::array<T, 3> Wedge::gradient_impl(
     const std::array<T, 3>& source_coords) const {
   // The source coords are centered
   const T centered_coords_magnitude = magnitude(source_coords);
+
+  // Short circuit if we are in the interior
+  if (axis_ == Axis::Interior) {
+    return 2.0 / cube(inner_surface_.radius) * source_coords;
+  }
+
+// First check if we are at the inner center to avoid dividing by zero below
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < get_size(centered_coords_magnitude); i++) {
+    if (UNLIKELY(equal_within_roundoff(
+            get_element(centered_coords_magnitude, i), 0.0))) {
+      ERROR(
+          "The gradient of the wedge transition was called with a point that "
+          "has zero centered radius, but the axis isn't the 'Interior'. Point "
+          "is "
+          << inner_surface_.center << ", axis is " << axis_);
+    }
+  }
+#endif
+
   const T one_over_centered_coords_magnitude = 1.0 / centered_coords_magnitude;
 
   const T lambda =
@@ -489,13 +655,35 @@ std::array<T, 3> Wedge::gradient_impl(
       compute_outer_surface_vector(source_coords, lambda);
   const T outer_distance = magnitude(outer_surface_vector);
 
-  check_distances(inner_distance, outer_distance, centered_coords_magnitude,
-                  source_coords, true);
+// Check if the point we were passed is within the transition region
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < get_size(centered_coords_magnitude); i++) {
+    const std::array<double, 3> point{get_element(source_coords[0], i),
+                                      get_element(source_coords[1], i),
+                                      get_element(source_coords[2], i)};
+    if (get_element(centered_coords_magnitude, i) <
+        (1.0 - eps_) * get_element(inner_distance, i)) {
+      ERROR("Wedge transition called with centered coordinate "
+            << point << " (with radius "
+            << get_element(centered_coords_magnitude, i)
+            << ") which is inside the inner surface ("
+            << get_element(inner_distance, i)
+            << ") while the axis was not 'Interior' (" << axis_ << ")");
+    } else if (get_element(centered_coords_magnitude, i) >
+               (1.0 + eps_) * get_element(outer_distance, i)) {
+      ERROR("Wedge transition called with centered coordinate "
+            << point << " (with radius "
+            << get_element(centered_coords_magnitude, i)
+            << ") which is outside the outer surface ("
+            << get_element(outer_distance, i) << ").");
+    }
+  }
+#endif
 
   // This can only be called if the projection center is 0, otherwise this
   // formula won't work. And if the projection center isn't 0, then we require
-  // that the sphericity of the inner surface is 1, so we ASSERT that here as
-  // well
+  // that the sphericity of the inner surface is 1, so we ASSERT that here
+  // as well
   const auto inner_surface_gradient = [&]() -> std::array<T, 3> {
     using ::operator<<;
     ASSERT((projection_center_ == std::array{0.0, 0.0, 0.0}),
@@ -512,11 +700,9 @@ std::array<T, 3> Wedge::gradient_impl(
 
     const T& axis_coord = gsl::at(source_coords, axis_idx);
 
-    const double factor =
-        inner_surface_.radius * (1.0 - inner_surface_.sphericity) / sqrt(3.0);
-
     std::array<T, 3> grad = make_array<3, T>(
-        factor * one_over_centered_coords_magnitude / abs(axis_coord));
+        inner_surface_.radius * (1.0 - inner_surface_.sphericity) / sqrt(3.0) *
+        one_over_centered_coords_magnitude / abs(axis_coord));
 
     // Dividing by axis_coord here takes care of the sgn(axis_coord) that would
     // have been necessary
@@ -544,7 +730,9 @@ std::array<T, 3> Wedge::gradient_impl(
             source_coords * one_over_centered_coords_magnitude -
             (outer_distance - centered_coords_magnitude) * outer_gradient *
                 one_over_distance_difference) *
-           one_over_distance_difference * (reverse_ ? -1.0 : 1.0);
+               one_over_distance_difference *
+               one_over_centered_coords_magnitude * (reverse_ ? -1.0 : 1.0) -
+           source_coords * (*this)(source_coords, {2});
   } else {
     const std::array<T, 3> inner_gradient = inner_surface_gradient();
 
@@ -553,7 +741,9 @@ std::array<T, 3> Wedge::gradient_impl(
             (outer_distance - centered_coords_magnitude) *
                 (outer_gradient - inner_gradient) *
                 one_over_distance_difference) *
-           one_over_distance_difference * (reverse_ ? -1.0 : 1.0);
+               one_over_distance_difference *
+               one_over_centered_coords_magnitude * (reverse_ ? -1.0 : 1.0) -
+           source_coords * (*this)(source_coords, {2});
   }
 }
 
@@ -574,43 +764,6 @@ bool Wedge::operator==(const ShapeMapTransitionFunction& other) const {
 
 bool Wedge::operator!=(const ShapeMapTransitionFunction& other) const {
   return not(*this == other);
-}
-
-template <typename T>
-void Wedge::check_distances(
-    [[maybe_unused]] const T& inner_distance,
-    [[maybe_unused]] const T& outer_distance,
-    [[maybe_unused]] const T& centered_coords_magnitude,
-    [[maybe_unused]] const std::array<T, 3>& source_coords,
-    [[maybe_unused]] const bool check_bounds) const {
-#ifdef SPECTRE_DEBUG
-  const T result = (outer_distance - centered_coords_magnitude) /
-                   (outer_distance - inner_distance);
-  for (size_t i = 0; i < get_size(centered_coords_magnitude); ++i) {
-    const bool point_is_bad =
-        check_bounds ? (get_element(result, i) + eps_ < 0.0 or
-                        get_element(result, i) - eps_ > 1.0)
-                     : get_element(centered_coords_magnitude, i) <= 0.0;
-    if (point_is_bad) {
-      ERROR(
-          "The Wedge transition map was called with bad coordinates.\nThe "
-          "requested (centered) point is "
-          << source_coords << "\nThe requested (centered) point has radius "
-          << get_element(centered_coords_magnitude, i)
-          << "\nThe inner surface has center, "
-             "radius, and sphericity (c="
-          << inner_surface_.center << ",r=" << inner_surface_.radius
-          << ",s=" << inner_surface_.sphericity
-          << ")\nThe outer surface has center, radius, and sphericity (c="
-          << outer_surface_.center << ",r=" << outer_surface_.radius
-          << ",s=" << outer_surface_.sphericity
-          << ")\nThe distance to the inner surface is "
-          << get_element(inner_distance, i)
-          << "\nThe distance to the outer surface is "
-          << get_element(outer_distance, i));
-    }
-  }
-#endif
 }
 
 namespace {

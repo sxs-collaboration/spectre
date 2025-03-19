@@ -76,9 +76,12 @@ void test_gradient_no_offset() {
         (1.0 - inner_sphericity) * inner_radius * grad_base;
     const std::array<double, 3> outer_grad =
         (1.0 - outer_sphericity) * outer_radius * grad_base;
-    return (outer_grad - point / radius) / distance_difference -
-           (outer_distance - radius) * (outer_grad - inner_grad) /
-               square(distance_difference);
+    return ((outer_grad - point / radius) / distance_difference -
+            (outer_distance - radius) * (outer_grad - inner_grad) /
+                square(distance_difference)) /
+               radius -
+           point * (outer_distance - radius) / distance_difference /
+               cube(radius);
   };
 
   const auto test_z_axis = [&](const double inner_sphericity,
@@ -150,6 +153,18 @@ void test_gradient_no_offset() {
     test_z_axis(0.0, 0.0);
     test_corners(0.0, 0.0);
   }
+  {
+    INFO("Interior region");
+    const auto center_wedge =
+        make_wedge(1.0, 0.0, std::array{0.0, 0.0, 0.0},
+                   std::array{0.0, 0.0, 0.0}, Wedge::Axis::Interior);
+    CHECK(center_wedge.gradient(std::array{0.0, 0.0, 0.0}) ==
+          std::array{0.0, 0.0, 0.0});
+    CHECK(center_wedge.gradient(std::array{0.0, 0.0, inner_radius}) ==
+          std::array{0.0, 0.0, 8.0});
+    CHECK(center_wedge.gradient(std::array{0.0, 0.0, 0.5 * inner_radius}) ==
+          std::array{0.0, 0.0, 4.0});
+  }
 }
 
 void test_only_transition_no_offset() {
@@ -171,20 +186,23 @@ void test_only_transition_no_offset() {
   const double distance_difference = outer_distance - inner_distance;
 
   std::array<double, 3> point{4.0, 0.0, 0.0};
-  const double function_value = (outer_distance - 4.0) / distance_difference;
+  const double linear_function_value =
+      (outer_distance - 4.0) / distance_difference;
 
-  CHECK(wedge(point) == approx(function_value));
-  CHECK(wedge_reverse(point) == approx(1.0 - function_value));
-  CHECK_ITERABLE_APPROX(wedge.gradient(point),
-                        (std::array{-1.0 / distance_difference, 0.0, 0.0}));
-  CHECK_ITERABLE_APPROX(wedge_reverse.gradient(point),
-                        (std::array{1.0 / distance_difference, 0.0, 0.0}));
-#ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      wedge.gradient(20.0 * point),
-      Catch::Matchers::ContainsSubstring(
-          "The Wedge transition map was called with bad coordinates."));
-#endif
+  CHECK(wedge(point, std::nullopt) == approx(0.25 * linear_function_value));
+  CHECK(wedge(point, {1}) == approx(0.0625 * linear_function_value));
+  CHECK(wedge_reverse(point, std::nullopt) ==
+        approx(0.25 * (1.0 - linear_function_value)));
+  CHECK(wedge_reverse(point, {1}) ==
+        approx(0.0625 * (1.0 - linear_function_value)));
+  CHECK_ITERABLE_APPROX(
+      wedge.gradient(point),
+      (0.25 * std::array{-1.0 / distance_difference, 0.0, 0.0} -
+       cube(0.25) * linear_function_value * point));
+  CHECK_ITERABLE_APPROX(
+      wedge_reverse.gradient(point),
+      (0.25 * std::array{1.0 / distance_difference, 0.0, 0.0} -
+       cube(0.25) * (1.0 - linear_function_value) * point));
 
   std::optional<double> orig_rad_over_rad{};
   std::optional<double> orig_rad_over_rad_reverse{};
@@ -203,21 +221,24 @@ void test_only_transition_no_offset() {
   CHECK(orig_rad_over_rad.value() == approx(1.0));
   CHECK(orig_rad_over_rad_reverse.has_value());
   CHECK(orig_rad_over_rad_reverse.value() == approx(1.0));
-  set_orig_rad_over_rad(point * (1.0 - 0.25 * function_value * 0.5), 0.5);
+  set_orig_rad_over_rad(point * (1.0 - 0.25 * linear_function_value * 0.5),
+                        0.5);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() ==
-        approx(4.0 / magnitude(point * (1.0 - 0.25 * function_value * 0.5))));
-  set_orig_rad_over_rad(point * (1.0 + 0.25 * function_value * 0.5), -0.5);
+        approx(4.0 /
+               magnitude(point * (1.0 - 0.25 * linear_function_value * 0.5))));
+  set_orig_rad_over_rad(point * (1.0 + 0.25 * linear_function_value * 0.5),
+                        -0.5);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() ==
-        approx(4.0 / magnitude(point * (1.0 + 0.25 * function_value * 0.5))));
+        approx(4.0 /
+               magnitude(point * (1.0 + 0.25 * linear_function_value * 0.5))));
   set_orig_rad_over_rad(point * 15.0, 0.0);
-  CHECK(orig_rad_over_rad.has_value());
-  CHECK(orig_rad_over_rad.value() == 1.0);
+  CHECK_FALSE(orig_rad_over_rad.has_value());
   // Hit some internal checks
   set_orig_rad_over_rad(point * 0.0, 0.0);
-  CHECK_FALSE(orig_rad_over_rad.has_value());
-  CHECK_FALSE(orig_rad_over_rad_reverse.has_value());
+  CHECK_FALSE(orig_rad_over_rad == std::optional{1.0});
+  CHECK_FALSE(orig_rad_over_rad_reverse == std::optional{1.0});
   // Wedge is in x direction. Check other directions
   const auto check_other_directions =
       [&](const std::array<double, 3>& mapped_point) {
@@ -238,8 +259,7 @@ void test_only_transition_no_offset() {
   CHECK(orig_rad_over_rad.value() == approx(5.0));
   // Inside inner boundary
   set_orig_rad_over_rad(std::array{0.0, 0.0, 0.1 * inner_radius}, 0.4);
-  CHECK(orig_rad_over_rad.has_value());
-  CHECK(orig_rad_over_rad.value() == (1.0 + 0.4 / (0.1 * inner_radius)));
+  CHECK_FALSE(orig_rad_over_rad.has_value());
 }
 
 void test_only_transition_offset() {
@@ -267,11 +287,18 @@ void test_only_transition_offset() {
   const double outer_distance = (half_cube_length + 1) * sqrt(26.0) / 5.0;
   const double distance_difference = outer_distance - inner_distance;
 
-  const double function_value =
+  const double linear_function_value =
       (outer_distance - radius_from_inner_center) / distance_difference;
 
-  CHECK(wedge(centered_point) == approx(function_value));
-  CHECK(wedge_reverse(centered_point) == approx(1.0 - function_value));
+  CHECK(wedge(centered_point, std::nullopt) ==
+        approx(linear_function_value / radius_from_inner_center));
+  CHECK(wedge(centered_point, {1}) ==
+        approx(linear_function_value / square(radius_from_inner_center)));
+  CHECK(wedge_reverse(centered_point, std::nullopt) ==
+        approx((1.0 - linear_function_value) / radius_from_inner_center));
+  CHECK(
+      wedge_reverse(centered_point, {1}) ==
+      approx((1.0 - linear_function_value) / square(radius_from_inner_center)));
   const std::array<double, 3> projection_center = inner_center - outer_center;
   // Because of PlusX
   const std::array<double, 3> outer_gradient =
@@ -281,14 +308,20 @@ void test_only_transition_offset() {
           (half_cube_length - projection_center[0]) / square(centered_point[0]),
           0.0, 0.0} *
           radius_from_inner_center;
-  const std::array<double, 3> expected_gradient =
+  const std::array<double, 3> expected_linear_gradient =
       (outer_gradient - centered_point / radius_from_inner_center) /
           distance_difference -
       ((outer_distance - radius_from_inner_center) * outer_gradient /
        square(distance_difference));
-  CHECK_ITERABLE_APPROX(wedge.gradient(centered_point), expected_gradient);
-  CHECK_ITERABLE_APPROX(wedge_reverse.gradient(centered_point),
-                        -1.0 * expected_gradient);
+  CHECK_ITERABLE_APPROX(wedge.gradient(centered_point),
+                        expected_linear_gradient / radius_from_inner_center -
+                            centered_point * linear_function_value /
+                                cube(radius_from_inner_center));
+  CHECK_ITERABLE_APPROX(
+      wedge_reverse.gradient(centered_point),
+      -1.0 * expected_linear_gradient / radius_from_inner_center -
+          centered_point * (1.0 - linear_function_value) /
+              cube(radius_from_inner_center));
 
   std::optional<double> orig_rad_over_rad{};
   std::optional<double> orig_rad_over_rad_reverse{};
@@ -309,27 +342,28 @@ void test_only_transition_offset() {
   CHECK(orig_rad_over_rad_reverse.value() == approx(1.0));
 
   std::array<double, 3> mapped_point =
-      centered_point * (1.0 - function_value / radius_from_inner_center * 0.5);
+      centered_point *
+      (1.0 - linear_function_value / radius_from_inner_center * 0.5);
   set_orig_rad_over_rad(mapped_point, 0.5);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() ==
         approx(radius_from_inner_center / magnitude(mapped_point)));
 
-  mapped_point = centered_point * (1.0 - (1.0 - function_value) /
+  mapped_point = centered_point * (1.0 - (1.0 - linear_function_value) /
                                              radius_from_inner_center * 0.5);
   set_orig_rad_over_rad(mapped_point, 0.5);
   CHECK(orig_rad_over_rad_reverse.has_value());
   CHECK(orig_rad_over_rad_reverse.value() ==
         approx(radius_from_inner_center / magnitude(mapped_point)));
 
-  mapped_point =
-      centered_point * (1.0 + function_value / radius_from_inner_center * 0.5);
+  mapped_point = centered_point *
+                 (1.0 + linear_function_value / radius_from_inner_center * 0.5);
   set_orig_rad_over_rad(mapped_point, -0.5);
   CHECK(orig_rad_over_rad.has_value());
   CHECK(orig_rad_over_rad.value() ==
         approx(radius_from_inner_center / magnitude(mapped_point)));
 
-  mapped_point = centered_point * (1.0 + (1.0 - function_value) /
+  mapped_point = centered_point * (1.0 + (1.0 - linear_function_value) /
                                              radius_from_inner_center * 0.5);
   set_orig_rad_over_rad(mapped_point, -0.5);
   CHECK(orig_rad_over_rad_reverse.has_value());
@@ -433,8 +467,8 @@ void test_in_shape_map_no_offset(const gsl::not_null<Generator*> generator,
   // This guarantees the radius of the point is within an acceptable distance of
   // the inner/outer surface of the wedge even if we are reversed
   // NOLINTNEXTLINE(misc-const-correctness)
-  std::uniform_real_distribution<double> radial_dist{(0.8 * inner_radius),
-                                                     (outer_radius + 0.2)};
+  std::uniform_real_distribution<double> radial_dist{
+      inner_radius + 1.e-3, outer_radius / sqrt(3.0) - 1.e-3};
 
   for (const auto& [inner_sphericity, outer_sphericity] :
        cartesian_product(std::array{1.0, 0.0}, std::array{1.0, 0.0})) {
@@ -471,14 +505,22 @@ void test_in_shape_map_no_offset(const gsl::not_null<Generator*> generator,
       CAPTURE(centered_point);
       CAPTURE(axis_for_wedge);
 
-      const bool check_jacobians = radius >= (inner_radius + 1.e-3) and
-                                   radius <= (outer_radius / sqrt(3.0) - 1.e-3);
-
       test_points_shape_map(inner_sphericity, outer_sphericity, center, center,
                             static_cast<Wedge::Axis>(axis_for_wedge),
                             check_time, fot_name, functions_of_time,
-                            centered_point + center, reverse, check_jacobians);
+                            centered_point + center, reverse, true);
     }
+  }
+
+  const double eps = std::numeric_limits<double>::epsilon();
+  // Check for points within the interior
+  for (const auto& point :
+       {center, center + std::array{0.0, 2.0 * eps, 0.0},
+        center + std::array{0.0, 0.5 * inner_radius, 0.0},
+        center + std::array{0.0, (1.0 - 2.0 * eps) * inner_radius, 0.0},
+        center + std::array{0.0, inner_radius, 0.0}}) {
+    test_points_shape_map(1.0, 0.0, center, center, Wedge::Axis::Interior,
+                          check_time, fot_name, functions_of_time, point);
   }
 }
 
@@ -635,7 +677,19 @@ void test_in_shape_map_offset(const gsl::not_null<Generator*> generator,
         }  // for other_length_2
       }    // for other_length_1
     }      // for axis
-  }        // for outer sphericity
+
+    const double eps = std::numeric_limits<double>::epsilon();
+    // Check for points within the interior
+    for (const auto& point :
+         {inner_center, inner_center + std::array{0.0, 2.0 * eps, 0.0},
+          inner_center + std::array{0.0, 0.5 * inner_radius, 0.0},
+          inner_center + std::array{0.0, (1.0 - 2.0 * eps) * inner_radius, 0.0},
+          inner_center + std::array{0.0, inner_radius, 0.0}}) {
+      test_points_shape_map(1.0, outer_sphericity, inner_center, outer_center,
+                            Wedge::Axis::Interior, check_time, fot_name,
+                            functions_of_time, point);
+    }
+  }  // for outer sphericity
 }
 
 void test_errors() {
@@ -659,6 +713,21 @@ void test_errors() {
       Catch::Matchers::ContainsSubstring("Axis for Wedge shape map transition "
                                          "function cannot be 'None'. Please "
                                          "choose another."));
+
+  CHECK_THROWS_WITH(
+      (Wedge{std::array{0.0, 0.0, 0.0}, inner_radius, 1.0,
+             std::array{0.0, 0.0, 0.0}, outer_radius, 1.0,
+             Wedge::Axis::Interior, true}),
+      Catch::Matchers::ContainsSubstring(
+          "When the axis is 'Interior', the inner surface must be a sphere "
+          "(sphericity 1.0) and reverse must be 'false'."));
+  CHECK_THROWS_WITH(
+      (Wedge{std::array{0.0, 0.0, 0.0}, inner_radius, 0.5,
+             std::array{0.0, 0.0, 0.0}, outer_radius, 1.0,
+             Wedge::Axis::Interior}),
+      Catch::Matchers::ContainsSubstring(
+          "When the axis is 'Interior', the inner surface must be a sphere "
+          "(sphericity 1.0) and reverse must be 'false'."));
 }
 
 template <typename Generator>

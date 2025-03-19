@@ -13,24 +13,29 @@
 namespace domain::CoordinateMaps::ShapeMapTransitionFunctions {
 
 /*!
- * \brief Abstract base class for the transition functions used by the
- * domain::CoordinateMaps::TimeDependent::Shape map.
+ * \brief Abstract base class for the transition function $G(r,\theta,\phi)$
+ * used by the domain::CoordinateMaps::TimeDependent::Shape map.
  *
  * \details This base class defines the required methods of a transition
- * function used by the shape map. Different domains require the shape map to
- * fall off towards the boundary in different ways. This behavior is controlled
- * by the transition function. It is also needed to find the inverse of the
- * shape map. Since the shape map preserves angles, the problem of finding its
- * inverse reduces to the 1-dimensional problem of finding the original radius
- * from the mapped radius. The mapped radius \f$\tilde{r}\f$ is related to the
- * original \f$r\f$ radius by:
- * \f{equation}{\label{eq:shape_map_radius}
- *  \tilde{r} = r (1 - \frac{f(r,\theta,\phi)}{r}
- *    \sum_{lm} \lambda_{lm}(t)Y_{lm}(\theta,\phi)),
- *  \f}
- * where $f(r,\theta,\phi) \in [0, 1]$ is the transition function (see docs of
- * domain::CoordinateMaps::TimeDependent::Shape map). Depending
- * on the format of the transition function, it should be possible to
+ * function that is defined as
+ *
+ * \begin{equation}
+ * G(r,\theta,\phi) = \frac{f(r,\theta,\phi)}{r}
+ * \end{equation}
+ *
+ * where $0 <= f(r,\theta,\phi) <= 1$. Different domains may require the shape
+ * map to fall off towards the boundary in different ways. This behavior is
+ * controlled by the transition function. It is also needed to find the inverse
+ * of the shape map. Since the shape map preserves angles, the problem of
+ * finding its inverse reduces to the 1-dimensional problem of finding the
+ * original radius from the mapped radius. The mapped radius $\tilde{r}$ is
+ * related to the original $r$ radius by:
+ * \begin{equation}
+ * \label{eq:shape_map_radius}
+ * \tilde{r} = r \left(1 - G(r,\theta,\phi)\sum_{lm}
+ *     \lambda_{lm}(t)Y_{lm}(\theta,\phi)\right),
+ * \end{equation}
+ * Depending on the format of the transition function, it should be possible to
  * analytically derive this map's inverse because it preserves angles and shifts
  * only the radius of each point. Otherwise the inverse has to be computed
  * numerically.
@@ -68,13 +73,20 @@ class ShapeMapTransitionFunction : public PUP::able {
 
   /// @{
   /*!
-   * Evaluate the transition function $f(r,\theta,\phi) \in [0, 1]$ at the
-   * Cartesian coordinates `source_coords`.
+   * Evaluate the transition function $G(r,\theta,\phi)$ at the
+   * Cartesian coordinates `source_coords` and possibly divide by the radius
+   * $r$.
+   *
+   * \details If \p one_over_radius_power has a value, then divide $G$ by $r$ to
+   * that power. This is done here because the transition function knows how to
+   * handle points in various regions of the map.
    */
   virtual double operator()(
-      const std::array<double, 3>& source_coords) const = 0;
+      const std::array<double, 3>& source_coords,
+      const std::optional<size_t>& one_over_radius_power) const = 0;
   virtual DataVector operator()(
-      const std::array<DataVector, 3>& source_coords) const = 0;
+      const std::array<DataVector, 3>& source_coords,
+      const std::optional<size_t>& one_over_radius_power) const = 0;
   /// @}
 
   /*!
@@ -88,8 +100,8 @@ class ShapeMapTransitionFunction : public PUP::able {
    * map.
    *
    * To derive the expression for this inverse, solve Eq.
-   * (\f$\ref{eq:shape_map_radius}\f$) for $r$ after substituting
-   * $f(r,\theta,\phi)$.
+   * ($\ref{eq:shape_map_radius}$) for $r$ after substituting
+   * $G(r,\theta,\phi)$.
    *
    * \param target_coords The mapped Cartesian coordinates $\tilde{x}^i$.
    * \param radial_distortion The spherical harmonic expansion
@@ -110,10 +122,10 @@ class ShapeMapTransitionFunction : public PUP::able {
       const std::array<double, 3>& source_coords) const = 0;
   virtual std::array<DataVector, 3> gradient(
       const std::array<DataVector, 3>& source_coords) const = 0;
+  /// @}
 
   virtual std::unique_ptr<ShapeMapTransitionFunction> get_clone() const = 0;
 
-  /// @}
   virtual bool operator==(const ShapeMapTransitionFunction& other) const = 0;
   virtual bool operator!=(const ShapeMapTransitionFunction& other) const = 0;
 
