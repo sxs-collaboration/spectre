@@ -793,9 +793,9 @@ void BinaryWithGravitationalWavesHistory::initialize() {
   reduced_mass_over_total_mass = reduced_mass / total_mass;
 
   initial_state_position = {{separation / total_mass, 0., 0.}};
-  initial_state_momentum = {{-momentum_right[0] / reduced_mass,
-                             -momentum_right[1] / reduced_mass,
-                             -momentum_right[2] / reduced_mass}};
+  initial_state_momentum = {{momentum_right[0] / reduced_mass,
+                             momentum_right[1] / reduced_mass,
+                             momentum_right[2] / reduced_mass}};
 
   // Reserve vector capacity
   for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
