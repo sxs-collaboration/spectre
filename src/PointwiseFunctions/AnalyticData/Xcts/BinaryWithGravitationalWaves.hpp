@@ -178,7 +178,7 @@ struct BinaryWithGravitationalWavesVariables
   std::array<std::function<double(double)>, 3> interpolation_momentum_right{};
 
   double time_displacement = 0.01;
-  DataType present_time = make_with_value<DataVector>(x, 1.);
+  DataType present_time = make_with_value<DataVector>(x, 0.);
 
   template <typename Tag,
             Requires<tmpl::list_contains_v<superposed_tags, Tag>> = nullptr>
@@ -349,54 +349,54 @@ struct BinaryWithGravitationalWavesHistory {
 
   void get_past_position_left(std::vector<double>* past_position_left,
                               size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_position_left->push_back(past_position_left_.at(i).at(j));
     }
   };
   void get_past_position_right(std::vector<double>* past_position_right,
                                size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_position_right->push_back(past_position_right_.at(i).at(j));
     }
   };
   void get_past_dt_position_left(std::vector<double>* past_dt_position_left,
                                  size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_dt_position_left->push_back(past_dt_position_left_.at(i).at(j));
     }
   };
   void get_past_dt_position_right(std::vector<double>* past_dt_position_right,
                                   size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_dt_position_right->push_back(past_dt_position_right_.at(i).at(j));
     }
   };
   void get_past_momentum_left(std::vector<double>* past_momentum_left,
                               size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_momentum_left->push_back(past_momentum_left_.at(i).at(j));
     }
   };
   void get_past_momentum_right(std::vector<double>* past_momentum_right,
                                size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_momentum_right->push_back(past_momentum_right_.at(i).at(j));
     }
   };
   void get_past_dt_momentum_left(std::vector<double>* past_dt_momentum_left,
                                  size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_dt_momentum_left->push_back(past_dt_momentum_left_.at(i).at(j));
     }
   };
   void get_past_dt_momentum_right(std::vector<double>* past_dt_momentum_right,
                                   size_t i) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_dt_momentum_right->push_back(past_dt_momentum_right_.at(i).at(j));
     }
   };
   void get_past_time(std::vector<double>* past_time) {
-    for (size_t j = 0; j <= number_of_steps; ++j) {
+    for (size_t j = 1; j <= number_of_steps; ++j) {
       past_time->push_back(past_time_[j]);
     }
   };
@@ -718,7 +718,7 @@ class BinaryWithGravitationalWaves
     const double time_step = .01;
     const double initial_time = 0.;
     const double final_time =
-        std::round(-2 * outer_radius_ / time_step) * time_step;
+        (std::round(-2 * outer_radius_ / time_step) - 1.) * time_step;
     const auto number_of_steps = static_cast<size_t>(
         std::round((initial_time - final_time) / time_step));
 
@@ -735,16 +735,16 @@ class BinaryWithGravitationalWaves
         number_of_steps};
     // Reserve vector capacity
     for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
-      past_position_left_.at(i).reserve(number_of_steps + 1);
-      past_position_right_.at(i).reserve(number_of_steps + 1);
-      past_momentum_left_.at(i).reserve(number_of_steps + 1);
-      past_momentum_right_.at(i).reserve(number_of_steps + 1);
-      past_dt_position_left_.at(i).reserve(number_of_steps + 1);
-      past_dt_position_right_.at(i).reserve(number_of_steps + 1);
-      past_dt_momentum_left_.at(i).reserve(number_of_steps + 1);
-      past_dt_momentum_right_.at(i).reserve(number_of_steps + 1);
+      past_position_left_.at(i).reserve(number_of_steps);
+      past_position_right_.at(i).reserve(number_of_steps);
+      past_momentum_left_.at(i).reserve(number_of_steps);
+      past_momentum_right_.at(i).reserve(number_of_steps);
+      past_dt_position_left_.at(i).reserve(number_of_steps);
+      past_dt_position_right_.at(i).reserve(number_of_steps);
+      past_dt_momentum_left_.at(i).reserve(number_of_steps);
+      past_dt_momentum_right_.at(i).reserve(number_of_steps);
     }
-    past_time_.reserve(number_of_steps + 1);
+    past_time_.reserve(number_of_steps);
 
     for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
       history.get_past_position_left((&(past_position_left_.at(i))), i);

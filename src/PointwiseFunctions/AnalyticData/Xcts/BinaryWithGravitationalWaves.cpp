@@ -799,16 +799,16 @@ void BinaryWithGravitationalWavesHistory::initialize() {
 
   // Reserve vector capacity
   for (size_t i = 0; i < 3; ++i) {  // loop over x,y,z components
-    past_position_left_.at(i).reserve(number_of_steps + 1);
-    past_position_right_.at(i).reserve(number_of_steps + 1);
-    past_momentum_left_.at(i).reserve(number_of_steps + 1);
-    past_momentum_right_.at(i).reserve(number_of_steps + 1);
-    past_dt_position_left_.at(i).reserve(number_of_steps + 1);
-    past_dt_position_right_.at(i).reserve(number_of_steps + 1);
-    past_dt_momentum_left_.at(i).reserve(number_of_steps + 1);
-    past_dt_momentum_right_.at(i).reserve(number_of_steps + 1);
+    past_position_left_.at(i).reserve(number_of_steps);
+    past_position_right_.at(i).reserve(number_of_steps);
+    past_momentum_left_.at(i).reserve(number_of_steps);
+    past_momentum_right_.at(i).reserve(number_of_steps);
+    past_dt_position_left_.at(i).reserve(number_of_steps);
+    past_dt_position_right_.at(i).reserve(number_of_steps);
+    past_dt_momentum_left_.at(i).reserve(number_of_steps);
+    past_dt_momentum_right_.at(i).reserve(number_of_steps);
   }
-  past_time_.reserve(number_of_steps + 1);
+  past_time_.reserve(number_of_steps);
 }
 
 void BinaryWithGravitationalWavesHistory::hamiltonian_system(
