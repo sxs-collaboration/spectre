@@ -26,7 +26,7 @@ spectre_unload_modules() {
     module unload openmpi/4.1.4
     module unload llvm/13.0.1
     module unload cmake/3.24.1
-    module unload python/3.9.5
+    module unload python/3.12.9
     module unload openblas-0.3.20-gcc-11.3.0-tc4qxfv
     module unload zlib-1.2.12-gcc-11.3.0-ge3ye5j
     module unload blaze-3.8-gcc-11.3.0-y7sgzzc
@@ -56,7 +56,7 @@ spectre_load_modules() {
     module load openmpi/4.1.4
     module load llvm/13.0.1
     module load cmake/3.24.1
-    module load python/3.9.5
+    module load python/3.12.9
     export MODULEPATH=$MODULEPATH:/opt/ohpc/pub/apps\
 /spack2022/share/spack/modules/linux-centos7-broadwell/
     module load openblas-0.3.20-gcc-11.3.0-tc4qxfv
