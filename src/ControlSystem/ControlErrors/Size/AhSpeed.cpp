@@ -124,6 +124,7 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
       info->discontinuous_change_has_occurred = true;
       info->state = std::make_unique<States::DeltaR>();
       info->suggested_time_scale = crossing_time_info.t_delta_radius;
+      info->target_char_speed = 0.0;
       ss << " Switching to DeltaR.\n";
       ss << " Suggested timescale = " << info->suggested_time_scale;
       // Here is where possible transition to State DeltaRDriftInward will go.
@@ -159,6 +160,8 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
       ss << " Min char speed " << update_args.min_char_speed
          << " >= target char speed " << info->target_char_speed << "\n";
     }
+    // Must happen after we print the value above
+    info->target_char_speed = 0.0;
     // Here is where possible transition to State DeltaRDriftInward
     // will go.
   } else {
