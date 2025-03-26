@@ -260,13 +260,38 @@ spacetime metric are stored separately in the lapse and shift. Each of the
 spatial metric, lapse, and shift must also have their cartesian derivatives. `K`
 is the extrinsic curvature, `AuxiliaryShift` is the auxiliary shift vector used
 in the first-order form of the Gamma-driver condition, and
-`ConformalChristoffel` is the trace of the conformal second_order symbols. We
-will compute the time derivative of the spatial metric using Eq. (2.134) of
-\cite BaumgarteShapiro, the time derivative of the lapse using the `1+log`
-slicing condition from Eq. (4.87) of \cite BaumgarteShapiro, and the time
-derivative of the shift using either the first order reduction form of the
-Gamma-driver condition from Eq. (4.89) of \cite BaumgarteShapiro or using the
-integrated Gamma-driver condition from Eq. (12) of \cite Hilditch:2012fp.
+`ConformalChristoffel` is the trace of the conformal second_order symbols.
+
+We will compute the time derivative of the spatial metric using Eq. (2.134) of
+\cite BaumgarteShapiro,
+
+\begin{equation}
+\partial_t \gamma_{ij} = -2\alpha K_{ij} + D_i\beta_j + D_j\beta_i.
+\end{equation}
+
+The time derivative of the lapse is computed using the `1+log` slicing condition
+from Eq. (4.87) of \cite BaumgarteShapiro
+
+\begin{equation}
+\partial_t \alpha = -2\alpha K + \beta^j\partial_j\alpha,
+\end{equation}
+
+and the time derivative of the shift is computed using either the first order
+reduction form of the Gamma-driver condition from Eq. (4.89) of
+\cite BaumgarteShapiro
+
+\begin{equation}
+\partial_t \beta^i = \eta B^i + \beta^j\partial_j\beta^i,
+\end{equation}
+
+where you can choose $\eta$ (typically $\eta=0.75$) or using the integrated
+Gamma-driver condition from Eq. (12) of \cite Hilditch:2012fp
+
+\begin{equation}
+\partial_t \beta^i = \tilde{\Gamma}^i - \eta\beta^i + \beta^j\partial_j\beta^i,
+\end{equation}
+
+again, where you can choose $\eta$ (typically $\eta=2/M_{\textrm{ADM}}$).
 
 \warning If your worldtube data is in the ADM metric nodal format but you have
 not used `1+log` slicing and the Gamma-driver conditions specified above, your
