@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
@@ -19,8 +20,8 @@ namespace Cce {
 
 /// \cond
 namespace Tags {
-  struct LMax;
-} // namespace Tags
+struct LMax;
+}  // namespace Tags
 template <typename Tag>
 struct VolumeWeyl;
 /// \endcond
@@ -68,6 +69,30 @@ struct VolumeWeyl<Tags::Psi0> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
 };
+
+namespace Tags {
+/*!
+ * \brief Compute tag for $\Psi_0$ in the volume.
+ *
+ * \details Uses `apply` function from `VolumeWeyl<Tags::Psi0>` for the
+ * computation.
+ */
+struct Psi0Compute : Tags::Psi0, db::ComputeTag {
+  using base = Tags::Psi0;
+  using return_type = typename base::type;
+  using argument_tags = typename VolumeWeyl<Tags::Psi0>::argument_tags;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
+      &VolumeWeyl<Tags::Psi0>::apply);
+};
+}  // namespace Tags
 
 /*!
  * \brief Transform `Tags::BondiJ` from the partially flat coordinates

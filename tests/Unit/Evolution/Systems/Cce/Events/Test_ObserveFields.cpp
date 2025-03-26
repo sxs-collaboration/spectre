@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Evolution/Systems/Cce/Events/ObserveFields.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -85,9 +86,10 @@ struct MockElement {
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<
-          tmpl::push_back<ObserveFields::available_tags_to_observe, Tags::LMax,
-                          Tags::NumberOfRadialPoints, ::Tags::Time>>>>>;
+      tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
+          tmpl::remove<ObserveFields::available_tags_to_observe, Tags::Psi0>,
+          Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
+          ::Tags::Time>>>>>;
 };
 
 struct Metavars {
@@ -103,7 +105,7 @@ void test() {
   using element = MockElement<metavars>;
 
   Cce::Events::ObserveFields fields{std::vector<std::string>{
-      "InertialRetardedTime", "J", "Dy(H)", "OneMinusY"}};
+      "InertialRetardedTime", "J", "Psi0", "Dy(H)", "OneMinusY"}};
   Cce::Events::ObserveFields serialized_fields =
       serialize_and_deserialize(fields);
 
@@ -117,6 +119,9 @@ void test() {
 
   auto& cache = ActionTesting::cache<obs_writer>(runner, 0);
   auto& box = ActionTesting::get_databox<element>(make_not_null(&runner), 0);
+  auto obs_box = make_observation_box<
+      typename Cce::Events::ObserveFields::compute_tags_for_observation_box>(
+      make_not_null(&box));
   const int array_index = 0;
   const obs_writer* const component = nullptr;
   const Event::ObservationValue observation_value{};
@@ -136,7 +141,7 @@ void test() {
     db::mutate<tag>(
         [&size](const auto tensor) {
           // All are scalars
-          get(*tensor) = ComplexDataVector{size, 0.0};
+          get(*tensor) = ComplexDataVector{size, 1.0};
         },
         make_not_null(&box));
   };
@@ -144,14 +149,19 @@ void test() {
   set_number(Tags::NumberOfRadialPoints{}, num_radial_grid_points);
   set_number(::Tags::Time{}, time);
   size_data(Tags::ComplexInertialRetardedTime{}, num_angular_grid_points);
-  size_data(Tags::BondiJ{}, num_volume_grid_points);
-  size_data(Tags::Dy<Tags::BondiH>{}, num_volume_grid_points);
-  size_data(Tags::OneMinusY{}, num_volume_grid_points);
 
-  serialized_fields(box, cache, array_index, component, observation_value);
+  tmpl::for_each<
+      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiH>, Tags::OneMinusY,
+                 Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
+                 Tags::BondiK, Tags::BondiR>>([&size_data](auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    size_data(tag{}, num_volume_grid_points);
+  });
+
+  serialized_fields(obs_box, cache, array_index, component, observation_value);
 
   // 1 for InertialRetardedTime and OneMinusY and 2 for each other tag
-  const size_t expected_number_of_actions = 6;
+  const size_t expected_number_of_actions = 8;
   CHECK(ActionTesting::number_of_queued_threaded_actions<obs_writer>(
             runner, 0) == expected_number_of_actions);
   for (size_t i = 0; i < expected_number_of_actions; i++) {
