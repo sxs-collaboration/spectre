@@ -25,9 +25,11 @@
 namespace domain::Initialization {
 template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
-    const ElementId<VolumeDim>& element_id, const Block<VolumeDim>& block,
+    const ElementId<VolumeDim>& element_id,
+    const std::vector<Block<VolumeDim>>& blocks,
     const std::vector<std::array<size_t, VolumeDim>>&
         initial_refinement_levels) {
+  const auto& block = blocks[element_id.block_id()];
   const auto& neighbors_of_block = block.neighbors();
   const auto segment_ids = element_id.segment_ids();
 
@@ -187,10 +189,10 @@ Element<VolumeDim> create_initial_element(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                 \
-  template Element<DIM(data)>                                \
-  domain::Initialization::create_initial_element<DIM(data)>( \
-      const ElementId<DIM(data)>&, const Block<DIM(data)>&,  \
+#define INSTANTIATE(_, data)                                             \
+  template Element<DIM(data)>                                            \
+  domain::Initialization::create_initial_element<DIM(data)>(             \
+      const ElementId<DIM(data)>&, const std::vector<Block<DIM(data)>>&, \
       const std::vector<std::array<size_t, DIM(data)>>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

@@ -63,9 +63,8 @@ struct Domain {
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
       const Spectral::Quadrature& quadrature,
       const ElementId<Dim>& element_id) {
-    const auto& my_block = domain.blocks()[element_id.block_id()];
     *element = ::domain::Initialization::create_initial_element(
-        element_id, my_block, initial_refinement);
+        element_id, domain.blocks(), initial_refinement);
     *mesh = ::domain::Initialization::create_initial_mesh(initial_extents,
                                                           *element, quadrature);
   }

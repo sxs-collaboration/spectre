@@ -95,7 +95,7 @@ void test(const BoundaryConditionType& boundary_condition) {
   auto domain = interval.create_domain();
   auto boundary_conditions = interval.external_boundary_conditions();
   const auto element = domain::Initialization::create_initial_element(
-      ElementId<1>{0, {SegmentId{0, 0}}}, domain.blocks().at(0),
+      ElementId<1>{0, {SegmentId{0, 0}}}, domain.blocks(),
       std::vector<std::array<size_t, 1>>{{refinement_level_x}});
 
   // Mesh and coordinates

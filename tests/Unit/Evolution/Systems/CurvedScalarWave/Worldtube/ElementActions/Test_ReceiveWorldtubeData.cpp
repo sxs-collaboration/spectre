@@ -169,9 +169,8 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
         make_not_null(&element_faces_grid_coords), initial_extents,
         initial_refinements, quadrature, shell_domain, excision_sphere);
     for (const auto& element_id : element_ids) {
-      const auto& my_block = blocks.at(element_id.block_id());
       auto element = domain::Initialization::create_initial_element(
-          element_id, my_block, initial_refinements);
+          element_id, blocks, initial_refinements);
       auto mesh = domain::Initialization::create_initial_mesh(
           initial_extents, element, quadrature);
       const size_t grid_size = mesh.number_of_grid_points();

@@ -34,11 +34,11 @@
 
 namespace {
 void test_create_initial_element(
-    const ElementId<2>& element_id, const Block<2>& block,
+    const ElementId<2>& element_id, const std::vector<Block<2>>& blocks,
     const std::vector<std::array<size_t, 2>>& refinement_levels,
     const DirectionMap<2, Neighbors<2>>& expected_neighbors) {
   const auto created_element = domain::Initialization::create_initial_element(
-      element_id, block, refinement_levels);
+      element_id, blocks, refinement_levels);
   const Element<2> expected_element{element_id, expected_neighbors};
   CHECK(created_element == expected_element);
 }
@@ -52,16 +52,17 @@ void test_h_refinement() {
                const std::unordered_set<ElementId<3>>& expected_neighbors) {
       CAPTURE(neighbor_orientation);
       CAPTURE(neighbor_refinement);
-      const Block<3> self_block(
-          domain::make_coordinate_map_base<Frame::BlockLogical,
-                                           Frame::Inertial>(
-              domain::CoordinateMaps::Identity<3>{}),
-          0, {{neighbor_direction, {1, neighbor_orientation}}});
+      std::vector<Block<3>> blocks;
+      blocks.emplace_back(
+          Block<3>(domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                    Frame::Inertial>(
+                       domain::CoordinateMaps::Identity<3>{}),
+                   0, {{neighbor_direction, {1, neighbor_orientation}}}));
       const std::vector<std::array<size_t, 3>> refinement_levels{
           {{1, 1, 1}}, neighbor_refinement};
 
       const auto refined_neighbors =
-          domain::Initialization::create_initial_element(self_id, self_block,
+          domain::Initialization::create_initial_element(self_id, blocks,
                                                          refinement_levels)
               .neighbors()
               .at(neighbor_direction)
@@ -398,18 +399,18 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
       make_array(Direction<2>::upper_xi(), Direction<2>::upper_eta()));
   OrientationMap<2> unaligned(
       make_array(Direction<2>::lower_eta(), Direction<2>::upper_xi()));
-  Block<2> test_block(
+  std::vector<Block<2>> blocks;
+  blocks.emplace_back(Block<2>(
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           domain::CoordinateMaps::Identity<2>{}),
       0,
       {{Direction<2>::upper_xi(), BlockNeighbors<2>{1, aligned}},
-       {Direction<2>::upper_eta(), BlockNeighbors<2>{2, unaligned}}});
+       {Direction<2>::upper_eta(), BlockNeighbors<2>{2, unaligned}}}));
   std::vector<std::array<size_t, 2>> refinement{{{2, 3}}, {{2, 3}}, {{3, 2}}};
 
   // interior element
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 4}}}}, test_block,
-      refinement,
+      ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 4}}}}, blocks, refinement,
       {{Direction<2>::upper_xi(),
         Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 4}}}}},
                      aligned}},
@@ -425,8 +426,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
 
   // element on external boundary
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 0}}}}, test_block,
-      refinement,
+      ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 0}}}}, blocks, refinement,
       {{Direction<2>::upper_xi(),
         Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 0}}}}},
                      aligned}},
@@ -436,8 +436,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
 
   // element bounding aligned neighbor block
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 4}}}}, test_block,
-      refinement,
+      ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 4}}}}, blocks, refinement,
       {{Direction<2>::upper_xi(),
         Neighbors<2>{{ElementId<2>{1, {{SegmentId{2, 0}, SegmentId{3, 4}}}}},
                      aligned}},
@@ -453,8 +452,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
 
   // element bounding unaligned neighbor block
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 7}}}}, test_block,
-      refinement,
+      ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 7}}}}, blocks, refinement,
       {{Direction<2>::upper_xi(),
         Neighbors<2>{{ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 7}}}}},
                      aligned}},
@@ -470,8 +468,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
 
   // element bounding both neighbor blocks
   test_create_initial_element(
-      ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 7}}}}, test_block,
-      refinement,
+      ElementId<2>{0, {{SegmentId{2, 3}, SegmentId{3, 7}}}}, blocks, refinement,
       {{Direction<2>::upper_xi(),
         Neighbors<2>{{ElementId<2>{1, {{SegmentId{2, 0}, SegmentId{3, 7}}}}},
                      aligned}},
@@ -490,7 +487,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
     const size_t grid_index = 3;
     test_create_initial_element(
         ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{3, 4}}}, grid_index},
-        test_block, refinement,
+        blocks, refinement,
         {{Direction<2>::upper_xi(),
           Neighbors<2>{
               {ElementId<2>{
