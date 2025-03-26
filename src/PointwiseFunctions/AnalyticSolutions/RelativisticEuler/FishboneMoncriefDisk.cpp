@@ -43,7 +43,10 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
       noise_(noise),
       equation_of_state_{polytropic_constant_, polytropic_exponent_},
       background_spacetime_{
-          bh_mass_, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}} {
+          bh_mass_, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}},
+      background_pressure_(background_density_ * background_temperature_),
+      background_specific_internal_energy_(background_temperature_ /
+                                           (polytropic_exponent_ - 1.)) {
   const double sqrt_m = sqrt(bh_mass_);
   const double a_sqrt_m = bh_spin_a_ * sqrt_m;
   const double& rmax = max_pressure_radius_;
@@ -82,6 +85,10 @@ void FishboneMoncriefDisk::pup(PUP::er& p) {
   p | noise_;
   p | equation_of_state_;
   p | background_spacetime_;
+  p | background_density_;
+  p | background_temperature_;
+  p | background_pressure_;
+  p | background_specific_internal_energy_;
 }
 // Sigma in Fishbone&Moncrief eqn (3.5)
 template <typename DataType>
@@ -148,13 +155,16 @@ FishboneMoncriefDisk::variables(
   const auto specific_enthalpy =
       get<hydro::Tags::SpecificEnthalpy<DataType>>(variables(
           x, tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>>{}, vars));
-  auto rest_mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
+  auto rest_mass_density =
+      make_with_value<Scalar<DataType>>(x, background_density_);
   variables_impl(vars, [&rest_mass_density, &specific_enthalpy, this](
                            const size_t s, const double /*potential_at_s*/) {
+    using std::max;
     get_element(get(rest_mass_density), s) =
-        (1 / rho_max_) *
-        get(equation_of_state_.rest_mass_density_from_enthalpy(
-            Scalar<double>{get_element(get(specific_enthalpy), s)}));
+        max((1 / rho_max_) *
+                get(equation_of_state_.rest_mass_density_from_enthalpy(
+                    Scalar<double>{get_element(get(specific_enthalpy), s)})),
+            background_density_);
   });
   return {std::move(rest_mass_density)};
 }
@@ -201,13 +211,15 @@ FishboneMoncriefDisk::variables(
   std::uniform_real_distribution<> dis(-noise_, noise_);
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars));
-  auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
+  auto pressure = make_with_value<Scalar<DataType>>(x, background_pressure_);
   variables_impl(vars, [&pressure, &rest_mass_density, &gen, &dis, this](
                            const size_t s, const double /*potential_at_s*/) {
+    using std::max;
     get_element(get(pressure), s) =
-        (1 / rho_max_) * (1 + dis(gen)) *
-        get(equation_of_state_.pressure_from_density(
-            Scalar<double>{rho_max_ * get_element(get(rest_mass_density), s)}));
+        max((1 / rho_max_) * (1 + dis(gen)) *
+                get(equation_of_state_.pressure_from_density(Scalar<double>{
+                    rho_max_ * get_element(get(rest_mass_density), s)})),
+            background_pressure_);
   });
   return {std::move(pressure)};
 }
@@ -220,12 +232,15 @@ FishboneMoncriefDisk::variables(
     gsl::not_null<IntermediateVariables<DataType>*> vars) const {
   const auto rest_mass_density = get<hydro::Tags::RestMassDensity<DataType>>(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars));
-  auto specific_internal_energy = make_with_value<Scalar<DataType>>(x, 0.0);
+  auto specific_internal_energy = make_with_value<Scalar<DataType>>(
+      x, background_specific_internal_energy_);
   variables_impl(vars, [&specific_internal_energy, &rest_mass_density, this](
                            const size_t s, const double /*potential_at_s*/) {
-    get_element(get(specific_internal_energy), s) =
+    using std::max;
+    get_element(get(specific_internal_energy), s) = max(
         get(equation_of_state_.specific_internal_energy_from_density(
-            Scalar<double>{rho_max_ * get_element(get(rest_mass_density), s)}));
+            Scalar<double>{rho_max_ * get_element(get(rest_mass_density), s)})),
+        background_specific_internal_energy_);
   });
   return {std::move(specific_internal_energy)};
 }
@@ -240,12 +255,15 @@ FishboneMoncriefDisk::variables(
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
           x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{},
           vars));
-  auto temperature = make_with_value<Scalar<DataType>>(x, 0.0);
+  auto temperature =
+      make_with_value<Scalar<DataType>>(x, background_temperature_);
   variables_impl(vars, [&temperature, &specific_internal_energy, this](
                            const size_t s, const double /*potential_at_s*/) {
+    using std::max;
     get_element(get(temperature), s) =
-        (polytropic_exponent_ - 1.0) *
-        get_element(get(specific_internal_energy), s);
+        max((polytropic_exponent_ - 1.0) *
+                get_element(get(specific_internal_energy), s),
+            background_temperature_);
   });
   return {std::move(temperature)};
 }
