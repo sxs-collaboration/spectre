@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <iosfwd>
 #include <unordered_set>
@@ -14,6 +15,8 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/Topology.hpp"
+#include "Utilities/MakeArray.hpp"
 
 /// \cond
 namespace PUP {
@@ -35,7 +38,11 @@ class Element {
   /// \param id a unique identifier for the Element.
   /// \param neighbors info about the Elements that share an interface
   /// with this Element.
-  Element(ElementId<VolumeDim> id, Neighbors_t neighbors);
+  /// \param topologies domain::Topology in each dimension (default value is
+  /// domain::Topology::I1)
+  Element(ElementId<VolumeDim> id, Neighbors_t neighbors,
+          std::array<domain::Topology, VolumeDim> topologies =
+              make_array<VolumeDim>(domain::Topology::I1));
 
   /// Default needed for serialization
   Element() = default;
@@ -65,6 +72,11 @@ class Element {
   /// The number of neighbors this element has
   size_t number_of_neighbors() const { return number_of_neighbors_; }
 
+  /// The topology in each dimensio of this Element
+  const std::array<domain::Topology, VolumeDim>& topologies() const {
+    return topologies_;
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
@@ -74,6 +86,7 @@ class Element {
   size_t number_of_neighbors_{};
   std::unordered_set<Direction<VolumeDim>> external_boundaries_{};
   std::unordered_set<Direction<VolumeDim>> internal_boundaries_{};
+  std::array<domain::Topology, VolumeDim> topologies_;
 };
 
 template <size_t VolumeDim>
