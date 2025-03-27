@@ -37,17 +37,6 @@ LinearLeastSquares<Order>::~LinearLeastSquares() {
 }
 
 template <size_t Order>
-double LinearLeastSquares<Order>::interpolate(
-    const std::array<double, Order + 1> coefficients,
-    const double x_to_interp_to) {
-  double result = 0;
-  for (size_t i = 0; i < Order + 1; i++) {
-    result += gsl::at(coefficients, i) * pow(x_to_interp_to, i);
-  }
-  return result;
-}
-
-template <size_t Order>
 template <typename T>
 std::array<double, Order + 1> LinearLeastSquares<Order>::fit_coefficients(
     const T& x_values, const T& y_values) {

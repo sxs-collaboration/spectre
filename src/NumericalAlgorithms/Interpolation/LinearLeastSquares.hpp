@@ -22,10 +22,9 @@ namespace intrp {
  * A wrapper class for the gsl linear least squares solver which determines
  * the coefficients of best fit for a polynomial of order `Order` given a set
  * of data points `x_values` and `y_values` representing some function y(x).
- * Note that the `interpolate` function requires a set of fit coefficients,
- * which can be obtained by first calling the `fit_coefficients` function.
- * The parameter `num_observations` refers to the number of entries in
- * `x_values`.
+ * The coefficients can be obtained from the `fit_coefficients` function, and
+ * passed to \ref evaluate_polynomial for interpolation. The parameter
+ * `num_observations` refers to the number of entries in `x_values`.
  *
  * The details of the linear least squares solver can be seen here:
  * [GSL documentation](https://www.gnu.org/software/gsl/doc/html/lls.html#).
@@ -48,8 +47,6 @@ class LinearLeastSquares {
   LinearLeastSquares& operator=(LinearLeastSquares&& rhs) = default;
   ~LinearLeastSquares();
 
-  double interpolate(const std::array<double, Order + 1> coefficients,
-                     const double x_to_interp_to);
   template <typename T>
   std::array<double, Order + 1> fit_coefficients(const T& x_values,
                                                  const T& y_values);
