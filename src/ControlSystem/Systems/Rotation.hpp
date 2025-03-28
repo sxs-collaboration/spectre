@@ -33,6 +33,8 @@
 
 /// \cond
 namespace Frame {
+struct Grid;
+struct Inertial;
 struct Distorted;
 }  // namespace Frame
 /// \endcond
@@ -94,8 +96,18 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {
     using type = LinkedMessageQueue<
-        double, tmpl::list<QueueTags::Center<::domain::ObjectLabel::A>,
-                           QueueTags::Center<::domain::ObjectLabel::B>>>;
+        double,
+        tmpl::append<
+            tmpl::list<
+                QueueTags::Center<::domain::ObjectLabel::A, Frame::Grid>,
+                QueueTags::Center<::domain::ObjectLabel::B, Frame::Grid>>,
+            tmpl::conditional_t<
+                std::is_same_v<measurement, measurements::BothNSCenters>,
+                tmpl::list<QueueTags::Center<::domain::ObjectLabel::A,
+                                             Frame::Inertial>,
+                           QueueTags::Center<::domain::ObjectLabel::B,
+                                             Frame::Inertial>>,
+                tmpl::list<>>>>;
   };
 
   using simple_tags = tmpl::list<MeasurementQueue>;
@@ -105,9 +117,14 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
     using argument_tags = tmpl::conditional_t<
         std::is_same_v<Submeasurement,
                        measurements::BothNSCenters::FindTwoCenters>,
-        tmpl::list<
-            measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::A>,
-            measurements::Tags::NeutronStarCenter<::domain::ObjectLabel::B>>,
+        tmpl::list<measurements::Tags::NeutronStarCenter<
+                       ::domain::ObjectLabel::A, Frame::Grid>,
+                   measurements::Tags::NeutronStarCenter<
+                       ::domain::ObjectLabel::B, Frame::Grid>,
+                   measurements::Tags::NeutronStarCenter<
+                       ::domain::ObjectLabel::A, Frame::Inertial>,
+                   measurements::Tags::NeutronStarCenter<
+                       ::domain::ObjectLabel::B, Frame::Inertial>>,
         tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>>>;
 
     template <::domain::ObjectLabel Horizon, typename Metavariables>
@@ -137,8 +154,10 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
     template <typename Metavariables>
     static void apply(
         measurements::BothNSCenters::FindTwoCenters submeasurement,
-        const std::array<double, 3> center_a,
-        const std::array<double, 3> center_b,
+        const std::array<double, 3> grid_center_a,
+        const std::array<double, 3> grid_center_b,
+        const std::array<double, 3> inertial_center_a,
+        const std::array<double, 3> inertial_center_b,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
@@ -147,10 +166,13 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
 
       Parallel::simple_action<::Actions::UpdateMessageQueue<
           MeasurementQueue, UpdateControlSystem<Rotation>,
-          QueueTags::Center<::domain::ObjectLabel::A>,
-          QueueTags::Center<::domain::ObjectLabel::B>>>(
-          control_sys_proxy, measurement_id, DataVector(center_a),
-          DataVector(center_b));
+          QueueTags::Center<::domain::ObjectLabel::A, Frame::Grid>,
+          QueueTags::Center<::domain::ObjectLabel::B, Frame::Grid>,
+          QueueTags::Center<::domain::ObjectLabel::A, Frame::Inertial>,
+          QueueTags::Center<::domain::ObjectLabel::B, Frame::Inertial>>>(
+          control_sys_proxy, measurement_id, DataVector(grid_center_a),
+          DataVector(grid_center_b), DataVector(inertial_center_a),
+          DataVector(inertial_center_b));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",

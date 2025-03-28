@@ -118,9 +118,11 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
           functions_of_time.at("Expansion")->func(time)[0][0];
 
       using center_A =
-          control_system::QueueTags::Center<::domain::ObjectLabel::A>;
+          control_system::QueueTags::Center<::domain::ObjectLabel::A,
+                                            Frame::Grid>;
       using center_B =
-          control_system::QueueTags::Center<::domain::ObjectLabel::B>;
+          control_system::QueueTags::Center<::domain::ObjectLabel::B,
+                                            Frame::Grid>;
 
       const tnsr::I<double, 3, Frame::Grid>& grid_position_of_A_tnsr =
           Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::A>>(

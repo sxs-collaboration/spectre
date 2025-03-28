@@ -109,6 +109,11 @@ struct UpdateControlSystem {
 
     // Begin step 1
     // If this control system isn't active, don't do anything
+    ASSERT(Parallel::get<control_system::Tags::IsActiveMap>(cache).contains(
+               function_of_time_name),
+           "Couldn't find function of time '"
+               << function_of_time_name
+               << "' in the control_system::Tags::IsActiveMap tag");
     if (not Parallel::get<control_system::Tags::IsActiveMap>(cache).at(
             function_of_time_name)) {
       return;

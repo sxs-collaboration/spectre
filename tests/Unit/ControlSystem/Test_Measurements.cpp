@@ -195,19 +195,26 @@ struct MockControlSystem
     template <typename Submeasurement>
     using argument_tags =
         tmpl::list<control_system::measurements::Tags::NeutronStarCenter<
-                       ::domain::ObjectLabel::A>,
+                       ::domain::ObjectLabel::A, Frame::Grid>,
                    control_system::measurements::Tags::NeutronStarCenter<
-                       ::domain::ObjectLabel::B>>;
+                       ::domain::ObjectLabel::B, Frame::Grid>,
+                   control_system::measurements::Tags::NeutronStarCenter<
+                       ::domain::ObjectLabel::A, Frame::Inertial>,
+                   control_system::measurements::Tags::NeutronStarCenter<
+                       ::domain::ObjectLabel::B, Frame::Inertial>>;
     using submeasurement =
         control_system::measurements::BothNSCenters::FindTwoCenters;
 
     template <typename Metavariables>
     static void apply(submeasurement /*meta*/,
-                      const std::array<double, 3> center_a,
-                      const std::array<double, 3> center_b,
+                      const std::array<double, 3> grid_center_a,
+                      const std::array<double, 3> grid_center_b,
+                      const std::array<double, 3> inertial_center_a,
+                      const std::array<double, 3> inertial_center_b,
                       Parallel::GlobalCache<Metavariables>& /*cache*/,
                       const LinkedMessageId<double>& /*measurement_id*/) {
-      check_centers(center_a, center_b);
+      check_centers(grid_center_a, grid_center_b, true);
+      check_centers(inertial_center_a, inertial_center_b, false);
       // Avoid unused variable warning for deriv_order, which is required
       // as part of the control_system protocol.
       CHECK(2 == deriv_order);

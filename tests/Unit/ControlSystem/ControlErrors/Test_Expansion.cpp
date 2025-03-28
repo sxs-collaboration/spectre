@@ -96,8 +96,8 @@ void test_expansion_control_error() {
       Parallel::get<domain::Tags::FunctionsOfTime>(cache);
 
   using QueueTuple = tuples::TaggedTuple<
-      control_system::QueueTags::Center<::domain::ObjectLabel::A>,
-      control_system::QueueTags::Center<::domain::ObjectLabel::B>>;
+      control_system::QueueTags::Center<::domain::ObjectLabel::A, Frame::Grid>,
+      control_system::QueueTags::Center<::domain::ObjectLabel::B, Frame::Grid>>;
 
   // Create fake measurements. For expansion we only care about the x component
   // because that's all that is used. A is on the positive x-axis, B is on the

@@ -78,10 +78,10 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
                         const double /*time*/,
                         const std::string& /*function_of_time_name*/,
                         const tuples::TaggedTuple<TupleTags...>& measurements) {
-    using center_A =
-        control_system::QueueTags::Center<::domain::ObjectLabel::A>;
-    using center_B =
-        control_system::QueueTags::Center<::domain::ObjectLabel::B>;
+    using center_A = control_system::QueueTags::Center<::domain::ObjectLabel::A,
+                                                       Frame::Grid>;
+    using center_B = control_system::QueueTags::Center<::domain::ObjectLabel::B,
+                                                       Frame::Grid>;
 
     const tnsr::I<double, 3, Frame::Grid>& grid_position_of_A =
         Parallel::get<domain::Tags::ObjectCenter<domain::ObjectLabel::A>>(

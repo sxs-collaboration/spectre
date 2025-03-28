@@ -29,7 +29,7 @@ enum class ObjectLabel;
 namespace control_system::QueueTags {
 /// \ingroup ControlSystemGroup
 /// Holds the centers of each horizon from measurements as DataVectors
-template <::domain::ObjectLabel Horizon>
+template <::domain::ObjectLabel Horizon, typename = Frame::Grid>
 struct Center {
   using type = DataVector;
 };
