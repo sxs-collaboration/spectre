@@ -108,14 +108,14 @@ std::unique_ptr<BaseClass> create(const Option& options) {
   } else if (node.IsMap()) {
     if (node.size() != 1) {
       PARSE_ERROR(derived_opts.context(),
-                  "Expected a single class to create, got "
-                  << node.size() << ":\n" << node);
+                  "Expected a class name (and possibly options), got multiple "
+                  "key-value pairs:\n" << node);
     }
     id = node.begin()->first.as<std::string>();
     derived_opts.set_node(node.begin()->second);
   } else if (node.IsNull()) {
     PARSE_ERROR(derived_opts.context(),
-                "Expected a class to create:\n"
+                "Expected a class name (and possibly options):\n"
                 << help_derived<creatable_classes>());
   } else {
     PARSE_ERROR(derived_opts.context(),
