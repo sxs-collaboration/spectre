@@ -26,6 +26,8 @@ using common_tags = tmpl::list<
     gr::Tags::TraceExtrinsicCurvature<DataType>,
     ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>>,
     Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+    ::Tags::deriv<Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>,
     Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataType, 3,
                                                             Frame::Inertial>,
     // Analytic derivatives
@@ -110,10 +112,15 @@ struct CommonVariables {
       gsl::not_null<Cache*> cache,
       Tags::ShiftBackground<DataType, Dim, Frame::Inertial> /*meta*/) const = 0;
   virtual void operator()(
+      gsl::not_null<tnsr::iJ<DataType, Dim>*> deriv_shift_background,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const = 0;
+  virtual void operator()(
       gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_background,
       gsl::not_null<Cache*> cache,
       Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-          DataType, Dim, Frame::Inertial> /*meta*/) const = 0;
+          DataType, Dim, Frame::Inertial> /*meta*/) const;
   virtual void operator()(
       gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_conformal_metric,
       gsl::not_null<Cache*> cache,

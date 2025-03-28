@@ -56,8 +56,16 @@ using SpacetimeQuantities = CachedTempBuffer<
     detail::LongitudinalShiftMinusDtConformalMetric<DataVector>,
     // ADM quantities
     gr::Tags::SpatialMetric<DataVector, 3>,
-    gr::Tags::InverseSpatialMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
-    gr::Tags::Shift<DataVector, 3>, gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+    gr::Tags::InverseSpatialMetric<DataVector, 3>,
+    ::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                  tmpl::size_t<3>, Frame::Inertial>,
+    gr::Tags::Lapse<DataVector>,
+    ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                  Frame::Inertial>,
+    gr::Tags::Shift<DataVector, 3>,
+    ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                  Frame::Inertial>,
+    gr::Tags::ExtrinsicCurvature<DataVector, 3>,
     gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
     gr::Tags::SpatialRicci<DataVector, 3>,
     // Constraints
@@ -82,6 +90,11 @@ struct SpacetimeQuantitiesComputer {
   void operator()(gsl::not_null<tnsr::II<DataVector, 3>*> inv_spatial_metric,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::InverseSpatialMetric<DataVector, 3> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::iJJ<DataVector, 3>*> deriv_inv_spatial_metric,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::i<DataVector, 3>*> deriv_conformal_factor,
       gsl::not_null<Cache*> cache,
@@ -113,6 +126,10 @@ struct SpacetimeQuantitiesComputer {
   void operator()(gsl::not_null<Scalar<DataVector>*> lapse,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Lapse<DataVector> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::i<DataVector, 3>*> deriv_lapse,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                                Frame::Inertial> /*meta*/) const;
   void operator()(gsl::not_null<tnsr::I<DataVector, 3>*> shift,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Shift<DataVector, 3> /*meta*/) const;
@@ -121,6 +138,10 @@ struct SpacetimeQuantitiesComputer {
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
                     tmpl::size_t<3>, Frame::Inertial> /*meta*/) const;
+  void operator()(gsl::not_null<tnsr::iJ<DataVector, 3>*> deriv_shift,
+                  gsl::not_null<Cache*> cache,
+                  ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                                Frame::Inertial> /*meta*/) const;
   void operator()(
       gsl::not_null<tnsr::ii<DataVector, 3>*> shift_strain,
       gsl::not_null<Cache*> cache,
@@ -151,6 +172,7 @@ struct SpacetimeQuantitiesComputer {
                   gsl::not_null<Cache*> cache,
                   gr::Tags::MomentumConstraint<DataVector, 3> /*meta*/) const;
 
+  // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
   // XCTS variables
   const Scalar<DataVector>& conformal_factor_minus_one;
   const Scalar<DataVector>& lapse_times_conformal_factor_minus_one;
@@ -167,6 +189,7 @@ struct SpacetimeQuantitiesComputer {
   const Scalar<DataVector>& trace_extrinsic_curvature;
   const tnsr::i<DataVector, 3>& deriv_trace_extrinsic_curvature;
   const tnsr::I<DataVector, 3>& shift_background;
+  const tnsr::iJ<DataVector, 3>& deriv_shift_background;
   const tnsr::II<DataVector, 3>&
       longitudinal_shift_background_minus_dt_conformal_metric;
   const tnsr::I<DataVector, 3>&
@@ -177,6 +200,7 @@ struct SpacetimeQuantitiesComputer {
   const Mesh<3>& mesh;
   const InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>&
       inv_jacobian;
+  // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 };
 
 namespace Tags {
@@ -202,6 +226,8 @@ struct SpacetimeQuantitiesCompute : ::Tags::Variables<Tags>, db::ComputeTag {
       ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>,
       ShiftBackground<DataVector, 3, Frame::Inertial>,
+      ::Tags::deriv<ShiftBackground<DataVector, 3, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial>,
       LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
                                                         Frame::Inertial>,
       ::Tags::div<LongitudinalShiftBackgroundMinusDtConformalMetric<

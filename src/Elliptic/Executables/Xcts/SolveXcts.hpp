@@ -68,19 +68,26 @@ struct Metavariables {
       "Find the solution to an XCTS problem."};
 
   using analytic_solution_fields = tmpl::append<typename system::primal_fields>;
-  using spacetime_quantities_compute = Xcts::Tags::SpacetimeQuantitiesCompute<
-      tmpl::list<Xcts::Tags::ConformalFactor<DataVector>,
-                 Xcts::Tags::LapseTimesConformalFactor<DataVector>,
-                 ::Tags::deriv<Xcts::Tags::ConformalFactor<DataVector>,
-                               tmpl::size_t<3>, Frame::Inertial>,
-                 gr::Tags::HamiltonianConstraint<DataVector>,
-                 gr::Tags::MomentumConstraint<DataVector, 3>,
-                 gr::Tags::SpatialMetric<DataVector, 3>,
-                 gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                 gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
-                 gr::Tags::SpatialRicci<DataVector, 3>,
-                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-                 gr::Tags::ExtrinsicCurvature<DataVector, 3>>>;
+  using spacetime_quantities_compute =
+      Xcts::Tags::SpacetimeQuantitiesCompute<tmpl::list<
+          Xcts::Tags::ConformalFactor<DataVector>,
+          Xcts::Tags::LapseTimesConformalFactor<DataVector>,
+          ::Tags::deriv<Xcts::Tags::ConformalFactor<DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          gr::Tags::HamiltonianConstraint<DataVector>,
+          gr::Tags::MomentumConstraint<DataVector, 3>,
+          gr::Tags::SpatialMetric<DataVector, 3>,
+          gr::Tags::InverseSpatialMetric<DataVector, 3>,
+          ::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>,
+          gr::Tags::SpatialRicci<DataVector, 3>, gr::Tags::Lapse<DataVector>,
+          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                        Frame::Inertial>,
+          gr::Tags::Shift<DataVector, 3>,
+          ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>,
+          gr::Tags::ExtrinsicCurvature<DataVector, 3>>>;
   using hydro_quantities_compute = Xcts::Tags::HydroQuantitiesCompute<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,

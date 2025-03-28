@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -60,6 +61,32 @@ void SpacetimeQuantitiesComputer::operator()(
   *inv_spatial_metric = inv_conformal_metric;
   for (auto& inv_spatial_metric_component : *inv_spatial_metric) {
     inv_spatial_metric_component /= pow<4>(get(conformal_factor));
+  }
+}
+
+void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::iJJ<DataVector, 3>*> deriv_inv_spatial_metric,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                  tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
+  const auto& deriv_conformal_factor =
+      cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  gr::deriv_inverse_spatial_metric(
+      deriv_inv_spatial_metric, inv_conformal_metric, deriv_conformal_metric);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = j; k < 3; ++k) {
+        auto& deriv_inv_spatial_metric_component =
+            deriv_inv_spatial_metric->get(i, j, k);
+        deriv_inv_spatial_metric_component /= pow<4>(get(conformal_factor));
+        deriv_inv_spatial_metric_component +=
+            -4. * deriv_conformal_factor.get(i) /
+            pow<5>(get(conformal_factor)) * inv_conformal_metric.get(j, k);
+      }
+    }
   }
 }
 
@@ -206,6 +233,26 @@ void SpacetimeQuantitiesComputer::operator()(
 }
 
 void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::i<DataVector, 3>*> deriv_lapse,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const {
+  const auto& lapse = cache->get_var(*this, gr::Tags::Lapse<DataVector>{});
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataVector>{});
+  const auto& deriv_conformal_factor =
+      cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
+  const auto& deriv_lapse_times_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<Tags::LapseTimesConformalFactor<DataVector>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
+  tenex::evaluate<ti::i>(
+      deriv_lapse,
+      deriv_lapse_times_conformal_factor(ti::i) / conformal_factor() -
+          lapse() / conformal_factor() * deriv_conformal_factor(ti::i));
+}
+
+void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::I<DataVector, 3>*> shift,
     const gsl::not_null<Cache*> /*cache*/,
     gr::Tags::Shift<DataVector, 3> /*meta*/) const {
@@ -225,6 +272,19 @@ void SpacetimeQuantitiesComputer::operator()(
   // derivative of the background shift is known analytically and included in
   // `longitudinal_shift_background_minus_dt_conformal_metric`.
   partial_derivative(deriv_shift_excess, shift_excess, mesh, inv_jacobian);
+}
+
+void SpacetimeQuantitiesComputer::operator()(
+    const gsl::not_null<tnsr::iJ<DataVector, 3>*> deriv_shift,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const {
+  const auto& deriv_shift_excess = cache->get_var(
+      *this, ::Tags::deriv<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
+                           tmpl::size_t<3>, Frame::Inertial>{});
+  tenex::evaluate<ti::i, ti::J>(
+      deriv_shift,
+      deriv_shift_excess(ti::i, ti::J) + deriv_shift_background(ti::i, ti::J));
 }
 
 void SpacetimeQuantitiesComputer::operator()(

@@ -23,6 +23,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -214,6 +215,28 @@ void CommonVariables<DataType, Cache>::operator()(
         "Numeric differentiation only works with DataVectors because it needs "
         "a grid.");
   }
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_background,
+    const gsl::not_null<Cache*> cache,
+    Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+        DataType, Dim, Frame::Inertial> /*meta*/) const {
+  const auto& shift_background = cache->get_var(
+      *this, Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
+  const auto& deriv_shift_background = cache->get_var(
+      *this,
+      ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
+                    tmpl::size_t<Dim>, Frame::Inertial>{});
+  const auto& inv_conformal_metric = cache->get_var(
+      *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
+  const auto& conformal_christoffel_second_kind = cache->get_var(
+      *this,
+      Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
+  Xcts::longitudinal_operator(longitudinal_shift_background, shift_background,
+                              deriv_shift_background, inv_conformal_metric,
+                              conformal_christoffel_second_kind);
 }
 
 template <typename DataType, typename Cache>
