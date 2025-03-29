@@ -424,7 +424,6 @@ std::vector<std::array<double, 4>> fit_ylm_coeffs(
     const std::vector<Strahlkorper<Fr>>& strahlkorpers) {
   size_t num_observations = strahlkorpers.size();
   size_t num_coefficients = strahlkorpers[0].coefficients().size();
-  intrp::LinearLeastSquares<3> predictor(num_observations);
   std::vector<DataVector> coefficients;
   for (size_t i = 0; i < num_coefficients; ++i) {
     DataVector same_coeff_of_each_strahlkorper(num_observations);
@@ -439,7 +438,7 @@ std::vector<std::array<double, 4>> fit_ylm_coeffs(
     }
     coefficients.push_back(std::move(same_coeff_of_each_strahlkorper));
   }
-  return predictor.fit_coefficients(times, coefficients);
+  return intrp::linear_least_squares<3>(times, coefficients);
 }
 
 namespace {

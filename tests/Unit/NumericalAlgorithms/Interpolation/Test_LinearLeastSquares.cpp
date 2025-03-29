@@ -30,16 +30,12 @@ void test_linear_least_squares_double(
 
   // Check that the coeffs determined match the ones used to
   // produce the data points.
-  intrp::LinearLeastSquares<Order> lls(x_values.size());
   Approx my_approx = Approx::custom().epsilon(1.e-11).scale(1.0);
-  auto deserialized_lls = serialize_and_deserialize(lls);
   const std::array<double, Order + 1> computed_coeffs =
-      lls.fit_coefficients(x_values, y_values);
+      intrp::linear_least_squares<Order>(x_values, y_values);
   CHECK_ITERABLE_CUSTOM_APPROX(coeffs, computed_coeffs, my_approx);
   for (size_t i = 0; i < x_values.size(); i++) {
-    CHECK(lls.interpolate(computed_coeffs, gsl::at(x_values, i)) ==
-          my_approx(gsl::at(y_values, i)));
-    CHECK(deserialized_lls.interpolate(computed_coeffs, gsl::at(x_values, i)) ==
+    CHECK(evaluate_polynomial(computed_coeffs, gsl::at(x_values, i)) ==
           my_approx(gsl::at(y_values, i)));
   }
 }
@@ -52,16 +48,9 @@ void test_linear_least_squares_datavector() {
   for (size_t i = 0; i < y_values.size(); ++i) {
     y_values[i] = x_values * coefficients[i][1] + coefficients[i][0];
   }
-  intrp::LinearLeastSquares<1> lls(x_values.size());
   const std::vector<std::array<double, 2>> computed_coefficients =
-      lls.fit_coefficients(x_values, y_values);
+      intrp::linear_least_squares<1>(x_values, y_values);
   CHECK_ITERABLE_APPROX(coefficients, computed_coefficients);
-  const double x_rand = 2.31;
-  for (size_t i = 0; i < y_values.size(); ++i) {
-    double expected_y_value = x_rand * coefficients[i][1] + coefficients[i][0];
-    double computed_y_value = lls.interpolate(coefficients[i], x_rand);
-    CHECK(expected_y_value == computed_y_value);
-  }
 }
 
 template <size_t Order>
@@ -73,20 +62,10 @@ void test_linear_least_squares_datavector2(
   for (size_t i = 0; i < y_values.size(); ++i) {
     y_values[i] = evaluate_polynomial(coeffs[i], x_values);
   }
-  intrp::LinearLeastSquares<Order> lls(x_values.size());
   const std::vector<std::array<double, Order + 1>> computed_coefficients =
-      lls.fit_coefficients(x_values, y_values);
+      intrp::linear_least_squares<Order>(x_values, y_values);
   Approx my_approx = Approx::custom().epsilon(1.e-11).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(coeffs, computed_coefficients, my_approx);
-  const double x_rand = 4.21;
-  for (size_t i = 0; i < y_values.size(); ++i) {
-    double expected_y_value = 0.0;
-    for (size_t j = 0; j < Order + 1; j++) {
-      expected_y_value += pow(x_rand, j) * coeffs[i][j];
-    }
-    double computed_y_value = lls.interpolate(coeffs[i], x_rand);
-    CHECK(expected_y_value == computed_y_value);
-  }
 }
 }  // namespace
 
