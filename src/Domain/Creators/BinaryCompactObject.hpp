@@ -64,8 +64,7 @@ struct BlockLogical;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 namespace bco {
 /*!
  * \brief Create a set of centers of objects for the binary domains.
@@ -299,13 +298,13 @@ class BinaryCompactObject : public DomainCreator<3> {
     /// working with boundary conditions).
     bool is_excised() const;
 
-    double inner_radius;
-    double outer_radius;
-    double x_coord;
+    double inner_radius{};
+    double outer_radius{};
+    double x_coord{};
     std::optional<
         std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
         inner_boundary_condition;
-    bool use_logarithmic_map;
+    bool use_logarithmic_map{};
   };
 
   // Simpler version of an object: a single cube centered on (xCoord,0,0)
@@ -373,6 +372,33 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {"Radius of the entire domain."};
   };
 
+  struct RadialPartitioningOuterShell {
+    static std::string name() { return "RadialPartitioning"; }
+    using group = OuterShell;
+    using type = std::vector<double>;
+    static constexpr Options::String help = {
+        "Radial coordinates of the boundaries splitting the outer spherical "
+        "shells between the envelope radius and OuterRadius. They must be "
+        "given in ascending order. This should be used if boundaries need to "
+        "be set at specific radii. If the number but not the specific "
+        "locations of the boundaries are important, use InitialRefinement "
+        "instead."};
+  };
+
+  struct RadialDistributionOuterShell {
+    static std::string name() { return "RadialDistribution"; }
+    using group = OuterShell;
+    using type =
+        std::variant<domain::CoordinateMaps::Distribution,
+                     std::vector<domain::CoordinateMaps::Distribution>>;
+    static constexpr Options::String help = {
+        "Select the radial distribution of grid points in each outer spherical "
+        "shell. There must be N+1 radial distributions specified for N radial "
+        "partitions. You can also specify just a single radial distribution "
+        "(not in a vector) which will use the same distribution for all "
+        "partitions."};
+  };
+
   struct OpeningAngle {
     using group = OuterShell;
     static std::string name() { return "OpeningAngle"; }
@@ -429,15 +455,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "made of ten bulged Frustums."};
   };
 
-  struct RadialDistributionOuterShell {
-    using group = OuterShell;
-    static std::string name() { return "RadialDistribution"; }
-    using type = CoordinateMaps::Distribution;
-    static constexpr Options::String help = {
-        "The distribution of radial grid points in Layer 5, the outer "
-        "spherical shell that covers the wave zone."};
-  };
-
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
     using group = OuterShell;
@@ -460,7 +477,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       tmpl::list<ObjectA, ObjectB, CenterOfMassOffset, EnvelopeRadius,
                  OuterRadius, CubeScale, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, RadialDistributionEnvelope,
-                 RadialDistributionOuterShell, OpeningAngle, TimeDependentMaps>,
+                 RadialPartitioningOuterShell, RadialDistributionOuterShell,
+                 OpeningAngle, TimeDependentMaps>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -503,8 +521,10 @@ class BinaryCompactObject : public DomainCreator<3> {
       bool use_equiangular_map = true,
       CoordinateMaps::Distribution radial_distribution_envelope =
           CoordinateMaps::Distribution::Projective,
-      CoordinateMaps::Distribution radial_distribution_outer_shell =
-          CoordinateMaps::Distribution::Linear,
+      const std::vector<double>& radial_partitioning_outer_shell = {},
+      const typename RadialDistributionOuterShell::type&
+          radial_distribution_outer_shell =
+              CoordinateMaps::Distribution::Linear,
       double opening_angle_in_degrees = 90.0,
       std::optional<bco::TimeDependentMapOptions<false>>
           time_dependent_options = std::nullopt,
@@ -558,25 +578,27 @@ class BinaryCompactObject : public DomainCreator<3> {
   std::array<double, 2> center_of_mass_offset_{};
   double envelope_radius_ = std::numeric_limits<double>::signaling_NaN();
   double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
-  std::vector<std::array<size_t, 3>> initial_refinement_{};
-  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_{};
+  std::vector<std::array<size_t, 3>> initial_refinement_;
+  std::vector<std::array<size_t, 3>> initial_number_of_grid_points_;
   bool use_equiangular_map_ = true;
   CoordinateMaps::Distribution radial_distribution_envelope_ =
       CoordinateMaps::Distribution::Projective;
-  CoordinateMaps::Distribution radial_distribution_outer_shell_ =
-      CoordinateMaps::Distribution::Linear;
+  std::vector<double> radial_partitioning_outer_shell_;
+  std::vector<CoordinateMaps::Distribution> radial_distribution_outer_shell_ = {
+      CoordinateMaps::Distribution::Linear};
   double translation_{};
   double length_inner_cube_{};
   double length_outer_cube_{};
+  size_t number_of_outer_shells_{};
   size_t number_of_blocks_{};
   size_t first_outer_shell_block_{};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
-  std::vector<std::string> block_names_{};
+  std::vector<std::string> block_names_;
   std::unordered_map<std::string, std::unordered_set<std::string>>
-      block_groups_{};
+      block_groups_;
   std::unordered_map<std::string, tnsr::I<double, 3, Frame::Grid>>
-      grid_anchors_{};
+      grid_anchors_;
   double offset_x_coord_a_{};
   double offset_x_coord_b_{};
 
@@ -587,8 +609,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   bool is_excised_b_ = false;
   bool use_single_block_a_ = false;
   bool use_single_block_b_ = false;
-  std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_{};
+  std::optional<bco::TimeDependentMapOptions<false>> time_dependent_options_;
   double opening_angle_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

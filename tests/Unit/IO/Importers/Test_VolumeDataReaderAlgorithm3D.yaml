@@ -24,6 +24,7 @@ SourceDomainCreator:
       RadialDistribution: Projective
     OuterShell:
       Radius: 350.
+      RadialPartitioning: []
       RadialDistribution: Inverse
       OpeningAngle: 90.0
     UseEquiangularMap: True
@@ -52,6 +53,7 @@ TargetDomainCreator:
       RadialDistribution: Projective
     OuterShell:
       Radius: 300.
+      RadialPartitioning: []
       RadialDistribution: Linear
       OpeningAngle: 90.0
     UseEquiangularMap: True

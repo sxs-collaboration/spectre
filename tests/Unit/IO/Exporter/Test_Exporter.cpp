@@ -130,6 +130,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         6_st,
         true,
         domain::CoordinateMaps::Distribution::Projective,
+        std::vector<double>{},
         domain::CoordinateMaps::Distribution::Inverse,
         120.};
     const auto domain = domain_creator.create_domain();

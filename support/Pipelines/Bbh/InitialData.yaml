@@ -108,6 +108,7 @@ DomainCreator:
       RadialDistribution: Projective
     OuterShell:
       Radius: &outer_radius 1e5
+      RadialPartitioning: []
       RadialDistribution: &outer_shell_distribution Inverse
       OpeningAngle: 120.0
       BoundaryCondition: Robin
@@ -119,7 +120,7 @@ DomainCreator:
       ObjectACube:      [{{ L }}, {{ L }}, {{ L }}]
       ObjectBCube:      [{{ L }}, {{ L }}, {{ L }}]
       Envelope:         [{{ L }}, {{ L }}, {{ L + 1 }}]
-      OuterShell:       [{{ L }}, {{ L }}, {{ L }}]
+      OuterShell0:       [{{ L }}, {{ L }}, {{ L }}]
     # This p-refinement represents a crude manual optimization of the domain. We
     # will need AMR to optimize the domain further.
     InitialGridPoints:
@@ -128,7 +129,7 @@ DomainCreator:
       ObjectACube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       ObjectBCube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
-      OuterShell:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
+      OuterShell0:     [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]
     TimeDependentMaps:
       InitialTime: 0.
       ExpansionMap: None

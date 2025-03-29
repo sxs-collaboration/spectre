@@ -54,6 +54,7 @@ DomainCreator:
       RadialDistribution: Linear
     OuterShell:
       Radius: 300.0
+      RadialPartitioning: []
       RadialDistribution: Linear
       OpeningAngle: 90.0
     UseEquiangularMap: True
@@ -64,7 +65,7 @@ DomainCreator:
       ObjectACube:    [1, 1, 0]
       ObjectBCube:    [1, 1, 0]
       Envelope: [1, 1, 1]
-      OuterShell:     [1, 1, 1]
+      OuterShell0:     [1, 1, 1]
     InitialGridPoints: 3
     TimeDependentMaps:
       InitialTime: 0.0

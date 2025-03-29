@@ -349,6 +349,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FindTwoCenters",
       {4_st},
       true,
       domain::CoordinateMaps::Distribution::Projective,
+      std::vector<double>{},
       domain::CoordinateMaps::Distribution::Linear,
       90.0,
       time_dep_opts};

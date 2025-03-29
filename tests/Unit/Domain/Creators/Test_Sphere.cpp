@@ -456,7 +456,7 @@ void test_parse_errors() {
                        radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "First radial partition must be larger than inner"));
+          "First radial partition must be larger than the inner"));
   CHECK_THROWS_WITH(
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,
@@ -464,7 +464,7 @@ void test_parse_errors() {
                        radial_distribution, which_wedges, std::nullopt, nullptr,
                        Options::Context{false, {}, 1, 1}),
       Catch::Matchers::ContainsSubstring(
-          "Last radial partition must be smaller than outer"));
+          "Last radial partition must be smaller than the outer"));
   CHECK_THROWS_WITH(
       creators::Sphere(inner_radius, outer_radius, inner_cube, refinement,
                        initial_extents, use_equiangular_map,

@@ -61,6 +61,7 @@ DomainCreator:
       RadialDistribution: Projective
     OuterShell:
       Radius: &outer_radius 600.
+      RadialPartitioning: []
       RadialDistribution: &outer_shell_distribution Inverse
       OpeningAngle: 90.0
       BoundaryCondition: Flatness
@@ -86,16 +87,16 @@ DomainCreator:
       EnvelopeUpperYRight:        [1, 1, 0]
       EnvelopeLowerYRight:        [1, 1, 0]
       EnvelopeUpperX:             [1, 1, 0]
-      OuterShellUpperZLeft:       [0, 1, 0]
-      OuterShellLowerZLeft:       [0, 1, 0]
-      OuterShellUpperYLeft:       [0, 1, 0]
-      OuterShellLowerYLeft:       [0, 1, 0]
-      OuterShellLowerX:           [1, 1, 0]
-      OuterShellUpperZRight:      [0, 1, 0]
-      OuterShellLowerZRight:      [0, 1, 0]
-      OuterShellUpperYRight:      [0, 1, 0]
-      OuterShellLowerYRight:      [0, 1, 0]
-      OuterShellUpperX:           [1, 1, 0]
+      OuterShell0UpperZLeft:       [0, 1, 0]
+      OuterShell0LowerZLeft:       [0, 1, 0]
+      OuterShell0UpperYLeft:       [0, 1, 0]
+      OuterShell0LowerYLeft:       [0, 1, 0]
+      OuterShell0LowerX:           [1, 1, 0]
+      OuterShell0UpperZRight:      [0, 1, 0]
+      OuterShell0LowerZRight:      [0, 1, 0]
+      OuterShell0UpperYRight:      [0, 1, 0]
+      OuterShell0LowerYRight:      [0, 1, 0]
+      OuterShell0UpperX:           [1, 1, 0]
     # This p-refinement represents a crude manual optimization of the domain. We
     # will need AMR to optimize the domain further.
     InitialGridPoints:
@@ -106,7 +107,7 @@ DomainCreator:
       ObjectACube:     [4, 4, 5]
       ObjectBCube:     [4, 4, 5]
       Envelope:        [4, 4, 4]
-      OuterShell:      [4, 4, 3]
+      OuterShell0:      [4, 4, 3]
     TimeDependentMaps: None
 
 Discretization:
