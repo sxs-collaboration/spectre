@@ -1,0 +1,14 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Ocean2
+  Description: |
+    Supercomputer at Cal State Fullerton hosted by Geoffrey Lovelace
+    More information:
+    Contact Geoffrey Lovelace for more information.
+  DefaultTasksPerNode: 6
+  DefaultProcsPerTasks: 32
+  DefaultQueue: "normal"
+  DefaultTimeLimit: "01-00:00:00"
+  LaunchCommandSingleNode: []
