@@ -4,7 +4,6 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 
 #include <algorithm>
-#include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -34,25 +33,6 @@ namespace TimeSteppers {
 // constant.
 static_assert(adams_coefficients::maximum_order ==
               AdamsBashforth::maximum_order);
-
-namespace {
-template <typename T>
-using OrderVector = adams_coefficients::OrderVector<T>;
-
-template <typename Iter>
-struct TimeFromRecord {
-  Time operator()(typename std::iterator_traits<Iter>::reference record) const {
-    return record.time_step_id.step_time();
-  }
-};
-
-// This must be templated on the iterator type rather than the math
-// wrapper type because of quirks in the template deduction rules.
-template <typename Iter>
-auto history_time_iterator(const Iter& it) {
-  return boost::transform_iterator(it, TimeFromRecord<Iter>{});
-}
-}  // namespace
 
 AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
   if (order_ < 1 or order_ > maximum_order) {
@@ -117,38 +97,97 @@ void AdamsBashforth::pup(PUP::er& p) {
   p | order_;
 }
 
+namespace {
+template <typename T>
+double evaluate_error(
+    const gsl::not_null<T*> scratch, const ConstUntypedHistory<T>& history,
+    const StepperErrorTolerances& tolerances,
+    const adams_coefficients::OrderVector<double>& higher_order_coefficients,
+    const adams_coefficients::OrderVector<double>& lower_order_coefficients) {
+  auto error_coefficients = higher_order_coefficients;
+  for (size_t i = 0; i < lower_order_coefficients.size(); ++i) {
+    error_coefficients[i + 1] -= lower_order_coefficients[i];
+  }
+
+  auto coefficient = error_coefficients.rbegin();
+  auto history_entry = history.rbegin();
+  *scratch = *coefficient * history_entry->derivative;
+  for (;;) {
+    ++history_entry;
+    ++coefficient;
+    if (coefficient == error_coefficients.rend()) {
+      break;
+    }
+    *scratch += *coefficient * history_entry->derivative;
+  }
+
+  return largest_stepper_error(*history.back().value, *scratch, tolerances);
+}
+}  // namespace
+
+template <bool DenseOutput, typename T>
+std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
+    const std::optional<StepperErrorTolerances>& tolerances) const {
+  ASSERT(not(DenseOutput and tolerances.has_value()),
+         "Can't compute errors in dense output.");
+  ASSERT(history.size() == history.integration_order(),
+         "Incorrect data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
+
+  const auto& step_start = history.back().time_step_id.step_time();
+  const auto history_start =
+      history.end() -
+      static_cast<typename ConstUntypedHistory<T>::difference_type>(
+          history.integration_order());
+  adams_coefficients::OrderVector<Time> control_times{};
+  std::transform(history_start, history.end(),
+                 std::back_inserter(control_times),
+                 [](const auto& r) { return r.time_step_id.step_time(); });
+  const auto update_coefficients = adams_coefficients::coefficients(
+      control_times.begin(), control_times.end(), step_start, time);
+
+  std::optional<StepperErrorEstimate> error{};
+  if constexpr (not DenseOutput) {
+    if (tolerances.has_value()) {
+      const auto lower_order_coefficients = adams_coefficients::coefficients(
+          control_times.begin() + 1, control_times.end(), step_start, time);
+      error.emplace(StepperErrorEstimate{
+          step_start, time - step_start, history.integration_order() - 1,
+          evaluate_error(u, history, *tolerances, update_coefficients,
+                         lower_order_coefficients)});
+    }
+
+    // Dense output adds to the existing value, but the main step overwrites.
+    *u = *history.back().value;
+  }
+
+  auto coefficient = update_coefficients.begin();
+  for (auto history_entry = history_start;
+       history_entry != history.end();
+       ++history_entry, ++coefficient) {
+    *u += *coefficient * history_entry->derivative;
+  }
+  return error;
+}
+
 template <typename T>
 void AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
                                    const ConstUntypedHistory<T>& history,
                                    const TimeDelta& time_step) const {
-  ASSERT(history.size() == history.integration_order(),
-         "Incorrect data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << history.integration_order());
-  *u = *history.back().value;
-  update_u_common(u, history, time_step);
+  const Time next_time = history.back().time_step_id.step_time() + time_step;
+  update_u_common<false>(u, history, next_time, std::nullopt);
 }
 
 template <typename T>
 std::optional<StepperErrorEstimate> AdamsBashforth::update_u_impl(
-    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step,
     const std::optional<StepperErrorTolerances>& tolerances) const {
-  ASSERT(history.size() == history.integration_order(),
-         "Incorrect data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << history.integration_order());
-  std::optional<StepperErrorEstimate> error{};
-  if (tolerances.has_value()) {
-    step_error(u, history, time_step);
-    error.emplace(StepperErrorEstimate{
-        history.back().time_step_id.step_time(), time_step,
-        history.integration_order() - 1,
-        largest_stepper_error(*history.back().value, *u, *tolerances)});
-  }
-  *u = *history.back().value;
-  update_u_common(u, history, time_step);
-  return error;
+  const Time next_time = history.back().time_step_id.step_time() + time_step;
+  return update_u_common<false>(u, history, next_time, tolerances);
 }
 
 template <typename T>
@@ -166,79 +205,8 @@ template <typename T>
 bool AdamsBashforth::dense_update_u_impl(const gsl::not_null<T*> u,
                                          const ConstUntypedHistory<T>& history,
                                          const double time) const {
-  const ApproximateTimeDelta time_step{
-      time - history.back().time_step_id.step_time().value()};
-  update_u_common(u, history, time_step);
+  update_u_common<true>(u, history, ApproximateTime{time}, std::nullopt);
   return true;
-}
-
-template <typename T, typename Delta>
-void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
-                                     const ConstUntypedHistory<T>& history,
-                                     const Delta& time_step) const {
-  ASSERT(
-      history.size() > 0,
-      "Cannot meaningfully update the evolved variables with an empty history");
-  const auto order = history.integration_order();
-  ASSERT(order <= order_,
-         "Requested integration order higher than integrator order");
-
-  const auto history_start =
-      history.end() -
-      static_cast<typename ConstUntypedHistory<T>::difference_type>(order);
-  const auto coefficients = adams_coefficients::coefficients(
-      history_time_iterator(history_start),
-      history_time_iterator(history.end()),
-      history.back().time_step_id.step_time(),
-      history.back().time_step_id.step_time() + time_step);
-
-  auto coefficient = coefficients.begin();
-  for (auto history_entry = history_start;
-       history_entry != history.end();
-       ++history_entry, ++coefficient) {
-    *u += *coefficient * history_entry->derivative;
-  }
-}
-
-template <typename T>
-void AdamsBashforth::step_error(const gsl::not_null<T*> u_error,
-                                const ConstUntypedHistory<T>& history,
-                                const TimeDelta& time_step) const {
-  ASSERT(
-      history.size() > 0,
-      "Cannot meaningfully update the evolved variables with an empty history");
-  const auto order = history.integration_order();
-  ASSERT(order <= order_,
-         "Requested integration order higher than integrator order");
-
-  const auto history_start =
-      history.end() -
-      static_cast<typename ConstUntypedHistory<T>::difference_type>(order);
-  auto coefficients = adams_coefficients::coefficients(
-      history_time_iterator(history_start),
-      history_time_iterator(history.end()),
-      history.back().time_step_id.step_time(),
-      history.back().time_step_id.step_time() + time_step);
-  const auto lower_order_coefficients = adams_coefficients::coefficients(
-      history_time_iterator(history_start + 1),
-      history_time_iterator(history.end()),
-      history.back().time_step_id.step_time(),
-      history.back().time_step_id.step_time() + time_step);
-  for (size_t i = 0; i < lower_order_coefficients.size(); ++i) {
-    coefficients[i + 1] -= lower_order_coefficients[i];
-  }
-
-  auto coefficient = coefficients.begin();
-  auto history_entry = history_start;
-  *u_error = *coefficient * history_entry->derivative;
-  for (;;) {
-    ++history_entry;
-    ++coefficient;
-    if (history_entry == history.end()) {
-      return;
-    }
-    *u_error += *coefficient * history_entry->derivative;
-  }
 }
 
 template <typename T>

@@ -17,6 +17,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+struct ApproximateTime;
 struct StepperErrorTolerances;
 class TimeDelta;
 class TimeStepId;
@@ -154,6 +155,13 @@ class AdamsMoultonPc : public LtsTimeStepper {
   void pup(PUP::er& p) override;
 
  private:
+  template <bool DenseOutput, typename T>
+  std::optional<StepperErrorEstimate> update_u_common(
+      gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+      const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
+      bool corrector,
+      const std::optional<StepperErrorTolerances>& tolerances) const;
+
   template <typename T>
   void update_u_impl(gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
