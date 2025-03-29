@@ -15,8 +15,10 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Evolution/Systems/Cce/NewmanPenrose.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -43,8 +45,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Cce {
-namespace Events {
+namespace Cce::Events {
 namespace detail {
 template <typename Tag>
 std::string name() {
@@ -80,6 +81,7 @@ std::string name() {
  *
  * Some more fields to observe are:
  *
+ * - `Cce::Tags::Psi0`
  * - `Cce::Tags::ComplexInertialRetardedTime`
  * - `Cce::Tags::OneMinusY`
  * - `Cce::Tags::BondiR`
@@ -148,6 +150,7 @@ class ObserveFields : public Event {
                  zero_one_two_radial_derivs<Tags::BondiJ>,
                  zero_one_two_radial_derivs<Tags::Du<Tags::BondiJ>>,
                  Tags::BondiR,
+                 Tags::Psi0,
                  Tags::EthRDividedByR,
                  Tags::DuRDividedByR>>;
   // clang-format on
@@ -181,25 +184,26 @@ class ObserveFields : public Event {
   ObserveFields(const std::vector<std::string>& variables_to_observe,
                 const Options::Context& context = {});
 
-  using compute_tags_for_observation_box = tmpl::list<>;
+  using compute_tags_for_observation_box = tmpl::list<Tags::Psi0Compute>;
 
   using return_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<::Tags::DataBox>;
+  using argument_tags = tmpl::list<::Tags::ObservationBox>;
 
-  template <typename DbTags, typename Metavariables, typename ArrayIndex,
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const db::DataBox<DbTags>& box,
+  void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& /*array_index*/,
                   const ParallelComponent* const /*component*/,
                   const ObservationValue& /*observation_value*/) const {
     // Number of points
-    const size_t l_max = db::get<Tags::LMax>(box);
+    const size_t l_max = get<Tags::LMax>(box);
     const size_t l_max_plus_one_squared = square(l_max + 1);
     const size_t number_of_angular_points =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     const size_t number_of_radial_grid_points =
-        db::get<Tags::NumberOfRadialPoints>(box);
+        get<Tags::NumberOfRadialPoints>(box);
 
     // Buffers/views
     std::vector<double> data_to_write(2 * l_max_plus_one_squared + 1);
@@ -218,7 +222,7 @@ class ObserveFields : public Event {
     }
 
     // Time
-    const double time = db::get<::Tags::Time>(box);
+    const double time = get<::Tags::Time>(box);
 
     // Observer writer
     auto observer_proxy = Parallel::get_parallel_component<
@@ -236,15 +240,16 @@ class ObserveFields : public Event {
           using tag = std::decay_t<decltype(tag_v)>;
 
           // Get ComplexDataVector out of SpinWeighted out of databox tag
-          const ComplexDataVector& tensor = get(db::get<tag>(box)).data();
+          const ComplexDataVector& tensor = get(get<tag>(box)).data();
 
           // Make non-owning ComplexDataVector to angular data corresponding to
           // this radial index
-          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+          // NOLINTBEGIN
           spin_weighted_data_view.set_data_ref(
               const_cast<ComplexDataVector&>(tensor).data() +
                   radial_index * number_of_angular_points,
               number_of_angular_points);
+          // NOLINTEND
 
           // swsh_transform requires a SpinWeighted<ComplexDataVector>. It's
           // easier to make a const-view from a ComplexDataVector that is
@@ -342,7 +347,7 @@ class ObserveFields : public Event {
       one_minus_y_legend.emplace_back("time");
 
       const ComplexDataVector& one_minus_y =
-          get(db::get<Tags::OneMinusY>(box)).data();
+          get(get<Tags::OneMinusY>(box)).data();
 
       // All nodal data for each radius are the same value so we just take the
       // first one
@@ -375,7 +380,7 @@ class ObserveFields : public Event {
       const std::string name = detail::name<tag>();
 
       // If we aren't observing this tag, then skip it
-      if (variables_to_observe_.count(name) != 1) {
+      if (not variables_to_observe_.contains(name)) {
         return;
       }
 
@@ -422,7 +427,7 @@ class ObserveFields : public Event {
   }
 
  private:
-  std::unordered_set<std::string> variables_to_observe_{};
+  std::unordered_set<std::string> variables_to_observe_;
 };
 
 ObserveFields::ObserveFields(
@@ -431,7 +436,7 @@ ObserveFields::ObserveFields(
     : variables_to_observe_([&context, &variables_to_observe]() {
         std::unordered_set<std::string> result{};
         for (const auto& tensor : variables_to_observe) {
-          if (result.count(tensor) != 0) {
+          if (result.contains(tensor)) {
             PARSE_ERROR(
                 context,
                 "Listed variable '"
@@ -449,7 +454,7 @@ ObserveFields::ObserveFields(
   });
 
   for (const auto& name : variables_to_observe_) {
-    if (valid_tensors.count(name) != 1) {
+    if (not valid_tensors.contains(name)) {
       PARSE_ERROR(
           context,
           name << " is not an available variable. Available variables:\n"
@@ -461,5 +466,4 @@ ObserveFields::ObserveFields(
 /// \cond
 PUP::able::PUP_ID ObserveFields::my_PUP_ID = 0;  // NOLINT
 /// \endcond
-}  // namespace Events
-}  // namespace Cce
+}  // namespace Cce::Events
