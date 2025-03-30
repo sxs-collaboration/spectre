@@ -203,9 +203,6 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
       ::Actions::Label<CceEvolutionLabelTag>,
-      tmpl::conditional_t<evolve_ccm, tmpl::list<>,
-                          evolution::Actions::RunEventsAndTriggers<
-                              Metavariables::local_time_stepping>>,
       Actions::ReceiveWorldtubeData<
           Metavariables,
           typename Metavariables::cce_boundary_communication_tags>,
@@ -222,6 +219,9 @@ struct CharacteristicEvolution {
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
+      tmpl::conditional_t<evolve_ccm, tmpl::list<>,
+                          evolution::Actions::RunEventsAndTriggers<
+                              Metavariables::local_time_stepping>>,
       compute_scri_quantities_and_observe,
       ::Actions::TakeLtsStep<cce_system,
                              typename Metavariables::cce_step_choosers>,
