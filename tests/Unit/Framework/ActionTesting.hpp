@@ -451,10 +451,25 @@ bool InitializeDataBox<tmpl::list<SimpleTags...>,
 /// \endcond
 
 namespace ActionTesting_detail {
+template <typename ChareType>
+struct charm_element_proxy;
+template <>
+struct charm_element_proxy<MockArrayChare> : public CProxyElement_ArrayElement {
+};
+template <>
+struct charm_element_proxy<MockGroupChare> : public CProxyElement_IrrGroup {};
+template <>
+struct charm_element_proxy<MockNodeGroupChare>
+    : public CProxyElement_NodeGroup {};
+template <>
+struct charm_element_proxy<MockSingletonChare>
+    : public CProxyElement_ArrayElement {};
+
 // A mock class for the Charm++ generated CProxyElement_AlgorithmArray. This
 // is each element obtained by indexing a CProxy_AlgorithmArray.
 template <typename Component, typename InboxTagList>
-class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
+class MockDistributedObjectProxy
+    : public charm_element_proxy<typename Component::chare_type> {
  public:
   using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
@@ -517,6 +532,17 @@ class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
                 static_cast<int>(mock_node_) and
             mock_distributed_object_->my_local_rank() ==
                 static_cast<int>(mock_local_core_))
+               ? mock_distributed_object_
+               : nullptr;
+  }
+
+  MockDistributedObject<Component>* ckLocalBranch() {
+    return (mock_distributed_object_->my_node() ==
+                static_cast<int>(mock_node_) and
+            (std::is_same_v<MockNodeGroupChare,
+                            typename Component::chare_type> or
+             mock_distributed_object_->my_local_rank() ==
+                 static_cast<int>(mock_local_core_)))
                ? mock_distributed_object_
                : nullptr;
   }

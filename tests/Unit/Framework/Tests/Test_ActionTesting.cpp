@@ -563,25 +563,34 @@ struct ComponentA {
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
+template <typename MyProxy, typename ArrayIndex>
+auto get_local(MyProxy& my_proxy, const ArrayIndex& array_index) {
+  if constexpr (Parallel::is_group_proxy<std::decay_t<MyProxy>>::value or
+                Parallel::is_node_group_proxy<std::decay_t<MyProxy>>::value) {
+    return Parallel::local_branch(my_proxy[array_index]);
+  } else {
+    return Parallel::local(my_proxy[array_index]);
+  }
+}
+
 struct MyProc {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
-    return Parallel::my_proc<RetType>(*Parallel::local(my_proxy[array_index]));
+    return Parallel::my_proc<RetType>(*get_local(my_proxy, array_index));
   }
 };
 
 struct MyNode {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
-    return Parallel::my_node<RetType>(*Parallel::local(my_proxy[array_index]));
+    return Parallel::my_node<RetType>(*get_local(my_proxy, array_index));
   }
 };
 
 struct LocalRank {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
-    return Parallel::my_local_rank<RetType>(
-        *Parallel::local(my_proxy[array_index]));
+    return Parallel::my_local_rank<RetType>(*get_local(my_proxy, array_index));
   }
 };
 
@@ -589,7 +598,7 @@ struct NumProcs {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
     return Parallel::number_of_procs<RetType>(
-        *Parallel::local(my_proxy[array_index]));
+        *get_local(my_proxy, array_index));
   }
 };
 
@@ -597,7 +606,7 @@ struct NumNodes {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
     return Parallel::number_of_nodes<RetType>(
-        *Parallel::local(my_proxy[array_index]));
+        *get_local(my_proxy, array_index));
   }
 };
 
