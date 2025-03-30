@@ -504,7 +504,7 @@ struct EvolutionMetavars {
         tmpl::pair<
             Trigger,
             tmpl::append<Triggers::logical_triggers, Triggers::time_triggers,
-                         tmpl::list<Triggers::SeparationLessThan>>>>;
+                         tmpl::list<Triggers::SeparationLessThan<false>>>>>;
   };
 
   // A tmpl::list of tags to be added to the GlobalCache by the
