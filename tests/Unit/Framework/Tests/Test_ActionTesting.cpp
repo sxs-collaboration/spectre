@@ -193,7 +193,6 @@ struct threaded_action_b_mock {
 struct SimpleActionMockMetavariables {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
-
 };
 
 template <typename Metavariables>
@@ -348,7 +347,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
@@ -415,7 +413,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
@@ -511,7 +508,6 @@ struct CallActionOnComponentB {
 struct Metavariables {
   using component_list =
       tmpl::list<ComponentA<Metavariables>, ComponentBMock<Metavariables>>;
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
@@ -685,7 +681,6 @@ struct ActionSetValueTo {
 
 struct MetavariablesOneComponent {
   using component_list = tmpl::list<ComponentA<MetavariablesOneComponent>>;
-
 };
 
 void test_parallel_info_functions() {
@@ -942,7 +937,6 @@ struct GroupComponent {
 struct MetavariablesGroupComponent {
   using component_list =
       tmpl::list<GroupComponent<MetavariablesGroupComponent>>;
-
 };
 
 void test_group_emplace() {
@@ -1018,7 +1012,6 @@ struct NodeGroupComponent {
 struct MetavariablesNodeGroupComponent {
   using component_list =
       tmpl::list<NodeGroupComponent<MetavariablesNodeGroupComponent>>;
-
 };
 
 void test_nodegroup_emplace() {
@@ -1074,7 +1067,6 @@ void test_nodegroup_emplace() {
 
 struct MetavariablesWithPup {
   using component_list = tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
-
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -1152,7 +1144,6 @@ struct Metavariables {
   // [mutable global cache metavars]
   using mutable_global_cache_tags = tmpl::list<CacheTag>;
   // [mutable global cache metavars]
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
