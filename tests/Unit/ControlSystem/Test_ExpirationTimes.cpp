@@ -81,7 +81,7 @@ void test_expiration_time_construction() {
       OptionHolder<2>{averager, controller, tuner2, control_error};
   const std::optional<OptionHolder<3>> option_holder3 = std::nullopt;
 
-  using FakeCreator = control_system::TestHelpers::FakeCreator;
+  using FakeCreator = TestHelpers::control_system::FakeCreator;
 
   const std::unique_ptr<DomainCreator<3>> creator1 =
       std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{});

@@ -98,7 +98,7 @@ void test_measurement_tag() {
   static_assert(
       tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 9);
 
-  using FakeCreator = control_system::TestHelpers::FakeCreator;
+  using FakeCreator = TestHelpers::control_system::FakeCreator;
 
   const double time_step = 0.2;
   {

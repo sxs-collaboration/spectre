@@ -24,7 +24,8 @@ void test_rotation_control_error() {
   // Since we are only doing rotation, turn off the
   // other control systems by passing 0 for their deriv orders
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<0, deriv_order, 0, 0>;
+  using metavars =
+      TestHelpers::control_system::MockMetavars<0, deriv_order, 0, 0>;
   using element_component = typename metavars::element_component;
   using rotation_system = typename metavars::rotation_system;
   MAKE_GENERATOR(gen);
@@ -35,7 +36,7 @@ void test_rotation_control_error() {
   const double initial_separation = 15.0;
 
   // Set up the system helper.
-  control_system::TestHelpers::SystemHelper<metavars> system_helper{};
+  TestHelpers::control_system::SystemHelper<metavars> system_helper{};
 
   const std::string input_options =
       "Evolution:\n"
@@ -66,7 +67,8 @@ void test_rotation_control_error() {
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(
       initial_time, initial_separation, input_options,
-      TestHelpers::initialize_rotation_functions_of_time<rotation_system>);
+      TestHelpers::control_system::initialize_rotation_functions_of_time<
+          rotation_system>);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need

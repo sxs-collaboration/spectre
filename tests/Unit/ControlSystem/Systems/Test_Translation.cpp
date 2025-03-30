@@ -45,7 +45,8 @@ template <size_t DerivOrder>
 void test_translation_control_system() {
   // Since we are only doing translation, turn off the
   // other control systems by passing 0 for their deriv orders
-  using metavars = TestHelpers::MockMetavars<DerivOrder, 0, 0, 0>;
+  using metavars =
+      TestHelpers::control_system::MockMetavars<DerivOrder, 0, 0, 0>;
   using translation_component = typename metavars::translation_component;
   using element_component = typename metavars::element_component;
   using translation_system = typename metavars::translation_system;
@@ -60,7 +61,7 @@ void test_translation_control_system() {
   const double final_time = 600.0;
 
   // Set up the system helper.
-  control_system::TestHelpers::SystemHelper<metavars> system_helper{};
+  TestHelpers::control_system::SystemHelper<metavars> system_helper{};
 
   const std::string input_options =
       "Evolution:\n"
@@ -91,7 +92,7 @@ void test_translation_control_system() {
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(
       initial_time, initial_separation, input_options,
-      TestHelpers::initialize_translation_functions_of_time<
+      TestHelpers::control_system::initialize_translation_functions_of_time<
           translation_system>);
 
   // Get references to everything that was set up inside the system helper. The
@@ -155,8 +156,9 @@ void test_translation_control_system() {
 
   const auto horizon_function = [&position_function, &runner,
                                  &coord_map](const double time) {
-    return TestHelpers::build_horizons_for_basic_control_systems<
-        element_component>(time, runner, position_function, coord_map);
+    return TestHelpers::control_system::
+        build_horizons_for_basic_control_systems<element_component>(
+            time, runner, position_function, coord_map);
   };
 
   // Run the actual control system test.
@@ -164,9 +166,9 @@ void test_translation_control_system() {
                                         horizon_function);
 
   // Grab results
-  const auto grid_positions =
-      TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
-          element_component>(final_time, runner, position_function, coord_map);
+  const auto grid_positions = TestHelpers::control_system::
+      grid_frame_horizon_centers_for_basic_control_systems<element_component>(
+          final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
   const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_a{

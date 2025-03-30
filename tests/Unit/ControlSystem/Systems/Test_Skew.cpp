@@ -81,7 +81,7 @@ using with_these_simple_actions_mock_component = tmpl::transform<
 
 template <typename Metavariables>
 struct MockComponent
-    : public control_system::TestHelpers::MockControlComponent<Metavariables,
+    : public TestHelpers::control_system::MockControlComponent<Metavariables,
                                                                skew> {
   using replace_these_simple_actions =
       replace_these_simple_actions_mock_component;

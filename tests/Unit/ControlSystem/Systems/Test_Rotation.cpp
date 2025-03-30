@@ -43,7 +43,8 @@ template <size_t DerivOrder>
 void test_rotation_control_system(const bool newtonian) {
   // Since we are only doing rotation, turn off the
   // other control systems by passing 0 for their deriv orders
-  using metavars = TestHelpers::MockMetavars<0, DerivOrder, 0, 0>;
+  using metavars =
+      TestHelpers::control_system::MockMetavars<0, DerivOrder, 0, 0>;
   using rotation_component = typename metavars::rotation_component;
   using element_component = typename metavars::element_component;
   using rotation_system = typename metavars::rotation_system;
@@ -58,7 +59,7 @@ void test_rotation_control_system(const bool newtonian) {
   const double final_time = 300.0;
 
   // Set up the system helper.
-  control_system::TestHelpers::SystemHelper<metavars> system_helper{};
+  TestHelpers::control_system::SystemHelper<metavars> system_helper{};
 
   const std::string input_options =
       "Evolution:\n"
@@ -89,7 +90,8 @@ void test_rotation_control_system(const bool newtonian) {
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(
       initial_time, initial_separation, input_options,
-      TestHelpers::initialize_rotation_functions_of_time<rotation_system>);
+      TestHelpers::control_system::initialize_rotation_functions_of_time<
+          rotation_system>);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need
@@ -146,8 +148,9 @@ void test_rotation_control_system(const bool newtonian) {
 
   const auto horizon_function = [&position_function, &runner,
                                  &coord_map](const double time) {
-    return TestHelpers::build_horizons_for_basic_control_systems<
-        element_component>(time, runner, position_function, coord_map);
+    return TestHelpers::control_system::
+        build_horizons_for_basic_control_systems<element_component>(
+            time, runner, position_function, coord_map);
   };
 
   // Run the actual control system test.
@@ -155,9 +158,9 @@ void test_rotation_control_system(const bool newtonian) {
                                         horizon_function);
 
   // Grab results
-  const auto grid_positions =
-      TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
-          element_component>(final_time, runner, position_function, coord_map);
+  const auto grid_positions = TestHelpers::control_system::
+      grid_frame_horizon_centers_for_basic_control_systems<element_component>(
+          final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
   const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_a{
