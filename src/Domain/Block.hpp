@@ -36,9 +36,9 @@ class er;
 /// Elements that cover a region of the computational domain.
 ///
 /// Each codimension 1 boundary of a Block<VolumeDim> is either an external
-/// boundary or identical to a boundary of one other Block.
+/// boundary or identical to a boundary of one or more Blocks.
 ///
-/// A Block has logical coordinates that go from -1 to +1 in each
+/// A Block has logical coordinates that depend upon the topology in each
 /// dimension.  The global coordinates are obtained from the logical
 /// coordinates from the Coordinatemap:  CoordinateMap::operator() takes
 /// Points in the BlockLogical Frame (i.e., block logical coordinates) and
@@ -52,8 +52,7 @@ class Block {
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
   /// \param name Human-readable name for the block
-  /// \param topologies domain::Topology in each dimension used for Elements in
-  /// the Block when using discontinuous Galerkin methods (default value is
+  /// \param topologies domain::Topology in each dimension (default value is
   /// domain::Topology::I1)
   Block(std::unique_ptr<domain::CoordinateMapBase<
             Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
@@ -167,8 +166,7 @@ class Block {
 
   const std::string& name() const { return name_; }
 
-  /// The basis functions used in each dimension for Elements of this Block
-  /// when using discontinuous Galerkin methods
+  /// The topology in each dimensio of this Block
   const std::array<domain::Topology, VolumeDim>& topologies() const {
     return topologies_;
   }

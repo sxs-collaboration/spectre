@@ -58,11 +58,17 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
   CHECK(element != element_diff_neighbors);
   CHECK_FALSE(element == element_diff_neighbors);
 
-  CHECK(get_output(element) ==
-        "Element " + get_output(element.id()) + ":\n"
-        "  Neighbors: " + get_output(element.neighbors()) + "\n"
-        "  External boundaries: " + get_output(element.external_boundaries()) +
-        "\n");
+  CHECK(get_output(element) == "Element " + get_output(element.id()) +
+                                   ":\n"
+                                   "  Topology: " +
+                                   get_output(element.topologies()) +
+                                   "\n"
+                                   "  Neighbors: " +
+                                   get_output(element.neighbors()) +
+                                   "\n"
+                                   "  External boundaries: " +
+                                   get_output(element.external_boundaries()) +
+                                   "\n");
 
   test_serialization(element);
 }
@@ -108,10 +114,41 @@ void check_element_3d() {
   check_element_work<3>(zeta_neighbors, 8);
 }
 
+void check_spherical_shell() {
+  const Element<3> spherical_shell(
+      ElementId<3>{5}, DirectionMap<3, Neighbors<3>>{},
+      std::array{domain::Topology::I1, domain::Topology::S2Colatitude,
+                 domain::Topology::S2Longitude});
+  CHECK(spherical_shell.external_boundaries().size() == 2);
+  CHECK(
+      spherical_shell.external_boundaries().contains(Direction<3>::lower_xi()));
+  CHECK(
+      spherical_shell.external_boundaries().contains(Direction<3>::upper_xi()));
+  CHECK(spherical_shell.neighbors().empty());
+}
+
+void check_assert() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        const Neighbors<1> element_neighbors(
+            std::unordered_set<ElementId<1>>{ElementId<1>{3}},
+            OrientationMap<1>::create_aligned());
+        const DirectionMap<1, Neighbors<1>> neighbors{
+            {Direction<1>::lower_xi(), element_neighbors}};
+        const Element<1> loop(ElementId<1>{2}, neighbors,
+                              std::array{domain::Topology::S1});
+      }()),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot specify a neighbor in a direction with no boundary"));
+#endif
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.Element", "[Domain][Unit]") {
   check_element_1d();
   check_element_2d();
   check_element_3d();
+  check_spherical_shell();
+  check_assert();
 }
