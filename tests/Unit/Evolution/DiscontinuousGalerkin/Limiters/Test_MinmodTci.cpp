@@ -240,7 +240,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
   const auto element_with_no_neighbors = TestHelpers::Limiters::make_element<1>(
       {{Direction<1>::lower_xi(), Direction<1>::upper_xi()}});
   test_tci_detection(false, tvb_constant, input, mesh,
-                     element_with_no_neighbors, element_size, {{}}, {{}});
+                     element_with_no_neighbors, element_size, {}, {});
 }
 
 void test_tci_with_different_size_neighbor(
