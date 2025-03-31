@@ -30,10 +30,8 @@ enum class Side : uint8_t {
   Self = 3 << detail::side_shift
 };
 
-/// The opposite side
-constexpr inline Side opposite(const Side side) {
-  return (Side::Lower == side ? Side::Upper : Side::Lower);
-}
+/// The opposite side (Side::Self is its own opposite)
+Side opposite(Side side);
 
 /// Output operator for a Side.
 std::ostream& operator<<(std::ostream& os, const Side& side);
