@@ -31,6 +31,11 @@ class er;
  *
  * See the [tutorial](@ref tutorial_orientations) for information on how
  * OrientationMaps are used and constructed.
+ *
+ * \note If there is no discrete rotation between logical coordinates (e.g. the
+ * angular coordinates of a spherical shell abutting a wedge of a cubed sphere)
+ * specify Direction<VolumeDim>::self() as the mapped direction
+ *
  */
 template <size_t VolumeDim>
 class OrientationMap {
@@ -72,7 +77,10 @@ class OrientationMap {
   size_t operator()(const size_t dim) const {
     ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
            "Cannot use a default-constructed OrientationMap");
-    return get_direction(dim).dimension();
+    const auto neighbor_direction = get_direction(dim);
+    ASSERT(neighbor_direction.side() != Side::Self,
+           "There is no corresponding dimension");
+    return neighbor_direction.dimension();
   }
 
   /// The corresponding direction in the neighbor.
