@@ -731,6 +731,7 @@ class MockRuntimeSystem {
     }
   }
 
+  /// @{
   /// Invoke the next action in the ActionList on the parallel component
   /// `Component` on the component labeled by `array_index`, returning whether
   /// it was ready.
@@ -746,6 +747,22 @@ class MockRuntimeSystem {
                                 << array_index);
     }
   }
+
+  template <typename Component, typename CatchMatcher>
+  bool next_action_if_ready(const typename Component::array_index& array_index,
+                            const CatchMatcher& matcher) {
+    static_assert(std::is_base_of_v<Catch::Matchers::MatcherBase<std::string>,
+                                    CatchMatcher>);
+    try {
+      return mock_distributed_objects<Component>()
+          .at(array_index)
+          .next_action_if_ready(std::addressof(matcher));
+    } catch (const std::exception& e) {
+      ERROR("Caught exception " << e.what() << " on array index "
+                                << array_index);
+    }
+  }
+  /// @}
 
   /// @{
   /// Access the inboxes for a given component.
