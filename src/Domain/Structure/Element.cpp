@@ -43,7 +43,8 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id, Neighbors_t neighbors,
     }
   }
   // Assuming a maximum 2-to-1 refinement between neighboring elements:
-  ASSERT(number_of_neighbors_ <= maximum_number_of_neighbors(VolumeDim),
+  ASSERT(number_of_neighbors_ <= maximum_number_of_neighbors(VolumeDim) or
+             topologies_ != domain::topologies::hypercube<VolumeDim>,
          "Can't have " << number_of_neighbors_ << " neighbors in " << VolumeDim
                        << " dimensions");
 }

@@ -8,7 +8,6 @@
 #include <pup_stl.h>
 
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -17,10 +16,6 @@ template <size_t VolumeDim, typename IdType>
 Neighbors<VolumeDim, IdType>::Neighbors(std::unordered_set<IdType> ids,
                                         OrientationMap<VolumeDim> orientation)
     : ids_(std::move(ids)), orientation_(std::move(orientation)) {
-  // Assuming a maximum 2-to-1 refinement between neighboring elements:
-  ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
-         "Can't have " << ids_.size() << " neighbors in " << VolumeDim
-                       << " dimensions");
   ASSERT(orientation_ != OrientationMap<VolumeDim>{},
          "Cannot use a default-constructed OrientationMap in Neighbors.");
 }
@@ -36,10 +31,6 @@ void Neighbors<VolumeDim, IdType>::add_ids(
   for (const auto& id : additional_ids) {
     ids_.insert(id);
   }
-  // Assuming a maximum 2-to-1 refinement between neighboring elements:
-  ASSERT(ids_.size() <= maximum_number_of_neighbors_per_direction(VolumeDim),
-         "Can't have " << ids_.size() << " neighbors in " << VolumeDim
-                       << " dimensions");
 }
 
 template <size_t VolumeDim, typename IdType>
