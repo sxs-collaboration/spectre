@@ -34,7 +34,8 @@ void test_translation_control_error() {
   // Since we are only doing translation, turn off the
   // other control systems by passing 0 for their deriv orders
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<deriv_order, 0, 0, 0>;
+  using metavars =
+      TestHelpers::control_system::MockMetavars<deriv_order, 0, 0, 0>;
   using element_component = typename metavars::element_component;
   using translation_system = typename metavars::translation_system;
 
@@ -44,7 +45,7 @@ void test_translation_control_error() {
   const double initial_separation = 15.0;
 
   // Set up the system helper.
-  control_system::TestHelpers::SystemHelper<metavars> system_helper{};
+  TestHelpers::control_system::SystemHelper<metavars> system_helper{};
 
   const std::string input_options =
       "Evolution:\n"
@@ -75,7 +76,7 @@ void test_translation_control_error() {
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(
       initial_time, initial_separation, input_options,
-      TestHelpers::initialize_translation_functions_of_time<
+      TestHelpers::control_system::initialize_translation_functions_of_time<
           translation_system>);
 
   // Get references to everything that was set up inside the system helper. The

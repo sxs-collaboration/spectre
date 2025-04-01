@@ -43,7 +43,7 @@ struct MetavarsEmpty {
   static constexpr size_t volume_dim = 3;
 };
 
-using FakeCreator = control_system::TestHelpers::FakeCreator;
+using FakeCreator = TestHelpers::control_system::FakeCreator;
 
 void test_all_tags() {
   INFO("Test all tags");

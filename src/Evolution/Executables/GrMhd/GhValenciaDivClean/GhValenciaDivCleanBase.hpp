@@ -104,6 +104,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/Tags/Filter.hpp"
+#include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
@@ -645,8 +646,13 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
-        tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
-                                         Triggers::time_triggers>>>;
+        tmpl::pair<
+            Trigger,
+            tmpl::append<Triggers::logical_triggers, Triggers::time_triggers,
+                         tmpl::conditional_t<
+                             UseControlSystems,
+                             tmpl::list<Triggers::SeparationLessThan<true>>,
+                             tmpl::list<>>>>>;
   };
 
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;

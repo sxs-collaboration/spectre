@@ -72,9 +72,8 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   INFO("Translation: "s + get_output(TranslationDerivOrder) + ", Rotation: "s +
        get_output(RotationDerivOrder) + ", Expansion: "s +
        get_output(ExpansionDerivOrder));
-  using metavars =
-      TestHelpers::MockMetavars<TranslationDerivOrder, RotationDerivOrder,
-                                ExpansionDerivOrder, 0>;
+  using metavars = TestHelpers::control_system::MockMetavars<
+      TranslationDerivOrder, RotationDerivOrder, ExpansionDerivOrder, 0>;
   using element_component = typename metavars::element_component;
   using translation_component = typename metavars::translation_component;
   using rotation_component = typename metavars::rotation_component;
@@ -93,7 +92,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   const double final_time = 500.0;
 
   // Set up the system helper
-  control_system::TestHelpers::SystemHelper<metavars> system_helper{};
+  TestHelpers::control_system::SystemHelper<metavars> system_helper{};
 
   const std::string translation_name =
       system_helper.template name<translation_system>();
@@ -126,13 +125,16 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
          const double local_initial_time,
          const std::unordered_map<std::string, double>&
              initial_expiration_times) {
-        TestHelpers::initialize_expansion_functions_of_time<expansion_system>(
-            functions_of_time, local_initial_time, initial_expiration_times);
-        TestHelpers::initialize_rotation_functions_of_time<rotation_system>(
-            functions_of_time, local_initial_time, initial_expiration_times);
-        return TestHelpers::initialize_translation_functions_of_time<
-            translation_system>(functions_of_time, local_initial_time,
-                                initial_expiration_times);
+        TestHelpers::control_system::initialize_expansion_functions_of_time<
+            expansion_system>(functions_of_time, local_initial_time,
+                              initial_expiration_times);
+        TestHelpers::control_system::initialize_rotation_functions_of_time<
+            rotation_system>(functions_of_time, local_initial_time,
+                             initial_expiration_times);
+        return TestHelpers::control_system::
+            initialize_translation_functions_of_time<translation_system>(
+                functions_of_time, local_initial_time,
+                initial_expiration_times);
       };
 
   // Initialize everything within the system helper
@@ -207,8 +209,9 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
 
   const auto horizon_function = [&position_function, &runner,
                                  &coord_map](const double time) {
-    return TestHelpers::build_horizons_for_basic_control_systems<
-        element_component>(time, runner, position_function, coord_map);
+    return TestHelpers::control_system::
+        build_horizons_for_basic_control_systems<element_component>(
+            time, runner, position_function, coord_map);
   };
 
   // Run the actual control system test.
@@ -216,9 +219,9 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
                                         horizon_function);
 
   // Grab results
-  const auto grid_positions =
-      TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
-          element_component>(final_time, runner, position_function, coord_map);
+  const auto grid_positions = TestHelpers::control_system::
+      grid_frame_horizon_centers_for_basic_control_systems<element_component>(
+          final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
   const tnsr::I<double, 3, Frame::Grid> expected_grid_position_of_a{

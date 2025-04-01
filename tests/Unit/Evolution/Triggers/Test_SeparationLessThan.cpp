@@ -20,7 +20,9 @@
 #include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/SettleToConstantQuaternion.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Triggers/SeparationLessThan.hpp"
@@ -29,24 +31,29 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/CartesianProduct.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
+template <bool UseGridCentersFunctionOfTime>
 struct Metavariables {
   using component_list = tmpl::list<>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<Trigger, tmpl::list<Triggers::SeparationLessThan>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::SeparationLessThan<
+                                          UseGridCentersFunctionOfTime>>>>;
   };
 };
 
 using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<3>;
 
-void test() {
+void test_horizons() {
+  INFO("Testing with horizons");
+  register_factory_classes_with_charm<Metavariables<false>>();
   const std::string f_of_t_name = "LlamasWithHats";
   std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>
       map = std::make_unique<
@@ -57,6 +64,7 @@ void test() {
                          const double separation, const double time,
                          const double x_center_a, const double x_center_b,
                          const bool expected_is_triggered) {
+    CAPTURE(separation, time, x_center_a, x_center_b, expected_is_triggered);
     const tnsr::I<double, 3, Frame::Grid> center_a{
         std::array{x_center_a, 0.0, 0.0}};
     const tnsr::I<double, 3, Frame::Grid> center_b{
@@ -76,7 +84,7 @@ void test() {
 
     const Domain<3> domain{{}, std::move(excision_spheres)};
 
-    const Triggers::SeparationLessThan trigger{separation};
+    const Triggers::SeparationLessThan<false> trigger{separation};
 
     // The coefs are zero because we want the inertial point to be the same
     // as the grid point for easy checking
@@ -95,16 +103,62 @@ void test() {
 
   for (const auto& [separation, x_center] : cartesian_product(
            make_array(10.0, 5.0, 2.0), make_array(6.0, 5.0, 2.0, 0.75))) {
-    check(separation, 0.0, x_center, -x_center, 2.0 * x_center <= separation);
+    check(separation, 0.0, x_center, -x_center, 2.0 * x_center < separation);
   }
 
-  TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
+  TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables<false>>(
       "SeparationLessThan:\n"
       "  Value: 2.3");
 }
 
-void test_errors() {
-  const Triggers::SeparationLessThan trigger{1.0};
+void test_grid_centers() {
+  INFO("Testing with grid centers");
+  register_factory_classes_with_charm<Metavariables<true>>();
+
+  const Triggers::SeparationLessThan<false> trigger{6.0};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  functions_of_time["GridCenters"] =
+      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>{
+          std::make_unique<::domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+              0.0,
+              std::array<DataVector, 4>{{{16.0, 0.0, 0.0, -16.0, 0.0, 0.0},
+                                         {-0.001, 0.0, 0.0, 0.001, 0.0, 0.0},
+                                         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                                         {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}},
+              std::numeric_limits<double>::max())};
+  const double initial_omega_z = 0.01;
+  auto init_func_rotation = make_array<4, DataVector>(DataVector{3, 0.0});
+  init_func_rotation[1][2] = initial_omega_z;
+  auto init_quaternion = make_array<1, DataVector>(DataVector{4, 0.0});
+  init_quaternion[0][0] = 1.0;
+  functions_of_time["Rotation"] =
+      std::make_unique<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>(
+          0.0, init_quaternion, init_func_rotation, 1.0e5);
+
+  CHECK_FALSE(trigger(0.0, functions_of_time));
+  CHECK_FALSE(trigger(9.0e3, functions_of_time));
+  CHECK_FALSE(trigger(12.9999999e3, functions_of_time));
+  CHECK(trigger(13.001e3, functions_of_time));
+  CHECK(trigger(14.0e3, functions_of_time));
+  CHECK(trigger(15.0e3, functions_of_time));
+
+  const double match_time = 14.5e3;
+  const std::array<DataVector, 3> settle_initial_func_and_derivs =
+      functions_of_time.at("Rotation")->func_and_2_derivs(match_time);
+  functions_of_time["Rotation"] =
+      std::make_unique<domain::FunctionsOfTime::SettleToConstantQuaternion>(
+          settle_initial_func_and_derivs, match_time, 60.0);
+  CHECK_FALSE(trigger(15.0e3, functions_of_time));
+
+  TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables<true>>(
+      "SeparationLessThan:\n"
+      "  Value: 2.3");
+}
+
+void test_errors_horizons() {
+  const Triggers::SeparationLessThan<false> trigger{1.0};
 
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
@@ -124,11 +178,11 @@ void test_errors() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Triggers.SeparationLessThan",
                   "[Unit][Evolution]") {
-  register_factory_classes_with_charm<Metavariables>();
   domain::FunctionsOfTime::register_derived_with_charm();
   PUPable_reg(SINGLE_ARG(
       domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>));
-  test();
-  test_errors();
+  test_horizons();
+  test_grid_centers();
+  test_errors_horizons();
 }
 }  // namespace

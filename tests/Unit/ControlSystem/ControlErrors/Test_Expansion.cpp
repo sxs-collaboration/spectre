@@ -21,7 +21,8 @@ namespace control_system {
 namespace {
 void test_expansion_control_error() {
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<0, 0, deriv_order, 0>;
+  using metavars =
+      TestHelpers::control_system::MockMetavars<0, 0, deriv_order, 0>;
   using element_component = typename metavars::element_component;
   using expansion_system = typename metavars::expansion_system;
 
@@ -31,7 +32,7 @@ void test_expansion_control_error() {
   const double initial_separation = 15.0;
 
   // Set up the system helper.
-  control_system::TestHelpers::SystemHelper<metavars> system_helper{};
+  TestHelpers::control_system::SystemHelper<metavars> system_helper{};
 
   const std::string input_options =
       "Evolution:\n"
@@ -62,7 +63,8 @@ void test_expansion_control_error() {
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(
       initial_time, initial_separation, input_options,
-      TestHelpers::initialize_expansion_functions_of_time<expansion_system>);
+      TestHelpers::control_system::initialize_expansion_functions_of_time<
+          expansion_system>);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need

@@ -57,7 +57,7 @@ using FoTMap = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
 using Strahlkorper = ylm::Strahlkorper<Frame::Distorted>;
 template <typename Metavars>
-using SystemHelper = control_system::TestHelpers::SystemHelper<Metavars>;
+using SystemHelper = TestHelpers::control_system::SystemHelper<Metavars>;
 
 template <typename Generator, typename Metavars, size_t DerivOrder>
 void test_shape_control(
@@ -178,7 +178,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
                 const double looser_eps, const double stricter_eps) {
   // First 3 zeros are for translation, rotation, and expansion
   using metavars =
-      control_system::TestHelpers::MockMetavars<0, 0, 0, DerivOrder>;
+      TestHelpers::control_system::MockMetavars<0, 0, 0, DerivOrder>;
   using system = typename metavars::shape_system;
 
   // Responsible for running all control system checks

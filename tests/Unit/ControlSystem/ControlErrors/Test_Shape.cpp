@@ -58,7 +58,7 @@ using Strahlkorper = ylm::Strahlkorper<Frame::Distorted>;
 void test_shape_control_error() {
   constexpr size_t deriv_order = 2;
   using metavars =
-      control_system::TestHelpers::MockMetavars<0, 0, 0, deriv_order>;
+      TestHelpers::control_system::MockMetavars<0, 0, 0, deriv_order>;
   using system = typename metavars::shape_system;
   using ControlError = system::control_error;
   using element_component = typename metavars::element_component;

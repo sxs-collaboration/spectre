@@ -12,6 +12,7 @@ set(LIBS_TO_LINK
   EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
+  EvolutionTriggers
   GeneralRelativitySolutions
   GeneralizedHarmonic
   GhGrMhdAnalyticData

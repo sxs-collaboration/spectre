@@ -3,6 +3,7 @@
 
 #include "Evolution/Triggers/SeparationLessThan.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <pup.h>
@@ -14,15 +15,19 @@
 #include "Domain/Block.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ExcisionSphere.hpp"
+#include "Domain/FunctionsOfTime/SettleToConstantQuaternion.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 
 namespace Triggers {
-SeparationLessThan::SeparationLessThan(const double separation)
+template <bool UseGridCentersFunctionOfTime>
+SeparationLessThan<UseGridCentersFunctionOfTime>::SeparationLessThan(
+    const double separation)
     : separation_(separation) {}
 
-bool SeparationLessThan::operator()(
+template <bool UseGridCentersFunctionOfTime>
+bool SeparationLessThan<UseGridCentersFunctionOfTime>::operator()(
     const double time, const ::Domain<3>& domain,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -73,10 +78,36 @@ bool SeparationLessThan::operator()(
            square(get<1>(position_difference)) +
            square(get<2>(position_difference)));
 
-  return calculated_separation <= separation_;
+  return calculated_separation < separation_;
 }
 
-void SeparationLessThan::pup(PUP::er& p) { p | separation_; }
+template <bool UseGridCentersFunctionOfTime>
+bool SeparationLessThan<UseGridCentersFunctionOfTime>::operator()(
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) const {
+  if (dynamic_cast<const domain::FunctionsOfTime::SettleToConstantQuaternion*>(
+          functions_of_time.at("Rotation").get()) != nullptr) {
+    return false;
+  }
+  const DataVector fot = functions_of_time.at("GridCenters")->func(time)[0];
+  const double separation =
+      std::sqrt(square(fot[0] - fot[3]) + square(fot[1] - fot[4]) +
+                square(fot[2] - fot[5]));
+  return separation < separation_;
+}
 
-PUP::able::PUP_ID SeparationLessThan::my_PUP_ID = 0;  // NOLINT
+template <bool UseGridCentersFunctionOfTime>
+void SeparationLessThan<UseGridCentersFunctionOfTime>::pup(PUP::er& p) {
+  p | separation_;
+}
+
+template <bool UseGridCentersFunctionOfTime>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID SeparationLessThan<UseGridCentersFunctionOfTime>::my_PUP_ID =
+    0;
+
+template class SeparationLessThan<true>;
+template class SeparationLessThan<false>;
 }  // namespace Triggers
