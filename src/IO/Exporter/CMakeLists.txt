@@ -14,7 +14,7 @@ add_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Exporter.cpp
+  PointwiseInterpolator.cpp
   )
 
 spectre_target_headers(
@@ -22,7 +22,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Exporter.hpp
-  InterpolateToPoints.hpp
+  PointwiseInterpolator.hpp
   )
 
 target_link_libraries(

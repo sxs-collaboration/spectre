@@ -20,7 +20,7 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "IO/Exporter/Exporter.hpp"
-#include "IO/Exporter/InterpolateToPoints.hpp"
+#include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
