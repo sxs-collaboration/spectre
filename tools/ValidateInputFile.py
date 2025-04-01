@@ -116,19 +116,25 @@ def validate_input_file(
             found_hints = True
             continue
         if found_hints:
-            if line.startswith("In group"):
-                path.append(line[9:-1])
-            elif line.startswith("While parsing option"):
-                path.append(line[21:-1])
-            elif line.startswith("While creating a"):
-                path.append(line[17:-1])
-            elif line.startswith("At line"):
-                match = re.match(r"At line ([0-9]+) column ([0-9]+)", line)
-                line_number, _ = map(int, match.groups())
-            elif line.startswith("While operating factory for"):
-                # remove "unique_ptr" entry from path
-                path.pop()
-            elif "# ERROR #" in line:
+            if line_number is None:
+                if line.startswith("In group"):
+                    path.append(line[9:-1])
+                    continue
+                elif line.startswith("While parsing option"):
+                    path.append(line[21:-1])
+                    continue
+                elif line.startswith("While creating a"):
+                    path.append(line[17:-1])
+                    continue
+                elif line.startswith("At line"):
+                    match = re.match(r"At line ([0-9]+) column ([0-9]+)", line)
+                    line_number, _ = map(int, match.groups())
+                    continue
+                elif line.startswith("While operating factory for"):
+                    # remove "unique_ptr" entry from path
+                    path.pop()
+                    continue
+            if "# ERROR #" in line:
                 break
             else:
                 msg.append(line)

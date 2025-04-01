@@ -409,15 +409,15 @@ void trigger_missing_arg() {
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
   CHECK_THROWS_WITH(trigger_missing(),
                     Catch::Matchers::ContainsSubstring(
-                        "At line 1 column 1:\nExpected a class to "
-                        "create:\nKnown Ids:\n  Test1"));
+                        "At line 1 column 1:\nExpected a class name (and "
+                        "possibly options):\nKnown Ids:\n  Test1"));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.multiple", "[Unit][Options]") {
   CHECK_THROWS_WITH(
       trigger_multiple(),
       Catch::Matchers::ContainsSubstring(
-          "At line 2 column 3:\nExpected a single class to create, got 2"));
+          "At line 2 column 3:\nExpected a class name (and possibly options)"));
 }
 
 SPECTRE_TEST_CASE("Unit.Options.Factory.vector", "[Unit][Options]") {

@@ -1233,6 +1233,8 @@ struct create_from_yaml<std::variant<T...>> {
                                                            Metavariables>(
           options, alternative_parsable_types{});
     } else {
+      const std::string error_separator =
+          "\n--------------------------------------------------\n";
       Result result{};
       std::string errors{};
       bool constructed = false;
@@ -1245,11 +1247,11 @@ struct create_from_yaml<std::variant<T...>> {
           constructed = true;
         } catch (const Options::detail::propagate_context& e) {
           // This alternative failed, but a later one may succeed.
-          errors += "\n\n" + e.message();
+          errors += error_separator + e.message();
         }
       }
 
-      const auto try_parse = [&constructed, &errors, &options,
+      const auto try_parse = [&constructed, &error_separator, &errors, &options,
                               &result](auto alternative_v) {
         using Alternative = tmpl::type_from<decltype(alternative_v)>;
         if (use_hybrid_parsing and
@@ -1265,7 +1267,7 @@ struct create_from_yaml<std::variant<T...>> {
           constructed = true;
         } catch (const Options::detail::propagate_context& e) {
           // This alternative failed, but a later one may succeed.
-          errors += "\n\n" + e.message();
+          errors += error_separator + e.message();
         }
       };
       EXPAND_PACK_LEFT_TO_RIGHT(try_parse(tmpl::type_<T>{}));

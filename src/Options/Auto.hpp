@@ -12,9 +12,10 @@
 #include <variant>
 
 #include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
+#include "Options/ParseError.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace Options {
 /// The label representing the absence of a value for `Options::Auto`
