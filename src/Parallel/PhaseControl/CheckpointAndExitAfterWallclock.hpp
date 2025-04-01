@@ -222,6 +222,10 @@ CheckpointAndExitAfterWallclock::arbitrate_phase_change_impl(
         return std::make_pair(
             Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint,
             ArbitrationStrategy::PermitAdditionalJumps);
+      } else if (current_phase ==
+                 Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint) {
+        return std::make_pair(Parallel::Phase::Restart,
+                              ArbitrationStrategy::PermitAdditionalJumps);
       }
       // Reset restart_phase until it is needed for the next checkpoint
       const auto result = restart_phase;

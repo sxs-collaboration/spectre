@@ -32,6 +32,7 @@ std::vector<Phase> known_phases() {
           Phase::PostFailureCleanup,
           Phase::Register,
           Phase::RegisterWithElementDataReader,
+          Phase::Restart,
           Phase::Solve,
           Phase::Testing,
           Phase::UpdateOptionsAtRestartFromCheckpoint,
@@ -74,6 +75,8 @@ std::ostream& operator<<(std::ostream& os, const Phase& phase) {
       return os << "Register";
     case Parallel::Phase::RegisterWithElementDataReader:
       return os << "RegisterWithElementDataReader";
+    case Parallel::Phase::Restart:
+      return os << "Restart";
     case Parallel::Phase::Solve:
       return os << "Solve";
     case Parallel::Phase::Testing:

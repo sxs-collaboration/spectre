@@ -79,6 +79,8 @@ enum class Phase {
   Register,
   ///  phase in which components register with the data importer components
   RegisterWithElementDataReader,
+  ///  phase run after a checkpoint-restart
+  Restart,
   ///  phase in which something is solved
   Solve,
   ///  phase in which something is tested
