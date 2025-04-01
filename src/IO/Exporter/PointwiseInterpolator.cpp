@@ -395,10 +395,11 @@ auto parse_volume_files(const std::variant<std::vector<std::string>,
                          std::move(domain), std::move(time_and_fot.second));
 }
 
-template <typename DataType, size_t Dim>
+template <typename DataType, size_t Dim, typename Frame>
 auto block_logical_coordinates(
-    const tnsr::I<DataType, Dim>& target_points, const Domain<Dim>& domain,
-    const double time, const domain::FunctionsOfTimeMap& functions_of_time,
+    const tnsr::I<DataType, Dim, Frame>& target_points,
+    const Domain<Dim>& domain, const double time,
+    const domain::FunctionsOfTimeMap& functions_of_time,
     const bool extrapolate_into_excisions,
     [[maybe_unused]] const size_t resolved_num_threads) {
   const size_t num_target_points = get_size(get<0>(target_points));
@@ -410,13 +411,20 @@ auto block_logical_coordinates(
   // added to the `block_logical_coords` and additional information is collected
   // in `extrapolation_info` for later extrapolation.
   constexpr size_t num_extrapolation_anchors = 8;
-  const double extrapolation_spacing = 0.3;
+  [[maybe_unused]] const double extrapolation_spacing = 0.3;
   std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
       extrapolation_info{};
+  if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
+    if (extrapolate_into_excisions) {
+      ERROR(
+          "Extrapolation into excisions is only supported in the inertial "
+          "frame at the moment.");
+    }
+  }
 #pragma omp parallel num_threads(resolved_num_threads)
   {
     // Set up thread-local variables
-    tnsr::I<double, Dim, Frame::Inertial> target_point{};
+    tnsr::I<double, Dim, Frame> target_point{};
     std::vector<BlockLogicalCoords<Dim>> extra_block_logical_coords{};
     std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
         extra_extrapolation_info{};
@@ -439,14 +447,16 @@ auto block_logical_coordinates(
       }
       // The point wasn't found in any block. Check if it's in an excision and
       // set up extrapolation if requested.
-      for (const auto& [name, excision_sphere] : domain.excision_spheres()) {
-        if (add_extrapolation_anchors(
-                make_not_null(&extra_block_logical_coords),
-                make_not_null(&extra_extrapolation_info), excision_sphere,
-                domain, target_point, time, functions_of_time,
-                extrapolation_spacing)) {
-          extra_extrapolation_info.back().target_index = s;
-          break;
+      if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+        for (const auto& [name, excision_sphere] : domain.excision_spheres()) {
+          if (add_extrapolation_anchors(
+                  make_not_null(&extra_block_logical_coords),
+                  make_not_null(&extra_extrapolation_info), excision_sphere,
+                  domain, target_point, time, functions_of_time,
+                  extrapolation_spacing)) {
+            extra_extrapolation_info.back().target_index = s;
+            break;
+          }
         }
       }
     }  // omp for target points
@@ -473,14 +483,14 @@ auto block_logical_coordinates(
 
 }  // namespace
 
-template <typename ResultDataType, size_t Dim>
+template <typename ResultDataType, size_t Dim, typename Frame>
 void interpolate_to_points(
     const gsl::not_null<std::vector<ResultDataType>*> result,
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
     const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
-    const tnsr::I<DataVector, Dim>& target_points,
+    const tnsr::I<DataVector, Dim, Frame>& target_points,
     const bool extrapolate_into_excisions,
     const std::optional<size_t> num_threads) {
   const size_t num_target_points = get<0>(target_points).size();
@@ -562,23 +572,25 @@ void interpolate_to_points(
 // Generate instantiations
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template void interpolate_to_points<DTYPE(data), DIM(data)>(                \
+  template void interpolate_to_points<DTYPE(data), DIM(data), FRAME(data)>(   \
       gsl::not_null<std::vector<DTYPE(data)>*> result,                        \
       const std::variant<std::vector<std::string>, std::string>&              \
           volume_files_or_glob,                                               \
       const std::string& subfile_name, const ObservationVariant& observation, \
       const std::vector<std::string>& tensor_components,                      \
-      const tnsr::I<DataVector, DIM(data)>& target_points,                    \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& target_points,       \
       bool extrapolate_into_excisions, std::optional<size_t> num_threads);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (DataVector, std::vector<double>))
 
 #undef INSTANTIATE
 #undef DIM
+#undef FRAME
 #undef DTYPE
 
 }  // namespace spectre::Exporter

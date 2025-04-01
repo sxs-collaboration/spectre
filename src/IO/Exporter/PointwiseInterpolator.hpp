@@ -66,24 +66,24 @@ auto make_tagged_tuple(std::vector<DataType> interpolated_data) {
  *
  * \snippet Test_Exporter.cpp interpolate_tensors_to_points_example
  */
-template <typename ResultDataType, size_t Dim>
+template <typename ResultDataType, size_t Dim, typename Frame>
 void interpolate_to_points(
     gsl::not_null<std::vector<ResultDataType>*> result,
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
     const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
-    const tnsr::I<DataVector, Dim>& target_points,
+    const tnsr::I<DataVector, Dim, Frame>& target_points,
     bool extrapolate_into_excisions = false,
     std::optional<size_t> num_threads = std::nullopt);
 
-template <size_t Dim>
+template <size_t Dim, typename Frame>
 std::vector<DataVector> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
     const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
-    const tnsr::I<DataVector, Dim>& target_points,
+    const tnsr::I<DataVector, Dim, Frame>& target_points,
     bool extrapolate_into_excisions = false,
     std::optional<size_t> num_threads = std::nullopt) {
   std::vector<DataVector> interpolated_data{};
@@ -93,12 +93,12 @@ std::vector<DataVector> interpolate_to_points(
   return interpolated_data;
 }
 
-template <typename Tags, size_t Dim>
+template <typename Tags, size_t Dim, typename Frame>
 tuples::tagged_tuple_from_typelist<Tags> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
     const std::string& subfile_name, const ObservationVariant& observation,
-    const tnsr::I<DataVector, Dim>& target_points,
+    const tnsr::I<DataVector, Dim, Frame>& target_points,
     bool extrapolate_into_excisions = false,
     std::optional<size_t> num_threads = std::nullopt) {
   return make_tagged_tuple<Tags>(
