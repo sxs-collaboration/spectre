@@ -12,6 +12,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/NeighborIsConforming.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
@@ -21,6 +22,83 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+
+namespace {
+SegmentId boundary_segment_id(const size_t refinement_level, const Side side) {
+  if (side == Side::Lower) {
+    return {refinement_level, 0_st};
+  }
+  ASSERT(side == Side::Upper, "Invalid side: " << side);
+  return {refinement_level, two_to_the(refinement_level) - 1};
+}
+
+std::vector<SegmentId> valid_transverse_ids_conforming(
+    const SegmentId& oriented_self_id, const size_t neighbor_refinement_level,
+    const size_t self_block_id, const size_t neighbor_block_id) {
+  const size_t self_refinement_level = oriented_self_id.refinement_level();
+  if (self_refinement_level == neighbor_refinement_level) {
+    return std::vector{oriented_self_id};
+  }
+  if (self_refinement_level == neighbor_refinement_level + 1) {
+    return std::vector{oriented_self_id.id_of_parent()};
+  }
+  if (self_refinement_level + 1 != neighbor_refinement_level) {
+    ERROR("Block " << self_block_id << " with refinement level "
+                   << self_refinement_level << " and neighbor block "
+                   << neighbor_block_id << " with refinement level "
+                   << neighbor_refinement_level << " differ by more than one.");
+  }
+  return std::vector{oriented_self_id.id_of_child(Side::Lower),
+                     oriented_self_id.id_of_child(Side::Upper)};
+}
+
+std::vector<SegmentId> valid_transverse_ids_nonconforming(
+    const size_t neighbor_refinement_level) {
+  std::vector<SegmentId> result(two_to_the(neighbor_refinement_level));
+  for (size_t i = 0; i < result.size(); ++i) {
+    result[i] = SegmentId(neighbor_refinement_level, i);
+  }
+  return result;
+}
+
+std::unordered_set<ElementId<1>> neighbor_ids(
+    const std::array<std::vector<SegmentId>, 1>& valid_segment_ids,
+    const size_t neighbor_block_id, const size_t grid_index) {
+  ASSERT(valid_segment_ids[0].size() == 1,
+         "Cannot have more than one neighbor in one dimension.");
+  return std::unordered_set{ElementId<1>{
+      neighbor_block_id, std::array{valid_segment_ids[0][0]}, grid_index}};
+}
+
+std::unordered_set<ElementId<2>> neighbor_ids(
+    const std::array<std::vector<SegmentId>, 2>& valid_segment_ids,
+    const size_t neighbor_block_id, const size_t grid_index) {
+  std::unordered_set<ElementId<2>> result;
+  for (const auto& xi_segment : valid_segment_ids[0]) {
+    for (const auto& eta_segment : valid_segment_ids[1]) {
+      result.emplace(neighbor_block_id, std::array{xi_segment, eta_segment},
+                     grid_index);
+    }
+  }
+  return result;
+}
+
+std::unordered_set<ElementId<3>> neighbor_ids(
+    const std::array<std::vector<SegmentId>, 3>& valid_segment_ids,
+    const size_t neighbor_block_id, const size_t grid_index) {
+  std::unordered_set<ElementId<3>> result;
+  for (const auto& xi_segment : valid_segment_ids[0]) {
+    for (const auto& eta_segment : valid_segment_ids[1]) {
+      for (const auto& zeta_segment : valid_segment_ids[2]) {
+        result.emplace(neighbor_block_id,
+                       std::array{xi_segment, eta_segment, zeta_segment},
+                       grid_index);
+      }
+    }
+  }
+  return result;
+}
+}  // namespace
 
 namespace domain::Initialization {
 template <size_t VolumeDim>
@@ -33,109 +111,70 @@ Element<VolumeDim> create_initial_element(
   const auto& neighbors_of_block = block.neighbors();
   const auto segment_ids = element_id.segment_ids();
 
-  // Declare two helper lambdas for setting the neighbors of an element
-  const auto compute_element_neighbor_in_other_block =
-      [&block, &initial_refinement_levels, &neighbors_of_block, &segment_ids,
-       grid_index =
-           element_id.grid_index()](const Direction<VolumeDim>& direction) {
-        const auto& block_neighbor = neighbors_of_block.at(direction);
-        const auto& orientation = block_neighbor.orientation();
-        const auto direction_in_neighbor = orientation(direction);
+  const auto compute_element_neighbors_in_other_block =
+      [&block, &blocks, &initial_refinement_levels, &neighbors_of_block,
+       &segment_ids, grid_index = element_id.grid_index()](
+          const Direction<VolumeDim>& direction) {
+        const auto& block_neighbors = neighbors_of_block.at(direction);
+        const auto& orientation = block_neighbors.orientation();
+        const auto direction_from_neighbor = orientation(direction).opposite();
+        Neighbors<VolumeDim> element_neighbors{
+            std::unordered_set<ElementId<VolumeDim>>{}, orientation};
 
-        // SegmentIds of the current element using the neighbor's axes.
-        auto segment_ids_of_unrefined_neighbor = orientation(segment_ids);
-        ASSERT(block_neighbor.size() == 1,
-               "Multiple block neighbors not supported by this function.");
-        const auto& refinement_of_neighbor =
-            initial_refinement_levels[*block_neighbor.begin()];
-
-        // Check whether each dimension will have multiple neighbors
-        // because the neighboring block is more refined.  For dimensions
-        // that have only one neighbor, adjust the SegmentId to that of
-        // the neighbor if necessary.
-        auto neighbor_is_refined = make_array<VolumeDim>(false);
-        for (size_t d = 0; d < VolumeDim; ++d) {
-          // The refinement difference perpendicular to the interface is
-          // not restricted.
-          if (d == direction_in_neighbor.dimension()) {
-            continue;
-          }
-          switch (static_cast<int>(gsl::at(refinement_of_neighbor, d)) -
-                  static_cast<int>(gsl::at(segment_ids_of_unrefined_neighbor, d)
-                                       .refinement_level())) {
-            case 0:
-              break;
-            case 1:
-              gsl::at(neighbor_is_refined, d) = true;
-              break;
-            case -1:
-              gsl::at(segment_ids_of_unrefined_neighbor, d) =
-                  gsl::at(segment_ids_of_unrefined_neighbor, d).id_of_parent();
-              break;
-            default:
-              ERROR("Refinement levels "
-                    << gsl::at(refinement_of_neighbor, d) << " and "
-                    << gsl::at(segment_ids_of_unrefined_neighbor, d)
-                           .refinement_level()
-                    << " in blocks " << *block_neighbor.begin() << " and "
-                    << block.id() << " differ by more than one.");
-          }
-        }
-
-        // Set the segment in the perpendicular dimension to the segment
-        // of the neighboring elements, which must be at one end of the
-        // interval.  This sort of refinement never produces multiple
-        // neighbors, so we do not set neighbor_is_refined[...].
-        {
-          auto& perpendicular_segment =
-              gsl::at(segment_ids_of_unrefined_neighbor,
-                      direction_in_neighbor.dimension());
-          const size_t neighbor_refinement = gsl::at(
-              refinement_of_neighbor, direction_in_neighbor.dimension());
-          // direction_in_neighbor points into the element, so we want the
-          // segment on the side it is pointing away from.
-          if (direction_in_neighbor.side() == Side::Upper) {
-            perpendicular_segment = SegmentId(neighbor_refinement, 0);
-          } else {
-            perpendicular_segment = SegmentId(
-                neighbor_refinement, two_to_the(neighbor_refinement) - 1);
-          }
-        }
-
-        // Consider all possible neighbors by looping over all elements of
-        // the product set {Lower, Upper}^VolumeDim, checking whether each
-        // actually describes a neighbor.  For dimensions where the
-        // interface is not split, we arbitrarily call all neighbors Lower
-        // and consider any Upper neighbors invalid.
-        std::unordered_set<ElementId<VolumeDim>> neighbor_ids;
-        for (IndexIterator<VolumeDim> index(Index<VolumeDim>(2)); index;
-             ++index) {
-          std::array<SegmentId, VolumeDim> segment_ids_of_neighbor{};
-          for (size_t d = 0; d < VolumeDim; ++d) {
-            const auto& unrefined_segment =
-                gsl::at(segment_ids_of_unrefined_neighbor, d);
-            auto& segment = gsl::at(segment_ids_of_neighbor, d);
-            if (not gsl::at(neighbor_is_refined, d)) {
-              if ((*index)[d] == 0) {
-                segment = unrefined_segment;
+        if (block_neighbors.size() == 1) {
+          const size_t neighbor_block_id = *(block_neighbors.begin());
+          std::array<std::vector<SegmentId>, VolumeDim> valid_segment_ids;
+          if (neighbor_is_conforming(block.topologies(),
+                                     blocks[neighbor_block_id].topologies(),
+                                     direction, orientation)) {
+            const auto oriented_segment_ids = orientation(segment_ids);
+            for (size_t d = 0; d < VolumeDim; ++d) {
+              const size_t level =
+                  gsl::at(initial_refinement_levels[neighbor_block_id], d);
+              if (d == direction_from_neighbor.dimension()) {
+                gsl::at(valid_segment_ids, d) = std::vector{
+                    boundary_segment_id(level, direction_from_neighbor.side())};
               } else {
-                goto next_index;
+                gsl::at(valid_segment_ids, d) = valid_transverse_ids_conforming(
+                    gsl::at(oriented_segment_ids, d), level, block.id(),
+                    neighbor_block_id);
               }
-            } else {
-              if ((*index)[d] == 0) {
-                segment = unrefined_segment.id_of_child(Side::Lower);
+            }
+          } else {
+            for (size_t d = 0; d < VolumeDim; ++d) {
+              const size_t level =
+                  gsl::at(initial_refinement_levels[neighbor_block_id], d);
+              if (d == direction_from_neighbor.dimension()) {
+                gsl::at(valid_segment_ids, d) = std::vector{
+                    boundary_segment_id(level, direction_from_neighbor.side())};
               } else {
-                segment = unrefined_segment.id_of_child(Side::Upper);
+                gsl::at(valid_segment_ids, d) =
+                    valid_transverse_ids_nonconforming(level);
               }
             }
           }
-          neighbor_ids.insert(
-              {*block_neighbor.begin(), segment_ids_of_neighbor, grid_index});
-        next_index:;
+          element_neighbors.add_ids(
+              neighbor_ids(valid_segment_ids, neighbor_block_id, grid_index));
+        } else {
+          for (const auto& block_id : block_neighbors.ids()) {
+            std::array<std::vector<SegmentId>, VolumeDim> valid_segment_ids;
+            for (size_t d = 0; d < VolumeDim; ++d) {
+              const size_t level =
+                  gsl::at(initial_refinement_levels[block_id], d);
+              if (d == direction_from_neighbor.dimension()) {
+                gsl::at(valid_segment_ids, d) = std::vector{
+                    boundary_segment_id(level, direction_from_neighbor.side())};
+              } else {
+                gsl::at(valid_segment_ids, d) =
+                    valid_transverse_ids_nonconforming(level);
+              }
+            }
+            element_neighbors.add_ids(
+                neighbor_ids(valid_segment_ids, block_id, grid_index));
+          }
         }
-        return std::make_pair(
-            direction,
-            Neighbors<VolumeDim>(std::move(neighbor_ids), orientation));
+
+        return std::make_pair(direction, std::move(element_neighbors));
       };
 
   const auto compute_element_neighbor_in_same_block = [&element_id,
@@ -165,7 +204,7 @@ Element<VolumeDim> create_initial_element(
     const auto lower_direction = Direction<VolumeDim>{d, Side::Lower};
     if (0 == index and 1 == neighbors_of_block.count(lower_direction)) {
       neighbors_of_element.emplace(
-          compute_element_neighbor_in_other_block(lower_direction));
+          compute_element_neighbors_in_other_block(lower_direction));
     } else if (0 != index) {
       neighbors_of_element.emplace(
           compute_element_neighbor_in_same_block(lower_direction));
@@ -175,7 +214,7 @@ Element<VolumeDim> create_initial_element(
     if (index == two_to_the(gsl::at(segment_ids, d).refinement_level()) - 1 and
         1 == neighbors_of_block.count(upper_direction)) {
       neighbors_of_element.emplace(
-          compute_element_neighbor_in_other_block(upper_direction));
+          compute_element_neighbors_in_other_block(upper_direction));
     } else if (index !=
                two_to_the(gsl::at(segment_ids, d).refinement_level()) - 1) {
       neighbors_of_element.emplace(
@@ -183,7 +222,8 @@ Element<VolumeDim> create_initial_element(
     }
   }
   return Element<VolumeDim>(ElementId<VolumeDim>(element_id),
-                            std::move(neighbors_of_element));
+                            std::move(neighbors_of_element),
+                            block.topologies());
 }
 }  // namespace domain::Initialization
 

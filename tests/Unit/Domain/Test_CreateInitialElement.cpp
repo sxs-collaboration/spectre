@@ -28,6 +28,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -36,10 +37,12 @@ namespace {
 void test_create_initial_element(
     const ElementId<2>& element_id, const std::vector<Block<2>>& blocks,
     const std::vector<std::array<size_t, 2>>& refinement_levels,
-    const DirectionMap<2, Neighbors<2>>& expected_neighbors) {
+    const DirectionMap<2, Neighbors<2>>& expected_neighbors,
+    const std::array<domain::Topology, 2>& topologies =
+        domain::topologies::hypercube<2>) {
   const auto created_element = domain::Initialization::create_initial_element(
       element_id, blocks, refinement_levels);
-  const Element<2> expected_element{element_id, expected_neighbors};
+  const Element<2> expected_element{element_id, expected_neighbors, topologies};
   CHECK(created_element == expected_element);
 }
 
@@ -58,6 +61,13 @@ void test_h_refinement() {
                                                     Frame::Inertial>(
                        domain::CoordinateMaps::Identity<3>{}),
                    0, {{neighbor_direction, {1, neighbor_orientation}}}));
+      blocks.emplace_back(
+          Block<3>(domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                    Frame::Inertial>(
+                       domain::CoordinateMaps::Identity<3>{}),
+                   1,
+                   {{neighbor_orientation(neighbor_direction).opposite(),
+                     {1, neighbor_orientation.inverse_map()}}}));
       const std::vector<std::array<size_t, 3>> refinement_levels{
           {{1, 1, 1}}, neighbor_refinement};
 
@@ -392,6 +402,71 @@ void test_h_refinement() {
   check_perpendicular_refinement_lower(reflected, {{5, 0, 0}},
                                        {{1, {{{5, 0}, {0, 0}, {0, 0}}}}});
 }
+
+void test_nonconforming_blocks() {
+  const OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
+  std::vector<Block<2>> blocks;
+  blocks.emplace_back(
+      nullptr, 0,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::upper_xi(), BlockNeighbors<2>{{1, 2, 3, 4}, aligned}}},
+      "Annulus", std::array{domain::Topology::I1, domain::Topology::S1});
+  blocks.emplace_back(
+      nullptr, 1,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(), BlockNeighbors<2>{0, aligned}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{2, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{4, aligned}}},
+      "North", std::array{domain::Topology::I1, domain::Topology::I1});
+  blocks.emplace_back(
+      nullptr, 2,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(), BlockNeighbors<2>{0, aligned}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{3, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{1, aligned}}},
+      "East", std::array{domain::Topology::I1, domain::Topology::I1});
+  blocks.emplace_back(
+      nullptr, 3,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(), BlockNeighbors<2>{0, aligned}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{4, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{2, aligned}}},
+      "South", std::array{domain::Topology::I1, domain::Topology::I1});
+  blocks.emplace_back(
+      nullptr, 4,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(), BlockNeighbors<2>{0, aligned}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{1, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{3, aligned}}},
+      "West", std::array{domain::Topology::I1, domain::Topology::I1});
+  const std::vector<std::array<size_t, 2>> initial_refinement_levels{
+      std::array{2_st, 0_st}, std::array{0_st, 1_st}, std::array{0_st, 1_st},
+      std::array{0_st, 1_st}, std::array{0_st, 1_st}};
+  const ElementId<2> annulus_u{0, std::array{SegmentId{2, 3}, SegmentId{0, 0}}};
+  const ElementId<2> annulus_m{0, std::array{SegmentId{2, 2}, SegmentId{0, 0}}};
+  const ElementId<2> north_l{1, std::array{SegmentId{0, 0}, SegmentId{1, 0}}};
+  const ElementId<2> north_u{1, std::array{SegmentId{0, 0}, SegmentId{1, 1}}};
+  const ElementId<2> east_l{2, std::array{SegmentId{0, 0}, SegmentId{1, 0}}};
+  const ElementId<2> east_u{2, std::array{SegmentId{0, 0}, SegmentId{1, 1}}};
+  const ElementId<2> south_l{3, std::array{SegmentId{0, 0}, SegmentId{1, 0}}};
+  const ElementId<2> south_u{3, std::array{SegmentId{0, 0}, SegmentId{1, 1}}};
+  const ElementId<2> west_l{4, std::array{SegmentId{0, 0}, SegmentId{1, 0}}};
+  const ElementId<2> west_u{4, std::array{SegmentId{0, 0}, SegmentId{1, 1}}};
+  test_create_initial_element(
+      annulus_u, blocks, initial_refinement_levels,
+      {{Direction<2>::lower_xi(), Neighbors<2>{annulus_m, aligned}},
+       {Direction<2>::upper_xi(),
+        Neighbors<2>{{north_l, north_u, east_l, east_u, south_l, south_u,
+                      west_l, west_u},
+                     aligned}}},
+      domain::topologies::annulus);
+  test_create_initial_element(
+      north_l, blocks, initial_refinement_levels,
+      {{Direction<2>::lower_xi(), Neighbors<2>{annulus_u, aligned}},
+       {Direction<2>::lower_eta(), Neighbors<2>{east_u, aligned}},
+       {Direction<2>::upper_eta(), Neighbors<2>{north_u, aligned}}},
+      domain::topologies::hypercube<2>);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
@@ -406,6 +481,16 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
       0,
       {{Direction<2>::upper_xi(), BlockNeighbors<2>{1, aligned}},
        {Direction<2>::upper_eta(), BlockNeighbors<2>{2, unaligned}}}));
+  blocks.emplace_back(Block<2>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}),
+      1, {{Direction<2>::lower_xi(), BlockNeighbors<2>{0, aligned}}}));
+  blocks.emplace_back(Block<2>(
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}),
+      2,
+      {{Direction<2>::lower_xi(),
+        BlockNeighbors<2>{0, unaligned.inverse_map()}}}));
   std::vector<std::array<size_t, 2>> refinement{{{2, 3}}, {{2, 3}}, {{3, 2}}};
 
   // interior element
@@ -511,4 +596,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
   }
 
   test_h_refinement();
+  test_nonconforming_blocks();
 }
