@@ -400,7 +400,7 @@ auto block_logical_coordinates(
     const tnsr::I<DataType, Dim, Frame>& target_points,
     const Domain<Dim>& domain, const double time,
     const domain::FunctionsOfTimeMap& functions_of_time,
-    const bool extrapolate_into_excisions,
+    const bool extrapolate_into_excisions, const bool error_on_missing_points,
     [[maybe_unused]] const size_t resolved_num_threads) {
   const size_t num_target_points = get_size(get<0>(target_points));
   // Look up block logical coordinates for all target points by mapping them
@@ -441,13 +441,22 @@ auto block_logical_coordinates(
       block_logical_coords[s] = block_logical_coordinates_single_point(
           target_point, domain, time, functions_of_time,
           make_not_null(&block_order));
-      if (block_logical_coords[s].has_value() or
-          not extrapolate_into_excisions) {
+      if (block_logical_coords[s].has_value()) {
         continue;
+      }
+      if (not extrapolate_into_excisions) {
+        // The point wasn't found in any block and we're not extrapolating.
+        // Check if we should throw an error or just skip this point.
+        if (error_on_missing_points) {
+          ERROR("Point is not in any block:\n" << target_point);
+        } else {
+          continue;
+        }
       }
       // The point wasn't found in any block. Check if it's in an excision and
       // set up extrapolation if requested.
       if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+        bool found_in_excision = false;
         for (const auto& [name, excision_sphere] : domain.excision_spheres()) {
           if (add_extrapolation_anchors(
                   make_not_null(&extra_block_logical_coords),
@@ -455,8 +464,12 @@ auto block_logical_coordinates(
                   domain, target_point, time, functions_of_time,
                   extrapolation_spacing)) {
             extra_extrapolation_info.back().target_index = s;
+            found_in_excision = true;
             break;
           }
+        }
+        if (not found_in_excision and error_on_missing_points) {
+          ERROR("Point is not in any block or excision:\n" << target_point);
         }
       }
     }  // omp for target points
@@ -491,7 +504,7 @@ void interpolate_to_points(
     const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
     const tnsr::I<DataVector, Dim, Frame>& target_points,
-    const bool extrapolate_into_excisions,
+    const bool extrapolate_into_excisions, const bool error_on_missing_points,
     const std::optional<size_t> num_threads) {
   const size_t num_target_points = get<0>(target_points).size();
   const auto [filenames, obs_id, time, domain, functions_of_time] =
@@ -502,7 +515,7 @@ void interpolate_to_points(
   const auto [block_logical_coords, extrapolation_info] =
       block_logical_coordinates(target_points, domain, time, functions_of_time,
                                 extrapolate_into_excisions,
-                                resolved_num_threads);
+                                error_on_missing_points, resolved_num_threads);
   const size_t num_interpolation_points = block_logical_coords.size();
 
   // Allocate memory for result
@@ -583,7 +596,8 @@ void interpolate_to_points(
       const std::string& subfile_name, const ObservationVariant& observation, \
       const std::vector<std::string>& tensor_components,                      \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& target_points,       \
-      bool extrapolate_into_excisions, std::optional<size_t> num_threads);
+      bool extrapolate_into_excisions, bool error_on_missing_points,          \
+      std::optional<size_t> num_threads);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (DataVector, std::vector<double>))

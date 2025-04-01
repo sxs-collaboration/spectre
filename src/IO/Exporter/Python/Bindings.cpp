@@ -25,15 +25,18 @@ void bind_interpolate_to_points_impl(py::module& m) {
          const std::vector<std::string>& tensor_components,
          const tnsr::I<DataVector, Dim, Frame>& target_points,
          const bool extrapolate_into_excisions,
+         const bool error_on_missing_points,
          const std::optional<size_t>& num_threads) {
         return spectre::Exporter::interpolate_to_points(
             volume_files_or_glob, subfile_name,
             spectre::Exporter::ObservationId{observation_id}, tensor_components,
-            target_points, extrapolate_into_excisions, num_threads);
+            target_points, extrapolate_into_excisions, error_on_missing_points,
+            num_threads);
       },
       py::arg("volume_files_or_glob"), py::arg("subfile_name"),
       py::arg("observation_id"), py::arg("tensor_components"),
       py::arg("target_points"), py::arg("extrapolate_into_excisions") = false,
+      py::arg("error_on_missing_points") = false,
       py::arg("num_threads") = std::nullopt);
 }
 

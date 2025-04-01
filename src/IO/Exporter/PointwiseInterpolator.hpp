@@ -75,6 +75,7 @@ void interpolate_to_points(
     const std::vector<std::string>& tensor_components,
     const tnsr::I<DataVector, Dim, Frame>& target_points,
     bool extrapolate_into_excisions = false,
+    bool error_on_missing_points = false,
     std::optional<size_t> num_threads = std::nullopt);
 
 template <size_t Dim, typename Frame>
@@ -85,11 +86,13 @@ std::vector<DataVector> interpolate_to_points(
     const std::vector<std::string>& tensor_components,
     const tnsr::I<DataVector, Dim, Frame>& target_points,
     bool extrapolate_into_excisions = false,
+    bool error_on_missing_points = false,
     std::optional<size_t> num_threads = std::nullopt) {
   std::vector<DataVector> interpolated_data{};
   interpolate_to_points(make_not_null(&interpolated_data), volume_files_or_glob,
                         subfile_name, observation, tensor_components,
-                        target_points, extrapolate_into_excisions, num_threads);
+                        target_points, extrapolate_into_excisions,
+                        error_on_missing_points, num_threads);
   return interpolated_data;
 }
 
@@ -100,11 +103,12 @@ tuples::tagged_tuple_from_typelist<Tags> interpolate_to_points(
     const std::string& subfile_name, const ObservationVariant& observation,
     const tnsr::I<DataVector, Dim, Frame>& target_points,
     bool extrapolate_into_excisions = false,
+    const bool error_on_missing_points = false,
     std::optional<size_t> num_threads = std::nullopt) {
-  return make_tagged_tuple<Tags>(
-      interpolate_to_points(volume_files_or_glob, subfile_name, observation,
-                            get_tensor_components<Tags>(), target_points,
-                            extrapolate_into_excisions, num_threads));
+  return make_tagged_tuple<Tags>(interpolate_to_points(
+      volume_files_or_glob, subfile_name, observation,
+      get_tensor_components<Tags>(), target_points, extrapolate_into_excisions,
+      error_on_missing_points, num_threads));
 }
 /// @}
 
