@@ -193,7 +193,6 @@ struct threaded_action_b_mock {
 struct SimpleActionMockMetavariables {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
-
 };
 
 template <typename Metavariables>
@@ -348,7 +347,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
@@ -415,7 +413,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
@@ -511,7 +508,6 @@ struct CallActionOnComponentB {
 struct Metavariables {
   using component_list =
       tmpl::list<ComponentA<Metavariables>, ComponentBMock<Metavariables>>;
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
@@ -567,25 +563,34 @@ struct ComponentA {
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
+template <typename MyProxy, typename ArrayIndex>
+auto get_local(MyProxy& my_proxy, const ArrayIndex& array_index) {
+  if constexpr (Parallel::is_group_proxy<std::decay_t<MyProxy>>::value or
+                Parallel::is_node_group_proxy<std::decay_t<MyProxy>>::value) {
+    return Parallel::local_branch(my_proxy[array_index]);
+  } else {
+    return Parallel::local(my_proxy[array_index]);
+  }
+}
+
 struct MyProc {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
-    return Parallel::my_proc<RetType>(*Parallel::local(my_proxy[array_index]));
+    return Parallel::my_proc<RetType>(*get_local(my_proxy, array_index));
   }
 };
 
 struct MyNode {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
-    return Parallel::my_node<RetType>(*Parallel::local(my_proxy[array_index]));
+    return Parallel::my_node<RetType>(*get_local(my_proxy, array_index));
   }
 };
 
 struct LocalRank {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
-    return Parallel::my_local_rank<RetType>(
-        *Parallel::local(my_proxy[array_index]));
+    return Parallel::my_local_rank<RetType>(*get_local(my_proxy, array_index));
   }
 };
 
@@ -593,7 +598,7 @@ struct NumProcs {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
     return Parallel::number_of_procs<RetType>(
-        *Parallel::local(my_proxy[array_index]));
+        *get_local(my_proxy, array_index));
   }
 };
 
@@ -601,7 +606,7 @@ struct NumNodes {
   template <typename MyProxy, typename ArrayIndex, typename RetType>
   static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
     return Parallel::number_of_nodes<RetType>(
-        *Parallel::local(my_proxy[array_index]));
+        *get_local(my_proxy, array_index));
   }
 };
 
@@ -685,7 +690,6 @@ struct ActionSetValueTo {
 
 struct MetavariablesOneComponent {
   using component_list = tmpl::list<ComponentA<MetavariablesOneComponent>>;
-
 };
 
 void test_parallel_info_functions() {
@@ -942,7 +946,6 @@ struct GroupComponent {
 struct MetavariablesGroupComponent {
   using component_list =
       tmpl::list<GroupComponent<MetavariablesGroupComponent>>;
-
 };
 
 void test_group_emplace() {
@@ -1018,7 +1021,6 @@ struct NodeGroupComponent {
 struct MetavariablesNodeGroupComponent {
   using component_list =
       tmpl::list<NodeGroupComponent<MetavariablesNodeGroupComponent>>;
-
 };
 
 void test_nodegroup_emplace() {
@@ -1074,7 +1076,6 @@ void test_nodegroup_emplace() {
 
 struct MetavariablesWithPup {
   using component_list = tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
-
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -1152,7 +1153,6 @@ struct Metavariables {
   // [mutable global cache metavars]
   using mutable_global_cache_tags = tmpl::list<CacheTag>;
   // [mutable global cache metavars]
-
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {

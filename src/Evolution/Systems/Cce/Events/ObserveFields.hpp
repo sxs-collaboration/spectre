@@ -30,6 +30,8 @@
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
+#include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
@@ -130,7 +132,9 @@ std::string name() {
  * spin weighted quantities above (and time as the first column).
  *
  * All data will be written into the `observers::OptionTags::ReductionFileName`
- * file.
+ * file. If CCE is run on a single core, then this will write the volume data
+ * immediately (synchronously) instead of sending it to the ObserverWriter to be
+ * written asynchronously.
  */
 class ObserveFields : public Event {
   template <typename Tag, bool IncludeSecondDeriv = true>
@@ -197,6 +201,9 @@ class ObserveFields : public Event {
                   const ArrayIndex& /*array_index*/,
                   const ParallelComponent* const /*component*/,
                   const ObservationValue& /*observation_value*/) const {
+    const bool write_synchronously =
+        Parallel::number_of_procs<size_t>(cache) == 1;
+
     // Number of points
     const size_t l_max = get<Tags::LMax>(box);
     const size_t l_max_plus_one_squared = square(l_max + 1);
@@ -324,11 +331,18 @@ class ObserveFields : public Event {
         inertial_retarded_time_to_write[i + 1] = data_to_write[2 * i + 1];
       }
 
-      // Send to observer writer
-      Parallel::threaded_action<
-          observers::ThreadedActions::WriteReductionDataRow>(
-          observer_proxy, subfile_name, inertial_retarded_time_legend,
-          std::make_tuple(std::move(inertial_retarded_time_to_write)));
+      if (write_synchronously) {
+        Parallel::local_synchronous_action<
+            observers::ThreadedActions::WriteReductionDataRow>(
+            observer_proxy, cache, subfile_name, inertial_retarded_time_legend,
+            std::make_tuple(std::move(inertial_retarded_time_to_write)));
+      } else {
+        // Send to observer writer
+        Parallel::threaded_action<
+            observers::ThreadedActions::WriteReductionDataRow>(
+            observer_proxy, subfile_name, inertial_retarded_time_legend,
+            std::make_tuple(std::move(inertial_retarded_time_to_write)));
+      }
     }
 
     // One minus y is also special because every angular grid point for a given
@@ -359,11 +373,18 @@ class ObserveFields : public Event {
                                         std::to_string(radial_index));
       }
 
-      // Send to observer writer
-      Parallel::threaded_action<
-          observers::ThreadedActions::WriteReductionDataRow>(
-          observer_proxy, subfile_name, one_minus_y_legend,
-          std::make_tuple(std::move(one_minus_y_to_write)));
+      if (write_synchronously) {
+        Parallel::local_synchronous_action<
+            observers::ThreadedActions::WriteReductionDataRow>(
+            observer_proxy, cache, subfile_name, one_minus_y_legend,
+            std::make_tuple(std::move(one_minus_y_to_write)));
+      } else {
+        // Send to observer writer
+        Parallel::threaded_action<
+            observers::ThreadedActions::WriteReductionDataRow>(
+            observer_proxy, subfile_name, one_minus_y_legend,
+            std::make_tuple(std::move(one_minus_y_to_write)));
+      }
     }
 
     // Everything needs the same time so we just write it once here. We use the
@@ -400,11 +421,18 @@ class ObserveFields : public Event {
         transform_to_modal(tag{}, spin_weighted_transform, goldberg_modes,
                            radial_index);
 
-        // Send to observer writer
-        Parallel::threaded_action<
-            observers::ThreadedActions::WriteReductionDataRow>(
-            observer_proxy, subfile_name, file_legend,
-            std::make_tuple(data_to_write));
+        if (write_synchronously) {
+          Parallel::local_synchronous_action<
+              observers::ThreadedActions::WriteReductionDataRow>(
+              observer_proxy, cache, subfile_name, file_legend,
+              std::make_tuple(data_to_write));
+        } else {
+          // Send to observer writer
+          Parallel::threaded_action<
+              observers::ThreadedActions::WriteReductionDataRow>(
+              observer_proxy, subfile_name, file_legend,
+              std::make_tuple(data_to_write));
+        }
       }
     });
   }
