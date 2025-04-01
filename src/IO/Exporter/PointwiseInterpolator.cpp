@@ -16,6 +16,7 @@
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "IO/Exporter/SelectObservation.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
@@ -297,36 +298,13 @@ bool add_extrapolation_anchors(
   return true;
 }
 
-// Determines the selected observation ID in the volume data file, given either
-// an `ObservationId` directly or an `ObservationStep`.
-struct SelectObservation {
-  size_t operator()(const ObservationId observation_id) const {
-    return observation_id.value;
-  }
-  size_t operator()(const ObservationStep observation_step) const {
-    int step = observation_step.value;
-    const auto obs_ids = volfile.list_observation_ids();
-    if (step < 0) {
-      step += static_cast<int>(obs_ids.size());
-    }
-    if (step < 0 or static_cast<size_t>(step) >= obs_ids.size()) {
-      ERROR_NO_TRACE("Invalid observation step: "
-                     << observation_step.value << ". There are "
-                     << obs_ids.size() << " observations in the file.");
-    }
-    return obs_ids[static_cast<size_t>(step)];
-  }
-  const h5::VolumeData& volfile;
-};
-
 }  // namespace
 
 template <size_t Dim>
 std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    const std::string& subfile_name,
-    const std::variant<ObservationId, ObservationStep>& observation,
+    const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
     const bool extrapolate_into_excisions,
@@ -525,8 +503,7 @@ std::vector<std::vector<double>> interpolate_to_points(
   template std::vector<std::vector<double>> interpolate_to_points<DIM(data)>( \
       const std::variant<std::vector<std::string>, std::string>&              \
           volume_files_or_glob,                                               \
-      const std::string& subfile_name,                                        \
-      const std::variant<ObservationId, ObservationStep>& observation,        \
+      const std::string& subfile_name, const ObservationVariant& observation, \
       const std::vector<std::string>& tensor_components,                      \
       const std::array<std::vector<double>, DIM(data)>& target_points,        \
       bool extrapolate_into_excisions,                                        \

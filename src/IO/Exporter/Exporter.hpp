@@ -32,6 +32,8 @@ struct ObservationStep {
   int value;
 };
 
+using ObservationVariant = std::variant<ObservationId, ObservationStep, double>;
+
 /*!
  * \brief Interpolate data in volume files to target points
  *
@@ -69,8 +71,7 @@ template <size_t Dim>
 std::vector<std::vector<double>> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    const std::string& subfile_name,
-    const std::variant<ObservationId, ObservationStep>& observation,
+    const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
     bool extrapolate_into_excisions = false,

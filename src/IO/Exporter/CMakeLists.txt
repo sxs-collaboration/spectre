@@ -15,6 +15,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   PointwiseInterpolator.cpp
+  SelectObservation.cpp
   )
 
 spectre_target_headers(
@@ -23,6 +24,7 @@ spectre_target_headers(
   HEADERS
   Exporter.hpp
   PointwiseInterpolator.hpp
+  SelectObservation.hpp
   )
 
 target_link_libraries(

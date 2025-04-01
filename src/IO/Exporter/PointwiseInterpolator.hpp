@@ -34,8 +34,7 @@ template <typename Tags, typename DataType, size_t Dim>
 tuples::tagged_tuple_from_typelist<Tags> interpolate_to_points(
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
-    const std::string& subfile_name,
-    const std::variant<ObservationId, ObservationStep>& observation,
+    const std::string& subfile_name, const ObservationVariant& observation,
     const tnsr::I<DataType, Dim>& target_points,
     bool extrapolate_into_excisions = false,
     std::optional<size_t> num_threads = std::nullopt) {
