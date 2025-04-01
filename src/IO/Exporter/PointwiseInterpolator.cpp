@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "IO/Exporter/Exporter.hpp"
+#include "IO/Exporter/PointwiseInterpolator.hpp"
 
 #include <csignal>  // For Blaze error handling without PCH
 #ifdef _OPENMP
@@ -36,16 +36,22 @@
 namespace spectre::Exporter {
 
 namespace {
+
+size_t resolve_num_threads(const std::optional<size_t> num_threads) {
+  // Resolve number of threads to use in OpenMP parallelization
+#ifdef _OPENMP
+  return num_threads.value_or(omp_get_max_threads());
+#else
+  if (num_threads.has_value()) {
+    ERROR_NO_TRACE(
+        "OpenMP is not available, so num_threads cannot be specified.");
+  }
+  return 1;
+#endif  // _OPENMP
+}
+
 template <size_t Dim>
-void interpolate_to_points(
-    const gsl::not_null<std::vector<std::vector<double>>*> result,
-    const gsl::not_null<std::vector<bool>*> filled_data,
-    const std::string& filename, const std::string& subfile_name,
-    const size_t obs_id, const std::vector<std::string>& tensor_components,
-    const std::vector<BlockLogicalCoords<Dim>>& block_logical_coords,
-    [[maybe_unused]] const size_t num_threads) {
-  const h5::H5File<h5::AccessType::ReadOnly> h5file(filename);
-  const auto& volfile = h5file.get<h5::VolumeData>(subfile_name);
+auto load_grids(const h5::VolumeData& volfile, const size_t obs_id) {
   const auto grid_names = volfile.get_grid_names(obs_id);
   const auto all_extents = volfile.get_extents(obs_id);
   const auto all_bases = volfile.get_bases(obs_id);
@@ -53,23 +59,25 @@ void interpolate_to_points(
   // Reconstruct element IDs & meshes in the volume data file.
   // This can be simplified by using ElementId and Mesh in the VolumeData class.
   std::vector<ElementId<Dim>> element_ids{};
-  std::unordered_map<ElementId<Dim>, Mesh<Dim>> meshes{};
+  std::unordered_map<ElementId<Dim>, std::tuple<Mesh<Dim>, size_t, size_t>>
+      meshes{};
   element_ids.reserve(grid_names.size());
   for (const auto& grid_name : grid_names) {
     const ElementId<Dim> element_id(grid_name);
     element_ids.push_back(element_id);
-    meshes[element_id] = h5::mesh_for_grid<Dim>(
+    get<0>(meshes[element_id]) = h5::mesh_for_grid<Dim>(
         grid_name, grid_names, all_extents, all_bases, all_quadratures);
+    const auto [offset, length] = h5::offset_and_length_for_grid(
+        get_output(element_id), grid_names, all_extents);
+    get<1>(meshes[element_id]) = offset;
+    get<2>(meshes[element_id]) = length;
   }
-  // Map the target points to element-logical coordinates. This selects the
-  // subset of target points that are in the volume data file's elements.
-  const auto element_logical_coords =
-      element_logical_coordinates(element_ids, block_logical_coords);
-  if (element_logical_coords.empty()) {
-    return;
-  }
-  // Load the tensor data for all grids in the file because it's stored
-  // contiguously
+  return std::make_pair(std::move(element_ids), std::move(meshes));
+}
+
+std::vector<DataVector> load_tensor_data(
+    const h5::VolumeData& volfile, const size_t obs_id,
+    const std::vector<std::string>& tensor_components) {
   std::vector<DataVector> tensor_data{};
   tensor_data.reserve(tensor_components.size());
   for (const auto& tensor_component : tensor_components) {
@@ -89,8 +97,21 @@ void interpolate_to_points(
       tensor_data.push_back(std::move(double_component_data));
     }
   }
-  h5file.close();
-#pragma omp parallel num_threads(num_threads)
+  return tensor_data;
+}
+
+template <typename ResultDataType, size_t Dim>
+void interpolate_to_points_impl(
+    const gsl::not_null<std::vector<ResultDataType>*> result,
+    const gsl::not_null<std::vector<bool>*> filled_data,
+    const std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>&
+        element_logical_coords,
+    const std::vector<ElementId<Dim>>& element_ids,
+    const std::unordered_map<ElementId<Dim>,
+                             std::tuple<Mesh<Dim>, size_t, size_t>>& meshes,
+    const std::vector<DataVector>& tensor_data,
+    [[maybe_unused]] const size_t resolved_num_threads) {
+#pragma omp parallel num_threads(resolved_num_threads)
   {
     DataVector interpolated_data{};
 #pragma omp for
@@ -100,21 +121,20 @@ void interpolate_to_points(
         continue;
       }
       const auto& points = found_points->second;
-      const auto [offset, length] = h5::offset_and_length_for_grid(
-          get_output(element_id), grid_names, all_extents);
+      const auto& [mesh, offset, length] = meshes.at(element_id);
       // Interpolate!
       // Possible optimization: rather than interpolating each tensor component
       // separately, we could interpolate all components at once. This would
       // need an offset and stride to be passed to the interpolator, since the
       // tensor components for all elements are stored contiguously.
-      const intrp::Irregular<Dim> interpolant(meshes[element_id],
+      const intrp::Irregular<Dim> interpolant(mesh,
                                               points.element_logical_coords);
       const size_t num_element_target_points =
           points.element_logical_coords.begin()->size();
       if (interpolated_data.size() < num_element_target_points) {
         interpolated_data.destructive_resize(num_element_target_points);
       }
-      for (size_t i = 0; i < tensor_components.size(); ++i) {
+      for (size_t i = 0; i < tensor_data.size(); ++i) {
         auto output_data =
             gsl::make_span(interpolated_data.data(), num_element_target_points);
         const auto input_data =
@@ -298,35 +318,39 @@ bool add_extrapolation_anchors(
   return true;
 }
 
-}  // namespace
+template <typename ResultDataType, size_t NumExtrapolationAnchors>
+void extrapolate_into_excisions_impl(
+    const gsl::not_null<std::vector<ResultDataType>*> result,
+    const std::vector<ExtrapolationInfo<NumExtrapolationAnchors>>&
+        extrapolation_info,
+    [[maybe_unused]] const size_t resolved_num_threads) {
+#pragma omp parallel for num_threads(resolved_num_threads)
+  for (const auto& extrapolation : extrapolation_info) {
+    double extrapolation_error = 0.;
+    for (size_t i = 0; i < result->size(); ++i) {
+      intrp::polynomial_interpolation<NumExtrapolationAnchors - 1>(
+          make_not_null(&(*result)[i][extrapolation.target_index]),
+          make_not_null(&extrapolation_error), extrapolation.target_point,
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+          gsl::make_span((*result)[i].data() + extrapolation.source_index,
+                         NumExtrapolationAnchors),
+          gsl::make_span(extrapolation.anchors.data(),
+                         NumExtrapolationAnchors));
+    }
+  }  // omp for extrapolation_info
+}
 
 template <size_t Dim>
-std::vector<std::vector<double>> interpolate_to_points(
-    const std::variant<std::vector<std::string>, std::string>&
-        volume_files_or_glob,
-    const std::string& subfile_name, const ObservationVariant& observation,
-    const std::vector<std::string>& tensor_components,
-    const std::array<std::vector<double>, Dim>& target_points,
-    const bool extrapolate_into_excisions,
-    const std::optional<size_t> num_threads) {
+auto parse_volume_files(const std::variant<std::vector<std::string>,
+                                           std::string>& volume_files_or_glob,
+                        const std::string& subfile_name,
+                        const ObservationVariant& observation) {
   domain::creators::register_derived_with_charm();
   domain::creators::time_dependence::register_derived_with_charm();
   domain::FunctionsOfTime::register_derived_with_charm();
 
-  // Resolve number of threads to use in OpenMP parallelization
-#ifdef _OPENMP
-  const size_t resolved_num_threads =
-      num_threads.value_or(omp_get_max_threads());
-#else
-  if (num_threads.has_value()) {
-    ERROR_NO_TRACE(
-        "OpenMP is not available, so num_threads cannot be specified.");
-  }
-  const size_t resolved_num_threads = 1;
-#endif  // _OPENMP
-
   // Get the list of volume data files
-  const std::vector<std::string> filenames =
+  std::vector<std::string> filenames =
       std::visit(Overloader{[](const std::vector<std::string>& volume_files) {
                               return volume_files;
                             },
@@ -354,9 +378,9 @@ std::vector<std::vector<double>> interpolate_to_points(
   const size_t obs_id =
       std::visit(SelectObservation{first_volfile}, observation);
   // Get domain, time, functions of time
-  const auto domain =
+  auto domain =
       deserialize<Domain<Dim>>(first_volfile.get_domain(obs_id)->data());
-  const auto time_and_fot = [&first_volfile, &obs_id, &domain]() {
+  auto time_and_fot = [&first_volfile, &obs_id, &domain]() {
     if (domain.is_time_dependent()) {
       return std::make_pair(
           first_volfile.get_observation_value(obs_id),
@@ -366,21 +390,18 @@ std::vector<std::vector<double>> interpolate_to_points(
       return std::make_pair(0., domain::FunctionsOfTimeMap{});
     }
   }();
-  const double time = time_and_fot.first;
-  const auto& functions_of_time = time_and_fot.second;
   first_h5file.close();
+  return std::make_tuple(std::move(filenames), obs_id, time_and_fot.first,
+                         std::move(domain), std::move(time_and_fot.second));
+}
 
-  // Check target points have the same number of points in each dimension
-  const size_t num_target_points = target_points[0].size();
-  for (size_t d = 0; d < Dim; ++d) {
-    const auto& target_coord = gsl::at(target_points, d);
-    if (target_coord.size() != num_target_points) {
-      ERROR_NO_TRACE("Mismatched number of target points: coordinate 0 has "
-                     << num_target_points << " points, but coordinate " << d
-                     << " has " << target_coord.size() << " points.");
-    }
-  }
-
+template <typename DataType, size_t Dim>
+auto block_logical_coordinates(
+    const tnsr::I<DataType, Dim>& target_points, const Domain<Dim>& domain,
+    const double time, const domain::FunctionsOfTimeMap& functions_of_time,
+    const bool extrapolate_into_excisions,
+    [[maybe_unused]] const size_t resolved_num_threads) {
+  const size_t num_target_points = get_size(get<0>(target_points));
   // Look up block logical coordinates for all target points by mapping them
   // through the domain. This is the most expensive part of the function, so we
   // parallelize the loop.
@@ -407,7 +428,7 @@ std::vector<std::vector<double>> interpolate_to_points(
 #pragma omp for
     for (size_t s = 0; s < num_target_points; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
-        target_point.get(d) = gsl::at(target_points, d)[s];
+        target_point.get(d) = get_element(target_points.get(d), s);
       }
       block_logical_coords[s] = block_logical_coordinates_single_point(
           target_point, domain, time, functions_of_time,
@@ -446,23 +467,76 @@ std::vector<std::vector<double>> interpolate_to_points(
                                 extra_extrapolation_info.end());
     }  // omp critical
   }  // omp parallel
+  return std::make_tuple(std::move(block_logical_coords),
+                         std::move(extrapolation_info));
+}
+
+}  // namespace
+
+template <typename ResultDataType, size_t Dim>
+void interpolate_to_points(
+    const gsl::not_null<std::vector<ResultDataType>*> result,
+    const std::variant<std::vector<std::string>, std::string>&
+        volume_files_or_glob,
+    const std::string& subfile_name, const ObservationVariant& observation,
+    const std::vector<std::string>& tensor_components,
+    const tnsr::I<DataVector, Dim>& target_points,
+    const bool extrapolate_into_excisions,
+    const std::optional<size_t> num_threads) {
+  const size_t num_target_points = get<0>(target_points).size();
+  const auto [filenames, obs_id, time, domain, functions_of_time] =
+      parse_volume_files<Dim>(volume_files_or_glob, subfile_name, observation);
+
+  const size_t resolved_num_threads = resolve_num_threads(num_threads);
+
+  const auto [block_logical_coords, extrapolation_info] =
+      block_logical_coordinates(target_points, domain, time, functions_of_time,
+                                extrapolate_into_excisions,
+                                resolved_num_threads);
+  const size_t num_interpolation_points = block_logical_coords.size();
 
   // Allocate memory for result
-  std::vector<std::vector<double>> result{};
-  result.reserve(tensor_components.size());
-  for (size_t i = 0; i < tensor_components.size(); ++i) {
-    result.emplace_back(block_logical_coords.size(),
-                        std::numeric_limits<double>::signaling_NaN());
+  const size_t num_components = tensor_components.size();
+  result->resize(num_components);
+  for (size_t i = 0; i < num_components; ++i) {
+    ResultDataType& component = (*result)[i];
+    if constexpr (std::is_same_v<ResultDataType, DataVector>) {
+      component.destructive_resize(num_interpolation_points);
+    } else {
+      component.resize(num_interpolation_points);
+    }
+    std::fill(component.begin(), component.end(),
+              std::numeric_limits<double>::signaling_NaN());
   }
-  std::vector<bool> filled_data(block_logical_coords.size(), false);
+  std::vector<bool> filled_data(num_interpolation_points, false);
 
   // Process all volume files in serial, because loading data with H5 must be
   // done in serial anyway. Instead, the loop over elements within each file is
   // parallelized with OpenMP.
   for (const auto& filename : filenames) {
-    interpolate_to_points(make_not_null(&result), make_not_null(&filled_data),
-                          filename, subfile_name, obs_id, tensor_components,
-                          block_logical_coords, resolved_num_threads);
+    const h5::H5File<h5::AccessType::ReadOnly> h5file(filename);
+    const auto& volfile = h5file.get<h5::VolumeData>(subfile_name);
+    const auto [element_ids, meshes] = load_grids<Dim>(volfile, obs_id);
+
+    // Map the target points to element-logical coordinates. This selects the
+    // subset of target points that are in the volume data file's elements.
+    const auto element_logical_coords =
+        element_logical_coordinates(element_ids, block_logical_coords);
+    if (element_logical_coords.empty()) {
+      continue;
+    }
+
+    // Load the tensor data for all grids in the file because it's stored
+    // contiguously
+    const auto tensor_data =
+        load_tensor_data(volfile, obs_id, tensor_components);
+    h5file.close();
+
+    // Interpolate the tensor data to the target points
+    interpolate_to_points_impl(result, make_not_null(&filled_data),
+                               element_logical_coords, element_ids, meshes,
+                               tensor_data, resolved_num_threads);
+
     // Terminate early if all data has been filled
     if (std::all_of(filled_data.begin(), filled_data.end(),
                     [](const bool filled) { return filled; })) {
@@ -471,48 +545,41 @@ std::vector<std::vector<double>> interpolate_to_points(
   }
 
   if (extrapolate_into_excisions) {
-    // Extrapolate into excisions from the anchor points
-#pragma omp parallel for num_threads(resolved_num_threads)
-    for (const auto& extrapolation : extrapolation_info) {
-      double extrapolation_error = 0.;
-      for (size_t i = 0; i < tensor_components.size(); ++i) {
-        intrp::polynomial_interpolation<num_extrapolation_anchors - 1>(
-            make_not_null(&result[i][extrapolation.target_index]),
-            make_not_null(&extrapolation_error), extrapolation.target_point,
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-            gsl::make_span(result[i].data() + extrapolation.source_index,
-                           num_extrapolation_anchors),
-            gsl::make_span(extrapolation.anchors.data(),
-                           num_extrapolation_anchors));
+    extrapolate_into_excisions_impl(result, extrapolation_info,
+                                    resolved_num_threads);
+    // Clear the anchor points from the result
+    for (size_t i = 0; i < result->size(); ++i) {
+      ResultDataType& component = (*result)[i];
+      if constexpr (std::is_same_v<ResultDataType, DataVector>) {
+        component.destructive_resize(num_target_points);
+      } else {
+        component.resize(num_target_points);
       }
     }
-    // Clear the anchor points from the result
-    for (size_t i = 0; i < tensor_components.size(); ++i) {
-      result[i].resize(num_target_points);
-    }
   }
-
-  return result;
 }
 
 // Generate instantiations
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template std::vector<std::vector<double>> interpolate_to_points<DIM(data)>( \
+  template void interpolate_to_points<DTYPE(data), DIM(data)>(                \
+      gsl::not_null<std::vector<DTYPE(data)>*> result,                        \
       const std::variant<std::vector<std::string>, std::string>&              \
           volume_files_or_glob,                                               \
       const std::string& subfile_name, const ObservationVariant& observation, \
       const std::vector<std::string>& tensor_components,                      \
-      const std::array<std::vector<double>, DIM(data)>& target_points,        \
-      bool extrapolate_into_excisions,                                        \
-      const std::optional<size_t> num_threads);
+      const tnsr::I<DataVector, DIM(data)>& target_points,                    \
+      bool extrapolate_into_excisions, std::optional<size_t> num_threads);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        (DataVector, std::vector<double>))
 
 #undef INSTANTIATE
 #undef DIM
+#undef DTYPE
 
 }  // namespace spectre::Exporter
 

@@ -14,6 +14,7 @@ add_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Exporter.cpp
   PointwiseInterpolator.cpp
   SelectObservation.cpp
   )
