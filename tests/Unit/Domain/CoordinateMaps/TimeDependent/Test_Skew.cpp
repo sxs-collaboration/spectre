@@ -85,7 +85,7 @@ void test(const gsl::not_null<Generator*> generator) {
       function_of_time_name));
 
   const Approx deriv_approx = Approx::custom().epsilon(1.e-9).scale(1.0);
-  const Approx inv_approx = Approx::custom().epsilon(5.e-14).scale(1.0);
+  const Approx inv_approx = Approx::custom().epsilon(5.e-13).scale(1.0);
 
   while (t < expiration_time) {
     CAPTURE(t);

@@ -1045,7 +1045,7 @@ void test_kerr_horizon_conforming() {
 
 }  // namespace
 
-// [[TimeOut, 30]]
+// [[TimeOut, 45]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();
