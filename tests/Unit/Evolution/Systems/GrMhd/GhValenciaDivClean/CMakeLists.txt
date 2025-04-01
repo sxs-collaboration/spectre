@@ -21,6 +21,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_PrimitiveGhostData.cpp
   Subcell/Test_PrimsAfterRollback.cpp
   Subcell/Test_ResizeAndComputePrimitives.cpp
+  Subcell/Test_ZeroTimeDerivatives.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_SetPiAndPhiFromConstraints.cpp
