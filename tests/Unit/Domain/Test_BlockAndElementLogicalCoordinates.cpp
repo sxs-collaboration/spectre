@@ -465,23 +465,26 @@ void test_block_and_element_logical_coordinates(
 
   std::vector<tnsr::I<double, Dim, Frame::BlockLogical>>
       block_logical_single_point_result(x_inertial.size());
+  std::vector<size_t> block_order(domain.blocks().size());
   for (size_t i = 0; i < x_inertial.size(); i++) {
     tnsr::I<double, Dim, Frame::Inertial> inertial_coords_double{};
     for (size_t d = 0; d < Dim; d++) {
       inertial_coords_double.get(d) = inertial_coords.get(d)[i];
     }
-
-    // We have to loop over every block because this function requires a block.
-    // We only append to block_logical_single_point_result for the block that
-    // has the point
-    for (const auto& block : domain.blocks()) {
-      if (auto inv_point = block_logical_coordinates_single_point(
-              inertial_coords_double, block);
-          inv_point.has_value()) {
-        block_logical_single_point_result[i] = std::move(inv_point.value());
-        break;
-      }
-    }
+    // Reset the block order so we always find the same block
+    std::iota(block_order.begin(), block_order.end(), 0);
+    auto inv_point = block_logical_coordinates_single_point(
+        inertial_coords_double, domain, 0., {}, make_not_null(&block_order));
+    REQUIRE(inv_point.has_value());
+    // Check that the block order was updated
+    const size_t block_id = inv_point.value().id.get_index();
+    CHECK(block_order.size() == domain.blocks().size());
+    CHECK(block_order.front() == block_id);
+    // Also check the other overload
+    CHECK(block_logical_coordinates_single_point(inertial_coords_double,
+                                                 domain.blocks()[block_id]) ==
+          inv_point.value().data);
+    block_logical_single_point_result[i] = std::move(inv_point.value().data);
   }
 
   const auto block_logical_result =
