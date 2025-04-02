@@ -471,6 +471,8 @@ struct GhValenciaDivCleanTemplateBase<
           ::Tags::PointwiseL2NormCompute<gh::Tags::FConstraint<DataVector, 3>>,
           ::Tags::PointwiseL2NormCompute<
               gh::Tags::GaugeH<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::ConstraintEnergy<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<gh::Tags::Phi<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
               ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
