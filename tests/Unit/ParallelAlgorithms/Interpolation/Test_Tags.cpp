@@ -4,11 +4,14 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <type_traits>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/TagsMetafunctions.hpp"
@@ -49,6 +52,14 @@ void test_tags_metafunctions() {
                                gr::Tags::Lapse<DataVector>>,
                 "Failed testing replace_frame_in_tag_t");
   static_assert(
+      std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
+                         Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                     tmpl::size_t<3>, Frame::Inertial>,
+                         Frame::Grid>,
+                     Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                                 Frame::Grid>>,
+      "Failed testing replace_frame_in_tag_t");
+  static_assert(
       std::is_same_v<
           TensorMetafunctions::replace_frame_in_tag_t<
               gh::ConstraintDamping::Tags::ConstraintGamma0, Frame::Grid>,
@@ -67,11 +78,15 @@ void test_tags_metafunctions() {
           TensorMetafunctions::replace_frame_in_taglist<
               tmpl::list<Tags::deriv<gh::Tags::Phi<DataVector, 3>,
                                      tmpl::size_t<3>, Frame::Inertial>,
-                         gh::Tags::Pi<DataVector, 3, Frame::Distorted>>,
+                         gh::Tags::Pi<DataVector, 3, Frame::Distorted>,
+                         Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                     tmpl::size_t<3>, Frame::Distorted>>,
               Frame::Grid>,
           tmpl::list<Tags::deriv<gh::Tags::Phi<DataVector, 3, Frame::Grid>,
                                  tmpl::size_t<3>, Frame::Grid>,
-                     gh::Tags::Pi<DataVector, 3, Frame::Grid>>>,
+                     gh::Tags::Pi<DataVector, 3, Frame::Grid>,
+                     Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                                 Frame::Grid>>>,
       "Failed testing replace_frame_in_taglist");
 }
 }  // namespace

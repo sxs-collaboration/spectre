@@ -142,13 +142,19 @@ void test_size_process_measurement() {
   const tnsr::I<DataVector, 3, Frame::Distorted> zero_tnsr_I{};
   const tnsr::ii<DataVector, 3, Frame::Distorted> zero_tnsr_ii{};
   const tnsr::II<DataVector, 3, Frame::Distorted> zero_tnsr_II{};
+  const tnsr::Ijj<DataVector, 3, Frame::Distorted>& spatial_christoffel{};
+  const tnsr::i<DataVector, 3, Frame::Distorted>& deriv_lapse{};
+  const tnsr::iJ<DataVector, 3, Frame::Distorted>& deriv_shift{};
+  const ::InverseJacobian<DataVector, 3, Frame::Grid, Frame::Distorted>&
+      inv_jac_grid_to_distorted{};
   const ylm::Strahlkorper<Frame::Distorted> horizon{};
   const ylm::Strahlkorper<Frame::Grid> excision{2, 2.0,
                                                 std::array{0.0, 0.0, 0.0}};
 
   size::process_measurement::apply<Metavars>(
       char_speed::Excision{}, excision, zero_scalar, zero_tnsr_I, zero_tnsr_ii,
-      zero_tnsr_II, cache, id);
+      zero_tnsr_II, spatial_christoffel, deriv_lapse, deriv_shift,
+      inv_jac_grid_to_distorted, cache, id);
 
   // We only check that the proper number of actions have been called.
   CHECK(ActionTesting::number_of_queued_simple_actions<component>(runner, 0) ==

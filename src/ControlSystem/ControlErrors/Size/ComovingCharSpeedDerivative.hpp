@@ -36,7 +36,8 @@ namespace control_system::size {
  *        spacetime tensor: it is raised/lowered with \f$\delta_{ij}\f$
  * \param excision_normal_one_form the unnormalized one-form
  *        \f$\hat{s}_\hat{i}\f$
- * \param excision_normal_one_form_norm the norm of the one-form \f$a\f$
+ * \param one_over_excision_normal_one_form_norm one over the norm of the
+ *        one-form \f$a\f$
  * \param distorted_components_of_grid_shift the quantity
  *        \f$\beta^i \frac{\partial x^\hat{i}}{\partial x_i}\f$
  *        evaluated on the excision boundary.  This is not the shift in
@@ -404,7 +405,7 @@ void comoving_char_speed_derivative(
     double grid_frame_excision_sphere_radius,
     const tnsr::i<DataVector, 3, Frame::Distorted>& excision_rhat,
     const tnsr::i<DataVector, 3, Frame::Distorted>& excision_normal_one_form,
-    const Scalar<DataVector>& excision_normal_one_form_norm,
+    const Scalar<DataVector>& one_over_excision_normal_one_form_norm,
     const tnsr::I<DataVector, 3, Frame::Distorted>&
         distorted_components_of_grid_shift,
     const tnsr::II<DataVector, 3, Frame::Distorted>&

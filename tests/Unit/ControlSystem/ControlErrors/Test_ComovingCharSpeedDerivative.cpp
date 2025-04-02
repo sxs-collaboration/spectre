@@ -23,7 +23,7 @@ void test_comoving_char_speed_derivative(const DataType& used_for_size) {
           {1.9, 2.1},
           {-0.8, 0.8},
           {-1., 1.},
-          {1., 2.},
+          {0.5, 1.},
           {-1., 1.},
           {1., 2.},
           {-1., 1.},

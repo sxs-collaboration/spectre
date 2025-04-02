@@ -10,6 +10,7 @@
 #include <string>
 
 #include "ControlSystem/Averager.hpp"
+#include "ControlSystem/ControlErrors/Size/ComovingCharSpeedDerivative.hpp"
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
@@ -18,6 +19,7 @@
 #include "ControlSystem/Tags/QueueTags.hpp"
 #include "ControlSystem/Tags/SystemTags.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -32,6 +34,8 @@
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -240,6 +244,11 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
       "disk."};
 
   Size() = default;
+  Size(const Size& rhs);
+  Size& operator=(const Size& rhs);
+  Size(Size&& /*rhs*/) = default;
+  Size& operator=(Size&& /*rhs*/) = default;
+  virtual ~Size() = default;
 
   /*!
    * \brief Initializes the `intrp::ZeroCrossingPredictor`s and the horizon
@@ -345,6 +354,35 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
         inverse_spatial_metric_on_excision = tuples::get<
             QueueTags::InverseSpatialMetricOnExcisionSurface<Frame::Distorted>>(
             excision_quantities);
+    const tnsr::Ijj<DataVector, 3, Frame::Distorted>& spatial_christoffel =
+        tuples::get<QueueTags::SpatialChristoffelSecondKind<Frame::Distorted>>(
+            excision_quantities);
+    const tnsr::i<DataVector, 3, Frame::Distorted>& deriv_lapse =
+        tuples::get<QueueTags::DerivLapse<Frame::Distorted>>(
+            excision_quantities);
+    const tnsr::iJ<DataVector, 3, Frame::Distorted>& deriv_shift =
+        tuples::get<QueueTags::DerivShift<Frame::Distorted>>(
+            excision_quantities);
+    const ::InverseJacobian<DataVector, 3, Frame::Grid,
+                            Frame::Distorted>& inv_jac_grid_to_distorted =
+        tuples::get<QueueTags::InverseJacobian<Frame::Grid, Frame::Distorted>>(
+            excision_quantities);
+
+    db::mutate<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>,
+               ylm::Tags::Strahlkorper<Frame::Distorted>>(
+        [&inverse_spatial_metric_on_excision, &excision_surface](
+            const gsl::not_null<tnsr::II<DataVector, 3, Frame::Distorted>*>
+                inv_spatial_metric,
+            const gsl::not_null<ylm::Strahlkorper<Frame::Distorted>*>
+                strahlkorper) {
+          for (size_t i = 0; i < inv_spatial_metric->size(); i++) {
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+            (*inv_spatial_metric)[i].set_data_ref(const_cast<DataVector*>(
+                &inverse_spatial_metric_on_excision[i]));
+          }
+          *strahlkorper = excision_surface;
+        },
+        make_not_null(&char_speed_box_));
 
     const double Y00 = 0.25 * M_2_SQRTPI;
 
@@ -418,6 +456,33 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
                                         delta_r_drift_outward_options_.value()
                                             .outward_drift_timescale)
             : std::nullopt;
+
+    // Currently we don't do anything with the derivative of the comoving char
+    // speed. Eventually, we will pass it to the computation of the control
+    // error below
+    Scalar<DataVector> deriv_comoving_char_speed{};
+    {
+      const tnsr::i<DataVector, 3, Frame::Distorted>& excision_normal_one_form =
+          db::get<ylm::Tags::NormalOneForm<Frame::Distorted>>(char_speed_box_);
+      const DataVector& one_over_excision_normal_one_form_norm_dv =
+          db::get<ylm::Tags::OneOverOneFormMagnitude>(char_speed_box_);
+      Scalar<DataVector> one_over_excision_normal_one_form_norm{};
+      get(one_over_excision_normal_one_form_norm)
+          // NOLINTNEXTLINE
+          .set_data_ref(const_cast<DataVector*>(
+              &one_over_excision_normal_one_form_norm_dv));
+
+      const tnsr::i<DataVector, 3, Frame::Distorted>& rhat =
+          db::get<ylm::Tags::Rhat<Frame::Distorted>>(char_speed_box_);
+
+      size::comoving_char_speed_derivative(
+          make_not_null(&deriv_comoving_char_speed), lambda_00, dt_lambda_00,
+          horizon_00, dt_horizon_00, grid_frame_excision_sphere_radius, rhat,
+          excision_normal_one_form, one_over_excision_normal_one_form_norm,
+          shifty_quantity, inverse_spatial_metric_on_excision,
+          spatial_christoffel, deriv_lapse, deriv_shift,
+          inv_jac_grid_to_distorted);
+    }
 
     info_.damping_time = min(tuner.current_timescale());
 
@@ -494,6 +559,18 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   std::vector<std::string> legend_{};
   std::string subfile_name_{};
   std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options_{};
+  db::compute_databox_type<tmpl::list<
+      gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>,
+      ylm::Tags::Strahlkorper<Frame::Distorted>,
+      ylm::Tags::ThetaPhiCompute<Frame::Distorted>,
+      ylm::Tags::InvJacobianCompute<Frame::Distorted>,
+      ylm::Tags::RadiusCompute<Frame::Distorted>,
+      ylm::Tags::RhatCompute<Frame::Distorted>,
+      ylm::Tags::DxRadiusCompute<Frame::Distorted>,
+      ylm::Tags::NormalOneFormCompute<Frame::Distorted>,
+      ylm::Tags::OneOverOneFormMagnitudeCompute<DataVector, 3,
+                                                Frame::Distorted>>>
+      char_speed_box_{};
 };
 }  // namespace ControlErrors
 }  // namespace control_system

@@ -21,7 +21,7 @@ void comoving_char_speed_derivative(
     const double dt_horizon_00, const double grid_frame_excision_sphere_radius,
     const tnsr::i<DataVector, 3, Frame::Distorted>& excision_rhat,
     const tnsr::i<DataVector, 3, Frame::Distorted>& excision_normal_one_form,
-    const Scalar<DataVector>& excision_normal_one_form_norm,
+    const Scalar<DataVector>& one_over_excision_normal_one_form_norm,
     const tnsr::I<DataVector, 3, Frame::Distorted>&
         distorted_components_of_grid_shift,
     const tnsr::II<DataVector, 3, Frame::Distorted>&
@@ -91,7 +91,7 @@ void comoving_char_speed_derivative(
   //   Third, scale by norm^3 so that result contains
   //   1/a (n^k n_j InvJac^j_k / r_EB + n_p n_j gamma^{pk} xi^i Gamma^j_{ki}),
   //   which is (almost) the last two terms of d/dlambda00(n_hati).
-  get(*result) /= cube(get(excision_normal_one_form_norm));
+  get(*result) *= cube(get(one_over_excision_normal_one_form_norm));
 
   // Set deriv_normal_one_form to the first two terms of d/dlambda00 (n_hati).
   // Possible memory optimization: excision_normal_vector isn't used anymore,
@@ -111,9 +111,9 @@ void comoving_char_speed_derivative(
     for (size_t j = 0; j < 3; ++j) {
       deriv_normal_one_form.get(i) +=
           excision_normal_one_form.get(j) *
-          inverse_jacobian_grid_to_distorted.get(j, i) * Y00 /
-          (grid_frame_excision_sphere_radius *
-           get(excision_normal_one_form_norm));
+          inverse_jacobian_grid_to_distorted.get(j, i) * Y00 *
+          get(one_over_excision_normal_one_form_norm) /
+          grid_frame_excision_sphere_radius;
     }
   }
 
@@ -131,7 +131,7 @@ void comoving_char_speed_derivative(
                                     deriv_of_distorted_shift(ti::j, ti::I));
 
   // Put in the norm factor.
-  get(*result) /= get(excision_normal_one_form_norm);
+  get(*result) *= get(one_over_excision_normal_one_form_norm);
 
   // Add the dlapse term (without the Y00 factor).
   tenex::update<>(

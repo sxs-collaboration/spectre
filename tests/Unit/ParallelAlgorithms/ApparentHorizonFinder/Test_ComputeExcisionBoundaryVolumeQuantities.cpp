@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
@@ -15,6 +16,8 @@
 #include "Domain/ElementToBlockLogicalMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -32,6 +35,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
 template <typename IsTimeDependent, typename TargetFrame, typename SrcTags,
@@ -42,6 +46,9 @@ void test_compute_excision_boundary_volume_quantities() {
   CAPTURE(is_time_dependent);
   CAPTURE(target_frame);
   const size_t number_of_grid_points = 8;
+  // Because we are taking numerical derivatives and have low resolution
+  [[maybe_unused]] Approx deriv_approx =  // NOLINT
+      Approx::custom().epsilon(1.0e-8).scale(1.0);
 
   // slab and temporal_id used only in the TimeDependent version.
   Slab slab(0.0, 1.0);
@@ -108,6 +115,9 @@ void test_compute_excision_boundary_volume_quantities() {
       jacobian_logical_to_target{};
   InverseJacobian<DataVector, 3, Frame::ElementLogical, TargetFrame>
       inv_jacobian_logical_to_target{};
+  // NOLINTNEXTLINE(misc-const-correctness)
+  InverseJacobian<DataVector, 3, Frame::Grid, TargetFrame>
+      inv_jacobian_grid_to_target{};
   tnsr::I<DataVector, 3, Frame::Inertial> frame_velocity_target_to_inertial{};
   tnsr::I<DataVector, 3, TargetFrame> frame_velocity_grid_to_target{
       mesh.number_of_grid_points(), 0.0};
@@ -137,6 +147,12 @@ void test_compute_excision_boundary_volume_quantities() {
           block.moving_mesh_grid_to_inertial_map().jacobian(
               map_logical_to_grid(logical_coords), time, functions_of_time);
       inv_jacobian_logical_to_target = inv_jacobian_logical_to_grid;
+      inv_jacobian_grid_to_target =
+          InverseJacobian<DataVector, 3, Frame::Grid, TargetFrame>{
+              mesh.number_of_grid_points(), 0.0};
+      get<0, 0>(inv_jacobian_grid_to_target) = 1.0;
+      get<1, 1>(inv_jacobian_grid_to_target) = 1.0;
+      get<2, 2>(inv_jacobian_grid_to_target) = 1.0;
       target_frame_coords = map_logical_to_grid(logical_coords);
     } else if constexpr (std::is_same_v<TargetFrame, Frame::Distorted>) {
       const domain::CoordinateMaps::Composition map_logical_to_distorted{
@@ -149,6 +165,9 @@ void test_compute_excision_boundary_volume_quantities() {
               time, functions_of_time);
       inv_jacobian_logical_to_target = map_logical_to_distorted.inv_jacobian(
           logical_coords, time, functions_of_time);
+      inv_jacobian_grid_to_target =
+          block.moving_mesh_grid_to_distorted_map().inv_jacobian(
+              map_logical_to_grid(logical_coords), time, functions_of_time);
       target_frame_coords =
           map_logical_to_distorted(logical_coords, time, functions_of_time);
     } else {
@@ -159,6 +178,7 @@ void test_compute_excision_boundary_volume_quantities() {
       jacobian_target_to_inertial =
           Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>(
               mesh.number_of_grid_points(), 0.0);
+      inv_jacobian_grid_to_target = inv_jacobian_grid_to_inertial;
       for (size_t i = 0; i < 3; ++i) {
         jacobian_target_to_inertial.get(i, i) = 1.0;
       }
@@ -169,7 +189,10 @@ void test_compute_excision_boundary_volume_quantities() {
     // time-independent.
     static_assert(std::is_same_v<TargetFrame, Frame::Inertial>,
                   "TargetFrame must be the Inertial frame");
-    // Don't need to define jacobian_target_to_inertial
+    // Don't need to define jacobian_target_to_inertial or
+    // inv_jacobian_grid_to_target
+    (void)jacobian_target_to_inertial;
+    (void)inv_jacobian_grid_to_target;
     ElementMap<3, Frame::Inertial> map_logical_to_inertial{
         element_ids[0], block.stationary_map().get_clone()};
     target_frame_coords = map_logical_to_inertial(logical_coords);
@@ -186,10 +209,20 @@ void test_compute_excision_boundary_volume_quantities() {
       typename gr::Solutions::KerrSchild::tags<DataVector, TargetFrame>{});
   const auto& lapse =
       get<gr::Tags::Lapse<DataVector>>(solution_vars_target_frame);
+  const auto& deriv_lapse = get<
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>, TargetFrame>>(
+      solution_vars_target_frame);
   const auto& shift = get<gr::Tags::Shift<DataVector, 3, TargetFrame>>(
       solution_vars_target_frame);
+  const auto& deriv_shift =
+      get<::Tags::deriv<gr::Tags::Shift<DataVector, 3, TargetFrame>,
+                        tmpl::size_t<3>, TargetFrame>>(
+          solution_vars_target_frame);
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>>(
+          solution_vars_target_frame);
+  const auto& spatial_christoffel =
+      get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>(
           solution_vars_target_frame);
 
   // Fill src vars with analytic solution.
@@ -218,6 +251,13 @@ void test_compute_excision_boundary_volume_quantities() {
 
     get<::gr::Tags::SpacetimeMetric<DataVector, 3, TargetFrame>>(src_vars) =
         gr::spacetime_metric(lapse, shift, spatial_metric);
+    const auto& deriv_spatial_metric =
+        get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3, TargetFrame>,
+                          tmpl::size_t<3>, TargetFrame>>(
+            solution_vars_target_frame);
+    get<::gh::Tags::Phi<DataVector, 3>>(src_vars) =
+        gh::phi(lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
+                deriv_spatial_metric);
   } else if constexpr (std::is_same_v<TargetFrame, Frame::Distorted>) {
     // First figure out jacobians
     const auto coords_frame_velocity_jacobians =
@@ -330,8 +370,8 @@ void test_compute_excision_boundary_volume_quantities() {
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
         make_not_null(&dest_vars), src_vars, mesh, jacobian_target_to_inertial,
         inv_jacobian_target_to_inertial, jacobian_logical_to_target,
-        inv_jacobian_logical_to_target, frame_velocity_target_to_inertial,
-        frame_velocity_grid_to_target);
+        inv_jacobian_logical_to_target, inv_jacobian_grid_to_target,
+        frame_velocity_target_to_inertial, frame_velocity_grid_to_target);
   } else {
     // time-independent.
     ah::ComputeExcisionBoundaryVolumeQuantities::apply(
@@ -363,10 +403,31 @@ void test_compute_excision_boundary_volume_quantities() {
   }
 
   if constexpr (tmpl::list_contains_v<
+                    DestTags, ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                            tmpl::size_t<3>, TargetFrame>>) {
+    const auto& numerical_deriv_lapse =
+        get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                          TargetFrame>>(dest_vars);
+    CHECK_ITERABLE_CUSTOM_APPROX(deriv_lapse, numerical_deriv_lapse,
+                                 deriv_approx);
+  }
+
+  if constexpr (tmpl::list_contains_v<
                     DestTags, gr::Tags::Shift<DataVector, 3, TargetFrame>>) {
     const auto& numerical_shift =
         get<gr::Tags::Shift<DataVector, 3, TargetFrame>>(dest_vars);
     CHECK_ITERABLE_APPROX(shift, numerical_shift);
+  }
+
+  if constexpr (tmpl::list_contains_v<
+                    DestTags,
+                    ::Tags::deriv<gr::Tags::Shift<DataVector, 3, TargetFrame>,
+                                  tmpl::size_t<3>, TargetFrame>>) {
+    const auto& numerical_deriv_shift =
+        get<::Tags::deriv<gr::Tags::Shift<DataVector, 3, TargetFrame>,
+                          tmpl::size_t<3>, TargetFrame>>(dest_vars);
+    CHECK_ITERABLE_CUSTOM_APPROX(deriv_shift, numerical_deriv_shift,
+                                 deriv_approx);
   }
 
   if constexpr (tmpl::list_contains_v<
@@ -377,6 +438,16 @@ void test_compute_excision_boundary_volume_quantities() {
     const auto shifty_quantity = tenex::evaluate<ti::I>(
         shift(ti::I) + frame_velocity_grid_to_target(ti::I));
     CHECK_ITERABLE_APPROX(shifty_quantity, numerical_shifty_quantity);
+  }
+
+  if constexpr (tmpl::list_contains_v<DestTags,
+                                      gr::Tags::SpatialChristoffelSecondKind<
+                                          DataVector, 3, TargetFrame>>) {
+    const auto& numerical_spatial_christoffel =
+        get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>(
+            dest_vars);
+    CHECK_ITERABLE_CUSTOM_APPROX(spatial_christoffel,
+                                 numerical_spatial_christoffel, deriv_approx);
   }
 
   // If TargetFrame is not the same as Inertial frame, we allow
@@ -414,9 +485,20 @@ void test_compute_excision_boundary_volume_quantities() {
           get<gr::Tags::Shift<DataVector, 3>>(dest_vars);
       CHECK_ITERABLE_APPROX(expected_inertial_shift, inertial_shift);
     }
+
+    if constexpr (tmpl::list_contains_v<
+                      DestTags, domain::Tags::InverseJacobian<3, Frame::Grid,
+                                                              TargetFrame>>) {
+      const auto& numerical_inv_jacobian_grid_to_target =
+          get<domain::Tags::InverseJacobian<3, Frame::Grid, TargetFrame>>(
+              dest_vars);
+      CHECK_ITERABLE_APPROX(inv_jacobian_grid_to_target,
+                            numerical_inv_jacobian_grid_to_target);
+    }
   }
 }
 
+// [[Timeout, 20]]
 SPECTRE_TEST_CASE(
     "Unit.ApparentHorizonFinder.ComputeExcisionBoundaryVolumeQuantities",
     "[ApparentHorizonFinder][Unit]") {
@@ -434,7 +516,14 @@ SPECTRE_TEST_CASE(
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
                  gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<DataVector, 3>>>();
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 gr::Tags::Shift<DataVector, 3>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3, Frame::Inertial>,
+                               tmpl::size_t<3>, Frame::Inertial>,
+                 domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Inertial>,
+                 gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
+                                                        Frame::Inertial>>>();
 
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<
@@ -443,15 +532,23 @@ SPECTRE_TEST_CASE(
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
-                 gr::Tags::Lapse<DataVector>>>();
+                 gr::Tags::Lapse<DataVector>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>,
+                 gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
+                                                        Frame::Inertial>>>();
 
   test_compute_excision_boundary_volume_quantities<
       std::false_type, Frame::Inertial,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>,
-      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gr::Tags::SpatialMetric<DataVector, 3>,
-                 gr::Tags::Shift<DataVector, 3>>>();
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<DataVector, 3>,
+          gr::Tags::SpatialMetric<DataVector, 3>,
+          gr::Tags::Shift<DataVector, 3>,
+          ::Tags::deriv<gr::Tags::Shift<DataVector, 3, Frame::Inertial>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Inertial>>>();
 
   // time-dependent.
   // All possible tags.
@@ -463,8 +560,16 @@ SPECTRE_TEST_CASE(
                              Frame::Inertial>>,
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gr::Tags::SpatialMetric<DataVector, 3>,
-                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-                 gr::Tags::Shift<DataVector, 3, Frame::Grid>>>();
+                 gr::Tags::Lapse<DataVector>,
+                 ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Grid>,
+                 gr::Tags::Shift<DataVector, 3>,
+                 gr::Tags::Shift<DataVector, 3, Frame::Grid>,
+                 ::Tags::deriv<gr::Tags::Shift<DataVector, 3, Frame::Grid>,
+                               tmpl::size_t<3>, Frame::Grid>,
+                 domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Grid>,
+                 gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
+                                                        Frame::Grid>>>();
 
   // Distorted frame.
   test_compute_excision_boundary_volume_quantities<
@@ -473,11 +578,19 @@ SPECTRE_TEST_CASE(
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                              Frame::Inertial>>,
-      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Distorted>,
-                 gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
-                 gr::Tags::Shift<DataVector, 3, Frame::Distorted>>>();
+      tmpl::list<
+          gr::Tags::SpacetimeMetric<DataVector, 3, Frame::Distorted>,
+          gr::Tags::SpatialMetric<DataVector, 3, Frame::Distorted>,
+          gr::Tags::Lapse<DataVector>,
+          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                        Frame::Distorted>,
+          gr::Tags::ShiftyQuantity<DataVector, 3, Frame::Distorted>,
+          gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
+          ::Tags::deriv<gr::Tags::Shift<DataVector, 3, Frame::Distorted>,
+                        tmpl::size_t<3>, Frame::Distorted>,
+          domain::Tags::InverseJacobian<3, Frame::Grid, Frame::Distorted>,
+          gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
+                                                 Frame::Distorted>>>();
 
   // Leave out a few tags.
   test_compute_excision_boundary_volume_quantities<

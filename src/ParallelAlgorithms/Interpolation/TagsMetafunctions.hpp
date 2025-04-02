@@ -31,7 +31,7 @@ template <template <typename> typename Tag, typename DataType,
 struct replace_frame_in_tag<Tag<DataType>, NewFrame> {
   using type = Tag<DataType>;
 };
-// Specialization for Tags::deriv<Tag> with Tag in gh::Tags
+// Specializations for Tags::deriv<Tag> with Tag in gh::Tags
 template <template <typename, size_t, typename> typename Tag, typename DataType,
           size_t Dim, typename Frame, typename NewFrame>
 struct replace_frame_in_tag<
@@ -39,6 +39,18 @@ struct replace_frame_in_tag<
     NewFrame> {
   using type =
       ::Tags::deriv<Tag<DataType, Dim, NewFrame>, tmpl::size_t<Dim>, NewFrame>;
+};
+template <template <typename> typename Tag, typename DataType, size_t Dim,
+          typename Frame, typename NewFrame>
+struct replace_frame_in_tag<
+    ::Tags::deriv<Tag<DataType>, tmpl::size_t<Dim>, Frame>, NewFrame> {
+  using type = ::Tags::deriv<Tag<DataType>, tmpl::size_t<Dim>, NewFrame>;
+};
+// Specialization for inverse jacobian
+template <template <size_t, typename, typename> typename Tag, size_t Dim,
+          typename SrcFrame, typename TargetFrame, typename NewTargetFrame>
+struct replace_frame_in_tag<Tag<Dim, SrcFrame, TargetFrame>, NewTargetFrame> {
+  using type = Tag<Dim, SrcFrame, NewTargetFrame>;
 };
 
 /// \ingroup TensorGroup

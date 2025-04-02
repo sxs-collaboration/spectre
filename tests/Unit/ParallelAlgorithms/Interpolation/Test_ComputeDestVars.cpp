@@ -64,6 +64,8 @@ struct MockComputeVarsToInterpolate
           jac_logical_to_target,
       const InverseJacobian<DataVector, 3, ::Frame::ElementLogical,
                             TargetFrame>& invjac_logical_to_target,
+      const InverseJacobian<DataVector, 3, ::Frame::Grid, TargetFrame>&
+          invjac_grid_to_target,
       const tnsr::I<DataVector, 3, ::Frame::Inertial>& inertial_mesh_velocity,
       const tnsr::I<DataVector, 3, TargetFrame>&
           grid_to_target_frame_mesh_velocity) {
@@ -72,6 +74,7 @@ struct MockComputeVarsToInterpolate
     CHECK(get<0, 0>(invjac_target_to_inertial).size() != 0);
     CHECK(get<0, 0>(jac_logical_to_target).size() != 0);
     CHECK(get<0, 0>(invjac_logical_to_target).size() != 0);
+    CHECK(get<0, 0>(invjac_grid_to_target).size() != 0);
     CHECK(get<0>(inertial_mesh_velocity).size() != 0);
     CHECK(get<0>(grid_to_target_frame_mesh_velocity).size() != 0);
   }

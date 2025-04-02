@@ -14,11 +14,14 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/Composition.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/ElementToBlockLogicalMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -742,17 +745,28 @@ CREATE_HAS_TYPE_ALIAS(compute_vars_to_interpolate)
 CREATE_HAS_TYPE_ALIAS_V(compute_vars_to_interpolate)
 
 namespace detail {
+template <typename T>
+struct is_an_invjac_impl : std::false_type {};
+
+template <typename Arg1, size_t Arg2, typename Arg3, typename Arg4>
+struct is_an_invjac_impl<InverseJacobian<Arg1, Arg2, Arg3, Arg4>>
+    : std::true_type {};
+
+template <typename Tag>
+struct is_an_invjac : is_an_invjac_impl<typename Tag::type> {};
+
 template <typename Tag, typename Frame>
 using any_index_in_frame_impl =
     TensorMetafunctions::any_index_in_frame<typename Tag::type, Frame>;
 }  // namespace detail
 
 /// Returns true if any of the tensors in TagList have any of their
-/// indices in the given frame.
+/// indices in the given frame. We don't count InverseJacobians because these
+/// mess up the frames
 template <typename TagList, typename Frame>
-constexpr bool any_index_in_frame_v =
-    tmpl::any<TagList, tmpl::bind<detail::any_index_in_frame_impl, tmpl::_1,
-                                  Frame>>::value;
+constexpr bool any_index_in_frame_v = tmpl::any<
+    tmpl::filter<TagList, tmpl::not_<detail::is_an_invjac<tmpl::_1>>>,
+    tmpl::bind<detail::any_index_in_frame_impl, tmpl::_1, Frame>>::value;
 
 /// Calls compute_vars_to_interpolate to compute
 /// InterpolationTargetTag::vars_to_interpolate_to_target from the source
@@ -798,10 +812,18 @@ void compute_dest_vars_from_source_vars(
           block.moving_mesh_grid_to_inertial_map()
               .coords_frame_velocity_jacobians(
                   map_logical_to_grid(logical_coords), time, functions_of_time);
+      // Create an identity jacobian since the transformation from grid to grid
+      // is the identity
+      InverseJacobian<DataVector, 3, Frame::Grid, Frame::Grid>
+          invjac_grid_to_grid{
+              DataVector{get<0, 0>(jac_logical_to_grid).size(), 0.0}};
+      get<0, 0>(invjac_grid_to_grid) = 1.0;
+      get<1, 1>(invjac_grid_to_grid) = 1.0;
+      get<2, 2>(invjac_grid_to_grid) = 1.0;
       InterpolationTargetTag::compute_vars_to_interpolate::apply(
           dest_vars, source_vars, mesh, jac_grid_to_inertial,
           invjac_grid_to_inertial, jac_logical_to_grid, invjac_logical_to_grid,
-          inertial_mesh_velocity,
+          invjac_grid_to_grid, inertial_mesh_velocity,
           tnsr::I<DataVector, 3, Frame::Grid>{
               DataVector{get<0, 0>(jac_logical_to_grid).size(), 0.0}});
     } else if constexpr (any_index_in_frame_v<SourceTags, Frame::Inertial> and
@@ -832,12 +854,13 @@ void compute_dest_vars_from_source_vars(
                   element_logical_to_distorted_map(logical_coords, time,
                                                    functions_of_time),
                   time, functions_of_time);
-      const auto grid_to_distorted_mesh_velocity =
-          get<3>(block.moving_mesh_grid_to_distorted_map()
-                     .coords_frame_velocity_jacobians(
-                         element_logical_to_grid_map(logical_coords, time,
-                                                     functions_of_time),
-                         time, functions_of_time));
+      const auto [distorted_coords, invjac_grid_to_distorted,
+                  jac_grid_to_distorted, grid_to_distorted_mesh_velocity] =
+          block.moving_mesh_grid_to_distorted_map()
+              .coords_frame_velocity_jacobians(
+                  element_logical_to_grid_map(logical_coords, time,
+                                              functions_of_time),
+                  time, functions_of_time);
       InterpolationTargetTag::compute_vars_to_interpolate::apply(
           dest_vars, source_vars, mesh, jac_distorted_to_inertial,
           invjac_distorted_to_inertial,
@@ -845,7 +868,8 @@ void compute_dest_vars_from_source_vars(
                                                     functions_of_time),
           element_logical_to_distorted_map.inv_jacobian(logical_coords, time,
                                                         functions_of_time),
-          distorted_to_inertial_mesh_velocity, grid_to_distorted_mesh_velocity);
+          invjac_grid_to_distorted, distorted_to_inertial_mesh_velocity,
+          grid_to_distorted_mesh_velocity);
     } else {
       // No frame transformations needed.
       InterpolationTargetTag::compute_vars_to_interpolate::apply(
