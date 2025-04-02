@@ -129,6 +129,23 @@ struct TimeDerivativeTermsImpl<
       return evolution::dg::TimeDerivativeDecisions<3>{false};
     }
 
+    // extracting 3+1 quantities to assign spacetime spatial derivatives
+    extract_three_plus_one_quantities(temps_ptr, arguments);
+
+    // MHD computation
+    aggregate_time_derivative_terms(dt_vars_ptr, fluxes_ptr, temps_ptr,
+                                    arguments);
+
+    return evolution::dg::TimeDerivativeDecisions<3>{true};
+  }
+
+  template <typename TemporaryTagsList, typename... ExtraTags>
+  static void extract_three_plus_one_quantities(
+      const gsl::not_null<Variables<TemporaryTagsList>*> temps_ptr,
+      const tuples::TaggedTuple<ExtraTags...>& arguments) {
+    // Extract the 3+1 quantities from the spacetime metric
+
+    // Check whether or not sqrt(det(g)) exists based on gauge condition
     if (get<Tags::detail::TemporaryReference<gh::gauges::Tags::GaugeCondition>>(
             arguments)
             .is_harmonic()) {
@@ -136,18 +153,22 @@ struct TimeDerivativeTermsImpl<
           sqrt(get(get<gr::Tags::DetSpatialMetric<DataVector>>(*temps_ptr)));
     }
 
+    // extract spatial derivative of lapse
     for (size_t i = 0; i < 3; ++i) {
       get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                         Frame::Inertial>>(*temps_ptr)
           .get(i) = -get(get<gr::Tags::Lapse<DataVector>>(*temps_ptr)) *
                     get<gh::Tags::HalfPhiTwoNormals<3>>(*temps_ptr).get(i);
     }
+
     const auto& phi =
         get<Tags::detail::TemporaryReference<gh::Tags::Phi<DataVector, 3>>>(
             arguments);
     const auto& inv_spatial_metric =
         get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(*temps_ptr);
     const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(*temps_ptr);
+
+    // extract spatial derivative of shift
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
@@ -181,6 +202,19 @@ struct TimeDerivativeTermsImpl<
       }
     }
 
+  }  // end extract3plus1
+
+  template <typename TemporaryTagsList, typename... ExtraTags>
+  static void aggregate_time_derivative_terms(
+      const gsl::not_null<
+          Variables<tmpl::list<GhDtTags..., ValenciaDtTags...>>*>
+          dt_vars_ptr,
+      const gsl::not_null<Variables<db::wrap_tags_in<
+          ::Tags::Flux, typename ValenciaDivClean::System::flux_variables,
+          tmpl::size_t<3>, Frame::Inertial>>*>
+          fluxes_ptr,
+      const gsl::not_null<Variables<TemporaryTagsList>*> temps_ptr,
+      const tuples::TaggedTuple<ExtraTags...>& arguments) {
     using extra_tags_list = tmpl::list<ExtraTags...>;
 
     grmhd::ValenciaDivClean::TimeDerivativeTerms::apply(
@@ -204,14 +238,11 @@ struct TimeDerivativeTermsImpl<
             Tags::detail::TemporaryReference<TraceReversedStressArgumentTags>,
             TraceReversedStressArgumentTags>>(*temps_ptr, arguments)...);
 
-    // The addition to dt Pi is independent of the specific form of the stress
-    // tensor.
     add_stress_energy_term_to_dt_pi(
         get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(dt_vars_ptr),
         get<grmhd::GhValenciaDivClean::Tags::TraceReversedStressEnergy>(
             *temps_ptr),
         get<gr::Tags::Lapse<DataVector>>(*temps_ptr));
-    return evolution::dg::TimeDerivativeDecisions<3>{true};
   }
 };
 }  // namespace detail
