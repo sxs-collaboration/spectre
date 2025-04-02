@@ -150,6 +150,7 @@ DomainCreator:
           Spin: *spin_left
         SizeInitialValues: [0, 0, 0]
         TransitionEndsAtCube: False
+      GridCenters: None
 
 Amr:
   Verbosity: Verbose

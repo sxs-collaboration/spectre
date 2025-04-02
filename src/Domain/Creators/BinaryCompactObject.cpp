@@ -39,6 +39,7 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"

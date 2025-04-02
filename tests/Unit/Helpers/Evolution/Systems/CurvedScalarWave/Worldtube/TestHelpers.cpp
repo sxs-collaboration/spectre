@@ -64,6 +64,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "  UseEquiangularMap: true\n"
       "  CubeScale: 1.0\n"
       "  TimeDependentMaps:\n"
+      "    GridCenters: None\n"
       "    InitialTime: 0.0\n"
       "    ExpansionMap: \n"
       "      InitialValues: [1.0, 0.0, 0.0]\n"

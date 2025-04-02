@@ -51,6 +51,7 @@
 namespace CurvedScalarWave::Worldtube {
 namespace {
 void test_excision_sphere_tag() {
+  INFO("test_excision_sphere_tag");
   const std::unique_ptr<DomainCreator<3>> shell =
       std::make_unique<domain::creators::Sphere>(
           1., 2., domain::creators::Sphere::Excision{}, 2_st, 4_st, true);
@@ -68,6 +69,7 @@ void test_excision_sphere_tag() {
 }
 
 void test_initial_position_velocity_tag() {
+  INFO("test_initial_position_velocity_tag");
   const double orbital_radius = 7.;
   const double angular_vel = 0.1;
   const auto domain_creator =
@@ -81,6 +83,7 @@ void test_initial_position_velocity_tag() {
 }
 
 void test_compute_face_coordinates_grid() {
+  INFO("test_compute_face_coordinates_grid");
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<
       Tags::FaceCoordinatesCompute<Dim, Frame::Grid, true>>("FaceCoordinates");
@@ -190,6 +193,7 @@ void test_compute_face_coordinates_grid() {
 }
 
 void test_compute_face_coordinates() {
+  INFO("test_compute_face_coordinates");
   static constexpr size_t Dim = 3;
   const auto domain_creator =
       TestHelpers::CurvedScalarWave::Worldtube::worldtube_binary_compact_object<
@@ -316,6 +320,7 @@ void test_compute_face_coordinates() {
 }
 
 void test_particle_position_velocity_compute() {
+  INFO("test_particle_position_velocity_compute");
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
   const double orbit_radius = 9.;
@@ -362,6 +367,7 @@ void test_particle_position_velocity_compute() {
 }
 
 void test_evolved_particle_position_velocity_compute() {
+  INFO("test_evolved_particle_position_velocity_compute");
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(-1., 1.);
@@ -382,6 +388,7 @@ void test_evolved_particle_position_velocity_compute() {
 }
 
 void test_constraint_gammas_compute() {
+  INFO("test_constraint_gammas_compute");
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
   const std::uniform_real_distribution<> dist(-1., 1.);
@@ -416,6 +423,7 @@ void test_constraint_gammas_compute() {
 }
 
 void test_geodesic_acceleration_compute() {
+  INFO("test_geodesic_acceleration_compute");
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(1., 100.);
@@ -445,6 +453,7 @@ void test_geodesic_acceleration_compute() {
 }
 
 void test_background_quantities_compute() {
+  INFO("test_background_quantities_compute");
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
 
@@ -520,6 +529,7 @@ void test_background_quantities_compute() {
 }
 
 void test_face_quantities_compute() {
+  INFO("test_face_quantities_compute");
   static constexpr size_t Dim = 3;
   MAKE_GENERATOR(gen);
   const double worldtube_radius = 1.5;
@@ -611,6 +621,7 @@ void test_face_quantities_compute() {
 }
 
 void test_puncture_field() {
+  INFO("test_puncture_field");
   static constexpr size_t Dim = 3;
   ::TestHelpers::db::test_compute_tag<Tags::PunctureFieldCompute<Dim>>(
       "PunctureField");
@@ -665,6 +676,7 @@ void test_puncture_field() {
 }
 
 void test_self_force_options() {
+  INFO("test_self_force_options");
   const auto options = TestHelpers::test_creation<OptionTags::SelfForceOptions>(
       "Mass: 0.1\n"
       "Iterations: 3\n"
@@ -677,6 +689,7 @@ void test_self_force_options() {
 }
 
 void test_radius_options() {
+  INFO("test_radius_options");
   {
     const auto wt_options =
         TestHelpers::test_creation<OptionTags::RadiusOptions<true>>(

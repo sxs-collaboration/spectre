@@ -87,6 +87,7 @@ DomainCreator:
         InitialValues: Spherical
         SizeInitialValues: [0., 0., 0.]
         TransitionEndsAtCube: false
+      GridCenters: None
 
 SpatialDiscretization:
   BoundaryCorrection:

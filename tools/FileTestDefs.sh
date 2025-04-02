@@ -290,11 +290,12 @@ long_lines() {
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
               'eos.*' \
-              'external/*' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \
+              'external/*' \
               'support/Environments/setup/mbot_install.sh' \
-              'tools/CheckFiles.sh$' && \
+              'tools/CheckFiles.sh$' \
+              'tools/FileTestDefs.sh' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
 long_lines_report() {
@@ -455,7 +456,8 @@ license() {
               'eos.*' \
               'RotatingStarId.dat$' \
               'RotatingStarId_Hybrid.dat$' \
-              'support/TeXLive/texlive.profile' && \
+              'support/TeXLive/texlive.profile' \
+              'tests/InputFiles/GrMhd/GhValenciaDivClean/EvolutionParameters.perl' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {
