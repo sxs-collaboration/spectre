@@ -125,16 +125,14 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   system_to_combined_names["LabelA"] = "LabelALabelB";
   system_to_combined_names["LabelB"] = "LabelALabelB";
   system_to_combined_names["LabelC"] = "LabelC";
-  std::unordered_map<std::string, bool> is_active_map{};
-  is_active_map["LabelA"] = true;
-  is_active_map["LabelB"] = false;
-  is_active_map["LabelC"] = true;
+  const std::unordered_map<std::string, bool> is_active_map{
+      {"LabelA", true}, {"LabelB", false}, {"LabelC", true}};
 
   std::unordered_map<std::string, control_system::UpdateAggregator>
       aggregators{};
 
   Parallel::GlobalCache<MockMetavars> cache{
-      {std::move(system_to_combined_names), std::move(is_active_map)},
+      {std::move(system_to_combined_names), is_active_map},
       {std::move(measurement_timescales)}};
 
   const Parallel::GlobalCache<MockMetavars>& cache_reference = cache;
@@ -152,6 +150,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   CHECK(aggregators.at("LabelALabelB").combined_name() == "LabelALabelB");
   CHECK(aggregators.at("LabelC").combined_name() == "LabelC");
 
-  CHECK_FALSE(aggregators.at("LabelALabelB").is_ready());
-  CHECK_FALSE(aggregators.at("LabelC").is_ready());
+  CHECK_FALSE(aggregators.at("LabelALabelB").is_ready(is_active_map));
+  CHECK_FALSE(aggregators.at("LabelC").is_ready(is_active_map));
 }

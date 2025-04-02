@@ -68,9 +68,13 @@ void UpdateAggregator::insert(const std::string& control_system_name,
                      new_measurement_expiration_time));
 }
 
-bool UpdateAggregator::is_ready() const {
+bool UpdateAggregator::is_ready(
+    const std::unordered_map<std::string, bool>& active_map) const {
   // Short circuit if one name isn't ready
   for (const std::string& control_system_name : active_names_) {
+    if (not active_map.at(control_system_name)) {
+      continue;
+    }
     if (expiration_times_.count(control_system_name) != 1) {
       return false;
     }
@@ -83,8 +87,9 @@ const std::string& UpdateAggregator::combined_name() const {
 }
 
 std::unordered_map<std::string, std::pair<DataVector, double>>
-UpdateAggregator::combined_fot_expiration_times() const {
-  ASSERT(is_ready(),
+UpdateAggregator::combined_fot_expiration_times(
+    const std::unordered_map<std::string, bool>& active_map) const {
+  ASSERT(is_ready(active_map),
          "Trying to get combined expiration times, but have not received "
          "data from all control systems.");
 
@@ -92,12 +97,18 @@ UpdateAggregator::combined_fot_expiration_times() const {
 
   double min_expiration_time = std::numeric_limits<double>::infinity();
   for (const auto& control_system_name : active_names_) {
+    if (not active_map.at(control_system_name)) {
+      continue;
+    }
     min_expiration_time =
         std::min(min_expiration_time,
                  expiration_times_.at(control_system_name).first.second);
   }
 
   for (const auto& control_system_name : active_names_) {
+    if (not active_map.at(control_system_name)) {
+      continue;
+    }
     result[control_system_name] =
         expiration_times_.at(control_system_name).first;
     result[control_system_name].second = min_expiration_time;
@@ -107,8 +118,9 @@ UpdateAggregator::combined_fot_expiration_times() const {
 }
 
 std::pair<double, double>
-UpdateAggregator::combined_measurement_expiration_time() {
-  ASSERT(is_ready(),
+UpdateAggregator::combined_measurement_expiration_time(
+    const std::unordered_map<std::string, bool>& active_map) {
+  ASSERT(is_ready(active_map),
          "Trying to get combined expiration times, but have not received "
          "data from all control systems.");
 
@@ -116,6 +128,9 @@ UpdateAggregator::combined_measurement_expiration_time() {
   double min_expiration_time = std::numeric_limits<double>::infinity();
 
   for (const auto& control_system_name : active_names_) {
+    if (not active_map.at(control_system_name)) {
+      continue;
+    }
     min_measurement_timescale =
         std::min(min_measurement_timescale,
                  expiration_times_[control_system_name].second.first);
