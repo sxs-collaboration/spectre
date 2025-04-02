@@ -17,8 +17,14 @@ spectre_python_add_module(
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
+  DataStructures
   ErrorHandling
   Exporter
   pybind11::module
   Utilities
+  )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyTensor
   )
