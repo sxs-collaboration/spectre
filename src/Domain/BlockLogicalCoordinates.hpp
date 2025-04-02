@@ -75,4 +75,17 @@ block_logical_coordinates_single_point(
     const tnsr::I<double, Dim, Fr>& input_point, const Block<Dim>& block,
     double time = std::numeric_limits<double>::signaling_NaN(),
     const domain::FunctionsOfTimeMap& functions_of_time = {});
+
+/// A `block_order` can be provided to this overload to speed up the search for
+/// the block containing the point. When the point is found, the containing
+/// block will be pushed to the front of the list. Note that when a block order
+/// is provided, the block with the smallest `BlockId` is no longer guaranteed
+/// to be chosen.
+template <size_t Dim, typename Fr>
+BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
+    const tnsr::I<double, Dim, Fr>& input_point, const Domain<Dim>& domain,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const domain::FunctionsOfTimeMap& functions_of_time = {},
+    std::optional<gsl::not_null<std::vector<size_t>*>> block_order =
+        std::nullopt);
 /// @}

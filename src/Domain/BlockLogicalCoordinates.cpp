@@ -134,6 +134,47 @@ block_logical_coordinates_single_point(
 }
 
 template <size_t Dim, typename Fr>
+BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
+    const tnsr::I<double, Dim, Fr>& input_point, const Domain<Dim>& domain,
+    const double time, const domain::FunctionsOfTimeMap& functions_of_time,
+    const std::optional<gsl::not_null<std::vector<size_t>*>> block_order) {
+  // Check which block this point is in. Each point will be in one
+  // and only one block, unless it is on a shared boundary.  In that
+  // case, choose the first matching block (and this block will have
+  // the smallest block_id).
+  // In case a block_order is provided, it is no longer guaranteed that the
+  // block with the smallest block_id is chosen.
+  const size_t num_blocks = block_order.has_value()
+                                ? block_order.value()->size()
+                                : domain.blocks().size();
+  ASSERT(num_blocks <= domain.blocks().size(),
+         "The block order has more entries than the domain has blocks.");
+  for (size_t i = 0; i < num_blocks; ++i) {
+    const size_t block_id =
+        block_order.has_value() ? (*block_order.value())[i] : i;
+    ASSERT(block_id < domain.blocks().size(),
+           "Block ID " << block_id << " is out of bounds.");
+    const auto& block = domain.blocks()[block_id];
+    auto x_logical = block_logical_coordinates_single_point(
+        input_point, block, time, functions_of_time);
+    if (x_logical.has_value()) {
+      if (block_order.has_value()) {
+        // Push this block to the front of the priority order
+        auto& order = *block_order.value();
+        const auto found = std::find(order.begin(), order.end(), block_id);
+        if (found != order.end()) {
+          order.erase(found);
+          order.insert(order.begin(), block_id);
+        }
+      }
+      return make_id_pair(domain::BlockId(block.id()),
+                          std::move(x_logical.value()));
+    }
+  }
+  return std::nullopt;
+}
+
+template <size_t Dim, typename Fr>
 std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Fr>& x,
     const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
@@ -144,23 +185,10 @@ std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
     for (size_t d = 0; d < Dim; ++d) {
       x_frame.get(d) = x.get(d)[s];
     }
-    // Check which block this point is in. Each point will be in one
-    // and only one block, unless it is on a shared boundary.  In that
-    // case, choose the first matching block (and this block will have
-    // the smallest block_id).
-    for (const auto& block : domain.blocks()) {
-      std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>> x_logical =
-          block_logical_coordinates_single_point(x_frame, block, time,
-                                                 functions_of_time);
-
-      if (x_logical.has_value()) {
-        // Point is in this block.  Don't bother checking subsequent
-        // blocks.
-        block_coord_holders[s] = make_id_pair(domain::BlockId(block.id()),
-                                              std::move(x_logical.value()));
-        break;
-      }
-    }
+    // Not using block_order here to guarantee that the block with the
+    // smallest block_id is chosen. This could be made an option.
+    block_coord_holders[s] = block_logical_coordinates_single_point(
+        x_frame, domain, time, functions_of_time);
   }
   return block_coord_holders;
 }
@@ -175,6 +203,12 @@ std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
       const tnsr::I<double, DIM(data), FRAME(data)>& input_point,              \
       const Block<DIM(data)>& block, const double time,                        \
       const domain::FunctionsOfTimeMap& functions_of_time);                    \
+  template BlockLogicalCoords<DIM(data)>                                       \
+  block_logical_coordinates_single_point(                                      \
+      const tnsr::I<double, DIM(data), FRAME(data)>& input_point,              \
+      const Domain<DIM(data)>& domain, const double time,                      \
+      const domain::FunctionsOfTimeMap& functions_of_time,                     \
+      std::optional<gsl::not_null<std::vector<size_t>*>> block_order);         \
   template std::vector<BlockLogicalCoords<DIM(data)>>                          \
   block_logical_coordinates(                                                   \
       const Domain<DIM(data)>& domain,                                         \
