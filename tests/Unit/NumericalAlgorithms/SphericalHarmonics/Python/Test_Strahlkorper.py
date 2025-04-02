@@ -12,6 +12,7 @@ import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
 from spectre.SphericalHarmonics import (
     AngularOrdering,
+    Frame,
     Strahlkorper,
     cartesian_coords,
     read_surface_ylm,
@@ -38,7 +39,7 @@ class TestStrahlkorper(unittest.TestCase):
         shutil.rmtree(self.test_dir)
 
     def test_strahlkorper(self):
-        strahlkorper = Strahlkorper(
+        strahlkorper = Strahlkorper[Frame.Inertial](
             l_max=12, radius=1.0, center=[0.0, 0.0, 0.0]
         )
         self.assertEqual(strahlkorper.l_max, 12)

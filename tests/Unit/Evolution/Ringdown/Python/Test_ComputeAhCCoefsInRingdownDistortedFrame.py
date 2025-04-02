@@ -13,7 +13,7 @@ from spectre.Evolution.Ringdown.ComputeAhCCoefsInRingdownDistortedFrame import (
     compute_ahc_coefs_in_ringdown_distorted_frame,
 )
 from spectre.Informer import unit_test_build_path
-from spectre.SphericalHarmonics import Strahlkorper, ylm_legend_and_data
+from spectre.SphericalHarmonics import Frame, Strahlkorper, ylm_legend_and_data
 from spectre.support.Logging import configure_logging
 
 
@@ -159,13 +159,13 @@ class TestComputeAhCCoefs(unittest.TestCase):
         expected_fit_ahc_coefs_mv = ModalVector(expected_fit_ahc_coefs)
         expected_fit_dt_ahc_coefs_mv = ModalVector(expected_fit_dt_ahc_coefs)
         expected_fit_dt2_ahc_coefs_mv = ModalVector(expected_fit_dt2_ahc_coefs)
-        expected_ahc_strahlkorper = Strahlkorper(
+        expected_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
             ahc_lmax, ahc_lmax, expected_fit_ahc_coefs_mv, ahc_center
         )
-        expected_dt_ahc_strahlkorper = Strahlkorper(
+        expected_dt_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
             ahc_lmax, ahc_lmax, expected_fit_dt_ahc_coefs_mv, ahc_center
         )
-        expected_dt2_ahc_strahlkorper = Strahlkorper(
+        expected_dt2_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
             ahc_lmax, ahc_lmax, expected_fit_dt2_ahc_coefs_mv, ahc_center
         )
         # These are bad legends because they say InertialExpansionCenter instead

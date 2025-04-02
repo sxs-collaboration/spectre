@@ -16,7 +16,7 @@ from spectre.Pipelines.Bbh.ControlId import (
     control_id,
 )
 from spectre.Pipelines.Bbh.FindHorizon import find_horizon, vec_to_string
-from spectre.SphericalHarmonics import Strahlkorper
+from spectre.SphericalHarmonics import Frame, Strahlkorper
 from spectre.support.Schedule import schedule, scheduler_options
 from spectre.Visualization.OpenVolfiles import open_volfiles
 from spectre.Visualization.ReadH5 import select_observation
@@ -116,7 +116,7 @@ def postprocess_id(
             subfile_name=id_subfile_name,
             obs_id=obs_id,
             obs_time=0.0,
-            initial_guess=Strahlkorper(
+            initial_guess=Strahlkorper[Frame.Inertial](
                 l_max=horizon_l_max,
                 radius=excision_radius * 1.5,
                 center=[xcoord, y_offset, z_offset],
