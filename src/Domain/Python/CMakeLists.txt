@@ -19,6 +19,7 @@ spectre_python_add_module(
   JacobianDiagnostic.cpp
   RadiallyCompressedCoordinates.cpp
   SegmentId.cpp
+  StrahlkorperTransformations.cpp
   PYTHON_FILES
   __init__.py
 )
@@ -38,6 +39,7 @@ spectre_python_headers(
   JacobianDiagnostic.hpp
   RadiallyCompressedCoordinates.hpp
   SegmentId.hpp
+  StrahlkorperTransformations.hpp
 )
 
 spectre_python_link_libraries(
@@ -57,5 +59,6 @@ spectre_python_add_dependencies(
   ${LIBRARY}
   PyCoordinateMaps
   PyDataStructures
+  PySphericalHarmonics
   PyTensor
   )
