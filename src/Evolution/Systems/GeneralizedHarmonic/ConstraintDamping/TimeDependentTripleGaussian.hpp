@@ -12,6 +12,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
+#include "Options/Auto.hpp"
 #include "Options/String.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -46,12 +47,16 @@ namespace gh::ConstraintDamping {
  * domain::FunctionsOfTime::FunctionOfTime \f$f(t)\f$: \f$w_\alpha(t) = w_\alpha
  * / f(t)\f$.
  *
- * The name of the domain::FunctionsOfTime::FunctionOfTime is hardcoded to be
- * `Expansion` as this class will typically be used with a domain that has an
- * expansion map and potentially an expansion control system, the names of which
- * will be `Expansion`.
+ * You can choose one of two methods for tracking the object
+ * centers. `ExpansionFactor` should be used for BBH simulations where the
+ * expansion control system is used to track the objects. `ObjectCenters`
+ * sholud be used for BNS simulations where the coordinate centers of the two
+ * stars is tracked separately and there is no expansion control system.
  */
 class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
+ private:
+  enum class MovementMethods { ExpansionFactor, ObjectCenters };
+
  public:
   template <size_t GaussianNumber>
   struct Gaussian {
@@ -85,14 +90,30 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   template <typename Group>
   struct Center {
     using group = Group;
-    using type = std::array<double, 3>;
+    using type = tmpl::conditional_t<std::is_same_v<Group, Gaussian<3>>,
+                                     std::array<double, 3>,
+                                     Options::Auto<std::array<double, 3>>>;
     static constexpr Options::String help = {"The center of the Gaussian."};
   };
 
-  using options = tmpl::list<
-      Constant, Amplitude<Gaussian<1>>, Width<Gaussian<1>>, Center<Gaussian<1>>,
-      Amplitude<Gaussian<2>>, Width<Gaussian<2>>, Center<Gaussian<2>>,
-      Amplitude<Gaussian<3>>, Width<Gaussian<3>>, Center<Gaussian<3>>>;
+  /// \brief How to track the movement of the compact objects.
+  ///
+  /// - `ExpansionFactor` for BBH simulations.
+  /// - `ObjectCenters` for BNS simulations.
+  struct MovementMethod {
+    using type = std::string;
+    static constexpr Options::String help = {
+        "How to track the movement of the compact objects.\n\n"
+        "- `ExpansionFactor` for BBH simulations.\n"
+        "- `ObjectCenters` for BNS simulations."};
+  };
+
+  using options =
+      tmpl::list<Constant, Amplitude<Gaussian<1>>, Width<Gaussian<1>>,
+                 Center<Gaussian<1>>, Amplitude<Gaussian<2>>,
+                 Width<Gaussian<2>>, Center<Gaussian<2>>,
+                 Amplitude<Gaussian<3>>, Width<Gaussian<3>>,
+                 Center<Gaussian<3>>, MovementMethod>;
 
   static constexpr Options::String help = {
       "Computes a sum of a constant and 3 Gaussians (each with its own "
@@ -107,13 +128,12 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
 
   explicit TimeDependentTripleGaussian(CkMigrateMessage* msg);
 
-  TimeDependentTripleGaussian(double constant, double amplitude_1,
-                              double width_1,
-                              const std::array<double, 3>& center_1,
-                              double amplitude_2, double width_2,
-                              const std::array<double, 3>& center_2,
-                              double amplitude_3, double width_3,
-                              const std::array<double, 3>& center_3);
+  TimeDependentTripleGaussian(
+      double constant, double amplitude_1, double width_1,
+      const std::optional<std::array<double, 3>>& center_1, double amplitude_2,
+      double width_2, const std::optional<std::array<double, 3>>& center_2,
+      double amplitude_3, double width_3, const std::array<double, 3>& center_3,
+      const std::string& movement_method, const Options::Context& context = {});
 
   TimeDependentTripleGaussian() = default;
   ~TimeDependentTripleGaussian() override = default;
@@ -125,13 +145,13 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   TimeDependentTripleGaussian& operator=(
       TimeDependentTripleGaussian&& /*rhs*/) = default;
 
-  void operator()(const gsl::not_null<Scalar<double>*> value_at_x,
+  void operator()(gsl::not_null<Scalar<double>*> value_at_x,
                   const tnsr::I<double, 3, Frame::Grid>& x, double time,
                   const std::unordered_map<
                       std::string,
                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
                       functions_of_time) const override;
-  void operator()(const gsl::not_null<Scalar<DataVector>*> value_at_x,
+  void operator()(gsl::not_null<Scalar<DataVector>*> value_at_x,
                   const tnsr::I<DataVector, 3, Frame::Grid>& x, double time,
                   const std::unordered_map<
                       std::string,
@@ -146,35 +166,26 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
 
  private:
   friend bool operator==(const TimeDependentTripleGaussian& lhs,
-                         const TimeDependentTripleGaussian& rhs) {
-    return lhs.constant_ == rhs.constant_ and
-           lhs.amplitude_1_ == rhs.amplitude_1_ and
-           lhs.inverse_width_1_ == rhs.inverse_width_1_ and
-           lhs.center_1_ == rhs.center_1_ and
-           lhs.amplitude_2_ == rhs.amplitude_2_ and
-           lhs.inverse_width_2_ == rhs.inverse_width_2_ and
-           lhs.center_2_ == rhs.center_2_ and
-           lhs.amplitude_3_ == rhs.amplitude_3_ and
-           lhs.inverse_width_3_ == rhs.inverse_width_3_ and
-           lhs.center_3_ == rhs.center_3_;
-  }
+                         const TimeDependentTripleGaussian& rhs);
 
   double constant_ = std::numeric_limits<double>::signaling_NaN();
   double amplitude_1_ = std::numeric_limits<double>::signaling_NaN();
   double inverse_width_1_ = std::numeric_limits<double>::signaling_NaN();
-  std::array<double, 3> center_1_{};
+  std::optional<std::array<double, 3>> center_1_{};
   double amplitude_2_ = std::numeric_limits<double>::signaling_NaN();
   double inverse_width_2_ = std::numeric_limits<double>::signaling_NaN();
-  std::array<double, 3> center_2_{};
+  std::optional<std::array<double, 3>> center_2_{};
   double amplitude_3_ = std::numeric_limits<double>::signaling_NaN();
   double inverse_width_3_ = std::numeric_limits<double>::signaling_NaN();
   std::array<double, 3> center_3_{};
+  MovementMethods movement_method_{MovementMethods::ExpansionFactor};
   inline static const std::string function_of_time_for_scaling_{"Expansion"};
+  inline static const std::string function_of_time_for_centers_{"GridCenters"};
 
   template <typename T>
   void apply_call_operator(
-      const gsl::not_null<Scalar<T>*> value_at_x,
-      const tnsr::I<T, 3, Frame::Grid>& x, double time,
+      gsl::not_null<Scalar<T>*> value_at_x, const tnsr::I<T, 3, Frame::Grid>& x,
+      double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&

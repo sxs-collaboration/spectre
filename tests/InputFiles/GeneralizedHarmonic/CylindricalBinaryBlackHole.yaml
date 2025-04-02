@@ -118,6 +118,7 @@ EvolutionSystem:
           Amplitude: 0.075            # 0.075 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
+        MovementMethod: ExpansionFactor
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: -0.999
@@ -139,6 +140,7 @@ EvolutionSystem:
           Amplitude: 0.075            # 0.075 / (m_A + m_B)
           Width: 38.415              # 2.5 * (x_B - x_A)
           Center: [0.0, 0.0, 0.0]
+        MovementMethod: ExpansionFactor
 
 Amr:
   Criteria:

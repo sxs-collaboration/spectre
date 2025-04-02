@@ -128,15 +128,16 @@ EvolutionSystem:
       # Parameters from SpEC run of equal mass non-spinning,
       # polytrope K=100 Gamma=2
       TimeDependentTripleGaussian:
+        MovementMethod: ObjectCenters
         Constant: 0.01
         Gaussian1:
           Amplitude: 0.06277857994
           Width: 7.884855
-          Center: [16, 0.0, 0.0]
+          Center: Auto
         Gaussian2:
           Amplitude: 0.06277857994
           Width: 7.884855
-          Center: [-16, 0.0, 0.0]
+          Center: Auto
         Gaussian3:
           Amplitude: 0.06277857994
           Width: 51.60996
@@ -151,15 +152,16 @@ EvolutionSystem:
       # Parameters from SpEC run of equal mass non-spinning,
       # polytrope K=100 Gamma=2
       TimeDependentTripleGaussian:
+        MovementMethod: ObjectCenters
         Constant: 0.01
         Gaussian1:
           Amplitude: 0.94167869922
           Width: 7.884855
-          Center: [16, 0.0, 0.0] # [x_A, 0, 0]
+          Center: Auto
         Gaussian2:
           Amplitude: 0.94167869922
           Width: 7.884855
-          Center: [-16, 0.0, 0.0]  # [x_B, 0, 0]
+          Center: Auto
         Gaussian3:
           Amplitude: 0.19182343873
           Width: 51.60996
