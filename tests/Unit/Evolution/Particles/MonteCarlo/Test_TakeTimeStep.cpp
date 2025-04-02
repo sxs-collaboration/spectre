@@ -9,6 +9,7 @@
 #include "Evolution/Particles/MonteCarlo/EvolvePackets.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
+#include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
@@ -121,11 +122,12 @@ void test_flat_space_time_step() {
   CHECK(packet.momentum_upper_t == 1.0);
 
   Scalar<DataVector> coupling_tilde_tau =
-      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
-  Scalar<DataVector> coupling_rho_ye =
-      make_with_value<Scalar<DataVector>>(zero_dv, 0.0);
+      make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
+  Scalar<DataVector> coupling_tilde_rho_ye =
+      make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
   tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s =
-      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(zero_dv, 0.0);
+      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(
+          zero_dv_with_ghost, 0.0);
 
   std::vector<Particles::MonteCarlo::Packet> packets{packet};
   Particles::MonteCarlo::TemplatedLocalFunctions<NeutrinoEnergies,
@@ -233,7 +235,8 @@ void test_flat_space_time_step() {
   double current_time = start_time;
   while (current_time < final_time) {
     MonteCarloStruct.take_time_step_on_element(
-        &packets, &generator, &single_packet_energy, current_time,
+        &packets, &coupling_tilde_tau, &coupling_tilde_rho_ye,
+        &coupling_tilde_s, &generator, &single_packet_energy, current_time,
         current_time + time_step, equation_of_state, interaction_table,
         electron_fraction, baryon_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,

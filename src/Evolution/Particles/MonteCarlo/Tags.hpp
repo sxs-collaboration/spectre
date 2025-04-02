@@ -31,6 +31,27 @@ struct CellLightCrossingTime : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// Simple tag storing the coupling term between
+/// MC and tilde_Tau (i.e. the energy variable)
+template <typename DataType>
+struct CouplingTildeTau : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// Simple tag storing the coupling term between
+/// MC and tilde_RhoYe (i.e. the composition variable)
+template <typename DataType>
+struct CouplingTildeRhoYe : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// Simple tag storing the coupling term between
+/// MC and tilde_S (i.e. the momentum variable)
+template <typename DataType, size_t Dim>
+struct CouplingTildeS : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame::Inertial>;
+};
+
 /// Simple tag storing the random number generator
 /// used by Monte-Carlo
 struct RandomNumberGenerator : db::SimpleTag {

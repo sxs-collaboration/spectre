@@ -79,6 +79,9 @@ struct component {
       hydro::Tags::ElectronFraction<DataVector>,
       hydro::Tags::Temperature<DataVector>,
       Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
+      Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>,
+      Particles::MonteCarlo::Tags::CouplingTildeRhoYe<DataVector>,
+      Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>,
       domain::Tags::NeighborMesh<Dim>,
       Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<3>,
       hydro::Tags::LowerSpatialFourVelocity<DataVector, Dim, Frame::Inertial>,
@@ -88,8 +91,8 @@ struct component {
                   Frame::Inertial>,
       Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
                   Frame::Inertial>,
-      Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
+      Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>, tmpl::size_t<Dim>,
+                  Frame::Inertial>,
       gr::Tags::SpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -210,8 +213,23 @@ void test_advance_packets() {
   gsl::at(single_packet_energy, 2) = 1.0;
   get(cell_light_crossing_time) = 1.0;
 
+  // Coupling data
+  const auto& subcell_extents = subcell_mesh.extents();
+  const size_t num_ghost_zones = 1;
+  size_t mesh_size_with_ghost = 1;
+  for (size_t d = 0; d < Dim; d++) {
+    mesh_size_with_ghost *= subcell_extents[d] + 2 * num_ghost_zones;
+  }
+  const DataVector zero_dv_with_ghost(mesh_size_with_ghost, 0.0);
+  Scalar<DataVector> coupling_tilde_tau =
+      make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
+  Scalar<DataVector> coupling_tilde_rho_ye =
+      make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
+  tnsr::i<DataVector, Dim> coupling_tilde_s =
+      make_with_value<tnsr::i<DataVector, Dim>>(zero_dv_with_ghost, 0.0);
+
   // Grid coordinates on subcell mesh
-  const size_t mesh_size = subcell_mesh.extents()[0];
+  const size_t mesh_size = subcell_extents[0];
   CHECK(subcell_mesh.extents()[1] == mesh_size);
   CHECK(subcell_mesh.extents()[2] == mesh_size);
   tnsr::I<DataVector, 3, Frame::ElementLogical> mesh_coordinates =
@@ -306,6 +324,9 @@ void test_advance_packets() {
        electron_fraction,
        temperature,
        cell_light_crossing_time,
+       coupling_tilde_tau,
+       coupling_tilde_rho_ye,
+       coupling_tilde_s,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        single_packet_energy,
        lower_spatial_four_velocity,

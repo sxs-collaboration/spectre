@@ -76,6 +76,10 @@ struct component {
       hydro::Tags::ElectronFraction<DataVector>,
       hydro::Tags::Temperature<DataVector>,
       Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
+      Particles::MonteCarlo::Tags::GhostZoneCouplingDataTag<Dim>,
+      Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>,
+      Particles::MonteCarlo::Tags::CouplingTildeRhoYe<DataVector>,
+      Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>,
       domain::Tags::NeighborMesh<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>>;
 
@@ -211,14 +215,28 @@ void test_send_receive_actions() {
       ActionTesting::emplace_array_component_and_initialize<comp>(
           &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
           neighbor_id,
-          {time_step_id, next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{},
-           tnsr::I<DataVector, Dim, Frame::ElementLogical>{}, active_grid,
-           Element<Dim>{}, NeighborDataMap{}, packets_on_element,
+          {time_step_id,
+           next_time_step_id,
+           Mesh<Dim>{},
+           Mesh<Dim>{},
+           tnsr::I<DataVector, Dim, Frame::ElementLogical>{},
+           active_grid,
+           Element<Dim>{},
+           NeighborDataMap{},
+           packets_on_element,
            Variables<evolved_vars_tags>{},
            typename Particles::MonteCarlo::Tags::MortarDataTag<Dim>::type{},
-           Scalar<DataVector>{}, Scalar<DataVector>{}, Scalar<DataVector>{},
            Scalar<DataVector>{},
-           typename domain::Tags::NeighborMesh<Dim>::type{}, Interps{}});
+           Scalar<DataVector>{},
+           Scalar<DataVector>{},
+           Scalar<DataVector>{},
+           typename Particles::MonteCarlo::Tags::GhostZoneCouplingDataTag<
+               Dim>::type{},
+           Scalar<DataVector>{},
+           Scalar<DataVector>{},
+           tnsr::i<DataVector, Dim, Frame::Inertial>{},
+           typename domain::Tags::NeighborMesh<Dim>::type{},
+           Interps{}});
     }
   }
 
@@ -250,6 +268,48 @@ void test_send_receive_actions() {
         DataVector(ghost_mesh.number_of_grid_points(), 0.1);
     mortar_data.cell_light_crossing_time[south_neighbor_id] =
         DataVector(ghost_mesh.number_of_grid_points(), 0.1);
+  }
+
+  // Coupling data
+  const size_t ghost_zone_size = 1;
+  const auto& subcell_extents = subcell_mesh.extents();
+  auto extents_with_ghost = subcell_extents;
+  size_t mesh_size_with_ghost = 1;
+  for (size_t d = 0; d < Dim; d++) {
+    extents_with_ghost[d] = subcell_extents[d] + 2 * ghost_zone_size;
+    mesh_size_with_ghost *= extents_with_ghost[d];
+  }
+  const DataVector zero_dv_with_ghost(mesh_size_with_ghost, 0.0);
+  Scalar<DataVector> coupling_tilde_tau =
+      make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
+  Scalar<DataVector> coupling_tilde_rho_ye =
+      make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
+  tnsr::i<DataVector, Dim> coupling_tilde_s =
+      make_with_value<tnsr::i<DataVector, Dim>>(zero_dv_with_ghost, 0.0);
+  Particles::MonteCarlo::GhostZoneCouplingData<Dim> coupling_data{};
+  {
+    const size_t number_of_points_in_ghost_zone =
+        mesh_size_with_ghost / extents_with_ghost[0];
+    coupling_data.coupling_tilde_tau[east_neighbor_id] =
+        DataVector(number_of_points_in_ghost_zone, 0.1);
+    coupling_data.coupling_tilde_rho_ye[east_neighbor_id] =
+        DataVector(number_of_points_in_ghost_zone, 0.1);
+    coupling_data.coupling_tilde_s[east_neighbor_id] =
+        make_with_value<tnsr::i<DataVector, Dim>>(
+            coupling_data.coupling_tilde_tau[east_neighbor_id].value(), 0.1);
+  }
+  if constexpr (Dim > 1) {
+    const size_t number_of_points_in_ghost_zone =
+        mesh_size_with_ghost / extents_with_ghost[1];
+    const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
+                                               south_id};
+    coupling_data.coupling_tilde_tau[south_neighbor_id] =
+        DataVector(number_of_points_in_ghost_zone, 0.1);
+    coupling_data.coupling_tilde_rho_ye[south_neighbor_id] =
+        DataVector(number_of_points_in_ghost_zone, 0.1);
+    coupling_data.coupling_tilde_s[south_neighbor_id] =
+        make_with_value<tnsr::i<DataVector, Dim>>(
+            coupling_data.coupling_tilde_tau[east_neighbor_id].value(), 0.1);
   }
 
   const size_t species = 1;
@@ -293,10 +353,25 @@ void test_send_receive_actions() {
   Interps fd_to_neighbor_fd_interpolants{};
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
-      {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, mesh_coordinates,
-       active_grid, element, neighbor_data, packets_on_element, evolved_vars,
-       mortar_data, rest_mass_density, electron_fraction, temperature,
+      {time_step_id,
+       next_time_step_id,
+       dg_mesh,
+       subcell_mesh,
+       mesh_coordinates,
+       active_grid,
+       element,
+       neighbor_data,
+       packets_on_element,
+       evolved_vars,
+       mortar_data,
+       rest_mass_density,
+       electron_fraction,
+       temperature,
        cell_light_crossing_time,
+       coupling_data,
+       coupling_tilde_tau,
+       coupling_tilde_rho_ye,
+       coupling_tilde_s,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        fd_to_neighbor_fd_interpolants});
 
@@ -311,7 +386,6 @@ void test_send_receive_actions() {
   CHECK(get_databox_tag<comp, ghost_data_tag>(runner, self_id).empty());
 
   // Check data sent to neighbors
-  const size_t ghost_zone_size = 1;
   const auto& directions_to_slice = element.internal_boundaries();
   const DirectionMap<Dim, DataVector> all_sliced_data =
       [&rest_mass_density, &electron_fraction, &temperature,
@@ -514,13 +588,65 @@ void test_send_receive_actions() {
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
   CHECK(get_databox_tag<comp, ghost_data_tag>(runner, self_id).empty());
 
+  // Check data sent to neighbors (PostStep)
+  const DirectionMap<Dim, DataVector> all_sliced_data_post =
+      [&coupling_tilde_tau, &coupling_tilde_rho_ye, &coupling_tilde_s,
+       &extents_with_ghost, &mesh_size_with_ghost, ghost_zone_size,
+       &directions_to_slice, &fd_to_neighbor_fd_interpolants]() {
+        (void)ghost_zone_size;
+        const size_t number_of_components = 2 + Dim;
+        DataVector buffer{mesh_size_with_ghost * number_of_components};
+        std::copy(get(coupling_tilde_tau).data(),
+                  std::next(get(coupling_tilde_tau).data(),
+                            static_cast<int>(mesh_size_with_ghost)),
+                  buffer.data());
+        std::copy(
+            get(coupling_tilde_rho_ye).data(),
+            std::next(get(coupling_tilde_rho_ye).data(),
+                      static_cast<int>(mesh_size_with_ghost)),
+            std::next(buffer.data(), static_cast<int>(mesh_size_with_ghost)));
+        for (size_t d = 0; d < Dim; d++) {
+          std::copy(
+              coupling_tilde_s.get(d).data(),
+              std::next(coupling_tilde_s.get(d).data(),
+                        static_cast<int>(mesh_size_with_ghost)),
+              std::next(buffer.data(),
+                        static_cast<int>(mesh_size_with_ghost * (2 + d))));
+        }
+
+        return evolution::dg::subcell::slice_data(
+            buffer, extents_with_ghost, ghost_zone_size, directions_to_slice, 0,
+            fd_to_neighbor_fd_interpolants);
+      }();
+
   {
+    const auto& expected_east_data =
+        all_sliced_data_post.at(east_neighbor_id.direction());
+    const auto& east_data = ActionTesting::get_inbox_tag<
+        comp, Particles::MonteCarlo::McGhostZoneDataInboxTag<
+                  Dim, Particles::MonteCarlo::CommunicationStep::PostStep>>(
+        runner, east_id);
+    CHECK(east_data.at(time_step_id)
+              .at(DirectionalId<Dim>{Direction<Dim>::lower_xi(), self_id})
+              .ghost_zone_hydro_variables == expected_east_data);
     // Verify that the packets out of the element have been removed.
     const auto& packets_from_box =
         get_databox_tag<comp, Particles::MonteCarlo::Tags::PacketsOnElement>(
             runner, self_id);
     CHECK(packets_from_box.size() == 1);
     CHECK(packets_from_box[0] == packet_keep);
+  }
+  if constexpr (Dim > 1) {
+    const auto direction = Direction<Dim>::lower_eta();
+    const auto& expected_south_data = all_sliced_data_post.at(direction);
+    const auto& south_data = ActionTesting::get_inbox_tag<
+        comp, Particles::MonteCarlo::McGhostZoneDataInboxTag<
+                  Dim, Particles::MonteCarlo::CommunicationStep::PostStep>>(
+        runner, south_id);
+    CHECK(
+        south_data.at(time_step_id)
+            .at(DirectionalId<Dim>{orientation(direction.opposite()), self_id})
+            .ghost_zone_hydro_variables == expected_south_data);
   }
 
   // Correct coordinates of packets sent east/south to get in the
@@ -592,11 +718,17 @@ void test_send_receive_actions() {
   }
 
   // Set up fake data coming from east neighbor
+  DataVector east_ghost_cells_post{};
   {
+    const size_t number_of_points_in_ghost_zone =
+        mesh_size_with_ghost / extents_with_ghost[0];
+    const size_t number_of_vars = 2 + Dim;
+    east_ghost_cells_post = DataVector{number_of_points_in_ghost_zone *
+                                       ghost_zone_size * number_of_vars};
+    alg::iota(east_ghost_cells_post, 2.0);
     const std::optional<std::vector<Particles::MonteCarlo::Packet>>
         packets_from_east =
             std::vector<Particles::MonteCarlo::Packet>{packet_east};
-    const DataVector east_ghost_cells_post{};
     const size_t items_in_inbox =
         Particles::MonteCarlo::McGhostZoneDataInboxTag<
             Dim, Particles::MonteCarlo::CommunicationStep::PostStep>::
@@ -609,14 +741,21 @@ void test_send_receive_actions() {
     CHECK(items_in_inbox == 1);
   }
   // Set up fake data coming from south neighbor
+  // NOLINTNEXTLINE(misc-const-correctness)
+  [[maybe_unused]] DataVector south_ghost_cells_post{};
   if constexpr (Dim > 1) {
     REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
         make_not_null(&runner), self_id));
 
+    const size_t number_of_points_in_ghost_zone =
+        mesh_size_with_ghost / extents_with_ghost[1];
+    const size_t number_of_vars = 2 + Dim;
+    south_ghost_cells_post = DataVector{number_of_points_in_ghost_zone *
+                                        ghost_zone_size * number_of_vars};
+    alg::iota(south_ghost_cells_post, 2.0);
     const std::optional<std::vector<Particles::MonteCarlo::Packet>>
         packets_from_south =
             std::vector<Particles::MonteCarlo::Packet>{packet_south};
-    const DataVector south_ghost_cells_post{};
     const size_t items_in_inbox =
         Particles::MonteCarlo::McGhostZoneDataInboxTag<
             Dim, Particles::MonteCarlo::CommunicationStep::PostStep>::
@@ -631,6 +770,71 @@ void test_send_receive_actions() {
   // Run the ReceiveDataForReconstruction action on self_id (PostStep)
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
+  // Check the received data was stored correctly
+  using coupling_data_tag =
+      Particles::MonteCarlo::Tags::GhostZoneCouplingDataTag<Dim>;
+  const auto& coupling_data_from_box =
+      get_databox_tag<comp, coupling_data_tag>(runner, self_id);
+  {
+    REQUIRE(coupling_data_from_box.coupling_tilde_tau.find(east_neighbor_id) !=
+            coupling_data_from_box.coupling_tilde_tau.end());
+    REQUIRE(
+        coupling_data_from_box.coupling_tilde_rho_ye.find(east_neighbor_id) !=
+        coupling_data_from_box.coupling_tilde_rho_ye.end());
+    REQUIRE(coupling_data_from_box.coupling_tilde_s.find(east_neighbor_id) !=
+            coupling_data_from_box.coupling_tilde_s.end());
+
+    const size_t number_of_east_points =
+        east_ghost_cells_post.size() / (2 + Dim);
+    const DataVector coupling_tilde_tau_view{east_ghost_cells_post.data(),
+                                             number_of_east_points};
+    const DataVector coupling_tilde_rho_ye_view{
+        east_ghost_cells_post.data() + number_of_east_points,
+        number_of_east_points};
+    CHECK(coupling_data_from_box.coupling_tilde_tau.find(east_neighbor_id)
+              ->second == coupling_tilde_tau_view);
+    CHECK(coupling_data_from_box.coupling_tilde_rho_ye.find(east_neighbor_id)
+              ->second == coupling_tilde_rho_ye_view);
+    for (size_t d = 0; d < Dim; d++) {
+      const DataVector coupling_tilde_s_d_view{
+          east_ghost_cells_post.data() + number_of_east_points * (2 + d),
+          number_of_east_points};
+      CHECK(coupling_data_from_box.coupling_tilde_s.find(east_neighbor_id)
+                ->second.value()
+                .get(d) == coupling_tilde_s_d_view);
+    }
+  }
+  if constexpr (Dim > 1) {
+    const DirectionalId<Dim> south_neighbor_id{Direction<Dim>::lower_eta(),
+                                               south_id};
+    REQUIRE(coupling_data_from_box.coupling_tilde_tau.find(south_neighbor_id) !=
+            coupling_data_from_box.coupling_tilde_tau.end());
+    REQUIRE(
+        coupling_data_from_box.coupling_tilde_rho_ye.find(south_neighbor_id) !=
+        coupling_data_from_box.coupling_tilde_rho_ye.end());
+    REQUIRE(coupling_data_from_box.coupling_tilde_s.find(south_neighbor_id) !=
+            coupling_data_from_box.coupling_tilde_s.end());
+
+    const size_t number_of_south_points =
+        south_ghost_cells_post.size() / (2 + Dim);
+    const DataVector coupling_tilde_tau_view{south_ghost_cells_post.data(),
+                                             number_of_south_points};
+    const DataVector coupling_tilde_rho_ye_view{
+        south_ghost_cells_post.data() + number_of_south_points,
+        number_of_south_points};
+    CHECK(coupling_data_from_box.coupling_tilde_tau.find(south_neighbor_id)
+              ->second == coupling_tilde_tau_view);
+    CHECK(coupling_data_from_box.coupling_tilde_rho_ye.find(south_neighbor_id)
+              ->second == coupling_tilde_rho_ye_view);
+    for (size_t d = 0; d < Dim; d++) {
+      const DataVector coupling_tilde_s_d_view{
+          south_ghost_cells_post.data() + number_of_south_points * (2 + d),
+          number_of_south_points};
+      CHECK(coupling_data_from_box.coupling_tilde_s.find(south_neighbor_id)
+                ->second.value()
+                .get(d) == coupling_tilde_s_d_view);
+    }
+  }
   // We should now have 3 packets (2 for Dim=1)
   {
     const auto& packets_from_box =
