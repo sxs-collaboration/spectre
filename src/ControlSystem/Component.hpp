@@ -32,6 +32,7 @@ struct ControlComponent {
   static_assert(tt::assert_conforms_to_v<
                 ControlSystem, control_system::protocols::ControlSystem>);
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using control_system = ControlSystem;
 
   static std::string name() { return ControlSystem::name(); }

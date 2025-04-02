@@ -34,6 +34,7 @@ struct DgElementCollection {
   ///
   /// It should be possible to generalize this to work as a group too.
   using chare_type = Parallel::Algorithms::Nodegroup;
+  static constexpr bool checkpoint_data = true;
   /// \brief The metavariables
   using metavariables = Metavariables;
   /// \brief The simple tags necessary from option parsing.

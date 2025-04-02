@@ -101,6 +101,7 @@ struct CceEvolutionLabelTag {};
 template <class Metavariables>
 struct CharacteristicEvolution {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   static constexpr bool evolve_ccm = Metavariables::evolve_ccm;
   using cce_system = Cce::System<evolve_ccm>;

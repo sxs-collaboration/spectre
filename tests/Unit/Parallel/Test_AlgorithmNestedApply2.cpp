@@ -46,6 +46,7 @@ struct error_call_single_action_from_action {
 template <class Metavariables>
 struct Component {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;

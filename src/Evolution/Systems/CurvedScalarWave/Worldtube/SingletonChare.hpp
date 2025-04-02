@@ -63,6 +63,7 @@ template <class Metavariables>
 struct WorldtubeSingleton {
   static constexpr size_t Dim = Metavariables::volume_dim;
   using chare_type = ::Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using evolved_vars = ::Tags::Variables<
       tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi>>;
@@ -108,6 +109,11 @@ struct WorldtubeSingleton {
           SelfStart::self_start_procedure<step_actions, worldtube_system>>,
       Parallel::PhaseActions<
           Parallel::Phase::Register,
+          tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
+                         Registration>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Restart,
           tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
                          Registration>,
                      Parallel::Actions::TerminatePhase>>,

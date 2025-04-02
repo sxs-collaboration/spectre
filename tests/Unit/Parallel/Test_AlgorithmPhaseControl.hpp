@@ -107,6 +107,7 @@ PUP::able::PUP_ID RegisterTrigger::my_PUP_ID = 0;
 template <typename Metavariables>
 struct ComponentAlpha {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = int;
 
@@ -168,6 +169,7 @@ struct ComponentAlpha {
 template <typename Metavariables>
 struct ComponentBeta {
   using chare_type = typename Metavariables::component_beta_chare_type;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = size_t;
 

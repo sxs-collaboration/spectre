@@ -42,6 +42,7 @@ struct InitializeMutator : tt::ConformsTo<db::protocols::Mutator> {
 template <class Metavariables>
 struct MemoryMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
 
   using metavariables = Metavariables;
 

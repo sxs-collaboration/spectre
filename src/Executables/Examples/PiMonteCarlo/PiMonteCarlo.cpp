@@ -260,6 +260,7 @@ struct ProcessHitsAndThrows {
 template <typename Metavars>
 struct PiEstimator {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavars;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<>>>;
@@ -301,6 +302,7 @@ void PiEstimator<Metavars>::execute_next_phase(
 template <typename Metavars>
 struct DartThrower {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavars;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Execute,

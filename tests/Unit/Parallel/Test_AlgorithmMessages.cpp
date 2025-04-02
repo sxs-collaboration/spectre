@@ -364,6 +364,7 @@ struct CheckMessage {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,

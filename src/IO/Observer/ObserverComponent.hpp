@@ -29,6 +29,7 @@ namespace observers {
 template <class Metavariables>
 struct Observer {
   using chare_type = Parallel::Algorithms::Group;
+  static constexpr bool checkpoint_data = false;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -50,6 +51,7 @@ struct Observer {
 template <class Metavariables>
 struct ObserverWriter {
   using chare_type = Parallel::Algorithms::Nodegroup;
+  static constexpr bool checkpoint_data = false;
   using const_global_cache_tags =
       tmpl::list<Tags::ReductionFileName, Tags::VolumeFileName,
                  ::Parallel::Tags::InputSource>;

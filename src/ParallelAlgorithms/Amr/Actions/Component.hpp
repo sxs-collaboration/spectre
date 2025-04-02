@@ -31,6 +31,7 @@ struct Component {
   using metavariables = Metavariables;
 
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
 
   using const_global_cache_tags =
       tmpl::list<amr::Criteria::Tags::Criteria, amr::Tags::Policies,

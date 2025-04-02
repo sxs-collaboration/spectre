@@ -35,6 +35,7 @@ namespace NonlinearSolver::newton_raphson::detail {
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using const_global_cache_tags =
       tmpl::list<logging::Tags::Verbosity<OptionsGroup>,
                  Convergence::Tags::Criteria<OptionsGroup>,

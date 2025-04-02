@@ -234,6 +234,7 @@ struct use_stored_double {
 template <class Metavariables>
 struct MutateCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
@@ -262,6 +263,7 @@ struct MutateCacheComponent {
 template <class Metavariables>
 struct UseMutatedCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
@@ -286,6 +288,7 @@ struct UseMutatedCacheComponent {
 template <class Metavariables>
 struct CheckAndUseMutatedCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
@@ -314,6 +317,7 @@ struct CheckAndUseMutatedCacheComponent {
 template <class Metavariables>
 struct CheckParallelInfo {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
@@ -368,6 +372,7 @@ struct CheckMemoryMonitorRelatedMethods {
 
  public:
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;

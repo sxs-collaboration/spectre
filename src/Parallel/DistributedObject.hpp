@@ -669,52 +669,70 @@ void DistributedObject<
   }
   p | terminate_;
   p | halt_algorithm_until_next_phase_;
-  p | box_;
-  // After unpacking the DataBox, we "touch" the GlobalCache proxy inside.
-  // This forces the DataBox to recompute the GlobalCache* the next time it
-  // is needed, but delays this process until after the pupper is called.
-  // (This delay is important: updating the pointer requires calling
-  // ckLocalBranch() on the Charm++ proxy, and in a restart from checkpoint
-  // this call may not be well-defined until after components are finished
-  // unpacking.)
-  if (p.isUnpacking()) {
-    db::mutate<Tags::GlobalCacheProxy<metavariables>>(
-        [](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
-          (void)proxy;
-        },
-        make_not_null(&box_));
-  }
-  p | inboxes_;
   p | array_index_;
   p | global_cache_proxy_;
-  if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
-    if (phase_ == Parallel::Phase::LoadBalancing) {
-      ERROR(
-          "Can't do load balacing phase with DG element collection right now.");
+
+  // We have no way to check that everything in the DataBox is
+  // temporary, but anything with non-trivial initialization isn't.
+  static_assert(
+      ParallelComponent::checkpoint_data or
+      std::is_same_v<typename ParallelComponent::simple_tags_from_options,
+                     tmpl::list<>>);
+  if constexpr (ParallelComponent::checkpoint_data) {
+    p | box_;
+    // After unpacking the DataBox, we "touch" the GlobalCache proxy inside.
+    // This forces the DataBox to recompute the GlobalCache* the next time it
+    // is needed, but delays this process until after the pupper is called.
+    // (This delay is important: updating the pointer requires calling
+    // ckLocalBranch() on the Charm++ proxy, and in a restart from checkpoint
+    // this call may not be well-defined until after components are finished
+    // unpacking.)
+    if (p.isUnpacking()) {
+      db::mutate<Tags::GlobalCacheProxy<metavariables>>(
+          [](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
+            (void)proxy;
+          },
+          make_not_null(&box_));
     }
-  } else {
-    // Note that `perform_registration_or_deregistration` passes the `box_` by
-    // const reference. If mutable access is required to the box, this function
-    // call needs to be carefully considered with respect to the `p | box_` call
-    // in both packing and unpacking scenarios.
-    //
-    // Note also that we don't perform (de)registrations when pup'ing for a
-    // checkpoint/restart. This enables a simpler first-pass implementation of
-    // checkpointing, though it means the restart must occur on the same
-    // hardware configuration (same number of nodes and same procs per node)
-    // used when writing the checkpoint.
-    if (phase_ == Parallel::Phase::LoadBalancing) {
-      // The deregistration and registration below does not actually insert
-      // anything into the PUP::er stream, so nothing is done on a sizing pup.
-      if (p.isPacking()) {
-        deregister_element<ParallelComponent>(
-            box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+    p | inboxes_;
+    if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
+      if (phase_ == Parallel::Phase::LoadBalancing) {
+        ERROR(
+            "Can't do load balacing phase with DG element collection right "
+            "now.");
       }
-      if (p.isUnpacking()) {
-        register_element<ParallelComponent>(
-            box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+    } else {
+      // Note that `perform_registration_or_deregistration` passes the `box_`
+      // by const reference. If mutable access is required to the box, this
+      // function call needs to be carefully considered with respect to the
+      // `p | box_` call in both packing and unpacking scenarios.
+      //
+      // Note also that we don't perform (de)registrations when pup'ing for a
+      // checkpoint/restart. This enables a simpler first-pass implementation
+      // of checkpointing, though it means the restart must occur on the same
+      // hardware configuration (same number of nodes and same procs per node)
+      // used when writing the checkpoint.
+      if (phase_ == Parallel::Phase::LoadBalancing) {
+        // The deregistration and registration below does not actually insert
+        // anything into the PUP::er stream, so nothing is done on a sizing pup.
+        if (p.isPacking()) {
+          deregister_element<ParallelComponent>(
+              box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+        }
+        if (p.isUnpacking()) {
+          register_element<ParallelComponent>(
+              box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+        }
       }
     }
+  } else if (p.isUnpacking()) {
+    box_ = decltype(box_){};
+    inboxes_ = decltype(inboxes_){};
+    db::mutate<Tags::GlobalCacheProxy<metavariables>>(
+        [&](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
+          *proxy = global_cache_proxy_;
+        },
+        make_not_null(&box_));
   }
 }
 

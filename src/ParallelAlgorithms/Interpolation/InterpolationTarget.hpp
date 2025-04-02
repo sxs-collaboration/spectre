@@ -264,6 +264,7 @@ struct InterpolationTarget {
     return pretty_type::name<InterpolationTargetTag>();
   }
   using chare_type = ::Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::flatten<tmpl::list<
@@ -278,6 +279,17 @@ struct InterpolationTarget {
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Register,
+          tmpl::list<
+              tmpl::conditional_t<
+                  InterpolationTargetTag::compute_target_points::is_sequential::
+                      value,
+                  tmpl::list<>,
+                  tmpl::list<
+                      Actions::InterpolationTargetSendTimeIndepPointsToElements<
+                          InterpolationTargetTag>>>,
+              Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Restart,
           tmpl::list<
               tmpl::conditional_t<
                   InterpolationTargetTag::compute_target_points::is_sequential::
