@@ -14,9 +14,17 @@ required-version = "23.3.0"
 # this feature is tracked in this issue:
 # https://github.com/psf/black/issues/2188
 preview = true
+# Skip external code since modifying it can be an issue with GPL-licensed code.
+extend-exclude = '''
+(
+  ^/external
+)
+'''
 
 [tool.isort]
 profile = "black"
 line_length = 80
 skip_gitignore = true
 known_first_party = ["spectre"]
+# Skip external code since modifying it can be an issue with GPL-licensed code.
+extend_skip = ["external"]
