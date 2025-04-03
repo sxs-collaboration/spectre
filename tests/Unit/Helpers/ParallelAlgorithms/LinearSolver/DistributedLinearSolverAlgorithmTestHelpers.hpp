@@ -285,12 +285,12 @@ struct InitializeElement {
     const auto& initial_extents = db::get<domain::Tags::InitialExtents<1>>(box);
     const auto& initial_refinement =
         db::get<domain::Tags::InitialRefinementLevels<1>>(box);
-    auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id,
-        Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     const auto& block = domain.blocks()[element_id.block_id()];
     auto element = domain::Initialization::create_initial_element(
         element_id, block, initial_refinement);
+    auto mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, element,
+        Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     auto logical_coords = logical_coordinates(mesh);
     // Element data
     const size_t element_index = get_index(element_id);

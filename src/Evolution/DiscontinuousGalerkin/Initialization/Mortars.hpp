@@ -18,6 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -70,7 +71,8 @@ std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>>
-mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
+mortars_apply_impl(const Domain<Dim>& domain,
+                   const std::vector<std::array<size_t, Dim>>& initial_extents,
                    Spectral::Quadrature quadrature, const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
                    const Mesh<Dim>& volume_mesh);
@@ -199,6 +201,7 @@ struct Mortars {
   using MortarMap = DirectionalIdMap<Dim, MappedType>;
 
  public:
+  using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
   using simple_tags_from_options =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
                  evolution::dg::Tags::Quadrature>;
@@ -225,6 +228,7 @@ struct Mortars {
     auto [mortar_data, mortar_meshes, mortar_sizes, mortar_next_temporal_ids,
           normal_covector_quantities] =
         detail::mortars_apply_impl(
+            db::get<::domain::Tags::Domain<Dim>>(box),
             db::get<::domain::Tags::InitialExtents<Dim>>(box),
             db::get<evolution::dg::Tags::Quadrature>(box),
             db::get<::domain::Tags::Element<Dim>>(box),

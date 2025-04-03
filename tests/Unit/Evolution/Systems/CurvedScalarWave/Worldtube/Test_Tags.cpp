@@ -144,10 +144,10 @@ void test_compute_face_coordinates_grid() {
       const ElementMap element_map(
           element_id, my_block.stationary_map().get_to_grid_frame());
       const auto mesh_1 = domain::Initialization::create_initial_mesh(
-          initial_extents_1, element_id, quadrature);
+          initial_extents_1, element, quadrature);
       const auto grid_coords_1 = element_map(logical_coordinates(mesh_1));
       const auto mesh_2 = domain::Initialization::create_initial_mesh(
-          initial_extents_2, element_id, quadrature);
+          initial_extents_2, element, quadrature);
       const auto grid_coords_2 = element_map(logical_coordinates(mesh_2));
 
       auto box =
@@ -216,7 +216,7 @@ void test_compute_face_coordinates() {
     const auto element = domain::Initialization::create_initial_element(
         element_id, my_block, initial_refinements);
     const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, quadrature);
+        initial_extents, element, quadrature);
     const ElementMap element_map(
         element_id,
         my_block.moving_mesh_logical_to_grid_map().get_to_grid_frame());
@@ -556,7 +556,7 @@ void test_face_quantities_compute() {
     const auto element = domain::Initialization::create_initial_element(
         element_id, my_block, initial_refinements);
     const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, quadrature);
+        initial_extents, element, quadrature);
     const ElementMap element_map(element_id,
                                  my_block.stationary_map().get_clone());
     const auto logical_coords = logical_coordinates(mesh);

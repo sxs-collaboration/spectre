@@ -88,7 +88,8 @@ template <size_t Dim, bool LocalTimeStepping>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = LocalTimeStepping;
-  using const_global_cache_tags = tmpl::list<domain::Tags::InitialExtents<Dim>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>>;
   struct system {
     using variables_tag = ::Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
   };
@@ -119,13 +120,18 @@ void test_impl(
         expected_normal_covector_quantities) {
   using metavars = Metavariables<Dim, LocalTimeStepping>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{initial_extents};
+  std::vector<Block<Dim>> blocks{1};
+  blocks[0] = Block<Dim>(nullptr, element.id().block_id(), {});
+  Domain<Dim> domain{std::move(blocks)};
+  tuples::TaggedTuple<domain::Tags::Domain<Dim>,
+                      domain::Tags::InitialExtents<Dim>>
+      opts{std::move(domain), initial_extents};
+  MockRuntimeSystem runner{std::move(opts)};
   ActionTesting::emplace_component_and_initialize<component<metavars>>(
       &runner, element.id(),
       {time_step_id, next_time_step_id, element,
-       domain::Initialization::create_initial_mesh(
-           initial_extents, element.id(), quadrature,
-           OrientationMap<Dim>::create_aligned()),
+       domain::Initialization::create_initial_mesh(initial_extents, element,
+                                                   quadrature),
        quadrature});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

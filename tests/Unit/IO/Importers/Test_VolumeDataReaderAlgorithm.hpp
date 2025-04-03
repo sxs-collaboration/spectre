@@ -231,10 +231,10 @@ void write_test_data(
   const auto element_ids = initial_element_ids(initial_refinement_levels);
   std::vector<ElementVolumeData> element_data{};
   for (const auto& element_id : element_ids) {
-    const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
-    const size_t num_points = mesh.number_of_grid_points();
     const auto& block = domain.blocks()[element_id.block_id()];
+    const auto mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, block, element_id, Spectral::Quadrature::GaussLobatto);
+    const size_t num_points = mesh.number_of_grid_points();
     const auto inertial_coords = inertial_coordinates(
         element_id, mesh, block, observation_value, functions_of_time);
 
@@ -360,9 +360,9 @@ struct InitializeElement {
         std::get<double>(get<importers::OptionTags::ObservationValue>(options));
     const auto& initial_extents =
         db::get<Tags::InitialExtents<Dim, SourceOrTarget::Target>>(box);
-    const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
     const auto& block = domain.blocks()[element_id.block_id()];
+    const auto mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, block, element_id, Spectral::Quadrature::GaussLobatto);
     Initialization::mutate_assign<
         tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                    domain::Tags::Mesh<Dim>>>(

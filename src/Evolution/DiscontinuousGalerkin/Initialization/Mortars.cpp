@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "Domain/Domain.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -34,7 +35,8 @@ std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>>
-mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
+mortars_apply_impl(const Domain<Dim>& domain,
+                   const std::vector<std::array<size_t, Dim>>& initial_extents,
                    const Spectral::Quadrature quadrature,
                    const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
@@ -52,13 +54,15 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
+      const auto& neighbor_block = domain.blocks()[neighbor.block_id()];
       mortar_meshes.emplace(
           mortar_id,
-          ::dg::mortar_mesh(volume_mesh.slice_away(direction.dimension()),
-                            ::domain::Initialization::create_initial_mesh(
-                                initial_extents, neighbor, quadrature,
-                                neighbors.orientation())
-                                .slice_away(direction.dimension())));
+          ::dg::mortar_mesh(
+              volume_mesh.slice_away(direction.dimension()),
+              neighbors
+                  .orientation()(::domain::Initialization::create_initial_mesh(
+                      initial_extents, neighbor_block, neighbor, quadrature))
+                  .slice_away(direction.dimension())));
       mortar_sizes.emplace(
           mortar_id,
           ::dg::mortar_size(element.id(), neighbor, direction.dimension(),
@@ -93,6 +97,8 @@ mortars_apply_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                        evolution::dg::Tags::MagnitudeOfNormal,                 \
                        evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>     \
   mortars_apply_impl(                                                          \
+      const Domain<DIM(data)>& domain,                                         \
+                                                                               \
       const std::vector<std::array<size_t, DIM(data)>>& initial_extents,       \
       const Spectral::Quadrature quadrature,                                   \
       const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,   \

@@ -153,8 +153,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.SurfaceFinder.SurfaceFinder",
   const ElementId<dim> id{0};
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   const auto& block = domain.blocks()[id.block_id()];
-  const auto mesh =
-      domain::Initialization::create_initial_mesh(extents, id, quadrature);
+  const auto mesh = domain::Initialization::create_initial_mesh(extents, block,
+                                                                id, quadrature);
   const ElementMap<dim, Frame::Inertial> element_map{
       id, block.stationary_map().get_clone()};
   const auto logical_coords = logical_coordinates(mesh);

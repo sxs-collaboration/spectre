@@ -61,11 +61,11 @@ double get_num_points_and_grid_spacing_cost(
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Spectral::Quadrature quadrature) {
-  Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
-      initial_extents, element_id, quadrature);
   Element<Dim> element = ::domain::Initialization::create_initial_element(
       element_id, block, initial_refinement_levels);
-  ElementMap<Dim, Frame::Grid> element_map{element_id, block};
+  const Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
+      initial_extents, element, quadrature);
+  const ElementMap<Dim, Frame::Grid> element_map{element_id, block};
   const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords =
       logical_coordinates(mesh);
   const tnsr::I<DataVector, Dim, Frame::Grid> grid_coords =
