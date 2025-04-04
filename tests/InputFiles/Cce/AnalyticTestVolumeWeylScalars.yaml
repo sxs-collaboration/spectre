@@ -1,0 +1,119 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: AnalyticTestCharacteristicExtract
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 20
+  Priority: High
+ExpectedOutput:
+  - CharacteristicExtractReduction.h5
+OutputFileChecks:
+  # Redo this when we change the CCE volume format
+  - Label: "check_psi0_r2"
+    Subfile: "/Cce/VolumeData/Psi0/CompactifiedRadius_2.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    SkipColumns: [0] # Don't look at the time column
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_psi0_r3"
+    Subfile: "/Cce/VolumeData/Psi0/CompactifiedRadius_3.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    SkipColumns: [0] # Don't look at the time column
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_psi0_r4"
+    Subfile: "/Cce/VolumeData/Psi0/CompactifiedRadius_4.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    SkipColumns: [0] # Don't look at the time column
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_psi1_r4"
+    Subfile: "/Cce/VolumeData/Psi1/CompactifiedRadius_4.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    SkipColumns: [0] # Don't look at the time column
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_psi1_r5"
+    Subfile: "/Cce/VolumeData/Psi1/CompactifiedRadius_5.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    SkipColumns: [0] # Don't look at the time column
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_psi1_r6"
+    Subfile: "/Cce/VolumeData/Psi1/CompactifiedRadius_6.dat"
+    FileGlob: "CharacteristicExtractReduction.h5"
+    SkipColumns: [0] # Don't look at the time column
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+
+---
+
+Evolution:
+  InitialTimeStep: 0.01
+  MinimumTimeStep: 1e-7
+  InitialSlabSize: 0.8
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons:
+    CharacteristicEvolution:
+      Proc: Auto
+      Exclusive: false
+    AnalyticWorldtubeBoundary:
+      Proc: Auto
+      Exclusive: false
+
+Observers:
+  VolumeFileName: "CharacteristicExtractUnusedVolume"
+  ReductionFileName: "CharacteristicExtractReduction"
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Offset: 0
+          Interval: 1
+    Events:
+      - ObserveTimeStep:
+          SubfileName: CceTimeStep
+          PrintTimeToTerminal: false
+      - ObserveFields:
+          VariablesToObserve:
+            - Psi0
+            - Psi1
+
+EventsAndTriggersAtSteps:
+
+Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforth:
+        Order: 3
+    StepChoosers:
+      - Constant: 0.1
+      - LimitIncrease:
+          Factor: 2
+
+  LMax: 8
+  NumberOfRadialPoints: 8
+  ObservationLMax: 8
+
+  StartTime: 0.0
+  EndTime: 0.8
+  ExtractionRadius: 30.0
+
+  AnalyticSolution:
+    BouncingBlackHole:
+      Period: 40.0
+      ExtractionRadius: 30.0
+      Mass: 1.0
+      Amplitude: 0.0
+
+  Filtering:
+    RadialFilterHalfPower: 24
+    RadialFilterAlpha: 35.0
+    FilterLMax: 6
+
+  ScriInterpOrder: 3
+  ScriOutputDensity: 1

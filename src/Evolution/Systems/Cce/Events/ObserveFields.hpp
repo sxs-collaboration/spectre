@@ -84,6 +84,7 @@ std::string name() {
  * Some more fields to observe are:
  *
  * - `Cce::Tags::Psi0`
+ * - `Cce::Tags::Psi1`
  * - `Cce::Tags::ComplexInertialRetardedTime`
  * - `Cce::Tags::OneMinusY`
  * - `Cce::Tags::BondiR`
@@ -155,6 +156,7 @@ class ObserveFields : public Event {
                  zero_one_two_radial_derivs<Tags::Du<Tags::BondiJ>>,
                  Tags::BondiR,
                  Tags::Psi0,
+                 Tags::Psi1,
                  Tags::EthRDividedByR,
                  Tags::DuRDividedByR>>;
   // clang-format on
@@ -188,7 +190,8 @@ class ObserveFields : public Event {
   ObserveFields(const std::vector<std::string>& variables_to_observe,
                 const Options::Context& context = {});
 
-  using compute_tags_for_observation_box = tmpl::list<Tags::Psi0Compute>;
+  using compute_tags_for_observation_box =
+    tmpl::list<Tags::Psi0Compute, Tags::Psi1Compute>;
 
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
