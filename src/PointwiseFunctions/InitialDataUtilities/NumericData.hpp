@@ -9,7 +9,7 @@
 #include <string>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "IO/Exporter/InterpolateToPoints.hpp"
+#include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
