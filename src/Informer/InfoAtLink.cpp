@@ -10,14 +10,10 @@
 #include <boost/preprocessor.hpp>
 #include <string>
 
-std::string link_date() { return std::string(BOOST_PP_STRINGIZE(LINK_TIME)); }
+std::string link_date() { return BOOST_PP_STRINGIZE(LINK_TIME); }
 
-std::string executable_name() {
-  return std::string(BOOST_PP_STRINGIZE(EXECUTABLE_NAME));
-}
+std::string executable_name() { return BOOST_PP_STRINGIZE(EXECUTABLE_NAME); }
 
-std::string git_description() {
-  return std::string(BOOST_PP_STRINGIZE(GIT_DESCRIPTION));
-}
+std::string git_description() { return BOOST_PP_STRINGIZE(GIT_DESCRIPTION); }
 
-std::string git_branch() { return std::string(BOOST_PP_STRINGIZE(GIT_BRANCH)); }
+std::string git_branch() { return BOOST_PP_STRINGIZE(GIT_BRANCH); }
