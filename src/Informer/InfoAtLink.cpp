@@ -10,7 +10,7 @@
 #include <boost/preprocessor.hpp>
 #include <string>
 
-std::string link_date() { return std::string(__TIMESTAMP__); }
+std::string link_date() { return std::string(BOOST_PP_STRINGIZE(LINK_TIME)); }
 
 std::string executable_name() {
   return std::string(BOOST_PP_STRINGIZE(EXECUTABLE_NAME));

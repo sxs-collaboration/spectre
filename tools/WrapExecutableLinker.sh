@@ -41,11 +41,12 @@ if [ -f @CMAKE_BINARY_DIR@/tmp/Formaline.sh ]; then
     . @CMAKE_BINARY_DIR@/tmp/Formaline.sh $(basename "${!oindex}")
     temp_files+=("${formaline_output}" "${formaline_object_output}")
     "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
-         ${InfoAtLink_flags} "${InfoAtLink_file}" "${formaline_output}" \
-         ${formaline_object_output}
+         -DLINK_TIME="$(date -u -Iseconds)" ${InfoAtLink_flags} \
+         "${InfoAtLink_file}" "${formaline_output}" ${formaline_object_output}
 else
     "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
-         ${InfoAtLink_flags} "${InfoAtLink_file}"
+         -DLINK_TIME="$(date -u -Iseconds)" ${InfoAtLink_flags} \
+         "${InfoAtLink_file}"
 fi
 
 if @WRAP_EXECUTABLE_LINKER_USE_STUB_OBJECT_FILES@; then
