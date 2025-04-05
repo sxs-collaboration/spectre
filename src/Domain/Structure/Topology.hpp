@@ -3,8 +3,12 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+
+#include "Utilities/MakeArray.hpp"
 
 namespace domain {
 
@@ -46,4 +50,24 @@ enum class Topology : uint8_t {
 
 /// Output operator for a Topology.
 std::ostream& operator<<(std::ostream& os, Topology topology);
+
+namespace topologies {
+template <size_t VolumeDim>
+static constexpr auto hypercube = make_array<VolumeDim>(Topology::I1);
+
+static constexpr auto annulus = std::array{Topology::I1, Topology::S1};
+
+static constexpr auto disk =
+    std::array{Topology::B2Radial, Topology::B2Angular};
+
+static constexpr auto spherical_shell =
+    std::array{Topology::I1, Topology::S2Colatitude, Topology::S2Longitude};
+
+static constexpr auto cylindrical_shell =
+    std::array{Topology::I1, Topology::S1, Topology::I1};
+
+static constexpr auto full_cylinder =
+    std::array{Topology::B2Radial, Topology::B2Angular, Topology::I1};
+}  // namespace topologies
+
 }  // namespace domain
