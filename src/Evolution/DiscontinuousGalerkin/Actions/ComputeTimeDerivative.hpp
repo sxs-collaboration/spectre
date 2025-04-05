@@ -410,12 +410,14 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
       typename EvolutionSystem::compute_volume_time_derivative_terms;
 
   const Mesh<Dim>& mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
+  const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(box);
   const ::dg::Formulation dg_formulation =
       db::get<::dg::Tags::Formulation>(box);
   ASSERT(alg::all_of(mesh.basis(),
                      [&mesh](const Spectral::Basis current_basis) {
                        return current_basis == mesh.basis(0);
-                     }),
+                     }) or
+             element.topologies() != domain::topologies::hypercube<Dim>,
          "An isotropic basis must be used in the evolution code. While "
          "theoretically this restriction could be lifted, the simplification "
          "it offers are quite substantial. Relaxing this assumption is likely "
@@ -423,7 +425,8 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
   ASSERT(alg::all_of(mesh.quadrature(),
                      [&mesh](const Spectral::Quadrature current_quadrature) {
                        return current_quadrature == mesh.quadrature(0);
-                     }),
+                     }) or
+             element.topologies() != domain::topologies::hypercube<Dim>,
          "An isotropic quadrature must be used in the evolution code. While "
          "theoretically this restriction could be lifted, the simplification "
          "it offers are quite substantial. Relaxing this assumption is likely "
@@ -472,7 +475,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
   size_t num_face_temporary_grid_points = 0;
   {
     for (const auto& [direction, neighbors_in_direction] :
-         db::get<domain::Tags::Element<Dim>>(box).neighbors()) {
+         element.neighbors()) {
       (void)neighbors_in_direction;
       const auto face_mesh = mesh.slice_away(direction.dimension());
       num_face_temporary_grid_points = std::max(
