@@ -98,7 +98,19 @@ namespace domain {}
 template <size_t VolumeDim>
 class Domain {
  public:
-  explicit Domain(std::vector<Block<VolumeDim>> blocks);
+  /// \brief Create a Domain from its blocks
+  ///
+  /// \param blocks each Block of the domain.
+  /// \param excision_spheres Any ExcisionSphere%s in the domain.
+  /// \param block_groups Labels to refer to groups of blocks. The groups can
+  ///        overlap, and they don't have to cover all blocks in the domain.
+  ///        The groups can be used to refer to multiple blocks at once.
+  explicit Domain(
+      std::vector<Block<VolumeDim>> blocks,
+      std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+          excision_spheres = {},
+      std::unordered_map<std::string, std::unordered_set<std::string>>
+          block_groups = {});
 
   /*!
    * \brief Create a Domain using CoordinateMaps to encode the Orientations.

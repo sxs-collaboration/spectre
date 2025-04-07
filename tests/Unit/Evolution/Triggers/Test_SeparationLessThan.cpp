@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
@@ -82,7 +83,8 @@ void test_horizons() {
     excision_spheres["ExcisionSphere" + get_output(domain::ObjectLabel::B)] =
         std::move(excision_sphere_b);
 
-    const Domain<3> domain{{}, std::move(excision_spheres)};
+    const Domain<3> domain{std::vector<Block<3>>{},
+                           std::move(excision_spheres)};
 
     const Triggers::SeparationLessThan<false> trigger{separation};
 
@@ -162,18 +164,22 @@ void test_errors_horizons() {
 
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
 
-  CHECK_THROWS_WITH(trigger(0.0, Domain<3>{{}, excision_spheres}, {}, {}, {}),
-                    Catch::Matchers::ContainsSubstring(
-                        "SeparationLessThan trigger expects an "
-                        "excision sphere named 'ExcisionSphere"));
+  CHECK_THROWS_WITH(
+      trigger(0.0, Domain<3>{std::vector<Block<3>>{}, excision_spheres}, {}, {},
+              {}),
+      Catch::Matchers::ContainsSubstring(
+          "SeparationLessThan trigger expects an "
+          "excision sphere named 'ExcisionSphere"));
 
   ExcisionSphere<3> excision_sphere_a{};
   excision_spheres["ExcisionSphere" + get_output(domain::ObjectLabel::A)] =
       std::move(excision_sphere_a);
 
-  CHECK_THROWS_WITH(trigger(0.0, Domain<3>{{}, excision_spheres}, {}, {}, {}),
-                    Catch::Matchers::ContainsSubstring(
-                        "to be time dependent, but it is not."));
+  CHECK_THROWS_WITH(
+      trigger(0.0, Domain<3>{std::vector<Block<3>>{}, excision_spheres}, {}, {},
+              {}),
+      Catch::Matchers::ContainsSubstring(
+          "to be time dependent, but it is not."));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Triggers.SeparationLessThan",

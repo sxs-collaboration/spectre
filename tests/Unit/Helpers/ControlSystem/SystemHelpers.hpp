@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
@@ -40,6 +41,7 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/OptionTags.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -134,7 +136,7 @@ class FakeCreator : public DomainCreator<3> {
                             {4, Direction<3>::lower_zeta()},
                             {5, Direction<3>::lower_zeta()}}}});
 
-    return Domain<3>{{}, std::move(excision_spheres)};
+    return Domain<3>{std::vector<Block<3>>{}, std::move(excision_spheres)};
   }
 
   std::vector<DirectionMap<
@@ -513,7 +515,7 @@ struct SystemHelper {
   const auto& system_to_combined_names() { return system_to_combined_names_; }
 
   void reset() {
-    domain_ = Domain<3>{{}, stored_excision_spheres_};
+    domain_ = Domain<3>{std::vector<Block<3>>{}, stored_excision_spheres_};
     is_active_map_ = create_is_active_map();
     initial_functions_of_time_ =
         clone_unique_ptrs(stored_initial_functions_of_time_);
@@ -637,7 +639,7 @@ struct SystemHelper {
                                 {3, Direction<3>::lower_zeta()},
                                 {4, Direction<3>::lower_zeta()},
                                 {5, Direction<3>::lower_zeta()}}}}};
-    domain_ = Domain<3>{{}, stored_excision_spheres_};
+    domain_ = Domain<3>{std::vector<Block<3>>{}, stored_excision_spheres_};
 
     stored_initial_functions_of_time_ =
         clone_unique_ptrs(initial_functions_of_time_);
