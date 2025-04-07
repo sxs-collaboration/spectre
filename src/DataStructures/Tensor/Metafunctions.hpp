@@ -53,6 +53,13 @@ struct check_index_symmetry_impl<2> {
                  tmpl::insert<IndexSymm, tmpl::pair<tmpl::front<Symm>, Index0>>,
                  IndexPack...>;
 };
+
+// helper function for prepending indices
+template <typename TheTensor>
+using new_sym_index =
+    tmpl::int32_t<1 +
+                  tmpl::fold<typename TheTensor::symmetry, tmpl::int32_t<0>,
+                             tmpl::max<tmpl::_state, tmpl::_element>>::value>;
 }  // namespace detail
 
 /*!
@@ -78,14 +85,31 @@ constexpr bool check_index_symmetry_v =
  */
 template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
           typename Fr = Frame::Grid>
-using prepend_spatial_index = ::Tensor<
+using prepend_spatial_index =
+    ::Tensor<typename TheTensor::type,
+             tmpl::push_front<typename TheTensor::symmetry,
+                              detail::new_sym_index<TheTensor>>,
+             tmpl::push_front<typename TheTensor::index_list,
+                              SpatialIndex<VolumeDim, Ul, Fr>>>;
+
+/*!
+ * \ingroup TensorGroup
+ * \brief Add two symmetric spatial indices to the front of a Tensor (e.g. when
+ * doing second derivatives)
+ *
+ * \tparam TheTensor the tensor type to which the new indices is prepended
+ * \tparam VolumeDim the volume dimension of the tensor indices to prepend
+ * \tparam Fr the ::Frame of the tensor indices to prepend
+ */
+template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
+          typename Fr = Frame::Grid>
+using prepend_two_symmetric_spatial_indices = ::Tensor<
     typename TheTensor::type,
-    tmpl::push_front<
-        typename TheTensor::symmetry,
-        tmpl::int32_t<
-            1 + tmpl::fold<typename TheTensor::symmetry, tmpl::int32_t<0>,
-                           tmpl::max<tmpl::_state, tmpl::_element>>::value>>,
-    tmpl::push_front<typename TheTensor::index_list,
+    tmpl::push_front<tmpl::push_front<typename TheTensor::symmetry,
+                                      detail::new_sym_index<TheTensor>>,
+                     detail::new_sym_index<TheTensor>>,
+    tmpl::push_front<tmpl::push_front<typename TheTensor::index_list,
+                                      SpatialIndex<VolumeDim, Ul, Fr>>,
                      SpatialIndex<VolumeDim, Ul, Fr>>>;
 
 /*!
@@ -98,15 +122,12 @@ using prepend_spatial_index = ::Tensor<
  */
 template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
           typename Fr = Frame::Grid>
-using prepend_spacetime_index = ::Tensor<
-    typename TheTensor::type,
-    tmpl::push_front<
-        typename TheTensor::symmetry,
-        tmpl::int32_t<
-            1 + tmpl::fold<typename TheTensor::symmetry, tmpl::int32_t<0>,
-                           tmpl::max<tmpl::_state, tmpl::_element>>::value>>,
-    tmpl::push_front<typename TheTensor::index_list,
-                     SpacetimeIndex<VolumeDim, Ul, Fr>>>;
+using prepend_spacetime_index =
+    ::Tensor<typename TheTensor::type,
+             tmpl::push_front<typename TheTensor::symmetry,
+                              detail::new_sym_index<TheTensor>>,
+             tmpl::push_front<typename TheTensor::index_list,
+                              SpacetimeIndex<VolumeDim, Ul, Fr>>>;
 
 /// \ingroup TensorGroup
 /// \brief remove the first index of a tensor

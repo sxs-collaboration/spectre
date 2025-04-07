@@ -122,6 +122,12 @@ static_assert(std::is_same_v<tnsr::iJ<double, 3, Frame::Grid>,
                                  tnsr::I<double, 3, Frame::Grid>, 3, UpLo::Lo,
                                  Frame::Grid>>,
               "Failed testing prepend_spatial_index");
+static_assert(
+    std::is_same_v<
+        tnsr::iiJJ<double, 3, Frame::Grid>,
+        TensorMetafunctions::prepend_two_symmetric_spatial_indices<
+            tnsr::II<double, 3, Frame::Grid>, 3, UpLo::Lo, Frame::Grid>>,
+    "Failed testing prepend_two_symmetric_spatial_indices");
 
 // Test remove_first_index
 static_assert(
