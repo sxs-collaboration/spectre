@@ -253,6 +253,9 @@ void apparent_horizon_impl(
         make_not_null(&expansion_of_solution), make_not_null(&beta_orthogonal),
         *solution_for_negative_expansion, x, face_normal, face_normal_magnitude,
         deriv_unnormalized_face_normal);
+    ASSERT(max(get(expansion_of_solution)) <
+               100.0 * std::numeric_limits<double>::epsilon(),
+           "Expansion of solution is not negative everywhere.");
   }
 
   // Shift
