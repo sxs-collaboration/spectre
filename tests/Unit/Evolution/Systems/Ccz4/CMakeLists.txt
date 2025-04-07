@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Ccz4")
 
 set(LIBRARY_SOURCES
+  FiniteDifference/Test_SecondPartialDerivatives.cpp
   Test_ATilde.cpp
   Test_Christoffel.cpp
   Test_DerivChristoffel.cpp
@@ -26,6 +27,7 @@ target_link_libraries(
   DataBoxTestHelpers
   DataStructures
   Domain
+  ErrorHandling
   GeneralRelativity
   GeneralRelativityHelpers
   GeneralRelativitySolutions
