@@ -197,6 +197,103 @@ struct GhostDataMcPackets {
   }
 };
 
+// Take the data for coupling MC to hydro gathered from neighboring
+// ghost zones (stored after communication in GhostZoneCouplingDataTag)
+// and add them to the coupling terms in live zones. After calling this
+// action, the coupling terms CouplingTildeTau, CouplingTildeRhoYe,
+// CouplingTildeS should contain the changes to the energy, RhoYe, and
+// momentum of the fluid due to MC packets evolved locally and those
+// that evolved within ghost zones on neighboring elements.
+// THIS FUNCTION IS CURRENTLY ONLY IMPLENTED IN 3D!
+// As other parts of the MC communication, it is also incompatible with
+// mesh refinement.
+template <size_t Dim>
+struct CombineCouplingDataPostStep {
+  using return_tags =
+      tmpl::list<Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>,
+                 Particles::MonteCarlo::Tags::CouplingTildeRhoYe<DataVector>,
+                 Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>>;
+  using argument_tags =
+      tmpl::list<Particles::MonteCarlo::Tags::GhostZoneCouplingDataTag<Dim>,
+                 ::domain::Tags::Element<Dim>,
+                 evolution::dg::subcell::Tags::Mesh<Dim>>;
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+      gsl::not_null<Scalar<DataVector>*> coupling_tilde_rho_ye,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+          coupling_tilde_s,
+      const Particles::MonteCarlo::GhostZoneCouplingData<Dim>& coupling_data,
+      const Element<Dim>& element, const Mesh<Dim>& subcell_mesh) {
+    // Check that we do not use this function for 1D/2D runs
+    ASSERT(Dim == 3, "CombineCouplingDataPostStep only coded in 3D so far");
+
+    const size_t num_ghost_zones = 1;
+    const Index<Dim> local_extents = subcell_mesh.extents();
+    Index<Dim> ghost_extents = local_extents;
+    for (size_t d = 0; d < 3; d++) {
+      ghost_extents[d] += 2 * num_ghost_zones;
+    }
+    // Loop over neighboring elements
+    for (const auto& [direction, neighbors_in_direction] :
+         element.neighbors()) {
+      for (const auto& neighbor : neighbors_in_direction) {
+        DirectionalId<Dim> directional_element_id{direction, neighbor};
+        if (coupling_data.coupling_tilde_tau.at(directional_element_id) ==
+            std::nullopt) {
+          continue;
+        }
+        const size_t dimension = directional_element_id.direction().dimension();
+        const Side side = directional_element_id.direction().side();
+        // Extents of coupling data: mesh with ghost points, sliced
+        // in direction 'dimension'
+        Index<Dim> ghost_zone_extents = ghost_extents;
+        ghost_zone_extents[dimension] = num_ghost_zones;
+        // These loops only work in 3D; needs fixing for other dimensions
+        for (size_t i = 0; i < ghost_zone_extents[0]; ++i) {
+          for (size_t j = 0; j < ghost_zone_extents[1]; ++j) {
+            for (size_t k = 0; k < ghost_zone_extents[2]; ++k) {
+              Index<Dim> index_3d{i, j, k};
+              // Index of point in ghost zone data
+              const size_t ghost_index =
+                  collapsed_index(index_3d, ghost_zone_extents);
+              // Index of corresponding live point within the full
+              // mesh, with ghost zones.
+              // For two ghost zones e.g., the 1d mesh looks like
+              //        x x o o o o o o x x
+              // with neighbors
+              //  o o o o o x x     x x o o o o o
+              // with x = GZ, o = live points. On the lower face,
+              // we thus add data from the first ghost point to
+              // index num_ghost_zones. On the upper face, the first
+              // ghost point goes to index local_extents (the size of
+              // the mesh without ghost zone).
+              index_3d[dimension] =
+                  (side == Side::Lower)
+                      ? index_3d[dimension] + num_ghost_zones
+                      : local_extents[dimension] + index_3d[dimension];
+              const size_t extended_index =
+                  collapsed_index(index_3d, ghost_extents);
+              // Add gathered data to existing coupling terms
+              coupling_tilde_tau->get()[extended_index] +=
+                  coupling_data.coupling_tilde_tau.at(directional_element_id)
+                      .value()[ghost_index];
+              coupling_tilde_rho_ye->get()[extended_index] +=
+                  coupling_data.coupling_tilde_rho_ye.at(directional_element_id)
+                      .value()[ghost_index];
+              for (size_t d = 0; d < Dim; d++) {
+                coupling_tilde_s->get(d)[extended_index] +=
+                    coupling_data.coupling_tilde_s.at(directional_element_id)
+                        .value()
+                        .get(d)[ghost_index];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 /// Action responsible for the Send operation of ghost
 /// zone communication for Monte-Carlo transport.
 /// If CommStep == PreStep, this sends the fluid and
@@ -500,6 +597,12 @@ struct ReceiveDataForMcCommunication {
             }
           },
           make_not_null(&box));
+      // Combine ghost zone data with live points data. Currently only done in
+      // 3D
+      if constexpr (Dim == 3) {
+        db::mutate_apply(CombineCouplingDataPostStep<Dim>{},
+                         make_not_null(&box));
+      }
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
