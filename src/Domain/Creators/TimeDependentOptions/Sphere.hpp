@@ -162,7 +162,8 @@ struct TimeDependentMapOptions {
    * blocks, this returns `nullptr`.
    */
   MapType<Frame::Distorted, Frame::Inertial> distorted_to_inertial_map(
-      size_t block_number, bool is_inner_cube) const;
+      size_t block_number, bool is_inner_cube,
+      size_t num_blocks_per_shell) const;
 
   /*!
    * \brief This will construct the map from `Frame::Grid` to
@@ -172,7 +173,8 @@ struct TimeDependentMapOptions {
    * function of time). For other blocks, this returns `nullptr`.
    */
   MapType<Frame::Grid, Frame::Distorted> grid_to_distorted_map(
-      size_t block_number, bool is_inner_cube) const;
+      size_t block_number, bool is_inner_cube,
+      size_t num_blocks_per_shell) const;
 
   /*!
    * \brief This will construct the map from `Frame::Grid` to `Frame::Inertial`.
@@ -183,7 +185,8 @@ struct TimeDependentMapOptions {
    * transition to zero.
    */
   MapType<Frame::Grid, Frame::Inertial> grid_to_inertial_map(
-      size_t block_number, bool is_outer_shell, bool is_central_region) const;
+      size_t block_number, bool is_outer_shell, bool is_central_region,
+      size_t num_blocks_per_shell) const;
 
   /*!
    * \brief Whether or not the distorted frame is being used. I.e. whether or
