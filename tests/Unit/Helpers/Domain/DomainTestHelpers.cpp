@@ -33,6 +33,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "Domain/Structure/Topology.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
@@ -505,11 +506,16 @@ void test_physical_separation(
       if (domain::blocks_are_neighbors(blocks[i], blocks[j])) {
         CAPTURE(i);
         CAPTURE(j);
-        CHECK(domain::physical_separation(blocks[i], blocks[j], time,
-                                          functions_of_time) < tolerance);
-        if constexpr (VolumeDim > 1) {
-          domain::check_block_face_grid_points_align(blocks[i], blocks[j], time,
-                                                     functions_of_time);
+        if (blocks[i].topologies() ==
+                domain::topologies::hypercube<VolumeDim> and
+            blocks[j].topologies() ==
+                domain::topologies::hypercube<VolumeDim>) {
+          CHECK(domain::physical_separation(blocks[i], blocks[j], time,
+                                            functions_of_time) < tolerance);
+          if constexpr (VolumeDim > 1) {
+            domain::check_block_face_grid_points_align(blocks[i], blocks[j],
+                                                       time, functions_of_time);
+          }
         }
       }
     }
@@ -534,6 +540,9 @@ void test_det_jac_positive(
         tnsr::I<double, VolumeDim, Frame::BlockLogical>(vci.coords_of_corner());
   }
   for(const auto& block: blocks) {
+    if (block.topologies() != domain::topologies::hypercube<VolumeDim>) {
+      continue;
+    }
     CAPTURE(block.id());
     if (block.is_time_dependent()) {
       const auto& map_logical_to_grid = block.moving_mesh_logical_to_grid_map();
