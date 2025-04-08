@@ -36,12 +36,8 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
   // Disable OpenMP multithreading since multiple unit tests may run in parallel
   omp_set_num_threads(1);
 #endif
-  {
-    INFO("Bundled volume data files");
-    const auto interpolated_data = interpolate_to_points<3>(
-        unit_test_src_path() + "/Visualization/Python/VolTestData*.h5",
-        "element_data", ObservationStep{0}, {"Psi", "Phi_x", "Phi_y", "Phi_z"},
-        {{{0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}});
+
+  const auto check_scalar_data = [](const auto& interpolated_data) {
     const auto& psi = interpolated_data[0];
     CHECK(psi[0] == approx(-0.07059806932542323));
     CHECK(psi[1] == approx(0.7869554122196492));
@@ -50,6 +46,15 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     CHECK(phi_y[0] == approx(1.0569673471948728));
     CHECK(phi_y[1] == approx(0.6741524090220188));
     CHECK(phi_y[2] == approx(0.2629752479142838));
+  };
+
+  {
+    INFO("Bundled volume data files");
+    const auto interpolated_data = interpolate_to_points<3>(
+        unit_test_src_path() + "/Visualization/Python/VolTestData*.h5",
+        "element_data", ObservationStep{0}, {"Psi", "Phi_x", "Phi_y", "Phi_z"},
+        {{{0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}});
+    check_scalar_data(interpolated_data);
   }
   {
     INFO("Tensor interface");
@@ -70,6 +75,31 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     CHECK(phi_y[0] == approx(1.0569673471948728));
     CHECK(phi_y[1] == approx(0.6741524090220188));
     CHECK(phi_y[2] == approx(0.2629752479142838));
+  }
+  {
+    INFO("PointwiseInterpolator interface");
+    const PointwiseInterpolator<3, Frame::Inertial> interpolator{
+        unit_test_src_path() + "/Visualization/Python/VolTestData*.h5",
+        "element_data",
+        ObservationStep{0},
+        {"Psi", "Phi_x", "Phi_y", "Phi_z"}};
+    {
+      INFO("Multiple points");
+      std::vector<DataVector> interpolated_data{};
+      interpolator.interpolate_to_points(
+          make_not_null(&interpolated_data),
+          tnsr::I<DataVector, 3>{
+              {{{0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}}});
+      check_scalar_data(interpolated_data);
+    }
+    {
+      INFO("Single point");
+      std::vector<double> interpolated_data{};
+      interpolator.interpolate_to_point(make_not_null(&interpolated_data),
+                                        tnsr::I<double, 3>{{0.0, 0.0, 0.0}});
+      CHECK(interpolated_data[0] == approx(-0.07059806932542323));
+      CHECK(interpolated_data[2] == approx(1.0569673471948728));
+    }
   }
   {
     INFO("Single-precision volume data");

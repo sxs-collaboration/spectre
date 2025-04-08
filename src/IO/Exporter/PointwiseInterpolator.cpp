@@ -149,6 +149,23 @@ void interpolate_to_points_impl(
   }  // omp parallel
 }
 
+template <size_t Dim>
+void interpolate_to_point_impl(
+    const gsl::not_null<std::vector<double>*> result,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& x_element_logical,
+    const Mesh<Dim>& mesh, const size_t offset, const size_t length,
+    const std::vector<DataVector>& tensor_data) {
+  const intrp::Irregular<Dim> interpolant(mesh, x_element_logical);
+  const size_t num_components = tensor_data.size();
+  result->resize(num_components);
+  for (size_t i = 0; i < num_components; ++i) {
+    auto output_data = gsl::make_span(&(*result)[i], 1);
+    const auto input_data =
+        gsl::make_span(tensor_data[i].data() + offset, length);
+    interpolant.interpolate(make_not_null(&output_data), input_data);
+  }
+}
+
 // Data structure for extrapolation of tensor components into excisions
 template <size_t NumExtrapolationAnchors>
 struct ExtrapolationInfo {
@@ -395,11 +412,12 @@ auto parse_volume_files(const std::variant<std::vector<std::string>,
                          std::move(domain), std::move(time_and_fot.second));
 }
 
-template <typename DataType, size_t Dim>
+template <typename DataType, size_t Dim, typename Frame>
 auto block_logical_coordinates(
-    const tnsr::I<DataType, Dim>& target_points, const Domain<Dim>& domain,
-    const double time, const domain::FunctionsOfTimeMap& functions_of_time,
-    const bool extrapolate_into_excisions,
+    const tnsr::I<DataType, Dim, Frame>& target_points,
+    const Domain<Dim>& domain, const double time,
+    const domain::FunctionsOfTimeMap& functions_of_time,
+    const bool extrapolate_into_excisions, const bool error_on_missing_points,
     [[maybe_unused]] const size_t resolved_num_threads) {
   const size_t num_target_points = get_size(get<0>(target_points));
   // Look up block logical coordinates for all target points by mapping them
@@ -410,13 +428,20 @@ auto block_logical_coordinates(
   // added to the `block_logical_coords` and additional information is collected
   // in `extrapolation_info` for later extrapolation.
   constexpr size_t num_extrapolation_anchors = 8;
-  const double extrapolation_spacing = 0.3;
+  [[maybe_unused]] const double extrapolation_spacing = 0.3;
   std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
       extrapolation_info{};
+  if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
+    if (extrapolate_into_excisions) {
+      ERROR(
+          "Extrapolation into excisions is only supported in the inertial "
+          "frame at the moment.");
+    }
+  }
 #pragma omp parallel num_threads(resolved_num_threads)
   {
     // Set up thread-local variables
-    tnsr::I<double, Dim, Frame::Inertial> target_point{};
+    tnsr::I<double, Dim, Frame> target_point{};
     std::vector<BlockLogicalCoords<Dim>> extra_block_logical_coords{};
     std::vector<ExtrapolationInfo<num_extrapolation_anchors>>
         extra_extrapolation_info{};
@@ -433,20 +458,35 @@ auto block_logical_coordinates(
       block_logical_coords[s] = block_logical_coordinates_single_point(
           target_point, domain, time, functions_of_time,
           make_not_null(&block_order));
-      if (block_logical_coords[s].has_value() or
-          not extrapolate_into_excisions) {
+      if (block_logical_coords[s].has_value()) {
         continue;
+      }
+      if (not extrapolate_into_excisions) {
+        // The point wasn't found in any block and we're not extrapolating.
+        // Check if we should throw an error or just skip this point.
+        if (error_on_missing_points) {
+          ERROR("Point is not in any block:\n" << target_point);
+        } else {
+          continue;
+        }
       }
       // The point wasn't found in any block. Check if it's in an excision and
       // set up extrapolation if requested.
-      for (const auto& [name, excision_sphere] : domain.excision_spheres()) {
-        if (add_extrapolation_anchors(
-                make_not_null(&extra_block_logical_coords),
-                make_not_null(&extra_extrapolation_info), excision_sphere,
-                domain, target_point, time, functions_of_time,
-                extrapolation_spacing)) {
-          extra_extrapolation_info.back().target_index = s;
-          break;
+      if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+        bool found_in_excision = false;
+        for (const auto& [name, excision_sphere] : domain.excision_spheres()) {
+          if (add_extrapolation_anchors(
+                  make_not_null(&extra_block_logical_coords),
+                  make_not_null(&extra_extrapolation_info), excision_sphere,
+                  domain, target_point, time, functions_of_time,
+                  extrapolation_spacing)) {
+            extra_extrapolation_info.back().target_index = s;
+            found_in_excision = true;
+            break;
+          }
+        }
+        if (not found_in_excision and error_on_missing_points) {
+          ERROR("Point is not in any block or excision:\n" << target_point);
         }
       }
     }  // omp for target points
@@ -473,15 +513,15 @@ auto block_logical_coordinates(
 
 }  // namespace
 
-template <typename ResultDataType, size_t Dim>
+template <typename ResultDataType, size_t Dim, typename Frame>
 void interpolate_to_points(
     const gsl::not_null<std::vector<ResultDataType>*> result,
     const std::variant<std::vector<std::string>, std::string>&
         volume_files_or_glob,
     const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
-    const tnsr::I<DataVector, Dim>& target_points,
-    const bool extrapolate_into_excisions,
+    const tnsr::I<DataVector, Dim, Frame>& target_points,
+    const bool extrapolate_into_excisions, const bool error_on_missing_points,
     const std::optional<size_t> num_threads) {
   const size_t num_target_points = get<0>(target_points).size();
   const auto [filenames, obs_id, time, domain, functions_of_time] =
@@ -492,7 +532,7 @@ void interpolate_to_points(
   const auto [block_logical_coords, extrapolation_info] =
       block_logical_coordinates(target_points, domain, time, functions_of_time,
                                 extrapolate_into_excisions,
-                                resolved_num_threads);
+                                error_on_missing_points, resolved_num_threads);
   const size_t num_interpolation_points = block_logical_coords.size();
 
   // Allocate memory for result
@@ -559,26 +599,165 @@ void interpolate_to_points(
   }
 }
 
+template <size_t Dim, typename Frame>
+PointwiseInterpolator<Dim, Frame>::PointwiseInterpolator(
+    const std::variant<std::vector<std::string>, std::string>&
+        volume_files_or_glob,
+    const std::string& subfile_name, const ObservationVariant& observation,
+    const std::vector<std::string>& tensor_components) {
+  auto bindings =
+      parse_volume_files<Dim>(volume_files_or_glob, subfile_name, observation);
+  const auto& filenames = std::get<0>(bindings);
+  obs_id_ = std::get<1>(bindings);
+  time_ = std::get<2>(bindings);
+  domain_ = std::move(std::get<3>(bindings));
+  functions_of_time_ = std::move(std::get<4>(bindings));
+
+  // Load tensor data into memory
+  element_ids_.reserve(filenames.size());
+  meshes_.reserve(filenames.size());
+  tensor_data_.reserve(filenames.size());
+  for (const auto& filename : filenames) {
+    const h5::H5File<h5::AccessType::ReadOnly> h5file(filename);
+    const auto& volfile = h5file.get<h5::VolumeData>(subfile_name);
+    const auto [element_ids, meshes] = load_grids<Dim>(volfile, obs_id_);
+    element_ids_.push_back(std::move(element_ids));
+    meshes_.push_back(std::move(meshes));
+    tensor_data_.push_back(
+        load_tensor_data(volfile, obs_id_, tensor_components));
+    h5file.close();
+  }
+}
+
+template <size_t Dim, typename Frame>
+void PointwiseInterpolator<Dim, Frame>::interpolate_to_points(
+    const gsl::not_null<std::vector<DataVector>*> result,
+    const tnsr::I<DataVector, Dim, Frame>& target_points,
+    const bool extrapolate_into_excisions, const bool error_on_missing_points,
+    const std::optional<size_t> num_threads) const {
+  ASSERT(not tensor_data_.empty(),
+         "PointwiseInterpolator has not been initialized with tensor data.");
+  const size_t resolved_num_threads = resolve_num_threads(num_threads);
+  const size_t num_target_points = get<0>(target_points).size();
+
+  // Map the target points through the domain
+  const auto [block_logical_coords, extrapolation_info] =
+      block_logical_coordinates(target_points, domain_, time_,
+                                functions_of_time_, extrapolate_into_excisions,
+                                error_on_missing_points, resolved_num_threads);
+  const size_t num_interpolation_points = block_logical_coords.size();
+
+  // Allocate memory for result
+  const size_t num_components = tensor_data_.front().size();
+  result->resize(num_components);
+  for (size_t i = 0; i < num_components; ++i) {
+    DataVector& component = (*result)[i];
+    component.destructive_resize(num_interpolation_points);
+    std::fill(component.begin(), component.end(),
+              std::numeric_limits<double>::signaling_NaN());
+  }
+  std::vector<bool> filled_data(num_interpolation_points, false);
+
+  // Process all volume files in serial
+  for (size_t file_id = 0; file_id < element_ids_.size(); ++file_id) {
+    const auto& element_ids = element_ids_[file_id];
+    const auto& meshes = meshes_[file_id];
+    const auto& tensor_data = tensor_data_[file_id];
+
+    // Map the target points to element-logical coordinates. This selects the
+    // subset of target points that are in the volume data file's elements.
+    const auto element_logical_coords =
+        element_logical_coordinates(element_ids, block_logical_coords);
+    if (element_logical_coords.empty()) {
+      continue;
+    }
+
+    // Interpolate the tensor data to the target points
+    interpolate_to_points_impl(result, make_not_null(&filled_data),
+                               element_logical_coords, element_ids, meshes,
+                               tensor_data, resolved_num_threads);
+
+    // Terminate early if all data has been filled
+    if (std::all_of(filled_data.begin(), filled_data.end(),
+                    [](const bool filled) { return filled; })) {
+      break;
+    }
+  }
+
+  if (extrapolate_into_excisions) {
+    extrapolate_into_excisions_impl(result, extrapolation_info,
+                                    resolved_num_threads);
+    // Clear the anchor points from the result
+    for (size_t i = 0; i < result->size(); ++i) {
+      DataVector& component = (*result)[i];
+      component.destructive_resize(num_target_points);
+    }
+  }
+}
+
+template <size_t Dim, typename Frame>
+void PointwiseInterpolator<Dim, Frame>::interpolate_to_point(
+    const gsl::not_null<std::vector<double>*> result,
+    const tnsr::I<double, Dim, Frame>& target_point,
+    const std::optional<gsl::not_null<std::vector<size_t>*>> block_order)
+    const {
+  ASSERT(not tensor_data_.empty(),
+         "PointwiseInterpolator has not been initialized with tensor data.");
+  const auto block_logical_coords = block_logical_coordinates_single_point(
+      target_point, domain_, time_, functions_of_time_, block_order);
+  if (not block_logical_coords.has_value()) {
+    ERROR("Point is not in any block:\n" << target_point);
+  }
+  // Process all volume files in serial
+  for (size_t file_id = 0; file_id < element_ids_.size(); ++file_id) {
+    const auto& element_ids = element_ids_[file_id];
+    const auto& meshes = meshes_[file_id];
+    const auto& tensor_data = tensor_data_[file_id];
+    const auto element_logical_coords =
+        element_logical_coordinates(element_ids, {block_logical_coords});
+    if (element_logical_coords.empty()) {
+      continue;
+    }
+    const auto& element_id = element_logical_coords.begin()->first;
+    const auto& x_element_logical =
+        element_logical_coords.begin()->second.element_logical_coords;
+    const auto& mesh_offset_length = meshes.at(element_id);
+    interpolate_to_point_impl(
+        result, x_element_logical, get<0>(mesh_offset_length),
+        get<1>(mesh_offset_length), get<2>(mesh_offset_length), tensor_data);
+    break;
+  }
+}
+
 // Generate instantiations
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template void interpolate_to_points<DTYPE(data), DIM(data)>(                \
+  template void interpolate_to_points<DTYPE(data), DIM(data), FRAME(data)>(   \
       gsl::not_null<std::vector<DTYPE(data)>*> result,                        \
       const std::variant<std::vector<std::string>, std::string>&              \
           volume_files_or_glob,                                               \
       const std::string& subfile_name, const ObservationVariant& observation, \
       const std::vector<std::string>& tensor_components,                      \
-      const tnsr::I<DataVector, DIM(data)>& target_points,                    \
-      bool extrapolate_into_excisions, std::optional<size_t> num_threads);
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& target_points,       \
+      bool extrapolate_into_excisions, bool error_on_missing_points,          \
+      std::optional<size_t> num_threads);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+#define INSTANTIATE_CLASSES(_, data) \
+  template class PointwiseInterpolator<DIM(data), FRAME(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (DataVector, std::vector<double>))
+GENERATE_INSTANTIATIONS(INSTANTIATE_CLASSES, (1, 2, 3),
+                        (Frame::Grid, Frame::Inertial))
 
 #undef INSTANTIATE
+#undef INSTANTIATE_CLASSES
 #undef DIM
+#undef FRAME
 #undef DTYPE
 
 }  // namespace spectre::Exporter

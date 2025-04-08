@@ -8,6 +8,7 @@ import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
+from spectre.DataStructures.Tensor import DataVector, Frame, tnsr
 from spectre.IO.Exporter import interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles_command,
@@ -40,6 +41,13 @@ logger = logging.getLogger(__name__)
         "Can be specified multiple times to quickly interpolate "
         "to a couple of target points."
     ),
+)
+@click.option(
+    "--frame",
+    type=click.Choice(Frame.__members__),
+    callback=lambda ctx, param, value: Frame.__members__[value],
+    default=Frame.Inertial.name,
+    help="Frame in which coordinates are specified.",
 )
 @click.option(
     "--extrapolate-into-excisions",
@@ -82,6 +90,7 @@ def interpolate_to_points_command(
     vars,
     target_coords,
     target_coords_file,
+    frame,
     output,
     delimiter,
     **kwargs,
@@ -98,6 +107,7 @@ def interpolate_to_points_command(
             target_coords_file, ndmin=2, delimiter=delimiter
         )
     dim = target_coords.shape[1]
+    target_points = tnsr.I[DataVector, dim, frame](target_coords.T)
 
     # Interpolate!
     interpolated_data = np.array(
@@ -106,7 +116,7 @@ def interpolate_to_points_command(
             subfile_name=subfile_name,
             observation_id=obs_id,
             tensor_components=vars,
-            target_points=target_coords.T,
+            target_points=target_points,
             **kwargs,
         )
     )

@@ -152,7 +152,7 @@ def plot_along_line(
             num_threads=num_threads,
         )
         for y, var_name, line in zip(vars_on_line, vars, lines):
-            line.set_data(x, y)
+            line.set_data(x, np.asarray(y))
         time_label.set_text(f"t = {obs_time:g}")
         ax.relim()
         ax.autoscale_view()

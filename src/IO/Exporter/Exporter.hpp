@@ -58,6 +58,9 @@ using ObservationVariant = std::variant<ObservationId, ObservationStep, double>;
  * grid frame (where the excision is spherical), then map the anchor points to
  * the distorted frame (where we have the target point) and do a 7th order
  * polynomial extrapolation into the excision region.
+ * \param error_on_missing_points If `true`, an error will be thrown if any of
+ * the target points are outside the domain. If `false`, the result will be
+ * filled with NaNs for points outside the domain (default is `false`).
  * \param num_threads The number of threads to use if OpenMP is linked in. If
  * not specified, OpenMP will determine the number of threads automatically.
  * It's also possible to set the number of threads using the environment
@@ -75,6 +78,7 @@ std::vector<std::vector<double>> interpolate_to_points(
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
     bool extrapolate_into_excisions = false,
+    bool error_on_missing_points = false,
     std::optional<size_t> num_threads = std::nullopt);
 
 }  // namespace spectre::Exporter

@@ -5,51 +5,50 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "IO/Exporter/Exporter.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "IO/Exporter/PointwiseInterpolator.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
-  enable_segfault_handler();
+namespace {
+
+template <size_t Dim, typename Frame>
+void bind_interpolate_to_points_impl(py::module& m) {
   m.def(
       "interpolate_to_points",
       [](const std::variant<std::vector<std::string>, std::string>&
              volume_files_or_glob,
          const std::string& subfile_name, const size_t observation_id,
          const std::vector<std::string>& tensor_components,
-         std::vector<std::vector<double>> target_points,
-         bool extrapolate_into_excisions,
+         const tnsr::I<DataVector, Dim, Frame>& target_points,
+         const bool extrapolate_into_excisions,
+         const bool error_on_missing_points,
          const std::optional<size_t>& num_threads) {
-        const size_t dim = target_points.size();
-        const spectre::Exporter::ObservationId obs_id{observation_id};
-        if (dim == 1) {
-          return spectre::Exporter::interpolate_to_points(
-              volume_files_or_glob, subfile_name, obs_id, tensor_components,
-              make_array<std::vector<double>, 1>(std::move(target_points)),
-              extrapolate_into_excisions, num_threads);
-        } else if (dim == 2) {
-          return spectre::Exporter::interpolate_to_points(
-              volume_files_or_glob, subfile_name, obs_id, tensor_components,
-              make_array<std::vector<double>, 2>(std::move(target_points)),
-              extrapolate_into_excisions, num_threads);
-        } else if (dim == 3) {
-          return spectre::Exporter::interpolate_to_points(
-              volume_files_or_glob, subfile_name, obs_id, tensor_components,
-              make_array<std::vector<double>, 3>(std::move(target_points)),
-              extrapolate_into_excisions, num_threads);
-        } else {
-          ERROR("Invalid dimension of target points: "
-                << dim
-                << ". Must be 1, 2, or 3. The first dimension of the "
-                   "target points must the spatial dimension of the volume "
-                   "data, and the second dimension is the number of points.");
-        }
+        return spectre::Exporter::interpolate_to_points(
+            volume_files_or_glob, subfile_name,
+            spectre::Exporter::ObservationId{observation_id}, tensor_components,
+            target_points, extrapolate_into_excisions, error_on_missing_points,
+            num_threads);
       },
       py::arg("volume_files_or_glob"), py::arg("subfile_name"),
       py::arg("observation_id"), py::arg("tensor_components"),
       py::arg("target_points"), py::arg("extrapolate_into_excisions") = false,
+      py::arg("error_on_missing_points") = false,
       py::arg("num_threads") = std::nullopt);
+}
+
+}  // namespace
+
+PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
+  enable_segfault_handler();
+  py::module_::import("spectre.DataStructures.Tensor");
+  bind_interpolate_to_points_impl<1, Frame::Grid>(m);
+  bind_interpolate_to_points_impl<2, Frame::Grid>(m);
+  bind_interpolate_to_points_impl<3, Frame::Grid>(m);
+  bind_interpolate_to_points_impl<1, Frame::Inertial>(m);
+  bind_interpolate_to_points_impl<2, Frame::Inertial>(m);
+  bind_interpolate_to_points_impl<3, Frame::Inertial>(m);
 }

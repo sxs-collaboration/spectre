@@ -15,7 +15,7 @@ std::vector<std::vector<double>> interpolate_to_points(
     const std::string& subfile_name, const ObservationVariant& observation,
     const std::vector<std::string>& tensor_components,
     const std::array<std::vector<double>, Dim>& target_points,
-    const bool extrapolate_into_excisions,
+    const bool extrapolate_into_excisions, const bool error_on_missing_points,
     const std::optional<size_t> num_threads) {
   tnsr::I<DataVector, Dim, Frame::Inertial> target_points_dv{};
   for (size_t d = 0; d < Dim; ++d) {
@@ -28,7 +28,7 @@ std::vector<std::vector<double>> interpolate_to_points(
   interpolate_to_points(make_not_null(&result), volume_files_or_glob,
                         subfile_name, observation, tensor_components,
                         target_points_dv, extrapolate_into_excisions,
-                        num_threads);
+                        error_on_missing_points, num_threads);
   return result;
 }
 
@@ -43,7 +43,8 @@ std::vector<std::vector<double>> interpolate_to_points(
       const std::string& subfile_name, const ObservationVariant& observation, \
       const std::vector<std::string>& tensor_components,                      \
       const std::array<std::vector<double>, DIM(data)>& target_points,        \
-      bool extrapolate_into_excisions, std::optional<size_t> num_threads);
+      bool extrapolate_into_excisions, bool error_on_missing_points,          \
+      std::optional<size_t> num_threads);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

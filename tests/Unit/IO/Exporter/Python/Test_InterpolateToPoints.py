@@ -10,7 +10,7 @@ import numpy.testing as npt
 from click.testing import CliRunner
 
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import Scalar, tnsr
+from spectre.DataStructures.Tensor import Frame, Scalar, tnsr
 from spectre.Informer import unit_test_build_path, unit_test_src_path
 from spectre.IO.Exporter import interpolate_tensors_to_points
 from spectre.IO.Exporter.InterpolateToPoints import (
@@ -37,16 +37,19 @@ class TestInterpolateToPoints(unittest.TestCase):
         obs_id = list_observations(
             open_volfiles([self.h5_filename], "/element_data")
         )[0][0]
-        coords = tnsr.I[DataVector, 3](np.array([3 * [0.0], 3 * [2 * np.pi]]).T)
-        (psi,) = interpolate_tensors_to_points(
-            self.h5_filename,
-            "element_data",
-            observation_id=obs_id,
-            tensor_names=["Psi"],
-            tensor_types=[Scalar[DataVector]],
-            target_points=coords,
-        )
-        self.assertAlmostEqual(psi.get()[0], -0.07059806932542323)
+        for frame in [Frame.Grid, Frame.Inertial]:
+            coords = tnsr.I[DataVector, 3](
+                np.array([3 * [0.0], 3 * [2 * np.pi]]).T
+            )
+            (psi,) = interpolate_tensors_to_points(
+                self.h5_filename,
+                "element_data",
+                observation_id=obs_id,
+                tensor_names=["Psi"],
+                tensor_types=[Scalar[DataVector]],
+                target_points=coords,
+            )
+            self.assertAlmostEqual(psi.get()[0], -0.07059806932542323)
 
     def test_cli(self):
         runner = CliRunner()
