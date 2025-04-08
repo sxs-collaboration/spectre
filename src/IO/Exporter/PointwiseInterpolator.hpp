@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
 #include "IO/Exporter/Exporter.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -181,6 +182,20 @@ struct PointwiseInterpolator {
                             const tnsr::I<double, Dim, Frame>& target_point,
                             std::optional<gsl::not_null<std::vector<size_t>*>>
                                 block_order = std::nullopt) const;
+
+  /*!
+   * \brief Interpolate to a single point in block-logical coordinates
+   *
+   * \param result the interpolated data at the target point. The vector is over
+   * the number of components. Will be resized automatically.
+   * \param target_point the point to interpolate to in block-logical
+   * coordinates.
+   */
+  void interpolate_to_point(
+      gsl::not_null<std::vector<double>*> result,
+      const IdPair<domain::BlockId,
+                   tnsr::I<double, Dim, ::Frame::BlockLogical>>& target_point)
+      const;
 
   size_t obs_id() const { return obs_id_; }
   double time() const { return time_; }

@@ -708,13 +708,22 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_point(
   if (not block_logical_coords.has_value()) {
     ERROR("Point is not in any block:\n" << target_point);
   }
-  // Process all volume files in serial
+  interpolate_to_point(result, block_logical_coords.value());
+}
+
+template <size_t Dim, typename Frame>
+void PointwiseInterpolator<Dim, Frame>::interpolate_to_point(
+    const gsl::not_null<std::vector<double>*> result,
+    const IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::BlockLogical>>&
+        target_point) const {
+  ASSERT(not tensor_data_.empty(),
+         "PointwiseInterpolator has not been initialized with tensor data.");
   for (size_t file_id = 0; file_id < element_ids_.size(); ++file_id) {
     const auto& element_ids = element_ids_[file_id];
     const auto& meshes = meshes_[file_id];
     const auto& tensor_data = tensor_data_[file_id];
     const auto element_logical_coords =
-        element_logical_coordinates(element_ids, {block_logical_coords});
+        element_logical_coordinates(element_ids, {target_point});
     if (element_logical_coords.empty()) {
       continue;
     }
