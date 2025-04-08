@@ -293,10 +293,9 @@ void test_block_time_dependent_distorted() {
 }
 
 void test_spherical_shell() {
-  const Block<3> spherical_shell(
-      nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{}, "Shell",
-      std::array{domain::Topology::I1, domain::Topology::S2Colatitude,
-                 domain::Topology::S2Longitude});
+  const Block<3> spherical_shell(nullptr, 4,
+                                 DirectionMap<3, BlockNeighbors<3>>{}, "Shell",
+                                 domain::topologies::spherical_shell);
   CHECK(spherical_shell.external_boundaries().size() == 2);
   CHECK(
       spherical_shell.external_boundaries().contains(Direction<3>::lower_xi()));
@@ -308,8 +307,7 @@ void test_spherical_shell() {
 void test_cylindrical_shell() {
   const Block<3> cylindrical_shell(
       nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{}, "CylindricalShell",
-      std::array{domain::Topology::I1, domain::Topology::S1,
-                 domain::Topology::I1});
+      domain::topologies::cylindrical_shell);
   CHECK(cylindrical_shell.external_boundaries().size() == 4);
   CHECK(cylindrical_shell.external_boundaries().contains(
       Direction<3>::lower_xi()));
@@ -323,10 +321,8 @@ void test_cylindrical_shell() {
 }
 
 void test_full_cylinder() {
-  const Block<3> full_cylinder(
-      nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{}, "Cylinder",
-      std::array{domain::Topology::B2Radial, domain::Topology::B2Angular,
-                 domain::Topology::I1});
+  const Block<3> full_cylinder(nullptr, 4, DirectionMap<3, BlockNeighbors<3>>{},
+                               "Cylinder", domain::topologies::full_cylinder);
   CHECK(full_cylinder.external_boundaries().size() == 3);
   CHECK(full_cylinder.external_boundaries().contains(Direction<3>::upper_xi()));
   CHECK(

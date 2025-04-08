@@ -106,11 +106,11 @@ struct InitializeElement {
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<1>>(box);
     const auto& domain = db::get<::domain::Tags::Domain<1>>(box);
+    const auto& block = domain.blocks()[element_id.block_id()];
     auto mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id,
+        initial_extents, block, element_id,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     const auto logical_coords = logical_coordinates(mesh);
-    const auto& block = domain.blocks()[element_id.block_id()];
     const ElementMap<1, Frame::Inertial> element_map{
         element_id, block.stationary_map().get_clone()};
     auto inertial_coords = element_map(logical_coords);

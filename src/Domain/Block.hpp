@@ -59,7 +59,7 @@ class Block {
         size_t id, DirectionMap<VolumeDim, BlockNeighbors<VolumeDim>> neighbors,
         std::string name = "",
         std::array<domain::Topology, VolumeDim> topologies =
-            make_array<VolumeDim>(domain::Topology::I1));
+            domain::topologies::hypercube<VolumeDim>);
 
   Block() = default;
   ~Block() = default;

@@ -453,7 +453,8 @@ struct Metavariables {
   static constexpr bool local_time_stepping = LocalTimeStepping;
   static constexpr bool use_nodegroup_dg_elements = UseNodegroupDgElements;
   using system = System<Dim, SystemType>;
-  using const_global_cache_tags = tmpl::list<domain::Tags::InitialExtents<Dim>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>>;
 
   using component_list = tmpl::list<component<Metavariables>>;
 };
@@ -546,7 +547,20 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   const Element<Dim> element{self_id, neighbors};
 
-  MockRuntimeSystem runner{{std::vector<std::array<size_t, Dim>>{
+  std::vector<Block<Dim>> blocks{Dim == 1 ? 1 : 2};
+  if constexpr (Dim == 1) {
+    blocks[0] = Block<Dim>(nullptr, element.id().block_id(), {});
+  } else {
+    blocks[0] = Block<Dim>(nullptr, 0,
+                           {{Direction<Dim>::lower_eta(),
+                             {1, OrientationMap<Dim>::create_aligned()}}});
+    blocks[1] = Block<Dim>(nullptr, 1,
+                           {{Direction<Dim>::upper_eta(),
+                             {0, OrientationMap<Dim>::create_aligned()}}});
+  }
+  Domain<Dim> domain{std::move(blocks)};
+  MockRuntimeSystem runner{{std::move(domain),
+                            std::vector<std::array<size_t, Dim>>{
                                 make_array<Dim>(2_st), make_array<Dim>(3_st)},
                             std::make_unique<BoundaryTerms<Dim>>(),
                             dg_formulation}};
