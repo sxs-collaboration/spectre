@@ -7,43 +7,16 @@ Testing:
   Timeout: 20
   Priority: High
 ExpectedOutput:
-  - CharacteristicExtractReduction.h5
+  - CharacteristicExtractVolume.h5
 OutputFileChecks:
-  # Redo this when we change the CCE volume format
-  - Label: "check_psi0_r2"
-    Subfile: "/Cce/VolumeData/Psi0/CompactifiedRadius_2.dat"
-    FileGlob: "CharacteristicExtractReduction.h5"
-    SkipColumns: [0] # Don't look at the time column
+  - Label: "check_psi0"
+    Subfile: "/CceVolumeData/VolumeData.vol/ObservationId.*/Psi0"
+    FileGlob: "CharacteristicExtractVolume.h5"
     # By not specifying an expected value, we test against 0
     AbsoluteTolerance: 1e-8
-  - Label: "check_psi0_r3"
-    Subfile: "/Cce/VolumeData/Psi0/CompactifiedRadius_3.dat"
-    FileGlob: "CharacteristicExtractReduction.h5"
-    SkipColumns: [0] # Don't look at the time column
-    # By not specifying an expected value, we test against 0
-    AbsoluteTolerance: 1e-8
-  - Label: "check_psi0_r4"
-    Subfile: "/Cce/VolumeData/Psi0/CompactifiedRadius_4.dat"
-    FileGlob: "CharacteristicExtractReduction.h5"
-    SkipColumns: [0] # Don't look at the time column
-    # By not specifying an expected value, we test against 0
-    AbsoluteTolerance: 1e-8
-  - Label: "check_psi1_r4"
-    Subfile: "/Cce/VolumeData/Psi1/CompactifiedRadius_4.dat"
-    FileGlob: "CharacteristicExtractReduction.h5"
-    SkipColumns: [0] # Don't look at the time column
-    # By not specifying an expected value, we test against 0
-    AbsoluteTolerance: 1e-8
-  - Label: "check_psi1_r5"
-    Subfile: "/Cce/VolumeData/Psi1/CompactifiedRadius_5.dat"
-    FileGlob: "CharacteristicExtractReduction.h5"
-    SkipColumns: [0] # Don't look at the time column
-    # By not specifying an expected value, we test against 0
-    AbsoluteTolerance: 1e-8
-  - Label: "check_psi1_r6"
-    Subfile: "/Cce/VolumeData/Psi1/CompactifiedRadius_6.dat"
-    FileGlob: "CharacteristicExtractReduction.h5"
-    SkipColumns: [0] # Don't look at the time column
+  - Label: "check_psi1"
+    Subfile: "/CceVolumeData/VolumeData.vol/ObservationId.*/Psi1"
+    FileGlob: "CharacteristicExtractVolume.h5"
     # By not specifying an expected value, we test against 0
     AbsoluteTolerance: 1e-8
 
@@ -65,7 +38,7 @@ ResourceInfo:
       Exclusive: false
 
 Observers:
-  VolumeFileName: "CharacteristicExtractUnusedVolume"
+  VolumeFileName: "CharacteristicExtractVolume"
   ReductionFileName: "CharacteristicExtractReduction"
 
 EventsAndTriggersAtSlabs:
@@ -79,7 +52,10 @@ EventsAndTriggersAtSlabs:
           SubfileName: CceTimeStep
           PrintTimeToTerminal: false
       - ObserveFields:
+          SubgroupName: "CceVolumeData"
           VariablesToObserve:
+            - OneMinusY
+            - InertialRetardedTime
             - Psi0
             - Psi1
 

@@ -23,6 +23,7 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTransform.hpp"
@@ -99,18 +100,41 @@ std::string name() {
  * data and decompose in spherical harmonics before writing. This means
  * our typical way of writing/storing volume data won't work.
  *
- * This event writes its data in the following structure in the H5 file:
- * `/Cce/VolumeData/TagName/CompactifiedRadius_X.dat`. Every field that is
- * observed will get its own subgroup called `TagName`. In this subgroup, there
- * will be N files corresponding to N radial grid points named
- * `CompactifiedRadius_X.dat` where `X` here will range from 0 to `N-1`. We call
- * these compactified radii because for a more "physical" radius, it goes to
- * infinity at future-null infinity and we can't write that in a file. Instead,
- * these N files will correspond to the compactified coordinate $y = 1 - 2R/r$
- * where $r$ is your coordinate radius and $R$ is the coordinate radius of your
- * worldtube. Each file will hold the modal data for that radial grid point. It
- * is recommended to always dump the quantity `Cce::Tags::OneMinusY` so the
- * values of the compactified coordinates are available as well.
+ * All data will be written into the `observers::OptionTags::VolumeFileName`
+ * file. If CCE is run on a single core, then this will write the volume data
+ * immediately (synchronously) instead of sending it to the ObserverWriter to be
+ * written asynchronously.  The option `SubgroupName` controls the name of the
+ * H5 group where this volume data is written. For example, if `SubgroupName` is
+ * "CceVolumeData", then the volume file will contain
+ * `/CceVolumeData/VolumeData.vol` for most fields; it would contain
+ * `/CceVolumeData/InertialRetardedTime.vol` for the inertial retarded time; and
+ * it would contain `/CceVolumeData/OneMinusY.vol` for the compactified radial
+ * coordinate. The structure of the .vol subfiles is the same as that for DG
+ * volume data. However, the extents of the three different volume files are all
+ * different, and for modal directions, they take the values l_max in both of
+ * the two extent slots corresponding to angular modes. This  also means that
+ * complex modal data (which has real/imag parts interleaved, as described
+ * below) has twice as much data as the products of the extents suggests.
+ *
+ * The formats for `Cce::Tags::ComplexInertialRetardedTime` and
+ * `Cce::Tags::OneMinusY` are special and are described below. Every other field
+ * follows the same format. Each ObservationId contains one time slice. Within
+ * an ObservationId, each field is an unraveled vector of complex modal
+ * coefficients at compactified radial slices (the compactified coordinate is $y
+ * = 1 - 2R/r$ where $r$ is your coordinate radius and $R$ is the coordinate
+ * radius of your worldtube; it is recommended to always dump the quantity
+ * `Cce::Tags::OneMinusY` so the values of the compactified coordinates are
+ * available as well). The ordering of the coefficients for a field $f$ at
+ * constant observation event are, for example:
+ * Re f_{0,0}(1-y_0), Im f_{0,0}(1-y_0), Re f_{1,-1}(1-y_0), Im f_{1,-1}(1-y_0),
+ * Re f_{1,0}(1-y_0), Im f_{1,0}(1-y_0), ...
+ * Re f_{l_{max},l_{max}}(1-y_0), Im f_{l_{max},l_{max}}(1-y_0),
+ * Re f_{0,0}(1-y_1), Im f_{0,0}(1-y_1), ...
+ * Re f_{l_{max},l_{max}}(1-y_{max)), Im f_{l_{max},l_{max}}(1-y_{max}).
+ * That is, the radial slice indexes the slowest, followed by the $\ell$ number
+ * (always starting at 0, even for s≠0), followed by the azimuthal m number
+ * (from $-\ell$ to $+\ell$ inclusive), followed by interleaving real and
+ * imaginary parts of the complex field.
  *
  * There are two notable exceptions to this format. One is
  * `Cce::Tags::ComplexInertialRetardedTime`. The quantity we are actually
@@ -118,24 +142,16 @@ std::string name() {
  * defined once for every direction $\theta,\phi$ (meaning it does not have
  * different values at the different radial grid points). However, we use
  * `Cce::Tags::ComplexInertialRetardedTime` because it has the same data type as
- * the other tags which makes the internals of the class simpler. The imaginary
- * part of this `ComplexDataVector` is set to zero. This quantity will be stored
- * in a subfile named `/Cce/VolumeData/InertialRetardedTime.dat` as a single
- * modal set of data so we don't repeat it N times.
+ * the other tags which makes the internals of the class simpler. This quantity
+ * is stored in `/<SubgroupName>/InertialRetardedTime.vol`.
  *
- * The second is `Cce::Tags::OneMinusY`. Even though this quantity is stored
- * as a `Scalar<SpinWeighted<ComplexDataVector, 0>>` like the others, there is
- * only one meaningful value per radial grid point. All angular grid points for
- * a given radius are set to this value, namely $1-y$. Thus we only need to
- * write this value once for each radial grid point. We do this in a subfile
- * `/Cce/VolumeData/OneMinusY.dat` where the columns are named
- * `CompactifiedRadius_X` corresponding to the radial subfiles written for the
- * spin weighted quantities above (and time as the first column).
- *
- * All data will be written into the `observers::OptionTags::ReductionFileName`
- * file. If CCE is run on a single core, then this will write the volume data
- * immediately (synchronously) instead of sending it to the ObserverWriter to be
- * written asynchronously.
+ * The second is `Cce::Tags::OneMinusY`. Even though this quantity is stored as
+ * a `Scalar<SpinWeighted<ComplexDataVector, 0>>` like the others, there is only
+ * one meaningful value per radial grid point. All angular grid points for a
+ * given radius are set to this value, namely $1-y$. Thus we only need to write
+ * this value once for each radial grid point. We do this in a volume subfile
+ * `/<SubgroupName>/OneMinusY.vol` with the elements in the same order as the
+ * radial index order for the spin weighted quantities above.
  */
 class ObserveFields : public Event {
   template <typename Tag, bool IncludeSecondDeriv = true>
@@ -172,22 +188,33 @@ class ObserveFields : public Event {
   WRAPPED_PUPable_decl_template(ObserveFields);  // NOLINT
   /// \endcond
 
+  /// The name of the subgroup inside the HDF5 file
+  struct SubgroupName {
+    using type = std::string;
+    static constexpr Options::String help = {
+      "The name of the subgroup inside the HDF5 file without an extension and "
+      "without a preceding '/'."};
+  };
+
   struct VariablesToObserve {
     static constexpr Options::String help = "Subset of variables to observe";
     using type = std::vector<std::string>;
     static size_t lower_bound_on_size() { return 1; }
   };
 
-  using options = tmpl::list<VariablesToObserve>;
+  using options = tmpl::list<SubgroupName, VariablesToObserve>;
 
   static constexpr Options::String help =
       "Observe volume tensor fields on the characteristic grid. Writes volume "
       "quantities from the tensors listed in the 'VariablesToObserve' "
-      "option to the `/Cce/VolumeData` subfile of the reduction h5 file.\n";
+      "option to volume subfiles in the subgroup named by the option "
+      "'SubgroupName', into the volume h5 file named by the option "
+      "'VolumeFileName' of Observers.\n";
 
   ObserveFields() = default;
 
-  ObserveFields(const std::vector<std::string>& variables_to_observe,
+  ObserveFields(const std::string& subgroup_name,
+                const std::vector<std::string>& variables_to_observe,
                 const Options::Context& context = {});
 
   using compute_tags_for_observation_box =
@@ -215,22 +242,6 @@ class ObserveFields : public Event {
     const size_t number_of_radial_grid_points =
         get<Tags::NumberOfRadialPoints>(box);
 
-    // Buffers/views
-    std::vector<double> data_to_write(2 * l_max_plus_one_squared + 1);
-    ComplexModalVector goldberg_mode_buffer{l_max_plus_one_squared};
-    ComplexDataVector spin_weighted_data_view{};
-
-    // Legend
-    std::vector<std::string> file_legend;
-    file_legend.reserve(2 * l_max_plus_one_squared + 1);
-    file_legend.emplace_back("time");
-    for (int i = 0; i <= static_cast<int>(l_max); ++i) {
-      for (int j = -i; j <= i; ++j) {
-        file_legend.push_back(MakeString{} << "Real Y_" << i << "," << j);
-        file_legend.push_back(MakeString{} << "Imag Y_" << i << "," << j);
-      }
-    }
-
     // Time
     const double time = get<::Tags::Time>(box);
 
@@ -238,166 +249,156 @@ class ObserveFields : public Event {
     auto observer_proxy = Parallel::get_parallel_component<
         ::observers::ObserverWriter<Metavariables>>(cache)[0];
 
-    // Actual work to transform nodal data to modal data. Places result in
-    // data_to_write (but starts placing data in the 1st, not 0th, element
-    // because the 0th element is time). Also makes use of the
-    // spin_weighted_data_view and goldberg_mode_buffer
-    const auto transform_to_modal =
-        [&spin_weighted_data_view, &goldberg_mode_buffer, &box, &l_max,
-         &number_of_angular_points, &l_max_plus_one_squared,
-         &data_to_write](auto tag_v, const auto& spin_weighted_transform,
-                         auto& goldberg_modes, const size_t radial_index) {
-          using tag = std::decay_t<decltype(tag_v)>;
-
-          // Get ComplexDataVector out of SpinWeighted out of databox tag
-          const ComplexDataVector& tensor = get(get<tag>(box)).data();
-
-          // Make non-owning ComplexDataVector to angular data corresponding to
-          // this radial index
-          // NOLINTBEGIN
-          spin_weighted_data_view.set_data_ref(
-              const_cast<ComplexDataVector&>(tensor).data() +
-                  radial_index * number_of_angular_points,
-              number_of_angular_points);
-          // NOLINTEND
-
-          // swsh_transform requires a SpinWeighted<ComplexDataVector>. It's
-          // easier to make a const-view from a ComplexDataVector that is
-          // already the proper size (spin_weighted_data_view) than it is to try
-          // and do all the indexing into the big block of memory here in this
-          // call. That is why we have spin_weighted_data_view above.
-          make_const_view(make_not_null(&spin_weighted_transform.data()),
-                          spin_weighted_data_view, 0,
-                          spin_weighted_data_view.size());
-
-          // libsharp_to_goldberg_modes expects
-          // SpinWeighted<ComplexModalVector>, but we don't know the spin until
-          // we loop over tensors, so we have goldberg_mode_buffer (a
-          // ComplexModalVector) allocated properly above and just point into it
-          // here.
-          goldberg_modes.set_data_ref(make_not_null(&goldberg_mode_buffer));
-
-          // Transform nodal data to modal data
-          Spectral::Swsh::libsharp_to_goldberg_modes(
-              make_not_null(&goldberg_modes),
-              Spectral::Swsh::swsh_transform(l_max, 1, spin_weighted_transform),
-              l_max);
-
-          // Copy data into std::vector for writing (remember 0th component is
-          // time and was written above).
-          for (size_t i = 0; i < l_max_plus_one_squared; ++i) {
-            data_to_write[2 * i + 1] = real(goldberg_modes.data()[i]);
-            data_to_write[2 * i + 2] = imag(goldberg_modes.data()[i]);
-          }
-        };
-
+    ////////////////////////////////////////////////////////////
     // The inertial retarded time is special because it's stored as a
     // Scalar<DataVector> because it's only real and only has one set of angular
-    // points worth of data to write. However, all the machinery above is for a
+    // points worth of data to write. However, all the machinery is for a
     // SpinWeighted<ComplexDataVector>. Luckily there is a
     // ComplexInertialRetardedTime where the real part is the
-    // InertialRetardedTime and the imaginary part is 0, so we use that instead
-    // swapping the names and legend where necessary
+    // InertialRetardedTime and the imaginary part is 0, so we use that instead,
+    // swapping the names where necessary.
+    // Put into volume subfile named /<SubgroupName>/InertialRetardedTime.vol
     const std::string inertial_retarded_time_name =
         detail::name<Tags::ComplexInertialRetardedTime>();
     if (variables_to_observe_.count(inertial_retarded_time_name) == 1) {
-      const std::string subfile_name =
-          "/Cce/VolumeData/" + inertial_retarded_time_name;
+      const std::string subfile_name = subgroup_path_
+                                       + "/" + inertial_retarded_time_name;
+      const observers::ObservationId observation_id{time,
+        subfile_name + ".vol"};
+      const std::vector<size_t> extents_vector{{l_max, l_max}};
+      const std::vector<Spectral::Basis> bases_vector{
+        {Spectral::Basis::SphericalHarmonic,
+         Spectral::Basis::SphericalHarmonic}};
+      const std::vector<Spectral::Quadrature> quadratures_vector{
+        {Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}};
 
-      // Legend
-      std::vector<std::string> inertial_retarded_time_legend;
-      inertial_retarded_time_legend.reserve(l_max_plus_one_squared + 1);
-      inertial_retarded_time_legend.emplace_back("time");
-      for (int i = 0; i <= static_cast<int>(l_max); ++i) {
-        for (int j = -i; j <= i; ++j) {
-          inertial_retarded_time_legend.push_back(MakeString{} << "Y_" << i
-                                                               << "," << j);
-        }
-      }
+      const SpinWeighted<ComplexDataVector, 0>& complex_inertial_retarded_time =
+          get(get<Tags::ComplexInertialRetardedTime>(box));
 
-      // These have to be here because of the spin template
-      const SpinWeighted<ComplexDataVector, 0> spin_weighted_transform{};
-      SpinWeighted<ComplexModalVector, 0> goldberg_modes{};
+      // Allocate a buffer to receive the transformed data, since
+      // WriteVolumeData only understands DataVectors, not
+      // ComplexDataVectors.
+      DataVector goldberg_modes_interleaved_dv(2 * l_max_plus_one_squared);
 
-      // Actually transform the time to complex modal data. Radial index 0
-      // because this isn't volume data. It only holds one shell of data.
-      transform_to_modal(Tags::ComplexInertialRetardedTime{},
-                         spin_weighted_transform, goldberg_modes, 0);
+      // A non-owning view of goldberg_modes_interleaved_dv,
+      // with the correct spin
+      SpinWeighted<ComplexModalVector, 0> goldberg_mode_view;
+      goldberg_mode_view.set_data_ref(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        reinterpret_cast<std::complex<double>*>(
+          goldberg_modes_interleaved_dv.data()),
+        l_max_plus_one_squared);
 
-      // Buffer to write
-      std::vector<double> inertial_retarded_time_to_write(
-          l_max_plus_one_squared + 1);
+      Spectral::Swsh::libsharp_to_goldberg_modes(
+          make_not_null(&goldberg_mode_view),
+          Spectral::Swsh::swsh_transform(
+              l_max, 1, complex_inertial_retarded_time),
+          l_max);
 
-      inertial_retarded_time_to_write[0] = time;
-      // Only copy real data
-      for (size_t i = 0; i < l_max_plus_one_squared; ++i) {
-        inertial_retarded_time_to_write[i + 1] = data_to_write[2 * i + 1];
-      }
+      const std::vector<TensorComponent> tensor_components{
+        {inertial_retarded_time_name, goldberg_modes_interleaved_dv}};
 
       if (write_synchronously) {
         Parallel::local_synchronous_action<
-            observers::ThreadedActions::WriteReductionDataRow>(
-            observer_proxy, cache, subfile_name, inertial_retarded_time_legend,
-            std::make_tuple(std::move(inertial_retarded_time_to_write)));
+          observers::ThreadedActions::WriteVolumeData>(
+              observer_proxy, cache,
+              Parallel::get<observers::Tags::VolumeFileName>(cache),
+              subfile_name, observation_id,
+              std::vector<ElementVolumeData>{
+                {inertial_retarded_time_name, tensor_components,
+                 extents_vector, bases_vector,
+                 quadratures_vector}});
       } else {
         // Send to observer writer
         Parallel::threaded_action<
-            observers::ThreadedActions::WriteReductionDataRow>(
-            observer_proxy, subfile_name, inertial_retarded_time_legend,
-            std::make_tuple(std::move(inertial_retarded_time_to_write)));
+          observers::ThreadedActions::WriteVolumeData>(
+              observer_proxy,
+              Parallel::get<observers::Tags::VolumeFileName>(cache),
+              subfile_name, observation_id,
+              std::vector<ElementVolumeData>{
+                {inertial_retarded_time_name, tensor_components,
+                 extents_vector, bases_vector,
+                 quadratures_vector}});
       }
     }
 
+    ////////////////////////////////////////////////////////////
     // One minus y is also special because every angular grid point for a given
     // radius holds the same value. Thus we only need to write one double per
-    // radial grid point corresponding to 1 - y. The subfile name is just the
-    // name of the tag, and the column names correspond to the names of the
-    // radial subfiles for the spin weighted quantities
+    // radial grid point corresponding to 1 - y. Put into volume subfile named
+    // /<SubgroupName>/OneMinusY.vol
     const std::string one_minus_y_name = detail::name<Tags::OneMinusY>();
     if (variables_to_observe_.count(one_minus_y_name) == 1) {
-      const std::string subfile_name = "/Cce/VolumeData/" + one_minus_y_name;
-      std::vector<double> one_minus_y_to_write;
-      std::vector<std::string> one_minus_y_legend;
-      one_minus_y_to_write.reserve(number_of_radial_grid_points + 1);
-      one_minus_y_legend.reserve(number_of_radial_grid_points + 1);
-      one_minus_y_to_write.emplace_back(time);
-      one_minus_y_legend.emplace_back("time");
+      const std::string subfile_name = subgroup_path_ + "/" + one_minus_y_name;
+      const observers::ObservationId observation_id{time,
+        subfile_name + ".vol"};
+      const std::vector<size_t> extents_vector{number_of_radial_grid_points};
+      const std::vector<Spectral::Basis> bases_vector{
+        Spectral::Basis::Legendre};
+      const std::vector<Spectral::Quadrature> quadratures_vector{
+        Spectral::Quadrature::GaussLobatto};
 
       const ComplexDataVector& one_minus_y =
           get(get<Tags::OneMinusY>(box)).data();
 
-      // All nodal data for each radius are the same value so we just take the
-      // first one
+      DataVector one_minus_y_to_write(number_of_radial_grid_points);
+
       for (size_t radial_index = 0; radial_index < number_of_radial_grid_points;
            radial_index++) {
-        one_minus_y_to_write.emplace_back(
-            real(one_minus_y[radial_index * number_of_angular_points]));
-        one_minus_y_legend.emplace_back("CompactifiedRadius_" +
-                                        std::to_string(radial_index));
+        one_minus_y_to_write[radial_index] =
+            real(one_minus_y[radial_index * number_of_angular_points]);
       }
+
+      const std::vector<TensorComponent> tensor_components{
+        {one_minus_y_name, one_minus_y_to_write}};
 
       if (write_synchronously) {
         Parallel::local_synchronous_action<
-            observers::ThreadedActions::WriteReductionDataRow>(
-            observer_proxy, cache, subfile_name, one_minus_y_legend,
-            std::make_tuple(std::move(one_minus_y_to_write)));
+          observers::ThreadedActions::WriteVolumeData>(
+              observer_proxy, cache,
+              Parallel::get<observers::Tags::VolumeFileName>(cache),
+              subfile_name, observation_id,
+              std::vector<ElementVolumeData>{
+                {one_minus_y_name, tensor_components,
+                 extents_vector, bases_vector,
+                 quadratures_vector}});
       } else {
         // Send to observer writer
         Parallel::threaded_action<
-            observers::ThreadedActions::WriteReductionDataRow>(
-            observer_proxy, subfile_name, one_minus_y_legend,
-            std::make_tuple(std::move(one_minus_y_to_write)));
+          observers::ThreadedActions::WriteVolumeData>(
+              observer_proxy,
+              Parallel::get<observers::Tags::VolumeFileName>(cache),
+              subfile_name, observation_id,
+              std::vector<ElementVolumeData>{
+                {one_minus_y_name, tensor_components,
+                 extents_vector, bases_vector,
+                 quadratures_vector}});
       }
     }
 
-    // Everything needs the same time so we just write it once here. We use the
-    // code time because the inertial retarded time is specified over the whole
-    // sphere and is written above (as a function of the code time as well)
-    data_to_write[0] = time;
+    ////////////////////////////////////////////////////////////
+    // Everything else gets written together into the volume subfile named
+    // /<SubgroupName>/VolumeData.vol
 
-    // Loop over all available spin weighted tags and check if we are observing
-    // this tag. We just capture everything in the scope because we need a
-    // majority of the variables anyways
+    // Field-independent info for writing into volume data file
+    const std::string subfile_name = subgroup_path_ + "/VolumeData";
+    const observers::ObservationId observation_id{time,
+      subfile_name + ".vol"};
+    const std::vector<size_t> extents_vector{
+      {number_of_radial_grid_points, l_max, l_max}};
+    const std::vector<Spectral::Basis> bases_vector{
+      {Spectral::Basis::Legendre,
+       Spectral::Basis::SphericalHarmonic,
+       Spectral::Basis::SphericalHarmonic}};
+    const std::vector<Spectral::Quadrature> quadratures_vector{
+      {Spectral::Quadrature::GaussLobatto,
+       Spectral::Quadrature::Gauss,
+       Spectral::Quadrature::Equiangular}};
+
+    // Create tensor_components by looping over all available spin
+    // weighted tags and checking if we are observing this tag.
+    std::vector<TensorComponent> tensor_components;
     tmpl::for_each<spin_weighted_tags_to_observe>([&](auto tag_v) {
       using tag = tmpl::type_from<decltype(tag_v)>;
       constexpr int spin = tag::type::type::spin;
@@ -408,36 +409,56 @@ class ObserveFields : public Event {
         return;
       }
 
-      // These have to be here because of the spin template
-      const SpinWeighted<ComplexDataVector, spin> spin_weighted_transform{};
-      SpinWeighted<ComplexModalVector, spin> goldberg_modes{};
+      const SpinWeighted<ComplexDataVector, spin>& field =
+        get(get<tag>(box));
 
-      // If we are observing this tag, loop over all radii and write data to
-      // separate subfiles for each radius
-      for (size_t radial_index = 0; radial_index < number_of_radial_grid_points;
-           radial_index++) {
-        const std::string subfile_name = "/Cce/VolumeData/" + name +
-                                         "/CompactifiedRadius_" +
-                                         std::to_string(radial_index);
+      // Allocate a buffer to receive the transformed data, since
+      // WriteVolumeData only understands DataVectors, not
+      // ComplexDataVectors.
+      DataVector goldberg_modes_interleaved_dv(2 *
+        l_max_plus_one_squared * number_of_radial_grid_points);
 
-        // Actually transform the time to complex modal data.
-        transform_to_modal(tag{}, spin_weighted_transform, goldberg_modes,
-                           radial_index);
+      // A non-owning view of goldberg_modes_interleaved_dv,
+      // with the correct spin
+      SpinWeighted<ComplexModalVector, spin> goldberg_mode_view;
+      goldberg_mode_view.set_data_ref(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        reinterpret_cast<std::complex<double>*>(
+          goldberg_modes_interleaved_dv.data()),
+        l_max_plus_one_squared * number_of_radial_grid_points);
 
-        if (write_synchronously) {
-          Parallel::local_synchronous_action<
-              observers::ThreadedActions::WriteReductionDataRow>(
-              observer_proxy, cache, subfile_name, file_legend,
-              std::make_tuple(data_to_write));
-        } else {
-          // Send to observer writer
-          Parallel::threaded_action<
-              observers::ThreadedActions::WriteReductionDataRow>(
-              observer_proxy, subfile_name, file_legend,
-              std::make_tuple(data_to_write));
-        }
-      }
+      Spectral::Swsh::libsharp_to_goldberg_modes(
+        make_not_null(&goldberg_mode_view),
+        Spectral::Swsh::swsh_transform(l_max,
+          number_of_radial_grid_points, field), l_max);
+
+      tensor_components.emplace_back(
+        name, std::move(goldberg_modes_interleaved_dv));
+
     });
+
+    if (write_synchronously) {
+      Parallel::local_synchronous_action<
+        observers::ThreadedActions::WriteVolumeData>(
+        observer_proxy, cache,
+        Parallel::get<observers::Tags::VolumeFileName>(cache),
+        subfile_name, observation_id,
+        std::vector<ElementVolumeData>{
+          {"VolumeData", tensor_components,
+           extents_vector, bases_vector,
+           quadratures_vector}});
+    } else {
+      // Send to observer writer
+      Parallel::threaded_action<
+        observers::ThreadedActions::WriteVolumeData>(
+        observer_proxy,
+        Parallel::get<observers::Tags::VolumeFileName>(cache),
+        subfile_name, observation_id,
+        std::vector<ElementVolumeData>{
+          {"VolumeData", tensor_components,
+           extents_vector, bases_vector,
+           quadratures_vector}});
+    }
   }
 
   using is_ready_argument_tags = tmpl::list<>;
@@ -454,17 +475,21 @@ class ObserveFields : public Event {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     Event::pup(p);
+    p | subgroup_path_;
     p | variables_to_observe_;
   }
 
  private:
+  std::string subgroup_path_;
   std::unordered_set<std::string> variables_to_observe_;
 };
 
 ObserveFields::ObserveFields(
+    const std::string& subgroup_name,
     const std::vector<std::string>& variables_to_observe,
     const Options::Context& context)
-    : variables_to_observe_([&context, &variables_to_observe]() {
+    : subgroup_path_("/" + subgroup_name),
+      variables_to_observe_([&context, &variables_to_observe]() {
         std::unordered_set<std::string> result{};
         for (const auto& tensor : variables_to_observe) {
           if (result.contains(tensor)) {

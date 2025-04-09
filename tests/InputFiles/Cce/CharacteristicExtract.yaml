@@ -25,11 +25,15 @@ ResourceInfo:
   Singletons: Auto
 
 Observers:
-  VolumeFileName: "CharacteristicExtractUnusedVolume"
-  # The reduction file is where the CCE output will be written.
+  # The reduction file is where to write the CCE output of quantities at future
+  # null infinity.
   # Specifically, it will be in a `/SpectreRXXXX.cce` where the number is the
   # ExtractionRadius specified below.
   ReductionFileName: "CharacteristicExtractReduction"
+  # The volume file is where to write the quantities from the bulk of the
+  # spacetime. The fields to extract can be specified in the section
+  # EventsAndTriggersAtSlabs.Events.ObserveFields below.
+  VolumeFileName: "CharacteristicExtractVolume"
 
 EventsAndTriggersAtSlabs:
   # Write the CCE time step every Slab. A Slab is a fixed length of simulation
@@ -45,6 +49,23 @@ EventsAndTriggersAtSlabs:
           # "/SubfileName.dat"
           SubfileName: CceTimeStep
           PrintTimeToTerminal: true
+      # # If you want to dump volume data into VolumeFileName (specified above),
+      # # you can uncomment the ObserveFields option here:
+      # - ObserveFields:
+      #     # Data will be written in the group named by SubgroupName inside the
+      #     # h5 file specified by VolumeFileName. If dumping any volume data,
+      #     # it is recommended to also output OneMinusY and
+      #     # InertialRetardedTime so as to conveniently provide the
+      #     # coordinates. See the documentation of
+      #     # src/Evolution/Systems/Cce/Events/ObserveFields.hpp for details of
+      #     # the Cce volume format.
+      #     SubgroupName: "CceVolumeData"
+      #     VariablesToObserve:
+      #       - OneMinusY
+      #       - InertialRetardedTime
+      #       - J
+      #       - Psi0
+      #       - Psi1
 
 EventsAndTriggersAtSteps:
 
