@@ -27,7 +27,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.Equilibrium3D",
   const double ideal_adiabatic_index = 2.0;
   const double cold_polytropic_index = 2.0;
   const EoS::PolytropicFluid<true> cold_eos{100.0, cold_polytropic_index};
-  const EoS::IdealFluid<true> eos_ideal_fluid{ideal_adiabatic_index};
+  const EoS::IdealFluid<true> eos_ideal_fluid{ideal_adiabatic_index, 0.0};
 
   EoS::Equilibrium3D<EoS::IdealFluid<true>> eos_ideal_fluid_3d{eos_ideal_fluid};
   const EoS::HybridEos<EoS::PolytropicFluid<true>> underlying_eos{

@@ -25,6 +25,7 @@ PhaseChangeAndTriggers:
 EquationOfState:
   IdealFluid:
     AdiabaticIndex: 1.4
+    MinTemperature: 0.0
 
 InitialData: &InitialData
   RiemannProblem:
