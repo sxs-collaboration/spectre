@@ -64,6 +64,9 @@ struct TemplatedLocalFunctions {
    */
   void take_time_step_on_element(
       gsl::not_null<std::vector<Packet>*> packets,
+      gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+      gsl::not_null<Scalar<DataVector>*> coupling_tilde_ye,
+      gsl::not_null<tnsr::i<DataVector, 3>*> coupling_tilde_s,
       gsl::not_null<std::mt19937*> random_number_generator,
       gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
           single_packet_energy,

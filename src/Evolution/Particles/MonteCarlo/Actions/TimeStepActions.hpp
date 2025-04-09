@@ -41,6 +41,9 @@ struct TimeStepMutator {
 
   using return_tags =
       tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement,
+                 Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>,
+                 Particles::MonteCarlo::Tags::CouplingTildeRhoYe<DataVector>,
+                 Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>,
                  Particles::MonteCarlo::Tags::RandomNumberGenerator,
                  Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
                      NeutrinoSpecies>>;
@@ -79,6 +82,9 @@ struct TimeStepMutator {
 
   static void apply(
       const gsl::not_null<std::vector<Packet>*> packets,
+      const gsl::not_null<Scalar<DataVector>*> coupling_tilde_tau,
+      const gsl::not_null<Scalar<DataVector>*> coupling_tilde_rho_ye,
+      const gsl::not_null<tnsr::i<DataVector, Dim>*> coupling_tilde_s,
       const gsl::not_null<std::mt19937*> random_number_generator,
       const gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
           single_packet_energy,
@@ -140,8 +146,9 @@ struct TimeStepMutator {
 
     TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies> templated_functions;
     templated_functions.take_time_step_on_element(
-        packets, random_number_generator, single_packet_energy, start_time,
-        end_time, equation_of_state, interaction_table, electron_fraction,
+        packets, coupling_tilde_tau, coupling_tilde_rho_ye, coupling_tilde_s,
+        random_number_generator, single_packet_energy, start_time, end_time,
+        equation_of_state, interaction_table, electron_fraction,
         rest_mass_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
         d_inv_spatial_metric, spatial_metric, inv_spatial_metric,

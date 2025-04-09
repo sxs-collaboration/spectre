@@ -75,6 +75,9 @@ template <size_t EnergyBins, size_t NeutrinoSpecies>
 void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
     take_time_step_on_element(
         const gsl::not_null<std::vector<Packet>*> packets,
+        const gsl::not_null<Scalar<DataVector>* > coupling_tilde_tau,
+        const gsl::not_null<Scalar<DataVector>* > coupling_tilde_rho_ye,
+        const gsl::not_null<tnsr::i<DataVector,3>* > coupling_tilde_s,
         const gsl::not_null<std::mt19937*> random_number_generator,
         const gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
             single_packet_energy,
@@ -198,20 +201,10 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   const std::array<double, EnergyBins>& energy_at_bin_center =
       interaction_table.get_neutrino_energies();
 
-  // Bookkeeping tensors for coupling to fluid
-  // These also include ghost zones.
-  Scalar<DataVector> coupling_tilde_tau =
-      make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, 0.0);
-  Scalar<DataVector> coupling_rho_ye =
-      make_with_value<Scalar<DataVector>>(zero_dv_ghost_zones, 0.0);
-  tnsr::i<DataVector, 3, Frame::Inertial> coupling_tilde_s =
-      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(
-          zero_dv_ghost_zones, 0.0);
-
   // Emit new MC packets
   this->emit_packets(
-      packets, random_number_generator, &coupling_tilde_tau, &coupling_tilde_s,
-      &coupling_rho_ye, start_time, time_step, mesh, num_ghost_zones,
+      packets, random_number_generator, coupling_tilde_tau, coupling_tilde_s,
+      coupling_tilde_rho_ye, start_time, time_step, mesh, num_ghost_zones,
       emissivity_in_cell, *single_packet_energy, energy_at_bin_center,
       lorentz_factor, lower_spatial_four_velocity, inertial_to_fluid_jacobian,
       inertial_to_fluid_inverse_jacobian, cell_proper_four_volume);
@@ -219,7 +212,7 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   // Propagate packets
   evolve_packets(
       packets, random_number_generator,
-      &coupling_tilde_tau, &coupling_tilde_s, &coupling_rho_ye,
+      coupling_tilde_tau, coupling_tilde_s, coupling_tilde_rho_ye,
       target_end_time, mesh, mesh_coordinates, num_ghost_zones,
       absorption_opacity, scattering_opacity, energy_at_bin_center,
       lorentz_factor, lower_spatial_four_velocity, lapse, shift, d_lapse,
@@ -227,12 +220,6 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
       cell_light_crossing_time,
       mesh_velocity, inverse_jacobian_logical_to_inertial,
       inertial_to_fluid_jacobian, inertial_to_fluid_inverse_jacobian);
-
-  // Couple to hydro needs to be done after communicating coupling terms
-  // between ghost zones... so likely outside of this function. Or at
-  // least we need to correct for GZ information somehow later.
-
-  // Determine new energy of packets and resample as needed.
 }
 
 }  // namespace Particles::MonteCarlo
