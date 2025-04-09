@@ -14,6 +14,7 @@
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
 #include "Domain/Creators/Sphere.hpp"
+#include "Domain/Creators/SphericalShells.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace DomainCreators_detail {
@@ -25,6 +26,7 @@ struct domain_creators<3> {
                  domain::creators::Brick, domain::creators::Cylinder,
                  domain::creators::CylindricalBinaryCompactObject,
                  domain::creators::FrustalCloak,
-                 domain::creators::RotatedBricks, domain::creators::Sphere>;
+                 domain::creators::RotatedBricks, domain::creators::Sphere,
+                 domain::creators::SphericalShells>;
 };
 }  // namespace DomainCreators_detail
