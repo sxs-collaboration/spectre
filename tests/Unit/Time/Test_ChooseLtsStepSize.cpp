@@ -23,6 +23,14 @@ SPECTRE_TEST_CASE("Unit.Time.ChooseLtsStepSize", "[Unit][Time]") {
                              std::numeric_limits<double>::infinity()) ==
         slab.duration());
 
+  CHECK(choose_lts_step_size(slab.start(),
+                             1.1 * slab.duration().value() / (1 << 30)) ==
+        slab.duration() / (1 << 30));
+  CHECK_THROWS_WITH(
+      choose_lts_step_size(slab.start(),
+                           0.9 * slab.duration().value() / (1 << 30)),
+      Catch::Matchers::ContainsSubstring("integer overflow"));
+
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       choose_lts_step_size(slab.start() + slab.duration() / 3, 1.),
