@@ -14,6 +14,7 @@
 #include "Domain/Python/JacobianDiagnostic.hpp"
 #include "Domain/Python/RadiallyCompressedCoordinates.hpp"
 #include "Domain/Python/SegmentId.hpp"
+#include "Domain/Python/StrahlkorperTransformations.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
 namespace py = pybind11;
@@ -36,6 +37,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py_bindings::bind_jacobian_diagnostic(m);
   py_bindings::bind_radially_compressed_coordinates(m);
   py_bindings::bind_segment_id(m);
+  py_bindings::bind_strahlkorper_transformations(m);
 }
 
 }  // namespace domain

@@ -14,7 +14,7 @@ from rich.pretty import pretty_repr
 import spectre.Evolution.Ringdown as Ringdown
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import ModalVector
-from spectre.SphericalHarmonics import Strahlkorper, ylm_legend_and_data
+from spectre.SphericalHarmonics import Frame, Strahlkorper, ylm_legend_and_data
 
 logger = logging.getLogger(__name__)
 
@@ -185,13 +185,13 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
     fit_ahc_coef_mv = ModalVector(fit_ahc_coefs)
     fit_ahc_dt_coef_mv = ModalVector(fit_ahc_dt_coefs)
     fit_ahc_dt2_coef_mv = ModalVector(fit_ahc_dt2_coefs)
-    fit_ahc_strahlkorper = Strahlkorper(
+    fit_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
         ahc_lmax, ahc_lmax, fit_ahc_coef_mv, ahc_center
     )
-    fit_ahc_dt_strahlkorper = Strahlkorper(
+    fit_ahc_dt_strahlkorper = Strahlkorper[Frame.Inertial](
         ahc_lmax, ahc_lmax, fit_ahc_dt_coef_mv, ahc_center
     )
-    fit_ahc_dt2_strahlkorper = Strahlkorper(
+    fit_ahc_dt2_strahlkorper = Strahlkorper[Frame.Inertial](
         ahc_lmax, ahc_lmax, fit_ahc_dt2_coef_mv, ahc_center
     )
     legend_ahc, fit_ahc_ylm_coefs_to_write = ylm_legend_and_data(

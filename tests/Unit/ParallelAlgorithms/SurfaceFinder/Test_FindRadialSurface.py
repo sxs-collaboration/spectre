@@ -20,7 +20,7 @@ from spectre.PointwiseFunctions.AnalyticSolutions.GeneralRelativity import (
     KerrSchild,
 )
 from spectre.Spectral import Basis, Mesh, Quadrature, logical_coordinates
-from spectre.SphericalHarmonics import Strahlkorper, cartesian_coords
+from spectre.SphericalHarmonics import Frame, Strahlkorper, cartesian_coords
 from spectre.support.Logging import configure_logging
 from spectre.SurfaceFinder.FindRadialSurface import (
     find_radial_surface,
@@ -106,7 +106,7 @@ class TestFindRadialSurface(unittest.TestCase):
             var_name="Lapse",
             # Value of the lapse at the horizon
             target=1 / np.sqrt(2),
-            initial_guess=Strahlkorper(
+            initial_guess=Strahlkorper[Frame.Inertial](
                 l_max=12, radius=1.0, center=[0.0, 0.0, 0.0]
             ),
             output_surfaces_file=self.output_surfaces_filename,

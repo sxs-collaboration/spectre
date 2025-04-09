@@ -20,6 +20,7 @@ from spectre.Domain import (
 from spectre.IO.H5.IterElements import iter_elements
 from spectre.Pipelines.Bbh.FindHorizon import _strahlkorper_vol_data
 from spectre.SphericalHarmonics import (
+    Frame,
     Strahlkorper,
     cartesian_coords,
     ylm_legend_and_data,
@@ -39,7 +40,7 @@ def find_radial_surface(
     obs_time: float,
     var_name: str,
     target: float,
-    initial_guess: Strahlkorper,
+    initial_guess: Strahlkorper[Frame.Inertial],
     output_surfaces_file: Optional[Union[str, Path]] = None,
     output_coeffs_subfile: Optional[str] = None,
     output_coords_subfile: Optional[str] = None,
@@ -182,7 +183,7 @@ def find_radial_surface(
             f" {len(missing_points)} / {len(filled)} radial rays. One of the"
             f" missing rays goes through: {missing_points[0]}"
         )
-    surface = Strahlkorper(
+    surface = Strahlkorper[Frame.Inertial](
         l_max=initial_guess.l_max,
         m_max=initial_guess.m_max,
         radius_at_collocation_points=surface_radii,
@@ -275,7 +276,7 @@ def find_radial_surface(
     ),
 )
 def find_radial_surface_command(l_max, initial_radius, center, **kwargs):
-    initial_guess = Strahlkorper(
+    initial_guess = Strahlkorper[Frame.Inertial](
         l_max=l_max, radius=initial_radius, center=center
     )
     find_radial_surface(initial_guess=initial_guess, **kwargs)

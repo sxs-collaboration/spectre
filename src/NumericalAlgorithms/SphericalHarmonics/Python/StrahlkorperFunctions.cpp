@@ -12,10 +12,18 @@
 namespace py = pybind11;
 
 namespace ylm::py_bindings {
-void bind_strahlkorper_functions(pybind11::module& m) {  // NOLINT
+namespace {
+template <typename Frame>
+void bind_strahlkorper_functions_impl(pybind11::module& m) {  // NOLINT
+  using Strahlkorper = ylm::Strahlkorper<Frame>;
   m.def("cartesian_coords",
-        py::overload_cast<const ylm::Strahlkorper<Frame::Inertial>&>(
-            &ylm::cartesian_coords<Frame::Inertial>),
+        py::overload_cast<const Strahlkorper&>(&ylm::cartesian_coords<Frame>),
         py::arg("strahlkorper"));
+}
+}  // namespace
+
+void bind_strahlkorper_functions(pybind11::module& m) {  // NOLINT
+  bind_strahlkorper_functions_impl<Frame::Grid>(m);
+  bind_strahlkorper_functions_impl<Frame::Inertial>(m);
 }
 }  // namespace ylm::py_bindings

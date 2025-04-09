@@ -18,6 +18,7 @@ from spectre.PointwiseFunctions.GeneralRelativity.Surfaces import (
 )
 from spectre.Spectral import Basis, Quadrature
 from spectre.SphericalHarmonics import (
+    Frame,
     Strahlkorper,
     cartesian_coords,
     ylm_legend_and_data,
@@ -80,7 +81,7 @@ def find_horizon(
     subfile_name: str,
     obs_id: int,
     obs_time: float,
-    initial_guess: Strahlkorper,
+    initial_guess: Strahlkorper[Frame.Inertial],
     fast_flow: Optional[FastFlow] = None,
     output_surfaces_file: Optional[Union[str, Path]] = None,
     output_coeffs_subfile: Optional[str] = None,
@@ -102,7 +103,7 @@ def find_horizon(
       obs_id: Observation ID in the volume data.
       obs_time: Time of the observation.
       initial_guess: Initial guess for the horizon. Specify a
-        'spectre.SphericalHarmonics.Strahlkorper'.
+        'spectre.SphericalHarmonics.Strahlkorper[Frame.Inertial]'.
       fast_flow: Optional. FastFlow object that controls the horizon finder.
         If not specified, a FastFlow object with default parameters is used.
       output_surfaces_file: Optional. H5 output file where the horizon Ylm
@@ -163,7 +164,9 @@ def find_horizon(
     strahlkorper = initial_guess
     while True:
         l_mesh = fast_flow.current_l_mesh(strahlkorper)
-        prolonged_strahlkorper = Strahlkorper(l_mesh, l_mesh, strahlkorper)
+        prolonged_strahlkorper = Strahlkorper[Frame.Inertial](
+            l_mesh, l_mesh, strahlkorper
+        )
         (
             inv_spatial_metric,
             extrinsic_curvature,
@@ -339,7 +342,7 @@ def find_horizon(
 )
 def find_horizon_command(l_max, initial_radius, center, vars, **kwargs):
     """Find an apparent horizon in volume data."""
-    initial_guess = Strahlkorper(
+    initial_guess = Strahlkorper[Frame.Inertial](
         l_max=l_max, radius=initial_radius, center=center
     )
     horizon, quantities = find_horizon(
