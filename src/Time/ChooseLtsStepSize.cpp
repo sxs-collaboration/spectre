@@ -27,6 +27,21 @@ TimeDelta choose_lts_step_size(const Time& time, const double desired_step) {
           : static_cast<size_t>(
                 std::ceil(std::log2(std::ceil(desired_step_count))));
 
+  const auto max_denominator =
+      std::numeric_limits<decltype(time.fraction().denominator())>::max() / 2 +
+      1;
+  ASSERT((max_denominator & (max_denominator - 1)) == 0,
+         "Calculated max denominator not a power of 2.");
+  if (two_to_the(desired_step_power) > static_cast<size_t>(max_denominator)) {
+    ERROR_NO_TRACE(
+        "Chosen step "
+        << desired_step
+        << " cannot be represented as a fraction of a slab of size "
+        << time.slab().duration().value()
+        << " without integer overflow.  The smallest representable step is "
+        << time.slab().duration().value() / max_denominator << ".");
+  }
+
   // Ensure we will hit the slab boundary if we continue taking
   // constant-sized steps.
   const auto step_count =

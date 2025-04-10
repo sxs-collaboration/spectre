@@ -130,19 +130,6 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
            "you are using DG.");
   }
 
-  constexpr double smallest_relative_step_size = 1.0 / (1 << 31);
-  if (abs(desired_step / current_step.slab().duration().value()) <
-      smallest_relative_step_size) {
-    ERROR_NO_TRACE(
-        "Chosen step "
-        << desired_step
-        << " cannot be represented as a fraction of a slab of size "
-        << current_step.slab().duration().value()
-        << " without integer overflow.  The smallest representable step is "
-        << smallest_relative_step_size * current_step.slab().duration().value()
-        << ".");
-  }
-
   const auto new_step =
       choose_lts_step_size(time_step_id.step_time(), desired_step);
   step_requests.error_on_hard_limit(
