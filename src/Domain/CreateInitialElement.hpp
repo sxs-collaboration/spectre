@@ -23,13 +23,14 @@ namespace Initialization {
  * \brief Creates an initial element of a Block.
  *
  * \details This function creates an element at the refinement level and
- * position specified by the `element_id` within the `block`. It assumes
+ * position specified by the `element_id` within the `blocks`. It assumes
  * that all elements in a given block have the same refinement level,
  * given in `initial_refinement_levels`.
  */
 template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
-    const ElementId<VolumeDim>& element_id, const Block<VolumeDim>& block,
+    const ElementId<VolumeDim>& element_id,
+    const std::vector<Block<VolumeDim>>& blocks,
     const std::vector<std::array<size_t, VolumeDim>>&
         initial_refinement_levels);
 }  // namespace Initialization

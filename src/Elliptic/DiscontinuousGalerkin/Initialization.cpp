@@ -103,10 +103,9 @@ void InitializeGeometry<Dim>::apply(
          "The elliptic DG scheme supports Gauss and Gauss-Lobatto "
          "grids, but the chosen quadrature is: "
              << quadrature);
-  const auto& block = domain.blocks()[element_id.block_id()];
   // Element
-  *element = domain::Initialization::create_initial_element(element_id, block,
-                                                            initial_refinement);
+  *element = domain::Initialization::create_initial_element(
+      element_id, domain.blocks(), initial_refinement);
   *mesh = domain::Initialization::create_initial_mesh(initial_extents, *element,
                                                       quadrature);
   // Neighbor meshes
@@ -120,6 +119,7 @@ void InitializeGeometry<Dim>::apply(
     }
   }
   // Element map
+  const auto& block = domain.blocks()[element_id.block_id()];
   *element_map = ElementMap<Dim, Frame::Inertial>{element_id, block};
   // Coordinates and Jacobians
   detail::initialize_coords_and_jacobians(

@@ -79,9 +79,9 @@ void test_infinite_surface_integral(const double distance,
     }
 
     // Get element information
-    const auto& current_block = blocks.at(element_id.block_id());
     const auto current_element = domain::Initialization::create_initial_element(
-        element_id, current_block, initial_ref_levels);
+        element_id, blocks, initial_ref_levels);
+    const auto& current_block = blocks.at(element_id.block_id());
     const ElementMap<3, Frame::Inertial> logical_to_inertial_map(
         element_id, current_block.stationary_map().get_clone());
 
@@ -167,9 +167,9 @@ void test_infinite_volume_integral(const double distance,
   // Compute integrals by summing over each element
   for (const auto& element_id : element_ids) {
     // Get element information
-    const auto& current_block = blocks.at(element_id.block_id());
     const auto current_element = domain::Initialization::create_initial_element(
-        element_id, current_block, initial_ref_levels);
+        element_id, blocks, initial_ref_levels);
+    const auto& current_block = blocks.at(element_id.block_id());
     const ElementMap<3, Frame::Inertial> logical_to_inertial_map(
         element_id, current_block.stationary_map().get_clone());
 

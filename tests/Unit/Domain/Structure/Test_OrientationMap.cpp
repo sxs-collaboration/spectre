@@ -486,6 +486,71 @@ void test_reference_wrapper() {
   CHECK(test_points[1].get() == y_points_proof);
   CHECK(test_points[2].get() == z_points_proof);
 }
+
+void test_only_radial_orientation() {
+  const OrientationMap<3> shell_to_wedge(std::array<Direction<3>, 3>{
+      Direction<3>::upper_zeta(), Direction<3>::self(), Direction<3>::self()});
+  const OrientationMap<3> wedge_to_shell(std::array<Direction<3>, 3>{
+      Direction<3>::self(), Direction<3>::self(), Direction<3>::upper_xi()});
+  const OrientationMap<3> radially_aligned(std::array<Direction<3>, 3>{
+      Direction<3>::upper_xi(), Direction<3>::self(), Direction<3>::self()});
+  CHECK_FALSE(shell_to_wedge.is_aligned());
+  CHECK_FALSE(wedge_to_shell.is_aligned());
+  CHECK_FALSE(radially_aligned.is_aligned());
+  CHECK(shell_to_wedge(0) == 2);
+  CHECK(wedge_to_shell(2) == 0);
+  CHECK(radially_aligned(0) == 0);
+  CHECK(shell_to_wedge(Direction<3>::upper_xi()) == Direction<3>::upper_zeta());
+  CHECK(shell_to_wedge(Direction<3>::lower_xi()) == Direction<3>::lower_zeta());
+  CHECK(shell_to_wedge(Direction<3>::lower_eta()) == Direction<3>::self());
+  CHECK(wedge_to_shell(Direction<3>::upper_zeta()) == Direction<3>::upper_xi());
+  CHECK(wedge_to_shell(Direction<3>::lower_zeta()) == Direction<3>::lower_xi());
+  CHECK(radially_aligned(Direction<3>::upper_xi()) == Direction<3>::upper_xi());
+  CHECK(radially_aligned(Direction<3>::lower_xi()) == Direction<3>::lower_xi());
+  CHECK(shell_to_wedge.inverse_map() == wedge_to_shell);
+  CHECK(shell_to_wedge == wedge_to_shell.inverse_map());
+  CHECK(radially_aligned.inverse_map() == radially_aligned);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(shell_to_wedge(1),
+                    Catch::Matchers::ContainsSubstring(
+                        "There is no corresponding dimension"));
+
+  CHECK_THROWS_WITH(
+      shell_to_wedge(
+          std::array{SegmentId{1, 0}, SegmentId{2, 1}, SegmentId{3, 2}}),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot re-orient all SegmentIds for this Orientation"));
+  CHECK_THROWS_WITH(
+      shell_to_wedge(Mesh<3>{
+          {4, 5, 9},
+          {Spectral::Basis::Chebyshev, Spectral::Basis::SphericalHarmonic,
+           Spectral::Basis::SphericalHarmonic},
+          {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+           Spectral::Quadrature::Equiangular}}),
+      Catch::Matchers::ContainsSubstring(
+          "There is no corresponding dimension"));
+  CHECK_THROWS_WITH(
+      shell_to_wedge.permute_to_neighbor(std::array{1.0, 2.0, 3.0}),
+      Catch::Matchers::ContainsSubstring(
+          "There is no corresponding dimension"));
+  CHECK_THROWS_WITH(
+      shell_to_wedge.permute_from_neighbor(std::array{1.0, 2.0, 3.0}),
+      Catch::Matchers::ContainsSubstring(
+          "There is no corresponding dimension"));
+  CHECK_THROWS_WITH(
+      discrete_rotation(shell_to_wedge, std::array{1.0, 2.0, 3.0}),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot define discrete rotation for this OrientationMap"));
+  CHECK_THROWS_WITH(
+      discrete_rotation_jacobian(shell_to_wedge),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot define discrete rotation for this OrientationMap"));
+  CHECK_THROWS_WITH(
+      discrete_rotation_inverse_jacobian(shell_to_wedge),
+      Catch::Matchers::ContainsSubstring(
+          "Cannot define discrete rotation for this OrientationMap"));
+#endif  // SPECTRE_DEBUG
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
@@ -497,5 +562,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
   test_rotation();
   test_reference_wrapper();
 
+  test_only_radial_orientation();
   test_errors();
 }

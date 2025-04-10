@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/SegmentId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -21,7 +22,9 @@ std::set<size_t> set_of_dimensions(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions) {
   std::set<size_t> set_of_dims;
   for (size_t j = 0; j < VolumeDim; j++) {
-    set_of_dims.insert(gsl::at(directions, j).dimension());
+    if (gsl::at(directions, j) != Direction<VolumeDim>::self()) {
+      set_of_dims.insert(gsl::at(directions, j).dimension());
+    }
   }
   return set_of_dims;
 }
@@ -51,8 +54,13 @@ OrientationMap<VolumeDim>::OrientationMap(
       set_aligned(false);
     }
   }
-  ASSERT(set_of_dimensions().size() == VolumeDim,
-         "This OrientationMap fails to map Directions one-to-one.");
+  ASSERT(static_cast<size_t>(
+             alg::count(mapped_directions, Direction<VolumeDim>::self())) +
+                 set_of_dimensions().size() ==
+             VolumeDim,
+         "This OrientationMap fails to map Directions one-to-one.\n"
+         "Mapped directions = "
+             << mapped_directions);
 }
 
 template <size_t VolumeDim>
@@ -69,9 +77,16 @@ OrientationMap<VolumeDim>::OrientationMap(
     }
   }
   ASSERT(::set_of_dimensions(directions_in_host).size() == VolumeDim,
-         "This OrientationMap fails to map Directions one-to-one.");
-  ASSERT(::set_of_dimensions(directions_in_neighbor).size() == VolumeDim,
-         "This OrientationMap fails to map Directions one-to-one.");
+         "This OrientationMap fails to map Directions one-to-one."
+         "directions_in_host = "
+             << directions_in_host);
+  ASSERT(::set_of_dimensions(directions_in_neighbor).size() +
+                 static_cast<size_t>(alg::count(
+                     directions_in_neighbor, Direction<VolumeDim>::self())) ==
+             VolumeDim,
+         "This OrientationMap fails to map Directions one-to-one."
+         "directions_in_neighbor = "
+             << directions_in_neighbor);
 }
 
 template <size_t VolumeDim>
@@ -81,7 +96,10 @@ std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
          "Cannot use a default-constructed OrientationMap");
   std::array<SegmentId, VolumeDim> result = segmentIds;
   for (size_t d = 0; d < VolumeDim; d++) {
-    gsl::at(result, get_direction(d).dimension()) =
+    const auto neighbor_direction = get_direction(d);
+    ASSERT(neighbor_direction.side() != Side::Self,
+           "Cannot re-orient all SegmentIds for this Orientation");
+    gsl::at(result, neighbor_direction.dimension()) =
         get_direction(d).side() == Side::Upper
             ? gsl::at(segmentIds, d)
             : gsl::at(segmentIds, d).id_if_flipped();
@@ -103,8 +121,11 @@ template <size_t VolumeDim>
 OrientationMap<VolumeDim> OrientationMap<VolumeDim>::inverse_map() const {
   ASSERT(bit_field_ != static_cast<uint16_t>(0b1 << 15),
          "Cannot use a default-constructed OrientationMap");
-  std::array<Direction<VolumeDim>, VolumeDim> result;
+  auto result = make_array<VolumeDim>(Direction<VolumeDim>::self());
   for (size_t i = 0; i < VolumeDim; i++) {
+    if (get_direction(i).side() == Side::Self) {
+      continue;
+    }
     gsl::at(result, get_direction(i).dimension()) =
         Direction<VolumeDim>(i, get_direction(i).side());
   }
@@ -187,7 +208,9 @@ template <size_t VolumeDim>
 std::set<size_t> OrientationMap<VolumeDim>::set_of_dimensions() const {
   std::set<size_t> set_of_dims;
   for (size_t j = 0; j < VolumeDim; j++) {
-    set_of_dims.insert(get_direction(j).dimension());
+    if (get_direction(j) != Direction<VolumeDim>::self()) {
+      set_of_dims.insert(get_direction(j).dimension());
+    }
   }
   return set_of_dims;
 }
@@ -224,6 +247,8 @@ std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
   std::array<ReturnType, VolumeDim> new_coords{};
   for (size_t i = 0; i < VolumeDim; i++) {
     const auto new_direction = rotation(Direction<VolumeDim>(i, Side::Upper));
+    ASSERT(new_direction.side() != Side::Self,
+           "Cannot define discrete rotation for this OrientationMap");
     gsl::at(new_coords, i) =
         std::move(gsl::at(source_coords, new_direction.dimension()));
     if (new_direction.side() != Side::Upper) {
@@ -240,6 +265,8 @@ tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_jacobian(
   for (size_t d = 0; d < VolumeDim; d++) {
     const auto new_direction =
         orientation(Direction<VolumeDim>(d, Side::Upper));
+    ASSERT(new_direction.side() != Side::Self,
+           "Cannot define discrete rotation for this OrientationMap");
     jacobian_matrix.get(d, orientation(d)) =
         new_direction.side() == Side::Upper ? 1.0 : -1.0;
   }
@@ -253,6 +280,8 @@ tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_inverse_jacobian(
   for (size_t d = 0; d < VolumeDim; d++) {
     const auto new_direction =
         orientation(Direction<VolumeDim>(d, Side::Upper));
+    ASSERT(new_direction.side() != Side::Self,
+           "Cannot define discrete rotation for this OrientationMap");
     inverse_jacobian_matrix.get(orientation(d), d) =
         new_direction.side() == Side::Upper ? 1.0 : -1.0;
   }

@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_Hypercube.cpp
   Test_IndexToSliceAt.cpp
   Test_InitialElementIds.cpp
+  Test_NeighborIsConforming.cpp
   Test_Neighbors.cpp
   Test_ObjectLabel.cpp
   Test_OrientationMap.cpp

@@ -82,10 +82,24 @@ Direction<VolumeDim>::Direction(const size_t dimension, const Side side)
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
                          const Direction<VolumeDim>& direction) {
-  if (-1.0 == direction.sign()) {
-    os << "-";
-  } else {
-    os << "+";
+  switch (direction.side()) {
+    case Side::Uninitialized:
+      os << "Uninitialized";
+      return os;
+    case Side::Self:
+      os << "Self";
+      return os;
+    case Side::Lower:
+      os << '-';
+      break;
+    case Side::Upper:
+      os << '+';
+      break;
+    default:  // LCOV_EXCL_LINE
+      ERROR(
+          "A direction with an unknown Side was passed to the stream "
+          "operator.");
+      // LCOV_EXCL_STOP
   }
   os << direction.dimension();
   return os;

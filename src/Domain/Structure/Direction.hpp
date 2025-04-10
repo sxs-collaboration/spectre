@@ -45,10 +45,16 @@ class Direction {
   static Direction<VolumeDim> self();
 
   /// The dimension of the Direction
-  size_t dimension() const { return static_cast<uint8_t>(axis()); }
+  size_t dimension() const {
+    ASSERT(bit_field_ != 0, "Cannot use an uninitialized Direction");
+    return static_cast<uint8_t>(axis());
+  }
 
   /// The Axis of the Direction
-  Axis axis() const { return static_cast<Axis>(bit_field_ bitand axis_mask); }
+  Axis axis() const {
+    ASSERT(bit_field_ != 0, "Cannot use an uninitialized Direction");
+    return static_cast<Axis>(bit_field_ bitand axis_mask);
+  }
 
   /// The side of the Direction
   Side side() const { return static_cast<Side>(bit_field_ bitand side_mask); }
@@ -165,6 +171,7 @@ inline Direction<VolumeDim> Direction<VolumeDim>::upper_zeta() {
 
 template <size_t VolumeDim>
 inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const {
+  ASSERT(bit_field_ != 0, "Cannot use an uninitialized Direction");
   return Direction<VolumeDim>(axis(), ::opposite(side()));
 }
 

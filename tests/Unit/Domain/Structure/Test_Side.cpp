@@ -12,6 +12,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Side", "[Domain][Unit]") {
   Side side_lower = Side::Lower;
   CHECK(opposite(side_lower) == Side::Upper);
   CHECK(opposite(opposite(side_lower)) == Side::Lower);
+  CHECK(opposite(Side::Self) == Side::Self);
   CHECK(get_output(side_lower) == "Lower");
   CHECK(get_output(Side::Upper) == "Upper");
+  CHECK(get_output(Side::Uninitialized) == "Uninitialized");
+  CHECK(get_output(Side::Self) == "Self");
+  CHECK_THROWS_WITH(opposite(Side::Uninitialized),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot get the opposite of Side::Uninitialized"));
 }

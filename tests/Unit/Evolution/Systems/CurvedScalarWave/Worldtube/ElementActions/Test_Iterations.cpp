@@ -211,11 +211,11 @@ void test_iterations(const size_t max_iterations) {
     std::vector<ElementId<Dim>> non_abutting_element_ids{};
 
     for (const auto& element_id : element_ids) {
-      const auto& my_block = blocks.at(element_id.block_id());
       auto element = domain::Initialization::create_initial_element(
-          element_id, my_block, initial_refinements);
+          element_id, blocks, initial_refinements);
       auto mesh = domain::Initialization::create_initial_mesh(
           initial_extents, element, quadrature);
+      const auto& my_block = blocks.at(element_id.block_id());
       const ElementMap element_map(element_id,
                                    my_block.stationary_map().get_clone());
       const auto logical_coords = logical_coordinates(mesh);

@@ -285,9 +285,8 @@ struct InitializeElement {
     const auto& initial_extents = db::get<domain::Tags::InitialExtents<1>>(box);
     const auto& initial_refinement =
         db::get<domain::Tags::InitialRefinementLevels<1>>(box);
-    const auto& block = domain.blocks()[element_id.block_id()];
     auto element = domain::Initialization::create_initial_element(
-        element_id, block, initial_refinement);
+        element_id, domain.blocks(), initial_refinement);
     auto mesh = domain::Initialization::create_initial_mesh(
         initial_extents, element,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));

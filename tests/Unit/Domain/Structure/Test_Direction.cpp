@@ -139,17 +139,6 @@ void test_helper_functions() {
   auto lower_zeta_3 = Direction<3>::lower_zeta();
   CHECK(lower_zeta_3.axis() == Direction<3>::Axis::Zeta);
   CHECK(lower_zeta_3.side() == Side::Lower);
-
-#ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(
-      Direction<3>(0, Side::Uninitialized).sign(),
-      Catch::Matchers::ContainsSubstring(
-          "sign() is only defined for Side::Lower and Side::Upper"));
-  CHECK_THROWS_WITH(
-      Direction<3>(0, Side::Self).sign(),
-      Catch::Matchers::ContainsSubstring(
-          "sign() is only defined for Side::Lower and Side::Upper"));
-#endif
 }
 
 void test_std_hash() {
@@ -240,6 +229,48 @@ void test_output() {
   auto lower_zeta_3 = Direction<3>(2, Side::Lower);
   CHECK(get_output(lower_zeta_3) == "-2");
 }
+
+template <size_t Dim>
+void test_uninitialized() {
+  const Direction<Dim> uninitialized{};
+  CHECK(uninitialized.side() == Side::Uninitialized);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(uninitialized.dimension(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use an uninitialized Direction"));
+  CHECK_THROWS_WITH(uninitialized.axis(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use an uninitialized Direction"));
+  CHECK_THROWS_WITH(
+      uninitialized.sign(),
+      Catch::Matchers::ContainsSubstring(
+          "sign() is only defined for Side::Lower and Side::Upper"));
+  CHECK_THROWS_WITH(uninitialized.opposite(),
+                    Catch::Matchers::ContainsSubstring(
+                        "Cannot use an uninitialized Direction"));
+#endif  // SPECTRE_DEBUG
+  CHECK(uninitialized.bits() == 0);
+  test_serialization(uninitialized);
+  CHECK(get_output(uninitialized) == "Uninitialized");
+}
+
+template <size_t Dim>
+void test_self() {
+  const Direction<Dim> self = Direction<Dim>::self();
+  CHECK(self.dimension() == 0);
+  CHECK(self.axis() == Direction<Dim>::Axis::Xi);
+  CHECK(self.side() == Side::Self);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      self.sign(),
+      Catch::Matchers::ContainsSubstring(
+          "sign() is only defined for Side::Lower and Side::Upper"));
+#endif  // SPECTRE_DEBUG
+  CHECK(self.opposite() == self);
+  CHECK(self.bits() == 0b00001100);
+  test_serialization(self);
+  CHECK(get_output(self) == "Self");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
@@ -251,6 +282,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
   test_std_hash();
   test_direction_hash();
   test_output();
+  test_uninitialized<1>();
+  test_uninitialized<2>();
+  test_uninitialized<3>();
+  test_self<1>();
+  test_self<2>();
+  test_self<3>();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(

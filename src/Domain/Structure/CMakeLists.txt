@@ -19,6 +19,7 @@ spectre_target_sources(
   HasBoundary.cpp
   Hypercube.cpp
   InitialElementIds.cpp
+  NeighborIsConforming.cpp
   Neighbors.cpp
   ObjectLabel.cpp
   OrientationMap.cpp
@@ -49,6 +50,7 @@ spectre_target_headers(
   IndexToSliceAt.hpp
   InitialElementIds.hpp
   MaxNumberOfNeighbors.hpp
+  NeighborIsConforming.hpp
   Neighbors.hpp
   ObjectLabel.hpp
   OrientationMap.hpp
