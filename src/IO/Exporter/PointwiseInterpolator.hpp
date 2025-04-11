@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/ElementSearchTree.hpp"
 #include "IO/Exporter/Exporter.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -212,6 +213,8 @@ struct PointwiseInterpolator {
   domain::FunctionsOfTimeMap functions_of_time_;
   // Outer vector is the source data file
   std::vector<std::vector<ElementId<Dim>>> element_ids_;
+  std::vector<std::map<size_t, domain::ElementSearchTree<Dim>>>
+      element_search_trees_;
   std::vector<
       std::unordered_map<ElementId<Dim>, std::tuple<Mesh<Dim>, size_t, size_t>>>
       meshes_;
