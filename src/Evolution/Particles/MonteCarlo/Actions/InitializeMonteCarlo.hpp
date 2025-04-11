@@ -200,7 +200,8 @@ struct InitializeMCTags {
           mesh.slice_away(direction.dimension()).extents();
       size_t sliced_mesh_size_with_ghost_zone = 1;
       for (size_t d = 0; d < dim - 1; d++) {
-        sliced_mesh_size_with_ghost_zone *= sliced_mesh_extents[d];
+        sliced_mesh_size_with_ghost_zone *= ( sliced_mesh_extents[d]
+                                             + 2 * num_ghost_zones );
       }
       const DataVector zero_dv_ghost_zones(sliced_mesh_size_with_ghost_zone,
                                            0.0);
