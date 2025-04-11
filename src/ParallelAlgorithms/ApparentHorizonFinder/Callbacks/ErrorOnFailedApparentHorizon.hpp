@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -57,12 +58,16 @@ struct ErrorOnFailedApparentHorizon {
         }
         ERROR("Apparent horizon finder "
               << pretty_type::name<InterpolationTargetTag>()
-              << " failed, reason = " << failure_reason << os.str());
+              << " failed. Number of interpolation retries: "
+              << db::get<ah::Tags::FailedInterpolationIterations>(box)
+              << ", reason = " << failure_reason << os.str());
       }
     }
     ERROR("Apparent horizon finder "
           << pretty_type::name<InterpolationTargetTag>()
-          << " failed, reason = " << failure_reason << " at time "
+          << " failed. Number of interpolation retries: "
+          << db::get<ah::Tags::FailedInterpolationIterations>(box)
+          << ", reason = " << failure_reason << " at time "
           << InterpolationTarget_detail::get_temporal_id_value(temporal_id));
   }
 };
