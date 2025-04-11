@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "ControlSystem/Actions/GridCenters.hpp"
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Actions/LimitTimeStep.hpp"
 #include "ControlSystem/Component.hpp"
@@ -470,6 +471,8 @@ struct GhValenciaDivCleanTemplateBase<
           ::Tags::PointwiseL2NormCompute<gh::Tags::FConstraint<DataVector, 3>>,
           ::Tags::PointwiseL2NormCompute<
               gh::Tags::GaugeH<DataVector, volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              gh::Tags::ConstraintEnergy<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<gh::Tags::Phi<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
               ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
@@ -887,6 +890,16 @@ struct GhValenciaDivCleanTemplateBase<
                   evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
                   PhaseControl::Actions::ExecutePhaseChange>>,
+
+          tmpl::conditional_t<
+              UseControlSystems,
+              Parallel::PhaseActions<
+                  Parallel::Phase::DisableRotationControl,
+                  tmpl::list<
+                      control_system::Actions::SwitchGridRotationToSettle,
+                      Parallel::Actions::TerminatePhase>>,
+              tmpl::list<>>,
+
           Parallel::PhaseActions<
               Parallel::Phase::PostFailureCleanup,
               tmpl::list<Actions::RunEventsOnFailure<Tags::Time>,

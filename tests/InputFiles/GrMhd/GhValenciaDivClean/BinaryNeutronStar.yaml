@@ -24,10 +24,25 @@ Evolution:
   MinimumTimeStep: 1e-7
   # Control systems only work with AdamsBashforth
   TimeStepper:
-    AdamsBashforth:
+    AdamsMoultonPcMonotonic:
       Order: 3
 
 PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          # Trigger checkpoint often enough so it triggers within
+          # the last 30 minutes of the run
+          Interval: 20
+          Offset: 0
+    PhaseChanges:
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 119.0
+  - Trigger:
+      SeparationLessThan:
+        Value: &RotationOffSeparation 5
+    PhaseChanges:
+      - VisitAndReturn(DisableRotationControl):
 
 # Values taken from the Xcts/HeadOnBns.yaml input file
 EquationOfState: &eos
@@ -41,40 +56,72 @@ EquationOfState: &eos
 DomainCreator:
   BinaryCompactObject:
     ObjectA:
-      CartesianCubeAtXCoord: &XCoordA 20
+      CartesianCubeAtXCoord: &XCoordA 14
     ObjectB:
-      CartesianCubeAtXCoord: &XCoordB -20
+      CartesianCubeAtXCoord: &XCoordB -14
     CenterOfMassOffset: [0., 0.]
     Envelope:
-      Radius: 100.0
-      RadialDistribution: Linear
+      Radius: 50.0
+      # Radial distribution is logarithmic to transition from grid point
+      # spacing around the excisions to the grid point spacing in the
+      # outer shell
+      RadialDistribution: Logarithmic
     OuterShell:
-      OpeningAngle: 90
-      Radius: 250.0
-      RadialPartitioning: []
-      RadialDistribution: Linear
+      Radius: 605.0
+      # Radial distribution is linear to resolve gravitational waves
+      RadialDistribution: [Linear, Linear, Linear]
+      RadialPartitioning: [80.0, 125.0]
+      OpeningAngle: 120.0
       BoundaryCondition:
         ConstraintPreservingFreeOutflow:
           Type: ConstraintPreservingPhysical
-    UseEquiangularMap: False
+    UseEquiangularMap: True
     CubeScale: 1.0
     InitialRefinement:
       ObjectA: [4, 4, 4]
       ObjectB: [4, 4, 4]
-      Envelope: [3, 3, 3]
-      OuterShell0: [2 ,2 ,3]
-    InitialGridPoints: 5
+      OuterShell0: [2, 2, 0]
+      OuterShell1: [1, 1, 0]
+      OuterShell2: [0, 0, 3]
+      EnvelopeUpperZLeft:  [3, 3, 1]
+      EnvelopeUpperZRight: [3, 3, 1]
+      EnvelopeLowerZLeft:  [3, 3, 1]
+      EnvelopeLowerZRight: [3, 3, 1]
+      EnvelopeUpperYLeft:  [3, 3, 1]
+      EnvelopeUpperYRight: [3, 3, 1]
+      EnvelopeLowerYLeft:  [3, 3, 1]
+      EnvelopeLowerYRight: [3, 3, 1]
+      EnvelopeUpperX:      [3, 3, 0]
+      EnvelopeLowerX:      [3, 3, 0]
+
+    InitialGridPoints:
+      ObjectA: [5, 5, 5]
+      ObjectB: [5, 5, 5]
+      Envelope: [8, 8, 10]
+      OuterShell0: [9, 9, 12]
+      OuterShell1: [11, 11, 14]
+      OuterShell2UpperZLeft:  [12, 12, 14]
+      OuterShell2UpperZRight: [12, 12, 14]
+      OuterShell2LowerZLeft:  [12, 12, 14]
+      OuterShell2LowerZRight: [12, 12, 14]
+      OuterShell2UpperYLeft:  [12, 12, 14]
+      OuterShell2UpperYRight: [12, 12, 14]
+      OuterShell2LowerYLeft:  [12, 12, 14]
+      OuterShell2LowerYRight: [12, 12, 14]
+      OuterShell2UpperX: [13, 13, 14]
+      OuterShell2LowerX: [13, 13, 14]
+
     TimeDependentMaps:
       InitialTime: 0.0
+      SkewMap: None
       ExpansionMap:
         InitialValues: [1.0, 0.0, 0.0]
         AsymptoticVelocityOuterBoundary: -1.0e-6
         DecayTimescaleOuterBoundary: 50.0
       RotationMap:
-        InitialAngularVelocity: [0.0, 0.0, 0.00826225]
+        InitialAngularVelocity: [0.0, 0.0, 0.00801722]
       TranslationMap:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-      SkewMap: None
       ShapeMapA: None
       ShapeMapB: None
       GridCenters:
@@ -172,7 +219,7 @@ SpatialDiscretization:
     ProductUpwindPenaltyAndHll:
       UpwindPenalty:
       Hll:
-        MagneticFieldMagnitudeForHydro: 1.0e-30
+        MagneticFieldMagnitudeForHydro: 1.0e-16
         LightSpeedDensityCutoff: 1.0e-8
   DiscontinuousGalerkin:
     Formulation: StrongInertial
@@ -186,12 +233,12 @@ SpatialDiscretization:
           Delta0: 1.0e-7
           Epsilon: 1.0e-3
         FdToDgTci:
-          NumberOfStepsBetweenTciCalls: 1
-          MinTciCallsAfterRollback: 1
-          MinimumClearTcis: 1
+          NumberOfStepsBetweenTciCalls: 20
+          MinTciCallsAfterRollback: 10
+          MinimumClearTcis: 2
         AlwaysUseSubcells: false
         UseHalo: false
-        OnlyDgBlocksAndGroups: None
+        OnlyDgBlocksAndGroups: [Envelope, OuterShell0, OuterShell1, OuterShell2]
       SubcellToDgReconstructionMethod: DimByDim
       FiniteDifferenceDerivativeOrder: 2
     TciOptions:
@@ -210,12 +257,14 @@ SpatialDiscretization:
         LowOrderReconstructor: MonotonisedCentral
         AtmosphereTreatment: Never
     FilterOptions:
-      SpacetimeDissipation: 0.1
+      SpacetimeDissipation: 0.3
 
 Filtering:
   ExpFilter0:
-    Alpha: 36
-    HalfPower: 64
+    Alpha: 64
+    # Half power was determined to filter only the last term up to N = 19
+    # since we support up to 20 gridpoints.
+    HalfPower: 420
     Enable: true
     BlocksToFilter: All
 
@@ -230,7 +279,7 @@ EventsAndTriggersAtSlabs:
           DelayChange: 0
           StepChoosers:
             - Cfl:
-                SafetyFactor: &CflSafetyFactor 0.5
+                SafetyFactor: &CflSafetyFactor 0.4
   # Update time step size regularly.
   - Trigger:
       Slabs:
@@ -243,23 +292,32 @@ EventsAndTriggersAtSlabs:
           StepChoosers:
             - Cfl:
                 SafetyFactor: *CflSafetyFactor
+
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 50
+          Interval: 120
           Offset: 0
     Events:
       - BondiSachsInterpolation
+
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 1
+          Interval: 10
           Offset: 0
     Events:
       - ObserveTimeStep:
             SubfileName: TimeSteps
             PrintTimeToTerminal: True
             ObservePerCore: False
+
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2000
+          Offset: 0
+    Events:
       - ObserveNorms:
           SubfileName: MaxDensity
           TensorsToObserve:
@@ -272,6 +330,22 @@ EventsAndTriggersAtSlabs:
           - Name: PointwiseL2Norm(GaugeConstraint)
             NormType: L2Norm
             Components: Sum
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(ConstraintEnergy)
+            NormType: L2Norm
+            Components: Sum
+
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2000
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: MetricDiagnostics
+          TensorsToObserve:
           - Name: DetSpatialMetric
             NormType: Max
             Components: Individual
@@ -296,37 +370,49 @@ EventsAndTriggersAtSlabs:
           - Name: TildeDUnboundUtCriterion
             NormType: VolumeIntegral
             Components: Individual
-          - Name: MassWeightedCoordsMask(None)
-            NormType: VolumeIntegral
-            Components: Individual
-          - Name: MassWeightedCoordsMask(NegativeXOnly)
-            NormType: VolumeIntegral
-            Components: Individual
-          - Name: MassWeightedCoordsMask(PositiveXOnly)
-            NormType: VolumeIntegral
-            Components: Individual
-          - Name: TildeDMask(NegativeXOnly)
-            NormType: VolumeIntegral
-            Components: Individual
-          - Name: TildeDMask(PositiveXOnly)
-            NormType: VolumeIntegral
-            Components: Individual
+
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2000
+          Offset: 0
+    Events:
       - ObserveFields:
-          SubfileName: VolumeData
+          SubfileName: VolumeSpacetimeData
           VariablesToObserve:
             - SpacetimeMetric
-            - Lapse
-            - Shift
             - DetSpatialMetric
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+          BlocksToObserve: All
+      - ObserveFields:
+          SubfileName: VolumeHydroData
+          VariablesToObserve:
             - RestMassDensity
-            - Pressure
-            - SpatialVelocity
-            - LorentzFactor
-            - SpecificInternalEnergy
             - Temperature
-            - MagneticField
             - ElectronFraction
+            - SpatialVelocity
+            - MagneticField
             - DivergenceCleaningField
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+          BlocksToObserve: [ObjectA, ObjectB]
+
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 0
+    Events:
+      - ObserveTimeStepVolume:
+          SubfileName: TimeStepSizeInVolume
+          CoordinatesFloatingPointType: Float
+          FloatingPointType: Float
+      - ObserveFields:
+          SubfileName: VolumeDiagnosticData
+          VariablesToObserve:
             - PointwiseL2Norm(GaugeConstraint)
             - PointwiseL2Norm(ThreeIndexConstraint)
             - TciStatus
@@ -334,17 +420,21 @@ EventsAndTriggersAtSlabs:
           CoordinatesFloatingPointType: Float
           FloatingPointTypes: [Float]
           BlocksToObserve: All
+
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan
-        Value: 1.5
+        Value: 6000.0 # About 9 orbits plus 1200M post-merger
     Events:
       - Completion
 
 InterpolationTargets:
   BondiSachsInterpolation:
     LMax: 16
-    Radius: [100, 150, 200]
+    # So far the R=200M_sun seems to be best. Could be that we need a bigger
+    # outer boundary or that BBH and BNS just are sufficiently different that
+    # even a closer worldtube may do better.
+    Radius: [100, 150, 200, 250, 300, 400,  500]
     Center: [0, 0, 0]
     AngularOrdering: Cce
 
@@ -390,6 +480,9 @@ EventsRunAtCleanup:
 
 # Control systems are disabled by default
 ControlSystems:
+  DisableRotationWhen:
+    DisableAtSeparation: *RotationOffSeparation
+    RotationDecayTimescale: 60.0
   WriteDataToDisk: true
   MeasurementsPerUpdate: 4
   Verbosity: Silent
@@ -401,7 +494,7 @@ ControlSystems:
     Controller:
       UpdateFraction: 0.03
     TimescaleTuner:
-      InitialTimescales: [0.2, 0.2, 0.2]
+      InitialTimescales: [10.0, 10.0, 10.0]
       MinTimescale: 1.0e-2
       MaxTimescale: 10.0
       IncreaseThreshold: 2.5e-4
@@ -421,7 +514,7 @@ ControlSystems:
       MinTimescale: 1.0e-2
       MaxTimescale: 20.0
       IncreaseThreshold: 2.5e-3
-      DecreaseThreshold: 1.0e-2
+      DecreaseThreshold: 2.5e-2
       IncreaseFactor: 1.01
       DecreaseFactor: 0.98
     ControlError:
@@ -431,6 +524,7 @@ InitialData:
   #   DataDirectory: "/path/to/EvID"
   #   EquationOfState: *eos
   #   DensityCutoff: *AtmosphereDensityCutoff
+  #   AtmosphereDensity: *AtmosphereDensity
   #   ElectronFraction: 0.15
   NumericInitialData:
     FileGlob: BnsVolume*.h5

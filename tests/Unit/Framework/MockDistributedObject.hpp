@@ -443,7 +443,8 @@ class MockDistributedObject {
 
   /// Invoke the next action in the action list for the current phase,
   /// returning whether the action was ready.
-  bool next_action_if_ready();
+  template <typename CatchMatcher = int>
+  bool next_action_if_ready(const CatchMatcher* matcher = nullptr);
 
   /// Defines the methods used for invoking threaded and simple actions. Since
   /// the two cases are so similar we use a macro to reduce the amount of
@@ -701,8 +702,9 @@ class MockDistributedObject {
     }
   }
 
-  template <typename PhaseDepActions, size_t... Is>
-  bool next_action_impl(std::index_sequence<Is...> /*meta*/);
+  template <typename PhaseDepActions, typename CatchMatcher, size_t... Is>
+  bool next_action_impl(const CatchMatcher* matcher,
+                        std::index_sequence<Is...> /*meta*/);
 
   bool terminate_{false};
   bool halt_algorithm_until_next_phase_{false};
@@ -750,20 +752,22 @@ void MockDistributedObject<Component>::next_action() {
 }
 
 template <typename Component>
-bool MockDistributedObject<Component>::next_action_if_ready() {
+template <typename CatchMatcher>
+bool MockDistributedObject<Component>::next_action_if_ready(
+    const CatchMatcher* const matcher) {
   bool found_matching_phase = false;
   bool was_ready = false;
-  const auto invoke_for_phase =
-      [this, &found_matching_phase, &was_ready](auto phase_dep_v) {
-        using PhaseDep = typename decltype(phase_dep_v)::type;
-        constexpr Parallel::Phase phase = PhaseDep::phase;
-        using actions_list = typename PhaseDep::action_list;
-        if (phase_ == phase) {
-          found_matching_phase = true;
-          was_ready = this->template next_action_impl<PhaseDep>(
-              std::make_index_sequence<tmpl::size<actions_list>::value>{});
-        }
-      };
+  const auto invoke_for_phase = [this, &found_matching_phase, &matcher,
+                                 &was_ready](auto phase_dep_v) {
+    using PhaseDep = typename decltype(phase_dep_v)::type;
+    constexpr Parallel::Phase phase = PhaseDep::phase;
+    using actions_list = typename PhaseDep::action_list;
+    if (phase_ == phase) {
+      found_matching_phase = true;
+      was_ready = this->template next_action_impl<PhaseDep>(
+          matcher, std::make_index_sequence<tmpl::size<actions_list>::value>{});
+    }
+  };
   tmpl::for_each<phase_dependent_action_lists>(invoke_for_phase);
   if (not found_matching_phase) {
     ERROR("Could not find any actions in the current phase ("
@@ -774,9 +778,9 @@ bool MockDistributedObject<Component>::next_action_if_ready() {
 }
 
 template <typename Component>
-template <typename PhaseDepActions, size_t... Is>
+template <typename PhaseDepActions, typename CatchMatcher, size_t... Is>
 bool MockDistributedObject<Component>::next_action_impl(
-    std::index_sequence<Is...> /*meta*/) {
+    const CatchMatcher* const matcher, std::index_sequence<Is...> /*meta*/) {
   if (UNLIKELY(performing_action_)) {
     ERROR(
         "Cannot call an Action while already calling an Action on the same "
@@ -792,8 +796,8 @@ bool MockDistributedObject<Component>::next_action_impl(
   // to only evaluate one per call.
   bool already_did_an_action = false;
   bool was_ready = true;
-  const auto helper = [this, &already_did_an_action,
-                       &was_ready](auto iteration) {
+  const auto helper = [this, &already_did_an_action, &was_ready,
+                       &matcher](auto iteration) {
     constexpr size_t iter = decltype(iteration)::value;
     if (already_did_an_action or algorithm_step_ != iter) {
       return;
@@ -804,7 +808,21 @@ bool MockDistributedObject<Component>::next_action_impl(
 
     performing_action_ = true;
     ++algorithm_step_;
-    if (not invoke_iterable_action<this_action, actions_list>(box_)) {
+    if (matcher != nullptr) {
+      if constexpr (not std::is_same_v<CatchMatcher, int>) {
+        CHECK_THROWS_WITH(
+            (invoke_iterable_action<this_action, actions_list>(box_)),
+            *matcher);
+      } else {
+        ERROR(
+            "The matcher type 'int' is a placeholder and the matcher must be a "
+            "nullptr when the placeholder is used, but in this case the "
+            "matcher pointer was not null. This is likely an internal bug, so "
+            "please file an issue.");
+      }
+      was_ready = false;
+      --algorithm_step_;
+    } else if (not invoke_iterable_action<this_action, actions_list>(box_)) {
       was_ready = false;
       --algorithm_step_;
     }

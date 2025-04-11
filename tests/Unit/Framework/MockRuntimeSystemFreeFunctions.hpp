@@ -7,7 +7,9 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <random>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -269,15 +271,29 @@ void next_action(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
   runner->template next_action<Component>(array_index);
 }
 
+/// @{
 /// Invoke the next action in the ActionList on the parallel component
 /// `Component` on the component labeled by `array_index`, returning whether
 /// it was ready.
+///
+/// If a Catch matcher is specified then it is assumed that the first action
+/// call should throw an exception. Essentially, the action invocation is
+/// wrapped in `CHECK_THROWS_WITH(invoke, matcher)`
 template <typename Component, typename Metavariables>
 bool next_action_if_ready(
     const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
     const typename Component::array_index& array_index) {
   return runner->template next_action_if_ready<Component>(array_index);
 }
+
+template <typename Component, typename Metavariables, typename CatchMatcher>
+bool next_action_if_ready(
+    const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
+    const typename Component::array_index& array_index,
+    const CatchMatcher& matcher) {
+  return runner->template next_action_if_ready<Component>(array_index, matcher);
+}
+/// @}
 
 /// Runs the simple action `Action` on the `array_index`th element of the
 /// parallel component `Component`.

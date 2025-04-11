@@ -3,6 +3,7 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
+  Actions/Test_GridCenters.cpp
   Actions/Test_Initialization.cpp
   Actions/Test_InitializeMeasurements.cpp
   Actions/Test_LimitTimeStep.cpp
