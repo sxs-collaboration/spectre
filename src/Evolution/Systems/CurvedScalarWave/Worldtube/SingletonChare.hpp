@@ -23,6 +23,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
@@ -113,7 +114,8 @@ struct WorldtubeSingleton {
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
           tmpl::list<step_actions, Actions::ObserveWorldtubeSolution,
-                     ::Actions::AdvanceTime>>>;
+                     ::Actions::AdvanceTime,
+                     PhaseControl::Actions::ExecutePhaseChange>>>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

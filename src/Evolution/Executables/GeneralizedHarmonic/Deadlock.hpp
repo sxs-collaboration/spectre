@@ -35,7 +35,8 @@ struct ObserverWriter;
 
 namespace gh::deadlock {
 template <typename DgElementArray, typename ControlComponents,
-          typename InterpolationTargetTags, typename Metavariables>
+          typename InterpolationTargetTags, bool HasInterpolator = true,
+          typename Metavariables>
 void run_deadlock_analysis_simple_actions(
     Parallel::GlobalCache<Metavariables>& cache,
     const std::vector<std::string>& deadlocked_components) {
@@ -58,32 +59,39 @@ void run_deadlock_analysis_simple_actions(
                                               "/mutable_cache_callbacks.out");
   }
 
-  Parallel::simple_action<::deadlock::PrintInterpolator>(
-      Parallel::get_parallel_component<intrp::Interpolator<Metavariables>>(
-          cache),
-      deadlock_dir);
+  if constexpr (HasInterpolator) {
+    Parallel::simple_action<::deadlock::PrintInterpolator>(
+        Parallel::get_parallel_component<intrp::Interpolator<Metavariables>>(
+            cache),
+        deadlock_dir);
+  }
 
-  const std::string intrp_target_file =
-      deadlock_dir + "/interpolation_targets.out";
-  tmpl::for_each<InterpolationTargetTags>(
-      [&cache, &intrp_target_file](const auto tag_v) {
-        using TargetTag = tmpl::type_from<decltype(tag_v)>;
+  if constexpr (tmpl::size<InterpolationTargetTags>::value > 0) {
+    const std::string intrp_target_file =
+        deadlock_dir + "/interpolation_targets.out";
+    tmpl::for_each<InterpolationTargetTags>(
+        [&cache, &intrp_target_file](const auto tag_v) {
+          using TargetTag = tmpl::type_from<decltype(tag_v)>;
 
-        Parallel::simple_action<::deadlock::PrintInterpolationTarget>(
-            Parallel::get_parallel_component<
-                intrp::InterpolationTarget<Metavariables, TargetTag>>(cache),
-            intrp_target_file);
-      });
+          Parallel::simple_action<::deadlock::PrintInterpolationTarget>(
+              Parallel::get_parallel_component<
+                  intrp::InterpolationTarget<Metavariables, TargetTag>>(cache),
+              intrp_target_file);
+        });
+  }
 
   if (alg::count(deadlocked_components, pretty_type::name<DgElementArray>()) ==
       1) {
-    tmpl::for_each<ControlComponents>([&cache,
-                                       &deadlock_dir](auto component_v) {
-      using component = tmpl::type_from<decltype(component_v)>;
-      Parallel::simple_action<control_system::Actions::PrintCurrentMeasurement>(
-          Parallel::get_parallel_component<component>(cache),
-          deadlock_dir + "/control_systems.out");
-    });
+    if constexpr (tmpl::size<ControlComponents>::value > 0) {
+      tmpl::for_each<ControlComponents>(
+          [&cache, &deadlock_dir](auto component_v) {
+            using component = tmpl::type_from<decltype(component_v)>;
+            Parallel::simple_action<
+                control_system::Actions::PrintCurrentMeasurement>(
+                Parallel::get_parallel_component<component>(cache),
+                deadlock_dir + "/control_systems.out");
+          });
+    }
 
     const std::string element_array_file =
         deadlock_dir + "/dg_element_array.out";

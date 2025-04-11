@@ -22,6 +22,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/Executables/GeneralizedHarmonic/Deadlock.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -340,6 +341,14 @@ struct EvolutionMetavars {
     using element_registrars =
         tmpl::map<tmpl::pair<dg_element_array, dg_registration_list>>;
   };
+
+  static void run_deadlock_analysis_simple_actions(
+      Parallel::GlobalCache<EvolutionMetavars>& cache,
+      const std::vector<std::string>& deadlocked_components) {
+    gh::deadlock::run_deadlock_analysis_simple_actions<
+        dg_element_array, tmpl::list<>, interpolation_target_tags, false>(
+        cache, deadlocked_components);
+  }
 
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
