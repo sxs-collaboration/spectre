@@ -24,7 +24,7 @@ def eccentricity_control(
     id_input_file_path: Union[str, Path],
     pipeline_dir: Union[str, Path],
     # Eccentricity control parameters
-    tmin: Optional[float] = 500,
+    tmin: Optional[float] = None,
     tmax: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
     ecc_params_output_file: Optional[Union[str, Path]] = None,
@@ -41,13 +41,10 @@ def eccentricity_control(
 
     - Reads orbital parameters from the 'id_input_file_path'.
 
-    - Sets the time boundaries for the eccentricity reduction process, starting
-      at 500 and using all available data by default, with the option to adjust
-      'tmin' and 'tmax' dynamically.
-
     - Get the new orbital parameters by calling the function
       'eccentricity_control_params' in
       'spectre.Pipelines.EccentricityControl.EccentricityControl'.
+      See this function for default values and more details on the arguments.
 
     - If the eccentricity is below a threshold, it prints "Success" and
       indicates that the simulation can continue.

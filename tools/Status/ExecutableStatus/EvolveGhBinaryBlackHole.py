@@ -271,12 +271,19 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         @st.fragment
         def render_eccentricity():
             if st.checkbox("Show eccentricity"):
-                col_tmin, col_tmax = st.columns(2)
+                if st.checkbox("Set time bounds"):
+                    col_tmin, col_tmax = st.columns(2)
+                    tmin = col_tmin.number_input("tmin", value=500, min_value=0)
+                    tmax = col_tmax.number_input(
+                        "tmax", value=1500, min_value=0
+                    )
+                else:
+                    tmin, tmax = None, None
                 ecc, _, _ = eccentricity_control_params(
                     reduction_files,
                     metadata["Next"]["With"]["id_input_file_path"],
-                    tmin=col_tmin.number_input("tmin", value=600, min_value=0),
-                    tmax=col_tmax.number_input("tmax", value=2000, min_value=0),
+                    tmin=tmin,
+                    tmax=tmax,
                 )
                 st.metric("Eccentricity", f"{ecc:e}")
 

@@ -76,9 +76,11 @@ def eccentricity_control_params(
       subfile_name_ahb_quantities: (Optional) Name of the subfile containing the
         quantities measured on apparent horizon B (masses and spins).
       tmin: (Optional) The lower time bound for the eccentricity estimate.
-        Used to remove initial junk and transients in the data.
+        Used to remove initial junk and transients in the data. If unspecified,
+        uses SpEC's 'OmegaDotEccRemoval.FindTmin' to estimate it.
       tmax: (Optional) The upper time bound for the eccentricity estimate.
         A reasonable value would include 2-3 orbits.
+        Default is '500 + 5 * pi / Omega0'.
       plot_output_dir: (Optional) Output directory for plots.
       ecc_params_output_file: (Optional) Output file for the results.
 
@@ -89,6 +91,7 @@ def eccentricity_control_params(
     try:
         from OmegaDotEccRemoval import (
             ComputeOmegaAndDerivsFromFile,
+            FindTmin,
             performAllFits,
         )
     except ImportError:
@@ -121,12 +124,17 @@ def eccentricity_control_params(
     traj_A, traj_B = import_A_and_B(
         h5_files, subfile_name_aha_trajectories, subfile_name_ahb_trajectories
     )
-    if tmin is not None:
-        traj_A = traj_A[traj_A[:, 0] >= tmin]
-        traj_B = traj_B[traj_B[:, 0] >= tmin]
-    if tmax is not None:
-        traj_A = traj_A[traj_A[:, 0] <= tmax]
-        traj_B = traj_B[traj_B[:, 0] <= tmax]
+    t, Omega, dOmegadt, OmegaVec = ComputeOmegaAndDerivsFromFile(traj_A, traj_B)
+
+    # Set time bounds if not provided
+    if tmin is None:
+        tmin = max(FindTmin(t, dOmegadt, 500), t[0])
+    if tmax is None:
+        tmax = min(500 + 5 * np.pi / Omega0, t[-1])
+    logger.info(
+        "Estimating eccentricity from trajectory data in time range"
+        f" {tmin:.3f} to {tmax:.3f}."
+    )
 
     # Load horizon parameters from evolution data at reference time (tmin)
     def get_horizons_data(reductions_file):
@@ -147,11 +155,9 @@ def eccentricity_control_params(
             return pd.concat(horizons_data, axis=1)
 
     horizon_params = pd.concat(map(get_horizons_data, h5_files))
-    if tmin is not None:
-        horizon_params = horizon_params[horizon_params.index >= tmin]
     if horizon_params.empty:
         logger.warning(
-            "No horizon data found in time range. "
+            "No horizon data found. "
             "Using initial data masses and ignoring spins."
         )
         mA = target_params["MassA"]
@@ -181,7 +187,6 @@ def eccentricity_control_params(
 
     # Call into SpEC's OmegaDotEccRemoval.py
     # Despite the name, this SpEC function takes arrays of data
-    t, Omega, dOmegadt, OmegaVec = ComputeOmegaAndDerivsFromFile(traj_A, traj_B)
     eccentricity, delta_Omega0, delta_adot0, delta_D0, ecc_std_dev, _ = (
         performAllFits(
             XA=traj_A,
@@ -197,9 +202,9 @@ def eccentricity_control_params(
             IDparam_omega0=Omega0,
             IDparam_adot0=adot0,
             IDparam_D0=D0,
-            tmin=tmin or 0.0,
-            tmax=tmax or np.inf,
-            tref=tmin or 0.0,
+            tmin=tmin,
+            tmax=tmax,
+            tref=tmin,
             opt_freq_filter=True,
             opt_varpro=True,
             opt_type="bbh",
