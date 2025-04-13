@@ -2,7 +2,6 @@
 
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
-
 """Tools to generate XDMF files that ParaView and VisIt can read.
 
 The XDMF file format is documented here:
@@ -13,7 +12,7 @@ import logging
 import os
 import sys
 import xml.etree.ElementTree as ET
-from typing import Optional
+from typing import List, Optional, Sequence, Tuple
 
 import click
 import h5py
@@ -281,6 +280,26 @@ def _xmf_grid(
     return xmf_grid
 
 
+def get_files_with_subfile(
+    h5file_names: Sequence[str], subfile_name: str
+) -> List[Tuple[h5py.File, str]]:
+    """Get the h5files and their name that contain a subfile with the name
+    subfile_name
+
+        \f
+    Arguments:
+      h5file_names: List of H5 file names of files to open and check if they
+        have the subfile.
+      subfile_name: The name of the subfile to check for.
+    """
+    result = list()
+    for filename in h5file_names:
+        h5file = h5py.File(filename, "r")
+        if subfile_name in h5file:
+            result.append((h5file, filename))
+    return result
+
+
 def generate_xdmf(
     h5files,
     output: str,
@@ -319,11 +338,12 @@ def generate_xdmf(
       use_tetrahedral_connectivity: Optional. Use "tetrahedral_connectivity".
         Default: False
     """
-    h5files = [(h5py.File(filename, "r"), filename) for filename in h5files]
+    h5file_names = h5files
 
     if not subfile_name:
         subfiles = available_subfiles(
-            (h5file for h5file, _ in h5files), extension=".vol"
+            h5file_names,
+            extension=".vol",
         )
         if len(subfiles) == 1:
             subfile_name = subfiles[0]
@@ -341,6 +361,20 @@ def generate_xdmf(
 
     if not subfile_name.endswith(".vol"):
         subfile_name += ".vol"
+
+    h5files = get_files_with_subfile(h5file_names, subfile_name)
+
+    if len(h5files) == 0:
+        raise ValueError(
+            f"Could not open subfile name '{subfile_name}' in any h5 "
+            f"files, {h5file_names}. Available subfiles: "
+            + str(
+                available_subfiles(
+                    h5file_names,
+                    extension=".vol",
+                )
+            )
+        )
 
     # Prepare XDMF document by building up an XML tree
     xmf_root = ET.Element("Xdmf", Version="2.0")
