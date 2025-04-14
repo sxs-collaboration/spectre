@@ -91,6 +91,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TciOnDgGrid.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TciOnFdGrid.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/TimeDerivative.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/ZeroTimeDerivatives.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
@@ -761,6 +762,10 @@ struct GhValenciaDivCleanTemplateBase<
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           system, volume_dim, false, use_dg_element_collection>,
+      tmpl::conditional_t<
+          UseControlSystems, tmpl::list<>,
+          Actions::MutateApply<
+              grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<system>,
