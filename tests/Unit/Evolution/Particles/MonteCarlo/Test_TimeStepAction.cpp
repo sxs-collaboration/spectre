@@ -233,24 +233,7 @@ void test_advance_packets() {
   CHECK(subcell_mesh.extents()[1] == mesh_size);
   CHECK(subcell_mesh.extents()[2] == mesh_size);
   tnsr::I<DataVector, 3, Frame::ElementLogical> mesh_coordinates =
-      make_with_value<tnsr::I<DataVector, 3, Frame::ElementLogical>>(lapse,
-                                                                     0.0);
-  for (size_t iz = 0; iz < mesh_size; iz++) {
-    const double z_coord = -1.0 + (0.5 + static_cast<double>(iz)) /
-                                      static_cast<double>(mesh_size) * 2.0;
-    for (size_t iy = 0; iy < mesh_size; iy++) {
-      const double y_coord = -1.0 + (0.5 + static_cast<double>(iy)) /
-                                        static_cast<double>(mesh_size) * 2.0;
-      for (size_t ix = 0; ix < mesh_size; ix++) {
-        const double x_coord = -1.0 + (0.5 + static_cast<double>(ix)) /
-                                          static_cast<double>(mesh_size) * 2.0;
-        const size_t idx = ix + iy * mesh_size + iz * mesh_size * mesh_size;
-        mesh_coordinates.get(0)[idx] = x_coord;
-        mesh_coordinates.get(1)[idx] = y_coord;
-        mesh_coordinates.get(2)[idx] = z_coord;
-      }
-    }
-  }
+      logical_coordinates(subcell_mesh);
 
   const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>> mesh_velocity =
       std::nullopt;

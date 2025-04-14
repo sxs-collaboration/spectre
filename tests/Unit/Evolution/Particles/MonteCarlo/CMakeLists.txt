@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_EmitPackets.cpp
   Test_EvolvePackets.cpp
   Test_ImplicitMonteCarloCorrections.cpp
+  Test_InitializeAction.cpp
   Test_InterpolateOpacities.cpp
   Test_InverseJacobianInertialToFluid.cpp
   Test_NeutrinoInteractionTable.cpp
@@ -37,5 +38,6 @@ target_link_libraries(
   HydroHelpers
   Informer
   MonteCarlo
+  MonteCarloSolutions
   Time
   )
