@@ -40,6 +40,9 @@ class Cardinal {
   Cardinal(
       const Mesh<Dim>& source_mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points);
+  Cardinal(
+      const Mesh<Dim>& source_mesh,
+      const tnsr::I<double, Dim, Frame::ElementLogical>& target_point);
 
   Cardinal();
 

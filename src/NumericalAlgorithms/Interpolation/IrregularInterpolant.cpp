@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 
 namespace {
 
@@ -42,24 +43,24 @@ std::vector<double> fd_stencil(const DataVector& xi_source,
   return result;
 }
 
-template <size_t Dim>
+template <size_t Dim, typename DataType>
 Matrix interpolation_matrix(
     const Mesh<Dim>& mesh,
-    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& points);
+    const tnsr::I<DataType, Dim, Frame::ElementLogical>& points);
 
-template <>
+template <typename DataType>
 Matrix interpolation_matrix(
     const Mesh<1>& mesh,
-    const tnsr::I<DataVector, 1, Frame::ElementLogical>& points) {
+    const tnsr::I<DataType, 1, Frame::ElementLogical>& points) {
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
     auto source_xi = logical_coordinates(mesh);
     const auto number_of_source_points = mesh.number_of_grid_points();
     const DataVector xi_source(get<0>(source_xi).data(),
                                number_of_source_points);
-    const auto number_of_target_points = get<0>(points).size();
-    Matrix result(number_of_target_points, mesh.number_of_grid_points());
+    const size_t number_of_target_points = get_size(get<0>(points));
+    Matrix result(number_of_target_points, number_of_source_points);
     for (size_t p = 0; p < number_of_target_points; ++p) {
-      const double xi_target = get<0>(points)[p];
+      const double xi_target = get_element(get<0>(points), p);
       const auto stencil = fd_stencil(xi_source, xi_target);
       for (size_t i = 0; i < number_of_source_points; ++i) {
         result(p, i) = stencil[i];
@@ -72,11 +73,11 @@ Matrix interpolation_matrix(
   return Spectral::interpolation_matrix(mesh, get<0>(points));
 }
 
-template <>
+template <typename DataType>
 Matrix interpolation_matrix(
     const Mesh<2>& mesh,
-    const tnsr::I<DataVector, 2, Frame::ElementLogical>& points) {
-  const auto number_of_target_points = get<0>(points).size();
+    const tnsr::I<DataType, 2, Frame::ElementLogical>& points) {
+  const auto number_of_target_points = get_size(get<0>(points));
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
@@ -94,8 +95,8 @@ Matrix interpolation_matrix(
       }
     }
     for (size_t p = 0; p < number_of_target_points; ++p) {
-      const double xi_target = get<0>(points)[p];
-      const double eta_target = get<1>(points)[p];
+      const double xi_target = get_element(get<0>(points), p);
+      const double eta_target = get_element(get<1>(points), p);
       const auto xi_stencil = fd_stencil(xi_source, xi_target);
       const auto eta_stencil = fd_stencil(eta_source, eta_target);
       for (size_t j = 0, s = 0; j < mesh.extents(1); ++j) {
@@ -142,11 +143,11 @@ Matrix interpolation_matrix(
   return result;
 }
 
-template <>
+template <typename DataType>
 Matrix interpolation_matrix(
     const Mesh<3>& mesh,
-    const tnsr::I<DataVector, 3, Frame::ElementLogical>& points) {
-  const auto number_of_target_points = get<0>(points).size();
+    const tnsr::I<DataType, 3, Frame::ElementLogical>& points) {
+  const auto number_of_target_points = get_size(get<0>(points));
   Matrix result(number_of_target_points, mesh.number_of_grid_points());
 
   if (mesh.basis()[0] == Spectral::Basis::FiniteDifference) {
@@ -177,9 +178,9 @@ Matrix interpolation_matrix(
       }
     }
     for (size_t p = 0; p < number_of_target_points; ++p) {
-      const double xi_target = get<0>(points)[p];
-      const double eta_target = get<1>(points)[p];
-      const double zeta_target = get<2>(points)[p];
+      const double xi_target = get_element(get<0>(points), p);
+      const double eta_target = get_element(get<1>(points), p);
+      const double zeta_target = get_element(get<2>(points), p);
       const auto xi_stencil = fd_stencil(xi_source, xi_target);
       const auto eta_stencil = fd_stencil(eta_source, eta_target);
       const auto zeta_stencil = fd_stencil(zeta_source, zeta_target);
@@ -245,10 +246,16 @@ template <size_t Dim>
 Irregular<Dim>::Irregular() = default;
 
 template <size_t Dim>
-Irregular<Dim>::Irregular(const Mesh<Dim>& source_mesh,
-                          const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
-                              target_points)
+Irregular<Dim>::Irregular(
+    const Mesh<Dim>& source_mesh,
+    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points)
     : interpolation_matrix_(interpolation_matrix(source_mesh, target_points)) {}
+
+template <size_t Dim>
+Irregular<Dim>::Irregular(
+    const Mesh<Dim>& source_mesh,
+    const tnsr::I<double, Dim, Frame::ElementLogical>& target_point)
+    : interpolation_matrix_(interpolation_matrix(source_mesh, target_point)) {}
 
 template <size_t Dim>
 void Irregular<Dim>::pup(PUP::er& p) {

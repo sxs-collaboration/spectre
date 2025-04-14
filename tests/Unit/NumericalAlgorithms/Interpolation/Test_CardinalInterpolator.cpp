@@ -72,6 +72,8 @@ void test_1d(const gsl::not_null<std::mt19937*> generator) {
     const auto xi_target =
         make_with_random_values<tnsr::I<DataVector, 1, Frame::ElementLogical>>(
             generator, make_not_null(&xi_distribution), n_target_points);
+    const tnsr::I<double, 1, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0]}}};
     for (const auto basis :
          std::array{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto quadrature :
@@ -83,9 +85,20 @@ void test_1d(const gsl::not_null<std::mt19937*> generator) {
           const auto xi_source = logical_coordinates(source_mesh);
           const DataVector f_source = f(get<0>(xi_source));
           const DataVector f_expected = f(get<0>(xi_target));
-          const intrp::Cardinal<1> interpolator(source_mesh, xi_target);
-          const DataVector f_interpolated = interpolator.interpolate(f_source);
-          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          {
+            const intrp::Cardinal<1> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+          if (n_target_points == 1) {
+            const intrp::Cardinal<1> interpolator(source_mesh,
+                                                  xi_target_single);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK(f_interpolated.size() == 1);
+            CHECK(f_interpolated[0] == approx(f_expected[0]));
+          }
         }
       }
     }
@@ -103,6 +116,8 @@ void test_2d_cartesian(const gsl::not_null<std::mt19937*> generator) {
     const auto xi_target =
         make_with_random_values<tnsr::I<DataVector, 2, Frame::ElementLogical>>(
             generator, make_not_null(&xi_distribution), n_target_points);
+    const tnsr::I<double, 2, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0]}}};
     for (const auto xi_basis : bases) {
       for (const auto xi_quadrature : quadratures) {
         for (const auto eta_basis : bases) {
@@ -118,10 +133,20 @@ void test_2d_cartesian(const gsl::not_null<std::mt19937*> generator) {
                 const auto xi_source = logical_coordinates(source_mesh);
                 const DataVector f_source = f(xi_source);
                 const DataVector f_expected = f(xi_target);
-                const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
-                const DataVector f_interpolated =
-                    interpolator.interpolate(f_source);
-                CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+                {
+                  const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
+                  const DataVector f_interpolated =
+                      interpolator.interpolate(f_source);
+                  CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+                }
+                if (n_target_points == 1) {
+                  const intrp::Cardinal<2> interpolator(source_mesh,
+                                                        xi_target_single);
+                  const DataVector f_interpolated =
+                      interpolator.interpolate(f_source);
+                  CHECK(f_interpolated.size() == 1);
+                  CHECK(f_interpolated[0] == approx(f_expected[0]));
+                }
               }
             }
           }
@@ -141,6 +166,8 @@ void test_2d_spherical(const gsl::not_null<std::mt19937*> generator) {
         generator, make_not_null(&xi_distribution), xi_target));
     get<1>(xi_target) = make_with_random_values<DataVector>(
         generator, make_not_null(&phi_distribution), xi_target);
+    const tnsr::I<double, 2, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0]}}};
     for (size_t n_z = 0; n_z < 4; ++n_z) {
       for (size_t n_y = 0; n_y < 4; ++n_y) {
         for (size_t n_x = 0; n_x < 4; ++n_x) {
@@ -154,9 +181,20 @@ void test_2d_spherical(const gsl::not_null<std::mt19937*> generator) {
           const auto xi_source = logical_coordinates(source_mesh);
           const DataVector f_source = f(xi_source);
           const DataVector f_expected = f(xi_target);
-          const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
-          const DataVector f_interpolated = interpolator.interpolate(f_source);
-          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          {
+            const intrp::Cardinal<2> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+          if (n_target_points == 1) {
+            const intrp::Cardinal<2> interpolator(source_mesh,
+                                                  xi_target_single);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK(f_interpolated.size() == 1);
+            CHECK(f_interpolated[0] == approx(f_expected[0]));
+          }
         }
       }
     }
@@ -170,6 +208,8 @@ void test_3d_cartesian(const gsl::not_null<std::mt19937*> generator) {
     const auto xi_target =
         make_with_random_values<tnsr::I<DataVector, 3, Frame::ElementLogical>>(
             generator, make_not_null(&xi_distribution), n_target_points);
+    const tnsr::I<double, 3, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0], get<2>(xi_target)[0]}}};
     for (size_t n_xi = 2; n_xi < 21; n_xi += 3) {
       for (size_t n_eta = 2; n_eta < 21; n_eta += 3) {
         for (size_t n_zeta = 2; n_zeta < 21; n_zeta += 3) {
@@ -182,9 +222,20 @@ void test_3d_cartesian(const gsl::not_null<std::mt19937*> generator) {
           const auto xi_source = logical_coordinates(source_mesh);
           const DataVector f_source = f(xi_source);
           const DataVector f_expected = f(xi_target);
-          const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
-          const DataVector f_interpolated = interpolator.interpolate(f_source);
-          CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          {
+            const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+          }
+          if (n_target_points == 1) {
+            const intrp::Cardinal<3> interpolator(source_mesh,
+                                                  xi_target_single);
+            const DataVector f_interpolated =
+                interpolator.interpolate(f_source);
+            CHECK(f_interpolated.size() == 1);
+            CHECK(f_interpolated[0] == approx(f_expected[0]));
+          }
         }
       }
     }
@@ -203,6 +254,8 @@ void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
         generator, make_not_null(&xi_distribution), xi_target));
     get<2>(xi_target) = make_with_random_values<DataVector>(
         generator, make_not_null(&phi_distribution), xi_target);
+    const tnsr::I<double, 3, Frame::ElementLogical> xi_target_single{
+        {{get<0>(xi_target)[0], get<1>(xi_target)[0], get<2>(xi_target)[0]}}};
     for (size_t n_r = 2; n_r < 4; ++n_r) {
       for (size_t n_z = 0; n_z < 4; ++n_z) {
         for (size_t n_y = 0; n_y < 4; ++n_y) {
@@ -224,10 +277,20 @@ void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
             const DataVector f_expected =
                 f_r(get<0>(xi_target)) *
                 f_a(get<1>(xi_target), get<2>(xi_target));
-            const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
-            const DataVector f_interpolated =
-                interpolator.interpolate(f_source);
-            CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+            {
+              const intrp::Cardinal<3> interpolator(source_mesh, xi_target);
+              const DataVector f_interpolated =
+                  interpolator.interpolate(f_source);
+              CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+            }
+            if (n_target_points == 1) {
+              const intrp::Cardinal<3> interpolator(source_mesh,
+                                                    xi_target_single);
+              const DataVector f_interpolated =
+                  interpolator.interpolate(f_source);
+              CHECK(f_interpolated.size() == 1);
+              CHECK(f_interpolated[0] == approx(f_expected[0]));
+            }
           }
         }
       }

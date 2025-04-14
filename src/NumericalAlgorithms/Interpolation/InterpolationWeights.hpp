@@ -24,7 +24,8 @@ namespace intrp {
  * distribution of the source points.  It is strongly suggested that you
  * carefully investigate the accuracy for your use case.
  */
-Matrix fornberg_interpolation_matrix(const DataVector& x_target,
+template <typename TargetDataType>
+Matrix fornberg_interpolation_matrix(const TargetDataType& x_target,
                                      const DataVector& x_source);
 
 /*!
@@ -41,6 +42,7 @@ Matrix fornberg_interpolation_matrix(const DataVector& x_target,
  * the term in brackets is evaluated only if \f$n\f$ is even.
  *
  */
-Matrix fourier_interpolation_matrix(const DataVector& x_target,
+template <typename TargetDataType>
+Matrix fourier_interpolation_matrix(const TargetDataType& x_target,
                                     size_t n_source_points);
 }  // namespace intrp
