@@ -59,6 +59,32 @@ struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
 
 /*!
  * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating symmetric second spatial derivatives
+ *
+ * Prefix indicating the symmetric second spatial derivatives of a Tensor.
+ *
+ * \tparam Tag The tag to wrap
+ * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
+ * \tparam Frame The frame of the derivative index
+ *
+ * \see Tags::DerivCompute
+ */
+template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+struct second_deriv;
+
+/// \cond
+template <typename Tag, typename Dim, typename Frame>
+struct second_deriv<Tag, Dim, Frame,
+                    Requires<tt::is_a_v<Tensor, typename Tag::type>>>
+    : db::PrefixTag, db::SimpleTag {
+  using type = TensorMetafunctions::prepend_two_symmetric_spatial_indices<
+      typename Tag::type, Dim::value, UpLo::Lo, Frame>;
+  using tag = Tag;
+};
+/// \endcond
+
+/*!
+ * \ingroup DataBoxTagsGroup
  * \brief Prefix indicating spacetime derivatives
  *
  * Prefix indicating the spacetime derivatives of a Tensor or that a Variables
