@@ -104,6 +104,7 @@ def eccentricity_control_params(
     # Make sure h5_files is a sequence
     if isinstance(h5_files, str):
         h5_files = glob.glob(h5_files)
+        h5_files.sort()
     if isinstance(h5_files, Path):
         h5_files = [h5_files]
 
