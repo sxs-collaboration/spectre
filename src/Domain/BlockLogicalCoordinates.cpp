@@ -110,23 +110,27 @@ block_logical_coordinates_single_point(
   }
 
   for (size_t d = 0; d < Dim; ++d) {
-    // Map inverses may report logical coordinates outside [-1, 1] due to
-    // numerical roundoff error. In that case we clamp them to -1 or 1 so
-    // that a consistent block is chosen here independent of roundoff error.
-    // Without this correction, points on block boundaries where both blocks
-    // report logical coordinates outside [-1, 1] by roundoff error would
-    // not be assigned to any block at all, even though they lie in the
-    // domain.
-    if (equal_within_roundoff(logical_point->get(d), 1.0)) {
-      logical_point->get(d) = 1.0;
-      continue;
-    }
-    if (equal_within_roundoff(logical_point->get(d), -1.0)) {
-      logical_point->get(d) = -1.0;
-      continue;
-    }
-    if (abs(logical_point->get(d)) > 1.0) {
-      return std::nullopt;
+    const auto topology = gsl::at(block.topologies(), d);
+    if (topology == domain::Topology::I1 or
+        topology == domain::Topology::B2Radial) {
+      // Map inverses may report logical coordinates outside [-1, 1] due to
+      // numerical roundoff error. In that case we clamp them to -1 or 1 so
+      // that a consistent block is chosen here independent of roundoff error.
+      // Without this correction, points on block boundaries where both blocks
+      // report logical coordinates outside [-1, 1] by roundoff error would
+      // not be assigned to any block at all, even though they lie in the
+      // domain.
+      if (equal_within_roundoff(logical_point->get(d), 1.0)) {
+        logical_point->get(d) = 1.0;
+        continue;
+      }
+      if (equal_within_roundoff(logical_point->get(d), -1.0)) {
+        logical_point->get(d) = -1.0;
+        continue;
+      }
+      if (abs(logical_point->get(d)) > 1.0) {
+        return std::nullopt;
+      }
     }
   }
 
