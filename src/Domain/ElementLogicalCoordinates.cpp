@@ -28,6 +28,11 @@ element_logical_coordinates(
   tnsr::I<double, Dim, Frame::ElementLogical> x_element_logical{};
   for (size_t d = 0; d < Dim; ++d) {
     // Check if the point is outside the element
+    if (element_id.segment_id(d).refinement_level() == 0) {
+      // Root segment in this dimension (map is identity)
+      x_element_logical.get(d) = x_block_logical.get(d);
+      continue;
+    }
     const double up = element_id.segment_id(d).endpoint(Side::Upper);
     const double lo = element_id.segment_id(d).endpoint(Side::Lower);
     if (x_block_logical.get(d) < lo or x_block_logical.get(d) > up) {
@@ -93,6 +98,11 @@ element_logical_coordinates(
         // Disambiguate points on shared element boundaries
         bool is_contained = true;
         for (size_t d = 0; d < Dim; ++d) {
+          if (element_id.segment_id(d).refinement_level() == 0) {
+            // Don't need to check bounds as segment is root segment of the
+            // block
+            continue;
+          }
           const double up = element_id.segment_id(d).endpoint(Side::Upper);
           const double lo = element_id.segment_id(d).endpoint(Side::Lower);
           const double x_block_log = x_block_logical.get(d);
