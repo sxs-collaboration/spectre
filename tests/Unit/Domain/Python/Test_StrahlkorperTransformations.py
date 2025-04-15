@@ -37,6 +37,13 @@ class TestStrahlkorperTransformations(unittest.TestCase):
             time=0.0,
         )
         self.assertAlmostEqual(strahlkorper_inertial.average_radius, 0.5)
+        strahlkorper_inertial = strahlkorper_in_inertial_frame_aligned(
+            strahlkorper_grid,
+            domain=domain,
+            functions_of_time=functions_of_time,
+            time=0.0,
+        )
+        self.assertAlmostEqual(strahlkorper_inertial.average_radius, 0.5)
 
 
 if __name__ == "__main__":
