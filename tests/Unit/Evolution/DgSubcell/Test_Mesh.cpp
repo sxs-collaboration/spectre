@@ -3,6 +3,10 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <sstream>
+#include <string>
+
+#include "DataStructures/DataVector.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -10,6 +14,44 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {
+void print_comparison_point_computation() {
+  // Prints the number of grid points for FD calculated either as:
+  //   1. (2.0 / dg_min_spacing), effectively matching the grid spacing
+  //   2. (2 * num_dg_points - 1), which assumes the time stepper order
+  //      matches the spatial order. This assumption is usually wrong about
+  //      5th or 6th order in space.
+  //
+  // DG points | (2.0 / dg_min_spacing) | (2 * num_dg_points - 1)
+  //  5        |       5.79129          |     9
+  //  6        |       8.51264          |     11
+  //  7        |       11.7802          |     13
+  //  8        |       15.5933          |     15
+  //  9        |       19.9517          |     17
+  //  10       |       24.8552          |     19
+  //  11       |       30.3037          |     21
+  //  12       |       36.2972          |     23
+  //  13       |       42.8356          |     25
+  //  14       |       49.9189          |     27
+  //  15       |       57.5472          |     29
+  //
+  // Clearly at high-order DG we could have way more FD grid points to match
+  // the spatial grid spacing. It's not clear to Nils D. whether the right
+  // thing to do is to always match the DG grid spacing, or transition from
+  // one method to the other at some point.
+  std::stringstream ss;
+  for (size_t i = 5; i < 16; ++i) {
+    const Mesh<1> dg_mesh{i, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
+    const DataVector& collocation_pts = Spectral::collocation_points(dg_mesh);
+    ss << dg_mesh.extents(0) << ' '
+       << 2.0 / std::abs(collocation_pts[1] - collocation_pts[0]) << " "
+       << (2 * dg_mesh.extents(0) - 1) << '\n';
+  }
+  const std::string str = ss.str();
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+  std::printf("%s\n", str.c_str());
+}
+
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 void test_mesh() {
   constexpr size_t min_num_pts =
@@ -108,4 +150,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.FD.Mesh", "[Evolution][Unit]") {
   test_mesh<Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>();
   test_mesh<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
   test_mesh<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
+  print_comparison_point_computation();
 }
