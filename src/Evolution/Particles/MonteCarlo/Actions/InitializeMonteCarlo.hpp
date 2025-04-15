@@ -50,6 +50,8 @@ namespace Initialization::Actions {
 /// Uses:
 /// - evolution::dg::subcell::Tags::Mesh<dim>
 /// - evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>
+/// - evolution::dg::subcell::Tags::ActiveGrid
+/// - ::Tags::Time
 /// - evolution::initial_data::Tags::InitialData
 /// - Particles::MonteCarlo::Tags::MonteCarloOptions<EnergyBins,
 /// NeutrinoSpecies>
