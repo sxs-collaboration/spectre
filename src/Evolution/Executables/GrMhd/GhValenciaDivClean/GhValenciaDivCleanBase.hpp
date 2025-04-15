@@ -763,9 +763,10 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           system, volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
-          UseControlSystems, tmpl::list<>,
+          UseControlSystems,
           Actions::MutateApply<
-              grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>>,
+              grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>,
+          tmpl::list<>>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<system>,
