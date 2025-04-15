@@ -24,4 +24,5 @@ spectre_target_headers(
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
   TimeDerivative.hpp
+  ZeroTimeDerivatives.hpp
   )
