@@ -196,6 +196,11 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 /// surfaces: The inner surface is the surface of the two joined inner cubes
 /// enveloping the two compact objects, while the outer is the surface of the
 /// outer cube.
+///
+/// When the sphericity is 0, the \p length_inner_cube must be less than $1/2$
+/// \p length_outer_cube while when the sphericity is 1 it must be less than
+/// $\sqrt{3}/2$ \p length_outer_cube.
+///
 /// \param length_inner_cube The side length of the cubes enveloping the two
 /// shells.
 /// \param length_outer_cube The side length of the outer cube.

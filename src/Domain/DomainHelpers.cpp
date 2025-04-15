@@ -746,21 +746,27 @@ std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     const domain::CoordinateMaps::Distribution radial_distribution,
     const std::optional<double> distribution_value, const double sphericity,
     const double opening_angle) {
-  if (length_inner_cube >= 0.5 * length_outer_cube) {
-    ERROR("The outer cube (" << length_outer_cube
-                             << ") is too small! The inner cubes ("
-                             << length_inner_cube
-                             << ") will pierce the surface of the outer cube.");
+  if (sphericity != 0.0 and sphericity != 1.0) {
+    ERROR("Sphericity for Frusmtums must be either 0 or 1, not " << sphericity);
+  }
+  const double sphericity_factor = sphericity == 0.0 ? 1.0 : std::sqrt(3.0);
+  if (length_inner_cube >= 0.5 * sphericity_factor * length_outer_cube) {
+    ERROR("The outer cube ("
+          << length_outer_cube << ") is too small! The inner cubes ("
+          << (length_inner_cube * sphericity_factor)
+          << ") will pierce the surface of the outer cube. The sphericity is "
+          << sphericity);
   }
   if (not(abs(origin_preimage[0]) + length_inner_cube <
-              0.5 * length_outer_cube and
+              0.5 * sphericity_factor * length_outer_cube and
           abs(origin_preimage[1]) + length_inner_cube <
-              0.5 * length_outer_cube and
+              0.5 * sphericity_factor * length_outer_cube and
           abs(origin_preimage[2]) + 0.5 * length_inner_cube <
-              0.5 * length_outer_cube)) {
+              0.5 * sphericity_factor * length_outer_cube)) {
     ERROR(
         "The current choice for `origin_preimage` results in the inner cubes "
-        "piercing the surface of the outer cube.");
+        "piercing the surface of the outer cube. The sphericity is "
+        << sphericity);
   }
   const auto frustum_orientations = orientations_for_sphere_wrappings();
   const double lower = 0.5 * length_inner_cube;
