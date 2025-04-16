@@ -168,6 +168,24 @@ void test_explicit_choices_per_dimension() {
 
 void test_equality() {
   INFO("Equality");
+  // For a zero-d Mesh any isotropic arguments are ignored...
+  CHECK(Mesh<0>{4, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto} ==
+        Mesh<0>{2, Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss});
+  CHECK(Mesh<0>{4, Spectral::Basis::Chebyshev,
+                Spectral::Quadrature::GaussLobatto} ==
+        Mesh<0>{{{}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
+  CHECK(Mesh<0>{4, Spectral::Basis::Chebyshev,
+                Spectral::Quadrature::GaussLobatto} ==
+        Mesh<0>{{{}}, {{}}, {{}}});
+  CHECK(Mesh<0>{{{}},
+                Spectral::Basis::Chebyshev,
+                Spectral::Quadrature::GaussLobatto} ==
+        Mesh<0>{{{}}, {{}}, {{}}});
+  CHECK(Mesh<0>{{{}},
+                Spectral::Basis::Chebyshev,
+                Spectral::Quadrature::GaussLobatto} ==
+        Mesh<0>{{{}}, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss});
   CHECK(Mesh<1>{3, Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto} ==
         Mesh<1>{{{3}},

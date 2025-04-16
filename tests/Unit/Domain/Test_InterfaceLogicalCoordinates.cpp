@@ -9,6 +9,7 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -20,6 +21,7 @@
 #include "Domain/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 
@@ -271,5 +273,24 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_ub_zeta[2][10] == 74.0);
   CHECK(x_3d_ub_zeta[2][12] == 74.0);
   CHECK(x_3d_ub_zeta[2][14] == 74.0);
+
+  const Mesh<3> spherical_mesh{
+      {{4_st, 5_st, 9_st}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+        Spectral::Basis::SphericalHarmonic}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+        Spectral::Quadrature::Equiangular}}};
+  const auto volume_x_logical = logical_coordinates(spherical_mesh);
+  const Mesh<2> face_mesh = spherical_mesh.slice_away(0);
+  const auto lower_face_x_logical =
+      interface_logical_coordinates(face_mesh, Direction<3>::lower_xi());
+  const auto lower_sliced_volume_x_logical =
+      data_on_slice(volume_x_logical, spherical_mesh.extents(), 0_st, 0_st);
+  CHECK_ITERABLE_APPROX(lower_face_x_logical, lower_sliced_volume_x_logical);
+  const auto upper_face_x_logical =
+      interface_logical_coordinates(face_mesh, Direction<3>::upper_xi());
+  const auto upper_sliced_volume_x_logical =
+      data_on_slice(volume_x_logical, spherical_mesh.extents(), 0_st, 3_st);
+  CHECK_ITERABLE_APPROX(upper_face_x_logical, upper_sliced_volume_x_logical);
 }
 }  // namespace domain

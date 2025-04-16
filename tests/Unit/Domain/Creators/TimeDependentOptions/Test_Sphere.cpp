@@ -133,17 +133,30 @@ void test(const std::optional<bool> use_non_zero_shape) {
     time_dep_options.build_maps(center, /* filled */ false, inner_radius,
                                 radial_partitions, outer_radius);
     // Inner shell with shape
-    check_map(time_dep_options.grid_to_distorted_map(0, false),
+    check_map(time_dep_options.grid_to_distorted_map(0, false, 6),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(0, false),
+    check_map(time_dep_options.distorted_to_inertial_map(0, false, 6),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false), false,
+    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 6), false,
               false);
     // Shell without shape
-    check_map(time_dep_options.grid_to_distorted_map(6, false), true, false);
-    check_map(time_dep_options.distorted_to_inertial_map(6, false), true,
+    check_map(time_dep_options.grid_to_distorted_map(6, false, 6), true, false);
+    check_map(time_dep_options.distorted_to_inertial_map(6, false, 6), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(6, false, false), false,
+    check_map(time_dep_options.grid_to_inertial_map(6, false, false, 6), false,
+              false);
+    // Inner S2 shell with shape
+    check_map(time_dep_options.grid_to_distorted_map(0, false, 1),
+              not use_non_zero_shape.has_value(), false);
+    check_map(time_dep_options.distorted_to_inertial_map(0, false, 1),
+              not use_non_zero_shape.has_value(), false);
+    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 1), false,
+              false);
+    // S2 Shell without shape
+    check_map(time_dep_options.grid_to_distorted_map(1, false, 1), true, false);
+    check_map(time_dep_options.distorted_to_inertial_map(1, false, 1), true,
+              false);
+    check_map(time_dep_options.grid_to_inertial_map(1, false, false, 1), false,
               false);
   }
   {
@@ -151,30 +164,31 @@ void test(const std::optional<bool> use_non_zero_shape) {
     time_dep_options.build_maps(center, /* filled */ true, inner_radius,
                                 radial_partitions, outer_radius);
     // Inner shell: cube to sphere
-    check_map(time_dep_options.grid_to_distorted_map(0, false),
+    check_map(time_dep_options.grid_to_distorted_map(0, false, 6),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(0, false),
+    check_map(time_dep_options.distorted_to_inertial_map(0, false, 6),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false), false,
+    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 6), false,
               false);
     // Shape rolloff region
-    check_map(time_dep_options.grid_to_distorted_map(6, false),
+    check_map(time_dep_options.grid_to_distorted_map(6, false, 6),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.distorted_to_inertial_map(6, false),
+    check_map(time_dep_options.distorted_to_inertial_map(6, false, 6),
               not use_non_zero_shape.has_value(), false);
-    check_map(time_dep_options.grid_to_inertial_map(0, false, false), false,
+    check_map(time_dep_options.grid_to_inertial_map(0, false, false, 6), false,
               false);
     // Shell without shape
-    check_map(time_dep_options.grid_to_distorted_map(12, false), true, false);
-    check_map(time_dep_options.distorted_to_inertial_map(12, false), true,
+    check_map(time_dep_options.grid_to_distorted_map(12, false, 6), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(12, false, false), false,
+    check_map(time_dep_options.distorted_to_inertial_map(12, false, 6), true,
+              false);
+    check_map(time_dep_options.grid_to_inertial_map(12, false, false, 6), false,
               false);
     // Inner cube
-    check_map(time_dep_options.grid_to_distorted_map(12, true), true, false);
-    check_map(time_dep_options.distorted_to_inertial_map(12, true), true,
+    check_map(time_dep_options.grid_to_distorted_map(12, true, 6), true, false);
+    check_map(time_dep_options.distorted_to_inertial_map(12, true, 6), true,
               false);
-    check_map(time_dep_options.grid_to_inertial_map(12, false, true), false,
+    check_map(time_dep_options.grid_to_inertial_map(12, false, true, 6), false,
               false);
   }
 

@@ -96,7 +96,8 @@ class Mesh {
    * the collocation points
    *
    * \note Because a `Mesh<0>` extends over no dimensions, it has 1 grid point
-   * independent of the value of `isotropic_extents`.
+   * independent of the value of `isotropic_extents`, and the `basis` and
+   * `quadrature` are ignored.
    */
   Mesh(size_t isotropic_extents, Spectral::Basis basis,
        Spectral::Quadrature quadrature);
@@ -110,6 +111,9 @@ class Mesh {
    * collocation points
    * \param quadrature The choice of quadrature to compute
    * the collocation points
+   *
+   * \note A `Mesh<0>` extends over no dimensions so the `basis` and
+   * `quadrature` are ignored.
    */
   Mesh(const std::array<size_t, Dim>& extents, Spectral::Basis basis,
        Spectral::Quadrature quadrature);

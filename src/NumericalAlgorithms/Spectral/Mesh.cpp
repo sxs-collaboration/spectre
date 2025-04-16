@@ -33,16 +33,23 @@ template <size_t Dim>
 Mesh<Dim>::Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
                 const Spectral::Quadrature quadrature) {
   static_assert(sizeof(Mesh<Dim>) == (Dim == 0 ? 2 : 2 * Dim));
-  ASSERT(isotropic_extents <= 255, "Cannot have more than 255 grid points");
-  extents_[0] = isotropic_extents;
-  quadrature_and_basis_[0] = combine(basis, quadrature);
-  if constexpr (Dim > 1) {
-    extents_[1] = isotropic_extents;
-    quadrature_and_basis_[1] = combine(basis, quadrature);
-    if constexpr (Dim > 2) {
-      extents_[2] = isotropic_extents;
-      quadrature_and_basis_[2] = combine(basis, quadrature);
+  if constexpr (Dim > 0) {
+    ASSERT(isotropic_extents <= 255, "Cannot have more than 255 grid points");
+    extents_[0] = isotropic_extents;
+    quadrature_and_basis_[0] = combine(basis, quadrature);
+    if constexpr (Dim > 1) {
+      extents_[1] = isotropic_extents;
+      quadrature_and_basis_[1] = combine(basis, quadrature);
+      if constexpr (Dim > 2) {
+        extents_[2] = isotropic_extents;
+        quadrature_and_basis_[2] = combine(basis, quadrature);
+      }
     }
+  } else {
+    // Silence compiler warnings
+    (void)isotropic_extents;
+    (void)basis;
+    (void)quadrature;
   }
 }
 
@@ -102,6 +109,11 @@ Mesh<Dim>::Mesh(const std::array<size_t, Dim>& extents,
         quadrature_and_basis_[2] = combine(bases[2], quadratures[2]);
       }
     }
+  } else {
+    // Silence compiler warnings
+    (void)extents;
+    (void)bases;
+    (void)quadratures;
   }
 }
 

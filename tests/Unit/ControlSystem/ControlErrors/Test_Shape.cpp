@@ -24,6 +24,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/SphereTransition.hpp"
 #include "Domain/Domain.hpp"
@@ -122,7 +123,7 @@ void test_shape_control_error() {
 
   // Fake domain
   Domain<3> fake_domain{
-      {},
+      std::vector<Block<3>>{},
       {{excision_sphere_A_name,
         ExcisionSphere<3>{excision_radius,
                           origin,

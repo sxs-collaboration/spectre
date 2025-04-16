@@ -10,8 +10,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>
@@ -22,25 +22,17 @@ interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
   tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_x(
       num_grid_points);
 
-  std::array<DataVector, VolumeDim - 1> collocation_points_in_each_dim{};
-  for (size_t d = 0; d < VolumeDim - 1; ++d) {
-    collocation_points_in_each_dim.at(d) =
-        Spectral::collocation_points(mesh.slice_through(d));
+  auto xi = logical_coordinates(mesh);
+  for (size_t d = 0; d < sliced_away_dim; ++d) {
+    logical_x.get(d) = std::move(xi.get(d));
+  }
+  logical_x[sliced_away_dim] =
+      (Side::Lower == direction.side() ? DataVector(num_grid_points, -1.0)
+                                       : DataVector(num_grid_points, 1.0));
+  for (size_t d = sliced_away_dim; d < VolumeDim - 1; ++d) {
+    logical_x.get(d + 1) = std::move(xi.get(d));
   }
 
-  for (IndexIterator<VolumeDim - 1> index(mesh.extents()); index; ++index) {
-    for (size_t d = 0; d < sliced_away_dim; ++d) {
-      logical_x.get(d)[index.collapsed_index()] =
-          collocation_points_in_each_dim.at(d)[index()[d]];
-    }
-    logical_x[sliced_away_dim] =
-        (Side::Lower == direction.side() ? DataVector(num_grid_points, -1.0)
-                                         : DataVector(num_grid_points, 1.0));
-    for (size_t d = sliced_away_dim; d < VolumeDim - 1; ++d) {
-      logical_x.get(d + 1)[index.collapsed_index()] =
-          collocation_points_in_each_dim.at(d)[index()[d]];
-    }
-  }
   return logical_x;
 }
 

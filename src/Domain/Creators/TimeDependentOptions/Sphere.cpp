@@ -227,10 +227,13 @@ void TimeDependentMapOptions::build_maps(
 // in the Sphere domain creator as well as this class' documentation.
 TimeDependentMapOptions::MapType<Frame::Distorted, Frame::Inertial>
 TimeDependentMapOptions::distorted_to_inertial_map(
-    const size_t block_number, const bool is_inner_cube) const {
-  const bool block_has_shape_map = shape_map_options_.has_value() and
-                                   block_number < (filled_ ? 12 : 6) and
-                                   not is_inner_cube;
+    const size_t block_number, const bool is_inner_cube,
+    const size_t num_blocks_per_shell) const {
+  const bool block_has_shape_map =
+      shape_map_options_.has_value() and
+      block_number <
+          (filled_ ? 2 * num_blocks_per_shell : num_blocks_per_shell) and
+      not is_inner_cube;
   if (block_has_shape_map) {
     return std::make_unique<DistortedToInertialComposition>(
         inner_rot_scale_trans_map_);
@@ -240,11 +243,14 @@ TimeDependentMapOptions::distorted_to_inertial_map(
 }
 
 TimeDependentMapOptions::MapType<Frame::Grid, Frame::Distorted>
-TimeDependentMapOptions::grid_to_distorted_map(const size_t block_number,
-                                               const bool is_inner_cube) const {
-  const bool block_has_shape_map = shape_map_options_.has_value() and
-                                   block_number < (filled_ ? 12 : 6) and
-                                   not is_inner_cube;
+TimeDependentMapOptions::grid_to_distorted_map(
+    const size_t block_number, const bool is_inner_cube,
+    const size_t num_blocks_per_shell) const {
+  const bool block_has_shape_map =
+      shape_map_options_.has_value() and
+      block_number <
+          (filled_ ? 2 * num_blocks_per_shell : num_blocks_per_shell) and
+      not is_inner_cube;
   if (block_has_shape_map) {
     // If the interior is not filled we use the SphereTransition function and
     // build only one shape map at index 0 (see `build_maps` above). Otherwise,
@@ -261,10 +267,12 @@ TimeDependentMapOptions::grid_to_distorted_map(const size_t block_number,
 TimeDependentMapOptions::MapType<Frame::Grid, Frame::Inertial>
 TimeDependentMapOptions::grid_to_inertial_map(
     const size_t block_number, const bool is_outer_shell,
-    const bool is_central_region) const {
-  const bool block_has_shape_map = shape_map_options_.has_value() and
-                                   block_number < (filled_ ? 12 : 6) and
-                                   not(is_central_region and filled_);
+    const bool is_central_region, const size_t num_blocks_per_shell) const {
+  const bool block_has_shape_map =
+      shape_map_options_.has_value() and
+      block_number <
+          (filled_ ? 2 * num_blocks_per_shell : num_blocks_per_shell) and
+      not(is_central_region and filled_);
   if (block_has_shape_map) {
     // If the interior is not filled we use the SphereTransition function and
     // build only one shape map at index 0 (see `build_maps` above). Otherwise,

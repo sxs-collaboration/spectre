@@ -21,29 +21,30 @@ namespace dg {
 template <size_t Dim>
 Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
                       const Mesh<Dim>& face_mesh2) {
-  Index<Dim> mortar_extents{};
-  for (size_t i = 0; i < Dim; ++i) {
-    ASSERT(face_mesh1.basis(i) == Spectral::Basis::Legendre and
-               face_mesh2.basis(i) == Spectral::Basis::Legendre,
-           "Only Legendre basis meshes are supported for element faces so far, "
-           "but face_mesh1 is "
-               << face_mesh1.basis(i) << " while face_mesh2 is "
-               << face_mesh2.basis(i));
-    ASSERT(face_mesh1.quadrature(i) == face_mesh2.quadrature(i),
-           "The quadrature on face_mesh1 and face_mesh2 must be equal in "
-           "direction "
-               << i << " but face_mesh1 is " << face_mesh1.quadrature(i)
-               << " while face_mesh2 is " << face_mesh2.quadrature(i));
-    ASSERT(face_mesh1.quadrature(i) == Spectral::Quadrature::Gauss or
-               face_mesh1.quadrature(i) == Spectral::Quadrature::GaussLobatto,
-           "The quadrature on the faces must be Gauss or GaussLobatto, not "
-               << face_mesh1.quadrature(i) << ". The direction is " << i);
-    mortar_extents[i] = std::max(face_mesh1.extents(i), face_mesh2.extents(i));
+  if constexpr (Dim == 0) {
+    return {{{}}, {{}}, {{}}};
+  } else {
+    Index<Dim> mortar_extents{};
+    for (size_t i = 0; i < Dim; ++i) {
+      ASSERT(face_mesh1.basis(i) == face_mesh2.basis(i),
+             "The quadrature on face_mesh1 and face_mesh2 must be equal in "
+             "direction "
+                 << i << " but face_mesh1 is " << face_mesh1.quadrature(i)
+                 << " while face_mesh2 is " << face_mesh2.quadrature(i));
+      ASSERT(face_mesh1.quadrature(i) == face_mesh2.quadrature(i),
+             "The quadrature on face_mesh1 and face_mesh2 must be equal in "
+             "direction "
+                 << i << " but face_mesh1 is " << face_mesh1.quadrature(i)
+                 << " while face_mesh2 is " << face_mesh2.quadrature(i));
+      ASSERT(
+          face_mesh1.basis(i) != Spectral::Basis::FiniteDifference,
+          "Cannot construct a mortar_mesh when the basis is FiniteDifference.");
+      mortar_extents[i] =
+          std::max(face_mesh1.extents(i), face_mesh2.extents(i));
+    }
+    return {mortar_extents.indices(), face_mesh1.basis(),
+            face_mesh1.quadrature()};
   }
-  // In 0-d we don't care about basis or quadrature so just specify GaussLobatto
-  return {
-      mortar_extents.indices(), Spectral::Basis::Legendre,
-      Dim != 0 ? face_mesh1.quadrature(0) : Spectral::Quadrature::GaussLobatto};
 }
 
 template <size_t Dim>

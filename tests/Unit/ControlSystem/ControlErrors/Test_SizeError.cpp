@@ -8,6 +8,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/ControlErrors/Size.hpp"
@@ -26,6 +27,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "ControlSystem/UpdateTimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Block.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/ExcisionSphere.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -260,7 +262,7 @@ void test_size_error_one_step(
         functions_of_time{};
     functions_of_time["Size"] = function_of_time->get_clone();
     Domain<3> domain{
-        {},
+        std::vector<Block<3>>{},
         {{"ExcisionSphereA", ExcisionSphere<3>{grid_excision_boundary_radius,
                                                tnsr::I<double, 3, Frame::Grid>{
                                                    std::array{0.0, 0.0, 0.0}},
