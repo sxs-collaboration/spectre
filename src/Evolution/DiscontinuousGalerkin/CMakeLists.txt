@@ -10,6 +10,7 @@ spectre_target_headers(
   BoundaryData.hpp
   DgElementArray.hpp
   InboxTags.hpp
+  InterfaceDataPolicy.hpp
   MortarData.hpp
   MortarDataHolder.hpp
   MortarTags.hpp
@@ -23,6 +24,7 @@ spectre_target_sources(
   PRIVATE
   AtomicInboxBoundaryData.cpp
   BoundaryData.cpp
+  InterfaceDataPolicy.cpp
   MortarData.cpp
   MortarDataHolder.cpp
   )
