@@ -4,11 +4,19 @@
 #pragma once
 
 #include <memory>
+#include <type_traits>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/TaggedVariant.hpp"
 #include "Time/OptionTags/TimeStepper.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+class LtsTimeStepper;
+/// \endcond
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
@@ -28,6 +36,13 @@ struct ConcreteTimeStepper : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static std::unique_ptr<StepperType> create_from_options(
       const std::unique_ptr<StepperType>& time_stepper) {
+    if (not std::is_same_v<StepperType, LtsTimeStepper> and
+        variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
+            time_stepper->order())) {
+      ERROR_NO_TRACE(
+          "Variable-order TimeSteppers are only supported in evolutions with "
+          "local time-stepping.");
+    }
     return deserialize<type>(serialize<type>(time_stepper).data());
   }
 };
