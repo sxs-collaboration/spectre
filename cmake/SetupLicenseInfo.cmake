@@ -29,7 +29,7 @@ Public License v3, or GPL3. The SpECTRE source code is freely available at
 https://github.com/sxs-collaboration/spectre/
 
 SpECTRE copyright for source, executables, libraries, and machine code is:
-Copyright 2017 - 2024 Simulating eXtreme Spacetimes Collaboration
+Copyright 2017 - 2025 Simulating eXtreme Spacetimes Collaboration
 
 SpECTRE source code MIT license:
 ${SPECTRE_MIT_LICENSE}
