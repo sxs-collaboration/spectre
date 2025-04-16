@@ -33,8 +33,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/Slab.hpp"
@@ -112,7 +112,7 @@ void test_impl(
     const Element<Dim>& element, const TimeStepId& time_step_id,
     const TimeStepId& next_time_step_id, const Spectral::Quadrature quadrature,
     const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
-    const ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
+    const ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>&
         expected_mortar_sizes,
     const DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                 evolution::dg::Tags::MagnitudeOfNormal,
@@ -213,7 +213,7 @@ struct Test<1, LocalTimeStepping> {
                                                east_id};
     const ::dg::MortarMap<1, Mesh<0>> expected_mortar_meshes{
         {interface_mortar_id, {}}};
-    const ::dg::MortarMap<1, std::array<Spectral::MortarSize, 0>>
+    const ::dg::MortarMap<1, std::array<Spectral::SegmentSize, 0>>
         expected_mortar_sizes{{interface_mortar_id, {}}};
 
     const DirectionMap<
@@ -271,11 +271,11 @@ struct Test<2, LocalTimeStepping> {
          Mesh<1>(2, Spectral::Basis::Legendre, quadrature)},
         {interface_mortar_id_south,
          Mesh<1>(3, Spectral::Basis::Legendre, quadrature)}};
-    ::dg::MortarMap<2, std::array<Spectral::MortarSize, 1>>
+    ::dg::MortarMap<2, std::array<Spectral::SegmentSize, 1>>
         expected_mortar_sizes{};
     for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
       expected_mortar_sizes[mortar_id_and_mesh.first] = {
-          {Spectral::MortarSize::Full}};
+          {Spectral::SegmentSize::Full}};
     }
 
     const DirectionMap<
@@ -341,11 +341,11 @@ struct Test<3, LocalTimeStepping> {
          Mesh<2>({{2, 4}}, Spectral::Basis::Legendre, quadrature)},
         {interface_mortar_id_top,
          Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)}};
-    ::dg::MortarMap<3, std::array<Spectral::MortarSize, 2>>
+    ::dg::MortarMap<3, std::array<Spectral::SegmentSize, 2>>
         expected_mortar_sizes{};
     for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
       expected_mortar_sizes[mortar_id_and_mesh.first] = {
-          {Spectral::MortarSize::Full, Spectral::MortarSize::Full}};
+          {Spectral::SegmentSize::Full, Spectral::SegmentSize::Full}};
     }
 
     const DirectionMap<
@@ -400,7 +400,7 @@ template <size_t Dim, bool UsingLts>
 void test_p_refine(
     ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>& mortar_data,
     ::dg::MortarMap<Dim, Mesh<Dim - 1>>& mortar_mesh,
-    ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
+    ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>&
         mortar_size,
     ::dg::MortarMap<Dim, TimeStepId>& mortar_next_temporal_id,
     DirectionMap<Dim, std::optional<Variables<tmpl::list<
@@ -414,7 +414,7 @@ void test_p_refine(
     const ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
         expected_mortar_data,
     const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_mesh,
-    const ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
+    const ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>&
         expected_mortar_size,
     const ::dg::MortarMap<Dim, TimeStepId>& expected_mortar_next_temporal_id,
     const DirectionMap<Dim, std::optional<Variables<tmpl::list<
@@ -533,7 +533,8 @@ void test_p_refine_gts() {
 
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh{};
-  ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>> mortar_size{};
+  ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>
+      mortar_size{};
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                                    evolution::dg::Tags::NormalCovector<Dim>>>>>
@@ -565,7 +566,7 @@ void test_p_refine_gts() {
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>
       expected_mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> expected_mortar_mesh{};
-  ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>
+  ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>
       expected_mortar_size{};
   ::dg::MortarMap<Dim, TimeStepId> expected_mortar_next_temporal_ids{};
   DirectionMap<Dim, std::optional<Variables<
@@ -653,7 +654,8 @@ void test_p_refine_lts() {
 
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh{};
-  ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>> mortar_size{};
+  ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>
+      mortar_size{};
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                                    evolution::dg::Tags::NormalCovector<Dim>>>>>
@@ -700,7 +702,7 @@ void test_p_refine_lts() {
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>
       expected_mortar_data{};
   ::dg::MortarMap<Dim, Mesh<Dim - 1>> expected_mortar_mesh{};
-  ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>
+  ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>
       expected_mortar_size{};
   ::dg::MortarMap<Dim, TimeStepId> expected_mortar_next_temporal_ids{};
   DirectionMap<Dim, std::optional<Variables<

@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Options/String.hpp"
 #include "Utilities/PrettyType.hpp"
 
@@ -35,7 +35,7 @@ struct Mortars : db::PrefixTag, db::SimpleTag {
 /// of the face that it covers.
 template <size_t Dim>
 struct MortarSize : db::SimpleTag {
-  using type = std::array<Spectral::MortarSize, Dim>;
+  using type = std::array<Spectral::SegmentSize, Dim>;
 };
 }  // namespace Tags
 

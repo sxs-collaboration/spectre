@@ -17,6 +17,7 @@ spectre_target_sources(
   Mesh.cpp
   Projection.cpp
   Quadrature.cpp
+  SegmentSize.cpp
   Spectral.cpp
   )
 
@@ -31,6 +32,7 @@ spectre_target_headers(
   Mesh.hpp
   Projection.hpp
   Quadrature.hpp
+  SegmentSize.hpp
   Spectral.hpp
   )
 

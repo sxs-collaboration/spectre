@@ -30,7 +30,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -66,7 +66,7 @@ void internal_mortar_data_impl(
         volume_primitive_variables,
     const Element<Dim>& element, const Mesh<Dim>& volume_mesh,
     const DirectionalIdMap<Dim, Mesh<Dim - 1>>& mortar_meshes,
-    const DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
+    const DirectionalIdMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>&
         mortar_sizes,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,

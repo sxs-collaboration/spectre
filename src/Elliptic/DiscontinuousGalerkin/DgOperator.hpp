@@ -37,8 +37,8 @@
 #include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -235,7 +235,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
   };
 
   static constexpr auto full_mortar_size =
-      make_array<Dim - 1>(Spectral::MortarSize::Full);
+      make_array<Dim - 1>(Spectral::SegmentSize::Full);
 
   template <bool AllDataIsZero, typename... DerivTags, typename... PrimalVars,
             typename... PrimalFluxesVars, typename... PrimalMortarVars,

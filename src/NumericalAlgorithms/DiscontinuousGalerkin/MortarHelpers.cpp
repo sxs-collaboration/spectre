@@ -11,8 +11,8 @@
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -48,7 +48,7 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
 }
 
 template <size_t Dim>
-std::array<Spectral::MortarSize, Dim - 1> mortar_size(
+std::array<Spectral::SegmentSize, Dim - 1> mortar_size(
     const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
     const size_t dimension, const OrientationMap<Dim>& orientation) {
   const auto self_segments =
@@ -56,20 +56,20 @@ std::array<Spectral::MortarSize, Dim - 1> mortar_size(
   const auto neighbor_segments = all_but_specified_element_of(
       orientation.inverse_map()(neighbor.segment_ids()), dimension);
 
-  std::array<Spectral::MortarSize, Dim - 1> result{};
+  std::array<Spectral::SegmentSize, Dim - 1> result{};
   for (size_t d = 0; d < Dim - 1; ++d) {
     const auto& self_segment = gsl::at(self_segments, d);
     const auto& neighbor_segment = gsl::at(neighbor_segments, d);
     if (neighbor_segment == self_segment.id_of_child(Side::Lower)) {
-      gsl::at(result, d) = Spectral::MortarSize::LowerHalf;
+      gsl::at(result, d) = Spectral::SegmentSize::LowerHalf;
     } else if (neighbor_segment == self_segment.id_of_child(Side::Upper)) {
-      gsl::at(result, d) = Spectral::MortarSize::UpperHalf;
+      gsl::at(result, d) = Spectral::SegmentSize::UpperHalf;
     } else {
       ASSERT(neighbor_segment == self_segment or
              neighbor_segment == self_segment.id_of_parent(),
              "Neighbor elements do not overlap 1:1 or 2:1: " << self_segment
              << " " << neighbor_segment);
-      gsl::at(result, d) = Spectral::MortarSize::Full;
+      gsl::at(result, d) = Spectral::SegmentSize::Full;
     }
   }
   return result;
@@ -79,7 +79,7 @@ std::array<Spectral::MortarSize, Dim - 1> mortar_size(
 #define INSTANTIATE(_, data)                                               \
   template Mesh<DIM(data)> mortar_mesh(const Mesh<DIM(data)>& face_mesh1,  \
                                        const Mesh<DIM(data)>& face_mesh2); \
-  template std::array<Spectral::MortarSize, DIM(data)> mortar_size(        \
+  template std::array<Spectral::SegmentSize, DIM(data)> mortar_size(       \
       const ElementId<DIM(data) + 1>& self,                                \
       const ElementId<DIM(data) + 1>& neighbor, size_t dimension,          \
       const OrientationMap<DIM(data) + 1>& orientation);

@@ -853,7 +853,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         dg_formulation, 10);
 
     // Project the boundary terms from the mortar to the face
-    const std::array<Spectral::MortarSize, Dim - 1>& mortar_size =
+    const std::array<Spectral::SegmentSize, Dim - 1>& mortar_size =
         mortar_sizes.at(mortar_id);
     const Mesh<Dim - 1> face_mesh = mesh.slice_away(dimension);
 

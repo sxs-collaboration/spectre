@@ -16,8 +16,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 
 namespace {
 
@@ -49,8 +49,8 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleBoundaryData", "[Unit][NumericalAlgorithms]") {
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<1> mortar_mesh{num_points + 1, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
-  const std::array<Spectral::MortarSize, 1> mortar_size{
-      {Spectral::MortarSize::UpperHalf}};
+  const std::array<Spectral::SegmentSize, 1> mortar_size{
+      {Spectral::SegmentSize::UpperHalf}};
   const auto projected_data =
       data.project_to_mortar(face_mesh, mortar_mesh, mortar_size);
   CHECK(projected_data.field_data ==

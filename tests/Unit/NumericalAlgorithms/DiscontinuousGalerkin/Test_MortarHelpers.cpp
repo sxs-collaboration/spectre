@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -50,22 +51,23 @@ void test_mortar_size() {
   CHECK(dg::mortar_size(ElementId<1>(0, {{{0, 0}}}),
                         ElementId<1>(0, {{{5, 2}}}), 0,
                         OrientationMap<1>::create_aligned()) ==
-        std::array<Spectral::MortarSize, 0>{});
+        std::array<Spectral::SegmentSize, 0>{});
 
   // Check the root segment to make sure the code doesn't try to get
   // its parent.
   CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
                         ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
                         OrientationMap<2>::create_aligned()) ==
-        std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
+        std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::Full}});
   CHECK(dg::mortar_size(ElementId<2>(0, {{{1, 0}, {0, 0}}}),
                         ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
                         OrientationMap<2>::create_aligned()) ==
-        std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::Full}});
-  CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1,
-                        OrientationMap<2>::create_aligned()) ==
-        std::array<Spectral::MortarSize, 1>{{Spectral::MortarSize::LowerHalf}});
+        std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::Full}});
+  CHECK(
+      dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                      ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1,
+                      OrientationMap<2>::create_aligned()) ==
+      std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::LowerHalf}});
 
   // Check all the aligned cases in 3D
   const auto test_segment = [](const SegmentId& base, const size_t test) {
@@ -86,11 +88,11 @@ void test_mortar_size() {
     switch (test) {
       case 0:
       case 1:
-        return Spectral::MortarSize::Full;
+        return Spectral::SegmentSize::Full;
       case 2:
-        return Spectral::MortarSize::LowerHalf;
+        return Spectral::SegmentSize::LowerHalf;
       case 3:
-        return Spectral::MortarSize::UpperHalf;
+        return Spectral::SegmentSize::UpperHalf;
       default:
         ERROR("Test logic error");
     }
@@ -117,7 +119,7 @@ void test_mortar_size() {
                                         test_segment(segment1, test1)}},
                               dimension, perp1));
         CAPTURE(neighbor);
-        const std::array<Spectral::MortarSize, 2> expected{
+        const std::array<Spectral::SegmentSize, 2> expected{
             {expected_size(test0), expected_size(test1)}};
         CHECK(dg::mortar_size(self, neighbor, dimension,
                               OrientationMap<3>::create_aligned()) == expected);
@@ -131,8 +133,8 @@ void test_mortar_size() {
                         OrientationMap<3>{{{Direction<3>::upper_eta(),
                                             Direction<3>::upper_zeta(),
                                             Direction<3>::lower_xi()}}}) ==
-        std::array<Spectral::MortarSize, 2>{
-            {Spectral::MortarSize::UpperHalf, Spectral::MortarSize::Full}});
+        std::array<Spectral::SegmentSize, 2>{
+            {Spectral::SegmentSize::UpperHalf, Spectral::SegmentSize::Full}});
 }
 
 struct Var : db::SimpleTag {
@@ -143,13 +145,13 @@ struct Var : db::SimpleTag {
 template <size_t Dim>
 tnsr::I<DataVector, Dim, Frame::ElementLogical> scaled_coords(
     tnsr::I<DataVector, Dim, Frame::ElementLogical> coords,
-    const std::array<Spectral::MortarSize, Dim>& mortar_size) {
+    const std::array<Spectral::SegmentSize, Dim>& mortar_size) {
   for (size_t d = 0; d < Dim; ++d) {
     switch (gsl::at(mortar_size, d)) {
-      case Spectral::MortarSize::LowerHalf:
+      case Spectral::SegmentSize::LowerHalf:
         coords.get(d) = 0.5 * (coords.get(d) - 1.);
         break;
-      case Spectral::MortarSize::UpperHalf:
+      case Spectral::SegmentSize::UpperHalf:
         coords.get(d) = 0.5 * (coords.get(d) + 1.);
         break;
       default:
@@ -173,9 +175,9 @@ DataVector basis6(const DataVector& coords) {
 }
 
 void test_projections() {
-  using Spectral::MortarSize;
-  const auto all_mortar_sizes = {MortarSize::Full, MortarSize::LowerHalf,
-                                 MortarSize::UpperHalf};
+  const auto all_mortar_sizes = {Spectral::SegmentSize::Full,
+                                 Spectral::SegmentSize::LowerHalf,
+                                 Spectral::SegmentSize::UpperHalf};
   // Check 0D
   {
     Variables<tmpl::list<Var>> vars(1);
@@ -195,7 +197,7 @@ void test_projections() {
       const auto face_coords = logical_coordinates(face_mesh);
       // face -> mortar
       for (const auto& slice_size : all_mortar_sizes) {
-        const std::array<MortarSize, 1> mortar_size{{slice_size}};
+        const std::array<Spectral::SegmentSize, 1> mortar_size{{slice_size}};
         CAPTURE(mortar_size);
         Variables<tmpl::list<Var>> vars(face_mesh.number_of_grid_points());
         get(get<Var>(vars)) = func(face_coords);
@@ -205,8 +207,8 @@ void test_projections() {
       }
 
       const auto make_mortar_data =
-          [&face_mesh, &func, &mortar_coords,
-           &mortar_mesh](const std::array<MortarSize, 1>& mortar_size) {
+          [&face_mesh, &func, &mortar_coords, &mortar_mesh](
+              const std::array<Spectral::SegmentSize, 1>& mortar_size) {
             Variables<tmpl::list<Var>> vars(
                 mortar_mesh.number_of_grid_points());
             get(get<Var>(vars)) =
@@ -222,7 +224,8 @@ void test_projections() {
 
       // full mortar -> face
       if (face_mesh != mortar_mesh) {
-        const std::array<MortarSize, 1> mortar_size{{MortarSize::Full}};
+        const std::array<Spectral::SegmentSize, 1> mortar_size{
+            {Spectral::SegmentSize::Full}};
         CAPTURE(mortar_size);
         const auto vars = make_mortar_data(mortar_size);
         CHECK_ITERABLE_APPROX(get(get<Var>(dg::project_from_mortar(
@@ -231,15 +234,17 @@ void test_projections() {
       }
       // half mortar -> face
       {
-        const auto vars_lo = make_mortar_data({{MortarSize::LowerHalf}});
-        const auto vars_hi = make_mortar_data({{MortarSize::UpperHalf}});
-        CHECK_ITERABLE_APPROX(
-            get(get<Var>(dg::project_from_mortar(
-                vars_lo, face_mesh, mortar_mesh, {{MortarSize::LowerHalf}}))) +
-                get(get<Var>(
-                    dg::project_from_mortar(vars_hi, face_mesh, mortar_mesh,
-                                            {{MortarSize::UpperHalf}}))),
-            func(face_coords));
+        const auto vars_lo =
+            make_mortar_data({{Spectral::SegmentSize::LowerHalf}});
+        const auto vars_hi =
+            make_mortar_data({{Spectral::SegmentSize::UpperHalf}});
+        CHECK_ITERABLE_APPROX(get(get<Var>(dg::project_from_mortar(
+                                  vars_lo, face_mesh, mortar_mesh,
+                                  {{Spectral::SegmentSize::LowerHalf}}))) +
+                                  get(get<Var>(dg::project_from_mortar(
+                                      vars_hi, face_mesh, mortar_mesh,
+                                      {{Spectral::SegmentSize::UpperHalf}}))),
+                              func(face_coords));
       }
     }
   }
@@ -260,7 +265,7 @@ void test_projections() {
       // face -> mortar
       for (const auto& slice_size0 : all_mortar_sizes) {
         for (const auto& slice_size1 : all_mortar_sizes) {
-          const std::array<MortarSize, 2> mortar_size{
+          const std::array<Spectral::SegmentSize, 2> mortar_size{
               {slice_size0, slice_size1}};
           CAPTURE(mortar_size);
           Variables<tmpl::list<Var>> vars(face_mesh.number_of_grid_points());
@@ -273,8 +278,8 @@ void test_projections() {
       }
 
       const auto make_mortar_data =
-          [&face_mesh, &func, &mortar_coords,
-           &mortar_mesh](const std::array<MortarSize, 2>& mortar_size) {
+          [&face_mesh, &func, &mortar_coords, &mortar_mesh](
+              const std::array<Spectral::SegmentSize, 2>& mortar_size) {
             Variables<tmpl::list<Var>> vars(
                 mortar_mesh.number_of_grid_points());
             get(get<Var>(vars)) =
@@ -293,8 +298,8 @@ void test_projections() {
 
       // full mortar -> face
       if (face_mesh != mortar_mesh) {
-        const std::array<MortarSize, 2> mortar_size{
-            {MortarSize::Full, MortarSize::Full}};
+        const std::array<Spectral::SegmentSize, 2> mortar_size{
+            {Spectral::SegmentSize::Full, Spectral::SegmentSize::Full}};
         const auto vars = make_mortar_data(mortar_size);
         CHECK_ITERABLE_APPROX(get(get<Var>(dg::project_from_mortar(
                                   vars, face_mesh, mortar_mesh, mortar_size))),
@@ -304,18 +309,19 @@ void test_projections() {
       // mortar -> face from a mortar long in one direction and short
       // in the other
       {
-        const auto vars_lo =
-            make_mortar_data({{MortarSize::Full, MortarSize::LowerHalf}});
-        const auto vars_hi =
-            make_mortar_data({{MortarSize::Full, MortarSize::UpperHalf}});
-        CHECK_ITERABLE_APPROX(
-            get(get<Var>(dg::project_from_mortar(
-                vars_lo, face_mesh, mortar_mesh,
-                {{MortarSize::Full, MortarSize::LowerHalf}}))) +
-                get(get<Var>(dg::project_from_mortar(
-                    vars_hi, face_mesh, mortar_mesh,
-                    {{MortarSize::Full, MortarSize::UpperHalf}}))),
-            func(face_coords));
+        const auto vars_lo = make_mortar_data(
+            {{Spectral::SegmentSize::Full, Spectral::SegmentSize::LowerHalf}});
+        const auto vars_hi = make_mortar_data(
+            {{Spectral::SegmentSize::Full, Spectral::SegmentSize::UpperHalf}});
+        CHECK_ITERABLE_APPROX(get(get<Var>(dg::project_from_mortar(
+                                  vars_lo, face_mesh, mortar_mesh,
+                                  {{Spectral::SegmentSize::Full,
+                                    Spectral::SegmentSize::LowerHalf}}))) +
+                                  get(get<Var>(dg::project_from_mortar(
+                                      vars_hi, face_mesh, mortar_mesh,
+                                      {{Spectral::SegmentSize::Full,
+                                        Spectral::SegmentSize::UpperHalf}}))),
+                              func(face_coords));
       }
     }
   }

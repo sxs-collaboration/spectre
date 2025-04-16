@@ -5,24 +5,25 @@
 
 #include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/SegmentId.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 
 namespace domain {
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.ChildSize", "[Domain][Unit]") {
-  CHECK(child_size({0, 0}, {0, 0}) == Spectral::ChildSize::Full);
-  CHECK(child_size({1, 0}, {0, 0}) == Spectral::ChildSize::LowerHalf);
-  CHECK(child_size({1, 1}, {0, 0}) == Spectral::ChildSize::UpperHalf);
-  CHECK(child_size({1, 1}, {1, 1}) == Spectral::ChildSize::Full);
-  CHECK(child_size<1>({{{2, 3}}}, {{{1, 1}}}) ==
-        std::array<Spectral::ChildSize, 1>{{Spectral::ChildSize::UpperHalf}});
+SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentSize", "[Domain][Unit]") {
+  CHECK(child_size({0, 0}, {0, 0}) == Spectral::SegmentSize::Full);
+  CHECK(child_size({1, 0}, {0, 0}) == Spectral::SegmentSize::LowerHalf);
+  CHECK(child_size({1, 1}, {0, 0}) == Spectral::SegmentSize::UpperHalf);
+  CHECK(child_size({1, 1}, {1, 1}) == Spectral::SegmentSize::Full);
+  CHECK(
+      child_size<1>({{{2, 3}}}, {{{1, 1}}}) ==
+      std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::UpperHalf}});
   CHECK(child_size<2>({{{0, 0}, {1, 0}}}, {{{0, 0}, {0, 0}}}) ==
-        std::array<Spectral::ChildSize, 2>{
-            {Spectral::ChildSize::Full, Spectral::ChildSize::LowerHalf}});
+        std::array<Spectral::SegmentSize, 2>{
+            {Spectral::SegmentSize::Full, Spectral::SegmentSize::LowerHalf}});
   CHECK(child_size<3>({{{1, 1}, {1, 1}, {2, 2}}}, {{{0, 0}, {1, 1}, {1, 1}}}) ==
-        std::array<Spectral::ChildSize, 3>{{Spectral::ChildSize::UpperHalf,
-                                            Spectral::ChildSize::Full,
-                                            Spectral::ChildSize::LowerHalf}});
+        std::array<Spectral::SegmentSize, 3>{
+            {Spectral::SegmentSize::UpperHalf, Spectral::SegmentSize::Full,
+             Spectral::SegmentSize::LowerHalf}});
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((child_size({1, 1}, {1, 0})),

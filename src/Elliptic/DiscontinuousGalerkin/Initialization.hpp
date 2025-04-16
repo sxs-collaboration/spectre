@@ -43,8 +43,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -549,7 +549,7 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
           DirectionalId<Dim>{direction, ElementId<Dim>::external_boundary_id()};
       mortar_meshes->emplace(mortar_id, face_mesh);
       mortar_sizes->emplace(mortar_id,
-                            make_array<Dim - 1>(Spectral::MortarSize::Full));
+                            make_array<Dim - 1>(Spectral::SegmentSize::Full));
       penalty_factors->emplace(
           mortar_id,
           elliptic::dg::penalty(2. / get(face_normal_magnitudes->at(direction)),

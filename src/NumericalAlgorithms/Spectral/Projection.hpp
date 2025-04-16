@@ -8,6 +8,7 @@
 #include <functional>
 #include <ostream>
 
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 /// \cond
@@ -17,20 +18,6 @@ class Mesh;
 /// \endcond
 
 namespace Spectral {
-
-/// The portion of a mesh covered by a child mesh.
-enum class ChildSize : uint8_t {
-  Uninitialized = 0,
-  Full = 1,
-  UpperHalf = 2,
-  LowerHalf = 3
-};
-
-/// The portion of an element covered by a mortar.
-using MortarSize = ChildSize;
-
-std::ostream& operator<<(std::ostream& os, ChildSize mortar_size);
-
 /// Determine whether data needs to be projected between a child mesh and its
 /// parent mesh. If no projection is necessary the data may be used as-is.
 /// Projection is necessary if the child is either p-refined or h-refined
@@ -38,7 +25,7 @@ std::ostream& operator<<(std::ostream& os, ChildSize mortar_size);
 /// irrelevant in which order the child and the parent mesh are passed in.
 template <size_t Dim>
 bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
-                      const std::array<ChildSize, Dim>& child_sizes);
+                      const std::array<SegmentSize, Dim>& child_sizes);
 
 /*!
  * \brief The projection matrix from a child mesh to its parent.
@@ -82,23 +69,23 @@ bool needs_projection(const Mesh<Dim>& mesh1, const Mesh<Dim>& mesh2,
  * \f}
  */
 const Matrix& projection_matrix_child_to_parent(
-    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh, ChildSize size,
+    const Mesh<1>& child_mesh, const Mesh<1>& parent_mesh, SegmentSize size,
     bool operand_is_massive = false);
 
 /// The projection matrix from a child mesh to its parent, in `Dim` dimensions.
 template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim>
-projection_matrix_child_to_parent(const Mesh<Dim>& child_mesh,
-                                  const Mesh<Dim>& parent_mesh,
-                                  const std::array<ChildSize, Dim>& child_sizes,
-                                  bool operand_is_massive = false);
+projection_matrix_child_to_parent(
+    const Mesh<Dim>& child_mesh, const Mesh<Dim>& parent_mesh,
+    const std::array<SegmentSize, Dim>& child_sizes,
+    bool operand_is_massive = false);
 
 /// The projection matrix from a parent mesh to one of its children.
 ///
 /// \see projection_matrix_child_to_parent()
 const Matrix& projection_matrix_parent_to_child(const Mesh<1>& parent_mesh,
                                                 const Mesh<1>& child_mesh,
-                                                ChildSize size);
+                                                SegmentSize size);
 
 /// The projection matrix from a parent mesh to one of its children, in `Dim`
 /// dimensions
@@ -106,7 +93,7 @@ template <size_t Dim>
 std::array<std::reference_wrapper<const Matrix>, Dim>
 projection_matrix_parent_to_child(
     const Mesh<Dim>& parent_mesh, const Mesh<Dim>& child_mesh,
-    const std::array<ChildSize, Dim>& child_sizes);
+    const std::array<SegmentSize, Dim>& child_sizes);
 
 /// The projection matrices from a source mesh to a target mesh where the
 /// meshes cover the same physical volume
@@ -121,7 +108,7 @@ std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
 /// This is particularly useful when hashing into statically-sized maps based
 /// on the number of dimensions.
 template <size_t DimMinusOne>
-size_t hash(const std::array<Spectral::ChildSize, DimMinusOne>& mortar_size);
+size_t hash(const std::array<Spectral::SegmentSize, DimMinusOne>& mortar_size);
 
 template <size_t Dim>
 struct MortarSizeHash {
@@ -129,7 +116,7 @@ struct MortarSizeHash {
   static constexpr bool is_perfect = MaxSize == two_to_the(Dim);
 
   size_t operator()(
-      const std::array<Spectral::ChildSize, Dim - 1>& mortar_size);
+      const std::array<Spectral::SegmentSize, Dim - 1>& mortar_size);
 };
 /// @}
 }  // namespace Spectral

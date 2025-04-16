@@ -41,8 +41,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
@@ -890,7 +890,7 @@ struct ApplyBoundaryCorrections {
                   *typed_boundary_correction, dg_formulation, volume_args_tuple,
                   typename BcType::dg_boundary_terms_volume_tags{});
 
-              const std::array<Spectral::MortarSize, volume_dim - 1>&
+              const std::array<Spectral::SegmentSize, volume_dim - 1>&
                   mortar_size = mortar_sizes.at(mortar_id);
 
               // This cannot reuse an allocation because it is initialized

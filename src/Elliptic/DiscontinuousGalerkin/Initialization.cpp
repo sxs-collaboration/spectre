@@ -27,8 +27,8 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -172,10 +172,10 @@ tnsr::I<DataVector, Dim, Frame::ElementLogical> mortar_logical_coordinates(
     if (d == direction.dimension()) {
       continue;
     }
-    if (mortar_size.at(d_m) == Spectral::MortarSize::LowerHalf) {
+    if (mortar_size.at(d_m) == Spectral::SegmentSize::LowerHalf) {
       mortar_logical_coords.get(d) -= 1.;
       mortar_logical_coords.get(d) *= 0.5;
-    } else if (mortar_size.at(d_m) == Spectral::MortarSize::UpperHalf) {
+    } else if (mortar_size.at(d_m) == Spectral::SegmentSize::UpperHalf) {
       mortar_logical_coords.get(d) += 1.;
       mortar_logical_coords.get(d) *= 0.5;
     }
@@ -200,7 +200,7 @@ void mortar_jacobian(
                                                     functions_of_time));
   // These factors of two account for the mortar size
   for (const auto& mortar_size_i : mortar_size) {
-    if (mortar_size_i != Spectral::MortarSize::Full) {
+    if (mortar_size_i != Spectral::SegmentSize::Full) {
       get(*mortar_jacobian) *= 0.5;
     }
   }

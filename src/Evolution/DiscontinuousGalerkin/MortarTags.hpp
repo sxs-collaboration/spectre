@@ -22,8 +22,7 @@ template <size_t Dim>
 class MortarDataHolder;
 }  // namespace evolution::dg
 namespace Spectral {
-enum class ChildSize : uint8_t;
-using MortarSize = ChildSize;
+enum class SegmentSize : uint8_t;
 }  // namespace Spectral
 class TimeStepId;
 namespace TimeSteppers {
@@ -73,7 +72,8 @@ struct MortarMesh : db::SimpleTag {
 /// The `Dim` is the volume dimension, not the face dimension.
 template <size_t Dim>
 struct MortarSize : db::SimpleTag {
-  using type = DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>;
+  using type =
+      DirectionalIdMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>;
 };
 
 /// The next temporal id at which to receive data on the specified mortar.

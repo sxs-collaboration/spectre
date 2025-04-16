@@ -48,9 +48,8 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Spectral {
-enum class ChildSize : uint8_t;
-using MortarSize = ChildSize;
 enum class Quadrature : uint8_t;
+enum class SegmentSize : uint8_t;
 }  // namespace Spectral
 namespace Tags {
 struct TimeStepId;
@@ -66,7 +65,7 @@ namespace detail {
 template <size_t Dim>
 std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionalIdMap<Dim, Mesh<Dim - 1>>,
-           DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>,
+           DirectionalIdMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>,
            DirectionalIdMap<Dim, TimeStepId>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
@@ -84,7 +83,7 @@ void p_project(
     /* mortar_data */,
     const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_mesh,
     const gsl::not_null<
-        ::dg::MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>*>
+        ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>*>
     /* mortar_size */,
     const gsl::not_null<::dg::MortarMap<Dim, TimeStepId>*>
     /* mortar_next_temporal_id */,
@@ -298,7 +297,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           mortar_data,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> mortar_mesh,
       const gsl::not_null<
-          ::dg::MortarMap<dim, std::array<Spectral::MortarSize, dim - 1>>*>
+          ::dg::MortarMap<dim, std::array<Spectral::SegmentSize, dim - 1>>*>
           mortar_size,
       const gsl::not_null<::dg::MortarMap<dim, TimeStepId>*>
           mortar_next_temporal_id,
@@ -323,7 +322,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
       const gsl::not_null<
-          ::dg::MortarMap<dim, std::array<Spectral::MortarSize, dim - 1>>*>
+          ::dg::MortarMap<dim, std::array<Spectral::SegmentSize, dim - 1>>*>
       /*mortar_size*/,
       const gsl::not_null<
           ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
@@ -347,7 +346,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
       const gsl::not_null<
-          ::dg::MortarMap<dim, std::array<Spectral::MortarSize, dim - 1>>*>
+          ::dg::MortarMap<dim, std::array<Spectral::SegmentSize, dim - 1>>*>
       /*mortar_size*/,
       const gsl::not_null<
           ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
