@@ -1022,6 +1022,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           spack env create spectre
           spack env activate spectre
           spack add blaze@3.8.2 ~blas ~lapack smp=none
+          # Support installing charm 7.0.0 with CMake 4.0
+          export CMAKE_POLICY_VERSION_MINIMUM=3.5
           spack add charmpp@7.0.0 +shared backend=multicore build-target=charm++
           # Use main branch until spack has 2.0 release
           spack add libxsmm@main
@@ -1110,6 +1112,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D CMAKE_INSTALL_PREFIX=../install \
             -D BUILD_DOCS=OFF \
             -D USE_XSIMD=OFF \
+            -D CMAKE_OSX_SYSROOT=macosx \
             $GITHUB_WORKSPACE
       - name: Build unit tests
         working-directory: build
