@@ -154,7 +154,9 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using common_tags =
       tmpl::push_back<ylm::Tags::items_tags<Frame>, ::ah::Tags::FastFlow,
                       logging::Tags::Verbosity<InterpolationTargetTag>,
-                      ylm::Tags::PreviousStrahlkorpers<Frame>>;
+                      ylm::Tags::PreviousStrahlkorpers<Frame>,
+                      ::ah::Tags::PreviousIterationStrahlkorper<Frame>,
+                      ::ah::Tags::FailedInterpolationIterations>;
   using simple_tags = tmpl::append<
       common_tags,
       tmpl::conditional_t<
@@ -186,7 +188,8 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
         std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>{std::make_pair(
-            std::numeric_limits<double>::quiet_NaN(), options.initial_guess)});
+            std::numeric_limits<double>::quiet_NaN(), options.initial_guess)},
+        options.initial_guess, 0_st);
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>

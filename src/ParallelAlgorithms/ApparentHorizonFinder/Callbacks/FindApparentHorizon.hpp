@@ -162,12 +162,21 @@ struct FindApparentHorizon
       // search, because only now do we know the temporal_id of this horizon
       // search.
       db::mutate<ylm::Tags::Strahlkorper<Frame>,
-                 ylm::Tags::PreviousStrahlkorpers<Frame>>(
+                 ylm::Tags::PreviousStrahlkorpers<Frame>,
+                 ah::Tags::PreviousIterationStrahlkorper<Frame>,
+                 ah::Tags::FailedInterpolationIterations>(
           [&temporal_id](
               const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
               const gsl::not_null<
                   std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>*>
-                  previous_strahlkorpers) {
+                  previous_strahlkorpers,
+              const gsl::not_null<ylm::Strahlkorper<Frame>*>
+                  previous_fast_flow_strahlkorper,
+              const gsl::not_null<size_t*> failed_interpolation_iterations) {
+            // Reset to zero. Will only be used starting from the second
+            // iteration
+            *failed_interpolation_iterations = 0;
+
             // If we have zero previous_strahlkorpers, then the
             // initial guess is already in strahlkorper, so do
             // nothing.
@@ -234,6 +243,9 @@ struct FindApparentHorizon
                     fac_1 * (*previous_strahlkorpers)[1].second.coefficients();
               }
             }
+
+            // First iteration the previous is just the initial guess
+            (*previous_fast_flow_strahlkorper) = *strahlkorper;
           },
           box);
     }
@@ -263,10 +275,17 @@ struct FindApparentHorizon
       std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 
       // Do a FastFlow iteration.
-      db::mutate<::ah::Tags::FastFlow, ylm::Tags::Strahlkorper<Frame>>(
+      db::mutate<::ah::Tags::FastFlow, ylm::Tags::Strahlkorper<Frame>,
+                 ah::Tags::PreviousIterationStrahlkorper<Frame>>(
           [&inv_g, &ex_curv, &christoffel, &status_and_info](
               const gsl::not_null<::FastFlow*> fast_flow,
-              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper) {
+              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
+              const gsl::not_null<ylm::Strahlkorper<Frame>*>
+                  previous_fast_flow_strahlkorper) {
+            // Set this before we iterate the fast flow. Note that this will
+            // have to be updated once we have adaptive horizon finding
+            (*previous_fast_flow_strahlkorper) = *strahlkorper;
+
             status_and_info = fast_flow->template iterate_horizon_finder<Frame>(
                 strahlkorper, inv_g, ex_curv, christoffel);
           },

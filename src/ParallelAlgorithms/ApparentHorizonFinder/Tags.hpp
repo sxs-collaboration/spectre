@@ -7,6 +7,10 @@
 
 /// \cond
 class FastFlow;
+namespace ylm {
+template <typename Frame>
+class Strahlkorper;
+}  // namespace ylm
 /// \endcond
 
 /*!
@@ -15,6 +19,23 @@ class FastFlow;
 namespace ah::Tags {
 struct FastFlow : db::SimpleTag {
   using type = ::FastFlow;
+};
+
+/*!
+ * \brief Tag that holds the strahlkorper of the previous FastFlow iteration
+ * (not the strahlkorper of the entire previous horizon find.)
+ */
+template <typename Frame>
+struct PreviousIterationStrahlkorper : db::SimpleTag {
+  using type = ylm::Strahlkorper<Frame>;
+};
+
+/*!
+ * \brief Tag to hold the number of failed interpolations to a surface during
+ * iterations of the FastFlow algorithm.
+ */
+struct FailedInterpolationIterations : db::SimpleTag {
+  using type = size_t;
 };
 
 /// Base tag for whether or not to write the centers of the horizons to disk.

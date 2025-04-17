@@ -205,6 +205,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.StrahlkorperDataBox",
   test_dimensionful_spin_vector_compute_tag();
   test_dimensionless_spin_magnitude_compute_tag();
   TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
+  TestHelpers::db::test_simple_tag<
+      ah::Tags::PreviousIterationStrahlkorper<::Frame::Distorted>>(
+      "PreviousIterationStrahlkorper");
+  TestHelpers::db::test_simple_tag<ah::Tags::FailedInterpolationIterations>(
+      "FailedInterpolationIterations");
   TestHelpers::db::test_base_tag<ah::Tags::ObserveCentersBase>(
       "ObserveCentersBase");
   TestHelpers::db::test_simple_tag<ah::Tags::ObserveCenters>("ObserveCenters");
