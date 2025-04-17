@@ -742,8 +742,10 @@ MetricWorldtubeH5BufferUpdater<T>::update_adm_formulation(
       time_deriv_shift.get(i) =
           adm_options_->shift.extra_factor * auxiliary_shift.get(i);
     } else {
-      time_deriv_shift.get(i) = conformal_christoffel.get(i) -
-                                adm_options_->shift.extra_factor * shift.get(i);
+      time_deriv_shift.get(i) =
+          adm_options_->shift.conformal_christoffel_factor *
+              conformal_christoffel.get(i) -
+          adm_options_->shift.extra_factor * shift.get(i);
     }
 
     if (adm_options_->lapse.is_advective) {

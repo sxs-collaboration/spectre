@@ -286,6 +286,7 @@ void write_input_file(const std::string& input_data_format,
         "      Advective: True\n"
         "    Shift:\n"
         "      Advective: True\n"
+        "      ConformalChristoffelFactor: 1.0\n"
         "      SecondOrderDriverEta: 2.0\n";
   } else {
     input_file += " " + input_data_format + "\n";
