@@ -666,6 +666,9 @@ void test() {
 }
 }  // namespace
 
+// The tests run relatively long as we use much higher spatial
+// resolution (~8000 grid points per element) to reach a relative
+// error of 1e-9.
 // [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.TimeDerivative",
                   "[Unit][Evolution]") {
