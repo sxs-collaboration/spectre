@@ -69,14 +69,22 @@ struct ApparentHorizon {
     static constexpr Options::String help = {"Verbosity"};
     using type = ::Verbosity;
   };
-  using options = tmpl::list<InitialGuess, FastFlow, Verbosity>;
+  struct MaxInterpolationRetries {
+    static constexpr Options::String help = {
+        "Number of times to retry the interpolation where, with each retry, "
+        "the two previous surfaces are averaged and that new surface is used."};
+    using type = size_t;
+  };
+  using options =
+      tmpl::list<InitialGuess, FastFlow, Verbosity, MaxInterpolationRetries>;
   static constexpr Options::String help = {
       "Provide an initial guess for the apparent horizon surface\n"
       "(Strahlkorper) and apparent-horizon-finding-algorithm (FastFlow)\n"
       "options."};
 
   ApparentHorizon(ylm::Strahlkorper<Frame> initial_guess_in,
-                  ::FastFlow fast_flow_in, ::Verbosity verbosity_in);
+                  ::FastFlow fast_flow_in, ::Verbosity verbosity_in,
+                  size_t max_interpolation_retries_in);
 
   ApparentHorizon() = default;
   ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
@@ -91,6 +99,7 @@ struct ApparentHorizon {
   ylm::Strahlkorper<Frame> initial_guess{};
   ::FastFlow fast_flow{};
   ::Verbosity verbosity{::Verbosity::Quiet};
+  size_t max_interpolation_retries{};
 };
 
 template <typename Frame>

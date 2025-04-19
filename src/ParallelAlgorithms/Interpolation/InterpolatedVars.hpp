@@ -47,6 +47,11 @@ struct Info {
   /// along which iteration the `block_coord_holders` are for. That way they can
   /// be properly ordered in the Interpolator.
   size_t iteration{0_st};
+  /// Sometimes during a single iteration, we are unable to interpolate, but the
+  /// target has a method of retrying the interpolation for the same overall
+  /// iteration. This keeps track of how many times we've tried to reinterpolate
+  /// for a given iteration.
+  size_t reinterpolation_iteration{0_st};
   /// `vars` holds the interpolated `Variables` on some subset of the
   /// points in `block_coord_holders`.  The grid points inside vars
   /// are indexed according to `global_offsets` below.  The size of

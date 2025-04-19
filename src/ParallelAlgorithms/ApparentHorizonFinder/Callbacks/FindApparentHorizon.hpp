@@ -22,6 +22,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
@@ -153,7 +154,10 @@ struct FindApparentHorizon
       const TemporalId& temporal_id) {
     bool horizon_finder_failed = false;
 
-    if (get<::ah::Tags::FastFlow>(*box).current_iteration() == 0) {
+    const size_t current_iteration =
+        get<::ah::Tags::FastFlow>(*box).current_iteration();
+
+    if (current_iteration == 0) {
       // If we get here, we are in a new apparent horizon search, as
       // opposed to a subsequent iteration of the same horizon search.
       //
@@ -254,13 +258,55 @@ struct FindApparentHorizon
     // outside of the Domain.
     const auto& indices_of_invalid_pts =
         db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
+    size_t& failed_interpolation_iterations =
+        db::get_mutable_reference<ah::Tags::FailedInterpolationIterations>(box);
     if (indices_of_invalid_pts.count(temporal_id) > 0 and
         not indices_of_invalid_pts.at(temporal_id).empty()) {
-      InterpolationTargetTag::horizon_find_failure_callback::template apply<
-          InterpolationTargetTag>(*box, *cache, temporal_id,
-                                  FastFlow::Status::InterpolationFailure);
-      horizon_finder_failed = true;
+      ++failed_interpolation_iterations;
+
+      const auto& options = Parallel::get<
+          intrp::Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(*cache);
+
+      // Can't recover from the first iteration or if we've exceeded our number
+      // of attempts
+      if (current_iteration > 0 and failed_interpolation_iterations <=
+                                        options.max_interpolation_retries) {
+        // Move the new trial surface halfway between the current surface and
+        // the previous surface
+        db::mutate<ylm::Tags::Strahlkorper<Frame>>(
+            [](const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
+               const ylm::Strahlkorper<Frame>&
+                   previous_strahlkorper_iteration) {
+              strahlkorper->coefficients() +=
+                  0.5 * (previous_strahlkorper_iteration.coefficients() -
+                         strahlkorper->coefficients());
+            },
+            box, db::get<ah::Tags::PreviousIterationStrahlkorper<Frame>>(*box));
+
+        // Resend the new coords at the same time and iteration. Use 0 for the
+        // array index because it's always 0 due to the targets being
+        // singletons. No need to worry about the invalid points since those get
+        // reset within SendPointsToInterpolator
+        Actions::SendPointsToInterpolator<InterpolationTargetTag>::
+            template apply<::intrp::InterpolationTarget<
+                Metavariables, InterpolationTargetTag>>(
+                *box, *cache, 0, temporal_id, current_iteration,
+                failed_interpolation_iterations);
+
+        // We return false because we don't want this iteration to clean
+        // up the volume data, since we still need it.
+        return false;
+      } else {
+        InterpolationTargetTag::horizon_find_failure_callback::template apply<
+            InterpolationTargetTag>(*box, *cache, temporal_id,
+                                    FastFlow::Status::InterpolationFailure);
+        horizon_finder_failed = true;
+      }
     }
+
+    // Reset now that we were able to interpolate (or if we are abandoning this
+    // horizon find)
+    failed_interpolation_iterations = 0;
 
     if (not horizon_finder_failed) {
       const auto& verbosity =

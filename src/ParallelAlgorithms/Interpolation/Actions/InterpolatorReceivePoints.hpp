@@ -85,9 +85,11 @@ struct ReceivePoints {
       const ArrayIndex& /*array_index*/,
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       std::vector<BlockLogicalCoords<VolumeDim>>&& block_logical_coords,
-      const size_t iteration = 0_st) {
+      const size_t iteration = 0_st,
+      const size_t reinterpolation_iteration = 0_st) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
-        [&temporal_id, &block_logical_coords, &iteration](
+        [&temporal_id, &block_logical_coords, &iteration,
+         &reinterpolation_iteration](
             const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
                 Metavariables>::type*>
                 vars_holders) {
@@ -97,37 +99,52 @@ struct ReceivePoints {
                   .infos;
 
           // Add the new target interpolation points at this temporal_id. There
-          // are two conditions that allow us to overwrite the current target
-          // points. Either
+          // are three conditions that allow us to overwrite the current target
+          // points:
           //
           //  1. There are no current target points at the temporal_id, OR
           //  2. There are target points already at this temporal_id, but the
           //     iteration of the new target points is greater than the
-          //     iteration of the current target points.
+          //     iteration of the current target points (even if we are retrying
+          //     interpolation).
+          //  3. There are target points already at this temporal_id, but the
+          //     iteration of the new target points is equal to the iteration of
+          //     the current target points, and the incoming reinterpolation
+          //     iteration is greater than the current reinterpolation
+          //     iteration.
           //
           // If we already have target points and the iteration of the new
           // points is less than or equal to the iteration of the current target
-          // points, then we ignore the new points. The new points are outdated
-          // and we definitely didn't have any of the new target points in our
-          // element by the fact that we have already received the next
-          // iteration of points.
+          // points (and we aren't retrying an interpolation with new points),
+          // then we ignore the new points. The new points are outdated and we
+          // definitely didn't have any of the new target points in our element
+          // by the fact that we have already received the next iteration of
+          // points.
+          //
+          // However, it occasionally happens where interpolation fails at some
+          // iteration, and the horizon finder is able to send a new set of
+          // points to try for the same iteration.
           //
           // Whenever we overwrite the target points, we also empty the
           // `interpolation_is_done_for_these_elements` (by virtue of a default
           // constructed `intrp::Vars::Info`) so that we always check every
           // element for this new set of target points.
           if (vars_infos.count(temporal_id) == 0 or
-              vars_infos.at(temporal_id).iteration < iteration) {
+              vars_infos.at(temporal_id).iteration < iteration or
+              (vars_infos.at(temporal_id).iteration == iteration and
+               vars_infos.at(temporal_id).reinterpolation_iteration <
+                   reinterpolation_iteration)) {
             vars_infos.insert_or_assign(
                 temporal_id,
                 intrp::Vars::Info<VolumeDim, typename InterpolationTargetTag::
                                                  vars_to_interpolate_to_target>{
                     std::move(block_logical_coords), iteration});
-          } else if (vars_infos.at(temporal_id).iteration == iteration) {
-            ERROR(
-                "Interpolator received target points at iteration "
-                << iteration
-                << " twice. Only one set of points per iteration is allowed.");
+          } else if (vars_infos.at(temporal_id).iteration == iteration and
+                     vars_infos.at(temporal_id).reinterpolation_iteration ==
+                         reinterpolation_iteration) {
+            ERROR("Interpolator received target points at iteration "
+                  << iteration << " (and reinterpolation iteration "
+                  << reinterpolation_iteration << ") twice.");
           }
         },
         make_not_null(&box));

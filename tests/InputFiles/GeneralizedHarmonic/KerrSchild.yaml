@@ -249,6 +249,7 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
+    MaxInterpolationRetries: 3
   ControlSystemSingleAh: *Ah
   ControlSystemCharSpeedAh: *Ah
 
