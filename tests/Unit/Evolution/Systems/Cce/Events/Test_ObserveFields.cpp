@@ -40,33 +40,33 @@ constexpr size_t num_volume_grid_points =
     num_radial_grid_points * num_angular_grid_points;
 constexpr double time = 1.3;
 
-struct MockWriteReductionDataRow {
+struct MockWriteVolumeData {
   template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ArrayIndex>
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& /*box*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
-                    const std::string& subfile_name,
-                    const std::vector<std::string>& file_legend,
-                    const std::tuple<std::vector<double>>& data_row) {
+                    const std::string& /*h5_file_name*/,
+                    const std::string& subfile_path,
+                    const observers::ObservationId& /*observation_id*/,
+                    std::vector<ElementVolumeData>&& volume_data) {
     // If we were to have made the data non-zero values, the event does too many
     // transformations for us to calculate what the result would be by hand, so
     // we just check that the sizes are correct, and that the (code) time is
     // correct
     const size_t l_plus_one_squared = square(l_max + 1);
-    if (subfile_name.find("InertialRetardedTime") != std::string::npos) {
-      CHECK(file_legend.size() == l_plus_one_squared + 1);
-      CHECK(std::get<0>(data_row).size() == l_plus_one_squared + 1);
-    } else if (subfile_name.find("OneMinusY") != std::string::npos) {
-      CHECK(file_legend.size() == num_radial_grid_points + 1);
-      CHECK(std::get<0>(data_row).size() == num_radial_grid_points + 1);
+    const DataVector& data_v =
+        std::get<DataVector>(volume_data[0].tensor_components[0].data);
+    if (subfile_path.find("InertialRetardedTime") != std::string::npos) {
+      CHECK(data_v.size() == 2 * l_plus_one_squared);
+    } else if (subfile_path.find("OneMinusY") != std::string::npos) {
+      CHECK(data_v.size() == num_radial_grid_points);
     } else {
-      CHECK(subfile_name.find("CompactifiedRadius") != std::string::npos);
-      CHECK(file_legend.size() == 2 * l_plus_one_squared + 1);
-      CHECK(std::get<0>(data_row).size() == 2 * l_plus_one_squared + 1);
+      CHECK(data_v.size() ==
+            2 * l_plus_one_squared * num_radial_grid_points);
     }
-    CHECK(std::get<0>(data_row)[0] == time);
   }
 };
 
@@ -74,24 +74,48 @@ void check_h5_file(const std::string& filename_prefix) {
   const h5::H5File<h5::AccessType::ReadOnly> h5_file{filename_prefix + ".h5"};
   const size_t l_plus_one_squared = square(l_max + 1);
   {
-    const auto& cce_subfile =
-        h5_file.get<h5::Dat>("/Cce/VolumeData/InertialRetardedTime.dat");
-    CHECK(cce_subfile.get_legend().size() == l_plus_one_squared + 1);
-    CHECK(cce_subfile.get_data()(0, 0) == time);
+    const auto& u_volume_data =
+        h5_file.get<h5::VolumeData>("/CceVolumeData/InertialRetardedTime");
+    const size_t observation_id = u_volume_data.find_observation_id(time);
+
+    const TensorComponent inertial_retarded_time_component =
+        u_volume_data.get_tensor_component(observation_id,
+                                           "InertialRetardedTime");
+
+    const DataVector inertial_retarded_time =
+        std::get<DataVector>(inertial_retarded_time_component.data);
+
+    CHECK(inertial_retarded_time.size() == 2 * l_plus_one_squared);
     h5_file.close_current_object();
   }
   {
-    const auto& cce_subfile =
-        h5_file.get<h5::Dat>("/Cce/VolumeData/OneMinusY.dat");
-    CHECK(cce_subfile.get_legend().size() == num_radial_grid_points + 1);
-    CHECK(cce_subfile.get_data()(0, 0) == time);
+    const auto& one_minus_y_volume_data =
+        h5_file.get<h5::VolumeData>("/CceVolumeData/OneMinusY");
+    const size_t observation_id =
+        one_minus_y_volume_data.find_observation_id(time);
+
+    const TensorComponent one_minus_y_component =
+        one_minus_y_volume_data.get_tensor_component(observation_id,
+                                           "OneMinusY");
+
+    const DataVector one_minus_y =
+        std::get<DataVector>(one_minus_y_component.data);
+
+    CHECK(one_minus_y.size() == num_radial_grid_points);
     h5_file.close_current_object();
   }
   {
-    const auto& cce_subfile =
-        h5_file.get<h5::Dat>("/Cce/VolumeData/J/CompactifiedRadius_0.dat");
-    CHECK(cce_subfile.get_legend().size() == 2 * l_plus_one_squared + 1);
-    CHECK(cce_subfile.get_data()(0, 0) == time);
+    const auto& volume_data =
+        h5_file.get<h5::VolumeData>("/CceVolumeData/VolumeData");
+    const size_t observation_id = volume_data.find_observation_id(time);
+
+    const TensorComponent J_component =
+        volume_data.get_tensor_component(observation_id, "J");
+
+    const DataVector J_interleaved =
+        std::get<DataVector>(J_component.data);
+    CHECK(J_interleaved.size() ==
+          2 * l_plus_one_squared * num_radial_grid_points);
     h5_file.close_current_object();
   }
 }
@@ -106,12 +130,12 @@ struct MockObserverWriter {
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  tmpl::list<observers::Tags::H5FileLock>>>>>;
   using const_global_cache_tags =
-      tmpl::list<observers::Tags::ReductionFileName>;
+      tmpl::list<observers::Tags::VolumeFileName>;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
 
   using replace_these_threaded_actions =
-      tmpl::list<observers::ThreadedActions::WriteReductionDataRow>;
-  using with_these_threaded_actions = tmpl::list<MockWriteReductionDataRow>;
+      tmpl::list<observers::ThreadedActions::WriteVolumeData>;
+  using with_these_threaded_actions = tmpl::list<MockWriteVolumeData>;
 };
 
 template <typename Metavariables>
@@ -145,19 +169,21 @@ void test(const bool write_synchronously) {
   using obs_writer = MockObserverWriter<metavars>;
   using element = MockElement<metavars>;
 
-  const Cce::Events::ObserveFields fields{std::vector<std::string>{
-      "InertialRetardedTime", "J", "Psi0", "Psi1", "Dy(H)", "OneMinusY"}};
+  const std::vector<std::string> observe_field_names{
+    "InertialRetardedTime", "J", "Psi0", "Psi1", "Dy(H)", "OneMinusY"};
+  const std::string subgroup_name{"CceVolumeData"};
+  const Cce::Events::ObserveFields fields{subgroup_name, observe_field_names};
   const Cce::Events::ObserveFields serialized_fields =
       serialize_and_deserialize(fields);
 
-  const std::string filename_prefix{"PineTree"};
-  if (file_system::check_if_file_exists(filename_prefix + ".h5")) {
-    file_system::rm(filename_prefix + ".h5", true);
+  const std::string volume_filename_prefix{"PineTree"};
+  if (file_system::check_if_file_exists(volume_filename_prefix + ".h5")) {
+    file_system::rm(volume_filename_prefix + ".h5", true);
   }
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {filename_prefix},
+      {volume_filename_prefix},
       {},
       std::vector<size_t>{write_synchronously ? 1_st : 2_st}};
   ActionTesting::emplace_nodegroup_component_and_initialize<obs_writer>(
@@ -217,10 +243,11 @@ void test(const bool write_synchronously) {
   serialized_fields(obs_box, cache, array_index, component, observation_value);
 
   if (write_synchronously) {
-    check_h5_file(filename_prefix);
+    check_h5_file(volume_filename_prefix);
   } else {
-    // 1 for InertialRetardedTime and OneMinusY and 2 for each other tag
-    const size_t expected_number_of_actions = 10;
+    // 1 each for InertialRetardedTime, OneMinusY, and 1 for all the rest of the
+    // volume fields together.
+    const size_t expected_number_of_actions = 3;
     CHECK(ActionTesting::number_of_queued_threaded_actions<obs_writer>(
               runner, 0) == expected_number_of_actions);
     for (size_t i = 0; i < expected_number_of_actions; i++) {
@@ -231,13 +258,14 @@ void test(const bool write_synchronously) {
 }
 
 void test_errors() {
-  CHECK_THROWS_WITH((Cce::Events::ObserveFields{std::vector<std::string>{
-                        "Unique", "Duplicate", "Duplicate"}}),
+  CHECK_THROWS_WITH((Cce::Events::ObserveFields{"CceVolumeData",
+        std::vector<std::string>{"Unique", "Duplicate", "Duplicate"}}),
                     Catch::Matchers::ContainsSubstring(
                         "more than once in list of variables to observe"));
 
   CHECK_THROWS_WITH(
-      (Cce::Events::ObserveFields{std::vector<std::string>{"MisspelledTag"}}),
+      (Cce::Events::ObserveFields{"CceVolumeData",
+         std::vector<std::string>{"MisspelledTag"}}),
       Catch::Matchers::ContainsSubstring(
           "MisspelledTag is not an available variable. Available variables:"));
 }

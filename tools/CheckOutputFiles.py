@@ -14,6 +14,17 @@ import numpy.testing as npt
 import yaml
 
 
+def enumerate_h5_datasets(obj):
+    """
+    Iterate through structure of an h5 file and yield all paths to dataset
+    """
+    if type(obj) in [h5py.Group, h5py.File]:
+        for key in obj.keys():
+            yield from enumerate_h5_datasets(obj[key])
+    elif type(obj) == h5py.Dataset:
+        yield obj.name
+
+
 class H5Check:
     """Describes a particular comparison between H5 datasets or groups
 
@@ -25,12 +36,17 @@ class H5Check:
         unit_test: The `unittest.testcase` object, used to invoke asserts
         label: An identifier string for the test
         file_glob: The shell glob matching the h5 files to test
-        subfile: The h5 path for the group or dataset to check
+        subfile: The h5 path for the group or dataset to check. This is allowed
+          to be a python regex but only the first matching dataset is checked.
+        absolute_tolerance: The absolute tolerance for approximation checks
+        relative_tolerance: The relative tolerance for approximation checks
         expected_data_subfile: The h5 path for the expected group or dataset
         expected_data: The expected data to compare with directly. Mutually
           exclusive with `expected_data_subfile`.
-        absolute_tolerance: The absolute tolerance for approximation checks
-        relative_tolerance: The relative tolerance for approximation checks
+        skip_columns: Which "columns" of the data to skip when checking. Here
+          column means the last index of a dataset of any shape. If the dataset
+          is rank 1, these are the indices to skip; if the dataset is rank 2,
+          with indices (row, column), then these are the columns to skip; etc.
     """
 
     def __init__(
@@ -94,7 +110,7 @@ class H5Check:
                 test_data = h5_file[test_entity][()]
                 column_mask = [
                     x not in self.skip_columns
-                    for x in range(test_data.shape[1])
+                    for x in range(test_data.shape[-1])
                 ]
                 if self.expected_h5_entity is not None:
                     expected_data = h5_file[expected_entity][()]
@@ -120,8 +136,8 @@ class H5Check:
                         # the error and print the arrays to full precision
                         try:
                             npt.assert_allclose(
-                                test_data[:, column_mask],
-                                expected_data[:, column_mask],
+                                test_data[..., column_mask],
+                                expected_data[..., column_mask],
                                 rtol=self.relative_tolerance,
                                 atol=self.absolute_tolerance,
                             )
@@ -129,10 +145,11 @@ class H5Check:
                             np.set_printoptions(precision=16)
                             print(
                                 "DESIRED:"
-                                f" {np.array(expected_data[:, column_mask])}"
+                                f" {np.array(expected_data[..., column_mask])}"
                             )
                             print(
-                                f"ACTUAL: {np.array(test_data[:, column_mask])}"
+                                "ACTUAL:"
+                                f" {np.array(test_data[..., column_mask])}"
                             )
                             raise AssertionError(
                                 "Test data is not equal to the expected data"
@@ -146,7 +163,7 @@ class H5Check:
                         # the error and print the arrays to full precision
                         try:
                             npt.assert_allclose(
-                                test_data[:, column_mask],
+                                test_data[..., column_mask],
                                 self.expected_data or 0.0,
                                 rtol=self.relative_tolerance,
                                 atol=self.absolute_tolerance,
@@ -157,7 +174,7 @@ class H5Check:
                             if self.expected_data:
                                 print(
                                     "ACTUAL:"
-                                    f" {np.array(test_data[:, column_mask])}"
+                                    f" {np.array(test_data[..., column_mask])}"
                                 )
                             else:
                                 print("ACTUAL: 0.0")
@@ -218,10 +235,31 @@ class H5Check:
         logging.info(
             "Performing checks: " + os.path.join(run_directory, self.h5_glob)
         )
+        test_h5_entity_pat = re.compile(self.test_h5_entity)
         for filename in glob.glob(os.path.join(run_directory, self.h5_glob)):
             logging.info("Checking file: " + filename)
             with self.unit_test.subTest(filename=filename):
                 with h5py.File(filename, "r") as check_h5:
+                    dataset_paths = enumerate_h5_datasets(check_h5)
+                    matched_paths = [
+                        path
+                        for path in dataset_paths
+                        if test_h5_entity_pat.match(path)
+                    ]
+
+                    if len(matched_paths) > 1:
+                        logging.warn(
+                            "Found more than 1 subfile path matching pattern '"
+                            + self.test_h5_entity
+                            + "'. Going to use first match. The matches were:\n"
+                            + "\n".join(matched_paths)
+                        )
+                        test_h5_entity = matched_paths[0]
+                    elif len(matched_paths) == 1:
+                        test_h5_entity = matched_paths[0]
+                    else:
+                        test_h5_entity = self.test_h5_entity
+
                     files_and_entities = (
                         files_and_entities
                         + filename
@@ -230,27 +268,25 @@ class H5Check:
                         + "\n"
                     )
                     found_test_entity = found_test_entity or (
-                        self.test_h5_entity in check_h5
+                        test_h5_entity in check_h5
                     )
                     found_expected_entity = found_expected_entity or (
                         self.expected_h5_entity is not None
                         and self.expected_h5_entity in check_h5
                     )
 
-                    if self.test_h5_entity in check_h5 or (
+                    if test_h5_entity in check_h5 or (
                         self.expected_h5_entity is not None
                         and self.expected_h5_entity in check_h5
                     ):
-                        self.unit_test.assertTrue(
-                            self.test_h5_entity in check_h5
-                        )
+                        self.unit_test.assertTrue(test_h5_entity in check_h5)
                         self.unit_test.assertTrue(
                             self.expected_h5_entity is None
                             or self.expected_h5_entity in check_h5
                         )
                         self.check_h5_file(
                             check_h5,
-                            self.test_h5_entity,
+                            test_h5_entity,
                             self.expected_h5_entity,
                         )
         self.unit_test.assertTrue(

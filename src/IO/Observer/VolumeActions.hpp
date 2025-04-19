@@ -439,6 +439,30 @@ struct WriteVolumeData {
         h5_file_name, observers::input_source_from_cache(cache), subfile_path,
         observation_id, std::move(volume_data));
   }
+
+  // For a local synchronous action
+  using return_type = void;
+
+  /// \brief The apply call for the local synchronous action
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename... Ts,
+            typename DataBox = db::DataBox<DbTagsList>>
+  static return_type apply(
+      db::DataBox<DbTagsList>& box,
+      const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const std::string& h5_file_name,
+      const std::string& subfile_path,
+      const observers::ObservationId& observation_id,
+      std::vector<ElementVolumeData>&& volume_data) {
+    auto& volume_file_lock =
+        db::get_mutable_reference<Tags::H5FileLock>(
+            make_not_null(&box));
+    const std::lock_guard hold_lock(volume_file_lock);
+    VolumeActions_detail::write_data(
+        h5_file_name, observers::input_source_from_cache(cache),
+        subfile_path, observation_id, std::move(volume_data));
+  }
 };
 }  // namespace ThreadedActions
 }  // namespace observers

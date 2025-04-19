@@ -450,6 +450,11 @@ a bit on why we chose some of those parameters.
   we also recommend running CCE over several worldtube radii and checking which
   is the best based on the Bianchi identity violations. There isn't necessarily
   a "best radius" to extract waveforms at.
+- Most users will not need it, but if you want to dump data from the volume
+  (instead of only on future null infinity), this is possible with the
+  `ObserveFields` option to `Events` within `EventsAndTriggersAtSlabs` in the
+  input file. See the input file referenced above for a (commented-out) example,
+  and the documentation of the class `Cce::Events::ObserveFields` for details.
 
 ### Initial data on the null hypersurface
 
