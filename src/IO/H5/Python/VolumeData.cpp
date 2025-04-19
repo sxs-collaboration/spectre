@@ -34,6 +34,9 @@ void bind_h5vol(py::module& m) {
       .def("list_observation_ids", &h5::VolumeData::list_observation_ids)
       .def("get_observation_value", &h5::VolumeData::get_observation_value,
            py::arg("observation_id"))
+      .def("find_observation_id", &h5::VolumeData::find_observation_id,
+           py::arg("observation_value"),
+           py::arg("observation_value_epsilon") = std::nullopt)
       .def("get_grid_names", &h5::VolumeData::get_grid_names,
            py::arg("observation_id"))
       .def("list_tensor_components", &h5::VolumeData::list_tensor_components,
