@@ -250,9 +250,11 @@ struct MockWriteReductionDataRow {
                     const std::tuple<std::vector<double>>& data_row) {
     CHECK((subfile_name == "/ControlSystems/BnsGridCenters" or
            subfile_name == "/ControlSystems/BnsInertialCenters"));
-    CHECK(file_legend == std::vector<std::string>{
-                             "Time", "Center_A_x", "Center_A_y", "Center_A_z",
-                             "Center_B_x", "Center_B_y", "Center_B_z"});
+    CHECK(file_legend ==
+          std::vector<std::string>{"Time", "Center_A_x", "Center_A_y",
+                                   "Center_A_z", "Center_B_x", "Center_B_y",
+                                   "Center_B_z", "Center_System_x",
+                                   "Center_System_y", "Center_System_z"});
 
     const std::vector<double>& data = get<0>(data_row);
 
