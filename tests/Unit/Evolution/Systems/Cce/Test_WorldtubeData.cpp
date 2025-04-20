@@ -616,14 +616,10 @@ void test_metric_worldtube_buffer_updater_impl(
     using Shift = typename AdmOptions::Shift;
     const Lapse lapse{true};
     if (extra_adm.value()) {
-      using option_list = tmpl::list<typename AdmOptions::Advective,
-                                     typename Shift::FirstOrderDriverFactor>;
-      const Shift shift{option_list{}, true, 0.75};
+      const Shift shift{true, 0.75};
       adm_options = AdmOptions{lapse, shift};
     } else {
-      using option_list = tmpl::list<typename AdmOptions::Advective,
-                                     typename Shift::SecondOrderDriverEta>;
-      const Shift shift{option_list{}, true, 2.0};
+      const Shift shift{true, 2.0, 1.0};
       adm_options = AdmOptions{lapse, shift};
     }
   }

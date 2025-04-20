@@ -10,6 +10,7 @@ InputDataFormat:
       Advective: True
     Shift:
       Advective: True
+      ConformalChristoffelFactor: 1.0 # Eq. 12 Hilditch 2013
       SecondOrderDriverEta: 2.0 # Eq. 12 Hilditch 2013
 # [second_order_input_data_format_example]
 ExtractionRadius: 292

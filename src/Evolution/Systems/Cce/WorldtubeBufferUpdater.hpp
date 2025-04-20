@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -309,7 +310,14 @@ class MetricWorldtubeH5BufferUpdater
         static constexpr Options::String help =
             "Factor 'eta' in front of shift vector in Eq. 12 of Hilditch 2013 "
             "(typically 2/M). To use this, the trace conformal christoffel "
-            "must be dumped. Here mu_S is assumed to be 1/lapse^2.";
+            "must be dumped.";
+      };
+      struct ConformalChristoffelFactor {
+        using type = double;
+        static constexpr Options::String help =
+            "Factor A in mu_S=A/lapse^2 in front of conformal Christoffel term "
+            "in Eq. 12 of Hilditch 2013 (typically A=1). To use this, the "
+            "trace conformal Christoffel must be dumped.";
       };
       struct FirstOrderDriverFactor {
         using type = double;
@@ -319,23 +327,25 @@ class MetricWorldtubeH5BufferUpdater
             "must be dumped. Here mu_S is assumed to be 1/lapse^2.";
       };
       Shift() = default;
-      using options =
-          tmpl::list<Advective,
-                     Options::Alternatives<tmpl::list<SecondOrderDriverEta>,
-                                           tmpl::list<FirstOrderDriverFactor>>>;
+      using options = tmpl::list<
+          Advective,
+          Options::Alternatives<
+              tmpl::list<SecondOrderDriverEta, ConformalChristoffelFactor>,
+              tmpl::list<FirstOrderDriverFactor>>>;
 
       static constexpr Options::String help =
           "Options for Gamma driver shift condition.";
-      Shift(tmpl::list<Advective, SecondOrderDriverEta> /*meta*/,
-            const bool advective, const double factor)
+      Shift(const bool advective, const double second_order_factor,
+            const double conformal_christoffel_factor_in)
           : is_advective(advective),
             is_first_order(false),
-            extra_factor(factor) {}
-      Shift(tmpl::list<Advective, FirstOrderDriverFactor> /*meta*/,
-            const bool advective, const double factor)
+            extra_factor(second_order_factor),
+            conformal_christoffel_factor(conformal_christoffel_factor_in) {}
+      Shift(const bool advective, const double first_order_factor)
           : is_advective(advective),
             is_first_order(true),
-            extra_factor(factor) {}
+            extra_factor(first_order_factor),
+            conformal_christoffel_factor(std::numeric_limits<double>::max()) {}
 
       void pup(PUP::er& p) {
         p | is_advective;
@@ -346,6 +356,7 @@ class MetricWorldtubeH5BufferUpdater
       bool is_advective;
       bool is_first_order;
       double extra_factor;
+      double conformal_christoffel_factor;
     };
 
     using options = tmpl::list<Lapse, Shift>;
