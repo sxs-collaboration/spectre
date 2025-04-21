@@ -17,6 +17,9 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
+/*!
+* \brief The namespace for the first and second-order Ccz4 evolution system.
+*/
 namespace Ccz4 {
 /*!
  * \brief Indicates whether or not to evolve the shift in a system evolved using
@@ -38,9 +41,9 @@ enum class EvolveShift : bool { False = false, True = true };
 enum class SlicingConditionType : char { Harmonic, Log };
 
 /*!
- * \brief Compute the RHS of the first order CCZ4 formulation of Einstein's
- * equations \cite Dumbser2017okk
- *
+ * \brief Compute the RHS of the first-order CCZ4 formulation of Einstein's
+ * equations with discontinuous Galerkin method. See equations 12a-12m of
+ * \cite Dumbser2017okk.
  * \details We define \f$\phi = (\det(\gamma_{ij}))^{-1/6}\f$ as the conformal
  * factor, \f$\alpha\f$ as the lapse, \f$\beta^i\f$ as the shift, \f$K_{ij}\f$
  * as the extrinsic curvature, and \f$Z_{a}\f$ as the Z4 constraint.

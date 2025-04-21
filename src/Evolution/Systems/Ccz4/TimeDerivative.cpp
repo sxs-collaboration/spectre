@@ -186,7 +186,7 @@ void TimeDerivative<Dim>::apply(
   } else if (slicing_condition_type == SlicingConditionType::Log) {
     ASSERT(min(get(*lapse)) > 0.0,
            "The lapse must be positive when using "
-           "Ccz4::SlicingConditionType::Harmonic.");
+           "Ccz4::SlicingConditionType::Log.");
 
     // g(\alpha) == 2 / \alpha
     get(*slicing_condition) = 2.0 / get(*lapse);
