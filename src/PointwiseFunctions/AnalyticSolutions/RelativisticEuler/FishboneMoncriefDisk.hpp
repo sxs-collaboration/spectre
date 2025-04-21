@@ -428,6 +428,24 @@ class FishboneMoncriefDisk
   double noise_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
   gr::Solutions::SphericalKerrSchild background_spacetime_{};
+
+  // Many of the codes on the EHT Code Comparison Project use flooring with
+  // density and pressure. However, in SpECTRE, floorings are applied on
+  // density and temperature.
+  // Previously, the background values outside of the torus were initialized
+  // to 0 and then subsequently modified based on the atmosphere treatment
+  // and flooring options.
+  // However, this meant that we need to apply higher than desired flooring
+  // level on temperature or density in order to match the radial
+  // profile of the pressure as used in the EHT Code Comparison project.
+  // Thus, we instead initialize the background values that most closely
+  // matches the radial profiles of EHT Code Comparison Project initial data
+  // without introducing any weird kinks.
+  double background_density_ = 1.e-7;
+  double background_temperature_ = 2.e-5;
+  double background_pressure_ = std::numeric_limits<double>::signaling_NaN();
+  double background_specific_internal_energy_ =
+      std::numeric_limits<double>::signaling_NaN();
 };
 
 bool operator!=(const FishboneMoncriefDisk& lhs,
