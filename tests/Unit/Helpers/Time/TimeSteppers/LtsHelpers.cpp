@@ -10,7 +10,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
-#include <limits>
 #include <optional>
 #include <utility>
 
@@ -63,9 +62,7 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
       const double deriv = arbitrary_rhs(init_id);
       volume_history.insert_initial(init_id, 0.0, deriv);
       boundary_history.local().insert_initial(init_id, order, deriv);
-      // Currently unset and unused in the evolution code.
-      constexpr auto remote_order = std::numeric_limits<size_t>::max();
-      boundary_history.remote().insert_initial(init_id, remote_order, deriv);
+      boundary_history.remote().insert_initial(init_id, order, deriv);
     }
   }
 
@@ -194,10 +191,9 @@ class Element {
                                      0.0);
       boundary_history_.local().insert_initial(
           init_id, stepper_->order(), analytic_self(init_time.value()));
-      // Currently unset and unused in the evolution code.
-      constexpr auto remote_order = std::numeric_limits<size_t>::max();
       boundary_history_.remote().insert_initial(
-          init_id, remote_order, analytic_neighbor(init_time.value()));
+          init_id, volume_history_.integration_order(),
+          analytic_neighbor(init_time.value()));
       --slab_number;
       init_step =
           init_step.with_slab(init_step.slab().advance_towards(-init_step));
@@ -267,12 +263,11 @@ class Element {
 
   template <typename T>
   bool process_messages(const T& time) {
-    // Currently unset and unused in the evolution code.
-    constexpr auto integration_order = std::numeric_limits<size_t>::max();
     while (not messages_.empty() and
            stepper_->neighbor_data_required(time, messages_.front().first)) {
-      boundary_history_.remote().insert(
-          messages_.front().first, integration_order, messages_.front().second);
+      boundary_history_.remote().insert(messages_.front().first,
+                                        volume_history_.integration_order(),
+                                        messages_.front().second);
       messages_.pop_front();
     }
     return not(messages_.empty() and

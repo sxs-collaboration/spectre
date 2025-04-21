@@ -69,24 +69,22 @@ void apply_coefficients(gsl::not_null<T*> result,
                         const LtsCoefficients& coefficients,
                         const BoundaryHistoryEvaluator<T>& coupling);
 
-/// Type of coefficients used for an AdamsScheme
+/// Type of coefficients used for an Adams scheme
 enum class SchemeType { Explicit, Implicit };
-
-struct AdamsScheme {
-  SchemeType type;
-  size_t order;
-};
-
-bool operator==(const AdamsScheme& a, const AdamsScheme& b);
-bool operator!=(const AdamsScheme& a, const AdamsScheme& b);
 
 /*!
  * Calculate the nonzero terms in an Adams LTS boundary contribution.
  *
  * The coefficients are generated for a step from \p start_time to \p
- * end_time, integrating using the \p small_step_scheme.
- * Interpolation from the elements is performed using polynomials
- * appropriate for the given \p local_scheme and \p remote_scheme.
+ * end_time.  Interpolation from the elements is performed using
+ * polynomials appropriate for the given \p local_scheme and \p
+ * remote_scheme.  The orders for the interpolations are taken from
+ * the \p local_times and \p remote_times, adjusted by \p
+ * local_order_offset and \p remote_order_offset, which can be either
+ * 0 or -1.  The small-step integration is performed with an implicit
+ * method if either \p local_scheme or \p remote_scheme is implicit,
+ * and the order is the larger of the integration orders on the two
+ * sides, reduced by one if both sides have offset -1.
  *
  * This function returns the sum of the coefficients for the small
  * steps, i.e., the steps between all the times either side updates
@@ -104,10 +102,11 @@ bool operator!=(const AdamsScheme& a, const AdamsScheme& b);
  * $n$, $y^L_{n,1}$ and $y^R_{n,1}$ are the predictor values for those
  * steps, and other index values count backwards in the history of
  * that side.  The range of $i$ and choice of the control times
- * $t^L_\cdots$ are determined by \p local_scheme, $j$ and
- * $t^R_\cdots$ are determined by \p remote_scheme, and the Adams
- * coefficients $\tilde{\alpha}_{nq}$ correspond to \p
- * small_step_scheme.
+ * $t^L_\cdots$ are determined by \p local_scheme and the local order,
+ * $j$ and $t^R_\cdots$ are determined by \p remote_scheme and the
+ * remote order, and the Adams coefficients $\tilde{\alpha}_{nq}$
+ * correspond to the larger of the two orders, and are implicit if
+ * either set of interpolation coefficients is.
  *
  * When called for dense output, the arguments must represent a
  * single small step, i.e., the step cannot cross any of the control
@@ -118,11 +117,9 @@ bool operator!=(const AdamsScheme& a, const AdamsScheme& b);
  * control times or `ApproximateTime` for dense output.
  */
 template <typename TimeType>
-LtsCoefficients lts_coefficients(const ConstBoundaryHistoryTimes& local_times,
-                                 const ConstBoundaryHistoryTimes& remote_times,
-                                 const Time& start_time,
-                                 const TimeType& end_time,
-                                 const AdamsScheme& local_scheme,
-                                 const AdamsScheme& remote_scheme,
-                                 const AdamsScheme& small_step_scheme);
+LtsCoefficients lts_coefficients(
+    const ConstBoundaryHistoryTimes& local_times,
+    const ConstBoundaryHistoryTimes& remote_times, const Time& start_time,
+    const TimeType& end_time, SchemeType local_scheme, SchemeType remote_scheme,
+    int local_order_offset, int remote_order_offset);
 }  // namespace TimeSteppers::adams_lts

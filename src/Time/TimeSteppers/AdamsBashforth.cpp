@@ -235,31 +235,41 @@ void AdamsBashforth::add_boundary_delta_impl(
     const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const TimeDelta& time_step) const {
-  const auto step_start = local_times.back().step_time();
-  const size_t integration_order =
-      local_times.integration_order(local_times.size() - 1);
+  for (size_t i = 0; i < local_times.size(); ++i) {
+    ASSERT(local_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(local_times[i]),
+           "Incorrect local order " << local_times.integration_order(i)
+           << " at time " << local_times[i]);
+  }
+  for (size_t i = 0; i < remote_times.size(); ++i) {
+    ASSERT(remote_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(remote_times[i]),
+           "Incorrect remote order " << remote_times.integration_order(i)
+           << " at time " << remote_times[i]);
+  }
 
-  const adams_lts::AdamsScheme scheme{adams_lts::SchemeType::Explicit,
-                                      integration_order};
+  const auto step_start = local_times.back().step_time();
   const auto lts_coefficients = adams_lts::lts_coefficients(
-      local_times, remote_times, step_start, step_start + time_step, scheme,
-      scheme, scheme);
+      local_times, remote_times, step_start, step_start + time_step,
+      adams_lts::SchemeType::Explicit, adams_lts::SchemeType::Explicit, 0, 0);
   adams_lts::apply_coefficients(result, lts_coefficients, coupling);
 }
 
 void AdamsBashforth::clean_boundary_history_impl(
     const TimeSteppers::MutableBoundaryHistoryTimes& local_times,
     const TimeSteppers::MutableBoundaryHistoryTimes& remote_times) const {
-  const size_t integration_order =
+  const size_t local_order =
       local_times.integration_order(local_times.size() - 1);
-
-  while (local_times.size() >= integration_order) {
+  while (local_times.size() >= local_order) {
     local_times.pop_front();
   }
+
+  const size_t remote_order =
+      remote_times.integration_order(remote_times.size() - 1);
   // We're guaranteed to have a new local value inserted before the
   // next use, but not a new remote value, so we need to keep one more
   // of these.
-  while (remote_times.size() > integration_order) {
+  while (remote_times.size() > remote_order) {
     remote_times.pop_front();
   }
 }
@@ -271,24 +281,35 @@ void AdamsBashforth::boundary_dense_output_impl(
     const TimeSteppers::ConstBoundaryHistoryTimes& remote_times,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const double time) const {
+  for (size_t i = 0; i < local_times.size(); ++i) {
+    ASSERT(local_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(local_times[i]),
+           "Incorrect local order " << local_times.integration_order(i)
+           << " at time " << local_times[i]);
+  }
+  for (size_t i = 0; i < remote_times.size(); ++i) {
+    ASSERT(remote_times.integration_order(i) == order_ or
+               ::SelfStart::is_self_starting(remote_times[i]),
+           "Incorrect remote order " << remote_times.integration_order(i)
+           << " at time " << remote_times[i]);
+  }
+
   if (local_times.back().step_time().value() == time) {
     // Nothing to do.  The requested time is the start of the step,
     // which is the input value of `result`.
     return;
   }
-  const auto current_order =
-      local_times.integration_order(local_times.size() - 1);
-  const adams_lts::AdamsScheme scheme{adams_lts::SchemeType::Explicit,
-                                      current_order};
   const auto small_step_start =
       std::max(local_times.back(), remote_times.back()).step_time();
   const auto lts_coefficients =
-      adams_lts::lts_coefficients(local_times, remote_times,
-                                  local_times.back().step_time(),
-                                  small_step_start, scheme, scheme, scheme) +
+      adams_lts::lts_coefficients(
+          local_times, remote_times, local_times.back().step_time(),
+          small_step_start, adams_lts::SchemeType::Explicit,
+          adams_lts::SchemeType::Explicit, 0, 0) +
       adams_lts::lts_coefficients(local_times, remote_times, small_step_start,
-                                  ApproximateTime{time}, scheme, scheme,
-                                  scheme);
+                                  ApproximateTime{time},
+                                  adams_lts::SchemeType::Explicit,
+                                  adams_lts::SchemeType::Explicit, 0, 0);
   adams_lts::apply_coefficients(result, lts_coefficients, coupling);
 }
 
