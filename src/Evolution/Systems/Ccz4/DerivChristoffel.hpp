@@ -26,21 +26,25 @@ namespace Ccz4 {
  * `Ccz4::Tags::InverseConformalMetric`, the CCZ4 auxiliary variable defined by
  * `Ccz4::Tags::FieldD`, its spatial derivative, and the CCZ4 identity defined
  * by `Ccz4::Tags::FieldDUp`.
+ * \note In second-order Ccz4, we impose symmetry of index k and l
+ * in \f$ \partial_l D_{kij}=\frac{1}{2}\partial_l \partial_k
+ * \tilde{\gamma}_{ij} \f$, because partial derivatives commute and to use
+ * `second_partial_derivatives()`. \f$ D_{kij} \f$ is evolved in
+ * the first-order system so no such symmetry is imposed.
  */
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 void deriv_conformal_christoffel_second_kind(
     const gsl::not_null<tnsr::iJkk<DataType, Dim, Frame>*> result,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& field_d,
-    const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
+    const tnsr::ijj<DataType, Dim, Frame>& field_d, const TensorType& d_field_d,
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up);
 
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 tnsr::iJkk<DataType, Dim, Frame> deriv_conformal_christoffel_second_kind(
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
-    const tnsr::ijj<DataType, Dim, Frame>& field_d,
-    const tnsr::ijkk<DataType, Dim, Frame>& d_field_d,
+    const tnsr::ijj<DataType, Dim, Frame>& field_d, const TensorType& d_field_d,
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up);
+
 /// @}
 
 /// @{
