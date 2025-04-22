@@ -571,5 +571,40 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
         make_not_null(&runner), 0_st);
     CHECK(num_calls_of_target_receive_vars == 2);
   }
+
+  // Add temporal id to the finished ids
+  {
+    auto& intrp_box = ActionTesting::get_databox<interp_component>(
+        make_not_null(&runner), 0_st);
+
+    db::mutate<intrp::Tags::InterpolatedVarsHolders<metavars>>(
+        [&temporal_id](
+            const gsl::not_null<
+                typename intrp::Tags::InterpolatedVarsHolders<metavars>::type*>
+                vars_holders) {
+          auto& finished_ids =
+              get<intrp::Vars::HolderTag<target_tag, metavars>>(*vars_holders)
+                  .temporal_ids_when_data_has_been_interpolated;
+          finished_ids.push_back(temporal_id);
+        },
+        make_not_null(&intrp_box));
+  }
+
+  // Send points to first interpolator core again to test that we ignore the
+  // points now that the interpolation is finished
+  runner.simple_action<interp_component, intrp::Actions::ReceivePoints<
+                                             metavars::InterpolationTargetA>>(
+      0_st, temporal_id, block_logical_coords, 0_st);
+
+  {
+    INFO("Element 7 ignore finished temporal id");
+    const auto& holder = get_holder(0_st);
+    CHECK_FALSE(holder.temporal_ids_when_data_has_been_interpolated.empty());
+    CHECK(holder.infos.empty());
+
+    // There should be no queued actions and no extra calls to
+    // target_receive_vars
+    CHECK(runner.is_simple_action_queue_empty<target_component>(0_st));
+  }
 }
 }  // namespace
