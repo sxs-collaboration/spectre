@@ -168,6 +168,11 @@ authors:
   orcid: https://orcid.org/0000-0002-4725-4978
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
+  family-names: Huang
+  given-names: Chenhang
+  orcid: https://orcid.org/0000-0003-2617-1011
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
   family-names: Iozzo
   given-names: Dante A. B.
   orcid: https://orcid.org/0000-0002-7244-1900
@@ -314,8 +319,8 @@ authors:
   given-names: Jooheon
   orcid: https://orcid.org/0000-0002-3251-0924
 cff-version: 1.2.0
-date-released: 2025-03-17
-doi: 10.5281/zenodo.15040490
+date-released: 2025-04-21
+doi: 10.5281/zenodo.15259042
 keywords:
 - Software
 - Astrophysics
@@ -1033,4 +1038,4 @@ references:
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2025.03.17
+version: 2025.04.21
