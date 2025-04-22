@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -286,6 +287,8 @@ void test_send_receive_actions() {
       make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
   tnsr::i<DataVector, Dim> coupling_tilde_s =
       make_with_value<tnsr::i<DataVector, Dim>>(zero_dv_with_ghost, 0.0);
+  alg::iota(get(coupling_tilde_tau), 1.0);
+  alg::iota(get(coupling_tilde_rho_ye), 2.0);
   Particles::MonteCarlo::GhostZoneCouplingData<Dim> coupling_data{};
   {
     const size_t number_of_points_in_ghost_zone =
@@ -305,6 +308,7 @@ void test_send_receive_actions() {
                                                south_id};
     coupling_data.coupling_tilde_tau[south_neighbor_id] =
         DataVector(number_of_points_in_ghost_zone, 0.1);
+    alg::iota(coupling_data.coupling_tilde_tau[south_neighbor_id].value(), 1.0);
     coupling_data.coupling_tilde_rho_ye[south_neighbor_id] =
         DataVector(number_of_points_in_ghost_zone, 0.1);
     coupling_data.coupling_tilde_s[south_neighbor_id] =
@@ -846,6 +850,49 @@ void test_send_receive_actions() {
     if constexpr (Dim > 1) {
       CHECK(packets_from_box[2] == packet_south);
     }
+  }
+  if constexpr (Dim == 3) {
+    // Check final values of coupling terms
+    // (1) Add values expected from east face
+    Index<2> extents_2d;
+    extents_2d[0] = extents_with_ghost[1];
+    extents_2d[1] = extents_with_ghost[2];
+    Index<3> index_volume_3d;
+    Index<2> index_slice_2d;
+    for (size_t i = 0; i < extents_with_ghost[1]; i++) {
+      for (size_t j = 0; j < extents_with_ghost[2]; j++) {
+        index_volume_3d[0] = extents_with_ghost[0] - 2;
+        index_volume_3d[1] = i;
+        index_volume_3d[2] = j;
+        index_slice_2d[0] = i;
+        index_slice_2d[1] = j;
+        const size_t index_volume =
+            collapsed_index(index_volume_3d, extents_with_ghost);
+        const size_t index_slice = collapsed_index(index_slice_2d, extents_2d);
+        get(coupling_tilde_tau)[index_volume] +=
+          (static_cast<double>(index_slice) + 2.0);
+      }
+    }
+    // South slice
+    extents_2d[0] = extents_with_ghost[0];
+    for (size_t i = 0; i < extents_with_ghost[0]; i++) {
+      for (size_t j = 0; j < extents_with_ghost[2]; j++) {
+        index_volume_3d[0] = i;
+        index_volume_3d[1] = 1;
+        index_volume_3d[2] = j;
+        index_slice_2d[0] = i;
+        index_slice_2d[1] = j;
+        const size_t index_volume =
+            collapsed_index(index_volume_3d, extents_with_ghost);
+        const size_t index_slice = collapsed_index(index_slice_2d, extents_2d);
+        get(coupling_tilde_tau)[index_volume] +=
+          (static_cast<double>(index_slice) + 2.0);
+      }
+    }
+    const auto& post_comm_coupling_tilde_tau = get_databox_tag<
+        comp, Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>>(
+        runner, self_id);
+    CHECK(post_comm_coupling_tilde_tau == coupling_tilde_tau);
   }
 }
 
