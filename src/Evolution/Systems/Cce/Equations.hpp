@@ -589,7 +589,7 @@ struct ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiW>> {
  * We write the equations of motion in the compactified coordinate \f$ y \equiv
  * 1 - 2 R/ r\f$, where \f$r(u, \theta, \phi)\f$ is the Bondi radius of the
  * \f$y=\f$ constant surface and \f$R(u,\theta,\phi)\f$ is the Bondi radius of
- * the worldtube. The equation which determines \f$W\f$ on a surface of constant
+ * the worldtube. The equation which determines \f$H\f$ on a surface of constant
  * \f$u\f$ given \f$J\f$,\f$\beta\f$, \f$Q\f$, \f$U\f$, and \f$W\f$ on the same
  * surface is written as
  * \f[(1 - y) \partial_y H + H + (1 - y)(\mathcal{D}_J H
