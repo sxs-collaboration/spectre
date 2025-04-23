@@ -22,7 +22,7 @@ void grad_grad_lapse(
     const tnsr::i<DataType, Dim, Frame>& field_a, const TensorType& d_field_a) {
   if constexpr (std::is_same_v<TensorType, tnsr::ij<DataType, Dim, Frame>>) {
     // We keep this for loop specialization for faster speed when no symmetry
-    // of field_a is present.
+    // of d_field_a is present.
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t j = 0; j < Dim; ++j) {
         result->get(i, j) = field_a.get(i) * field_a.get(j) +
