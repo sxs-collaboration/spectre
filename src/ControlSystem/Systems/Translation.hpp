@@ -78,7 +78,12 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
   static_assert(
       tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
-  using control_error = ControlErrors::Translation<NumberOfObjects>;
+  // For BNS we only control the Translation using the CoM, not the individual
+  // objects like for BBH.
+  using control_error = ControlErrors::Translation<
+      std::is_same_v<measurement, measurements::BothNSCenters>
+          ? 1
+          : NumberOfObjects>;
   static_assert(tt::conforms_to_v<control_error,
                                   control_system::protocols::ControlError>);
 
@@ -98,6 +103,10 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
                     tmpl::list<QueueTags::Center<::domain::ObjectLabel::A,
                                                  Frame::Inertial>,
                                QueueTags::Center<::domain::ObjectLabel::B,
+                                                 Frame::Inertial>,
+                               QueueTags::Center<::domain::ObjectLabel::None,
+                                                 Frame::Grid>,
+                               QueueTags::Center<::domain::ObjectLabel::None,
                                                  Frame::Inertial>>,
                     tmpl::list<>>>>>;
   };
@@ -116,7 +125,9 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
                    measurements::Tags::NeutronStarCenter<
                        ::domain::ObjectLabel::A, Frame::Inertial>,
                    measurements::Tags::NeutronStarCenter<
-                       ::domain::ObjectLabel::B, Frame::Inertial>>,
+                       ::domain::ObjectLabel::B, Frame::Inertial>,
+                   measurements::Tags::SystemCenterOfMass<Frame::Grid>,
+                   measurements::Tags::SystemCenterOfMass<Frame::Inertial>>,
         tmpl::list<ylm::Tags::Strahlkorper<Frame::Distorted>>>;
 
     template <typename Metavariables>
@@ -172,6 +183,8 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
         const std::array<double, 3> grid_center_b,
         const std::array<double, 3> inertial_center_a,
         const std::array<double, 3> inertial_center_b,
+        const std::array<double, 3> grid_system_center_of_mass,
+        const std::array<double, 3> inertial_system_center_of_mass,
         Parallel::GlobalCache<Metavariables>& cache,
         const LinkedMessageId<double>& measurement_id) {
       auto& control_sys_proxy = Parallel::get_parallel_component<
@@ -182,10 +195,15 @@ struct Translation : tt::ConformsTo<protocols::ControlSystem> {
           QueueTags::Center<::domain::ObjectLabel::A, Frame::Grid>,
           QueueTags::Center<::domain::ObjectLabel::B, Frame::Grid>,
           QueueTags::Center<::domain::ObjectLabel::A, Frame::Inertial>,
-          QueueTags::Center<::domain::ObjectLabel::B, Frame::Inertial>>>(
+          QueueTags::Center<::domain::ObjectLabel::B, Frame::Inertial>,
+          // Use None to mark "one object" since we want translation to track
+          // the system CoM.
+          QueueTags::Center<::domain::ObjectLabel::None, Frame::Grid>,
+          QueueTags::Center<::domain::ObjectLabel::None, Frame::Inertial>>>(
           control_sys_proxy, measurement_id, DataVector(grid_center_a),
           DataVector(grid_center_b), DataVector(inertial_center_a),
-          DataVector(inertial_center_b));
+          DataVector(inertial_center_b), DataVector(grid_system_center_of_mass),
+          DataVector(inertial_system_center_of_mass));
 
       if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
         Parallel::printf("%s, time = %.16f: Received measurement '%s'.\n",
