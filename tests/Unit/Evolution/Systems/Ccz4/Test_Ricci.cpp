@@ -142,6 +142,14 @@ void test_compute_spatial_ricci_tensor(
 
   const auto d_field_p =
       partial_derivative(field_p, mesh, coord_map.inv_jacobian(x_logical));
+  // testing spatial_ricci_tensor() with a symmetric d_field_p
+  tnsr::ii<DataVector, SpatialDim, Frame::Inertial> d_field_p_symm{};
+  for (size_t i = 0; i < SpatialDim; i++) {
+    for (size_t j = i; j < SpatialDim; j++) {
+        d_field_p_symm.get(i, j) = d_field_p.get(i, j);
+    }
+  }
+
   const auto conformal_christoffel_second_kind =
       Ccz4::conformal_christoffel_second_kind(inverse_conformal_spatial_metric,
                                               field_d);
@@ -166,6 +174,12 @@ void test_compute_spatial_ricci_tensor(
           d_conformal_christoffel_second_kind, conformal_spatial_metric,
           inverse_conformal_spatial_metric, field_d, field_d_up, field_p,
           d_field_p)};
+  const auto expected_py_ricci_tensor_with_symmetric_d_field_p{
+      pypp::call<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+          "Ricci", "spatial_ricci_tensor", christoffel_second_kind,
+          d_conformal_christoffel_second_kind, conformal_spatial_metric,
+          inverse_conformal_spatial_metric, field_d, field_d_up, field_p,
+          d_field_p_symm)};
 
   const auto expected_cpp_ricci_tensor =
       gr::ricci_tensor(christoffel_second_kind, d_christoffel_second_kind);
@@ -175,14 +189,25 @@ void test_compute_spatial_ricci_tensor(
       contracted_d_conformal_christoffel_difference, conformal_spatial_metric,
       inverse_conformal_spatial_metric, field_d, field_d_up,
       contracted_field_d_up, field_p, d_field_p);
+  const auto actual_cpp_ricci_tensor_with_symmetric_d_field_p
+    = Ccz4::spatial_ricci_tensor(
+        christoffel_second_kind, contracted_christoffel_second_kind,
+        contracted_d_conformal_christoffel_difference, conformal_spatial_metric,
+        inverse_conformal_spatial_metric, field_d, field_d_up,
+        contracted_field_d_up, field_p, d_field_p_symm);
 
   CHECK_ITERABLE_APPROX(expected_py_ricci_tensor, actual_cpp_ricci_tensor);
+  CHECK_ITERABLE_APPROX(expected_py_ricci_tensor_with_symmetric_d_field_p,
+    actual_cpp_ricci_tensor_with_symmetric_d_field_p);
   // A custom epsilon is used here because the Legendre polynomials don't fit
   // the derivative of 1 / r well. This was looked at for various box sizes and
   // number of 1D grid points.
   Approx approx = Approx::custom().epsilon(1e-11).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_cpp_ricci_tensor,
                                actual_cpp_ricci_tensor, approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_cpp_ricci_tensor,
+                               actual_cpp_ricci_tensor_with_symmetric_d_field_p,
+                               approx);
 }
 }  // namespace
 
