@@ -10,6 +10,7 @@
 #include <string>
 
 #include "DataStructures/TaggedVariant.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
@@ -104,10 +105,8 @@ class AdamsMoultonPc : public LtsTimeStepper {
   static constexpr size_t maximum_order = 8;
 
   struct Order {
-    using type = size_t;
+    using type = Options::Auto<size_t>;
     static constexpr Options::String help = {"Convergence order"};
-    static type lower_bound() { return minimum_order; }
-    static type upper_bound() { return maximum_order; }
   };
   using options = tmpl::list<Order>;
   static constexpr Options::String help =
