@@ -214,5 +214,13 @@ struct NumberOfElements : db::SimpleTag {
   using type = std::unordered_set<ElementId<Dim>>;
 };
 
+/*!
+ * \brief Base tag that holds a map between interpolation target tag name (aka a
+ * horizon) and a set of block names that should be used for interpolation for
+ * that target.
+ */
+struct BlocksForInterpolationBase : db::BaseTag {
+  using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
+};
 }  // namespace Tags
 }  // namespace intrp

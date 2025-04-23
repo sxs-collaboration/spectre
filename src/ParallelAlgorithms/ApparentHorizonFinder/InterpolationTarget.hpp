@@ -4,24 +4,36 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Structure/BlockGroups.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
@@ -39,6 +51,8 @@ template <typename TagsList>
 class DataBox;
 }  // namespace db
 namespace intrp {
+template <class Metavariables, typename InterpolationTargetTag>
+struct InterpolationTarget;
 namespace Tags {
 template <typename TemporalId>
 struct TemporalIds;
@@ -55,6 +69,10 @@ namespace OptionHolders {
 /// Options for finding an apparent horizon.
 template <typename Frame>
 struct ApparentHorizon {
+ private:
+  struct All {};
+
+ public:
   /// See Strahlkorper for suboptions.
   struct InitialGuess {
     static constexpr Options::String help = {"Initial guess"};
@@ -75,16 +93,23 @@ struct ApparentHorizon {
         "the two previous surfaces are averaged and that new surface is used."};
     using type = size_t;
   };
-  using options =
-      tmpl::list<InitialGuess, FastFlow, Verbosity, MaxInterpolationRetries>;
+  struct BlocksForInterpolation {
+    static constexpr Options::String help = {
+        "Volume data will be sent to the interpolator for these block group "
+        "names. Set to 'All' to send volume data from the entire domain."};
+    using type = Options::Auto<std::vector<std::string>, All>;
+  };
+  using options = tmpl::list<InitialGuess, FastFlow, Verbosity,
+                             MaxInterpolationRetries, BlocksForInterpolation>;
   static constexpr Options::String help = {
       "Provide an initial guess for the apparent horizon surface\n"
       "(Strahlkorper) and apparent-horizon-finding-algorithm (FastFlow)\n"
       "options."};
 
-  ApparentHorizon(ylm::Strahlkorper<Frame> initial_guess_in,
-                  ::FastFlow fast_flow_in, ::Verbosity verbosity_in,
-                  size_t max_interpolation_retries_in);
+  ApparentHorizon(
+      ylm::Strahlkorper<Frame> initial_guess_in, ::FastFlow fast_flow_in,
+      ::Verbosity verbosity_in, size_t max_interpolation_retries_in,
+      std::optional<std::vector<std::string>> blocks_for_interpolation_in);
 
   ApparentHorizon() = default;
   ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
@@ -100,6 +125,7 @@ struct ApparentHorizon {
   ::FastFlow fast_flow{};
   ::Verbosity verbosity{::Verbosity::Quiet};
   size_t max_interpolation_retries{};
+  std::optional<std::vector<std::string>> blocks_for_interpolation;
 };
 
 template <typename Frame>
@@ -138,6 +164,83 @@ struct ApparentHorizon : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& option) { return option; }
 };
+
+namespace detail {
+template <typename InterpolationTargetTags>
+struct get_horizon_options;
+
+template <typename... InterpolationTargetTags>
+struct get_horizon_options<tmpl::list<InterpolationTargetTags...>> {
+  using type = tmpl::list<OptionTags::ApparentHorizon<
+      InterpolationTargetTags,
+      typename InterpolationTargetTags::compute_target_points::frame>...>;
+};
+
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
+}  // namespace detail
+
+/*!
+ * \brief Holds a map between interpolation target tag name (aka a horizon) and
+ * a set of block names that should be used for interpolation for that target.
+ */
+struct BlocksForInterpolation : db::SimpleTag, BlocksForInterpolationBase {
+  using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
+  template <typename Metavariables>
+  using option_tags = tmpl::push_front<
+      typename detail::get_horizon_options<
+          InterpolationTarget_detail::get_sequential_target_tags<
+              Metavariables>>::type,
+      ::domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
+
+  static constexpr bool pass_metavariables = true;
+  template <typename Metavariables, typename... HorizonOptions>
+  static type create_from_options(
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const HorizonOptions&... all_horizon_options) {
+    return create_from_options_impl<Metavariables>(
+        domain_creator, std::forward_as_tuple(all_horizon_options...),
+        std::make_index_sequence<sizeof...(HorizonOptions)>{});
+  }
+
+ private:
+  // Need the names of the target tags which are in the option tags, but not the
+  // horizon options themselves. This just expands a tuple to be able to index
+  // the `option_tags` type alias so we can get the name of the target horizon
+  template <typename Metavariables, typename HorizonOptionsTuple, size_t... Is>
+  static type create_from_options_impl(
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const HorizonOptionsTuple& all_horizon_options,
+      const std::index_sequence<Is...>& /*index_sequence*/
+  ) {
+    std::unordered_map<std::string, std::unordered_set<std::string>> result{};
+
+    const auto block_names = domain_creator->block_names();
+    const auto block_groups = domain_creator->block_groups();
+
+    const auto append_to_result = [&](const std::string& name,
+                                      const auto& horizon_options) {
+      if (horizon_options.blocks_for_interpolation.has_value()) {
+        result[name] = domain::expand_block_groups_to_block_names(
+            horizon_options.blocks_for_interpolation.value(), block_names,
+            block_groups);
+      } else {
+        // Insert all blocks
+        result[name].insert(block_names.begin(), block_names.end());
+      }
+
+      // Needed for the expand_pack below
+      return 0;
+    };
+
+    expand_pack(
+        append_to_result(tmpl::at_c<option_tags<Metavariables>, Is + 1>::name(),
+                         std::get<Is>(all_horizon_options))...);
+
+    return result;
+  }
+};
 }  // namespace Tags
 
 namespace TargetPoints {
@@ -156,7 +259,8 @@ namespace TargetPoints {
 template <typename InterpolationTargetTag, typename Frame>
 struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
-      tmpl::list<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
+      tmpl::list<Tags::BlocksForInterpolation,
+                 Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
   using is_sequential = std::true_type;
   using frame = Frame;
 

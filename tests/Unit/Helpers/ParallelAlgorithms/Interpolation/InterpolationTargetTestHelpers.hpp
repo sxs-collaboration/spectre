@@ -25,6 +25,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -148,10 +149,12 @@ struct MockMetavars {
 };
 
 template <typename InterpolationTargetTag, size_t Dim,
-          typename InterpolationTargetOptionTag, typename BlockCoordHolder>
+          typename InterpolationTargetOptionTag, typename BlockCoordHolder,
+          typename... ExtraCacheObjects>
 void test_interpolation_target(
     typename InterpolationTargetOptionTag::type options,
-    const BlockCoordHolder& expected_block_coord_holders) {
+    const BlockCoordHolder& expected_block_coord_holders,
+    const ExtraCacheObjects&... extra_cache_objects) {
   using metavars = MockMetavars<InterpolationTargetTag, Dim>;
   using target_component =
       mock_interpolation_target<metavars, InterpolationTargetTag>;
@@ -161,8 +164,8 @@ void test_interpolation_target(
                 intrp::protocols::ComputeTargetPoints>);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {std::move(options), Domain<metavars::volume_dim>{},
-       ::Verbosity::Silent}};
+      {extra_cache_objects..., std::move(options),
+       Domain<metavars::volume_dim>{}, ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<target_component>(&runner, 0);
