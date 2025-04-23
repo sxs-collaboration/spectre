@@ -61,6 +61,17 @@ template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GradSpatialZ4Constraint;
 template <typename DataType>
 struct RicciScalarPlusDivergenceZ4Constraint;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct AuxiliaryShiftB;
+template <typename DataType>
+struct K0;
+template <typename DataType>
+struct Eta;
+struct GammaDriverParam;
+struct Kappa1;
+struct Kappa2;
+struct Kappa3;
+
 // Temporary expressions for computing above quantities of interest
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct GammaHatMinusContractedConformalChristoffel;

@@ -15,6 +15,11 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 
 namespace Ccz4 {
+/*!
+ * \brief Tags for the CCZ4 formulation of Einstein equations.
+ * \details The naming convention follows \cite Dumbser2017okk
+ * eq. 12a-12m.
+ */
 namespace Tags {
 /*!
  * \brief The conformal factor that rescales the spatial metric
@@ -45,9 +50,9 @@ struct ConformalFactorSquared : db::SimpleTag {
  * spatial metric, then we define
  * \f$\bar{\gamma}_{ij} = \phi^2 \gamma_{ij}\f$.
  */
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 using ConformalMetric =
-    gr::Tags::Conformal<gr::Tags::SpatialMetric<DataType, Dim, Frame>, 2>;
+    gr::Tags::Conformal<gr::Tags::SpatialMetric<DataType, Dim, Fr>, 2>;
 
 /*!
  * \brief The conformally scaled inverse spatial metric
@@ -363,6 +368,81 @@ struct GradSpatialZ4Constraint : db::SimpleTag {
  */
 template <typename DataType>
 struct RicciScalarPlusDivergenceZ4Constraint : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The projection of the Z4 constraint vector along the normal direction.
+ *
+ *
+ */
+template <typename DataType>
+struct Theta : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief Auxiliary variable b in the gamma-driver condition
+ * eq. 12c of \cite Dumbser2017okk.
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct AuxiliaryShiftB : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The parameter f in the gamma-driver condition
+ * eq. 12c of \cite Dumbser2017okk.
+ *
+ */
+struct GammaDriverParam
+    : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter \f$ kappa_1 \f$ related to
+ * constraint damping
+ * in eq. 12f of \cite Dumbser2017okk.
+ */
+struct Kappa1 : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter \f$ kappa_2 \f$ related to
+ * constraint damping
+ * in eq. 12f of \cite Dumbser2017okk.
+ */
+struct Kappa2 : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter \f$ kappa_3 \f$ related to
+ * constraint damping
+ * in eq. 12h of \cite Dumbser2017okk.
+ */
+struct Kappa3 : db::SimpleTag {
+  using type = double;
+};
+
+/*!
+ * \brief Free parameter \f$ K_0 \f$ in 1+log slicing
+ * in eq. 12b of \cite Dumbser2017okk.
+ */
+template <typename DataType>
+struct K0 : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The parameter \f$ \eta \f$ in the gamma-driver
+ * condition eq. 12i of \cite Dumbser2017okk.
+ *
+ */
+template <typename DataType>
+struct Eta : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 }  // namespace Tags
