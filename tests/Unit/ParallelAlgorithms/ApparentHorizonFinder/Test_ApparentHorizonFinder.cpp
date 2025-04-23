@@ -316,7 +316,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       ylm::Strahlkorper<Frame>{l_max, 2.8, {{0.0, 0.0, 0.0}}},
       FastFlow{FastFlow::FlowType::Fast, 1.0, 0.5, 1.e-12, 1.e-2, 1.2, 5,
                max_its},
-      Verbosity::Verbose);
+      Verbosity::Verbose, 3_st);
 
   std::unique_ptr<DomainCreator<3>> domain_creator;
   std::unique_ptr<ActionTesting::MockRuntimeSystem<metavars>> runner_ptr{};

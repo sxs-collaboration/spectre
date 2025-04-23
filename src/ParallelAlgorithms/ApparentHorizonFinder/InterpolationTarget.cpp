@@ -4,6 +4,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 
 #include <algorithm>
+#include <cstddef>
 
 #include "IO/Logging/Verbosity.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -16,10 +17,11 @@ namespace intrp::OptionHolders {
 template <typename Frame>
 ApparentHorizon<Frame>::ApparentHorizon(
     ylm::Strahlkorper<Frame> initial_guess_in, ::FastFlow fast_flow_in,
-    ::Verbosity verbosity_in)
+    ::Verbosity verbosity_in, const size_t max_interpolation_retries_in)
     : initial_guess(std::move(initial_guess_in)),
-      fast_flow(std::move(fast_flow_in)),    // NOLINT
-      verbosity(std::move(verbosity_in)) {}  // NOLINT
+      fast_flow(std::move(fast_flow_in)),  // NOLINT
+      verbosity(std::move(verbosity_in)),  // NOLINT
+      max_interpolation_retries(max_interpolation_retries_in) {}
 // clang-tidy std::move of trivially copyable type.
 
 template <typename Frame>
@@ -27,13 +29,15 @@ void ApparentHorizon<Frame>::pup(PUP::er& p) {
   p | initial_guess;
   p | fast_flow;
   p | verbosity;
+  p | max_interpolation_retries;
 }
 
 template <typename Frame>
 bool operator==(const ApparentHorizon<Frame>& lhs,
                 const ApparentHorizon<Frame>& rhs) {
   return lhs.initial_guess == rhs.initial_guess and
-         lhs.fast_flow == rhs.fast_flow and lhs.verbosity == rhs.verbosity;
+         lhs.fast_flow == rhs.fast_flow and lhs.verbosity == rhs.verbosity and
+         lhs.max_interpolation_retries == rhs.max_interpolation_retries;
 }
 
 template <typename Frame>

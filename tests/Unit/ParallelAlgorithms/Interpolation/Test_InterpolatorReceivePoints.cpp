@@ -502,7 +502,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
           intrp::Actions::ReceivePoints<metavars::InterpolationTargetA>>(
           1_st, temporal_id, block_logical_coords, 1_st)),
       Catch::Matchers::ContainsSubstring(
-          "Interpolator received target points at iteration 1 twice."));
+          "Interpolator received target points at iteration 1 (and "
+          "reinterpolation iteration 0) twice"));
+  // However if on core 1 we reinterpolate at the same iteration, there
+  // shouldn't be an error
+  runner.simple_action<interp_component, intrp::Actions::ReceivePoints<
+                                             metavars::InterpolationTargetA>>(
+      1_st, temporal_id, block_logical_coords, 1_st, 1_st);
 
   // Now send with iteration 2. These points should overwrite the previous ones
   // and an interpolation should happen

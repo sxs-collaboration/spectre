@@ -274,6 +274,7 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
+    MaxInterpolationRetries: 3
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *LMax
@@ -281,6 +282,7 @@ ApparentHorizons:
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
+    MaxInterpolationRetries: 3
   ObservationAhC:
     InitialGuess:
       LMax: 20
@@ -288,6 +290,7 @@ ApparentHorizons:
       Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
+    MaxInterpolationRetries: 3
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA

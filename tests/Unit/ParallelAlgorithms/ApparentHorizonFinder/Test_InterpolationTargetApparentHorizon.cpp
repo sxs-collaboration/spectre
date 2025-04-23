@@ -59,7 +59,7 @@ SPECTRE_TEST_CASE(
   // Options for ApparentHorizon
   intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
       ylm::Strahlkorper<Frame::Inertial>{l_max, radius, center}, FastFlow{},
-      Verbosity::Verbose);
+      Verbosity::Verbose, 3_st);
 
   // Test creation of options
   const auto created_opts = TestHelpers::test_creation<
@@ -77,7 +77,8 @@ SPECTRE_TEST_CASE(
       "InitialGuess:\n"
       "  Center: [0.05, 0.06, 0.07]\n"
       "  Radius: 2.0\n"
-      "  LMax: 12");
+      "  LMax: 12\n"
+      "MaxInterpolationRetries: 3");
   CHECK(created_opts == apparent_horizon_opts);
 
   const auto domain_creator = domain::creators::Sphere(
