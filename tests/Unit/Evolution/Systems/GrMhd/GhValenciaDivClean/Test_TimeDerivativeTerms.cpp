@@ -106,8 +106,8 @@ SPECTRE_TEST_CASE(
       Variables<tmpl::append<gh_dt_variables_tags, valencia_dt_variables_tags>>;
 
   using gh_flux_tags = tmpl::list<>;
-  using valencia_flux_tags =
-      grmhd::GhValenciaDivClean::TimeDerivativeTerms::valencia_flux_tags;
+  using valencia_flux_tags = grmhd::GhValenciaDivClean::detail::
+      TimeDerivativeTermsImpl::valencia_flux_tags;
   using flux_variables_type =
       Variables<tmpl::append<gh_flux_tags, valencia_flux_tags>>;
 
@@ -233,56 +233,54 @@ SPECTRE_TEST_CASE(
   tuples::tagged_tuple_from_typelist<all_valencia_arg_tags>
       all_valencia_argument_variables{};
 
-  tmpl::for_each<
-      tmpl::remove<all_valencia_arg_tags,
-                   SpatialMetricTag>>([&arg_variables, &expected_temp_variables,
-                                       &all_valencia_argument_variables](
-                                          const auto tag_v) {
-    using tag = typename decltype(tag_v)::type;
-    if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          get<tag>(expected_temp_variables);
-    } else if constexpr (std::is_same_v<
-                             tag,
-                             ::Tags::deriv<gr::Tags::Lapse<DataVector>,
-                                           tmpl::size_t<3>, Frame::Inertial>>) {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          gh::spatial_deriv_of_lapse(
-              get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
-              get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
-                  expected_temp_variables),
-              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
-      get<tag>(expected_temp_variables) =
-          tuples::get<tag>(all_valencia_argument_variables);
-    } else if constexpr (std::is_same_v<
-                             tag,
-                             ::Tags::deriv<gr::Tags::Shift<DataVector, 3>,
-                                           tmpl::size_t<3>, Frame::Inertial>>) {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          gh::spatial_deriv_of_shift(
-              get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
-              get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(
-                  expected_temp_variables),
-              get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
-                  expected_temp_variables),
-              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
-      get<tag>(expected_temp_variables) =
-          tuples::get<tag>(all_valencia_argument_variables);
-    } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<
-                                                 DataVector, 3>>) {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          gh::extrinsic_curvature(
-              get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
-                  expected_temp_variables),
-              get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
-              get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
-      get<tag>(expected_temp_variables) =
-          tuples::get<tag>(all_valencia_argument_variables);
-    } else {
-      tuples::get<tag>(all_valencia_argument_variables) =
-          tuples::get<tag>(arg_variables);
-    }
-  });
+  tmpl::for_each<tmpl::remove<all_valencia_arg_tags, SpatialMetricTag>>(
+      [&arg_variables, &expected_temp_variables,
+       &all_valencia_argument_variables](const auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
+          tuples::get<tag>(all_valencia_argument_variables) =
+              get<tag>(expected_temp_variables);
+        } else if constexpr (std::is_same_v<
+                                 tag, ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                                    tmpl::size_t<3>,
+                                                    Frame::Inertial>>) {
+          tuples::get<tag>(all_valencia_argument_variables) =
+              gh::spatial_deriv_of_lapse(
+                  get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
+                  get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+                      expected_temp_variables),
+                  get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
+          get<tag>(expected_temp_variables) =
+              tuples::get<tag>(all_valencia_argument_variables);
+        } else if constexpr (std::is_same_v<
+                                 tag, ::Tags::deriv<
+                                          gr::Tags::Shift<DataVector, 3>,
+                                          tmpl::size_t<3>, Frame::Inertial>>) {
+          tuples::get<tag>(all_valencia_argument_variables) =
+              gh::spatial_deriv_of_shift(
+                  get<gr::Tags::Lapse<DataVector>>(expected_temp_variables),
+                  get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(
+                      expected_temp_variables),
+                  get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+                      expected_temp_variables),
+                  get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
+          get<tag>(expected_temp_variables) =
+              tuples::get<tag>(all_valencia_argument_variables);
+        } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<
+                                                     DataVector, 3>>) {
+          tuples::get<tag>(all_valencia_argument_variables) =
+              gh::extrinsic_curvature(
+                  get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(
+                      expected_temp_variables),
+                  get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
+                  get<gh::Tags::Phi<DataVector, 3>>(arg_variables));
+          get<tag>(expected_temp_variables) =
+              tuples::get<tag>(all_valencia_argument_variables);
+        } else {
+          tuples::get<tag>(all_valencia_argument_variables) =
+              tuples::get<tag>(arg_variables);
+        }
+      });
   // Set spatial metric and its derivative
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {

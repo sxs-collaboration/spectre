@@ -47,35 +47,58 @@ struct ValenciaTempTag : db::SimpleTag, db::PrefixTag {
   using type = typename Tag::type;
 };
 
-template <typename GhDtTagList, typename ValenciaDtTagList,
-          typename ValenciaFluxTagList, typename GhTempTagList,
-          typename ValenciaTempTagList, typename GhGradientTagList,
-          typename GhArgTagList, typename ValenciaArgTagList,
-          typename ValenciaTimeDerivativeArgTagList,
-          typename TraceReversedStressResultTagsList,
-          typename TraceReversedStressArgumentTagsList>
-struct TimeDerivativeTermsImpl;
+namespace dt_type_aliases {
+using gh_dt_tags =
+    db::wrap_tags_in<::Tags::dt,
+                     typename gh::System<3_st>::variables_tag::tags_list>;
+using valencia_dt_tags = db::wrap_tags_in<
+    ::Tags::dt,
+    typename grmhd::ValenciaDivClean::System::variables_tag::tags_list>;
 
-template <typename... GhDtTags, typename... ValenciaDtTags,
-          typename... ValenciaFluxTags, typename... GhTempTags,
-          typename... ValenciaTempTags, typename... GhGradientTags,
-          typename... GhArgTags, typename... ValenciaArgTags,
-          typename... ValenciaTimeDerivativeArgTags,
-          typename... TraceReversedStressResultTags,
-          typename... TraceReversedStressArgumentTags>
-struct TimeDerivativeTermsImpl<
-    tmpl::list<GhDtTags...>, tmpl::list<ValenciaDtTags...>,
-    tmpl::list<ValenciaFluxTags...>, tmpl::list<GhTempTags...>,
-    tmpl::list<ValenciaTempTags...>, tmpl::list<GhGradientTags...>,
-    tmpl::list<GhArgTags...>, tmpl::list<ValenciaArgTags...>,
-    tmpl::list<ValenciaTimeDerivativeArgTags...>,
-    tmpl::list<TraceReversedStressResultTags...>,
-    tmpl::list<TraceReversedStressArgumentTags...>> {
+using dt_tags = tmpl::append<gh_dt_tags, valencia_dt_tags>;
+}  // namespace dt_type_aliases
+
+struct TimeDerivativeTermsImpl;
+struct TimeDerivativeTermsImpl {
+  // Tags related to GeneralizedHarmonic system
+  using gh_arg_tags = typename gh::TimeDerivative<
+      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
+      3_st>::argument_tags;
+
+  using gh_temp_tags = typename gh::TimeDerivative<
+      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
+      3_st>::temporary_tags;
+
+  using valencia_flux_tags = db::wrap_tags_in<
+      ::Tags::Flux,
+      typename grmhd::ValenciaDivClean::System::variables_tag::tags_list,
+      tmpl::size_t<3>, Frame::Inertial>;
+
+  using valencia_temp_tags =
+      typename grmhd::ValenciaDivClean::TimeDerivativeTerms::temporary_tags;
+
+  using valencia_time_derivative_arg_tags =
+      typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags;
+
+  using trace_reversed_stress_result_tags =
+      tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
+                 Tags::ComovingMagneticFieldOneForm>;
+  using trace_reversed_stress_argument_tags = tmpl::list<
+      hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3_st, Frame::Inertial>,
+      hydro::Tags::MagneticFieldOneForm<DataVector, 3_st, Frame::Inertial>,
+      hydro::Tags::MagneticFieldSquared<DataVector>,
+      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+      hydro::Tags::LorentzFactor<DataVector>,
+      grmhd::ValenciaDivClean::TimeDerivativeTerms::OneOverLorentzFactorSquared,
+      hydro::Tags::Pressure<DataVector>,
+      hydro::Tags::SpecificInternalEnergy<DataVector>,
+      gr::Tags::SpacetimeMetric<DataVector, 3>,
+      gr::Tags::Shift<DataVector, 3_st>, gr::Tags::Lapse<DataVector>>;
+
   template <typename TemporaryTagsList, typename... ExtraTags>
   static evolution::dg::TimeDerivativeDecisions<3> apply(
-      const gsl::not_null<
-          Variables<tmpl::list<GhDtTags..., ValenciaDtTags...>>*>
-          dt_vars_ptr,
+      const gsl::not_null<Variables<dt_type_aliases::dt_tags>*> dt_vars_ptr,
       const gsl::not_null<Variables<db::wrap_tags_in<
           ::Tags::Flux, typename ValenciaDivClean::System::flux_variables,
           tmpl::size_t<3>, Frame::Inertial>>*>
@@ -87,14 +110,12 @@ struct TimeDerivativeTermsImpl<
       const tnsr::ijaa<DataVector, 3>& d_phi,
 
       const tuples::TaggedTuple<ExtraTags...>& arguments) {
-    gh::TimeDerivative<
-        ghmhd::GhValenciaDivClean::InitialData::
-            analytic_solutions_and_data_list,
-        3_st>::apply(get<GhDtTags>(dt_vars_ptr)...,
-                     get<GhTempTags>(temps_ptr)..., d_spacetime_metric, d_pi,
-                     d_phi,
-                     get<Tags::detail::TemporaryReference<GhArgTags>>(
-                         arguments)...);
+    generalized_harmonic_time_derivative(
+        dt_vars_ptr, temps_ptr, d_spacetime_metric, d_pi, d_phi, arguments,
+        dt_type_aliases::gh_dt_tags{}, gh_temp_tags{}, gh_arg_tags{});
+
+    // Track whether or not we extracted the 3+1 quantities
+    bool three_plus_one_extracted = false;
 
     // If we are in the atmosphere, then we can skip the evolution
     // of the GRMHD system completely. This inevitably depends on parameters
@@ -114,8 +135,9 @@ struct TimeDerivativeTermsImpl<
                        : std::numeric_limits<double>::infinity())}) *
             (1.0 + 10.0 * std::numeric_limits<double>::epsilon())) {
       // Point into the right memory, then set it to zero.
+
       ASSERT(
-          max(get(get<tmpl::front<tmpl::list<ValenciaDtTags...>>>(
+          max(get(get<tmpl::front<dt_type_aliases::valencia_dt_tags>>(
               *dt_vars_ptr))) == 0.0,
           "GH+GRMHD assumes the time derivatives are set to zero in general."
           " If this is no longer the case, please set them to zero in "
@@ -127,16 +149,53 @@ struct TimeDerivativeTermsImpl<
       //     0.0);
       fluxes_ptr->initialize(fluxes_ptr->number_of_grid_points(), 0.0);
       return evolution::dg::TimeDerivativeDecisions<3>{false};
+    } else {
+      // MHD calls
+
+      // extracting 3+1 quantities to assign spacetime spatial derivatives
+      extract_three_plus_one_quantities(temps_ptr, arguments);
+      three_plus_one_extracted = true;
+
+      // MHD computation
+      aggregate_time_derivative_terms(
+          dt_vars_ptr, fluxes_ptr, temps_ptr, arguments,
+          dt_type_aliases::valencia_dt_tags{}, valencia_flux_tags{},
+          valencia_temp_tags{}, valencia_time_derivative_arg_tags{},
+          trace_reversed_stress_result_tags{},
+          trace_reversed_stress_argument_tags{});
     }
 
-    // extracting 3+1 quantities to assign spacetime spatial derivatives
-    extract_three_plus_one_quantities(temps_ptr, arguments);
-
-    // MHD computation
-    aggregate_time_derivative_terms(dt_vars_ptr, fluxes_ptr, temps_ptr,
-                                    arguments);
+    if (!three_plus_one_extracted) {
+      // If in atmosphere, extract 3+1 quantities for neutrino
+      // evolution
+      extract_three_plus_one_quantities(temps_ptr, arguments);
+      three_plus_one_extracted = true;
+      // Neutrino evolution will be called below
+    }
 
     return evolution::dg::TimeDerivativeDecisions<3>{true};
+  }
+
+  template <typename OutputTags, typename TemporaryTagsList,
+            typename... ExtraTags, typename... GhDtTags, typename... GhTempTags,
+            typename... GhArgTags>
+  static void generalized_harmonic_time_derivative(
+      const gsl::not_null<Variables<OutputTags>*> dt_vars_ptr,
+      const gsl::not_null<Variables<TemporaryTagsList>*> temps_ptr,
+      const tnsr::iaa<DataVector, 3>& d_spacetime_metric,
+      const tnsr::iaa<DataVector, 3>& d_pi,
+      const tnsr::ijaa<DataVector, 3>& d_phi,
+      const tuples::TaggedTuple<ExtraTags...>& arguments,
+      tmpl::list<GhDtTags...> /*meta*/, tmpl::list<GhTempTags...> /*meta*/,
+      tmpl::list<GhArgTags...> /*meta*/) {
+    gh::TimeDerivative<
+        ghmhd::GhValenciaDivClean::InitialData::
+            analytic_solutions_and_data_list,
+        3_st>::apply(get<GhDtTags>(dt_vars_ptr)...,
+                     get<GhTempTags>(temps_ptr)..., d_spacetime_metric, d_pi,
+                     d_phi,
+                     get<Tags::detail::TemporaryReference<GhArgTags>>(
+                         arguments)...);
   }
 
   template <typename TemporaryTagsList, typename... ExtraTags>
@@ -204,17 +263,26 @@ struct TimeDerivativeTermsImpl<
 
   }  // end extract3plus1
 
-  template <typename TemporaryTagsList, typename... ExtraTags>
+  template <typename OutputTags, typename TemporaryTagsList,
+            typename... ExtraTags, typename... ValenciaDtTags,
+            typename... ValenciaFluxTags, typename... ValenciaTempTags,
+            typename... ValenciaTimeDerivativeArgTags,
+            typename... TraceReversedStressResultTags,
+            typename... TraceReversedStressArgumentTags>
   static void aggregate_time_derivative_terms(
-      const gsl::not_null<
-          Variables<tmpl::list<GhDtTags..., ValenciaDtTags...>>*>
-          dt_vars_ptr,
+      const gsl::not_null<Variables<OutputTags>*> dt_vars_ptr,
       const gsl::not_null<Variables<db::wrap_tags_in<
           ::Tags::Flux, typename ValenciaDivClean::System::flux_variables,
           tmpl::size_t<3>, Frame::Inertial>>*>
           fluxes_ptr,
       const gsl::not_null<Variables<TemporaryTagsList>*> temps_ptr,
-      const tuples::TaggedTuple<ExtraTags...>& arguments) {
+      const tuples::TaggedTuple<ExtraTags...>& arguments,
+      tmpl::list<ValenciaDtTags...> /*meta*/,
+      tmpl::list<ValenciaFluxTags...> /*meta*/,
+      tmpl::list<ValenciaTempTags...> /*meta*/,
+      tmpl::list<ValenciaTimeDerivativeArgTags...> /*meta*/,
+      tmpl::list<TraceReversedStressResultTags...> /*meta*/,
+      tmpl::list<TraceReversedStressArgumentTags...> /*meta*/) {
     using extra_tags_list = tmpl::list<ExtraTags...>;
 
     grmhd::ValenciaDivClean::TimeDerivativeTerms::apply(
@@ -244,7 +312,7 @@ struct TimeDerivativeTermsImpl<
             *temps_ptr),
         get<gr::Tags::Lapse<DataVector>>(*temps_ptr));
   }
-};
+};  // namespace detail
 }  // namespace detail
 
 /*!
@@ -283,11 +351,6 @@ struct TimeDerivativeTerms : evolution::PassVariables {
   using d_spatial_metric = ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
                                          tmpl::size_t<3>, Frame::Inertial>;
 
-  using valencia_flux_tags = tmpl::transform<
-      typename grmhd::ValenciaDivClean::System::flux_variables,
-      tmpl::bind<::Tags::Flux, tmpl::_1, tmpl::pin<tmpl::size_t<3_st>>,
-                 tmpl::pin<Frame::Inertial>>>;
-
   using gh_temp_tags = typename gh::TimeDerivative<
       ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
       3_st>::temporary_tags;
@@ -313,18 +376,6 @@ struct TimeDerivativeTerms : evolution::PassVariables {
   using trace_reversed_stress_result_tags =
       tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
                  Tags::ComovingMagneticFieldOneForm>;
-  using trace_reversed_stress_argument_tags = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3_st, Frame::Inertial>,
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3_st, Frame::Inertial>,
-      hydro::Tags::MagneticFieldSquared<DataVector>,
-      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>,
-      grmhd::ValenciaDivClean::TimeDerivativeTerms::OneOverLorentzFactorSquared,
-      hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpecificInternalEnergy<DataVector>,
-      gr::Tags::SpacetimeMetric<DataVector, 3>,
-      gr::Tags::Shift<DataVector, 3_st>, gr::Tags::Lapse<DataVector>>;
   using extra_temp_tags = tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>;
 
   using temporary_tags = tmpl::remove<
@@ -389,15 +440,9 @@ struct TimeDerivativeTerms : evolution::PassVariables {
       }
     }
 
-    return detail::TimeDerivativeTermsImpl<
-        gh_dt_tags, valencia_dt_tags, valencia_flux_tags, gh_temp_tags,
-        valencia_temp_tags, gh_gradient_tags, gh_arg_tags, valencia_arg_tags,
-        typename grmhd::ValenciaDivClean::TimeDerivativeTerms::argument_tags,
-        trace_reversed_stress_result_tags,
-        trace_reversed_stress_argument_tags>::apply(dt_vars_ptr, fluxes_ptr,
-                                                    temps_ptr,
-                                                    d_spacetime_metric, d_pi,
-                                                    d_phi, arguments);
+    return detail::TimeDerivativeTermsImpl::apply(dt_vars_ptr, fluxes_ptr,
+                                                  temps_ptr, d_spacetime_metric,
+                                                  d_pi, d_phi, arguments);
   }
 };
 }  // namespace grmhd::GhValenciaDivClean
