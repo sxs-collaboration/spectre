@@ -29,6 +29,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotonicityPreserving5.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
@@ -47,18 +48,21 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
-PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
-    CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
+template <typename System>
+PositivityPreservingAdaptiveOrderPrim<
+    System>::PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* const msg)
+    : Reconstructor<System>(msg) {}
 
-PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
-    const double alpha_5, const std::optional<double> alpha_7,
-    const std::optional<double> alpha_9,
-    const ::fd::reconstruction::FallbackReconstructorType
-        low_order_reconstructor,
-    const ::VariableFixing::FixReconstructedStateToAtmosphere
-        fix_reconstructed_state_to_atmosphere,
-    const Options::Context& context)
+template <typename System>
+PositivityPreservingAdaptiveOrderPrim<System>::
+    PositivityPreservingAdaptiveOrderPrim(
+        const double alpha_5, const std::optional<double> alpha_7,
+        const std::optional<double> alpha_9,
+        const ::fd::reconstruction::FallbackReconstructorType
+            low_order_reconstructor,
+        const ::VariableFixing::FixReconstructedStateToAtmosphere
+            fix_reconstructed_state_to_atmosphere,
+        const Options::Context& context)
     : four_to_the_alpha_5_(pow(4.0, alpha_5)),
       low_order_reconstructor_(low_order_reconstructor),
       fix_reconstructed_state_to_atmosphere_(
@@ -78,7 +82,8 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
   set_function_pointers();
 }
 
-void PositivityPreservingAdaptiveOrderPrim::set_function_pointers() {
+template <typename System>
+void PositivityPreservingAdaptiveOrderPrim<System>::set_function_pointers() {
   std::tie(reconstruct_, reconstruct_lower_neighbor_,
            reconstruct_upper_neighbor_) = ::fd::reconstruction::
       positivity_preserving_adaptive_order_function_pointers<3, false>(
@@ -91,13 +96,15 @@ void PositivityPreservingAdaptiveOrderPrim::set_function_pointers() {
           six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
 }
 
-std::unique_ptr<Reconstructor>
-PositivityPreservingAdaptiveOrderPrim::get_clone() const {
+template <typename System>
+std::unique_ptr<Reconstructor<System>>
+PositivityPreservingAdaptiveOrderPrim<System>::get_clone() const {
   return std::make_unique<PositivityPreservingAdaptiveOrderPrim>(*this);
 }
 
-void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
-  Reconstructor::pup(p);
+template <typename System>
+void PositivityPreservingAdaptiveOrderPrim<System>::pup(PUP::er& p) {
+  Reconstructor<System>::pup(p);
   p | four_to_the_alpha_5_;
   p | six_to_the_alpha_7_;
   p | eight_to_the_alpha_9_;
@@ -108,11 +115,13 @@ void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   }
 }
 
+template <typename System>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID PositivityPreservingAdaptiveOrderPrim::my_PUP_ID = 0;
+PUP::able::PUP_ID PositivityPreservingAdaptiveOrderPrim<System>::my_PUP_ID = 0;
 
+template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
-void PositivityPreservingAdaptiveOrderPrim::reconstruct(
+void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
@@ -246,8 +255,9 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
 // reconstruction at Dg/Subcell boundary. PP should only be required
 // at shocks / surfaces, which should be within the subcell region
 // if the Dg/Subcell code is performing as expected.
+template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
-void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
+void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const Variables<
@@ -359,8 +369,9 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
            : nullptr));
 }
 
-bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
-                const PositivityPreservingAdaptiveOrderPrim& rhs) {
+template <typename System>
+bool operator==(const PositivityPreservingAdaptiveOrderPrim<System>& lhs,
+                const PositivityPreservingAdaptiveOrderPrim<System>& rhs) {
   // Don't check function pointers since they are set from
   // low_order_reconstructor_
   return lhs.four_to_the_alpha_5_ == rhs.four_to_the_alpha_5_ and
@@ -371,50 +382,81 @@ bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
              rhs.fix_reconstructed_state_to_atmosphere_;
 }
 
-bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
-                const PositivityPreservingAdaptiveOrderPrim& rhs) {
+template <typename System>
+bool operator!=(const PositivityPreservingAdaptiveOrderPrim<System>& lhs,
+                const PositivityPreservingAdaptiveOrderPrim<System>& rhs) {
   return not(lhs == rhs);
 }
 
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATION(r, data)                               \
+  template class PositivityPreservingAdaptiveOrderPrim<      \
+      GhValenciaDivClean::System<NEUTRINO(data)>>;           \
+  template bool operator==(                                  \
+      const PositivityPreservingAdaptiveOrderPrim<           \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& lhs,  \
+      const PositivityPreservingAdaptiveOrderPrim<           \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& rhs); \
+  template bool operator!=(                                  \
+      const PositivityPreservingAdaptiveOrderPrim<           \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& lhs,  \
+      const PositivityPreservingAdaptiveOrderPrim<           \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& rhs);
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+#undef INSTANTIATION
+#undef NEUTRINO
+
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template void PositivityPreservingAdaptiveOrderPrim::reconstruct(         \
-      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
-          vars_on_lower_face,                                               \
-      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
-          vars_on_upper_face,                                               \
-      const gsl::not_null<                                                  \
-          std::optional<std::array<gsl::span<std::uint8_t>, 3>>*>           \
-          reconstruction_order,                                             \
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,         \
-      const Variables<typename System::variables_tag::type::tags_list>&     \
-          volume_spacetime_and_cons_vars,                                   \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
-          ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh,                                          \
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
-  template void                                                             \
-  PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(           \
-      gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
-          vars_on_face,                                                     \
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
-      const Variables<                                                      \
-          grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&  \
-          subcell_volume_spacetime_metric,                                  \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
-          ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh,                                          \
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
-      const Direction<3> direction_to_reconstruct) const;
+#define INSTANTIATION(r, data)                                                 \
+  template void PositivityPreservingAdaptiveOrderPrim<                         \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>::                     \
+      reconstruct(                                                             \
+          gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>  \
+              vars_on_lower_face,                                              \
+          gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>  \
+              vars_on_upper_face,                                              \
+          const gsl::not_null<                                                 \
+              std::optional<std::array<gsl::span<std::uint8_t>, 3>>*>          \
+              reconstruction_order,                                            \
+          const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,        \
+          const Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO( \
+              data)>::variables_tag::type::tags_list>&                         \
+              volume_spacetime_and_cons_vars,                                  \
+          const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&     \
+              eos,                                                             \
+          const Element<3>& element,                                           \
+          const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
+              ghost_data,                                                      \
+          const Mesh<3>& subcell_mesh,                                         \
+          const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere)       \
+          const;                                                               \
+  template void PositivityPreservingAdaptiveOrderPrim<                         \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>::                     \
+      reconstruct_fd_neighbor(                                                 \
+          gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>     \
+              vars_on_face,                                                    \
+          const Variables<hydro::grmhd_tags<DataVector>>&                      \
+              subcell_volume_prims,                                            \
+          const Variables<                                                     \
+              grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>& \
+              subcell_volume_spacetime_metric,                                 \
+          const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&     \
+              eos,                                                             \
+          const Element<3>& element,                                           \
+          const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
+              ghost_data,                                                      \
+          const Mesh<3>& subcell_mesh,                                         \
+          const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,       \
+          const Direction<3> direction_to_reconstruct) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
+                        (RadiationTransport::NoNeutrinos::System))
 
 #undef INSTANTIATION
 #undef TAGS_LIST
 #undef THERMO_DIM
+#undef NEUTRINO
 }  // namespace grmhd::GhValenciaDivClean::fd

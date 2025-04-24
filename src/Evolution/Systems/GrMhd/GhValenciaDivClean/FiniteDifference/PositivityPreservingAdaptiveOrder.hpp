@@ -69,7 +69,8 @@ namespace grmhd::GhValenciaDivClean::fd {
  * \f$\Pi_{ab}\f$ are all reconstructed since the Riemann solver on the DG
  * element also needs to solve for the metric variables.
  */
-class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
+template <typename System>
+class PositivityPreservingAdaptiveOrderPrim : public Reconstructor<System> {
  private:
   using positivity_preserving_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -148,10 +149,10 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
 
   explicit PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* msg);
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor,
-                                     PositivityPreservingAdaptiveOrderPrim);
+  WRAPPED_PUPable_decl_base_template(
+      Reconstructor<System>, PositivityPreservingAdaptiveOrderPrim<System>);
 
-  auto get_clone() const -> std::unique_ptr<Reconstructor> override;
+  auto get_clone() const -> std::unique_ptr<Reconstructor<System>> override;
 
   static constexpr bool use_adaptive_order = true;
   bool supports_adaptive_order() const override { return use_adaptive_order; }
@@ -205,12 +206,16 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       Direction<dim> direction_to_reconstruct) const;
 
  private:
+  template <typename LocalSystem>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
-                         const PositivityPreservingAdaptiveOrderPrim& rhs);
+  friend bool operator==(
+      const PositivityPreservingAdaptiveOrderPrim<LocalSystem>& lhs,
+      const PositivityPreservingAdaptiveOrderPrim<LocalSystem>& rhs);
 
-  friend bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
-                         const PositivityPreservingAdaptiveOrderPrim& rhs);
+  template <typename LocalSystem>
+  friend bool operator!=(
+      const PositivityPreservingAdaptiveOrderPrim<LocalSystem>& lhs,
+      const PositivityPreservingAdaptiveOrderPrim<LocalSystem>& rhs);
 
   void set_function_pointers();
 

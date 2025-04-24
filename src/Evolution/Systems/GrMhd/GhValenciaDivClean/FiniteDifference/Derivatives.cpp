@@ -16,6 +16,7 @@
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -24,14 +25,13 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
+template <typename System>
 void spacetime_derivatives(
-    const gsl::not_null<Variables<db::wrap_tags_in<
-        ::Tags::deriv,
-        typename grmhd::GhValenciaDivClean::System::gradients_tags,
-        tmpl::size_t<3>, Frame::Inertial>>*>
+    const gsl::not_null<Variables<
+        db::wrap_tags_in<::Tags::deriv, typename System::gradients_tags,
+                         tmpl::size_t<3>, Frame::Inertial>>*>
         result,
-    const Variables<
-        typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
+    const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_variables,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
         all_ghost_data,
@@ -92,4 +92,32 @@ void spacetime_derivatives(
       number_of_gh_components, deriv_order,
       cell_centered_logical_to_inertial_inv_jacobian);
 }
+
+// Instantiate here
+// spacetime_derivatives()
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                                              \
+  template void                                                             \
+  spacetime_derivatives<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>( \
+      const gsl::not_null<Variables<                                        \
+          db::wrap_tags_in<::Tags::deriv,                                   \
+                           typename grmhd::GhValenciaDivClean::System<      \
+                               NEUTRINO(data)>::gradients_tags,             \
+                           tmpl::size_t<3>, Frame::Inertial>>*>             \
+          result,                                                           \
+      const Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO(  \
+          data)>::variables_tag::tags_list>& volume_evolved_variables,      \
+      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
+          all_ghost_data,                                                   \
+      const size_t& deriv_order, const Mesh<3>& volume_mesh,                \
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical,           \
+                            Frame::Inertial>&                               \
+          cell_centered_logical_to_inertial_inv_jacobian);
+
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+#undef INSTANTIATION
+#undef NEUTRINO
+
 }  // namespace grmhd::GhValenciaDivClean::fd

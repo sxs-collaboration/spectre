@@ -39,6 +39,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
@@ -52,15 +53,19 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
-DirichletFreeOutflow::DirichletFreeOutflow(CkMigrateMessage* const msg)
+template <typename System>
+DirichletFreeOutflow<System>::DirichletFreeOutflow(CkMigrateMessage* const msg)
     : BoundaryCondition(msg) {}
 // LCOV_EXCL_STOP
-DirichletFreeOutflow::DirichletFreeOutflow(const DirichletFreeOutflow& rhs)
+template <typename System>
+DirichletFreeOutflow<System>::DirichletFreeOutflow(
+    const DirichletFreeOutflow<System>& rhs)
     : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
-DirichletFreeOutflow& DirichletFreeOutflow::operator=(
-    const DirichletFreeOutflow& rhs) {
+template <typename System>
+DirichletFreeOutflow<System>& DirichletFreeOutflow<System>::operator=(
+    const DirichletFreeOutflow<System>& rhs) {
   if (&rhs == this) {
     return *this;
   }
@@ -68,23 +73,28 @@ DirichletFreeOutflow& DirichletFreeOutflow::operator=(
   return *this;
 }
 
-DirichletFreeOutflow::DirichletFreeOutflow(
+template <typename System>
+DirichletFreeOutflow<System>::DirichletFreeOutflow(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}
 
+template <typename System>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-DirichletFreeOutflow::get_clone() const {
+DirichletFreeOutflow<System>::get_clone() const {
   return std::make_unique<DirichletFreeOutflow>(*this);
 }
 
-void DirichletFreeOutflow::pup(PUP::er& p) {
+template <typename System>
+void DirichletFreeOutflow<System>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
   p | analytic_prescription_;
 }
+template <typename System>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID DirichletFreeOutflow::my_PUP_ID = 0;
+PUP::able::PUP_ID DirichletFreeOutflow<System>::my_PUP_ID = 0;
 
-std::optional<std::string> DirichletFreeOutflow::dg_ghost(
+template <typename System>
+std::optional<std::string> DirichletFreeOutflow<System>::dg_ghost(
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
         spacetime_metric,
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
@@ -200,7 +210,8 @@ std::optional<std::string> DirichletFreeOutflow::dg_ghost(
                *shift, *lapse, *inv_spatial_metric);
 }
 
-void DirichletFreeOutflow::fd_ghost(
+template <typename System>
+void DirichletFreeOutflow<System>::fd_ghost(
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
         spacetime_metric,
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
@@ -237,7 +248,7 @@ void DirichletFreeOutflow::fd_ghost(
     const ElementMap<3, Frame::Grid>& logical_to_grid_map,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
         grid_to_inertial_map,
-    const fd::Reconstructor& reconstructor) const {
+    const fd::Reconstructor<System>& reconstructor) const {
   const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
 
   const auto ghost_logical_coords =
@@ -325,5 +336,17 @@ void DirichletFreeOutflow::fd_ghost(
       // fd_gridless_tags
       reconstructor.ghost_zone_size(), cell_centered_ghost_fluxes.has_value());
 }
+
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)         \
+  template class DirichletFreeOutflow< \
+      GhValenciaDivClean::System<NEUTRINO(data)>>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+
+#undef INSTANTIATION
+#undef NEUTRINO
 
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

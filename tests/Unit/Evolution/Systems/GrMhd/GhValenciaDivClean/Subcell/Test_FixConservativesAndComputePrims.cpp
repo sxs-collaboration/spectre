@@ -16,6 +16,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -28,9 +29,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <typename EquationOfStateType>
+
+template <typename NeutrinoTransportSystem, typename EquationOfStateType>
 void test(const EquationOfStateType& eos) {
-  using System = grmhd::GhValenciaDivClean::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
 
   // Only use 1 grid point to see that we correctly flagged the point as being
   // fixed. We're really only testing that the mutator calls the correct
@@ -88,9 +90,9 @@ void test(const EquationOfStateType& eos) {
 
   using recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>;
-  db::mutate_apply<grmhd::GhValenciaDivClean::subcell::
-                       FixConservativesAndComputePrims<recovery_schemes>>(
-      make_not_null(&box));
+  db::mutate_apply<
+      grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
+          recovery_schemes, System>>(make_not_null(&box));
 
   // Verify that the conserved variables were fixed
   CHECK(db::get<grmhd::ValenciaDivClean::Tags::VariablesNeededFixing>(box));
@@ -134,6 +136,8 @@ void test(const EquationOfStateType& eos) {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GhValenciaDivClean.Subcell.FixConsAndComputePrims",
     "[Unit][Evolution]") {
-  test(EquationsOfState::Barotropic3D(
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+
+  test<NeutrinoTransportSystem>(EquationsOfState::Barotropic3D(
       EquationsOfState::PolytropicFluid<true>(100.0, 2.0)));
 }

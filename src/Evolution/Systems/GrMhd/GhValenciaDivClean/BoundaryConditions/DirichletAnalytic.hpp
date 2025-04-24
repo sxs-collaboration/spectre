@@ -57,6 +57,8 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  * \brief Sets Dirichlet boundary conditions using the analytic solution or
  * analytic data.
  */
+// template on System instead
+template <typename System>
 class DirichletAnalytic final : public BoundaryCondition {
  public:
   /// \brief What analytic solution/data to prescribe.
@@ -151,7 +153,7 @@ class DirichletAnalytic final : public BoundaryCondition {
                  domain::Tags::ElementMap<3, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                              Frame::Inertial>,
-                 fd::Tags::Reconstructor>;
+                 fd::Tags::Reconstructor<System>>;
   void fd_ghost(
       gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> spacetime_metric,
       gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
@@ -177,7 +179,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const ElementMap<3, Frame::Grid>& logical_to_grid_map,
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
           grid_to_inertial_map,
-      const fd::Reconstructor& reconstructor) const;
+      const fd::Reconstructor<System>& reconstructor) const;
 
  private:
   std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;

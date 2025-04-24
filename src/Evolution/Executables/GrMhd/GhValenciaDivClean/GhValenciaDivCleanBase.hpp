@@ -106,6 +106,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SetInitialRdmpData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/Tags/Filter.hpp"
 #include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
@@ -268,7 +269,9 @@ struct GhValenciaDivCleanDefaults {
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
-  using system = grmhd::GhValenciaDivClean::System;
+  using neutrino_system = RadiationTransport::NoNeutrinos::System;
+
+  using system = grmhd::GhValenciaDivClean::System<neutrino_system>;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using analytic_solution_fields =
@@ -357,6 +360,7 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_dg_element_collection =
       defaults::use_dg_element_collection;
   using system = typename defaults::system;
+  // using neutrino_system = typename defaults::neutrino_system;
   using analytic_variables_tags = typename defaults::analytic_variables_tags;
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
   using ordered_list_of_primitive_recovery_schemes =
@@ -595,7 +599,7 @@ struct GhValenciaDivCleanTemplateBase<
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
    private:
     using boundary_conditions = grmhd::GhValenciaDivClean::BoundaryConditions::
-        standard_boundary_conditions;
+        standard_boundary_conditions<system>;
 
    public:
     using factory_classes = tmpl::map<
@@ -670,7 +674,7 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           use_dg_subcell,
           tmpl::list<
-              grmhd::GhValenciaDivClean::fd::Tags::Reconstructor,
+              grmhd::GhValenciaDivClean::fd::Tags::Reconstructor<system>,
               grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
@@ -712,12 +716,14 @@ struct GhValenciaDivCleanTemplateBase<
     template <typename DbTagsList>
     static constexpr size_t ghost_zone_size(
         const db::DataBox<DbTagsList>& box) {
-      return db::get<grmhd::GhValenciaDivClean::fd::Tags::Reconstructor>(box)
+      return db::get<
+                 grmhd::GhValenciaDivClean::fd::Tags::Reconstructor<system>>(
+                 box)
           .ghost_zone_size();
     }
 
     using DgComputeSubcellNeighborPackagedData =
-        grmhd::GhValenciaDivClean::subcell::NeighborPackagedData;
+        grmhd::GhValenciaDivClean::subcell::NeighborPackagedData<system>;
 
     using GhostVariables =
         grmhd::GhValenciaDivClean::subcell::PrimitiveGhostVariables;
@@ -727,7 +733,7 @@ struct GhValenciaDivCleanTemplateBase<
       ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<volume_dim>,
       AlwaysReadyPostprocessor<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
-              ordered_list_of_primitive_recovery_schemes>>>;
+              ordered_list_of_primitive_recovery_schemes, system>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
@@ -764,8 +770,8 @@ struct GhValenciaDivCleanTemplateBase<
           system, volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           UseControlSystems,
-          Actions::MutateApply<
-              grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>,
+          Actions::MutateApply<grmhd::GhValenciaDivClean::subcell::
+                                   ZeroMhdTimeDerivatives<system>>,
           tmpl::list<>>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
@@ -801,7 +807,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::MutateApply<evolution::dg::subcell::fd::CellCenteredFlux<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, true>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
-          grmhd::GhValenciaDivClean::subcell::TimeDerivative>,
+          grmhd::GhValenciaDivClean::subcell::TimeDerivative<system>>,
       Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
@@ -810,7 +816,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::CleanHistory<system, local_time_stepping>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
-              ordered_list_of_primitive_recovery_schemes>>,
+              ordered_list_of_primitive_recovery_schemes, system>>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           grmhd::GhValenciaDivClean::subcell::TciOnFdGrid>,
       Actions::MutateApply<

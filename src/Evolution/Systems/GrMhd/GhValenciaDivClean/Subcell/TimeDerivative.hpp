@@ -73,17 +73,18 @@ namespace grmhd::GhValenciaDivClean::subcell {
 namespace detail {
 template <class GhDtTagsList, class GhTemporariesList, class GhGradientTagsList,
           class GhExtraTagsList, class GrmhdDtTagsList,
-          class GrmhdSourceTagsList, class GrmhdArgumentSourceTagsList>
+          class GrmhdSourceTagsList, class GrmhdArgumentSourceTagsList,
+          typename System>
 struct ComputeTimeDerivImpl;
 
 template <class... GhDtTags, class... GhTemporaries, class... GhGradientTags,
           class... GhExtraTags, class... GrmhdDtTags, class... GrmhdSourceTags,
-          class... GrmhdArgumentSourceTags>
+          class... GrmhdArgumentSourceTags, typename System>
 struct ComputeTimeDerivImpl<
     tmpl::list<GhDtTags...>, tmpl::list<GhTemporaries...>,
     tmpl::list<GhGradientTags...>, tmpl::list<GhExtraTags...>,
     tmpl::list<GrmhdDtTags...>, tmpl::list<GrmhdSourceTags...>,
-    tmpl::list<GrmhdArgumentSourceTags...>> {
+    tmpl::list<GrmhdArgumentSourceTags...>, System> {
   template <class DbTagsList>
   static void apply(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
@@ -154,8 +155,7 @@ struct ComputeTimeDerivImpl<
     dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
 
     using primitives_tag = typename System::primitive_variables_tag;
-    using evolved_vars_tag =
-        typename grmhd::GhValenciaDivClean::System::variables_tag;
+    using evolved_vars_tag = typename System::variables_tag;
 
     const auto& primitive_vars = db::get<primitives_tag>(*box);
     const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
@@ -442,11 +442,11 @@ struct ComputeTimeDerivImpl<
  * - Assumes Cartesian coordinates with a diagonal Jacobian matrix
  * from the logical to the inertial frame
  */
+template <typename System>
 struct TimeDerivative {
   template <typename DbTagsList>
   static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
-    using evolved_vars_tag =
-        typename grmhd::GhValenciaDivClean::System::variables_tag;
+    using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using grmhd_evolved_vars_tag =
         typename grmhd::ValenciaDivClean::System::variables_tag;
@@ -505,12 +505,13 @@ struct TimeDerivative {
            "ElementID "
                << element.id());
 
-    const fd::Reconstructor& recons = db::get<fd::Tags::Reconstructor>(*box);
+    const fd::Reconstructor<System>& recons =
+        db::get<fd::Tags::Reconstructor<System>>(*box);
     // If the element has external boundaries and subcell is enabled for
     // boundary elements, compute FD ghost data with a given boundary condition.
     if constexpr (subcell_enabled_at_external_boundary) {
       if (not element_is_interior) {
-        fd::BoundaryConditionGhostData::apply(box, element, recons);
+        fd::BoundaryConditionGhostData<System>::apply(box, element, recons);
       }
     }
     std::optional<std::array<gsl::span<std::uint8_t>, 3>>
@@ -561,11 +562,11 @@ struct TimeDerivative {
     Variables<db::wrap_tags_in<::Tags::deriv, gradients_tags, tmpl::size_t<3>,
                                Frame::Inertial>>
         cell_centered_gh_derivs{num_pts};
-    grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
+    grmhd::GhValenciaDivClean::fd::spacetime_derivatives<System>(
         make_not_null(&cell_centered_gh_derivs), evolved_vars,
         db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(
             *box),
-        recons.ghost_zone_size()*2, subcell_mesh,
+        recons.ghost_zone_size() * 2, subcell_mesh,
         cell_centered_logical_to_inertial_inv_jacobian);
 
     // Now package the data and compute the correction
@@ -606,8 +607,9 @@ struct TimeDerivative {
               Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
 
           // Reconstruct data to the face
-          call_with_dynamic_type<void, typename grmhd::GhValenciaDivClean::fd::
-                                           Reconstructor::creatable_classes>(
+          call_with_dynamic_type<
+              void, typename grmhd::GhValenciaDivClean::fd::Reconstructor<
+                        System>::creatable_classes>(
               &recons, [&box, &package_data_argvars_lower_face,
                         &package_data_argvars_upper_face,
                         &reconstruction_order](const auto& reconstructor) {
@@ -812,15 +814,15 @@ struct TimeDerivative {
                         tmpl::bind<db::remove_tag_prefix, tmpl::_1>>;
     using grmhd_source_argument_tags =
         ValenciaDivClean::ComputeSources::argument_tags;
-    detail::ComputeTimeDerivImpl<gh_variables_tags, gh_temporary_tags,
-                                 gh_gradient_tags, gh_extra_tags,
-                                 grmhd_evolved_vars_tags, grmhd_source_tags,
-                                 grmhd_source_argument_tags>::
-        apply(box, inertial_coords,
-              db::get<evolution::dg::subcell::fd::Tags::
-                          DetInverseJacobianLogicalToInertial>(*box),
-              cell_centered_logical_to_inertial_inv_jacobian, one_over_delta_xi,
-              boundary_corrections, cell_centered_gh_derivs);
+    detail::ComputeTimeDerivImpl<
+        gh_variables_tags, gh_temporary_tags, gh_gradient_tags, gh_extra_tags,
+        grmhd_evolved_vars_tags, grmhd_source_tags, grmhd_source_argument_tags,
+        System>::apply(box, inertial_coords,
+                       db::get<evolution::dg::subcell::fd::Tags::
+                                   DetInverseJacobianLogicalToInertial>(*box),
+                       cell_centered_logical_to_inertial_inv_jacobian,
+                       one_over_delta_xi, boundary_corrections,
+                       cell_centered_gh_derivs);
     evolution::dg::subcell::store_reconstruction_order_in_databox(
         box, reconstruction_order);
   }

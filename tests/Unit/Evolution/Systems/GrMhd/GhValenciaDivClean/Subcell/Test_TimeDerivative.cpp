@@ -61,6 +61,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -92,6 +93,7 @@ struct DummyAnalyticSolutionTag : db::SimpleTag,
       gh::Solutions::WrappedGr<::RelativisticEuler::Solutions::TovStar>;
 };
 
+template <typename System>
 struct DummyEvolutionMetaVars {
   struct SubcellOptions {
     static constexpr bool subcell_enabled_at_external_boundary = true;
@@ -99,16 +101,17 @@ struct DummyEvolutionMetaVars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<
-            BoundaryConditions::BoundaryCondition,
-            tmpl::push_back<BoundaryConditions::standard_boundary_conditions,
-                            BoundaryConditions::DirichletAnalytic>>,
+        tmpl::pair<BoundaryConditions::BoundaryCondition,
+                   tmpl::push_back<
+                       BoundaryConditions::standard_boundary_conditions<System>,
+                       BoundaryConditions::DirichletAnalytic<System>>>,
         tmpl::pair<evolution::initial_data::InitialData,
                    ghmhd::GhValenciaDivClean::InitialData::
                        analytic_solutions_and_data_list>>;
   };
 };
 
+template <typename System>
 double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
             const bool test_non_diagonal_jacobian) {
   using Affine = domain::CoordinateMaps::Affine;
@@ -128,9 +131,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       external_boundary_conditions(1);
   for (const auto& direction : Direction<3>::all_directions()) {
     external_boundary_conditions.at(0)[direction] =
-        grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic(
-            std::make_unique<gh::Solutions::WrappedGr<
-                ::RelativisticEuler::Solutions::TovStar>>(soln))
+        grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic<
+            System>(std::make_unique<gh::Solutions::WrappedGr<
+                        ::RelativisticEuler::Solutions::TovStar>>(soln))
             .get_clone();
   }
   std::vector<Block<3>> blocks;
@@ -272,8 +275,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       neighbor_data{};
   using prims_to_reconstruct_tags = grmhd::GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
-  for (const auto & [ direction, neighbors_in_direction ] :
-       element.neighbors()) {
+  for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);
     neighbor_logical_coords.get(direction.dimension()) +=
         2.0 * direction.sign();
@@ -646,9 +648,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
-          domain::Tags::Mesh<3>, fd::Tags::Reconstructor,
-          evolution::Tags::BoundaryCorrection<
-              grmhd::GhValenciaDivClean::System>,
+          domain::Tags::Mesh<3>, fd::Tags::Reconstructor<System>,
+          evolution::Tags::BoundaryCorrection<System>,
           hydro::Tags::GrmhdEquationOfState,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
@@ -666,7 +667,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
                                         Frame::Inertial>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize,
-          Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>,
+          Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars<System>>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>,
           gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>,
@@ -705,9 +706,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3,
                                                 Frame::Inertial>>>(
       element, subcell_mesh, dg_mesh,
-      std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor>{
+      std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor<System>>{
           std::make_unique<
-              grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim>()},
+              grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>>()},
       std::unique_ptr<
           grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<BoundaryCorrections::ProductOfCorrections<
@@ -725,7 +726,8 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       std::move(domain), std::move(external_boundary_conditions),
       dg_mesh_velocity, div_dg_mesh_velocity,
       dg_logical_to_inertial_inv_jacobian, dummy_normal_covector_and_magnitude,
-      time, clone_unique_ptrs(functions_of_time), DummyEvolutionMetaVars{},
+      time, clone_unique_ptrs(functions_of_time),
+      DummyEvolutionMetaVars<System>{},
       // Note: These damping functions all assume Grid==Inertial. We need to
       // rescale the widths in the Grid frame for binaries.
       std::unique_ptr<DampingFunction>(  // Gamma0, taken from SpEC BNS
@@ -743,7 +745,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
 
-  subcell::TimeDerivative::apply(make_not_null(&box));
+  subcell::TimeDerivative<System>::apply(make_not_null(&box));
 
   // We test that the time derivative converges to zero,
   // so we remove the expected value of the time derivative for moving meshes
@@ -785,7 +787,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
                              Frame::Inertial>>
       cell_centered_gh_derivs{subcell_mesh.number_of_grid_points()};
   const size_t fd_deriv_order = 4;
-  grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
+  grmhd::GhValenciaDivClean::fd::spacetime_derivatives<System>(
       make_not_null(&cell_centered_gh_derivs), gh_evolved_vars,
       db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<3>>(box),
       fd_deriv_order, subcell_mesh,
@@ -850,20 +852,24 @@ SPECTRE_TEST_CASE(
   // that the time derivative vanishes. Or, more specifically, that the time
   // derivative decreases with increasing resolution and is below 1.0e-6.
 
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+
   std::optional<double> expansion_velocity = {};
 
-  CHECK(test(4, expansion_velocity, false) >
-        test(8, expansion_velocity, false));
-  CHECK(test(8, expansion_velocity, false) < 1.0e-6);
+  CHECK(test<System>(4, expansion_velocity, false) >
+        test<System>(8, expansion_velocity, false));
+  CHECK(test<System>(8, expansion_velocity, false) < 1.0e-6);
 
   expansion_velocity = 0.5;
 
-  CHECK(test(4, expansion_velocity, false) >
-        test(8, expansion_velocity, false));
-  CHECK(test(8, expansion_velocity, false) < 1.0e-6);
+  CHECK(test<System>(4, expansion_velocity, false) >
+        test<System>(8, expansion_velocity, false));
+  CHECK(test<System>(8, expansion_velocity, false) < 1.0e-6);
 
-  CHECK(test(4, expansion_velocity, true) > test(8, expansion_velocity, true));
-  CHECK(test(8, expansion_velocity, true) < 1.0e-6);
+  CHECK(test<System>(4, expansion_velocity, true) >
+        test<System>(8, expansion_velocity, true));
+  CHECK(test<System>(8, expansion_velocity, true) < 1.0e-6);
 }
 }  // namespace
 }  // namespace grmhd::GhValenciaDivClean

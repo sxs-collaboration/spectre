@@ -25,6 +25,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
@@ -41,13 +42,14 @@
 
 namespace grmhd::GhValenciaDivClean::fd {
 
-Wcns5zPrim::Wcns5zPrim(const size_t nonlinear_weight_exponent,
-                       const double epsilon,
-                       const ::fd::reconstruction::FallbackReconstructorType
-                           fallback_reconstructor,
-                       const size_t max_number_of_extrema,
-                       const ::VariableFixing::FixReconstructedStateToAtmosphere
-                           fix_reconstructed_state_to_atmosphere)
+template <typename System>
+Wcns5zPrim<System>::Wcns5zPrim(
+    const size_t nonlinear_weight_exponent, const double epsilon,
+    const ::fd::reconstruction::FallbackReconstructorType
+        fallback_reconstructor,
+    const size_t max_number_of_extrema,
+    const ::VariableFixing::FixReconstructedStateToAtmosphere
+        fix_reconstructed_state_to_atmosphere)
     : nonlinear_weight_exponent_(nonlinear_weight_exponent),
       epsilon_(epsilon),
       fallback_reconstructor_(fallback_reconstructor),
@@ -60,14 +62,18 @@ Wcns5zPrim::Wcns5zPrim(const size_t nonlinear_weight_exponent,
           nonlinear_weight_exponent_, fallback_reconstructor_);
 }
 
-Wcns5zPrim::Wcns5zPrim(CkMigrateMessage* const msg) : Reconstructor(msg) {}
+template <typename System>
+Wcns5zPrim<System>::Wcns5zPrim(CkMigrateMessage* const msg)
+    : Reconstructor<System>(msg) {}
 
-std::unique_ptr<Reconstructor> Wcns5zPrim::get_clone() const {
-  return std::make_unique<Wcns5zPrim>(*this);
+template <typename System>
+std::unique_ptr<Reconstructor<System>> Wcns5zPrim<System>::get_clone() const {
+  return std::make_unique<Wcns5zPrim<System>>(*this);
 }
 
-void Wcns5zPrim::pup(PUP::er& p) {
-  Reconstructor::pup(p);
+template <typename System>
+void Wcns5zPrim<System>::pup(PUP::er& p) {
+  Reconstructor<System>::pup(p);
   p | nonlinear_weight_exponent_;
   p | epsilon_;
   p | fallback_reconstructor_;
@@ -81,18 +87,19 @@ void Wcns5zPrim::pup(PUP::er& p) {
   }
 }
 
+template <typename System>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID Wcns5zPrim::my_PUP_ID = 0;
+PUP::able::PUP_ID Wcns5zPrim<System>::my_PUP_ID = 0;
 
+template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
-void Wcns5zPrim::reconstruct(
+void Wcns5zPrim<System>::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_upper_face,
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
-    const Variables<
-        typename GhValenciaDivClean::System::variables_tag::type::tags_list>&
+    const Variables<typename System::variables_tag::type::tags_list>&
         volume_spacetime_and_cons_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
@@ -160,8 +167,9 @@ void Wcns5zPrim::reconstruct(
            : nullptr));
 }
 
+template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
-void Wcns5zPrim::reconstruct_fd_neighbor(
+void Wcns5zPrim<System>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const Variables<
@@ -266,7 +274,8 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
            : nullptr));
 }
 
-bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
+template <typename System>
+bool operator==(const Wcns5zPrim<System>& lhs, const Wcns5zPrim<System>& rhs) {
   // Don't check function pointers since they are set from
   // nonlinear_weight_exponent_ and fallback_reconstructor_
   return lhs.nonlinear_weight_exponent_ == rhs.nonlinear_weight_exponent_ and
@@ -277,46 +286,77 @@ bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
              rhs.fix_reconstructed_state_to_atmosphere_;
 }
 
-bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
+template <typename System>
+bool operator!=(const Wcns5zPrim<System>& lhs, const Wcns5zPrim<System>& rhs) {
   return not(lhs == rhs);
 }
 
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATION(r, data)                                             \
+  template class Wcns5zPrim<                                               \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;                  \
+  template bool operator==(                                                \
+      const Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>& \
+          lhs,                                                             \
+      const Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>& \
+          rhs);                                                            \
+  template bool operator!=(                                                \
+      const Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>& \
+          lhs,                                                             \
+      const Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>& \
+          rhs);
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+#undef INSTANTIATION
+#undef NEUTRINO
+
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template void Wcns5zPrim::reconstruct(                                    \
-      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
-          vars_on_lower_face,                                               \
-      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
-          vars_on_upper_face,                                               \
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,         \
-      const Variables<typename System::variables_tag::type::tags_list>&     \
-          volume_spacetime_and_cons_vars,                                   \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
-          ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh,                                          \
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
-  template void Wcns5zPrim::reconstruct_fd_neighbor(                        \
-      gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
-          vars_on_face,                                                     \
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
-      const Variables<                                                      \
-          grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&  \
-          subcell_volume_spacetime_metric,                                  \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
-          ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh,                                          \
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
-      const Direction<3>& direction_to_reconstruct) const;
+// If templated on System, need to template  Wcns5zPrim<typename
+// System<NEUTRINO(data)>>
+#define INSTANTIATION(r, data)                                                 \
+  template void                                                                \
+  Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>::reconstruct(  \
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>      \
+          vars_on_lower_face,                                                  \
+      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>      \
+          vars_on_upper_face,                                                  \
+      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,            \
+      const Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO(     \
+          data)>::variables_tag::type::tags_list>&                             \
+          volume_spacetime_and_cons_vars,                                      \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
+      const Element<3>& element,                                               \
+      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&            \
+          ghost_data,                                                          \
+      const Mesh<3>& subcell_mesh,                                             \
+      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const;    \
+  template void                                                                \
+  Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>::              \
+      reconstruct_fd_neighbor(                                                 \
+          gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>     \
+              vars_on_face,                                                    \
+          const Variables<hydro::grmhd_tags<DataVector>>&                      \
+              subcell_volume_prims,                                            \
+          const Variables<                                                     \
+              grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>& \
+              subcell_volume_spacetime_metric,                                 \
+          const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&     \
+              eos,                                                             \
+          const Element<3>& element,                                           \
+          const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
+              ghost_data,                                                      \
+          const Mesh<3>& subcell_mesh,                                         \
+          const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,       \
+          const Direction<3>& direction_to_reconstruct) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
+                        (RadiationTransport::NoNeutrinos::System))
 
 #undef INSTANTIATION
 #undef TAGS_LIST
 #undef THERMO_DIM
+#undef NEUTRINO
 
 }  // namespace grmhd::GhValenciaDivClean::fd

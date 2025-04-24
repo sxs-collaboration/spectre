@@ -14,9 +14,11 @@
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
 /// Boundary conditions that work with finite difference.
+template <typename System>
 using standard_boundary_conditions = tmpl::list<
     ConstraintPreservingFreeOutflow,
     domain::BoundaryConditions::Periodic<BoundaryCondition>,
-    grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic,
-    grmhd::GhValenciaDivClean::BoundaryConditions::DirichletFreeOutflow>;
+    grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic<System>,
+    grmhd::GhValenciaDivClean::BoundaryConditions::DirichletFreeOutflow<
+        System>>;
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

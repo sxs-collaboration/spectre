@@ -61,6 +61,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
@@ -81,6 +82,7 @@
 
 namespace grmhd::GhValenciaDivClean {
 namespace {
+template <typename System>
 double test(const size_t num_dg_pts) {
   using BoundaryCorrection = BoundaryCorrections::ProductOfCorrections<
       gh::BoundaryCorrections::UpwindPenalty<3>,
@@ -261,9 +263,9 @@ double test(const size_t num_dg_pts) {
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
-          evolution::dg::subcell::Tags::Mesh<3>, fd::Tags::Reconstructor,
-          evolution::Tags::BoundaryCorrection<
-              grmhd::GhValenciaDivClean::System>,
+          evolution::dg::subcell::Tags::Mesh<3>,
+          fd::Tags::Reconstructor<System>,
+          evolution::Tags::BoundaryCorrection<System>,
           hydro::Tags::GrmhdEquationOfState,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
@@ -302,9 +304,9 @@ double test(const size_t num_dg_pts) {
           gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3,
                                                                Frame::Grid>>>(
       element, dg_mesh, subcell_mesh,
-      std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor>{
+      std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor<System>>{
           std::make_unique<
-              grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim>()},
+              grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>>()},
       std::unique_ptr<
           grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<BoundaryCorrection>(
@@ -343,8 +345,8 @@ double test(const size_t num_dg_pts) {
         DirectionalId<3>{direction, *neighbors.begin()});
   }
 
-  const auto all_packaged_data =
-      subcell::NeighborPackagedData::apply(box, mortars_to_reconstruct_to);
+  const auto all_packaged_data = subcell::NeighborPackagedData<System>::apply(
+      box, mortars_to_reconstruct_to);
 
   // Parse out evolved vars, since those are easiest to check for correctness,
   // then return absolute difference between analytic and reconstructed values.
@@ -495,8 +497,12 @@ SPECTRE_TEST_CASE(
   // This tests sets up a cube [-4,4]^3 in a TOV star spacetime and verifies
   // that the time derivative vanishes. Or, more specifically, that the time
   // derivative decreases with increasing resolution and is below 1.0e-4.
-  const double error_4 = test(4);
-  const double error_8 = test(8);
+
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+
+  const double error_4 = test<System>(4);
+  const double error_8 = test<System>(8);
   CHECK(error_4 > error_8);
   // Check that the error is "reasonably small"
   CHECK(error_8 < 1.0e-4);

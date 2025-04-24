@@ -7,6 +7,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PositivityPreservingAdaptiveOrder.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -15,12 +16,17 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
                   "[Unit][Evolution]") {
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+
   namespace helpers = TestHelpers::grmhd::GhValenciaDivClean::fd;
   PUPable_reg(SINGLE_ARG(
-      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim));
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>));
   const auto ppao_from_options_base = TestHelpers::test_factory_creation<
-      grmhd::GhValenciaDivClean::fd::Reconstructor,
-      grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor>(
+      grmhd::GhValenciaDivClean::fd::Reconstructor<System>,
+      grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor<
+          System>>(
       "PositivityPreservingAdaptiveOrderPrim:\n"
       "  Alpha5: 3.7\n"
       "  Alpha7: None\n"
@@ -29,30 +35,35 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Ppao",
       "  AtmosphereTreatment: Never\n");
   const auto ppao_deserialized =
       serialize_and_deserialize(ppao_from_options_base);
-  auto* const ppao_from_options =
-      dynamic_cast<const grmhd::GhValenciaDivClean::fd::
-                       PositivityPreservingAdaptiveOrderPrim*>(
-          ppao_deserialized.get());
+  auto* const ppao_from_options = dynamic_cast<
+      const grmhd::GhValenciaDivClean::fd::
+          PositivityPreservingAdaptiveOrderPrim<System>*>(
+      ppao_deserialized.get());
   REQUIRE(ppao_from_options != nullptr);
-  CHECK(grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+  CHECK(grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+            System>{
             3.7, std::nullopt, std::nullopt,
             fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
             ::VariableFixing::FixReconstructedStateToAtmosphere::Always} !=
-        grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+        grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+            System>{
             3.7, std::nullopt, std::nullopt,
             fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
             ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   CHECK(*ppao_from_options ==
-        grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+        grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+            System>{
             3.7, std::nullopt, std::nullopt,
             fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
             ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
   test_move_semantics(
-      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>{
           3.7, std::nullopt, std::nullopt,
           fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never},
-      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+      grmhd::GhValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim<
+          System>{
           3.7, std::nullopt, std::nullopt,
           fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never});

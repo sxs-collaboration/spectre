@@ -31,6 +31,10 @@ namespace GhValenciaDivClean {
 struct TimeDerivativeTerms;
 /// \endcond
 
+template <typename NeutrinoTransportSystem>
+struct System;
+
+template <typename NeutrinoTransportSystem>
 struct System {
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
@@ -38,6 +42,7 @@ struct System {
   static constexpr size_t volume_dim = 3;
   using grmhd_system = grmhd::ValenciaDivClean::System;
   using gh_system = gh::System<3_st>;
+  using neutrino_transport_system = NeutrinoTransportSystem;
 
   static_assert(std::is_same_v<Tags::spacetime_reconstruction_tags,
                                typename gh_system::variables_tag::tags_list>);

@@ -23,6 +23,7 @@ namespace grmhd::GhValenciaDivClean::subcell {
  * \brief Zeros out the MHD time derivatives in the elements next to a DG-only
  * block that themselves are not DG-only elements.
  */
+template <typename System>
 struct ZeroMhdTimeDerivatives {
   using return_tags = tmpl::list<::Tags::Variables<
       db::wrap_tags_in<::Tags::dt, typename System::variables_tag::tags_list>>>;

@@ -44,6 +44,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -51,11 +52,13 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::subcell {
-DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
+template <typename System>
+DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
     const db::Access& box,
     const std::vector<DirectionalId<3>>& mortars_to_reconstruct_to) {
   using evolved_vars_tag = typename System::variables_tag;
@@ -106,7 +109,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
       subcell_mesh.extents());
 
   const auto& recons =
-      db::get<grmhd::GhValenciaDivClean::fd::Tags::Reconstructor>(box);
+      db::get<grmhd::GhValenciaDivClean::fd::Tags::Reconstructor<System>>(box);
   const auto& base_boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<System>>(box);
   const auto& fix_to_atmosphere =
@@ -159,8 +162,9 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
                                           .product();
           vars_on_face.initialize(num_face_pts);
 
-          call_with_dynamic_type<void, typename grmhd::GhValenciaDivClean::fd::
-                                           Reconstructor::creatable_classes>(
+          call_with_dynamic_type<
+              void, typename grmhd::GhValenciaDivClean::fd::Reconstructor<
+                        System>::creatable_classes>(
               &recons,
               [&element, &eos, &fix_to_atmosphere, &mortar_id,
                &ghost_subcell_data, &subcell_mesh, &vars_on_face, &volume_prims,
@@ -328,10 +332,21 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
 
   return neighbor_package_data;
 }
+
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATION(r, data)          \
+  template struct NeighborPackagedData< \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+#undef INSTANTIATION
+#undef NEUTRINO
 }  // namespace grmhd::GhValenciaDivClean::subcell
 
 template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
-    3, grmhd::GhValenciaDivClean::subcell::NeighborPackagedData>(
+    3, grmhd::GhValenciaDivClean::subcell::NeighborPackagedData<
+           grmhd::GhValenciaDivClean::System<
+               RadiationTransport::NoNeutrinos::System>>>(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
         TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>

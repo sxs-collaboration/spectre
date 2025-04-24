@@ -25,18 +25,18 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::GhValenciaDivClean::subcell {
-template <typename OrderedListOfRecoverySchemes>
-void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
-    const gsl::not_null<bool*> needed_fixing,
-    const gsl::not_null<typename System::variables_tag::type*>
-        conserved_vars_ptr,
-    const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
-        primitive_vars_ptr,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
-    const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
-    const EquationsOfState::EquationOfState<true, 3>& eos,
-    const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
-        primitive_from_conservative_options) {
+template <typename OrderedListOfRecoverySchemes, typename System>
+void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes, System>::
+    apply(const gsl::not_null<bool*> needed_fixing,
+          const gsl::not_null<typename System::variables_tag::type*>
+              conserved_vars_ptr,
+          const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
+              primitive_vars_ptr,
+          const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,
+          const grmhd::ValenciaDivClean::FixConservatives& fix_conservatives,
+          const EquationsOfState::EquationOfState<true, 3>& eos,
+          const grmhd::ValenciaDivClean::PrimitiveFromConservativeOptions&
+              primitive_from_conservative_options) {
   CAPTURE_FOR_ERROR(subcell_coords);
   const auto& cons_vars = *conserved_vars_ptr;
   CAPTURE_FOR_ERROR(cons_vars);
@@ -121,17 +121,21 @@ using KastaunThenNewmanThenPalenzuela =
 }  // namespace
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data) \
-  template struct FixConservativesAndComputePrims<RECOVERY(data)>;
+#define INSTANTIATION(r, data)                     \
+  template struct FixConservativesAndComputePrims< \
+      RECOVERY(data), GhValenciaDivClean::System<NEUTRINO(data)>>;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
-     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela))
+     NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
+    (RadiationTransport::NoNeutrinos::System))
 
 #undef INSTANTIATION
 #undef RECOVERY
+#undef NEUTRINO
 }  // namespace grmhd::GhValenciaDivClean::subcell

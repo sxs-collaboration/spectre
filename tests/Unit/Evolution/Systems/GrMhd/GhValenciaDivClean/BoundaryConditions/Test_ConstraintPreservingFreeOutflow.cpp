@@ -22,6 +22,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/HydroFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -53,7 +54,7 @@ struct Metavariables {
   };
 };
 
-template <typename U>
+template <typename System, typename U>
 void test_dg(const gsl::not_null<std::mt19937*> generator,
              const U& boundary_condition) {
   const double time = 1.3;
@@ -286,8 +287,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
   const auto logical_dt_phi = make_with_random_values<tnsr::iaa<DataVector, 3>>(
       generator, make_not_null(&dist), num_points);
 
-  using DtVars = Variables<db::wrap_tags_in<
-      ::Tags::dt, grmhd::GhValenciaDivClean::System::variables_tag::tags_list>>;
+  using DtVars = Variables<
+      db::wrap_tags_in<::Tags::dt, typename System::variables_tag::tags_list>>;
   DtVars dt_vars{num_points};
 
   CHECK(
@@ -455,11 +456,12 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       });
 }
 
-template <typename U>
+template <typename System, typename U>
 void test_fd(const U& boundary_condition) {
   const auto direction = Direction<3>::lower_xi();
 
-  grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim reconstructor{};
+  const grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>
+      reconstructor{};
 
   using Vars = Variables<grmhd::GhValenciaDivClean::Tags::
                              primitive_grmhd_and_spacetime_reconstruction_tags>;
@@ -503,6 +505,12 @@ SPECTRE_TEST_CASE(
                         ConstraintPreservingFreeOutflow*>(
           product_boundary_condition.get()));
 
-  test_dg(make_not_null(&gen), serialized_and_deserialized_condition);
-  test_fd(serialized_and_deserialized_condition);
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+  test_dg<System, grmhd::GhValenciaDivClean::BoundaryConditions::
+                      ConstraintPreservingFreeOutflow>(
+      make_not_null(&gen), serialized_and_deserialized_condition);
+  test_fd<System, grmhd::GhValenciaDivClean::BoundaryConditions::
+                      ConstraintPreservingFreeOutflow>(
+      serialized_and_deserialized_condition);
 }

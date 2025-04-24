@@ -4,5 +4,7 @@
 #pragma once
 
 namespace grmhd::GhValenciaDivClean::fd {
+
+template <typename System>
 void register_derived_with_charm();
 }  // namespace grmhd::GhValenciaDivClean::fd

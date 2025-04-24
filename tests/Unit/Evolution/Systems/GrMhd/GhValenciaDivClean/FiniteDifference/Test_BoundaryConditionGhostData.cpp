@@ -50,6 +50,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -72,20 +73,23 @@ namespace grmhd::GhValenciaDivClean {
 namespace {
 
 // Metavariables to parse the list of derived classes of boundary conditions
+template <typename System>
 struct EvolutionMetaVars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
         BoundaryConditions::BoundaryCondition,
-        tmpl::push_back<BoundaryConditions::standard_boundary_conditions,
-                        BoundaryConditions::DirichletAnalytic>>>;
+        tmpl::push_back<
+            BoundaryConditions::standard_boundary_conditions<
+                System>,
+            BoundaryConditions::DirichletAnalytic<System>>>>;
   };
 };
 
 using SolutionForTest =
     gh::Solutions::WrappedGr<RelativisticEuler::Solutions::TovStar>;
 
-template <typename BoundaryConditionType>
+template <typename System, typename BoundaryConditionType>
 void test(const BoundaryConditionType& boundary_condition,
           const SolutionForTest& solution) {
   CAPTURE(pretty_type::name<BoundaryConditionType>());
@@ -114,7 +118,8 @@ void test(const BoundaryConditionType& boundary_condition,
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // use MC reconstruction for test
-  using ReconstructorForTest = fd::MonotonisedCentralPrim;
+  using ReconstructorForTest =
+      fd::MonotonisedCentralPrim<System>;
   const size_t ghost_zone_size{ReconstructorForTest{}.ghost_zone_size()};
 
   // dummy neighbor data to put into DataBox
@@ -204,7 +209,8 @@ void test(const BoundaryConditionType& boundary_condition,
                            tmpl::list<inverse_spatial_metric_tag>{}));
     normal_vectors[direction] = std::nullopt;
     evolution::dg::Actions::detail::
-        unit_normal_vector_and_covector_and_magnitude<System>(
+        unit_normal_vector_and_covector_and_magnitude<
+            System>(
             make_not_null(&normal_vectors), make_not_null(&fields_on_face),
             direction, unnormalized_normal_covectors, moving_mesh_map);
   }
@@ -227,21 +233,24 @@ void test(const BoundaryConditionType& boundary_condition,
 
   // create a box for test
   auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<EvolutionMetaVars>,
+      Parallel::Tags::MetavariablesImpl<
+          EvolutionMetaVars<System>>,
       domain::Tags::Domain<3>, domain::Tags::ExternalBoundaryConditions<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
-      fd::Tags::Reconstructor, domain::Tags::MeshVelocity<3>,
+      fd::Tags::Reconstructor<System>,
+      domain::Tags::MeshVelocity<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
       typename System::primitive_variables_tag>>(
-      EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
-      subcell_mesh, subcell_logical_coords, neighbor_data,
-      std::unique_ptr<fd::Reconstructor>{
+      EvolutionMetaVars<System>{}, std::move(domain),
+      std::move(boundary_conditions), subcell_mesh, subcell_logical_coords,
+      neighbor_data,
+      std::unique_ptr<fd::Reconstructor<System>>{
           std::make_unique<ReconstructorForTest>()},
       volume_mesh_velocity, normal_vectors, time,
       clone_unique_ptrs(functions_of_time),
@@ -254,8 +263,8 @@ void test(const BoundaryConditionType& boundary_condition,
       volume_prim_vars);
 
   // compute FD ghost data and retrieve the result
-  fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
-                                        ReconstructorForTest{});
+  fd::BoundaryConditionGhostData<System>::apply(
+      make_not_null(&box), element, ReconstructorForTest{});
   const auto direction = Direction<3>::upper_xi();
   const DirectionalId<3> mortar_id{direction,
                                    ElementId<3>::external_boundary_id()};
@@ -281,7 +290,7 @@ void test(const BoundaryConditionType& boundary_condition,
   // now test each boundary conditions
   //
   if (typeid(BoundaryConditionType) ==
-      typeid(BoundaryConditions::DirichletAnalytic)) {
+      typeid(BoundaryConditions::DirichletAnalytic<System>)) {
     const auto ghost_logical_coords =
         evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
             subcell_mesh, ghost_zone_size, direction);
@@ -333,16 +342,20 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/"};
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+
   const SolutionForTest solution{RelativisticEuler::Solutions::TovStar{
       1.28e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild}};
-  test(
-      grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{
-          std::make_unique<SolutionForTest>(solution)},
+  test<System>(
+      grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic<
+          System>{std::make_unique<SolutionForTest>(solution)},
       solution);
-  CHECK_THROWS_WITH(test(grmhd::GhValenciaDivClean::BoundaryConditions::
-                             ConstraintPreservingFreeOutflow{},
-                         solution),
+  CHECK_THROWS_WITH(test<System>(
+                        grmhd::GhValenciaDivClean::BoundaryConditions::
+                            ConstraintPreservingFreeOutflow{},
+                        solution),
                     Catch::Matchers::ContainsSubstring(
                         "Not implemented because it's not trivial "
                         "to figure out what the right way of"));
@@ -350,9 +363,10 @@ SPECTRE_TEST_CASE(
 // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
-      test(domain::BoundaryConditions::Periodic<
-               BoundaryConditions::BoundaryCondition>{},
-           solution),
+      test<System>(
+          domain::BoundaryConditions::Periodic<
+              BoundaryConditions::BoundaryCondition>{},
+          solution),
       Catch::Matchers::ContainsSubstring("not on external boundaries"));
 #endif
 }

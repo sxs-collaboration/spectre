@@ -19,6 +19,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Derivatives.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PrimReconstructor.hpp"
@@ -32,6 +33,8 @@
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Derivatives",
     "[Unit][Evolution]") {
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
   const size_t points_per_dimension = 5;
   const size_t ghost_zone_size = 3;
   const size_t fd_deriv_order = 4;
@@ -58,8 +61,7 @@ SPECTRE_TEST_CASE(
   const auto volume_prims_for_recons =
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::compute_prim_solution(
           logical_coords);
-  Variables<
-      typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>
+  Variables<typename System::variables_tag::tags_list>
       volume_evolved_vars{subcell_mesh.number_of_grid_points()};
   get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_evolved_vars) =
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(volume_prims_for_recons);
@@ -68,19 +70,19 @@ SPECTRE_TEST_CASE(
   get<gh::Tags::Pi<DataVector, 3>>(volume_evolved_vars) =
       get<gh::Tags::Pi<DataVector, 3>>(volume_prims_for_recons);
 
-  Variables<db::wrap_tags_in<
-      Tags::deriv, typename grmhd::GhValenciaDivClean::System::gradients_tags,
-      tmpl::size_t<3>, Frame::Inertial>>
+  Variables<db::wrap_tags_in<Tags::deriv,
+                             typename System::gradients_tags,
+                             tmpl::size_t<3>, Frame::Inertial>>
       deriv_of_gh_vars{subcell_mesh.number_of_grid_points()};
 
-  grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
+  grmhd::GhValenciaDivClean::fd::spacetime_derivatives<System>(
       make_not_null(&deriv_of_gh_vars), volume_evolved_vars, all_ghost_data,
       fd_deriv_order, subcell_mesh,
       cell_centered_logical_to_inertial_inv_jacobian);
 
-  Variables<db::wrap_tags_in<
-      Tags::deriv, typename grmhd::GhValenciaDivClean::System::gradients_tags,
-      tmpl::size_t<3>, Frame::Inertial>>
+  Variables<db::wrap_tags_in<Tags::deriv,
+                             typename System::gradients_tags,
+                             tmpl::size_t<3>, Frame::Inertial>>
       expected_deriv_of_gh_vars{subcell_mesh.number_of_grid_points()};
 
   auto& expected_d_metric =
@@ -168,7 +170,8 @@ SPECTRE_TEST_CASE(
         << Variables<grmhd::GhValenciaDivClean::Tags::
                          primitive_grmhd_and_spacetime_reconstruction_tags>::
                number_of_independent_components};
-    CHECK_THROWS_WITH(grmhd::GhValenciaDivClean::fd::spacetime_derivatives(
+    CHECK_THROWS_WITH(grmhd::GhValenciaDivClean::fd::spacetime_derivatives<
+                          System>(
                           make_not_null(&deriv_of_gh_vars), volume_evolved_vars,
                           bad_ghost_data, fd_deriv_order, subcell_mesh,
                           cell_centered_logical_to_inertial_inv_jacobian),

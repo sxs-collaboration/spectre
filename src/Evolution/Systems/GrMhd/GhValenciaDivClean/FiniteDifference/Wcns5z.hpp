@@ -62,7 +62,9 @@ namespace grmhd::GhValenciaDivClean::fd {
  * Z oscillation indicator. See ::fd::reconstruction::wcns5z() for details.
  *
  */
-class Wcns5zPrim : public Reconstructor {
+// template on System instead
+template <typename System>
+class Wcns5zPrim : public Reconstructor<System> {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -133,9 +135,9 @@ class Wcns5zPrim : public Reconstructor {
 
   explicit Wcns5zPrim(CkMigrateMessage* msg);
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor, Wcns5zPrim);
+  WRAPPED_PUPable_decl_base_template(Reconstructor<System>, Wcns5zPrim<System>);
 
-  auto get_clone() const -> std::unique_ptr<Reconstructor> override;
+  auto get_clone() const -> std::unique_ptr<Reconstructor<System>> override;
 
   static constexpr bool use_adaptive_order = false;
 
@@ -181,9 +183,14 @@ class Wcns5zPrim : public Reconstructor {
       const Direction<dim>& direction_to_reconstruct) const;
 
  private:
+  template <typename LocalSystem>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs);
-  friend bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs);
+  friend bool operator==(const Wcns5zPrim<LocalSystem>& lhs,
+                         const Wcns5zPrim<LocalSystem>& rhs);
+
+  template <typename LocalSystem>
+  friend bool operator!=(const Wcns5zPrim<LocalSystem>& lhs,
+                         const Wcns5zPrim<LocalSystem>& rhs);
 
   size_t nonlinear_weight_exponent_ = 0;
   double epsilon_ = std::numeric_limits<double>::signaling_NaN();
@@ -210,5 +217,4 @@ class Wcns5zPrim : public Reconstructor {
                                       const Direction<dim>&, const double&,
                                       const size_t&) = nullptr;
 };
-
 }  // namespace grmhd::GhValenciaDivClean::fd
