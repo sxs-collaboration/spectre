@@ -26,6 +26,14 @@ void test_grad_grad_lapse(const DataType& used_for_size) {
           const tnsr::ij<DataType, Dim, Frame::Inertial>&)>(
           &::Ccz4::grad_grad_lapse<DataType, Dim, Frame::Inertial>),
       "DerivLapse", "grad_grad_lapse", {{{-1., 1.}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::ij<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::Ijj<DataType, Dim, Frame::Inertial>&,
+          const tnsr::i<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&)>(
+          &::Ccz4::grad_grad_lapse<DataType, Dim, Frame::Inertial>),
+      "DerivLapse", "grad_grad_lapse", {{{-1., 1.}}}, used_for_size);
 }
 
 template <size_t Dim, typename DataType>
