@@ -16,6 +16,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -87,6 +88,17 @@ struct ReceivePoints {
       std::vector<BlockLogicalCoords<VolumeDim>>&& block_logical_coords,
       const size_t iteration = 0_st,
       const size_t reinterpolation_iteration = 0_st) {
+    const auto& finished_ids =
+        get<intrp::Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
+            get<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(box))
+            .temporal_ids_when_data_has_been_interpolated;
+
+    // If we are receiving points from a target after the interpolation has
+    // finished, we discard the points and don't do anything
+    if (alg::found(finished_ids, temporal_id)) {
+      return;
+    }
+
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         [&temporal_id, &block_logical_coords, &iteration,
          &reinterpolation_iteration](
