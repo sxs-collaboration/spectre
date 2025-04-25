@@ -321,7 +321,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   std::unique_ptr<DomainCreator<3>> domain_creator;
   std::unique_ptr<ActionTesting::MockRuntimeSystem<metavars>> runner_ptr{};
   std::unordered_map<std::string, std::unordered_set<std::string>>
-      blocks_for_interpolation{{"AhA", {"Shell0"}}};
+      blocks_for_interpolation{};
+  blocks_for_interpolation["AhA"];
 
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending
@@ -355,6 +356,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
         grid_points_each_dimension, false, std::nullopt, radial_partitioning,
         radial_distribution, ShellWedges::All, std::move(time_dependence));
+    const auto block_names = domain_creator->block_names();
+    blocks_for_interpolation.at("AhA").insert(block_names.begin(),
+                                              block_names.end());
     tuples::TaggedTuple<
         domain::Tags::Domain<3>, intrp::Tags::BlocksForInterpolation,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
@@ -369,6 +373,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     domain_creator = std::make_unique<domain::creators::Sphere>(
         1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
         grid_points_each_dimension, false);
+    const auto block_names = domain_creator->block_names();
+    blocks_for_interpolation.at("AhA").insert(block_names.begin(),
+                                              block_names.end());
 
     tuples::TaggedTuple<
         domain::Tags::Domain<3>, intrp::Tags::BlocksForInterpolation,

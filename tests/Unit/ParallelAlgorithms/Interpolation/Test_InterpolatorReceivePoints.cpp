@@ -23,6 +23,7 @@
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -34,6 +35,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -169,7 +171,8 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
+      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+                 domain::Tags::Domain<Metavariables::volume_dim>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -239,9 +242,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
       std::array{1_st, 2_st, 0_st}, std::array{2_st, 2_st, 2_st},
       std::array{false, false, false}};
   const Domain<3> domain = domain_creator.create_domain();
+  const auto block_names = domain_creator.block_names();
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), ::Verbosity::Silent},
+      {std::unordered_map<std::string, std::unordered_set<std::string>>{
+           {"InterpolationTargetA", {block_names.begin(), block_names.end()}}},
+       domain_creator.create_domain(), ::Verbosity::Silent},
       {},
       std::vector<std::size_t>{2_st}};
   ActionTesting::set_phase(make_not_null(&runner),
@@ -291,7 +297,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   for (size_t array_index = 0; array_index < 2; array_index++) {
     for (size_t num_elements = 0; num_elements < 4; num_elements++) {
       runner.simple_action<interp_component, ::intrp::Actions::RegisterElement>(
-          array_index, element_ids[array_index + num_elements * 2]);
+          array_index, element_ids[num_elements + array_index * 4]);
     }
   }
 

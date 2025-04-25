@@ -33,6 +33,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/IO/VolumeData.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -58,6 +59,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveLineSegment.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
@@ -131,7 +133,8 @@ struct MockInterpolationTarget {
           tmpl::flatten<tmpl::list<
               typename InterpolationTargetTag::compute_target_points,
               typename InterpolationTargetTag::post_interpolation_callbacks>>>,
-      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
+      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+                 domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -269,12 +272,22 @@ void run_test(gsl::not_null<Generator*> generator,
       MockInterpolationTarget<metavars, typename metavars::LineB>;
   using obs_writer = MockObserverWriter<metavars>;
 
+  const auto block_names = domain_creator.block_names();
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       ::intrp::Tags::LineSegment<typename metavars::LineA, Dim>,
                       ::intrp::Tags::LineSegment<typename metavars::LineB, Dim>,
-                      ::intrp::Tags::Verbosity, domain::Tags::Domain<Dim>>
-      tuple_of_opts{h5_file_prefix, line_segment_opts_A, line_segment_opts_B,
-                    ::Verbosity::Silent, domain_creator.create_domain()};
+                      ::intrp::Tags::Verbosity,
+                      InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+                      domain::Tags::Domain<Dim>>
+      tuple_of_opts{
+          h5_file_prefix,
+          line_segment_opts_A,
+          line_segment_opts_B,
+          ::Verbosity::Silent,
+          std::unordered_map<std::string, std::unordered_set<std::string>>{
+              {"LineA", {block_names.begin(), block_names.end()}},
+              {"LineB", {block_names.begin(), block_names.end()}}},
+          domain_creator.create_domain()};
 
   // Three mock nodes, with 2, 1, and 4 mock cores.
   ActionTesting::MockRuntimeSystem<metavars> runner{
@@ -413,6 +426,8 @@ void run_test(gsl::not_null<Generator*> generator,
   }
   // There should be 2 more threaded actions, so invoke them and check
   // that there are no more.  They should all be on node zero.
+  REQUIRE(ActionTesting::number_of_queued_threaded_actions<obs_writer>(runner,
+                                                                       0) == 2);
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
       make_not_null(&runner), 0);
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
@@ -424,60 +439,61 @@ void run_test(gsl::not_null<Generator*> generator,
 
   const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
 
-  auto check_file_contents = [&file, &spacetime](const std::string& group_name,
-                                                 const tnsr::I<DataVector, Dim>&
-                                                     interpolated_coords) {
-    file.close_current_object();
-    const auto& vol_file = file.get<h5::VolumeData>(group_name);
-    const auto& obs_ids = vol_file.list_observation_ids();
-    CHECK(obs_ids.size() == 1);
-    const auto& obs_value = vol_file.get_observation_value(obs_ids.at(0));
-    CHECK(obs_value == 0.);
+  auto check_file_contents =
+      [&file, &spacetime](const std::string& group_name,
+                          const tnsr::I<DataVector, Dim>& interpolated_coords) {
+        file.close_current_object();
+        const auto& vol_file = file.get<h5::VolumeData>(group_name);
+        const auto& obs_ids = vol_file.list_observation_ids();
+        CHECK(obs_ids.size() == 1);
+        const auto& obs_value = vol_file.get_observation_value(obs_ids.at(0));
+        CHECK(obs_value == 0.);
 
-    // error due to low resolution of domain
-    Approx custom_approx = Approx::custom().epsilon(1.e-4).scale(1.0);
+        // error due to low resolution of domain
+        Approx custom_approx = Approx::custom().epsilon(1.e-4).scale(1.0);
 
-    for (size_t i = 0; i < interpolated_coords.size(); ++i) {
-      const auto& written_component = vol_file.get_tensor_component(
-          obs_ids.at(0),
-          "InertialCoordinates" + interpolated_coords.component_suffix(i));
-      const auto& written_dv = std::get<DataVector>(written_component.data);
-      CHECK_ITERABLE_CUSTOM_APPROX(written_dv, interpolated_coords.get(i),
-                                   custom_approx);
-    }
+        for (size_t i = 0; i < interpolated_coords.size(); ++i) {
+          const auto& written_component = vol_file.get_tensor_component(
+              obs_ids.at(0),
+              "InertialCoordinates" + interpolated_coords.component_suffix(i));
+          const auto& written_dv = std::get<DataVector>(written_component.data);
+          CHECK_ITERABLE_CUSTOM_APPROX(written_dv, interpolated_coords.get(i),
+                                       custom_approx);
+        }
 
-    const auto interpolated_metric =
-        get<gr::Tags::SpatialMetric<DataVector, Dim>>(spacetime.variables(
-            interpolated_coords, 0.0,
-            tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>>{}));
-    for (size_t i = 0; i < interpolated_metric.size(); ++i) {
-      const auto& written_component = vol_file.get_tensor_component(
-          obs_ids.at(0),
-          "SpatialMetric" + interpolated_metric.component_suffix(i));
-      const auto& written_dv = std::get<DataVector>(written_component.data);
-      CHECK_ITERABLE_CUSTOM_APPROX(written_dv, interpolated_metric[i],
-                                   custom_approx);
-    }
+        const auto interpolated_metric =
+            get<gr::Tags::SpatialMetric<DataVector, Dim>>(spacetime.variables(
+                interpolated_coords, 0.0,
+                tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>>{}));
+        for (size_t i = 0; i < interpolated_metric.size(); ++i) {
+          const auto& written_component = vol_file.get_tensor_component(
+              obs_ids.at(0),
+              "SpatialMetric" + interpolated_metric.component_suffix(i));
+          const auto& written_dv = std::get<DataVector>(written_component.data);
+          CHECK_ITERABLE_CUSTOM_APPROX(written_dv, interpolated_metric[i],
+                                       custom_approx);
+        }
 
-    const auto interpolated_test_solution = test_function(interpolated_coords);
+        const auto interpolated_test_solution =
+            test_function(interpolated_coords);
 
-    const auto& written_test_solution_component =
-        vol_file.get_tensor_component(obs_ids.at(0), "TestSolution");
-    const auto& written_test_solution_dv =
-        std::get<DataVector>(written_test_solution_component.data);
+        const auto& written_test_solution_component =
+            vol_file.get_tensor_component(obs_ids.at(0), "TestSolution");
+        const auto& written_test_solution_dv =
+            std::get<DataVector>(written_test_solution_component.data);
 
-    CHECK_ITERABLE_CUSTOM_APPROX(written_test_solution_dv,
-                                 interpolated_test_solution, custom_approx);
+        CHECK_ITERABLE_CUSTOM_APPROX(written_test_solution_dv,
+                                     interpolated_test_solution, custom_approx);
 
-    const auto interpolated_square = square(interpolated_test_solution);
-    const auto& written_square_component =
-        vol_file.get_tensor_component(obs_ids.at(0), "Square");
-    const auto& written_square_dv =
-        std::get<DataVector>(written_square_component.data);
+        const auto interpolated_square = square(interpolated_test_solution);
+        const auto& written_square_component =
+            vol_file.get_tensor_component(obs_ids.at(0), "Square");
+        const auto& written_square_dv =
+            std::get<DataVector>(written_square_component.data);
 
-    CHECK_ITERABLE_CUSTOM_APPROX(written_square_dv, interpolated_square,
-                                 custom_approx);
-  };
+        CHECK_ITERABLE_CUSTOM_APPROX(written_square_dv, interpolated_square,
+                                     custom_approx);
+      };
 
   auto check_file_contents_are_nans =
       [&file](const std::string& group_name,

@@ -28,6 +28,7 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -45,6 +46,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
@@ -201,7 +203,8 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
-      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
+      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+                 domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -312,18 +315,32 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
       10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}},
       ylm::AngularOrdering::Strahlkorper);
-  const auto domain_creator = domain::creators::Sphere(
-      0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  // The radial partition is chosen specially for this test to include all
+  // points for targets A&C in the first shell, but points for B are in both
+  // shells.
+  const auto domain_creator =
+      domain::creators::Sphere(0.9, 4.9, domain::creators::Sphere::Excision{},
+                               1_st, 5_st, false, std::nullopt, {4.2});
+  const auto block_names = domain_creator.block_names();
+  const auto block_groups = domain_creator.block_groups();
   tuples::TaggedTuple<
       intrp::Tags::LineSegment<metavars::InterpolationTargetA, 3>,
+      InterpTargetTestHelpers::Tags::BlocksForInterpolation,
       domain::Tags::Domain<3>,
       intrp::Tags::LineSegment<metavars::InterpolationTargetB, 3>,
       intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>,
       intrp::Tags::Verbosity>
-      tuple_of_opts(std::move(line_segment_opts_A),
-                    domain_creator.create_domain(),
-                    std::move(line_segment_opts_B), kerr_horizon_opts_C,
-                    ::Verbosity::Silent);
+      tuple_of_opts(
+          std::move(line_segment_opts_A),
+          std::unordered_map<std::string, std::unordered_set<std::string>>{
+              // Target A only receives data from elements in Shell0
+              {"InterpolationTargetA", block_groups.at("Shell0")},
+              {"InterpolationTargetB",
+               {block_names.begin(), block_names.end()}},
+              {"InterpolationTargetC",
+               {block_names.begin(), block_names.end()}}},
+          domain_creator.create_domain(), std::move(line_segment_opts_B),
+          kerr_horizon_opts_C, ::Verbosity::Silent);
 
   // 3 mock nodes, with 2, 3, and 1 mocked core respectively.
   ActionTesting::MockRuntimeSystem<metavars> runner{

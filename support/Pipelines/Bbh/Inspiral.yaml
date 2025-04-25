@@ -468,6 +468,7 @@ ApparentHorizons:
       MaxIts: 100
     Verbosity: Quiet
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: ["ObjectAShell", "ObjectACube"]
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *ObsLMax
@@ -476,6 +477,7 @@ ApparentHorizons:
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: ["ObjectBShell", "ObjectBCube"]
   ObservationAhC:
     InitialGuess:
       LMax: 33
@@ -484,6 +486,12 @@ ApparentHorizons:
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
     MaxInterpolationRetries: 3
+    BlocksForInterpolation:
+      - "ObjectAShell"
+      - "ObjectACube"
+      - "ObjectBShell"
+      - "ObjectBCube"
+      - "Envelope"
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA

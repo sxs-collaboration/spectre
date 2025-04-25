@@ -141,7 +141,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{::Verbosity::Silent}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
-      {std::unordered_set<ElementId<metavars::volume_dim>>{},
+      {std::unordered_map<
+           std::string, std::unordered_set<ElementId<metavars::volume_dim>>>{},
        typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>::type{
            std::move(volume_vars_info_bc)},
        typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::Time>::type{

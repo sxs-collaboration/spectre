@@ -17,6 +17,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/GetComputeItemsOnSource.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -90,6 +91,22 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
     static_assert(
         std::is_same_v<typename Metavariables::interpolator_source_vars,
                        tmpl::list<InterpolatorSourceVarTags...>>);
+
+    const auto& blocks_to_interpolate =
+        Parallel::get<intrp::Tags::BlocksForInterpolationBase>(cache);
+    ASSERT(blocks_to_interpolate.contains(name()),
+           "Blocks to interpolate doesn't contain target " << name());
+    const auto& blocks_to_interpolate_for_this_target =
+        blocks_to_interpolate.at(name());
+    const auto& blocks =
+        Parallel::get<domain::Tags::Domain<VolumeDim>>(cache).blocks();
+    const auto& block_name = blocks[array_index.block_id()].name();
+
+    // Only send data if this target needs this blocks data
+    if (not blocks_to_interpolate_for_this_target.contains(block_name)) {
+      return;
+    }
+
     if constexpr (Parallel::is_dg_element_collection_v<ParallelComponent>) {
       const auto core_id = static_cast<int>(
           Parallel::local_synchronous_action<

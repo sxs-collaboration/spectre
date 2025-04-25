@@ -43,14 +43,14 @@ template <bool UseControlSystems, typename... InterpolationTargetTags>
 struct EvolutionMetavars
     : public GhValenciaDivCleanTemplateBase<
           EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>,
-          false, false> {
+          false, false, true> {
   static_assert(not UseControlSystems,
                 "GhValenciaWithHorizon doesn't support control systems yet.");
   static constexpr bool use_dg_subcell = false;
 
   using defaults = GhValenciaDivCleanDefaults<use_dg_subcell>;
   using base = GhValenciaDivCleanTemplateBase<EvolutionMetavars, use_dg_subcell,
-                                              UseControlSystems>;
+                                              UseControlSystems, true>;
   static constexpr size_t volume_dim = defaults::volume_dim;
   using domain_frame = typename defaults::domain_frame;
   static constexpr bool use_damped_harmonic_rollon =

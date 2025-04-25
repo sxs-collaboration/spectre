@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -28,6 +29,7 @@
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -55,6 +57,19 @@ struct NumberOfElements;
 /// \endcond
 
 namespace InterpTargetTestHelpers {
+namespace Tags {
+// Tag used for tests that will never be created from options, but will be
+// created in a mock runtime system
+struct BlocksForInterpolation : db::SimpleTag,
+                                intrp::Tags::BlocksForInterpolationBase {
+  using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
+
+  using option_tags = tmpl::list<>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options() { return {}; }
+};
+}  // namespace Tags
 
 enum class ValidPoints { All, None, Some };
 

@@ -17,12 +17,15 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -198,16 +201,25 @@ void try_to_interpolate(
 
   // Send interpolated data only if interpolation has been done on all
   // of the local elements.
-  const auto& num_elements =
+  const auto all_num_elements =
       db::get<Tags::NumberOfElements<Metavariables::volume_dim>>(*box);
-  if (vars_infos.at(temporal_id)
-          .interpolation_is_done_for_these_elements.size() ==
-      num_elements.size()) {
+  const std::string& target_name = pretty_type::name<InterpolationTargetTag>();
+  if (not all_num_elements.contains(target_name)) {
+    ERROR("Target name " << target_name << " not in NumberOfElements: "
+                         << keys_of(all_num_elements));
+  }
+  const auto& num_elements = all_num_elements.at(target_name);
+  // Since some targets may not need all elements, we must specifically check if
+  // we have all the necessary elements
+  if (alg::all_of(num_elements, [&](const auto& element) {
+        return vars_infos.at(temporal_id)
+            .interpolation_is_done_for_these_elements.contains(element);
+      })) {
     // Send data to InterpolationTarget, but only if the list of points is
     // non-empty.
     if (debug_print) {
-      ss << "finished interpolation on all " << num_elements
-         << " elements on core " << sys::my_proc();
+      ss << "finished interpolation on all " << num_elements.size()
+         << " elements on core " << Parallel::my_proc<int>(*cache);
     }
 
     if (not vars_infos.at(temporal_id).global_offsets.empty()) {
@@ -238,7 +250,8 @@ void try_to_interpolate(
         box);
   } else if (debug_print) {
     ss << "interpolation not finished on all local elements of core "
-       << sys::my_proc() << ". Expected " << num_elements << ", received "
+       << Parallel::my_proc<int>(*cache) << ". Expected " << num_elements.size()
+       << ", received "
        << vars_infos.at(temporal_id)
               .interpolation_is_done_for_these_elements.size();
   }

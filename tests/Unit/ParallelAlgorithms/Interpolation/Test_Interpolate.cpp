@@ -16,6 +16,8 @@
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -32,12 +34,14 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Slab.hpp"
@@ -151,6 +155,10 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
+  using const_global_cache_tags = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags_from_actions<
+          tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
+      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
@@ -182,8 +190,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::TargetPoints::LineSegment<InterpolatorTargetA, 3,
-                                           Frame::Inertial>;
+        ::intrp::TargetPoints::ApparentHorizon<InterpolatorTargetA,
+                                               Frame::Inertial>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolatorTargetA>>;
@@ -209,6 +217,7 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                   "[Unit]") {
   ::domain::FunctionsOfTime::register_derived_with_charm();
+  ::domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
   const ElementId<metavars::volume_dim> element_id(2);
   const ElementId<metavars::volume_dim> array_index(element_id);
@@ -226,8 +235,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
           0.0, std::array<DataVector, 1>{{DataVector{1, 0.0}}},
           initial_expr_time);
+  const auto domain_creator = domain::creators::Sphere(
+      1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto block_names = domain_creator.block_names();
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {::Verbosity::Silent}, {std::move(functions_of_time)}};
+      {std::unordered_map<std::string, std::unordered_set<std::string>>{
+           {"InterpolatorTargetA", {block_names.begin(), block_names.end()}}},
+       intrp::OptionHolders::ApparentHorizon<Frame::Inertial>{},
+       domain_creator.create_domain(), ::Verbosity::Silent},
+      {std::move(functions_of_time)}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);

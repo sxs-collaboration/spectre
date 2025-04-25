@@ -39,6 +39,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceivePoints.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
@@ -119,10 +120,12 @@ struct MockCleanUpInterpolator {
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
     db::mutate<intrp::Tags::NumberOfElements<Metavariables::volume_dim>>(
-        [](const gsl::not_null<
-            std::unordered_set<ElementId<Metavariables::volume_dim>>*>
+        [](const gsl::not_null<std::unordered_map<
+               std::string,
+               std::unordered_set<ElementId<Metavariables::volume_dim>>>*>
                number_of_elements) {
-          number_of_elements->insert(ElementId<Metavariables::volume_dim>{0});
+          (*number_of_elements)["InterpolationTargetA"].insert(
+              ElementId<Metavariables::volume_dim>{0});
         },
         make_not_null(&box));
   }
@@ -194,12 +197,10 @@ void callback_impl(const db::DataBox<DbTags>& box,
 
 struct MockPostInterpolationCallback
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
-  template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& temporal_id) {
     callback_impl(box, temporal_id);
   }
 };
@@ -211,12 +212,11 @@ struct MockPostInterpolationCallback
 //  but this is a more direct test.
 struct MockPostInterpolationCallbackNoCleanup
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
-  template <typename DbTags, typename Metavariables>
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::GlobalCache<Metavariables>*> /*cache*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) {
+      const TemporalId& temporal_id) {
     callback_impl(*box, temporal_id);
     return false;
   }
@@ -226,12 +226,10 @@ template <size_t NumberOfInvalidInterpolationPoints>
 struct MockPostInterpolationCallbackWithInvalidPoints
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   static constexpr double fill_invalid_points_with = 15.0;
-  template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& temporal_id) {
     CHECK(temporal_id.id == 13.0 / 16.0);
 
     // The result should be the square of the first 10 integers, in
@@ -486,10 +484,12 @@ void test_interpolation_target_receive_vars() {
 
     // Check that MockCleanUpInterpolator was NOT called.  If called, it resets
     // the (fake) number of elements, specifically so we can test it here.
-    CHECK(ActionTesting::get_databox_tag<interp_component,
-                                         intrp::Tags::NumberOfElements<Dim>>(
-              runner, 0)
-              .empty());
+    const auto& number_of_elements =
+        ActionTesting::get_databox_tag<interp_component,
+                                       intrp::Tags::NumberOfElements<Dim>>(
+            runner, 0);
+    REQUIRE(number_of_elements.contains("InterpolationTargetA"));
+    CHECK(number_of_elements.at("InterpolationTargetA").empty());
 
     // Also, there should still be the same number of TemporalIds left
     // because we did not clean them up.
@@ -555,10 +555,12 @@ void test_interpolation_target_receive_vars() {
 
     // Check that MockCleanUpInterpolator was called.  It resets the
     // (fake) number of elements, specifically so we can test it here.
-    CHECK(ActionTesting::get_databox_tag<interp_component,
-                                         intrp::Tags::NumberOfElements<Dim>>(
-              runner, 0)
-              .size() == 1);
+    const auto& number_of_elements =
+        ActionTesting::get_databox_tag<interp_component,
+                                       intrp::Tags::NumberOfElements<Dim>>(
+            runner, 0);
+    REQUIRE(number_of_elements.contains("InterpolationTargetA"));
+    CHECK(number_of_elements.at("InterpolationTargetA").size() == 1);
 
     if constexpr (IsTimeDependent::value) {
       // There should be zero TemporalIds left, but one PendingTemporalId,

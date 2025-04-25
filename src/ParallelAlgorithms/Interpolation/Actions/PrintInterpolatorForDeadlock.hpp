@@ -48,11 +48,12 @@ struct PrintInterpolator {
 
     tmpl::for_each<target_tags>([&](const auto tag_v) {
       using target_tag = tmpl::type_from<decltype(tag_v)>;
+      const std::string& target_name = pretty_type::name<target_tag>();
 
       // Only need to print the sequential targets (aka horizons)
       if constexpr (target_tag::compute_target_points::is_sequential::value) {
         const std::string file_name =
-            intrp_deadlock_dir + "/" + pretty_type::name<target_tag>() + ".out";
+            intrp_deadlock_dir + "/" + target_name + ".out";
 
         const auto& holders =
             db::get<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(box);
@@ -79,12 +80,13 @@ struct PrintInterpolator {
         for (const auto& [temporal_id, info] : vars_infos) {
           ss << "Temporal id " << temporal_id << ": "
              << "Iteration " << info.iteration << ", expecting data from "
-             << num_elements.size() << " elements, but only received "
+             << num_elements.at(target_name).size()
+             << " elements, but only received "
              << info.interpolation_is_done_for_these_elements.size()
              << ". Missing these elements: ";
 
           std::unordered_set<ElementId<Metavariables::volume_dim>> difference{};
-          for (const auto& element : num_elements) {
+          for (const auto& element : num_elements.at(target_name)) {
             if (not info.interpolation_is_done_for_these_elements.contains(
                     element)) {
               difference.insert(element);
