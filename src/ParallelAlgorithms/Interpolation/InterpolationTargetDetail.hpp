@@ -380,6 +380,7 @@ void clean_up_interpolation_target(
       box);
 }
 
+struct HaveDataAtAllPoints {};
 /// Returns true if this InterpolationTarget has received data
 /// at all its points.
 ///
@@ -414,7 +415,6 @@ bool have_data_at_all_points(
           .at(temporal_id)
           .number_of_grid_points();
   if (verbosity >= ::Verbosity::Debug) {
-    struct HaveDataAtAllPoints {};
     Parallel::printf(
         "%s, Total expected points = %d, valid points received = %d, "
         "invalid points received = %d\n",
