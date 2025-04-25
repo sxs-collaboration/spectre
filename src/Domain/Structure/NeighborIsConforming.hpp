@@ -26,10 +26,11 @@ namespace domain {
 /// OrientationMap).  It is a requirement that neighboring Blocks be conforming
 /// if their oriented topologies are the same in the interface dimensions.
 ///
-/// \note If the neighbors are conforming, they can exchange boundary data via
-/// copy or projection, taking into account the discrete rotation if necessary.
-/// If the neighbors are not conforming, boundary data will need to be
-/// interpolated.
+/// \note If neighboring Elements are conforming, they can exchange boundary
+/// data via either copy (if they have the same h- and p-refinement) or
+/// projection (if they don't), taking into account the discrete rotation if
+/// necessary. If the neighbors are not conforming, boundary data will need to
+/// be interpolated.
 template <size_t VolumeDim>
 bool neighbor_is_conforming(
     const std::array<Topology, VolumeDim>& self_topologies,
