@@ -69,6 +69,12 @@ void test_rectangle_construction(
       rectangle, expect_boundary_conditions);
   CHECK(rectangle.grid_anchors().empty());
 
+  CHECK(rectangle.block_names() == std::vector<std::string>{"Rectangle"});
+  const auto block_groups = rectangle.block_groups();
+  CHECK(block_groups.contains("Rectangle"));
+  CHECK(block_groups.at("Rectangle") ==
+        std::unordered_set<std::string>{"Rectangle"});
+
   CHECK(rectangle.initial_extents() == expected_extents);
   CHECK(rectangle.initial_refinement_levels() == expected_refinement_level);
 

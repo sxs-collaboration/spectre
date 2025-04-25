@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -246,6 +247,11 @@ class Rectilinear : public DomainCreator<Dim> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
   std::vector<std::string> block_names() const override { return block_names_; }
+
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+  block_groups() const override {
+    return {{name(), {name()}}};
+  }
 
   // Transforms from option-created boundary conditions to the type used in the
   // constructor
