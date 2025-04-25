@@ -23,6 +23,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -42,7 +43,7 @@ namespace dg {
 template <size_t VolumeDim>
 using MortarId = DirectionalId<VolumeDim>;
 template <size_t MortarDim>
-using MortarSize = std::array<Spectral::MortarSize, MortarDim>;
+using MortarSize = std::array<Spectral::SegmentSize, MortarDim>;
 template <size_t VolumeDim, typename ValueType>
 using MortarMap = DirectionalIdMap<VolumeDim, ValueType>;
 

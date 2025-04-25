@@ -16,8 +16,8 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -30,7 +30,7 @@ using MortarMap = DirectionalIdMap<Dim, MappedType>;
 template <size_t Dim>
 std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionalIdMap<Dim, Mesh<Dim - 1>>,
-           DirectionalIdMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>,
+           DirectionalIdMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>,
            DirectionalIdMap<Dim, TimeStepId>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
@@ -43,7 +43,7 @@ mortars_apply_impl(const Domain<Dim>& domain,
                    const Mesh<Dim>& volume_mesh) {
   MortarMap<evolution::dg::MortarDataHolder<Dim>, Dim> mortar_data{};
   MortarMap<Mesh<Dim - 1>, Dim> mortar_meshes{};
-  MortarMap<std::array<Spectral::MortarSize, Dim - 1>, Dim> mortar_sizes{};
+  MortarMap<std::array<Spectral::SegmentSize, Dim - 1>, Dim> mortar_sizes{};
   MortarMap<TimeStepId, Dim> mortar_next_temporal_ids{};
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
@@ -90,7 +90,7 @@ mortars_apply_impl(const Domain<Dim>& domain,
       DirectionalIdMap<DIM(data), evolution::dg::MortarDataHolder<DIM(data)>>, \
       DirectionalIdMap<DIM(data), Mesh<DIM(data) - 1>>,                        \
       DirectionalIdMap<DIM(data),                                              \
-                       std::array<Spectral::MortarSize, DIM(data) - 1>>,       \
+                       std::array<Spectral::SegmentSize, DIM(data) - 1>>,      \
       DirectionalIdMap<DIM(data), TimeStepId>,                                 \
       DirectionMap<DIM(data),                                                  \
                    std::optional<Variables<tmpl::list<                         \

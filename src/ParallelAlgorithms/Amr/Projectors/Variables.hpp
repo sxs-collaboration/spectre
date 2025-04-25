@@ -14,6 +14,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -62,16 +63,16 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
     const auto& element_id = element.id();
     const auto& parent_id = get<domain::Tags::Element<Dim>>(parent_items).id();
     const auto& parent_mesh = get<domain::Tags::Mesh<Dim>>(parent_items);
-    std::array<Spectral::ChildSize, Dim> child_sizes{};
+    std::array<Spectral::SegmentSize, Dim> child_sizes{};
     for (size_t d = 0; d < Dim; ++d) {
       if (parent_id.segment_id(d) == element_id.segment_id(d)) {
-        gsl::at(child_sizes, d) = Spectral::ChildSize::Full;
+        gsl::at(child_sizes, d) = Spectral::SegmentSize::Full;
       } else if (parent_id.segment_id(d).id_of_child(Side::Lower) ==
                  element_id.segment_id(d)) {
-        gsl::at(child_sizes, d) = Spectral::ChildSize::LowerHalf;
+        gsl::at(child_sizes, d) = Spectral::SegmentSize::LowerHalf;
       } else if (parent_id.segment_id(d).id_of_child(Side::Upper) ==
                  element_id.segment_id(d)) {
-        gsl::at(child_sizes, d) = Spectral::ChildSize::UpperHalf;
+        gsl::at(child_sizes, d) = Spectral::SegmentSize::UpperHalf;
       } else {
         ERROR("Parent element " << parent_id << " is not a parent of element "
                                 << element_id << ". Please report this bug.");

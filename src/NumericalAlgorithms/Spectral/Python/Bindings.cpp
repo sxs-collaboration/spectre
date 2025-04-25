@@ -28,19 +28,19 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
         py::arg("mesh"), py::arg("number_of_modes_to_zero"),
         py::return_value_policy::reference);
   // Projection
-  py::enum_<Spectral::ChildSize>(m, "ChildSize")
-      .value("Uninitialized", Spectral::ChildSize::Uninitialized)
-      .value("Full", Spectral::ChildSize::Full)
-      .value("UpperHalf", Spectral::ChildSize::UpperHalf)
-      .value("LowerHalf", Spectral::ChildSize::LowerHalf);
+  py::enum_<Spectral::SegmentSize>(m, "SegmentSize")
+      .value("Uninitialized", Spectral::SegmentSize::Uninitialized)
+      .value("Full", Spectral::SegmentSize::Full)
+      .value("UpperHalf", Spectral::SegmentSize::UpperHalf)
+      .value("LowerHalf", Spectral::SegmentSize::LowerHalf);
   m.def("projection_matrix_parent_to_child",
         static_cast<const Matrix& (*)(const Mesh<1>&, const Mesh<1>&,
-                                      Spectral::ChildSize)>(
+                                      Spectral::SegmentSize)>(
             &Spectral::projection_matrix_parent_to_child),
         py::arg("parent_mesh"), py::arg("child_mesh"), py::arg("size"));
   m.def("projection_matrix_child_to_parent",
         static_cast<const Matrix& (*)(const Mesh<1>&, const Mesh<1>&,
-                                      Spectral::ChildSize, bool)>(
+                                      Spectral::SegmentSize, bool)>(
             &Spectral::projection_matrix_child_to_parent),
         py::arg("child_mesh"), py::arg("parent_mesh"), py::arg("size"),
         py::arg("operand_is_massive"));

@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -37,9 +38,9 @@ DataVector apply_matrix(const Matrix& m, const DataVector& v) {
 }
 
 void test_mortar_size() {
-  CHECK(get_output(Spectral::MortarSize::Full) == "Full");
-  CHECK(get_output(Spectral::MortarSize::UpperHalf) == "UpperHalf");
-  CHECK(get_output(Spectral::MortarSize::LowerHalf) == "LowerHalf");
+  CHECK(get_output(Spectral::SegmentSize::Full) == "Full");
+  CHECK(get_output(Spectral::SegmentSize::UpperHalf) == "UpperHalf");
+  CHECK(get_output(Spectral::SegmentSize::LowerHalf) == "LowerHalf");
 }
 
 void test_needs_projection() {
@@ -48,31 +49,31 @@ void test_needs_projection() {
   CHECK_FALSE(
       needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
                           {3, Basis::Legendre, Quadrature::GaussLobatto},
-                          make_array<1>(ChildSize::Full)));
+                          make_array<1>(SegmentSize::Full)));
   CHECK_FALSE(
       needs_projection<2>({3, Basis::Legendre, Quadrature::GaussLobatto},
                           {3, Basis::Legendre, Quadrature::GaussLobatto},
-                          make_array<2>(ChildSize::Full)));
+                          make_array<2>(SegmentSize::Full)));
   CHECK_FALSE(
       needs_projection<3>({3, Basis::Legendre, Quadrature::GaussLobatto},
                           {3, Basis::Legendre, Quadrature::GaussLobatto},
-                          make_array<3>(ChildSize::Full)));
+                          make_array<3>(SegmentSize::Full)));
   CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
                             {4, Basis::Legendre, Quadrature::GaussLobatto},
-                            make_array<1>(ChildSize::Full)));
+                            make_array<1>(SegmentSize::Full)));
   CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
                             {3, Basis::Legendre, Quadrature::Gauss},
-                            make_array<1>(ChildSize::Full)));
+                            make_array<1>(SegmentSize::Full)));
   CHECK(needs_projection<1>({3, Basis::Legendre, Quadrature::GaussLobatto},
                             {3, Basis::Legendre, Quadrature::GaussLobatto},
-                            {{ChildSize::LowerHalf}}));
+                            {{SegmentSize::LowerHalf}}));
   CHECK(needs_projection<2>({3, Basis::Legendre, Quadrature::GaussLobatto},
                             {3, Basis::Legendre, Quadrature::GaussLobatto},
-                            {{ChildSize::Full, ChildSize::LowerHalf}}));
+                            {{SegmentSize::Full, SegmentSize::LowerHalf}}));
   CHECK(needs_projection<3>(
       {3, Basis::Legendre, Quadrature::GaussLobatto},
       {3, Basis::Legendre, Quadrature::GaussLobatto},
-      {{ChildSize::Full, ChildSize::Full, ChildSize::UpperHalf}}));
+      {{SegmentSize::Full, SegmentSize::Full, SegmentSize::UpperHalf}}));
 }
 
 void test_p_mortar_to_element() {
@@ -80,7 +81,7 @@ void test_p_mortar_to_element() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
@@ -88,16 +89,15 @@ void test_p_mortar_to_element() {
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = num_points_dest;
              num_points_source <=
-                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
              ++num_points_source) {
           const Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
           const auto& projection = projection_matrix_child_to_parent(
-              mesh_source, mesh_dest, Spectral::MortarSize::Full);
-          for (size_t test_order = 0;
-               test_order < num_points_source;
+              mesh_source, mesh_dest, Spectral::SegmentSize::Full);
+          for (size_t test_order = 0; test_order < num_points_source;
                ++test_order) {
             CAPTURE(test_order);
             const DataVector source_data = pow(points_source, test_order);
@@ -134,24 +134,22 @@ void test_p_element_to_mortar() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       const auto& points_dest = Spectral::collocation_points(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
-        for (size_t num_points_source = 2;
-             num_points_source <= num_points_dest;
+        for (size_t num_points_source = 2; num_points_source <= num_points_dest;
              ++num_points_source) {
           const Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
           const auto& projection = projection_matrix_parent_to_child(
-              mesh_source, mesh_dest, Spectral::MortarSize::Full);
-          for (size_t test_order = 0;
-               test_order < num_points_source;
+              mesh_source, mesh_dest, Spectral::SegmentSize::Full);
+          for (size_t test_order = 0; test_order < num_points_source;
                ++test_order) {
             CAPTURE(test_order);
             const DataVector source_data = pow(points_source, test_order);
@@ -175,7 +173,7 @@ DataVector to_lower_half(const DataVector& p) { return 0.5 * (p - 1.); }
 // [-1,1] interval to the half that we are (are not) interpolating
 // from.
 template <typename F1, typename F2>
-void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
+void check_mortar_to_element_projection(const Spectral::SegmentSize mortar_size,
                                         const Mesh<1>& mesh_element,
                                         const Mesh<1>& mesh_self_mortar,
                                         F1&& to_element_self,
@@ -194,8 +192,7 @@ void check_mortar_to_element_projection(const Spectral::MortarSize mortar_size,
   const auto& points_self_mortar =
       Spectral::collocation_points(mesh_self_mortar);
 
-  for (size_t test_order = 0;
-       test_order < num_points_self_mortar;
+  for (size_t test_order = 0; test_order < num_points_self_mortar;
        ++test_order) {
     CAPTURE(test_order);
     const auto test_func_self_mortar = [test_order](const auto& x) {
@@ -266,7 +263,7 @@ void test_h_mortar_to_element() {
     for (size_t num_points_dest = 2;
          // We need one extra point to do the quadrature later.
          num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
@@ -274,16 +271,15 @@ void test_h_mortar_to_element() {
       for (const auto& quadrature_source : quadratures) {
         for (size_t num_points_source = num_points_dest;
              num_points_source <=
-                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre> -
-                 1;
+             Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
              ++num_points_source) {
           const Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
-          check_mortar_to_element_projection(Spectral::MortarSize::UpperHalf,
+          check_mortar_to_element_projection(Spectral::SegmentSize::UpperHalf,
                                              mesh_dest, mesh_source,
                                              to_upper_half, to_lower_half);
-          check_mortar_to_element_projection(Spectral::MortarSize::LowerHalf,
+          check_mortar_to_element_projection(Spectral::SegmentSize::LowerHalf,
                                              mesh_dest, mesh_source,
                                              to_lower_half, to_upper_half);
         }
@@ -297,22 +293,20 @@ void test_h_element_to_mortar() {
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
-             Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
+         Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
       CAPTURE(mesh_dest);
       const auto& points_dest = Spectral::collocation_points(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
-        for (size_t num_points_source = 2;
-             num_points_source <= num_points_dest;
+        for (size_t num_points_source = 2; num_points_source <= num_points_dest;
              ++num_points_source) {
           const Mesh<1> mesh_source(
               num_points_source, Spectral::Basis::Legendre, quadrature_source);
           CAPTURE(mesh_source);
           const auto& points_source = Spectral::collocation_points(mesh_source);
-          for (size_t test_order = 0;
-               test_order < num_points_source;
+          for (size_t test_order = 0; test_order < num_points_source;
                ++test_order) {
             CAPTURE(test_order);
             const DataVector source_data = pow(points_source, test_order);
@@ -321,7 +315,7 @@ void test_h_element_to_mortar() {
             // projection should not alter it.
             {
               const auto& projection = projection_matrix_parent_to_child(
-                  mesh_source, mesh_dest, Spectral::MortarSize::UpperHalf);
+                  mesh_source, mesh_dest, Spectral::SegmentSize::UpperHalf);
               const DataVector projected_data =
                   apply_matrix(projection, source_data);
               CHECK_ITERABLE_APPROX(
@@ -329,7 +323,7 @@ void test_h_element_to_mortar() {
             }
             {
               const auto& projection = projection_matrix_parent_to_child(
-                  mesh_source, mesh_dest, Spectral::MortarSize::LowerHalf);
+                  mesh_source, mesh_dest, Spectral::SegmentSize::LowerHalf);
               const DataVector projected_data =
                   apply_matrix(projection, source_data);
               CHECK_ITERABLE_APPROX(
@@ -359,8 +353,8 @@ void test_massive_restriction(const size_t parent_num_points,
                            Spectral::Quadrature::Gauss};
   const auto& x_child = Spectral::collocation_points(child_mesh);
   DataVector child_data = square(x_child) + x_child + 1.;
-  for (const ChildSize child_size :
-       {ChildSize::Full, ChildSize::LowerHalf, ChildSize::UpperHalf}) {
+  for (const SegmentSize child_size :
+       {SegmentSize::Full, SegmentSize::LowerHalf, SegmentSize::UpperHalf}) {
     CAPTURE(child_size);
     // Check R = M_coarse^-1 * I^T * M_fine and R_massive = I^T
     // => M_coarse * R * f = R_massive * M_fine * f
@@ -372,7 +366,7 @@ void test_massive_restriction(const size_t parent_num_points,
     ::dg::apply_mass_matrix(make_not_null(&lhs), parent_mesh);
     // (ii) Compute r.h.s.
     auto massive_child_data = child_data;
-    if (child_size != ChildSize::Full) {
+    if (child_size != SegmentSize::Full) {
       // This is the Jacobian from logical to inertial coordinates (we take the
       // parent logical coordinates as inertial so don't have to apply a
       // Jacobian above). The `apply_mass_matrix` function requires
@@ -411,9 +405,9 @@ void test_exact_restriction() {
 
   // Restrict function values
   const auto& restriction_operator_left = projection_matrix_child_to_parent(
-      child_mesh, parent_mesh, ChildSize::LowerHalf);
+      child_mesh, parent_mesh, SegmentSize::LowerHalf);
   const auto& restriction_operator_right = projection_matrix_child_to_parent(
-      child_mesh, parent_mesh, ChildSize::UpperHalf);
+      child_mesh, parent_mesh, SegmentSize::UpperHalf);
   auto restricted_data =
       apply_matrix(restriction_operator_left, child_data_left);
   restricted_data += apply_matrix(restriction_operator_right, child_data_right);
@@ -431,10 +425,10 @@ void test_exact_restriction() {
   ::dg::apply_mass_matrix(make_not_null(&child_data_right), child_mesh);
   const auto& restriction_operator_left_massive =
       projection_matrix_child_to_parent(child_mesh, parent_mesh,
-                                        ChildSize::LowerHalf, true);
+                                        SegmentSize::LowerHalf, true);
   const auto& restriction_operator_right_massive =
       projection_matrix_child_to_parent(child_mesh, parent_mesh,
-                                        ChildSize::UpperHalf, true);
+                                        SegmentSize::UpperHalf, true);
   restricted_data =
       apply_matrix(restriction_operator_left_massive, child_data_left);
   restricted_data +=
@@ -456,12 +450,12 @@ void test_higher_dimensions() {
     const auto restriction_identity =
         Spectral::projection_matrix_child_to_parent(
             {3, basis, quadrature}, {3, basis, quadrature},
-            make_array<Dim>(Spectral::ChildSize::Full));
+            make_array<Dim>(Spectral::SegmentSize::Full));
     const auto prolongation_identity =
         Spectral::projection_matrix_parent_to_child(
             {3, basis, quadrature}, {3, basis, quadrature},
-            make_array<Dim>(Spectral::ChildSize::Full));
-    for (size_t d = 0; d < Dim;++d) {
+            make_array<Dim>(Spectral::SegmentSize::Full));
+    for (size_t d = 0; d < Dim; ++d) {
       CHECK(gsl::at(restriction_identity, d).get() == Matrix{});
       CHECK(gsl::at(prolongation_identity, d).get() == Matrix{});
     }
@@ -470,9 +464,9 @@ void test_higher_dimensions() {
     const size_t parent_extents = 3;
     std::array<size_t, Dim> child_extents{};
     std::iota(child_extents.begin(), child_extents.end(), size_t{3});
-    auto child_sizes = make_array<Dim>(Spectral::ChildSize::Full);
+    auto child_sizes = make_array<Dim>(Spectral::SegmentSize::Full);
     if constexpr (Dim > 1) {
-      child_sizes[1] = Spectral::ChildSize::UpperHalf;
+      child_sizes[1] = Spectral::SegmentSize::UpperHalf;
     }
     const auto projection_matrix = Spectral::projection_matrix_child_to_parent(
         {child_extents, basis, quadrature}, {parent_extents, basis, quadrature},
@@ -482,13 +476,13 @@ void test_higher_dimensions() {
       CHECK(&projection_matrix[1].get() ==
             &Spectral::projection_matrix_child_to_parent(
                 {4, basis, quadrature}, {3, basis, quadrature},
-                Spectral::ChildSize::UpperHalf));
+                Spectral::SegmentSize::UpperHalf));
     }
     if constexpr (Dim > 2) {
       CHECK(&projection_matrix[2].get() ==
             &Spectral::projection_matrix_child_to_parent(
                 {5, basis, quadrature}, {3, basis, quadrature},
-                Spectral::ChildSize::Full));
+                Spectral::SegmentSize::Full));
     }
   }
 }
@@ -520,7 +514,7 @@ void test_p_projection_matrices() {
     CHECK(&projection_matrix[0].get() ==
           &Spectral::projection_matrix_child_to_parent(
               {4, basis, quadrature}, {3, basis, quadrature},
-              Spectral::ChildSize::Full));
+              Spectral::SegmentSize::Full));
     if constexpr (Dim > 1) {
       CHECK(projection_matrix[1].get() == Matrix{});
     }
@@ -528,7 +522,7 @@ void test_p_projection_matrices() {
       CHECK(&projection_matrix[2].get() ==
             &Spectral::projection_matrix_parent_to_child(
                 {4, basis, quadrature}, {5, basis, quadrature},
-                Spectral::ChildSize::Full));
+                Spectral::SegmentSize::Full));
     }
   }
 }
@@ -536,30 +530,30 @@ void test_p_projection_matrices() {
 void test_hash() {
   CHECK(Spectral::MortarSizeHash<1>{}({}) == 0);
 
-  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::ChildSize::LowerHalf}) == 0);
-  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::ChildSize::Full}) == 0);
-  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::ChildSize::UpperHalf}) == 1);
+  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::SegmentSize::LowerHalf}) == 0);
+  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::SegmentSize::Full}) == 0);
+  CHECK(Spectral::MortarSizeHash<2>{}({Spectral::SegmentSize::UpperHalf}) == 1);
 
-  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::LowerHalf,
-                                       Spectral::ChildSize::LowerHalf}) == 0);
-  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::UpperHalf,
-                                       Spectral::ChildSize::LowerHalf}) == 1);
-  CHECK(Spectral::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::Full, Spectral::ChildSize::LowerHalf}) == 0);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::LowerHalf,
+                                       Spectral::SegmentSize::LowerHalf}) == 0);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::UpperHalf,
+                                       Spectral::SegmentSize::LowerHalf}) == 1);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::Full,
+                                       Spectral::SegmentSize::LowerHalf}) == 0);
 
-  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::LowerHalf,
-                                       Spectral::ChildSize::UpperHalf}) == 2);
-  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::ChildSize::UpperHalf,
-                                       Spectral::ChildSize::UpperHalf}) == 3);
-  CHECK(Spectral::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::Full, Spectral::ChildSize::UpperHalf}) == 2);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::LowerHalf,
+                                       Spectral::SegmentSize::UpperHalf}) == 2);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::UpperHalf,
+                                       Spectral::SegmentSize::UpperHalf}) == 3);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::Full,
+                                       Spectral::SegmentSize::UpperHalf}) == 2);
 
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::LowerHalf,
+                                       Spectral::SegmentSize::Full}) == 0);
+  CHECK(Spectral::MortarSizeHash<3>{}({Spectral::SegmentSize::UpperHalf,
+                                       Spectral::SegmentSize::Full}) == 1);
   CHECK(Spectral::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::LowerHalf, Spectral::ChildSize::Full}) == 0);
-  CHECK(Spectral::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::UpperHalf, Spectral::ChildSize::Full}) == 1);
-  CHECK(Spectral::MortarSizeHash<3>{}(
-            {Spectral::ChildSize::Full, Spectral::ChildSize::Full}) == 0);
+            {Spectral::SegmentSize::Full, Spectral::SegmentSize::Full}) == 0);
 }
 }  // namespace
 

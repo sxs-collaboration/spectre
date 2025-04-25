@@ -24,6 +24,7 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -183,11 +184,11 @@ SPECTRE_TEST_CASE("Unit.ParallelMultigrid.Action.RestrictFields",
     const DataVector coarse_data =
         apply_matrices(
             make_array<1>(Spectral::projection_matrix_child_to_parent(
-                fine_mesh, coarse_mesh, Spectral::ChildSize::LowerHalf)),
+                fine_mesh, coarse_mesh, Spectral::SegmentSize::LowerHalf)),
             fine_data_left, Index<1>{4}) +
         apply_matrices(
             make_array<1>(Spectral::projection_matrix_child_to_parent(
-                fine_mesh, coarse_mesh, Spectral::ChildSize::UpperHalf)),
+                fine_mesh, coarse_mesh, Spectral::SegmentSize::UpperHalf)),
             fine_data_right, Index<1>{4});
     test_restrict_fields<void>(fine_mesh, coarse_mesh, fine_data_left,
                                fine_data_right, coarse_data);
@@ -198,11 +199,13 @@ SPECTRE_TEST_CASE("Unit.ParallelMultigrid.Action.RestrictFields",
     const DataVector coarse_data =
         apply_matrices(
             make_array<1>(Spectral::projection_matrix_child_to_parent(
-                fine_mesh, coarse_mesh, Spectral::ChildSize::LowerHalf, true)),
+                fine_mesh, coarse_mesh, Spectral::SegmentSize::LowerHalf,
+                true)),
             fine_data_left, Index<1>{4}) +
         apply_matrices(
             make_array<1>(Spectral::projection_matrix_child_to_parent(
-                fine_mesh, coarse_mesh, Spectral::ChildSize::UpperHalf, true)),
+                fine_mesh, coarse_mesh, Spectral::SegmentSize::UpperHalf,
+                true)),
             fine_data_right, Index<1>{4});
     test_restrict_fields<MassiveTag>(fine_mesh, coarse_mesh, fine_data_left,
                                      fine_data_right, coarse_data, true);

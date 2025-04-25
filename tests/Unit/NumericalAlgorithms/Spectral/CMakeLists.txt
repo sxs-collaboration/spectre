@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_LogicalCoordinates.cpp
   Test_Mesh.cpp
   Test_Projection.cpp
+  Test_SegmentSize.cpp
   Test_Spectral.cpp
   )
 
