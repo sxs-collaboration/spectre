@@ -198,9 +198,9 @@ struct InitializeSubdomain {
       const ParallelComponent* const /*meta*/) {
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
     for (const auto& [direction, neighbors] : element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor_id : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor_id);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const LinearSolver::Schwarz::OverlapId<Dim> overlap_id{direction,
                                                                neighbor_id};
         // Initialize background-agnostic geometry on overlaps
@@ -335,9 +335,9 @@ struct InitializeSubdomain {
         db::get<overlaps_tag<domain::Tags::NeighborMesh<Dim>>>(*box).at(
             overlap_id);
     for (const auto& [direction, neighbors] : element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor_id : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor_id);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
         const auto neighbor_face_mesh =
             neighbor_meshes.at(mortar_id).slice_away(

@@ -1123,11 +1123,16 @@ void test_minmod_impl_limits_in_x_only(
 // limiting operation.
 void test_minmod_impl_two_lower_xi_neighbors() {
   INFO("Testing minmod_impl in 2D with two neighbors in one direction");
+  const SegmentId root_segment{0, 0};
   const auto element = Element<2>{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
           {Direction<2>::lower_xi(),
-           {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
+           {std::unordered_set<ElementId<2>>{
+                ElementId<2>(
+                    1, {{root_segment, root_segment.id_of_child(Side::Lower)}}),
+                ElementId<2>(1, {{root_segment,
+                                  root_segment.id_of_child(Side::Upper)}})},
             OrientationMap<2>::create_aligned()}},
           {Direction<2>::upper_xi(),
            TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
@@ -1144,17 +1149,24 @@ void test_minmod_impl_two_lower_xi_neighbors() {
   };
   const auto input = ScalarTag::type(func(logical_coords));
 
-  const auto make_neighbors = [&dx](const double left1, const double left2,
-                                    const double right, const double left1_size,
-                                    const double left2_size) {
+  const auto make_neighbors =
+    [&dx,&root_segment](const double left1, const double left2,
+                        const double right, const double left1_size,
+                        const double left2_size) {
     using Pack = Limiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
     return std::unordered_map<DirectionalId<2>, Pack,
                               boost::hash<DirectionalId<2>>>{
         std::make_pair(
-            DirectionalId<2>{Direction<2>::lower_xi(), ElementId<2>(1)},
+            DirectionalId<2>{
+                Direction<2>::lower_xi(),
+                ElementId<2>(1, {{root_segment,
+                                  root_segment.id_of_child(Side::Lower)}})},
             Pack{Scalar<double>(left1), make_array(left1_size, dx)}),
         std::make_pair(
-            DirectionalId<2>{Direction<2>::lower_xi(), ElementId<2>(7)},
+            DirectionalId<2>{
+                Direction<2>::lower_xi(),
+                ElementId<2>(1, {{root_segment,
+                                  root_segment.id_of_child(Side::Upper)}})},
             Pack{Scalar<double>(left2), make_array(left2_size, dx)}),
         std::make_pair(
             DirectionalId<2>{Direction<2>::upper_xi(), ElementId<2>(2)},
@@ -1270,16 +1282,27 @@ void test_minmod_impl_3d_work(const Spectral::Quadrature quadrature) {
 // Similar to the 2D case, but in 3D and with 4 upper_xi neighbors
 void test_minmod_impl_four_upper_xi_neighbors() {
   INFO("Testing minmod_impl in 3D with four neighbors in one direction");
+  const SegmentId root_segment{0, 0};
   const auto element = Element<3>{
       ElementId<3>{0},
       Element<3>::Neighbors_t{
           {Direction<3>::lower_xi(),
            TestHelpers::Limiters::make_neighbor_with_id<3>(1)},
           {Direction<3>::upper_xi(),
-           {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
-                                             ElementId<3>(8), ElementId<3>(9)},
-            OrientationMap<3>::create_aligned()}},
-      }};
+           {std::unordered_set<ElementId<3>>{
+                ElementId<3>(
+                    2, {root_segment, root_segment.id_of_child(Side::Lower),
+                        root_segment.id_of_child(Side::Lower)}),
+                ElementId<3>(
+                    2, {root_segment, root_segment.id_of_child(Side::Lower),
+                        root_segment.id_of_child(Side::Upper)}),
+                ElementId<3>(
+                    2, {root_segment, root_segment.id_of_child(Side::Upper),
+                        root_segment.id_of_child(Side::Lower)}),
+                ElementId<3>(
+                    2, {root_segment, root_segment.id_of_child(Side::Upper),
+                        root_segment.id_of_child(Side::Upper)})},
+            OrientationMap<3>::create_aligned()}}}};
   const auto mesh =
       Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -1294,10 +1317,11 @@ void test_minmod_impl_four_upper_xi_neighbors() {
   const auto input = ScalarTag::type(func(logical_coords));
 
   const auto make_neighbors =
-      [&dx](const double left, const double right1, const double right2,
-            const double right3, const double right4, const double right1_size,
-            const double right2_size, const double right3_size,
-            const double right4_size) {
+    [&dx, &root_segment](const double left, const double right1,
+                         const double right2, const double right3,
+                         const double right4, const double right1_size,
+                         const double right2_size, const double right3_size,
+                         const double right4_size) {
         using Pack = Limiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
         return std::unordered_map<DirectionalId<3>, Pack,
                                   boost::hash<DirectionalId<3>>>{
@@ -1305,16 +1329,32 @@ void test_minmod_impl_four_upper_xi_neighbors() {
                 DirectionalId<3>{Direction<3>::lower_xi(), ElementId<3>(1)},
                 Pack{Scalar<double>(left), make_array<3>(dx)}),
             std::make_pair(
-                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(2)},
+                DirectionalId<3>{
+                    Direction<3>::upper_xi(),
+                    ElementId<3>(
+                        2, {root_segment, root_segment.id_of_child(Side::Lower),
+                            root_segment.id_of_child(Side::Lower)})},
                 Pack{Scalar<double>(right1), make_array(right1_size, dx, dx)}),
             std::make_pair(
-                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(7)},
+                DirectionalId<3>{
+                    Direction<3>::upper_xi(),
+                    ElementId<3>(
+                        2, {root_segment, root_segment.id_of_child(Side::Lower),
+                            root_segment.id_of_child(Side::Upper)})},
                 Pack{Scalar<double>(right2), make_array(right2_size, dx, dx)}),
             std::make_pair(
-                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(8)},
+                DirectionalId<3>{
+                    Direction<3>::upper_xi(),
+                    ElementId<3>(
+                        2, {root_segment, root_segment.id_of_child(Side::Upper),
+                            root_segment.id_of_child(Side::Lower)})},
                 Pack{Scalar<double>(right3), make_array(right3_size, dx, dx)}),
             std::make_pair(
-                DirectionalId<3>{Direction<3>::upper_xi(), ElementId<3>(9)},
+                DirectionalId<3>{
+                    Direction<3>::upper_xi(),
+                    ElementId<3>(
+                        2, {root_segment, root_segment.id_of_child(Side::Upper),
+                            root_segment.id_of_child(Side::Upper)})},
                 Pack{Scalar<double>(right4), make_array(right4_size, dx, dx)}),
         };
       };

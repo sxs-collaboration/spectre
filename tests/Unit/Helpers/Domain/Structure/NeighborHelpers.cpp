@@ -525,9 +525,10 @@ void check_neighbors(const Neighbors<Dim>& neighbors,
   const size_t dim_normal_to_face = direction.dimension();
   const Side neighbor_side = direction.side();
   const Side element_side = opposite(neighbor_side);
-  const OrientationMap<Dim>& orientation_map = neighbors.orientation();
   double surface_area_covered = 0.0;
   for (const auto& neighbor : neighbors) {
+    const OrientationMap<Dim>& orientation_map =
+        neighbors.orientation(neighbor);
     double neighbor_overlap_area = 1.0;
     const std::array<SegmentId, Dim> neighbor_segment_ids =
         orientation_map.is_aligned()

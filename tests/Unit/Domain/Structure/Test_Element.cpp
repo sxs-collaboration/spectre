@@ -87,11 +87,20 @@ void check_element_1d() {
 }
 
 void check_element_2d() {
+  const SegmentId root_segment{0, 0};
   const Neighbors<2> neighbors_lower_eta(
-      std::unordered_set<ElementId<2>>{ElementId<2>(7), ElementId<2>(4)},
+      std::unordered_set<ElementId<2>>{
+          ElementId<2>(7,
+                       {{root_segment.id_of_child(Side::Lower), root_segment}}),
+          ElementId<2>(
+              7, {{root_segment.id_of_child(Side::Upper), root_segment}})},
       OrientationMap<2>::create_aligned());
   const Neighbors<2> neighbors_upper_eta(
-      std::unordered_set<ElementId<2>>{ElementId<2>(7), ElementId<2>(4)},
+      std::unordered_set<ElementId<2>>{
+          ElementId<2>(8,
+                       {{root_segment.id_of_child(Side::Lower), root_segment}}),
+          ElementId<2>(
+              8, {{root_segment.id_of_child(Side::Upper), root_segment}})},
       OrientationMap<2>::create_aligned());
   const typename Element<2>::Neighbors_t eta_neighbors{
       {Direction<2>::lower_eta(), neighbors_lower_eta},
@@ -100,13 +109,36 @@ void check_element_2d() {
 }
 
 void check_element_3d() {
+  const SegmentId root_segment{0, 0};
   const Neighbors<3> neighbors_lower_zeta(
-      std::unordered_set<ElementId<3>>{ElementId<3>(7), ElementId<3>(4),
-                                       ElementId<3>(9), ElementId<3>(2)},
+      std::unordered_set<ElementId<3>>{
+          ElementId<3>(7,
+                       {{root_segment.id_of_child(Side::Lower),
+                         root_segment.id_of_child(Side::Lower), root_segment}}),
+          ElementId<3>(7,
+                       {{root_segment.id_of_child(Side::Lower),
+                         root_segment.id_of_child(Side::Upper), root_segment}}),
+          ElementId<3>(7,
+                       {{root_segment.id_of_child(Side::Upper),
+                         root_segment.id_of_child(Side::Lower), root_segment}}),
+          ElementId<3>(
+              7, {{root_segment.id_of_child(Side::Upper),
+                   root_segment.id_of_child(Side::Upper), root_segment}})},
       OrientationMap<3>::create_aligned());
   const Neighbors<3> neighbors_upper_zeta(
-      std::unordered_set<ElementId<3>>{ElementId<3>(7), ElementId<3>(4),
-                                       ElementId<3>(9), ElementId<3>(2)},
+      std::unordered_set<ElementId<3>>{
+          ElementId<3>(8,
+                       {{root_segment.id_of_child(Side::Lower),
+                         root_segment.id_of_child(Side::Lower), root_segment}}),
+          ElementId<3>(8,
+                       {{root_segment.id_of_child(Side::Lower),
+                         root_segment.id_of_child(Side::Upper), root_segment}}),
+          ElementId<3>(8,
+                       {{root_segment.id_of_child(Side::Upper),
+                         root_segment.id_of_child(Side::Lower), root_segment}}),
+          ElementId<3>(
+              8, {{root_segment.id_of_child(Side::Upper),
+                   root_segment.id_of_child(Side::Upper), root_segment}})},
       OrientationMap<3>::create_aligned());
   const typename Element<3>::Neighbors_t zeta_neighbors{
       {Direction<3>::lower_zeta(), neighbors_lower_zeta},

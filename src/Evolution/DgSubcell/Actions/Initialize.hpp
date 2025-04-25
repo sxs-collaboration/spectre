@@ -295,9 +295,9 @@ struct SetAndCommunicateInitialRdmpData {
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
     for (const auto& [direction, neighbors] : element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         evolution::dg::subcell::InitialTciData data{{}, rdmp_data};
         // We use temporal ID 0 for sending RDMP data
         const int temporal_id = 0;
@@ -429,9 +429,10 @@ struct ComputeAndSendTciOnInitialGrid {
       auto& receiver_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
       for (const auto& [direction, neighbors] : element.neighbors()) {
-        const auto& orientation = neighbors.orientation();
-        const auto direction_from_neighbor = orientation(direction.opposite());
         for (const auto& neighbor : neighbors) {
+          const auto& orientation = neighbors.orientation(neighbor);
+          const auto direction_from_neighbor =
+              orientation(direction.opposite());
           evolution::dg::subcell::InitialTciData data{tci_decision, {}};
           // We use temporal ID 1 for ending the TCI decision.
           const int temporal_id = 1;

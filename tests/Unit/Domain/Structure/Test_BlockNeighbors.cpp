@@ -26,15 +26,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockNeighbors", "[Domain][Unit]") {
        Direction<3>::upper_xi()}});
   BlockNeighbors<3> custom_neighbor(0, custom_orientation);
   CHECK(*(custom_neighbor.begin()) == 0);
-  CHECK(custom_neighbor.orientation()(Direction<3>::upper_xi()) ==
+  CHECK(custom_neighbor.orientation(0)(Direction<3>::upper_xi()) ==
         Direction<3>::upper_eta());
-  CHECK(custom_neighbor.orientation()(Direction<3>::upper_eta()) ==
+  CHECK(custom_neighbor.orientation(0)(Direction<3>::upper_eta()) ==
         Direction<3>::upper_zeta());
-  CHECK(custom_neighbor.orientation()(Direction<3>::upper_zeta()) ==
+  CHECK(custom_neighbor.orientation(0)(Direction<3>::upper_zeta()) ==
         Direction<3>::upper_xi());
 
   // Test output operator:
-  CHECK(get_output(custom_neighbor) == "Ids = (0); orientation = (+1, +2, +0)");
+  CHECK(get_output(custom_neighbor) ==
+        "Ids = (0); orientations = ([0,(+1, +2, +0)]); conforming = true");
 
   // Test comparison operator:
   CHECK(test_block_neighbor != custom_neighbor);

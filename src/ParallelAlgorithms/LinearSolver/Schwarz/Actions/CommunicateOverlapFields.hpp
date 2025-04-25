@@ -143,10 +143,10 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
       }
       ();
       // Copy data to send to neighbors, but move it for the last one
-      const auto direction_from_neighbor =
-          neighbors.orientation()(direction.opposite());
       for (auto neighbor = neighbors.begin(); neighbor != neighbors.end();
            ++neighbor) {
+        const auto direction_from_neighbor =
+            neighbors.orientation(*neighbor)(direction.opposite());
         Parallel::receive_data<detail::OverlapFieldsTag<
             Dim, tmpl::list<OverlapFields...>, OptionsGroup>>(
             receiver_proxy[*neighbor], iteration_id,

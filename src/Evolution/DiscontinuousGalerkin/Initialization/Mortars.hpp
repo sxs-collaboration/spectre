@@ -116,7 +116,7 @@ void p_project(
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       if (mortar_mesh->contains(mortar_id)) {
         const auto new_neighbor_mesh =
-            have_neighbor_info ? neighbors.orientation().inverse_map()(
+            have_neighbor_info ? neighbors.orientation(neighbor).inverse_map()(
                                      neighbor_info.at(neighbor).new_mesh)
                                : neighbor_mesh.at(mortar_id);
         const auto& old_mortar_mesh = mortar_mesh->at(mortar_id);

@@ -75,6 +75,36 @@ struct Metavariables {
   using component_list = tmpl::list<element_array>;
 };
 
+template <size_t Dim>
+ElementId<Dim> make_element_id_2() {
+  const SegmentId root_segment{0, 0};
+  if constexpr (Dim == 1) {
+    return ElementId<1>{1, {{root_segment}}};
+  } else if constexpr (Dim == 2) {
+    return ElementId<2>{
+        1, {{root_segment, root_segment.id_of_child(Side::Lower)}}};
+  } else {
+    return ElementId<3>{
+        1,
+        {{root_segment, root_segment.id_of_child(Side::Lower), root_segment}}};
+  }
+}
+
+template <size_t Dim>
+ElementId<Dim> make_element_id_3() {
+  const SegmentId root_segment{0, 0};
+  if constexpr (Dim == 1) {
+    return ElementId<1>{2, {{root_segment}}};
+  } else if constexpr (Dim == 2) {
+    return ElementId<2>{
+        1, {{root_segment, root_segment.id_of_child(Side::Upper)}}};
+  } else {
+    return ElementId<3>{
+        1,
+        {{root_segment, root_segment.id_of_child(Side::Upper), root_segment}}};
+  }
+}
+
 template <size_t Dim, bool RestrictToOverlap>
 void test_communicate_overlap_fields(const size_t num_points_per_dim,
                                      const size_t overlap,
@@ -108,8 +138,8 @@ void test_communicate_overlap_fields(const size_t num_points_per_dim,
          LinearSolver::Schwarz::OverlapMap<Dim, typename fields_tag::type>{}});
   };
   const ElementId<Dim> first_element_id{0};
-  const ElementId<Dim> second_element_id{1};
-  const ElementId<Dim> third_element_id{2};
+  const ElementId<Dim> second_element_id = make_element_id_2<Dim>();
+  const ElementId<Dim> third_element_id = make_element_id_3<Dim>();
   // We can only have multiple face-neighbors in >1 dimensions
   if constexpr (Dim > 1) {
     add_element({first_element_id,

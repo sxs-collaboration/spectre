@@ -692,9 +692,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   }
 
   for (const auto& [direction, neighbors] : element.neighbors()) {
-    const auto& orientation = neighbors.orientation();
-    const auto direction_from_neighbor = orientation(direction.opposite());
-
     DataVector ghost_and_subcell_data{};
     if constexpr (using_subcell_v<Metavariables>) {
       ASSERT(all_neighbor_data_for_reconstruction.has_value(),
@@ -707,6 +704,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     const size_t total_neighbors = neighbors.size();
     size_t neighbor_count = 1;
     for (const auto& neighbor : neighbors) {
+      const auto& orientation = neighbors.orientation(neighbor);
+      const auto direction_from_neighbor = orientation(direction.opposite());
       const DirectionalId<Dim> mortar_id{direction, neighbor};
 
       const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);

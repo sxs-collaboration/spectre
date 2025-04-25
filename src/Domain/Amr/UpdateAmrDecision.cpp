@@ -40,7 +40,7 @@ bool update_amr_decision(
       const Direction<VolumeDim> direction_to_neighbor =
           direction_neighbors.first;
       const OrientationMap<VolumeDim>& orientation_of_neighbor =
-          neighbors_in_dir.orientation();
+          neighbors_in_dir.orientation(neighbor_id);
       const std::array<size_t, VolumeDim> neighbor_desired_levels =
           desired_refinement_levels_of_neighbor(
               neighbor_id, neighbor_amr_flags, orientation_of_neighbor);

@@ -93,7 +93,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                 new_neighbor_ids.insert(id);
               }
               const auto new_neighbors = Neighbors<Dim>{
-                  std::move(new_neighbor_ids), neighbors.orientation()};
+                  std::move(new_neighbor_ids), neighbors.orientations(),
+                  neighbors.are_conforming()};
               CAPTURE(new_neighbors);
               TestHelpers::domain::check_neighbors(new_neighbors, element_id,
                                                    direction);
@@ -122,7 +123,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
               new_neighbor_ids.insert(id);
             }
             const auto new_neighbors =
-                Neighbors<Dim>{new_neighbor_ids, neighbors.orientation()};
+                Neighbors<Dim>{new_neighbor_ids, neighbors.orientations(),
+                               neighbors.are_conforming()};
             CAPTURE(new_neighbors);
             TestHelpers::domain::check_neighbors(new_neighbors, element_id,
                                                  direction);

@@ -34,8 +34,8 @@ void test_check_element_no_href() {
   const ElementId<2> self_id(0, {{{3, 7}, {4, 2}}});
   const ElementId<2> lower_xi_id(1, {{{3, 5}, {4, 11}}});
   const ElementId<2> upper_xi_id(2, {{{4, 7}, {3, 0}}});
-  const ElementId<2> lower_eta_id_1(3, {{{3, 7}, {4, 2}}});
-  const ElementId<2> lower_eta_id_2(4, {{{3, 7}, {4, 2}}});
+  const ElementId<2> lower_eta_id_1(3, {{{4, 14}, {4, 2}}});
+  const ElementId<2> lower_eta_id_2(3, {{{4, 15}, {4, 2}}});
   const ElementId<2> upper_eta_id(5, {{{3, 7}, {3, 2}}});
 
   const Neighbors<2> lower_xi_neighbors({lower_xi_id},

@@ -48,15 +48,15 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
   std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>>
       new_neighbors_in_direction;
 
-  const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
-      previous_neighbors_in_direction.orientation();
-  const Direction<VolumeDim> direction_to_me_in_neighbor_frame =
-      orientation_map_from_me_to_neighbors(direction.opposite());
-
   // Only one neighbor in 1D in a given direction
   if constexpr (VolumeDim == 1) {
     const ElementId<1>& previous_neighbor_id =
         *(previous_neighbors_in_direction.ids().begin());
+    const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
+        previous_neighbors_in_direction.orientation(previous_neighbor_id);
+    const Direction<VolumeDim> direction_to_me_in_neighbor_frame =
+        orientation_map_from_me_to_neighbors(direction.opposite());
+
     const amr::Flag neighbor_flag =
         previous_neighbors_amr_info.at(previous_neighbor_id).flags[0];
     SegmentId previous_segment_id = previous_neighbor_id.segment_ids()[0];
@@ -74,13 +74,17 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
     return new_neighbors_in_direction;
   }
 
-  const size_t dim_of_direction_to_me_in_neighbor_frame =
-      direction_to_me_in_neighbor_frame.dimension();
-  const std::array<SegmentId, VolumeDim> my_segment_ids_in_neighbor_frame =
-      orientation_map_from_me_to_neighbors(my_id.segment_ids());
-
   for (const auto& previous_neighbor_id :
        previous_neighbors_in_direction.ids()) {
+    const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
+        previous_neighbors_in_direction.orientation(previous_neighbor_id);
+    const Direction<VolumeDim> direction_to_me_in_neighbor_frame =
+        orientation_map_from_me_to_neighbors(direction.opposite());
+    const size_t dim_of_direction_to_me_in_neighbor_frame =
+        direction_to_me_in_neighbor_frame.dimension();
+    const std::array<SegmentId, VolumeDim> my_segment_ids_in_neighbor_frame =
+        orientation_map_from_me_to_neighbors(my_id.segment_ids());
+
     // a neighbor_segment_id is valid if it touches me in the normal direction
     // (which is in dim_of_direction_to_me_in_neighbor_frame) or overlaps with
     // me in the transverse directions

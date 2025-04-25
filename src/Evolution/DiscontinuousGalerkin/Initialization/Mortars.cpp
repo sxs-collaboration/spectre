@@ -60,13 +60,14 @@ mortars_apply_impl(const Domain<Dim>& domain,
           ::dg::mortar_mesh(
               volume_mesh.slice_away(direction.dimension()),
               neighbors
-                  .orientation()(::domain::Initialization::create_initial_mesh(
+                  .orientation(
+                      neighbor)(::domain::Initialization::create_initial_mesh(
                       initial_extents, neighbor_block, neighbor, quadrature))
                   .slice_away(direction.dimension())));
       mortar_sizes.emplace(
           mortar_id,
           ::dg::mortar_size(element.id(), neighbor, direction.dimension(),
-                            neighbors.orientation()));
+                            neighbors.orientation(neighbor)));
       // Since no communication needs to happen for boundary conditions
       // the temporal id is not advanced on the boundary, so we only need to
       // initialize it on internal boundaries

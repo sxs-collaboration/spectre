@@ -475,7 +475,7 @@ struct SolveSubdomain {
         const auto& direction = overlap_id.direction();
         const auto& neighbor_id = overlap_id.id();
         const auto& orientation =
-            element.neighbors().at(direction).orientation();
+            element.neighbors().at(direction).orientation(neighbor_id);
         const auto direction_from_neighbor = orientation(direction.opposite());
         Parallel::receive_data<overlap_solution_inbox_tag>(
             receiver_proxy[neighbor_id], iteration_id,

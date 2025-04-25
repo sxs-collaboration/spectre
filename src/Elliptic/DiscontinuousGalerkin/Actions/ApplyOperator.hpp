@@ -257,9 +257,9 @@ struct PrepareAndSendMortarData<
         Parallel::get_parallel_component<ParallelComponent>(cache);
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const size_t dimension = direction.dimension();
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor_id : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor_id);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
         // Make a copy of the local boundary data on the mortar to send to the
         // neighbor

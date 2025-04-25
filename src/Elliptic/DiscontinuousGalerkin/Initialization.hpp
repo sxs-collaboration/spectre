@@ -463,8 +463,8 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
     const auto& element_id = element.id();
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto face_mesh = mesh.slice_away(direction.dimension());
-      const auto& orientation = neighbors.orientation();
       for (const auto& neighbor_id : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor_id);
         const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
         const auto& neighbor_mesh = neighbor_meshes.at(mortar_id);
         mortar_meshes->emplace(

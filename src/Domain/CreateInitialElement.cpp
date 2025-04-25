@@ -116,13 +116,16 @@ Element<VolumeDim> create_initial_element(
        &segment_ids, grid_index = element_id.grid_index()](
           const Direction<VolumeDim>& direction) {
         const auto& block_neighbors = neighbors_of_block.at(direction);
-        const auto& orientation = block_neighbors.orientation();
-        const auto direction_from_neighbor = orientation(direction).opposite();
         Neighbors<VolumeDim> element_neighbors{
-            std::unordered_set<ElementId<VolumeDim>>{}, orientation};
+            std::unordered_set<ElementId<VolumeDim>>{},
+            block_neighbors.orientations(), block_neighbors.are_conforming()};
 
         if (block_neighbors.size() == 1) {
           const size_t neighbor_block_id = *(block_neighbors.begin());
+          const auto& orientation =
+              block_neighbors.orientation(neighbor_block_id);
+          const auto direction_from_neighbor =
+              orientation(direction).opposite();
           std::array<std::vector<SegmentId>, VolumeDim> valid_segment_ids;
           if (neighbor_is_conforming(block.topologies(),
                                      blocks[neighbor_block_id].topologies(),
@@ -156,11 +159,15 @@ Element<VolumeDim> create_initial_element(
           element_neighbors.add_ids(
               neighbor_ids(valid_segment_ids, neighbor_block_id, grid_index));
         } else {
-          for (const auto& block_id : block_neighbors.ids()) {
+          for (const auto& neighbor_block_id : block_neighbors.ids()) {
+            const auto& orientation =
+                block_neighbors.orientation(neighbor_block_id);
+            const auto direction_from_neighbor =
+                orientation(direction).opposite();
             std::array<std::vector<SegmentId>, VolumeDim> valid_segment_ids;
             for (size_t d = 0; d < VolumeDim; ++d) {
               const size_t level =
-                  gsl::at(initial_refinement_levels[block_id], d);
+                  gsl::at(initial_refinement_levels[neighbor_block_id], d);
               if (d == direction_from_neighbor.dimension()) {
                 gsl::at(valid_segment_ids, d) = std::vector{
                     boundary_segment_id(level, direction_from_neighbor.side())};
@@ -170,7 +177,7 @@ Element<VolumeDim> create_initial_element(
               }
             }
             element_neighbors.add_ids(
-                neighbor_ids(valid_segment_ids, block_id, grid_index));
+                neighbor_ids(valid_segment_ids, neighbor_block_id, grid_index));
           }
         }
 

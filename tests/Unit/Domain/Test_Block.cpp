@@ -399,8 +399,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
         "Block 3 (Identity):\n"
         "Topology: (I1,I1)\n"
         "Neighbors: "
-        "([+0,Ids = (1); orientation = (+0, +1)],"
-        "[-1,Ids = (2); orientation = (-0, +1)])\n"
+        "([+0,Ids = (1); orientations = ([1,(+0, +1)]); conforming = true],"
+        "[-1,Ids = (2); orientations = ([2,(-0, +1)]); conforming = true])\n"
         "External boundaries: (+1,-0)\n"
         "Is time dependent: false");
 

@@ -97,7 +97,7 @@ void test() {
   Interps neighbor_dg_to_fd_interpolants{};
   {
     const auto& orientation_map =
-        neighbors.at(lower_xi_id.direction()).orientation();
+        neighbors.at(lower_xi_id.direction()).orientation(lower_xi_id.id());
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
       oriented_logical_coords.get(i) = orient_variables(
@@ -113,7 +113,7 @@ void test() {
     const DirectionalId<Dim> lower_zeta_id{Direction<Dim>::lower_zeta(),
                                            ElementId<Dim>{4}};
     const auto& orientation_map =
-        neighbors.at(lower_zeta_id.direction()).orientation();
+        neighbors.at(lower_zeta_id.direction()).orientation(lower_zeta_id.id());
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
       oriented_logical_coords.get(i) = orient_variables(
@@ -143,16 +143,19 @@ void test() {
   const DataVector expected_neighbor_data_from_lower_xi = [&dg_mesh, &neighbors,
                                                            &number_of_rdmp_vars,
                                                            &received_dg_data,
-                                                           &subcell_mesh]() {
+                                                           &subcell_mesh,
+                                                           &lower_xi_id]() {
     (void)number_of_rdmp_vars;  // workaround clang bug unused warning
     // Need the view so the size is correct
     const DataVector view_received_data(
         received_dg_data.data(),
         received_dg_data.size() - 2 * number_of_rdmp_vars);
     DataVector oriented_data{view_received_data.size()};
-    orient_variables(
-        make_not_null(&oriented_data), view_received_data, dg_mesh.extents(),
-        neighbors.at(Direction<Dim>::lower_xi()).orientation().inverse_map());
+    orient_variables(make_not_null(&oriented_data), view_received_data,
+                     dg_mesh.extents(),
+                     neighbors.at(Direction<Dim>::lower_xi())
+                         .orientation(lower_xi_id.id())
+                         .inverse_map());
     // We've now got the data in the local orientation, so now we need to
     // project it to the ghost cells.
     // Note: assume isotropic meshes
@@ -351,10 +354,11 @@ void test() {
             number_of_ghost_zones, Side::Upper));
 
     DataVector oriented_data{unaligned_received_dg_data.size()};
-    orient_variables(
-        make_not_null(&oriented_data), unaligned_received_dg_data,
-        dg_mesh.extents(),
-        neighbors.at(Direction<Dim>::lower_zeta()).orientation().inverse_map());
+    orient_variables(make_not_null(&oriented_data), unaligned_received_dg_data,
+                     dg_mesh.extents(),
+                     neighbors.at(Direction<Dim>::lower_zeta())
+                         .orientation(lower_zeta_id.id())
+                         .inverse_map());
     apply_matrices(make_not_null(&expected_data), projection_matrices,
                    oriented_data, dg_mesh.extents());
     CHECK_ITERABLE_APPROX(get_neighbor_data(lower_zeta_id), expected_data);

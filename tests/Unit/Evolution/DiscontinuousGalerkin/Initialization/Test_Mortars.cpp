@@ -555,7 +555,7 @@ void test_p_refine_gts() {
       mortar_size.emplace(
           mortar_id,
           ::dg::mortar_size(old_element.id(), neighbor, direction.dimension(),
-                            neighbors.orientation()));
+                            neighbors.orientation(neighbor)));
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       neighbor_info.emplace(
           neighbor,
@@ -587,7 +587,7 @@ void test_p_refine_gts() {
       expected_mortar_size.emplace(
           mortar_id,
           ::dg::mortar_size(new_element.id(), neighbor, direction.dimension(),
-                            neighbors.orientation()));
+                            neighbors.orientation(neighbor)));
       expected_mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
     }
   }
@@ -675,7 +675,7 @@ void test_p_refine_lts() {
       mortar_size.emplace(
           mortar_id,
           ::dg::mortar_size(old_element.id(), neighbor, direction.dimension(),
-                            neighbors.orientation()));
+                            neighbors.orientation(neighbor)));
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       neighbor_info.emplace(
           neighbor,
@@ -723,7 +723,7 @@ void test_p_refine_lts() {
       expected_mortar_size.emplace(
           mortar_id,
           ::dg::mortar_size(new_element.id(), neighbor, direction.dimension(),
-                            neighbors.orientation()));
+                            neighbors.orientation(neighbor)));
       expected_mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       expected_mortar_data_history.emplace(mortar_id,
                                            boundary_history_type<Dim>{});
