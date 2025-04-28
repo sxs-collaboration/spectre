@@ -619,7 +619,7 @@ struct ApplyBoundaryCorrections {
       tmpl::flatten<tmpl::list<
           tmpl::conditional_t<DenseOutput, mortar_data_tag, tmpl::list<>>,
           domain::Tags::Mesh<volume_dim>, domain::Tags::Element<volume_dim>,
-          Tags::MortarMesh<volume_dim>, Tags::MortarSize<volume_dim>,
+          Tags::MortarMesh<volume_dim>, Tags::MortarInfo<volume_dim>,
           ::dg::Tags::Formulation,
           evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
           ::Tags::TimeStepper<TimeStepperType>,
@@ -637,7 +637,7 @@ struct ApplyBoundaryCorrections {
       const gsl::not_null<MortarDataType*> mortar_data,
       const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
-      const typename Tags::MortarSize<volume_dim>::type& mortar_sizes,
+      const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
       const ::dg::Formulation dg_formulation,
       const DirectionMap<
           volume_dim, std::optional<Variables<tmpl::list<
@@ -650,7 +650,7 @@ struct ApplyBoundaryCorrections {
       const Scalar<DataVector>& gts_det_inv_jacobian,
       const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
-               mortar_sizes, dg_formulation, face_normal_covector_and_magnitude,
+               mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
                std::numeric_limits<double>::signaling_NaN(),
                gts_det_inv_jacobian, volume_args...);
@@ -662,7 +662,7 @@ struct ApplyBoundaryCorrections {
       const gsl::not_null<MortarDataType*> mortar_data,
       const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
-      const typename Tags::MortarSize<volume_dim>::type& mortar_sizes,
+      const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
       const ::dg::Formulation dg_formulation,
       const DirectionMap<
           volume_dim, std::optional<Variables<tmpl::list<
@@ -673,7 +673,7 @@ struct ApplyBoundaryCorrections {
       const typename system::boundary_correction_base& boundary_correction,
       const TimeDelta& time_step, const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
-               mortar_sizes, dg_formulation, face_normal_covector_and_magnitude,
+               mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, time_step,
                std::numeric_limits<double>::signaling_NaN(), {},
                volume_args...);
@@ -686,7 +686,7 @@ struct ApplyBoundaryCorrections {
       const MortarDataType& mortar_data, const Mesh<volume_dim>& volume_mesh,
       const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
-      const typename Tags::MortarSize<volume_dim>::type& mortar_sizes,
+      const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
       const ::dg::Formulation dg_formulation,
       const DirectionMap<
           volume_dim, std::optional<Variables<tmpl::list<
@@ -697,7 +697,7 @@ struct ApplyBoundaryCorrections {
       const typename system::boundary_correction_base& boundary_correction,
       const double dense_output_time, const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, &mortar_data, volume_mesh, element,
-               mortar_meshes, mortar_sizes, dg_formulation,
+               mortar_meshes, mortar_infos, dg_formulation,
                face_normal_covector_and_magnitude, time_stepper,
                boundary_correction, TimeDelta{}, dense_output_time, {},
                volume_args...);
@@ -729,7 +729,7 @@ struct ApplyBoundaryCorrections {
       const gsl::not_null<MortarDataType*> mortar_data,
       const Mesh<volume_dim>& volume_mesh, const Element<volume_dim>& element,
       const typename Tags::MortarMesh<volume_dim>::type& mortar_meshes,
-      const typename Tags::MortarSize<volume_dim>::type& mortar_sizes,
+      const typename Tags::MortarInfo<volume_dim>::type& mortar_infos,
       const ::dg::Formulation dg_formulation,
       const DirectionMap<
           volume_dim, std::optional<Variables<tmpl::list<
@@ -777,7 +777,7 @@ struct ApplyBoundaryCorrections {
         &boundary_correction,
         [&dense_output_time, &dg_formulation,
          &face_normal_covector_and_magnitude, &mortar_data, &mortar_meshes,
-         &mortar_sizes, &time_step, &time_stepper, using_gauss_lobatto_points,
+         &mortar_infos, &time_step, &time_stepper, using_gauss_lobatto_points,
          &vars_to_update, &volume_args_tuple, &volume_det_jacobian,
          &volume_det_inv_jacobian,
          &volume_mesh](auto* typed_boundary_correction) {
@@ -823,7 +823,7 @@ struct ApplyBoundaryCorrections {
                  &dt_boundary_correction_on_mortar, &face_det_jacobian,
                  &face_mesh, &face_normal_covector_and_magnitude,
                  &local_data_on_mortar, &mortar_id, &mortar_meshes,
-                 &mortar_sizes, &neighbor_data_on_mortar,
+                 &mortar_infos, &neighbor_data_on_mortar,
                  using_gauss_lobatto_points, &volume_args_tuple,
                  &volume_det_jacobian, &volume_det_inv_jacobian,
                  &volume_dt_correction, &volume_mesh](
@@ -891,7 +891,7 @@ struct ApplyBoundaryCorrections {
                   typename BcType::dg_boundary_terms_volume_tags{});
 
               const std::array<Spectral::SegmentSize, volume_dim - 1>&
-                  mortar_size = mortar_sizes.at(mortar_id);
+                  mortar_size = mortar_infos.at(mortar_id).mortar_size();
 
               // This cannot reuse an allocation because it is initialized
               // via move-assignment.  (If it is used at all.)

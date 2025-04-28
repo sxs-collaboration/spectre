@@ -44,6 +44,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/PassVariables.hpp"
@@ -1707,14 +1708,14 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
 
   const auto& mortar_meshes = get_tag(::evolution::dg::Tags::MortarMesh<Dim>{});
-  const auto& mortar_sizes = get_tag(::evolution::dg::Tags::MortarSize<Dim>{});
+  const auto& mortar_infos = get_tag(::evolution::dg::Tags::MortarInfo<Dim>{});
 
   Variables<tmpl::list<Var3Squared>> volume_temporaries{
       mesh.number_of_grid_points()};
   get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
   const auto compute_expected_mortar_data =
       [&element, &expected_fluxes, &face_normals, &get_tag, &mesh,
-       &mesh_velocity, &mortar_meshes, &mortar_sizes, &volume_temporaries,
+       &mesh_velocity, &mortar_meshes, &mortar_infos, &volume_temporaries,
        &variables_before_compute_time_derivatives](
           const Direction<Dim>& local_direction,
           const ElementId<Dim>& local_neighbor_id, const bool local_data) {
@@ -1778,7 +1779,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         const auto mortar_id =
             DirectionalId<Dim>{local_direction, local_neighbor_id};
         const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-        const auto& mortar_size = mortar_sizes.at(mortar_id);
+        const auto& mortar_size = mortar_infos.at(mortar_id).mortar_size();
 
         DataVector expected_data{};
         if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {

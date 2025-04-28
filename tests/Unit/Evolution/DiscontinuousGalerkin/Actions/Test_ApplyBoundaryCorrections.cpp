@@ -27,6 +27,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -787,8 +788,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
 
   // Now retrieve dt tag and check that values are correct
-  const auto& mortar_sizes =
-      get_tag<evolution::dg::Tags::MortarSize<Dim>>(runner, self_id);
+  const auto& mortar_infos =
+      get_tag<evolution::dg::Tags::MortarInfo<Dim>>(runner, self_id);
 
   Variables<dt_variables_tags> dt_boundary_correction_on_mortar{};
   Variables<dt_variables_tags> dt_boundary_correction_projected_onto_face{};
@@ -800,7 +801,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       [&det_inv_jacobian, &dg_formulation, &dt_boundary_correction_on_mortar,
        &dt_boundary_correction_projected_onto_face,
        &expected_dt_variables_volume, &mesh, &mortar_id_ptr, &mortar_meshes,
-       &mortar_sizes, &quadrature, &runner,
+       &mortar_infos, &quadrature, &runner,
        &self_id](const evolution::dg::MortarData<Dim>& local_mortar_data,
                  const evolution::dg::MortarData<Dim>& neighbor_mortar_data)
       -> Variables<db::wrap_tags_in<::Tags::dt, variables_tags>> {
@@ -854,7 +855,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 
     // Project the boundary terms from the mortar to the face
     const std::array<Spectral::SegmentSize, Dim - 1>& mortar_size =
-        mortar_sizes.at(mortar_id);
+        mortar_infos.at(mortar_id).mortar_size();
     const Mesh<Dim - 1> face_mesh = mesh.slice_away(dimension);
 
     auto& dt_boundary_correction =
