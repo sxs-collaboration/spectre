@@ -256,19 +256,27 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
 
     if (primitive_data.has_value()) {
       get(*rest_mass_density)[s] = primitive_data.value().rest_mass_density;
-      const double coefficient_of_b =
-          get(momentum_density_dot_magnetic_field)[s] /
-          (primitive_data.value().rho_h_w_squared *
-           (primitive_data.value().rho_h_w_squared +
-            get(magnetic_field_squared)[s]));
-      const double coefficient_of_s =
-          1.0 / (get(sqrt_det_spatial_metric)[s] *
-                 (primitive_data.value().rho_h_w_squared +
-                  get(magnetic_field_squared)[s]));
-      for (size_t i = 0; i < 3; ++i) {
-        spatial_velocity->get(i)[s] =
-            coefficient_of_b * magnetic_field->get(i)[s] +
-            coefficient_of_s * tilde_s_upper.get(i)[s];
+      // if we set the Lorentz factor to 1.0 in atmosphere, then
+      // we also need to set the spatial_velocity accordingly.
+      if (primitive_data.value().lorentz_factor == 1.0) {
+        for (size_t i = 0; i < 3; ++i) {
+          spatial_velocity->get(i)[s] = 0.0;
+        }
+      } else {
+        const double coefficient_of_b =
+            get(momentum_density_dot_magnetic_field)[s] /
+            (primitive_data.value().rho_h_w_squared *
+             (primitive_data.value().rho_h_w_squared +
+              get(magnetic_field_squared)[s]));
+        const double coefficient_of_s =
+            1.0 / (get(sqrt_det_spatial_metric)[s] *
+                   (primitive_data.value().rho_h_w_squared +
+                    get(magnetic_field_squared)[s]));
+        for (size_t i = 0; i < 3; ++i) {
+          spatial_velocity->get(i)[s] =
+              coefficient_of_b * magnetic_field->get(i)[s] +
+              coefficient_of_s * tilde_s_upper.get(i)[s];
+        }
       }
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;

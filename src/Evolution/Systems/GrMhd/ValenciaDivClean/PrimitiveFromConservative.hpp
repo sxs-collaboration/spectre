@@ -41,6 +41,33 @@ namespace ValenciaDivClean {
  * If `EnforcePhysicality` is `false` then the hydrodynamic inversion will
  * return with an error if the input conservatives are unphysical, i.e., if no
  * solution exits. The exact behavior is governed by `ErrorOnFailure`.
+ *
+ * \note
+ * Here, we outline the algebra for computing the spatial velocity
+ * \f$ v^i \f$:
+ *
+ * We start from definition of the momentum density \f$ S_i \f$:
+ * \f[
+ * \begin{aligned}
+ * S_i &= (\rho h)^* W^2 v_i - \alpha b^0 b_i \\
+ *     &= \left(\rho h + \frac{B^2}{W^2} + (v \cdot B)^2\right) W^2 v_i
+ *        - \alpha \left(\frac{W}{\alpha}(v \cdot B)\right)
+ *        \left(\frac{B_i}{W} + (v \cdot B) W v_i\right) \\
+ *     &= \left(\rho h + \frac{B^2}{W^2}\right) W^2 v_i - (v \cdot B) B_i
+ * \end{aligned}
+ * \f]
+ *
+ * From the above, we obtain:
+ * \f[
+ * \begin{aligned}
+ * S^i &= \left(\rho h + \frac{B^2}{W^2}\right) W^2 v^i - (v \cdot B) B^i \\
+ * S \cdot B &= \left(\rho h + \frac{B^2}{W^2}\right) W^2 (v \cdot B)
+ *              - (v \cdot B) B^2 \\
+ *          &= \rho h W^2 (v \cdot B) \\
+ * v^i &= \frac{1}{\sqrt{\gamma} (\rho h W^2 + B^2)} \tilde{S}^i
+ *       + \frac{S \cdot B}{\rho h W^2 (\rho h W^2 + B^2)} B^i
+ * \end{aligned}
+ * \f]
  */
 template <typename OrderedListOfPrimitiveRecoverySchemes,
           bool ErrorOnFailure = true>
