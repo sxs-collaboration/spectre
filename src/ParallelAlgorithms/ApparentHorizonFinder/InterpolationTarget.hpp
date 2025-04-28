@@ -22,6 +22,7 @@
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
@@ -314,29 +315,11 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     const auto& strahlkorper = db::get<ylm::Tags::Strahlkorper<Frame>>(box);
 
     const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
+
     const auto prolonged_strahlkorper =
         ylm::Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
 
-    Variables<tmpl::list<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>,
-                         ::Tags::Tempi<1, 3, Frame>, ::Tags::TempScalar<2>>>
-        temp_buffer(prolonged_strahlkorper.ylm_spherepack().physical_size());
-
-    auto& theta_phi =
-        get<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>>(temp_buffer);
-    auto& r_hat = get<::Tags::Tempi<1, 3, Frame>>(temp_buffer);
-    auto& radius = get<::Tags::TempScalar<2>>(temp_buffer);
-    ylm::Tags::ThetaPhiCompute<Frame>::function(make_not_null(&theta_phi),
-                                                prolonged_strahlkorper);
-    ylm::Tags::RhatCompute<Frame>::function(make_not_null(&r_hat), theta_phi);
-    ylm::Tags::RadiusCompute<Frame>::function(make_not_null(&radius),
-                                              prolonged_strahlkorper);
-
-    tnsr::I<DataVector, 3, Frame> prolonged_coords{};
-    ylm::Tags::CartesianCoordsCompute<Frame>::function(
-        make_not_null(&prolonged_coords), prolonged_strahlkorper, radius,
-        r_hat);
-
-    return prolonged_coords;
+    return ylm::cartesian_coords(prolonged_strahlkorper);
   }
 };
 
