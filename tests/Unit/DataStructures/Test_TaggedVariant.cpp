@@ -165,6 +165,24 @@ static_assert(double_variant > double_variant2);
 static_assert(not(double_variant <= double_variant2));
 static_assert(double_variant >= double_variant2);
 
+static_assert(int_variant == variants::TaggedVariant<Tags::Int>(1));
+static_assert(not(int_variant != variants::TaggedVariant<Tags::Int>(1)));
+static_assert(int_variant != variants::TaggedVariant<Tags::Int>(2));
+static_assert(not(int_variant == variants::TaggedVariant<Tags::Int>(2)));
+static_assert(int_variant !=
+              variants::TaggedVariant<Tags::Templated<double>>(1.0));
+static_assert(not(int_variant ==
+                  variants::TaggedVariant<Tags::Templated<double>>(1.0)));
+
+static_assert(variants::TaggedVariant<Tags::Int>(1) == int_variant);
+static_assert(not(variants::TaggedVariant<Tags::Int>(1) != int_variant));
+static_assert(variants::TaggedVariant<Tags::Int>(2) != int_variant);
+static_assert(not(variants::TaggedVariant<Tags::Int>(2) == int_variant));
+static_assert(variants::TaggedVariant<Tags::Templated<double>>(1.0) !=
+              int_variant);
+static_assert(not(variants::TaggedVariant<Tags::Templated<double>>(1.0) ==
+                  int_variant));
+
 constexpr variants::TaggedVariant<Tags::Int, Tags::Templated<double>>
     default_variant{};
 static_assert(holds_alternative<Tags::Int>(default_variant));

@@ -5,9 +5,14 @@
 
 #include <utility>
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 
-size_t ClassicalRungeKutta4::order() const { return 4; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+ClassicalRungeKutta4::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(4);
+}
 
 // The growth function for RK4 is (e.g. page 60 of
 // http://www.staff.science.uu.nl/~frank011/Classes/numwisk/ch10.pdf

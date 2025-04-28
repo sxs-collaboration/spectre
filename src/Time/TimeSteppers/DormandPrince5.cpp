@@ -3,9 +3,14 @@
 
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 
-size_t DormandPrince5::order() const { return 5; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+DormandPrince5::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(5);
+}
 
 // The growth function for DP5 is
 //

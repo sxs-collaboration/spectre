@@ -34,7 +34,7 @@ template <typename T>
 void ImexRungeKutta::add_inhomogeneous_implicit_terms_impl(
     const gsl::not_null<T*> u, const ConstUntypedHistory<T>& implicit_history,
     const TimeDelta& time_step) const {
-  ASSERT(implicit_history.integration_order() == order(),
+  ASSERT(implicit_history.integration_order() == get<Tags::FixedOrder>(order()),
          "Fixed-order stepper cannot run at order "
              << implicit_history.integration_order());
 

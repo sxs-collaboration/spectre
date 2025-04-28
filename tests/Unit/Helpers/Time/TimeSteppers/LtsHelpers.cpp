@@ -33,7 +33,7 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
                                  std::deque<Rational> step_pattern,
                                  std::deque<Rational> neighbor_step_pattern,
                                  const double tolerance) {
-  const auto order = stepper.order();
+  const auto order = get<TimeSteppers::Tags::FixedOrder>(stepper.order());
   const auto local_approx = Approx::custom().epsilon(tolerance);
   const auto step_sign = time_runs_forward ? 1 : -1;
 
@@ -176,7 +176,7 @@ class Element {
         value_(analytic_self(time_step_id_.substep_time())),
         step_size_(next_step_size()),
         next_time_step_id_(stepper_->next_time_id(time_step_id_, step_size_)),
-        volume_history_(stepper_->order()),
+        volume_history_(get<TimeSteppers::Tags::FixedOrder>(stepper.order())),
         next_message_(stepper_->next_time_id(
             time_step_id_, neighbor_first_step *
                                time_step_id_.step_time().slab().duration())) {
@@ -190,7 +190,8 @@ class Element {
       volume_history_.insert_initial(init_id, analytic_self(init_time.value()),
                                      0.0);
       boundary_history_.local().insert_initial(
-          init_id, stepper_->order(), analytic_self(init_time.value()));
+          init_id, volume_history_.integration_order(),
+          analytic_self(init_time.value()));
       boundary_history_.remote().insert_initial(
           init_id, volume_history_.integration_order(),
           analytic_neighbor(init_time.value()));
@@ -456,6 +457,8 @@ void test_convergence_impl(
     const LtsTimeStepper& stepper,
     const std::pair<int32_t, int32_t>& number_of_steps_range,
     const int32_t stride, const bool dense) {
+  const size_t expected_order =
+      get<TimeSteppers::Tags::FixedOrder>(stepper.order());
   CAPTURE(dense);
   std::deque<Rational> step_pattern_x{{1, 2}, {1, 8}, {1, 8}, {1, 4}};
   std::deque<Rational> step_pattern_y{{1, 8}, {1, 8}, {1, 4}, {1, 2}};
@@ -463,14 +466,14 @@ void test_convergence_impl(
             number_of_steps_range, stride, [&](const int32_t repeats) {
               return test_convergence_error(stepper, step_pattern_x,
                                             step_pattern_y, repeats, dense);
-            }) == approx(stepper.order()).margin(0.4));
+            }) == approx(expected_order).margin(0.4));
   alg::for_each(step_pattern_x, [](Rational& x) { x *= -1; });
   alg::for_each(step_pattern_y, [](Rational& x) { x *= -1; });
   CHECK(convergence_rate(
             number_of_steps_range, stride, [&](const int32_t repeats) {
               return test_convergence_error(stepper, step_pattern_x,
                                             step_pattern_y, repeats, dense);
-            }) == approx(stepper.order()).margin(0.4));
+            }) == approx(expected_order).margin(0.4));
 }
 }  // namespace
 

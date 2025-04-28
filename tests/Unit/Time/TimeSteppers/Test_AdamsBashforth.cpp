@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/LtsHelpers.hpp"
@@ -50,7 +51,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
     TimeStepperTestUtils::check_convergence_order(stepper, {10, 30});
     TimeStepperTestUtils::check_dense_output(stepper, {10, 30}, 1, true);
 
-    CHECK(stepper.order() == order);
+    CHECK(stepper.order() ==
+          variants::TaggedVariant<TimeSteppers::Tags::FixedOrder>(order));
 
     TimeStepperTestUtils::stability_test(stepper);
   }

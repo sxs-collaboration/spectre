@@ -218,7 +218,9 @@ struct Initialize {
     const auto values_needed =
         db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0
             ? 0
-            : db::get<::Tags::TimeStepper<TimeStepper>>(box).order() - 1;
+            : get<TimeSteppers::Tags::FixedOrder>(
+                  db::get<::Tags::TimeStepper<TimeStepper>>(box).order()) -
+                  1;
 
     // Decrease the step so that the generated history will be
     // entirely before the first step.  This ensures we will not
@@ -425,18 +427,6 @@ struct Cleanup {
             *tag_value = std::decay_t<decltype(*tag_value)>{};
           },
           make_not_null(&box));
-    });
-    using history_tags = ::Tags::get_all_history_tags<DbTags>;
-    tmpl::for_each<history_tags>([&box](auto tag_v) {
-      using tag = typename decltype(tag_v)::type;
-      ASSERT(db::get<tag>(box).integration_order() ==
-                 db::get<::Tags::TimeStepper<TimeStepper>>(box).order(),
-             "Volume history order is: "
-                 << db::get<tag>(box).integration_order()
-                 << " but time stepper requires order: "
-                 << db::get<::Tags::TimeStepper<TimeStepper>>(box).order()
-                 << ". This may indicate that the step size has varied during "
-                    "self-start, which should not be permitted.");
     });
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

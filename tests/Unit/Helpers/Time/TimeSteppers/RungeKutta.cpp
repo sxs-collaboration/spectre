@@ -100,7 +100,9 @@ void check_tableau(const TimeSteppers::RungeKutta::ButcherTableau& tableau,
 }
 
 void check_tableau(const TimeSteppers::RungeKutta& stepper) {
-  check_tableau(stepper.butcher_tableau(), stepper.order());
+  REQUIRE(holds_alternative<TimeSteppers::Tags::FixedOrder>(stepper.order()));
+  check_tableau(stepper.butcher_tableau(),
+                get<TimeSteppers::Tags::FixedOrder>(stepper.order()));
 }
 
 void check_implicit_tableau(

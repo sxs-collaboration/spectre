@@ -279,9 +279,10 @@ void test_impl(
   // limit
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{{2.0}, {-2.0}};
   std::deque<evolution::dg::subcell::ActiveGrid> tci_grid_history{};
-  for (size_t i = 0; i < time_stepper->order() and
-                     (multistep_time_stepper or
-                      (not multistep_time_stepper and minimum_clear_tcis > 1));
+  for (size_t i = 0;
+       i < get<TimeSteppers::Tags::FixedOrder>(time_stepper->order()) and
+       (multistep_time_stepper or
+        (not multistep_time_stepper and minimum_clear_tcis > 1));
        ++i) {
     tci_grid_history.push_back(evolution::dg::subcell::ActiveGrid::Dg);
   }
@@ -323,8 +324,11 @@ void test_impl(
         time_stepper_history.substeps()[1].time_step_id);
   }
   Variables<evolved_vars_tags> vars{subcell_mesh.number_of_grid_points()};
-  get(get<Var1>(vars)) = (static_cast<double>(time_stepper->order()) + 1.0) *
-                         get<0>(logical_coordinates(subcell_mesh));
+  get(get<Var1>(vars)) =
+      (static_cast<double>(
+           get<TimeSteppers::Tags::FixedOrder>(time_stepper->order())) +
+       1.0) *
+      get<0>(logical_coordinates(subcell_mesh));
 
   typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
       neighbor_decisions{};
@@ -397,7 +401,8 @@ void test_impl(
   if (avoid_switch_to_dg or rdmp_fails or tci_fails or
       (use_halo and neighbor_is_troubled) or
 
-      (minimum_clear_tcis > time_stepper->order() and
+      (minimum_clear_tcis >
+           get<TimeSteppers::Tags::FixedOrder>(time_stepper->order()) and
        not(not multistep_time_stepper and minimum_clear_tcis > 1))) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
     CHECK(cell_centered_flux_from_box.has_value());
@@ -503,8 +508,10 @@ void test_impl(
     } else if (multistep_time_stepper) {
       REQUIRE(not tci_grid_history_from_box.empty());
       CHECK(tci_grid_history_from_box.front() ==
-            (minimum_clear_tcis > time_stepper->order() and not tci_fails and
-                     not rdmp_fails and not(neighbor_is_troubled and use_halo)
+            (minimum_clear_tcis > get<TimeSteppers::Tags::FixedOrder>(
+                                      time_stepper->order()) and
+                     not tci_fails and not rdmp_fails and
+                     not(neighbor_is_troubled and use_halo)
                  ? evolution::dg::subcell::ActiveGrid::Dg
                  : evolution::dg::subcell::ActiveGrid::Subcell));
     } else {
@@ -514,12 +521,13 @@ void test_impl(
     }
     if (multistep_time_stepper) {
       CHECK(tci_grid_history_from_box.size() ==
-            (minimum_clear_tcis > time_stepper->order() and
+            (minimum_clear_tcis > get<TimeSteppers::Tags::FixedOrder>(
+                                      time_stepper->order()) and
                      not always_use_subcell and
                      not metavars::tci_rdmp_data_only and
                      min_tci_calls_after_rollback <= tci_calls_since_rollback
                  ? minimum_clear_tcis - 1
-                 : time_stepper->order()));
+                 : get<TimeSteppers::Tags::FixedOrder>(time_stepper->order())));
     }
   }
   CHECK(ActionTesting::get_databox_tag<

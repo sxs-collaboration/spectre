@@ -3,9 +3,14 @@
 
 #include "Time/TimeSteppers/Rk4Kennedy.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 
-size_t Rk4Kennedy::order() const { return 4; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+Rk4Kennedy::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(4);
+}
 
 double Rk4Kennedy::stable_step() const { return 2.1172491998184686; }
 

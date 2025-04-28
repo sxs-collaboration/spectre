@@ -3,10 +3,15 @@
 
 #include "Time/TimeSteppers/Rk5Tsitouras.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 Rk5Tsitouras::Rk5Tsitouras(CkMigrateMessage* /*msg*/) {}
 
-size_t Rk5Tsitouras::order() const { return 5; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+Rk5Tsitouras::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(5);
+}
 
 double Rk5Tsitouras::stable_step() const { return 1.7534234969024887; }
 

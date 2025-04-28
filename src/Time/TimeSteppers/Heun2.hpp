@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/TimeSteppers/ImexRungeKutta.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -51,7 +52,8 @@ class Heun2 : public ImexRungeKutta {
   Heun2& operator=(Heun2&&) = default;
   ~Heun2() override = default;
 
-  size_t order() const override;
+  variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
+      const override;
 
   double stable_step() const override;
 

@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/RungeKutta.hpp"
@@ -13,7 +14,8 @@
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk5Owren", "[Unit][Time]") {
   const TimeSteppers::Rk5Owren stepper{};
 
-  CHECK(stepper.order() == 5);
+  CHECK(stepper.order() ==
+        variants::TaggedVariant<TimeSteppers::Tags::FixedOrder>(5));
   CHECK(stepper.number_of_substeps() == 7);
   CHECK(stepper.number_of_substeps_for_error() == 7);
   TestHelpers::RungeKutta::check_tableau(stepper);

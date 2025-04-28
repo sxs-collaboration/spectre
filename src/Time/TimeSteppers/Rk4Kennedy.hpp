@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/TimeSteppers/ImexRungeKutta.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -34,7 +35,8 @@ class Rk4Kennedy : public ImexRungeKutta {
   Rk4Kennedy& operator=(Rk4Kennedy&&) = default;
   ~Rk4Kennedy() override = default;
 
-  size_t order() const override;
+  variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
+      const override;
 
   double stable_step() const override;
 

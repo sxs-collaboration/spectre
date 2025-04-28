@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/LtsHelpers.hpp"
@@ -30,7 +31,8 @@ void test_am() {
   for (size_t order = 2; order < 9; ++order) {
     CAPTURE(order);
     const TimeSteppers::AdamsMoultonPc<Monotonic> stepper(order);
-    CHECK(stepper.order() == order);
+    CHECK(stepper.order() ==
+          variants::TaggedVariant<TimeSteppers::Tags::FixedOrder>(order));
     CHECK(stepper.number_of_past_steps() == order - 2);
     CHECK(stepper.number_of_substeps() == 2);
     CHECK(stepper.number_of_substeps_for_error() == 2);
@@ -122,7 +124,8 @@ void test_am() {
         TimeStepper, TimeSteppers::AdamsMoultonPc<Monotonic>>(name +
                                                               ":\n"
                                                               "  Order: 3");
-    CHECK(created->order() == 3);
+    CHECK(created->order() ==
+          variants::TaggedVariant<TimeSteppers::Tags::FixedOrder>(3));
   }
 
   {

@@ -3,9 +3,14 @@
 
 #include "Time/TimeSteppers/Heun2.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 
-size_t Heun2::order() const { return 2; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> Heun2::order()
+    const {
+  return variants::TaggedVariant<Tags::FixedOrder>(2);
+}
 
 // The stability polynomial is
 //

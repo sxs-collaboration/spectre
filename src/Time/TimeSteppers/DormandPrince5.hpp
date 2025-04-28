@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/TimeSteppers/RungeKutta.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -53,7 +54,8 @@ class DormandPrince5 : public RungeKutta {
   DormandPrince5& operator=(DormandPrince5&&) = default;
   ~DormandPrince5() override = default;
 
-  size_t order() const override;
+  variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder> order()
+      const override;
 
   double stable_step() const override;
 

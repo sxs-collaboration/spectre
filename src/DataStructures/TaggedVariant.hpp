@@ -110,13 +110,28 @@ class TaggedVariant {
                          TaggedVariant<OtherTags...>, TaggedVariant>>::value ==
                      0> = nullptr>
   // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr TaggedVariant(TaggedVariant<OtherTags...>&& other);
+  constexpr TaggedVariant(TaggedVariant<OtherTags...>&& other)
+      : TaggedVariant(visit(
+            []<typename Tag>(
+                std::pair<tmpl::type_<Tag>, typename Tag::type&&> entry) {
+              return TaggedVariant(std::in_place_type<Tag>,
+                                   std::move(entry.second));
+            },
+            std::move(other))) {}
 
   template <typename... OtherTags,
             Requires<tmpl::size<tmpl::list_difference<
                          TaggedVariant<OtherTags...>, TaggedVariant>>::value ==
                      0> = nullptr>
-  constexpr TaggedVariant& operator=(TaggedVariant<OtherTags...>&& other);
+  constexpr TaggedVariant& operator=(TaggedVariant<OtherTags...>&& other) {
+    visit(
+        [&]<typename Tag>(
+            std::pair<tmpl::type_<Tag>, typename Tag::type&&> entry) {
+          emplace<Tag>(std::move(entry.second));
+        },
+        std::move(other));
+    return *this;
+  }
   /// @}
 
   /// The index into the `Tags...` of the active object.
@@ -407,6 +422,39 @@ constexpr bool operator>=(const TaggedVariant<Tags...>& a,
   return not(a < b);
 }
 
+/// Comparison operators against single-tag variants.  Primarily useful
+/// in tests.
+/// @{
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator==(const TaggedVariant<Tags...>& a,
+                          const TaggedVariant<Tag>& b) {
+  return holds_alternative<Tag>(a) and get<Tag>(a) == get<Tag>(b);
+}
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator==(const TaggedVariant<Tag>& a,
+                          const TaggedVariant<Tags...>& b) {
+  return b == a;
+}
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator!=(const TaggedVariant<Tags...>& a,
+                          const TaggedVariant<Tag>& b) {
+  return not(a == b);
+}
+template <typename... Tags, typename Tag,
+          Requires<(sizeof...(Tags) > 1 and
+                    (... or std::is_same_v<Tags, Tag>))> = nullptr>
+constexpr bool operator!=(const TaggedVariant<Tag>& a,
+                          const TaggedVariant<Tags...>& b) {
+  return not(a == b);
+}
+/// @}
+
 template <
     typename... Tags,
     Requires<(... and (std::is_move_constructible_v<typename Tags::type> and
@@ -414,39 +462,6 @@ template <
 constexpr void swap(TaggedVariant<Tags...>& a,
                     TaggedVariant<Tags...>& b) noexcept(noexcept(a.swap(b))) {
   a.swap(b);
-}
-
-template <typename... Tags>
-template <
-    typename... OtherTags,
-    Requires<tmpl::size<tmpl::list_difference<TaggedVariant<OtherTags...>,
-                                              TaggedVariant<Tags...>>>::value ==
-             0>>
-constexpr TaggedVariant<Tags...>::TaggedVariant(
-    TaggedVariant<OtherTags...>&& other)
-    : TaggedVariant(visit(
-          []<typename Tag>(
-              std::pair<tmpl::type_<Tag>, typename Tag::type&&> entry) {
-            return TaggedVariant(std::in_place_type<Tag>,
-                                 std::move(entry.second));
-          },
-          std::move(other))) {}
-
-template <typename... Tags>
-template <
-    typename... OtherTags,
-    Requires<tmpl::size<tmpl::list_difference<TaggedVariant<OtherTags...>,
-                                              TaggedVariant<Tags...>>>::value ==
-             0>>
-constexpr TaggedVariant<Tags...>& TaggedVariant<Tags...>::operator=(
-    TaggedVariant<OtherTags...>&& other) {
-  visit(
-      [&]<typename Tag>(
-          std::pair<tmpl::type_<Tag>, typename Tag::type&&> entry) {
-        emplace<Tag>(std::move(entry.second));
-      },
-      std::move(other));
-  return *this;
 }
 }  // namespace variants
 

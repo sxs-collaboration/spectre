@@ -3,9 +3,14 @@
 
 #include "Time/TimeSteppers/Rk3Pareschi.hpp"
 
+#include "DataStructures/TaggedVariant.hpp"
+
 namespace TimeSteppers {
 
-size_t Rk3Pareschi::order() const { return 3; }
+variants::TaggedVariant<Tags::FixedOrder, Tags::VariableOrder>
+Rk3Pareschi::order() const {
+  return variants::TaggedVariant<Tags::FixedOrder>(3);
+}
 
 double Rk3Pareschi::stable_step() const { return 1.25637; }
 
