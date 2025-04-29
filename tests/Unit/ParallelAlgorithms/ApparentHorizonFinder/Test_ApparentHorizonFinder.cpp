@@ -110,16 +110,28 @@ namespace {
 // This struct is here to generate a snippet for the dox.
 // Otherwise, we would just call ErrorOnFailedApparentHorizon directly.
 struct TestHorizonFindFailureCallback {
-  // [horizon_find_failure_callback_example]
+  // [horizon_find_failure_callbacks_example]
   template <typename InterpolationTargetTag, typename DbTags,
             typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id,
                     const FastFlow::Status failure_reason) {
-    // [horizon_find_failure_callback_example]
+    // [horizon_find_failure_callbacks_example]
     intrp::callbacks::ErrorOnFailedApparentHorizon::template apply<
         InterpolationTargetTag>(box, cache, temporal_id, failure_reason);
+  }
+};
+
+FastFlow::Status callback_failure_status = FastFlow::Status::MaxIts;  // NOLINT
+struct ExtraHorizonFindFailureCallback {
+  template <typename InterpolationTargetTag, typename DbTags,
+            typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& /*temporal_id*/,
+                    const FastFlow::Status failure_reason) {
+    callback_failure_status = failure_reason;
   }
 };
 
@@ -276,7 +288,11 @@ struct MockMetavariables {
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<AhA, TargetFrame>>;
     using post_horizon_find_callbacks = PostHorizonFindCallbacks;
-    using horizon_find_failure_callback = TestHorizonFindFailureCallback;
+    // The order of these failure callbacks is important so that we can test the
+    // first is called and the second gives an error
+    using horizon_find_failure_callbacks =
+        tmpl::list<ExtraHorizonFindFailureCallback,
+                   TestHorizonFindFailureCallback>;
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
@@ -831,27 +847,33 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
       });
 
   test_schwarzschild_horizon_called = 0;
+  callback_failure_status = FastFlow::Status::MaxIts;
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
           Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
                                         4, 1.0, {{0.0, 0.0, 0.0}})),
       Catch::Matchers::ContainsSubstring("Cannot interpolate onto surface"));
+  CHECK(callback_failure_status == FastFlow::Status::InterpolationFailure);
 
   test_schwarzschild_horizon_called = 0;
+  callback_failure_status = FastFlow::Status::MaxIts;
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
           Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
                                         4, 10.0, {{0.0, 0.0, 0.0}})),
       Catch::Matchers::ContainsSubstring("Cannot interpolate onto surface"));
+  CHECK(callback_failure_status == FastFlow::Status::InterpolationFailure);
 
   test_schwarzschild_horizon_called = 0;
+  callback_failure_status = FastFlow::Status::MaxIts;
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
           Frame::Inertial, false, false>(&test_schwarzschild_horizon_called, 3,
                                          4, 1.0, {{0.0, 0.0, 0.0}}, 1)),
       Catch::Matchers::ContainsSubstring("Too many iterations"));
+  CHECK(callback_failure_status == FastFlow::Status::MaxIts);
 }
 }  // namespace

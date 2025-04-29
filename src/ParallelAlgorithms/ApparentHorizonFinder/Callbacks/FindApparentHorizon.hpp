@@ -70,11 +70,12 @@ namespace intrp::callbacks {
 ///
 /// that is called if the FastFlow iteration has converged.
 /// InterpolationTargetTag also is assumed to contain an additional
-/// struct called `horizon_find_failure_callback`, which has a function
+/// type alias called `horizon_find_failure_callbacks`, which is a list of
+/// structs, each of which has a function
 ///
 /// \snippet
 /// ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp
-/// horizon_find_failure_callback_example
+/// horizon_find_failure_callbacks_example
 ///
 /// that is called if the FastFlow iteration or the interpolation has
 /// failed.
@@ -297,9 +298,14 @@ struct FindApparentHorizon
         // up the volume data, since we still need it.
         return false;
       } else {
-        InterpolationTargetTag::horizon_find_failure_callback::template apply<
-            InterpolationTargetTag>(*box, *cache, temporal_id,
-                                    FastFlow::Status::InterpolationFailure);
+        tmpl::for_each<
+            typename InterpolationTargetTag::horizon_find_failure_callbacks>(
+            [&box, &cache, &temporal_id](auto callback_v) {
+              using callback = tmpl::type_from<decltype(callback_v)>;
+              callback::template apply<InterpolationTargetTag>(
+                  *box, *cache, temporal_id,
+                  FastFlow::Status::InterpolationFailure);
+            });
         horizon_finder_failed = true;
       }
     }
@@ -375,8 +381,13 @@ struct FindApparentHorizon
         // (i.e. the simple_action that we just called).
         return false;
       } else if (not has_converged) {
-        InterpolationTargetTag::horizon_find_failure_callback::template apply<
-            InterpolationTargetTag>(*box, *cache, temporal_id, status);
+        tmpl::for_each<
+            typename InterpolationTargetTag::horizon_find_failure_callbacks>(
+            [&box, &cache, &temporal_id, &status](auto callback_v) {
+              using callback = tmpl::type_from<decltype(callback_v)>;
+              callback::template apply<InterpolationTargetTag>(
+                  *box, *cache, temporal_id, status);
+            });
         horizon_finder_failed = true;
       }
     }

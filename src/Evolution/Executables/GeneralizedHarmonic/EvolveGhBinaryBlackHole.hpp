@@ -271,8 +271,8 @@ struct EvolutionMetavars {
         intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
-    using horizon_find_failure_callback =
-        intrp::callbacks::IgnoreFailedApparentHorizon;
+    using horizon_find_failure_callbacks =
+        tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
                                              Frame>,
