@@ -27,6 +27,16 @@ void test_compute_deriv_conformal_christoffel_second_kind(
                                                          Frame::Inertial>),
       "DerivChristoffel", "deriv_conformal_christoffel_second_kind",
       {{{-1., 1.}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::iJkk<DataType, Dim, Frame::Inertial> (*)(
+          const tnsr::II<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iijj<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iJJ<DataType, Dim, Frame::Inertial>&)>(
+          &Ccz4::deriv_conformal_christoffel_second_kind<DataType, Dim,
+                                                         Frame::Inertial>),
+      "DerivChristoffel", "deriv_conformal_christoffel_second_kind",
+      {{{-1., 1.}}}, used_for_size);
 }
 
 template <size_t Dim, typename DataType>
