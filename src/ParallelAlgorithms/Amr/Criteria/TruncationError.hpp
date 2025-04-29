@@ -77,18 +77,14 @@ class TruncationError : public Criterion {
     using type = double;
     static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
-        "The absolute target truncation error. If any tensor component "
-        "has a truncation error above this value, the element will be "
-        "p-refined."};
+        "The absolute target truncation error."};
   };
   struct RelativeTargetTruncationError {
     static std::string name() { return "RelativeTarget"; }
     using type = double;
     static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
-        "The relative target truncation error. If any tensor component "
-        "has a truncation error above this value, the element will be "
-        "p-refined."};
+        "The relative target truncation error."};
   };
 
   using options = tmpl::list<VariablesToMonitor, AbsoluteTargetTruncationError,

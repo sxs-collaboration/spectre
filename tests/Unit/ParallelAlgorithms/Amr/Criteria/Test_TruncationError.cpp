@@ -51,15 +51,15 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.TruncationError",
   static constexpr size_t Dim = 2;
   register_factory_classes_with_charm<Metavariables<Dim>>();
   const TruncationError<Dim, tmpl::list<TestVector<Dim>>> criterion{
-      {"TestVector"}, 1.e-3, 1.e-3};
+      {"TestVector"}, 1.e-3, 0.0};
   const auto criterion_from_option_string = TestHelpers::test_factory_creation<
       amr::Criterion, TruncationError<Dim, tmpl::list<TestVector<Dim>>>>(
       "TruncationError:\n"
       "  VariablesToMonitor: [TestVector]\n"
       "  AbsoluteTarget: 1.e-3\n"
-      "  RelativeTarget: 1.e-3\n");
+      "  RelativeTarget: 0.0\n");
 
-  const auto evaluate_criterion = [&criterion](const size_t num_points) {
+  const auto evaluate_criterion = [&](const size_t num_points) {
     const Mesh<Dim> mesh{num_points, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
     const auto logical_coords = logical_coordinates(mesh);
@@ -81,7 +81,10 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.TruncationError",
         db::DataBox<tmpl::list<::domain::Tags::Mesh<Dim>, TestVector<Dim>>>>
         box{make_not_null(&databox)};
 
-    return criterion.evaluate(box, empty_cache, ElementId<Dim>{0});
+    const auto result = criterion.evaluate(box, empty_cache, ElementId<Dim>{0});
+    CHECK(criterion_from_option_string->evaluate(box, empty_cache,
+                                                 ElementId<Dim>{0}) == result);
+    return result;
   };
 
   // Expectation:
