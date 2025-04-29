@@ -241,31 +241,31 @@ void test_observe(
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component_impl = [&num_components_observed,
-                                     tensor_data = &results.received_volume_data
-                                                        .tensor_components,
-                                     &interpolant](const std::string& component,
-                                                   const DataVector& expected) {
-    CAPTURE(*tensor_data);
-    CAPTURE(component);
-    const DataVector interpolated_expected = interpolant.interpolate(expected);
-    const auto it =
-        alg::find_if(*tensor_data, [&component](const TensorComponent& tc) {
-          return tc.name == component;
-        });
-    REQUIRE(it != tensor_data->end());
-    CAPTURE(component);
-    if (component.substr(0, 6) == "Tensor" or
-        component.substr(0, 7) == "Tensor2" or
-        component.substr(0, 14) == "Error(Tensor2)") {
-      CHECK(std::get<std::vector<float>>(it->data) ==
-            std::vector<float>{interpolated_expected.begin(),
-                               interpolated_expected.end()});
-    } else {
-      CHECK(std::get<DataVector>(it->data) == interpolated_expected);
-    }
-    ++num_components_observed;
-  };
+  const auto check_component_impl =
+      [&num_components_observed,
+       tensor_data = &results.received_volume_data.tensor_components,
+       &interpolant](const std::string& component, const DataVector& expected) {
+        CAPTURE(*tensor_data);
+        CAPTURE(component);
+        const DataVector interpolated_expected =
+            interpolant.interpolate(expected);
+        const auto it =
+            alg::find_if(*tensor_data, [&component](const TensorComponent& tc) {
+              return tc.name == component;
+            });
+        REQUIRE(it != tensor_data->end());
+        CAPTURE(component);
+        if (component.substr(0, 6) == "Tensor" or
+            component.substr(0, 7) == "Tensor2" or
+            component.substr(0, 14) == "Error(Tensor2)") {
+          CHECK(std::get<std::vector<float>>(it->data) ==
+                std::vector<float>{interpolated_expected.begin(),
+                                   interpolated_expected.end()});
+        } else {
+          CHECK(std::get<DataVector>(it->data) == interpolated_expected);
+        }
+        ++num_components_observed;
+      };
   const auto check_component = [&check_component_impl](
                                    const std::string& component,
                                    const auto& expected) {
