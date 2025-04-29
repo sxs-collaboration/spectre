@@ -194,7 +194,8 @@ def plot_control_system(
     # Plot all components for all systems. The name for the legend differs
     # slightly from the name in the DataFrame, just to make it prettier for the
     # user. Since both figures will have the same lines, we only show one legend
-    for system in control_system_components:
+    line_styles = ["-", "--", ":", "-."]
+    for i, system in enumerate(control_system_components):
         for component in control_system_components[system]:
             df_name = f"{system}{component}"
             legend_name = (
@@ -206,11 +207,13 @@ def plot_control_system(
             axes[0].plot(
                 data.index,
                 np.abs(data[f"{df_name}ControlError"]),
+                linestyle=line_styles[i % len(line_styles)],
             )
             axes[1].plot(
                 data.index,
                 np.abs(data[f"{df_name}DampingTimescale"]),
                 label=legend_name,
+                linestyle=line_styles[i % len(line_styles)],
             )
 
     # Configure the axes and legend
