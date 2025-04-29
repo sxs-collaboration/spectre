@@ -3,6 +3,5 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
-  Events/Test_FindApparentHorizon.cpp
-  Events/Test_FindCommonHorizon.cpp
+  Protocols/Test_Protocols.cpp
   PARENT_SCOPE)

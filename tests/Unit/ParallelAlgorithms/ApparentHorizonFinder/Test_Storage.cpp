@@ -1,0 +1,66 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#include "Framework/TestingFramework.hpp"
+
+#include <cstddef>
+#include <unordered_set>
+#include <vector>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Storage.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace ah {
+namespace {
+// The only thing to test with the storage is the serialization since it's just
+// structs with public members
+template <typename Fr>
+void test_storage() {
+  const ah::Storage::VolumeVariables<Fr> volume_variables{
+      Mesh<3>{3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
+      Variables<ah::source_vars<3>>{4, 1.234},
+      Variables<ah::vars_to_interpolate_to_target<3, Fr>>{4, 4.321}};
+  test_serialization(volume_variables);
+
+  const ah::Storage::Iteration<Fr> iteration{
+      ylm::Strahlkorper<Fr>{4_st, 3.0, std::array{0.0, 0.1, 0.2}},
+      std::optional<std::vector<BlockLogicalCoords<3>>>{{std::nullopt}},
+      Variables<ah::vars_to_interpolate_to_target<3, Fr>>{6, 9.876},
+      std::set<size_t>{1_st, 4_st, 5_st},
+      std::unordered_set<ElementId<3>>{ElementId<3>{0}, ElementId<3>{1}},
+      {2}};
+  test_serialization(iteration);
+
+  const ah::Storage::SingleTimeStorage<Fr> single_time_storage{
+      std::unordered_map<ElementId<3>, ah::Storage::VolumeVariables<Fr>>{
+          {ElementId<3>{0}, volume_variables}},
+      iteration, iteration.strahlkorper, Destination::ControlSystem};
+  test_serialization(single_time_storage);
+
+  const ah::Storage::PreviousSurface<Fr> previous_surface{
+      LinkedMessageId<double>{3.0, {2.0}}, iteration.strahlkorper};
+  test_serialization(previous_surface);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Storage",
+                  "[ApparentHorizonFinder][Unit]") {
+  test_storage<::Frame::Grid>();
+  test_storage<::Frame::Distorted>();
+  test_storage<::Frame::Inertial>();
+}
+}  // namespace ah

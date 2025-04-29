@@ -17,6 +17,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
@@ -31,8 +32,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace ah {
-namespace callbacks {
+namespace ah::callbacks {
 /*!
  * \brief Writes the center of an apparent horizon to disk in both the
  * `Frame` template parameter frame and Frame::Inertial frame. Intended to be
@@ -69,9 +69,11 @@ struct ObserveCenters {
   // uses ObserveCenters can control when it gets printed.
 
   template <typename DbTags, typename Metavariables, typename TemporalId>
-  static void apply(const db::DataBox<DbTags>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const TemporalId& temporal_id) {
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const TemporalId& temporal_id,
+      const FastFlow::Status /*status*/ = FastFlow::Status::AbsTol) {
     static_assert(std::is_same_v<Frame, ::Frame::Grid> or
                       std::is_same_v<Frame, ::Frame::Distorted>,
                   "Frame must be either Grid or Distorted.");
@@ -139,5 +141,4 @@ struct ObserveCenters {
       {"Time", "GridCenter_x", "GridCenter_y", "GridCenter_z",
        "InertialCenter_x", "InertialCenter_y", "InertialCenter_z"}};
 };
-}  // namespace callbacks
-}  // namespace ah
+}  // namespace ah::callbacks

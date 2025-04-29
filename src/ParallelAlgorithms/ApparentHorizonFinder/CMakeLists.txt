@@ -8,9 +8,16 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CleanUp.cpp
+  ComputePoints.cpp
+  ComputeVarsToInterpolateToTarget.cpp
+  CurrentTime.cpp
   Destination.cpp
   FastFlow.cpp
+  InterpolateVolumeVars.cpp
   InterpolationTarget.cpp
+  OptionTags.cpp
+  Storage.cpp
   )
 
 spectre_target_headers(
@@ -18,15 +25,25 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ApparentHorizon.hpp
+  CleanUp.hpp
+  Component.hpp
   ComputeExcisionBoundaryVolumeQuantities.hpp
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
+  ComputePoints.hpp
+  ComputeVarsToInterpolateToTarget.hpp
+  CurrentTime.hpp
   Destination.hpp
   FastFlow.hpp
   FindCommonHorizon.hpp
   HorizonAliases.hpp
+  Initialization.hpp
+  InterpolateVolumeVars.hpp
   InterpolationTarget.hpp
+  OptionTags.hpp
+  ReceiveVolumeData.hpp
+  Storage.hpp
   Tags.hpp
   )
 

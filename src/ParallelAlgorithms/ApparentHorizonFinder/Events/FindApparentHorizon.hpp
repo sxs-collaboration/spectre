@@ -21,6 +21,7 @@
 #include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ReceiveVolumeData.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -28,13 +29,6 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace ah {
-template <typename HorizonMetavars>
-struct ReceiveVolumeData;
-}  // namespace ah
-/// \endcond
 
 namespace ah::Events {
 /*!

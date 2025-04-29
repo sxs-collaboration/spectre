@@ -32,6 +32,10 @@ namespace control_system::protocols {
  *   this event must be fully functional when it is default constructed. It will
  *   not be constructed with any arguments.
  *
+ * If a conforming struct provides `void` for the `interpolation_target_tag`,
+ * then it can optionally provide a `horizon_metavars` type alias to a
+ * `ah::protocols::HorizonMetavars`.
+ *
  * The `event` will be run on every element, and they must collectively
  * result in a single call on one chare (which need not be one of the element
  * chares) to `control_system::RunCallbacks<ConformingStructBeingDefinedHere,
