@@ -3,17 +3,16 @@
 
 #pragma once
 
-#include "Evolution/Systems/Ccz4/Ricci.hpp"
-
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/Ccz4/Ricci.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Ccz4 {
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
@@ -26,7 +25,7 @@ void spatial_ricci_tensor(
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up,
     const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_p) {
+    const TensorType& d_field_p) {
   tenex::evaluate<ti::i, ti::j>(
       result,
       contracted_d_conformal_christoffel_difference(ti::i, ti::j) +
@@ -69,7 +68,7 @@ void spatial_ricci_tensor(
               christoffel_second_kind(ti::M, ti::l, ti::j));
 }
 
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame, typename TensorType>
 tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
     const tnsr::i<DataType, Dim, Frame>& contracted_christoffel_second_kind,
@@ -81,7 +80,7 @@ tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up,
     const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
-    const tnsr::ij<DataType, Dim, Frame>& d_field_p) {
+    const TensorType& d_field_p) {
   tnsr::ii<DataType, Dim, Frame> result{};
   spatial_ricci_tensor(make_not_null(&result), christoffel_second_kind,
                        contracted_christoffel_second_kind,
@@ -96,6 +95,7 @@ tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define TTYPE(data) BOOST_PP_TUPLE_ELEM(3, data)
 
 #define INSTANTIATE(_, data)                                              \
   template void Ccz4::spatial_ricci_tensor(                               \
@@ -116,7 +116,7 @@ tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>&                 \
           contracted_field_d_up,                                          \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,        \
-      const tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>& d_field_p);    \
+      const TTYPE(data)<DTYPE(data), DIM(data), FRAME(data)>& d_field_p); \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                  \
   Ccz4::spatial_ricci_tensor(                                             \
       const tnsr::Ijj<DTYPE(data), DIM(data), FRAME(data)>&               \
@@ -134,7 +134,7 @@ tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>&                 \
           contracted_field_d_up,                                          \
       const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& field_p,        \
-      const tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>& d_field_p);
+      const TTYPE(data)<DTYPE(data), DIM(data), FRAME(data)>& d_field_p);
 
 // Instantiations are split into several compilation units to reduce
 // compiler memory consumption.
