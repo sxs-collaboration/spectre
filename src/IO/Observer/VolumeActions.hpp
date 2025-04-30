@@ -157,6 +157,86 @@ void write_data(const std::string& h5_file_name,
                 const std::string& subfile_path,
                 const observers::ObservationId& observation_id,
                 std::vector<ElementVolumeData>&& volume_data);
+
+template <typename ParallelComponent, typename Metavariables,
+          typename VolumeDataAtObsId>
+void write_combined_volume_data(
+    Parallel::GlobalCache<Metavariables>& cache,
+    const observers::ObservationId& observation_id,
+    const VolumeDataAtObsId& volume_data,
+    const gsl::not_null<Parallel::NodeLock*> volume_file_lock,
+    const std::string& subfile_name) {
+  ASSERT(not volume_data.empty(),
+         "Failed to populate volume_data before trying to write it.");
+
+  std::vector<ElementVolumeData> volume_data_to_write;
+
+  if constexpr (std::is_same_v<tmpl::at_c<VolumeDataAtObsId, 1>,
+                               ElementVolumeData>) {
+    volume_data_to_write.reserve(volume_data.size());
+    for (const auto& [id, element] : volume_data) {
+      (void)id;  // avoid compiler warnings
+      volume_data_to_write.push_back(element);
+    }
+  } else {
+    size_t total_size = 0;
+    for (const auto& [id, vec_elements] : volume_data) {
+      (void)id;  // avoid compiler warnings
+      total_size += vec_elements.size();
+    }
+    volume_data_to_write.reserve(total_size);
+
+    for (const auto& [id, vec_elements] : volume_data) {
+      (void)id;  // avoid compiler warnings
+      volume_data_to_write.insert(volume_data_to_write.end(),
+                                  vec_elements.begin(), vec_elements.end());
+    }
+  }
+
+  // Write to file. We use a separate node lock because writing can be
+  // very time consuming (it's network dependent, depends on how full the
+  // disks are, what other users are doing, etc.) and we want to be able
+  // to continue to work on the nodegroup while we are writing data to
+  // disk.
+  const std::lock_guard hold_lock(*volume_file_lock);
+  {
+    // Scoping is for closing HDF5 file before we release the lock.
+    const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
+    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+    h5::H5File<h5::AccessType::ReadWrite> h5file(
+        file_prefix +
+            std::to_string(
+                Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
+            ".h5",
+        true, observers::input_source_from_cache(cache));
+    constexpr size_t version_number = 0;
+    auto& volume_file =
+        h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
+
+    // Serialize domain. See `Domain` docs for details on the serialization.
+    // The domain is retrieved from the global cache using the standard
+    // domain tag. If more flexibility is required here later, then the
+    // domain can be passed along with the `ContributeVolumeData` action.
+    const auto serialized_domain = serialize(
+        Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache));
+    const auto serialized_functions_of_time =
+        [&cache]() -> std::optional<std::vector<char>> {
+      // Functions-of-time are in the _mutable_ global cache, so they aren't
+      // accessible through the DataBox by default
+      if constexpr (Parallel::is_in_global_cache<
+                        Metavariables, domain::Tags::FunctionsOfTime>) {
+        return serialize(get<domain::Tags::FunctionsOfTime>(cache));
+      } else {
+        (void)cache;
+        return std::nullopt;
+      }
+    }();
+    // Write the data to the file
+    volume_file.write_volume_data(observation_id.hash(), observation_id.value(),
+                                  volume_data_to_write, serialized_domain,
+                                  serialized_functions_of_time);
+  }
+}
 }  // namespace VolumeActions_detail
 /*!
  * \ingroup ObserversGroup
@@ -325,78 +405,9 @@ struct ContributeVolumeDataToWriter {
     }
 
     if (perform_write) {
-      ASSERT(not volume_data.empty(),
-             "Failed to populate volume_data before trying to write it.");
-
-      std::vector<ElementVolumeData> volume_data_to_write;
-
-      if constexpr (std::is_same_v<tmpl::at_c<VolumeDataAtObsId, 1>,
-                                   ElementVolumeData>) {
-        volume_data_to_write.reserve(volume_data.size());
-        for (const auto& [id, element] : volume_data) {
-          (void)id;  // avoid compiler warnings
-          volume_data_to_write.push_back(element);
-        }
-      } else {
-        size_t total_size = 0;
-        for (const auto& [id, vec_elements] : volume_data) {
-          (void)id;  // avoid compiler warnings
-          total_size += vec_elements.size();
-        }
-        volume_data_to_write.reserve(total_size);
-
-        for (const auto& [id, vec_elements] : volume_data) {
-          (void)id;  // avoid compiler warnings
-          volume_data_to_write.insert(volume_data_to_write.end(),
-                                      vec_elements.begin(), vec_elements.end());
-        }
-      }
-
-      // Write to file. We use a separate node lock because writing can be
-      // very time consuming (it's network dependent, depends on how full the
-      // disks are, what other users are doing, etc.) and we want to be able
-      // to continue to work on the nodegroup while we are writing data to
-      // disk.
-      const std::lock_guard hold_lock(*volume_file_lock);
-      {
-        // Scoping is for closing HDF5 file before we release the lock.
-        const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
-        h5::H5File<h5::AccessType::ReadWrite> h5file(
-            file_prefix +
-                std::to_string(
-                    Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
-                ".h5",
-            true, observers::input_source_from_cache(cache));
-        constexpr size_t version_number = 0;
-        auto& volume_file =
-            h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
-
-        // Serialize domain. See `Domain` docs for details on the serialization.
-        // The domain is retrieved from the global cache using the standard
-        // domain tag. If more flexibility is required here later, then the
-        // domain can be passed along with the `ContributeVolumeData` action.
-        const auto serialized_domain = serialize(
-            Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(
-                cache));
-        const auto serialized_functions_of_time =
-            [&cache]() -> std::optional<std::vector<char>> {
-          // Functions-of-time are in the _mutable_ global cache, so they aren't
-          // accessible through the DataBox by default
-          if constexpr (Parallel::is_in_global_cache<
-                            Metavariables, domain::Tags::FunctionsOfTime>) {
-            return serialize(get<domain::Tags::FunctionsOfTime>(cache));
-          } else {
-            (void)cache;
-            return std::nullopt;
-          }
-        }();
-        // Write the data to the file
-        volume_file.write_volume_data(
-            observation_id.hash(), observation_id.value(), volume_data_to_write,
-            serialized_domain, serialized_functions_of_time);
-      }
+      VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
+          cache, observation_id, volume_data, make_not_null(volume_file_lock),
+          subfile_name);
     }
   }
 };
