@@ -445,6 +445,29 @@ void test_history() {
       }
     }();
 
+    const auto modify_transformer = []() {
+      if constexpr (tt::is_a_v<Variables, Vars>) {
+        return [](const gsl::not_null<double*> result, const auto& input) {
+          *result *= input.data()[0];
+        };
+      } else {
+        return [](const gsl::not_null<double*> result, const double& input) {
+          *result *= input;
+        };
+      }
+    }();
+    const auto modify_transformer2 = []() {
+      if constexpr (tt::is_a_v<Variables, Vars>) {
+        return [](const gsl::not_null<double*> result, const auto& input) {
+          *result *= (input.data()[0] - 1.0);
+        };
+      } else {
+        return [](const gsl::not_null<double*> result, const double& input) {
+          *result *= (input - 1.0);
+        };
+      }
+    }();
+
     TimeSteppers::History<double> transformed_history{};
     transform(make_not_null(&transformed_history), history, return_transformer);
 
@@ -452,36 +475,117 @@ void test_history() {
           history.integration_order());
 
     CHECK(transformed_history.size() == 3);
+    CHECK(transformed_history[0].time_step_id == history[0].time_step_id);
     CHECK(not transformed_history[0].value.has_value());
     CHECK(transformed_history[0].derivative == 11.0);
+    CHECK(transformed_history[1].time_step_id == history[1].time_step_id);
     CHECK(transformed_history[1].value == std::optional{3.0});
     CHECK(transformed_history[1].derivative == 21.0);
     CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].time_step_id ==
+          history.substeps()[0].time_step_id);
     CHECK(transformed_history.substeps()[0].value == 5.0);
     CHECK(transformed_history.substeps()[0].derivative == 41.0);
+
+    transform_mutate(make_not_null(&transformed_history), history,
+                     modify_transformer);
+
+    CHECK(transformed_history.size() == 3);
+    CHECK(transformed_history[0].time_step_id == history[0].time_step_id);
+    CHECK(not transformed_history[0].value.has_value());
+    CHECK(transformed_history[0].derivative == 110.0);
+    CHECK(transformed_history[1].time_step_id == history[1].time_step_id);
+    CHECK(transformed_history[1].value == std::optional{6.0});
+    CHECK(transformed_history[1].derivative == 420.0);
+    CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].time_step_id ==
+          history.substeps()[0].time_step_id);
+    CHECK(transformed_history.substeps()[0].value == 20.0);
+    CHECK(transformed_history.substeps()[0].derivative == 1640.0);
 
     transform(make_not_null(&transformed_history), history, return_transformer,
               return_transformer2);
 
     CHECK(transformed_history.size() == 3);
+    CHECK(transformed_history[0].time_step_id == history[0].time_step_id);
     CHECK(not transformed_history[0].value.has_value());
     CHECK(transformed_history[0].derivative == 12.0);
+    CHECK(transformed_history[1].time_step_id == history[1].time_step_id);
     CHECK(transformed_history[1].value == std::optional{3.0});
     CHECK(transformed_history[1].derivative == 22.0);
     CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].time_step_id ==
+          history.substeps()[0].time_step_id);
     CHECK(transformed_history.substeps()[0].value == 5.0);
     CHECK(transformed_history.substeps()[0].derivative == 42.0);
+
+    transform_mutate(make_not_null(&transformed_history), history,
+                     modify_transformer, modify_transformer2);
+
+    CHECK(transformed_history.size() == 3);
+    CHECK(transformed_history[0].time_step_id == history[0].time_step_id);
+    CHECK(not transformed_history[0].value.has_value());
+    CHECK(transformed_history[0].derivative == 108.0);
+    CHECK(transformed_history[1].time_step_id == history[1].time_step_id);
+    CHECK(transformed_history[1].value == std::optional{6.0});
+    CHECK(transformed_history[1].derivative == 418.0);
+    CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].time_step_id ==
+          history.substeps()[0].time_step_id);
+    CHECK(transformed_history.substeps()[0].value == 20.0);
+    CHECK(transformed_history.substeps()[0].derivative == 1638.0);
 
     transform(make_not_null(&transformed_history), history, mutate_transformer);
 
     CHECK(transformed_history.size() == 3);
+    CHECK(transformed_history[0].time_step_id == history[0].time_step_id);
     CHECK(not transformed_history[0].value.has_value());
     CHECK(transformed_history[0].derivative == 11.0);
+    CHECK(transformed_history[1].time_step_id == history[1].time_step_id);
     CHECK(transformed_history[1].value == std::optional{3.0});
     CHECK(transformed_history[1].derivative == 21.0);
     CHECK(transformed_history.substeps().size() == 2);
+    CHECK(transformed_history.substeps()[0].time_step_id ==
+          history.substeps()[0].time_step_id);
     CHECK(transformed_history.substeps()[0].value == 5.0);
     CHECK(transformed_history.substeps()[0].derivative == 41.0);
+
+#ifdef SPECTRE_DEBUG
+    transformed_history.integration_order(1);
+    CHECK_THROWS_WITH(
+        transform_mutate(make_not_null(&transformed_history), history,
+                         modify_transformer),
+        Catch::Matchers::ContainsSubstring("integration orders"));
+
+    transform(make_not_null(&transformed_history), history, mutate_transformer);
+    transformed_history.discard_value(transformed_history[1].time_step_id);
+    CHECK_THROWS_WITH(
+        transform_mutate(make_not_null(&transformed_history), history,
+                         modify_transformer),
+        Catch::Matchers::ContainsSubstring(
+            "Only one of the entries to combine has a value"));
+
+    transform(make_not_null(&transformed_history), history, mutate_transformer);
+    transformed_history[0].time_step_id = TimeStepId(true, 10, slab.start());
+    CHECK_THROWS_WITH(
+        transform_mutate(make_not_null(&transformed_history), history,
+                         modify_transformer),
+        Catch::Matchers::ContainsSubstring("Entries to combine do not match"));
+
+    transform(make_not_null(&transformed_history), history, mutate_transformer);
+    transformed_history.pop_front();
+    CHECK_THROWS_WITH(
+        transform_mutate(make_not_null(&transformed_history), history,
+                         modify_transformer),
+        Catch::Matchers::ContainsSubstring("with sizes"));
+
+    transform(make_not_null(&transformed_history), history, mutate_transformer);
+    transformed_history.clear_substeps();
+    CHECK_THROWS_WITH(
+        transform_mutate(make_not_null(&transformed_history), history,
+                         modify_transformer),
+        Catch::Matchers::ContainsSubstring("with substep sizes"));
+#endif
   }
 
   history.undo_latest();
