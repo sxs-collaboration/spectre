@@ -39,8 +39,7 @@ struct RegisterObservers {
   static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) {
-    return {TypeOfObservation,
-            observers::ObservationKey{"ElementObservationType"}};
+    return {TypeOfObservation, observers::ObservationKey{"/element_data.vol"}};
   }
 };
 

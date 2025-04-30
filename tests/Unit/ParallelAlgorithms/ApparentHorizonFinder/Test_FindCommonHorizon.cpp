@@ -59,13 +59,15 @@ namespace {
 struct MockContributeVolumeData {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ObservationId& /*observation_id*/,
-                    const std::string& /*subfile_name*/,
-                    const Parallel::ArrayComponentId& /*array_component_id*/,
-                    ElementVolumeData&& /*received_volume_data*/) {}
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ObservationId& /*observation_id*/,
+      const std::string& /*subfile_name*/,
+      const Parallel::ArrayComponentId& /*array_component_id*/,
+      ElementVolumeData&& /*received_volume_data*/,
+      const std::optional<std::string>& /*dependency*/ = std::nullopt) {}
 };
 
 struct MockInterpolatorReceiveVolumeData {

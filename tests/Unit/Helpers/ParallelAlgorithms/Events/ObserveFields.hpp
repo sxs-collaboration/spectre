@@ -57,22 +57,26 @@ struct MockContributeVolumeData {
     std::string subfile_name{};
     Parallel::ArrayComponentId array_component_id{};
     ElementVolumeData received_volume_data{};
+    std::optional<std::string> dependency{};
   };
   static Results results;
 
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ObservationId& observation_id,
-                    const std::string& subfile_name,
-                    const Parallel::ArrayComponentId& array_component_id,
-                    ElementVolumeData&& received_volume_data) {
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ObservationId& observation_id,
+      const std::string& subfile_name,
+      const Parallel::ArrayComponentId& array_component_id,
+      ElementVolumeData&& received_volume_data,
+      const std::optional<std::string>& dependency = std::nullopt) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
     results.received_volume_data = std::move(received_volume_data);
+    results.dependency = dependency;
   }
 };
 

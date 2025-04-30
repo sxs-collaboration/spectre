@@ -47,6 +47,7 @@
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -117,8 +118,8 @@ void check_write_volume_data(
   const std::vector<Spectral::Quadrature> h5_write_volume_expected_quadratures{
       {expected_mesh.quadrature(0), expected_mesh.quadrature(1)}};
 
-  const observers::ObservationId write_vol_observation_id{
-      1., "ElementObservationType"};
+  const observers::ObservationId write_vol_observation_id{1.,
+                                                          "/element_data.vol"};
 
   if (file_system::check_if_file_exists(h5_write_volume_file_name + ".h5"s)) {
     file_system::rm(h5_write_volume_file_name + ".h5"s, true);
@@ -161,6 +162,7 @@ void check_write_volume_data(
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   using registration_list = tmpl::list<
       observers::Actions::RegisterWithObservers<
@@ -230,117 +232,198 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     file_system::rm(h5_file_name, true);
   }
 
-  // Test passing volume data...
-  const observers::ObservationId observation_id{3., "ElementObservationType"};
-  for (const auto& id : element_ids) {
-    const Parallel::ArrayComponentId array_id =
-        Parallel::make_array_component_id<element_comp>(id);
-
-    auto [mesh, fake_volume_data] = make_fake_volume_data(array_id);
-    runner
-        .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
-            0, observation_id, std::string{"/element_data"}, array_id,
-            ElementVolumeData{id, std::move(fake_volume_data), mesh});
-  }
-  // Invoke the simple action 'ContributeVolumeDataToWriter'
-  // to move the volume data to the Writer parallel component.
-  runner.invoke_queued_threaded_action<obs_writer>(0);
-  CHECK(ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 0));
-
-  REQUIRE(file_system::check_if_file_exists(h5_file_name));
-  // Check that the H5 file was written correctly.
-  h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
-  const auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
-
-  const auto temporal_id = observation_id.hash();
-  CHECK(volume_file.list_observation_ids() == std::vector<size_t>{temporal_id});
-
-  const auto tensor_names = volume_file.list_tensor_components(temporal_id);
   const std::vector<std::string> expected_tensor_names{"T_x",  "T_y",  "S_xx",
                                                        "S_yy", "S_xy", "S_yx"};
-  CAPTURE(tensor_names);
   CAPTURE(expected_tensor_names);
-  REQUIRE(alg::all_of(tensor_names,
-                      [&expected_tensor_names](const std::string& name) {
-                        return alg::found(expected_tensor_names, name);
-                      }));
-  REQUIRE(alg::all_of(expected_tensor_names,
-                      [&tensor_names](const std::string& name) {
-                        return alg::found(tensor_names, name);
-                      }));
-  const std::vector<std::string> grid_names =
-      volume_file.get_grid_names(temporal_id);
-  // A pair holds an element_id, and it's "place" in the string of grid names
-  std::vector<std::tuple<ElementId<2>, size_t>> pairs;
-  auto start = grid_names.begin();
-  auto end = grid_names.end();
-  for (const auto& element_id : element_ids) {
-    const auto place =
-        std::find(start, end, get_output<ElementId<2>>(element_id));
-    // Check that the grid was actually found
-    REQUIRE(place != end);
-    // Store a tuple of the element_id and its place
-    pairs.emplace_back(element_id, std::distance(start, place));
-  }
-  // Sort element_ids by place, this is necessary because the elements are
-  // written to file in an unpredictable order, so to extract this order,
-  // we look at the string of grid names, as it is written in the same order as
-  // the elements.
-  std::sort(pairs.begin(), pairs.end(),
-            [](const std::tuple<ElementId<2>, size_t>& pair_1,
-               const std::tuple<ElementId<2>, size_t>& pair_2) {
-              return std::get<1>(pair_1) < std::get<1>(pair_2);
-            });
-  std::vector<ElementId<2>> sorted_element_ids;
-  sorted_element_ids.reserve(pairs.size());
-  for (const auto& pair : pairs) {
-    sorted_element_ids.push_back(std::get<0>(pair));
-  }
-  // Read the Tensor Data that was written to the file
-  std::unordered_map<std::string, DataVector> read_tensor_data;
-  for (const auto& tensor_name :
-       volume_file.list_tensor_components(temporal_id)) {
-    read_tensor_data[tensor_name] = std::get<DataVector>(
-        volume_file.get_tensor_component(temporal_id, tensor_name).data);
-  }
-  // Read the extents that were written to file
-  const std::vector<std::vector<size_t>> read_extents =
-      volume_file.get_extents(temporal_id);
-  const auto read_bases = volume_file.get_bases(temporal_id);
-  const auto read_quadratures = volume_file.get_quadratures(temporal_id);
-  // The data is stored contiguously, and each element has a subset of the
-  // data.  We need to keep track of how many points have already been checked
-  // so that we know where to look in the tensor component data for the current
-  // grid's data.
-  size_t points_processed = 0;
-  for (size_t i = 0; i < sorted_element_ids.size(); i++) {
-    const auto& element_id = sorted_element_ids[i];
-    const std::string grid_name = MakeString{} << element_id;
-    const Parallel::ArrayComponentId array_id =
-        Parallel::make_array_component_id<element_comp>(element_id);
-    const auto volume_data_fakes = make_fake_volume_data(array_id);
-    // Each element contains as many data points as the product of its
-    // extents, compute this number
-    const size_t stride =
-        alg::accumulate(std::get<0>(volume_data_fakes).extents().indices(),
-                        static_cast<size_t>(1), std::multiplies<>{});
 
-    // Check that the extents and tensor data were correctly written
-    CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes).extents(0),
-                              std::get<0>(volume_data_fakes).extents(1)} ==
-          read_extents[i]);
-    for (const auto& tensor_component : std::get<1>(volume_data_fakes)) {
-      CHECK(std::get<DataVector>(tensor_component.data) ==
-            DataVector(
-                &(read_tensor_data[tensor_component.name][points_processed]),
-                stride));
+  // Test passing volume data. Last three arguments are only used if dependency
+  // has a value
+  const auto test_volume_actions = [&](const std::optional<std::string>&
+                                           dependency = std::nullopt,
+                                       const bool write_volume_data = true,
+                                       const bool
+                                           send_dependency_before_elements =
+                                               true,
+                                       const bool test_error = false) {
+    const observers::ObservationId observation_id{3., "/element_data.vol"};
+
+    CAPTURE(observation_id);
+    CAPTURE(dependency);
+    CAPTURE(write_volume_data);
+    CAPTURE(send_dependency_before_elements);
+
+    if (file_system::check_if_file_exists(h5_file_name)) {
+      file_system::rm(h5_file_name, true);
     }
-    points_processed += stride;
-  }
 
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
+    const auto send_dependency = [&]() {
+      ActionTesting::threaded_action<
+          obs_writer, observers::ThreadedActions::ContributeDependency>(
+          make_not_null(&runner), 0, observation_id.value(),
+          test_error ? "BadDependency" : dependency.value(), "element_data",
+          write_volume_data);
+    };
+    if (dependency.has_value() and send_dependency_before_elements) {
+      send_dependency();
+    }
+
+    for (const auto& id : element_ids) {
+      const Parallel::ArrayComponentId array_id =
+          Parallel::make_array_component_id<element_comp>(id);
+
+      auto [mesh, fake_volume_data] = make_fake_volume_data(array_id);
+      ActionTesting::simple_action<obs_component,
+                                   observers::Actions::ContributeVolumeData>(
+          make_not_null(&runner), 0, observation_id,
+          std::string{"/element_data"}, array_id,
+          ElementVolumeData{id, std::move(fake_volume_data), mesh}, dependency);
+    }
+    // Invoke the simple action 'ContributeVolumeDataToWriter'
+    // to move the volume data to the Writer parallel component.
+    if (test_error) {
+      CHECK_THROWS_WITH(
+          ActionTesting::invoke_queued_threaded_action<obs_writer>(
+              make_not_null(&runner), 0),
+          Catch::Matchers::ContainsSubstring(
+              "The dependency that was sent to the ObserverWriter from the "
+              "elements (TestDependency) does not match the dependency "
+              "received from ContributeDependency (BadDependency)"));
+      return;
+    } else {
+      ActionTesting::invoke_queued_threaded_action<obs_writer>(
+          make_not_null(&runner), 0);
+    }
+    CHECK(ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 0));
+
+    // If we have a dependency, volume data should still be in the writer if
+    // we are sending the dependency after all the elements
+    if (dependency.has_value()) {
+      const auto& all_volume_data =
+          ActionTesting::get_databox_tag<obs_writer,
+                                         observers::Tags::TensorData>(runner,
+                                                                      0);
+      REQUIRE(all_volume_data.contains(observation_id) !=
+              send_dependency_before_elements);
+
+      // Now we send the dependency if we didn't before
+      if (not send_dependency_before_elements) {
+        send_dependency();
+      }
+
+      // Now we should be guaranteed to have written the volume data (or
+      // deleted it because we aren't writing)
+      REQUIRE_FALSE(all_volume_data.contains(observation_id));
+
+      // Check that we indeed didn't write anything if we weren't supposed
+      // to
+      if (not write_volume_data) {
+        REQUIRE_FALSE(file_system::check_if_file_exists(h5_file_name));
+        return;
+      }
+    }
+
+    REQUIRE(file_system::check_if_file_exists(h5_file_name));
+    // Check that the H5 file was written correctly.
+    const h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
+    const auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
+
+    const auto temporal_id = observation_id.hash();
+    CHECK(volume_file.list_observation_ids() ==
+          std::vector<size_t>{temporal_id});
+
+    const auto tensor_names = volume_file.list_tensor_components(temporal_id);
+    CAPTURE(tensor_names);
+    REQUIRE(alg::all_of(tensor_names,
+                        [&expected_tensor_names](const std::string& name) {
+                          return alg::found(expected_tensor_names, name);
+                        }));
+    REQUIRE(alg::all_of(expected_tensor_names,
+                        [&tensor_names](const std::string& name) {
+                          return alg::found(tensor_names, name);
+                        }));
+    const std::vector<std::string> grid_names =
+        volume_file.get_grid_names(temporal_id);
+    // A pair holds an element_id, and it's "place" in the string of grid
+    // names
+    std::vector<std::tuple<ElementId<2>, size_t>> pairs;
+    auto start = grid_names.begin();
+    auto end = grid_names.end();
+    for (const auto& element_id : element_ids) {
+      const auto place =
+          std::find(start, end, get_output<ElementId<2>>(element_id));
+      // Check that the grid was actually found
+      REQUIRE(place != end);
+      // Store a tuple of the element_id and its place
+      pairs.emplace_back(element_id, std::distance(start, place));
+    }
+    // Sort element_ids by place, this is necessary because the elements are
+    // written to file in an unpredictable order, so to extract this order,
+    // we look at the string of grid names, as it is written in the same
+    // order as the elements.
+    std::sort(pairs.begin(), pairs.end(),
+              [](const std::tuple<ElementId<2>, size_t>& pair_1,
+                 const std::tuple<ElementId<2>, size_t>& pair_2) {
+                return std::get<1>(pair_1) < std::get<1>(pair_2);
+              });
+    std::vector<ElementId<2>> sorted_element_ids;
+    sorted_element_ids.reserve(pairs.size());
+    for (const auto& pair : pairs) {
+      sorted_element_ids.push_back(std::get<0>(pair));
+    }
+    // Read the Tensor Data that was written to the file
+    std::unordered_map<std::string, DataVector> read_tensor_data;
+    for (const auto& tensor_name :
+         volume_file.list_tensor_components(temporal_id)) {
+      read_tensor_data[tensor_name] = std::get<DataVector>(
+          volume_file.get_tensor_component(temporal_id, tensor_name).data);
+    }
+    // Read the extents that were written to file
+    const std::vector<std::vector<size_t>> read_extents =
+        volume_file.get_extents(temporal_id);
+    const auto read_bases = volume_file.get_bases(temporal_id);
+    const auto read_quadratures = volume_file.get_quadratures(temporal_id);
+    // The data is stored contiguously, and each element has a subset of the
+    // data.  We need to keep track of how many points have already been
+    // checked so that we know where to look in the tensor component data
+    // for the current grid's data.
+    size_t points_processed = 0;
+    for (size_t i = 0; i < sorted_element_ids.size(); i++) {
+      const auto& element_id = sorted_element_ids[i];
+      const std::string grid_name = MakeString{} << element_id;
+      const Parallel::ArrayComponentId array_id =
+          Parallel::make_array_component_id<element_comp>(element_id);
+      const auto volume_data_fakes = make_fake_volume_data(array_id);
+      // Each element contains as many data points as the product of its
+      // extents, compute this number
+      const size_t stride =
+          alg::accumulate(std::get<0>(volume_data_fakes).extents().indices(),
+                          static_cast<size_t>(1), std::multiplies<>{});
+
+      // Check that the extents and tensor data were correctly written
+      CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes).extents(0),
+                                std::get<0>(volume_data_fakes).extents(1)} ==
+            read_extents[i]);
+      for (const auto& tensor_component : std::get<1>(volume_data_fakes)) {
+        CHECK(std::get<DataVector>(tensor_component.data) ==
+              DataVector(
+                  &(read_tensor_data[tensor_component.name][points_processed]),
+                  stride));
+      }
+      points_processed += stride;
+    }
+
+    if (file_system::check_if_file_exists(h5_file_name)) {
+      file_system::rm(h5_file_name, true);
+    }
+  };
+
+  test_volume_actions();
+  for (const auto& [write_volume_data, send_dependency_before_elements] :
+       cartesian_product(std::array{true, false}, std::array{true, false})) {
+    test_volume_actions({"TestDependency"}, write_volume_data,
+                        send_dependency_before_elements);
   }
+  test_volume_actions({"TestDependency"}, true, true, true);
 
   check_write_volume_data<metavariables, obs_writer, element_comp>(
       make_not_null(&runner), element_ids[0], expected_tensor_names);
