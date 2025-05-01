@@ -12,7 +12,9 @@
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftInward.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRNoDrift.hpp"
 #include "ControlSystem/ControlErrors/Size/Info.hpp"
 #include "ControlSystem/ControlErrors/Size/Initial.hpp"
 #include "ControlSystem/ControlErrors/Size/State.hpp"
@@ -30,6 +32,8 @@ void StateHistory::initialize_stored_control_errors() {
   stored_control_errors_[States::Initial{}.number()];
   stored_control_errors_[States::DeltaR{}.number()];
   stored_control_errors_[States::AhSpeed{}.number()];
+  stored_control_errors_[States::DeltaRDriftInward{}.number()];
+  stored_control_errors_[States::DeltaRNoDrift{}.number()];
   stored_control_errors_[States::DeltaRDriftOutward{}.number()];
 }
 
@@ -49,6 +53,8 @@ void StateHistory::store(double time, const Info& info,
   store_state(States::Initial{});
   store_state(States::DeltaR{});
   store_state(States::AhSpeed{});
+  store_state(States::DeltaRDriftInward{});
+  store_state(States::DeltaRNoDrift{});
   store_state(States::DeltaRDriftOutward{});
 }
 

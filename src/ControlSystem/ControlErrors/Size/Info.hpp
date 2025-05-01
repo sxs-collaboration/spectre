@@ -65,7 +65,9 @@ struct CrossingTimeInfo {
   CrossingTimeInfo(
       const std::optional<double>& char_speed_crossing_time,
       const std::optional<double>& comoving_char_speed_crossing_time,
-      const std::optional<double>& delta_radius_crossing_time);
+      const std::optional<double>& delta_radius_crossing_time,
+      const std::optional<double>& drift_limit_char_speed_crossing_time,
+      const std::optional<double>& drift_limit_delta_radius_crossing_time);
   /// t_char_speed is the time (relative to the current time) when the
   /// minimum characteristic speed is predicted to cross zero (or nullopt if
   /// the minimum characteristic speed is increasing).
@@ -79,6 +81,18 @@ struct CrossingTimeInfo {
   /// predicted to cross zero (or nullopt if the minimum distance is
   /// increasing).
   std::optional<double> t_delta_radius;
+  /// t_drift_limit_delta_radius is the time (relative to the current time) when
+  /// the minimum distance between the horizon and the excision boundary is
+  /// predicted to cross the min_allowed_radial_distance associated with the
+  /// state DeltaRDriftInward (or nullopt if the minimum distance is
+  /// decreasing).
+  /// In SpEC this quantity is called MaxDeltaRXTime
+  std::optional<double> t_drift_limit_delta_radius;
+  /// t_drift_limit is a convenient variable that is
+  /// the minimum of t_drift_limit_delta_radius and t_drift_limit_char_speed,
+  /// or nullopt if both drift limits are nullopt.
+  /// In SpEC this quantity is called State3XTime
+  std::optional<double> t_drift_limit;
   /// Extra variables to simplify the logic; these indicate whether
   /// the characteristic speed or the excision boundary (or neither) are
   /// expected to cross zero soon.
