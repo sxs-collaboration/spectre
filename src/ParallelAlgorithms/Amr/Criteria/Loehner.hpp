@@ -41,7 +41,7 @@ namespace amr::Criteria {
  *
  * \begin{equation}
  * \epsilon_k =
- *   \sqrt{\frac{1}{N_\mathrm{points}} \sum_{p=1}^N_\mathrm{points}
+ *   \sqrt{\frac{1}{N_{\mathrm{points}}} \sum_{p=1}^{N_\mathrm{points}}
  *     \left(\partial^2 u / \partial \xi_k^2\right)^2}
  * \end{equation}
  *
