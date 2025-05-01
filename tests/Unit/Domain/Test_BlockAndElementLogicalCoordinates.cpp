@@ -22,6 +22,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/Sphere.hpp"
+#include "Domain/Creators/SphericalShells.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
@@ -355,9 +356,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
 }
 
 void fuzzy_test_block_and_element_logical_coordinates_shell(
-    const size_t n_pts) {
-  const auto shell = domain::creators::Sphere(
-      1.5, 2.5, domain::creators::Sphere::Excision{}, 2_st, 1_st, true);
+    const DomainCreator<3>& shell, const size_t n_pts) {
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
@@ -831,7 +830,12 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   fuzzy_test_block_and_element_logical_coordinates2(20);
   fuzzy_test_block_and_element_logical_coordinates1(20);
   fuzzy_test_block_and_element_logical_coordinates1(0);
-  fuzzy_test_block_and_element_logical_coordinates_shell(20);
+  const auto sphere = domain::creators::Sphere(
+      1.5, 2.5, domain::creators::Sphere::Excision{}, 2_st, 1_st, true);
+  fuzzy_test_block_and_element_logical_coordinates_shell(sphere, 20);
+  const auto spherical_shells =
+      domain::creators::SphericalShells(1.5, 2.5, 2_st, 2_st, 2_st);
+  fuzzy_test_block_and_element_logical_coordinates_shell(sphere, 20);
   fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(20);
   fuzzy_test_block_and_element_logical_coordinates_distorted_brick(20);
   test_block_logical_coordinates1fail();

@@ -22,6 +22,7 @@ spectre_target_sources(
   RotatedRectangles.cpp
   ShellDistribution.cpp
   Sphere.cpp
+  SphericalShells.cpp
   )
 
 spectre_target_headers(
@@ -49,6 +50,7 @@ spectre_target_headers(
   RotatedRectangles.hpp
   ShellDistribution.hpp
   Sphere.hpp
+  SphericalShells.hpp
   )
 
 target_link_libraries(

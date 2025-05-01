@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/SphericalToCartesianPfaffian.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"

@@ -19,6 +19,7 @@ set(LIBRARY_SOURCES
   Test_RotatedIntervals.cpp
   Test_RotatedRectangles.cpp
   Test_Sphere.cpp
+  Test_SphericalShells.cpp
   )
 
 add_subdirectory(TimeDependentOptions)
