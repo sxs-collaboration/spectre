@@ -10,9 +10,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <limits>
 #include <optional>
 #include <utility>
 
+#include "DataStructures/DataVector.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
@@ -28,12 +30,24 @@
 
 namespace TimeStepperTestUtils::lts {
 namespace {
+VariableOrderChoice fixed_order_choice(const LtsTimeStepper& stepper) {
+  REQUIRE(holds_alternative<TimeSteppers::Tags::FixedOrder>(stepper.order()));
+  const size_t order = get<TimeSteppers::Tags::FixedOrder>(stepper.order());
+  const size_t past_steps = stepper.number_of_past_steps();
+  return {order, past_steps, order, past_steps};
+}
+
+VariableOrderChoice flip(const VariableOrderChoice& choice) {
+  return {choice.remote_order, choice.remote_number_of_past_steps,
+          choice.local_order, choice.local_number_of_past_steps};
+}
+
 void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
                                  const bool time_runs_forward,
                                  std::deque<Rational> step_pattern,
                                  std::deque<Rational> neighbor_step_pattern,
-                                 const double tolerance) {
-  const auto order = get<TimeSteppers::Tags::FixedOrder>(stepper.order());
+                                 const double tolerance,
+                                 const VariableOrderChoice& order_choice) {
   const auto local_approx = Approx::custom().epsilon(tolerance);
   const auto step_sign = time_runs_forward ? 1 : -1;
 
@@ -43,7 +57,7 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
     return 1.23 * static_cast<double>(t.substep()) + t.substep_time();
   };
 
-  TimeSteppers::History<double> volume_history{order};
+  TimeSteppers::History<double> volume_history{order_choice.local_order};
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history{};
 
   const Slab initial_slab(1.2, 3.4);
@@ -53,16 +67,27 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
     auto init_step = step_sign * initial_slab.duration();
     auto init_time = id.step_time();
     int64_t slab_number = 0;
-    while (volume_history.size() < stepper.number_of_past_steps()) {
+    while (boundary_history.local().size() <
+               order_choice.local_number_of_past_steps or
+           boundary_history.remote().size() <
+               order_choice.remote_number_of_past_steps) {
       --slab_number;
       init_step =
           init_step.with_slab(init_step.slab().advance_towards(-init_step));
       init_time -= init_step;
       const TimeStepId init_id(time_runs_forward, slab_number, init_time);
       const double deriv = arbitrary_rhs(init_id);
-      volume_history.insert_initial(init_id, 0.0, deriv);
-      boundary_history.local().insert_initial(init_id, order, deriv);
-      boundary_history.remote().insert_initial(init_id, order, deriv);
+      if (boundary_history.local().size() <
+          order_choice.local_number_of_past_steps) {
+        volume_history.insert_initial(init_id, 0.0, deriv);
+        boundary_history.local().insert_initial(
+            init_id, order_choice.local_order, deriv);
+      }
+      if (boundary_history.remote().size() <
+          order_choice.remote_number_of_past_steps) {
+        boundary_history.remote().insert_initial(
+            init_id, order_choice.remote_order, deriv);
+      }
     }
   }
 
@@ -78,7 +103,7 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
 
   const auto add_neighbor_entries = [&](const auto& limit) {
     while (stepper.neighbor_data_required(limit, neighbor_id)) {
-      boundary_history.remote().insert(neighbor_id, order,
+      boundary_history.remote().insert(neighbor_id, order_choice.remote_order,
                                        arbitrary_rhs(neighbor_id));
       ASSERT(not neighbor_step_pattern.empty(), "Test logic error");
       const TimeDelta neighbor_step = step_sign *
@@ -102,7 +127,7 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
       {
         const double deriv = arbitrary_rhs(id);
         volume_history.insert(id, 0.0, deriv);
-        boundary_history.local().insert(id, order, deriv);
+        boundary_history.local().insert(id, order_choice.local_order, deriv);
       }
 
       // Check dense output
@@ -142,29 +167,43 @@ void arbitrary_compare_to_volume(const LtsTimeStepper& stepper,
 
 void test_equal_rate(const LtsTimeStepper& stepper) {
   INFO("test_equal_rate");
+  const auto order_choice = fixed_order_choice(stepper);
   const std::deque<Rational> step_pattern{{1}, {1, 4}, {1, 4}, {1, 2}};
   arbitrary_compare_to_volume(stepper, true, step_pattern, step_pattern,
-                              1.0e-15);
+                              1.0e-15, order_choice);
   arbitrary_compare_to_volume(stepper, false, step_pattern, step_pattern,
-                              1.0e-15);
+                              1.0e-15, order_choice);
 }
 
-void test_uncoupled(const LtsTimeStepper& stepper, const double tolerance) {
+void test_uncoupled(const LtsTimeStepper& stepper, const double tolerance,
+                    std::optional<VariableOrderChoice> variable_order_choice) {
   INFO("test_uncoupled");
+  if (not variable_order_choice.has_value()) {
+    variable_order_choice.emplace(fixed_order_choice(stepper));
+  }
   const std::deque<Rational> step_pattern{{1}, {1, 4}, {1, 4}, {1, 2}};
   const std::deque<Rational> neighbor_step_pattern{{1, 4}, {1, 4}, {1, 2}, {1}};
   arbitrary_compare_to_volume(stepper, true, step_pattern,
-                              neighbor_step_pattern, tolerance);
+                              neighbor_step_pattern, tolerance,
+                              *variable_order_choice);
   arbitrary_compare_to_volume(stepper, false, step_pattern,
-                              neighbor_step_pattern, tolerance);
+                              neighbor_step_pattern, tolerance,
+                              *variable_order_choice);
 }
 
 namespace {
+struct StepResult {
+  TimeStepId id;
+  size_t order;
+  double value;
+};
+
 template <typename Coupling>
 class Element {
  public:
   template <typename AnalyticSelf, typename AnalyticNeighbor>
-  Element(const LtsTimeStepper& stepper, Coupling coupling,
+  Element(const LtsTimeStepper& stepper,
+          const VariableOrderChoice& order_choice, Coupling coupling,
           std::deque<Rational> step_pattern, const TimeStepId& time_step_id,
           const Rational& neighbor_first_step,
           const AnalyticSelf& analytic_self,
@@ -176,7 +215,7 @@ class Element {
         value_(analytic_self(time_step_id_.substep_time())),
         step_size_(next_step_size()),
         next_time_step_id_(stepper_->next_time_id(time_step_id_, step_size_)),
-        volume_history_(get<TimeSteppers::Tags::FixedOrder>(stepper.order())),
+        volume_history_(order_choice.local_order),
         next_message_(stepper_->next_time_id(
             time_step_id_, neighbor_first_step *
                                time_step_id_.step_time().slab().duration())) {
@@ -184,17 +223,26 @@ class Element {
                      time_step_id_.step_time().slab().duration();
     auto init_time = time_step_id_.step_time();
     int64_t slab_number = 0;
-    while (volume_history_.size() < stepper_->number_of_past_steps() + 1) {
+    while (boundary_history_.local().size() <
+               order_choice.local_number_of_past_steps + 1 or
+           boundary_history_.remote().size() <
+               order_choice.remote_number_of_past_steps + 1) {
       const TimeStepId init_id(time_step_id_.time_runs_forward(), slab_number,
                                init_time);
-      volume_history_.insert_initial(init_id, analytic_self(init_time.value()),
-                                     0.0);
-      boundary_history_.local().insert_initial(
-          init_id, volume_history_.integration_order(),
-          analytic_self(init_time.value()));
-      boundary_history_.remote().insert_initial(
-          init_id, volume_history_.integration_order(),
-          analytic_neighbor(init_time.value()));
+      if (boundary_history_.local().size() <
+          order_choice.local_number_of_past_steps + 1) {
+        volume_history_.insert_initial(init_id,
+                                       analytic_self(init_time.value()), 0.0);
+        boundary_history_.local().insert_initial(
+            init_id, order_choice.local_order,
+            analytic_self(init_time.value()));
+      }
+      if (boundary_history_.remote().size() <
+          order_choice.remote_number_of_past_steps + 1) {
+        boundary_history_.remote().insert_initial(
+            init_id, order_choice.remote_order,
+            analytic_neighbor(init_time.value()));
+      }
       --slab_number;
       init_step =
           init_step.with_slab(init_step.slab().advance_towards(-init_step));
@@ -225,7 +273,7 @@ class Element {
     return dense_result;
   }
 
-  std::optional<std::pair<TimeStepId, double>> step() {
+  std::optional<StepResult> step() {
     if (not process_messages(next_time_step_id_)) {
       return std::nullopt;
     }
@@ -247,13 +295,12 @@ class Element {
     volume_history_.insert(time_step_id_, value_, 0.0);
     boundary_history_.local().insert(
         time_step_id_, volume_history_.integration_order(), value_);
-    return {{time_step_id_, value_}};
+    return {{time_step_id_, volume_history_.integration_order(), value_}};
   }
 
-  void receive_data(const TimeStepId& id, const double value,
-                    const TimeStepId& next_id) {
-    ASSERT(id == next_message_, "Test logic error.");
-    messages_.emplace_back(id, value);
+  void receive_data(const StepResult& message, const TimeStepId& next_id) {
+    ASSERT(message.id == next_message_, "Test logic error.");
+    messages_.emplace_back(message);
     next_message_ = next_id;
   }
 
@@ -265,10 +312,10 @@ class Element {
   template <typename T>
   bool process_messages(const T& time) {
     while (not messages_.empty() and
-           stepper_->neighbor_data_required(time, messages_.front().first)) {
-      boundary_history_.remote().insert(messages_.front().first,
-                                        volume_history_.integration_order(),
-                                        messages_.front().second);
+           stepper_->neighbor_data_required(time, messages_.front().id)) {
+      boundary_history_.remote().insert(messages_.front().id,
+                                        messages_.front().order,
+                                        messages_.front().value);
       messages_.pop_front();
     }
     return not(messages_.empty() and
@@ -285,7 +332,7 @@ class Element {
   TimeStepId next_time_step_id_;
   TimeSteppers::History<double> volume_history_{};
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history_{};
-  std::deque<std::pair<TimeStepId, double>> messages_{};
+  std::deque<StepResult> messages_{};
   TimeStepId next_message_;
 };
 
@@ -312,7 +359,8 @@ double analytic_y(const double t) { return conserved_sum - analytic_x(t); }
 
 void test_conservation_impl(const LtsTimeStepper& stepper,
                             std::deque<Rational> step_pattern_x,
-                            std::deque<Rational> step_pattern_y) {
+                            std::deque<Rational> step_pattern_y,
+                            const VariableOrderChoice& order_choice) {
   const bool time_runs_forward = step_pattern_x.front() > 0;
   const evolution_less<Time> before{time_runs_forward};
 
@@ -323,14 +371,14 @@ void test_conservation_impl(const LtsTimeStepper& stepper,
 
   const auto first_step_x = step_pattern_x.front();
   Element element_x(
-      stepper,
+      stepper, order_choice,
       [](const double local, const double remote) {
         return product_system::rhs_x(local, remote);
       },
       std::move(step_pattern_x), initial_id, step_pattern_y.front(),
       product_system::analytic_x, product_system::analytic_y);
   Element element_y(
-      stepper,
+      stepper, flip(order_choice),
       [](const double local, const double remote) {
         return product_system::rhs_y(remote, local);
       },
@@ -361,8 +409,7 @@ void test_conservation_impl(const LtsTimeStepper& stepper,
     if (need_more_x) {
       const auto step_result = element_x.step();
       if (step_result.has_value()) {
-        element_y.receive_data(step_result->first, step_result->second,
-                               element_x.next_time_step_id());
+        element_y.receive_data(*step_result, element_x.next_time_step_id());
         continue;
       }
     }
@@ -370,8 +417,7 @@ void test_conservation_impl(const LtsTimeStepper& stepper,
     if (need_more_y) {
       const auto step_result = element_y.step();
       if (step_result.has_value()) {
-        element_x.receive_data(step_result->first, step_result->second,
-                               element_y.next_time_step_id());
+        element_x.receive_data(*step_result, element_y.next_time_step_id());
         continue;
       }
     }
@@ -384,7 +430,8 @@ void test_conservation_impl(const LtsTimeStepper& stepper,
 double test_convergence_error(const LtsTimeStepper& stepper,
                               const std::deque<Rational>& step_pattern_x,
                               const std::deque<Rational>& step_pattern_y,
-                              const int32_t repeats, const bool test_dense) {
+                              const int32_t repeats, const bool test_dense,
+                              const VariableOrderChoice& order_choice) {
   const bool time_runs_forward = step_pattern_x.front() > 0;
 
   const auto initial_slab =
@@ -407,14 +454,14 @@ double test_convergence_error(const LtsTimeStepper& stepper,
   }
 
   Element element_x(
-      stepper,
+      stepper, order_choice,
       [](const double local, const double remote) {
         return product_system::rhs_x(local, remote);
       },
       std::move(full_pattern_x), initial_id, step_pattern_y.front(),
       product_system::analytic_x, product_system::analytic_y);
   Element element_y(
-      stepper,
+      stepper, flip(order_choice),
       [](const double local, const double remote) {
         return product_system::rhs_y(remote, local);
       },
@@ -429,8 +476,7 @@ double test_convergence_error(const LtsTimeStepper& stepper,
       if (not step_result.has_value()) {
         break;
       }
-      element_x.receive_data(step_result->first, step_result->second,
-                             element_y.next_time_step_id());
+      element_x.receive_data(*step_result, element_y.next_time_step_id());
     }
 
     if (test_dense and element_x.local_dense_output_ready(dense_time)) {
@@ -443,11 +489,10 @@ double test_convergence_error(const LtsTimeStepper& stepper,
       const auto step_result = element_x.step();
       if (step_result.has_value()) {
         if (not test_dense and element_x.done()) {
-          return step_result->second -
-                 product_system::analytic_x(step_result->first.substep_time());
+          return step_result->value -
+                 product_system::analytic_x(step_result->id.substep_time());
         }
-        element_y.receive_data(step_result->first, step_result->second,
-                               element_x.next_time_step_id());
+        element_y.receive_data(*step_result, element_x.next_time_step_id());
       }
     }
   }
@@ -456,47 +501,238 @@ double test_convergence_error(const LtsTimeStepper& stepper,
 void test_convergence_impl(
     const LtsTimeStepper& stepper,
     const std::pair<int32_t, int32_t>& number_of_steps_range,
-    const int32_t stride, const bool dense) {
+    const int32_t stride, const bool dense,
+    const VariableOrderChoice& order_choice) {
   const size_t expected_order =
-      get<TimeSteppers::Tags::FixedOrder>(stepper.order());
+      std::min(order_choice.local_order, order_choice.remote_order);
   CAPTURE(dense);
   std::deque<Rational> step_pattern_x{{1, 2}, {1, 8}, {1, 8}, {1, 4}};
   std::deque<Rational> step_pattern_y{{1, 8}, {1, 8}, {1, 4}, {1, 2}};
   CHECK(convergence_rate(
             number_of_steps_range, stride, [&](const int32_t repeats) {
               return test_convergence_error(stepper, step_pattern_x,
-                                            step_pattern_y, repeats, dense);
+                                            step_pattern_y, repeats, dense,
+                                            order_choice);
             }) == approx(expected_order).margin(0.4));
   alg::for_each(step_pattern_x, [](Rational& x) { x *= -1; });
   alg::for_each(step_pattern_y, [](Rational& x) { x *= -1; });
   CHECK(convergence_rate(
             number_of_steps_range, stride, [&](const int32_t repeats) {
               return test_convergence_error(stepper, step_pattern_x,
-                                            step_pattern_y, repeats, dense);
+                                            step_pattern_y, repeats, dense,
+                                            order_choice);
             }) == approx(expected_order).margin(0.4));
 }
 }  // namespace
 
-void test_conservation(const LtsTimeStepper& stepper) {
+void test_conservation(
+    const LtsTimeStepper& stepper,
+    std::optional<VariableOrderChoice> variable_order_choice) {
+  if (not variable_order_choice.has_value()) {
+    variable_order_choice.emplace(fixed_order_choice(stepper));
+  }
   std::deque<Rational> step_pattern_x{{1}, {1, 4}, {1, 4}, {1, 2}};
   std::deque<Rational> step_pattern_y{{1, 4}, {1, 4}, {1, 2}, {1}};
-  test_conservation_impl(stepper, step_pattern_x, step_pattern_y);
+  test_conservation_impl(stepper, step_pattern_x, step_pattern_y,
+                         *variable_order_choice);
   alg::for_each(step_pattern_x, [](Rational& x) { x *= -1; });
   alg::for_each(step_pattern_y, [](Rational& x) { x *= -1; });
   test_conservation_impl(stepper, std::move(step_pattern_x),
-                         std::move(step_pattern_y));
+                         std::move(step_pattern_y), *variable_order_choice);
 }
 
-void test_convergence(const LtsTimeStepper& stepper,
-                      const std::pair<int32_t, int32_t>& number_of_steps_range,
-                      const int32_t stride) {
-  test_convergence_impl(stepper, number_of_steps_range, stride, false);
+void test_convergence(
+    const LtsTimeStepper& stepper,
+    const std::pair<int32_t, int32_t>& number_of_steps_range,
+    const int32_t stride,
+    std::optional<VariableOrderChoice> variable_order_choice) {
+  if (not variable_order_choice.has_value()) {
+    variable_order_choice.emplace(fixed_order_choice(stepper));
+  }
+  test_convergence_impl(stepper, number_of_steps_range, stride, false,
+                        *variable_order_choice);
 }
 
 void test_dense_convergence(
     const LtsTimeStepper& stepper,
     const std::pair<int32_t, int32_t>& number_of_steps_range,
-    const int32_t stride) {
-  test_convergence_impl(stepper, number_of_steps_range, stride, true);
+    const int32_t stride,
+    std::optional<VariableOrderChoice> variable_order_choice) {
+  if (not variable_order_choice.has_value()) {
+    variable_order_choice.emplace(fixed_order_choice(stepper));
+  }
+  test_convergence_impl(stepper, number_of_steps_range, stride, true,
+                        *variable_order_choice);
+}
+
+void test_variable_order_consistency(const LtsTimeStepper& variable_stepper,
+                                     const LtsTimeStepper& fixed_stepper) {
+  REQUIRE(variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
+      variable_stepper.order()));
+  REQUIRE(variants::holds_alternative<TimeSteppers::Tags::FixedOrder>(
+      fixed_stepper.order()));
+
+  const size_t order =
+      variants::get<TimeSteppers::Tags::FixedOrder>(fixed_stepper.order());
+
+  const Slab slab(1.2, 3.4);
+  const TimeDelta step = slab.duration();
+  TimeSteppers::History<double> history{order};
+  // Values don't matter
+  TimeStepperTestUtils::initialize_history(
+      slab.start(), make_not_null(&history),
+      [](const double t) { return sin(t); },
+      [](const double /*y*/, const double t) { return cos(t); },
+      slab.duration(), fixed_stepper.number_of_past_steps());
+  TimeStepId step_id(true, 0, slab.start());
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-do-while)
+  do {
+    history.insert(
+        step_id,
+        sin(step_id.substep_time()) + static_cast<double>(step_id.substep()),
+        cos(step_id.substep_time()) + static_cast<double>(step_id.substep()));
+    double y_fixed = std::numeric_limits<double>::signaling_NaN();
+    double y_variable = std::numeric_limits<double>::signaling_NaN();
+    fixed_stepper.update_u(make_not_null(&y_fixed), history, step);
+    variable_stepper.update_u(make_not_null(&y_variable), history, step);
+    CHECK(y_fixed == y_variable);
+    const auto new_step_id = fixed_stepper.next_time_id(step_id, step);
+    CHECK(variable_stepper.next_time_id(step_id, step) == new_step_id);
+    step_id = new_step_id;
+  } while (step_id.substep() != 0);
+}
+
+void test_variable_order_boundary_consistency(const LtsTimeStepper& stepper) {
+  const auto stepper_order_variant = stepper.order();
+  REQUIRE(variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
+      stepper_order_variant));
+  const auto& stepper_order =
+      variants::get<TimeSteppers::Tags::VariableOrder>(stepper_order_variant);
+
+  const Slab slab(0.0, 1.0);
+  const auto make_id = [&](const Rational& frac) {
+    return TimeStepId(true, 0, slab.start() + frac * slab.duration());
+  };
+
+  // Test sequence:
+  //   0   -  2/16  raise order away from minimum
+  //  2/16 -  5/16  change local order with local step smaller
+  //  5/16 - 10/16  change remote order with local step smaller
+  // 10/16 - 11/16  change remote order with remote step smaller
+  // 12/16 - 15/16  change local order with remote step smaller
+  std::map<TimeStepId, TimeDelta> local_step_changes{
+      {make_id(0), slab.duration() / 16},
+      {make_id({2, 16}), slab.duration() / 32}};
+  std::map<TimeStepId, size_t> local_order_changes{{make_id({1, 16}), 2},
+                                                   {make_id({2, 16}), 3},
+                                                   {make_id({5, 32}), 4},
+                                                   {make_id({6, 32}), 5},
+                                                   {make_id({8, 32}), 4},
+                                                   {make_id({9, 32}), 3},
+                                                   {make_id({24, 32}), 4},
+                                                   {make_id({25, 32}), 5},
+                                                   {make_id({26, 32}), 6},
+                                                   {make_id({27, 32}), 7},
+                                                   {make_id({28, 32}), 6},
+                                                   {make_id({29, 32}), 5}};
+  std::map<TimeStepId, TimeDelta> remote_step_changes{
+      {make_id(0), slab.duration() / 16},
+      {make_id({10, 16}), slab.duration() / 64}};
+  std::map<TimeStepId, size_t> remote_order_changes{{make_id({1, 16}), 2},
+                                                    {make_id({2, 16}), 3},
+                                                    {make_id({5, 16}), 4},
+                                                    {make_id({6, 16}), 5},
+                                                    {make_id({7, 16}), 6},
+                                                    {make_id({8, 16}), 5},
+                                                    {make_id({9, 16}), 4},
+                                                    {make_id({40, 64}), 5},
+                                                    {make_id({41, 64}), 6},
+                                                    {make_id({42, 64}), 7},
+                                                    {make_id({43, 64}), 6},
+                                                    {make_id({44, 64}), 5}};
+
+  TimeSteppers::History<double> local_history{stepper_order.minimum};
+  TimeSteppers::History<double> remote_history{stepper_order.minimum};
+  TimeSteppers::History<DataVector> boundary_volume_history{
+      stepper_order.minimum};
+  TimeSteppers::BoundaryHistory<double, double, DataVector> boundary_history{};
+
+  const auto deriv = [](const TimeStepId& id) {
+    return id.substep_time() + static_cast<double>(id.substep());
+  };
+  const auto coupling = [](const double a, const double b) {
+    return DataVector{a, b};
+  };
+
+  TimeStepId local_id = make_id(0);
+  TimeStepId remote_id = make_id(0);
+  TimeDelta local_time_step{};
+  TimeDelta remote_time_step{};
+
+  double local_value = 1.0;
+  double remote_value = 2.0;
+  DataVector boundary_value{local_value, remote_value};
+
+  while (local_id.slab_number() == 0) {
+    local_history.insert(local_id, local_value, deriv(local_id));
+    boundary_volume_history.insert(local_id, boundary_value,
+                                   DataVector(2, 0.0));
+    boundary_history.local().insert(local_id, local_history.integration_order(),
+                                    deriv(local_id));
+    if (const auto change = local_step_changes.find(local_id);
+        change != local_step_changes.end()) {
+      local_time_step = change->second;
+      local_step_changes.erase(change);
+    }
+    local_id = stepper.next_time_id(local_id, local_time_step);
+
+    while (stepper.neighbor_data_required(local_id, remote_id)) {
+      remote_history.insert(remote_id, remote_value, deriv(remote_id));
+      boundary_history.remote().insert(
+          remote_id, remote_history.integration_order(), deriv(remote_id));
+      if (const auto change = remote_step_changes.find(remote_id);
+          change != remote_step_changes.end()) {
+        remote_time_step = change->second;
+        remote_step_changes.erase(change);
+      }
+      stepper.update_u(make_not_null(&remote_value), remote_history,
+                       remote_time_step);
+      remote_id = stepper.next_time_id(remote_id, remote_time_step);
+      if (const auto change = remote_order_changes.find(remote_id);
+          change != remote_order_changes.end()) {
+        remote_history.integration_order(std::clamp(
+            change->second, stepper_order.minimum, stepper_order.maximum));
+        remote_order_changes.erase(change);
+      }
+      stepper.clean_history(make_not_null(&remote_history));
+    }
+
+    stepper.update_u(make_not_null(&local_value), local_history,
+                     local_time_step);
+    stepper.update_u(make_not_null(&boundary_value), boundary_volume_history,
+                     local_time_step);
+    stepper.add_boundary_delta(make_not_null(&boundary_value), boundary_history,
+                               local_time_step, coupling);
+    if (const auto change = local_order_changes.find(local_id);
+        change != local_order_changes.end()) {
+      local_history.integration_order(std::clamp(
+          change->second, stepper_order.minimum, stepper_order.maximum));
+      boundary_volume_history.integration_order(std::clamp(
+          change->second, stepper_order.minimum, stepper_order.maximum));
+      local_order_changes.erase(change);
+    }
+    stepper.clean_history(make_not_null(&local_history));
+    stepper.clean_history(make_not_null(&boundary_volume_history));
+    stepper.clean_boundary_history(make_not_null(&boundary_history));
+    CHECK(boundary_value[0] == approx(local_value));
+    if (local_id == remote_id) {
+      CHECK(boundary_value[1] == approx(remote_value));
+    }
+  }
+  ASSERT(local_id == remote_id, "Steps did not align at end");
+  ASSERT(local_step_changes.empty(), "Not all changes processed");
+  ASSERT(local_order_changes.empty(), "Not all changes processed");
+  ASSERT(remote_step_changes.empty(), "Not all changes processed");
+  ASSERT(remote_order_changes.empty(), "Not all changes processed");
 }
 }  // namespace TimeStepperTestUtils::lts

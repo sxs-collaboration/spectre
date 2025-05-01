@@ -17,6 +17,7 @@
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
@@ -258,6 +259,33 @@ void test_boundary() {
       TimeStepperTestUtils::lts::test_dense_convergence(stepper, {50, 170}, 15);
     }
   }
+
+  const TimeSteppers::AdamsMoultonPc<Monotonic> variable_order_stepper(
+      std::nullopt);
+  for (size_t local_order = 2; local_order < 9; ++local_order) {
+    for (size_t remote_order = 2; remote_order < 9; ++remote_order) {
+      const TimeStepperTestUtils::lts::VariableOrderChoice variable_order{
+          local_order, local_order - 2, remote_order, remote_order - 2};
+      TimeStepperTestUtils::lts::test_uncoupled(variable_order_stepper, 1e-12,
+                                                {variable_order});
+      TimeStepperTestUtils::lts::test_conservation(variable_order_stepper,
+                                                   {variable_order});
+    }
+  }
+
+  // These are slow, so just test a few of them.
+  TimeStepperTestUtils::lts::test_convergence(variable_order_stepper, {40, 100},
+                                              20, {{4, 2, 4, 2}});
+  TimeStepperTestUtils::lts::test_convergence(variable_order_stepper, {40, 100},
+                                              20, {{6, 4, 3, 1}});
+  TimeStepperTestUtils::lts::test_convergence(variable_order_stepper, {40, 100},
+                                              20, {{3, 1, 6, 4}});
+  TimeStepperTestUtils::lts::test_dense_convergence(
+      variable_order_stepper, {60, 180}, 20, {{4, 2, 4, 2}});
+  TimeStepperTestUtils::lts::test_dense_convergence(
+      variable_order_stepper, {60, 180}, 20, {{6, 4, 3, 1}});
+  TimeStepperTestUtils::lts::test_dense_convergence(
+      variable_order_stepper, {60, 180}, 20, {{3, 1, 6, 4}});
 }
 
 TimeStepId make_id(const Rational& time_fraction, const uint64_t substep,
@@ -391,18 +419,32 @@ void test_monotonic_boundary_cleaning() {
   CHECK(substep_counts(history.remote()) == Counts{{{5, 8}, 1}});
 }
 
-// [[Timeout, 30]]
+template <bool Monotonic>
+void test_variable_order() {
+  for (size_t order = 2; order <= 8; ++order) {
+    TimeStepperTestUtils::lts::test_variable_order_consistency(
+        TimeSteppers::AdamsMoultonPc<Monotonic>(std::nullopt),
+        TimeSteppers::AdamsMoultonPc<Monotonic>(order));
+  }
+
+  TimeStepperTestUtils::lts::test_variable_order_boundary_consistency(
+      TimeSteppers::AdamsMoultonPc<Monotonic>(std::nullopt));
+}
+
+// [[Timeout, 60]]
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPc", "[Unit][Time]") {
   test_am<false>();
   test_boundary<false>();
   test_non_monotonic_boundary_cleaning();
+  test_variable_order<false>();
 }
 
-// [[Timeout, 30]]
+// [[Timeout, 60]]
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsMoultonPcMonotonic",
                   "[Unit][Time]") {
   test_am<true>();
   test_boundary<true>();
   test_monotonic_boundary_cleaning();
+  test_variable_order<true>();
 }
 }  // namespace

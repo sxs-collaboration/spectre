@@ -39,6 +39,9 @@ namespace TimeSteppers {
 struct VariableOrder {
   size_t minimum;
   size_t maximum;
+
+  VariableOrder(const size_t minimum_in, const size_t maximum_in)
+      : minimum(minimum_in), maximum(maximum_in) {}
 };
 
 bool operator==(const VariableOrder& a, const VariableOrder& b);
