@@ -77,7 +77,8 @@ std::string Initial::update(const gsl::not_null<Info*> info,
   } else if (update_args.average_radial_distance.has_value() and
              update_args.average_radial_distance.value() >
                  non_oscillation_drift_outward_factor *
-                     update_args.max_allowed_radial_distance.value()) {
+                     update_args.max_allowed_radial_distance.value_or(
+                         std::numeric_limits<double>::infinity())) {
     info->discontinuous_change_has_occurred = true;
     info->state = std::make_unique<States::DeltaRDriftOutward>();
     ss << "Current state Initial. "

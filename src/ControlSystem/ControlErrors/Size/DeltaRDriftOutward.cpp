@@ -72,7 +72,8 @@ std::string DeltaRDriftOutward::update(
     ss << " Suggested timescale = " << info->suggested_time_scale;
   } else if (update_args.average_radial_distance.has_value() and
              update_args.average_radial_distance.value() <
-                 update_args.max_allowed_radial_distance.value()) {
+                 update_args.max_allowed_radial_distance.value_or(
+                     std::numeric_limits<double>::infinity())) {
     ss << "Current state DeltaRDriftOutward. Switching to DeltaR.";
     info->discontinuous_change_has_occurred = true;
     info->state = std::make_unique<States::DeltaR>();
