@@ -111,6 +111,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/IgnoreFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/SendDependencyToObserverWriter.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
@@ -272,12 +273,23 @@ struct EvolutionMetavars {
         intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
-    using horizon_find_failure_callbacks =
-        tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>;
-    using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
-                                             Frame>,
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>>;
+    using horizon_find_failure_callbacks = tmpl::append<
+        tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>,
+        tmpl::conditional_t<
+            Horizon == ::domain::ObjectLabel::C,
+            tmpl::list<
+                intrp::callbacks::SendDependencyToObserverWriter<false, Ah>>,
+            tmpl::list<>>>;
+    using post_horizon_find_callbacks = tmpl::append<
+        tmpl::conditional_t<
+            Horizon == ::domain::ObjectLabel::C,
+            tmpl::list<
+                intrp::callbacks::SendDependencyToObserverWriter<true, Ah>>,
+            tmpl::list<>>,
+        tmpl::list<
+            intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
+                                                 Frame>,
+            intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>>>;
     static std::string name() {
       return "ObservationAh" + ::domain::name(Horizon);
     }
