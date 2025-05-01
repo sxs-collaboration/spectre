@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftInward.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -48,6 +49,18 @@ std::string DeltaR::update(const gsl::not_null<Info*> info,
       crossing_time_info.t_char_speed.value_or(
           std::numeric_limits<double>::infinity()) < info->damping_time and
       not delta_radius_is_in_danger;
+
+  // inward_drift_limit_in_danger means we are about
+  // to cross the maximum allowed deltaR, and we are not in
+  // the situation where we should exit state DeltaRNoDrift.
+  // (the latter is important because we don't want to keep entering
+  //  and exiting DeltaRNoDrift repeatedly)
+  // In SpEC this variable is called "State2MaxLimitInDanger".
+  const bool inward_drift_limit_in_danger =
+      crossing_time_info.t_drift_limit_delta_radius.value_or(
+          std::numeric_limits<double>::infinity()) < info->damping_time and
+      update_args.min_allowed_radial_distance.has_value() and
+      not ok_to_return_to_state_deltar(update_args);
 
   // This factor is present in SpEC, and it is used to prevent
   // oscillations between states.  The value was chosen in SpEC, but
@@ -104,6 +117,22 @@ std::string DeltaR::update(const gsl::not_null<Info*> info,
        << std::abs(update_args.control_error_delta_r) << " > threshold "
        << delta_r_control_error_threshold << ". Staying in DeltaR.\n";
     ss << " Suggested timescale = " << info->suggested_time_scale;
+  } else if (should_transition_from_state_delta_r_to_inward_drift(
+                 crossing_time_info.t_drift_limit, info->damping_time,
+                 update_args)) {
+    info->discontinuous_change_has_occurred = true;
+    info->state = std::make_unique<States::DeltaRDriftInward>();
+    info->target_char_speed = target_speed_for_inward_drift(
+        update_args.avg_distorted_normal_dot_unit_coord_vector,
+        update_args.min_char_speed, update_args.inward_drift_velocity.value());
+    ss << "Current state DeltaR. "
+          "Horizon too close to excision boundary. Switching to "
+          "DeltaRDriftInward";
+  } else if (inward_drift_limit_in_danger) {
+    info->suggested_time_scale = crossing_time_info.t_drift_limit_delta_radius;
+    ss << "Current state DeltaR. Inward drift limit in danger. Staying "
+          "in DeltaR.\n";
+    ss << " Suggested timescale = " << info->suggested_time_scale;
   } else if (update_args.average_radial_distance.has_value() and
              update_args.average_radial_distance.value() >
                  non_oscillation_drift_outward_factor *
@@ -117,8 +146,6 @@ std::string DeltaR::update(const gsl::not_null<Info*> info,
   } else {
     ss << "Current state DeltaR. No change necessary. Staying in DeltaR.";
   }
-  // Here is where possible transitions to states DeltaRDriftInward and
-  // state DeltaRDriftOutward will go.
 
   return ss.str();
 }

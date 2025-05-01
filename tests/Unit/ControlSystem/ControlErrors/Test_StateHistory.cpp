@@ -29,7 +29,7 @@ void test_state_history(const size_t num_times_to_store) {
   ControlErrorArgs control_error_args{1.0, 1.0, 1.0, 1.0, 1.0};
 
   StateHistory state_history{num_times_to_store};
-  const std::vector<size_t> states{0, 1, 2, 5};
+  const std::vector<size_t> states{0, 1, 2, 3, 4, 5};
 
   // Test that as we fill up the history, we have the expected number of stored
   // entries and that they are the correct values, for each state
@@ -55,6 +55,12 @@ void test_state_history(const size_t num_times_to_store) {
             CHECK(control_error == 0.0);
             break;
           case 2:
+            CHECK(control_error == 1.0);
+            break;
+          case 3:
+            CHECK(control_error == 2.0);
+            break;
+          case 4:
             CHECK(control_error == 1.0);
             break;
           case 5:

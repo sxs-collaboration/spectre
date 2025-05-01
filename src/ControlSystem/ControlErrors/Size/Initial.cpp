@@ -10,6 +10,7 @@
 
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftInward.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -59,21 +60,28 @@ std::string Initial::update(const gsl::not_null<Info*> info,
           "AhSpeed.\n";
     ss << " Target char speed = " << info->target_char_speed << "\n";
     ss << " Suggested timescale = " << info->suggested_time_scale;
-  } else if (delta_radius_is_in_danger) {
+  } else if (delta_radius_is_in_danger
+             or update_args.min_comoving_char_speed > 0.0) {
     info->discontinuous_change_has_occurred = true;
-    info->state = std::make_unique<States::DeltaR>();
-    info->suggested_time_scale = crossing_time_info.t_delta_radius;
-    ss << "Current state Initial. Delta radius in danger. Switching to "
-          "DeltaR.\n";
-    ss << " Suggested timescale = " << info->suggested_time_scale;
-    // Here is where transition to State DeltaRDriftInward will go.
-  } else if (update_args.min_comoving_char_speed > 0.0) {
-    // Here the comoving speed is positive, so prefer DeltaR control.
-    info->discontinuous_change_has_occurred = true;
-    info->state = std::make_unique<States::DeltaR>();
-    ss << "Current state Initial. Comoving char speed positive. Switching to "
-          "DeltaR.";
-    // Here is where transition to State DeltaRDriftInward will go.
+    if (delta_radius_is_in_danger) {
+      info->suggested_time_scale = crossing_time_info.t_delta_radius;
+    }
+    const bool drift_inward = should_activate_inward_drift(update_args);
+    if (drift_inward) {
+      info->state = std::make_unique<States::DeltaRDriftInward>();
+      info->target_char_speed = target_speed_for_inward_drift(
+          update_args.avg_distorted_normal_dot_unit_coord_vector,
+          update_args.min_char_speed,
+          update_args.inward_drift_velocity.value());
+    } else {
+      info->state = std::make_unique<States::DeltaR>();
+    }
+    ss << "Current state Initial. "
+       << (delta_radius_is_in_danger ? "DeltaR is in danger"
+                                     : "Comoving char speed positive")
+       << ". Switching to " << (drift_inward ? "DeltaRDriftInward." : "DeltaR.")
+       << "\n";
+    ss << " Target char speed = " << info->target_char_speed;
   } else if (update_args.average_radial_distance.has_value() and
              update_args.average_radial_distance.value() >
                  non_oscillation_drift_outward_factor *

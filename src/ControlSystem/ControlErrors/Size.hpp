@@ -235,9 +235,47 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     double outward_drift_timescale{};
   };
 
-  using options = tmpl::list<MaxNumTimesForZeroCrossingPredictor,
-                             SmoothAvgTimescaleFraction, SmootherTuner,
-                             InitialState, DeltaRDriftOutwardOptions>;
+  struct DeltaRDriftInwardOptions {
+    using type =
+        Options::Auto<DeltaRDriftInwardOptions, Options::AutoLabel::None>;
+    static constexpr Options::String help{
+        "Options for State DeltaRDriftInward. Specify 'None' to disable State "
+        "DeltaRDriftInward."};
+    struct MinAllowedRadialDistance {
+      using type = double;
+      static constexpr Options::String help{
+          "Drift excision boundary inward if distance from horizon to "
+          "excision is less than this."};
+    };
+    struct MinAllowedCharSpeed {
+      using type = double;
+      static constexpr Options::String help{
+          "Drift excision boundary inward if min char speed is less than "
+          "this."};
+    };
+    struct InwardDriftVelocity {
+      using type = double;
+      static constexpr Options::String help{
+          "Maximum value of drift velocity term, if State DeltaRDriftInward is "
+          "triggered by MinAllowedRadialDistance or MinAllowedCharSpeed."};
+    };
+    using options = tmpl::list<MinAllowedRadialDistance, MinAllowedCharSpeed,
+                               InwardDriftVelocity>;
+    DeltaRDriftInwardOptions();
+    DeltaRDriftInwardOptions(double min_allowed_radial_distance_in,
+                             double min_allowed_char_speed_in,
+                             double inward_drift_velocity_in);
+    void pup(PUP::er& p);
+
+    double min_allowed_radial_distance{};
+    double min_allowed_char_speed{};
+    double inward_drift_velocity{};
+  };
+
+  using options =
+      tmpl::list<MaxNumTimesForZeroCrossingPredictor,
+                 SmoothAvgTimescaleFraction, SmootherTuner, InitialState,
+                 DeltaRDriftOutwardOptions, DeltaRDriftInwardOptions>;
   static constexpr Options::String help{
       "Computes the control error for size control. Will also write a "
       "diagnostics file if the control systems are allowed to write data to "
@@ -265,7 +303,8 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   Size(const int max_times, const double smooth_avg_timescale_frac,
        TimescaleTuner<true> smoother_tuner,
        std::unique_ptr<size::State> initial_state,
-       std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options);
+       std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options,
+       std::optional<DeltaRDriftInwardOptions> delta_r_drift_inward_options);
 
   /// Returns the internal `control_system::size::Info::suggested_time_scale`. A
   /// std::nullopt means that no timescale is suggested.
@@ -456,6 +495,21 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
                                         delta_r_drift_outward_options_.value()
                                             .outward_drift_timescale)
             : std::nullopt;
+    const std::optional<double> inward_drift_velocity =
+        delta_r_drift_inward_options_.has_value()
+            ? std::optional<double>(
+                  delta_r_drift_inward_options_.value().inward_drift_velocity)
+            : std::nullopt;
+    const std::optional<double> min_allowed_radial_distance =
+        delta_r_drift_inward_options_.has_value()
+            ? std::optional<double>(delta_r_drift_inward_options_.value()
+                                        .min_allowed_radial_distance)
+            : std::nullopt;
+    const std::optional<double> min_allowed_char_speed =
+        delta_r_drift_inward_options_.has_value()
+            ? std::optional<double>(
+                  delta_r_drift_inward_options_.value().min_allowed_char_speed)
+            : std::nullopt;
 
     // Currently we don't do anything with the derivative of the comoving char
     // speed. Eventually, we will pass it to the computation of the control
@@ -489,15 +543,18 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
     const size::ErrorDiagnostics error_diagnostics = size::control_error(
         make_not_null(&info_), make_not_null(&char_speed_predictor_),
         make_not_null(&comoving_char_speed_predictor_),
-        make_not_null(&delta_radius_predictor_), time, control_error_delta_r,
-        control_error_delta_r_outward,
+        make_not_null(&delta_radius_predictor_),
+        make_not_null(&drift_limit_char_speed_predictor_),
+        make_not_null(&drift_limit_delta_radius_predictor_), time,
+        control_error_delta_r, control_error_delta_r_outward,
         delta_r_drift_outward_options_.has_value()
             ? std::optional<double>(delta_r_drift_outward_options_.value()
                                         .max_allowed_radial_distance)
             : std::nullopt,
-        dt_lambda_00, apparent_horizon, excision_surface, lapse,
-        shifty_quantity, spatial_metric_on_excision,
-        inverse_spatial_metric_on_excision);
+        inward_drift_velocity, min_allowed_radial_distance,
+        min_allowed_char_speed, horizon_00, dt_lambda_00, apparent_horizon,
+        excision_surface, lapse, shifty_quantity, spatial_metric_on_excision,
+        inverse_spatial_metric_on_excision, deriv_comoving_char_speed);
 
     state_history_.store(time, info_, error_diagnostics.control_error_args);
 
@@ -555,10 +612,13 @@ struct Size : tt::ConformsTo<protocols::ControlError> {
   intrp::ZeroCrossingPredictor char_speed_predictor_{};
   intrp::ZeroCrossingPredictor comoving_char_speed_predictor_{};
   intrp::ZeroCrossingPredictor delta_radius_predictor_{};
+  intrp::ZeroCrossingPredictor drift_limit_char_speed_predictor_{};
+  intrp::ZeroCrossingPredictor drift_limit_delta_radius_predictor_{};
   size::StateHistory state_history_{};
   std::vector<std::string> legend_{};
   std::string subfile_name_{};
   std::optional<DeltaRDriftOutwardOptions> delta_r_drift_outward_options_{};
+  std::optional<DeltaRDriftInwardOptions> delta_r_drift_inward_options_{};
   db::compute_databox_type<tmpl::list<
       gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Distorted>,
       ylm::Tags::Strahlkorper<Frame::Distorted>,

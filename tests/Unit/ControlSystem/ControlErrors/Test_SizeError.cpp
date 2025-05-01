@@ -14,6 +14,7 @@
 #include "ControlSystem/ControlErrors/Size.hpp"
 #include "ControlSystem/ControlErrors/Size/AhSpeed.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftInward.hpp"
 #include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "ControlSystem/ControlErrors/Size/Error.hpp"
 #include "ControlSystem/ControlErrors/Size/Factory.hpp"
@@ -95,6 +96,10 @@ void test_size_error_one_step(
     const gsl::not_null<intrp::ZeroCrossingPredictor*>
         predictor_comoving_char_speed,
     const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
+    const gsl::not_null<intrp::ZeroCrossingPredictor*>
+        predictor_drift_limit_char_speed,
+    const gsl::not_null<intrp::ZeroCrossingPredictor*>
+        predictor_drift_limit_delta_radius,
     const double time, const double grid_excision_boundary_radius,
     const double distorted_excision_boundary_radius_initial,
     const double distorted_excision_boundary_velocity,
@@ -110,8 +115,26 @@ void test_size_error_one_step(
   const double initial_damping_time = 0.1;
   const double initial_target_drift_velocity = 0.0;
   const double initial_suggested_time_scale = 0.0;
-  // Set constants so that State::DeltaROutward is turned off.
-  const std::optional<double> max_allowed_radial_distance{};
+  // Set max_allowed_radial_distance so that State::DeltaRDriftOutward
+  // does not transition to DeltaR with the chosen radial_distance of 0.5
+  // below. This is fine-tuned.
+  const std::optional<double> max_allowed_radial_distance{0.049};
+  // The NOLINTs for these following 3 vars are because clang-tidy
+  // wants these to be const, but their values are changed (sometimes)
+  // by the if constexpr below.
+  std::optional<double> inward_drift_velocity{}; // NOLINT
+  std::optional<double> min_allowed_radial_distance{}; // NOLINT
+  std::optional<double> min_allowed_char_speed{}; // NOLINT
+  if constexpr (std::is_same_v<
+                    FinalState,
+                    control_system::size::States::DeltaRDriftInward>) {
+    // Set constants so that State::DeltaRDriftInward does not transition
+    // to DeltaRNoDrift for the chosen parameters in the test.
+    // This is fine-tuned.
+    min_allowed_radial_distance = 0.06;
+    inward_drift_velocity = 0.001;
+    min_allowed_char_speed = 0.068;
+  }
   control_system::size::Info info{std::make_unique<InitialState>(),
                                   initial_damping_time,
                                   target_char_speed,
@@ -135,7 +158,8 @@ void test_size_error_one_step(
       tmpl::list<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame::Distorted>>,
                  ::Tags::Tempi<1, 3, Frame::Distorted>,
                  ::Tags::TempI<2, 3, Frame::Distorted>,
-                 ::Tags::TempI<3, 3, Frame::Distorted>, ::Tags::TempScalar<4>>>
+                 ::Tags::TempI<3, 3, Frame::Distorted>, ::Tags::TempScalar<4>,
+                 Tags::TempScalar<5>>>
       temp_buffer(excision_boundary.ylm_spherepack().physical_size());
   auto& theta_phi =
       get<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame::Distorted>>>(
@@ -145,6 +169,7 @@ void test_size_error_one_step(
       get<Tags::TempI<2, 3, Frame::Distorted>>(temp_buffer);
   auto& shifty_quantity = get<Tags::TempI<3, 3, Frame::Distorted>>(temp_buffer);
   auto& radius = get<::Tags::TempScalar<4>>(temp_buffer);
+  auto& deriv_comoving_char_speed = get<::Tags::TempScalar<5>>(temp_buffer);
   ylm::Tags::ThetaPhiCompute<Frame::Distorted>::function(
       make_not_null(&theta_phi), excision_boundary);
   ylm::Tags::RhatCompute<Frame::Distorted>::function(make_not_null(&r_hat),
@@ -193,6 +218,12 @@ void test_size_error_one_step(
                            distorted_excision_boundary_radius_initial;
   }
 
+  // Here set deriv_comoving_char_speed to 1.0 artificially.
+  // deriv_comoving_char_speed is not used in the control error,
+  // except in determining which state to change to, in which case
+  // only the sign of deriv_comoving_char_speed matters.
+  get(deriv_comoving_char_speed) = 1.0;
+
   const auto lambda_dt_lambda = function_of_time->func_and_deriv(time);
   const double control_error_delta_r =
       control_system::size::control_error_delta_r(
@@ -212,10 +243,14 @@ void test_size_error_one_step(
 
   auto error = control_system::size::control_error(
       make_not_null(&info), predictor_char_speed, predictor_comoving_char_speed,
-      predictor_delta_radius, time, control_error_delta_r,
+      predictor_delta_radius, predictor_drift_limit_char_speed,
+      predictor_drift_limit_delta_radius, time, control_error_delta_r,
       control_error_delta_r_outward, max_allowed_radial_distance,
+      inward_drift_velocity, min_allowed_radial_distance,
+      min_allowed_char_speed, horizon.coefficients()[0],
       time_deriv_horizon.coefficients()[0], horizon, excision_boundary, lapse,
-      shifty_quantity, spatial_metric, inverse_spatial_metric);
+      shifty_quantity, spatial_metric, inverse_spatial_metric,
+      deriv_comoving_char_speed);
 
   // Check error and parts of info.
   //
@@ -225,7 +260,8 @@ void test_size_error_one_step(
   // main thing that happens inside of control_error.
   // Here we merely check that control_error does the correct
   // thing for a few cases.
-  CHECK(dynamic_cast<FinalState*>(info.state.get()) != nullptr);
+  CAPTURE(error.update_message);
+  CHECK(info.state.get()->number() == FinalState{}.number());
   CHECK(error.control_error == approx(expected_error));
 
   // Now check the control error class, but only if the initial state is Initial
@@ -242,6 +278,7 @@ void test_size_error_one_step(
         "MaxNumTimesForZeroCrossingPredictor: 4\n"
         "SmoothAvgTimescaleFraction: 0.25\n"
         "DeltaRDriftOutwardOptions: None\n"
+        "DeltaRDriftInwardOptions: None\n"
         "InitialState: Initial\n"
         "SmootherTuner:\n"
         "  InitialTimescales: 0.2\n"
@@ -366,11 +403,15 @@ void test_size_error(const double grid_excision_boundary_radius,
   intrp::ZeroCrossingPredictor predictor_char_speed;
   intrp::ZeroCrossingPredictor predictor_comoving_char_speed;
   intrp::ZeroCrossingPredictor predictor_delta_radius;
+  intrp::ZeroCrossingPredictor predictor_drift_limit_char_speed;
+  intrp::ZeroCrossingPredictor predictor_drift_limit_delta_radius;
 
   test_size_error_one_step<InitialState, FinalState>(
       make_not_null(&predictor_char_speed),
       make_not_null(&predictor_comoving_char_speed),
-      make_not_null(&predictor_delta_radius), initial_time,
+      make_not_null(&predictor_delta_radius),
+      make_not_null(&predictor_drift_limit_char_speed),
+      make_not_null(&predictor_drift_limit_delta_radius), initial_time,
       grid_excision_boundary_radius, distorted_excision_boundary_radius_initial,
       distorted_excision_boundary_velocity, distorted_horizon_radius,
       distorted_horizon_velocity, target_char_speed, function_of_time,
@@ -411,6 +452,20 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
         horizon_velocity, target_char_speed, expected_control_error);
   }
   {
+    // The following is computed by hand from arxiv:1211.6079 eq. 96.
+    const double horizon_distorted = 2.0;
+    const double excision_distorted = 1.98;
+    const double expected_control_error =
+        (-horizon_velocity * 0.5 * excision_distorted + excision_velocity) /
+        Y00;
+    // Should go to state DeltaR.
+    test_size_error<control_system::size::States::DeltaRNoDrift,
+                    control_system::size::States::DeltaR>(
+        excision_grid, excision_distorted, excision_velocity, horizon_distorted,
+        horizon_velocity, target_char_speed, expected_control_error);
+  }
+
+  {
     // The following is computed by hand from arxiv:1211.6079 eq. 97.
     const double horizon_distorted = 2.0;
     const double excision_distorted = 1.95;
@@ -422,6 +477,22 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.SizeError", "[Domain][Unit]") {
     // Should stay in state DeltaRDriftOutward.
     test_size_error<control_system::size::States::DeltaRDriftOutward,
                     control_system::size::States::DeltaRDriftOutward>(
+        excision_grid, excision_distorted, excision_velocity, horizon_distorted,
+        horizon_velocity, target_char_speed, expected_control_error);
+  }
+
+  {
+    // The following is computed by hand from arxiv:1211.6079 eq. 96 plus
+    // the target char speed.
+    const double horizon_distorted = 2.0;
+    const double excision_distorted = 1.95;
+    const double expected_control_error =
+        (-horizon_velocity * 0.5 * excision_distorted + excision_velocity) /
+            Y00 +
+        target_char_speed;
+    // Should stay in state DeltaRDriftInward.
+    test_size_error<control_system::size::States::DeltaRDriftInward,
+                    control_system::size::States::DeltaRDriftInward>(
         excision_grid, excision_distorted, excision_velocity, horizon_distorted,
         horizon_velocity, target_char_speed, expected_control_error);
   }

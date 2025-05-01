@@ -582,6 +582,7 @@ ControlSystems:
       MaxNumTimesForZeroCrossingPredictor: 4
       SmoothAvgTimescaleFraction: 0.25
       DeltaRDriftOutwardOptions: None
+      DeltaRDriftInwardOptions: None
       InitialState: Initial
       SmootherTuner:
         InitialTimescales: *SizeATimescale
@@ -604,6 +605,7 @@ ControlSystems:
       MaxNumTimesForZeroCrossingPredictor: 4
       SmoothAvgTimescaleFraction: 0.25
       DeltaRDriftOutwardOptions: None
+      DeltaRDriftInwardOptions: None
       InitialState: Initial
       SmootherTuner:
         InitialTimescales: *SizeBTimescale
