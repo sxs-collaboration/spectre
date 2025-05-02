@@ -16,20 +16,19 @@
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Filter.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
+template <typename VariableTags>
 void spacetime_kreiss_oliger_filter(
-    const gsl::not_null<Variables<
-        typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>*>
-        result,
-    const Variables<
-        typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
-        volume_evolved_variables,
+    const gsl::not_null<Variables<VariableTags>*> result,
+    const Variables<VariableTags>& volume_evolved_variables,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
         all_ghost_data,
     const Mesh<3>& volume_mesh, const size_t order, const double epsilon) {
@@ -88,4 +87,25 @@ void spacetime_kreiss_oliger_filter(
                              ghost_cell_vars, volume_mesh,
                              number_of_gh_components, order, epsilon);
 }
+
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                                             \
+  template void spacetime_kreiss_oliger_filter(                            \
+      const gsl::not_null<                                                 \
+          Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO(   \
+              data)>::variables_tag::tags_list>*>                          \
+          result,                                                          \
+      const Variables<typename grmhd::GhValenciaDivClean::System<NEUTRINO( \
+          data)>::variables_tag::tags_list>& volume_evolved_variables,     \
+      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
+          all_ghost_data,                                                  \
+      const Mesh<3>& volume_mesh, const size_t order, const double epsilon);
+
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+
+#undef INSTANTIATION
+#undef NEUTRINO
+
 }  // namespace grmhd::GhValenciaDivClean::fd

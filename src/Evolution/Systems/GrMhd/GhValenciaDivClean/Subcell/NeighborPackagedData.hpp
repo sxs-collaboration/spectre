@@ -35,6 +35,7 @@ namespace grmhd::GhValenciaDivClean::subcell {
  * Developer note: For performance reasons We should consider storing the mesh
  * velocity on the faces instead of re-slicing/projecting.
  */
+template <typename System>
 struct NeighborPackagedData {
   static DirectionalIdMap<3, DataVector> apply(
       const db::Access& box,

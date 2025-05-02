@@ -14,6 +14,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -87,7 +88,8 @@ using ComputeBoundaryCorrectionHelper = ComputeBoundaryCorrectionHelperImpl<
     typename DerivedCorrection::dg_package_data_primitive_tags,
     typename DerivedCorrection::dg_package_data_volume_tags>;
 
-template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
+template <typename DerivedGhCorrection, typename DerivedValenciaCorrection,
+          typename NeutrinoTransportSystem>
 void test_boundary_correction_combination(
     const DerivedGhCorrection& derived_gh_correction,
     const DerivedValenciaCorrection& derived_valencia_correction,
@@ -257,7 +259,7 @@ void test_boundary_correction_combination(
       helpers::Tags::Range<gr::Tags::Shift<DataVector, 3>>>
       ranges{std::array{0.3, 1.0}, std::array{0.01, 0.02}};
   TestHelpers::evolution::dg::test_boundary_correction_conservation<
-      grmhd::GhValenciaDivClean::System>(
+      grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>>(
       make_not_null(&gen), derived_product_correction,
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       volume_variables, ranges);
@@ -268,6 +270,7 @@ SPECTRE_TEST_CASE(
     "Unit.GhValenciaDivClean.BoundaryCorrections.ProductOfCorrections",
     "[Unit][Evolution]") {
   // scoped to separate out each product combination
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
   {
     INFO("Product correction UpwindPenalty and Rusanov");
     grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov valencia_correction{};
@@ -285,9 +288,9 @@ SPECTRE_TEST_CASE(
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {
       test_boundary_correction_combination<
           gh::BoundaryCorrections::UpwindPenalty<3_st>,
-          grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>(
-          gh_correction, valencia_correction, product_boundary_correction,
-          formulation);
+          grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov,
+          NeutrinoTransportSystem>(gh_correction, valencia_correction,
+                                   product_boundary_correction, formulation);
     }
   }
   {
@@ -310,9 +313,9 @@ SPECTRE_TEST_CASE(
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {
       test_boundary_correction_combination<
           gh::BoundaryCorrections::UpwindPenalty<3_st>,
-          grmhd::ValenciaDivClean::BoundaryCorrections::Hll>(
-          gh_correction, valencia_correction, product_boundary_correction,
-          formulation);
+          grmhd::ValenciaDivClean::BoundaryCorrections::Hll,
+          NeutrinoTransportSystem>(gh_correction, valencia_correction,
+                                   product_boundary_correction, formulation);
     }
   }
 }

@@ -11,6 +11,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -36,11 +37,13 @@ namespace grmhd::GhValenciaDivClean::subcell {
  * Sets `ValenciaDivClean::Tags::VariablesNeededFixing` to `true` if the
  * conservative variables needed fixing, otherwise sets the tag to `false`.
  */
-template <typename OrderedListOfRecoverySchemes>
+template <typename OrderedListOfRecoverySchemes,
+          typename System>
 struct FixConservativesAndComputePrims {
-  using return_tags = tmpl::list<ValenciaDivClean::Tags::VariablesNeededFixing,
-                                 typename System::variables_tag,
-                                 typename System::primitive_variables_tag>;
+  using return_tags = tmpl::list<
+      ValenciaDivClean::Tags::VariablesNeededFixing,
+      typename System::variables_tag,
+      typename System::primitive_variables_tag>;
   using argument_tags = tmpl::list<
       evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
       ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
@@ -49,7 +52,9 @@ struct FixConservativesAndComputePrims {
 
   static void apply(
       gsl::not_null<bool*> needed_fixing,
-      gsl::not_null<typename System::variables_tag::type*> conserved_vars_ptr,
+      gsl::not_null<
+          typename System::variables_tag::type*>
+          conserved_vars_ptr,
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>
           primitive_vars_ptr,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_coords,

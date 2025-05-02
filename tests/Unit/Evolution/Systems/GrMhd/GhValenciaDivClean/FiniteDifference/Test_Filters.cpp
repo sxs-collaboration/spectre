@@ -21,6 +21,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Filters.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/PrimReconstructor.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -42,9 +43,9 @@ void set_polynomial(
   }
 }
 
+template <typename System>
 void set_solution(
-    const gsl::not_null<Variables<
-        typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>*>
+    const gsl::not_null<Variables<typename System::variables_tag::tags_list>*>
         volume_vars,
     const gsl::not_null<DirectionalIdMap<3, evolution::dg::subcell::GhostData>*>
         neighbor_data,
@@ -105,18 +106,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Filters",
   const auto logical_coords = TestHelpers::grmhd::GhValenciaDivClean::fd::
       detail::set_logical_coordinates(subcell_mesh);
 
-  Variables<
-      typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+
+  Variables<typename grmhd::GhValenciaDivClean::System<
+      NeutrinoTransportSystem>::variables_tag::tags_list>
       result{subcell_mesh.number_of_grid_points(), 0.0};
-  Variables<
-      typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>
+  Variables<typename grmhd::GhValenciaDivClean::System<
+      NeutrinoTransportSystem>::variables_tag::tags_list>
       volume_evolved_variables{subcell_mesh.number_of_grid_points()};
 
   DirectionalIdMap<3, evolution::dg::subcell::GhostData>
       neighbor_data_for_reconstruction{};
 
-  set_solution(&volume_evolved_variables, &neighbor_data_for_reconstruction,
-               subcell_mesh, logical_coords, 4, 3);
+  set_solution<System>(&volume_evolved_variables,
+                       &neighbor_data_for_reconstruction, subcell_mesh,
+                       logical_coords, 4, 3);
 
   grmhd::GhValenciaDivClean::fd::spacetime_kreiss_oliger_filter(
       make_not_null(&result), volume_evolved_variables,

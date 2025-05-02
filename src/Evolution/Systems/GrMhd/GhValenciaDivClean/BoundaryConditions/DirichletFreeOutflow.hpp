@@ -56,6 +56,7 @@ namespace grmhd::GhValenciaDivClean::BoundaryConditions {
  * analytic data on the spacetime variables and hydro free outflow on the GRMHD
  * variables.
  */
+template <typename System>
 class DirichletFreeOutflow final : public BoundaryCondition {
  private:
   template <typename T>
@@ -179,7 +180,7 @@ class DirichletFreeOutflow final : public BoundaryCondition {
                  domain::Tags::ElementMap<3, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                              Frame::Inertial>,
-                 fd::Tags::Reconstructor>;
+                 fd::Tags::Reconstructor<System>>;
   void fd_ghost(
 
       gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> spacetime_metric,
@@ -216,6 +217,6 @@ class DirichletFreeOutflow final : public BoundaryCondition {
       const ElementMap<3, Frame::Grid>& logical_to_grid_map,
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
           grid_to_inertial_map,
-      const fd::Reconstructor& reconstructor) const;
+      const fd::Reconstructor<System>& reconstructor) const;
 };
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

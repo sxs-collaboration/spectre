@@ -20,14 +20,16 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/ZeroTimeDerivatives.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GhValenciaDivClean.Subcell.ZeroTimeDerivatives",
     "[Unit][Evolution]") {
-  using DtVarsTag = ::Tags::Variables<db::wrap_tags_in<
-      ::Tags::dt,
-      typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>>;
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+  using DtVarsTag = ::Tags::Variables<
+      db::wrap_tags_in<::Tags::dt, typename System::variables_tag::tags_list>>;
   using DtVars = typename DtVarsTag::type;
   using MhdTags =
       typename grmhd::ValenciaDivClean::System::variables_tag::tags_list;
@@ -57,7 +59,8 @@ SPECTRE_TEST_CASE(
       tmpl::list<DtVarsTag, evolution::dg::subcell::Tags::SubcellOptions<3>,
                  domain::Tags::Element<3>>>(
       DtVars{num_points, 1.2345}, subcell_options, element_in_dg_only);
-  db::mutate_apply<grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>(
+  db::mutate_apply<
+      grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives<System>>(
       make_not_null(&box_in_dg_only));
   CHECK(db::get<DtVarsTag>(box_in_dg_only) == DtVars{num_points, 1.2345});
 
@@ -65,13 +68,14 @@ SPECTRE_TEST_CASE(
   const Element<3> element_neighboring_dg_only{
       ElementId<3>{0, {}},
       {{Direction<3>::lower_xi(),
-         Neighbors<3>{ElementId<3>{6, {}},
+        Neighbors<3>{ElementId<3>{6, {}},
                      OrientationMap<3>::create_aligned()}}}};
   auto box_neighboring_dg_only = db::create<
       tmpl::list<DtVarsTag, evolution::dg::subcell::Tags::SubcellOptions<3>,
                  domain::Tags::Element<3>>>(
       DtVars{num_points, 1.2345}, subcell_options, element_neighboring_dg_only);
-  db::mutate_apply<grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>(
+  db::mutate_apply<
+      grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives<System>>(
       make_not_null(&box_neighboring_dg_only));
   {
     DtVars expected{num_points, 1.2345};
@@ -90,14 +94,15 @@ SPECTRE_TEST_CASE(
   const Element<3> element_neighboring_and_in_dg_only{
       ElementId<3>{6, {}},
       {{Direction<3>::lower_xi(),
-         Neighbors<3>{ElementId<3>{6, {}},
+        Neighbors<3>{ElementId<3>{6, {}},
                      OrientationMap<3>::create_aligned()}}}};
   auto box_neighboring_and_in_dg_only = db::create<
       tmpl::list<DtVarsTag, evolution::dg::subcell::Tags::SubcellOptions<3>,
                  domain::Tags::Element<3>>>(DtVars{num_points, 1.2345},
                                             subcell_options,
                                             element_neighboring_and_in_dg_only);
-  db::mutate_apply<grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives>(
+  db::mutate_apply<
+      grmhd::GhValenciaDivClean::subcell::ZeroMhdTimeDerivatives<System>>(
       make_not_null(&box_neighboring_and_in_dg_only));
   CHECK(db::get<DtVarsTag>(box_neighboring_and_in_dg_only) ==
         DtVars{num_points, 1.2345});

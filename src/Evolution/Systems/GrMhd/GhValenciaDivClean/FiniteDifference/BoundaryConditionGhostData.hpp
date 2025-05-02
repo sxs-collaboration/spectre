@@ -54,11 +54,12 @@ namespace grmhd::GhValenciaDivClean::fd {
  * function would be never called.
  *
  */
+template <typename System>
 struct BoundaryConditionGhostData {
   template <typename DbTagsList>
-  static void apply(gsl::not_null<db::DataBox<DbTagsList>*> box,
-                    const Element<3>& element,
-                    const Reconstructor& reconstructor);
+  static void apply(
+      gsl::not_null<db::DataBox<DbTagsList>*> box, const Element<3>& element,
+      const Reconstructor<System>& reconstructor);
 
  private:
   template <typename FdBoundaryConditionHelper, typename DbTagsList,
@@ -73,10 +74,12 @@ struct BoundaryConditionGhostData {
   }
 };
 
+template <typename System>
 template <typename DbTagsList>
-void BoundaryConditionGhostData::apply(
+void BoundaryConditionGhostData<System>::apply(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    const Element<3>& element, const Reconstructor& reconstructor) {
+    const Element<3>& element,
+    const Reconstructor<System>& reconstructor) {
   const auto& external_boundary_condition =
       db::get<domain::Tags::ExternalBoundaryConditions<3>>(*box).at(
           element.id().block_id());
@@ -141,7 +144,8 @@ void BoundaryConditionGhostData::apply(
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             *box))>::factory_creation::factory_classes;
     using derived_boundary_conditions_for_subcell = tmpl::remove_if<
-        tmpl::at<factory_classes, typename System::boundary_conditions_base>,
+        tmpl::at<factory_classes, typename System::
+                                      boundary_conditions_base>,
         tmpl::or_<
             std::is_base_of<domain::BoundaryConditions::MarkAsPeriodic,
                             tmpl::_1>,

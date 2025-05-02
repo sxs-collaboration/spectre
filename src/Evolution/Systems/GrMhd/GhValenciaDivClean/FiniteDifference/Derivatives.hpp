@@ -36,14 +36,14 @@ namespace grmhd::GhValenciaDivClean::fd {
  *
  * The derivatives are computed using FD of order deriv_order
  */
+template <typename System>
 void spacetime_derivatives(
-    gsl::not_null<Variables<db::wrap_tags_in<
-        ::Tags::deriv,
-        typename grmhd::GhValenciaDivClean::System::gradients_tags,
-        tmpl::size_t<3>, Frame::Inertial>>*>
+    gsl::not_null<
+        Variables<db::wrap_tags_in<::Tags::deriv,
+                                   typename System::gradients_tags,
+                                   tmpl::size_t<3>, Frame::Inertial>>*>
         result,
-    const Variables<
-        typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
+    const Variables<typename System::variables_tag::tags_list>&
         volume_evolved_variables,
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
         all_ghost_data,

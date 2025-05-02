@@ -27,6 +27,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Unlimited.hpp"
@@ -43,29 +44,38 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
-MonotonisedCentralPrim::MonotonisedCentralPrim(
+
+template <typename System>
+MonotonisedCentralPrim<System>::MonotonisedCentralPrim(
     const ::VariableFixing::FixReconstructedStateToAtmosphere
         fix_reconstructed_state_to_atmosphere)
     : fix_reconstructed_state_to_atmosphere_(
           fix_reconstructed_state_to_atmosphere) {}
 
-MonotonisedCentralPrim::MonotonisedCentralPrim(CkMigrateMessage* const msg)
-    : Reconstructor(msg) {}
+template <typename System>
+MonotonisedCentralPrim<System>::MonotonisedCentralPrim(
+    CkMigrateMessage* const msg)
+    : Reconstructor<System>(msg) {}
 
-std::unique_ptr<Reconstructor> MonotonisedCentralPrim::get_clone() const {
+template <typename System>
+std::unique_ptr<Reconstructor<System>>
+MonotonisedCentralPrim<System>::get_clone() const {
   return std::make_unique<MonotonisedCentralPrim>(*this);
 }
 
-void MonotonisedCentralPrim::pup(PUP::er& p) {
-  Reconstructor::pup(p);
+template <typename System>
+void MonotonisedCentralPrim<System>::pup(PUP::er& p) {
+  Reconstructor<System>::pup(p);
   p | fix_reconstructed_state_to_atmosphere_;
 }
 
+template <typename System>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
+PUP::able::PUP_ID MonotonisedCentralPrim<System>::my_PUP_ID = 0;
 
+template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
-void MonotonisedCentralPrim::reconstruct(
+void MonotonisedCentralPrim<System>::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
@@ -141,8 +151,9 @@ void MonotonisedCentralPrim::reconstruct(
            : nullptr));
 }
 
+template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>
-void MonotonisedCentralPrim::reconstruct_fd_neighbor(
+void MonotonisedCentralPrim<System>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const Variables<
@@ -250,52 +261,85 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
            : nullptr));
 }
 
-bool operator==(const MonotonisedCentralPrim& lhs,
-                const MonotonisedCentralPrim& rhs) {
+template <typename System>
+bool operator==(const MonotonisedCentralPrim<System>& lhs,
+                const MonotonisedCentralPrim<System>& rhs) {
   return lhs.fix_reconstructed_state_to_atmosphere_ ==
          rhs.fix_reconstructed_state_to_atmosphere_;
 }
 
-bool operator!=(const MonotonisedCentralPrim& lhs,
-                const MonotonisedCentralPrim& rhs) {
+template <typename System>
+bool operator!=(const MonotonisedCentralPrim<System>& lhs,
+                const MonotonisedCentralPrim<System>& rhs) {
   return not(lhs == rhs);
 }
 
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATION(r, data)                               \
+  template class MonotonisedCentralPrim<                     \
+      GhValenciaDivClean::System<NEUTRINO(data)>>;           \
+  template bool operator==(                                  \
+      const MonotonisedCentralPrim<                          \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& lhs,  \
+      const MonotonisedCentralPrim<                          \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& rhs); \
+  template bool operator!=(                                  \
+      const MonotonisedCentralPrim<                          \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& lhs,  \
+      const MonotonisedCentralPrim<                          \
+          GhValenciaDivClean::System<NEUTRINO(data)>>& rhs);
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+#undef INSTANTIATION
+#undef NEUTRINO
+
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template void MonotonisedCentralPrim::reconstruct(                        \
-      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
-          vars_on_lower_face,                                               \
-      gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>   \
-          vars_on_upper_face,                                               \
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,         \
-      const Variables<typename System::variables_tag::type::tags_list>&     \
-          volume_spacetime_and_cons_vars,                                   \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
-          ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh,                                          \
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere) const; \
-  template void MonotonisedCentralPrim::reconstruct_fd_neighbor(            \
-      gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>      \
-          vars_on_face,                                                     \
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims, \
-      const Variables<                                                      \
-          grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&  \
-          subcell_volume_spacetime_metric,                                  \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos, \
-      const Element<3>& element,                                            \
-      const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&         \
-          ghost_data,                                                       \
-      const Mesh<3>& subcell_mesh,                                          \
-      const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,        \
-      const Direction<3> direction_to_reconstruct) const;
+#define INSTANTIATION(r, data)                                                 \
+  template void                                                                \
+  MonotonisedCentralPrim<GhValenciaDivClean::System<NEUTRINO(data)>>::         \
+      reconstruct(                                                             \
+          gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>  \
+              vars_on_lower_face,                                              \
+          gsl::not_null<std::array<Variables<tags_list_for_reconstruct>, 3>*>  \
+              vars_on_upper_face,                                              \
+          const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,        \
+          const Variables<typename GhValenciaDivClean::System<NEUTRINO(        \
+              data)>::variables_tag::type::tags_list>&                         \
+              volume_spacetime_and_cons_vars,                                  \
+          const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&     \
+              eos,                                                             \
+          const Element<3>& element,                                           \
+          const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
+              ghost_data,                                                      \
+          const Mesh<3>& subcell_mesh,                                         \
+          const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere)       \
+          const;                                                               \
+  template void                                                                \
+  MonotonisedCentralPrim<GhValenciaDivClean::System<NEUTRINO(data)>>::         \
+      reconstruct_fd_neighbor(                                                 \
+          gsl::not_null<Variables<tags_list_for_reconstruct_fd_neighbor>*>     \
+              vars_on_face,                                                    \
+          const Variables<hydro::grmhd_tags<DataVector>>&                      \
+              subcell_volume_prims,                                            \
+          const Variables<                                                     \
+              grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>& \
+              subcell_volume_spacetime_metric,                                 \
+          const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>&     \
+              eos,                                                             \
+          const Element<3>& element,                                           \
+          const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&        \
+              ghost_data,                                                      \
+          const Mesh<3>& subcell_mesh,                                         \
+          const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,       \
+          const Direction<3> direction_to_reconstruct) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
+                        (RadiationTransport::NoNeutrinos::System))
 
 #undef INSTANTIATION
 #undef TAGS_LIST
 #undef THERMO_DIM
+#undef NEUTRINO
 }  // namespace grmhd::GhValenciaDivClean::fd

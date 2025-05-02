@@ -18,8 +18,9 @@ namespace grmhd::GhValenciaDivClean::fd {
 /// Option tags for finite difference solver
 namespace OptionTags {
 /// \brief Option tag for the reconstructor
+template <typename System>
 struct Reconstructor {
-  using type = std::unique_ptr<fd::Reconstructor>;
+  using type = std::unique_ptr<fd::Reconstructor<System>>;
 
   static constexpr Options::String help = {"The reconstruction scheme to use."};
   using group = evolution::dg::subcell::OptionTags::SubcellSolverGroup;
@@ -37,10 +38,12 @@ struct FilterOptions {
 /// %Tags for finite difference solver
 namespace Tags {
 /// \brief Tag for the reconstructor
+template <typename System>
 struct Reconstructor : db::SimpleTag,
                        evolution::dg::subcell::Tags::Reconstructor {
-  using type = std::unique_ptr<fd::Reconstructor>;
-  using option_tags = tmpl::list<OptionTags::Reconstructor>;
+  using type = std::unique_ptr<fd::Reconstructor<System>>;
+  using option_tags =
+      tmpl::list<OptionTags::Reconstructor<System>>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& reconstructor) {

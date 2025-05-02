@@ -37,6 +37,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
@@ -52,39 +53,49 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryConditions {
+
 // LCOV_EXCL_START
-DirichletAnalytic::DirichletAnalytic(CkMigrateMessage* const msg)
+template <typename System>
+DirichletAnalytic<System>::DirichletAnalytic(CkMigrateMessage* const msg)
     : BoundaryCondition(msg) {}
 // LCOV_EXCL_STOP
-DirichletAnalytic::DirichletAnalytic(const DirichletAnalytic& rhs)
+template <typename System>
+DirichletAnalytic<System>::DirichletAnalytic(
+    const DirichletAnalytic<System>& rhs)
     : BoundaryCondition{dynamic_cast<const BoundaryCondition&>(rhs)},
       analytic_prescription_(rhs.analytic_prescription_->get_clone()) {}
 
-DirichletAnalytic& DirichletAnalytic::operator=(const DirichletAnalytic& rhs) {
+template <typename System>
+DirichletAnalytic<System>& DirichletAnalytic<System>::operator=(
+    const DirichletAnalytic<System>& rhs) {
   if (&rhs == this) {
     return *this;
   }
   analytic_prescription_ = rhs.analytic_prescription_->get_clone();
   return *this;
 }
-
-DirichletAnalytic::DirichletAnalytic(
+template <typename System>
+DirichletAnalytic<System>::DirichletAnalytic(
     std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription)
     : analytic_prescription_(std::move(analytic_prescription)) {}
 
+template <typename System>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-DirichletAnalytic::get_clone() const {
-  return std::make_unique<DirichletAnalytic>(*this);
+DirichletAnalytic<System>::get_clone() const {
+  return std::make_unique<DirichletAnalytic<System>>(*this);
 }
 
-void DirichletAnalytic::pup(PUP::er& p) {
+template <typename System>
+void DirichletAnalytic<System>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
   p | analytic_prescription_;
 }
+template <typename System>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+PUP::able::PUP_ID DirichletAnalytic<System>::my_PUP_ID = 0;
 
-std::optional<std::string> DirichletAnalytic::dg_ghost(
+template <typename System>
+std::optional<std::string> DirichletAnalytic<System>::dg_ghost(
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
         spacetime_metric,
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
@@ -249,7 +260,8 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
   return {};
 }
 
-void DirichletAnalytic::fd_ghost(
+template <typename System>
+void DirichletAnalytic<System>::fd_ghost(
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*>
         spacetime_metric,
     const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
@@ -276,7 +288,7 @@ void DirichletAnalytic::fd_ghost(
     const ElementMap<3, Frame::Grid>& logical_to_grid_map,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
         grid_to_inertial_map,
-    const fd::Reconstructor& reconstructor) const {
+    const fd::Reconstructor<System>& reconstructor) const {
   const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
 
   const auto ghost_logical_coords =
@@ -353,5 +365,16 @@ void DirichletAnalytic::fd_ghost(
   *divergence_cleaning_field =
       get<hydro::Tags::DivergenceCleaningField<DataVector>>(boundary_values);
 }
+
+#define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data) \
+  template class DirichletAnalytic<GhValenciaDivClean::System<NEUTRINO(data)>>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATION,
+                        (RadiationTransport::NoNeutrinos::System))
+
+#undef INSTANTIATION
+#undef NEUTRINO
 
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

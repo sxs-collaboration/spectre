@@ -70,7 +70,8 @@ namespace grmhd::GhValenciaDivClean::fd {
  * \f$\Pi_{ab}\f$ are all reconstructed since the Riemann solver on the DG
  * element also needs to solve for the metric variables.
  */
-class MonotonisedCentralPrim : public Reconstructor {
+template <typename System>
+class MonotonisedCentralPrim : public Reconstructor<System> {
  public:
   static constexpr size_t dim = 3;
 
@@ -98,9 +99,10 @@ class MonotonisedCentralPrim : public Reconstructor {
 
   explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentralPrim);
+  WRAPPED_PUPable_decl_base_template(Reconstructor<System>,
+                                     MonotonisedCentralPrim);
 
-  auto get_clone() const -> std::unique_ptr<Reconstructor> override;
+  auto get_clone() const -> std::unique_ptr<Reconstructor<System>> override;
 
   static constexpr bool use_adaptive_order = false;
 
@@ -147,14 +149,15 @@ class MonotonisedCentralPrim : public Reconstructor {
       Direction<dim> direction_to_reconstruct) const;
 
  private:
-  friend bool operator==(const MonotonisedCentralPrim& lhs,
-                         const MonotonisedCentralPrim& rhs);
+  template <typename LocalSystem>
+  friend bool operator==(const MonotonisedCentralPrim<LocalSystem>& lhs,
+                         const MonotonisedCentralPrim<LocalSystem>& rhs);
+  template <typename LocalSystem>
+  friend bool operator!=(const MonotonisedCentralPrim<LocalSystem>& lhs,
+                         const MonotonisedCentralPrim<LocalSystem>& rhs);
 
   ::VariableFixing::FixReconstructedStateToAtmosphere
       fix_reconstructed_state_to_atmosphere_{
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never};
 };
-
-bool operator!=(const MonotonisedCentralPrim& lhs,
-                const MonotonisedCentralPrim& rhs);
 }  // namespace grmhd::GhValenciaDivClean::fd

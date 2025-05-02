@@ -17,14 +17,20 @@ class er;
 
 namespace grmhd::GhValenciaDivClean::fd {
 /// \cond
+template <typename System>
 class MonotonisedCentralPrim;
+template <typename System>
 class PositivityPreservingAdaptiveOrderPrim;
+template <typename System>
 class Wcns5zPrim;
 /// \endcond
 
 /*!
  * \brief The base class from which all reconstruction schemes must inherit
  */
+
+// template on System instead
+template <typename System>
 class Reconstructor : public PUP::able {
  public:
   Reconstructor() = default;
@@ -36,14 +42,16 @@ class Reconstructor : public PUP::able {
 
   /// \cond
   explicit Reconstructor(CkMigrateMessage* msg);
-  WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
+  WRAPPED_PUPable_abstract(Reconstructor<System>);  // NOLINT
   /// \endcond
 
+  using system = System;
   using creatable_classes =
-      tmpl::list<MonotonisedCentralPrim, PositivityPreservingAdaptiveOrderPrim,
-                 Wcns5zPrim>;
+      tmpl::list<MonotonisedCentralPrim<System>,
+                 PositivityPreservingAdaptiveOrderPrim<System>,
+                 Wcns5zPrim<System>>;
 
-  virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
+  virtual std::unique_ptr<Reconstructor<System>> get_clone() const = 0;
 
   virtual size_t ghost_zone_size() const = 0;
 

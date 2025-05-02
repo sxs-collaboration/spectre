@@ -167,7 +167,8 @@ inline tnsr::I<DataVector, 3, Frame::ElementLogical> set_logical_coordinates(
   return logical_coords;
 }
 
-template <size_t ThermodynamicDim, typename Reconstructor>
+template <size_t ThermodynamicDim,
+          typename Reconstructor>  // DerivedReconstructor?
 void test_prim_reconstructor_impl(
     const size_t points_per_dimension,
     const Reconstructor& derived_reconstructor,
@@ -177,10 +178,14 @@ void test_prim_reconstructor_impl(
   // 2. send through reconstruction
   // 3. check prims and cons were computed correctly
   namespace ghmhd = ::grmhd::GhValenciaDivClean;
-  const ghmhd::fd::Reconstructor& reconstructor = derived_reconstructor;
-  static_assert(
-      tmpl::list_contains_v<
-          typename ghmhd::fd::Reconstructor::creatable_classes, Reconstructor>);
+  using NeutrinoTransportSystem =
+      typename Reconstructor::system::neutrino_transport_system;
+  using System = ::grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+
+  const ghmhd::fd::Reconstructor<System>& reconstructor = derived_reconstructor;
+  static_assert(tmpl::list_contains_v<
+                typename ghmhd::fd::Reconstructor<System>::creatable_classes,
+                Reconstructor>);
 
   using Rho = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
@@ -202,7 +207,7 @@ void test_prim_reconstructor_impl(
   using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<DataVector>;
 
   using prims_tags = hydro::grmhd_tags<DataVector>;
-  using cons_tags = typename ghmhd::System::variables_tag::tags_list;
+  using cons_tags = typename System::variables_tag::tags_list;
   using spacetime_tags =
       ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 

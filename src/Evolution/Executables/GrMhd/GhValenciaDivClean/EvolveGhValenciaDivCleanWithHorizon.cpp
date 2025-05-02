@@ -26,7 +26,8 @@ extern "C" void CkRegisterMainModule() {
        &domain::FunctionsOfTime::register_derived_with_charm,
        &grmhd::GhValenciaDivClean::BoundaryCorrections::
            register_derived_with_charm,
-       &grmhd::GhValenciaDivClean::fd::register_derived_with_charm,
+       &grmhd::GhValenciaDivClean::fd::register_derived_with_charm<
+           typename metavariables::base::system>,
        &EquationsOfState::register_derived_with_charm,
        &gh::ConstraintDamping::register_derived_with_charm,
        &register_factory_classes_with_charm<metavariables>},

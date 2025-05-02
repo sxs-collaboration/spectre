@@ -28,6 +28,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/HydroFreeOutflow.hpp"
+#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -58,6 +59,7 @@ namespace helpers = ::TestHelpers::evolution::dg;
 
 namespace {
 
+template <typename System>
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -65,7 +67,7 @@ struct Metavariables {
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
-                           DirichletFreeOutflow>>,
+                           DirichletFreeOutflow<System>>>,
         tmpl::pair<evolution::initial_data::InitialData,
                    ghmhd::GhValenciaDivClean::InitialData::initial_data_list>,
         tmpl::pair<
@@ -327,7 +329,7 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
   });
 }
 
-template <typename T, typename U>
+template <typename System, typename T, typename U>
 void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
   std::uniform_real_distribution<> dist(0.1, 1.0);
 
@@ -359,7 +361,8 @@ void test_fd(const U& boundary_condition, const T& analytic_solution_or_data) {
           .get_clone()};
   const auto direction = Direction<3>::lower_xi();
 
-  grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim reconstructor{};
+  grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>
+      reconstructor{};
 
   using Vars = Variables<grmhd::GhValenciaDivClean::Tags::
                              primitive_grmhd_and_spacetime_reconstruction_tags>;
@@ -552,7 +555,9 @@ SPECTRE_TEST_CASE(
     "Unit.GhValenciaDivClean.BoundaryConditions.DirichletFreeOutflow",
     "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
-  register_factory_classes_with_charm<Metavariables>();
+  using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
+  using System = grmhd::GhValenciaDivClean::System<NeutrinoTransportSystem>;
+  register_factory_classes_with_charm<Metavariables<System>>();
   EquationsOfState::register_derived_with_charm();
 
   {
@@ -561,7 +566,7 @@ SPECTRE_TEST_CASE(
         TestHelpers::test_creation<
             std::unique_ptr<grmhd::GhValenciaDivClean::BoundaryConditions::
                                 BoundaryCondition>,
-            Metavariables>(
+            Metavariables<System>>(
             "DirichletFreeOutflow:\n"
             "  AnalyticPrescription:\n"
             "    GeneralizedHarmonic(BondiMichel):\n"
@@ -576,12 +581,13 @@ SPECTRE_TEST_CASE(
     const auto serialized_and_deserialized_condition =
         serialize_and_deserialize(
             *dynamic_cast<grmhd::GhValenciaDivClean::BoundaryConditions::
-                              DirichletFreeOutflow*>(
+                              DirichletFreeOutflow<System>*>(
                 product_boundary_condition.get()));
 
     test_dg(make_not_null(&gen), serialized_and_deserialized_condition,
             analytic_solution_or_data);
-    test_fd(serialized_and_deserialized_condition, analytic_solution_or_data);
+    test_fd<System>(serialized_and_deserialized_condition,
+                                     analytic_solution_or_data);
   }
   {
     INFO("Test with analytic data");
@@ -589,7 +595,7 @@ SPECTRE_TEST_CASE(
         TestHelpers::test_creation<
             std::unique_ptr<grmhd::GhValenciaDivClean::BoundaryConditions::
                                 BoundaryCondition>,
-            Metavariables>(
+            Metavariables<System>>(
             "DirichletFreeOutflow:\n"
             "  AnalyticPrescription:\n"
             "      GeneralizedHarmonic(MagnetizedTovStar):\n"
@@ -622,11 +628,12 @@ SPECTRE_TEST_CASE(
     const auto serialized_and_deserialized_condition =
         serialize_and_deserialize(
             *dynamic_cast<grmhd::GhValenciaDivClean::BoundaryConditions::
-                              DirichletFreeOutflow*>(
+                              DirichletFreeOutflow<System>*>(
                 product_boundary_condition.get()));
 
     test_dg(make_not_null(&gen), serialized_and_deserialized_condition,
             analytic_solution_or_data);
-    test_fd(serialized_and_deserialized_condition, analytic_solution_or_data);
+    test_fd<System>(serialized_and_deserialized_condition,
+                                     analytic_solution_or_data);
   }
 }
