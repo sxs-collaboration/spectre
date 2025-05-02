@@ -376,9 +376,9 @@ struct SendDataForMcCommunication {
 
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
-      const auto& orientation = neighbors_in_direction.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const ElementId<Dim>& neighbor : neighbors_in_direction) {
+        const auto& orientation = neighbors_in_direction.orientation(neighbor);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         std::optional<std::vector<Particles::MonteCarlo::Packet>>
             packets_to_send = std::nullopt;
         DataVector subcell_data_to_send{};

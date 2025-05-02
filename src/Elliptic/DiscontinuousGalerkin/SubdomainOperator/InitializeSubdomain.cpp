@@ -39,11 +39,11 @@ void InitializeOverlapGeometry<Dim>::operator()(
   // this setup is a possible optimization. The computational cost and memory
   // usage is probably irrelevant though.
   for (const auto& [direction, neighbors] : element.neighbors()) {
-    const auto& orientation = neighbors.orientation();
-    const auto direction_from_neighbor = orientation(direction.opposite());
-    const auto reoriented_face_mesh =
-        orientation(mesh).slice_away(direction_from_neighbor.dimension());
     for (const auto& neighbor_id : neighbors) {
+      const auto& orientation = neighbors.orientation(neighbor_id);
+      const auto direction_from_neighbor = orientation(direction.opposite());
+      const auto reoriented_face_mesh =
+          orientation(mesh).slice_away(direction_from_neighbor.dimension());
       const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
       const auto& neighbor_mesh = neighbor_meshes.at(mortar_id);
       const auto neighbor_face_mesh =
@@ -56,7 +56,7 @@ void InitializeOverlapGeometry<Dim>::operator()(
                                        direction_from_neighbor.dimension(),
                                        orientation.inverse_map()));
     }  // neighbors
-  }    // internal directions
+  }  // internal directions
 }
 
 template class InitializeOverlapGeometry<1>;

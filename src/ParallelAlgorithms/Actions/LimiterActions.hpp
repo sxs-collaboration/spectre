@@ -167,7 +167,8 @@ struct SendData {
                  << direction << "\nDimension: " << dimension
                  << "\nNeighbors:\n"
                  << neighbors_in_direction);
-      const auto& orientation = neighbors_in_direction.orientation();
+      const auto& neighbor_id = *(neighbors_in_direction.cbegin());
+      const auto& orientation = neighbors_in_direction.orientation(neighbor_id);
       const auto direction_from_neighbor = orientation(direction.opposite());
 
       using argument_tags =

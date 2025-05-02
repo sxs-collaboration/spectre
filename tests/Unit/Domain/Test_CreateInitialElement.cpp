@@ -409,7 +409,11 @@ void test_nonconforming_blocks() {
   blocks.emplace_back(
       nullptr, 0,
       DirectionMap<2, BlockNeighbors<2>>{
-          {Direction<2>::upper_xi(), BlockNeighbors<2>{{1, 2, 3, 4}, aligned}}},
+          {Direction<2>::upper_xi(),
+           BlockNeighbors<2>{
+               {1, 2, 3, 4},
+               {{1, aligned}, {2, aligned}, {3, aligned}, {4, aligned}},
+               false}}},
       "Annulus", std::array{domain::Topology::I1, domain::Topology::S1});
   blocks.emplace_back(
       nullptr, 1,
@@ -458,7 +462,8 @@ void test_nonconforming_blocks() {
        {Direction<2>::upper_xi(),
         Neighbors<2>{{north_l, north_u, east_l, east_u, south_l, south_u,
                       west_l, west_u},
-                     aligned}}},
+                     {{1, aligned}, {2, aligned}, {3, aligned}, {4, aligned}},
+                     false}}},
       domain::topologies::annulus);
   test_create_initial_element(
       north_l, blocks, initial_refinement_levels,

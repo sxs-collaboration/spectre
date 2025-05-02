@@ -1079,6 +1079,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   ElementId<Dim> self_id{};
   ElementId<Dim> east_id{};
   ElementId<Dim> south_id{};  // not used in 1d
+  OrientationMap<Dim> south_orientation{};
 
   if constexpr (Dim == 1) {
     self_id = ElementId<Dim>{0, {{{1, 0}}}};
@@ -1089,24 +1090,24 @@ void test_impl(const Spectral::Quadrature quadrature,
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}}}};
+    south_orientation = OrientationMap<Dim>{
+        std::array{Direction<Dim>::lower_xi(), Direction<Dim>::lower_eta()}};
     neighbors[Direction<Dim>::upper_xi()] =
         Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{
-        {south_id},
-        OrientationMap<Dim>{std::array{Direction<Dim>::lower_xi(),
-                                       Direction<Dim>::lower_eta()}}};
+    neighbors[Direction<Dim>::lower_eta()] =
+        Neighbors<Dim>{{south_id}, south_orientation};
   } else {
     static_assert(Dim == 3, "Only implemented tests in 1, 2, and 3d");
     self_id = ElementId<Dim>{0, {{{1, 0}, {0, 0}, {0, 0}}}};
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}, {0, 0}}}};
+    south_orientation = OrientationMap<Dim>{
+        std::array{Direction<Dim>::lower_xi(), Direction<Dim>::lower_eta(),
+                   Direction<Dim>::upper_zeta()}};
     neighbors[Direction<Dim>::upper_xi()] =
         Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
-    neighbors[Direction<Dim>::lower_eta()] = Neighbors<Dim>{
-        {south_id},
-        OrientationMap<Dim>{std::array{Direction<Dim>::lower_xi(),
-                                       Direction<Dim>::lower_eta(),
-                                       Direction<Dim>::upper_zeta()}}};
+    neighbors[Direction<Dim>::lower_eta()] =
+        Neighbors<Dim>{{south_id}, south_orientation};
   }
 
   const auto grid_to_inertial_map =
@@ -1114,7 +1115,7 @@ void test_impl(const Spectral::Quadrature quadrature,
           domain::CoordinateMaps::Identity<Dim>{});
 
   const Element<Dim> element{self_id, neighbors};
-  MockRuntimeSystem runner = [&dg_formulation, &element,
+  MockRuntimeSystem runner = [&dg_formulation, &south_orientation,
                               &grid_to_inertial_map]() {
     std::vector<DirectionMap<
         Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -1123,29 +1124,22 @@ void test_impl(const Spectral::Quadrature quadrature,
     DirectionMap<Dim, BlockNeighbors<Dim>> neighbors_block0{};
     DirectionMap<Dim, BlockNeighbors<Dim>> neighbors_block1{};
     if constexpr (Dim > 1) {
-      neighbors_block0[Direction<Dim>::lower_eta()] = BlockNeighbors<Dim>{
-          1, element.neighbors().at(Direction<Dim>::lower_eta()).orientation()};
-      neighbors_block1[element.neighbors()
-                           .at(Direction<Dim>::lower_eta())
-                           .orientation()(Direction<Dim>::lower_eta())] =
-          BlockNeighbors<Dim>{0, element.neighbors()
-                                    .at(Direction<Dim>::lower_eta())
-                                    .orientation()
-                                    .inverse_map()};
+      neighbors_block0[Direction<Dim>::lower_eta()] =
+          BlockNeighbors<Dim>{1, south_orientation};
+      neighbors_block1[south_orientation(Direction<Dim>::lower_eta())] =
+          BlockNeighbors<Dim>{0, south_orientation.inverse_map()};
       for (const auto& direction : Direction<Dim>::all_directions()) {
         if (direction != Direction<Dim>::lower_eta()) {
           boundary_conditions[0][direction] =
               std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
         }
-        if (direction != element.neighbors()
-                             .at(Direction<Dim>::lower_eta())
-                             .orientation()(Direction<Dim>::lower_eta())) {
+        if (direction != south_orientation(Direction<Dim>::lower_eta())) {
           boundary_conditions[1][direction] =
               std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
         }
       }
     } else {
-      (void)element;
+      (void)south_orientation;
       for (const auto& direction : Direction<Dim>::all_directions()) {
         boundary_conditions[0][direction] =
             std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
@@ -1805,8 +1799,9 @@ void test_impl(const Spectral::Quadrature quadrature,
           expected_data = packaged_data_buffer;
         }
 
-        const auto& orientation =
-            element.neighbors().at(local_direction).orientation();
+        const auto& orientation = element.neighbors()
+                                      .at(local_direction)
+                                      .orientation(local_neighbor_id);
         DataVector oriented_variables =
             orient_variables_on_slice(expected_data, mortar_mesh.extents(),
                                       local_direction.dimension(), orientation);
@@ -1896,7 +1891,8 @@ void test_impl(const Spectral::Quadrature quadrature,
            .at(DirectionalId<Dim>{
                element.neighbors()
                    .at(mortar_id_east.direction())
-                   .orientation()(mortar_id_east.direction().opposite()),
+                   .orientation(mortar_id_east.id())(
+                       mortar_id_east.direction().opposite()),
                element.id()})
            .boundary_correction_data.value()),
       compute_expected_mortar_data(mortar_id_east.direction(),
@@ -1910,7 +1906,8 @@ void test_impl(const Spectral::Quadrature quadrature,
              .at(DirectionalId<Dim>{
                  element.neighbors()
                      .at(mortar_id_east.direction())
-                     .orientation()(mortar_id_east.direction().opposite()),
+                     .orientation(mortar_id_east.id())(
+                         mortar_id_east.direction().opposite()),
                  element.id()})
              .validity_range) ==
         (LocalTimeStepping ? next_time_step_id : time_step_id));
@@ -1926,7 +1923,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                .at(DirectionalId<Dim>{
                    element.neighbors()
                        .at(mortar_id_south.direction())
-                       .orientation()(mortar_id_south.direction().opposite()),
+                       .orientation(mortar_id_south.id())(
+                           mortar_id_south.direction().opposite()),
                    element.id()})
                .validity_range) ==
           (LocalTimeStepping ? next_time_step_id : time_step_id));
@@ -1961,7 +1959,8 @@ void test_impl(const Spectral::Quadrature quadrature,
              .at(DirectionalId<Dim>{
                  element.neighbors()
                      .at(mortar_id_south.direction())
-                     .orientation()(mortar_id_south.direction().opposite()),
+                     .orientation(mortar_id_south.id())(
+                         mortar_id_south.direction().opposite()),
                  element.id()})
              .boundary_correction_data.value()),
         compute_expected_mortar_data(mortar_id_south.direction(),

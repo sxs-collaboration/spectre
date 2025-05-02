@@ -175,8 +175,8 @@ struct InitializeRandomSubdomainData {
                   make_not_null(&gen), make_not_null(&dist),
                   mesh.number_of_grid_points());
           for (const auto& [direction, neighbors] : element.neighbors()) {
-            const auto& orientation = neighbors.orientation();
             for (const auto& neighbor_id : neighbors) {
+              const auto& orientation = neighbors.orientation(neighbor_id);
               const auto overlap_id =
                   DirectionalId<Dim>{direction, neighbor_id};
               const size_t overlap_extent = all_overlap_extents.at(overlap_id);
@@ -682,8 +682,8 @@ void test_subdomain_operator(
           const auto& direction = overlap_id.direction();
           const auto& neighbor_id = overlap_id.id();
           const auto direction_from_neighbor =
-              central_element.neighbors().at(direction).orientation()(
-                  direction.opposite());
+              central_element.neighbors().at(direction).orientation(
+                  neighbor_id)(direction.opposite());
           set_tag(
               neighbor_id, fields_tag{},
               LinearSolver::Schwarz::extended_overlap_data(
@@ -738,8 +738,8 @@ void test_subdomain_operator(
           const auto& direction = overlap_id.direction();
           const auto& neighbor_id = overlap_id.id();
           const auto direction_from_neighbor =
-              central_element.neighbors().at(direction).orientation()(
-                  direction.opposite());
+              central_element.neighbors().at(direction).orientation(
+                  neighbor_id)(direction.opposite());
           const auto expected_overlap_result =
               LinearSolver::Schwarz::data_on_overlap(
                   get_tag(neighbor_id, operator_applied_to_fields_tag{}),

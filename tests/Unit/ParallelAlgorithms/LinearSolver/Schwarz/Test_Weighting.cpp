@@ -107,13 +107,20 @@ void test_weights_conservation(const Element<Dim>& element,
 template <size_t Dim>
 void test_weights(const Mesh<Dim>& mesh, const size_t max_overlap) {
   typename Element<Dim>::Neighbors_t neighbors{};
+  std::unordered_map<size_t, OrientationMap<Dim>> orientations{};
+  for (size_t i = 0; i < two_to_the(Dim - 1); ++i) {
+    orientations.emplace(i + 1, OrientationMap<Dim>::create_aligned());
+  }
   for (size_t d = 0; d < Dim; ++d) {
     for (const auto& side : std::array<Side, 2>{{Side::Lower, Side::Upper}}) {
+      // This test as written uses Neighbors that are in different Blocks which
+      // are now by definition non-conforming.  LK has chosen to mark them as
+      // non-conforming instead of generating Elements that would be conforming
       auto& direction_neighbors =
           neighbors
               .emplace(Direction<Dim>{d, side},
                        Neighbors<Dim>{std::unordered_set<ElementId<Dim>>{},
-                                      OrientationMap<Dim>::create_aligned()})
+                                      orientations, false})
               .first->second;
       for (size_t i = 0; i < two_to_the(Dim - 1); ++i) {
         direction_neighbors.add_ids({ElementId<Dim>{i + 1}});

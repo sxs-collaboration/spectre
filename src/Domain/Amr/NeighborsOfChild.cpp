@@ -65,7 +65,8 @@ neighbors_of_child(
 
       result.first.emplace(
           direction,
-          Neighbors<VolumeDim>{new_neighbor_ids, old_neighbors.orientation()});
+          Neighbors<VolumeDim>{new_neighbor_ids, old_neighbors.orientations(),
+                               old_neighbors.are_conforming()});
     }
   }
 

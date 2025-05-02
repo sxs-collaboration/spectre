@@ -208,14 +208,14 @@ struct SendDataForReconstruction {
     // Compute and send actual variables
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
-      const auto& orientation = neighbors_in_direction.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       ASSERT(neighbors_in_direction.size() == 1,
              "AMR is not yet supported when using DG-subcell. Note that this "
              "condition could be relaxed to support AMR only where the "
              "evolution is using DG without any changes to subcell.");
 
       for (const ElementId<Dim>& neighbor : neighbors_in_direction) {
+        const auto& orientation = neighbors_in_direction.orientation(neighbor);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const size_t rdmp_size = rdmp_tci_data.max_variables_values.size() +
                                  rdmp_tci_data.min_variables_values.size();
         const auto& sliced_data_in_direction = all_sliced_data.at(direction);

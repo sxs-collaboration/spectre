@@ -97,9 +97,10 @@ struct SetInterpolators {
       const auto& direction = direction_neighbors_in_direction.first;
       const auto& neighbors_in_direction =
           direction_neighbors_in_direction.second;
-      const auto& orientation = neighbors_in_direction.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const ElementId<Dim>& neighbor_id : neighbors_in_direction) {
+        const auto& orientation =
+            neighbors_in_direction.orientation(neighbor_id);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const size_t neighbor_block_id = neighbor_id.block_id();
         if (neighbor_block_id == my_block_id) {
           continue;

@@ -67,7 +67,8 @@ neighbors_of_parent(
       if (0 == result.first.count(direction)) {
         result.first.emplace(
             direction, Neighbors<VolumeDim>{new_neighbor_ids,
-                                            child_neighbors.orientation()});
+                                            child_neighbors.orientations(),
+                                            child_neighbors.are_conforming()});
       } else {
         result.first.at(direction).add_ids(new_neighbor_ids);
       }

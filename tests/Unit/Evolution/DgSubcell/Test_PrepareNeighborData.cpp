@@ -220,10 +220,10 @@ void test(const bool all_neighbors_are_doing_dg,
   Interps dg_to_fd_neighbor_interpolants{};
   if constexpr (Dim == 3) {
     const auto direction = expected_neighbor_directions<Dim>()[1];
-    const auto& orientation_map =
-        element.neighbors().at(direction).orientation();
     const auto& neighbor_element_id =
         *element.neighbors().at(direction).begin();
+    const auto& orientation_map =
+        element.neighbors().at(direction).orientation(neighbor_element_id);
     const auto logical_fd_coords = logical_coordinates(subcell_mesh);
     tnsr::I<DataVector, Dim, Frame::ElementLogical> oriented_logical_coords{};
     for (size_t i = 0; i < Dim; ++i) {
@@ -333,9 +333,11 @@ void test(const bool all_neighbors_are_doing_dg,
       const auto direction = expected_neighbor_directions<Dim>()[1];
       Index<Dim> slice_extents = subcell_mesh.extents();
       slice_extents[direction.dimension()] = ghost_zone_size;
-      expected_neighbor_data.at(direction) =
-          orient_variables(expected_neighbor_data.at(direction), slice_extents,
-                           element.neighbors().at(direction).orientation());
+      const auto& neighbor_element_id =
+          *element.neighbors().at(direction).begin();
+      expected_neighbor_data.at(direction) = orient_variables(
+          expected_neighbor_data.at(direction), slice_extents,
+          element.neighbors().at(direction).orientation(neighbor_element_id));
     }
   }
 

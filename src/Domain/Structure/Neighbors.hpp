@@ -31,8 +31,23 @@ class Neighbors {
                 std::is_same_v<IdType, ElementId<VolumeDim>>);
 
  public:
+  /// Construct with the ids, the orientation of the neighbors relative to the
+  /// host, and whether the neighbors are conforming.
+  ///
+  /// \param ids the ids of the neighbors.
+  /// \param orientations An OrientationMap (which takes objects in the logical
+  /// coordinate frame of the host and maps them to the logical coordinate frame
+  /// of the neighbor) for each neighboring Block (Elements within a Block share
+  /// the same orientation).  The key of the unordered map is the Block ID.
+  /// \param are_conforming whether or not the block logical coordinates of the
+  /// neighbors conform to those of the host (see
+  /// domain::neighbor_is_conforming)
+  Neighbors(std::unordered_set<IdType> ids,
+            std::unordered_map<size_t, OrientationMap<VolumeDim>> orientations,
+            bool are_conforming);
+
   /// Construct with the ids and orientation of the neighbors relative to the
-  /// host.
+  /// host, assuming the neighbors are conforming.
   ///
   /// \param ids the ids of the neighbors.
   /// \param orientation This OrientationMap takes objects in the logical
@@ -42,7 +57,7 @@ class Neighbors {
             OrientationMap<VolumeDim> orientation);
 
   /// Construct with the id and orientation of a single neighbor relative to the
-  /// host.
+  /// host, assuming the neighbor is conforming.
   ///
   /// \param id the id of the neighbors.
   /// \param orientation This OrientationMap takes objects in the logical
@@ -60,16 +75,33 @@ class Neighbors {
 
   const std::unordered_set<IdType>& ids() const { return ids_; }
 
-  const OrientationMap<VolumeDim>& orientation() const { return orientation_; }
-
-  /// Reset the ids of the neighbors.
-  void set_ids_to(const std::unordered_set<IdType> new_ids) {
-    ids_ = std::move(new_ids);
+  /// The orientations of the neighbors for each neighboring Block.
+  ///
+  /// \note All Elements within a Block share the same orientation.
+  const std::unordered_map<size_t, OrientationMap<VolumeDim>>& orientations()
+      const {
+    return orientations_;
   }
 
+  /// Whether or not the block logical coordinates of the neighbors conform to
+  /// those of the host (see domain::neighbor_is_conforming)
+  bool are_conforming() const { return are_conforming_; }
+
+  /// The orientation of a particular neighbor.
+  const OrientationMap<VolumeDim>& orientation(const IdType& id) const;
+
+  /// Reset the ids of the neighbors.
+  ///
+  /// \note This should only be called to reset Element Neighbors after
+  /// h-refinement
+  void set_ids_to(std::unordered_set<IdType> new_ids);
+
   /// Add ids of neighbors.
-  /// Adding an existing neighbor is allowed.
-  void add_ids(const std::unordered_set<IdType>& additional_ids);
+  ///
+  /// \note Adding an existing neighbor is allowed.
+  /// \note The additional ids must be from Blocks with the existing
+  /// orientations.
+  void add_ids(std::unordered_set<IdType> additional_ids);
 
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
@@ -99,8 +131,9 @@ class Neighbors {
   }
 
  private:
-  std::unordered_set<IdType> ids_;
-  OrientationMap<VolumeDim> orientation_;
+  std::unordered_set<IdType> ids_{};
+  std::unordered_map<size_t, OrientationMap<VolumeDim>> orientations_{};
+  bool are_conforming_{true};
 };
 
 /// Output operator for Neighbors.

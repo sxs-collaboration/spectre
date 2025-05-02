@@ -145,11 +145,13 @@ valid_info_t<Dim> valid_neighbor_info(
   valid_info_t<Dim> result{};
   Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
-  const auto& orientation_of_neighbors = neighbors.orientation();
   const auto& first_neighbor_id = *(neighbors.begin());
+  const auto& orientation_of_first_neighbor =
+      neighbors.orientation(first_neighbor_id);
   for (const auto& neighbor_flags : amr_flags<Dim>()) {
     if (are_valid_neighbor_flags(element_id, element_flags, first_neighbor_id,
-                                 neighbor_flags, orientation_of_neighbors)) {
+                                 neighbor_flags,
+                                 orientation_of_first_neighbor)) {
       result.emplace_back(neighbor_info_t<Dim>{
           {first_neighbor_id, ::amr::Info<Dim>{neighbor_flags, mesh}}});
     }
@@ -159,10 +161,11 @@ valid_info_t<Dim> valid_neighbor_info(
     valid_info_t<Dim> prev_result{};
     std::swap(result, prev_result);
     const auto& neighbor_id = *it;
+    const auto& orientation_of_neighbor = neighbors.orientation(neighbor_id);
     for (const auto& neighbor_flags : amr_flags<Dim>()) {
       if (not are_valid_neighbor_flags(element_id, element_flags, neighbor_id,
                                        neighbor_flags,
-                                       orientation_of_neighbors)) {
+                                       orientation_of_neighbor)) {
         // neighbor_flags conflicts with element
         continue;
       }

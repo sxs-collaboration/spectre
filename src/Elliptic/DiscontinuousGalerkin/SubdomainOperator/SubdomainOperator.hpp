@@ -420,9 +420,9 @@ struct SubdomainOperator
         data_is_zero);
     // Prepare neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor_id : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor_id);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const LinearSolver::Schwarz::OverlapId<Dim> overlap_id{direction,
                                                                neighbor_id};
         const auto& overlap_extent = all_overlap_extents.at(overlap_id);
@@ -520,7 +520,9 @@ struct SubdomainOperator
             continue;
           }
           const auto& neighbor_orientation =
-              neighbor.neighbors().at(neighbor_direction).orientation();
+              neighbor.neighbors()
+                  .at(neighbor_direction)
+                  .orientation(neighbors_neighbor_id);
           const auto neighbors_neighbor_direction =
               neighbor_orientation(neighbor_direction.opposite());
           const ::dg::MortarId<Dim> mortar_id_from_neighbors_neighbor{
@@ -624,9 +626,9 @@ struct SubdomainOperator
         box, temporal_id, fluxes_args_on_faces, sources_args, data_is_zero);
     // Apply on neighbors
     for (const auto& [direction, neighbors] : central_element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
       for (const auto& neighbor_id : neighbors) {
+        const auto& orientation = neighbors.orientation(neighbor_id);
+        const auto direction_from_neighbor = orientation(direction.opposite());
         const LinearSolver::Schwarz::OverlapId<Dim> overlap_id{direction,
                                                                neighbor_id};
         const auto& overlap_extent = all_overlap_extents.at(overlap_id);

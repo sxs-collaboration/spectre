@@ -26,8 +26,9 @@ bool check_element_has_one_similar_neighbor_in_direction(
     // More than one neighbor
     return false;
   } else {
-    const auto& orientation_map = neighbors.orientation();
-    const auto neighbor_segment_ids = neighbors.ids().cbegin()->segment_ids();
+    const auto& neighbor_id = *(neighbors.ids().cbegin());
+    const auto& orientation_map = neighbors.orientation(neighbor_id);
+    const auto neighbor_segment_ids = neighbor_id.segment_ids();
     const auto reoriented_neighbor_segment_ids =
         orientation_map.inverse_map()(neighbor_segment_ids);
     for (size_t d = 0; d < VolumeDim; ++d) {

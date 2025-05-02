@@ -107,9 +107,9 @@ void test_domain_connectivity(
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
       const auto& neighbors = direction_neighbors.second;
-      const auto& direction_to_me_in_neighbor =
-          neighbors.orientation()(direction.opposite());
       for (const auto& neighbor_id : neighbors.ids()) {
+        const auto& direction_to_me_in_neighbor =
+            neighbors.orientation(neighbor_id)(direction.opposite());
         CHECK(is_a_neighbor_of_my_neighbor_me(
             element_id, elements_in_domain.at(neighbor_id),
             direction_to_me_in_neighbor));
@@ -166,16 +166,16 @@ void test_refinement_levels_of_neighbors(
     const auto& element = key_value.second;
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& neighbors = direction_neighbors.second;
-      const auto& orientation = neighbors.orientation();
       for (size_t d = 0; d < VolumeDim; ++d) {
         // No restriction on perpendicular refinement.
         if (d == direction_neighbors.first.dimension()) {
           continue;
         }
 
-        const size_t my_dim_in_neighbor = orientation(d);
         const size_t my_level = element_id.segment_id(d).refinement_level();
         for (const auto neighbor_id : neighbors.ids()) {
+          const auto& orientation = neighbors.orientation(neighbor_id);
+          const size_t my_dim_in_neighbor = orientation(d);
           const size_t neighbor_level =
               neighbor_id.segment_id(my_dim_in_neighbor).refinement_level();
           check_if_levels_are_within<AllowedTangentialDifference>(
@@ -202,7 +202,7 @@ OrientationMap<VolumeDim> find_neighbor_orientation(
     const Block<VolumeDim>& neighbor_block) {
   for (const auto& neighbor : host_block.neighbors()) {
     if (neighbor.second.ids().contains(neighbor_block.id())) {
-      return neighbor.second.orientation();
+      return neighbor.second.orientation(neighbor_block.id());
     }
   }
   ERROR("The Block `neighbor_block` is not a neighbor of `host_block`.");
