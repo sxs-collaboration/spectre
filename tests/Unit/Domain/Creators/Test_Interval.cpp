@@ -44,7 +44,11 @@ void test_interval_construction(const creators::Interval& domain_creator,
   CHECK(domain_creator.grid_anchors().empty());
 
   // Interval-specific tests
-  CHECK(domain.block_groups().empty());
+  CHECK(domain_creator.block_names() == std::vector<std::string>{"Interval"});
+  const auto block_groups = domain_creator.block_groups();
+  CHECK(block_groups.contains("Interval"));
+  CHECK(block_groups.at("Interval") ==
+        std::unordered_set<std::string>{"Interval"});
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == 1);
   CHECK(domain.excision_spheres().empty());

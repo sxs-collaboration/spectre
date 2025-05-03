@@ -316,10 +316,13 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       ylm::Strahlkorper<Frame>{l_max, 2.8, {{0.0, 0.0, 0.0}}},
       FastFlow{FastFlow::FlowType::Fast, 1.0, 0.5, 1.e-12, 1.e-2, 1.2, 5,
                max_its},
-      Verbosity::Verbose, 3_st);
+      Verbosity::Verbose, 3_st, std::nullopt);
 
   std::unique_ptr<DomainCreator<3>> domain_creator;
   std::unique_ptr<ActionTesting::MockRuntimeSystem<metavars>> runner_ptr{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      blocks_for_interpolation{};
+  blocks_for_interpolation["AhA"];
 
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending
@@ -353,11 +356,15 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
         grid_points_each_dimension, false, std::nullopt, radial_partitioning,
         radial_distribution, ShellWedges::All, std::move(time_dependence));
+    const auto block_names = domain_creator->block_names();
+    blocks_for_interpolation.at("AhA").insert(block_names.begin(),
+                                              block_names.end());
     tuples::TaggedTuple<
-        domain::Tags::Domain<3>,
+        domain::Tags::Domain<3>, intrp::Tags::BlocksForInterpolation,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
         intrp::Tags::Verbosity>
         tuple_of_opts{std::move(domain_creator->create_domain()),
+                      std::move(blocks_for_interpolation),
                       std::move(apparent_horizon_opts), ::Verbosity::Silent};
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(
         std::move(tuple_of_opts), domain_creator->functions_of_time(),
@@ -366,12 +373,16 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     domain_creator = std::make_unique<domain::creators::Sphere>(
         1.9, 2.9, domain::creators::Sphere::Excision{}, 1_st,
         grid_points_each_dimension, false);
+    const auto block_names = domain_creator->block_names();
+    blocks_for_interpolation.at("AhA").insert(block_names.begin(),
+                                              block_names.end());
 
     tuples::TaggedTuple<
-        domain::Tags::Domain<3>,
+        domain::Tags::Domain<3>, intrp::Tags::BlocksForInterpolation,
         typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
         intrp::Tags::Verbosity>
         tuple_of_opts{std::move(domain_creator->create_domain()),
+                      std::move(blocks_for_interpolation),
                       std::move(apparent_horizon_opts), ::Verbosity::Silent};
 
     runner_ptr = std::make_unique<ActionTesting::MockRuntimeSystem<metavars>>(

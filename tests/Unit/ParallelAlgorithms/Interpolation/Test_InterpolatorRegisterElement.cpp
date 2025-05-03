@@ -5,11 +5,15 @@
 
 #include <cstddef>
 
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Sphere.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
@@ -26,12 +30,22 @@ struct NumberOfElements;
 }  // namespace intrp::Tags
 
 namespace {
+struct MockTargetTag
+    : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::TimeStepId;
+  using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using compute_items_on_target = tmpl::list<>;
+  using compute_target_points =
+      ::intrp::TargetPoints::ApparentHorizon<MockTargetTag, ::Frame::Inertial>;
+  using post_interpolation_callbacks = tmpl::list<>;
+};
 
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -73,17 +87,27 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
 
-  using component_list = tmpl::list<mock_interpolator<MockMetavariables>,
-                                    mock_element<MockMetavariables>>;
+  using component_list = tmpl::list<
+      InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables,
+                                                         MockTargetTag>,
+      mock_interpolator<MockMetavariables>, mock_element<MockMetavariables>>;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
   constexpr size_t Dim = metavars::volume_dim;
   using interp_component = mock_interpolator<metavars>;
   using elem_component = mock_element<metavars>;
-  ActionTesting::MockRuntimeSystem<metavars> runner{{::Verbosity::Silent}};
+  const auto domain_creator = domain::creators::Sphere(
+      1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st, false);
+  const auto block_names = domain_creator.block_names();
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {std::unordered_map<std::string, std::unordered_set<std::string>>{
+           {"MockTargetTag", {block_names.begin(), block_names.end()}}},
+       intrp::OptionHolders::ApparentHorizon<Frame::Inertial>{},
+       domain_creator.create_domain(), ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
@@ -105,19 +129,22 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
                                      ::intrp::Tags::NumberOfElements<Dim>>(
           runner, 0);
 
-  CHECK(number_of_elements.empty());
+  const std::string target_name = pretty_type::name<MockTargetTag>();
+  REQUIRE(number_of_elements.contains(target_name));
 
   runner.simple_action<interp_component, ::intrp::Actions::RegisterElement>(
       0, id_0);
 
-  CHECK(number_of_elements.size() == 1);
-  CHECK(number_of_elements.contains(id_0));
+  CHECK(number_of_elements.contains(target_name));
+  CHECK(number_of_elements.at(target_name).size() == 1);
+  CHECK(number_of_elements.at(target_name).contains(id_0));
 
   runner.simple_action<interp_component, ::intrp::Actions::RegisterElement>(
       0, id_1);
 
-  CHECK(number_of_elements.size() == 2);
-  CHECK(number_of_elements.contains(id_1));
+  CHECK(number_of_elements.contains(target_name));
+  CHECK(number_of_elements.at(target_name).size() == 2);
+  CHECK(number_of_elements.at(target_name).contains(id_1));
 
   // Call RegisterElementWithInterpolator from element, check if
   // it gets registered.
@@ -126,8 +153,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
 
   runner.invoke_queued_simple_action<interp_component>(0);
 
-  CHECK(number_of_elements.size() == 3);
-  CHECK(number_of_elements.contains(id_2));
+  CHECK(number_of_elements.contains(target_name));
+  CHECK(number_of_elements.at(target_name).size() == 3);
+  CHECK(number_of_elements.at(target_name).contains(id_2));
 
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
@@ -146,12 +174,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
     CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
     CHECK(runner.is_simple_action_queue_empty<elem_component>(id_0));
 
-    CHECK(number_of_elements.size() == 2);
-    CHECK_FALSE(number_of_elements.contains(id_0));
+    CHECK(number_of_elements.contains(target_name));
+    CHECK(number_of_elements.at(target_name).size() == 2);
+    CHECK_FALSE(number_of_elements.at(target_name).contains(id_0));
     runner.simple_action<interp_component, ::intrp::Actions::DeregisterElement>(
         0, id_1);
-    CHECK(number_of_elements.size() == 1);
-    CHECK_FALSE(number_of_elements.contains(id_1));
+    CHECK(number_of_elements.contains(target_name));
+    CHECK(number_of_elements.at(target_name).size() == 1);
+    CHECK_FALSE(number_of_elements.at(target_name).contains(id_1));
     runner.simple_action<interp_component, ::intrp::Actions::DeregisterElement>(
         0, id_2);
     CHECK(number_of_elements.empty());

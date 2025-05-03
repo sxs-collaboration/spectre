@@ -208,11 +208,21 @@ struct InterpolatedVarsHolders : db::SimpleTag {
       typename Metavariables::interpolation_target_tags, Metavariables>>;
 };
 
-/// Unordered set of element ids on each interpolator core.
+/// Map between interpolation target name and an unordered set of element ids on
+/// each interpolator core that will participate for that target.
 template <size_t Dim>
 struct NumberOfElements : db::SimpleTag {
-  using type = std::unordered_set<ElementId<Dim>>;
+  using type =
+      std::unordered_map<std::string, std::unordered_set<ElementId<Dim>>>;
 };
 
+/*!
+ * \brief Base tag that holds a map between interpolation target tag name (aka a
+ * horizon) and a set of block names that should be used for interpolation for
+ * that target.
+ */
+struct BlocksForInterpolationBase : db::BaseTag {
+  using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
+};
 }  // namespace Tags
 }  // namespace intrp

@@ -7,6 +7,7 @@
 #include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -15,10 +16,14 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Protocols/ElementRegistrar.hpp"
 #include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/StdHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -57,16 +62,40 @@ struct RegisterElement {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ElementId<Metavariables::volume_dim>& element_id) {
+    using sequential_targets =
+        intrp::InterpolationTarget_detail::get_sequential_target_tags<
+            Metavariables>;
+    const auto& blocks_to_interpolate =
+        Parallel::get<intrp::Tags::BlocksForInterpolationBase>(cache);
+    const auto& blocks =
+        Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache)
+            .blocks();
     db::mutate<Tags::NumberOfElements<Metavariables::volume_dim>>(
-        [&](const gsl::not_null<
-            std::unordered_set<ElementId<Metavariables::volume_dim>>*>
+        [&](const gsl::not_null<std::unordered_map<
+                std::string,
+                std::unordered_set<ElementId<Metavariables::volume_dim>>>*>
                 num_elements) {
-          auto inserted = num_elements->insert(element_id);
-          if (not inserted.second) {
-            ERROR("Unable to insert element "
-                  << element_id << " into interpolator core "
-                  << Parallel::my_proc<size_t>(cache));
-          }
+          const auto& block_name = blocks[element_id.block_id()].name();
+
+          tmpl::for_each<sequential_targets>([&](auto target_v) {
+            using target = tmpl::type_from<decltype(target_v)>;
+            const std::string& target_name = pretty_type::name<target>();
+            if (not blocks_to_interpolate.contains(target_name)) {
+              ERROR("Target " << target_name
+                              << " not in blocks to interpolate: "
+                              << keys_of(blocks_to_interpolate));
+            }
+
+            if (blocks_to_interpolate.at(target_name).contains(block_name)) {
+              auto inserted = (*num_elements)[target_name].insert(element_id);
+              if (not inserted.second) {
+                ERROR("Unable to insert element "
+                      << element_id << " into interpolator core "
+                      << Parallel::my_proc<size_t>(cache) << " for target "
+                      << target_name);
+              }
+            }
+          });
         },
         make_not_null(&box));
   }
@@ -94,16 +123,45 @@ struct DeregisterElement {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ElementId<Metavariables::volume_dim>& element_id) {
+    using sequential_targets =
+        intrp::InterpolationTarget_detail::get_sequential_target_tags<
+            Metavariables>;
+    const auto& blocks_to_interpolate =
+        Parallel::get<intrp::Tags::BlocksForInterpolationBase>(cache);
+    const auto& blocks =
+        Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache)
+            .blocks();
     db::mutate<Tags::NumberOfElements<Metavariables::volume_dim>>(
-        [&](const gsl::not_null<
-            std::unordered_set<ElementId<Metavariables::volume_dim>>*>
+        [&](const gsl::not_null<std::unordered_map<
+                std::string,
+                std::unordered_set<ElementId<Metavariables::volume_dim>>>*>
                 num_elements) {
-          const size_t num_elements_removed = num_elements->erase(element_id);
-          if (num_elements_removed == 0) {
-            ERROR("Unable to remove element "
-                  << element_id << " from interpolator core "
-                  << Parallel::my_proc<size_t>(cache));
-          }
+          const auto& block_name = blocks[element_id.block_id()].name();
+
+          tmpl::for_each<sequential_targets>([&](auto target_v) {
+            using target = tmpl::type_from<decltype(target_v)>;
+            const std::string& target_name = pretty_type::name<target>();
+            if (not blocks_to_interpolate.contains(target_name)) {
+              ERROR("Target " << target_name
+                              << " not in blocks to interpolate: "
+                              << keys_of(blocks_to_interpolate));
+            }
+
+            if (blocks_to_interpolate.at(target_name).contains(block_name)) {
+              const size_t num_elements_removed =
+                  (*num_elements)[target_name].erase(element_id);
+              if (num_elements_removed == 0) {
+                ERROR("Unable to remove element "
+                      << element_id << " from interpolator core "
+                      << Parallel::my_proc<size_t>(cache) << " for target "
+                      << target_name);
+              }
+
+              if (num_elements->at(target_name).empty()) {
+                num_elements->erase(target_name);
+              }
+            }
+          });
         },
         make_not_null(&box));
   }

@@ -337,15 +337,15 @@ struct GhValenciaDivCleanDefaults {
 };
 
 template <typename EvolutionMetavarsDerived, bool UseDgSubcell,
-          bool UseControlSystems>
+          bool UseControlSystems, bool WithHorizon>
 struct GhValenciaDivCleanTemplateBase;
 
-template <bool UseDgSubcell, bool UseControlSystems,
+template <bool UseDgSubcell, bool UseControlSystems, bool WithHorizon,
           template <bool, typename...> class EvolutionMetavarsDerived,
           typename... InterpolationTargetTags>
 struct GhValenciaDivCleanTemplateBase<
     EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>,
-    UseDgSubcell, UseControlSystems>
+    UseDgSubcell, UseControlSystems, WithHorizon>
     : public virtual GhValenciaDivCleanDefaults<UseDgSubcell> {
   using derived_metavars =
       EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>;
@@ -690,9 +690,11 @@ struct GhValenciaDivCleanTemplateBase<
       gh::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
                                                          Frame::Grid>>>;
 
-  using dg_registration_list =
-      tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
-                 observers::Actions::RegisterEventsWithObservers>;
+  using dg_registration_list = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<WithHorizon,
+                          intrp::Actions::RegisterElementWithInterpolator,
+                          tmpl::list<>>,
+      observers::Actions::RegisterEventsWithObservers>>;
 
   static constexpr auto default_phase_order = std::array<Parallel::Phase, 8>{
       {Parallel::Phase::Initialization,
@@ -928,7 +930,8 @@ struct GhValenciaDivCleanTemplateBase<
       observers::ObserverWriter<derived_metavars>,
       importers::ElementDataReader<derived_metavars>,
       control_system::control_components<derived_metavars, control_systems>,
-      intrp::Interpolator<derived_metavars>,
+      tmpl::conditional_t<WithHorizon, intrp::Interpolator<derived_metavars>,
+                          tmpl::list<>>,
       intrp::InterpolationTarget<derived_metavars, InterpolationTargetTags>...,
       dg_element_array_component>>;
 };

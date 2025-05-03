@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
@@ -25,8 +26,10 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -54,6 +57,19 @@ struct NumberOfElements;
 /// \endcond
 
 namespace InterpTargetTestHelpers {
+namespace Tags {
+// Tag used for tests that will never be created from options, but will be
+// created in a mock runtime system
+struct BlocksForInterpolation : db::SimpleTag,
+                                intrp::Tags::BlocksForInterpolationBase {
+  using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
+
+  using option_tags = tmpl::list<>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options() { return {}; }
+};
+}  // namespace Tags
 
 enum class ValidPoints { All, None, Some };
 
@@ -148,10 +164,12 @@ struct MockMetavars {
 };
 
 template <typename InterpolationTargetTag, size_t Dim,
-          typename InterpolationTargetOptionTag, typename BlockCoordHolder>
+          typename InterpolationTargetOptionTag, typename BlockCoordHolder,
+          typename... ExtraCacheObjects>
 void test_interpolation_target(
     typename InterpolationTargetOptionTag::type options,
-    const BlockCoordHolder& expected_block_coord_holders) {
+    const BlockCoordHolder& expected_block_coord_holders,
+    const ExtraCacheObjects&... extra_cache_objects) {
   using metavars = MockMetavars<InterpolationTargetTag, Dim>;
   using target_component =
       mock_interpolation_target<metavars, InterpolationTargetTag>;
@@ -161,8 +179,8 @@ void test_interpolation_target(
                 intrp::protocols::ComputeTargetPoints>);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {std::move(options), Domain<metavars::volume_dim>{},
-       ::Verbosity::Silent}};
+      {extra_cache_objects..., std::move(options),
+       Domain<metavars::volume_dim>{}, ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<target_component>(&runner, 0);

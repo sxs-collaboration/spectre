@@ -7,11 +7,15 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
@@ -59,7 +63,7 @@ SPECTRE_TEST_CASE(
   // Options for ApparentHorizon
   intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
       ylm::Strahlkorper<Frame::Inertial>{l_max, radius, center}, FastFlow{},
-      Verbosity::Verbose, 3_st);
+      Verbosity::Verbose, 3_st, std::nullopt);
 
   // Test creation of options
   const auto created_opts = TestHelpers::test_creation<
@@ -78,7 +82,8 @@ SPECTRE_TEST_CASE(
       "  Center: [0.05, 0.06, 0.07]\n"
       "  Radius: 2.0\n"
       "  LMax: 12\n"
-      "MaxInterpolationRetries: 3");
+      "MaxInterpolationRetries: 3\n"
+      "BlocksForInterpolation: All");
   CHECK(created_opts == apparent_horizon_opts);
 
   const auto domain_creator = domain::creators::Sphere(
@@ -125,5 +130,57 @@ SPECTRE_TEST_CASE(
 
   InterpTargetTestHelpers::test_interpolation_target<
       HorizonTag, 3, intrp::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
-      apparent_horizon_opts, expected_block_coord_holders);
+      apparent_horizon_opts, expected_block_coord_holders,
+      std::unordered_map<std::string, std::unordered_set<std::string>>{});
+
+  TestHelpers::db::test_simple_tag<intrp::Tags::BlocksForInterpolation>(
+      "BlocksForInterpolation");
+
+  {
+    const auto blocks_for_interpolation =
+        intrp::Tags::BlocksForInterpolation::create_from_options<
+            InterpTargetTestHelpers::MockMetavars<HorizonTag, 3>>(
+            std::make_unique<domain::creators::Sphere>(
+                1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st,
+                false),
+            created_opts);
+    REQUIRE(blocks_for_interpolation.contains("HorizonTag"));
+    const auto block_names = domain_creator.block_names();
+    CHECK(blocks_for_interpolation.at("HorizonTag") ==
+          std::unordered_set<std::string>{block_names.begin(),
+                                          block_names.end()});
+  }
+  {
+    const auto new_created_opts = TestHelpers::test_creation<
+        intrp::OptionHolders::ApparentHorizon<Frame::Inertial>>(
+        "FastFlow:\n"
+        "  Flow: Fast\n"
+        "  Alpha: 1.0\n"
+        "  Beta: 0.5\n"
+        "  AbsTol: 1e-12\n"
+        "  TruncationTol: 1e-2\n"
+        "  DivergenceTol: 1.2\n"
+        "  DivergenceIter: 5\n"
+        "  MaxIts: 100\n"
+        "Verbosity: Verbose\n"
+        "InitialGuess:\n"
+        "  Center: [0.05, 0.06, 0.07]\n"
+        "  Radius: 2.0\n"
+        "  LMax: 12\n"
+        "MaxInterpolationRetries: 3\n"
+        "BlocksForInterpolation: [Shell0]");
+    const auto blocks_for_interpolation =
+        intrp::Tags::BlocksForInterpolation::create_from_options<
+            InterpTargetTestHelpers::MockMetavars<HorizonTag, 3>>(
+            std::make_unique<domain::creators::Sphere>(
+                1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st,
+                false, std::nullopt, std::vector{2.0}),
+            new_created_opts);
+    REQUIRE(blocks_for_interpolation.contains("HorizonTag"));
+    const auto block_names = domain_creator.block_names();
+    CHECK(blocks_for_interpolation.at("HorizonTag") ==
+          std::unordered_set<std::string>{"Shell0UpperZ", "Shell0LowerZ",
+                                          "Shell0UpperY", "Shell0LowerY",
+                                          "Shell0UpperX", "Shell0LowerX"});
+  }
 }

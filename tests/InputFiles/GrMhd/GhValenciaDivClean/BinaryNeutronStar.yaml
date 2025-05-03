@@ -446,7 +446,6 @@ Observers:
   ReductionFileName: "GhMhdReductions"
 
 Interpolator:
-  DumpVolumeDataOnFailure: false
   Verbosity: Silent
 
 EventsAndDenseTriggers:

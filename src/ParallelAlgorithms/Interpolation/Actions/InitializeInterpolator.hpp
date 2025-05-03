@@ -10,9 +10,12 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -69,8 +72,21 @@ struct InitializeInterpolator {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    Initialization::mutate_assign<tmpl::list<Tags::NumberOfElements<Dim>>>(
-        make_not_null(&box), std::unordered_set<ElementId<Dim>>{});
+    using sequential_targets =
+        intrp::InterpolationTarget_detail::get_sequential_target_tags<
+            Metavariables>;
+    db::mutate<Tags::NumberOfElements<Dim>>(
+        [](const gsl::not_null<std::unordered_map<
+               std::string, std::unordered_set<ElementId<Dim>>>*>
+               num_elements) {
+          tmpl::for_each<sequential_targets>([&](auto target_v) {
+            using target = tmpl::type_from<decltype(target_v)>;
+            const std::string& target_name = pretty_type::name<target>();
+
+            (*num_elements)[target_name] = std::unordered_set<ElementId<Dim>>{};
+          });
+        },
+        make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

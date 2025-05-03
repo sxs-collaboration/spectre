@@ -222,6 +222,7 @@ ApparentHorizons:
       MaxIts: 100
     Verbosity: Verbose
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: All
   ControlSystemSingleAh: *AhA
 
 InterpolationTargets:

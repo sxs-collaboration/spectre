@@ -88,6 +88,27 @@ struct Variables;
 /// \endcond
 
 namespace intrp::InterpolationTarget_detail {
+template <typename InterpolationTarget>
+struct get_interpolation_target_tag {
+  using type = typename InterpolationTarget::interpolation_target_tag;
+};
+
+template <typename InterpolationTargetTag>
+struct is_sequential
+    : InterpolationTargetTag::compute_target_points::is_sequential {};
+
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
+
+template <typename Metavariables>
+using get_sequential_target_tags = tmpl::filter<
+    tmpl::transform<
+        tmpl::filter<tmpl::transform<typename Metavariables::component_list,
+                                     get_component_being_mocked_or_default<
+                                         tmpl::_1, tmpl::_1>>,
+                     tt::is_a<intrp::InterpolationTarget, tmpl::_1>>,
+        get_interpolation_target_tag<tmpl::_1>>,
+    is_sequential<tmpl::_1>>;
+
 CREATE_IS_CALLABLE(substep_time)
 CREATE_IS_CALLABLE_V(substep_time)
 template <typename T>
@@ -380,6 +401,7 @@ void clean_up_interpolation_target(
       box);
 }
 
+struct HaveDataAtAllPoints {};
 /// Returns true if this InterpolationTarget has received data
 /// at all its points.
 ///
@@ -414,7 +436,6 @@ bool have_data_at_all_points(
           .at(temporal_id)
           .number_of_grid_points();
   if (verbosity >= ::Verbosity::Debug) {
-    struct HaveDataAtAllPoints {};
     Parallel::printf(
         "%s, Total expected points = %d, valid points received = %d, "
         "invalid points received = %d\n",

@@ -273,7 +273,6 @@ Observers:
   ReductionFileName: "GhMhdTovStarReductions"
 
 Interpolator:
-  DumpVolumeDataOnFailure: false
   Verbosity: Silent
 
 EventsAndDenseTriggers:

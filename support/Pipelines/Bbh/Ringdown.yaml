@@ -306,6 +306,7 @@ ApparentHorizons:
       MaxIts: 100
     Verbosity: Quiet
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: ["Shell0"]
   ControlSystemSingleAh: *Ah
   ControlSystemCharSpeedAh: *Ah
 

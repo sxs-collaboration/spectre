@@ -33,6 +33,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
@@ -53,6 +54,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -248,7 +250,8 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
+      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+                 domain::Tags::Domain<Metavariables::volume_dim>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -412,6 +415,7 @@ void test(const bool dump_vol_data) {
   const auto domain_creator = domain::creators::Sphere(
       0.9, 4.9, domain::creators::Sphere::Excision{}, 1_st, 7_st, false);
   const auto domain = domain_creator.create_domain();
+  const auto block_names = domain_creator.block_names();
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
   auto vars_holders = [&domain, &temporal_id]() {
@@ -444,11 +448,14 @@ void test(const bool dump_vol_data) {
   }
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), dump_vol_data, ::Verbosity::Silent,
+      {std::unordered_map<std::string, std::unordered_set<std::string>>{
+           {"InterpolationTargetA", {block_names.begin(), block_names.end()}},
+           {"InterpolationTargetB", {block_names.begin(), block_names.end()}}},
+       domain_creator.create_domain(), dump_vol_data, ::Verbosity::Silent,
        filename}};
   ActionTesting::emplace_group_component_and_initialize<interp_component>(
       &runner,
-      {std::unordered_set<ElementId<3>>{},
+      {std::unordered_map<std::string, std::unordered_set<ElementId<3>>>{},
        typename intrp::Tags::VolumeVarsInfo<
            metavars,
            typename metavars::InterpolationTargetA::temporal_id>::type{},

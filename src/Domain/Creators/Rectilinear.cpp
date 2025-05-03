@@ -180,7 +180,8 @@ Domain<Dim> Rectilinear<Dim>::create_domain() const {
       {std::move(block_corners)},
       std::move(identifications),
       {},
-      block_names_};
+      block_names(),
+      block_groups()};
 
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(

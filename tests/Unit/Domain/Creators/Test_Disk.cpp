@@ -48,6 +48,15 @@ void test_disk_construction(
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
       disk, expect_boundary_conditions);
   CHECK(disk.grid_anchors().empty());
+  CHECK(disk.block_names() == std::vector<std::string>{"UpperX", "UpperY",
+                                                       "LowerX", "LowerY",
+                                                       "CenterSquare"});
+  const auto block_groups = disk.block_groups();
+  CHECK(block_groups.contains("Shell0"));
+  CHECK(block_groups.contains("CenterSquare"));
+  CHECK(
+      block_groups.at("Shell0") ==
+      std::unordered_set<std::string>{"UpperX", "UpperY", "LowerX", "LowerY"});
 
   const OrientationMap<2> aligned_orientation =
       OrientationMap<2>::create_aligned();

@@ -6,6 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -138,6 +141,13 @@ class Disk : public DomainCreator<2> {
 
   std::vector<std::array<size_t, 2>> initial_refinement_levels() const override;
 
+  std::vector<std::string> block_names() const override { return block_names_; }
+
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+  block_groups() const override {
+    return block_groups_;
+  }
+
  private:
   typename InnerRadius::type inner_radius_{};
   typename OuterRadius::type outer_radius_{};
@@ -146,6 +156,9 @@ class Disk : public DomainCreator<2> {
   typename UseEquiangularMap::type use_equiangular_map_{false};
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_;
+  std::vector<std::string> block_names_;
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups_;
 };
 }  // namespace creators
 }  // namespace domain

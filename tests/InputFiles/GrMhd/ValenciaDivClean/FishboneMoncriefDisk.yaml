@@ -186,7 +186,6 @@ Observers:
   ReductionFileName: "ValenciaDivCleanFishboneMoncriefDiskReductions"
 
 Interpolator:
-  DumpVolumeDataOnFailure: false
   Verbosity: Silent
 
 InterpolationTargets:

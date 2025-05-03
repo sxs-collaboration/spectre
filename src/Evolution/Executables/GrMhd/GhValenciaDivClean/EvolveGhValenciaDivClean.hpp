@@ -24,10 +24,10 @@ template <bool UseControlSystems, typename... InterpolationTargetTags>
 struct EvolutionMetavars
     : public GhValenciaDivCleanTemplateBase<
           EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>,
-          true, UseControlSystems> {
+          true, UseControlSystems, false> {
   using base = GhValenciaDivCleanTemplateBase<
       EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>, true,
-      UseControlSystems>;
+      UseControlSystems, false>;
   using const_global_cache_tags = typename base::const_global_cache_tags;
   using observed_reduction_data_tags =
       typename base::observed_reduction_data_tags;

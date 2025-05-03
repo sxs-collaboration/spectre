@@ -60,6 +60,17 @@ Disk::Disk(typename InnerRadius::type inner_radius,
   if (boundary_condition_ != nullptr and is_periodic(boundary_condition_)) {
     PARSE_ERROR(context, "Cannot have periodic boundary conditions on a disk.");
   }
+
+  block_groups_["Shell0"];
+  block_names_.reserve(5);
+  const std::array<std::string, 4> wedge_directions{"UpperX", "UpperY",
+                                                    "LowerX", "LowerY"};
+  for (const std::string& name : wedge_directions) {
+    block_names_.emplace_back(name);
+    block_groups_["Shell0"].insert(name);
+  }
+  block_names_.emplace_back("CenterSquare");
+  block_groups_["CenterSquare"].insert("CenterSquare");
 }
 
 Domain<2> Disk::create_domain() const {
@@ -131,7 +142,8 @@ Domain<2> Disk::create_domain() const {
     boundary_conditions_all_blocks.emplace_back();
   }
 
-  return Domain<2>{std::move(coord_maps), corners};
+  return Domain<2>{std::move(coord_maps), corners,      {}, {},
+                   block_names_,          block_groups_};
 }
 
 std::vector<DirectionMap<

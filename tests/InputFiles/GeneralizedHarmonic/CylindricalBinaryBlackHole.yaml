@@ -275,6 +275,7 @@ ApparentHorizons:
       MaxIts: 100
     Verbosity: Verbose
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: All
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *LMax
@@ -283,6 +284,7 @@ ApparentHorizons:
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: All
   ObservationAhC:
     InitialGuess:
       LMax: 20
@@ -291,6 +293,7 @@ ApparentHorizons:
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
     MaxInterpolationRetries: 3
+    BlocksForInterpolation: All
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA
