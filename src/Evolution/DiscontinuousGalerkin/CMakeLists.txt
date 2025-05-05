@@ -13,6 +13,7 @@ spectre_target_headers(
   InterfaceDataPolicy.hpp
   MortarData.hpp
   MortarDataHolder.hpp
+  MortarInfo.hpp
   MortarTags.hpp
   NormalVectorTags.hpp
   TimeDerivativeDecisions.hpp
@@ -27,6 +28,7 @@ spectre_target_sources(
   InterfaceDataPolicy.cpp
   MortarData.cpp
   MortarDataHolder.cpp
+  MortarInfo.cpp
   )
 
 add_subdirectory(Actions)

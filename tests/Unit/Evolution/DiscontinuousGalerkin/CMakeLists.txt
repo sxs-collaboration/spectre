@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_InterfaceDataPolicy.cpp
   Test_MortarData.cpp
   Test_MortarDataHolder.cpp
+  Test_MortarInfo.cpp
   Test_MortarTags.cpp
   Test_NormalVectorTags.cpp
   Test_UsingSubcell.cpp

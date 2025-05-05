@@ -30,6 +30,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -49,7 +50,6 @@ class GlobalCache;
 }  // namespace Parallel
 namespace Spectral {
 enum class Quadrature : uint8_t;
-enum class SegmentSize : uint8_t;
 }  // namespace Spectral
 namespace Tags {
 struct TimeStepId;
@@ -65,7 +65,7 @@ namespace detail {
 template <size_t Dim>
 std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionalIdMap<Dim, Mesh<Dim - 1>>,
-           DirectionalIdMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>,
+           DirectionalIdMap<Dim, MortarInfo<Dim>>,
            DirectionalIdMap<Dim, TimeStepId>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
@@ -82,9 +82,8 @@ void p_project(
         ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
     /* mortar_data */,
     const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_mesh,
-    const gsl::not_null<
-        ::dg::MortarMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>*>
-    /* mortar_size */,
+    const gsl::not_null<::dg::MortarMap<Dim, MortarInfo<Dim>>*>
+    /* mortar_infos */,
     const gsl::not_null<::dg::MortarMap<Dim, TimeStepId>*>
     /* mortar_next_temporal_id */,
     const gsl::not_null<
@@ -187,7 +186,7 @@ void p_project(
  * - Adds:
  *   - `Tags::MortarData<Dim>`
  *   - `Tags::MortarMesh<Dim>`
- *   - `Tags::MortarSize<Dim>`
+ *   - `Tags::MortarInfo<Dim>`
  *   - `Tags::MortarNextTemporalId<Dim>`
  *   - `evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>`
  *   - `evolution::dg::Tags::BoundaryData<Dim>`
@@ -206,7 +205,7 @@ struct Mortars {
                  evolution::dg::Tags::Quadrature>;
 
   using simple_tags = tmpl::list<
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
+      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
       Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<
@@ -224,7 +223,7 @@ struct Mortars {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto [mortar_data, mortar_meshes, mortar_sizes, mortar_next_temporal_ids,
+    auto [mortar_data, mortar_meshes, mortar_infos, mortar_next_temporal_ids,
           normal_covector_quantities] =
         detail::mortars_apply_impl(
             db::get<::domain::Tags::Domain<Dim>>(box),
@@ -245,7 +244,7 @@ struct Mortars {
     }
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
-        std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
+        std::move(mortar_infos), std::move(mortar_next_temporal_ids),
         std::move(normal_covector_quantities), std::move(boundary_data_history),
         typename evolution::dg::Tags::BoundaryData<Dim>::type{});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -257,7 +256,7 @@ struct Mortars {
 /// Mutates:
 ///   - Tags::MortarData<dim>
 ///   - Tags::MortarMesh<dim>
-///   - Tags::MortarSize<dim>
+///   - Tags::MortarInfo<dim>
 ///   - Tags::MortarNextTemporalId<dim>
 ///   - evolution::dg::Tags::NormalCovectorAndMagnitude<dim>
 ///   - Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>
@@ -284,7 +283,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
 
   using return_tags =
       tmpl::list<Tags::MortarData<dim>, Tags::MortarMesh<dim>,
-                 Tags::MortarSize<dim>, Tags::MortarNextTemporalId<dim>,
+                 Tags::MortarInfo<dim>, Tags::MortarNextTemporalId<dim>,
                  evolution::dg::Tags::NormalCovectorAndMagnitude<dim>,
                  Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>;
   using argument_tags =
@@ -296,9 +295,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
           mortar_data,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> mortar_mesh,
-      const gsl::not_null<
-          ::dg::MortarMap<dim, std::array<Spectral::SegmentSize, dim - 1>>*>
-          mortar_size,
+      const gsl::not_null<::dg::MortarMap<dim, MortarInfo<dim>>*> mortar_infos,
       const gsl::not_null<::dg::MortarMap<dim, TimeStepId>*>
           mortar_next_temporal_id,
       const gsl::not_null<
@@ -309,7 +306,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const std::unordered_map<ElementId<dim>, amr::Info<dim>>& neighbor_info,
       const ::dg::MortarMap<dim, Mesh<dim>>& neighbor_mesh,
       const std::pair<Mesh<dim>, Element<dim>>& old_mesh_and_element) {
-    detail::p_project(mortar_data, mortar_mesh, mortar_size,
+    detail::p_project(mortar_data, mortar_mesh, mortar_infos,
                       mortar_next_temporal_id, normal_covector_and_magnitude,
                       mortar_data_history, new_mesh, new_element, neighbor_info,
                       neighbor_mesh, old_mesh_and_element);
@@ -321,9 +318,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
       /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
-      const gsl::not_null<
-          ::dg::MortarMap<dim, std::array<Spectral::SegmentSize, dim - 1>>*>
-      /*mortar_size*/,
+      const gsl::not_null<::dg::MortarMap<dim, MortarInfo<dim>>*>
+      /*mortar_infos*/,
       const gsl::not_null<
           ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
       const gsl::not_null<
@@ -345,9 +341,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
       /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> /*mortar_mesh*/,
-      const gsl::not_null<
-          ::dg::MortarMap<dim, std::array<Spectral::SegmentSize, dim - 1>>*>
-      /*mortar_size*/,
+      const gsl::not_null<::dg::MortarMap<dim, MortarInfo<dim>>*>
+      /*mortar_infos*/,
       const gsl::not_null<
           ::dg::MortarMap<dim, TimeStepId>*> /*mortar_next_temporal_id*/,
       const gsl::not_null<

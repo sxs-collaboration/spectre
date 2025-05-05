@@ -17,7 +17,7 @@ void test() {
   TestHelpers::db::test_simple_tag<Tags::MortarDataHistory<Dim, double>>(
       "MortarDataHistory");
   TestHelpers::db::test_simple_tag<Tags::MortarMesh<Dim>>("MortarMesh");
-  TestHelpers::db::test_simple_tag<Tags::MortarSize<Dim>>("MortarSize");
+  TestHelpers::db::test_simple_tag<Tags::MortarInfo<Dim>>("MortarInfo");
   TestHelpers::db::test_simple_tag<Tags::MortarNextTemporalId<Dim>>(
       "MortarNextTemporalId");
   TestHelpers::db::test_simple_tag<Tags::BoundaryMessageFromInbox<Dim>>(

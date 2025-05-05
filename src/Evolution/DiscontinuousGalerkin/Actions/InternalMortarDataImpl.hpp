@@ -66,8 +66,7 @@ void internal_mortar_data_impl(
         volume_primitive_variables,
     const Element<Dim>& element, const Mesh<Dim>& volume_mesh,
     const DirectionalIdMap<Dim, Mesh<Dim - 1>>& mortar_meshes,
-    const DirectionalIdMap<Dim, std::array<Spectral::SegmentSize, Dim - 1>>&
-        mortar_sizes,
+    const DirectionalIdMap<Dim, MortarInfo<Dim>>& mortar_infos,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,
     const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
@@ -241,7 +240,7 @@ void internal_mortar_data_impl(
       const auto& neighbor = *neighbors_in_direction.begin();
       const auto mortar_id = DirectionalId<Dim>{direction, neighbor};
       const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-      const auto& mortar_size = mortar_sizes.at(mortar_id);
+      const auto& mortar_size = mortar_infos.at(mortar_id).mortar_size();
 
       // Have to use packaged_data_buffer
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
@@ -290,7 +289,7 @@ void internal_mortar_data_impl(
     for (const auto& neighbor : neighbors_in_direction) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       const auto& mortar_mesh = mortar_meshes.at(mortar_id);
-      const auto& mortar_size = mortar_sizes.at(mortar_id);
+      const auto& mortar_size = mortar_infos.at(mortar_id).mortar_size();
 
       if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
         auto& local_mortar = mortar_data_ptr->at(mortar_id).local();
@@ -347,7 +346,7 @@ void internal_mortar_data(
        &mesh = db::get<domain::Tags::Mesh<Dim>>(*box),
        &mesh_velocity = db::get<domain::Tags::MeshVelocity<Dim>>(*box),
        &mortar_meshes = db::get<Tags::MortarMesh<Dim>>(*box),
-       &mortar_sizes = db::get<Tags::MortarSize<Dim>>(*box),
+       &mortar_infos = db::get<Tags::MortarInfo<Dim>>(*box),
        &moving_mesh_map = db::get<domain::CoordinateMaps::Tags::CoordinateMap<
            Dim, Frame::Grid, Frame::Inertial>>(*box),
        &primitive_vars, &temporaries, &volume_fluxes](
@@ -357,7 +356,7 @@ void internal_mortar_data(
             normal_covector_and_magnitude_ptr, mortar_data_ptr,
             face_temporaries, packaged_data_buffer, boundary_correction,
             evolved_variables, volume_fluxes, temporaries, primitive_vars,
-            element, mesh, mortar_meshes, mortar_sizes, moving_mesh_map,
+            element, mesh, mortar_meshes, mortar_infos, moving_mesh_map,
             mesh_velocity, logical_to_inertial_inverse_jacobian,
             package_data_volume_args...);
       },

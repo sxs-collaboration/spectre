@@ -317,7 +317,6 @@ struct get_primitive_tags_for_face {
  *   - `domain::Tags::Element<Dim>`
  *   - `domain::Tags::Mesh<Dim>`
  *   - `evolution::dg::Tags::MortarMesh<Dim>`
- *   - `evolution::dg::Tags::MortarSize<Dim>`
  *   - `evolution::dg::Tags::MortarData<Dim>`
  *   - `Tags::TimeStepId`
  *   - \code{.cpp}
