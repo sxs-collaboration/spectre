@@ -588,13 +588,18 @@ jobs:
         if: matrix.PYTHON_VERSION
         run: |
           add-apt-repository ppa:deadsnakes/ppa
-          apt install -y python${{ matrix.PYTHON_VERSION }}
+          apt install -y python${{ matrix.PYTHON_VERSION }}-dev \
+            python${{ matrix.PYTHON_VERSION }}-venv \
+            python${{ matrix.PYTHON_VERSION }}-distutils
+          update-alternatives --install /usr/bin/python3 python3 \
+            /usr/bin/python${{ matrix.PYTHON_VERSION }} 1
       - name: Install Python dependencies
         if: matrix.PYTHON_VERSION
         run: |
-          python3 -m pip install -r support/Python/requirements.txt \
+          python${{ matrix.PYTHON_VERSION }} -m pip install \
+            -r support/Python/requirements.txt \
             -r support/Python/dev_requirements.txt
-          python3 -m pip list -v
+          python${{ matrix.PYTHON_VERSION }} -m pip list -v
       - name: Install ParaView
         if: matrix.test_3d_rendering == 'ON'
         working-directory: /work
@@ -664,6 +669,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           ENABLE_WARNINGS=${{ matrix.ENABLE_WARNINGS }}
           WERROR="${{ matrix.WERROR != 'OFF' && '-Werror' || '' }}"
           CXX_FLAGS="${WERROR} ${{ matrix.EXTRA_CXX_FLAGS }}"
+          PYTHON_VERSION=${{ matrix.PYTHON_VERSION }}
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
@@ -683,6 +689,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
+          -D Python_EXECUTABLE=/usr/bin/python${PYTHON_VERSION:-'3'}
           -D CMAKE_CXX_FLAGS="${CXX_FLAGS}"
           -D OVERRIDE_ARCH=x86-64
           -D ENABLE_WARNINGS=${ENABLE_WARNINGS:-'ON'}
@@ -880,6 +887,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           ENABLE_WARNINGS=${{ matrix.ENABLE_WARNINGS }}
           WERROR="${{ matrix.WERROR != 'OFF' && '-Werror' || '' }}"
           CXX_FLAGS="${WERROR} ${{ matrix.EXTRA_CXX_FLAGS }}"
+          PYTHON_VERSION=${{ matrix.PYTHON_VERSION }}
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
@@ -890,6 +898,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
+          -D Python_EXECUTABLE=/usr/bin/python${PYTHON_VERSION:-'3'}
           -D CMAKE_CXX_FLAGS="${CXX_FLAGS}"
           -D OVERRIDE_ARCH=x86-64
           -D ENABLE_WARNINGS=${ENABLE_WARNINGS:-'ON'}
