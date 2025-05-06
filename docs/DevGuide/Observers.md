@@ -118,9 +118,7 @@ parallel performance and threading, the amount of work done while the entire
 node is locked should be minimized. To this end, we have additional locks. One
 for the HDF5 files because we do not require a threadsafe HDF5
 (`observers::Tags::H5FileLock`). We also have locks for the objects mutated when
-contributing reduction data (`observers::Tags::ReductionDataLock`) and the
-objects mutated when contributing volume data
-(`observers::Tags::VolumeDataLock`).
+contributing reduction data (`observers::Tags::ReductionDataLock`).
 
 ### Future changes
 - It would be preferable to make the `Observer` and `ObserverWriter` parallel
