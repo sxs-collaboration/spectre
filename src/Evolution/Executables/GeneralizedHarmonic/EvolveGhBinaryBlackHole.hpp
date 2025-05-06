@@ -115,6 +115,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FindCommonHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
@@ -462,7 +463,9 @@ struct EvolutionMetavars {
             tmpl::flatten<tmpl::list<
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
                 intrp::Events::Interpolate<3, AhB, interpolator_source_vars>,
-                intrp::Events::Interpolate<3, AhC, interpolator_source_vars>,
+                ah::Events::FindCommonHorizon<
+                    volume_dim, AhC, interpolator_source_vars, observe_fields,
+                    non_tensor_compute_tags>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, BondiSachs, source_vars_no_deriv>,
                 intrp::Events::InterpolateWithoutInterpComponent<
