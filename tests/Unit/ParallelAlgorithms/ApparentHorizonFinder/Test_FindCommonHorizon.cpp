@@ -89,7 +89,8 @@ struct MockAddTemporalIdsToInterpolationTarget {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const LinkedMessageId<double>&
-                    /*temporal_id*/) {}
+                    /*temporal_id*/,
+                    std::optional<std::string> /*dependency*/) {}  // NOLINT
 };
 
 template <typename Metavariables>

@@ -368,8 +368,9 @@ void test_interpolation_target_receive_vars() {
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
        std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{
            invalid_indices},
-       pending_temporal_ids, current_temporal_id,
-       std::deque<temporal_id_type>{},
+       pending_temporal_ids,
+       std::unordered_map<temporal_id_type, std::optional<std::string>>{},
+       current_temporal_id, std::deque<temporal_id_type>{},
        std::unordered_map<
            temporal_id_type,
            Variables<typename target_tag::vars_to_interpolate_to_target>>{

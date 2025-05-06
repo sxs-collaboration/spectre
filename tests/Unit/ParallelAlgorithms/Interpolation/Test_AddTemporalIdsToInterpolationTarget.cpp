@@ -1,12 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "DataStructures/LinkedMessageId.hpp"
+#include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Framework/TestingFramework.hpp"
 
+#include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
 #include <type_traits>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -245,7 +249,7 @@ void test_add_temporal_ids() {
     ActionTesting::simple_action<
         target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               typename metavars::InterpolationTargetA>>(
-        make_not_null(&runner), 0, id);
+        make_not_null(&runner), 0, id, std::nullopt);
   };
 
   add_id_to_target(temporal_id_1);
@@ -404,15 +408,20 @@ void test_add_linked_message_id() {
   // This allows us to do a lot of quick testing
   const auto reset_box = [&]() {
     db::mutate<::intrp::Tags::CurrentTemporalId<LinkedMessageId<double>>,
+               ::intrp::Tags::Dependencies<LinkedMessageId<double>>,
                ::intrp::Tags::PendingTemporalIds<LinkedMessageId<double>>,
                ::intrp::Tags::CompletedTemporalIds<LinkedMessageId<double>>>(
         [&](const gsl::not_null<std::optional<LinkedMessageId<double>>*>
                 current_id,
+            const gsl::not_null<std::unordered_map<LinkedMessageId<double>,
+                                                   std::optional<std::string>>*>
+                dependencies,
             const gsl::not_null<std::deque<LinkedMessageId<double>>*>
                 pending_ids,
             const gsl::not_null<std::deque<LinkedMessageId<double>>*>
                 completed_ids) {
           completed_ids->clear();
+          dependencies->clear();
           pending_ids->clear();
           current_id->reset();
         },
@@ -434,12 +443,14 @@ void test_add_linked_message_id() {
             make_not_null(&target_box));
       };
 
-  const auto add_id_to_target = [&](const LinkedMessageId<double>& id) {
-    ActionTesting::simple_action<
-        target_component,
-        ::intrp::Actions::AddTemporalIdsToInterpolationTarget<target_tag>>(
-        make_not_null(&runner), 0, id);
-  };
+  const auto add_id_to_target =
+      [&](const LinkedMessageId<double>& id,
+          const std::optional<std::string>& dependency = std::nullopt) {
+        ActionTesting::simple_action<
+            target_component,
+            ::intrp::Actions::AddTemporalIdsToInterpolationTarget<target_tag>>(
+            make_not_null(&runner), 0, id, dependency);
+      };
 
   const auto check_empty = [&]<template <typename> typename Tag>() {
     if constexpr (tt::is_a_v<std::optional,
@@ -469,6 +480,19 @@ void test_add_linked_message_id() {
                 .value() == ids.front());
     }
   };
+  const auto check_dependency =
+      [&](const LinkedMessageId<double>& id, const bool value_should_exist,
+          const std::optional<std::string>& dependency = std::nullopt) {
+        const auto& dependencies = ActionTesting::get_databox_tag<
+            target_component,
+            ::intrp::Tags::Dependencies<LinkedMessageId<double>>>(runner, 0);
+
+        CHECK(dependencies.contains(id) == value_should_exist);
+        if (value_should_exist) {
+          REQUIRE(dependencies.contains(id));
+          CHECK(dependencies.at(id) == dependency);
+        }
+      };
 
   // PendingTemporalIds and TemporalIds should be
   // initially empty.
@@ -486,7 +510,7 @@ void test_add_linked_message_id() {
         temporal_ids[0]);
 
     // Add an out of order id
-    add_id_to_target(temporal_ids[2]);
+    add_id_to_target(temporal_ids[2], {"Dependency2"});
 
     // This should have gone into Pending and the first one was moved to
     // TemporalIds
@@ -494,13 +518,14 @@ void test_add_linked_message_id() {
         {temporal_ids[2]});
     check_values.template operator()<::intrp::Tags::CurrentTemporalId>(
         {temporal_ids[0]});
+    check_dependency(temporal_ids[2], true, {"Dependency2"});
 
     reset_box();
     insert_id_into.template operator()<::intrp::Tags::PendingTemporalIds>(
         temporal_ids[0]);
 
     // Add an in order id
-    add_id_to_target(temporal_ids[1]);
+    add_id_to_target(temporal_ids[1], {"Dependency1"});
 
     // This should also be in Pending, again because Pending wasn't empty on
     // entry
@@ -508,6 +533,7 @@ void test_add_linked_message_id() {
         {temporal_ids[1]});
     check_values.template operator()<::intrp::Tags::CurrentTemporalId>(
         {temporal_ids[0]});
+    check_dependency(temporal_ids[1], true, {"Dependency1"});
   }
 
   // For the rest of this test we will start with Pending being empty
@@ -526,6 +552,8 @@ void test_add_linked_message_id() {
         {temporal_ids[2]});
     check_values.template operator()<::intrp::Tags::CurrentTemporalId>(
         {temporal_ids[0]});
+    check_dependency(temporal_ids[1], false);
+    check_dependency(temporal_ids[2], true, std::nullopt);
 
     reset_box();
     insert_id_into.template operator()<::intrp::Tags::CurrentTemporalId>(
@@ -541,6 +569,7 @@ void test_add_linked_message_id() {
         {temporal_ids[1]});
     check_values.template operator()<::intrp::Tags::CurrentTemporalId>(
         {temporal_ids[0]});
+    check_dependency(temporal_ids[1], true, std::nullopt);
   }
 
   // For the rest of this test we will start with TemporalIds being empty
@@ -559,6 +588,8 @@ void test_add_linked_message_id() {
     check_values.template operator()<::intrp::Tags::PendingTemporalIds>(
         {temporal_ids[2]});
     check_empty.template operator()<::intrp::Tags::CurrentTemporalId>();
+    check_dependency(temporal_ids[1], false);
+    check_dependency(temporal_ids[2], true, std::nullopt);
 
     reset_box();
     insert_id_into.template operator()<::intrp::Tags::CompletedTemporalIds>(
@@ -572,6 +603,7 @@ void test_add_linked_message_id() {
     check_empty.template operator()<::intrp::Tags::PendingTemporalIds>();
     check_values.template operator()<::intrp::Tags::CurrentTemporalId>(
         {temporal_ids[1]});
+    check_dependency(temporal_ids[1], true, std::nullopt);
   }
 
   // Finally we will start with everything being empty
@@ -586,6 +618,8 @@ void test_add_linked_message_id() {
     check_values.template operator()<::intrp::Tags::PendingTemporalIds>(
         {temporal_ids[1]});
     check_empty.template operator()<::intrp::Tags::CurrentTemporalId>();
+    check_dependency(temporal_ids[0], false);
+    check_dependency(temporal_ids[1], true, std::nullopt);
 
     // Send the first id
     add_id_to_target(temporal_ids[0]);
@@ -596,6 +630,7 @@ void test_add_linked_message_id() {
         {temporal_ids[1]});
     check_values.template operator()<::intrp::Tags::CurrentTemporalId>(
         {temporal_ids[0]});
+    check_dependency(temporal_ids[0], true, std::nullopt);
   }
 }
 
@@ -649,7 +684,7 @@ void test_add_temporal_ids_time_dependent() {
     ActionTesting::simple_action<
         target_component,
         ::intrp::Actions::AddTemporalIdsToInterpolationTarget<target_tag>>(
-        make_not_null(&runner), 0, id);
+        make_not_null(&runner), 0, id, std::nullopt);
   };
 
   // Two of the temporal_ids are before the expiration_time, the

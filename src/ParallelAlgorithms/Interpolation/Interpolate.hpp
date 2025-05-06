@@ -42,6 +42,7 @@ void interpolate(
     const Mesh<VolumeDim>& mesh, Parallel::GlobalCache<Metavariables>& cache,
     const ElementId<VolumeDim>& array_index,
     const std::optional<int> interpolator_id,
+    const std::optional<std::string>& dependency,
     const InterpolatorSourceVars&... interpolator_source_vars_input) {
   Variables<typename Metavariables::interpolator_source_vars>
       interpolator_source_vars(mesh.number_of_grid_points());
@@ -78,6 +79,6 @@ void interpolate(
       InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
   Parallel::simple_action<
       Actions::AddTemporalIdsToInterpolationTarget<InterpolationTargetTag>>(
-      target, temporal_id);
+      target, temporal_id, dependency);
 }
 }  // namespace intrp

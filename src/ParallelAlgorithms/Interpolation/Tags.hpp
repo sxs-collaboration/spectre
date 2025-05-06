@@ -100,6 +100,12 @@ struct IndicesOfInvalidInterpPoints : db::SimpleTag {
   using type = std::unordered_map<TemporalId, std::unordered_set<size_t>>;
 };
 
+/// Holds potential dependency for apparent horizon callbacks.
+template <typename TemporalId>
+struct Dependencies : db::SimpleTag {
+  using type = std::unordered_map<TemporalId, std::optional<std::string>>;
+};
+
 /// `temporal_id`s that have been flagged to interpolate on, but that
 /// have not yet been added to Tags::CurrentTemporalId.  A `temporal_id` is
 /// pending if the `FunctionOfTime`s are not up to date for the time

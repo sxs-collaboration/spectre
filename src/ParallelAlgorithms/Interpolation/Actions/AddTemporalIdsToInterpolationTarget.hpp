@@ -57,7 +57,8 @@ struct AddTemporalIdsToInterpolationTarget {
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
-                    const TemporalId& temporal_id) {
+                    const TemporalId& temporal_id,
+                    std::optional<std::string> dependency) {
     static_assert(
         InterpolationTargetTag::compute_target_points::is_sequential::value,
         "Actions::AddTemporalIdsToInterpolationTarget can be used only with "
@@ -66,7 +67,8 @@ struct AddTemporalIdsToInterpolationTarget {
     const bool pending_temporal_ids_was_empty_on_entry =
         db::get<Tags::PendingTemporalIds<TemporalId>>(box).empty();
     InterpolationTarget_detail::flag_temporal_id_as_pending<
-        InterpolationTargetTag>(make_not_null(&box), temporal_id);
+        InterpolationTargetTag>(make_not_null(&box), temporal_id,
+                                std::move(dependency));
 
     // - If Tags::CurrentTemporalIds has a value, then there is an
     //   interpolation in progress, so do nothing here.  (If there's
