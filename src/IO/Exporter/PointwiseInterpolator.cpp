@@ -584,14 +584,21 @@ void interpolate_to_points(
     }
   }
 
-  if (extrapolate_into_excisions) {
+  if (extrapolate_into_excisions and not extrapolation_info.empty()) {
     extrapolate_into_excisions_impl(result, extrapolation_info,
                                     resolved_num_threads);
     // Clear the anchor points from the result
     for (size_t i = 0; i < result->size(); ++i) {
       ResultDataType& component = (*result)[i];
       if constexpr (std::is_same_v<ResultDataType, DataVector>) {
-        component.destructive_resize(num_target_points);
+        // Can't use `destructive_resize` because we want to preserve the
+        // leading elements of the DataVector
+        DataVector new_component(num_target_points);
+        std::copy(
+            component.begin(),
+            component.begin() + static_cast<std::ptrdiff_t>(num_target_points),
+            new_component.begin());
+        component = std::move(new_component);
       } else {
         component.resize(num_target_points);
       }

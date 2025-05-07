@@ -206,16 +206,9 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
                                            {0., 0., 0., 0., 0., 0.},
                                            {0., 0., 0., 0., 0., 0.}}}};
     const size_t num_target_points = get<0>(target_points).size();
-    std::array<std::vector<double>, 3> target_points_array{};
-    for (size_t d = 0; d < 3; ++d) {
-      gsl::at(target_points_array, d).resize(num_target_points);
-      for (size_t i = 0; i < num_target_points; ++i) {
-        gsl::at(target_points_array, d)[i] = target_points.get(d)[i];
-      }
-    }
     const auto interpolated_data = interpolate_to_points<3>(
-        h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"},
-        target_points_array, true);
+        h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"}, target_points,
+        true);
     CHECK(interpolated_data.size() == 1);
     CHECK(interpolated_data[0].size() == num_target_points);
     // Check result
