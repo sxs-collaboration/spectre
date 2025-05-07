@@ -45,6 +45,7 @@ spectre_target_headers(
   DirectionMap.hpp
   Element.hpp
   ElementId.hpp
+  ElementSearchTree.hpp
   HasBoundary.hpp
   Hypercube.hpp
   IndexToSliceAt.hpp
