@@ -234,14 +234,16 @@ struct ScalarSystem {
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh,
       std::optional<std::vector<std::string>> active_block_or_block_groups =
-          std::nullopt) {
+          std::nullopt,
+      std::optional<std::string> dependency = std::nullopt) {
     return ObserveEvent{
         "element_data",
         FloatingPointType::Double,
         {FloatingPointType::Double},
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Error(Scalar)"},
         std::move(active_block_or_block_groups),
-        interpolating_mesh};
+        interpolating_mesh,
+        std::move(dependency)};
   }
 };
 
@@ -361,7 +363,8 @@ struct ComplicatedSystem {
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh,
       std::optional<std::vector<std::string>> active_block_or_block_groups =
-          std::nullopt) {
+          std::nullopt,
+      std::optional<std::string> dependency = std::nullopt) {
     return ObserveEvent(
         "element_data", FloatingPointType::Double,
         {FloatingPointType::Double, FloatingPointType::Double,
@@ -370,7 +373,8 @@ struct ComplicatedSystem {
          FloatingPointType::Double, FloatingPointType::Float},
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Vector",
          "Tensor", "Tensor2", "Error(Vector)", "Error(Tensor2)"},
-        std::move(active_block_or_block_groups), interpolating_mesh);
+        std::move(active_block_or_block_groups), interpolating_mesh,
+        std::move(dependency));
   }
 };
 }  // namespace TestHelpers::dg::Events::ObserveFields
