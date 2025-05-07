@@ -4,7 +4,9 @@
 #include "Domain/ElementLogicalCoordinates.hpp"
 
 #include <array>
+#include <map>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -43,6 +45,30 @@ element_logical_coordinates(
         (2.0 * x_block_logical.get(d) - up - lo) / (up - lo);
   }
   return x_element_logical;
+}
+
+template <size_t Dim>
+std::optional<
+    std::pair<ElementId<Dim>, tnsr::I<double, Dim, Frame::ElementLogical>>>
+element_logical_coordinates(
+    const IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::BlockLogical>>&
+        block_logical_coords,
+    const std::map<size_t, domain::ElementSearchTree<Dim>>& search_tree) {
+  const auto block_search_tree_it =
+      search_tree.find(block_logical_coords.id.get_index());
+  if (block_search_tree_it == search_tree.end()) {
+    return std::nullopt;
+  }
+  const auto& block_search_tree = block_search_tree_it->second;
+  const auto found_element_id = block_search_tree.qbegin(
+      boost::geometry::index::covers(block_logical_coords.data));
+  if (found_element_id == block_search_tree.qend()) {
+    return std::nullopt;
+  }
+  const auto& element_id = *found_element_id;
+  return std::make_pair(element_id, element_logical_coordinates(
+                                        block_logical_coords.data, element_id)
+                                        .value());
 }
 
 namespace {
@@ -152,6 +178,15 @@ element_logical_coordinates(
   element_logical_coordinates(                                                \
       const tnsr::I<double, DIM(data), Frame::BlockLogical>& x_block_logical, \
       const ElementId<DIM(data)>& element_id);                                \
+  template std::optional<                                                     \
+      std::pair<ElementId<DIM(data)>,                                         \
+                tnsr::I<double, DIM(data), Frame::ElementLogical>>>           \
+  element_logical_coordinates(                                                \
+      const IdPair<domain::BlockId,                                           \
+                   tnsr::I<double, DIM(data), Frame::BlockLogical>>&          \
+          block_logical_coords,                                               \
+      const std::map<size_t, domain::ElementSearchTree<DIM(data)>>&           \
+          search_tree);                                                       \
   template std::unordered_map<ElementId<DIM(data)>,                           \
                               ElementLogicalCoordHolder<DIM(data)>>           \
   element_logical_coordinates(                                                \
