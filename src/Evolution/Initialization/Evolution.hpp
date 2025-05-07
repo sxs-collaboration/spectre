@@ -18,6 +18,7 @@
 #include "Domain/Amr/Helpers.hpp"
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
+#include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
@@ -366,21 +367,57 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
 
   template <typename... Tags>
   static void apply(
-      const gsl::not_null<typename dt_variables_tag::type*> /*dt_vars*/,
-      const gsl::not_null<typename history_tag::type*> /*history*/,
-      const Mesh<dim>& /*new_mesh*/, const ElementId<dim>& /*element_id*/,
-      const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
-    ERROR("h-refinement not implemented yet");
+      const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
+      const gsl::not_null<typename history_tag::type*> history,
+      const Mesh<dim>& new_mesh, const ElementId<dim>& element_id,
+      const tuples::TaggedTuple<Tags...>& parent_items) {
+    const auto& parent_id = get<domain::Tags::Element<dim>>(parent_items).id();
+    const auto& parent_mesh = get<domain::Tags::Mesh<dim>>(parent_items);
+    const auto child_sizes =
+        domain::child_size(element_id.segment_ids(), parent_id.segment_ids());
+    const auto projection_matrices =
+        Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
+                                                    child_sizes);
+    transform(history, get<history_tag>(parent_items),
+              [&](const auto& source_entry) {
+                return apply_matrices(projection_matrices, source_entry,
+                                      parent_mesh.extents());
+              });
+    dt_vars->initialize(new_mesh.number_of_grid_points());
   }
 
   template <typename... Tags>
   static void apply(
-      const gsl::not_null<typename dt_variables_tag::type*> /*dt_vars*/,
-      const gsl::not_null<typename history_tag::type*> /*history*/,
-      const Mesh<dim>& /*new_mesh*/, const ElementId<dim>& /*element_id*/,
+      const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
+      const gsl::not_null<typename history_tag::type*> history,
+      const Mesh<dim>& new_mesh, const ElementId<dim>& element_id,
       const std::unordered_map<ElementId<dim>, tuples::TaggedTuple<Tags...>>&
-      /*children_items*/) {
-    ERROR("h-refinement not implemented yet");
+          children_items) {
+    bool first_child = true;
+    for (const auto& [child_id, child_items] : children_items) {
+      const auto& child_mesh = get<domain::Tags::Mesh<dim>>(child_items);
+      const auto child_sizes =
+          domain::child_size(child_id.segment_ids(), element_id.segment_ids());
+      const auto projection_matrices =
+          Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
+                                                      child_sizes);
+      if (first_child) {
+        transform(history, get<history_tag>(child_items),
+                  [&](const auto& source_entry) {
+                    return apply_matrices(projection_matrices, source_entry,
+                                          child_mesh.extents());
+                  });
+        first_child = false;
+      } else {
+        transform_mutate(history, get<history_tag>(child_items),
+                         [&](const auto dest_entry, const auto& source_entry) {
+                           *dest_entry +=
+                               apply_matrices(projection_matrices, source_entry,
+                                              child_mesh.extents());
+                         });
+      }
+    }
+    dt_vars->initialize(new_mesh.number_of_grid_points());
   }
 };
 }  // namespace Initialization
