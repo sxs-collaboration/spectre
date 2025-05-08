@@ -253,7 +253,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
                                            target_points, true);
         return result;
       };
-      // 152 us / 327 us
+      // 147 us / 149 us
       BENCHMARK("PointwiseInterpolator::interpolate_to_point") {
         std::vector<double> result{};
         interpolator.interpolate_to_point(make_not_null(&result),
@@ -262,7 +262,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
       };
       std::vector<size_t> block_order(domain.blocks().size());
       std::iota(block_order.begin(), block_order.end(), 0);
-      // 139 us / 321 us
+      // 137 us / 143 us
       BENCHMARK(
           "PointwiseInterpolator::interpolate_to_point with block order") {
         std::vector<double> result{};
