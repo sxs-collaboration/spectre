@@ -83,6 +83,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
         "element_data",
         ObservationStep{0},
         {"Psi", "Phi_x", "Phi_y", "Phi_z"}};
+    CHECK(interpolator.time() == approx(0.04));
     {
       INFO("Multiple points");
       std::vector<DataVector> interpolated_data{};
