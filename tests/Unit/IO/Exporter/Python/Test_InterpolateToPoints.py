@@ -12,7 +12,11 @@ from click.testing import CliRunner
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Frame, Scalar, tnsr
 from spectre.Informer import unit_test_build_path, unit_test_src_path
-from spectre.IO.Exporter import ObservationId, interpolate_tensors_to_points
+from spectre.IO.Exporter import (
+    ObservationId,
+    PointwiseInterpolator3DInertial,
+    interpolate_tensors_to_points,
+)
 from spectre.IO.Exporter.InterpolateToPoints import (
     interpolate_to_points_command,
 )
@@ -50,6 +54,16 @@ class TestInterpolateToPoints(unittest.TestCase):
                 target_points=coords,
             )
             self.assertAlmostEqual(psi.get()[0], -0.07059806932542323)
+        interpolator = PointwiseInterpolator3DInertial(
+            self.h5_filename,
+            subfile_name="element_data",
+            observation=ObservationId(obs_id),
+            tensor_components=["Psi"],
+        )
+        self.assertAlmostEqual(
+            interpolator.interpolate_to_point(np.zeros(3))[0],
+            -0.07059806932542323,
+        )
 
     def test_cli(self):
         runner = CliRunner()
