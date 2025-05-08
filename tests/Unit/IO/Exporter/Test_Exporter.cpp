@@ -231,6 +231,48 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     // This point is interpolated
     Approx approx_interpolated = Approx::custom().epsilon(1.e-6).scale(1.0);
     CHECK(psi_interpolated[5] == approx_interpolated(psi_expected[5]));
+
+    // Do some benchmarks
+    // - Results ran on Apple M2 Pro chip (Nils Vu, May 2025)
+    // - First number is without h-refinement (as set in the domain creator
+    //   above so these tests run quickly). Second number is when setting the
+    //   h-refinement to 2.
+    // 9.5 ms / 576 ms
+    BENCHMARK("interpolate_to_points") {
+      return interpolate_to_points<3>(h5_file_name, "/VolumeData",
+                                      ObservationId{123}, {"Psi"},
+                                      target_points, true);
+    };
+    {
+      PointwiseInterpolator<3, Frame::Inertial> interpolator{
+          h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"}};
+      // 3.1 ms / 3.4 ms
+      BENCHMARK("PointwiseInterpolator::interpolate_to_points") {
+        std::vector<DataVector> result{};
+        interpolator.interpolate_to_points(make_not_null(&result),
+                                           target_points, true);
+        return result;
+      };
+      // 152 us / 327 us
+      BENCHMARK("PointwiseInterpolator::interpolate_to_point") {
+        std::vector<double> result{};
+        interpolator.interpolate_to_point(make_not_null(&result),
+                                          tnsr::I<double, 3>{{10., 0., 0.}});
+        return result;
+      };
+      std::vector<size_t> block_order(domain.blocks().size());
+      std::iota(block_order.begin(), block_order.end(), 0);
+      // 139 us / 321 us
+      BENCHMARK(
+          "PointwiseInterpolator::interpolate_to_point with block order") {
+        std::vector<double> result{};
+        interpolator.interpolate_to_point(make_not_null(&result),
+                                          tnsr::I<double, 3>{{10., 0., 0.}},
+                                          make_not_null(&block_order));
+        return result;
+      };
+    }
+
     // Delete the test file
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);
