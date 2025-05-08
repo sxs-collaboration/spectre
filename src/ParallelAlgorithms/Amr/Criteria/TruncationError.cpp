@@ -37,8 +37,7 @@ void max_over_components(
     const auto& modes = gsl::at(*power_monitors_buffer, d);
     // Increase p refinement if the truncation error exceeds the target
     const double truncation_error =
-        umax *
-        pow(10, -PowerMonitors::relative_truncation_error(modes, modes.size()));
+        umax * PowerMonitors::relative_truncation_error(modes, modes.size());
     if (truncation_error >
         target_abs_truncation_error + umax * target_rel_truncation_error) {
       gsl::at(*result, d) = Flag::IncreaseResolution;
@@ -57,8 +56,8 @@ void max_over_components(
       // this resolution (or increase resolution if another tensor component
       // requested that).
       const double truncation_error_coarsened =
-          umax * pow(10, -PowerMonitors::relative_truncation_error(
-                             modes, modes.size() - 1));
+          umax *
+          PowerMonitors::relative_truncation_error(modes, modes.size() - 1);
       if (truncation_error_coarsened <=
           target_abs_truncation_error + umax * target_rel_truncation_error) {
         gsl::at(*result, d) = Flag::DecreaseResolution;

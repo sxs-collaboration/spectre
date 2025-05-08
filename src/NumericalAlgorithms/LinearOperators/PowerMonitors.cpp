@@ -79,7 +79,7 @@ double relative_truncation_error(const DataVector& power_monitor,
   // could have zero modes by symmetry.
   if (num_modes_to_use >= 2 and power_monitor[last_index] < cutoff and
       power_monitor[last_index - 1] < cutoff) {
-    return -log10(cutoff) + 2.;
+    return cutoff * 1.e-2;
   }
   // Compute weighted average and total sum in the current dimension
   double weighted_average = 0.0;
@@ -105,11 +105,8 @@ double relative_truncation_error(const DataVector& power_monitor,
   double leading_term = std::max(power_monitor[0], power_monitor[1]);
   ASSERT(not(leading_term == 0.0),
          "The leading power monitor term is zero bitwise.");
-  leading_term = log10(leading_term);
 
-  // Compute relative truncation error
-  double result = leading_term - weighted_average;
-  return result;
+  return std::pow(10.0, weighted_average) / leading_term;
 }
 
 template <size_t Dim>
@@ -119,8 +116,7 @@ std::array<double, Dim> relative_truncation_error(
   const auto modes = power_monitors(tensor_component, mesh);
   for (size_t d = 0; d < Dim; ++d) {
     const auto& modes_d = gsl::at(modes, d);
-    gsl::at(result, d) =
-        pow(10.0, -relative_truncation_error(modes_d, modes_d.size()));
+    gsl::at(result, d) = relative_truncation_error(modes_d, modes_d.size());
   }
   return result;
 }
@@ -139,8 +135,7 @@ std::array<double, Dim> absolute_truncation_error(
     relative_truncation_error_in_d =
         relative_truncation_error(modes_d, modes_d.size());
     // Compute absolute truncation error estimate
-    gsl::at(result, d) =
-        umax * pow(10.0, -1.0 * relative_truncation_error_in_d);
+    gsl::at(result, d) = umax * relative_truncation_error_in_d;
   }
   return result;
 }
