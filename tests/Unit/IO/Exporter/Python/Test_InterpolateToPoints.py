@@ -12,7 +12,7 @@ from click.testing import CliRunner
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import Frame, Scalar, tnsr
 from spectre.Informer import unit_test_build_path, unit_test_src_path
-from spectre.IO.Exporter import interpolate_tensors_to_points
+from spectre.IO.Exporter import ObservationId, interpolate_tensors_to_points
 from spectre.IO.Exporter.InterpolateToPoints import (
     interpolate_to_points_command,
 )
@@ -38,13 +38,13 @@ class TestInterpolateToPoints(unittest.TestCase):
             open_volfiles([self.h5_filename], "/element_data")
         )[0][0]
         for frame in [Frame.Grid, Frame.Inertial]:
-            coords = tnsr.I[DataVector, 3](
+            coords = tnsr.I[DataVector, 3, frame](
                 np.array([3 * [0.0], 3 * [2 * np.pi]]).T
             )
             (psi,) = interpolate_tensors_to_points(
                 self.h5_filename,
                 "element_data",
-                observation_id=obs_id,
+                observation=ObservationId(obs_id),
                 tensor_names=["Psi"],
                 tensor_types=[Scalar[DataVector]],
                 target_points=coords,
