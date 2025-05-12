@@ -126,6 +126,14 @@ class Index {
 template <size_t N>
 size_t collapsed_index(const Index<N>& index, const Index<N>& extents);
 
+/// \ingroup DataStructuresGroup
+/// This is the inverse function of collapsed_index. Given a collapsed (1D)
+/// index and the extents of the array, return the Index corresponding to that
+/// collapsed index. Note that the first dimension of the Index varies fastest
+/// when computing the collapsed index.
+template <size_t Dim>
+Index<Dim> expanded_index(size_t index, const Index<Dim>& extents);
+
 template <size_t N>
 std::ostream& operator<<(std::ostream& os, const Index<N>& i);
 
@@ -191,6 +199,30 @@ SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<4>& index,
   return index[0] +
          extents[0] *
              (index[1] + extents[1] * (index[2] + extents[2] * index[3]));
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE Index<1> expanded_index(size_t index,
+                                              const Index<1>& extents) {
+  (void)extents;
+  return Index<1>{index};
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE Index<2> expanded_index(size_t index,
+                                              const Index<2>& extents) {
+  const size_t ix = index % extents[0];
+  const size_t iy = index / extents[0];
+  return Index<2>{{ix, iy}};
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE Index<3> expanded_index(size_t index,
+                                              const Index<3>& extents) {
+  const size_t ix = index % extents[0];
+  const size_t iy = (index / extents[0]) % extents[1];
+  const size_t iz = (index / extents[0]) / extents[1];
+  return Index<3>{{ix, iy, iz}};
 }
 
 template <size_t N>

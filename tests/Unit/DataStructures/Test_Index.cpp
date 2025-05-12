@@ -31,6 +31,17 @@ void test_collapsed_index(const Index<Dim> extents) {
     CHECK(index_it.collapsed_index() == collapsed_index(index, extents));
   }
 }
+
+template <size_t Dim>
+void test_expanded_index(const Index<Dim>& extents) {
+  // Check that we recover same index when we expand and then collapse.
+  const size_t total_points = extents.product();
+  for (size_t i = 0; i < total_points; ++i) {
+    const Index<Dim> expanded = expanded_index(i, extents);
+    const size_t collapsed = collapsed_index(expanded, extents);
+    CHECK(collapsed == i);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
@@ -108,6 +119,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   for (IndexIterator<3> ii{extents_for_iterator}; ii; ++ii) {
     CHECK(collapsed_index(*ii, extents_for_iterator) == ii.collapsed_index());
   }
+  test_collapsed_index(extents_for_iterator);
+
+  // Test expanded_index
+  CHECK(expanded_index(0, Index<1>{3}) == Index<1>{0});
+  CHECK(expanded_index(2, Index<1>{3}) == Index<1>{2});
+  CHECK(expanded_index(7, Index<2>{3, 4}) == Index<2>{1, 2});
+  CHECK(expanded_index(23, Index<3>{3, 4, 2}) == Index<3>{2, 3, 1});
+  test_expanded_index(extents_for_iterator);
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH((collapsed_index(Index<3>{4, 4, 4}, Index<3>{2, 3, 4})),
