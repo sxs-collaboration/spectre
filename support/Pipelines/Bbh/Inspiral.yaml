@@ -137,6 +137,9 @@ DomainCreator:
         SubfileName: "VolumeData"
       TranslationMap:
         InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+      SkewMap:
+        H5Filename: "{{ FotFilename }}"
+        SubfileName: "VolumeData"
       ShapeMapA:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "VolumeData"
