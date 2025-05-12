@@ -31,6 +31,9 @@ struct StateUpdateArgs {
   /// min_comoving_char_speed is the minimum over the excision boundary
   /// of Eq. 28 of \cite Hemberger2012jz.
   double min_comoving_char_speed;
+  /// horizon_00 is the spherepack coefficient of the apparent
+  /// horizon.
+  double horizon_00;
   /// control_error_delta_r is the control error when the control system
   /// is in state Label::DeltaR.
   /// This is Q in Eq. 96 of \cite Hemberger2012jz.
@@ -44,6 +47,26 @@ struct StateUpdateArgs {
   /// Label::DeltaRDriftOutward.  If std::nullopt, then DeltaRDriftOutward
   /// will never be triggered.
   std::optional<double> max_allowed_radial_distance;
+  /// avg_distorted_normal_dot_unit_coord_vector is the same quantity as
+  /// ControlErrorArgs::avg_distorted_normal_dot_unit_coord_vector.
+  double avg_distorted_normal_dot_unit_coord_vector;
+  /// inward_drift_velocity is a positive quantity that represents how
+  /// fast the horizon and the excision boundary move apart in state
+  /// DeltaRDriftInward.  If std::nullopt, then DeltaRDriftInward will
+  /// never be triggered.
+  std::optional<double> inward_drift_velocity;
+  /// min_allowed_radial_distance is the minimum distance between the horizon
+  /// and the excision boundary that will trigger state
+  /// Label::DeltaRDriftInward.
+  std::optional<double> min_allowed_radial_distance;
+  /// min_allowed_char_speed is the minimum char speed that will
+  /// trigger state DeltaRDriftInward.  If both
+  /// min_allowed_radial_distance and min_allowed_char_speed are
+  /// std::nullopt, then DeltaRDriftInward will never be triggered.
+  std::optional<double> min_allowed_char_speed;
+  /// comoving_char_speed_increasing_inward is true if the comoving char speed
+  /// increases as the excision boundary is moved inward.
+  bool comoving_char_speed_increasing_inward;
 };
 
 /*!
@@ -120,16 +143,16 @@ struct ControlErrorArgs {
  * - DeltaRDriftOutward: Same as DeltaR but the excision boundary has a small
  *   velocity outward.  This state is triggered when it is deemed that the
  *   excision boundary and the horizon are too far apart.
- * - DeltaRTransition: Same as DeltaR except for the logic that
- *   determines how DeltaRTransition changes to other states.
- *   DeltaRTransition is allowed (under some circumstances) to change
+ * - DeltaRNoDrift: Same as DeltaR except for the logic that
+ *   determines how DeltaRNoDrift changes to other states.
+ *   DeltaRNoDrift is allowed (under some circumstances) to change
  *   to state DeltaR, but DeltaRDriftOutward and DeltaRDriftInward
  *   are never allowed to change to state DeltaR.  Instead
  *   DeltaRDriftOutward and DeltaRDriftInward are allowed (under
- *   some circumstances) to change to state DeltaRTransition.
+ *   some circumstances) to change to state DeltaRNoDrift.
  *
  * The reason that DeltaRDriftInward, DeltaRDriftOutward, and
- * DeltaRTransition are separate states is to simplify the logic.  In
+ * DeltaRNoDrift are separate states is to simplify the logic.  In
  * principle, all 3 of those states could be merged with state
  * DeltaR, because the control error is the same for all four states
  * (except for a velocity term that could be set to zero).  But if that

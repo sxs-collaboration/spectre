@@ -9,6 +9,8 @@
 #include <string>
 
 #include "ControlSystem/ControlErrors/Size/DeltaR.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftInward.hpp"
+#include "ControlSystem/ControlErrors/Size/DeltaRDriftOutward.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace control_system::size::States {
@@ -22,6 +24,12 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
                             const CrossingTimeInfo& crossing_time_info) const {
   const double min_char_speed = update_args.min_char_speed;
   const double min_comoving_char_speed = update_args.min_comoving_char_speed;
+
+  // This factor is present in SpEC, and it is used to prevent
+  // oscillations between states.  The value was chosen in SpEC, but
+  // nothing should be sensitive to small changes in this value as
+  // long as it is slightly greater than unity.
+  constexpr double non_oscillation_drift_inward_factor = 1.1;
 
   // Note that delta_radius_is_in_danger and char_speed_is_in_danger
   // can be different for different States.
@@ -120,6 +128,16 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
       }
       ss << " Target char speed = " << info->target_char_speed << "\n";
       ss << " Suggested timescale = " << info->suggested_time_scale;
+    } else if (should_activate_inward_drift(update_args)) {
+      info->discontinuous_change_has_occurred = true;
+      info->state = std::make_unique<States::DeltaRDriftInward>();
+      info->suggested_time_scale = crossing_time_info.t_delta_radius;
+      info->target_char_speed = target_speed_for_inward_drift(
+          update_args.avg_distorted_normal_dot_unit_coord_vector,
+          update_args.min_char_speed,
+          update_args.inward_drift_velocity.value());
+      ss << " Switching to DeltaRDriftInward.\n";
+      ss << " Suggested timescale = " << info->suggested_time_scale;
     } else {
       info->discontinuous_change_has_occurred = true;
       info->state = std::make_unique<States::DeltaR>();
@@ -127,7 +145,6 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
       info->target_char_speed = 0.0;
       ss << " Switching to DeltaR.\n";
       ss << " Suggested timescale = " << info->suggested_time_scale;
-      // Here is where possible transition to State DeltaRDriftInward will go.
     }
   } else if (update_args.min_comoving_char_speed > 0.0 and
              update_args.min_char_speed > 0.0 and
@@ -138,10 +155,19 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
                comoving_decreasing_slower_than_char_speeds)) and
              (update_args.min_char_speed >= info->target_char_speed or
               min_comoving_char_speed > min_char_speed)) {
+    const bool drift_inward = should_activate_inward_drift(update_args);
     info->discontinuous_change_has_occurred = true;
-    info->state = std::make_unique<States::DeltaR>();
-
-    ss << "Current state AhSpeed. Switching to DeltaR.\n";
+    if (drift_inward) {
+      info->state = std::make_unique<States::DeltaRDriftInward>();
+      info->target_char_speed = target_speed_for_inward_drift(
+          update_args.avg_distorted_normal_dot_unit_coord_vector,
+          update_args.min_char_speed,
+          update_args.inward_drift_velocity.value());
+    } else {
+      info->state = std::make_unique<States::DeltaR>();
+    }
+    ss << "Current state AhSpeed. Switching to "
+       << (drift_inward ? "DeltaRDriftInward" : "DeltaR") << ".\n";
     ss << " Min char speed " << update_args.min_char_speed << " > 0\n";
     ss << " Min comoving char speed " << update_args.min_comoving_char_speed
        << " > 0\n";
@@ -160,10 +186,19 @@ std::string AhSpeed::update(const gsl::not_null<Info*> info,
       ss << " Min char speed " << update_args.min_char_speed
          << " >= target char speed " << info->target_char_speed << "\n";
     }
-    // Must happen after we print the value above
-    info->target_char_speed = 0.0;
-    // Here is where possible transition to State DeltaRDriftInward
-    // will go.
+    if (not drift_inward) {  // Must happen after we print the value above
+      info->target_char_speed = 0.0;
+    }
+  } else if (update_args.average_radial_distance.has_value() and
+             update_args.average_radial_distance.value() >
+                 non_oscillation_drift_inward_factor *
+                     update_args.max_allowed_radial_distance.value_or(
+                         std::numeric_limits<double>::infinity()) and
+             not crossing_time_info.t_char_speed.has_value()) {
+    info->discontinuous_change_has_occurred = true;
+    ss << "Current state AhSpeed. We have drifted too far in, so "
+          "we are switching to DeltaRDriftOutward.\n";
+    info->state = std::make_unique<States::DeltaRDriftOutward>();
   } else {
     ss << "Current state AhSpeed. No change necessary. Staying in AhSpeed.";
   }

@@ -62,6 +62,11 @@ struct ErrorDiagnostics {
  *        comoving characteristic speed.
  * \param predictor_delta_radius ZeroCrossingPredictor for the difference
  *        in radius between the horizon and the excision boundary.
+ * \param predictor_drift_limit_char_speed ZeroCrossingPredictor for the
+ *        difference between the characteristic speed and
+ *        min_allowed_char_speed.
+ * \param predictor_drift_limit_delta_radius ZeroCrossingPredictor for the
+ *        difference between delta_radius and min_allowed_radial_distance.
  * \param time the current time.
  * \param control_error_delta_r the control error for the DeltaR state. This is
  *        used in other states as well.
@@ -72,6 +77,20 @@ struct ErrorDiagnostics {
  *        between the horizon and the excision boundary that is allowed without
  *        triggering the DeltaRDriftOutward state.  If std::nullopt, then
  *        DeltaRDriftOutward will not be used.
+ * \param inward_drift_velocity a velocity that determines how fast the
+ *        excision boundary drifts inward in state DeltaRDriftInward. If
+ *        std::nullopt, then DeltaRDriftInward will not be used.
+ * \param min_allowed_radial_distance the minimum average radial distance
+ *        between the horizon and the excision boundary that is allowed without
+ *        triggering the DeltaRDriftInward state.  If std::nullopt, then
+ *        DeltaRDriftInward will not be used.
+ * \param min_allowed_char_speed the minimum characteristic speed on the
+ *        excision boundary that is allowed without triggering the
+ *        DeltaRDriftInward state.  If std::nullopt, then
+ *        DeltaRDriftInward will not be used.
+ * \param horizon_00 The l=0,m=0 component of the spherepack decomposition
+ *        of the apparent horizon.  This is passed separately from the
+ *        full apparent_horizon below because horizon_00 is time-averaged.
  * \param dt_lambda_00 the time derivative of the map parameter lambda_00
  * \param apparent_horizon the current horizon in frame Frame.
  * \param excision_boundary a Strahlkorper representing the excision
@@ -84,6 +103,8 @@ struct ErrorDiagnostics {
  *        Frame.
  * \param spatial_metric_on_excision_boundary metric in frame Frame.
  * \param inverse_spatial_metric_on_excision_boundary metric in frame Frame.
+ * \param deriv_comoving_char_speed the derivative of the comoving char
+ *        speed with respect to the map parameter lambda_00.
  * \return Returns an `ErrorDiagnostics` object which, in addition to the actual
  *         control error, holds a lot of diagnostic information about how the
  *         control error was calculated. This information could be used to print
@@ -138,20 +159,28 @@ struct ErrorDiagnostics {
  */
 template <typename Frame>
 ErrorDiagnostics control_error(
-    const gsl::not_null<Info*> info,
-    const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
-    const gsl::not_null<intrp::ZeroCrossingPredictor*>
+    gsl::not_null<Info*> info,
+    gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_char_speed,
+    gsl::not_null<intrp::ZeroCrossingPredictor*>
         predictor_comoving_char_speed,
-    const gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
+    gsl::not_null<intrp::ZeroCrossingPredictor*> predictor_delta_radius,
+    gsl::not_null<intrp::ZeroCrossingPredictor*>
+        predictor_drift_limit_char_speed,
+    gsl::not_null<intrp::ZeroCrossingPredictor*>
+        predictor_drift_limit_delta_radius,
     double time, double control_error_delta_r,
     std::optional<double> control_error_delta_r_outward,
-    std::optional<double> max_allowed_radial_distance, double dt_lambda_00,
-    const ylm::Strahlkorper<Frame>& apparent_horizon,
+    std::optional<double> max_allowed_radial_distance,
+    std::optional<double> inward_drift_velocity,
+    std::optional<double> min_allowed_radial_distance,
+    std::optional<double> min_allowed_char_speed, double horizon_00,
+    double dt_lambda_00, const ylm::Strahlkorper<Frame>& apparent_horizon,
     const ylm::Strahlkorper<Frame>& excision_boundary,
     const Scalar<DataVector>& lapse_on_excision_boundary,
     const tnsr::I<DataVector, 3, Frame>& frame_components_of_grid_shift,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric_on_excision_boundary,
     const tnsr::II<DataVector, 3, Frame>&
-        inverse_spatial_metric_on_excision_boundary);
+        inverse_spatial_metric_on_excision_boundary,
+    const Scalar<DataVector>& deriv_comoving_char_speed);
 
 }  // namespace control_system::size

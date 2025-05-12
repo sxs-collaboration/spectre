@@ -48,11 +48,12 @@ std::string DeltaRDriftOutward::update(
     // Switch to AhSpeed mode. Note that we don't check ComovingCharSpeed
     // like we do in state DeltaR; this behavior agrees with SpEC.
 
-    // This factor prevents oscillating between states Initial and
-    // AhSpeed.  It needs to be slightly greater than unity, but the
-    // control system should not be sensitive to the exact
-    // value. The value of 1.01 was chosen arbitrarily in SpEC and
-    // never needed to be changed.
+    // This factor prevents oscillations between
+    // DeltaR/DeltaRInward/DeltaRNoDrift/DeltaROutward and AhSpeed.
+    // It needs to be slightly greater than unity, but the control
+    // system should not be sensitive to the exact value. The value of
+    // 1.01 was chosen arbitrarily in SpEC and never needed to be
+    // changed.
     constexpr double non_oscillation_factor = 1.01;
     info->discontinuous_change_has_occurred = true;
     info->state = std::make_unique<States::AhSpeed>();
@@ -72,7 +73,8 @@ std::string DeltaRDriftOutward::update(
     ss << " Suggested timescale = " << info->suggested_time_scale;
   } else if (update_args.average_radial_distance.has_value() and
              update_args.average_radial_distance.value() <
-                 update_args.max_allowed_radial_distance.value()) {
+                 update_args.max_allowed_radial_distance.value_or(
+                     std::numeric_limits<double>::infinity())) {
     ss << "Current state DeltaRDriftOutward. Switching to DeltaR.";
     info->discontinuous_change_has_occurred = true;
     info->state = std::make_unique<States::DeltaR>();
