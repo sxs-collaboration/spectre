@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_BackgroundGrVars.cpp
   Test_CartesianFluxDivergence.cpp
   Test_CellCenteredFlux.cpp
+  Test_CombineVolumeGhostData.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
   Test_GetActiveTag.cpp

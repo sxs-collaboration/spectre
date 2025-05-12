@@ -13,6 +13,7 @@ spectre_target_headers(
   BackgroundGrVars.hpp
   CartesianFluxDivergence.hpp
   CellCenteredFlux.hpp
+  CombineVolumeGhostData.hpp
   ComputeBoundaryTerms.hpp
   CorrectPackagedData.hpp
   DgSubcell.hpp
@@ -48,6 +49,7 @@ spectre_target_sources(
   PRIVATE
   ActiveGrid.cpp
   CartesianFluxDivergence.cpp
+  CombineVolumeGhostData.cpp
   GhostData.cpp
   GhostZoneLogicalCoordinates.cpp
   InitialTciData.cpp

@@ -98,6 +98,17 @@ class SubcellOptions {
     using type = bool;
     using group = TroubledCellIndicator;
   };
+  /// If true, then we allow extension directions to be used for
+  /// computing the ghost points in the FD subcell method to avoid
+  /// extrapolation.
+  struct EnableExtensionDirections {
+    static constexpr Options::String help{
+        "If true, then we allow extension directions to be used for "
+        "computing the ghost points in the FD subcell method to avoid "
+        "extrapolation."};
+    using type = bool;
+    using group = TroubledCellIndicator;
+  };
   /// Method to use for reconstructing the DG solution from the subcell
   /// solution.
   struct SubcellToDgReconstructionMethod {
@@ -189,11 +200,13 @@ class SubcellOptions {
     using group = FdToDgTci;
   };
 
-  using options = tmpl::list<
-      PerssonExponent, PerssonNumHighestModes, RdmpDelta0, RdmpEpsilon,
-      AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo,
-      OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder,
-      NumberOfStepsBetweenTciCalls, MinTciCallsAfterRollback, MinimumClearTcis>;
+  using options =
+      tmpl::list<PerssonExponent, PerssonNumHighestModes, RdmpDelta0,
+                 RdmpEpsilon, AlwaysUseSubcells, EnableExtensionDirections,
+                 SubcellToDgReconstructionMethod, UseHalo,
+                 OnlyDgBlocksAndGroups, FiniteDifferenceDerivativeOrder,
+                 NumberOfStepsBetweenTciCalls, MinTciCallsAfterRollback,
+                 MinimumClearTcis>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -202,7 +215,8 @@ class SubcellOptions {
   SubcellOptions(
       double persson_exponent, size_t persson_num_highest_modes,
       double rdmp_delta0, double rdmp_epsilon, bool always_use_subcells,
-      fd::ReconstructionMethod recons_method, bool use_halo,
+      bool enable_extension_directions, fd::ReconstructionMethod recons_method,
+      bool use_halo,
       std::optional<std::vector<std::string>> only_dg_block_and_group_names,
       ::fd::DerivativeOrder finite_difference_derivative_order,
       size_t number_of_steps_between_tci_calls,
@@ -235,6 +249,10 @@ class SubcellOptions {
   double rdmp_epsilon() const { return rdmp_epsilon_; }
 
   bool always_use_subcells() const { return always_use_subcells_; }
+
+  bool enable_extension_directions() const {
+    return enable_extension_directions_;
+  }
 
   fd::ReconstructionMethod reconstruction_method() const {
     return reconstruction_method_;
@@ -285,6 +303,7 @@ class SubcellOptions {
   double rdmp_delta0_ = std::numeric_limits<double>::signaling_NaN();
   double rdmp_epsilon_ = std::numeric_limits<double>::signaling_NaN();
   bool always_use_subcells_ = false;
+  bool enable_extension_directions_ = false;
   fd::ReconstructionMethod reconstruction_method_ =
       fd::ReconstructionMethod::AllDimsAtOnce;
   bool use_halo_{false};

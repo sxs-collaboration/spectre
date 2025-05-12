@@ -280,7 +280,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const evolution::dg::subcell::SubcellOptions& subcell_options =
       evolution::dg::subcell::SubcellOptions{
           evolution::dg::subcell::SubcellOptions{
-              4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell,
+              4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
               use_halo,
               disable_subcell_in_block

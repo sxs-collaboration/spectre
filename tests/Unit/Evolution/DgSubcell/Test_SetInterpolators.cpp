@@ -18,6 +18,7 @@
 #include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/CombineVolumeGhostData.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
@@ -42,20 +43,20 @@ auto make_grid_map(const size_t id) {
     using domain::CoordinateMaps::ProductOf2Maps;
     return make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         ProductOf2Maps<Affine, Affine>(
-            Affine(-1.0, 1.0, -1.0, id == 0 ? -0.8 : -1.9),
+            Affine(-1.0, 1.0, -1.0, id == 0 ? -0.3 : -1.3),
             Affine(-1.0, 1.0, -1.0, -0.8)));
   } else {
     using domain::CoordinateMaps::ProductOf3Maps;
     return make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
         ProductOf3Maps<Affine, Affine, Affine>(
-            Affine(-1.0, 1.0, -1.0, id == 0 ? -0.8 : -1.9),
+            Affine(-1.0, 1.0, -1.0, id == 0 ? -0.5 : -1.2),
             Affine(-1.0, 1.0, -1.0, -0.8), Affine(-1.0, 1.0, 0.8, 1.0)));
   }
 }
 
 class DummyReconstructor {
  public:
-  static size_t ghost_zone_size() { return 2; }
+  static size_t ghost_zone_size() { return 3; }
 };
 
 namespace Tags {
@@ -66,14 +67,15 @@ struct Reconstructor : db::SimpleTag,
 }  // namespace Tags
 
 template <size_t Dim>
-void test() {
+void test(const bool enable_extension) {
   // Domain setup:
   //   | lower_xi | element |
   //
   // No neighbors in upper xi or in eta/zeta.
-
+  // We currently can only use enable_extension =true
+  // with always_use_subcell = true.
   const evolution::dg::subcell::SubcellOptions subcell_options(
-      4.0, 1, 2.0e-3, 2.0e-4, false,
+      4.0, 1, 2.0e-3, 2.0e-4, enable_extension, enable_extension,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
       std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
 
@@ -141,8 +143,7 @@ void test() {
       db::AddSimpleTags<
           InterpolatorsFromFdToNeighborFd<Dim>,
           InterpolatorsFromDgToNeighborFd<Dim>,
-          InterpolatorsFromNeighborDgToFd<Dim>,
-
+          InterpolatorsFromNeighborDgToFd<Dim>, ExtensionDirections<Dim>,
           ::domain::Tags::Element<Dim>, ::domain::Tags::Domain<Dim>,
           domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
           ::domain::Tags::ElementMap<Dim, Frame::Grid>, Tags::Reconstructor,
@@ -161,8 +162,8 @@ void test() {
       typename InterpolatorsFromFdToNeighborFd<Dim>::type{},
       typename InterpolatorsFromDgToNeighborFd<Dim>::type{},
       typename InterpolatorsFromNeighborDgToFd<Dim>::type{},
-
-      element, Domain<Dim>{std::move(blocks)}, dg_mesh, subcell_mesh,
+      typename ExtensionDirections<Dim>::type{}, element,
+      Domain<Dim>{std::move(blocks)}, dg_mesh, subcell_mesh,
       ElementMap{element_id, make_grid_map<Dim, Frame::Grid>(0)},
       std::make_unique<DummyReconstructor>(), subcell_options);
   db::mutate_apply<evolution::dg::subcell::SetInterpolators<Dim>>(
@@ -181,61 +182,134 @@ void test() {
   REQUIRE(db::get<InterpolatorsFromNeighborDgToFd<Dim>>(box)
               .at(lower_xi_id)
               .has_value());
+  if (enable_extension) {
+    const Direction<Dim> direction_to_extend_v =
+        db::get<ExtensionDirections<Dim>>(box)
+            .at(Direction<Dim>::lower_xi())
+            .direction_to_extend;
 
-  // Interpolate to neighbor ghost zones.
-  tnsr::I<DataVector, Dim, Frame::Grid> dg_to_ghost_zones{};
-  tnsr::I<DataVector, Dim, Frame::Grid> fd_to_ghost_zones{};
-  for (size_t i = 0; i < Dim; ++i) {
-    dg_to_ghost_zones.get(i) =
-        db::get<InterpolatorsFromDgToNeighborFd<Dim>>(box)
-            .at(lower_xi_id)
-            .value()
-            .interpolate(
-                db::get<domain::Tags::Coordinates<Dim, Frame::Grid>>(box).get(
-                    i));
-    fd_to_ghost_zones.get(i) =
-        db::get<InterpolatorsFromFdToNeighborFd<Dim>>(box)
-            .at(lower_xi_id)
-            .value()
-            .interpolate(db::get<evolution::dg::subcell::Tags::Coordinates<
-                             Dim, Frame::Grid>>(box)
-                             .get(i));
-  }
-  // Compute the lower-xi neighbor expected ghost zones.
-  const auto lower_xi_logical_ghost_coords =
-      evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
-          subcell_mesh, DummyReconstructor::ghost_zone_size(),
-          Direction<Dim>::lower_xi());
-  const ElementMap lower_xi_element_map{lower_xi_element_id,
-                                        make_grid_map<Dim, Frame::Grid>(1)};
-  const auto lower_xi_neighbor_grid_ghost_coords =
-      lower_xi_element_map(lower_xi_logical_ghost_coords);
-  // Check interpolation worked correctly.
-  CHECK_ITERABLE_APPROX(dg_to_ghost_zones, lower_xi_neighbor_grid_ghost_coords);
-  CHECK_ITERABLE_APPROX(fd_to_ghost_zones, lower_xi_neighbor_grid_ghost_coords);
+    const auto& element_coords_in_grid =
+        db::get<evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Grid>>(
+            box);
 
-  // Check interpolating lower-xi DG data works to our FD ghost zones.
-  const auto lower_xi_dg_grid_coords =
-      lower_xi_element_map(element_logical_coords);
-  tnsr::I<DataVector, Dim, Frame::Grid> lower_xi_dg_to_ghost_zones{};
-  for (size_t i = 0; i < Dim; ++i) {
-    lower_xi_dg_to_ghost_zones.get(i) =
-        db::get<InterpolatorsFromNeighborDgToFd<Dim>>(box)
-            .at(lower_xi_id)
-            .value()
-            .interpolate(lower_xi_dg_grid_coords.get(i));
+    const auto element_ghost_coords =
+        evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
+            subcell_mesh, DummyReconstructor::ghost_zone_size(),
+            direction_to_extend_v);
+    const ElementMap my_element_map{element_id,
+                                    make_grid_map<Dim, Frame::Grid>(0)};
+    // transform the ghost coords to grid
+    const auto element_ghost_coords_in_grid =
+        my_element_map(element_ghost_coords);
+
+    const size_t volume_size = element_coords_in_grid.get(0).size();
+    const size_t ghost_size = element_ghost_coords_in_grid.get(0).size();
+
+    DataVector volume_data{Dim * volume_size};
+    DataVector ghost_data{Dim * ghost_size};
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < volume_size; ++j) {
+        volume_data[j + i * volume_size] = element_coords_in_grid.get(i)[j];
+      }
+      for (size_t k = 0; k < ghost_size; ++k) {
+        ghost_data[k + i * ghost_size] = element_ghost_coords_in_grid.get(i)[k];
+      }
+    }
+    const DataVector combined_data =
+        evolution::dg::subcell::combine_volume_ghost_data(
+            volume_data, ghost_data, subcell_mesh.extents(),
+            DummyReconstructor::ghost_zone_size(), direction_to_extend_v);
+
+    // Compute the lower-xi neighbor expected ghost zones.
+    const auto lower_xi_logical_ghost_coords =
+        evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
+            subcell_mesh, DummyReconstructor::ghost_zone_size(),
+            Direction<Dim>::lower_xi());
+    const ElementMap lower_xi_element_map{lower_xi_element_id,
+                                          make_grid_map<Dim, Frame::Grid>(1)};
+    const auto lower_xi_neighbor_grid_ghost_coords =
+        lower_xi_element_map(lower_xi_logical_ghost_coords);
+
+    DataVector expected_result{ghost_size * Dim};
+    for (size_t i = 0; i < Dim; ++i) {
+      for (size_t j = 0; j < ghost_size; ++j) {
+        expected_result[j + i * ghost_size] =
+            lower_xi_neighbor_grid_ghost_coords.get(i)[j];
+      }
+    }
+
+    DataVector result{ghost_size * Dim};
+    auto result_span = gsl::make_span(result.data(), result.size());
+    db::get<InterpolatorsFromFdToNeighborFd<Dim>>(box)
+        .at(lower_xi_id)
+        .value()
+        .interpolate(
+            make_not_null(&result_span),
+            gsl::make_span(combined_data.data(), combined_data.size()));
+
+    CHECK_ITERABLE_APPROX(expected_result, result);
   }
-  const auto expected_lower_xi_dg_to_ghost_zones =
-      db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(box)(
-          lower_xi_logical_ghost_coords);
-  CHECK_ITERABLE_APPROX(lower_xi_dg_to_ghost_zones,
-                        expected_lower_xi_dg_to_ghost_zones);
+
+  else {
+    // Interpolate to neighbor ghost zones.
+    tnsr::I<DataVector, Dim, Frame::Grid> dg_to_ghost_zones{};
+    tnsr::I<DataVector, Dim, Frame::Grid> fd_to_ghost_zones{};
+    for (size_t i = 0; i < Dim; ++i) {
+      dg_to_ghost_zones.get(i) =
+          db::get<InterpolatorsFromDgToNeighborFd<Dim>>(box)
+              .at(lower_xi_id)
+              .value()
+              .interpolate(
+                  db::get<domain::Tags::Coordinates<Dim, Frame::Grid>>(box).get(
+                      i));
+      fd_to_ghost_zones.get(i) =
+          db::get<InterpolatorsFromFdToNeighborFd<Dim>>(box)
+              .at(lower_xi_id)
+              .value()
+              .interpolate(db::get<evolution::dg::subcell::Tags::Coordinates<
+                               Dim, Frame::Grid>>(box)
+                               .get(i));
+    }
+    // Compute the lower-xi neighbor expected ghost zones.
+    const auto lower_xi_logical_ghost_coords =
+        evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
+            subcell_mesh, DummyReconstructor::ghost_zone_size(),
+            Direction<Dim>::lower_xi());
+    const ElementMap lower_xi_element_map{lower_xi_element_id,
+                                          make_grid_map<Dim, Frame::Grid>(1)};
+    const auto lower_xi_neighbor_grid_ghost_coords =
+        lower_xi_element_map(lower_xi_logical_ghost_coords);
+    // Check interpolation worked correctly.
+    CHECK_ITERABLE_APPROX(dg_to_ghost_zones,
+                          lower_xi_neighbor_grid_ghost_coords);
+    CHECK_ITERABLE_APPROX(fd_to_ghost_zones,
+                          lower_xi_neighbor_grid_ghost_coords);
+
+    // Check interpolating lower-xi DG data works to our FD ghost zones.
+    const auto lower_xi_dg_grid_coords =
+        lower_xi_element_map(element_logical_coords);
+    tnsr::I<DataVector, Dim, Frame::Grid> lower_xi_dg_to_ghost_zones{};
+    for (size_t i = 0; i < Dim; ++i) {
+      lower_xi_dg_to_ghost_zones.get(i) =
+          db::get<InterpolatorsFromNeighborDgToFd<Dim>>(box)
+              .at(lower_xi_id)
+              .value()
+              .interpolate(lower_xi_dg_grid_coords.get(i));
+    }
+    const auto expected_lower_xi_dg_to_ghost_zones =
+        db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(box)(
+            lower_xi_logical_ghost_coords);
+    CHECK_ITERABLE_APPROX(lower_xi_dg_to_ghost_zones,
+                          expected_lower_xi_dg_to_ghost_zones);
+  }
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SetInterpolators",
                   "[Evolution][Unit]") {
-  test<1>();
-  test<2>();
-  test<3>();
+  for (const bool enable_extension : {false, true}) {
+    test<1>(enable_extension);
+    test<2>(enable_extension);
+    test<3>(enable_extension);
+  }
 }

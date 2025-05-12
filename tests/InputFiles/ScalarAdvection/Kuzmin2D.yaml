@@ -53,6 +53,7 @@ SpatialDiscretization:
           MinTciCallsAfterRollback: 1
           MinimumClearTcis: 1
         AlwaysUseSubcells: false
+        EnableExtensionDirections: false
         UseHalo: false
         OnlyDgBlocksAndGroups: None
       SubcellToDgReconstructionMethod: DimByDim

@@ -467,7 +467,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
       grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{},
       cell_centered_fluxes,
       evolution::dg::subcell::SubcellOptions{
-          4.0, 1_st, 1.0e-3, 1.0e-4, false,
+          4.0, 1_st, 1.0e-3, 1.0e-4, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, fd_derivative_order, 1, 1, 1},
       typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type{});

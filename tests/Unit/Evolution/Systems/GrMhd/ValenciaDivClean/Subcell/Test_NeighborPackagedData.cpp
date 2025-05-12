@@ -277,7 +277,7 @@ double test(const size_t num_dg_pts) {
       neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{},
       std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors,
       evolution::dg::subcell::SubcellOptions{
-          4.0, 1_st, 1.0e-3, 1.0e-4, false,
+          4.0, 1_st, 1.0e-3, 1.0e-4, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));

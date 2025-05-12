@@ -42,7 +42,7 @@ SPECTRE_TEST_CASE(
   REQUIRE(sphere.create_domain().block_names().at(6) == "InnerCube");
 
   const SubcellOptions subcell_options{
-      SubcellOptions{4.0, 1, 1.0e-4, 1.0e-4, false,
+      SubcellOptions{4.0, 1, 1.0e-4, 1.0e-4, false, false,
                      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
                      true, std::vector<std::string>{"InnerCube"},
                      fd::DerivativeOrder::Two, 10, 10, 2},

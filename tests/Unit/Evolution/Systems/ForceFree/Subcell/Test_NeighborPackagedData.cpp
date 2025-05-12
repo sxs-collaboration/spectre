@@ -300,7 +300,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
       std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors,
       solution,
       evolution::dg::subcell::SubcellOptions{
-          4.0, 1_st, 1.0e-3, 1.0e-4, false,
+          4.0, 1_st, 1.0e-3, 1.0e-4, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
 
