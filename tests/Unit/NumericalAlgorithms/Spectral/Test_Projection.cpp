@@ -85,9 +85,10 @@ void test_p_mortar_to_element() {
          ++num_points_dest) {
       const Mesh<1> mesh_dest(num_points_dest, Spectral::Basis::Legendre,
                               quadrature_dest);
+      const auto& points_dest = Spectral::collocation_points(mesh_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
-        for (size_t num_points_source = num_points_dest;
+        for (size_t num_points_source = 2;
              num_points_source <=
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
              ++num_points_source) {
@@ -103,24 +104,32 @@ void test_p_mortar_to_element() {
             const DataVector source_data = pow(points_source, test_order);
             const DataVector projected_data =
                 apply_matrix(projection, source_data);
-            // Projection matrices can be defined as the matrices which
-            // make the error in the destination space orthogonal to the
-            // destination space.  We interpolate back to the higher
-            // dimensional source space to check.
-            const DataVector interpolated_projected_data = apply_matrix(
-                Spectral::interpolation_matrix(mesh_dest, points_source),
-                projected_data);
-            const DataVector error = interpolated_projected_data - source_data;
+            if (num_points_source > num_points_dest) {
+              // Projection matrices can be defined as the matrices which
+              // make the error in the destination space orthogonal to the
+              // destination space.  We interpolate back to the higher
+              // dimensional source space to check.
+              const DataVector interpolated_projected_data = apply_matrix(
+                  Spectral::interpolation_matrix(mesh_dest, points_source),
+                  projected_data);
+              const DataVector error =
+                  interpolated_projected_data - source_data;
 
-            for (size_t orthogonality_test_order = 0;
-                 orthogonality_test_order < num_points_dest;
-                 ++orthogonality_test_order) {
-              // This integral might not be evaluated exactly for the
-              // highest order polynomials, but it will correctly
-              // determine orthogonality.
-              CHECK(definite_integral(
-                        error * pow(points_source, orthogonality_test_order),
-                        mesh_source) == approx(0.));
+              for (size_t orthogonality_test_order = 0;
+                   orthogonality_test_order < num_points_dest;
+                   ++orthogonality_test_order) {
+                // This integral might not be evaluated exactly for the
+                // highest order polynomials, but it will correctly
+                // determine orthogonality.
+                CHECK(definite_integral(
+                          error * pow(points_source, orthogonality_test_order),
+                          mesh_source) == approx(0.));
+              }
+            } else {
+              // The function can be represented exactly in both spaces.
+              auto local_approx = Approx::custom().scale(1.0).epsilon(1.0e-13);
+              CHECK_ITERABLE_CUSTOM_APPROX(
+                  projected_data, pow(points_dest, test_order), local_approx);
             }
           }
         }
@@ -207,9 +216,9 @@ void check_mortar_to_element_projection(const Spectral::SegmentSize mortar_size,
     // Test points for each half in each coordinate system.  These
     // have to have one extra point because LGL quadrature is not
     // sufficiently good.
-    const Mesh<1> test_mesh_self_mortar(mesh_self_mortar.extents(0) + 1,
-                                        mesh_self_mortar.basis(0),
-                                        mesh_self_mortar.quadrature(0));
+    const Mesh<1> test_mesh_self_mortar(
+        std::max(mesh_self_mortar.extents(0), mesh_element.extents(0)) + 1,
+        mesh_self_mortar.basis(0), mesh_self_mortar.quadrature(0));
     const auto& test_points_self_mortar =
         Spectral::collocation_points(test_mesh_self_mortar);
     // We don't need to represent the initial function on the other
@@ -269,7 +278,7 @@ void test_h_mortar_to_element() {
                               quadrature_dest);
       CAPTURE(mesh_dest);
       for (const auto& quadrature_source : quadratures) {
-        for (size_t num_points_source = num_points_dest;
+        for (size_t num_points_source = 2;
              num_points_source <=
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> - 1;
              ++num_points_source) {
@@ -557,6 +566,7 @@ void test_hash() {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test_mortar_size();

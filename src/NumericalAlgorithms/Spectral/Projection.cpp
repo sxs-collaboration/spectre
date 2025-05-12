@@ -47,12 +47,12 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
   ASSERT(parent_mesh.extents(0) <= max_points and
              child_mesh.extents(0) <= max_points,
          "Mesh has more points than supported by its quadrature.");
-  ASSERT(parent_mesh.extents(0) <= child_mesh.extents(0),
-         "Requested projection matrix from child with fewer points ("
-             << child_mesh.extents(0) << ") than the parent ("
-             << parent_mesh.extents(0) << ")");
 
   if (operand_is_massive) {
+    ASSERT(parent_mesh.extents(0) <= child_mesh.extents(0),
+           "Requested projection matrix from child with fewer points ("
+               << child_mesh.extents(0) << ") than the parent ("
+               << parent_mesh.extents(0) << ")");
     // The restriction operator for massive quantities is just the interpolation
     // transpose
     const static auto cache = make_static_cache<
@@ -90,9 +90,6 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                  const size_t extents_element,
                  const Quadrature quadrature_mortar,
                  const size_t extents_mortar) {
-                if (extents_element > extents_mortar) {
-                  return Matrix{};
-                }
                 const Mesh<1> mesh_element(extents_element, Basis::Legendre,
                                            quadrature_element);
                 const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
@@ -104,10 +101,12 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                     modal_to_nodal_matrix(mesh_element);
                 const auto& grid_to_spectral_mortar =
                     nodal_to_modal_matrix(mesh_mortar);
+                const auto num_modes =
+                    std::min(extents_element, extents_mortar);
                 Matrix projection(extents_element, extents_mortar, 0.);
                 for (size_t i = 0; i < extents_element; ++i) {
                   for (size_t j = 0; j < extents_mortar; ++j) {
-                    for (size_t k = 0; k < extents_element; ++k) {
+                    for (size_t k = 0; k < num_modes; ++k) {
                       projection(i, j) += spectral_to_grid_element(i, k) *
                                           grid_to_spectral_mortar(k, j);
                     }
@@ -130,9 +129,6 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
           CacheRange<2_st, max_points + 1>>(
           [](const Quadrature quadrature_element, const size_t extents_element,
              const Quadrature quadrature_mortar, const size_t extents_mortar) {
-            if (extents_element > extents_mortar) {
-              return Matrix{};
-            }
             const Mesh<1> mesh_element(extents_element, Basis::Legendre,
                                        quadrature_element);
             const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
@@ -173,8 +169,9 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
             const auto& grid_to_spectral_mortar =
                 nodal_to_modal_matrix(mesh_mortar);
 
-            Matrix temp(extents_element, extents_element, 0.);
-            for (size_t j = 0; j < extents_element; ++j) {
+            const auto num_modes = std::min(extents_element, extents_mortar);
+            Matrix temp(extents_element, num_modes, 0.);
+            for (size_t j = 0; j < num_modes; ++j) {
               for (size_t k = j; k < extents_element; ++k) {
                 const double transformation_entry =
                     spectral_transformation(k, j);
@@ -188,7 +185,7 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
             Matrix projection(extents_element, extents_mortar, 0.);
             for (size_t i = 0; i < extents_element; ++i) {
               for (size_t j = 0; j < extents_mortar; ++j) {
-                for (size_t k = 0; k < extents_element; ++k) {
+                for (size_t k = 0; k < num_modes; ++k) {
                   projection(i, j) +=
                       temp(i, k) * grid_to_spectral_mortar(k, j);
                 }
@@ -213,9 +210,6 @@ const Matrix& projection_matrix_child_to_parent(const Mesh<1>& child_mesh,
                  const size_t extents_element,
                  const Quadrature quadrature_mortar,
                  const size_t extents_mortar) {
-                if (extents_element > extents_mortar) {
-                  return Matrix{};
-                }
                 const Mesh<1> mesh_element(extents_element, Basis::Legendre,
                                            quadrature_element);
                 const Mesh<1> mesh_mortar(extents_mortar, Basis::Legendre,
