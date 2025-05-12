@@ -6,6 +6,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 
+#include "Evolution/DiscontinuousGalerkin/InterpolatedBoundaryData.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -21,6 +22,7 @@ void BoundaryData<Dim>::pup(PUP::er& p) {
   p | validity_range;
   p | tci_status;
   p | integration_order;
+  p | interpolated_boundary_data;
 }
 
 template <size_t Dim>
@@ -32,7 +34,8 @@ bool operator==(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs) {
          lhs.boundary_correction_data == rhs.boundary_correction_data and
          lhs.validity_range == rhs.validity_range and
          lhs.tci_status == rhs.tci_status and
-         lhs.integration_order == rhs.integration_order;
+         lhs.integration_order == rhs.integration_order and
+         lhs.interpolated_boundary_data == rhs.interpolated_boundary_data;
 }
 
 template <size_t Dim>
@@ -42,6 +45,7 @@ bool operator!=(const BoundaryData<Dim>& lhs, const BoundaryData<Dim>& rhs) {
 
 template <size_t Dim>
 std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
+  using ::operator<<;
   return os << "Volume mesh: " << value.volume_mesh << '\n'
             << "Ghost mesh: " << value.volume_mesh_ghost_cell_data << '\n'
             << "Boundary correction mesh: " << value.boundary_correction_mesh
@@ -51,7 +55,9 @@ std::ostream& operator<<(std::ostream& os, const BoundaryData<Dim>& value) {
             << '\n'
             << "Validy range: " << value.validity_range << '\n'
             << "TCI status: " << value.tci_status << '\n'
-            << "Integration order: " << value.integration_order;
+            << "Integration order: " << value.integration_order << '\n'
+            << "Interpolated boundary data: "
+            << value.interpolated_boundary_data;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

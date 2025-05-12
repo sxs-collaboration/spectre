@@ -54,6 +54,9 @@ namespace evolution::dg::Tags {
  * 7. the troublade cell indicator status using for determining halos around
  *    troubled cells.
  * 8. the integration order of the time-stepper.
+ * 9. the InterpolatedBoundaryData sent by a non-conforming Element that
+ *    interpolates its data to a subset of the points of the Element receiving
+ *    this BoundaryData
  *
  * The TimeStepId is the neighboring element's next time step. When using local
  * time stepping, the neighbor's boundary data is valid up until this time,
@@ -177,12 +180,14 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
              ghost_cell_data, boundary_correction_data, validity_range,
-             tci_status, integration_order] = data.second;
+             tci_status, integration_order, interpolated_boundary_data] =
+          data.second;
       (void)ghost_cell_data;
       auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
              current_boundary_correction_mesh, current_ghost_cell_data,
              current_boundary_correction_data, current_validity_range,
-             current_tci_status, current_integration_order] = it->second;
+             current_tci_status, current_integration_order,
+             current_interpolated_boundary_data] = it->second;
       (void)current_volume_mesh_ghost_cell_data;  // Need to use when
                                                   // optimizing subcell
       // We have already received some data at this time. Receiving data twice
@@ -228,6 +233,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
       current_validity_range = validity_range;
       current_tci_status = tci_status;
       current_integration_order = integration_order;
+      current_interpolated_boundary_data = interpolated_boundary_data;
     } else {
       // We have not received ghost cells or fluxes at this time.
       if (not current_inbox.insert(std::forward<ReceiveDataType>(data))

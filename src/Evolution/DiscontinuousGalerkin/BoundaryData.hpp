@@ -8,6 +8,7 @@
 #include <optional>
 
 #include "DataStructures/DataVector.hpp"
+#include "Evolution/DiscontinuousGalerkin/InterpolatedBoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 
@@ -30,6 +31,9 @@ namespace evolution::dg {
  * 7. the troubled cell indicator status used for determining halos around
  *    troubled cells.
  * 8. the integration order of the time-stepper
+ * 9. the InterpolatedBoundaryData sent by a non-conforming Element that
+ *    interpolates its data to a subset of the points of the Element receiving
+ *    this BoundaryData
  */
 template <size_t Dim>
 struct BoundaryData {
@@ -44,6 +48,7 @@ struct BoundaryData {
   ::TimeStepId validity_range{};
   int tci_status{};
   size_t integration_order{std::numeric_limits<size_t>::max()};
+  std::optional<InterpolatedBoundaryData<Dim>> interpolated_boundary_data{};
 };
 
 template <size_t Dim>

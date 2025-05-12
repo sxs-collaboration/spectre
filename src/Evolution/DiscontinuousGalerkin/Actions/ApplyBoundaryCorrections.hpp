@@ -127,12 +127,13 @@ void retrieve_boundary_data_spsc(
           auto& [volume_mesh, volume_mesh_ghost_cell_data,
                  boundary_correction_mesh, ghost_cell_data,
                  boundary_correction_data, validity_range, tci_status,
-                 integration_order] = data;
+                 integration_order, interpolated_boundary_data] = data;
           (void)ghost_cell_data;
           auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
                  current_boundary_correction_mesh, current_ghost_cell_data,
                  current_boundary_correction_data, current_validity_range,
-                 current_tci_status, current_integration_order] = it->second;
+                 current_tci_status, current_integration_order,
+                 current_interpolated_boundary_data] = it->second;
           // Need to use when optimizing subcell
           (void)current_volume_mesh_ghost_cell_data;
           // We have already received some data at this time. Receiving
@@ -181,6 +182,7 @@ void retrieve_boundary_data_spsc(
           current_validity_range = validity_range;
           current_tci_status = tci_status;
           current_integration_order = integration_order;
+          current_interpolated_boundary_data = interpolated_boundary_data;
         } else {
           // We have not received ghost cells or fluxes at this time.
           if (not current_inbox
