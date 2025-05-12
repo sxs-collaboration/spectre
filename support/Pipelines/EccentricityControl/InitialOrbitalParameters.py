@@ -7,6 +7,8 @@ from typing import Optional, Sequence, Tuple
 import numpy as np
 from scipy.optimize import minimize
 
+from spectre.support.CheckSpecImport import check_spec_import
+
 logger = logging.getLogger(__name__)
 
 
@@ -103,14 +105,8 @@ def initial_orbital_parameters(
     # call old Fortran code (LSODA) through scipy.integrate.odeint, which leads
     # to lots of noise in stdout. When porting these functions, we should
     # modernize them to use scipy.integrate.solve_ivp.
-    try:
-        from ZeroEccParamsFromPN import nOrbitsAndTotalTime, omegaAndAdot
-    except ImportError:
-        raise ImportError(
-            "Importing from SpEC failed. Make sure you have pointed "
-            "'-D SPEC_ROOT' to a SpEC installation when configuring the build "
-            "with CMake."
-        )
+    check_spec_import()
+    from ZeroEccParamsFromPN import nOrbitsAndTotalTime, omegaAndAdot
 
     # Find an omega0 that gives the right number of orbits or time to merger
     if num_orbits is not None or time_to_merger is not None:
