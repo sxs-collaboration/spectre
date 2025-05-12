@@ -32,6 +32,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/ElementSearchTree.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
@@ -71,6 +72,107 @@ void test_element_logical_coordinates() {
             tnsr::I<double, 3, Frame::BlockLogical>{{{0., 0.5, 1.}}},
             ElementId<3>{0, {{{1, 0}, {1, 1}, {1, 1}}}}) ==
         tnsr::I<double, 3, Frame::ElementLogical>{{{1., 0., 1.}}});
+
+  {
+    INFO("With ElementSearchTree");
+    const std::vector<ElementId<2>> element_ids{
+        // Element layout in block-logical coordinates:
+        //        xi -->
+        //        -1     0       1
+        // eta  -1  -------------
+        //  |      |  0  |   2   |
+        //  v    0 |-------------|
+        //         |  1  | 3 | 4 |
+        //       1  -------------
+        ElementId<2>{0, {{{1, 0}, {1, 0}}}},  // 0
+        ElementId<2>{0, {{{1, 0}, {1, 1}}}},  // 1
+        ElementId<2>{0, {{{1, 1}, {1, 0}}}},  // 2
+        ElementId<2>{0, {{{2, 2}, {1, 1}}}},  // 3
+        ElementId<2>{0, {{{2, 3}, {1, 1}}}},  // 4
+        // Other block
+        ElementId<2>{1, {{{1, 0}, {1, 0}}}}};
+    const auto search_tree = domain::index_element_ids(element_ids);
+    CHECK(element_logical_coordinates<2>(
+              {domain::BlockId{0},
+               tnsr::I<double, 2, Frame::BlockLogical>{{{0.25, 0.5}}}},
+              search_tree) ==
+          std::make_pair(
+              element_ids[3],
+              tnsr::I<double, 2, Frame::ElementLogical>{{{0.0, 0.0}}}));
+    CHECK(element_logical_coordinates<2>(
+              {domain::BlockId{0},
+               tnsr::I<double, 2, Frame::BlockLogical>{{{-0.5, 0.5}}}},
+              search_tree) ==
+          std::make_pair(
+              element_ids[1],
+              tnsr::I<double, 2, Frame::ElementLogical>{{{0.0, 0.0}}}));
+    CHECK(element_logical_coordinates<2>(
+              {domain::BlockId{1},
+               tnsr::I<double, 2, Frame::BlockLogical>{{{-0.5, -0.5}}}},
+              search_tree) ==
+          std::make_pair(
+              element_ids[5],
+              tnsr::I<double, 2, Frame::ElementLogical>{{{0.0, 0.0}}}));
+    CHECK(element_logical_coordinates<2>(
+              {domain::BlockId{0},
+               tnsr::I<double, 2, Frame::BlockLogical>{{{-1.0, -0.5}}}},
+              search_tree) ==
+          std::make_pair(
+              element_ids[0],
+              tnsr::I<double, 2, Frame::ElementLogical>{{{-1.0, 0.0}}}));
+    CHECK(element_logical_coordinates<2>(
+              {domain::BlockId{0},
+               tnsr::I<double, 2, Frame::BlockLogical>{{{0.0, 0.0}}}},
+              search_tree) ==
+          std::make_pair(
+              // Multiple matches, result should be the first one inserted
+              element_ids[0],
+              tnsr::I<double, 2, Frame::ElementLogical>{{{1.0, 1.0}}}));
+    CHECK_FALSE(element_logical_coordinates<2>(
+                    {domain::BlockId{1},
+                     tnsr::I<double, 2, Frame::BlockLogical>{{{0.5, 0.5}}}},
+                    search_tree)
+                    .has_value());
+    CHECK_FALSE(element_logical_coordinates<2>(
+                    {domain::BlockId{2},
+                     tnsr::I<double, 2, Frame::BlockLogical>{{{-0.5, -0.5}}}},
+                    search_tree)
+                    .has_value());
+  }
+
+  {
+    // Benchmark with and without search tree
+    // - Result on Apple M2 Pro chip (Nils Vu, May 2025):
+    //   4.7 ms without search tree vs 0.2 ms with search tree (mean time per
+    //   sample)
+    const auto element_ids =
+        initial_element_ids<3>({{{3, 3, 3}}, {{2, 2, 2}}, {{1, 1, 1}}});
+    const auto search_tree = domain::index_element_ids(element_ids);
+    const size_t num_points = 100;
+    std::vector<
+        IdPair<domain::BlockId, tnsr::I<double, 3, Frame::BlockLogical>>>
+        target_points;
+    target_points.reserve(num_points);
+    std::uniform_int_distribution<size_t> dist_blocks(0, 3);
+    std::uniform_real_distribution<double> dist_points(-1.0, 1.0);
+    MAKE_GENERATOR(gen);
+    for (size_t i = 0; i < num_points; ++i) {
+      target_points.push_back(
+          {domain::BlockId{dist_blocks(gen)},
+           tnsr::I<double, 3, Frame::BlockLogical>{
+               {dist_points(gen), dist_points(gen), dist_points(gen)}}});
+    }
+    BENCHMARK("element_logical_coordinates without search tree") {
+      for (const auto& target_point : target_points) {
+        element_logical_coordinates(element_ids, {target_point});
+      }
+    };
+    BENCHMARK("element_logical_coordinates with search tree") {
+      for (const auto& target_point : target_points) {
+        element_logical_coordinates(target_point, search_tree);
+      }
+    };
+  }
 }
 
 template <size_t Dim>

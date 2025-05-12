@@ -206,16 +206,9 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
                                            {0., 0., 0., 0., 0., 0.},
                                            {0., 0., 0., 0., 0., 0.}}}};
     const size_t num_target_points = get<0>(target_points).size();
-    std::array<std::vector<double>, 3> target_points_array{};
-    for (size_t d = 0; d < 3; ++d) {
-      gsl::at(target_points_array, d).resize(num_target_points);
-      for (size_t i = 0; i < num_target_points; ++i) {
-        gsl::at(target_points_array, d)[i] = target_points.get(d)[i];
-      }
-    }
     const auto interpolated_data = interpolate_to_points<3>(
-        h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"},
-        target_points_array, true);
+        h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"}, target_points,
+        true);
     CHECK(interpolated_data.size() == 1);
     CHECK(interpolated_data[0].size() == num_target_points);
     // Check result
@@ -238,6 +231,48 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     // This point is interpolated
     Approx approx_interpolated = Approx::custom().epsilon(1.e-6).scale(1.0);
     CHECK(psi_interpolated[5] == approx_interpolated(psi_expected[5]));
+
+    // Do some benchmarks
+    // - Results ran on Apple M2 Pro chip (Nils Vu, May 2025)
+    // - First number is without h-refinement (as set in the domain creator
+    //   above so these tests run quickly). Second number is when setting the
+    //   h-refinement to 2.
+    // 9.5 ms / 576 ms
+    BENCHMARK("interpolate_to_points") {
+      return interpolate_to_points<3>(h5_file_name, "/VolumeData",
+                                      ObservationId{123}, {"Psi"},
+                                      target_points, true);
+    };
+    {
+      PointwiseInterpolator<3, Frame::Inertial> interpolator{
+          h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"}};
+      // 3.1 ms / 3.4 ms
+      BENCHMARK("PointwiseInterpolator::interpolate_to_points") {
+        std::vector<DataVector> result{};
+        interpolator.interpolate_to_points(make_not_null(&result),
+                                           target_points, true);
+        return result;
+      };
+      // 147 us / 149 us
+      BENCHMARK("PointwiseInterpolator::interpolate_to_point") {
+        std::vector<double> result{};
+        interpolator.interpolate_to_point(make_not_null(&result),
+                                          tnsr::I<double, 3>{{10., 0., 0.}});
+        return result;
+      };
+      std::vector<size_t> block_order(domain.blocks().size());
+      std::iota(block_order.begin(), block_order.end(), 0);
+      // 137 us / 143 us
+      BENCHMARK(
+          "PointwiseInterpolator::interpolate_to_point with block order") {
+        std::vector<double> result{};
+        interpolator.interpolate_to_point(make_not_null(&result),
+                                          tnsr::I<double, 3>{{10., 0., 0.}},
+                                          make_not_null(&block_order));
+        return result;
+      };
+    }
+
     // Delete the test file
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);

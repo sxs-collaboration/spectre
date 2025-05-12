@@ -4,12 +4,14 @@
 #pragma once
 
 #include <cstddef>
+#include <map>
 #include <optional>
 #include <unordered_map>
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Structure/ElementSearchTree.hpp"
 
 /// \cond
 namespace domain {
@@ -38,6 +40,29 @@ std::optional<tnsr::I<double, Dim, Frame::ElementLogical>>
 element_logical_coordinates(
     const tnsr::I<double, Dim, Frame::BlockLogical>& x_block_logical,
     const ElementId<Dim>& element_id);
+
+/*!
+ * \brief Map block logical coordinates to element logical coordinates using an
+ * indexed set of elements
+ *
+ * The indexing is done by the `domain::index_element_ids` function, which
+ * places element IDs into a search tree for fast lookup. If the point is on a
+ * shared element boundary then no guarantee is made which of the abutting
+ * element IDs is returned (the returned element ID is deterministic but depends
+ * on the order in which the elements were inserted into the search tree). See
+ * the other function overload for handling multiple points and disambiguating
+ * points on shared element boundaries.
+ *
+ * \param block_logical_coords the block logical coordinates of the point
+ * \param search_tree the result of `domain::index_element_ids`
+ */
+template <size_t Dim>
+std::optional<
+    std::pair<ElementId<Dim>, tnsr::I<double, Dim, Frame::ElementLogical>>>
+element_logical_coordinates(
+    const IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::BlockLogical>>&
+        block_logical_coords,
+    const std::map<size_t, domain::ElementSearchTree<Dim>>& search_tree);
 
 /// \ingroup ComputationalDomainGroup
 ///

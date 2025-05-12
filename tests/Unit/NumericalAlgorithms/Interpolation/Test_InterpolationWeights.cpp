@@ -43,6 +43,10 @@ void test_fornberg_matrix(const gsl::not_null<std::mt19937*> generator) {
           CHECK(fornberg_matrix.rows() == n_target_points);
           CHECK(fornberg_matrix.columns() == n_source_points);
           CHECK(spectral_matrix == fornberg_matrix);
+          if (n_target_points == 1) {
+            CHECK(intrp::fornberg_interpolation_matrix(
+                      x_target[0], get<0>(xi)) == fornberg_matrix);
+          }
         }
       }
     }
@@ -70,6 +74,10 @@ void test_fourier_matrix(const gsl::not_null<std::mt19937*> generator) {
            n_target_points, f_source.data(), 1, 0.0, f_interp.data(), 1);
     for (size_t k = 0; k < n_target_points; ++k) {
       CHECK_THAT(f_interp[k], Catch::Matchers::WithinAbs(f_target[k], 1.e-13));
+    }
+    if (n_target_points == 1) {
+      CHECK(intrp::fourier_interpolation_matrix(x_target[0], n_source_points) ==
+            m);
     }
   }
 }

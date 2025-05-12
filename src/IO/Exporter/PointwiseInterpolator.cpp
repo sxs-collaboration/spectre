@@ -152,7 +152,7 @@ void interpolate_to_points_impl(
 template <size_t Dim>
 void interpolate_to_point_impl(
     const gsl::not_null<std::vector<double>*> result,
-    const tnsr::I<DataVector, Dim, Frame::ElementLogical>& x_element_logical,
+    const tnsr::I<double, Dim, Frame::ElementLogical>& x_element_logical,
     const Mesh<Dim>& mesh, const size_t offset, const size_t length,
     const std::vector<DataVector>& tensor_data) {
   const intrp::Irregular<Dim> interpolant(mesh, x_element_logical);
@@ -584,14 +584,21 @@ void interpolate_to_points(
     }
   }
 
-  if (extrapolate_into_excisions) {
+  if (extrapolate_into_excisions and not extrapolation_info.empty()) {
     extrapolate_into_excisions_impl(result, extrapolation_info,
                                     resolved_num_threads);
     // Clear the anchor points from the result
     for (size_t i = 0; i < result->size(); ++i) {
       ResultDataType& component = (*result)[i];
       if constexpr (std::is_same_v<ResultDataType, DataVector>) {
-        component.destructive_resize(num_target_points);
+        // Can't use `destructive_resize` because we want to preserve the
+        // leading elements of the DataVector
+        DataVector new_component(num_target_points);
+        std::copy(
+            component.begin(),
+            component.begin() + static_cast<std::ptrdiff_t>(num_target_points),
+            new_component.begin());
+        component = std::move(new_component);
       } else {
         component.resize(num_target_points);
       }
@@ -615,6 +622,7 @@ PointwiseInterpolator<Dim, Frame>::PointwiseInterpolator(
 
   // Load tensor data into memory
   element_ids_.reserve(filenames.size());
+  element_search_trees_.reserve(filenames.size());
   meshes_.reserve(filenames.size());
   tensor_data_.reserve(filenames.size());
   for (const auto& filename : filenames) {
@@ -622,6 +630,8 @@ PointwiseInterpolator<Dim, Frame>::PointwiseInterpolator(
     const auto& volfile = h5file.get<h5::VolumeData>(subfile_name);
     const auto [element_ids, meshes] = load_grids<Dim>(volfile, obs_id_);
     element_ids_.push_back(std::move(element_ids));
+    element_search_trees_.push_back(
+        domain::index_element_ids(element_ids_.back()));
     meshes_.push_back(std::move(meshes));
     tensor_data_.push_back(
         load_tensor_data(volfile, obs_id_, tensor_components));
@@ -708,19 +718,27 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_point(
   if (not block_logical_coords.has_value()) {
     ERROR("Point is not in any block:\n" << target_point);
   }
-  // Process all volume files in serial
+  interpolate_to_point(result, block_logical_coords.value());
+}
+
+template <size_t Dim, typename Frame>
+void PointwiseInterpolator<Dim, Frame>::interpolate_to_point(
+    const gsl::not_null<std::vector<double>*> result,
+    const IdPair<domain::BlockId, tnsr::I<double, Dim, ::Frame::BlockLogical>>&
+        target_point) const {
+  ASSERT(not tensor_data_.empty(),
+         "PointwiseInterpolator has not been initialized with tensor data.");
   for (size_t file_id = 0; file_id < element_ids_.size(); ++file_id) {
-    const auto& element_ids = element_ids_[file_id];
+    const auto& element_search_tree = element_search_trees_[file_id];
     const auto& meshes = meshes_[file_id];
     const auto& tensor_data = tensor_data_[file_id];
     const auto element_logical_coords =
-        element_logical_coordinates(element_ids, {block_logical_coords});
-    if (element_logical_coords.empty()) {
+        element_logical_coordinates(target_point, element_search_tree);
+    if (not element_logical_coords.has_value()) {
       continue;
     }
-    const auto& element_id = element_logical_coords.begin()->first;
-    const auto& x_element_logical =
-        element_logical_coords.begin()->second.element_logical_coords;
+    const auto& element_id = element_logical_coords.value().first;
+    const auto& x_element_logical = element_logical_coords.value().second;
     const auto& mesh_offset_length = meshes.at(element_id);
     interpolate_to_point_impl(
         result, x_element_logical, get<0>(mesh_offset_length),

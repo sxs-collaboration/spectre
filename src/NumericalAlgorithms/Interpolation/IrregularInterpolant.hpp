@@ -39,6 +39,9 @@ class Irregular {
   Irregular(
       const Mesh<Dim>& source_mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& target_points);
+  Irregular(
+      const Mesh<Dim>& source_mesh,
+      const tnsr::I<double, Dim, Frame::ElementLogical>& target_point);
   Irregular();
 
   /// Serialization for Charm++

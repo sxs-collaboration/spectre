@@ -177,6 +177,18 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) {
     CHECK(irregular_interpolant_new != irregular_interpolant);
   }
 
+  // ... and another to test the constructor from a single point
+  {
+    tnsr::I<double, Dim, Frame::ElementLogical> target_x_single{};
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> target_x_single_dv(1_st);
+    for (size_t d = 0; d < Dim; ++d) {
+      target_x_single.get(d) = target_x.get(d)[0];
+      target_x_single_dv.get(d)[0] = target_x_single.get(d);
+    }
+    CHECK(intrp::Irregular<Dim>(mesh, target_x_single) ==
+          intrp::Irregular<Dim>(mesh, target_x_single_dv));
+  }
+
   // Coordinates on the grid
   const auto src_x = coordinate_map(logical_coordinates(mesh));
 
