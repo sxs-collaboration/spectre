@@ -24,6 +24,7 @@ Next:
       - AdmLinearMomentum
     evolve: {{ evolve }}
     eccentricity_control: {{ eccentricity_control }}
+    negative_expansion_bc: {{ negative_expansion_bc }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
@@ -85,7 +86,11 @@ DomainCreator:
               - {{ HorizonRotationRight_y }}
               - {{ HorizonRotationRight_z }}
             Lapse: *kerr_right
+            {% if negative_expansion_bc %}
             NegativeExpansion: *kerr_right
+            {% else %}
+            NegativeExpansion: None
+            {% endif %}
       UseLogarithmicMap: True
     ObjectB:
       InnerRadius: {{ ExcisionRadiusLeft }}
@@ -100,7 +105,11 @@ DomainCreator:
               - {{ HorizonRotationLeft_y }}
               - {{ HorizonRotationLeft_z }}
             Lapse: *kerr_left
+            {% if negative_expansion_bc %}
             NegativeExpansion: *kerr_left
+            {% else %}
+            NegativeExpansion: None
+            {% endif %}
       UseLogarithmicMap: True
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:

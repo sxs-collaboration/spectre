@@ -40,6 +40,7 @@ class TestInitialData(unittest.TestCase):
             radial_expansion_velocity=-1.0e-5,
             refinement_level=1,
             polynomial_order=5,
+            negative_expansion_bc=True,
         )
         self.assertEqual(params["ConformalMassRight"], 0.6)
         self.assertEqual(params["ConformalMassLeft"], 0.4)
@@ -183,6 +184,7 @@ class TestInitialData(unittest.TestCase):
                     ],
                     "evolve": True,
                     "eccentricity_control": True,
+                    "negative_expansion_bc": True,
                     "scheduler": "None",
                     "copy_executable": "None",
                     "submit_script_template": "None",

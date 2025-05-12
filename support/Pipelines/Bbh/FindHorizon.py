@@ -12,6 +12,11 @@ import spectre.IO.H5 as spectre_h5
 from spectre.ApparentHorizonFinder import FastFlow, FlowType, Status
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import tnsr
+from spectre.Domain import (
+    deserialize_domain,
+    deserialize_functions_of_time,
+    strahlkorper_in_inertial_frame_aligned,
+)
 from spectre.IO.Exporter import ObservationId, interpolate_tensors_to_points
 from spectre.PointwiseFunctions.GeneralRelativity.Surfaces import (
     horizon_quantities,
@@ -23,7 +28,10 @@ from spectre.SphericalHarmonics import (
     cartesian_coords,
     ylm_legend_and_data,
 )
-from spectre.Visualization.OpenVolfiles import open_volfiles_command
+from spectre.Visualization.OpenVolfiles import (
+    open_volfiles,
+    open_volfiles_command,
+)
 from spectre.Visualization.ReadH5 import list_observations
 
 logger = logging.getLogger(__name__)
@@ -274,6 +282,129 @@ def find_horizon(
             )
             datfile.append(reduction_data)
     return strahlkorper, quantities
+
+
+def use_excision_as_horizon(
+    h5_files: Union[str, Sequence[str]],
+    subfile_name: str,
+    obs_id: int,
+    obs_time: float,
+    l_max: int,
+    radius: float,
+    center: Sequence[float],
+    output_reductions_file: Optional[Union[str, Path]] = None,
+    output_quantities_subfile: Optional[str] = None,
+    tensor_names: Optional[Sequence[str]] = None,
+):
+    """Use excision to compute horizon quantities.
+
+    The volume data must contain the spatial metric, inverse spatial metric,
+    extrinsic curvature, spatial Christoffel symbols, and spatial Ricci tensor.
+
+    Arguments:
+      h5_files: List of H5 files containing volume data or glob pattern.
+      subfile_name: Name of the volume data subfile in the 'h5_files'.
+      obs_id: Observation ID in the volume data.
+      obs_time: Time of the observation.
+      l_max: Maximum l-mode for the horizon Ylm representation.
+      radius: Radius of the excision.
+      center: Center of the excision.
+      output_reductions_file: Optional. H5 output file where the reduction
+        quantities on the horizon will be written, e.g. masses and spins.
+        Can be a new or existing file. Requires 'output_quantities_subfile'
+        is also specified.
+      output_quantities_subfile: Optional. Name of the subfile in the
+        'output_reductions_file' where the horizon quantities will be written,
+        e.g. masses and spins.
+      tensor_names: Optional. List of tensor names in the volume data that
+        represent the spatial metric, inverse spatial metric, extrinsic
+        curvature, spatial Christoffel symbols, and spatial Ricci tensor, in
+        this order. Defaults to ["SpatialMetric", "InverseSpatialMetric",
+        "ExtrinsicCurvature", "SpatialChristoffelSecondKind", "SpatialRicci"].
+
+    Returns: The Strahlkorper representing the horizon, and a dictionary of
+      horizon quantities (e.g. area, mass, spin, etc.).
+    """
+    if not tensor_names:
+        tensor_names = [
+            "SpatialMetric",
+            "InverseSpatialMetric",
+            "ExtrinsicCurvature",
+            "SpatialChristoffelSecondKind",
+            "SpatialRicci",
+        ]
+
+    # Define excision in the grid frame
+    excision_grid = Strahlkorper[Frame.Grid](l_max, radius, center)
+
+    # Interpolate the tensors to the excision points
+    (
+        spatial_metric,
+        inv_spatial_metric,
+        extrinsic_curvature,
+        spatial_christoffel_second_kind,
+        spatial_ricci,
+    ) = interpolate_tensors_to_points(
+        h5_files,
+        subfile_name,
+        observation=ObservationId(obs_id),
+        target_points=cartesian_coords(excision_grid),
+        tensor_names=tensor_names,
+        tensor_types=[
+            tnsr.ii[DataVector, 3],
+            tnsr.II[DataVector, 3],
+            tnsr.ii[DataVector, 3],
+            tnsr.Ijj[DataVector, 3],
+            tnsr.ii[DataVector, 3],
+        ],
+    )
+
+    # Deserialize domain and get the excision in the inertial frame
+    if isinstance(h5_files, str):
+        h5_files = [h5_files]
+    for volfile in open_volfiles(h5_files, subfile_name, obs_id):
+        dim = volfile.get_dimension()
+        domain = deserialize_domain[dim](volfile.get_domain(obs_id))
+        if domain.is_time_dependent():
+            functions_of_time = deserialize_functions_of_time(
+                volfile.get_functions_of_time(obs_id)
+            )
+            excision_inertial = strahlkorper_in_inertial_frame_aligned(
+                excision_grid, domain, functions_of_time, obs_time
+            )
+        else:
+            # When the domain is time-independent, the excision is the same in
+            # the grid and inertial frames.
+            excision_inertial = Strahlkorper[Frame.Inertial](
+                l_max, radius, center
+            )
+        break
+
+    # Compute horizon quantities
+    quantities = horizon_quantities(
+        excision_inertial,
+        spatial_metric=spatial_metric,
+        inv_spatial_metric=inv_spatial_metric,
+        extrinsic_curvature=extrinsic_curvature,
+        spatial_christoffel_second_kind=spatial_christoffel_second_kind,
+        spatial_ricci=spatial_ricci,
+    )
+
+    if output_reductions_file:
+        assert output_quantities_subfile, (
+            "Specify 'output_quantities_subfile' if 'output_reductions_file'"
+            " is specified."
+        )
+        if Path(output_reductions_file).suffix not in [".h5", ".hdf5"]:
+            output_reductions_file += ".h5"
+        legend, reduction_data = _horizon_reduction_data(quantities)
+        with spectre_h5.H5File(str(output_reductions_file), "a") as output_file:
+            datfile = output_file.try_insert_dat(
+                output_quantities_subfile, legend, 0
+            )
+            datfile.append(reduction_data)
+
+    return excision_inertial, quantities
 
 
 @click.command(name="find-horizon")

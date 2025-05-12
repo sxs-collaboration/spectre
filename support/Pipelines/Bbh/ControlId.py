@@ -57,6 +57,7 @@ def control_id(
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
     refinement_level: int = 1,
     polynomial_order: int = 6,
+    negative_expansion_bc: bool = True,
 ):
     """Control BBH physical parameters.
 
@@ -186,6 +187,7 @@ def control_id(
                 scheduler=None,
                 refinement_level=refinement_level,
                 polynomial_order=polynomial_order,
+                negative_expansion_bc=negative_expansion_bc,
             )
 
         # Initialize dictionary to hold the measured physical parameters

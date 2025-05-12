@@ -16,7 +16,11 @@ from spectre.Domain.Creators import Sphere
 from spectre.Informer import unit_test_build_path
 from spectre.IO.H5.IterElements import Element
 from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
-from spectre.Pipelines.Bbh.FindHorizon import find_horizon, find_horizon_command
+from spectre.Pipelines.Bbh.FindHorizon import (
+    find_horizon,
+    find_horizon_command,
+    use_excision_as_horizon,
+)
 from spectre.PointwiseFunctions.AnalyticSolutions.GeneralRelativity import (
     KerrSchild,
 )
@@ -134,6 +138,27 @@ class TestFindHorizon(unittest.TestCase):
         )
         # Mass and spin should be 1.0 and 0.0
         npt.assert_allclose(quantities["ChristodoulouMass"], 1.0, atol=1e-3)
+        npt.assert_allclose(
+            quantities["DimensionlessSpinMagnitude"], 0.0, atol=1e-3
+        )
+
+    def test_use_excision_as_horizon(self):
+        horizon, quantities = use_excision_as_horizon(
+            self.h5_filename,
+            subfile_name="element_data",
+            obs_id=0,
+            obs_time=0.0,
+            l_max=12,
+            radius=1.0,
+            center=[0.0, 0.0, 0.0],
+        )
+        # Horizon should be a sphere of coordinate radius 1.0
+        npt.assert_allclose(
+            np.linalg.norm(cartesian_coords(horizon), axis=0), 1.0, atol=1e-3
+        )
+        # Mass should be 0.5 because r=2M and we're at r=1.0
+        npt.assert_allclose(quantities["ChristodoulouMass"], 0.5, atol=1e-3)
+        # Spin should be 0.0
         npt.assert_allclose(
             quantities["DimensionlessSpinMagnitude"], 0.0, atol=1e-3
         )
