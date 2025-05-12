@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_FastFlow.cpp
+  Test_FindCommonHorizon.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_ObserveCenters.cpp
   Test_Tags.cpp

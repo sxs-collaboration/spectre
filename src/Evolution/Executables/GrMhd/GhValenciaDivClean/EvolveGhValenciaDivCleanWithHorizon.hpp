@@ -90,8 +90,8 @@ struct EvolutionMetavars
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callbacks = tmpl::list<
         intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>>;
-    using horizon_find_failure_callback =
-        intrp::callbacks::ErrorOnFailedApparentHorizon;
+    using horizon_find_failure_callbacks =
+        tmpl::list<intrp::callbacks::ErrorOnFailedApparentHorizon>;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
   };

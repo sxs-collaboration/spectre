@@ -259,10 +259,10 @@ struct ContributeVolumeDataToWriter {
                       << observation_id);
               }
             } else {
-              ERROR("key "
-                      << key
-                      << " not in the registered group ids. Known keys are "
-                      << keys_of(observations_registered));
+              ERROR(
+                  "key " << key
+                         << " not in the registered group ids. Known keys are "
+                         << keys_of(observations_registered));
             }
 
             all_volume_data = &*volume_data_ptr;
@@ -451,17 +451,15 @@ struct WriteVolumeData {
       db::DataBox<DbTagsList>& box,
       const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const std::string& h5_file_name,
-      const std::string& subfile_path,
+      const std::string& h5_file_name, const std::string& subfile_path,
       const observers::ObservationId& observation_id,
       std::vector<ElementVolumeData>&& volume_data) {
     auto& volume_file_lock =
-        db::get_mutable_reference<Tags::H5FileLock>(
-            make_not_null(&box));
+        db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
     const std::lock_guard hold_lock(volume_file_lock);
     VolumeActions_detail::write_data(
-        h5_file_name, observers::input_source_from_cache(cache),
-        subfile_path, observation_id, std::move(volume_data));
+        h5_file_name, observers::input_source_from_cache(cache), subfile_path,
+        observation_id, std::move(volume_data));
   }
 };
 }  // namespace ThreadedActions

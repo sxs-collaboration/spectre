@@ -239,7 +239,17 @@ EventsAndTriggersAtSlabs:
       SeparationLessThan:
         Value: 2.0
     Events:
-      - ObservationAhC
+      - ObservationAhC:
+          SubfileName: ForContinuation
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+          InterpolateToMesh: None
+          # This volume data is for ringdown, so double precision is needed.
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
   - Trigger:
       TimeCompares:
         Comparison: GreaterThan

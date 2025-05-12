@@ -104,8 +104,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<ApparentHorizon,
                                                          ::Frame::Inertial>>;
-    using horizon_find_failure_callback =
-        intrp::callbacks::IgnoreFailedApparentHorizon;
+    using horizon_find_failure_callbacks =
+        tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
                                                      ApparentHorizon>,

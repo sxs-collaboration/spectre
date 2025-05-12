@@ -80,8 +80,8 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using post_interpolation_callbacks =
           tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
                                                            ::Frame::Distorted>>;
-      using horizon_find_failure_callback =
-          intrp::callbacks::ErrorOnFailedApparentHorizon;
+      using horizon_find_failure_callbacks =
+          tmpl::list<intrp::callbacks::ErrorOnFailedApparentHorizon>;
       using post_horizon_find_callbacks =
           tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>,
                      ::ah::callbacks::ObserveCenters<InterpolationTarget,
