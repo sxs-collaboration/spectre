@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_BoundaryCorrectionsHelper.cpp
   Test_BoundaryData.cpp
   Test_InterfaceDataPolicy.cpp
+  Test_InterpolatedBoundaryData.cpp
   Test_MortarData.cpp
   Test_MortarDataHolder.cpp
   Test_MortarInfo.cpp
