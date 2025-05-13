@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
