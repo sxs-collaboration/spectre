@@ -15,7 +15,7 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 
-namespace intrp::OptionHolders {
+namespace ah::OptionHolders {
 template <typename Frame>
 ApparentHorizon<Frame>::ApparentHorizon(
     ylm::Strahlkorper<Frame> initial_guess_in, ::FastFlow fast_flow_in,
@@ -66,4 +66,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 
 #undef FRAME
 #undef INSTANTIATE
-}  // namespace intrp::OptionHolders
+}  // namespace ah::OptionHolders

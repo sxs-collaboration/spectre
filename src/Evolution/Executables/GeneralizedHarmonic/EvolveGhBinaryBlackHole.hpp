@@ -269,8 +269,7 @@ struct EvolutionMetavars {
         tmpl::list<::Tags::AhObservationTimeCompute<index>>;
     using compute_items_on_target =
         ::ah::compute_items_on_target<volume_dim, Frame>;
-    using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
+    using compute_target_points = ah::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
     using horizon_find_failure_callbacks = tmpl::append<

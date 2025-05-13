@@ -321,7 +321,7 @@ struct MockMetavariables {
         gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<AhA, TargetFrame>;
+        ah::TargetPoints::ApparentHorizon<AhA, TargetFrame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<AhA, TargetFrame>>;
     using post_horizon_find_callbacks = tmpl::append<
@@ -379,7 +379,7 @@ void test_apparent_horizon(
 
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.
-  intrp::OptionHolders::ApparentHorizon<Frame> apparent_horizon_opts(
+  ah::OptionHolders::ApparentHorizon<Frame> apparent_horizon_opts(
       ylm::Strahlkorper<Frame>{l_max, 2.8, {{0.0, 0.0, 0.0}}},
       FastFlow{FastFlow::FlowType::Fast, 1.0, 0.5, 1.e-12, 1.e-2, 1.2, 5,
                max_its},
@@ -427,8 +427,8 @@ void test_apparent_horizon(
     blocks_for_interpolation.at("AhA").insert(block_names.begin(),
                                               block_names.end());
     tuples::TaggedTuple<
-        domain::Tags::Domain<3>, intrp::Tags::BlocksForInterpolation,
-        typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
+        domain::Tags::Domain<3>, ah::Tags::BlocksForInterpolation,
+        typename ::ah::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
         intrp::Tags::Verbosity>
         tuple_of_opts{std::move(domain_creator->create_domain()),
                       std::move(blocks_for_interpolation),
@@ -445,8 +445,8 @@ void test_apparent_horizon(
                                               block_names.end());
 
     tuples::TaggedTuple<
-        domain::Tags::Domain<3>, intrp::Tags::BlocksForInterpolation,
-        typename ::intrp::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
+        domain::Tags::Domain<3>, ah::Tags::BlocksForInterpolation,
+        typename ::ah::Tags::ApparentHorizon<typename metavars::AhA, Frame>,
         intrp::Tags::Verbosity>
         tuple_of_opts{std::move(domain_creator->create_domain()),
                       std::move(blocks_for_interpolation),

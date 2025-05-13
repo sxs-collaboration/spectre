@@ -148,8 +148,8 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
           ::ah::compute_items_on_target<3, Frame::Distorted>,
           ylm::Tags::TimeDerivStrahlkorperCompute<Frame::Distorted>>;
       using compute_target_points =
-          intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
-                                               ::Frame::Distorted>;
+          ah::TargetPoints::ApparentHorizon<InterpolationTarget,
+                                            ::Frame::Distorted>;
       using post_interpolation_callbacks =
           tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
                                                            ::Frame::Distorted>>;

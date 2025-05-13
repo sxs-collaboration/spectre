@@ -36,7 +36,7 @@ struct MockTargetTag
   using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using compute_items_on_target = tmpl::list<>;
   using compute_target_points =
-      ::intrp::TargetPoints::ApparentHorizon<MockTargetTag, ::Frame::Inertial>;
+      ::ah::TargetPoints::ApparentHorizon<MockTargetTag, ::Frame::Inertial>;
   using post_interpolation_callbacks = tmpl::list<>;
 };
 
@@ -106,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"MockTargetTag", {block_names.begin(), block_names.end()}}},
-       intrp::OptionHolders::ApparentHorizon<Frame::Inertial>{},
+       ah::OptionHolders::ApparentHorizon<Frame::Inertial>{},
        domain_creator.create_domain(), ::Verbosity::Silent}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

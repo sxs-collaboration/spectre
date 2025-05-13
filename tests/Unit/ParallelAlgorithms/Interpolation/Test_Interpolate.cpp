@@ -194,8 +194,8 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::TargetPoints::ApparentHorizon<InterpolatorTargetA,
-                                               Frame::Inertial>;
+        ::ah::TargetPoints::ApparentHorizon<InterpolatorTargetA,
+                                            Frame::Inertial>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolatorTargetA>>;
@@ -245,7 +245,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"InterpolatorTargetA", {block_names.begin(), block_names.end()}}},
-       intrp::OptionHolders::ApparentHorizon<Frame::Inertial>{},
+       ah::OptionHolders::ApparentHorizon<Frame::Inertial>{},
        domain_creator.create_domain(), ::Verbosity::Silent},
       {std::move(functions_of_time)}};
   ActionTesting::set_phase(make_not_null(&runner),
