@@ -171,7 +171,11 @@ struct EvolutionMetavars {
           ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
                                                         Frame::Inertial>,
           CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
-          CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>>>,
+          CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
+          ::Tags::PointwiseL2NormCompute<
+              CurvedScalarWave::Tags::OneIndexConstraint<volume_dim>>,
+          ::Tags::PointwiseL2NormCompute<
+              CurvedScalarWave::Tags::TwoIndexConstraint<volume_dim>>>>,
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using non_tensor_compute_tags =
