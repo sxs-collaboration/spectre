@@ -700,7 +700,14 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_points(
     // Clear the anchor points from the result
     for (size_t i = 0; i < result->size(); ++i) {
       DataVector& component = (*result)[i];
-      component.destructive_resize(num_target_points);
+      // Can't use `destructive_resize` because we want to preserve the
+      // leading elements of the DataVector
+      DataVector new_component(num_target_points);
+      std::copy(
+          component.begin(),
+          component.begin() + static_cast<std::ptrdiff_t>(num_target_points),
+          new_component.begin());
+      component = std::move(new_component);
     }
   }
 }
