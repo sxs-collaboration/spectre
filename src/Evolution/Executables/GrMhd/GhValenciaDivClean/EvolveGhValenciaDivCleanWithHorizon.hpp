@@ -91,7 +91,7 @@ struct EvolutionMetavars
         tmpl::list<gr::surfaces::Tags::AreaElementCompute<domain_frame>>,
         tags_to_observe>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
+        ah::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callbacks = tmpl::list<
         intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>>;
     using horizon_find_failure_callbacks =

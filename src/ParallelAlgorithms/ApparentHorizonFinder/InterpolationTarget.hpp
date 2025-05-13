@@ -64,8 +64,7 @@ struct Verbosity;
 }  // namespace Tags
 /// \endcond
 
-namespace intrp {
-
+namespace ah {
 namespace OptionHolders {
 /// Options for finding an apparent horizon.
 template <typename Frame>
@@ -184,12 +183,13 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
  * \brief Holds a map between interpolation target tag name (aka a horizon) and
  * a set of block names that should be used for interpolation for that target.
  */
-struct BlocksForInterpolation : db::SimpleTag, BlocksForInterpolationBase {
+struct BlocksForInterpolation : db::SimpleTag,
+                                intrp::Tags::BlocksForInterpolationBase {
   using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
   template <typename Metavariables>
   using option_tags = tmpl::push_front<
       typename detail::get_horizon_options<
-          InterpolationTarget_detail::get_sequential_target_tags<
+          intrp::InterpolationTarget_detail::get_sequential_target_tags<
               Metavariables>>::type,
       ::domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
 
@@ -355,7 +355,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
                   not std::isnan(previous_strahlkorpers[2].first)) {
                 // Quadratic extrapolation
                 const double new_time =
-                    InterpolationTarget_detail::get_temporal_id_value(
+                    intrp::InterpolationTarget_detail::get_temporal_id_value(
                         temporal_id);
                 const double dt_0 = previous_strahlkorpers[0].first - new_time;
                 const double dt_1 = previous_strahlkorpers[1].first - new_time;
@@ -372,7 +372,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
               } else {
                 // Linear extrapolation
                 const double new_time =
-                    InterpolationTarget_detail::get_temporal_id_value(
+                    intrp::InterpolationTarget_detail::get_temporal_id_value(
                         temporal_id);
                 const double dt_0 = previous_strahlkorpers[0].first - new_time;
                 const double dt_1 = previous_strahlkorpers[1].first - new_time;
@@ -400,4 +400,4 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 };
 
 }  // namespace TargetPoints
-}  // namespace intrp
+}  // namespace ah

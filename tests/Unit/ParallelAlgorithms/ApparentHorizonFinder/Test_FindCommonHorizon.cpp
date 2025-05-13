@@ -186,8 +186,8 @@ struct MockMetavariables {
                    gh::Tags::Phi<DataVector, volume_dim>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::TargetPoints::ApparentHorizon<InterpolationTargetA,
-                                               ::Frame::Inertial>;
+        ::ah::TargetPoints::ApparentHorizon<InterpolationTargetA,
+                                            ::Frame::Inertial>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolationTargetA>>;

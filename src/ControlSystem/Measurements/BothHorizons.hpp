@@ -75,8 +75,8 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using compute_items_on_source =
           tmpl::list<::Tags::TimeAndPreviousCompute<0>>;
       using compute_target_points =
-          intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
-                                               ::Frame::Distorted>;
+          ah::TargetPoints::ApparentHorizon<InterpolationTarget,
+                                            ::Frame::Distorted>;
       using post_interpolation_callbacks =
           tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
                                                            ::Frame::Distorted>>;
