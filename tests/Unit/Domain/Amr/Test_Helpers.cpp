@@ -218,10 +218,11 @@ void test_ids_of_children() {
                                                        amr::Flag::Split}) ==
         std::vector{ElementId<2>{0, {{SegmentId(3, 0), SegmentId(2, 2)}}},
                     ElementId<2>{0, {{SegmentId(3, 0), SegmentId(2, 3)}}}});
-  CHECK(amr::ids_of_children(element_id_2d, std::array{amr::Flag::Split,
-                                                       amr::Flag::DoNothing}) ==
-        std::vector{ElementId<2>{0, {{SegmentId(4, 0), SegmentId(1, 1)}}},
-                    ElementId<2>{0, {{SegmentId(4, 1), SegmentId(1, 1)}}}});
+  CHECK(amr::ids_of_children(element_id_2d,
+                             std::array{amr::Flag::Split, amr::Flag::DoNothing},
+                             1) ==
+        std::vector{ElementId<2>{0, {{SegmentId(4, 0), SegmentId(1, 1)}}, 1},
+                    ElementId<2>{0, {{SegmentId(4, 1), SegmentId(1, 1)}}, 1}});
   const ElementId<3> element_id_3d{
       7, {{SegmentId(5, 31), SegmentId(2, 0), SegmentId(4, 15)}}};
   CHECK(amr::ids_of_children(

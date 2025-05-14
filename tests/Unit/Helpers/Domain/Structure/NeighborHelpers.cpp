@@ -527,6 +527,7 @@ void check_neighbors(const Neighbors<Dim>& neighbors,
   const Side element_side = opposite(neighbor_side);
   double surface_area_covered = 0.0;
   for (const auto& neighbor : neighbors) {
+    CHECK(neighbor.grid_index() == element_id.grid_index());
     const OrientationMap<Dim>& orientation_map =
         neighbors.orientation(neighbor);
     double neighbor_overlap_area = 1.0;
