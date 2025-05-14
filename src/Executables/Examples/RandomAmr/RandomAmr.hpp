@@ -88,7 +88,8 @@ struct RandomAmrMetavars {
               Parallel::Phase::Initialization,
               tmpl::list<Initialization::Actions::InitializeItems<
                              amr::Initialization::Domain<volume_dim>,
-                             amr::Initialization::Initialize<volume_dim>>,
+                             amr::Initialization::Initialize<
+                                 volume_dim, RandomAmrMetavars>>,
                          Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<Parallel::Phase::CheckDomain,
                                  tmpl::list<::amr::Actions::SendAmrDiagnostics,
@@ -106,10 +107,10 @@ struct RandomAmrMetavars {
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
-
     using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
         domain::Tags::InitialExtents<Dim>,
         domain::Tags::InitialRefinementLevels<Dim>,
         evolution::dg::Tags::Quadrature>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 };

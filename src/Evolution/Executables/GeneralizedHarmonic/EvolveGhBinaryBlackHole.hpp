@@ -579,7 +579,7 @@ struct EvolutionMetavars {
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim,
                                                 use_control_systems>,
-          ::amr::Initialization::Initialize<volume_dim>,
+          ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<tmpl::list<::Tags::DerivCompute<
@@ -702,6 +702,7 @@ struct EvolutionMetavars {
             intrp::Tags::InterpPointInfo<EvolutionMetavars>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   using component_list = tmpl::flatten<tmpl::list<

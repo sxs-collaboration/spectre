@@ -148,7 +148,7 @@ struct ElementArray {
                          System, analytic_solution_tag>,
                      ::elliptic::dg::Actions::initialize_operator<System>,
                      Initialization::Actions::InitializeItems<
-                         ::amr::Initialization::Initialize<Dim>>,
+                         ::amr::Initialization::Initialize<Dim, metavariables>>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -230,6 +230,7 @@ struct Metavariables {
         tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random>>>;
   };
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = ElementArray<System, Linearized, Metavariables>;
     using projectors = tmpl::flatten<tmpl::list<
         ProjectTemporalId<Metavariables>,
         ::amr::projectors::DefaultInitialize<
@@ -247,6 +248,7 @@ struct Metavariables {
         elliptic::dg::Actions::amr_projectors<
             System, typename element_array::analytic_solution_tag>,
         typename element_array::dg_operator::amr_projectors>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   // NOLINTNEXTLINE(google-runtime-references)

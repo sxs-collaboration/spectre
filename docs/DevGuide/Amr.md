@@ -278,6 +278,7 @@ struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
         domain::Tags::InitialExtents<Dim>,
         domain::Tags::InitialRefinementLevels<Dim>,
         evolution::dg::Tags::Quadrature>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 ```
 

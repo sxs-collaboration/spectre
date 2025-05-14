@@ -334,7 +334,8 @@ struct Metavariables {
                              Initialization::TimeStepping<Metavariables,
                                                           TimeStepperBase>,
                              evolution::dg::Initialization::Domain<Dim>,
-                             ::amr::Initialization::Initialize<volume_dim>,
+                             ::amr::Initialization::Initialize<volume_dim,
+                                                               Metavariables>,
                              Initialization::SetMeshType<Dim>>,
                          Initialization::Actions::AddComputeTags<tmpl::list<
                              ::domain::Tags::MinimumGridSpacingCompute<
@@ -371,6 +372,7 @@ struct Metavariables {
             ::domain::Tags::InitialExtents<Dim>,
             ::domain::Tags::InitialRefinementLevels<Dim>,
             evolution::dg::Tags::Quadrature>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   struct registration

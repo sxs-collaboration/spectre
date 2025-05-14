@@ -10,8 +10,10 @@
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace amr::Initialization {
@@ -19,8 +21,12 @@ namespace amr::Initialization {
 /// \brief Initialize items related to adaptive mesh refinement
 ///
 /// \see InitializeItems
-template <size_t Dim>
+template <size_t Dim, typename Metavariables>
 struct Initialize {
+  static_assert(tt::assert_conforms_to_v<typename Metavariables::amr,
+                                         amr::protocols::AmrMetavariables>);
+  using ElementArray = typename Metavariables::amr::element_array;
+
   using const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags = tmpl::list<>;
   using simple_tags_from_options = tmpl::list<>;

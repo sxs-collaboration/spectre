@@ -21,6 +21,9 @@ namespace amr::protocols {
 ///       order to initialize data on newly created elements.
 ///     - amr::Actions::AdjustDomain in order to update data on existing
 ///       elements in case their Mesh or neighbors have changed.
+/// - `keep_coarse_grids`: A boolean indicating that AMR should create a
+///   completely new grid at each AMR step with an incremented grid index, and
+///   keep the old grid around. This is useful for multigrid solvers.
 ///
 /// Here is an example for a class conforming to this protocol:
 ///
@@ -33,6 +36,7 @@ struct AmrMetavariables {
     static_assert(
         tmpl::all<projectors,
                   tt::assert_conforms_to<tmpl::_1, Projector>>::value);
+    static constexpr bool keep_coarse_grids = ConformingType::keep_coarse_grids;
   };
 };
 }  // namespace amr::protocols

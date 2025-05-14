@@ -13,16 +13,27 @@
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
+struct Metavariables {
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = void;
+    using projectors = tmpl::list<>;
+    static constexpr bool keep_coarse_grids = false;
+  };
+};
+
 template <size_t Dim>
 void test() {
   auto box = db::create<
       db::AddSimpleTags<amr::Tags::Info<Dim>, amr::Tags::NeighborInfo<Dim>>>(
       amr::Info<Dim>{}, std::unordered_map<ElementId<Dim>, amr::Info<Dim>>{});
-  db::mutate_apply<amr::Initialization::Initialize<Dim>>(make_not_null(&box));
+  db::mutate_apply<amr::Initialization::Initialize<Dim, Metavariables>>(
+      make_not_null(&box));
   CHECK(db::get<amr::Tags::Info<Dim>>(box).flags ==
         make_array<Dim>(amr::Flag::Undefined));
   CHECK(db::get<amr::Tags::Info<Dim>>(box).new_mesh == Mesh<Dim>{});

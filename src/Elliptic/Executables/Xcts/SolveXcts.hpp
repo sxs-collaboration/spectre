@@ -195,6 +195,7 @@ struct Metavariables {
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
     using projectors = typename solver::amr_projectors;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   struct registration
