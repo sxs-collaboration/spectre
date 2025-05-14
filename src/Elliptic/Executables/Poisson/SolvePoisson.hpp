@@ -150,6 +150,10 @@ struct Metavariables {
               Parallel::Phase::Register,
               tmpl::push_back<register_actions,
                               Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::Restart,
+              tmpl::push_back<register_actions,
+                              Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
           Parallel::PhaseActions<Parallel::Phase::CheckDomain,
                                  tmpl::list<::amr::Actions::SendAmrDiagnostics,

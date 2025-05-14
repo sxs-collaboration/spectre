@@ -82,6 +82,7 @@ template <typename Metavariables>
 struct TestAmrComponent {
   using metavariables = Metavariables;
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using simple_tags_from_options = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
@@ -301,6 +302,7 @@ struct ChangeArray {
 template <class Metavariables>
 struct TestArray {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = int;
   using phase_dependent_action_list =

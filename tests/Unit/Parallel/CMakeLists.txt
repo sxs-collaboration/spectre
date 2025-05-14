@@ -57,9 +57,10 @@ Checkpoints/Checkpoint_0000")
     "mkdir -p ${TEST_NAME} \
     && cd ${TEST_NAME} \
     && rm -rf ${CHECKPOINT} \
-    && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
-    && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} \
-       +restart ${CHECKPOINT} 2>&1 \
+    && TEST_IN_RESTART= ${SPECTRE_TEST_RUNNER} \
+       ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
+    && TEST_IN_RESTART=1 ${SPECTRE_TEST_RUNNER} \
+       ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} +restart ${CHECKPOINT} 2>&1 \
     && rm -rf ${CHECKPOINT} \
     && cd .."
     )

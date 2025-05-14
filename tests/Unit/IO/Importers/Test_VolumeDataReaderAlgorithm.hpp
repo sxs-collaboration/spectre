@@ -311,6 +311,7 @@ struct CleanTestData {
 template <size_t Dim, typename Metavariables>
 struct TestDataWriter {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -396,6 +397,7 @@ struct TestResult {
 template <size_t Dim, typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using array_index = ElementId<Dim>;
   using metavariables = Metavariables;
   using simple_tags_from_options = tmpl::list<>;

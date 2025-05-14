@@ -74,6 +74,7 @@ struct get_temporal_id {
 template <class Metavariables>
 struct Interpolator {
   using chare_type = Parallel::Algorithms::Group;
+  static constexpr bool checkpoint_data = false;
   using metavariables = Metavariables;
   using all_interpolation_target_tags = tmpl::transform<
       tmpl::filter<typename Metavariables::component_list,
@@ -94,6 +95,13 @@ struct Interpolator {
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Register,
+          tmpl::flatten<tmpl::list<
+              tmpl::transform<
+                  all_temporal_ids,
+                  tmpl::bind<Actions::RegisterWithObserverWriter, tmpl::_1>>,
+              Parallel::Actions::TerminatePhase>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Restart,
           tmpl::flatten<tmpl::list<
               tmpl::transform<
                   all_temporal_ids,

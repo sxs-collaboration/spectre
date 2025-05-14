@@ -42,6 +42,7 @@ struct ElementDataReader {
   static constexpr size_t Dim = Metavariables::volume_dim;
 
   using chare_type = Parallel::Algorithms::Nodegroup;
+  static constexpr bool checkpoint_data = false;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,

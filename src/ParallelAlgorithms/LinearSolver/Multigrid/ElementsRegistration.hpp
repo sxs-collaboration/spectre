@@ -184,6 +184,7 @@ struct UpdateSections {
 template <typename Metavariables, typename OptionsGroup>
 struct ElementsRegistrationComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using const_global_cache_tags = tmpl::list<>;
   using metavariables = Metavariables;
   static constexpr size_t Dim = metavariables::volume_dim;

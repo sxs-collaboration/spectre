@@ -178,6 +178,7 @@ struct TestSyncActionIncrement {
 template <class Metavariables>
 struct NodegroupComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
 
   using phase_dependent_action_list =
@@ -198,6 +199,7 @@ struct NodegroupComponent {
 template <class Metavariables>
 struct ArrayComponent {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = int;
 

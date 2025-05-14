@@ -479,6 +479,7 @@ struct StoreMatrixColumn {
 template <typename Metavariables, typename BuildMatrixMetavars>
 struct BuildMatrixSingleton {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using const_global_cache_tags = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<

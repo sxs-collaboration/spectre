@@ -122,6 +122,7 @@ struct InitializeElement {
 template <typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using array_index = int;
   using metavariables = Metavariables;
 

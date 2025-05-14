@@ -163,6 +163,7 @@ struct CheckValue {
 template <class Metavariables>
 struct TestArray {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = int;
   using phase_dependent_action_list =
@@ -207,6 +208,7 @@ struct TestArray {
 template <class Metavariables>
 struct TestNodegroup {
   using chare_type = Parallel::Algorithms::Nodegroup;
+  static constexpr bool checkpoint_data = true;
   using array_index = int;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
@@ -312,6 +314,7 @@ struct RunCallbacks {
 template <class Metavariables>
 struct TestSingleton {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using array_index = int;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<

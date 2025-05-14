@@ -118,6 +118,7 @@ struct ReceiveCount {
 template <typename Metavariables>
 struct ArrayComponent {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = int;
 

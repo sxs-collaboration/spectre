@@ -188,6 +188,7 @@ struct DgElementArray {
                                Parallel::protocols::ArrayElementsAllocator>);
 
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;

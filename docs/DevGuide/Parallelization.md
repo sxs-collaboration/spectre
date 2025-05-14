@@ -249,6 +249,12 @@ Each %Parallel Component struct must have the following type aliases:
    function of an array component. This type alias is only required for array
    components.
 
+Additionally, each %Parallel Component struct must define a `static constexpr
+bool checkpoint_data`, indicating whether the DataBox and inbox contents should
+be preserved in a checkpoint.  Setting this to false is intended for
+organizational components that only store registration data that can be
+regenerated during the Restart phase.
+
 \parblock
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component

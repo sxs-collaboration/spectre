@@ -586,6 +586,11 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                               Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<
+              Parallel::Phase::Restart,
+              tmpl::push_back<dg_registration_list,
+                              Parallel::Actions::TerminatePhase>>,
+
+          Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
                   evolution::Actions::RunEventsAndTriggers<local_time_stepping>,

@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <cstdlib>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -25,6 +26,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -108,9 +110,37 @@ struct CheckLog {
   }
 };
 
+struct CheckNonCheckpointedLog {
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<tmpl::list<DbTags...>>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    // False positive.  Thread-safety of getenv is guaranteed in C++11.
+    // NOLINTNEXTLINE(concurrency-mt-unsafe)
+    const char* const in_restart_env = std::getenv("TEST_IN_RESTART");
+    SPECTRE_PARALLEL_REQUIRE(in_restart_env != nullptr);
+    const bool in_restart = *in_restart_env != '\0';
+    if (in_restart) {
+      const std::string& log = db::get<Tags::Log>(box);
+      SPECTRE_PARALLEL_REQUIRE(log.empty());
+    }
+    // Check that the global cache is set up correctly
+    SPECTRE_PARALLEL_REQUIRE(
+        db::get<Parallel::Tags::ResourceInfo<Metavariables>>(box) ==
+        cache.get_resource_info());
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
+  }
+};
+
 template <class Metavariables>
 struct ArrayComponent {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = int;
 
@@ -152,6 +182,7 @@ struct ArrayComponent {
 template <class Metavariables>
 struct GroupComponent {
   using chare_type = Parallel::Algorithms::Group;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
@@ -174,6 +205,7 @@ struct GroupComponent {
 template <class Metavariables>
 struct NodegroupComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
@@ -196,6 +228,7 @@ struct NodegroupComponent {
 template <class Metavariables>
 struct SingletonComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
@@ -214,6 +247,30 @@ struct SingletonComponent {
         .start_phase(next_phase);
   }
 };
+
+template <class Metavariables>
+struct NonCheckpointedComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = false;
+  using metavariables = Metavariables;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<InitializeLog>>,
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<CheckNonCheckpointedLog>>>;
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void execute_next_phase(
+      const Parallel::Phase next_phase,
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *Parallel::local_branch(global_cache);
+    Parallel::get_parallel_component<NonCheckpointedComponent>(local_cache)
+        .start_phase(next_phase);
+  }
+};
 }  // namespace CheckpointTest
 
 struct TestMetavariables {
@@ -221,7 +278,8 @@ struct TestMetavariables {
       tmpl::list<CheckpointTest::ArrayComponent<TestMetavariables>,
                  CheckpointTest::GroupComponent<TestMetavariables>,
                  CheckpointTest::NodegroupComponent<TestMetavariables>,
-                 CheckpointTest::SingletonComponent<TestMetavariables>>;
+                 CheckpointTest::SingletonComponent<TestMetavariables>,
+                 CheckpointTest::NonCheckpointedComponent<TestMetavariables>>;
 
   static constexpr Options::String help = "";
 

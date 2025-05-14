@@ -211,6 +211,9 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
           Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<Parallel::Phase::Restart,
+                                 tmpl::list<dg_registration_list,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<

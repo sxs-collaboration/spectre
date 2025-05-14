@@ -214,6 +214,7 @@ struct finalize {
 template <class Metavariables>
 struct NoOpsComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -376,6 +377,7 @@ struct finalize {
 template <class Metavariables>
 struct MutateComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = ElementIndex;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
@@ -654,6 +656,7 @@ struct finalize {
 template <class Metavariables>
 struct ReceiveComponent {
   using chare_type = Parallel::Algorithms::Array;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = ElementId<3>;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
@@ -781,6 +784,7 @@ struct finalize {
 template <class Metavariables>
 struct AnyOrderComponent {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using array_index = ElementIndex;  // Just to test nothing breaks
 

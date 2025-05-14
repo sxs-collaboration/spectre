@@ -20,6 +20,7 @@ namespace Cce {
 template <typename WorldtubeComponent, typename Metavariables>
 struct WorldtubeComponentBase {
   using chare_type = Parallel::Algorithms::Singleton;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using initialize_action_list =
       tmpl::list<Actions::InitializeWorldtubeBoundary<WorldtubeComponent>,
