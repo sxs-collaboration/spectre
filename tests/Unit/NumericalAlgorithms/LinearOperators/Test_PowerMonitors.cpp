@@ -137,8 +137,8 @@ void test_relative_truncation_error_impl() {
   const DataVector& power_monitor_x = gsl::at(power_monitors, 0_st);
   // We use all of the modes as above
   const double test_relative_truncation_error =
-      pow(10.0, -1.0 * PowerMonitors::relative_truncation_error(
-                           power_monitor_x, power_monitor_x.size()));
+      PowerMonitors::relative_truncation_error(power_monitor_x,
+                                               power_monitor_x.size());
 
   CHECK_ITERABLE_APPROX(expected_relative_truncation_error,
                         test_relative_truncation_error);
@@ -149,9 +149,8 @@ void test_relative_truncation_error_impl() {
 
   // Compare with the result from the relative truncation error
   const double expected_truncation_error_x =
-      max(abs(u_nodal)) *
-      pow(10.0, -1.0 * PowerMonitors::relative_truncation_error(
-                           power_monitor_x, power_monitor_x.size()));
+      max(abs(u_nodal)) * PowerMonitors::relative_truncation_error(
+                              power_monitor_x, power_monitor_x.size());
 
   CHECK_ITERABLE_APPROX(test_truncation_error, expected_truncation_error_x);
 }
@@ -176,8 +175,8 @@ void test_relative_truncation_error_with_symmetry() {
   // Expect the relative truncation error to be the ratio of the first and last
   // nonzero modes
   const double expected_relative_truncation_error =
-      log10(modes[0] / modes[num_modes - 2]);
-  Approx custom_approx = Approx::custom().epsilon(1e-2).scale(1.);
+      modes[num_modes - 2] / modes[0];
+  const Approx custom_approx = Approx::custom().epsilon(5e-2);
   CHECK(relative_truncation_error ==
         custom_approx(expected_relative_truncation_error));
 }
@@ -198,29 +197,29 @@ void test_relative_truncation_error_linear_function() {
   };
   {
     INFO("2 modes");
-    const auto [modes, rel_error_digits] = get_modes(2);
+    const auto [modes, rel_error] = get_modes(2);
     CAPTURE(modes);
     CHECK_ITERABLE_APPROX(modes, (DataVector{0.5, 0.5}));
     // We don't know for sure that we have resolved the function exactly,
     // because we have two nonzero modes and nothing else.
-    CHECK(rel_error_digits == approx(0.));
+    CHECK(rel_error == approx(1.));
   }
   {
     INFO("3 modes");
-    const auto [modes, rel_error_digits] = get_modes(3);
+    const auto [modes, rel_error] = get_modes(3);
     CAPTURE(modes);
     CHECK_ITERABLE_APPROX(modes, (DataVector{0.5, 0.5, 0.}));
     // The last mode is zero, but we still don't know if we have resolved the
     // function because the last mode could be zero by symmetry.
-    CHECK(rel_error_digits == approx(0.));
+    CHECK(rel_error == approx(1.));
   }
   {
     INFO("4 modes");
-    const auto [modes, rel_error_digits] = get_modes(4);
+    const auto [modes, rel_error] = get_modes(4);
     CAPTURE(modes);
     CHECK_ITERABLE_APPROX(modes, (DataVector{0.5, 0.5, 0., 0.}));
     // We have two zero modes, so we know we have resolved the function exactly.
-    CHECK(rel_error_digits > 14.);
+    CHECK(rel_error < 1.e-14);
   }
 }
 

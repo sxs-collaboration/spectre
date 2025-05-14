@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <optional>
 #include <pup.h>
 #include <string>
 #include <vector>
@@ -47,8 +46,7 @@ void max_over_components(
     gsl::not_null<std::array<Flag, Dim>*> result,
     const gsl::not_null<std::array<DataVector, Dim>*> power_monitors_buffer,
     const DataVector& tensor_component, const Mesh<Dim>& mesh,
-    std::optional<double> target_abs_truncation_error,
-    std::optional<double> target_rel_truncation_error);
+    double target_abs_truncation_error, double target_rel_truncation_error);
 }  // namespace TruncationError_detail
 
 /*!
@@ -76,19 +74,17 @@ class TruncationError : public Criterion {
   };
   struct AbsoluteTargetTruncationError {
     static std::string name() { return "AbsoluteTarget"; }
-    using type = Options::Auto<double, Options::AutoLabel::None>;
+    using type = double;
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
-        "The absolute target truncation error. If any tensor component "
-        "has a truncation error above this value, the element will be "
-        "p-refined."};
+        "The absolute target truncation error."};
   };
   struct RelativeTargetTruncationError {
     static std::string name() { return "RelativeTarget"; }
-    using type = Options::Auto<double, Options::AutoLabel::None>;
+    using type = double;
+    static type lower_bound() { return 0.0; }
     static constexpr Options::String help = {
-        "The relative target truncation error. If any tensor component "
-        "has a truncation error above this value, the element will be "
-        "p-refined."};
+        "The relative target truncation error."};
   };
 
   using options = tmpl::list<VariablesToMonitor, AbsoluteTargetTruncationError,
@@ -100,8 +96,8 @@ class TruncationError : public Criterion {
   TruncationError() = default;
 
   TruncationError(std::vector<std::string> vars_to_monitor,
-                  const std::optional<double> target_abs_truncation_error,
-                  const std::optional<double> target_rel_truncation_error,
+                  double target_abs_truncation_error,
+                  double target_rel_truncation_error,
                   const Options::Context& context = {});
 
   /// \cond
@@ -125,8 +121,8 @@ class TruncationError : public Criterion {
 
  private:
   std::vector<std::string> vars_to_monitor_{};
-  std::optional<double> target_abs_truncation_error_{};
-  std::optional<double> target_rel_truncation_error_{};
+  double target_abs_truncation_error_{};
+  double target_rel_truncation_error_{};
 };
 
 // Out-of-line definitions
@@ -135,18 +131,12 @@ class TruncationError : public Criterion {
 template <size_t Dim, typename TensorTags>
 TruncationError<Dim, TensorTags>::TruncationError(
     std::vector<std::string> vars_to_monitor,
-    const std::optional<double> target_abs_truncation_error,
-    const std::optional<double> target_rel_truncation_error,
-    const Options::Context& context)
+    const double target_abs_truncation_error,
+    const double target_rel_truncation_error, const Options::Context& context)
     : vars_to_monitor_(std::move(vars_to_monitor)),
       target_abs_truncation_error_(target_abs_truncation_error),
       target_rel_truncation_error_(target_rel_truncation_error) {
   db::validate_selection<TensorTags>(vars_to_monitor_, context);
-  if (not target_abs_truncation_error.has_value() and
-      not target_rel_truncation_error.has_value()) {
-    PARSE_ERROR(context,
-                "Must specify AbsoluteTarget, RelativeTarget, or both");
-  }
 }
 
 template <size_t Dim, typename TensorTags>

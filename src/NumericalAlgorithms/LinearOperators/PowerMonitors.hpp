@@ -48,10 +48,10 @@ std::array<DataVector, Dim> power_monitors(const DataVector& u,
 /// @{
 /*!
  * \ingroup SpectralGroup
- * \brief Compute the negative log10 of the relative truncation error.
+ * \brief Compute the relative truncation error.
  *
- * Truncation error according to Eqs. (57) and (58) of Ref.
- * \cite Szilagyi2014fna, i.e.,
+ * The negative logarithm of this quantity is defined by Eqs. (57) and
+ * (58) of Ref. \cite Szilagyi2014fna, i.e.,
  *
  * \f{align*}{
  *  \mathcal{T}\left[P_k\right] = \log_{10} \max \left(P_0, P_1\right)
@@ -67,8 +67,7 @@ std::array<DataVector, Dim> power_monitors(const DataVector& u,
  *
  * where \f$ j_{\text{max}, k}  = N_k - 1 \f$ and  \f$ N_k \f$ is the number of
  * modes or gridpoints in dimension k. Here the second term is a weighted
- * average with larger weights toward the highest modes. This number should
- * correspond to the number of digits resolved by the spectral expansion.
+ * average with larger weights toward the highest modes.
  *
  * \note Modes below a cutoff of $100 \epsilon \mathrm{max}_k(P_k)$ are ignored
  * in the weighted average, where $\epsilon$ is the machine epsilon. This
@@ -93,10 +92,6 @@ double relative_truncation_error(const DataVector& power_monitor,
  * This overload is intended for visualization purposes only. It takes a tensor
  * component as input, so it can be used as a kernel to post-process volume data
  * with Python bindings (see `TransformVolumeData.py`).
- *
- * This function returns the relative truncation error directly, as opposed to
- * the other overload that returns the negative log10 of the relative truncation
- * error.
  */
 template <size_t Dim>
 std::array<double, Dim> relative_truncation_error(
