@@ -27,7 +27,6 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   TestHelpers::db::test_simple_tag<ReductionDataLock>("ReductionDataLock");
   TestHelpers::db::test_simple_tag<ContributorsOfTensorData>(
       "ContributorsOfTensorData");
-  TestHelpers::db::test_simple_tag<VolumeDataLock>("VolumeDataLock");
   TestHelpers::db::test_simple_tag<TensorData>("TensorData");
   TestHelpers::db::test_simple_tag<ReductionData<double>>("ReductionData");
   TestHelpers::db::test_simple_tag<ReductionDataNames<double>>(

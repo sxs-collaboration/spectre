@@ -9,6 +9,7 @@
 #include <memory>
 #include <sstream>
 #include <type_traits>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -31,8 +32,10 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/TagsMetafunctions.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -368,11 +371,15 @@ void clean_up_interpolation_target(
         box);
   }
   db::mutate<Tags::CompletedTemporalIds<TemporalId>,
+             Tags::Dependencies<TemporalId>,
              Tags::IndicesOfFilledInterpPoints<TemporalId>,
              Tags::IndicesOfInvalidInterpPoints<TemporalId>,
              Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
       [&temporal_id](
           const gsl::not_null<std::deque<TemporalId>*> completed_ids,
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::optional<std::string>>*>
+              dependencies,
           const gsl::not_null<
               std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
               indices_of_filled,
@@ -394,6 +401,7 @@ void clean_up_interpolation_target(
         if (completed_ids->size() > 1000) {
           completed_ids->pop_front();
         }
+        dependencies->erase(temporal_id);
         indices_of_filled->erase(temporal_id);
         indices_of_invalid->erase(temporal_id);
         interpolated_vars->erase(temporal_id);
@@ -494,7 +502,8 @@ bool flag_temporal_id_for_interpolation(
 
 /// Tells an InterpolationTarget that it should interpolate at
 /// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
-/// accordingly.
+/// accordingly. Also adds a dependency to the box at this time if there isn't
+/// one already. If there's already one, ASSERTs that they are the same.
 ///
 /// flag_temporal_ids_as_pending is called by an Action
 /// of InterpolationTarget
@@ -503,7 +512,8 @@ bool flag_temporal_id_for_interpolation(
 /// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
 template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
 void flag_temporal_id_as_pending(const gsl::not_null<db::DataBox<DbTags>*> box,
-                                 const TemporalId& temporal_id) {
+                                 const TemporalId& temporal_id,
+                                 std::optional<std::string> dependency) {
   // We allow this function to be called multiple times with the same
   // temporal_ids (e.g. from each element, or from each node of a
   // NodeGroup ParallelComponent such as Interpolator). If multiple
@@ -517,12 +527,17 @@ void flag_temporal_id_as_pending(const gsl::not_null<db::DataBox<DbTags>*> box,
   // temporal_ids that we have already completed interpolation on.  So
   // here we do not add any temporal_ids that are already present in
   // `id` or `completed_ids`.
-  db::mutate_apply<tmpl::list<Tags::PendingTemporalIds<TemporalId>>,
+  db::mutate_apply<tmpl::list<Tags::PendingTemporalIds<TemporalId>,
+                              Tags::Dependencies<TemporalId>>,
                    tmpl::list<Tags::CurrentTemporalId<TemporalId>,
                               Tags::CompletedTemporalIds<TemporalId>>>(
-      [&temporal_id](const gsl::not_null<std::deque<TemporalId>*> pending_ids,
-                     const std::optional<TemporalId>& current_id,
-                     const std::deque<TemporalId>& completed_ids) {
+      [&temporal_id, &dependency](
+          const gsl::not_null<std::deque<TemporalId>*> pending_ids,
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::optional<std::string>>*>
+              dependencies,
+          const std::optional<TemporalId>& current_id,
+          const std::deque<TemporalId>& completed_ids) {
         if (not(alg::found(completed_ids, temporal_id) or
                 (current_id.has_value() and
                  current_id.value() == temporal_id) or
@@ -530,6 +545,17 @@ void flag_temporal_id_as_pending(const gsl::not_null<db::DataBox<DbTags>*> box,
           pending_ids->push_back(temporal_id);
 
           alg::sort(*pending_ids);
+        }
+
+        if (dependencies->contains(temporal_id)) {
+          ASSERT(dependencies->at(temporal_id) == dependency,
+                 "Already have dependency at time "
+                     << get_temporal_id_value(temporal_id) << ": "
+                     << dependencies->at(temporal_id)
+                     << ", which is not the same as the incoming one "
+                     << dependency);
+        } else {
+          (*dependencies)[temporal_id] = std::move(dependency);
         }
       },
       box);

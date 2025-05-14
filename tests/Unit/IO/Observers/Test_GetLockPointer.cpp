@@ -20,7 +20,6 @@
 
 namespace {
 Parallel::NodeLock* h5_lock_to_check;
-Parallel::NodeLock* volume_lock_to_check;
 
 template <typename LockTag>
 struct mock_lock_retrieval_action {
@@ -34,11 +33,7 @@ struct mock_lock_retrieval_action {
                         observers::ObserverWriter<Metavariables>>(cache))
                     ->template local_synchronous_action<
                         observers::Actions::GetLockPointer<LockTag>>();
-    if constexpr (std::is_same_v<LockTag, observers::Tags::H5FileLock>) {
-      h5_lock_to_check = lock;
-    } else {
-      volume_lock_to_check = lock;
-    }
+    h5_lock_to_check = lock;
   }
 };
 
@@ -49,8 +44,7 @@ struct mock_observer_writer {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using simple_tags =
-      tmpl::list<observers::Tags::H5FileLock, observers::Tags::VolumeDataLock>;
+  using simple_tags = tmpl::list<observers::Tags::H5FileLock>;
 
   using const_global_cache_tags = tmpl::list<>;
 
@@ -93,23 +87,17 @@ SPECTRE_TEST_CASE("Unit.IO.Observer.GetNodeLockPointer", "[Unit][Cce]") {
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_array_component_and_initialize<writer_component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-      {Parallel::NodeLock{}, Parallel::NodeLock{}});
+      {Parallel::NodeLock{}});
   ActionTesting::emplace_array_component<array_component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0);
 
   ActionTesting::simple_action<
       array_component, mock_lock_retrieval_action<observers::Tags::H5FileLock>>(
       make_not_null(&runner), 0);
-  ActionTesting::simple_action<
-      array_component,
-      mock_lock_retrieval_action<observers::Tags::VolumeDataLock>>(
-      make_not_null(&runner), 0);
 
-  db::mutate<observers::Tags::H5FileLock, observers::Tags::VolumeDataLock>(
-      [](const gsl::not_null<Parallel::NodeLock*> h5_lock,
-         const gsl::not_null<Parallel::NodeLock*> volume_lock) {
+  db::mutate<observers::Tags::H5FileLock>(
+      [](const gsl::not_null<Parallel::NodeLock*> h5_lock) {
         CHECK(h5_lock.get() == h5_lock_to_check);
-        CHECK(volume_lock.get() == volume_lock_to_check);
       },
       make_not_null(&ActionTesting::get_databox<writer_component>(
           make_not_null(&runner), 0)));

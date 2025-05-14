@@ -157,6 +157,86 @@ void write_data(const std::string& h5_file_name,
                 const std::string& subfile_path,
                 const observers::ObservationId& observation_id,
                 std::vector<ElementVolumeData>&& volume_data);
+
+template <typename ParallelComponent, typename Metavariables,
+          typename VolumeDataAtObsId>
+void write_combined_volume_data(
+    Parallel::GlobalCache<Metavariables>& cache,
+    const observers::ObservationId& observation_id,
+    const VolumeDataAtObsId& volume_data,
+    const gsl::not_null<Parallel::NodeLock*> volume_file_lock,
+    const std::string& subfile_name) {
+  ASSERT(not volume_data.empty(),
+         "Failed to populate volume_data before trying to write it.");
+
+  std::vector<ElementVolumeData> volume_data_to_write;
+
+  if constexpr (std::is_same_v<tmpl::at_c<VolumeDataAtObsId, 1>,
+                               ElementVolumeData>) {
+    volume_data_to_write.reserve(volume_data.size());
+    for (const auto& [id, element] : volume_data) {
+      (void)id;  // avoid compiler warnings
+      volume_data_to_write.push_back(element);
+    }
+  } else {
+    size_t total_size = 0;
+    for (const auto& [id, vec_elements] : volume_data) {
+      (void)id;  // avoid compiler warnings
+      total_size += vec_elements.size();
+    }
+    volume_data_to_write.reserve(total_size);
+
+    for (const auto& [id, vec_elements] : volume_data) {
+      (void)id;  // avoid compiler warnings
+      volume_data_to_write.insert(volume_data_to_write.end(),
+                                  vec_elements.begin(), vec_elements.end());
+    }
+  }
+
+  // Write to file. We use a separate node lock because writing can be
+  // very time consuming (it's network dependent, depends on how full the
+  // disks are, what other users are doing, etc.) and we want to be able
+  // to continue to work on the nodegroup while we are writing data to
+  // disk.
+  const std::lock_guard hold_lock(*volume_file_lock);
+  {
+    // Scoping is for closing HDF5 file before we release the lock.
+    const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
+    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+    h5::H5File<h5::AccessType::ReadWrite> h5file(
+        file_prefix +
+            std::to_string(
+                Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
+            ".h5",
+        true, observers::input_source_from_cache(cache));
+    constexpr size_t version_number = 0;
+    auto& volume_file =
+        h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
+
+    // Serialize domain. See `Domain` docs for details on the serialization.
+    // The domain is retrieved from the global cache using the standard
+    // domain tag. If more flexibility is required here later, then the
+    // domain can be passed along with the `ContributeVolumeData` action.
+    const auto serialized_domain = serialize(
+        Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache));
+    const auto serialized_functions_of_time =
+        [&cache]() -> std::optional<std::vector<char>> {
+      // Functions-of-time are in the _mutable_ global cache, so they aren't
+      // accessible through the DataBox by default
+      if constexpr (Parallel::is_in_global_cache<
+                        Metavariables, domain::Tags::FunctionsOfTime>) {
+        return serialize(get<domain::Tags::FunctionsOfTime>(cache));
+      } else {
+        (void)cache;
+        return std::nullopt;
+      }
+    }();
+    // Write the data to the file
+    volume_file.write_volume_data(observation_id.hash(), observation_id.value(),
+                                  volume_data_to_write, serialized_domain,
+                                  serialized_functions_of_time);
+  }
+}
 }  // namespace VolumeActions_detail
 /*!
  * \ingroup ObserversGroup
@@ -211,192 +291,92 @@ struct ContributeVolumeDataToWriter {
                          VolumeDataAtObsId received_volume_data) {
     // The below gymnastics with pointers is done in order to minimize the
     // time spent locking the entire node, which is necessary because the
-    // DataBox does not allow any functions calls, both get and mutate, during
-    // a mutate. This design choice in DataBox is necessary to guarantee a
-    // consistent state throughout mutation. Here, however, we need to be
-    // reasonable efficient in parallel and so we manually guarantee that
-    // consistent state. To this end, we create pointers and assign to them
-    // the data in the DataBox which is guaranteed to be pointer stable. The
-    // data itself is guaranteed to be stable inside the VolumeDataLock.
-    typename TensorDataTag::type* all_volume_data = nullptr;
-    VolumeDataAtObsId volume_data;
+    // DataBox does not allow any function calls, either get and mutate, during
+    // a mutate. We separate out writing from the operations that edit the
+    // DataBox since writing to disk can be very slow, but moving data around is
+    // comparatively quick.
     Parallel::NodeLock* volume_file_lock = nullptr;
-    std::unordered_map<ObservationId,
-                       std::unordered_set<Parallel::ArrayComponentId>>*
-        volume_observers_contributed = nullptr;
-    Parallel::NodeLock* volume_data_lock = nullptr;
-    size_t observations_registered_with_id = std::numeric_limits<size_t>::max();
+    bool perform_write = false;
+    VolumeDataAtObsId volume_data{};
 
     {
       const std::lock_guard hold_lock(*node_lock);
-      db::mutate<TensorDataTag, Tags::ContributorsOfTensorData,
-                 Tags::VolumeDataLock, Tags::H5FileLock>(
-          [&observation_id, &observations_registered_with_id,
-           &observer_group_id, &all_volume_data, &volume_observers_contributed,
-           &volume_data_lock, &volume_file_lock](
-              const gsl::not_null<typename TensorDataTag::type*>
-                  volume_data_ptr,
-              const gsl::not_null<std::unordered_map<
-                  ObservationId,
-                  std::unordered_set<Parallel::ArrayComponentId>>*>
-                  volume_observers_contributed_ptr,
-              const gsl::not_null<Parallel::NodeLock*> volume_data_lock_ptr,
-              const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr,
-              const std::unordered_map<
-                  ObservationKey,
-                  std::unordered_set<Parallel::ArrayComponentId>>&
-                  observations_registered) {
-            const ObservationKey& key{observation_id.observation_key()};
-            if (const auto& registered_group_ids =
-                    observations_registered.find(key);
-                LIKELY(registered_group_ids != observations_registered.end())) {
-              if (UNLIKELY(
-                      registered_group_ids->second.find(observer_group_id) ==
-                      registered_group_ids->second.end())) {
-                ERROR("The observer group id "
-                      << observer_group_id
-                      << " was not registered for the observation id "
-                      << observation_id);
-              }
-            } else {
-              ERROR(
-                  "key " << key
-                         << " not in the registered group ids. Known keys are "
-                         << keys_of(observations_registered));
-            }
 
-            all_volume_data = &*volume_data_ptr;
-            volume_observers_contributed = &*volume_observers_contributed_ptr;
-            volume_data_lock = &*volume_data_lock_ptr;
-            observations_registered_with_id =
-                observations_registered.at(key).size();
+      // Set file lock for later
+      db::mutate<Tags::H5FileLock>(
+          [&volume_file_lock](
+              const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr) {
             volume_file_lock = &*volume_file_lock_ptr;
           },
-          make_not_null(&box),
-          db::get<Tags::ExpectedContributorsForObservations>(box));
-    }
+          make_not_null(&box));
 
-    ASSERT(all_volume_data != nullptr,
-           "Failed to set all_volume_data in the mutate");
-    ASSERT(volume_file_lock != nullptr,
-           "Failed to set volume_file_lock in the mutate");
-    ASSERT(volume_observers_contributed != nullptr,
-           "Failed to set volume_observers_contributed in the mutate");
-    ASSERT(volume_data_lock != nullptr,
-           "Failed to set volume_data_lock in the mutate");
-    ASSERT(
-        observations_registered_with_id != std::numeric_limits<size_t>::max(),
-        "Failed to set observations_registered_with_id when mutating the "
-        "DataBox. This is a bug in the code.");
+      ASSERT(volume_file_lock != nullptr,
+             "Failed to set volume_file_lock in the mutate");
 
-    bool perform_write = false;
-    {
-      const std::lock_guard hold_lock(*volume_data_lock);
+      const auto& observations_registered =
+          db::get<Tags::ExpectedContributorsForObservations>(box);
+
+      const ObservationKey& key = observation_id.observation_key();
+      if (LIKELY(observations_registered.contains(key))) {
+        if (UNLIKELY(not observations_registered.at(key).contains(
+                observer_group_id))) {
+          ERROR("The observer group id "
+                << observer_group_id
+                << " was not registered for the observation id "
+                << observation_id);
+        }
+      } else {
+        ERROR("key " << key
+                     << " not in the registered group ids. Known keys are "
+                     << keys_of(observations_registered));
+      }
+
+      const size_t observations_registered_with_id =
+          observations_registered.at(key).size();
+
+      // Ok because we have the node lock
+      auto& volume_observers_contributed =
+          db::get_mutable_reference<Tags::ContributorsOfTensorData>(
+              make_not_null(&box));
+      auto& all_volume_data =
+          db::get_mutable_reference<TensorDataTag>(make_not_null(&box));
+
       auto& contributed_group_ids =
-          (*volume_observers_contributed)[observation_id];
+          volume_observers_contributed[observation_id];
 
-      if (UNLIKELY(contributed_group_ids.find(observer_group_id) !=
-                   contributed_group_ids.end())) {
+      if (UNLIKELY(contributed_group_ids.contains(observer_group_id))) {
         ERROR("Already received reduction data to observation id "
               << observation_id << " from array component id "
               << observer_group_id);
       }
       contributed_group_ids.insert(observer_group_id);
 
-      if (all_volume_data->find(observation_id) == all_volume_data->end()) {
-        // We haven't been called before on this processing element.
-        all_volume_data->operator[](observation_id) =
-            std::move(received_volume_data);
-      } else {
-        auto& current_data = all_volume_data->at(observation_id);
+      // Add received volume data to the box
+      if (all_volume_data.contains(observation_id)) {
+        auto& current_data = all_volume_data.at(observation_id);
         current_data.insert(
             std::make_move_iterator(received_volume_data.begin()),
             std::make_move_iterator(received_volume_data.end()));
+      } else {
+        // We haven't been called before on this processing element.
+        all_volume_data[observation_id] = std::move(received_volume_data);
       }
+
       // Check if we have received all "volume" data from the Observer
       // group. If so we write to disk.
-      if (volume_observers_contributed->at(observation_id).size() ==
+      if (volume_observers_contributed.at(observation_id).size() ==
           observations_registered_with_id) {
         perform_write = true;
-        volume_data = std::move(all_volume_data->operator[](observation_id));
-        all_volume_data->erase(observation_id);
-        volume_observers_contributed->erase(observation_id);
+        volume_data = std::move(all_volume_data[observation_id]);
+        all_volume_data.erase(observation_id);
+        volume_observers_contributed.erase(observation_id);
       }
     }
 
     if (perform_write) {
-      ASSERT(not volume_data.empty(),
-             "Failed to populate volume_data before trying to write it.");
-
-      std::vector<ElementVolumeData> volume_data_to_write;
-
-      if constexpr (std::is_same_v<tmpl::at_c<VolumeDataAtObsId, 1>,
-                                   ElementVolumeData>) {
-        volume_data_to_write.reserve(volume_data.size());
-        for (const auto& [id, element] : volume_data) {
-          (void)id;  // avoid compiler warnings
-          volume_data_to_write.push_back(element);
-        }
-      } else {
-        size_t total_size = 0;
-        for (const auto& [id, vec_elements] : volume_data) {
-          (void)id;  // avoid compiler warnings
-          total_size += vec_elements.size();
-        }
-        volume_data_to_write.reserve(total_size);
-
-        for (const auto& [id, vec_elements] : volume_data) {
-          (void)id;  // avoid compiler warnings
-          volume_data_to_write.insert(volume_data_to_write.end(),
-                                      vec_elements.begin(), vec_elements.end());
-        }
-      }
-
-      // Write to file. We use a separate node lock because writing can be
-      // very time consuming (it's network dependent, depends on how full the
-      // disks are, what other users are doing, etc.) and we want to be able
-      // to continue to work on the nodegroup while we are writing data to
-      // disk.
-      const std::lock_guard hold_lock(*volume_file_lock);
-      {
-        // Scoping is for closing HDF5 file before we release the lock.
-        const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
-        h5::H5File<h5::AccessType::ReadWrite> h5file(
-            file_prefix +
-                std::to_string(
-                    Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
-                ".h5",
-            true, observers::input_source_from_cache(cache));
-        constexpr size_t version_number = 0;
-        auto& volume_file =
-            h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
-
-        // Serialize domain. See `Domain` docs for details on the serialization.
-        // The domain is retrieved from the global cache using the standard
-        // domain tag. If more flexibility is required here later, then the
-        // domain can be passed along with the `ContributeVolumeData` action.
-        const auto serialized_domain = serialize(
-            Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(
-                cache));
-        const auto serialized_functions_of_time =
-            [&cache]() -> std::optional<std::vector<char>> {
-          // Functions-of-time are in the _mutable_ global cache, so they aren't
-          // accessible through the DataBox by default
-          if constexpr (Parallel::is_in_global_cache<
-                            Metavariables, domain::Tags::FunctionsOfTime>) {
-            return serialize(get<domain::Tags::FunctionsOfTime>(cache));
-          } else {
-            (void)cache;
-            return std::nullopt;
-          }
-        }();
-        // Write the data to the file
-        volume_file.write_volume_data(
-            observation_id.hash(), observation_id.value(), volume_data_to_write,
-            serialized_domain, serialized_functions_of_time);
-      }
+      VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
+          cache, observation_id, volume_data, make_not_null(volume_file_lock),
+          subfile_name);
     }
   }
 };

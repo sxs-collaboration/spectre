@@ -71,7 +71,7 @@ struct InitializeInterpolationTarget {
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints<TemporalId>,
       Tags::IndicesOfInvalidInterpPoints<TemporalId>,
-      Tags::PendingTemporalIds<TemporalId>,
+      Tags::PendingTemporalIds<TemporalId>, Tags::Dependencies<TemporalId>,
       tmpl::conditional_t<is_sequential::value,
                           Tags::CurrentTemporalId<TemporalId>,
                           Tags::TemporalIds<TemporalId>>,

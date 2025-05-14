@@ -93,14 +93,6 @@ struct ContributorsOfTensorData : db::SimpleTag {
                          std::unordered_set<Parallel::ArrayComponentId>>;
 };
 
-/// \brief Lock used when contributing volume data.
-///
-/// A separate lock from the node lock of the nodegroup is used in order to
-/// allow other cores to contribute reduction data, write to disk, etc.
-struct VolumeDataLock : db::SimpleTag {
-  using type = Parallel::NodeLock;
-};
-
 /// Volume tensor data to be written to disk.
 struct TensorData : db::SimpleTag {
   using type = std::unordered_map<

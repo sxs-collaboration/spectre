@@ -69,6 +69,10 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
 
   Interpolate() = default;
 
+  /// This constructor is not available through options
+  explicit Interpolate(std::optional<std::string> dependency)
+      : dependency_(std::move(dependency)) {}
+
   using compute_tags_for_observation_box =
       detail::get_compute_items_on_source_or_default_t<InterpolationTargetTag,
                                                        tmpl::list<>>;
@@ -116,10 +120,11 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
               ->at(array_index)
               .get_core());
       interpolate<InterpolationTargetTag>(temporal_id, mesh, cache, array_index,
-                                          core_id, interpolator_source_vars...);
+                                          core_id, dependency_,
+                                          interpolator_source_vars...);
     } else {
       interpolate<InterpolationTargetTag>(temporal_id, mesh, cache, array_index,
-                                          std::nullopt,
+                                          std::nullopt, dependency_,
                                           interpolator_source_vars...);
     }
   }
@@ -134,6 +139,14 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
   }
 
   bool needs_evolved_variables() const override { return true; }
+
+  void pup(PUP::er& p) override {
+    Event::pup(p);
+    p | dependency_;
+  }
+
+ private:
+  std::optional<std::string> dependency_;
 };
 
 /// \cond

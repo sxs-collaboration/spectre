@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Framework/TestHelpers.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <algorithm>
@@ -113,10 +114,13 @@ struct MockAddTemporalIdsToInterpolationTarget {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::InterpolatorTargetA::temporal_id::type&
-      /*temporal_id*/) {
+      /*temporal_id*/,
+      std::optional<std::string> dependency) {
     // We are not testing this Action here.
-    // Do nothing except make sure it is called once.
+    // Do nothing except make sure it is called once and the dependency is
+    // correct
     ++called_mock_add_temporal_ids_to_interpolation_target;
+    CHECK(dependency == std::optional<std::string>{"FakeDependency"});
   }
 };
 
@@ -290,7 +294,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   const double invalid_time = 0.2;
 
   intrp::interpolate<MockMetavariables::InterpolatorTargetA>(
-      temporal_id, mesh, cache, array_index, std::nullopt,
+      temporal_id, mesh, cache, array_index, std::nullopt, {"FakeDependency"},
       get<Tags::Lapse>(vars));
 
   check_results();
@@ -306,7 +310,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       metavars{}, temporal_id, invalid_time, mesh, vars);
 
-  metavars::event event{};
+  const metavars::event event{{"FakeDependency"}};
+  const metavars::event serialized_event = serialize_and_deserialize(event);
 
   // Update time in box and functions of time
   db::mutate<::Tags::Time>([](gsl::not_null<double*> time) { *time = 1.0; },
@@ -315,13 +320,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                    control_system::UpdateSingleFunctionOfTime>(
       cache, name, initial_expr_time, DataVector{1, 0.0}, observation_time);
 
-  CHECK(event.needs_evolved_variables());
+  CHECK(serialized_event.needs_evolved_variables());
 
   auto obs_box = make_observation_box<
       typename metavars::event::compute_tags_for_observation_box>(
       make_not_null(&box));
-  event.run(make_not_null(&obs_box), cache, array_index,
-            std::add_pointer_t<elem_component>{}, {});
+  serialized_event.run(make_not_null(&obs_box), cache, array_index,
+                       std::add_pointer_t<elem_component>{}, {});
 
   check_results();
 }

@@ -410,15 +410,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, temporal_id);
+      make_not_null(&runner), 0, temporal_id, std::nullopt);
   ActionTesting::simple_action<
       target_b_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetB>>(
-      make_not_null(&runner), 0, temporal_id);
+      make_not_null(&runner), 0, temporal_id, std::nullopt);
   ActionTesting::simple_action<
       target_c_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetC>>(
-      make_not_null(&runner), 0, temporal_id);
+      make_not_null(&runner), 0, temporal_id, std::nullopt);
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -475,7 +475,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, temporal_id);
+      make_not_null(&runner), 0, temporal_id, std::nullopt);
   // ...so make sure it was ignored by checking that there isn't anything
   // else in the simple_action queue of the target or the interpolator.
   CHECK(ActionTesting::is_simple_action_queue_empty<target_a_component>(runner,

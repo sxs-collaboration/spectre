@@ -469,8 +469,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   for (const auto& temporal_id : temporal_ids) {
     ActionTesting::simple_action<
         target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                              typename metavars::AhA>>(make_not_null(&runner),
-                                                       0, temporal_id);
+                              typename metavars::AhA>>(
+        make_not_null(&runner), 0, temporal_id, std::nullopt);
   }
 
   // Center of the analytic solution.
