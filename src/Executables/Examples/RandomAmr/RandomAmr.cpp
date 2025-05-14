@@ -11,7 +11,7 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Parameters chosen in CMakeLists.txt
-using metavariables = RandomAmrMetavars<DIM>;
+using metavariables = RandomAmrMetavars<DIM, KEEP_COARSE_GRIDS>;
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<metavariables>();

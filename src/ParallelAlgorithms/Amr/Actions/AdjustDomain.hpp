@@ -30,6 +30,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Tags/DistributedObjectTags.hpp"
+#include "Parallel/Tags/Section.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateChild.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CreateParent.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
@@ -106,7 +107,10 @@ struct AdjustDomain {
       using tags_mutated_by_this_action = tmpl::list<
           ::domain::Tags::Element<volume_dim>, ::domain::Tags::Mesh<volume_dim>,
           ::domain::Tags::NeighborMesh<volume_dim>, amr::Tags::Info<volume_dim>,
-          amr::Tags::NeighborInfo<volume_dim>>;
+          amr::Tags::NeighborInfo<volume_dim>, amr::Tags::ParentId<volume_dim>,
+          amr::Tags::ChildIds<volume_dim>, amr::Tags::ParentMesh<volume_dim>,
+          Parallel::Tags::Section<ParallelComponent, amr::Tags::GridIndex>,
+          Parallel::Tags::Section<ParallelComponent, amr::Tags::IsFinestGrid>>;
       using mutated_tags =
           tmpl::append<distributed_object_tags, tags_mutated_by_this_action,
                        typename detail::GetMutatedTags<amr_projectors>::type>;
@@ -124,6 +128,9 @@ struct AdjustDomain {
       const auto& my_amr_flags = my_amr_info.flags;
       auto& element_array =
           Parallel::get_parallel_component<ParallelComponent>(cache);
+      auto& amr_component =
+          Parallel::get_parallel_component<amr::Component<Metavariables>>(
+              cache);
       const auto& phase_bookmarks =
           Parallel::local(element_array[element_id])->phase_bookmarks();
       const auto& verbosity =
@@ -149,10 +156,11 @@ struct AdjustDomain {
                "Element " << element_id
                           << " cannot both split and join, but had AMR flags "
                           << my_amr_flags << "\n");
-        auto children_ids = amr::ids_of_children(element_id, my_amr_flags);
-        auto& amr_component =
-            Parallel::get_parallel_component<amr::Component<Metavariables>>(
-                cache);
+        const size_t child_grid_index = Metavariables::amr::keep_coarse_grids
+                                            ? element_id.grid_index() + 1
+                                            : element_id.grid_index();
+        auto children_ids =
+            amr::ids_of_children(element_id, my_amr_flags, child_grid_index);
         if (verbosity >= Verbosity::Debug) {
           Parallel::printf("Splitting element %s into %zu: %s\n", element_id,
                            children_ids.size(), children_ids);
@@ -160,11 +168,21 @@ struct AdjustDomain {
         Parallel::simple_action<CreateChild>(amr_component, element_array,
                                              element_id, children_ids, 0_st,
                                              phase_bookmarks);
-
+        return;
       } else if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
                    return flag == amr::Flag::Join;
                  })) {
         // h-coarsening
+        if (Metavariables::amr::keep_coarse_grids) {
+          ERROR(
+              "When AMR keeps coarse grids then no h-coarsening during AMR is "
+              "allowed, but element "
+              << element_id
+              << " requested h-coarsening. Set the 'AllowCoarsening' policy to "
+                 "false to disable coarsening.");
+          // Note: this restriction could be relaxed if ever needed.
+          return;
+        }
         // Only one element should create the new parent
         if (amr::is_child_that_creates_parent(element_id, my_amr_flags)) {
           auto parent_id = amr::id_of_parent(element_id, my_amr_flags);
@@ -172,9 +190,6 @@ struct AdjustDomain {
               db::get<::domain::Tags::Element<volume_dim>>(box);
           auto ids_to_join =
               amr::ids_of_joining_neighbors(element, my_amr_flags);
-          auto& amr_component =
-              Parallel::get_parallel_component<amr::Component<Metavariables>>(
-                  cache);
           if (verbosity >= Verbosity::Debug) {
             Parallel::printf("Joining %zu elements: %s -> %s\n",
                              ids_to_join.size(), ids_to_join, parent_id);
@@ -183,94 +198,91 @@ struct AdjustDomain {
               amr_component, element_array, std::move(parent_id), element_id,
               std::move(ids_to_join), phase_bookmarks);
         }
+        return;
+      }
 
-      } else {
-        // Neither h-refinement nor h-coarsening. This element will remain.
-        const auto old_mesh_and_element =
-            std::make_pair(db::get<::domain::Tags::Mesh<volume_dim>>(box),
-                           db::get<::domain::Tags::Element<volume_dim>>(box));
-        const auto& old_mesh = old_mesh_and_element.first;
+      // Neither h-refinement nor h-coarsening. This element will remain.
 
-        // Determine new neighbors and update the Element
-        {  // avoid shadowing when mutating flags below
-          using NeighborMeshType =
-              DirectionalIdMap<volume_dim, ::Mesh<volume_dim>>;
-          const auto& amr_info_of_neighbors =
-              db::get<amr::Tags::NeighborInfo<volume_dim>>(box);
-          db::mutate<::domain::Tags::Element<volume_dim>,
-                     ::domain::Tags::NeighborMesh<volume_dim>>(
-              [&element_id, &amr_info_of_neighbors](
-                  const gsl::not_null<Element<volume_dim>*> element,
-                  const gsl::not_null<NeighborMeshType*> neighbor_meshes) {
-                auto new_neighbors = element->neighbors();
-                neighbor_meshes->clear();
-                for (auto& [direction, neighbors] : new_neighbors) {
-                  const auto new_neighbor_ids_and_meshes =
-                      amr::new_neighbor_ids(element_id, direction, neighbors,
-                                            amr_info_of_neighbors);
-                  std::unordered_set<ElementId<volume_dim>> new_neighbor_ids;
-                  for (const auto& [id, mesh] : new_neighbor_ids_and_meshes) {
-                    neighbor_meshes->insert({{direction, id}, mesh});
-                    new_neighbor_ids.insert(id);
-                  }
-                  neighbors.set_ids_to(new_neighbor_ids);
-                }
-                *element =
-                    Element<volume_dim>(element_id, std::move(new_neighbors));
-              },
-              make_not_null(&box));
-        }
+      if constexpr (Metavariables::amr::keep_coarse_grids) {
+        // Create new element that covers this one with an incremented grid
+        // index. p-refinement will be handled by the newly created element.
+        ElementId<volume_dim> new_element_id{element_id.block_id(),
+                                             element_id.segment_ids(),
+                                             element_id.grid_index() + 1};
+        Parallel::simple_action<CreateChild>(
+            amr_component, element_array, element_id,
+            std::vector<ElementId<volume_dim>>{new_element_id}, 0_st,
+            phase_bookmarks);
+        return;
+      }
 
-        // Check for p-refinement
-        if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
-              return (flag == amr::Flag::IncreaseResolution or
-                      flag == amr::Flag::DecreaseResolution);
-            })) {
-          db::mutate<::domain::Tags::Mesh<volume_dim>>(
-              [&old_mesh,
-               &my_amr_flags](const gsl::not_null<Mesh<volume_dim>*> mesh) {
-                *mesh = amr::projectors::mesh(old_mesh, my_amr_flags);
-              },
-              make_not_null(&box));
+      const auto old_mesh_and_element =
+          std::make_pair(db::get<::domain::Tags::Mesh<volume_dim>>(box),
+                         db::get<::domain::Tags::Element<volume_dim>>(box));
+      const auto& old_mesh = old_mesh_and_element.first;
 
-          if (verbosity >= Verbosity::Debug) {
-            Parallel::printf(
-                "Increasing order of element %s: %s -> %s\n", element_id,
-                old_mesh.extents(),
-                db::get<::domain::Tags::Mesh<volume_dim>>(box).extents());
-          }
-        }
+      // Determine new neighbors and update the Element
+      const auto& amr_info_of_neighbors =
+          db::get<amr::Tags::NeighborInfo<volume_dim>>(box);
+      auto [new_neighbors, new_neighbor_meshes] =
+          neighbors_of_child(old_mesh_and_element.second, my_amr_info,
+                             amr_info_of_neighbors, element_id);
+      ::Initialization::mutate_assign<
+          tmpl::list<::domain::Tags::Element<volume_dim>,
+                     ::domain::Tags::NeighborMesh<volume_dim>>>(
+          make_not_null(&box),
+          Element<volume_dim>(element_id, std::move(new_neighbors)),
+          std::move(new_neighbor_meshes));
 
-        // Run the projectors on all elements, even if they did no h-refinement.
-        // This allows projectors to update mutable items that depend upon the
-        // neighbors of the element.
-        tmpl::for_each<amr_projectors>(
-            [&box, &old_mesh_and_element](auto projector_v) {
-              using projector = typename decltype(projector_v)::type;
-              try {
-                db::mutate_apply<projector>(make_not_null(&box),
-                                            old_mesh_and_element);
-              } catch (std::exception& e) {
-                ERROR("Error in AMR projector '"
-                      << pretty_type::get_name<projector>() << "':\n"
-                      << e.what());
-              }
-            });
-
-        // Reset the AMR flags
-        db::mutate<amr::Tags::Info<volume_dim>,
-                   amr::Tags::NeighborInfo<volume_dim>>(
-            [](const gsl::not_null<amr::Info<volume_dim>*> amr_info,
-               const gsl::not_null<std::unordered_map<ElementId<volume_dim>,
-                                                      amr::Info<volume_dim>>*>
-                   amr_info_of_neighbors) {
-              amr_info_of_neighbors->clear();
-              for (size_t d = 0; d < volume_dim; ++d) {
-                amr_info->flags[d] = amr::Flag::Undefined;
-              }
+      // Check for p-refinement
+      if (alg::any_of(my_amr_flags, [](amr::Flag flag) {
+            return (flag == amr::Flag::IncreaseResolution or
+                    flag == amr::Flag::DecreaseResolution);
+          })) {
+        db::mutate<::domain::Tags::Mesh<volume_dim>>(
+            [&old_mesh,
+             &my_amr_flags](const gsl::not_null<Mesh<volume_dim>*> mesh) {
+              *mesh = amr::projectors::mesh(old_mesh, my_amr_flags);
             },
             make_not_null(&box));
+
+        if (verbosity >= Verbosity::Debug) {
+          Parallel::printf(
+              "Increasing order of element %s: %s -> %s\n", element_id,
+              old_mesh.extents(),
+              db::get<::domain::Tags::Mesh<volume_dim>>(box).extents());
+        }
       }
+
+      // Run the projectors on all elements, even if they did no p-refinement.
+      // This allows projectors to update mutable items that depend upon the
+      // neighbors of the element.
+      tmpl::for_each<amr_projectors>(
+          [&box, &old_mesh_and_element](auto projector_v) {
+            using projector = typename decltype(projector_v)::type;
+            try {
+              db::mutate_apply<projector>(make_not_null(&box),
+                                          old_mesh_and_element);
+            } catch (std::exception& e) {
+              ERROR("Error in AMR projector '"
+                    << pretty_type::get_name<projector>() << "':\n"
+                    << e.what());
+            }
+          });
+
+      // Reset the AMR flags
+      db::mutate<amr::Tags::Info<volume_dim>,
+                 amr::Tags::NeighborInfo<volume_dim>>(
+          [](const gsl::not_null<amr::Info<volume_dim>*> amr_info,
+             const gsl::not_null<std::unordered_map<ElementId<volume_dim>,
+                                                    amr::Info<volume_dim>>*>
+                 local_amr_info_of_neighbors) {
+            local_amr_info_of_neighbors->clear();
+            for (size_t d = 0; d < volume_dim; ++d) {
+              amr_info->flags[d] = amr::Flag::Undefined;
+            }
+          },
+          make_not_null(&box));
     }
   }
 };

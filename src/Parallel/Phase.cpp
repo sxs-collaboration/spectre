@@ -36,6 +36,7 @@ std::vector<Phase> known_phases() {
           Phase::Solve,
           Phase::Testing,
           Phase::UpdateOptionsAtRestartFromCheckpoint,
+          Phase::UpdateSections,
           Phase::WriteCheckpoint};
 }
 
@@ -83,6 +84,8 @@ std::ostream& operator<<(std::ostream& os, const Phase& phase) {
       return os << "Testing";
     case Parallel::Phase::UpdateOptionsAtRestartFromCheckpoint:
       return os << "UpdateOptionsAtRestartFromCheckpoint";
+    case Parallel::Phase::UpdateSections:
+      return os << "UpdateSections";
     case Parallel::Phase::WriteCheckpoint:
       return os << "WriteCheckpoint";
     default:  // LCOV_EXCL_LINE

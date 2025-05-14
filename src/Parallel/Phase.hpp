@@ -87,6 +87,8 @@ enum class Phase {
   Testing,
   ///  phase in which options are changed after restart
   UpdateOptionsAtRestartFromCheckpoint,
+  ///  phase in which array sections are updated
+  UpdateSections,
   ///  phase in which checkpoint files are written to disk
   WriteCheckpoint
 };

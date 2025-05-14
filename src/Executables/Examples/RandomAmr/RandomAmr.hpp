@@ -24,9 +24,11 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/ElementsRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
 #include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
@@ -51,7 +53,7 @@ struct DummySystem {};
 /// executable.
 
 /// \brief The metavariables for the RandomAmr executable
-template <size_t Dim>
+template <size_t Dim, bool KeepCoarseGrids>
 struct RandomAmrMetavars {
   static constexpr size_t volume_dim = Dim;
   using system = DummySystem;
@@ -72,14 +74,16 @@ struct RandomAmrMetavars {
                 PhaseControl::VisitAndReturn<
                     Parallel::Phase::EvaluateAmrCriteria>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::UpdateSections>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>,
                 PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 
   static constexpr auto default_phase_order =
-      std::array{Parallel::Phase::Initialization, Parallel::Phase::CheckDomain,
-                 Parallel::Phase::Evolve, Parallel::Phase::Exit};
+      std::array{Parallel::Phase::Initialization, Parallel::Phase::Register,
+                 Parallel::Phase::UpdateSections, Parallel::Phase::CheckDomain,
+                 Parallel::Phase::Evolve,         Parallel::Phase::Exit};
 
   using dg_element_array = DgElementArray<
       RandomAmrMetavars,
@@ -91,13 +95,22 @@ struct RandomAmrMetavars {
                              amr::Initialization::Initialize<
                                  volume_dim, RandomAmrMetavars>>,
                          Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<Parallel::Phase::Register,
+                                 tmpl::list<amr::Actions::RegisterElement,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<Parallel::Phase::CheckDomain,
                                  tmpl::list<::amr::Actions::SendAmrDiagnostics,
                                             Parallel::Actions::TerminatePhase>>,
-
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<PhaseControl::Actions::ExecutePhaseChange>>>>;
+
+  struct registration
+      : tt::ConformsTo<Parallel::protocols::RegistrationMetavariables> {
+    using element_registrars =
+        tmpl::map<tmpl::pair<dg_element_array,
+                             tmpl::list<amr::Actions::RegisterElement>>>;
+  };
 
   using component_list =
       tmpl::list<amr::Component<RandomAmrMetavars>, dg_element_array>;
@@ -111,6 +124,6 @@ struct RandomAmrMetavars {
         domain::Tags::InitialExtents<Dim>,
         domain::Tags::InitialRefinementLevels<Dim>,
         evolution::dg::Tags::Quadrature>>;
-    static constexpr bool keep_coarse_grids = false;
+    static constexpr bool keep_coarse_grids = KeepCoarseGrids;
   };
 };

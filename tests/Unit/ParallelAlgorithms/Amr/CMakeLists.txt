@@ -34,6 +34,7 @@ set(LIBRARY_SOURCES
   Projectors/Test_Tensors.cpp
   Projectors/Test_Variables.cpp
   Test_Protocols.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

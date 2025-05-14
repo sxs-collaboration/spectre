@@ -10,7 +10,10 @@
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
+#include "IO/Observer/Tags.hpp"
+#include "Parallel/Tags/Section.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -33,10 +36,22 @@ struct Initialize {
 
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<amr::Tags::Info<Dim>>;
-  using simple_tags =
-      tmpl::push_back<return_tags, amr::Tags::NeighborInfo<Dim>>;
+  using simple_tags = tmpl::append<
+      return_tags, tmpl::list<amr::Tags::NeighborInfo<Dim>>,
+      tmpl::conditional_t<
+          Metavariables::amr::keep_coarse_grids,
+          tmpl::list<
+              amr::Tags::ParentId<Dim>, amr::Tags::ChildIds<Dim>,
+              amr::Tags::ParentMesh<Dim>,
+              Parallel::Tags::Section<ElementArray, amr::Tags::GridIndex>,
+              Parallel::Tags::Section<ElementArray, amr::Tags::IsFinestGrid>>,
+          tmpl::list<>>>;
 
-  using compute_tags = tmpl::list<>;
+  using compute_tags = tmpl::conditional_t<
+      Metavariables::amr::keep_coarse_grids,
+      tmpl::list<amr::Tags::GridIndexObservationKeyCompute<Dim>,
+                 amr::Tags::IsFinestGridObservationKeyCompute<Dim>>,
+      tmpl::list<>>;
 
   /// Given the items fetched from a DataBox by the argument_tags, mutate
   /// the items in the DataBox corresponding to return_tags

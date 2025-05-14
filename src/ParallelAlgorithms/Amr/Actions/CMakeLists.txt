@@ -11,6 +11,7 @@ spectre_target_headers(
   Component.hpp
   CreateChild.hpp
   CreateParent.hpp
+  ElementsRegistration.hpp
   EvaluateRefinementCriteria.hpp
   Initialization.hpp
   Initialize.hpp

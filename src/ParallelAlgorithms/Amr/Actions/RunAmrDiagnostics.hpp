@@ -51,7 +51,7 @@ struct RunAmrDiagnostics {
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
+                    const ArrayIndex& /*array_index*/, const size_t grid_index,
                     const boost::rational<size_t>& volume,
                     const size_t number_of_elements,
                     const size_t number_of_grid_points,
@@ -67,16 +67,21 @@ struct RunAmrDiagnostics {
     }
     if (db::get<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>(box) >=
         Verbosity::Quiet) {
+      const std::string title = Metavariables::amr::keep_coarse_grids
+                                    ? MakeString{} << "AMR level " << grid_index
+                                                   << ":\n"
+                                    : std::string{""};
       const std::string string_gcc_needs_to_use_in_order_for_printf_to_compile =
           MakeString{} << "Average refinement levels: "
                        << avg_refinement_levels_by_dim
                        << "\nAverage grid points: " << avg_extents_by_dim
                        << "\n";
       Parallel::printf(
+          "%s"
           "Number of elements: %zu\n"
           "Number of grid points: %zu\n"
           "%s\n",
-          number_of_elements, number_of_grid_points,
+          title, number_of_elements, number_of_grid_points,
           string_gcc_needs_to_use_in_order_for_printf_to_compile);
     }
   }

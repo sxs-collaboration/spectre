@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <unordered_map>
 #include <utility>
 
@@ -23,6 +24,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ElementRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -76,6 +78,16 @@ struct InitializeChild {
         ::domain::Tags::NeighborMesh<volume_dim>>>(
         make_not_null(&box), std::move(child), std::move(child_mesh),
         std::move(neighbors.second));
+
+    if constexpr (Metavariables::amr::keep_coarse_grids) {
+      if (db::get<amr::Tags::MaxCoarseLevels>(box).value_or(
+              std::numeric_limits<size_t>::max()) > 0) {
+        ::Initialization::mutate_assign<
+            tmpl::list<amr::Tags::ParentId<volume_dim>,
+                       amr::Tags::ParentMesh<volume_dim>>>(
+            make_not_null(&box), parent.id(), parent_mesh);
+      }
+    }
 
     tmpl::for_each<typename Metavariables::amr::projectors>(
         [&box, &parent_items](auto projector_v) {
