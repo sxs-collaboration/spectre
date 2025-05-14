@@ -80,7 +80,7 @@ void test(const Event& event) {
   const Mesh<1> mesh{std::array{3_st}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const amr::Policies policies{amr::Isotropy::Anisotropic,
-                               amr::Limits{0, 0, 3, 5}, true};
+                               amr::Limits{0, 0, 3, 5}, true, true};
 
   {
     INFO("Basic function");
@@ -141,7 +141,7 @@ void test(const Event& event) {
 
     const amr::Policies error_policies{amr::Isotropy::Anisotropic,
                                        amr::Limits{{{0, 0}}, {{3, 5}}, true},
-                                       true};
+                                       true, true};
     db::mutate<amr::Tags::Policies>(
         [&](const gsl::not_null<amr::Policies*> box_policies) {
           *box_policies = error_policies;

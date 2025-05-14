@@ -344,6 +344,7 @@ Amr:
       RefinementLevel: Auto
       NumGridPoints: Auto
       ErrorBeyondLimits: False
+    AllowCoarsening: True
   Verbosity: Verbose
 ```
 

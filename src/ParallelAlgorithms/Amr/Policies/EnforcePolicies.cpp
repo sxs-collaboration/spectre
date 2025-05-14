@@ -25,6 +25,14 @@ void enforce_policies(const gsl::not_null<std::array<Flag, Dim>*> amr_decision,
     *amr_decision = make_array<Dim>(*alg::max_element(*amr_decision));
   }
 
+  if (not amr_policies.allow_coarsening()) {
+    for (size_t d = 0; d < Dim; ++d) {
+      if (gsl::at(*amr_decision, d) < Flag::DoNothing) {
+        gsl::at(*amr_decision, d) = Flag::DoNothing;
+      }
+    }
+  }
+
   const auto& limits = amr_policies.limits();
 
   const auto error_if_beyond_limits = [&](const size_t direction,

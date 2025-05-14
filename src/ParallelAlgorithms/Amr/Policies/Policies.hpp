@@ -43,8 +43,16 @@ class Policies {
         "element faces."};
   };
 
+  /// Whether or not to allow coarsening or only refining
+  struct AllowCoarsening {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether or not to allow coarsening or only refining."};
+  };
+
   using options =
-      tmpl::list<Isotropy, Limits, EnforceTwoToOneBalanceInNormalDirection>;
+      tmpl::list<Isotropy, Limits, EnforceTwoToOneBalanceInNormalDirection,
+                 AllowCoarsening>;
 
   static constexpr Options::String help = {
       "Policies controlling adaptive mesh refinement."};
@@ -52,7 +60,8 @@ class Policies {
   Policies() = default;
 
   Policies(amr::Isotropy isotropy, const amr::Limits& limits,
-           bool enforce_two_to_one_balance_in_normal_direction);
+           bool enforce_two_to_one_balance_in_normal_direction,
+           bool allow_coarsening);
 
   amr::Isotropy isotropy() const { return isotropy_; }
 
@@ -62,12 +71,15 @@ class Policies {
     return enforce_two_to_one_balance_in_normal_direction_;
   }
 
+  bool allow_coarsening() const { return allow_coarsening_; }
+
   void pup(PUP::er& p);
 
  private:
   amr::Isotropy isotropy_{amr::Isotropy::Anisotropic};
   amr::Limits limits_{};
   bool enforce_two_to_one_balance_in_normal_direction_{true};
+  bool allow_coarsening_{true};
 };
 
 bool operator==(const Policies& lhs, const Policies& rhs);

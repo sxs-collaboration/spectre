@@ -414,7 +414,8 @@ void test_dg_operator(
       std::move(boundary_conditions), penalty_parameter,
       use_massive_dg_operator, quadrature, dg_formulation, analytic_solution,
       std::move(amr_criteria),
-      ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true},
+      ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true,
+                      true},
       ::Verbosity::Debug}};
 
   // DataBox shortcuts

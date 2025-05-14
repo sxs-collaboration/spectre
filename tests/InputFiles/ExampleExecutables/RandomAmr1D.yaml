@@ -29,6 +29,7 @@ Amr:
       RefinementLevel: [0, 8]
       NumGridPoints: Auto
       ErrorBeyondLimits: False
+    AllowCoarsening: True
   Verbosity: Verbose
 
 DomainCreator:
