@@ -375,23 +375,12 @@ std::unordered_set<ElementId<Dim>> oriented_neighbor_ids(
 }
 
 template <size_t Dim>
-bool elements_overlap(const ElementId<Dim>& element_one,
-                      const ElementId<Dim>& element_two) {
-  for (size_t d = 0; d < Dim; ++d) {
-    if (not overlapping(element_one.segment_id(d), element_two.segment_id(d))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <size_t Dim>
 bool are_neighbors_overlapping(const Neighbors<Dim>& neighbors) {
   const auto& neighbor_ids = neighbors.ids();
   for (auto it = std::next(neighbor_ids.begin()); it != neighbor_ids.end();
        ++it) {
     for (auto prev_it = neighbor_ids.begin(); prev_it != it; ++prev_it) {
-      if (elements_overlap(*prev_it, *it)) {
+      if (overlapping(*prev_it, *it)) {
         return true;
       }
     }
