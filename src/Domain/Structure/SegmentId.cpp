@@ -32,6 +32,13 @@ std::ostream& operator<<(std::ostream& os, const SegmentId& id) {
   return os;
 }
 
+bool overlapping(const SegmentId& a, const SegmentId& b) {
+  const size_t a_denom = two_to_the(a.refinement_level());
+  const size_t b_denom = two_to_the(b.refinement_level());
+  return a.index() * b_denom < (b.index() + 1) * a_denom and
+         b.index() * a_denom < (a.index() + 1) * b_denom;
+}
+
 // LCOV_EXCL_START
 size_t hash_value(const SegmentId& segment_id) {
   size_t hash = 0;

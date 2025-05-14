@@ -378,7 +378,7 @@ template <size_t Dim>
 bool elements_overlap(const ElementId<Dim>& element_one,
                       const ElementId<Dim>& element_two) {
   for (size_t d = 0; d < Dim; ++d) {
-    if (not element_one.segment_id(d).overlaps(element_two.segment_id(d))) {
+    if (not overlapping(element_one.segment_id(d), element_two.segment_id(d))) {
       return false;
     }
   }
@@ -549,7 +549,7 @@ void check_neighbors(const Neighbors<Dim>& neighbors,
         }
         if (element_id.block_id() == neighbor.block_id()) {
           CHECK((element_id == neighbor or
-                 not element_segment.overlaps(neighbor_segment)));
+                 not overlapping(element_segment, neighbor_segment)));
         }
       } else {  // transverse to face
         if (neighbors.size() == 1) {
