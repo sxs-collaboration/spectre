@@ -9,6 +9,7 @@
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -58,30 +59,17 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
   // h-refinement
   template <typename... Tags>
   static void apply(const gsl::not_null<typename VariablesTags::type*>... vars,
-                    const Element<Dim>& element, const Mesh<Dim>& child_mesh,
+                    const Element<Dim>& element, const Mesh<Dim>& new_mesh,
                     const tuples::TaggedTuple<Tags...>& parent_items) {
     const auto& element_id = element.id();
     const auto& parent_id = get<domain::Tags::Element<Dim>>(parent_items).id();
     const auto& parent_mesh = get<domain::Tags::Mesh<Dim>>(parent_items);
-    std::array<Spectral::SegmentSize, Dim> child_sizes{};
-    for (size_t d = 0; d < Dim; ++d) {
-      if (parent_id.segment_id(d) == element_id.segment_id(d)) {
-        gsl::at(child_sizes, d) = Spectral::SegmentSize::Full;
-      } else if (parent_id.segment_id(d).id_of_child(Side::Lower) ==
-                 element_id.segment_id(d)) {
-        gsl::at(child_sizes, d) = Spectral::SegmentSize::LowerHalf;
-      } else if (parent_id.segment_id(d).id_of_child(Side::Upper) ==
-                 element_id.segment_id(d)) {
-        gsl::at(child_sizes, d) = Spectral::SegmentSize::UpperHalf;
-      } else {
-        ERROR("Parent element " << parent_id << " is not a parent of element "
-                                << element_id << ". Please report this bug.");
-      }
-    }
-    const auto prolongation_matrices =
-        Spectral::projection_matrix_parent_to_child(parent_mesh, child_mesh,
+    const auto child_sizes =
+        domain::child_size(element_id.segment_ids(), parent_id.segment_ids());
+    const auto projection_matrices =
+        Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
                                                     child_sizes);
-    expand_pack((*vars = apply_matrices(prolongation_matrices,
+    expand_pack((*vars = apply_matrices(projection_matrices,
                                         get<VariablesTags>(parent_items),
                                         parent_mesh.extents()))...);
   }
@@ -89,11 +77,30 @@ struct ProjectVariables : tt::ConformsTo<amr::protocols::Projector> {
   // h-coarsening
   template <typename... Tags>
   static void apply(
-      const gsl::not_null<typename VariablesTags::type*>... /*vars*/,
-      const Element<Dim>& /*element*/, const Mesh<Dim>& /*new_mesh*/,
+      const gsl::not_null<typename VariablesTags::type*>... vars,
+      const Element<Dim>& element, const Mesh<Dim>& new_mesh,
       const std::unordered_map<ElementId<Dim>, tuples::TaggedTuple<Tags...>>&
-      /*children_items*/) {
-    ERROR("h-coarsening not implemented yet");
+          children_items) {
+    const auto& element_id = element.id();
+    bool first_child = true;
+    for (const auto& [child_id, child_items] : children_items) {
+      const auto& child_mesh = get<domain::Tags::Mesh<Dim>>(child_items);
+      const auto child_sizes =
+          domain::child_size(child_id.segment_ids(), element_id.segment_ids());
+      const auto projection_matrices =
+          Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
+                                                      child_sizes);
+      if (first_child) {
+        expand_pack((*vars = apply_matrices(projection_matrices,
+                                            get<VariablesTags>(child_items),
+                                            child_mesh.extents()))...);
+        first_child = false;
+      } else {
+        expand_pack((*vars += apply_matrices(projection_matrices,
+                                             get<VariablesTags>(child_items),
+                                             child_mesh.extents()))...);
+      }
+    }
   }
 };
 

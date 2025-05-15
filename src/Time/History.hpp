@@ -1047,6 +1047,8 @@ std::ostream& operator<<(std::ostream& os, const History<Vars>& history) {
 ///
 /// An overload applying the same transformation to the values and
 /// derivatives is provided for convenience.
+///
+/// \see transform_mutate
 /// @{
 template <typename DestVars, typename SourceVars, typename ValueTransformer,
           typename DerivativeTransformer>
@@ -1119,6 +1121,88 @@ template <typename DestVars, typename SourceVars, typename Transformer>
 void transform(const gsl::not_null<History<DestVars>*> dest,
                const History<SourceVars>& source, Transformer&& transformer) {
   transform(dest, source, transformer, transformer);
+}
+/// @}
+
+/// \ingroup TimeSteppersGroup
+/// Combine two History objects by applying a transformation to each
+/// value and derivative.
+///
+/// The transformers must accept a `gsl::not_null` value from the \p
+/// dest history and a const reference to value from the \p source
+/// history.  They will be applied to each corresponding (non-nullopt)
+/// pair of values from the two histories.  It is an error if the
+/// entries in the two histories do not match.
+///
+/// An overload applying the same transformation to the values and
+/// derivatives is provided for convenience.
+///
+/// \see transform
+/// @{
+template <typename DestVars, typename SourceVars, typename ValueTransformer,
+          typename DerivativeTransformer>
+void transform_mutate(const gsl::not_null<History<DestVars>*> dest,
+                      const History<SourceVars>& source,
+                      ValueTransformer&& value_transformer,
+                      DerivativeTransformer&& derivative_transformer) {
+  ASSERT(dest->integration_order() == source.integration_order(),
+         "Attempting to combine histories with integration orders "
+             << dest->integration_order() << " and "
+             << source.integration_order());
+
+  const auto transform_record =
+      [&derivative_transformer, &value_transformer](
+          typename History<DestVars>::value_type& dest_record,
+          const typename History<SourceVars>::value_type& source_record) {
+        ASSERT(dest_record.time_step_id == source_record.time_step_id,
+               "Entries to combine do not match: "
+                   << dest_record.time_step_id << " "
+                   << source_record.time_step_id);
+        ASSERT(dest_record.value.has_value() == source_record.value.has_value(),
+               "Only one of the entries to combine has a value at "
+                   << dest_record.time_step_id);
+        if (dest_record.value.has_value()) {
+          value_transformer(make_not_null(&*dest_record.value),
+                            *source_record.value);
+        }
+        derivative_transformer(make_not_null(&dest_record.derivative),
+                               source_record.derivative);
+      };
+
+  ASSERT(dest->size() == source.size(),
+         "Attempting to combine histories with sizes "
+             << dest->size() << " and " << source.size());
+  {
+    auto dest_entry = dest->begin();
+    auto source_entry = source.begin();
+    while (dest_entry != dest->end()) {
+      transform_record(*dest_entry, *source_entry);
+      ++dest_entry;
+      ++source_entry;
+    }
+  }
+
+  {
+    auto dest_substeps = dest->substeps();
+    const auto source_substeps = source.substeps();
+    ASSERT(dest_substeps.size() == source_substeps.size(),
+           "Attempting to combine histories with substep sizes "
+               << dest_substeps.size() << " and " << source_substeps.size());
+    auto dest_entry = dest_substeps.begin();
+    auto source_entry = source_substeps.begin();
+    while (dest_entry != dest_substeps.end()) {
+      transform_record(*dest_entry, *source_entry);
+      ++dest_entry;
+      ++source_entry;
+    }
+  }
+}
+
+template <typename DestVars, typename SourceVars, typename Transformer>
+void transform_mutate(const gsl::not_null<History<DestVars>*> dest,
+                      const History<SourceVars>& source,
+                      Transformer&& transformer) {
+  transform_mutate(dest, source, transformer, transformer);
 }
 /// @}
 }  // namespace TimeSteppers

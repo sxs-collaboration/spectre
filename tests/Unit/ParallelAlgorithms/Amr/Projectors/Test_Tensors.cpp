@@ -5,23 +5,33 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
+#include <numeric>
+#include <unordered_map>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Framework/TestHelpers.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
@@ -95,8 +105,10 @@ void test_p_refine() {
   const auto expected_deriv = make_tensor<typename Tag2<Dim>::type>(x_new, 8.0);
 
   auto box = db::create<
-      db::AddSimpleTags<domain::Tags::Mesh<Dim>, Tag0, Tag1<Dim>, Tag2<Dim>>>(
-      new_mesh, std::move(scalar), std::move(one_form), std::move(deriv));
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                        Tag0, Tag1<Dim>, Tag2<Dim>>>(
+      new_mesh, element, std::move(scalar), std::move(one_form),
+      std::move(deriv));
 
   db::mutate_apply<amr::projectors::ProjectTensors<
       Dim, tmpl::list<Tag0, Tag1<Dim>, Tag2<Dim>>>>(
@@ -104,6 +116,137 @@ void test_p_refine() {
   CHECK_ITERABLE_APPROX(db::get<Tag0>(box), expected_scalar);
   CHECK_ITERABLE_APPROX(db::get<Tag1<Dim>>(box), expected_one_form);
   CHECK_ITERABLE_APPROX(db::get<Tag2<Dim>>(box), expected_deriv);
+}
+
+template <size_t Dim>
+void test_h_refine() {
+  const ElementId<Dim> parent_element_id{0};
+  std::array<size_t, Dim> extents{};
+  std::iota(extents.begin(), extents.end(), 3_st);
+  const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const auto parent_x = logical_coordinates(mesh);
+
+  using ElementData =
+      tuples::TaggedTuple<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                          Tag0, Tag1<Dim>, Tag2<Dim>>;
+  const ElementData parent_data{
+      Element<Dim>{parent_element_id, {}}, mesh,
+      make_tensor<typename Tag0::type>(parent_x, 1.0),
+      make_tensor<typename Tag1<Dim>::type>(parent_x, 4.0),
+      make_tensor<typename Tag2<Dim>::type>(parent_x, 8.0)};
+
+  std::unordered_map<ElementId<Dim>, ElementData> children_data{};
+  for (size_t child = 0; child < two_to_the(Dim); ++child) {
+    auto child_id = parent_element_id;
+    auto child_x = parent_x;
+    for (size_t d = 0; d < Dim; ++d) {
+      const auto side = (child & (1_st << d)) == 0 ? Side::Lower : Side::Upper;
+      child_id = child_id.id_of_child(d, side);
+      child_x.get(d) *= 0.5;
+      child_x.get(d) += side == Side::Upper ? 0.5 : -0.5;
+    }
+    children_data.emplace(
+        child_id,
+        ElementData{Element<Dim>{child_id, {}}, mesh,
+                    make_tensor<typename Tag0::type>(child_x, 1.0),
+                    make_tensor<typename Tag1<Dim>::type>(child_x, 4.0),
+                    make_tensor<typename Tag2<Dim>::type>(child_x, 8.0)});
+  }
+
+  for (const auto& [child_id, child_data] : children_data) {
+    auto box = db::create<
+        db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                          Tag0, Tag1<Dim>, Tag2<Dim>>>(
+        mesh, get<domain::Tags::Element<Dim>>(child_data),
+        typename Tag0::type{}, typename Tag1<Dim>::type{},
+        typename Tag2<Dim>::type{});
+
+    db::mutate_apply<amr::projectors::ProjectTensors<
+        Dim, tmpl::list<Tag0, Tag1<Dim>, Tag2<Dim>>>>(make_not_null(&box),
+                                                      parent_data);
+
+    const auto& expected = children_data.at(child_id);
+    CHECK_ITERABLE_APPROX(db::get<Tag0>(box), get<Tag0>(expected));
+    CHECK_ITERABLE_APPROX(db::get<Tag1<Dim>>(box), get<Tag1<Dim>>(expected));
+    CHECK_ITERABLE_APPROX(db::get<Tag2<Dim>>(box), get<Tag2<Dim>>(expected));
+  }
+
+  {
+    auto box = db::create<
+        db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                          Tag0, Tag1<Dim>, Tag2<Dim>>>(
+        mesh, get<domain::Tags::Element<Dim>>(parent_data),
+        typename Tag0::type{}, typename Tag1<Dim>::type{},
+        typename Tag2<Dim>::type{});
+
+    db::mutate_apply<amr::projectors::ProjectTensors<
+        Dim, tmpl::list<Tag0, Tag1<Dim>, Tag2<Dim>>>>(make_not_null(&box),
+                                                      children_data);
+
+    CHECK_ITERABLE_APPROX(db::get<Tag0>(box), get<Tag0>(parent_data));
+    CHECK_ITERABLE_APPROX(db::get<Tag1<Dim>>(box), get<Tag1<Dim>>(parent_data));
+    CHECK_ITERABLE_APPROX(db::get<Tag2<Dim>>(box), get<Tag2<Dim>>(parent_data));
+  }
+}
+
+template <size_t Dim>
+void test_nonuniform_join() {
+  const ElementId<Dim> parent_element_id{0};
+
+  using ElementData =
+      tuples::TaggedTuple<domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
+                          Tag0, Tag1<Dim>, Tag2<Dim>>;
+
+  std::unordered_map<ElementId<Dim>, ElementData> children_data{};
+  std::vector<Mesh<Dim>> children_meshes{};
+  for (size_t child = 0; child < two_to_the(Dim); ++child) {
+    const Mesh<Dim> child_mesh{child + 3, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto};
+    children_meshes.push_back(child_mesh);
+    auto child_id = parent_element_id;
+    auto child_x = logical_coordinates(child_mesh);
+    for (size_t d = 0; d < Dim; ++d) {
+      const auto side = (child & (1_st << d)) == 0 ? Side::Lower : Side::Upper;
+      child_id = child_id.id_of_child(d, side);
+      child_x.get(d) *= 0.5;
+      child_x.get(d) += side == Side::Upper ? 0.5 : -0.5;
+    }
+    children_data.emplace(
+        child_id,
+        ElementData{Element<Dim>{child_id, {}}, child_mesh,
+                    make_tensor<typename Tag0::type>(child_x, 1.0),
+                    make_tensor<typename Tag1<Dim>::type>(child_x, 4.0),
+                    make_tensor<typename Tag2<Dim>::type>(child_x, 8.0)});
+  }
+
+  const auto parent_mesh = amr::projectors::parent_mesh(children_meshes);
+  const auto parent_x = logical_coordinates(parent_mesh);
+
+  const ElementData parent_data{
+      Element<Dim>{parent_element_id, {}}, parent_mesh,
+      make_tensor<typename Tag0::type>(parent_x, 1.0),
+      make_tensor<typename Tag1<Dim>::type>(parent_x, 4.0),
+      make_tensor<typename Tag2<Dim>::type>(parent_x, 8.0)};
+
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                        Tag0, Tag1<Dim>, Tag2<Dim>>>(
+      parent_mesh, get<domain::Tags::Element<Dim>>(parent_data),
+      typename Tag0::type{}, typename Tag1<Dim>::type{},
+      typename Tag2<Dim>::type{});
+
+  db::mutate_apply<amr::projectors::ProjectTensors<
+      Dim, tmpl::list<Tag0, Tag1<Dim>, Tag2<Dim>>>>(make_not_null(&box),
+                                                    children_data);
+
+  auto custom_approx = Approx::custom().scale(1.0).epsilon(1.e-13);
+  CHECK_ITERABLE_CUSTOM_APPROX(db::get<Tag0>(box), get<Tag0>(parent_data),
+                               custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(db::get<Tag1<Dim>>(box),
+                               get<Tag1<Dim>>(parent_data), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(db::get<Tag2<Dim>>(box),
+                               get<Tag2<Dim>>(parent_data), custom_approx);
 }
 }  // namespace
 
@@ -115,4 +258,10 @@ SPECTRE_TEST_CASE("Unit.Amr.Projectors.Tensors", "[ParallelAlgorithms][Unit]") {
   test_p_refine<1>();
   test_p_refine<2>();
   test_p_refine<3>();
+  test_h_refine<1>();
+  test_h_refine<2>();
+  test_h_refine<3>();
+  test_nonuniform_join<1>();
+  test_nonuniform_join<2>();
+  test_nonuniform_join<3>();
 }
