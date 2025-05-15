@@ -740,7 +740,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
                         tci_decision,
-                        integration_order};
+                        integration_order,
+                        std::nullopt};
       } else {
         data = SendData{volume_mesh,
                         ghost_data_mesh,
@@ -749,7 +750,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
                         tci_decision,
-                        integration_order};
+                        integration_order,
+                        std::nullopt};
       }
 
       // Send mortar data (the `std::tuple` named `data`) to neighbor

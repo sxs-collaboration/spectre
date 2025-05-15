@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
+#include "Evolution/DiscontinuousGalerkin/InterpolatedBoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -34,43 +35,60 @@ void test() {
                                 DataVector{1, 4.4},
                                 TimeStepId{true, 1, time},
                                 7,
-                                3};
+                                3,
+                                std::nullopt};
   CHECK(data0 == BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
                                    DataVector{2, 2.3}, DataVector{1, 4.4},
-                                   TimeStepId{true, 1, time}, 7, 3});
-  CHECK(data0 != BoundaryData<Dim>{Mesh<Dim>{6, Spectral::Basis::Legendre,
-                                             Spectral::Quadrature::Gauss},
-                                   ghost_data_mesh, mortar_mesh,
-                                   DataVector{2, 2.3}, DataVector{1, 4.4},
-                                   TimeStepId{true, 1, time}, 7, 3});
+                                   TimeStepId{true, 1, time}, 7, 3,
+                                   std::nullopt});
+  CHECK(
+      data0 !=
+      BoundaryData<Dim>{
+          Mesh<Dim>{6, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+          ghost_data_mesh, mortar_mesh, DataVector{2, 2.3}, DataVector{1, 4.4},
+          TimeStepId{true, 1, time}, 7, 3, std::nullopt});
   CHECK(data0 !=
         BoundaryData<Dim>{volume_mesh,
                           Mesh<Dim>{11, Spectral::Basis::FiniteDifference,
                                     Spectral::Quadrature::CellCentered},
                           mortar_mesh, DataVector{2, 2.3}, DataVector{1, 4.4},
-                          TimeStepId{true, 1, time}, 7, 3});
+                          TimeStepId{true, 1, time}, 7, 3, std::nullopt});
   if constexpr (Dim > 1) {
     CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh,
                                      Mesh<Dim - 1>{2, Spectral::Basis::Legendre,
                                                    Spectral::Quadrature::Gauss},
                                      DataVector{2, 2.3}, DataVector{1, 4.4},
-                                     TimeStepId{true, 1, time}, 7, 3});
+                                     TimeStepId{true, 1, time}, 7, 3,
+                                     std::nullopt});
   }
   CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
                                    DataVector{9, 2.3}, DataVector{1, 4.4},
-                                   TimeStepId{true, 1, time}, 7, 3});
+                                   TimeStepId{true, 1, time}, 7, 3,
+                                   std::nullopt});
   CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
                                    DataVector{2, 2.3}, DataVector{6, 4.4},
-                                   TimeStepId{true, 1, time}, 7, 3});
+                                   TimeStepId{true, 1, time}, 7, 3,
+                                   std::nullopt});
   CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
                                    DataVector{2, 2.3}, DataVector{1, 4.4},
-                                   TimeStepId{true, 2, time}, 7, 3});
+                                   TimeStepId{true, 2, time}, 7, 3,
+                                   std::nullopt});
   CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
                                    DataVector{2, 2.3}, DataVector{1, 4.4},
-                                   TimeStepId{true, 1, time}, 9, 3});
+                                   TimeStepId{true, 1, time}, 9, 3,
+                                   std::nullopt});
   CHECK(data0 != BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
                                    DataVector{2, 2.3}, DataVector{1, 4.4},
-                                   TimeStepId{true, 2, time}, 7, 5});
+                                   TimeStepId{true, 2, time}, 7, 5,
+                                   std::nullopt});
+  CHECK(data0 !=
+        BoundaryData<Dim>{volume_mesh, ghost_data_mesh, mortar_mesh,
+                          DataVector{2, 2.3}, DataVector{1, 4.4},
+                          TimeStepId{true, 1, time}, 7, 3,
+                          InterpolatedBoundaryData<Dim>{
+                              {.data = DataVector{3, 1.0},
+                               .target_mesh = mortar_mesh,
+                               .offsets = std::vector{0_st, 2_st, 3_st}}}});
   CHECK(get_output(data0) ==
         std::string(
             "Volume mesh: " + get_output(volume_mesh) +
@@ -79,7 +97,8 @@ void test() {
             "\nGhost cell data: " + get_output(DataVector{2, 2.3}) +
             "\nBoundary correction data: " + get_output(DataVector{1, 4.4}) +
             "\nValidy range: " + get_output(TimeStepId{true, 1, time}) +
-            "\nTCI status: 7\nIntegration order: 3"));
+            "\nTCI status: 7\nIntegration order: 3\nInterpolated boundary "
+            "data: --"));
 }
 }  // namespace
 
