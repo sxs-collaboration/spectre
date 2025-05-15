@@ -129,7 +129,7 @@ void check_observer_registration() {
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Test registration occurred as expected
-  const observers::ObservationKey obs_id_key{"ElementObservationType"};
+  const observers::ObservationKey obs_id_key{"/element_data.vol"};
   std::unordered_map<observers::ObservationKey,
                      std::unordered_set<Parallel::ArrayComponentId>>
       expected_obs_ids{};

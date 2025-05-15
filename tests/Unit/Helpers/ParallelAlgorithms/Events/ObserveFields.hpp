@@ -57,22 +57,26 @@ struct MockContributeVolumeData {
     std::string subfile_name{};
     Parallel::ArrayComponentId array_component_id{};
     ElementVolumeData received_volume_data{};
+    std::optional<std::string> dependency{};
   };
   static Results results;
 
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ObservationId& observation_id,
-                    const std::string& subfile_name,
-                    const Parallel::ArrayComponentId& array_component_id,
-                    ElementVolumeData&& received_volume_data) {
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ObservationId& observation_id,
+      const std::string& subfile_name,
+      const Parallel::ArrayComponentId& array_component_id,
+      ElementVolumeData&& received_volume_data,
+      const std::optional<std::string>& dependency = std::nullopt) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
     results.received_volume_data = std::move(received_volume_data);
+    results.dependency = dependency;
   }
 };
 
@@ -230,14 +234,16 @@ struct ScalarSystem {
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh,
       std::optional<std::vector<std::string>> active_block_or_block_groups =
-          std::nullopt) {
+          std::nullopt,
+      std::optional<std::string> dependency = std::nullopt) {
     return ObserveEvent{
         "element_data",
         FloatingPointType::Double,
         {FloatingPointType::Double},
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Error(Scalar)"},
         std::move(active_block_or_block_groups),
-        interpolating_mesh};
+        interpolating_mesh,
+        std::move(dependency)};
   }
 };
 
@@ -357,7 +363,8 @@ struct ComplicatedSystem {
   static ObserveEvent make_test_object(
       const std::optional<Mesh<volume_dim>>& interpolating_mesh,
       std::optional<std::vector<std::string>> active_block_or_block_groups =
-          std::nullopt) {
+          std::nullopt,
+      std::optional<std::string> dependency = std::nullopt) {
     return ObserveEvent(
         "element_data", FloatingPointType::Double,
         {FloatingPointType::Double, FloatingPointType::Double,
@@ -366,7 +373,8 @@ struct ComplicatedSystem {
          FloatingPointType::Double, FloatingPointType::Float},
         {"Scalar", "ScalarVarTimesTwo", "ScalarVarTimesThree", "Vector",
          "Tensor", "Tensor2", "Error(Vector)", "Error(Tensor2)"},
-        std::move(active_block_or_block_groups), interpolating_mesh);
+        std::move(active_block_or_block_groups), interpolating_mesh,
+        std::move(dependency));
   }
 };
 }  // namespace TestHelpers::dg::Events::ObserveFields

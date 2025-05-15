@@ -98,7 +98,8 @@ class FindCommonHorizon<
       : observe_fields_event_(subfile_name, coordinates_floating_point_type,
                               floating_point_types, variables_to_observe,
                               active_block_or_block_groups, interpolation_mesh,
-                              context) {}
+                              {name()}, context),
+        interpolate_event_(subfile_name) {}
 
   using compute_tags_for_observation_box = tmpl::remove_duplicates<tmpl::append<
       typename ObserveFieldsEvent::compute_tags_for_observation_box,

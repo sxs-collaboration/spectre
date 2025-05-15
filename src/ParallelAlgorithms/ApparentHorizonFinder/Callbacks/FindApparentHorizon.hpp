@@ -64,18 +64,14 @@ namespace intrp::callbacks {
 /// type alias called `post_horizon_find_callbacks`, which is a list of
 /// structs, each of which has a function
 ///
-/// \snippet
-/// ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp
-/// post_horizon_find_callback_example
+/// \snippet ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp post_horizon_find_callback_example
 ///
 /// that is called if the FastFlow iteration has converged.
 /// InterpolationTargetTag also is assumed to contain an additional
 /// type alias called `horizon_find_failure_callbacks`, which is a list of
 /// structs, each of which has a function
 ///
-/// \snippet
-/// ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp
-/// horizon_find_failure_callbacks_example
+/// \snippet ParallelAlgorithms/ApparentHorizonFinder/Test_ApparentHorizonFinder.cpp horizon_find_failure_callbacks_example
 ///
 /// that is called if the FastFlow iteration or the interpolation has
 /// failed.

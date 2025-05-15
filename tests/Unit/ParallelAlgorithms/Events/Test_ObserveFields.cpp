@@ -99,7 +99,8 @@ void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions, const bool test_specific_blocks,
-    const std::optional<std::string>& section = std::nullopt) {
+    const std::optional<std::string>& section = std::nullopt,
+    const std::optional<std::string>& dependency = std::nullopt) {
   INFO(test_specific_blocks);
   using metavariables = Metavariables<System, false>;
   constexpr size_t volume_dim = System::volume_dim;
@@ -224,6 +225,7 @@ void test_observe(
   CHECK(results.observation_id.observation_key() ==
         expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
+  CHECK(results.dependency == dependency);
   CHECK(results.array_component_id ==
         Parallel::make_array_component_id<element_component>(array_index));
   CHECK(results.received_volume_data.extents.size() == volume_dim);
@@ -326,20 +328,23 @@ void test_system(
     const std::string& mesh_creation_string,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {},
     const bool has_analytic_solutions = true,
-    const std::optional<std::string>& section = std::nullopt) {
+    const std::optional<std::string>& section = std::nullopt,
+    const std::optional<std::string>& dependency = std::nullopt) {
   INFO(pretty_type::get_name<System>());
   CAPTURE(has_analytic_solutions);
   CAPTURE(mesh_creation_string);
   using ArraySectionIdTag = typename System::array_section_id;
   INFO(pretty_type::get_name<ArraySectionIdTag>());
   CAPTURE(section);
+  CAPTURE(dependency);
   using metavariables = Metavariables<System, false>;
   for (const bool test_specific_blocks : {false, true}) {
     test_observe<System, ArraySectionIdTag>(
         std::make_unique<typename System::ObserveEvent>(
-            System::make_test_object(interpolating_mesh)),
+            System::make_test_object(interpolating_mesh, std::nullopt,
+                                     dependency)),
         interpolating_mesh, has_analytic_solutions, test_specific_blocks,
-        section);
+        section, dependency);
     INFO("create/serialize");
     register_factory_classes_with_charm<metavariables>();
     {
@@ -349,9 +354,10 @@ void test_system(
           TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
               creation_string);
       auto serialized_event = serialize_and_deserialize(factory_event);
+      // No dependency from factory creation
       test_observe<System, ArraySectionIdTag>(
           std::move(serialized_event), interpolating_mesh,
-          has_analytic_solutions, test_specific_blocks, section);
+          has_analytic_solutions, test_specific_blocks, section, std::nullopt);
     }
   }
 }
@@ -360,7 +366,7 @@ void test_system(
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   {
     INFO("No Interpolation");
-    const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
+    const std::string interpolating_mesh_str = "  InterpolateToMesh: None\n";
     using system_no_section = ScalarSystem<dg::Events::ObserveFields, void>;
     using system_with_section =
         ScalarSystem<dg::Events::ObserveFields, TestSectionIdTag>;
@@ -375,7 +381,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         (system_no_section, system_with_section,
          ComplicatedSystem<dg::Events::ObserveFields>));
     INVOKE_TEST_FUNCTION(test_system,
-                         (interpolating_mesh_str, std::nullopt, false),
+                         (interpolating_mesh_str, std::nullopt, false,
+                          std::nullopt, "TestDependency"),
                          (ScalarSystem<dg::Events::ObserveFields>,
                           ComplicatedSystem<dg::Events::ObserveFields>));
   }

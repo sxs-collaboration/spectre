@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
@@ -27,6 +28,7 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -55,17 +57,21 @@
 namespace {
 // Mock actions only exist so we don't need all other action down the line. In
 // this test we'll only check that actions are queued since each individual
-// event is tested elsewhere
+// event is tested elsewhere, but we do check the dependencies
 struct MockContributeVolumeData {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ObservationId& /*observation_id*/,
-                    const std::string& /*subfile_name*/,
-                    const Parallel::ArrayComponentId& /*array_component_id*/,
-                    ElementVolumeData&& /*received_volume_data*/) {}
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ObservationId& /*observation_id*/,
+      const std::string& /*subfile_name*/,
+      const Parallel::ArrayComponentId& /*array_component_id*/,
+      ElementVolumeData&& /*received_volume_data*/,
+      const std::optional<std::string>& dependency = std::nullopt) {
+    CHECK(dependency == std::optional{"InterpolationTargetA"});
+  }
 };
 
 struct MockInterpolatorReceiveVolumeData {
@@ -90,7 +96,9 @@ struct MockAddTemporalIdsToInterpolationTarget {
                     const ArrayIndex& /*array_index*/,
                     const LinkedMessageId<double>&
                     /*temporal_id*/,
-                    std::optional<std::string> /*dependency*/) {}  // NOLINT
+                    std::optional<std::string> dependency) {  // NOLINT
+    CHECK(dependency == std::optional{"SubfileName"});
+  }
 };
 
 template <typename Metavariables>
@@ -253,20 +261,30 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
   const ::Event::ObservationValue observation_value{"FindCommonHorizon",
                                                     observation_time};
 
+  // Actual coords don't matter
+  const auto logical_coords = logical_coordinates(mesh);
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavars>,
       Parallel::Tags::GlobalCacheImpl<metavars>,
       metavars::InterpolationTargetA::temporal_id, ::Tags::Time,
       ::Events::Tags::ObserverMesh<metavars::volume_dim>,
+      ::domain::Tags::Coordinates<3, ::Frame::Inertial>,
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
-      metavars{}, &cache, temporal_id, observation_time, mesh, vars);
+      metavars{}, &cache, temporal_id, observation_time, mesh,
+      tnsr::I<DataVector, 3, ::Frame::Inertial>{
+          std::array{logical_coords[0], logical_coords[1], logical_coords[2]}},
+      vars);
 
   using FindCommonHorizon = ah::Events::FindCommonHorizon<
       metavars::volume_dim, typename metavars::InterpolationTargetA,
       typename metavars::interpolator_source_vars,
-      typename metavars::interpolator_source_vars>;
+      tmpl::push_back<typename metavars::interpolator_source_vars,
+                      ::domain::Tags::Coordinates<3, ::Frame::Inertial>>>;
 
-  const FindCommonHorizon find_common_horizon{};
+  const FindCommonHorizon find_common_horizon{"SubfileName",
+                                              FloatingPointType::Double,
+                                              {FloatingPointType::Double},
+                                              {"Pi"}};
 
   CHECK(find_common_horizon.needs_evolved_variables());
   CHECK(find_common_horizon.is_ready(cache, 0,

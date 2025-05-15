@@ -245,7 +245,7 @@ void test_reduction_observer(const bool observe_per_core) {
       runner.simple_action<obs_component,
                            observers::Actions::ContributeReductionData>(
           get_global_core_id(id),
-          observers::ObservationId{time, "ElementObservationType"},
+          observers::ObservationId{time, "/element_data.vol"},
           Parallel::make_array_component_id<element_comp>(id), "/element_data",
           legend, std::move(reduction_data_fakes), std::move(formatter),
           observe_per_core);

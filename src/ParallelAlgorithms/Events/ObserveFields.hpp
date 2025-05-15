@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -181,6 +182,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
 
   ObserveFields() = default;
 
+  // The dependency isn't available through Options
   ObserveFields(
       const std::string& subfile_name,
       FloatingPointType coordinates_floating_point_type,
@@ -188,7 +190,21 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       const std::vector<std::string>& variables_to_observe,
       std::optional<std::vector<std::string>> active_block_or_block_groups = {},
       std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+      std::optional<std::string> dependency = {},
       const Options::Context& context = {});
+
+  ObserveFields(
+      const std::string& subfile_name,
+      FloatingPointType coordinates_floating_point_type,
+      const std::vector<FloatingPointType>& floating_point_types,
+      const std::vector<std::string>& variables_to_observe,
+      std::optional<std::vector<std::string>> active_block_or_block_groups = {},
+      std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+      const Options::Context& context = {})
+      : ObserveFields(subfile_name, coordinates_floating_point_type,
+                      floating_point_types, variables_to_observe,
+                      std::move(active_block_or_block_groups),
+                      std::move(interpolation_mesh), std::nullopt, context) {}
 
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
@@ -217,7 +233,8 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     }
     call_operator_impl(subfile_path_ + *section_observation_key,
                        variables_to_observe_, interpolation_mesh_, mesh, box,
-                       cache, array_index, component, observation_value);
+                       cache, array_index, component, observation_value,
+                       dependency_);
   }
 
   // We factor out the work into a static member function so it can  be shared
@@ -235,7 +252,8 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& element_id,
       const ParallelComponent* const /*meta*/,
-      const ObservationValue& observation_value) {
+      const ObservationValue& observation_value,
+      const std::optional<std::string>& dependency) {
     // if no interpolation_mesh is provided, the interpolation is essentially
     // ignored by the RegularGridInterpolant except for a single copy.
     const intrp::RegularGrid interpolant(mesh,
@@ -334,12 +352,12 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
       Parallel::threaded_action<
           observers::ThreadedActions::ContributeVolumeDataToWriter>(
           local_observer, std::move(observation_id), array_component_id,
-          subfile_path, std::move(data_to_send));
+          subfile_path, std::move(data_to_send), dependency);
     } else {
       // Send data to volume observer
       Parallel::simple_action<observers::Actions::ContributeVolumeData>(
           local_observer, std::move(observation_id), subfile_path,
-          array_component_id, std::move(element_volume_data));
+          array_component_id, std::move(element_volume_data), dependency);
     }
   }
 
@@ -382,6 +400,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     p | variables_to_observe_;
     p | active_block_or_block_groups_;
     p | interpolation_mesh_;
+    p | dependency_;
   }
 
  private:
@@ -414,6 +433,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
   std::optional<std::vector<std::string>> active_block_or_block_groups_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
+  std::optional<std::string> dependency_;
 };
 
 template <size_t VolumeDim, typename... Tensors,
@@ -427,7 +447,7 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         const std::vector<std::string>& variables_to_observe,
         std::optional<std::vector<std::string>> active_block_or_block_groups,
         std::optional<Mesh<VolumeDim>> interpolation_mesh,
-        const Options::Context& context)
+        std::optional<std::string> dependency, const Options::Context& context)
     : subfile_path_("/" + subfile_name),
       variables_to_observe_([&context, &floating_point_types,
                              &variables_to_observe]() {
@@ -455,7 +475,8 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         return result;
       }()),
       active_block_or_block_groups_(std::move(active_block_or_block_groups)),
-      interpolation_mesh_(interpolation_mesh) {
+      interpolation_mesh_(interpolation_mesh),
+      dependency_(std::move(dependency)) {
   ASSERT(
       (... or (db::tag_name<Tensors>() == "InertialCoordinates")),
       "There is no tag with name 'InertialCoordinates' specified "

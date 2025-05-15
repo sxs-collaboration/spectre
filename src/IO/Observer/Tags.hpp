@@ -108,6 +108,13 @@ struct InterpolatorTensorData : db::SimpleTag {
                                             std::vector<ElementVolumeData>>>;
 };
 
+/// Map of ObservationIds that have dependencies for volume data to be written
+/// and whether or not the dependency has the volume data being written or
+/// discarded.
+struct Dependencies : db::SimpleTag {
+  using type = std::unordered_map<ObservationId, std::pair<std::string, bool>>;
+};
+
 /// \cond
 template <class... ReductionDatums>
 struct ReductionDataNames;

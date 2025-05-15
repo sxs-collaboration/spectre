@@ -7,6 +7,7 @@
 #include <iterator>
 #include <mutex>
 #include <optional>
+#include <string>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -28,6 +29,7 @@
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -60,16 +62,17 @@ namespace Actions {
 struct ContributeVolumeData {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index,
-                    const observers::ObservationId& observation_id,
-                    const std::string& subfile_name,
-                    const Parallel::ArrayComponentId& sender_array_id,
-                    ElementVolumeData&& received_volume_data) {
+  static void apply(
+      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index,
+      const observers::ObservationId& observation_id,
+      const std::string& subfile_name,
+      const Parallel::ArrayComponentId& sender_array_id,
+      ElementVolumeData&& received_volume_data,
+      const std::optional<std::string>& dependency = std::nullopt) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         [&array_index, &cache, &received_volume_data, &observation_id,
-         &sender_array_id, &subfile_name](
+         &sender_array_id, &subfile_name, &dependency](
             const gsl::not_null<std::unordered_map<
                 observers::ObservationId,
                 std::unordered_map<Parallel::ArrayComponentId,
@@ -105,8 +108,8 @@ struct ContributeVolumeData {
           }
           contributed_array_ids.insert(sender_array_id);
 
-          if (volume_data->count(observation_id) == 0 or
-              volume_data->at(observation_id).count(sender_array_id) == 0) {
+          if ((not volume_data->contains(observation_id)) or
+              (not volume_data->at(observation_id).contains(sender_array_id))) {
             volume_data->operator[](observation_id)
                 .emplace(sender_array_id, std::move(received_volume_data));
           } else {
@@ -139,7 +142,8 @@ struct ContributeVolumeData {
                 local_writer, observation_id,
                 Parallel::make_array_component_id<ParallelComponent>(
                     array_index),
-                subfile_name, std::move((*volume_data)[observation_id]));
+                subfile_name, std::move((*volume_data)[observation_id]),
+                dependency);
             volume_data->erase(observation_id);
             contributed_volume_data_ids->erase(observation_id);
           }
@@ -242,24 +246,27 @@ void write_combined_volume_data(
  * \ingroup ObserversGroup
  * \brief Move data to the observer writer for writing to disk.
  *
- * Once data from all cores is collected this action writes the data to disk.
+ * Once data from all cores is collected this action writes the data to disk if
+ * there isn't a dependency. Or if there is a dependency and it has been
+ * received already. If there is a dependency but it hasn't been received yet,
+ * data will be written by a call to `ContributeDependency`.
  */
 struct ContributeVolumeDataToWriter {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<Parallel::NodeLock*> node_lock,
-                    const observers::ObservationId& observation_id,
-                    Parallel::ArrayComponentId observer_group_id,
-                    const std::string& subfile_name,
-                    std::unordered_map<Parallel::ArrayComponentId,
-                                       std::vector<ElementVolumeData>>&&
-                        received_volume_data) {
+  static void apply(
+      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const gsl::not_null<Parallel::NodeLock*> node_lock,
+      const observers::ObservationId& observation_id,
+      Parallel::ArrayComponentId observer_group_id,
+      const std::string& subfile_name,
+      std::unordered_map<Parallel::ArrayComponentId,
+                         std::vector<ElementVolumeData>>&& received_volume_data,
+      const std::optional<std::string>& dependency = std::nullopt) {
     apply_impl<Tags::InterpolatorTensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        std::move(received_volume_data));
+        std::move(received_volume_data), dependency);
   }
 
   template <typename ParallelComponent, typename DbTagsList,
@@ -272,23 +279,24 @@ struct ContributeVolumeDataToWriter {
       Parallel::ArrayComponentId observer_group_id,
       const std::string& subfile_name,
       std::unordered_map<Parallel::ArrayComponentId, ElementVolumeData>&&
-          received_volume_data) {
+          received_volume_data,
+      const std::optional<std::string>& dependency = std::nullopt) {
     apply_impl<Tags::TensorData, ParallelComponent>(
         box, cache, node_lock, observation_id, observer_group_id, subfile_name,
-        std::move(received_volume_data));
+        std::move(received_volume_data), dependency);
   }
 
  private:
   template <typename TensorDataTag, typename ParallelComponent,
             typename DbTagsList, typename Metavariables,
             typename VolumeDataAtObsId>
-  static void apply_impl(db::DataBox<DbTagsList>& box,
-                         Parallel::GlobalCache<Metavariables>& cache,
-                         const gsl::not_null<Parallel::NodeLock*> node_lock,
-                         const observers::ObservationId& observation_id,
-                         Parallel::ArrayComponentId observer_group_id,
-                         const std::string& subfile_name,
-                         VolumeDataAtObsId received_volume_data) {
+  static void apply_impl(
+      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const gsl::not_null<Parallel::NodeLock*> node_lock,
+      const observers::ObservationId& observation_id,
+      Parallel::ArrayComponentId observer_group_id,
+      const std::string& subfile_name, VolumeDataAtObsId received_volume_data,
+      const std::optional<std::string>& dependency = std::nullopt) {
     // The below gymnastics with pointers is done in order to minimize the
     // time spent locking the entire node, which is necessary because the
     // DataBox does not allow any function calls, either get and mutate, during
@@ -340,6 +348,8 @@ struct ContributeVolumeDataToWriter {
               make_not_null(&box));
       auto& all_volume_data =
           db::get_mutable_reference<TensorDataTag>(make_not_null(&box));
+      auto& box_dependencies =
+          db::get_mutable_reference<Tags::Dependencies>(make_not_null(&box));
 
       auto& contributed_group_ids =
           volume_observers_contributed[observation_id];
@@ -366,10 +376,40 @@ struct ContributeVolumeDataToWriter {
       // group. If so we write to disk.
       if (volume_observers_contributed.at(observation_id).size() ==
           observations_registered_with_id) {
-        perform_write = true;
-        volume_data = std::move(all_volume_data[observation_id]);
-        all_volume_data.erase(observation_id);
-        volume_observers_contributed.erase(observation_id);
+        // Check if
+        //  1. there is an external dependencies
+        if (dependency.has_value()) {
+          //  2. if there is, that we have received something at this time
+          //  3. that the dependencies are the same
+          if (box_dependencies.contains(observation_id)) {
+            if (UNLIKELY(box_dependencies.at(observation_id).first !=
+                         dependency.value())) {
+              ERROR(
+                  "The dependency that was sent to the ObserverWriter from the "
+                  "elements ("
+                  << dependency.value()
+                  << ") does not match the dependency received from "
+                     "ContributeDependency ("
+                  << box_dependencies.at(observation_id).first << ").");
+            }
+            //  4. that we are writing the volume data to disk
+            if (box_dependencies.at(observation_id).second) {
+              perform_write = true;
+              volume_data = std::move(all_volume_data[observation_id]);
+            }
+
+            // Whether or not we are writing data to disk, we clean up because
+            // we have received both the volume data and the dependency
+            all_volume_data.erase(observation_id);
+            volume_observers_contributed.erase(observation_id);
+            box_dependencies.erase(observation_id);
+          }
+        } else {
+          perform_write = true;
+          volume_data = std::move(all_volume_data[observation_id]);
+          all_volume_data.erase(observation_id);
+          volume_observers_contributed.erase(observation_id);
+        }
       }
     }
 
@@ -377,6 +417,108 @@ struct ContributeVolumeDataToWriter {
       VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
           cache, observation_id, volume_data, make_not_null(volume_file_lock),
           subfile_name);
+    }
+  }
+};
+
+/*!
+ * \brief Threaded action that will add a dependency to the ObserverWriter for a
+ * given ObservationId ( \p time + \p volume_subfile_name).
+ *
+ * \details If not all the volume data for this ObservationId has been received
+ * yet, then this will just add the dependency to the box and exit without
+ * writing anything. If all volume data arrives before this action is called,
+ * then it will write out the volume data (or remove it if we aren't writing).
+ */
+struct ContributeDependency {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
+                    const double time, const std::string& dependency,
+                    std::string volume_subfile_name,
+                    const bool write_volume_data) {
+    if (not volume_subfile_name.starts_with("/")) {
+      volume_subfile_name = "/" + volume_subfile_name;
+    }
+    if (not volume_subfile_name.ends_with(".vol")) {
+      volume_subfile_name += ".vol";
+    }
+
+    const ObservationId observation_id{time, volume_subfile_name};
+
+    // The below gymnastics with pointers is done in order to minimize the
+    // time spent locking the entire node, which is necessary because the
+    // DataBox does not allow any function calls, either get and mutate, during
+    // a mutate. We separate out writing from the operations that edit the
+    // DataBox since writing to disk can be very slow, but moving data around is
+    // comparatively quick.
+    Parallel::NodeLock* volume_file_lock = nullptr;
+    bool perform_write = false;
+    std::unordered_map<Parallel::ArrayComponentId, ElementVolumeData>
+        volume_data{};
+
+    // For now just hold the entire node. We can optimize with different locks
+    // later on
+    {
+      const std::lock_guard hold_lock(*node_lock);
+
+      db::mutate<Tags::H5FileLock, Tags::Dependencies>(
+          [&](const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr,
+              const gsl::not_null<std::unordered_map<
+                  ObservationId, std::pair<std::string, bool>>*>
+                  dependencies) {
+            volume_file_lock = &*volume_file_lock_ptr;
+            (*dependencies)[observation_id] =
+                std::pair{dependency, write_volume_data};
+          },
+          make_not_null(&box));
+
+      auto& volume_observers_contributed =
+          db::get_mutable_reference<Tags::ContributorsOfTensorData>(
+              make_not_null(&box));
+      auto& all_volume_data =
+          db::get_mutable_reference<Tags::TensorData>(make_not_null(&box));
+      auto& box_dependencies =
+          db::get_mutable_reference<Tags::Dependencies>(make_not_null(&box));
+      const auto& expected_contributors =
+          db::get<Tags::ExpectedContributorsForObservations>(box);
+
+      if (not expected_contributors.contains(
+              observation_id.observation_key())) {
+        ERROR("Key " << observation_id.observation_key()
+                     << " was not registered.");
+      }
+
+      // We have not received any volume data at this time so we can't do
+      // anything
+      if (not(volume_observers_contributed.contains(observation_id) and
+              all_volume_data.contains(observation_id))) {
+        return;
+      }
+
+      // Check if we have received all "volume" data from the Observer
+      // group. If so we write to disk. Then always delete it since the volume
+      // data was waiting for this dependency to arrive to be written
+      if (volume_observers_contributed.at(observation_id).size() ==
+          expected_contributors.at(observation_id.observation_key()).size()) {
+        if (write_volume_data) {
+          perform_write = true;
+          volume_data = std::move(all_volume_data.at(observation_id));
+        }
+
+        all_volume_data.erase(observation_id);
+        volume_observers_contributed.erase(observation_id);
+        box_dependencies.erase(observation_id);
+      }
+    }
+
+    if (perform_write) {
+      VolumeActions_detail::write_combined_volume_data<ParallelComponent>(
+          cache, observation_id, volume_data, make_not_null(volume_file_lock),
+          volume_subfile_name);
     }
   }
 };

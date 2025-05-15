@@ -37,6 +37,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -50,6 +51,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/SendDependencyToObserverWriter.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
@@ -132,6 +134,25 @@ struct ExtraHorizonFindFailureCallback {
                     const TemporalId& /*temporal_id*/,
                     const FastFlow::Status failure_reason) {
     callback_failure_status = failure_reason;
+  }
+};
+
+// This should be set before each test happens
+bool expected_write_volume_data = false;  // NOLINT
+struct MockContributeDependency {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const double /*time*/, const std::string& dependency,
+                    std::string volume_subfile_name,
+                    const bool write_volume_data) {
+    // The time is different throughout the test so we don't check it here
+    CHECK(volume_subfile_name == "FakeVolumeSubfile");
+    CHECK(dependency == "AhA");
+    CHECK(write_volume_data == expected_write_volume_data);
   }
 };
 
@@ -271,8 +292,24 @@ struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
+template <typename Metavariables>
+struct mock_observer_writer {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using array_index = int;
+
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+
+  using replace_these_threaded_actions =
+      tmpl::list<observers::ThreadedActions::ContributeDependency>;
+  using with_these_threaded_actions = tmpl::list<MockContributeDependency>;
+};
+
 template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
-          typename TargetFrame>
+          typename TargetFrame, bool SendDependency>
 struct MockMetavariables {
   static constexpr bool use_time_dependent_maps = IsTimeDependent::value;
   struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -287,12 +324,23 @@ struct MockMetavariables {
         intrp::TargetPoints::ApparentHorizon<AhA, TargetFrame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<AhA, TargetFrame>>;
-    using post_horizon_find_callbacks = PostHorizonFindCallbacks;
+    using post_horizon_find_callbacks = tmpl::append<
+        PostHorizonFindCallbacks,
+        tmpl::conditional_t<
+            SendDependency,
+            tmpl::list<
+                intrp::callbacks::SendDependencyToObserverWriter<true, AhA>>,
+            tmpl::list<>>>;
     // The order of these failure callbacks is important so that we can test the
-    // first is called and the second gives an error
-    using horizon_find_failure_callbacks =
+    // first are called and the last gives an error
+    using horizon_find_failure_callbacks = tmpl::append<
+        tmpl::conditional_t<
+            SendDependency,
+            tmpl::list<
+                intrp::callbacks::SendDependencyToObserverWriter<false, AhA>>,
+            tmpl::list<>>,
         tmpl::list<ExtraHorizonFindFailureCallback,
-                   TestHorizonFindFailureCallback>;
+                   TestHorizonFindFailureCallback>>;
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
@@ -301,24 +349,27 @@ struct MockMetavariables {
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
-                 mock_interpolator<MockMetavariables>>;
+                 mock_interpolator<MockMetavariables>,
+                 mock_observer_writer<MockMetavariables>>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
 };
 
 template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
           typename Frame = ::Frame::Inertial, bool UseShapeMap = false,
+          bool SendDependency = false,
           bool MakeHorizonFinderFailOnPurpose = false>
-void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
-                           const size_t l_max,
-                           const size_t grid_points_each_dimension,
-                           const double mass,
-                           const std::array<double, 3>& dimensionless_spin,
-                           const size_t max_its = 100_st) {
-  using metavars =
-      MockMetavariables<PostHorizonFindCallbacks, IsTimeDependent, Frame>;
+void test_apparent_horizon(
+    const gsl::not_null<size_t*> test_horizon_called, const size_t l_max,
+    const size_t grid_points_each_dimension, const double mass,
+    const std::array<double, 3>& dimensionless_spin,
+    const std::optional<std::string>& dependency = std::nullopt,
+    const size_t max_its = 100_st) {
+  using metavars = MockMetavariables<PostHorizonFindCallbacks, IsTimeDependent,
+                                     Frame, SendDependency>;
   using interp_component = mock_interpolator<metavars>;
   using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
+  using obs_writer_component = mock_observer_writer<metavars>;
 
   // Assert that the FindApparentHorizon callback conforms to the protocol
   static_assert(
@@ -409,6 +460,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
+  ActionTesting::emplace_nodegroup_component<obs_writer_component>(&runner);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     for (int indx = 0; indx < 5; ++indx) {
@@ -470,7 +522,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     ActionTesting::simple_action<
         target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               typename metavars::AhA>>(
-        make_not_null(&runner), 0, temporal_id, std::nullopt);
+        make_not_null(&runner), 0, temporal_id, dependency);
   }
 
   // Center of the analytic solution.
@@ -774,6 +826,24 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // Make sure function was called three times per
   // post_horizon_find_callback.
   CHECK(*test_horizon_called == 3 * tmpl::size<PostHorizonFindCallbacks>{});
+
+  if constexpr (SendDependency) {
+    // Three actions if the horizon find succeeds, only one if it fails
+    const size_t expected_number_of_actions =
+        MakeHorizonFinderFailOnPurpose ? 1 : 3;
+    // Two nodes
+    for (int node = 0; node < 2; node++) {
+      CHECK(ActionTesting::number_of_queued_threaded_actions<
+                obs_writer_component>(runner, node) ==
+            expected_number_of_actions);
+      for (size_t i = 0; i < expected_number_of_actions; i++) {
+        // Set before we check it
+        expected_write_volume_data = not MakeHorizonFinderFailOnPurpose;
+        ActionTesting::invoke_queued_threaded_action<obs_writer_component>(
+            make_not_null(&runner), node);
+      }
+    }
+  }
 }
 
 // This tests the entire AH finder including numerical interpolation.
@@ -831,19 +901,22 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
 
   // Time-dependent tests in distorted frame using both translation and shape
   // maps.
+  const std::optional<std::string> dependency{"FakeVolumeSubfile"};
   tmpl::for_each<tmpl::list<std::true_type, std::false_type>>(
-      [](auto use_shape_map) {
+      [&](auto use_shape_map) {
         constexpr bool UseShapeMap =
             tmpl::type_from<std::decay_t<decltype(use_shape_map)>>::value;
         test_schwarzschild_horizon_called = 0;
         test_kerr_horizon_called = 0;
         test_apparent_horizon<
             tmpl::list<TestSchwarzschildHorizon<Frame::Distorted>>,
-            std::true_type, Frame::Distorted, UseShapeMap>(
-            &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}});
+            std::true_type, Frame::Distorted, UseShapeMap, true>(
+            &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}},
+            dependency);
         test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Distorted>>,
-                              std::true_type, Frame::Distorted, UseShapeMap>(
-            &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
+                              std::true_type, Frame::Distorted, UseShapeMap,
+                              true>(&test_kerr_horizon_called, 3, 7, 1.1,
+                                    {{0.12, 0.23, 0.45}}, dependency);
       });
 
   test_schwarzschild_horizon_called = 0;
@@ -851,8 +924,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
-          Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
-                                        4, 1.0, {{0.0, 0.0, 0.0}})),
+          Frame::Inertial, false, false, true>(
+          &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}})),
       Catch::Matchers::ContainsSubstring("Cannot interpolate onto surface"));
   CHECK(callback_failure_status == FastFlow::Status::InterpolationFailure);
 
@@ -860,20 +933,21 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
   callback_failure_status = FastFlow::Status::MaxIts;
   CHECK_THROWS_WITH(
       (test_apparent_horizon<
-          tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
-          Frame::Inertial, false, true>(&test_schwarzschild_horizon_called, 3,
-                                        4, 10.0, {{0.0, 0.0, 0.0}})),
+           tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
+           std::true_type, Frame::Inertial, false, true, true>(
+           &test_schwarzschild_horizon_called, 3, 4, 10.0, {{0.0, 0.0, 0.0}}),
+       dependency),
       Catch::Matchers::ContainsSubstring("Cannot interpolate onto surface"));
   CHECK(callback_failure_status == FastFlow::Status::InterpolationFailure);
 
   test_schwarzschild_horizon_called = 0;
   callback_failure_status = FastFlow::Status::MaxIts;
-  CHECK_THROWS_WITH(
-      (test_apparent_horizon<
-          tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
-          Frame::Inertial, false, false>(&test_schwarzschild_horizon_called, 3,
-                                         4, 1.0, {{0.0, 0.0, 0.0}}, 1)),
-      Catch::Matchers::ContainsSubstring("Too many iterations"));
+  CHECK_THROWS_WITH((test_apparent_horizon<
+                        tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
+                        std::true_type, Frame::Inertial, false, false>(
+                        &test_schwarzschild_horizon_called, 3, 4, 1.0,
+                        {{0.0, 0.0, 0.0}}, std::nullopt, 1)),
+                    Catch::Matchers::ContainsSubstring("Too many iterations"));
   CHECK(callback_failure_status == FastFlow::Status::MaxIts);
 }
 }  // namespace
