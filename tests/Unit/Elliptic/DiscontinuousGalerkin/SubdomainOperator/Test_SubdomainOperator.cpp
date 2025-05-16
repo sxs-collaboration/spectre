@@ -113,10 +113,6 @@ struct SubdomainOperatorTag : db::SimpleTag {
   using type = SubdomainOperatorType;
 };
 
-struct TemporalIdTag : db::SimpleTag {
-  using type = size_t;
-};
-
 template <typename Tag>
 struct DgOperatorAppliedTo : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
@@ -418,8 +414,7 @@ struct ElementArray {
       SubdomainOperatorAppliedToDataTag<Dim, typename fields_tag::tags_list>;
 
   using dg_operator =
-      ::elliptic::dg::Actions::DgOperator<System, true, TemporalIdTag,
-                                          fields_tag, fluxes_tag,
+      ::elliptic::dg::Actions::DgOperator<System, true, fields_tag, fluxes_tag,
                                           operator_applied_to_fields_tag>;
 
   using background_tag =
@@ -464,10 +459,11 @@ struct ElementArray {
           tmpl::list<
               // Init subdomain
               LinearSolver::Schwarz::Actions::SendOverlapFields<
-                  subdomain_init_tags, DummyOptionsGroup, false, TemporalIdTag>,
+                  subdomain_init_tags, DummyOptionsGroup, false,
+                  typename dg_operator::temporal_id_tag>,
               LinearSolver::Schwarz::Actions::ReceiveOverlapFields<
                   Dim, subdomain_init_tags, DummyOptionsGroup, false,
-                  TemporalIdTag>,
+                  typename dg_operator::temporal_id_tag>,
               init_subdomain_action, init_random_subdomain_data_action,
               Parallel::Actions::TerminatePhase,
               // Full DG operator
@@ -540,7 +536,7 @@ struct Metavariables {
             typename element_array::init_random_subdomain_data_action::
                 simple_tags>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
-            OverrideBoundaryConditionsTag, TemporalIdTag,
+            OverrideBoundaryConditionsTag,
             // Work around a segfault because this tag isn't handled
             // correctly by the testing framework
             Parallel::Tags::GlobalCache<Metavariables>>,

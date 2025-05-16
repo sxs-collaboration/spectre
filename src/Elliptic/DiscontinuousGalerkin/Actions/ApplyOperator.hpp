@@ -32,6 +32,7 @@
 #include "Elliptic/Systems/GetModifyBoundaryData.hpp"
 #include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -40,6 +41,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -55,6 +57,11 @@ namespace elliptic::dg::Actions {
 // they don't work on their own. Instead, the public interface (defined below)
 // exposes them in action lists.
 namespace detail {
+
+// This is a global ID that identifies the DG operator application. It
+// increments with each application of the operator.
+struct DgOperatorLabel {};
+using TemporalIdTag = Convergence::Tags::IterationId<DgOperatorLabel>;
 
 // This tag is used to communicate mortar data across neighbors
 template <size_t Dim, typename TemporalIdTag, typename PrimalFields,
@@ -156,7 +163,7 @@ struct PrepareAndSendMortarData<
 
  public:
   // Request these tags be added to the DataBox. We
-  // don't actually need to initialize them, because the `TemporalIdTag` and the
+  // don't actually need to initialize them, because the
   // `PrimalFieldsTag` will be set by other actions before applying the operator
   // and the remaining tags hold output of the operator.
   using simple_tags =
@@ -335,7 +342,7 @@ struct ReceiveMortarDataAndApplyOperator<
     const auto& temporal_id = get<TemporalIdTag>(box);
     const auto& element = get<domain::Tags::Element<Dim>>(box);
 
-    if (not::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
+    if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
             temporal_id, element, inboxes)) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
@@ -412,6 +419,13 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<elliptic::dg::Tags::Formulation>(box), temporal_id,
         fluxes_args_on_faces,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
+
+    // Increment temporal ID
+    db::mutate<TemporalIdTag>(
+        [](const gsl::not_null<size_t*> stored_temporal_id) {
+          ++(*stored_temporal_id);
+        },
+        make_not_null(&box));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -495,14 +509,13 @@ using amr_projectors = tmpl::append<
  * \par AMR
  * Also add the `amr_projectors` to the list of AMR projectors to support AMR.
  */
-template <typename System, bool Linearized, typename TemporalIdTag,
-          typename PrimalFieldsTag, typename PrimalFluxesTag,
-          typename OperatorAppliedToFieldsTag,
+template <typename System, bool Linearized, typename PrimalFieldsTag,
+          typename PrimalFluxesTag, typename OperatorAppliedToFieldsTag,
           typename PrimalMortarFieldsTag = PrimalFieldsTag,
           typename PrimalMortarFluxesTag = PrimalFluxesTag>
 struct DgOperator {
   using system = System;
-  using temporal_id_tag = TemporalIdTag;
+  using temporal_id_tag = detail::TemporalIdTag;
 
  private:
   static constexpr size_t Dim = System::volume_dim;
@@ -510,20 +523,22 @@ struct DgOperator {
  public:
   using apply_actions =
       tmpl::list<detail::PrepareAndSendMortarData<
-                     System, Linearized, TemporalIdTag, PrimalFieldsTag,
+                     System, Linearized, temporal_id_tag, PrimalFieldsTag,
                      PrimalFluxesTag, OperatorAppliedToFieldsTag,
                      PrimalMortarFieldsTag, PrimalMortarFluxesTag>,
                  detail::ReceiveMortarDataAndApplyOperator<
-                     System, Linearized, TemporalIdTag, PrimalFieldsTag,
+                     System, Linearized, temporal_id_tag, PrimalFieldsTag,
                      PrimalFluxesTag, OperatorAppliedToFieldsTag,
                      PrimalMortarFieldsTag, PrimalMortarFluxesTag>>;
-  using amr_projectors = tmpl::list<::amr::projectors::DefaultInitialize<
-      PrimalFluxesTag, OperatorAppliedToFieldsTag,
-      ::Tags::Mortars<elliptic::dg::Tags::MortarData<
-                          typename TemporalIdTag::type,
-                          typename PrimalMortarFieldsTag::tags_list,
-                          typename PrimalMortarFluxesTag::tags_list>,
-                      Dim>>>;
+  using amr_projectors = tmpl::list<
+      ::amr::projectors::DefaultInitialize<
+          PrimalFluxesTag, OperatorAppliedToFieldsTag,
+          ::Tags::Mortars<elliptic::dg::Tags::MortarData<
+                              typename temporal_id_tag::type,
+                              typename PrimalMortarFieldsTag::tags_list,
+                              typename PrimalMortarFluxesTag::tags_list>,
+                          Dim>>,
+      ::amr::projectors::CopyFromCreatorOrLeaveAsIs<temporal_id_tag>>;
 };
 
 /*!

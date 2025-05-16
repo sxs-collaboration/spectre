@@ -210,10 +210,7 @@ struct Solver {
 
   template <bool Linearized>
   using dg_operator = elliptic::dg::Actions::DgOperator<
-      system, Linearized,
-      tmpl::conditional_t<Linearized, linear_solver_iteration_id,
-                          nonlinear_solver_iteration_id>,
-      tmpl::conditional_t<Linearized, vars_tag, fields_tag>,
+      system, Linearized, tmpl::conditional_t<Linearized, vars_tag, fields_tag>,
       tmpl::conditional_t<Linearized, fluxes_vars_tag, fluxes_tag>,
       tmpl::conditional_t<Linearized, operator_applied_to_vars_tag,
                           operator_applied_to_fields_tag>>;
@@ -362,19 +359,18 @@ struct Solver {
           typename schwarz_smoother::options_group, false, amr_iteration_id>,
       init_subdomain_action,
       // Linear or nonlinear solve
-      tmpl::conditional_t<
-          is_linear,
-          // Linear solve
-          tmpl::list<
-              // Apply the DG operator to the initial guess
-              typename elliptic::dg::Actions::DgOperator<
-                  system, true, linear_solver_iteration_id, fields_tag,
-                  fluxes_vars_tag, operator_applied_to_fields_tag, vars_tag,
-                  fluxes_vars_tag>::apply_actions,
-              // Krylov solve
-              linear_solve_actions<tmpl::list<>>>,
-          // Nonlinear solve
-          nonlinear_solve_actions<tmpl::list<>>>>>;
+      tmpl::conditional_t<is_linear,
+                          // Linear solve
+                          tmpl::list<
+                              // Apply the DG operator to the initial guess
+                              typename elliptic::dg::Actions::DgOperator<
+                                  system, true, fields_tag, fluxes_vars_tag,
+                                  operator_applied_to_fields_tag, vars_tag,
+                                  fluxes_vars_tag>::apply_actions,
+                              // Krylov solve
+                              linear_solve_actions<tmpl::list<>>>,
+                          // Nonlinear solve
+                          nonlinear_solve_actions<tmpl::list<>>>>>;
 
   template <typename Tag>
   using overlaps_tag =
