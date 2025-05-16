@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   GaussianPlusConstant.cpp
   RegisterDerivedWithCharm.cpp
+  TimeDependentTripleGaussian.cpp
 )
 
 spectre_target_headers(
