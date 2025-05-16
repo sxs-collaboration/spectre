@@ -160,12 +160,13 @@ struct BuildMatrixMetavars {
 
 /// \brief The total number of grid points (size of the matrix) and the index of
 /// the first grid point in this element (the offset into the matrix
-/// corresponding to this element).
+/// corresponding to this element). The `num_points_per_element` should hold
+/// the total number of degrees of freedom for each element, so the number of
+/// variables times the number of grid points.
 template <size_t Dim>
 std::pair<size_t, size_t> total_num_points_and_local_first_index(
     const ElementId<Dim>& element_id,
-    const std::map<ElementId<Dim>, size_t>& num_points_per_element,
-    size_t num_vars);
+    const std::map<ElementId<Dim>, size_t>& num_points_per_element);
 
 /// \brief The index of the '1' of the unit vector in this element, or
 /// std::nullopt if the '1' is in another element.
@@ -371,9 +372,8 @@ struct PrepareBuildMatrix {
       return;
     }
     const auto [total_num_points, local_first_index] =
-        detail::total_num_points_and_local_first_index(
-            element_id, num_points_per_element,
-            OperandTag::type::number_of_independent_components);
+        detail::total_num_points_and_local_first_index(element_id,
+                                                       num_points_per_element);
     if (get<logging::Tags::Verbosity<OptionTags::BuildMatrixOptionsGroup>>(
             box) >= Verbosity::Quiet and
         local_first_index == 0) {

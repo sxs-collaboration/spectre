@@ -16,8 +16,7 @@ namespace LinearSolver::Actions::detail {
 template <size_t Dim>
 std::pair<size_t, size_t> total_num_points_and_local_first_index(
     const ElementId<Dim>& element_id,
-    const std::map<ElementId<Dim>, size_t>& num_points_per_element,
-    const size_t num_vars) {
+    const std::map<ElementId<Dim>, size_t>& num_points_per_element) {
   size_t total_num_points = 0;
   size_t local_first_index = 0;
   for (const auto& [element_id_i, num_points] : num_points_per_element) {
@@ -26,8 +25,6 @@ std::pair<size_t, size_t> total_num_points_and_local_first_index(
     }
     total_num_points += num_points;
   }
-  total_num_points *= num_vars;
-  local_first_index *= num_vars;
   return {total_num_points, local_first_index};
 }
 
@@ -47,8 +44,7 @@ std::optional<size_t> local_unit_vector_index(const size_t iteration_id,
 #define INSTANTIATION(r, data)                                               \
   template std::pair<size_t, size_t> total_num_points_and_local_first_index( \
       const ElementId<DIM(data)>& element_id,                                \
-      const std::map<ElementId<DIM(data)>, size_t>& num_points_per_element,  \
-      const size_t num_vars);
+      const std::map<ElementId<DIM(data)>, size_t>& num_points_per_element);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
