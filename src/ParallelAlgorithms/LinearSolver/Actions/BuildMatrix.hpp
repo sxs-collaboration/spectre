@@ -55,7 +55,7 @@ struct BuildMatrixOptionsGroup {
 };
 
 struct MatrixSubfileName {
-  using type = std::string;
+  using type = Options::Auto<std::string, Options::AutoLabel::None>;
   using group = BuildMatrixOptionsGroup;
   static constexpr Options::String help = {
       "Subfile name in the volume data H5 files where the matrix will be "
@@ -80,7 +80,7 @@ namespace Tags {
 
 /// Subfile name in the volume data H5 files where the matrix will be stored.
 struct MatrixSubfileName : db::SimpleTag {
-  using type = std::string;
+  using type = std::optional<std::string>;
   using option_tags = tmpl::list<OptionTags::MatrixSubfileName>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& value) { return value; }
@@ -237,9 +237,10 @@ struct RegisterWithVolumeObserver {
            "The identifier 'Unused' is reserved to indicate that no "
            "observations with this key will be contributed. Use a different "
            "key, or change the identifier 'Unused' to something else.");
+    const auto& subfile_name = get<Tags::MatrixSubfileName>(box);
     return {
         observers::TypeOfObservation::Volume,
-        observers::ObservationKey(get<Tags::MatrixSubfileName>(box) +
+        observers::ObservationKey(subfile_name.value_or("Unused") +
                                   section_observation_key.value_or("Unused"))};
   }
 };
@@ -447,11 +448,14 @@ struct StoreMatrixColumn {
         },
         make_not_null(&box));
     // Write it out to disk
-    detail::observe_matrix_column<ParallelComponent>(
-        iteration_id, operator_applied_to_operand, element_id,
-        get<domain::Tags::Mesh<Dim>>(box), get<CoordsTag>(box),
-        get<Tags::MatrixSubfileName>(box),
-        *observers::get_section_observation_key<ArraySectionIdTag>(box), cache);
+    if (const auto& subfile_name = get<Tags::MatrixSubfileName>(box);
+        subfile_name.has_value()) {
+      detail::observe_matrix_column<ParallelComponent>(
+          iteration_id, operator_applied_to_operand, element_id,
+          get<domain::Tags::Mesh<Dim>>(box), get<CoordsTag>(box), *subfile_name,
+          *observers::get_section_observation_key<ArraySectionIdTag>(box),
+          cache);
+    }
     // Reset operand to zero
     const std::optional<size_t> local_unit_vector_index =
         detail::local_unit_vector_index(iteration_id, local_first_index,
