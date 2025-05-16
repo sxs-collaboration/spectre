@@ -14,6 +14,7 @@ spectre_target_sources(
   LiftFromBoundary.cpp
   MetricIdentityJacobian.cpp
   MortarHelpers.cpp
+  MortarInterpolator.cpp
   )
 
 spectre_target_headers(
@@ -28,6 +29,7 @@ spectre_target_headers(
   LiftFromBoundary.hpp
   MetricIdentityJacobian.hpp
   MortarHelpers.hpp
+  MortarInterpolator.hpp
   NormalDotFlux.hpp
   ProjectToBoundary.hpp
   SimpleBoundaryData.hpp
@@ -40,11 +42,14 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  Domain
   DomainStructure
   ErrorHandling
+  Interpolation
   Options
   Serialization
   Spectral
+  SphericalHarmonicsHelpers
   Utilities
   INTERFACE
   Domain

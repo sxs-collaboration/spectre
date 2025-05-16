@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_LiftFromBoundary.cpp
   Test_MetricIdentityJacobian.cpp
   Test_MortarHelpers.cpp
+  Test_MortarInterpolator.cpp
   Test_NormalDotFlux.cpp
   Test_ProjectToBoundary.cpp
   Test_SimpleBoundaryData.cpp
