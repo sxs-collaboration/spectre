@@ -14,6 +14,10 @@ class er;
 /// \ingroup TimeGroup
 /// Tolerances used for time step error control
 struct StepperErrorTolerances {
+  enum class Estimates { None, StepperOrder, AllOrders };
+
+  /// Which estimates the time stepper should generate.
+  Estimates estimates = Estimates::None;
   double absolute = std::numeric_limits<double>::signaling_NaN();
   double relative = std::numeric_limits<double>::signaling_NaN();
 

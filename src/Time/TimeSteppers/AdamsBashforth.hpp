@@ -11,6 +11,7 @@
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -18,7 +19,6 @@
 
 /// \cond
 struct ApproximateTime;
-struct StepperErrorTolerances;
 class TimeDelta;
 namespace PUP {
 class er;
@@ -261,17 +261,13 @@ class AdamsBashforth : public LtsTimeStepper {
   std::optional<StepperErrorEstimate> update_u_common(
       gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
       const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
-      const std::optional<StepperErrorTolerances>& tolerances) const;
-
-  template <typename T>
-  void update_u_impl(gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
-                     const TimeDelta& time_step) const;
+      const StepperErrorTolerances& tolerances) const;
 
   template <typename T>
   std::optional<StepperErrorEstimate> update_u_impl(
       gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
       const TimeDelta& time_step,
-      const std::optional<StepperErrorTolerances>& tolerances) const;
+      const StepperErrorTolerances& tolerances = {}) const;
 
   template <typename T>
   void clean_history_impl(const MutableUntypedHistory<T>& history) const;

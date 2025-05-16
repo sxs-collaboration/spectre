@@ -12,7 +12,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <optional>
 #include <utility>
 
 #include "Time/EvolutionOrdering.hpp"
@@ -59,7 +58,10 @@ void take_step_and_check_error(
     const gsl::not_null<TimeSteppers::History<double>*> history,
     const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) {
   // Return the actual error, not a normalized version.
-  const StepperErrorTolerances tolerances{.absolute = 1.0, .relative = 0.0};
+  const StepperErrorTolerances tolerances{
+      .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+      .absolute = 1.0,
+      .relative = 0.0};
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
@@ -71,7 +73,7 @@ void take_step_and_check_error(
       auto y_without_tolerances = std::numeric_limits<double>::signaling_NaN();
       const auto error_without_tolerances =
           stepper.update_u(make_not_null(&y_without_tolerances), *history,
-                           step_size, std::nullopt);
+                           step_size, StepperErrorTolerances{});
       CHECK(not error_without_tolerances.has_value());
       CHECK(y_without_tolerances == *y);
     }
@@ -393,7 +395,8 @@ void check_dense_output(
         }
         y = std::numeric_limits<double>::signaling_NaN();
         if (use_error_methods) {
-          stepper.update_u(make_not_null(&y), history, step, std::nullopt);
+          stepper.update_u(make_not_null(&y), history, step,
+                           StepperErrorTolerances{});
         } else {
           stepper.update_u(make_not_null(&y), history, step);
         }
@@ -527,7 +530,7 @@ void check_strong_stability_preservation(const TimeStepper& stepper,
         [&](const gsl::not_null<double*> u,
             const TimeSteppers::History<double>& history,
             const TimeDelta& time_step) {
-          stepper.update_u(u, history, time_step, std::nullopt);
+          stepper.update_u(u, history, time_step, StepperErrorTolerances{});
         },
         [&](const TimeStepId& time_step_id, const TimeDelta& time_step) {
           return stepper.next_time_id_for_error(time_step_id, time_step);

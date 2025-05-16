@@ -210,7 +210,10 @@ void test_stepper_error() {
       std::move(time_stepper), initial_id,
       time_stepper->next_time_id(initial_id, initial_time_step),
       initial_time_step, true,
-      std::optional<StepperErrorTolerances>{{.absolute = 1.0, .relative = 0.0}},
+      StepperErrorTolerances{
+          .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+          .absolute = 1.0,
+          .relative = 0.0},
       1., history_tag::type{3}, Tags::StepperErrors<variables_tag>::type{});
 
   const auto do_substep = [&box](const bool repeat_substep = false) {

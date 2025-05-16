@@ -151,8 +151,9 @@ template <bool DenseOutput, typename T>
 std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
     const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
-    const std::optional<StepperErrorTolerances>& tolerances) const {
-  ASSERT(not(DenseOutput and tolerances.has_value()),
+    const StepperErrorTolerances& tolerances) const {
+  ASSERT(not DenseOutput or
+             tolerances.estimates == StepperErrorTolerances::Estimates::None,
          "Can't compute errors in dense output.");
   ASSERT(history.size() >= history.integration_order(),
          "Incorrect data to take an order-" << history.integration_order()
@@ -175,15 +176,16 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
 
   std::optional<StepperErrorEstimate> error{};
   if constexpr (not DenseOutput) {
-    if (tolerances.has_value()) {
+    if (tolerances.estimates != StepperErrorTolerances::Estimates::None) {
       auto lower_order_coefficients = adams_coefficients::coefficients(
           control_times.begin() + 1, control_times.end(), step_start, time);
       error.emplace(step_start, time - step_start,
                     history.integration_order() - 1,
-                    evaluate_error(u, history, *tolerances, update_coefficients,
+                    evaluate_error(u, history, tolerances, update_coefficients,
                                    lower_order_coefficients));
 
-      if (not order_.has_value()) {
+      if (tolerances.estimates ==
+          StepperErrorTolerances::Estimates::AllOrders) {
         for (size_t error_order = history.integration_order() - 2;
              error_order != std::numeric_limits<size_t>::max();
              --error_order) {
@@ -194,7 +196,7 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
                       error_order),
               control_times.end(), step_start, time);
           gsl::at(error->errors, error_order)
-              .emplace(evaluate_error(u, history, *tolerances,
+              .emplace(evaluate_error(u, history, tolerances,
                                       higher_order_coefficients,
                                       lower_order_coefficients));
         }
@@ -215,18 +217,10 @@ std::optional<StepperErrorEstimate> AdamsBashforth::update_u_common(
 }
 
 template <typename T>
-void AdamsBashforth::update_u_impl(const gsl::not_null<T*> u,
-                                   const ConstUntypedHistory<T>& history,
-                                   const TimeDelta& time_step) const {
-  const Time next_time = history.back().time_step_id.step_time() + time_step;
-  update_u_common<false>(u, history, next_time, std::nullopt);
-}
-
-template <typename T>
 std::optional<StepperErrorEstimate> AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step,
-    const std::optional<StepperErrorTolerances>& tolerances) const {
+    const StepperErrorTolerances& tolerances) const {
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   return update_u_common<false>(u, history, next_time, tolerances);
 }
@@ -246,7 +240,8 @@ template <typename T>
 bool AdamsBashforth::dense_update_u_impl(const gsl::not_null<T*> u,
                                          const ConstUntypedHistory<T>& history,
                                          const double time) const {
-  update_u_common<true>(u, history, ApproximateTime{time}, std::nullopt);
+  update_u_common<true>(u, history, ApproximateTime{time},
+                        StepperErrorTolerances{});
   return true;
 }
 

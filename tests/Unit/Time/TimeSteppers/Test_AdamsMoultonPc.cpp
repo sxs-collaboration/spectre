@@ -445,9 +445,10 @@ void test_variable_order() {
     history.insert(TimeStepId(true, 0, slab.start(), 1, slab.duration(), step),
                    exp(step), exp(step));
     double y = std::numeric_limits<double>::signaling_NaN();
-    const auto errors =
-        variable_stepper.update_u(make_not_null(&y), history, slab.duration(),
-                                  StepperErrorTolerances{1.0, 0.0});
+    const auto errors = variable_stepper.update_u(
+        make_not_null(&y), history, slab.duration(),
+        StepperErrorTolerances{StepperErrorTolerances::Estimates::AllOrders,
+                               1.0, 0.0});
     REQUIRE(errors.has_value());
     // Truncation error for AM is |implicit_corrector_coef| step^{k+1} f^(k).
     // As with many time-stepper things, the quoted order is the

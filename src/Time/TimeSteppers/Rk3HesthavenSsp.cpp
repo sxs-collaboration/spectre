@@ -57,56 +57,49 @@ TimeStepId Rk3HesthavenSsp::next_time_id_for_error(
 }
 
 template <typename T>
-void Rk3HesthavenSsp::update_u_impl(const gsl::not_null<T*> u,
-                                    const ConstUntypedHistory<T>& history,
-                                    const TimeDelta& time_step) const {
+std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
+    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+    const TimeDelta& time_step,
+    const StepperErrorTolerances& tolerances) const {
   ASSERT(history.integration_order() == get<Tags::FixedOrder>(order()),
          "Fixed-order stepper cannot run at order "
              << history.integration_order());
 
   const auto substep = history.at_step_start() ? 0 : history.substeps().size();
-  switch (substep) {
-    case 0:
-      *u =
-          *history.back().value + time_step.value() * history.back().derivative;
-      return;
-    case 1:
-      *u = 0.25 * (3.0 * *history.back().value + *history.substeps()[0].value +
-                   time_step.value() * history.substeps()[0].derivative);
-      return;
-    case 2:
-      *u = (1.0 / 3.0) *
-           (*history.back().value + 2.0 * *history.substeps()[1].value +
-            2.0 * time_step.value() * history.substeps()[1].derivative);
-      return;
-    default:
-      ERROR("Bad substep: " << history.substeps().size());
-  }
-}
-
-template <typename T>
-std::optional<StepperErrorEstimate> Rk3HesthavenSsp::update_u_impl(
-    gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
-    const TimeDelta& time_step,
-    const std::optional<StepperErrorTolerances>& tolerances) const {
-  ASSERT(history.integration_order() == get<Tags::FixedOrder>(order()),
-         "Fixed-order stepper cannot run at order "
-             << history.integration_order());
 
   std::optional<StepperErrorEstimate> error{};
-  if (not history.at_step_start() and history.substeps().size() == 2 and
-      tolerances.has_value()) {
+  if (substep == 2 and
+      tolerances.estimates != StepperErrorTolerances::Estimates::None) {
+    ASSERT(
+        tolerances.estimates == StepperErrorTolerances::Estimates::StepperOrder,
+        "Lower-order error estimates not provided");
     *u = -(1.0 / 6.0) * *history.back().value +
          (2.0 / 3.0) * *history.substeps()[1].value +
          (2.0 / 3.0) * time_step.value() * history.substeps()[1].derivative -
          0.5 * *history.substeps()[0].value -
          0.5 * time_step.value() * history.substeps()[0].derivative;
-    error.emplace(
-        history.back().time_step_id.step_time(), time_step, 2,
-        largest_stepper_error(*history.back().value, *u, *tolerances));
+    error.emplace(history.back().time_step_id.step_time(), time_step, 2,
+                  largest_stepper_error(*history.back().value, *u, tolerances));
   }
 
-  update_u_impl(u, history, time_step);
+  switch (substep) {
+    case 0:
+      *u =
+          *history.back().value + time_step.value() * history.back().derivative;
+      break;
+    case 1:
+      *u = 0.25 * (3.0 * *history.back().value + *history.substeps()[0].value +
+                   time_step.value() * history.substeps()[0].derivative);
+      break;
+    case 2:
+      *u = (1.0 / 3.0) *
+           (*history.back().value + 2.0 * *history.substeps()[1].value +
+            2.0 * time_step.value() * history.substeps()[1].derivative);
+      break;
+    default:
+      ERROR("Bad substep: " << history.substeps().size());
+  }
+
   return error;
 }
 

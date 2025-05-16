@@ -162,7 +162,10 @@ void test_chooser() {
         INFO("Test successful step");
         const ErrorControl error_control{5.0e-4, 1.0e-3, 2.0, 0.5, 0.95};
         CHECK(error_control.tolerances() ==
-              StepperErrorTolerances{.absolute = 5.0e-4, .relative = 1.0e-3});
+              StepperErrorTolerances{
+                  .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+                  .absolute = 5.0e-4,
+                  .relative = 1.0e-3});
         const auto first_result = get_suggestion(
             error_control, {step_errors(0.0, 0.3)}, {}, unit_step);
         REQUIRE(first_result.has_value());
@@ -286,9 +289,12 @@ void test_tags() {
         make_not_null(&box));
     CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box) ==
-          StepperErrorTolerances{.absolute = 1.0e-5, .relative = 1.0e-4});
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+          StepperErrorTolerances{
+              .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = 1.0e-5,
+              .relative = 1.0e-4});
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::StepChoosers>(
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
@@ -301,10 +307,10 @@ void test_tags() {
         },
         make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(not db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-                  .has_value());
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::StepChoosers>(
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
@@ -314,10 +320,10 @@ void test_tags() {
         },
         make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(not db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-                  .has_value());
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::StepChoosers>(
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
@@ -343,9 +349,12 @@ void test_tags() {
         make_not_null(&box));
     CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box) ==
-          StepperErrorTolerances{.absolute = 1.0e-5, .relative = 1.0e-4});
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+          StepperErrorTolerances{
+              .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = 1.0e-5,
+              .relative = 1.0e-4});
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::StepChoosers>(
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
@@ -371,9 +380,15 @@ void test_tags() {
         make_not_null(&box));
     CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box) ==
-          StepperErrorTolerances{.absolute = 1.0e-5, .relative = 1.0e-4});
+          StepperErrorTolerances{
+              .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = 1.0e-5,
+              .relative = 1.0e-4});
     CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box) ==
-          StepperErrorTolerances{.absolute = 1.0e-5, .relative = 1.0e-8});
+          StepperErrorTolerances{
+              .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = 1.0e-5,
+              .relative = 1.0e-8});
 
     db::mutate<Tags::StepChoosers>(
         [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
@@ -441,9 +456,12 @@ void test_tags() {
         make_not_null(&box));
     CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
     CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box) ==
-          StepperErrorTolerances{.absolute = 1.0e-5, .relative = 1.0e-4});
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+          StepperErrorTolerances{
+              .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = 1.0e-5,
+              .relative = 1.0e-4});
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
         [](const gsl::not_null<EventsAndTriggers*> events) {
@@ -464,10 +482,10 @@ void test_tags() {
         },
         make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(not db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-                  .has_value());
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
         [](const gsl::not_null<EventsAndTriggers*> events) {
@@ -482,10 +500,10 @@ void test_tags() {
         },
         make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(not db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-                  .has_value());
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
 
     db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
         [](const gsl::not_null<EventsAndTriggers*> events) {
@@ -494,10 +512,10 @@ void test_tags() {
         },
         make_not_null(&box));
     CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(not db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-                  .has_value());
-    CHECK(not db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-                  .has_value());
+    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
+    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
+              .estimates == StepperErrorTolerances::Estimates::None);
   }
 }
 

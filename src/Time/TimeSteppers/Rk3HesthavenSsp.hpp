@@ -10,6 +10,7 @@
 #include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "Time/StepperErrorEstimate.hpp"
+#include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -17,7 +18,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-struct StepperErrorTolerances;
 class TimeDelta;
 namespace TimeSteppers {
 template <typename T>
@@ -78,14 +78,10 @@ class Rk3HesthavenSsp : public TimeStepper {
 
  private:
   template <typename T>
-  void update_u_impl(gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
-                     const TimeDelta& time_step) const;
-
-  template <typename T>
   std::optional<StepperErrorEstimate> update_u_impl(
       gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
       const TimeDelta& time_step,
-      const std::optional<StepperErrorTolerances>& tolerances) const;
+      const StepperErrorTolerances& tolerances = {}) const;
 
   template <typename T>
   void clean_history_impl(const MutableUntypedHistory<T>& history) const;

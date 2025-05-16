@@ -206,9 +206,9 @@ template <bool DenseOutput, typename T>
 std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
     const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const tmpl::conditional_t<DenseOutput, ApproximateTime, Time>& time,
-    const bool corrector,
-    const std::optional<StepperErrorTolerances>& tolerances) const {
-  ASSERT(not(DenseOutput and tolerances.has_value()),
+    const bool corrector, const StepperErrorTolerances& tolerances) const {
+  ASSERT(not DenseOutput or
+             tolerances.estimates == StepperErrorTolerances::Estimates::None,
          "Can't compute errors in dense output.");
   ASSERT(history.size() >= history.integration_order() - 1,
          "Insufficient history");
@@ -236,15 +236,17 @@ std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
 
   std::optional<StepperErrorEstimate> error{};
   if constexpr (not DenseOutput) {
-    if (corrector and tolerances.has_value()) {
+    if (corrector and
+        tolerances.estimates != StepperErrorTolerances::Estimates::None) {
       const auto predictor_coefficients = adams_coefficients::coefficients(
           control_times.begin(), control_times.end() - 1, step_start, time);
       error.emplace(step_start, time - step_start,
                     history.integration_order() - 1,
-                    evaluate_error(u, history, *tolerances, update_coefficients,
+                    evaluate_error(u, history, tolerances, update_coefficients,
                                    predictor_coefficients));
 
-      if (not order_.has_value()) {
+      if (tolerances.estimates ==
+          StepperErrorTolerances::Estimates::AllOrders) {
         for (size_t error_order = history.integration_order() - 2;
              error_order != std::numeric_limits<size_t>::max();
              --error_order) {
@@ -259,7 +261,7 @@ std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
                       error_order + 1),
               control_times.end() - 1, step_start, time);
           gsl::at(error->errors, error_order)
-              .emplace(evaluate_error(u, history, *tolerances, error_corrector,
+              .emplace(evaluate_error(u, history, tolerances, error_corrector,
                                       error_predictor));
         }
       }
@@ -284,20 +286,10 @@ std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_common(
 
 template <bool Monotonic>
 template <typename T>
-void AdamsMoultonPc<Monotonic>::update_u_impl(
-    const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
-    const TimeDelta& time_step) const {
-  const Time next_time = history.back().time_step_id.step_time() + time_step;
-  update_u_common<false>(u, history, next_time, not history.at_step_start(),
-                         std::nullopt);
-}
-
-template <bool Monotonic>
-template <typename T>
 std::optional<StepperErrorEstimate> AdamsMoultonPc<Monotonic>::update_u_impl(
     const gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
     const TimeDelta& time_step,
-    const std::optional<StepperErrorTolerances>& tolerances) const {
+    const StepperErrorTolerances& tolerances) const {
   const Time next_time = history.back().time_step_id.step_time() + time_step;
   return update_u_common<false>(u, history, next_time,
                                 not history.at_step_start(), tolerances);
@@ -330,14 +322,14 @@ bool AdamsMoultonPc<Monotonic>::dense_update_u_impl(
       return false;
     }
     update_u_common<true>(u, history, ApproximateTime{time}, false,
-                          std::nullopt);
+                          StepperErrorTolerances{});
     return true;
   } else {
     if (history.at_step_start()) {
       return false;
     }
     update_u_common<true>(u, history, ApproximateTime{time}, true,
-                          std::nullopt);
+                          StepperErrorTolerances{});
     return true;
   }
 }

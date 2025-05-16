@@ -243,7 +243,9 @@ class ErrorControl
   bool can_be_delayed() const override { return true; }
 
   StepperErrorTolerances tolerances() const override {
-    return {.absolute = absolute_tolerance_, .relative = relative_tolerance_};
+    return {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
+            .absolute = absolute_tolerance_,
+            .relative = relative_tolerance_};
   }
 
   void pup(PUP::er& p) override {  // NOLINT
@@ -346,11 +348,11 @@ struct StepperErrorTolerancesCompute
 
   // local time stepping
   static void function(
-      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
           step_choosers) {
-    tolerances->reset();
+    *tolerances = ::StepperErrorTolerances{};
     for (const auto& step_chooser : step_choosers) {
       set_tolerances_if_error_control(tolerances, *step_chooser);
     }
@@ -358,9 +360,9 @@ struct StepperErrorTolerancesCompute
 
   // global time stepping
   static void function(
-      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const ::EventsAndTriggers& events_and_triggers) {
-    tolerances->reset();
+    *tolerances = ::StepperErrorTolerances{};
     // In principle the slab size could be changed based on a dense
     // trigger, but it's not clear that there is ever a good reason to
     // do so, and it wouldn't make sense to use error control in that
@@ -379,7 +381,7 @@ struct StepperErrorTolerancesCompute
  private:
   template <typename StepChooserUse>
   static void set_tolerances_if_error_control(
-      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const StepChooser<StepChooserUse>& step_chooser) {
     if (const auto* const error_control =
             dynamic_cast<const ::StepChoosers::ErrorControl_detail::
@@ -387,12 +389,13 @@ struct StepperErrorTolerancesCompute
                 &step_chooser);
         error_control != nullptr) {
       const auto this_tolerances = error_control->tolerances();
-      if (tolerances->has_value() and tolerances->value() != this_tolerances) {
+      if (tolerances->estimates != ::StepperErrorTolerances::Estimates::None and
+          *tolerances != this_tolerances) {
         ERROR_NO_TRACE("All ErrorControl events for "
                        << db::tag_name<EvolvedVariableTag>()
                        << " must use the same tolerances.");
       }
-      tolerances->emplace(this_tolerances);
+      *tolerances = this_tolerances;
     }
   }
 };

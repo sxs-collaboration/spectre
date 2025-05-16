@@ -107,7 +107,7 @@ class RungeKutta : public virtual TimeStepper {
   std::optional<StepperErrorEstimate> update_u_impl(
       gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
       const TimeDelta& time_step,
-      const std::optional<StepperErrorTolerances>& tolerances) const;
+      const StepperErrorTolerances& tolerances) const;
 
   template <typename T>
   void clean_history_impl(const MutableUntypedHistory<T>& history) const;
