@@ -216,9 +216,11 @@ struct Solver {
                           operator_applied_to_fields_tag>>;
 
   using build_matrix = LinearSolver::Actions::BuildMatrix<
-      fields_tag, fixed_sources_tag, vars_tag, operator_applied_to_vars_tag,
+      typename multigrid::smooth_fields_tag,
+      typename multigrid::smooth_source_tag, vars_tag,
+      operator_applied_to_vars_tag,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
-      LinearSolver::multigrid::Tags::IsFinestGrid>;
+      LinearSolver::multigrid::Tags::MultigridLevel>;
 
   using build_matrix_actions = typename build_matrix::template actions<
       typename dg_operator<true>::apply_actions>;
@@ -264,10 +266,11 @@ struct Solver {
                                                     fluxes_tag>>>>>;
 
   using register_actions = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<is_linear, typename build_matrix::register_actions,
+      tmpl::conditional_t<is_linear, tmpl::list<>,
                           typename nonlinear_solver::register_element>,
       typename multigrid::register_element,
-      typename schwarz_smoother::register_element>>;
+      typename schwarz_smoother::register_element,
+      typename build_matrix::register_actions>>;
 
   template <typename Label>
   using smooth_actions = typename schwarz_smoother::template solve<
@@ -304,7 +307,8 @@ struct Solver {
               typename dg_operator<true>::apply_actions,
               // Schwarz smoothing on each multigrid level
               smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
-              smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
+              smooth_actions<LinearSolver::multigrid::VcycleUpLabel>,
+              build_matrix_actions>,
           // Support disabling the preconditioner
           ::LinearSolver::Actions::make_identity_if_skipped<
               multigrid, typename dg_operator<true>::apply_actions>>,
@@ -334,6 +338,8 @@ struct Solver {
           LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
               typename schwarz_smoother::subdomain_solver,
               typename schwarz_smoother::options_group>,
+          // Reset explicitly built matrix
+          typename build_matrix::reset_actions,
           // Linear solve for correction
           linear_solve_actions<tmpl::list<>>>,
       StepActions>;
@@ -383,6 +389,7 @@ struct Solver {
       typename linear_solver::amr_projectors,
       typename multigrid::amr_projectors,
       typename schwarz_smoother::amr_projectors,
+      typename build_matrix::amr_projectors,
       ::amr::projectors::DefaultInitialize<tmpl::append<
           tmpl::list<domain::Tags::InitialExtents<volume_dim>,
                      domain::Tags::InitialRefinementLevels<volume_dim>>,
@@ -400,7 +407,7 @@ struct Solver {
       init_analytic_solution_action,
       elliptic::dg::Actions::amr_projectors<system, background_tag>,
       typename dg_operator<true>::amr_projectors,
-      tmpl::conditional_t<is_linear, typename build_matrix::amr_projectors,
+      tmpl::conditional_t<is_linear, tmpl::list<>,
                           typename dg_operator<false>::amr_projectors>,
       // Actions below may use faces and normals
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
@@ -412,15 +419,14 @@ struct Solver {
           tmpl::list<>>,
       elliptic::amr::Actions::Initialize>>;
 
-  using component_list = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<
-          is_linear,
-          typename build_matrix::template component_list<Metavariables>,
-          typename nonlinear_solver::component_list>,
-      typename linear_solver::component_list,
-      typename multigrid::component_list,
-      typename schwarz_smoother::component_list,
-      ::amr::Component<Metavariables>>>;
+  using component_list = tmpl::flatten<
+      tmpl::list<tmpl::conditional_t<is_linear, tmpl::list<>,
+                                     typename nonlinear_solver::component_list>,
+                 typename linear_solver::component_list,
+                 typename multigrid::component_list,
+                 typename schwarz_smoother::component_list,
+                 typename build_matrix::template component_list<Metavariables>,
+                 ::amr::Component<Metavariables>>>;
 };
 
 }  // namespace elliptic

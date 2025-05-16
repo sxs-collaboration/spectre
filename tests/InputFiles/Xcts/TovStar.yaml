@@ -93,6 +93,7 @@ LinearSolver:
     Iterations: 1
     MaxLevels: Auto
     PreSmoothing: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: False
     Verbosity: Verbose
     OutputVolumeData: False
@@ -173,3 +174,9 @@ Amr:
   Iterations: 1
 
 PhaseChangeAndTriggers: []
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Verbose
+  EnableDirectSolve: True
+  SkipResets: True

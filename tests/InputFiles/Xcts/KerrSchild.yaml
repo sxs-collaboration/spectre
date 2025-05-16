@@ -175,6 +175,7 @@ LinearSolver:
     Iterations: 1
     MaxLevels: 1
     PreSmoothing: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: False
     Verbosity: Silent
     OutputVolumeData: False
@@ -245,3 +246,10 @@ EventsAndTriggersAtIterations:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Verbose
+  EnableDirectSolve: True
+  # Can't skip resets if bottom solver is enabled because we start at flatness
+  SkipResets: False

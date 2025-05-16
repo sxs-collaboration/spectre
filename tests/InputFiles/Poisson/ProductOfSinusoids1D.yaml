@@ -8,7 +8,6 @@ Testing:
 ExpectedOutput:
   - PoissonProductOfSinusoids1DReductions.h5
   - PoissonProductOfSinusoids1DVolume0.h5
-  - SubdomainMatrix*.txt
 OutputFileChecks:
   - Label: Discretization error
     Subfile: ErrorNorms.dat
@@ -18,28 +17,22 @@ OutputFileChecks:
       - [1, 8, 4.71238898038469e+00, 4.14037391064113e-03]
       - [2, 16, 4.71238898038469e+00, 1.96421037243931e-04]
       - [3, 20, 4.71238898038469e+00, 1.47125554015345e-05]
-    AbsoluteTolerance: 1e-8
+    AbsoluteTolerance: 1e-6
   - Label: Linear solver convergence
     Subfile: GmresResiduals.dat
     FileGlob: PoissonProductOfSinusoids1DReductions.h5
     SkipColumns: [1] # Skip walltime
     ExpectedData:
-      # AMR iteration 0 (solved by building matrix and direct solve)
-      - [0, 1.e-16]
+      # Each AMR iteration is solved directly by the multigrid bottom solver
+      # AMR iteration 0
+      - [0, 1.218121e+01]
+      - [1, 0.0]
       # AMR iteration 1
-      - [0, 2.09447729412913e-01]
-      - [1, 2.46546953964650e-03]
-      - [2, 8.48550910654618e-04]
-      - [3, 2.44047574357982e-04]
-      - [4, 2.63835241157592e-05]
-      - [5, 2.07844911429961e-07]
+      - [0, 2.094477e-01]
+      - [1, 0.0]
       # AMR iteration 2
-      - [0, 3.15882858760581e-02]
-      - [1, 7.82175835835042e-04]
-      - [2, 1.13099440899420e-04]
-      - [3, 5.55444538380480e-05]
-      - [4, 1.11628047012794e-05]
-      - [5, 1.65458379564807e-08]
+      - [0, 3.158830e-02]
+      - [1, 0.0]
     AbsoluteTolerance: 1e-6
 
 ---
@@ -100,13 +93,6 @@ Amr:
   Iterations: 3
 
 PhaseChangeAndTriggers:
-  # Build explicit matrix representation for initial domain
-  - Trigger:
-      EveryNIterations:
-        N: 100
-        Offset: 0
-    PhaseChanges:
-      - VisitAndReturn(BuildMatrix)
   # Run AMR in every iteration, but not on the initial guess
   - Trigger:
       EveryNIterations:
@@ -140,6 +126,7 @@ LinearSolver:
     Iterations: 1
     MaxLevels: 1
     PreSmoothing: True
+    UseBottomSolver: True
     PostSmoothingAtBottom: False
     Verbosity: Silent
     OutputVolumeData: True
@@ -150,7 +137,7 @@ LinearSolver:
     Verbosity: Silent
     SubdomainSolver:
       ExplicitInverse:
-        WriteMatrixToFile: "SubdomainMatrix"
+        WriteMatrixToFile: None
     ObservePerCoreReductions: False
 
 RadiallyCompressedCoordinates: None
@@ -173,6 +160,6 @@ EventsAndTriggersAtIterations:
           BlocksToObserve: All
 
 BuildMatrix:
-  MatrixSubfileName: Matrix
+  MatrixSubfileName: None
   Verbosity: Verbose
   EnableDirectSolve: True

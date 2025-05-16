@@ -132,6 +132,7 @@ LinearSolver:
     Iterations: 1
     MaxLevels: 1
     PreSmoothing: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: False
     Verbosity: Silent
     OutputVolumeData: False
@@ -178,3 +179,9 @@ EventsAndTriggersAtIterations:
             - Name: AdmMassIntegrand
               NormType: VolumeIntegral
               Components: Individual
+
+BuildMatrix:
+  MatrixSubfileName: None
+  Verbosity: Verbose
+  EnableDirectSolve: True
+  SkipResets: True
