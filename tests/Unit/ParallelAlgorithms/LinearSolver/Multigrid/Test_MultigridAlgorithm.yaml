@@ -70,10 +70,11 @@ Observers:
   ReductionFileName: "Test_MultigridAlgorithm_Reductions"
 
 MultigridSolver:
-  Iterations: 5
+  Iterations: 7
   Verbosity: Verbose
   MaxLevels: Auto
   PreSmoothing: True
+  UseBottomSolver: True
   PostSmoothingAtBottom: False
   OutputVolumeData: True
 

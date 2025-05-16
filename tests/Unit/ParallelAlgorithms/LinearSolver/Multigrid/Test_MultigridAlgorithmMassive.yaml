@@ -65,6 +65,7 @@ MultigridSolver:
   Verbosity: Verbose
   MaxLevels: Auto
   PreSmoothing: True
+  UseBottomSolver: False
   PostSmoothingAtBottom: False
   OutputVolumeData: True
 

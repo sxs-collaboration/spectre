@@ -69,7 +69,7 @@ struct VcycleUpLabel {};
  * See section 3 in \cite Fortunato2019jl for details on the inter-mesh
  * operators.
  *
- * \par Smoother
+ * \par Smoother and bottom solver
  * On every level of the grid hierarchy the multigrid solver relies on a
  * "smoother" that performs an approximate linear solve on that level. The
  * smoother can be any linear solver that solves the `smooth_fields_tag` for the
@@ -87,7 +87,14 @@ struct VcycleUpLabel {};
  *
  * \snippet Test_MultigridAlgorithm.cpp setup_smoother
  *
- * The smoother can be used to construct an action list like this:
+ * On the coarsest level of the grid hierarchy, the multigrid algorithm can also
+ * use a separate "bottom solver". If enabled, the bottom solver replaces the
+ * pre-smoother on the coarsest grid. The bottom solver can also be any linear
+ * solver, but it is typically a direct solver that solves the linear problem
+ * exactly (see `LinearSolver::Actions::BuildMatrix` for a good bottom solver).
+ *
+ * The smoother and bottom solver can be used to construct an action list like
+ * this:
  *
  * \snippet Test_MultigridAlgorithm.cpp action_list
  *
@@ -103,10 +110,11 @@ struct VcycleUpLabel {};
  * as the source for the smoother on the coarser grid. When going up again, the
  * algorithm projects the solution of the smoother to the next-finer grid,
  * adding it to the solution on the finer grid as a correction. The bottom-most
- * coarsest grid (the "tip" of the V-cycle) may skip the post-smoothing, so the
- * result of the pre-smoother is immediately projected up to the finer grid
- * (controlled by the
- * `LinearSolver::multigrid::Tags::EnablePostSmoothingAtBottom` option). On the
+ * coarsest grid (the "tip" of the V-cycle) may run the bottom solver instead of
+ * the pre-smoother. It may also skip the post-smoother, so the result of the
+ * bottom solver is immediately projected up to the finer grid (controlled by
+ * the options `LinearSolver::multigrid::Tags::UseBottomSolver` and
+ * `LinearSolver::multigrid::Tags::EnablePostSmoothingAtBottom`). On the
  * top-most finest grid (the "original" grid that represents the overall
  * solution) the algorithm applies the smoothing and the corrections from the
  * coarser grids directly to the solution fields.
@@ -153,13 +161,17 @@ struct Multigrid {
                      detail::RegisterWithVolumeObserver<OptionsGroup>>>;
 
   template <typename ApplyOperatorActions, typename PreSmootherActions,
-            typename PostSmootherActions, typename Label = OptionsGroup>
+            typename PostSmootherActions,
+            typename BottomSolverActions = tmpl::list<>,
+            typename Label = OptionsGroup>
   using solve = tmpl::list<
       async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label,
                                   Tags::IsFinestGrid, false>,
       detail::ReceiveResidualFromFinerGrid<Dim, FieldsTag, OptionsGroup,
                                            SourceTag>,
-      detail::PreparePreSmoothing<FieldsTag, OptionsGroup, SourceTag>,
+      detail::PreparePreSmoothing<
+          FieldsTag, OptionsGroup, SourceTag,
+          not std::is_same_v<BottomSolverActions, tmpl::list<>>>,
       // No need to apply the linear operator here:
       // - On the finest grid, the operator applied to the fields should have
       //   already been computed at this point, either applied to the initial
@@ -168,6 +180,8 @@ struct Multigrid {
       // - On coarser grids, the initial fields are zero, so the operator
       //   applied to them is also zero.
       PreSmootherActions,
+      detail::SkipBottomSolver<FieldsTag, OptionsGroup, SourceTag>,
+      BottomSolverActions,
       detail::SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>,
       detail::SendResidualToCoarserGrid<FieldsTag, OptionsGroup,
                                         ResidualIsMassiveTag, SourceTag>,

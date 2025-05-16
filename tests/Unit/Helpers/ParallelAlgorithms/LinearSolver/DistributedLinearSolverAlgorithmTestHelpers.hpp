@@ -129,6 +129,10 @@ inline size_t get_index(const ElementId<1>& element_id) {
   return element_id.segment_id(0).index();
 }
 
+// Assemble the full matrix from its per-element slices
+blaze::DynamicMatrix<double> combine_matrix_slices(
+    const std::vector<blaze::DynamicMatrix<double>>& matrix_slices);
+
 // In the following `ComputeOperatorAction` and `CollectOperatorAction` actions
 // we compute A(p)=sum_elements(A_element(p_element)) in a global reduction and
 // then broadcast the global A(p) back to the elements so that they can extract
