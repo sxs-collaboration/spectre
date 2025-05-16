@@ -230,6 +230,7 @@
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -755,7 +756,8 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-              system, volume_dim, false, use_dg_element_collection>>,
+                         system, volume_dim, false, use_dg_element_collection>,
+                     Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   system, volume_dim, false, use_dg_element_collection>,

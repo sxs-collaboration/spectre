@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
@@ -25,7 +26,10 @@
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/TimeStepRequest.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/VariableOrderAlgorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -39,6 +43,9 @@ struct IsUsingTimeSteppingErrorControlCompute;
 struct StepChoosers;
 template <typename EvolvedVariableTag, bool LocalTimeStepping>
 struct StepperErrorTolerancesCompute;
+template <typename StepperInterface>
+struct TimeStepper;
+struct VariableOrderAlgorithm;
 }  // namespace Tags
 /// \endcond
 
@@ -343,7 +350,9 @@ struct StepperErrorTolerancesCompute
   using base = StepperErrorTolerances<EvolvedVariableTag>;
   using return_type = typename base::type;
   using argument_tags = tmpl::conditional_t<
-      LocalTimeStepping, tmpl::list<::Tags::StepChoosers>,
+      LocalTimeStepping,
+      tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<::TimeStepper>,
+                 ::Tags::VariableOrderAlgorithm>,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
 
   // local time stepping
@@ -351,10 +360,22 @@ struct StepperErrorTolerancesCompute
       const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
-          step_choosers) {
+          step_choosers,
+      const ::TimeStepper& time_stepper,
+      const ::VariableOrderAlgorithm& variable_order_algorithm) {
     *tolerances = ::StepperErrorTolerances{};
     for (const auto& step_chooser : step_choosers) {
       set_tolerances_if_error_control(tolerances, *step_chooser);
+    }
+    // Error-based variable-order requires some variable to be
+    // controlled using error control, but in a split-variable system
+    // a different variable might be controlled, so no control on this
+    // variable is not an error.
+    if (tolerances->estimates != ::StepperErrorTolerances::Estimates::None and
+        variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
+            time_stepper.order())) {
+      tolerances->estimates = std::max(
+          tolerances->estimates, variable_order_algorithm.required_estimates());
     }
   }
 

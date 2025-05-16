@@ -204,6 +204,8 @@ Evolution:
   # you need it smaller you can edit it, but make sure to change the slab
   # intervals in the EventsAndTriggersAtSlabs
   InitialSlabSize: 0.1
+  VariableOrderAlgorithm:
+    GoalOrder: 4
   StepChoosers:
     - LimitIncrease:
         Factor: 2

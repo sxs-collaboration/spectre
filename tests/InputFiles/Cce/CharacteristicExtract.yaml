@@ -18,6 +18,8 @@ Evolution:
   # The initial Slab size controls how often the EventsAndTriggers are run. They
   # are run once per Slab.
   InitialSlabSize: 10.0
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 ResourceInfo:
   # Can ignore this section since CCE performs best on a single core.

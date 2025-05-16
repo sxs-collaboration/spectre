@@ -33,6 +33,8 @@ Evolution:
   InitialTimeStep: 0.001
   MinimumTimeStep: 1e-7
   InitialSlabSize: 0.01
+  VariableOrderAlgorithm:
+    GoalOrder: 3
   TimeStepper:
     AdamsBashforth:
       Order: 3

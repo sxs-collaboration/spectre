@@ -28,6 +28,8 @@ Evolution:
     AdamsBashforth:
       Order: 3
   InitialSlabSize: 0.001
+  VariableOrderAlgorithm:
+    GoalOrder: 3
   StepChoosers:
     - LimitIncrease:
         Factor: 2

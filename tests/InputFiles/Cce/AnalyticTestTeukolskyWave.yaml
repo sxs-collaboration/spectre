@@ -21,6 +21,8 @@ Evolution:
   InitialTimeStep: 0.1
   MinimumTimeStep: 1e-7
   InitialSlabSize: 1.0
+  VariableOrderAlgorithm:
+    GoalOrder: 3
 
 ResourceInfo:
   AvoidGlobalProc0: false
