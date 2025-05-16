@@ -279,7 +279,7 @@ struct CollectTotalNumPoints {
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<Dim>& array_index, const ActionList /*meta*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // Skip everything on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
@@ -306,11 +306,14 @@ struct CollectTotalNumPoints {
     auto& section = Parallel::get_section<ParallelComponent, ArraySectionIdTag>(
         make_not_null(&box));
     Parallel::contribute_to_reduction<PrepareBuildMatrix<BuildMatrixMetavars>>(
-        Parallel::ReductionData<Parallel::ReductionDatum<
-            std::map<ElementId<Dim>, size_t>, funcl::Merge<>>>{
+        Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<std::map<ElementId<Dim>, size_t>,
+                                     funcl::Merge<>>>{
+            element_id.grid_index(),
             std::map<ElementId<Dim>, size_t>{
-                std::make_pair(array_index, get<OperandTag>(box).size())}},
-        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
+                std::make_pair(element_id, get<OperandTag>(box).size())}},
+        Parallel::get_parallel_component<ParallelComponent>(cache)[element_id],
         Parallel::get_parallel_component<ParallelComponent>(cache),
         make_not_null(&section));
     // Pause the algorithm for now. The reduction will be broadcast to the next
@@ -332,8 +335,11 @@ struct PrepareBuildMatrix {
             typename Metavariables, size_t Dim>
   static void apply(
       db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<Dim>& element_id,
+      const ElementId<Dim>& element_id, const size_t grid_index,
       const std::map<ElementId<Dim>, size_t>& num_points_per_element) {
+    if (grid_index != element_id.grid_index()) {
+      return;
+    }
     const auto [total_num_points, local_first_index] =
         detail::total_num_points_and_local_first_index(
             element_id, num_points_per_element,
@@ -532,8 +538,11 @@ struct AssembleFullMatrix {
         make_not_null(&box));
     Parallel::contribute_to_reduction<
         InvertMatrix<ParallelComponent, BuildMatrixMetavars>>(
-        Parallel::ReductionData<Parallel::ReductionDatum<
-            std::map<ElementId<Dim>, ReductionType>, funcl::Merge<>>>{
+        Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<std::map<ElementId<Dim>, ReductionType>,
+                                     funcl::Merge<>>>{
+            element_id.grid_index(),
             std::map<ElementId<Dim>, ReductionType>{std::make_pair(
                 element_id, ReductionType{get<Tags::Matrix<value_type>>(box),
                                           get<FixedSourcesTag>(box)})}},
@@ -563,7 +572,7 @@ struct InvertMatrix {
             typename Metavariables, typename ArrayIndex, size_t Dim>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
+                    const ArrayIndex& /*array_index*/, const size_t grid_index,
                     const std::map<ElementId<Dim>, ReductionType>&
                         matrix_and_sources_slices) {
     const size_t total_num_points =
@@ -599,7 +608,7 @@ struct InvertMatrix {
     // Broadcast the solution to the elements
     Parallel::simple_action<StoreSolution<BuildMatrixMetavars>>(
         Parallel::get_parallel_component<ElementArrayComponent>(cache),
-        solution);
+        grid_index, solution);
   }
 };
 
@@ -614,8 +623,11 @@ struct StoreSolution {
             typename Metavariables, size_t Dim>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ElementId<Dim>& element_id,
+                    const ElementId<Dim>& element_id, const size_t grid_index,
                     const blaze::DynamicVector<value_type>& solution) {
+    if (grid_index != element_id.grid_index()) {
+      return;
+    }
     const size_t local_first_index = db::get<Tags::LocalFirstIndex>(box);
     db::mutate<FieldsTag>(
         [&solution, &local_first_index](const auto fields) {
