@@ -35,6 +35,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -76,6 +77,18 @@ struct EnableDirectSolve {
       "This can be unfeasible if the linear problem is too big."};
 };
 
+struct SkipResets {
+  using type = bool;
+  using group = BuildMatrixOptionsGroup;
+  static constexpr Options::String help = {
+      "Skip resets of the built matrix. This only has an effect in cases "
+      "where the operator changes, e.g. between nonlinear-solver iterations. "
+      "Skipping resets avoids expensive re-building of the matrix, but comes "
+      "at the cost of less accurate preconditioning and thus potentially more "
+      "preconditioned iterations. Whether or not this helps convergence "
+      "overall is highly problem-dependent."};
+};
+
 }  // namespace OptionTags
 
 namespace Tags {
@@ -114,6 +127,13 @@ struct EnableDirectSolve : db::SimpleTag {
   static type create_from_options(const type& value) { return value; }
 };
 
+struct SkipResets : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::SkipResets>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& value) { return value; }
+};
+
 }  // namespace Tags
 
 namespace Actions {
@@ -134,6 +154,8 @@ struct BuildMatrixMetavars {
   using array_section_id_tag = ArraySectionIdTag;
 
   using value_type = typename OperatorAppliedToOperandTag::type::value_type;
+
+  struct end_label {};
 };
 
 /// \brief The total number of grid points (size of the matrix) and the index of
@@ -287,11 +309,18 @@ struct CollectTotalNumPoints {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
-        constexpr size_t last_action_index =
-            tmpl::index_of<ActionList,
-                           AssembleFullMatrix<BuildMatrixMetavars>>::value;
+        constexpr size_t last_action_index = tmpl::index_of<
+            ActionList,
+            ::Actions::Label<typename BuildMatrixMetavars::end_label>>::value;
         return {Parallel::AlgorithmExecution::Continue, last_action_index + 1};
       }
+    }
+    if (db::get<Tags::TotalNumPoints>(box) != 0) {
+      // We have built the matrix already, so we can skip ahead
+      constexpr size_t assemble_matrix_index =
+          tmpl::index_of<ActionList,
+                         AssembleFullMatrix<BuildMatrixMetavars>>::value;
+      return {Parallel::AlgorithmExecution::Continue, assemble_matrix_index};
     }
     db::mutate<Tags::TotalNumPoints, OperandTag>(
         [](const auto total_num_points, const auto operand,
@@ -659,14 +688,62 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
 
  public:
   using return_tags =
-      tmpl::list<Tags::TotalNumPoints, Tags::LocalFirstIndex, IterationIdTag,
-                 OperandTag, Tags::Matrix<value_type>>;
+      tmpl::list<Tags::TotalNumPoints, Tags::Matrix<value_type>,
+                 Tags::LocalFirstIndex, IterationIdTag, OperandTag>;
   using argument_tags = tmpl::list<>;
 
   template <typename... AmrData>
-  static void apply(const gsl::not_null<size_t*> /*unused*/,
-                    const AmrData&... /*amr_data*/) {
-    // Nothing to do. Everything gets initialized at the start of the algorithm.
+  static void apply(
+      const gsl::not_null<size_t*> total_num_points,
+      const gsl::not_null<blaze::CompressedMatrix<value_type>*> matrix,
+      const AmrData&... /*amr_data*/) {
+    // Reset the built matrix when AMR changes the grid.
+    // In case AMR is configured to keep coarse grids then the coarse-grid
+    // elements don't run projectors during AMR, so they are not reset and just
+    // keep the built matrix. This is good because the coarse grids are
+    // unchanged and so the matrix is still valid (and can be used as bottom
+    // solver in multigrid).
+    *total_num_points = 0;
+    matrix->clear();
+  }
+};
+
+/// Dispatch global reduction to get the size of the matrix
+template <typename BuildMatrixMetavars>
+struct ResetBuiltMatrix {
+ private:
+  using value_type = typename BuildMatrixMetavars::value_type;
+  using ArraySectionIdTag = typename BuildMatrixMetavars::array_section_id_tag;
+
+ public:
+  using const_global_cache_tags = tmpl::list<Tags::SkipResets>;
+
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    // Skip on elements that are not part of the section
+    if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
+      if (not db::get<Parallel::Tags::Section<ParallelComponent,
+                                              ArraySectionIdTag>>(box)
+                  .has_value()) {
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+      }
+    }
+    if (db::get<Tags::SkipResets>(box)) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
+    db::mutate<Tags::TotalNumPoints, Tags::Matrix<value_type>>(
+        [](const auto total_num_points, const auto matrix) {
+          *total_num_points = 0;
+          matrix->clear();
+        },
+        make_not_null(&box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -704,6 +781,12 @@ struct BuildMatrix {
       detail::BuildMatrixMetavars<FieldsTag, FixedSourcesTag, OperandTag,
                                   OperatorAppliedToOperandTag, CoordsTag,
                                   ArraySectionIdTag>;
+  static_assert(
+      std::is_same_v<FieldsTag, OperandTag>,
+      "The operand and the fields tags must be the same. This is just so that "
+      "at the end of the algorithm the operator is applied to the solution "
+      "fields. This restriction can be lifted if needed by copying the fields "
+      "into the operand and back.");
 
  public:
   template <typename Metavariables>
@@ -718,13 +801,28 @@ struct BuildMatrix {
                  StoreMatrixColumn<BuildMatrixMetavars>,
                  // Algorithm iterates until matrix is complete, then proceeds
                  // below
-                 AssembleFullMatrix<BuildMatrixMetavars>>;
+                 AssembleFullMatrix<BuildMatrixMetavars>,
+                 // Apply operator to the solution. Note that FieldsTag and
+                 // OperandTag must be the same for this (see assert above).
+                 // Note also that this operator application is not needed in
+                 // most cases, as the linear problem is solved exactly and
+                 // therefore Ax = b is set in 'StoreSolution'. However, this
+                 // operator application is needed if the operator changes
+                 // between nonlinear solver iterations but we skip the reset,
+                 // so the matrix represents the old operator. It's just one
+                 // more operator application, so we keep it always enabled for
+                 // now.
+                 ApplyOperatorActions,
+                 ::Actions::Label<typename BuildMatrixMetavars::end_label>>;
 
   using amr_projectors = tmpl::list<ProjectBuildMatrix<BuildMatrixMetavars>>;
 
   /// Add to the register phase to enable observations
   using register_actions = tmpl::list<observers::Actions::RegisterWithObservers<
       detail::RegisterWithVolumeObserver<ArraySectionIdTag>>>;
+
+  /// Add to the action list to reset the matrix
+  using reset_actions = tmpl::list<ResetBuiltMatrix<BuildMatrixMetavars>>;
 };
 
 }  // namespace Actions
