@@ -216,8 +216,7 @@ struct Solver {
                           operator_applied_to_fields_tag>>;
 
   using build_matrix = LinearSolver::Actions::BuildMatrix<
-      typename dg_operator<true>::temporal_id_tag, fields_tag,
-      fixed_sources_tag, vars_tag, operator_applied_to_vars_tag,
+      fields_tag, fixed_sources_tag, vars_tag, operator_applied_to_vars_tag,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
       LinearSolver::multigrid::Tags::IsFinestGrid>;
 

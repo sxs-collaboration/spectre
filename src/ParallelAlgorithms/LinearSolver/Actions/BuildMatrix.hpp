@@ -27,6 +27,7 @@
 #include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GetSection.hpp"
 #include "Parallel/Phase.hpp"
@@ -118,11 +119,12 @@ namespace Actions {
 
 namespace detail {
 
-template <typename IterationIdTag, typename FieldsTag, typename FixedSourcesTag,
-          typename OperandTag, typename OperatorAppliedToOperandTag,
-          typename CoordsTag, typename ArraySectionIdTag>
+template <typename FieldsTag, typename FixedSourcesTag, typename OperandTag,
+          typename OperatorAppliedToOperandTag, typename CoordsTag,
+          typename ArraySectionIdTag>
 struct BuildMatrixMetavars {
-  using iteration_id_tag = IterationIdTag;
+  using iteration_id_tag = Convergence::Tags::IterationId<
+      LinearSolver::OptionTags::BuildMatrixOptionsGroup>;
   using fields_tag = FieldsTag;
   using fixed_sources_tag = FixedSourcesTag;
   using operand_tag = OperandTag;
@@ -660,9 +662,6 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
  * linear operator to the `OperandTag`. Also add the `amr_projectors` to the
  * list of AMR projectors and the `register_actions`
  *
- * \tparam IterationIdTag Used to keep track of the iteration over all matrix
- * columns. Should be the same that's used to identify iterations in the
- * `ApplyOperatorActions`.
  * \tparam FieldsTag The solution will be stored here (if direct solve is
  * enabled).
  * \tparam FixedSourcesTag The source `b` in the problem `Ax = b`. Only used
@@ -676,15 +675,15 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
  * \tparam ArraySectionIdTag Can identify a subset of elements that this
  * algorithm should run over, e.g. in a multigrid setting.
  */
-template <typename IterationIdTag, typename FieldsTag, typename FixedSourcesTag,
-          typename OperandTag, typename OperatorAppliedToOperandTag,
-          typename CoordsTag, typename ArraySectionIdTag = void>
+template <typename FieldsTag, typename FixedSourcesTag, typename OperandTag,
+          typename OperatorAppliedToOperandTag, typename CoordsTag,
+          typename ArraySectionIdTag = void>
 struct BuildMatrix {
  private:
   using BuildMatrixMetavars =
-      detail::BuildMatrixMetavars<IterationIdTag, FieldsTag, FixedSourcesTag,
-                                  OperandTag, OperatorAppliedToOperandTag,
-                                  CoordsTag, ArraySectionIdTag>;
+      detail::BuildMatrixMetavars<FieldsTag, FixedSourcesTag, OperandTag,
+                                  OperatorAppliedToOperandTag, CoordsTag,
+                                  ArraySectionIdTag>;
 
  public:
   template <typename Metavariables>
