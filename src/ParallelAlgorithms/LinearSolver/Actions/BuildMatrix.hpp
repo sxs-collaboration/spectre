@@ -36,6 +36,7 @@
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -617,6 +618,7 @@ struct StoreSolution {
  private:
   using value_type = typename BuildMatrixMetavars::value_type;
   using FieldsTag = typename BuildMatrixMetavars::fields_tag;
+  using FixedSourcesTag = typename BuildMatrixMetavars::fixed_sources_tag;
 
  public:
   template <typename ParallelComponent, typename DbTagsList,
@@ -629,13 +631,19 @@ struct StoreSolution {
       return;
     }
     const size_t local_first_index = db::get<Tags::LocalFirstIndex>(box);
-    db::mutate<FieldsTag>(
-        [&solution, &local_first_index](const auto fields) {
+    db::mutate<
+        FieldsTag,
+        db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, FieldsTag>>(
+        [&solution, &local_first_index](const auto fields,
+                                        const auto operator_applied_to_fields,
+                                        const auto& fixed_sources) {
           std::copy_n(
               solution.begin() + static_cast<ptrdiff_t>(local_first_index),
               fields->size(), fields->data());
+          // The linear problem is solved now, so Ax = b
+          *operator_applied_to_fields = fixed_sources;
         },
-        make_not_null(&box));
+        make_not_null(&box), db::get<FixedSourcesTag>(box));
     // Proceed with algorithm
     Parallel::get_parallel_component<ParallelComponent>(cache)[element_id]
         .perform_algorithm(true);
