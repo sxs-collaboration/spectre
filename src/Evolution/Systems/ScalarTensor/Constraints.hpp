@@ -9,11 +9,11 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -42,7 +42,7 @@ struct FConstraintCompute
                     tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<gh::Tags::Phi<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::Tags::ConstraintGamma2,
       gh::Tags::ThreeIndexConstraint<DataVector, SpatialDim, Frame>,
       Tags::TraceReversedStressEnergy<DataVector, SpatialDim, Frame>>;
 

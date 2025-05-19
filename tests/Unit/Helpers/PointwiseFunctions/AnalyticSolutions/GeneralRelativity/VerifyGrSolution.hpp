@@ -217,8 +217,7 @@ void verify_time_independent_einstein_solution(
   auto dt_phi =
       make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(x, 0.0);
   Variables<tmpl::list<
-      gh::ConstraintDamping::Tags::ConstraintGamma1,
-      gh::ConstraintDamping::Tags::ConstraintGamma2,
+      gh::Tags::ConstraintGamma1, gh::Tags::ConstraintGamma2,
       gh::Tags::GaugeH<DataVector, 3>,
       gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>, gh::Tags::Gamma1Gamma2,
       gh::Tags::HalfPiTwoNormals, gh::Tags::NormalDotOneIndexConstraint,
@@ -245,10 +244,8 @@ void verify_time_independent_einstein_solution(
   gh::TimeDerivative<gh::Solutions::all_solutions<3>, 3>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma1>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma2>(buffer)),
       make_not_null(&get<gh::Tags::GaugeH<DataVector, 3>>(buffer)),
       make_not_null(
           &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(buffer)),

@@ -3,6 +3,6 @@
 
 #pragma once
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 void register_derived_with_charm();
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping

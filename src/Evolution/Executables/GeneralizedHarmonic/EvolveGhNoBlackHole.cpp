@@ -9,8 +9,8 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Parallel/CharmMain.tpp"
+#include "PointwiseFunctions/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Parameters chosen in CMakeLists.txt
@@ -23,7 +23,7 @@ extern "C" void CkRegisterMainModule() {
        &domain::creators::time_dependence::register_derived_with_charm,
        &domain::FunctionsOfTime::register_derived_with_charm,
        &gh::BoundaryCorrections::register_derived_with_charm,
-       &gh::ConstraintDamping::register_derived_with_charm,
+       &ConstraintDamping::register_derived_with_charm,
        &register_factory_classes_with_charm<metavariables>},
       {});
 }

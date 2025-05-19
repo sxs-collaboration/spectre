@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp"
+#include "PointwiseFunctions/ConstraintDamping/GaussianPlusConstant.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -23,7 +23,7 @@ namespace domain::FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(CkMigrateMessage* msg)
     : DampingFunction<VolumeDim, Fr>(msg) {}
@@ -56,7 +56,8 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const gsl::not_null<Scalar<double>*> value_at_x,
     const tnsr::I<double, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
     /*functions_of_time*/) const {
   apply_call_operator(value_at_x, x);
 }
@@ -65,7 +66,8 @@ void GaussianPlusConstant<VolumeDim, Fr>::operator()(
     const gsl::not_null<Scalar<DataVector>*> value_at_x,
     const tnsr::I<DataVector, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
     /*functions_of_time*/) const {
   set_number_of_grid_points(value_at_x, x);
   apply_call_operator(value_at_x, x);
@@ -85,22 +87,22 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const
     -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> {
   return std::make_unique<GaussianPlusConstant<VolumeDim, Fr>>(*this);
 }
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                                 \
-  template gh::ConstraintDamping::GaussianPlusConstant<                      \
-      DIM(data), FRAME(data)>::GaussianPlusConstant(CkMigrateMessage* msg);  \
-  template gh::ConstraintDamping::                                           \
-      GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(    \
-          const double constant, const double amplitude, const double width, \
-          const std::array<double, DIM(data)>& center);                      \
-  template void                                                              \
-  gh::ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::pup(  \
-      PUP::er& p);                                                           \
-  template auto gh::ConstraintDamping::GaussianPlusConstant<                 \
-      DIM(data), FRAME(data)>::get_clone()                                   \
+#define INSTANTIATE(_, data)                                                   \
+  template ConstraintDamping::GaussianPlusConstant<                            \
+      DIM(data), FRAME(data)>::GaussianPlusConstant(CkMigrateMessage* msg);    \
+  template ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::   \
+      GaussianPlusConstant(const double constant, const double amplitude,      \
+                           const double width,                                 \
+                           const std::array<double, DIM(data)>& center);       \
+  template void                                                                \
+  ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::pup(        \
+      PUP::er& p);                                                             \
+  template auto                                                                \
+  ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::get_clone() \
       const->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
@@ -112,17 +114,16 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                               \
-  template void gh::ConstraintDamping::                                    \
-      GaussianPlusConstant<DIM(data), FRAME(data)>::operator()(            \
-          const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,            \
-          const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,           \
-          const double /*time*/,                                           \
-          const std::unordered_map<                                        \
-              std::string,                                                 \
-              std::unique_ptr<domain::FunctionsOfTime::                    \
-                                  FunctionOfTime>>& /*functions_of_time*/) \
-          const;
+#define INSTANTIATE(_, data)                                                   \
+  template void                                                                \
+  ConstraintDamping::GaussianPlusConstant<DIM(data), FRAME(data)>::operator()( \
+      const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,                   \
+      const double /*time*/,                                                   \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<::domain::FunctionsOfTime::                          \
+                              FunctionOfTime>>& /*functions_of_time*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
                         (double, DataVector))
@@ -130,4 +131,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-

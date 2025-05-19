@@ -9,11 +9,11 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
@@ -108,8 +108,7 @@ template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
 struct TimeDerivative {
  public:
   using temporary_tags = tmpl::list<
-      ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::Tags::ConstraintGamma1, ::gh::Tags::ConstraintGamma2,
       Tags::GaugeH<DataVector, Dim>,
       Tags::SpacetimeDerivGaugeH<DataVector, Dim>, Tags::Gamma1Gamma2,
       Tags::HalfPiTwoNormals, Tags::NormalDotOneIndexConstraint,
@@ -132,11 +131,10 @@ struct TimeDerivative {
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                  Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma0,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
-                 gauges::Tags::GaugeCondition, domain::Tags::Mesh<Dim>,
-                 ::Tags::Time, domain::Tags::Coordinates<Dim, Frame::Inertial>,
+                 ::gh::Tags::ConstraintGamma0, ::gh::Tags::ConstraintGamma1,
+                 ::gh::Tags::ConstraintGamma2, gauges::Tags::GaugeCondition,
+                 domain::Tags::Mesh<Dim>, ::Tags::Time,
+                 domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                                Frame::Inertial>,
                  domain::Tags::MeshVelocity<Dim, Frame::Inertial>>;

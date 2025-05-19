@@ -45,7 +45,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/AnalyticChristoffel.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
@@ -71,6 +70,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
+#include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -316,14 +316,12 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   Domain<3> domain{std::move(blocks)};
 
   const auto gamma1 =  // Gamma1, taken from SpEC BNS
-      std::make_unique<
-          gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
+      std::make_unique<ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
           -0.999, 0.999 * 1.0,
           10.0 * 10.0,  // second 10 is "separation" of NSes
           std::array{0.0, 0.0, 0.0});
   const auto gamma2 =  // Gamma2, taken from SpEC BNS
-      std::make_unique<
-          gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
+      std::make_unique<ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
           0.01, 1.35 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0});
 
   // Set mortar data, both for ourselves on some interfaces and for our
@@ -367,8 +365,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
                    gr::Tags::SqrtDetSpatialMetric<DataVector>,
                    gr::Tags::SpatialMetric<DataVector, 3>,
                    gr::Tags::InverseSpatialMetric<DataVector, 3>,
-                   ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                   ::gh::ConstraintDamping::Tags::ConstraintGamma2>,
+                   ::gh::Tags::ConstraintGamma1, ::gh::Tags::ConstraintGamma2>,
         dg_package_data_temporary_tags, prims_to_reconstruct_tags>>>
         prims_to_reconstruct{interface_mesh.number_of_grid_points()};
     prims_to_reconstruct.assign_subset(face_prims);
@@ -464,12 +461,10 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
     }
 
     (*gamma1)(
-        make_not_null(&get<::gh::ConstraintDamping::Tags::ConstraintGamma1>(
-            prims_to_reconstruct)),
+        make_not_null(&get<::gh::Tags::ConstraintGamma1>(prims_to_reconstruct)),
         face_grid_coords, time, functions_of_time);
     (*gamma2)(
-        make_not_null(&get<::gh::ConstraintDamping::Tags::ConstraintGamma2>(
-            prims_to_reconstruct)),
+        make_not_null(&get<::gh::Tags::ConstraintGamma2>(prims_to_reconstruct)),
         face_grid_coords, time, functions_of_time);
 
     tnsr::i<DataVector, 3, Frame::Inertial> normal_covector =
@@ -640,8 +635,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   // initialized.
   typename evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type
       dummy_normal_covector_and_magnitude{};
-  using DampingFunction =
-      gh::ConstraintDamping::DampingFunction<3, Frame::Grid>;
+  using DampingFunction = ConstraintDamping::DampingFunction<3, Frame::Grid>;
   typename evolution::dg::subcell::Tags::ReconstructionOrder<3>::type
       dummy_reconstruction_order{};
 
@@ -668,9 +662,9 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize,
           Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars<System>>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>,
+          gh::Tags::DampingFunctionGamma0<3, Frame::Grid>,
+          gh::Tags::DampingFunctionGamma1<3, Frame::Grid>,
+          gh::Tags::DampingFunctionGamma2<3, Frame::Grid>,
           ::gh::gauges::Tags::GaugeCondition,
           grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
           ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>,
@@ -732,7 +726,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
       // rescale the widths in the Grid frame for binaries.
       std::unique_ptr<DampingFunction>(  // Gamma0, taken from SpEC BNS
           std::make_unique<
-              gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
+              ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
               0.01, 0.09 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0})),
       gamma1->get_clone(), gamma2->get_clone(),
       std::unique_ptr<gh::gauges::GaugeCondition>(

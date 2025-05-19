@@ -348,12 +348,9 @@ struct GeneralizedHarmonicTemplateBase {
   using const_global_cache_tags =
       tmpl::list<gh::gauges::Tags::GaugeCondition,
                  evolution::initial_data::Tags::InitialData,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma0<
-                     volume_dim, Frame::Grid>,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma1<
-                     volume_dim, Frame::Grid>,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma2<
-                     volume_dim, Frame::Grid>>;
+                 gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

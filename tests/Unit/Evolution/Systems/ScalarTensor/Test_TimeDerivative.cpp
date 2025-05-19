@@ -123,10 +123,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
           make_not_null(&get<::Tags::dt<gh::Tags::Phi<DataVector, 3>>>(
               expected_dt_variables)),
           // GH temporaries
-          make_not_null(&get<gh::ConstraintDamping::Tags::ConstraintGamma1>(
-              expected_temp_variables)),
-          make_not_null(&get<gh::ConstraintDamping::Tags::ConstraintGamma2>(
-              expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::ConstraintGamma1>(expected_temp_variables)),
+          make_not_null(
+              &get<gh::Tags::ConstraintGamma2>(expected_temp_variables)),
           make_not_null(
               &get<gh::Tags::GaugeH<DataVector, 3>>(expected_temp_variables)),
           make_not_null(&get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(
@@ -195,12 +195,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
           tuples::get<gr::Tags::SpacetimeMetric<DataVector, 3>>(arg_variables),
           tuples::get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
           tuples::get<gh::Tags::Phi<DataVector, 3>>(arg_variables),
-          tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma0>(
-              arg_variables),
-          tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma1>(
-              arg_variables),
-          tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma2>(
-              arg_variables),
+          tuples::get<gh::Tags::ConstraintGamma0>(arg_variables),
+          tuples::get<gh::Tags::ConstraintGamma1>(arg_variables),
+          tuples::get<gh::Tags::ConstraintGamma2>(arg_variables),
 
           *tuples::get<gh::gauges::Tags::GaugeCondition>(arg_variables),
 
@@ -302,10 +299,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
       make_not_null(
           &get<::Tags::dt<CurvedScalarWave::Tags::Phi<3>>>(dt_variables)),
       // GH temporaries
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(temp_variables)),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(temp_variables)),
+      make_not_null(&get<gh::Tags::ConstraintGamma1>(temp_variables)),
+      make_not_null(&get<gh::Tags::ConstraintGamma2>(temp_variables)),
       make_not_null(&get<gh::Tags::GaugeH<DataVector, 3>>(temp_variables)),
       make_not_null(
           &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(temp_variables)),
@@ -379,9 +374,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
 
       tuples::get<gh::Tags::Pi<DataVector, 3>>(arg_variables),
       tuples::get<gh::Tags::Phi<DataVector, 3>>(arg_variables),
-      tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma0>(arg_variables),
-      tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma1>(arg_variables),
-      tuples::get<gh::ConstraintDamping::Tags::ConstraintGamma2>(arg_variables),
+      tuples::get<gh::Tags::ConstraintGamma0>(arg_variables),
+      tuples::get<gh::Tags::ConstraintGamma1>(arg_variables),
+      tuples::get<gh::Tags::ConstraintGamma2>(arg_variables),
 
       *tuples::get<gh::gauges::Tags::GaugeCondition>(arg_variables),
 

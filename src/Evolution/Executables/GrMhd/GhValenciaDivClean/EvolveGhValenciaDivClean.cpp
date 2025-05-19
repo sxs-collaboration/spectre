@@ -8,10 +8,10 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/RegisterDerivedWithCharm.hpp"
 #include "Parallel/CharmMain.tpp"
+#include "PointwiseFunctions/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
@@ -29,7 +29,7 @@ extern "C" void CkRegisterMainModule() {
        &grmhd::GhValenciaDivClean::fd::register_derived_with_charm<
            typename metavariables::base::system>,
        &EquationsOfState::register_derived_with_charm,
-       &gh::ConstraintDamping::register_derived_with_charm,
+       &ConstraintDamping::register_derived_with_charm,
        &register_factory_classes_with_charm<metavariables>},
       {});
 }

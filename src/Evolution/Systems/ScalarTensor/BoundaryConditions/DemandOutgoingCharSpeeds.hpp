@@ -11,9 +11,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/BoundaryCondition.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,8 +52,8 @@ class DemandOutgoingCharSpeeds final : public BoundaryCondition {
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
-      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+      tmpl::list<::gh::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, 3>,
                  ::CurvedScalarWave::Tags::ConstraintGamma1>;
   using dg_gridless_tags = tmpl::list<>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;

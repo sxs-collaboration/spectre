@@ -10,10 +10,10 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -218,8 +218,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
                  Tags::VMinus<DataVector, Dim>, NormalTimesVPlus,
                  NormalTimesVMinus, Gamma2VSpacetimeMetric, CharSpeedsTensor>;
   using dg_package_data_temporary_tags =
-      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      tmpl::list<::gh::Tags::ConstraintGamma1, ::gh::Tags::ConstraintGamma2,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>>;
   using dg_package_data_primitive_tags = tmpl::list<>;
   using dg_package_data_volume_tags = tmpl::list<>;

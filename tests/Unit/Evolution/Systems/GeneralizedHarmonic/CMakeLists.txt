@@ -2,7 +2,6 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(GaugeSourceFunctions)
-add_subdirectory(ConstraintDamping)
 
 set(LIBRARY "Test_GeneralizedHarmonic")
 

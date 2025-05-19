@@ -34,7 +34,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
@@ -116,6 +115,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
@@ -250,9 +250,8 @@ struct ObserverTags {
           ::Tags::PointwiseL2NormCompute<ScalarTensor::Tags::Csw<
               CurvedScalarWave::Tags::TwoIndexConstraint<volume_dim>>>,
           // Damping parameters
-          gh::ConstraintDamping::Tags::ConstraintGamma0,
-          gh::ConstraintDamping::Tags::ConstraintGamma1,
-          gh::ConstraintDamping::Tags::ConstraintGamma2,
+          gh::Tags::ConstraintGamma0, gh::Tags::ConstraintGamma1,
+          gh::Tags::ConstraintGamma2,
           // Sources
           ScalarTensor::Tags::TraceReversedStressEnergyCompute,
           ScalarTensor::Tags::ScalarSource,
@@ -407,12 +406,9 @@ struct ScalarTensorTemplateBase {
   using const_global_cache_tags =
       tmpl::list<gh::gauges::Tags::GaugeCondition,
                  evolution::initial_data::Tags::InitialData,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma0<
-                     volume_dim, Frame::Grid>,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma1<
-                     volume_dim, Frame::Grid>,
-                 gh::ConstraintDamping::Tags::DampingFunctionGamma2<
-                     volume_dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>,
                  // Source parameters
                  ScalarTensor::Tags::ScalarMass>;
 

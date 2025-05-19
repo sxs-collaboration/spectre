@@ -10,9 +10,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -80,8 +80,8 @@ struct CharacteristicSpeedsCompute
   using base = Tags::CharacteristicSpeeds<DataVector, Dim, Frame>;
   using type = typename base::type;
   using argument_tags = tmpl::list<
-      ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim, Frame>,
+      ::gh::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<DataVector, Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
       domain::Tags::MeshVelocity<Dim, Frame>>;
 
@@ -113,8 +113,7 @@ struct CharacteristicSpeedsOnStrahlkorperCompute
   using base = CharacteristicSpeedsOnStrahlkorper<Frame>;
   using type = typename base::type;
   using argument_tags =
-      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gr::Tags::Lapse<DataVector>,
+      tmpl::list<::gh::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, Dim, Frame>,
                  ::ylm::Tags::UnitNormalOneForm<Frame>>;
 
@@ -211,7 +210,7 @@ struct CharacteristicFieldsCompute
   using base = Tags::CharacteristicFields<DataVector, Dim, Frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
       gr::Tags::SpacetimeMetric<DataVector, Dim, Frame>,
       Tags::Pi<DataVector, Dim, Frame>, Tags::Phi<DataVector, Dim, Frame>,
@@ -263,7 +262,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
       Tags::EvolvedFieldsFromCharacteristicFields<DataVector, Dim, Frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
-      gh::ConstraintDamping::Tags::ConstraintGamma2,
+      gh::Tags::ConstraintGamma2,
       Tags::VSpacetimeMetric<DataVector, Dim, Frame>,
       Tags::VZero<DataVector, Dim, Frame>, Tags::VPlus<DataVector, Dim, Frame>,
       Tags::VMinus<DataVector, Dim, Frame>,
@@ -291,8 +290,7 @@ template <size_t Dim, typename Frame>
 struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
                                            LargestCharacteristicSpeed {
   using argument_tags =
-      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gr::Tags::Lapse<DataVector>,
+      tmpl::list<::gh::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, Dim, Frame>,
                  gr::Tags::SpatialMetric<DataVector, Dim, Frame>>;
   using return_type = double;

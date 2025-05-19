@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_GhConstraintDamping")
+set(LIBRARY "Test_ConstraintDamping")
 
 set(LIBRARY_SOURCES
   Test_Constant.cpp
@@ -14,9 +14,9 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  ConstraintDampingHelpers
   DataStructures
   GeneralizedHarmonic
-  GhConstraintDampingHelpers
   Parallel
   Utilities
 )

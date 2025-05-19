@@ -1,11 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
+#include "PointwiseFunctions/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 
 #include <cstddef>
 
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
+#include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Frame {
@@ -13,7 +13,7 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 namespace {
 template <size_t Dim, typename Fr>
 void register_damping_functions_with_charm() {
@@ -29,4 +29,4 @@ void register_derived_with_charm() {
   register_damping_functions_with_charm<2, Frame::Inertial>();
   register_damping_functions_with_charm<3, Frame::Inertial>();
 }
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping

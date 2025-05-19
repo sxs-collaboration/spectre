@@ -119,12 +119,9 @@ struct EvolutionMetavars
       gh::gauges::Tags::GaugeCondition, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       typename base::equation_of_state_tag,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
-                                                         Frame::Grid>,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
-                                                         Frame::Grid>,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
-                                                         Frame::Grid>>>;
+      gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
+      gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
+      gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;

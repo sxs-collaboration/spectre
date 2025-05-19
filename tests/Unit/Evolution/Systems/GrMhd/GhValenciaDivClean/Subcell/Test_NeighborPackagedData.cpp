@@ -45,7 +45,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/AnalyticChristoffel.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
@@ -67,6 +66,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
+#include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -241,14 +241,12 @@ double test(const size_t num_dg_pts) {
       dg_coords, time, typename System::gh_system::variables_tag::tags_list{}));
 
   const auto gamma1 =  // Gamma1, taken from SpEC BNS
-      std::make_unique<
-          gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
+      std::make_unique<ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
           -0.999, 0.999 * 1.0,
           10.0 * 10.0,  // second 10 is "separation" of NSes
           std::array{0.0, 0.0, 0.0});
   const auto gamma2 =  // Gamma1, taken from SpEC BNS
-      std::make_unique<
-          gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
+      std::make_unique<ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
           0.01, 1.35 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0});
 
   // Below are also dummy variables required for compilation due to boundary
@@ -257,8 +255,7 @@ double test(const size_t num_dg_pts) {
   // actually called so it is okay to leave these variables somewhat poorly
   // initialized.
   std::optional<tnsr::I<DataVector, 3>> dummy_volume_mesh_velocity{};
-  using DampingFunction =
-      gh::ConstraintDamping::DampingFunction<3, Frame::Grid>;
+  using DampingFunction = ConstraintDamping::DampingFunction<3, Frame::Grid>;
 
   auto box = db::create<
       db::AddSimpleTags<
@@ -277,9 +274,9 @@ double test(const size_t num_dg_pts) {
           domain::Tags::MeshVelocity<3, Frame::Inertial>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
           domain::Tags::FunctionsOfTimeInitialize,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>,
+          gh::Tags::DampingFunctionGamma0<3, Frame::Grid>,
+          gh::Tags::DampingFunctionGamma1<3, Frame::Grid>,
+          gh::Tags::DampingFunctionGamma2<3, Frame::Grid>,
           ::gh::gauges::Tags::GaugeCondition,
           grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
           evolution::dg::subcell::Tags::SubcellOptions<3>,
@@ -299,10 +296,9 @@ double test(const size_t num_dg_pts) {
           gr::Tags::DetAndInverseSpatialMetricCompute<DataVector, 3,
                                                       Frame::Inertial>,
           gr::Tags::SqrtDetSpatialMetricCompute<DataVector, 3, Frame::Inertial>,
-          gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3, Frame::Grid>,
-          gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3, Frame::Grid>,
-          gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3,
-                                                               Frame::Grid>>>(
+          gh::Tags::ConstraintGamma0Compute<3, Frame::Grid>,
+          gh::Tags::ConstraintGamma1Compute<3, Frame::Grid>,
+          gh::Tags::ConstraintGamma2Compute<3, Frame::Grid>>>(
       element, dg_mesh, subcell_mesh,
       std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor<System>>{
           std::make_unique<
@@ -322,7 +318,7 @@ double test(const size_t num_dg_pts) {
       // rescale the widths in the Grid frame for binaries.
       std::unique_ptr<DampingFunction>(  // Gamma0, taken from SpEC BNS
           std::make_unique<
-              gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
+              ConstraintDamping::GaussianPlusConstant<3, Frame::Grid>>(
               0.01, 0.09 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0})),
       gamma1->get_clone(), gamma2->get_clone(),
       std::unique_ptr<gh::gauges::GaugeCondition>(

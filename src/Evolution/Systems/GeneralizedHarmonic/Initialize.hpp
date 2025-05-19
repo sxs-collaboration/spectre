@@ -15,7 +15,6 @@
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -27,6 +26,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
@@ -66,14 +66,14 @@ struct InitializeGhAnd3Plus1Variables {
       gr::Tags::LapseCompute<DataVector, Dim, frame>,
 
       // Compute constraint damping parameters.
-      ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
-      ConstraintDamping::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
-      ConstraintDamping::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>>;
+      gh::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
+      gh::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
+      gh::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>>;
 
-  using const_global_cache_tags = tmpl::list<
-      gh::ConstraintDamping::Tags::DampingFunctionGamma0<Dim, Frame::Grid>,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma1<Dim, Frame::Grid>,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma2<Dim, Frame::Grid>>;
+  using const_global_cache_tags =
+      tmpl::list<gh::Tags::DampingFunctionGamma0<Dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma1<Dim, Frame::Grid>,
+                 gh::Tags::DampingFunctionGamma2<Dim, Frame::Grid>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

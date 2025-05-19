@@ -39,8 +39,7 @@ void test() {
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>>{
           "error"},
       "DemandOutgoingCharSpeeds:\n", Index<2>{5}, db::DataBox<tmpl::list<>>{},
-      tuples::TaggedTuple<
-          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma1>>{
+      tuples::TaggedTuple<helpers::Tags::Range<gh::Tags::ConstraintGamma1>>{
           std::array{0.0, 1.0}});
 }
 }  // namespace

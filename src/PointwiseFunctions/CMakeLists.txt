@@ -3,6 +3,7 @@
 
 add_subdirectory(AnalyticData)
 add_subdirectory(AnalyticSolutions)
+add_subdirectory(ConstraintDamping)
 add_subdirectory(Elasticity)
 add_subdirectory(GeneralRelativity)
 add_subdirectory(Hydro)
