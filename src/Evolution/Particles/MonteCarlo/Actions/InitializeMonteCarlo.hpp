@@ -9,8 +9,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/ActiveGrid.hpp"
-#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
@@ -47,10 +45,10 @@ namespace Initialization::Actions {
 /// \ingroup InitializationGroup
 /// \brief Allocate variables needed for evolution of Monte Carlo transport
 ///
+/// We set up all variables on the subcell FD mesh.
 /// Uses:
 /// - evolution::dg::subcell::Tags::Mesh<dim>
 /// - evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>
-/// - evolution::dg::subcell::Tags::ActiveGrid
 /// - ::Tags::Time
 /// - evolution::initial_data::Tags::InitialData
 /// - Particles::MonteCarlo::Tags::MonteCarloOptions<EnergyBins,
@@ -91,8 +89,7 @@ struct InitializeMCTags {
                  Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, dim>,
                  Particles::MonteCarlo::Tags::MortarDataTag<dim>,
                  Particles::MonteCarlo::Tags::GhostZoneCouplingDataTag<dim>,
-                 Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>,
-                 evolution::dg::subcell::Tags::ActiveGrid>;
+                 Particles::MonteCarlo::Tags::McGhostZoneDataTag<dim>>;
 
   using compute_tags = tmpl::list<>;
 
@@ -105,10 +102,6 @@ struct InitializeMCTags {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if (db::get<evolution::dg::subcell::Tags::ActiveGrid>(box) !=
-        evolution::dg::subcell::ActiveGrid::Subcell) {
-      ERROR("MC requires all elements to use Subcell");
-    }
     const Mesh<dim>& mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();

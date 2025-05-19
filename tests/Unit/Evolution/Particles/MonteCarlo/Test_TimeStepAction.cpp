@@ -192,7 +192,6 @@ void test_advance_packets() {
   // Evaluate solution
   const gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> solution(mass, spin,
                                                                      center);
-
   // Compute metric quantities
   const auto vars =
       solution.variables(inertial_coordinates, t,

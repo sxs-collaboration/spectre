@@ -66,6 +66,19 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/FluidCouplingAction.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/InitializeMonteCarlo.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/Labels.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/TimeStepActions.hpp"
+#include "Evolution/Particles/MonteCarlo/Actions/TriggerMonteCarloEvolution.hpp"
+#include "Evolution/Particles/MonteCarlo/CellCrossingTime.hpp"
+#include "Evolution/Particles/MonteCarlo/GhostZoneCommunication.hpp"
+#include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
+#include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
+#include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
+#include "Evolution/Particles/MonteCarlo/NeutrinoMomentsFromMonteCarlo.hpp"
+#include "Evolution/Particles/MonteCarlo/System.hpp"
+#include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
@@ -272,7 +285,9 @@ struct GhValenciaDivCleanDefaults {
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
-  using neutrino_system = RadiationTransport::NoNeutrinos::System;
+  using neutrino_system = Particles::MonteCarlo::System;
+  static constexpr size_t neutrino_species = 3;
+  static constexpr size_t neutrino_energy_bins = 16;
 
   using system = grmhd::GhValenciaDivClean::System<neutrino_system>;
   using analytic_variables_tags =
@@ -291,6 +306,18 @@ struct GhValenciaDivCleanDefaults {
                                      grmhd::ValenciaDivClean::Tags::TildeTau,
                                      grmhd::ValenciaDivClean::Tags::TildeS<>,
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
+
+  using initialize_data_for_monte_carlo = tmpl::list<
+      Initialization::Actions::InitializeMCTags<
+          neutrino_system, neutrino_energy_bins, neutrino_species, false>,
+      Initialization::Actions::AddComputeTags<tmpl::list<
+          Particles::MonteCarlo::CellLightCrossingTimeCompute,
+          Particles::MonteCarlo::InertialFrameEnergyDensityCompute,
+          Particles::MonteCarlo::InertialFrameEnergyDensityPerSpeciesCompute<
+              neutrino_species>,
+          Particles::MonteCarlo::InertialFrameLeptonNumberDensityCompute,
+          Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
+          domain::Tags::JacobianCompute<4, Frame::Inertial, Frame::Fluid>>>>;
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
@@ -331,7 +358,11 @@ struct GhValenciaDivCleanDefaults {
                   VariableFixing::LimitLorentzFactor>,
               Actions::UpdateConservatives,
               Actions::MutateApply<
-                  grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>>,
+                  grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>,
+              tmpl::conditional_t<std::is_same_v<neutrino_system,
+                                                 Particles::MonteCarlo::System>,
+                                  initialize_data_for_monte_carlo,
+                                  tmpl::list<>>>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
 
@@ -369,6 +400,7 @@ struct GhValenciaDivCleanTemplateBase<
       defaults::use_dg_element_collection;
   using system = typename defaults::system;
 
+  using neutrino_system = typename defaults::neutrino_system;
   using analytic_variables_tags = typename defaults::analytic_variables_tags;
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
   using ordered_list_of_primitive_recovery_schemes =
@@ -542,7 +574,15 @@ struct GhValenciaDivCleanTemplateBase<
                      ::Events::Tags::ObserverCoordinatesCompute<volume_dim,
                                                                 Frame::Grid>,
                      ::Events::Tags::ObserverCoordinatesCompute<
-                         volume_dim, Frame::Inertial>>>>;
+                         volume_dim, Frame::Inertial>>>,
+      tmpl::conditional_t<
+          std::is_same_v<neutrino_system, Particles::MonteCarlo::System>,
+          tmpl::list<
+              Particles::MonteCarlo::Tags::InertialFrameEnergyDensity,
+              Particles::MonteCarlo::Tags::InertialFrameEnergyDensityPerSpecies<
+                  defaults::neutrino_species>,
+              Particles::MonteCarlo::Tags::InertialFrameLeptonNumberDensity>,
+          tmpl::list<>>>;
   using integrand_fields = tmpl::append<
       typename system::variables_tag::tags_list,
       tmpl::list<
@@ -698,6 +738,14 @@ struct GhValenciaDivCleanTemplateBase<
       gh::gauges::Tags::GaugeCondition, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       equation_of_state_tag,
+      tmpl::conditional_t<
+          std::is_same_v<neutrino_system, Particles::MonteCarlo::System>,
+          tmpl::list<
+              Particles::MonteCarlo::Tags::MonteCarloOptions<
+                  defaults::neutrino_species>,
+              Particles::MonteCarlo::Tags::InteractionRatesTable<
+                  defaults::neutrino_energy_bins, defaults::neutrino_species>>,
+          tmpl::list<>>,
       gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
       gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
       gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>>;
@@ -768,6 +816,33 @@ struct GhValenciaDivCleanTemplateBase<
       VariableFixing::Actions::FixVariables<
           grmhd::ValenciaDivClean::FixConservatives>,
       Actions::UpdatePrimitives>>;
+
+  using mc_subcell_step_actions = tmpl::flatten<tmpl::list<
+      Particles::MonteCarlo::Actions::TriggerMonteCarloEvolution,
+      Actions::Label<Particles::MonteCarlo::Actions::Labels::BeginMonteCarlo>,
+      Particles::MonteCarlo::Actions::SendDataForMcCommunication<
+          volume_dim,
+          // No local time stepping
+          false, Particles::MonteCarlo::CommunicationStep::PreStep>,
+      Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
+          volume_dim, Particles::MonteCarlo::CommunicationStep::PreStep>,
+      Particles::MonteCarlo::Actions::TakeTimeStep<
+          defaults::neutrino_energy_bins, defaults::neutrino_species>,
+      Particles::MonteCarlo::Actions::SendDataForMcCommunication<
+          volume_dim,
+          // No local time stepping
+          false, Particles::MonteCarlo::CommunicationStep::PostStep>,
+      Particles::MonteCarlo::Actions::ReceiveDataForMcCommunication<
+          volume_dim, Particles::MonteCarlo::CommunicationStep::PostStep>,
+      Actions::MutateApply<Particles::MonteCarlo::FluidCouplingMutator>,
+      Actions::MutateApply<
+          grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<
+              ordered_list_of_primitive_recovery_schemes, system>>,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::FixToAtmosphere<volume_dim>>,
+      VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
+      Actions::UpdateConservatives,
+      Actions::Label<Particles::MonteCarlo::Actions::Labels::EndMonteCarlo>>>;
 
   using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::subcell::Actions::SelectNumericalMethod,
@@ -843,7 +918,10 @@ struct GhValenciaDivCleanTemplateBase<
       VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
       Actions::UpdateConservatives,
 
-      Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;
+      Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
+      tmpl::conditional_t<
+          std::is_same_v<neutrino_system, Particles::MonteCarlo::System>,
+          mc_subcell_step_actions, tmpl::list<>>>>;
 
   using step_actions =
       tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,

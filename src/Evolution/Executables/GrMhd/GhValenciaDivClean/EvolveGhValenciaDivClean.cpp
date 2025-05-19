@@ -20,6 +20,20 @@ using metavariables =
     EvolutionMetavars<USE_CONTROL_SYSTEMS, USE_PARAMETRIZED_DELEPTONIZATION,
                       BondiSachs>;
 
+void register_neutrino_tables() {
+  register_classes_with_charm(
+      tmpl::list<Particles::MonteCarlo::NeutrinoInteractionTable<2, 2>,
+                 Particles::MonteCarlo::NeutrinoInteractionTable<2, 3>,
+                 Particles::MonteCarlo::NeutrinoInteractionTable<4, 3>,
+                 Particles::MonteCarlo::NeutrinoInteractionTable<16, 3>>{});
+}
+
+void register_mc_options() {
+  register_classes_with_charm(
+      tmpl::list<Particles::MonteCarlo::MonteCarloOptions<2>,
+                 Particles::MonteCarlo::MonteCarloOptions<3>>{});
+}
+
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<metavariables>();
   Parallel::charmxx::register_init_node_and_proc(
@@ -32,6 +46,7 @@ extern "C" void CkRegisterMainModule() {
            typename metavariables::base::system>,
        &EquationsOfState::register_derived_with_charm,
        &ConstraintDamping::register_derived_with_charm,
-       &register_factory_classes_with_charm<metavariables>},
+       &register_factory_classes_with_charm<metavariables>,
+       &register_neutrino_tables, &register_mc_options},
       {});
 }
