@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
+#include "Domain/CoordinateMaps/Composition.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/CylindricalEndcap.hpp"
@@ -63,16 +64,20 @@ struct to_grid_map<
 template <size_t Dim>
 using maps_from_creators = tmpl::remove_duplicates<
     tmpl::flatten<tmpl::transform<domain_creators<Dim>, get_maps<tmpl::_1>>>>;
+
+template <size_t Dim>
+using composition_map = domain::CoordinateMaps::Composition<
+    tmpl::list<Frame::BlockLogical, Frame::Grid, Frame::Inertial>, Dim>;
 }  // namespace
 
 void register_derived_with_charm() {
   using all_maps = tmpl::remove_duplicates<tmpl::append<
-      maps_from_creators<1>, maps_from_creators<2>, maps_from_creators<3>>>;
+      maps_from_creators<1>, maps_from_creators<2>, maps_from_creators<3>,
+      tmpl::list<composition_map<1>, composition_map<2>, composition_map<3>>>>;
   using maps_to_grid =
       tmpl::remove<tmpl::transform<all_maps, to_grid_map<tmpl::_1>>, void>;
   using maps_to_register =
       tmpl::remove_duplicates<tmpl::append<all_maps, maps_to_grid>>;
-
   register_classes_with_charm(maps_to_register{});
 
   domain::CoordinateMaps::ShapeMapTransitionFunctions::
