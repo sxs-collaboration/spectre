@@ -89,3 +89,16 @@ RichardsonSmoother:
   Iterations: 20
   RelaxationParameter: 0.33123384064827677
   Verbosity: Silent
+
+Amr:
+  Verbosity: Verbose
+  Criteria: []
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: False
+  MaxCoarseLevels: Auto

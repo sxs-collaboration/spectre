@@ -19,8 +19,10 @@
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -31,6 +33,8 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -81,7 +85,8 @@ struct OperatorIsMassive : db::SimpleTag {
 using fields_tag = helpers_distributed::fields_tag;
 using sources_tag = helpers_distributed::sources_tag;
 
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
+ public:  // Iterable action
   using simple_tags_from_options =
       tmpl::list<::domain::Tags::InitialExtents<1>,
                  ::domain::Tags::InitialRefinementLevels<1>>;
@@ -89,7 +94,8 @@ struct InitializeElement {
       tmpl::list<helpers_distributed::Source, OperatorIsMassive,
                  elliptic::dg::Tags::Quadrature>;
   using simple_tags =
-      tmpl::list<::domain::Tags::Mesh<1>,
+      tmpl::list<::domain::Tags::Element<1>, ::domain::Tags::Mesh<1>,
+                 ::domain::Tags::NeighborMesh<1>,
                  ::domain::Tags::Coordinates<1, Frame::Inertial>,
                  ::domain::Tags::Element<1>, fields_tag, sources_tag>;
   using compute_tags = tmpl::list<>;
@@ -116,6 +122,7 @@ struct InitializeElement {
     auto inertial_coords = element_map(logical_coords);
     // Only needed for element ID, so don't initialize neighbors
     Element<1> element{element_id, {}};
+    DirectionalIdMap<1, Mesh<1>> neighbor_meshes{};
     // Initialize data
     const size_t element_index = helpers_distributed::get_index(element_id);
     const size_t multigrid_level = element_id.grid_index();
@@ -127,9 +134,30 @@ struct InitializeElement {
     const size_t num_points = mesh.number_of_grid_points();
     auto initial_fields = typename fields_tag::type{num_points, 0.};
     Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), std::move(mesh), std::move(inertial_coords),
+        make_not_null(&box), std::move(element), std::move(mesh),
+        std::move(neighbor_meshes), std::move(inertial_coords),
         std::move(element), std::move(initial_fields), std::move(source));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using argument_tags =
+      tmpl::list<::domain::Tags::Mesh<1>, ::domain::Tags::Element<1>,
+                 ::domain::Tags::Domain<1>>;
+  using return_tags =
+      tmpl::list<::domain::Tags::Coordinates<1, Frame::Inertial>>;
+
+  template <typename... AmrData>
+  static void apply(
+      const gsl::not_null<tnsr::I<DataVector, 1>*> inertial_coords,
+      const Mesh<1>& mesh, const Element<1>& element, const Domain<1>& domain,
+      const AmrData&... /*amr_data*/) {
+    const auto logical_coords = logical_coordinates(mesh);
+    const auto& element_id = element.id();
+    const auto& block = domain.blocks()[element_id.block_id()];
+    const ElementMap<1, Frame::Inertial> element_map{
+        element_id, block.stationary_map().get_clone()};
+    *inertial_coords = element_map(logical_coords);
   }
 };
 
