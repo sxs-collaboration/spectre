@@ -3,6 +3,8 @@
 set(LIBRARY "Test_ScalarTensorPointwise")
 
 set(LIBRARY_SOURCES
+  Test_ConstraintDampingTags.cpp
+  Test_ConstraintGammas.cpp
   Test_ScalarCharge.cpp
   )
 

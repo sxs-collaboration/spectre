@@ -29,6 +29,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  ConstraintDamping
   CurvedScalarWave
   DataStructures
   DiscontinuousGalerkin

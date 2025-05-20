@@ -124,6 +124,8 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "PointwiseFunctions/ScalarTensor/ConstraintDampingTags.hpp"
+#include "PointwiseFunctions/ScalarTensor/ConstraintGammas.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarCharge.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
@@ -396,21 +398,20 @@ struct ScalarTensorTemplateBase {
               volume_dim>>,
       Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
           gh::ScalarTensor::AnalyticData::all_analytic_data, volume_dim>>,
-      Initialization::Actions::AddSimpleTags<
-          CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
-              volume_dim>>,
       Parallel::Actions::TerminatePhase>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
-  using const_global_cache_tags =
-      tmpl::list<gh::gauges::Tags::GaugeCondition,
-                 evolution::initial_data::Tags::InitialData,
-                 gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
-                 gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
-                 gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>,
-                 // Source parameters
-                 ScalarTensor::Tags::ScalarMass>;
+  using const_global_cache_tags = tmpl::list<
+      gh::gauges::Tags::GaugeCondition,
+      evolution::initial_data::Tags::InitialData,
+      gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
+      gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
+      gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>,
+      ScalarTensor::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
+      ScalarTensor::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>,
+      // Source parameters
+      ScalarTensor::Tags::ScalarMass>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

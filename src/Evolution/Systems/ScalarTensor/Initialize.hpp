@@ -29,6 +29,8 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/ScalarTensor/ConstraintDampingTags.hpp"
+#include "PointwiseFunctions/ScalarTensor/ConstraintGammas.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarTensor::Initialization {
@@ -68,6 +70,9 @@ using scalar_tensor_3plus1_compute_tags = tmpl::list<
     gh::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
     gh::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
     gh::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>,
+
+    ScalarTensor::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
+    ScalarTensor::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>,
 
     ScalarTensor::Tags::ScalarSourceCompute>;
 
