@@ -73,7 +73,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
                  Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>;
   using compute_tags = tmpl::list<>;
   using const_global_cache_tags =
-      tmpl::list<Tags::MaxLevels<OptionsGroup>,
+      tmpl::list<Tags::InitialCoarseLevels<OptionsGroup>,
                  LinearSolver::Tags::OutputVolumeData<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -143,7 +143,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       if (not is_finest_grid) {
         ERROR_NO_TRACE(
             "AMR is not supported in the multigrid algorithm yet. Set the "
-            "'Multigrid.MaxLevels' to 1.");
+            "'Multigrid.InitialCoarseLevels' to 0.");
       }
       // Preserve state of observation ID
       if constexpr (tt::is_a_v<tuples::TaggedTuple, AmrData...>) {

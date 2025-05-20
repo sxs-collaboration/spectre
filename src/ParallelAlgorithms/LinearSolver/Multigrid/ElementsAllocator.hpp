@@ -47,7 +47,7 @@ namespace LinearSolver::multigrid {
  * the initial set of element IDs in the domain. This is taken as the finest
  * grid in the multigrid hierarchy. Coarser grids are determined by successively
  * applying `LinearSolver::multigrid::coarsen`, up to
- * `LinearSolver::multigrid::Tags::MaxLevels` grids.
+ * `LinearSolver::multigrid::Tags::InitialCoarseLevels` coarser grids.
  *
  * Array elements are created for all element IDs on all grids, meaning they all
  * share the same parallel component, action list etc. Elements are connected to
@@ -114,23 +114,17 @@ struct ElementsAllocator
         Parallel::get<elliptic::dg::Tags::Quadrature>(local_cache);
     const std::optional<domain::ElementWeight>& element_weight =
         get<domain::Tags::ElementDistribution>(local_cache);
-    std::optional<size_t> max_levels =
-        get<Tags::MaxLevels<OptionsGroup>>(local_cache);
+    std::optional<size_t> max_coarse_levels =
+        get<Tags::InitialCoarseLevels<OptionsGroup>>(local_cache);
     const size_t number_of_procs =
         Parallel::number_of_procs<size_t>(local_cache);
-    if (max_levels == 0) {
-      ERROR_NO_TRACE(
-          "The 'MaxLevels' option includes the finest grid, so '0' is not a "
-          "valid value. Set the option to '1' to effectively disable "
-          "multigrid.");
-    }
     const size_t num_iterations =
         get<Convergence::Tags::Iterations<OptionsGroup>>(local_cache);
     if (UNLIKELY(num_iterations == 0)) {
       Parallel::printf(
           "%s is disabled (zero iterations). Only creating a single grid.\n",
           pretty_type::name<OptionsGroup>());
-      max_levels = 1;
+      max_coarse_levels = 0;
     }
     const auto& blocks = domain.blocks();
     size_t multigrid_level = 0;
@@ -139,7 +133,8 @@ struct ElementsAllocator
       children_refinement_levels = initial_refinement_levels;
       initial_refinement_levels = parent_refinement_levels;
       // Construct coarsened (parent) grid
-      if (not max_levels.has_value() or multigrid_level < *max_levels - 1) {
+      if (not max_coarse_levels.has_value() or
+          multigrid_level < *max_coarse_levels) {
         parent_refinement_levels =
             LinearSolver::multigrid::coarsen(initial_refinement_levels);
       }

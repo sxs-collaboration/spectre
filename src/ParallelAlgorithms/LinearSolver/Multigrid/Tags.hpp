@@ -27,12 +27,13 @@ namespace LinearSolver::multigrid {
 namespace OptionTags {
 
 template <typename OptionsGroup>
-struct MaxLevels {
+struct InitialCoarseLevels {
   using type = Options::Auto<size_t>;
   static constexpr Options::String help =
-      "Maximum number of levels in the multigrid hierarchy. Includes the "
-      "finest grid, i.e. set to '1' to disable multigrids. Set to 'Auto' to "
-      "coarsen all the way up to single-element blocks.";
+      "Maximum number of coarser levels in the initial multigrid hierarchy. "
+      "Set to '0' to create no coarser levels initially. Set to 'Auto' to "
+      "coarsen all the way up to single-element blocks. "
+      "AMR may create additional levels later.";
   using group = OptionsGroup;
 };
 
@@ -122,13 +123,13 @@ struct ParentRefinementLevels : db::SimpleTag {
 /// effectively disables the multigrid, and `std::nullopt` means the number
 /// of multigrid levels is not capped.
 template <typename OptionsGroup>
-struct MaxLevels : db::SimpleTag {
+struct InitialCoarseLevels : db::SimpleTag {
   using type = std::optional<size_t>;
   static constexpr bool pass_metavariables = false;
-  using option_tags = tmpl::list<OptionTags::MaxLevels<OptionsGroup>>;
+  using option_tags = tmpl::list<OptionTags::InitialCoarseLevels<OptionsGroup>>;
   static type create_from_options(const type value) { return value; };
   static std::string name() {
-    return "MaxLevels(" + pretty_type::name<OptionsGroup>() + ")";
+    return "InitialCoarseLevels(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 

@@ -80,7 +80,7 @@ KrylovSolver:
 MultigridSolver:
   Iterations: 2
   Verbosity: Verbose
-  MaxLevels: Auto
+  InitialCoarseLevels: Auto
   PreSmoothing: True
   PostSmoothingAtBottom: False
   OutputVolumeData: True

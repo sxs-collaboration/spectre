@@ -91,7 +91,7 @@ LinearSolver:
 
   Multigrid:
     Iterations: 1
-    MaxLevels: Auto
+    InitialCoarseLevels: Auto
     PreSmoothing: True
     UseBottomSolver: False
     PostSmoothingAtBottom: False

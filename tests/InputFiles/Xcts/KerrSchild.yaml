@@ -173,7 +173,7 @@ LinearSolver:
 
   Multigrid:
     Iterations: 1
-    MaxLevels: 1
+    InitialCoarseLevels: 0
     PreSmoothing: True
     UseBottomSolver: False
     PostSmoothingAtBottom: False

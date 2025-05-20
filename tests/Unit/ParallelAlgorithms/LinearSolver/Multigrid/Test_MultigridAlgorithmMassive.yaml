@@ -63,7 +63,7 @@ Observers:
 MultigridSolver:
   Iterations: 4
   Verbosity: Verbose
-  MaxLevels: Auto
+  InitialCoarseLevels: Auto
   PreSmoothing: True
   UseBottomSolver: False
   PostSmoothingAtBottom: False
