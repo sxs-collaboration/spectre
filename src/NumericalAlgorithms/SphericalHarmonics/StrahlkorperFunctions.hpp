@@ -397,4 +397,47 @@ void time_deriv_of_strahlkorper(
     gsl::not_null<Strahlkorper<Frame>*> time_deriv,
     const std::deque<std::pair<double, Strahlkorper<Frame>>>&
         previous_strahlkorpers);
+
+/// @{
+/*!
+ * \brief Compute the power monitor of a Strahlkorper
+ *
+ * \details Computes a Strahlkorper represented as a spectral expansion
+ * in scalar spherical harmonics $Y_{lm}(\theta,\phi)$ up to
+ * $l=l_{\rm max}$ and $m=m_{\rm max}$. Then this function
+ * computes the power in each $l$. If
+ * a Strahlkorper's radius $r(\theta,\phi)$ is expanded as
+ * \begin{equation}
+ * r(\theta,\phi) = \sum_{l=0}^{l_{\rm max}}
+ *   \sum_{m=-\mathcal{M}}^{\mathcal{M}} C_{lm} Y_{lm}(\theta,\phi),
+ * \end{equation}
+ * where $\mathcal{M}$ is $l$ or $m_{\rm max}$, whichever is smaller,
+ * then the power monitor $P_l$ is the square root of a normalized sum of
+ * the magnitudes squared of the coefficients $C_{lm}$:
+ * \begin{equation}
+ * P_l = \sqrt{\frac{1}{2 \mathcal{M}+1}\sum_{m=-\mathcal{M}}^\mathcal{M}
+ *       \left|C_{lm}\right|^2}.
+ * \end{equation}
+ * See Eq. (51) and the surrounding discussion in \cite Szilagyi2014fna
+ * for the motivation of this power monitor, which is useful in adaptively
+ * selecting the angular resolution $l_{\rm max}$ when finding
+ * apparent horizons. But note that because internally the Strahlkorper is
+ * represented as a Spherepack expansion, the implementation of this function
+ * uses that expansion rather than a literal implementation of the
+ * above equations. As a result, it's the Spherepack spectral coefficients
+ * that get squared and (for each $l$) summed over.
+ * \param strahlkorper The Strahlkorper surface.
+ */
+template <typename Frame>
+DataVector power_monitor(const Strahlkorper<Frame>& strahlkorper);
+
+/*!
+ * \copydoc power_monitor
+ * \param result A DataVector containing the power monitor $P_l$ for each
+ * $l$ up to the Strahlkorper's `l_max`.
+ */
+template <typename Frame>
+void power_monitor(gsl::not_null<DataVector*> result,
+                   const Strahlkorper<Frame>& strahlkorper);
+/// @}
 }  // namespace ylm

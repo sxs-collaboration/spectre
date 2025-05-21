@@ -15,6 +15,7 @@ from spectre.SphericalHarmonics import (
     Frame,
     Strahlkorper,
     cartesian_coords,
+    power_monitor,
     read_surface_ylm,
     read_surface_ylm_single_time,
     write_sphere_of_points_to_text_file,
@@ -53,6 +54,13 @@ class TestStrahlkorper(unittest.TestCase):
         x = np.array(cartesian_coords(strahlkorper))
         r = np.linalg.norm(x, axis=0)
         npt.assert_allclose(r, 1.0)
+
+        power = np.array(power_monitor(strahlkorper))
+        for i, power_in_mode in enumerate(power):
+            if i > 0:
+                self.assertAlmostEqual(power_in_mode, 0.0)
+            else:
+                self.assertAlmostEqual(power_in_mode, 2.0 * np.sqrt(2.0))
 
         legend, ylm_data = ylm_legend_and_data(strahlkorper, 1.0, 12)
         self.assertEqual(len(legend), 174)

@@ -19,6 +19,9 @@ void bind_strahlkorper_functions_impl(pybind11::module& m) {  // NOLINT
   m.def("cartesian_coords",
         py::overload_cast<const Strahlkorper&>(&ylm::cartesian_coords<Frame>),
         py::arg("strahlkorper"));
+  m.def("power_monitor",
+        py::overload_cast<const Strahlkorper&>(&ylm::power_monitor<Frame>),
+        py::arg("strahlkorper"));
 }
 }  // namespace
 
