@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -22,9 +24,12 @@
 #include "Evolution/Particles/MonteCarlo/NeutrinoInteractionTable.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Evolution/Particles/MonteCarlo/TemplatedLocalFunctions.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -58,15 +63,10 @@ struct TimeStepMutator {
       hydro::Tags::RestMassDensity<DataVector>,
       hydro::Tags::Temperature<DataVector>,
       hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::LowerSpatialFourVelocity<DataVector, Dim, Frame::Inertial>,
+      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<DataVector, Dim, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
+      gh::Tags::Phi<DataVector, 3, Frame::Inertial>,
       gr::Tags::SpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -97,14 +97,11 @@ struct TimeStepMutator {
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& temperature,
       const Scalar<DataVector>& lorentz_factor,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          lower_spatial_four_velocity,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
 
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_lapse,
-      const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
-      const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_determinant_spatial_metric,
@@ -139,8 +136,91 @@ struct TimeStepMutator {
     const DirectionalIdMap<Dim, std::optional<DataVector>>&
         cell_light_crossing_time_ghost = mortar_data.cell_light_crossing_time;
 
-    tnsr::iJJ<DataVector, 3, Frame::Inertial> d_inv_spatial_metric =
-        make_with_value<tnsr::iJJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+    // Calculate temporary tensors needed for MC evolution
+    using deriv_lapse = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                      tmpl::size_t<3>, Frame::Inertial>;
+    using deriv_shift = ::Tags::deriv<gr::Tags::Shift<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>;
+    using deriv_spatial_metric =
+        ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>;
+    using deriv_inverse_spatial_metric =
+        ::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                      tmpl::size_t<3>, Frame::Inertial>;
+    using temporary_tags = tmpl::list<
+        hydro::Tags::LowerSpatialFourVelocity<DataVector, Dim, Frame::Inertial>,
+        gr::Tags::SpacetimeNormalVector<DataVector, 3>,
+        gr::Tags::InverseSpacetimeMetric<DataVector, 3>, deriv_lapse,
+        deriv_shift, deriv_spatial_metric, deriv_inverse_spatial_metric>;
+    Variables<temporary_tags> temp_tags{mesh.number_of_grid_points(), 0.0};
+
+    // u_i = \gamma_{ij} v^j W
+    auto& lower_spatial_four_velocity =
+        get<hydro::Tags::LowerSpatialFourVelocity<DataVector, Dim,
+                                                  Frame::Inertial>>(temp_tags);
+    raise_or_lower_index(make_not_null(&lower_spatial_four_velocity),
+                         spatial_velocity, spatial_metric);
+    for (size_t i = 0; i < Dim; i++) {
+      lower_spatial_four_velocity.get(i) *= get(lorentz_factor);
+    }
+    // For the metric, we adapt the calculations performed for the time
+    // derivative of in GhGrMhd. First get n^a and g^ab
+    auto& spacetime_normal_vector =
+        get<gr::Tags::SpacetimeNormalVector<DataVector, 3>>(temp_tags);
+    auto& inv_spacetime_metric =
+        get<gr::Tags::InverseSpacetimeMetric<DataVector, 3>>(temp_tags);
+    gr::spacetime_normal_vector(make_not_null(&spacetime_normal_vector), lapse,
+                                shift);
+    gr::inverse_spacetime_metric(make_not_null(&inv_spacetime_metric), lapse,
+                                 shift, inv_spatial_metric);
+
+    auto& d_lapse = get<deriv_lapse>(temp_tags);
+    auto& d_shift = get<deriv_shift>(temp_tags);
+    // Temporary store phi_iab n^a n^b in d_lapse. This is phi_two_normals in GH
+    for (size_t i = 0; i < Dim; i++) {
+      for (size_t a = 0; a < Dim + 1; a++) {
+        for (size_t b = 0; b < Dim + 1; b++) {
+          d_lapse.get(i) += phi.get(i, a, b) * spacetime_normal_vector.get(a) *
+                            spacetime_normal_vector.get(b);
+        }
+      }
+    }
+    // Shift derivative using stored quantity in d_lapse
+    // We use d_i shift^j =
+    // (g^{j+1 b} phi_{iba} n^a + n^{j+1} phi_{iab} n^a n_b) * lapse
+    // as in TimeDerivative.hpp in GhGrMhd
+    for (size_t i = 0; i < Dim; i++) {
+      for (size_t j = 0; j < Dim; j++) {
+        d_shift.get(i, j) +=
+            d_lapse.get(i) * spacetime_normal_vector.get(j + 1);
+        for (size_t a = 0; a < Dim + 1; a++) {
+          for (size_t b = 0; b < Dim + 1; b++) {
+            d_shift.get(i, j) += inv_spacetime_metric.get(j + 1, b) *
+                                 phi.get(i, b, a) *
+                                 spacetime_normal_vector.get(a);
+          }
+        }
+        d_shift.get(i, j) *= get(lapse);
+      }
+    }
+    // Now use d_i lapse = - lapse * 0.5 * phi_{iab} n^a n^b
+    // As we already stored phi_{iab} n^a n^b in d_i lapse,
+    // we just multiply by (-0.5 * lapse)
+    for (size_t i = 0; i < Dim; i++) {
+      d_lapse.get(i) *= (-0.5) * get(lapse);
+    }
+
+    // Extract d_i \gamma_{jk} from phi_{i,j+1,k+1}
+    auto& d_spatial_metric = get<deriv_spatial_metric>(temp_tags);
+    for (size_t i = 0; i < Dim; i++) {
+      for (size_t j = 0; j < Dim; j++) {
+        for (size_t k = j; k < Dim; k++) {
+          d_spatial_metric.get(i, j, k) = phi.get(i, j + 1, k + 1);
+        }
+      }
+    }
+
+    auto& d_inv_spatial_metric = get<deriv_inverse_spatial_metric>(temp_tags);
     gr::deriv_inverse_spatial_metric(make_not_null(&d_inv_spatial_metric),
                                      inv_spatial_metric, d_spatial_metric);
 

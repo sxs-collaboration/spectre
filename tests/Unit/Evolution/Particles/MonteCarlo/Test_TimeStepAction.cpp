@@ -28,12 +28,15 @@
 #include "Evolution/Particles/MonteCarlo/MortarData.hpp"
 #include "Evolution/Particles/MonteCarlo/Packet.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -84,15 +87,10 @@ struct component {
       Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>,
       domain::Tags::NeighborMesh<Dim>,
       Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<3>,
-      hydro::Tags::LowerSpatialFourVelocity<DataVector, Dim, Frame::Inertial>,
+      hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<DataVector, Dim, Frame::Inertial>,
-      Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-      Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-      Tags::deriv<gr::Tags::SpatialMetric<DataVector, Dim>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
+      gh::Tags::Phi<DataVector, Dim, Frame::Inertial>,
       gr::Tags::SpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
@@ -125,6 +123,7 @@ struct Metavariables {
 void test_advance_packets() {
 
   MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<double> rng_uniform_zero_to_one(0.0, 1.0);
   const size_t Dim = 3;
 
   register_classes_with_charm<EquationsOfState::Tabulated3D<true>>();
@@ -169,6 +168,15 @@ void test_advance_packets() {
       DirectionalIdMap<Dim, Particles::MonteCarlo::McGhostZoneData<Dim>>;
   NeighborDataMap neighbor_data{};
 
+  // Coordinates
+  const auto mesh_coordinates = logical_coordinates(subcell_mesh);
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coordinates =
+      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(
+          mesh_coordinates.get(0), 0);
+  inertial_coordinates.get(0) = mesh_coordinates.get(0) + 6.0;
+  inertial_coordinates.get(1) = mesh_coordinates.get(1);
+  inertial_coordinates.get(2) = mesh_coordinates.get(2);
+
   using evolved_vars_tags = tmpl::list<Var1>;
   Variables<evolved_vars_tags> evolved_vars{n_pts};
   // Set Var1 to the logical coords, just need some data
@@ -176,44 +184,74 @@ void test_advance_packets() {
 
   const DataVector zero_dv(n_pts, 0.0);
 
-  // Minkowski metric
-  Scalar<DataVector> lapse{DataVector(n_pts, 1.0)};
-  tnsr::II<DataVector, 3, Frame::Inertial> inv_spatial_metric =
-      make_with_value<tnsr::II<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  inv_spatial_metric.get(0, 0) = 1.0;
-  inv_spatial_metric.get(1, 1) = 1.0;
-  inv_spatial_metric.get(2, 2) = 1.0;
-  tnsr::ii<DataVector, 3, Frame::Inertial> spatial_metric =
-      make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  spatial_metric.get(0, 0) = 1.0;
-  spatial_metric.get(1, 1) = 1.0;
-  spatial_metric.get(2, 2) = 1.0;
-  Scalar<DataVector> sqrt_determinant_spatial_metric(n_pts, 1.0);
-  tnsr::I<DataVector, 3, Frame::Inertial> shift =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::i<DataVector, 3, Frame::Inertial> d_lapse =
-      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::iJ<DataVector, 3, Frame::Inertial> d_shift =
-      make_with_value<tnsr::iJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  tnsr::ijj<DataVector, 3, Frame::Inertial> d_spatial_metric =
-      make_with_value<tnsr::ijj<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  // Parameters for KerrSchild solution
+  const double mass = 1.01;
+  const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  const double t = 1.3;
+  // Evaluate solution
+  const gh::Solutions::WrappedGr<gr::Solutions::KerrSchild> solution(mass, spin,
+                                                                     center);
 
-  // Fluid variables
+  // Compute metric quantities
+  const auto vars =
+      solution.variables(inertial_coordinates, t,
+                         typename gh::Solutions::WrappedGr<
+                             gr::Solutions::KerrSchild>::tags<DataVector>{});
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto& deriv_lapse = get<typename gr::Solutions::KerrSchild::DerivLapse<
+      DataVector, Frame::Inertial>>(vars);
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector, 3, Frame::Inertial>>(vars);
+  const auto& deriv_shift = get<typename gr::Solutions::KerrSchild::DerivShift<
+      DataVector, Frame::Inertial>>(vars);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3, Frame::Inertial>>(vars);
+  const auto& inverse_spatial_metric =
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3, Frame::Inertial>>(vars);
+  const Scalar<DataVector> cell_light_crossing_time =
+      make_with_value<Scalar<DataVector>>(zero_dv, 1.0);
+  const auto& deriv_spatial_metric =
+      get<typename gr::Solutions::KerrSchild::DerivSpatialMetric<
+          DataVector, Frame::Inertial>>(vars);
+  const auto& phi = get<gh::Tags::Phi<DataVector, 3, Frame::Inertial>>(vars);
+
+  tnsr::iJJ<DataVector, 3, Frame::Inertial> deriv_inverse_spatial_metric =
+      make_with_value<tnsr::iJJ<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = i; j < 3; j++) {
+      for (size_t k = 0; k < 3; k++) {
+        for (size_t l = 0; l < 3; l++) {
+          for (size_t m = 0; m < 3; m++) {
+            deriv_inverse_spatial_metric.get(k, i, j) -=
+                inverse_spatial_metric.get(i, l) *
+                inverse_spatial_metric.get(j, m) *
+                deriv_spatial_metric.get(k, l, m);
+          }
+        }
+      }
+    }
+  }
+
+  // Not needed?
+  Scalar<DataVector> sqrt_determinant_spatial_metric(n_pts, 1.0);
+
+  // Fluid variables (not used)
   Scalar<DataVector> rest_mass_density(zero_dv);
   Scalar<DataVector> lorentz_factor =
     make_with_value<Scalar<DataVector>>(lapse, 1.0);;
   Scalar<DataVector> electron_fraction(zero_dv);
   Scalar<DataVector> temperature(zero_dv);
+  tnsr::I<DataVector, 3, Frame::Inertial> spatial_velocity =
+      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
   tnsr::i<DataVector, 3, Frame::Inertial> lower_spatial_four_velocity =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(lapse, 0.0);
-  Scalar<DataVector> cell_light_crossing_time(zero_dv);
   std::array<DataVector, 3> single_packet_energy = {zero_dv, zero_dv, zero_dv};
   gsl::at(single_packet_energy, 0) = 1.0;
   gsl::at(single_packet_energy, 1) = 1.0;
   gsl::at(single_packet_energy, 2) = 1.0;
-  get(cell_light_crossing_time) = 1.0;
 
-  // Coupling data
+  // Coupling data (not used)
   const auto& subcell_extents = subcell_mesh.extents();
   const size_t num_ghost_zones = 1;
   size_t mesh_size_with_ghost = 1;
@@ -221,6 +259,7 @@ void test_advance_packets() {
     mesh_size_with_ghost *= subcell_extents[d] + 2 * num_ghost_zones;
   }
   const DataVector zero_dv_with_ghost(mesh_size_with_ghost, 0.0);
+  const DataVector one_dv_with_ghost(mesh_size_with_ghost, 1.0);
   Scalar<DataVector> coupling_tilde_tau =
       make_with_value<Scalar<DataVector>>(zero_dv_with_ghost, 0.0);
   Scalar<DataVector> coupling_tilde_rho_ye =
@@ -232,8 +271,6 @@ void test_advance_packets() {
   const size_t mesh_size = subcell_extents[0];
   CHECK(subcell_mesh.extents()[1] == mesh_size);
   CHECK(subcell_mesh.extents()[2] == mesh_size);
-  tnsr::I<DataVector, 3, Frame::ElementLogical> mesh_coordinates =
-      logical_coordinates(subcell_mesh);
 
   const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>> mesh_velocity =
       std::nullopt;
@@ -269,21 +306,44 @@ void test_advance_packets() {
   Particles::MonteCarlo::MortarData<Dim> mortar_data{};
 
   std::vector<Particles::MonteCarlo::Packet> packets_on_element{};
+
+  // Initialize packet on the x-axis
   const size_t species = 1;
   const double number_of_neutrinos = 2.0;
+  // Index will be recomputed below
   const size_t index_of_closest_grid_point = 0;
   const double t0 = time_step_id.step_time().value();
-  const double x0 = 0.3;
-  const double y0 = 0.5;
-  const double z0 = -0.7;
-  const double p_upper_t0 = 1.1;
-  const double p_x0 = 0.9;
-  const double p_y0 = 0.7;
-  const double p_z0 = 0.1;
-  const Particles::MonteCarlo::Packet packet(species, number_of_neutrinos,
+  // Logical coordinates drawn from a unit cube far enough
+  // away from the boundary that the packet won't escape
+  const double x0 = rng_uniform_zero_to_one(generator) - 0.5;
+  const double y0 = rng_uniform_zero_to_one(generator) - 0.5;
+  const double z0 = rng_uniform_zero_to_one(generator) - 0.5;
+  // p^t will be self-consistently reset below
+  const double p_upper_t0 = 1.0;
+  // Random momentum chosen to be in the lowest energy bin
+  const double p_x0 = rng_uniform_zero_to_one(generator) - 0.5;
+  const double p_y0 = rng_uniform_zero_to_one(generator) - 0.5;
+  const double p_z0 = rng_uniform_zero_to_one(generator) - 0.5;
+  Particles::MonteCarlo::Packet packet(species, number_of_neutrinos,
                                        index_of_closest_grid_point, t0, x0, y0,
                                        z0, p_upper_t0, p_x0, p_y0, p_z0);
+  // Self-consistency: update index of closest point and p^t
+  std::array<size_t, 3> closest_point_index_3d{0, 0, 0};
+  for (size_t d = 0; d < 3; d++) {
+    gsl::at(closest_point_index_3d, d) =
+        std::floor((packet.coordinates[d] - mesh_coordinates.get(d)[0]) /
+                       (2.0 / static_cast<double>(mesh_size)) +
+                   0.5);
+  }
+  const Index<3>& extents = subcell_mesh.extents();
+  packet.index_of_closest_grid_point =
+      closest_point_index_3d[0] +
+      extents[0] *
+          (closest_point_index_3d[1] + extents[1] * closest_point_index_3d[2]);
+  // Reset p^t
+  packet.renormalize_momentum(inverse_spatial_metric, lapse);
   packets_on_element.push_back(packet);
+  const Particles::MonteCarlo::Packet packet_t0(packet);
 
   MockRuntimeSystem runner{
       {std::move(equation_of_state_ptr), std::move(interaction_table_ptr)}};
@@ -312,14 +372,12 @@ void test_advance_packets() {
        coupling_tilde_s,
        typename domain::Tags::NeighborMesh<Dim>::type{},
        single_packet_energy,
-       lower_spatial_four_velocity,
+       spatial_velocity,
        lapse,
        shift,
-       d_lapse,
-       d_shift,
-       d_spatial_metric,
+       phi,
        spatial_metric,
-       inv_spatial_metric,
+       inverse_spatial_metric,
        sqrt_determinant_spatial_metric,
        mesh_coordinates,
        mesh_velocity,
@@ -336,6 +394,55 @@ void test_advance_packets() {
   const auto& packets_from_box = ActionTesting::get_databox_tag<
       comp, Particles::MonteCarlo::Tags::PacketsOnElement>(runner, self_id);
   CHECK(packets_from_box[0].time == next_time_step_id.step_time().value());
+
+  // Test action vs standalone function. This is non-trivial because
+  // the standalone function directly uses d_lapse, d_shift, d_g
+  // instead of calculating those quantities from phi
+  std::vector<Particles::MonteCarlo::Packet> packets_on_element_2{};
+  Particles::MonteCarlo::TemplatedLocalFunctions<4, 3> MonteCarloStruct;
+  const double final_time = next_time_step_id.step_time().value();
+  packets_on_element_2.push_back(packet_t0);
+  // Interaction rates
+  const std::array<double, 4> energy_at_bin_center = {0.1, 1.0, 2.0, 3.0};
+  const std::array<std::array<DataVector, 4>, 3> absorption_opacity = {
+      std::array<DataVector, 4>{{zero_dv_with_ghost, zero_dv_with_ghost,
+                                 zero_dv_with_ghost, zero_dv_with_ghost}},
+      std::array<DataVector, 4>{{zero_dv_with_ghost, zero_dv_with_ghost,
+                                 zero_dv_with_ghost, zero_dv_with_ghost}},
+      std::array<DataVector, 4>{{zero_dv_with_ghost, zero_dv_with_ghost,
+                                 zero_dv_with_ghost, zero_dv_with_ghost}}};
+  const std::array<std::array<DataVector, 4>, 3> scattering_opacity = {
+      std::array<DataVector, 4>{{zero_dv_with_ghost, zero_dv_with_ghost,
+                                 zero_dv_with_ghost, zero_dv_with_ghost}},
+      std::array<DataVector, 4>{{zero_dv_with_ghost, zero_dv_with_ghost,
+                                 zero_dv_with_ghost, zero_dv_with_ghost}},
+      std::array<DataVector, 4>{{zero_dv_with_ghost, zero_dv_with_ghost,
+                                 zero_dv_with_ghost, zero_dv_with_ghost}}};
+  MonteCarloStruct.evolve_packets(
+      &packets_on_element_2, &generator, &coupling_tilde_tau, &coupling_tilde_s,
+      &coupling_tilde_rho_ye, final_time, subcell_mesh, mesh_coordinates,
+      num_ghost_zones, absorption_opacity, scattering_opacity,
+      energy_at_bin_center, lorentz_factor, lower_spatial_four_velocity, lapse,
+      shift, deriv_lapse, deriv_shift, deriv_inverse_spatial_metric,
+      spatial_metric, inverse_spatial_metric, cell_light_crossing_time,
+      mesh_velocity, inverse_jacobian_logical_to_inertial,
+      jacobian_inertial_to_fluid, inverse_jacobian_inertial_to_fluid);
+  const double eps_test = 1.e-14;
+  CHECK(packets_from_box[0].time == packets_on_element_2[0].time);
+  CHECK(fabs(packets_from_box[0].coordinates[0] -
+             packets_on_element_2[0].coordinates[0]) < eps_test);
+  CHECK(fabs(packets_from_box[0].coordinates[1] -
+             packets_on_element_2[0].coordinates[1]) < eps_test);
+  CHECK(fabs(packets_from_box[0].coordinates[2] -
+             packets_on_element_2[0].coordinates[2]) < eps_test);
+  CHECK(fabs(packets_from_box[0].momentum[0] -
+             packets_on_element_2[0].momentum[0]) < eps_test);
+  CHECK(fabs(packets_from_box[0].momentum[1] -
+             packets_on_element_2[0].momentum[1]) < eps_test);
+  CHECK(fabs(packets_from_box[0].momentum[2] -
+             packets_on_element_2[0].momentum[2]) < eps_test);
+  CHECK(fabs(packets_from_box[0].momentum_upper_t -
+             packets_on_element_2[0].momentum_upper_t) < eps_test);
 }
 
 }  // namespace

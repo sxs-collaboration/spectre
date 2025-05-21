@@ -84,7 +84,7 @@ struct component {
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  Initialization::Actions::InitializeMCTags<
-                     System<Dim>, EnergyBins, NeutrinoSpecies>>>>;
+                     System<Dim>, EnergyBins, NeutrinoSpecies, true>>>>;
 };
 
 template <size_t Dim, size_t EnergyBins, size_t NeutrinoSpecies>
