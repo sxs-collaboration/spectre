@@ -62,8 +62,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
     const double value = dist(gen);
     // Set the scale because the fractional part of a negative number
     // (defined as `x - floor(x)`) can be larger than the number.
-    auto approx_value =
-        approx.scale(std::max(value, std::abs(std::floor(value))))(value);
+    auto local_approx = approx;
+    local_approx.scale(std::max(value, std::abs(std::floor(value))));
     ContinuedFractionSummer<Rational> summer;
     bool should_be_smaller = true;
     std::vector<int64_t> terms{};  // Only for output
@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
 
       // Convergents to a continued fraction always alternate between
       // over- and underestimates.
-      if (convergents.back() != approx_value) {
+      if (convergents.back() != local_approx(value)) {
         if (should_be_smaller) {
           CHECK(convergents.back() <= value);
         } else {
@@ -88,7 +88,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
     }
     CAPTURE(terms);
     CAPTURE(convergents);
-    CHECK(convergents.back() == approx_value);
+    CHECK(convergents.back() == local_approx(value));
   }
 }
 

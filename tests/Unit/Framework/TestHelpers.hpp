@@ -517,9 +517,8 @@ struct check_variables_approx;
 
 template <typename TagList>
 struct check_variables_approx<Variables<TagList>> {
-  // clang-tidy: non-const reference
   static void apply(const Variables<TagList>& a, const Variables<TagList>& b,
-                    Approx& appx = approx) {  // NOLINT
+                    const Approx& appx = approx) {
     tmpl::for_each<TagList>([&a, &b, &appx](auto x) {
       using Tag = typename decltype(x)::type;
       INFO(db::tag_name<Tag>());
@@ -536,8 +535,7 @@ struct check_variables_approx<Variables<TagList>> {
 // checking on the wrapped `data()` for the SpinWeighted
 template <typename T>
 struct check_iterable_approx<T, Requires<is_any_spin_weighted_v<T>>> {
-  // clang-tidy: non-const reference
-  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+  static void apply(const T& a, const T& b, const Approx& appx = approx) {
     check_iterable_approx<typename T::value_type>::apply(a.data(), b.data(),
                                                          appx);
   }

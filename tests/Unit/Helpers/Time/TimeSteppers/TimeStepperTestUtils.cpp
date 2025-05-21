@@ -412,7 +412,7 @@ void check_dense_output(
 
   // Check that the dense output is continuous
   {
-    auto local_approx = approx.epsilon(1e-12);
+    const auto local_approx = Approx::custom().scale(1.0).epsilon(1e-12);
     for (const auto time_step :
          {Slab(0., 1.).duration(), -Slab(-1., 0.).duration()}) {
       CAPTURE(time_step);

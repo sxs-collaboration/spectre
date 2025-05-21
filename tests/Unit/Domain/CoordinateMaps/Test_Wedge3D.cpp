@@ -624,6 +624,8 @@ void test_wedge3d_large_radius() {
         const auto inv_jacobian = map.inv_jacobian(logical_point);
         CAPTURE(jacobian);
         CAPTURE(inv_jacobian);
+        auto jacobian_approx = approx;
+        jacobian_approx.scale(square(expected_radius));
 
         {
           const std::array<double, 3> radial_vector =
@@ -637,7 +639,6 @@ void test_wedge3d_large_radius() {
           }
 
           CAPTURE(r_dot_jacobian);
-          auto jacobian_approx = approx.scale(square(expected_radius));
           CHECK(gsl::at(r_dot_jacobian, 0) == jacobian_approx(0.0));
           CHECK(gsl::at(r_dot_jacobian, 1) == jacobian_approx(0.0));
           CHECK(gsl::at(r_dot_jacobian, 2) ==
@@ -650,10 +651,12 @@ void test_wedge3d_large_radius() {
             inv_jacobian(ti::I, ti::k) * jacobian(ti::K, ti::j));
         CAPTURE(jacobian_times_inverse);
         CAPTURE(inverse_times_jacobian);
-        CHECK_ITERABLE_APPROX(jacobian_times_inverse,
-                              (identity<3, double>(0.0)));
-        CHECK_ITERABLE_APPROX(inverse_times_jacobian,
-                              (identity<3, double>(0.0)));
+        CHECK_ITERABLE_CUSTOM_APPROX(jacobian_times_inverse,
+                                     (identity<3, double>(0.0)),
+                                     jacobian_approx);
+        CHECK_ITERABLE_CUSTOM_APPROX(inverse_times_jacobian,
+                                     (identity<3, double>(0.0)),
+                                     jacobian_approx);
       };
 
       // Check that points on the corners of the reference cube map to

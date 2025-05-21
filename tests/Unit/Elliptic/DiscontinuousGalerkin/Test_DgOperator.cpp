@@ -348,10 +348,8 @@ void test_dg_operator(
     const bool use_massive_dg_operator, const Spectral::Quadrature quadrature,
     const ::dg::Formulation dg_formulation,
     const AnalyticSolution& analytic_solution,
-    // NOLINTNEXTLINE(google-runtime-references)
-    Approx& analytic_solution_aux_approx,
-    // NOLINTNEXTLINE(google-runtime-references)
-    Approx& analytic_solution_operator_approx,
+    const Approx& analytic_solution_aux_approx,
+    const Approx& analytic_solution_operator_approx,
     const std::vector<std::tuple<
         std::unordered_map<ElementId<Dim>,
                            typename ElementArray::vars_tag::type>,
@@ -466,8 +464,8 @@ void test_dg_operator(
               all_expected_primal_fluxes_vars,
           const std::unordered_map<ElementId<Dim>, OperatorAppliedToVars>&
               all_expected_operator_applied_to_vars,
-          Approx& custom_aux_approx = approx,
-          Approx& custom_operator_approx = approx) {
+          const Approx& custom_aux_approx = approx,
+          const Approx& custom_operator_approx = approx) {
         // Set variables data on central element and on its neighbors
         for (const auto& element_id : all_element_ids) {
           const auto vars = all_vars.find(element_id);

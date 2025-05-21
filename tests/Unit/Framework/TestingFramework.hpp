@@ -76,7 +76,7 @@ using Approx = Catch::Approx;
  * \snippet Test_TestingFramework.cpp approx_test
  */
 // clang-tidy: static object creation may throw exception
-static Approx approx =                                          // NOLINT
+static const Approx approx =                                    // NOLINT
     Approx::custom()                                            // NOLINT
         .epsilon(std::numeric_limits<double>::epsilon() * 100)  // NOLINT
         .scale(1.0);                                            // NOLINT
@@ -111,17 +111,15 @@ static Approx approx =                                          // NOLINT
 /// \cond HIDDEN_SYMBOLS
 template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
-  // clang-tidy: non-const reference
-  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+  static void apply(const T& a, const T& b, const Approx& appx = approx) {
     CHECK(a == appx(b));
   }
 };
 
 template <typename T>
 struct check_iterable_approx<std::complex<T>, std::nullptr_t> {
-  // clang-tidy: non-const reference
   static void apply(const std::complex<T>& a, const std::complex<T>& b,
-                    Approx& appx = approx) {  // NOLINT
+                    const Approx& appx = approx) {
     check_iterable_approx<T>::apply(real(a), real(b), appx);
     check_iterable_approx<T>::apply(imag(a), imag(b), appx);
   }
@@ -131,8 +129,7 @@ template <typename T>
 struct check_iterable_approx<
     T, Requires<not tt::is_maplike_v<T> and tt::is_iterable_v<T> and
                 not tt::is_a_v<std::unordered_set, T>>> {
-  // clang-tidy: non-const reference
-  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+  static void apply(const T& a, const T& b, const Approx& appx = approx) {
     CAPTURE(a);
     CAPTURE(b);
     auto a_it = a.begin();
@@ -158,9 +155,7 @@ struct check_iterable_approx<
 
 template <typename T>
 struct check_iterable_approx<T, Requires<tt::is_a_v<std::unordered_set, T>>> {
-  // clang-tidy: non-const reference
-  static void apply(const T& a, const T& b,
-                    Approx& /*appx*/ = approx) {  // NOLINT
+  static void apply(const T& a, const T& b, const Approx& /*appx*/ = approx) {
     // Approximate comparison of unordered sets is difficult
     CHECK(a == b);
   }
@@ -169,8 +164,7 @@ struct check_iterable_approx<T, Requires<tt::is_a_v<std::unordered_set, T>>> {
 template <typename T>
 struct check_iterable_approx<
     T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
-  // clang-tidy: non-const reference
-  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+  static void apply(const T& a, const T& b, const Approx& appx = approx) {
     CAPTURE(a);
     CAPTURE(b);
     for (const auto& kv : a) {
@@ -207,9 +201,7 @@ struct check_iterable_approx<
 template <typename M>
 struct check_iterable_approx<M, Requires<blaze::IsColumnMajorMatrix_v<M> and
                                          blaze::IsDenseMatrix_v<M>>> {
-  // clang-tidy: non-const reference
-  static void apply(const M& a, const M& b,
-                    Approx& appx = approx) {  // NOLINT
+  static void apply(const M& a, const M& b, const Approx& appx = approx) {
     CHECK(a.columns() == b.columns());
     for (size_t j = 0; j < a.columns(); j++) {
       CAPTURE(a);
