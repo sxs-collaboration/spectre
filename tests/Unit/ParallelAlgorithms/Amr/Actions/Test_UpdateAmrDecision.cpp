@@ -94,7 +94,7 @@ void test() {
   std::unordered_map<ElementId<1>, amr::Info<1>> initial_neighbor_info{};
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true}}};
+      {amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true}}};
 
   const Element<1> self(
       self_id, {{{Direction<1>::lower_xi(),

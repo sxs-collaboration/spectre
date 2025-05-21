@@ -124,7 +124,7 @@ void test() {
                         amr::Criteria::Tags::Criteria, amr::Tags::Policies>>(
       Metavariables{}, time, std::move(functions_of_time), std::move(domain),
       mesh, std::move(criteria),
-      amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true});
+      amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true});
 
   const double observation_value = 1.23;
 

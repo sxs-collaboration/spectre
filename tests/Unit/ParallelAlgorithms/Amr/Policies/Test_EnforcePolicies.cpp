@@ -47,8 +47,10 @@ void test_1d() {
   const auto join = std::array{amr::Flag::Join};
   const auto all_flags = std::vector{split, increase, stay, decrease, join};
 
-  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
+  const amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true,
+                                true};
+  const amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{},
+                                  true, true};
   const auto policies = std::array{anisotropic, isotropic};
   const ElementId<1> element_id{0, {{{1, 0}}}};
   const Mesh<1> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
@@ -58,21 +60,34 @@ void test_1d() {
     }
   }
 
-  amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{0, 5, 1, 12},
-                       true};
-  test_decision(join, policy, ElementId<1>{0}, mesh, stay);
-  test_decision(split, policy, ElementId<1>{0, {{{5, 2}}}}, mesh, stay);
-  test_decision(
-      decrease, policy, element_id,
-      Mesh<1>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, stay);
-  test_decision(
-      decrease, policy, element_id,
-      Mesh<1>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
-      stay);
-  test_decision(
-      increase, policy, element_id,
-      Mesh<1>{12, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
-      stay);
+  {
+    INFO("Limits");
+    const amr::Policies policy{amr::Isotropy::Anisotropic,
+                               amr::Limits{0, 5, 1, 12}, true, true};
+    test_decision(join, policy, ElementId<1>{0}, mesh, stay);
+    test_decision(split, policy, ElementId<1>{0, {{{5, 2}}}}, mesh, stay);
+    test_decision(
+        decrease, policy, element_id,
+        Mesh<1>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+        stay);
+    test_decision(decrease, policy, element_id,
+                  Mesh<1>{2, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto},
+                  stay);
+    test_decision(
+        increase, policy, element_id,
+        Mesh<1>{12, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
+        stay);
+  }
+  {
+    INFO("No coarsening");
+    const amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{}, true,
+                               false};
+    test_decision(join, policy, element_id, mesh, stay);
+    test_decision(split, policy, element_id, mesh, split);
+    test_decision(decrease, policy, element_id, mesh, stay);
+    test_decision(increase, policy, element_id, mesh, increase);
+  }
 }
 
 void test_2d() {
@@ -127,8 +142,10 @@ void test_2d() {
       split_join,        increase_join,  stay_join,         decrease_join,
       join_join};
 
-  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
+  const amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true,
+                                true};
+  const amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{},
+                                  true, true};
 
   const ElementId<2> element_id{0, {{{1, 0}, {1, 0}}}};
   const Mesh<2> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
@@ -156,6 +173,30 @@ void test_2d() {
     test_decision(flags, isotropic, element_id, mesh, decrease_decrease);
   }
   test_decision(join_join, isotropic, element_id, mesh, join_join);
+
+  {
+    INFO("No coarsening");
+    const amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{}, true,
+                               false};
+    for (const auto flags :
+         {stay_stay, decrease_stay, join_stay, stay_decrease, decrease_decrease,
+          join_decrease, stay_join, decrease_join, join_join}) {
+      test_decision(flags, policy, element_id, mesh, stay_stay);
+    }
+    for (const auto flags : {split_split, increase_split, stay_split,
+                             split_increase, increase_increase, stay_increase,
+                             split_stay, increase_stay, stay_stay}) {
+      test_decision(flags, policy, element_id, mesh, flags);
+    }
+    test_decision(decrease_split, policy, element_id, mesh, stay_split);
+    test_decision(join_split, policy, element_id, mesh, stay_split);
+    test_decision(decrease_increase, policy, element_id, mesh, stay_increase);
+    test_decision(join_increase, policy, element_id, mesh, stay_increase);
+    test_decision(split_decrease, policy, element_id, mesh, split_stay);
+    test_decision(increase_decrease, policy, element_id, mesh, increase_stay);
+    test_decision(split_join, policy, element_id, mesh, split_stay);
+    test_decision(increase_join, policy, element_id, mesh, increase_stay);
+  }
 }
 
 void test_3d() {
@@ -163,8 +204,11 @@ void test_3d() {
       std::array{amr::Flag::DoNothing, amr::Flag::Split, amr::Flag::Split};
   const auto split_split_split =
       std::array{amr::Flag::Split, amr::Flag::Split, amr::Flag::Split};
-  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true};
-  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true};
+  const auto join_split_split =
+      std::array{amr::Flag::Join, amr::Flag::Split, amr::Flag::Split};
+  amr::Policies isotropic{amr::Isotropy::Isotropic, amr::Limits{}, true, true};
+  amr::Policies anisotropic{amr::Isotropy::Anisotropic, amr::Limits{}, true,
+                            true};
   ElementId<3> element_id{0, {{{1, 0}, {1, 0}, {1, 0}}}};
   const Mesh<3> mesh{3, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss};
   test_decision(stay_split_split, anisotropic, element_id, mesh,
@@ -174,14 +218,25 @@ void test_3d() {
 
   // Test error beyond limits
   isotropic = amr::Policies{amr::Isotropy::Isotropic,
-                            amr::Limits{{{0, 0}}, {{2, 8}}, true}, true};
-  anisotropic = amr::Policies{amr::Isotropy::Anisotropic,
-                              amr::Limits{{{0, 0}}, {{2, 8}}, true}, true};
+                            amr::Limits{{{0, 0}}, {{2, 8}}, true}, true, true};
+  anisotropic =
+      amr::Policies{amr::Isotropy::Anisotropic,
+                    amr::Limits{{{0, 0}}, {{2, 8}}, true}, true, true};
   element_id = ElementId<3>{0};
   test_decision(stay_split_split, anisotropic, element_id, mesh,
                 stay_split_split, true);
   test_decision(stay_split_split, isotropic, element_id, mesh,
                 split_split_split, true);
+
+  {
+    INFO("No coarsening");
+    const amr::Policies policy{amr::Isotropy::Anisotropic, amr::Limits{}, true,
+                               false};
+    for (const auto flags : {stay_split_split, split_split_split}) {
+      test_decision(flags, policy, element_id, mesh, flags);
+    }
+    test_decision(join_split_split, policy, element_id, mesh, stay_split_split);
+  }
 }
 }  // namespace
 

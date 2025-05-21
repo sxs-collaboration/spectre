@@ -94,6 +94,7 @@ Amr:
       NumGridPoints: Auto
       RefinementLevel: Auto
       ErrorBeyondLimits: False
+    AllowCoarsening: True
   Iterations: 3
 
 PhaseChangeAndTriggers:

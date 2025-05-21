@@ -594,7 +594,8 @@ void test_subdomain_operator(
         std::make_unique<RandomBackground<Dim>>(), overlap,
         ::Verbosity::Verbose, penalty_parameter, use_massive_dg_operator,
         quadrature, ::dg::Formulation::StrongInertial, std::move(amr_criteria),
-        ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true},
+        ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true,
+                        true},
         ::Verbosity::Debug}};
 
     // Initialize all elements, generating random subdomain data
