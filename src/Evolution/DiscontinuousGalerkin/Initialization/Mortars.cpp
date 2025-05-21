@@ -62,8 +62,8 @@ mortars_apply_impl(const Domain<Dim>& domain,
           mortar_id,
           ::dg::mortar_mesh(
               volume_mesh.slice_away(direction.dimension()),
-              neighbor_orientation(
-                  ::domain::Initialization::create_initial_mesh(
+              neighbor_orientation
+                  .inverse_map()(::domain::Initialization::create_initial_mesh(
                       initial_extents, neighbor_block, neighbor, quadrature))
                   .slice_away(direction.dimension())));
       mortar_infos.emplace(

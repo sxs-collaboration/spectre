@@ -120,8 +120,12 @@ void test_impl(
         expected_normal_covector_quantities) {
   using metavars = Metavariables<Dim, LocalTimeStepping>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  std::vector<Block<Dim>> blocks{1};
-  blocks[0] = Block<Dim>(nullptr, element.id().block_id(), {});
+  std::vector<Block<Dim>> blocks{};
+  blocks.reserve(initial_extents.size());
+  for (size_t block_id = 0; block_id < initial_extents.size(); ++block_id) {
+    blocks.emplace_back(nullptr, block_id,
+                        DirectionMap<Dim, BlockNeighbors<Dim>>{});
+  }
   Domain<Dim> domain{std::move(blocks)};
   tuples::TaggedTuple<domain::Tags::Domain<Dim>,
                       domain::Tags::InitialExtents<Dim>>
@@ -310,18 +314,22 @@ struct Test<3, LocalTimeStepping> {
     // All other directions don't have neighbors.
 
     const ElementId<3> element_id{
-        0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
+        0, {{SegmentId{1, 1}, SegmentId{1, 1}, SegmentId{1, 0}}}};
     const ElementId<3> right_id(
-        0, {{SegmentId{1, 1}, SegmentId{1, 1}, SegmentId{1, 0}}});
+        1, {{SegmentId{2, 1}, SegmentId{1, 0}, SegmentId{1, 1}}});
     const ElementId<3> front_id(
-        0, {{SegmentId{1, 0}, SegmentId{1, 0}, SegmentId{1, 0}}});
+        0, {{SegmentId{1, 1}, SegmentId{1, 0}, SegmentId{1, 0}}});
     const ElementId<3> top_id(
-        0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 1}}});
-    const std::vector initial_extents{std::array{2_st, 3_st, 4_st}};
+        0, {{SegmentId{1, 1}, SegmentId{1, 1}, SegmentId{1, 1}}});
+    const std::vector initial_extents{std::array{2_st, 3_st, 4_st},
+                                      std::array{5_st, 6_st, 7_st}};
 
     DirectionMap<3, Neighbors<3>> neighbors{};
     neighbors[Direction<3>::upper_xi()] =
-        Neighbors<3>{{right_id}, OrientationMap<3>::create_aligned()};
+        Neighbors<3>{{right_id},
+                     OrientationMap<3>{{Direction<3>::upper_eta(),
+                                        Direction<3>::upper_zeta(),
+                                        Direction<3>::upper_xi()}}};
     neighbors[Direction<3>::lower_eta()] =
         Neighbors<3>{{front_id}, OrientationMap<3>::create_aligned()};
     neighbors[Direction<3>::upper_zeta()] =
@@ -340,20 +348,30 @@ struct Test<3, LocalTimeStepping> {
 
     const ::dg::MortarMap<3, Mesh<2>> expected_mortar_meshes{
         {interface_mortar_id_right,
-         Mesh<2>({{3, 4}}, Spectral::Basis::Legendre, quadrature)},
+         Mesh<2>({{7, 5}}, Spectral::Basis::Legendre, quadrature)},
         {interface_mortar_id_front,
          Mesh<2>({{2, 4}}, Spectral::Basis::Legendre, quadrature)},
         {interface_mortar_id_top,
          Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)}};
     ::dg::MortarMap<3, MortarInfo<3>> expected_mortar_infos{};
-    for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
-      expected_mortar_infos.emplace(
-          mortar_id_and_mesh.first,
-          MortarInfo<3>{
-              {.mortar_size = {{Spectral::SegmentSize::Full,
-                                Spectral::SegmentSize::Full}},
-               .policy = evolution::dg::InterfaceDataPolicy::CopyProject}});
-    }
+    expected_mortar_infos.emplace(
+        interface_mortar_id_right,
+        MortarInfo<3>{
+            {.mortar_size = {{Spectral::SegmentSize::Full,
+                              Spectral::SegmentSize::UpperHalf}},
+             .policy = evolution::dg::InterfaceDataPolicy::OrientCopyProject}});
+    expected_mortar_infos.emplace(
+        interface_mortar_id_front,
+        MortarInfo<3>{
+            {.mortar_size = {{Spectral::SegmentSize::Full,
+                              Spectral::SegmentSize::Full}},
+             .policy = evolution::dg::InterfaceDataPolicy::CopyProject}});
+    expected_mortar_infos.emplace(
+        interface_mortar_id_top,
+        MortarInfo<3>{
+            {.mortar_size = {{Spectral::SegmentSize::Full,
+                              Spectral::SegmentSize::Full}},
+             .policy = evolution::dg::InterfaceDataPolicy::CopyProject}});
 
     const DirectionMap<
         3, std::optional<
