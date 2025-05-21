@@ -708,14 +708,16 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       const DirectionalId<Dim> mortar_id{direction, neighbor};
 
       const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
+      const auto volume_mesh_for_neighbor = orientation(volume_mesh);
+      const auto mortar_mesh_for_neighbor =
+          orient_mesh_on_slice(mortar_mesh, direction.dimension(), orientation);
       DataVector neighbor_boundary_data_on_mortar{};
 
       if (LIKELY(orientation.is_aligned())) {
         neighbor_boundary_data_on_mortar =
             *all_mortar_data.at(mortar_id).local().mortar_data.value();
       } else {
-        const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
-        // LK: Why isn't the face mesh reoriented?
+        const auto& slice_extents = mortar_mesh.extents();
         neighbor_boundary_data_on_mortar = orient_variables_on_slice(
             all_mortar_data.at(mortar_id).local().mortar_data.value(),
             slice_extents, direction.dimension(), orientation);
@@ -733,9 +735,9 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       SendData data{};
 
       if (neighbor_count == total_neighbors) {
-        data = SendData{volume_mesh,
+        data = SendData{volume_mesh_for_neighbor,
                         ghost_data_mesh,
-                        mortar_mesh,
+                        mortar_mesh_for_neighbor,
                         std::move(ghost_and_subcell_data),
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,
@@ -743,9 +745,9 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                         integration_order,
                         std::nullopt};
       } else {
-        data = SendData{volume_mesh,
+        data = SendData{volume_mesh_for_neighbor,
                         ghost_data_mesh,
-                        mortar_mesh,
+                        mortar_mesh_for_neighbor,
                         ghost_and_subcell_data,
                         {std::move(neighbor_boundary_data_on_mortar)},
                         next_time_step_id,

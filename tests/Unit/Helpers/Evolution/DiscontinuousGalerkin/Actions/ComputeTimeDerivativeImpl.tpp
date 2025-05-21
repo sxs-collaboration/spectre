@@ -89,7 +89,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
-#include "Utilities/MakeArray.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -1103,8 +1103,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     east_id = ElementId<Dim>{0, {{{1, 1}, {0, 0}, {0, 0}}}};
     south_id = ElementId<Dim>{1, {{{0, 0}, {0, 0}, {0, 0}}}};
     south_orientation = OrientationMap<Dim>{
-        std::array{Direction<Dim>::lower_xi(), Direction<Dim>::lower_eta(),
-                   Direction<Dim>::upper_zeta()}};
+        std::array{Direction<Dim>::upper_eta(), Direction<Dim>::upper_zeta(),
+                   Direction<Dim>::upper_xi()}};
     neighbors[Direction<Dim>::upper_xi()] =
         Neighbors<Dim>{{east_id}, OrientationMap<Dim>::create_aligned()};
     neighbors[Direction<Dim>::lower_eta()] =
@@ -1115,8 +1115,11 @@ void test_impl(const Spectral::Quadrature quadrature,
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<Dim>{});
 
+  std::array<size_t, Dim> extents{};
+  alg::iota(extents, 2_st);
+
   const Element<Dim> element{self_id, neighbors};
-  MockRuntimeSystem runner = [&dg_formulation, &south_orientation,
+  MockRuntimeSystem runner = [&dg_formulation, &extents, &south_orientation,
                               &grid_to_inertial_map]() {
     std::vector<DirectionMap<
         Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
@@ -1164,16 +1167,14 @@ void test_impl(const Spectral::Quadrature quadrature,
 
     if constexpr (LocalTimeStepping) {
       return MockRuntimeSystem{
-          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                make_array<Dim>(3_st)},
+          {std::vector<std::array<size_t, Dim>>{extents, extents},
            typename metavars::normal_dot_numerical_flux::type{},
            std::move(domain), dg_formulation,
            std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
            std::move(boundary_conditions), 1e-8}};
     } else {
       return MockRuntimeSystem{
-          {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
-                                                make_array<Dim>(3_st)},
+          {std::vector<std::array<size_t, Dim>>{extents, extents},
            typename metavars::normal_dot_numerical_flux::type{},
            std::move(domain), dg_formulation,
            std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
@@ -1186,7 +1187,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                                                     self_id);
   };
 
-  const Mesh<Dim> mesh{2, Spectral::Basis::Legendre, quadrature};
+  const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre, quadrature};
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
@@ -1651,13 +1652,14 @@ void test_impl(const Spectral::Quadrature quadrature,
     get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) += 5.0;
   }
 
-  CHECK_VARIABLES_APPROX(
+  const auto local_approx = Approx::custom().scale(1.0).epsilon(1.e-13);
+  CHECK_VARIABLES_CUSTOM_APPROX(
       SINGLE_ARG(ActionTesting::get_databox_tag<
                  component<metavars>,
                  db::add_tag_prefix<::Tags::dt,
                                     typename metavars::system::variables_tag>>(
           runner, self_id)),
-      expected_dt_evolved_vars);
+      expected_dt_evolved_vars, local_approx);
 
   const DirectionalId<Dim> mortar_id_east{Direction<Dim>::upper_xi(), east_id};
 
@@ -1803,9 +1805,6 @@ void test_impl(const Spectral::Quadrature quadrature,
         const auto& orientation = element.neighbors()
                                       .at(local_direction)
                                       .orientation(local_neighbor_id);
-        DataVector oriented_variables =
-            orient_variables_on_slice(expected_data, mortar_mesh.extents(),
-                                      local_direction.dimension(), orientation);
         if (local_data or orientation.is_aligned()) {
           return expected_data;
         } else {
@@ -1951,19 +1950,27 @@ void test_impl(const Spectral::Quadrature quadrature,
                             compute_expected_mortar_data(
                                 Direction<Dim>::lower_eta(), south_id, true));
     }
+    const DirectionalId<Dim> south_neighbor_mortar_id{
+        element.neighbors()
+            .at(mortar_id_south.direction())
+            .orientation(mortar_id_south.id())(
+                mortar_id_south.direction().opposite()),
+        element.id()};
+    const auto& south_received_data =
+        ActionTesting::get_inbox_tag<
+            component<metavars>,
+            ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
+            .at(time_step_id)
+            .at(south_neighbor_mortar_id);
+    CHECK(south_received_data.volume_mesh == south_orientation(mesh));
+    CHECK(south_received_data.boundary_correction_mesh.value() ==
+          ::dg::mortar_mesh(
+              mesh.slice_away(south_neighbor_mortar_id.direction().dimension()),
+              south_orientation(mesh).slice_away(
+                  south_neighbor_mortar_id.direction().dimension())));
     CHECK_ITERABLE_APPROX(
-        (ActionTesting::get_inbox_tag<
-             component<metavars>,
-             ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                 Dim, UseNodegroupDgElements>>(runner, mortar_id_south.id())
-             .at(time_step_id)
-             .at(DirectionalId<Dim>{
-                 element.neighbors()
-                     .at(mortar_id_south.direction())
-                     .orientation(mortar_id_south.id())(
-                         mortar_id_south.direction().opposite()),
-                 element.id()})
-             .boundary_correction_data.value()),
+        south_received_data.boundary_correction_data.value(),
         compute_expected_mortar_data(mortar_id_south.direction(),
                                      mortar_id_south.id(), false));
   }
