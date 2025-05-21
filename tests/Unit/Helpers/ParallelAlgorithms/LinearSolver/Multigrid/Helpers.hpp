@@ -125,9 +125,9 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
     DirectionalIdMap<1, Mesh<1>> neighbor_meshes{};
     // Initialize data
     const size_t element_index = helpers_distributed::get_index(element_id);
-    const size_t multigrid_level = element_id.grid_index();
+    const bool is_finest_grid = db::get<::amr::Tags::ChildIds<1>>(box).empty();
     auto source =
-        multigrid_level == 0
+        is_finest_grid
             ? typename sources_tag::type(
                   gsl::at(get<helpers_distributed::Source>(box), element_index))
             : typename sources_tag::type{};
@@ -196,8 +196,8 @@ struct ComputeOperatorAction {
            linear_operator.data(), linear_operator.spacing(), operand.data(), 1,
            0, operator_applied_to_operand.data(), 1);
 
-    auto& section = *db::get_mutable_reference<Parallel::Tags::Section<
-        ParallelComponent, ::LinearSolver::multigrid::Tags::MultigridLevel>>(
+    auto& section = *db::get_mutable_reference<
+        Parallel::Tags::Section<ParallelComponent, ::amr::Tags::GridIndex>>(
         make_not_null(&box));
     Parallel::contribute_to_reduction<
         CollectOperatorAction<OperandTag, OperatorAppliedToOperandTag>>(
@@ -269,8 +269,8 @@ struct PrepareDirectSolve {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto& section = *db::get_mutable_reference<Parallel::Tags::Section<
-        ParallelComponent, ::LinearSolver::multigrid::Tags::MultigridLevel>>(
+    auto& section = *db::get_mutable_reference<
+        Parallel::Tags::Section<ParallelComponent, ::amr::Tags::GridIndex>>(
         make_not_null(&box));
     Parallel::contribute_to_reduction<SolveDirectly<FieldsTag, SourceTag>>(
         Parallel::ReductionData<
@@ -353,7 +353,8 @@ struct TestResult {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if (element_id.grid_index() > 0) {
+    const bool is_finest_grid = db::get<::amr::Tags::ChildIds<1>>(box).empty();
+    if (not is_finest_grid) {
       return {Parallel::AlgorithmExecution::Pause, std::nullopt};
     }
     const size_t element_index = helpers_distributed::get_index(element_id);

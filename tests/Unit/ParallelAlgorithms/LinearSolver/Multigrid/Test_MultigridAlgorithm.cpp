@@ -69,8 +69,7 @@ struct Metavariables {
 
   using smoother = LinearSolver::Richardson::Richardson<
       typename multigrid::smooth_fields_tag, RichardsonSmoother,
-      typename multigrid::smooth_source_tag,
-      LinearSolver::multigrid::Tags::MultigridLevel>;
+      typename multigrid::smooth_source_tag, ::amr::Tags::GridIndex>;
   // [setup_smoother]
 
   using bottom_solver_actions = tmpl::list<
@@ -91,7 +90,7 @@ struct Metavariables {
       typename smoother::initialize_element,
       Initialization::Actions::InitializeItems<
           ::amr::Initialization::Initialize<volume_dim, Metavariables>>,
-                                      Parallel::Actions::TerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   using register_actions = tmpl::list<
       typename multigrid::register_element, typename smoother::register_element,

@@ -11,7 +11,6 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementActions.hpp"
-#include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsRegistration.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ObserveVolumeData.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -47,13 +46,16 @@ struct VcycleUpLabel {};
  * \par Grid hierarchy
  * This geometric multigrid solver relies on a strategy to coarsen the
  * computational grid in a way that removes small-scale modes. We currently
- * h-coarsen the domain, meaning that we create multigrid levels by successively
- * combining two elements into one along every dimension of the grid. We only
- * p-coarsen the grid in the sense that we choose the smaller of the two
- * polynomial degrees when combining elements. This strategy follows
+ * h-coarsen the initial domain, meaning that we create multigrid levels by
+ * successively combining two elements into one along every dimension of the
+ * grid. We only p-coarsen the grid in the sense that we choose the smaller of
+ * the two polynomial degrees when combining elements. This strategy follows
  * \cite Vincent2019qpd. See `LinearSolver::multigrid::ElementsAllocator` and
- * `LinearSolver::multigrid::coarsen` for the code that creates the multigrid
- * hierarchy.
+ * `LinearSolver::multigrid::coarsen` for the code that creates the initial
+ * multigrid hierarchy.
+ * Once the initial grids are created, AMR steps can create incrementally finer
+ * grids. For this to work, AMR must be configured with the compile-time option
+ * `keep_coarse_grids = true` (see `amr::protocols::AmrMetavariables`).
  *
  * \par Inter-mesh operators
  * The algorithm relies on operations that project data between grids. Residuals
@@ -118,12 +120,6 @@ struct VcycleUpLabel {};
  * top-most finest grid (the "original" grid that represents the overall
  * solution) the algorithm applies the smoothing and the corrections from the
  * coarser grids directly to the solution fields.
- *
- * \par AMR
- * AMR is not yet fully supported by the multigrid solver. When AMR is enabled,
- * only a single multigrid level can be used (the finest grid). To support AMR
- * fully, we have to send AMR decisions to coarser grids to refine those as
- * well.
  */
 template <typename Metavariables, size_t Dim, typename FieldsTag,
           typename OptionsGroup, typename ResidualIsMassiveTag,
@@ -139,8 +135,7 @@ struct Multigrid {
   using smooth_source_tag = source_tag;
   using smooth_fields_tag = fields_tag;
 
-  using component_list = tmpl::list<
-      detail::ElementsRegistrationComponent<Metavariables, OptionsGroup>>;
+  using component_list = tmpl::list<>;
 
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<async_solvers::reduction_data>>;
@@ -149,16 +144,13 @@ struct Multigrid {
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>,
       detail::InitializeElement<Dim, FieldsTag, OptionsGroup, SourceTag>>;
 
-  using amr_projectors =
-      tmpl::list<initialize_element,
-                 detail::ProjectMultigridSections<Metavariables>>;
+  using amr_projectors = initialize_element;
 
-  using register_element =
-      tmpl::list<detail::RegisterElement<Dim, OptionsGroup>,
-                 async_solvers::RegisterElement<FieldsTag, OptionsGroup,
-                                                SourceTag, Tags::IsFinestGrid>,
-                 observers::Actions::RegisterWithObservers<
-                     detail::RegisterWithVolumeObserver<OptionsGroup>>>;
+  using register_element = tmpl::list<
+      async_solvers::RegisterElement<FieldsTag, OptionsGroup, SourceTag,
+                                     ::amr::Tags::IsFinestGrid>,
+      observers::Actions::RegisterWithObservers<
+          detail::RegisterWithVolumeObserver<OptionsGroup>>>;
 
   template <typename ApplyOperatorActions, typename PreSmootherActions,
             typename PostSmootherActions,
@@ -166,7 +158,7 @@ struct Multigrid {
             typename Label = OptionsGroup>
   using solve = tmpl::list<
       async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label,
-                                  Tags::IsFinestGrid, false>,
+                                  ::amr::Tags::IsFinestGrid, false>,
       detail::ReceiveResidualFromFinerGrid<Dim, FieldsTag, OptionsGroup,
                                            SourceTag>,
       detail::PreparePreSmoothing<
@@ -192,7 +184,7 @@ struct Multigrid {
       detail::SendCorrectionToFinerGrid<FieldsTag, OptionsGroup, SourceTag>,
       detail::ObserveVolumeData<FieldsTag, OptionsGroup, SourceTag>,
       async_solvers::CompleteStep<FieldsTag, OptionsGroup, SourceTag, Label,
-                                  Tags::IsFinestGrid, false>>;
+                                  ::amr::Tags::IsFinestGrid, false>>;
 };
 
 }  // namespace LinearSolver::multigrid

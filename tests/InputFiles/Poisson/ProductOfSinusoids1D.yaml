@@ -90,6 +90,7 @@ Amr:
       RefinementLevel: Auto
       ErrorBeyondLimits: False
     AllowCoarsening: True
+  MaxCoarseLevels: 0
   Iterations: 3
 
 PhaseChangeAndTriggers:
@@ -101,6 +102,7 @@ PhaseChangeAndTriggers:
     PhaseChanges:
       - VisitAndReturn(EvaluateAmrCriteria)
       - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(UpdateSections)
       - VisitAndReturn(CheckDomain)
 
 Discretization:

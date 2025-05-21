@@ -188,35 +188,7 @@ struct EnablePostSmoothingAtBottom : db::SimpleTag {
   }
 };
 
-/// The multigrid level. The finest grid is always level 0 and the coarsest grid
-/// has the highest level.
-struct MultigridLevel : db::SimpleTag {
-  using type = size_t;
-};
-
-/// Indicates the root of the multigrid hierarchy, i.e. level 0.
-struct IsFinestGrid : db::SimpleTag {
-  using type = bool;
-};
-
-/// The ID of the element that covers the same region or more on the coarser
-/// (parent) grid
-template <size_t Dim>
-struct ParentId : db::SimpleTag {
-  using type = std::optional<ElementId<Dim>>;
-};
-
-/// The IDs of the elements that cover the same region on the finer (child) grid
-template <size_t Dim>
-struct ChildIds : db::SimpleTag {
-  using type = std::unordered_set<ElementId<Dim>>;
-};
-
-/// The mesh of the parent element. Needed for projections between grids.
-template <size_t Dim>
-struct ParentMesh : db::SimpleTag {
-  using type = std::optional<Mesh<Dim>>;
-};
+// The following tags are related to volume data output
 
 /// @{
 /// Prefix tag for recording volume data in

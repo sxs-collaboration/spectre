@@ -26,6 +26,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,7 +45,7 @@ struct RegisterWithVolumeObserver {
   register_info(const db::DataBox<DbTagsList>& box,
                 const ArrayIndex& /*array_index*/) {
     const std::string& level_observation_key =
-        *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
+        *db::get<observers::Tags::ObservationKey<::amr::Tags::GridIndex>>(box);
     const std::string subfile_path =
         "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
     return {observers::TypeOfObservation::Volume,
@@ -114,7 +115,7 @@ struct ObserveVolumeData {
         Parallel::get_parallel_component<observers::Observer<Metavariables>>(
             cache));
     const auto& level_observation_key =
-        *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
+        *db::get<observers::Tags::ObservationKey<::amr::Tags::GridIndex>>(box);
     const std::string subfile_path =
         "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(

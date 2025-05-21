@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
@@ -28,6 +29,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -181,11 +183,42 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
   using argument_tags = tmpl::list<>;
   using return_tags = simple_tags;
 
-  template <typename... AmrData>
-  static void apply(const gsl::not_null<size_t*> /*unused*/,
-                    const AmrData&... /*all_items*/) {
-    // No need to reset or initialize any of the items during AMR because they
-    // will be set in `PrepareSolve`. AMR can't happen _during_ a solve.
+  // p-refinement
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<size_t*> /*iteration_id*/,
+      const gsl::not_null<Convergence::HasConverged*> /*has_converged*/,
+      const gsl::not_null<typename operator_applied_to_fields_tag::
+                              type*> /*operator_applied_to_fields*/,
+      const std::pair<Mesh<Dim>, Element<Dim>>& /*old_mesh_and_element*/) {}
+
+  // h-refinement
+  template <typename... ParentTags>
+  static void apply(
+      const gsl::not_null<size_t*> iteration_id,
+      const gsl::not_null<Convergence::HasConverged*> has_converged,
+      const gsl::not_null<typename operator_applied_to_fields_tag::
+                              type*> /*operator_applied_to_fields*/,
+      const tuples::TaggedTuple<ParentTags...>& parent_items) {
+    *iteration_id =
+        get<Convergence::Tags::IterationId<OptionsGroup>>(parent_items);
+    *has_converged =
+        get<Convergence::Tags::HasConverged<OptionsGroup>>(parent_items);
+  }
+
+  // h-coarsening
+  template <size_t Dim, typename... ChildTags>
+  static void apply(
+      const gsl::not_null<size_t*> iteration_id,
+      const gsl::not_null<Convergence::HasConverged*> has_converged,
+      const gsl::not_null<typename operator_applied_to_fields_tag::
+                              type*> /*operator_applied_to_fields*/,
+      const std::unordered_map<
+          ElementId<Dim>, tuples::TaggedTuple<ChildTags...>>& children_items) {
+    *iteration_id = get<Convergence::Tags::IterationId<OptionsGroup>>(
+        children_items.begin()->second);
+    *has_converged = get<Convergence::Tags::HasConverged<OptionsGroup>>(
+        children_items.begin()->second);
   }
 };
 

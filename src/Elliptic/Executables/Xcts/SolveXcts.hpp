@@ -144,11 +144,10 @@ struct Metavariables {
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
-                       Events::ObserveAdmIntegrals<
-                           LinearSolver::multigrid::Tags::IsFinestGrid>,
+                       Events::ObserveAdmIntegrals<::amr::Tags::IsFinestGrid>,
                        dg::Events::field_observations<
                            volume_dim, observe_fields, observer_compute_tags,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
+                           ::amr::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 ::amr::OptionTags::AmrGroup>>,
         tmpl::pair<
@@ -157,6 +156,7 @@ struct Metavariables {
                 PhaseControl::VisitAndReturn<
                     Parallel::Phase::EvaluateAmrCriteria>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::UpdateSections>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>>>,
         tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
@@ -202,7 +202,7 @@ struct Metavariables {
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
     using projectors = typename solver::amr_projectors;
-    static constexpr bool keep_coarse_grids = false;
+    static constexpr bool keep_coarse_grids = true;
     static constexpr bool p_refine_only_in_event = false;
   };
 
@@ -218,8 +218,9 @@ struct Metavariables {
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
 
-  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+  static constexpr std::array<Parallel::Phase, 6> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Register,
+       Parallel::Phase::UpdateSections, Parallel::Phase::CheckDomain,
        Parallel::Phase::Solve, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)

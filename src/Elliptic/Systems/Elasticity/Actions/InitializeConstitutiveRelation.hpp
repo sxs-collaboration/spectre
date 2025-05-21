@@ -27,6 +27,7 @@
 #include "Options/String.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
@@ -128,6 +129,29 @@ struct MaterialLayerName : db::SimpleTag {
   using type = std::optional<std::string>;
 };
 
+template <size_t Dim>
+struct MaterialLayerObservationKeyCompute
+    : db::ComputeTag,
+      observers::Tags::ObservationKey<MaterialLayerName> {
+  using base = observers::Tags::ObservationKey<MaterialLayerName>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<MaterialLayerName, amr::Tags::ChildIds<Dim>>;
+  static void function(
+      const gsl::not_null<std::optional<std::string>*> observation_key,
+      const std::optional<std::string>& material_layer_name,
+      const std::unordered_set<ElementId<Dim>>& child_ids) {
+    const bool is_finest_grid = child_ids.empty();
+    // Set the corresponding observation key, but only on the finest multigrid
+    // level. This could be done better by supporting intersections of array
+    // sections in observation events or something like that.
+    if (is_finest_grid) {
+      *observation_key = material_layer_name;
+    } else {
+      *observation_key = std::nullopt;
+    }
+  }
+};
+
 }  // namespace Tags
 
 /// Actions related to solving Elasticity systems
@@ -151,10 +175,10 @@ struct InitializeConstitutiveRelation
   using const_global_cache_tags =
       tmpl::list<Tags::ConstitutiveRelationPerBlock<Dim>,
                  Tags::MaterialBlockGroups<Dim>>;
-  using simple_tags =
-      tmpl::list<Tags::MaterialLayerName,
-                 observers::Tags::ObservationKey<Tags::MaterialLayerName>>;
-  using compute_tags = tmpl::list<Tags::ConstitutiveRelationReference<Dim>>;
+  using simple_tags = tmpl::list<Tags::MaterialLayerName>;
+  using compute_tags =
+      tmpl::list<Tags::ConstitutiveRelationReference<Dim>,
+                 Tags::MaterialLayerObservationKeyCompute<Dim>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -177,7 +201,6 @@ struct InitializeConstitutiveRelation
   template <typename... AmrData>
   static void apply(
       const gsl::not_null<std::optional<std::string>*> material_layer_name,
-      const gsl::not_null<std::optional<std::string>*> observation_key,
       const std::unordered_set<std::string>& material_block_groups,
       const Element<Dim>& element, const Domain<Dim>& domain,
       const AmrData&... /*unused*/) {
@@ -193,11 +216,6 @@ struct InitializeConstitutiveRelation
       }
       return std::nullopt;
     }();
-    // Set the corresponding observation key, but only on the finest multigrid
-    // level. This could be done better by supporting intersections of array
-    // sections in observation events or something like that.
-    *observation_key =
-        element.id().grid_index() == 0 ? *material_layer_name : std::nullopt;
   }
 };
 

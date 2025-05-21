@@ -59,14 +59,13 @@ namespace LinearSolver::multigrid {
  * initialization actions (see `LinearSolver::multigrid::parent_id` and
  * `LinearSolver::multigrid::child_ids`).
  *
- * This allocator also creates two sets of sections (see `Parallel::Section`):
- * - `Parallel::Tags::Section<ElementArray,
- *   LinearSolver::multigrid::Tags::MultigridLevel>`: One section per grid. All
- *   elements are part of a section with this tag.
- * - `Parallel::Tags::Section<ElementArray,
- *   LinearSolver::multigrid::Tags::IsFinestGrid>`: A single section that holds
- *   only the elements on the finest grid. Holds `std::nullopt` on all other
- *   elements.
+ * Once the multigrid hierarchy is created, the AMR infrastructure registers
+ * the grids and creates the following sections (see `Parallel::Section`).
+ * - `Parallel::Tags::Section<ElementArray, amr::Tags::GridIndex>`: One section
+ *   per grid. All elements are part of a section with this tag.
+ * - `Parallel::Tags::Section<ElementArray, amr::Tags::IsFinestGrid>`: A single
+ *   section that holds only the elements on the finest grid. Holds
+ *   `std::nullopt` on all other elements.
  *
  * The elements are distributed on processors using the
  * `domain::BlockZCurveProcDistribution` for every grid independently. An
@@ -77,9 +76,7 @@ template <size_t Dim, typename OptionsGroup>
 struct ElementsAllocator
     : tt::ConformsTo<Parallel::protocols::ArrayElementsAllocator> {
   template <typename ElementArray>
-  using array_allocation_tags =
-      tmpl::list<Parallel::Tags::Section<ElementArray, Tags::MultigridLevel>,
-                 Parallel::Tags::Section<ElementArray, Tags::IsFinestGrid>>;
+  using array_allocation_tags = tmpl::list<>;
 
   template <typename ElementArray, typename Metavariables,
             typename... InitializationTags>
@@ -127,14 +124,25 @@ struct ElementsAllocator
       max_coarse_levels = 0;
     }
     const auto& blocks = domain.blocks();
-    size_t multigrid_level = 0;
-    do {
+
+    // Determine number of initial multigrid levels
+    size_t num_levels = 1;
+    for (const auto& ref_levs : initial_refinement_levels) {
+      num_levels = std::max(
+          num_levels, *std::max_element(ref_levs.begin(), ref_levs.end()) + 1);
+    }
+    if (max_coarse_levels.has_value()) {
+      num_levels = std::min(num_levels, max_coarse_levels.value() + 1);
+    }
+
+    // Create the initial grids
+    for (int multigrid_level = static_cast<int>(num_levels) - 1;
+         multigrid_level >= 0; --multigrid_level) {
       // Store the current grid as child grid before coarsening it
       children_refinement_levels = initial_refinement_levels;
       initial_refinement_levels = parent_refinement_levels;
       // Construct coarsened (parent) grid
-      if (not max_coarse_levels.has_value() or
-          multigrid_level < *max_coarse_levels) {
+      if (multigrid_level > 0) {
         parent_refinement_levels =
             LinearSolver::multigrid::coarsen(initial_refinement_levels);
       }
@@ -144,34 +152,10 @@ struct ElementsAllocator
         const std::vector<ElementId<Dim>> block_element_ids =
             initial_element_ids(block.id(),
                                 initial_refinement_levels[block.id()],
-                                multigrid_level);
+                                static_cast<size_t>(multigrid_level));
         element_ids.insert(element_ids.begin(), block_element_ids.begin(),
                            block_element_ids.end());
       }
-      // Create an array section for this refinement level
-      std::vector<CkArrayIndex> array_indices(element_ids.size());
-      std::transform(
-          element_ids.begin(), element_ids.end(), array_indices.begin(),
-          [](const ElementId<Dim>& local_element_id) {
-            return Parallel::ArrayIndex<ElementId<Dim>>(local_element_id);
-          });
-      using MultigridLevelSection =
-          Parallel::Section<ElementArray, Tags::MultigridLevel>;
-      get<Parallel::Tags::Section<ElementArray, Tags::MultigridLevel>>(
-          initialization_items) = MultigridLevelSection{
-          multigrid_level, MultigridLevelSection::cproxy_section::ckNew(
-                               element_array.ckGetArrayID(),
-                               array_indices.data(), array_indices.size())};
-      using FinestGridSection =
-          Parallel::Section<ElementArray, Tags::IsFinestGrid>;
-      get<Parallel::Tags::Section<ElementArray, Tags::IsFinestGrid>>(
-          initialization_items) =
-          multigrid_level == 0
-              ? std::make_optional(FinestGridSection{
-                    true, FinestGridSection::cproxy_section::ckNew(
-                              element_array.ckGetArrayID(),
-                              array_indices.data(), array_indices.size())})
-              : std::nullopt;
       // Create the elements for this refinement level and distribute them among
       // processors
       const size_t num_of_procs_to_use =
@@ -207,13 +191,7 @@ struct ElementsAllocator
           which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
         }
       }
-      Parallel::printf(
-          "%s level %zu has %zu elements in %zu blocks distributed on %d "
-          "procs.\n",
-          pretty_type::name<OptionsGroup>(), multigrid_level,
-          element_ids.size(), blocks.size(), num_of_procs_to_use);
-      ++multigrid_level;
-    } while (initial_refinement_levels != parent_refinement_levels);
+    }
     element_array.doneInserting();
   }
 };

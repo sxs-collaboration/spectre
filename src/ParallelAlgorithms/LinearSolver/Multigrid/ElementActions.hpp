@@ -28,6 +28,7 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Actions/RestrictFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Hierarchy.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
@@ -65,10 +66,8 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       tmpl::list<Tags::ChildrenRefinementLevels<Dim>,
                  Tags::ParentRefinementLevels<Dim>>;
   using simple_tags =
-      tmpl::list<Tags::ParentId<Dim>, Tags::ChildIds<Dim>,
-                 Tags::ParentMesh<Dim>,
-                 observers::Tags::ObservationKey<Tags::MultigridLevel>,
-                 observers::Tags::ObservationKey<Tags::IsFinestGrid>,
+      tmpl::list<amr::Tags::ParentId<Dim>, amr::Tags::ChildIds<Dim>,
+                 amr::Tags::ParentMesh<Dim>,
                  LinearSolver::Tags::ObservationId<OptionsGroup>,
                  Tags::VolumeDataForOutput<OptionsGroup, FieldsTag>>;
   using compute_tags = tmpl::list<>;
@@ -100,9 +99,6 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<std::optional<ElementId<Dim>>*> parent_id,
       const gsl::not_null<std::unordered_set<ElementId<Dim>>*> child_ids,
       const gsl::not_null<std::optional<Mesh<Dim>>*> parent_mesh,
-      const gsl::not_null<std::optional<std::string>*> observation_key_level,
-      const gsl::not_null<std::optional<std::string>*>
-          observation_key_is_finest_grid,
       const gsl::not_null<size_t*> observation_id,
       const gsl::not_null<VolumeDataVars*> volume_data_for_output,
       const gsl::not_null<std::vector<std::array<size_t, Dim>>*>
@@ -112,39 +108,37 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       const Mesh<Dim>& mesh, const Element<Dim>& element,
       const std::vector<std::array<size_t, Dim>> initial_refinement_levels,
       const bool output_volume_data, const AmrData&... amr_data) {
-    // Note: The following initialization code assumes that all elements in a
-    // block have the same p-refinement. This is true for initial domains, but
-    // will be broken by AMR.
-
-    const auto& element_id = element.id();
-    const size_t multigrid_level = element_id.grid_index();
-    const bool is_finest_grid = multigrid_level == 0;
+    // Note: This initialization code runs on elements of the initial multigrid
+    // hierarchy (created by LinearSolver::multigrid::ElementsAllocator) and on
+    // elements created by AMR. Elements in a block of the initial domain are
+    // assumed to have the same p-refinement.
 
     if constexpr (sizeof...(AmrData) == 0) {
       // Initialization: use initial domain to set up multigrid hierarchy
+      const auto& element_id = element.id();
       const bool is_coarsest_grid =
           initial_refinement_levels == *parent_refinement_levels;
+      const bool is_finest_grid =
+          initial_refinement_levels == *children_refinement_levels;
       *parent_id = is_coarsest_grid
                        ? std::nullopt
                        : std::make_optional(multigrid::parent_id(element_id));
-      *child_ids = multigrid::child_ids(
-          element_id, (*children_refinement_levels)[element_id.block_id()]);
+      *child_ids =
+          is_finest_grid
+              ? std::unordered_set<ElementId<Dim>>{}
+              : multigrid::child_ids(
+                    element_id,
+                    (*children_refinement_levels)[element_id.block_id()]);
       *parent_mesh = is_coarsest_grid ? std::nullopt : std::make_optional(mesh);
       *observation_id = 0;
     } else {
-      // AMR: make sure we only have a single multigrid level. To support AMR
-      // fully, we have to send AMR decisions to coarser grids to refine those
-      // as well.
+      // These items are updated by AMR
       (void)parent_id;
       (void)child_ids;
       (void)parent_mesh;
+      // These items are only needed during initialization
       (void)parent_refinement_levels;
       (void)children_refinement_levels;
-      if (not is_finest_grid) {
-        ERROR_NO_TRACE(
-            "AMR is not supported in the multigrid algorithm yet. Set the "
-            "'Multigrid.InitialCoarseLevels' to 0.");
-      }
       // Preserve state of observation ID
       if constexpr (tt::is_a_v<tuples::TaggedTuple, AmrData...>) {
         // h-refinement: copy from the parent
@@ -158,13 +152,6 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
         (void)observation_id;
       }
     }
-
-    *observation_key_level =
-        is_finest_grid ? std::string{""}
-                       : (std::string{"Level"} + get_output(multigrid_level));
-    *observation_key_is_finest_grid =
-        is_finest_grid ? std::make_optional(std::string{""}) : std::nullopt;
-
     // Initialize volume data output
     if (output_volume_data) {
       volume_data_for_output->initialize(mesh.number_of_grid_points());
@@ -220,7 +207,7 @@ struct PreparePreSmoothing {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const bool is_coarsest_grid =
-        not db::get<Tags::ParentId<Dim>>(box).has_value();
+        not db::get<::amr::Tags::ParentId<Dim>>(box).has_value();
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Prepare %s\n", element_id,
@@ -233,7 +220,8 @@ struct PreparePreSmoothing {
     // On coarser grids the smoother solves for a correction to the finer-grid
     // fields, so we set its initial guess to zero. On the finest grid we smooth
     // the fields directly, so there's nothing to prepare.
-    if (element_id.grid_index() > 0) {
+    const bool is_finest_grid = db::get<amr::Tags::ChildIds<Dim>>(box).empty();
+    if (not is_finest_grid) {
       db::mutate<fields_tag, operator_applied_to_fields_tag>(
           [](const auto fields, const auto operator_applied_to_fields,
              const auto& source) {
@@ -334,7 +322,7 @@ struct SkipPostSmoothingAtBottom {
       const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const bool is_coarsest_grid =
-        not db::get<Tags::ParentId<Dim>>(box).has_value();
+        not db::get<amr::Tags::ParentId<Dim>>(box).has_value();
 
     // Record pre-smoothing result fields and residual
     if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
@@ -403,7 +391,7 @@ struct SendCorrectionToFinerGrid {
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& child_ids = db::get<Tags::ChildIds<Dim>>(box);
+    const auto& child_ids = db::get<amr::Tags::ChildIds<Dim>>(box);
 
     // Record post-smoothing result fields and residual
     if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
@@ -465,7 +453,7 @@ struct ReceiveCorrectionFromCoarserGrid {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
+    const auto& parent_id = db::get<amr::Tags::ParentId<Dim>>(box);
     // We should always have a `parent_id` at this point because we skip this
     // part of the algorithm on the coarsest grid with the
     // `SkipPostSmoothingAtBottom` action
@@ -491,7 +479,7 @@ struct ReceiveCorrectionFromCoarserGrid {
 
     // Apply prolongation operator
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-    const auto& parent_mesh = db::get<Tags::ParentMesh<Dim>>(box);
+    const auto& parent_mesh = db::get<amr::Tags::ParentMesh<Dim>>(box);
     ASSERT(
         parent_mesh.has_value(),
         "Should have a parent mesh, because a parent ID is set. This element: "

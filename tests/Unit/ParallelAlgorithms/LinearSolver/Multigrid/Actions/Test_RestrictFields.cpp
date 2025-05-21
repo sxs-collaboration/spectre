@@ -61,10 +61,8 @@ struct ElementArray {
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
-              LinearSolver::multigrid::Tags::ParentId<Dim>,
-              LinearSolver::multigrid::Tags::ChildIds<Dim>,
-              domain::Tags::Mesh<Dim>,
-              LinearSolver::multigrid::Tags::ParentMesh<Dim>,
+              amr::Tags::ParentId<Dim>, amr::Tags::ChildIds<Dim>,
+              domain::Tags::Mesh<Dim>, amr::Tags::ParentMesh<Dim>,
               Convergence::Tags::IterationId<DummyOptionsGroup>, fields_tag>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,

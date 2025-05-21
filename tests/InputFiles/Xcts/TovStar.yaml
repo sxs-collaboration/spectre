@@ -172,6 +172,7 @@ Amr:
       RefinementLevel: Auto
       ErrorBeyondLimits: False
     AllowCoarsening: True
+  MaxCoarseLevels: Auto
   Iterations: 1
 
 PhaseChangeAndTriggers: []

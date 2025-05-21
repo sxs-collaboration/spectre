@@ -55,8 +55,7 @@ ElementId<Dim> parent_id(const ElementId<Dim>& child_id);
  * \param children_refinement_levels The refinement level of the finer grid in
  * this block
  * \return std::unordered_set<ElementId<Dim>> The IDs of the elements on the
- * finer grid that cover the `parent_id`. Returns an empty set if the
- * `parent_id` is already on the finest grid. Else, returns at least one child
+ * finer grid that cover the `parent_id`. Returns at least one child
  * (if the grids have the same refinement levels) and at most
  * \f$2^\mathrm{Dim}\f$ children (if the grid is finer in every dimension).
  */

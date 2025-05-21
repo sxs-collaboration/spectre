@@ -79,19 +79,18 @@ struct Metavariables {
   // correction scheme to test it in a multigrid context as well.
   using nonlinear_solver = NonlinearSolver::newton_raphson::NewtonRaphson<
       Metavariables, helpers_mg::fields_tag, NewtonRaphsonSolver,
-      helpers_mg::sources_tag, LinearSolver::multigrid::Tags::IsFinestGrid>;
+      helpers_mg::sources_tag, ::amr::Tags::IsFinestGrid>;
   using linear_solver = LinearSolver::gmres::Gmres<
       Metavariables, typename nonlinear_solver::linear_solver_fields_tag,
       KrylovSolver, true, typename nonlinear_solver::linear_solver_source_tag,
-      LinearSolver::multigrid::Tags::IsFinestGrid>;
+      ::amr::Tags::IsFinestGrid>;
   using multigrid = LinearSolver::multigrid::Multigrid<
       Metavariables, volume_dim, typename linear_solver::operand_tag,
       MultigridSolver, helpers_mg::OperatorIsMassive,
       typename linear_solver::preconditioner_source_tag>;
   using smoother = LinearSolver::Richardson::Richardson<
       typename multigrid::smooth_fields_tag, RichardsonSmoother,
-      typename multigrid::smooth_source_tag,
-      LinearSolver::multigrid::Tags::MultigridLevel>;
+      typename multigrid::smooth_source_tag, ::amr::Tags::GridIndex>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -104,17 +103,17 @@ struct Metavariables {
 
   using initialization_actions = tmpl::list<
       helpers_mg::InitializeElement,
-                 typename nonlinear_solver::initialize_element,
-                 typename linear_solver::initialize_element,
-                 typename multigrid::initialize_element,
-                 typename smoother::initialize_element,
+      typename nonlinear_solver::initialize_element,
+      typename linear_solver::initialize_element,
+      typename multigrid::initialize_element,
+      typename smoother::initialize_element,
       Initialization::Actions::InitializeItems<
           ::amr::Initialization::Initialize<volume_dim, Metavariables>>,
-                 Parallel::Actions::TerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   using register_actions = tmpl::list<
       typename nonlinear_solver::register_element,
-                 typename linear_solver::register_element,
+      typename linear_solver::register_element,
       typename multigrid::register_element, typename smoother::register_element,
       ::amr::Actions::RegisterElement, Parallel::Actions::TerminatePhase>;
 
