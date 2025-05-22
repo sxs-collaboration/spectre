@@ -63,6 +63,28 @@ void test_complex_data_vector_math() {
   // `Test_ComplexDataVectorBinaryOperations.cpp` in an effort to better
   // parallelize the build.
 }
+
+void test_norms() {
+  INFO("Test norms");
+  // Test l1Norm and l2Norm:
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<double> dist{-5, 10};
+  ComplexDataVector vector(30);
+  fill_with_random_values(make_not_null(&vector), make_not_null(&gen),
+                          make_not_null(&dist));
+  double l1norm = 0.0;
+  double l2norm = 0.0;
+  for (const std::complex<double> value : vector) {
+    l1norm += std::abs(value);
+    l2norm += square(std::abs(value));
+  }
+  l2norm = std::sqrt(l2norm);
+  CHECK(blaze::real(l1Norm(vector)) == approx(l1norm));
+  CHECK(blaze::real(l2Norm(vector)) == approx(l2norm));
+  CHECK(blaze::imag(l1Norm(vector)) == approx(0.0));
+  CHECK(blaze::imag(l2Norm(vector)) == approx(0.0));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ComplexDataVector",
@@ -105,6 +127,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.ComplexDataVector",
     INFO("test ComplexDataVector math operations");
     test_complex_data_vector_math();
   }
+  test_norms();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(

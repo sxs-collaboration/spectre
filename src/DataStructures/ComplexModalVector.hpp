@@ -105,7 +105,7 @@ struct MapTrait<ComplexModalVector, Operator> {
                                blaze::Bind2nd<blaze::Sub, double>>,
                     Operator>,
                 "Only unary operations permitted on a ComplexModalVector are:"
-                " conj, imag, and real");
+                " conj, imag, real, abs");
   using Type = ComplexModalVector;
 };
 template <>
@@ -122,6 +122,14 @@ struct MapTrait<ModalVector, blaze::Imag> {
 };
 template <>
 struct MapTrait<ModalVector, blaze::Real> {
+  using Type = ModalVector;
+};
+template <>
+struct MapTrait<ComplexModalVector, blaze::Abs> {
+  using Type = ModalVector;
+};
+template <>
+struct MapTrait<ComplexModalVector, blaze::SqrAbs> {
   using Type = ModalVector;
 };
 
@@ -146,18 +154,5 @@ DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexModalVector,
                                ComplexModalVector, operator+=, std::plus<>())
 DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexModalVector,
                                ComplexModalVector, operator-=, std::minus<>())
-
-namespace blaze {
-// Partial specialization to disable being able to take the l?Norm of a
-// ComplexModalVector. This does *not* prevent taking the norm of the square (or
-// some other math expression) of a ComplexModalVector.
-template <typename Abs, typename Power>
-struct DVecNormHelper<
-    blaze::CustomVector<std::complex<double>, blaze::AlignmentFlag::unaligned,
-                        blaze::PaddingFlag::unpadded,
-                        blaze::defaultTransposeFlag, blaze::GroupTag<0>,
-                        ComplexModalVector>,
-    Abs, Power> {};
-}  // namespace blaze
 /// \endcond
 MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(ComplexModalVector)
