@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/TimeDependentTripleGaussian.hpp"
+#include "PointwiseFunctions/ConstraintDamping/TimeDependentTripleGaussian.hpp"
 
 #include <array>
 #include <cmath>
@@ -24,7 +24,7 @@
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 TimeDependentTripleGaussian::TimeDependentTripleGaussian(CkMigrateMessage* msg)
     : DampingFunction<3, Frame::Grid>(msg) {}
 
@@ -89,7 +89,8 @@ void TimeDependentTripleGaussian::apply_call_operator(
     const gsl::not_null<Scalar<T>*> value_at_x,
     const tnsr::I<T, 3, Frame::Grid>& x, const double time,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
   // Start by setting the result to the constant
   get(*value_at_x) = constant_;
@@ -153,7 +154,8 @@ void TimeDependentTripleGaussian::operator()(
     const gsl::not_null<Scalar<double>*> value_at_x,
     const tnsr::I<double, 3, Frame::Grid>& x, const double time,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
   apply_call_operator(value_at_x, x, time, functions_of_time);
 }
@@ -161,7 +163,8 @@ void TimeDependentTripleGaussian::operator()(
     const gsl::not_null<Scalar<DataVector>*> value_at_x,
     const tnsr::I<DataVector, 3, Frame::Grid>& x, const double time,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const {
   set_number_of_grid_points(value_at_x, x);
   apply_call_operator(value_at_x, x, time, functions_of_time);
@@ -206,7 +209,7 @@ bool operator!=(const TimeDependentTripleGaussian& lhs,
                 const TimeDependentTripleGaussian& rhs) {
   return not(lhs == rhs);
 }
-}  // namespace gh::ConstraintDamping
-PUP::able::PUP_ID
-    gh::ConstraintDamping::TimeDependentTripleGaussian::my_PUP_ID =
-        0;  // NOLINT
+}  // namespace ConstraintDamping
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID ConstraintDamping::TimeDependentTripleGaussian::my_PUP_ID =
+    0;  // NOLINT

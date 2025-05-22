@@ -16,7 +16,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
@@ -33,6 +32,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -605,8 +605,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       mesh.number_of_grid_points());
 
   Variables<tmpl::list<
-      gh::ConstraintDamping::Tags::ConstraintGamma1,
-      gh::ConstraintDamping::Tags::ConstraintGamma2,
+      gh::Tags::ConstraintGamma1, gh::Tags::ConstraintGamma2,
       gh::Tags::GaugeH<DataVector, Dim>,
       gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>, gh::Tags::Gamma1Gamma2,
       gh::Tags::HalfPiTwoNormals, gh::Tags::NormalDotOneIndexConstraint,
@@ -633,10 +632,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   gh::TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma1>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma2>(buffer)),
       make_not_null(&get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
@@ -682,10 +679,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
       {});
 
-  CHECK_ITERABLE_APPROX(
-      get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer), gamma1);
-  CHECK_ITERABLE_APPROX(
-      get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer), gamma2);
+  CHECK_ITERABLE_APPROX(get<gh::Tags::ConstraintGamma1>(buffer), gamma1);
+  CHECK_ITERABLE_APPROX(get<gh::Tags::ConstraintGamma2>(buffer), gamma2);
   CHECK_ITERABLE_APPROX((get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
                         gauge_h);
   Approx custom_approx = Approx::custom().epsilon(1.e-10);
@@ -735,10 +730,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   gh::TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>::apply(
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma1>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma2>(buffer)),
       make_not_null(&get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),
@@ -792,10 +785,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   gh::TimeDerivative<gh::Solutions::all_solutions<Dim>, Dim>::apply(
       make_not_null(&dt_spacetime_metric_moving_mesh),
       make_not_null(&dt_pi_moving_mesh), make_not_null(&dt_phi_moving_mesh),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma1>(buffer)),
-      make_not_null(
-          &get<gh::ConstraintDamping::Tags::ConstraintGamma2>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma1>(buffer)),
+      make_not_null(&get<gh::Tags::ConstraintGamma2>(buffer)),
       make_not_null(&get<gh::Tags::GaugeH<DataVector, Dim>>(buffer)),
       make_not_null(
           &get<gh::Tags::SpacetimeDerivGaugeH<DataVector, Dim>>(buffer)),

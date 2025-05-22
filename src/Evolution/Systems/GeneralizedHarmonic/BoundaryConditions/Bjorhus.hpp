@@ -17,12 +17,12 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -150,8 +150,7 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
                  Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 ConstraintDamping::Tags::ConstraintGamma1,
-                 ConstraintDamping::Tags::ConstraintGamma2,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2,
                  gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>,
                  gr::Tags::InverseSpacetimeMetric<DataVector, Dim>,
                  gr::Tags::SpacetimeNormalVector<DataVector, Dim>,

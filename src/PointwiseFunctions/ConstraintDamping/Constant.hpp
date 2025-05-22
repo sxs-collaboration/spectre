@@ -11,8 +11,8 @@
 #include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -26,7 +26,7 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 /// \endcond
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 /*!
  * \brief A constant function: \f$f = C\f$
  *
@@ -62,18 +62,20 @@ class Constant : public DampingFunction<VolumeDim, Fr> {
   Constant(Constant&& /*rhs*/) = default;
   Constant& operator=(Constant&& /*rhs*/) = default;
 
-  void operator()(const gsl::not_null<Scalar<double>*> value_at_x,
-                  const tnsr::I<double, VolumeDim, Fr>& x, double time,
-                  const std::unordered_map<
-                      std::string,
-                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const override;
-  void operator()(const gsl::not_null<Scalar<DataVector>*> value_at_x,
-                  const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
-                  const std::unordered_map<
-                      std::string,
-                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const override;
+  void operator()(
+      gsl::not_null<Scalar<double>*> value_at_x,
+      const tnsr::I<double, VolumeDim, Fr>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const override;
+  void operator()(
+      gsl::not_null<Scalar<DataVector>*> value_at_x,
+      const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const override;
 
   auto get_clone() const
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> override;
@@ -97,10 +99,11 @@ bool operator!=(const Constant<VolumeDim, Fr>& lhs,
                 const Constant<VolumeDim, Fr>& rhs) {
   return not(lhs == rhs);
 }
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping
 
 /// \cond
 template <size_t VolumeDim, typename Fr>
-PUP::able::PUP_ID gh::ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond

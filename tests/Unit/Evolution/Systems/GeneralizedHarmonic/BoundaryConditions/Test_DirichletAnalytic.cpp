@@ -98,10 +98,8 @@ void test() {
               gr::Tags::SpacetimeMetric<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<gh::Tags::Pi<DataVector, Dim>>,
           helpers::Tags::PythonFunctionName<gh::Tags::Phi<DataVector, Dim>>,
-          helpers::Tags::PythonFunctionName<
-              gh::ConstraintDamping::Tags::ConstraintGamma1>,
-          helpers::Tags::PythonFunctionName<
-              gh::ConstraintDamping::Tags::ConstraintGamma2>,
+          helpers::Tags::PythonFunctionName<gh::Tags::ConstraintGamma1>,
+          helpers::Tags::PythonFunctionName<gh::Tags::ConstraintGamma2>,
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
           helpers::Tags::PythonFunctionName<gr::Tags::Shift<DataVector, Dim>>>{
           "error", "spacetime_metric", "pi", "phi", "constraint_gamma1",
@@ -112,9 +110,8 @@ void test() {
       "      Amplitude: 0.2\n"
       "      Wavelength: 10.0\n",
       Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_analytic_soln,
-      tuples::TaggedTuple<
-          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma1>,
-          helpers::Tags::Range<gh::ConstraintDamping::Tags::ConstraintGamma2>>{
+      tuples::TaggedTuple<helpers::Tags::Range<gh::Tags::ConstraintGamma1>,
+                          helpers::Tags::Range<gh::Tags::ConstraintGamma2>>{
           std::array{0.0, 1.0}, std::array{0.0, 1.0}});
 }
 }  // namespace

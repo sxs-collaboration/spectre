@@ -11,9 +11,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryConditions/BoundaryCondition.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -80,8 +80,7 @@ class DirichletAnalytic final : public BoundaryCondition {
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+                 ::gh::Tags::ConstraintGamma1, ::gh::Tags::ConstraintGamma2,
                  ::CurvedScalarWave::Tags::ConstraintGamma1,
                  ::CurvedScalarWave::Tags::ConstraintGamma2>;
   using dg_gridless_tags = tmpl::list<::Tags::Time>;

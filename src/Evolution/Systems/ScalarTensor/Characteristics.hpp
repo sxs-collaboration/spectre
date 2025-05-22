@@ -30,8 +30,7 @@ struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
                                            LargestCharacteristicSpeed {
   static constexpr size_t Dim = 3_st;
   using argument_tags =
-      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 gr::Tags::Lapse<DataVector>,
+      tmpl::list<::gh::Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<DataVector, Dim, Frame>,
                  gr::Tags::SpatialMetric<DataVector, Dim, Frame>,
                  CurvedScalarWave::Tags::ConstraintGamma1>;

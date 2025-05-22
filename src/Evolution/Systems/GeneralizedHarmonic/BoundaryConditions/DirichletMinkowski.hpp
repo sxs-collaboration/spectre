@@ -16,9 +16,9 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -67,8 +67,7 @@ class DirichletMinkowski final : public BoundaryCondition<Dim> {
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
-      tmpl::list<::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
+      tmpl::list<::gh::Tags::ConstraintGamma1, ::gh::Tags::ConstraintGamma2>;
   using dg_gridless_tags = tmpl::list<>;
 
   std::optional<std::string> dg_ghost(

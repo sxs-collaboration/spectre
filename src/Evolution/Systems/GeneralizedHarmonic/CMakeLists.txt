@@ -35,6 +35,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   CoordinateMaps
+  ConstraintDamping
   DataStructures
   Domain
   DomainBoundaryConditions
@@ -62,5 +63,4 @@ target_link_libraries(
 add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
-add_subdirectory(ConstraintDamping)
 add_subdirectory(GaugeSourceFunctions)

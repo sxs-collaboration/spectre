@@ -25,9 +25,6 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -40,9 +37,12 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"
+#include "PointwiseFunctions/ConstraintDamping/GaussianPlusConstant.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
@@ -799,13 +799,13 @@ void test_constraint_compute_items(const Solution& solution,
                                    const std::array<double, 3>& upper_bound) {
   // Check that compute items are named correctly
   TestHelpers::db::test_compute_tag<
-      gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
+      gh::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
       "ConstraintGamma0");
   TestHelpers::db::test_compute_tag<
-      gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
+      gh::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
       "ConstraintGamma1");
   TestHelpers::db::test_compute_tag<
-      gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
+      gh::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
       "ConstraintGamma2");
   TestHelpers::db::test_compute_tag<
       gh::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<3, Frame::Inertial>>(
@@ -962,42 +962,36 @@ void test_constraint_compute_items(const Solution& solution,
 
   // Insert into databox
   const auto box = db::create<
-      db::AddSimpleTags<
-          domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
-          domain::Tags::Coordinates<3, Frame::Inertial>,
-          gr::Tags::SpatialMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<DataVector, 3>,
-          ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
-          ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-          ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
-          ::Tags::deriv<gh::Tags::GaugeH<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::dt<gh::Tags::GaugeH<DataVector, 3>>,
-          ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::deriv<gh::Tags::Pi<DataVector, 3>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma0<3,
-                                                             Frame::Inertial>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma1<3,
-                                                             Frame::Inertial>,
-          gh::ConstraintDamping::Tags::DampingFunctionGamma2<3,
-                                                             Frame::Inertial>>,
+      db::AddSimpleTags<domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
+                        domain::Tags::Coordinates<3, Frame::Inertial>,
+                        gr::Tags::SpatialMetric<DataVector, 3>,
+                        gr::Tags::Lapse<DataVector>,
+                        gr::Tags::Shift<DataVector, 3>,
+                        ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        ::Tags::deriv<gr::Tags::Shift<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        ::Tags::dt<gr::Tags::SpatialMetric<DataVector, 3>>,
+                        ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+                        ::Tags::dt<gr::Tags::Shift<DataVector, 3>>,
+                        ::Tags::deriv<gh::Tags::GaugeH<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        ::Tags::dt<gh::Tags::GaugeH<DataVector, 3>>,
+                        ::Tags::deriv<gr::Tags::SpacetimeMetric<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        ::Tags::deriv<gh::Tags::Phi<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        ::Tags::deriv<gh::Tags::Pi<DataVector, 3>,
+                                      tmpl::size_t<3>, Frame::Inertial>,
+                        gh::Tags::DampingFunctionGamma0<3, Frame::Inertial>,
+                        gh::Tags::DampingFunctionGamma1<3, Frame::Inertial>,
+                        gh::Tags::DampingFunctionGamma2<3, Frame::Inertial>>,
       db::AddComputeTags<
-          gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3,
-                                                               Frame::Inertial>,
-          gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3,
-                                                               Frame::Inertial>,
-          gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3,
-                                                               Frame::Inertial>,
+          gh::Tags::ConstraintGamma0Compute<3, Frame::Inertial>,
+          gh::Tags::ConstraintGamma1Compute<3, Frame::Inertial>,
+          gh::Tags::ConstraintGamma2Compute<3, Frame::Inertial>,
           gr::Tags::SpacetimeNormalOneFormCompute<DataVector, 3,
                                                   Frame::Inertial>,
           gr::Tags::SpacetimeNormalVectorCompute<DataVector, 3,
@@ -1029,50 +1023,44 @@ void test_constraint_compute_items(const Solution& solution,
       deriv_shift, time_deriv_spatial_metric, time_deriv_lapse,
       time_deriv_shift, deriv_gauge_source, time_deriv_gauge_source,
       deriv_spacetime_metric, deriv_phi, deriv_pi,
-      std::move(
-          static_cast<std::unique_ptr<
-              gh::ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
-              std::make_unique<gh::ConstraintDamping::GaussianPlusConstant<
-                  3, Frame::Inertial>>(constant_02, amplitude_0, width,
-                                       center))),
-      std::move(
-          static_cast<std::unique_ptr<
-              gh::ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
-              std::make_unique<gh::ConstraintDamping::GaussianPlusConstant<
-                  3, Frame::Inertial>>(constant_1, amplitude_1, width,
-                                       center))),
-      std::move(
-          static_cast<std::unique_ptr<
-              gh::ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
-              std::make_unique<gh::ConstraintDamping::GaussianPlusConstant<
-                  3, Frame::Inertial>>(constant_02, amplitude_2, width,
-                                       center))));
+      std::move(static_cast<std::unique_ptr<
+                    ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
+          std::make_unique<
+              ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>>(
+              constant_02, amplitude_0, width, center))),
+      std::move(static_cast<std::unique_ptr<
+                    ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
+          std::make_unique<
+              ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>>(
+              constant_1, amplitude_1, width, center))),
+      std::move(static_cast<std::unique_ptr<
+                    ConstraintDamping::DampingFunction<3, Frame::Inertial>>>(
+          std::make_unique<
+              ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>>(
+              constant_02, amplitude_2, width, center))));
 
   // Compute tested quantities locally
   std::unordered_map<std::string,
                      std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
       empty_functions_of_time{};
   Scalar<DataVector> gamma0{};
-  gh::ConstraintDamping::Tags::ConstraintGamma0Compute<3, Frame::Inertial>::
-      function(make_not_null(&gamma0),
-               gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>{
-                   constant_02, amplitude_0, width, center},
-               x, std::numeric_limits<double>::signaling_NaN(),
-               empty_functions_of_time);
+  gh::Tags::ConstraintGamma0Compute<3, Frame::Inertial>::function(
+      make_not_null(&gamma0),
+      ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>{
+          constant_02, amplitude_0, width, center},
+      x, std::numeric_limits<double>::signaling_NaN(), empty_functions_of_time);
   Scalar<DataVector> gamma1{};
-  gh::ConstraintDamping::Tags::ConstraintGamma1Compute<3, Frame::Inertial>::
-      function(make_not_null(&gamma1),
-               gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>{
-                   constant_1, amplitude_1, width, center},
-               x, std::numeric_limits<double>::signaling_NaN(),
-               empty_functions_of_time);
+  gh::Tags::ConstraintGamma1Compute<3, Frame::Inertial>::function(
+      make_not_null(&gamma1),
+      ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>{
+          constant_1, amplitude_1, width, center},
+      x, std::numeric_limits<double>::signaling_NaN(), empty_functions_of_time);
   Scalar<DataVector> gamma2{};
-  gh::ConstraintDamping::Tags::ConstraintGamma2Compute<3, Frame::Inertial>::
-      function(make_not_null(&gamma2),
-               gh::ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>{
-                   constant_02, amplitude_2, width, center},
-               x, std::numeric_limits<double>::signaling_NaN(),
-               empty_functions_of_time);
+  gh::Tags::ConstraintGamma2Compute<3, Frame::Inertial>::function(
+      make_not_null(&gamma2),
+      ConstraintDamping::GaussianPlusConstant<3, Frame::Inertial>{
+          constant_02, amplitude_2, width, center},
+      x, std::numeric_limits<double>::signaling_NaN(), empty_functions_of_time);
 
   const auto four_index_constraint = gh::four_index_constraint(deriv_phi);
   const auto three_index_constraint =
@@ -1094,9 +1082,9 @@ void test_constraint_compute_items(const Solution& solution,
       det_spatial_metric);
 
   // Check that their compute items in databox furnish identical values
-  CHECK(db::get<gh::ConstraintDamping::Tags::ConstraintGamma0>(box) == gamma0);
-  CHECK(db::get<gh::ConstraintDamping::Tags::ConstraintGamma1>(box) == gamma1);
-  CHECK(db::get<gh::ConstraintDamping::Tags::ConstraintGamma2>(box) == gamma2);
+  CHECK(db::get<gh::Tags::ConstraintGamma0>(box) == gamma0);
+  CHECK(db::get<gh::Tags::ConstraintGamma1>(box) == gamma1);
+  CHECK(db::get<gh::Tags::ConstraintGamma2>(box) == gamma2);
   CHECK(db::get<gh::Tags::GaugeH<DataVector, 3>>(box) == gauge_source);
   CHECK(db::get<gh::Tags::SpacetimeDerivGaugeH<DataVector, 3>>(box) ==
         spacetime_deriv_gauge_source);

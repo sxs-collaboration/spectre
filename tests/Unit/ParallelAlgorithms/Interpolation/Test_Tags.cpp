@@ -7,7 +7,6 @@
 #include <type_traits>
 
 #include "DataStructures/Tensor/IndexType.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -15,6 +14,7 @@
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/TagsMetafunctions.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -59,12 +59,10 @@ void test_tags_metafunctions() {
                      Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                                  Frame::Grid>>,
       "Failed testing replace_frame_in_tag_t");
-  static_assert(
-      std::is_same_v<
-          TensorMetafunctions::replace_frame_in_tag_t<
-              gh::ConstraintDamping::Tags::ConstraintGamma0, Frame::Grid>,
-          gh::ConstraintDamping::Tags::ConstraintGamma0>,
-      "Failed testing replace_frame_in_tag_t");
+  static_assert(std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
+                                   gh::Tags::ConstraintGamma0, Frame::Grid>,
+                               gh::Tags::ConstraintGamma0>,
+                "Failed testing replace_frame_in_tag_t");
   static_assert(
       std::is_same_v<TensorMetafunctions::replace_frame_in_tag_t<
                          Tags::deriv<gh::Tags::Phi<DataVector, 3>,

@@ -7,7 +7,6 @@
 #include <optional>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -16,6 +15,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
@@ -65,9 +65,9 @@ using scalar_tensor_3plus1_compute_tags = tmpl::list<
     gh::Tags::TraceExtrinsicCurvatureCompute<Dim, Fr>,
 
     // Compute constraint damping parameters.
-    gh::ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
-    gh::ConstraintDamping::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
-    gh::ConstraintDamping::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>,
+    gh::Tags::ConstraintGamma0Compute<Dim, Frame::Grid>,
+    gh::Tags::ConstraintGamma1Compute<Dim, Frame::Grid>,
+    gh::Tags::ConstraintGamma2Compute<Dim, Frame::Grid>,
 
     ScalarTensor::Tags::ScalarSourceCompute>;
 

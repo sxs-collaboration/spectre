@@ -236,27 +236,24 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
           //   packaged data?
           {
             Scalar<DataVector> gamma_on_dg_face = data_on_slice(
-                get<gh::ConstraintDamping::Tags::ConstraintGamma1>(box),
-                dg_mesh.extents(), direction.dimension(),
+                get<gh::Tags::ConstraintGamma1>(box), dg_mesh.extents(),
+                direction.dimension(),
                 direction.side() == Side::Lower
                     ? 0
                     : (dg_mesh.extents(direction.dimension()) - 1));
             evolution::dg::subcell::fd::project(
                 make_not_null(
-                    &get(get<gh::ConstraintDamping::Tags::ConstraintGamma1>(
-                        vars_on_face))),
+                    &get(get<gh::Tags::ConstraintGamma1>(vars_on_face))),
                 get(gamma_on_dg_face), dg_face_mesh, subcell_face_extents);
-            data_on_slice(
-                make_not_null(&gamma_on_dg_face),
-                get<gh::ConstraintDamping::Tags::ConstraintGamma2>(box),
-                dg_mesh.extents(), direction.dimension(),
-                direction.side() == Side::Lower
-                    ? 0
-                    : (dg_mesh.extents(direction.dimension()) - 1));
+            data_on_slice(make_not_null(&gamma_on_dg_face),
+                          get<gh::Tags::ConstraintGamma2>(box),
+                          dg_mesh.extents(), direction.dimension(),
+                          direction.side() == Side::Lower
+                              ? 0
+                              : (dg_mesh.extents(direction.dimension()) - 1));
             evolution::dg::subcell::fd::project(
                 make_not_null(
-                    &get(get<gh::ConstraintDamping::Tags::ConstraintGamma2>(
-                        vars_on_face))),
+                    &get(get<gh::Tags::ConstraintGamma2>(vars_on_face))),
                 get(gamma_on_dg_face), dg_face_mesh, subcell_face_extents);
           }
 

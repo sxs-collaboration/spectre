@@ -21,7 +21,7 @@ class FunctionOfTime;
 /// \endcond
 
 /// Holds classes implementing DampingFunction (functions \f$R^n \to R\f$).
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 /// \cond
 template <size_t VolumeDim, typename Fr>
 class Constant;
@@ -42,11 +42,11 @@ class DampingFunction : public PUP::able {
  public:
   using creatable_classes = tmpl::conditional_t<
       (VolumeDim == 3 and std::is_same<Fr, Frame::Grid>::value),
-      tmpl::list<gh::ConstraintDamping::Constant<VolumeDim, Fr>,
-                 gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>,
-                 gh::ConstraintDamping::TimeDependentTripleGaussian>,
-      tmpl::list<gh::ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>,
-                 gh::ConstraintDamping::Constant<VolumeDim, Fr>>>;
+      tmpl::list<ConstraintDamping::Constant<VolumeDim, Fr>,
+                 ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>,
+                 ConstraintDamping::TimeDependentTripleGaussian>,
+      tmpl::list<ConstraintDamping::GaussianPlusConstant<VolumeDim, Fr>,
+                 ConstraintDamping::Constant<VolumeDim, Fr>>>;
   constexpr static size_t volume_dim = VolumeDim;
   using frame = Fr;
 
@@ -68,22 +68,22 @@ class DampingFunction : public PUP::able {
       const tnsr::I<double, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const = 0;
   virtual void operator()(
       const gsl::not_null<Scalar<DataVector>*> value_at_x,
       const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const = 0;
   /// @}
 
   virtual auto get_clone() const
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> = 0;
 };
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping
 
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Constant.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/TimeDependentTripleGaussian.hpp"
+#include "PointwiseFunctions/ConstraintDamping/Constant.hpp"
+#include "PointwiseFunctions/ConstraintDamping/GaussianPlusConstant.hpp"
+#include "PointwiseFunctions/ConstraintDamping/TimeDependentTripleGaussian.hpp"

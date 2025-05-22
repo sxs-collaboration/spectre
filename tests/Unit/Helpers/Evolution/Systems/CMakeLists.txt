@@ -3,4 +3,3 @@
 
 add_subdirectory(Cce)
 add_subdirectory(CurvedScalarWave)
-add_subdirectory(GeneralizedHarmonic)

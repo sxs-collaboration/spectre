@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Constant.hpp"
+#include "PointwiseFunctions/ConstraintDamping/Constant.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -22,7 +22,7 @@ namespace domain::FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 template <size_t VolumeDim, typename Fr>
 Constant<VolumeDim, Fr>::Constant(CkMigrateMessage* msg)
     : DampingFunction<VolumeDim, Fr>(msg) {}
@@ -42,7 +42,8 @@ void Constant<VolumeDim, Fr>::operator()(
     const gsl::not_null<Scalar<double>*> value_at_x,
     const tnsr::I<double, VolumeDim, Fr>& /*x*/, const double /*time*/,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
     /*functions_of_time*/) const {
   apply_call_operator(value_at_x);
 }
@@ -51,7 +52,8 @@ void Constant<VolumeDim, Fr>::operator()(
     const gsl::not_null<Scalar<DataVector>*> value_at_x,
     const tnsr::I<DataVector, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        std::string,
+        std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
     /*functions_of_time*/) const {
   set_number_of_grid_points(value_at_x, x);
   apply_call_operator(value_at_x);
@@ -68,19 +70,19 @@ auto Constant<VolumeDim, Fr>::get_clone() const
     -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> {
   return std::make_unique<Constant<VolumeDim, Fr>>(*this);
 }
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                                  \
-  template gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
-      CkMigrateMessage* msg);                                                 \
-  template gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
-      const double value);                                                    \
-  template void gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::pup( \
-      PUP::er& p);                                                            \
-  template auto                                                               \
-  gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::get_clone()        \
+#define INSTANTIATE(_, data)                                              \
+  template ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
+      CkMigrateMessage* msg);                                             \
+  template ConstraintDamping::Constant<DIM(data), FRAME(data)>::Constant( \
+      const double value);                                                \
+  template void ConstraintDamping::Constant<DIM(data), FRAME(data)>::pup( \
+      PUP::er& p);                                                        \
+  template auto                                                           \
+  ConstraintDamping::Constant<DIM(data), FRAME(data)>::get_clone()        \
       const->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
@@ -92,15 +94,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                           \
-  template void                                                        \
-  gh::ConstraintDamping::Constant<DIM(data), FRAME(data)>::operator()( \
-      const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,            \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& /*x*/,       \
-      const double /*time*/,                                           \
-      const std::unordered_map<                                        \
-          std::string,                                                 \
-          std::unique_ptr<domain::FunctionsOfTime::                    \
+#define INSTANTIATE(_, data)                                       \
+  template void                                                    \
+  ConstraintDamping::Constant<DIM(data), FRAME(data)>::operator()( \
+      const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& /*x*/,   \
+      const double /*time*/,                                       \
+      const std::unordered_map<                                    \
+          std::string,                                             \
+          std::unique_ptr<::domain::FunctionsOfTime::              \
                               FunctionOfTime>>& /*functions_of_time*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),

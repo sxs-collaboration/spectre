@@ -11,9 +11,9 @@
 #include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Options/Auto.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -27,7 +27,7 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 /// \endcond
 
-namespace gh::ConstraintDamping {
+namespace ConstraintDamping {
 /*!
  * \brief A sum of three Gaussians plus a constant, where the Gaussian widths
  * are scaled by a domain::FunctionsOfTime::FunctionOfTime.
@@ -145,18 +145,20 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   TimeDependentTripleGaussian& operator=(
       TimeDependentTripleGaussian&& /*rhs*/) = default;
 
-  void operator()(gsl::not_null<Scalar<double>*> value_at_x,
-                  const tnsr::I<double, 3, Frame::Grid>& x, double time,
-                  const std::unordered_map<
-                      std::string,
-                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const override;
-  void operator()(gsl::not_null<Scalar<DataVector>*> value_at_x,
-                  const tnsr::I<DataVector, 3, Frame::Grid>& x, double time,
-                  const std::unordered_map<
-                      std::string,
-                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-                      functions_of_time) const override;
+  void operator()(
+      gsl::not_null<Scalar<double>*> value_at_x,
+      const tnsr::I<double, 3, Frame::Grid>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const override;
+  void operator()(
+      gsl::not_null<Scalar<DataVector>*> value_at_x,
+      const tnsr::I<DataVector, 3, Frame::Grid>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const override;
 
   auto get_clone() const
       -> std::unique_ptr<DampingFunction<3, Frame::Grid>> override;
@@ -188,10 +190,10 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
       double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const;
 };
 
 bool operator!=(const TimeDependentTripleGaussian& lhs,
                 const TimeDependentTripleGaussian& rhs);
-}  // namespace gh::ConstraintDamping
+}  // namespace ConstraintDamping

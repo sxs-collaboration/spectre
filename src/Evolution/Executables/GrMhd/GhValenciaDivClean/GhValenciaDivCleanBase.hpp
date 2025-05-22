@@ -683,12 +683,9 @@ struct GhValenciaDivCleanTemplateBase<
       gh::gauges::Tags::GaugeCondition, initial_data_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       equation_of_state_tag,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma0<volume_dim,
-                                                         Frame::Grid>,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma1<volume_dim,
-                                                         Frame::Grid>,
-      gh::ConstraintDamping::Tags::DampingFunctionGamma2<volume_dim,
-                                                         Frame::Grid>>>;
+      gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
+      gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
+      gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>>;
 
   using dg_registration_list = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<WithHorizon,

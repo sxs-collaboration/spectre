@@ -46,10 +46,10 @@ namespace evolution::dg::Actions::detail {
 template <size_t Dim>
 struct NormalVector;
 }  // namespace evolution::dg::Actions::detail
-namespace gh::ConstraintDamping::Tags {
+namespace gh::Tags {
 struct ConstraintGamma1;
 struct ConstraintGamma2;
-}  // namespace gh::ConstraintDamping::Tags
+}  // namespace gh::Tags
 /// \endcond
 
 namespace grmhd::GhValenciaDivClean::fd {
@@ -66,8 +66,7 @@ using tags_list_for_reconstruct_split_lapse =
 using tags_list_for_reconstruct_fd_neighbor = tmpl::append<
     tmpl::front<detail::tags_list_for_reconstruct_split_lapse>,
     tmpl::push_front<tmpl::back<detail::tags_list_for_reconstruct_split_lapse>,
-                     gh::ConstraintDamping::Tags::ConstraintGamma1,
-                     gh::ConstraintDamping::Tags::ConstraintGamma2,
+                     gh::Tags::ConstraintGamma1, gh::Tags::ConstraintGamma2,
                      gr::Tags::Lapse<DataVector>>>;
 
 /*!

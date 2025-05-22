@@ -12,9 +12,9 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -650,7 +650,7 @@ struct FConstraintCompute : FConstraint<DataVector, SpatialDim, Frame>,
                     Frame>,
       ::Tags::deriv<Phi<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::Tags::ConstraintGamma2,
       ThreeIndexConstraint<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
@@ -696,7 +696,7 @@ struct TwoIndexConstraintCompute
                     Frame>,
       ::Tags::deriv<Phi<DataVector, SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>,
-      ::gh::ConstraintDamping::Tags::ConstraintGamma2,
+      ::gh::Tags::ConstraintGamma2,
       ThreeIndexConstraint<DataVector, SpatialDim, Frame>>;
 
   using return_type = tnsr::ia<DataVector, SpatialDim, Frame>;

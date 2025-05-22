@@ -25,7 +25,6 @@
 #include "Evolution/DgSubcell/SliceTensor.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
@@ -39,6 +38,7 @@
 #include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -99,8 +99,7 @@ class DirichletAnalytic final : public BoundaryCondition {
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                 ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
+                 ::gh::Tags::ConstraintGamma1, ::gh::Tags::ConstraintGamma2>;
   using dg_interior_primitive_variables_tags = tmpl::list<>;
   using dg_gridless_tags = tmpl::list<::Tags::Time>;
 

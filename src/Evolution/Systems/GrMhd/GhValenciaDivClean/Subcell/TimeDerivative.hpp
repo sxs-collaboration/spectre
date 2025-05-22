@@ -119,7 +119,7 @@ struct ComputeTimeDerivImpl<
                                     3_st>::temporary_tags,
         tmpl::push_front<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
                              temporary_tags,
-                         ::gh::ConstraintDamping::Tags::ConstraintGamma0>,
+                         ::gh::Tags::ConstraintGamma0>,
         extra_tags_for_grmhd,
         tmpl::list<Tags::TraceReversedStressEnergy, Tags::FourVelocityOneForm,
                    Tags::ComovingMagneticFieldOneForm>>>;
@@ -133,18 +133,15 @@ struct ComputeTimeDerivImpl<
     const auto& grid_coords =
         db::get<evolution::dg::subcell::Tags::Coordinates<3, Frame::Grid>>(
             *box);
-    db::get<
-        gh::ConstraintDamping::Tags::DampingFunctionGamma0<3, Frame::Grid>> (
-        *box)(get<gh::ConstraintDamping::Tags::ConstraintGamma0>(temp_tags_ptr),
-              grid_coords, time, functions_of_time);
-    db::get<
-        gh::ConstraintDamping::Tags::DampingFunctionGamma1<3, Frame::Grid>> (
-        *box)(get<gh::ConstraintDamping::Tags::ConstraintGamma1>(temp_tags_ptr),
-              grid_coords, time, functions_of_time);
-    db::get<
-        gh::ConstraintDamping::Tags::DampingFunctionGamma2<3, Frame::Grid>> (
-        *box)(get<gh::ConstraintDamping::Tags::ConstraintGamma2>(temp_tags_ptr),
-              grid_coords, time, functions_of_time);
+    db::get<gh::Tags::DampingFunctionGamma0<3, Frame::Grid>> (*box)(
+        get<gh::Tags::ConstraintGamma0>(temp_tags_ptr), grid_coords, time,
+        functions_of_time);
+    db::get<gh::Tags::DampingFunctionGamma1<3, Frame::Grid>> (*box)(
+        get<gh::Tags::ConstraintGamma1>(temp_tags_ptr), grid_coords, time,
+        functions_of_time);
+    db::get<gh::Tags::DampingFunctionGamma2<3, Frame::Grid>> (*box)(
+        get<gh::Tags::ConstraintGamma2>(temp_tags_ptr), grid_coords, time,
+        functions_of_time);
 
     using variables_tag = typename System::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
@@ -806,9 +803,8 @@ struct TimeDerivative {
     using gh_extra_tags =
         tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                    gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
-                   ::gh::ConstraintDamping::Tags::ConstraintGamma0,
-                   ::gh::ConstraintDamping::Tags::ConstraintGamma1,
-                   ::gh::ConstraintDamping::Tags::ConstraintGamma2>;
+                   ::gh::Tags::ConstraintGamma0, ::gh::Tags::ConstraintGamma1,
+                   ::gh::Tags::ConstraintGamma2>;
     using grmhd_source_tags =
         tmpl::transform<ValenciaDivClean::ComputeSources::return_tags,
                         tmpl::bind<db::remove_tag_prefix, tmpl::_1>>;
