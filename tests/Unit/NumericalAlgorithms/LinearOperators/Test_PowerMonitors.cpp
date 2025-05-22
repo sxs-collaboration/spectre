@@ -8,8 +8,10 @@
 
 #include <array>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestCreation.hpp"
@@ -28,25 +30,36 @@ void test_power_monitors_impl() {
   const size_t number_of_points = pow<2>(number_of_points_per_dimension);
 
   // Test a constant function
-  const DataVector test_data_vector = DataVector{number_of_points, 1.0};
+  const DataVector test_data_vector{number_of_points, 1.0};
+  const ComplexDataVector test_complex_data_vector{
+      number_of_points, std::complex<double>(1.0, 1.0)};
 
   const Mesh<2_st> mesh{number_of_points_per_dimension,
                         Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
 
   const auto test_power_monitors =
-      PowerMonitors::power_monitors<2_st>(test_data_vector, mesh);
+      PowerMonitors::power_monitors(test_data_vector, mesh);
+  const auto test_power_monitors_complex =
+      PowerMonitors::power_monitors(test_complex_data_vector, mesh);
 
   // The only non-zero modal coefficient of a constant is the one corresponding
   // to the first Legendre polynomial
   DataVector check_data_vector =
       DataVector{number_of_points_per_dimension, 0.0};
   check_data_vector[0] = 1.0 / sqrt(number_of_points_per_dimension);
+  DataVector check_data_vector_complex =
+      DataVector{number_of_points_per_dimension, 0.0};
+  check_data_vector_complex[0] = sqrt(2) / sqrt(number_of_points_per_dimension);
 
   const std::array<DataVector, 2> expected_power_monitors{check_data_vector,
                                                           check_data_vector};
+  const std::array<DataVector, 2> expected_power_monitors_complex{
+      check_data_vector_complex, check_data_vector_complex};
 
   CHECK_ITERABLE_APPROX(test_power_monitors, expected_power_monitors);
+  CHECK_ITERABLE_APPROX(test_power_monitors_complex,
+                        expected_power_monitors_complex);
 }
 
 void test_power_monitors_second_impl() {
@@ -71,8 +84,7 @@ void test_power_monitors_second_impl() {
             gsl::at(coeff, dim), logical_coords.get(dim));
   }
 
-  const auto test_power_monitors =
-      PowerMonitors::power_monitors<2_st>(u_nodal, mesh);
+  const auto test_power_monitors = PowerMonitors::power_monitors(u_nodal, mesh);
 
   // The only non-zero modal coefficient of a constant is the one corresponding
   // to the specified Legendre polynomial
@@ -132,8 +144,7 @@ void test_relative_truncation_error_impl() {
   // We test the order of magnitude of the relative error
   const double expected_relative_truncation_error = pow(10.0, avg);
 
-  const auto power_monitors =
-      PowerMonitors::power_monitors<1_st>(u_nodal, mesh);
+  const auto power_monitors = PowerMonitors::power_monitors(u_nodal, mesh);
   const DataVector& power_monitor_x = gsl::at(power_monitors, 0_st);
   // We use all of the modes as above
   const double test_relative_truncation_error =

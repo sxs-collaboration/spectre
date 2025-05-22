@@ -24,15 +24,17 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
+using namespace std::complex_literals;
+
 namespace amr::Criteria {
 namespace {
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 struct TestVector : db::SimpleTag {
-  using type = tnsr::I<DataVector, Dim>;
+  using type = tnsr::I<DataType, Dim>;
 };
 
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<>;
@@ -40,9 +42,52 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
-        amr::Criterion, tmpl::list<Loehner<Dim, tmpl::list<TestVector<Dim>>>>>>;
+        amr::Criterion,
+        tmpl::list<Loehner<Dim, tmpl::list<TestVector<DataType, Dim>>>>>>;
   };
 };
+
+template <typename DataType, size_t Dim>
+void test() {
+  const Mesh<Dim> mesh{6, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const auto logical_coords = logical_coordinates(mesh);
+
+  register_factory_classes_with_charm<Metavariables<DataType, Dim>>();
+
+  const auto criterion = TestHelpers::test_factory_creation<
+      amr::Criterion, Loehner<Dim, tmpl::list<TestVector<DataType, Dim>>>>(
+      "Loehner:\n"
+      "  VariablesToMonitor: [TestVector]\n"
+      "  AbsoluteTolerance: 1.e-3\n"
+      "  RelativeTolerance: 1.e-3\n"
+      "  CoarseningFactor: 0.3\n");
+
+  // Manufacture some test data
+  tnsr::I<DataType, Dim> test_data{};
+  // X-component is linear in x and y
+  get<0>(test_data) = get<0>(logical_coords) + 2. * get<1>(logical_coords);
+  // Y-component is nonlinear in one dimension and linear in the other
+  get<1>(test_data) =
+      exp(-square(get<0>(logical_coords))) + 2. * get<1>(logical_coords);
+  if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+    get<0>(test_data) += 1.0i * get<0>(logical_coords);
+    get<1>(test_data) += 2.0i * get<1>(logical_coords);
+  }
+
+  Parallel::GlobalCache<Metavariables<DataType, Dim>> empty_cache{};
+  auto databox = db::create<
+      tmpl::list<::domain::Tags::Mesh<Dim>, TestVector<DataType, Dim>>>(
+      mesh, std::move(test_data));
+  const ObservationBox<tmpl::list<>,
+                       db::DataBox<tmpl::list<::domain::Tags::Mesh<Dim>,
+                                              TestVector<DataType, Dim>>>>
+      box{make_not_null(&databox)};
+
+  const auto flags = criterion->evaluate(box, empty_cache, ElementId<Dim>{0});
+  CHECK(flags[0] == amr::Flag::Split);
+  CHECK(flags[1] == amr::Flag::Join);
+}
 
 }  // namespace
 
@@ -69,35 +114,8 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.Loehner", "[Unit][ParallelAlgorithms]") {
     CHECK(indicator[1] == approx(0.));
   }
 
-  register_factory_classes_with_charm<Metavariables<Dim>>();
-  const auto criterion = TestHelpers::test_factory_creation<
-      amr::Criterion, Loehner<Dim, tmpl::list<TestVector<Dim>>>>(
-      "Loehner:\n"
-      "  VariablesToMonitor: [TestVector]\n"
-      "  AbsoluteTolerance: 1.e-3\n"
-      "  RelativeTolerance: 1.e-3\n"
-      "  CoarseningFactor: 0.3\n");
-
-  // Manufacture some test data
-  tnsr::I<DataVector, Dim> test_data{};
-  // X-component is linear in x and y
-  get<0>(test_data) = get<0>(logical_coords) + 2. * get<1>(logical_coords);
-  // Y-component is nonlinear in one dimension and linear in the other
-  get<1>(test_data) =
-      exp(-square(get<0>(logical_coords))) + 2. * get<1>(logical_coords);
-
-  Parallel::GlobalCache<Metavariables<Dim>> empty_cache{};
-  auto databox =
-      db::create<tmpl::list<::domain::Tags::Mesh<Dim>, TestVector<Dim>>>(
-          mesh, std::move(test_data));
-  ObservationBox<
-      tmpl::list<>,
-      db::DataBox<tmpl::list<::domain::Tags::Mesh<Dim>, TestVector<Dim>>>>
-      box{make_not_null(&databox)};
-
-  const auto flags = criterion->evaluate(box, empty_cache, ElementId<Dim>{0});
-  CHECK(flags[0] == amr::Flag::Split);
-  CHECK(flags[1] == amr::Flag::Join);
+  test<DataVector, Dim>();
+  test<ComplexDataVector, Dim>();
 }
 
 }  // namespace amr::Criteria

@@ -90,23 +90,23 @@ namespace amr::Criteria {
  * be cheaper to compute, but it requires an interpolation to the center and
  * maybe also to the faces, depending on the desired stencil.
  */
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 double loehner_smoothness_indicator(
-    gsl::not_null<DataVector*> first_deriv_buffer,
-    gsl::not_null<DataVector*> second_deriv_buffer,
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    gsl::not_null<VectorType*> first_deriv_buffer,
+    gsl::not_null<VectorType*> second_deriv_buffer,
+    const VectorType& tensor_component, const Mesh<Dim>& mesh,
     size_t dimension);
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 std::array<double, Dim> loehner_smoothness_indicator(
-    const DataVector& tensor_component, const Mesh<Dim>& mesh);
+    const VectorType& tensor_component, const Mesh<Dim>& mesh);
 /// @}
 
 namespace Loehner_detail {
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 void max_over_components(
     gsl::not_null<std::array<Flag, Dim>*> result,
-    gsl::not_null<std::array<DataVector, 2>*> deriv_buffers,
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    gsl::not_null<std::array<VectorType, 2>*> deriv_buffers,
+    const VectorType& tensor_component, const Mesh<Dim>& mesh,
     double relative_tolerance, double absolute_tolerance,
     double coarsening_factor);
 }
@@ -229,12 +229,13 @@ std::array<Flag, Dim> Loehner<Dim, TensorTags>::operator()(
     const ElementId<Dim>& /*element_id*/) const {
   auto result = make_array<Dim>(Flag::Undefined);
   const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+  using VectorType = typename Variables<TensorTags>::vector_type;
   // Check all tensors and all tensor components in turn. We take the
   // highest-priority refinement flag in each dimension, so if any tensor
   // component is non-smooth, the element will split in that dimension. And only
   // if all tensor components are smooth enough will elements join in that
   // dimension.
-  std::array<DataVector, 2> deriv_buffers{};
+  std::array<VectorType, 2> deriv_buffers{};
   tmpl::for_each<TensorTags>(
       [&result, &box, &mesh, &deriv_buffers, this](const auto tag_v) {
         // Stop if we have already decided to refine every dimension
@@ -248,7 +249,7 @@ std::array<Flag, Dim> Loehner<Dim, TensorTags>::operator()(
           return;
         }
         const auto& tensor = db::get<tag>(box);
-        for (const DataVector& tensor_component : tensor) {
+        for (const VectorType& tensor_component : tensor) {
           Loehner_detail::max_over_components(
               make_not_null(&result), make_not_null(&deriv_buffers),
               tensor_component, mesh, relative_tolerance_, absolute_tolerance_,

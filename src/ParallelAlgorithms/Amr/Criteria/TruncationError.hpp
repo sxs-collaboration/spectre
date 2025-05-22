@@ -41,11 +41,11 @@ namespace TruncationError_detail {
  * `Flag::IncreaseResolution`, followed by `Flag::DoNothing`, and then
  * `Flag::DecreaseResolution`.
  */
-template <size_t Dim>
+template <typename ValueType, size_t Dim>
 void max_over_components(
     gsl::not_null<std::array<Flag, Dim>*> result,
     const gsl::not_null<std::array<DataVector, Dim>*> power_monitors_buffer,
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    const ValueType& tensor_component, const Mesh<Dim>& mesh,
     double target_abs_truncation_error, double target_rel_truncation_error);
 }  // namespace TruncationError_detail
 
@@ -166,7 +166,7 @@ std::array<Flag, Dim> TruncationError<Dim, TensorTags>::operator()(
           return;
         }
         const auto& tensor = db::get<tag>(box);
-        for (const DataVector& tensor_component : tensor) {
+        for (const auto& tensor_component : tensor) {
           TruncationError_detail::max_over_components(
               make_not_null(&result), make_not_null(&power_monitors_buffer),
               tensor_component, mesh, target_abs_truncation_error_,
