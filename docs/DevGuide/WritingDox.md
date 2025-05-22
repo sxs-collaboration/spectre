@@ -163,14 +163,12 @@ When you refer to publications or books in the documentation, add a
 corresponding entry to `docs/References.bib`. Follow these guidelines when
 editing `docs/References.bib`:
 
-- Ideally, find the publication on [INSPIRE HEP](https://inspirehep.net), copy
-its BibTeX entry, remove the colon `:` from its key and add the `url` field (see
-below). We remove the colon because it can create problems in HTML related to
-its function as a CSS selector.
+- Ideally, find the publication on [INSPIRE HEP](https://inspirehep.net) and
+copy its BibTeX entry.
 - For publications that are not listed on [INSPIRE HEP](https://inspirehep.net),
 make sure to format the new entry's key in the same style, i.e.
-`(<Author>[a-zA-Z]+)(<Year>[0-9]{4})(<ID>[a-z]*)`. Good keys are, for
-instance, `Einstein1915` or `LVC2016a`. For books you may omit the year.
+`(<Author>[a-zA-Z]+):(<Year>[0-9]{4})(<ID>[a-z]*)`. Good keys are, for
+instance, `Einstein:1915` or `LVC:2016a`. For books you may omit the year.
 - Sort the list of BibTeX entries in the file alphabetically by their keys.
 - Provide open access or preprint information whenever possible. For
 publications available on [arXiv](https://arxiv.org), for instance, add the
