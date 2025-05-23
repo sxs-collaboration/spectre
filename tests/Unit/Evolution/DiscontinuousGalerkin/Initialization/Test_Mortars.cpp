@@ -15,7 +15,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Amr/Info.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -441,7 +440,7 @@ void test_p_refine(
     mortar_data_history_type<Dim>& mortar_data_history,
     const Mesh<Dim>& old_mesh, Mesh<Dim>& new_mesh,
     const Element<Dim>& old_element, Element<Dim>& new_element,
-    std::unordered_map<ElementId<Dim>, amr::Info<Dim>>& neighbor_info,
+    ::dg::MortarMap<Dim, Mesh<Dim>> neighbor_meshes,
     const ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
         expected_mortar_data,
     const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_mesh,
@@ -454,13 +453,12 @@ void test_p_refine(
     const mortar_data_history_type<Dim>& expected_mortar_data_history) {
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      domain::Tags::NeighborMesh<Dim>, amr::Tags::NeighborInfo<Dim>,
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
+      domain::Tags::NeighborMesh<Dim>, Tags::MortarData<Dim>,
+      Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
       Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
-      std::move(new_mesh), std::move(new_element),
-      ::dg::MortarMap<Dim, Mesh<Dim>>{}, std::move(neighbor_info),
+      std::move(new_mesh), std::move(new_element), std::move(neighbor_meshes),
       std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_infos),
       std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
@@ -571,7 +569,7 @@ void test_p_refine_gts() {
   mortar_data_history_type<Dim> mortar_data_history{};
 
   ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_ids{};
-  std::unordered_map<ElementId<Dim>, amr::Info<Dim>> neighbor_info{};
+  ::dg::MortarMap<Dim, Mesh<Dim>> neighbor_meshes{};
   for (const auto& [direction, neighbors] : old_element.neighbors()) {
     normal_covector_and_magnitude[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
@@ -592,9 +590,7 @@ void test_p_refine_gts() {
                              ? InterfaceDataPolicy::CopyProject
                              : InterfaceDataPolicy::OrientCopyProject}});
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
-      neighbor_info.emplace(
-          neighbor,
-          amr::Info<Dim>{std::array<amr::Flag, Dim>{}, neighbor_mesh});
+      neighbor_meshes.emplace(mortar_id, neighbor_mesh);
     }
   }
 
@@ -615,9 +611,9 @@ void test_p_refine_gts() {
       expected_mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
       expected_mortar_mesh.emplace(
           mortar_id,
-          ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),
-                            neighbor_info.at(neighbor).new_mesh.slice_away(
-                                direction.dimension())));
+          ::dg::mortar_mesh(
+              new_mesh.slice_away(direction.dimension()),
+              neighbor_meshes.at(mortar_id).slice_away(direction.dimension())));
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       expected_mortar_infos.emplace(
           mortar_id,
@@ -640,7 +636,7 @@ void test_p_refine_gts() {
   test_p_refine<Dim, false>(
       mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_ids,
       normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
-      old_element, new_element, neighbor_info, expected_mortar_data,
+      old_element, new_element, neighbor_meshes, expected_mortar_data,
       expected_mortar_mesh, expected_mortar_infos,
       expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
       expected_mortar_data_history);
@@ -702,7 +698,7 @@ void test_p_refine_lts() {
       normal_covector_and_magnitude{};
   mortar_data_history_type<Dim> mortar_data_history{};
   ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_ids{};
-  std::unordered_map<ElementId<Dim>, amr::Info<Dim>> neighbor_info{};
+  ::dg::MortarMap<Dim, Mesh<Dim>> neighbor_meshes{};
   for (const auto& [direction, neighbors] : old_element.neighbors()) {
     normal_covector_and_magnitude[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
@@ -723,9 +719,7 @@ void test_p_refine_lts() {
                              ? InterfaceDataPolicy::CopyProject
                              : InterfaceDataPolicy::OrientCopyProject}});
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
-      neighbor_info.emplace(
-          neighbor,
-          amr::Info<Dim>{std::array<amr::Flag, Dim>{}, neighbor_mesh});
+      neighbor_meshes.emplace(mortar_id, neighbor_mesh);
       mortar_data_history.emplace(mortar_id, boundary_history_type<Dim>{});
       for (size_t i = 0; i < 3; ++i) {
         mortar_data_history.at(mortar_id).local().insert(
@@ -762,9 +756,9 @@ void test_p_refine_lts() {
       expected_mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
       expected_mortar_mesh.emplace(
           mortar_id,
-          ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),
-                            neighbor_info.at(neighbor).new_mesh.slice_away(
-                                direction.dimension())));
+          ::dg::mortar_mesh(
+              new_mesh.slice_away(direction.dimension()),
+              neighbor_meshes.at(mortar_id).slice_away(direction.dimension())));
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       expected_mortar_infos.emplace(
           mortar_id,
@@ -803,7 +797,7 @@ void test_p_refine_lts() {
   test_p_refine<Dim, true>(
       mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_ids,
       normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
-      old_element, new_element, neighbor_info, expected_mortar_data,
+      old_element, new_element, neighbor_meshes, expected_mortar_data,
       expected_mortar_mesh, expected_mortar_infos,
       expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
       expected_mortar_data_history);
