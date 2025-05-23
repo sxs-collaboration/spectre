@@ -90,6 +90,10 @@ template <>
 struct MapTrait<ComplexDataVector, blaze::Abs> {
   using Type = DataVector;
 };
+template <>
+struct MapTrait<ComplexDataVector, blaze::SqrAbs> {
+  using Type = DataVector;
+};
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
                                                AddTrait, ComplexDataVector);
@@ -157,19 +161,6 @@ DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexDataVector, double, operator+=,
                                std::plus<>())
 DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexDataVector, double, operator-=,
                                std::minus<>())
-
-namespace blaze {
-// Partial specialization to disable being able to take the l?Norm of a
-// ComplexDataVector. This does *not* prevent taking the norm of the square (or
-// some other math expression) of a ComplexDataVector.
-template <typename Abs, typename Power>
-struct DVecNormHelper<
-    blaze::CustomVector<std::complex<double>, blaze::AlignmentFlag::unaligned,
-                        blaze::PaddingFlag::unpadded,
-                        blaze::defaultTransposeFlag, blaze::GroupTag<0>,
-                        ComplexDataVector>,
-    Abs, Power> {};
-}  // namespace blaze
 /// \endcond
 
 MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(ComplexDataVector)

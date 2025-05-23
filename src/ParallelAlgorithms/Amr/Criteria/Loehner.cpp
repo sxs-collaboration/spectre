@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Domain/Amr/Flag.hpp"
@@ -17,11 +18,11 @@
 
 namespace amr::Criteria {
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 double loehner_smoothness_indicator(
-    const gsl::not_null<DataVector*> first_deriv_buffer,
-    const gsl::not_null<DataVector*> second_deriv_buffer,
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    const gsl::not_null<VectorType*> first_deriv_buffer,
+    const gsl::not_null<VectorType*> second_deriv_buffer,
+    const VectorType& tensor_component, const Mesh<Dim>& mesh,
     const size_t dimension) {
   const size_t num_points = mesh.number_of_grid_points();
   set_number_of_grid_points(first_deriv_buffer, num_points);
@@ -40,15 +41,21 @@ double loehner_smoothness_indicator(
   apply_matrices(second_deriv_buffer, matrices, *first_deriv_buffer,
                  mesh.extents());
   // Take the L2 norm over all grid points
-  return blaze::l2Norm(*second_deriv_buffer) /
-         sqrt(second_deriv_buffer->size());
+  double norm = 0;
+  if constexpr (std::is_same_v<VectorType, ComplexDataVector>) {
+    norm = blaze::l2Norm(blaze::abs(*second_deriv_buffer));
+  } else {
+    norm = blaze::l2Norm(*second_deriv_buffer);
+  }
+  norm /= sqrt(second_deriv_buffer->size());
+  return norm;
 }
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 std::array<double, Dim> loehner_smoothness_indicator(
-    const DataVector& tensor_component, const Mesh<Dim>& mesh) {
+    const VectorType& tensor_component, const Mesh<Dim>& mesh) {
   std::array<double, Dim> result{};
-  std::array<DataVector, 2> deriv_buffers{};
+  std::array<VectorType, 2> deriv_buffers{};
   for (size_t d = 0; d < Dim; ++d) {
     gsl::at(result, d) = loehner_smoothness_indicator(
         make_not_null(&deriv_buffers[0]), make_not_null(&deriv_buffers[1]),
@@ -59,11 +66,11 @@ std::array<double, Dim> loehner_smoothness_indicator(
 
 namespace Loehner_detail {
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 void max_over_components(
     const gsl::not_null<std::array<Flag, Dim>*> result,
-    const gsl::not_null<std::array<DataVector, 2>*> deriv_buffers,
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    const gsl::not_null<std::array<VectorType, 2>*> deriv_buffers,
+    const VectorType& tensor_component, const Mesh<Dim>& mesh,
     const double relative_tolerance, const double absolute_tolerance,
     const double coarsening_factor) {
   const double umax = max(abs(tensor_component));
@@ -96,24 +103,25 @@ void max_over_components(
 
 }  // namespace Loehner_detail
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template double loehner_smoothness_indicator(                         \
-      gsl::not_null<DataVector*> first_deriv_buffer,                    \
-      gsl::not_null<DataVector*> second_deriv_buffer,                   \
-      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh,  \
-      size_t dimension);                                                \
-  template std::array<double, DIM(data)> loehner_smoothness_indicator(  \
-      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh); \
-  template void Loehner_detail::max_over_components(                    \
-      gsl::not_null<std::array<Flag, DIM(data)>*> result,               \
-      gsl::not_null<std::array<DataVector, 2>*> deriv_buffers,          \
-      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh,  \
-      double relative_tolerance, double absolute_tolerance,             \
+#define INSTANTIATE(_, data)                                              \
+  template double loehner_smoothness_indicator(                           \
+      gsl::not_null<DTYPE(data)*> first_deriv_buffer,                     \
+      gsl::not_null<DTYPE(data)*> second_deriv_buffer,                    \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh,  \
+      size_t dimension);                                                  \
+  template std::array<double, DIM(data)> loehner_smoothness_indicator(    \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh); \
+  template void Loehner_detail::max_over_components(                      \
+      gsl::not_null<std::array<Flag, DIM(data)>*> result,                 \
+      gsl::not_null<std::array<DTYPE(data), 2>*> deriv_buffers,           \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh,  \
+      double relative_tolerance, double absolute_tolerance,               \
       double coarsening_factor);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector, ComplexDataVector), (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM

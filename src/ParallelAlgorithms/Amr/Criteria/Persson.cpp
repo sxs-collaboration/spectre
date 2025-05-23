@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Domain/Amr/Flag.hpp"
@@ -18,10 +19,10 @@
 
 namespace amr::Criteria {
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 double persson_smoothness_indicator(
-    const gsl::not_null<DataVector*> filtered_component_buffer,
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    const gsl::not_null<VectorType*> filtered_component_buffer,
+    const VectorType& tensor_component, const Mesh<Dim>& mesh,
     const size_t dimension, const size_t num_highest_modes) {
   // Zero out the lowest modes in the given dimension
   static const Matrix identity{};
@@ -34,16 +35,22 @@ double persson_smoothness_indicator(
   apply_matrices(filtered_component_buffer, matrices, tensor_component,
                  mesh.extents());
   // Take the L2 norm over all grid points
-  return blaze::l2Norm(*filtered_component_buffer) /
-         sqrt(filtered_component_buffer->size());
+  double norm = 0;
+  if constexpr (std::is_same_v<VectorType, ComplexDataVector>) {
+    norm = blaze::l2Norm(blaze::abs(*filtered_component_buffer));
+  } else {
+    norm = blaze::l2Norm(*filtered_component_buffer);
+  }
+  norm /= sqrt(filtered_component_buffer->size());
+  return norm;
 }
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 std::array<double, Dim> persson_smoothness_indicator(
-    const DataVector& tensor_component, const Mesh<Dim>& mesh,
+    const VectorType& tensor_component, const Mesh<Dim>& mesh,
     const size_t num_highest_modes) {
   std::array<double, Dim> result{};
-  DataVector buffer{};
+  VectorType buffer{};
   for (size_t d = 0; d < Dim; ++d) {
     gsl::at(result, d) = persson_smoothness_indicator(
         make_not_null(&buffer), tensor_component, mesh, d, num_highest_modes);
@@ -53,10 +60,10 @@ std::array<double, Dim> persson_smoothness_indicator(
 
 namespace Persson_detail {
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 void max_over_components(const gsl::not_null<std::array<Flag, Dim>*> result,
-                         const gsl::not_null<DataVector*> buffer,
-                         const DataVector& tensor_component,
+                         const gsl::not_null<VectorType*> buffer,
+                         const VectorType& tensor_component,
                          const Mesh<Dim>& mesh, const size_t num_highest_modes,
                          const double alpha, const double absolute_tolerance,
                          const double coarsening_factor) {
@@ -91,23 +98,25 @@ void max_over_components(const gsl::not_null<std::array<Flag, Dim>*> result,
 
 }  // namespace Persson_detail
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template double persson_smoothness_indicator(                              \
-      gsl::not_null<DataVector*> buffer, const DataVector& tensor_component, \
-      const Mesh<DIM(data)>& mesh, size_t dimension,                         \
-      size_t num_highest_modes);                                             \
-  template std::array<double, DIM(data)> persson_smoothness_indicator(       \
-      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh,       \
-      size_t num_highest_modes);                                             \
-  template void Persson_detail::max_over_components(                         \
-      gsl::not_null<std::array<Flag, DIM(data)>*> result,                    \
-      gsl::not_null<DataVector*> buffer, const DataVector& tensor_component, \
-      const Mesh<DIM(data)>& mesh, size_t num_highest_modes, double alpha,   \
-      double absolute_tolerance, double coarsening_factor);
+#define INSTANTIATE(_, data)                                             \
+  template double persson_smoothness_indicator(                          \
+      gsl::not_null<DTYPE(data)*> buffer,                                \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh, \
+      size_t dimension, size_t num_highest_modes);                       \
+  template std::array<double, DIM(data)> persson_smoothness_indicator(   \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh, \
+      size_t num_highest_modes);                                         \
+  template void Persson_detail::max_over_components(                     \
+      gsl::not_null<std::array<Flag, DIM(data)>*> result,                \
+      gsl::not_null<DTYPE(data)*> buffer,                                \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh, \
+      size_t num_highest_modes, double alpha, double absolute_tolerance, \
+      double coarsening_factor);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (DataVector, ComplexDataVector), (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM

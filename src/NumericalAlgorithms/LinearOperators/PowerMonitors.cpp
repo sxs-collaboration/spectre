@@ -6,6 +6,8 @@
 #include <array>
 #include <cmath>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
@@ -18,9 +20,9 @@
 
 namespace PowerMonitors {
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
-                    const DataVector& u, const Mesh<Dim>& mesh) {
+                    const VectorType& u, const Mesh<Dim>& mesh) {
   ASSERT(u.size() == mesh.number_of_grid_points(),
          "The number of grid points per element ("
              << mesh.number_of_grid_points()
@@ -28,7 +30,7 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
                 "vector ("
              << u.size() << ").");
   // Get modal coefficients
-  const ModalVector modal_coefficients = to_modal_coefficients(u, mesh);
+  const auto modal_coefficients = to_modal_coefficients(u, mesh);
 
   double slice_sum = 0.0;
   size_t n_slice = 0;
@@ -42,7 +44,12 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
     for (size_t index = 0; index < n_stripe; ++index) {
       slice_sum = 0.0;
       for (SliceIterator si(mesh.extents(), sliced_dim, index); si; ++si) {
-        slice_sum += square(modal_coefficients[si.volume_offset()]);
+        const auto& mode = modal_coefficients[si.volume_offset()];
+        if constexpr (std::is_same_v<VectorType, ComplexDataVector>) {
+          slice_sum += square(abs(mode));
+        } else {
+          slice_sum += square(mode);
+        }
       }
       slice_sum /= n_slice;
       slice_sum = sqrt(slice_sum);
@@ -52,8 +59,8 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
   }
 }
 
-template <size_t Dim>
-std::array<DataVector, Dim> power_monitors(const DataVector& u,
+template <typename VectorType, size_t Dim>
+std::array<DataVector, Dim> power_monitors(const VectorType& u,
                                            const Mesh<Dim>& mesh) {
   std::array<DataVector, Dim> result{};
   power_monitors(make_not_null(&result), u, mesh);
@@ -109,9 +116,9 @@ double relative_truncation_error(const DataVector& power_monitor,
   return std::pow(10.0, weighted_average) / leading_term;
 }
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 std::array<double, Dim> relative_truncation_error(
-    const DataVector& tensor_component, const Mesh<Dim>& mesh) {
+    const VectorType& tensor_component, const Mesh<Dim>& mesh) {
   std::array<double, Dim> result{};
   const auto modes = power_monitors(tensor_component, mesh);
   for (size_t d = 0; d < Dim; ++d) {
@@ -121,9 +128,9 @@ std::array<double, Dim> relative_truncation_error(
   return result;
 }
 
-template <size_t Dim>
+template <typename VectorType, size_t Dim>
 std::array<double, Dim> absolute_truncation_error(
-    const DataVector& tensor_component, const Mesh<Dim>& mesh) {
+    const VectorType& tensor_component, const Mesh<Dim>& mesh) {
   std::array<double, Dim> result{};
   const auto modes = power_monitors(tensor_component, mesh);
   // Use infinity norm to estimate the order of magnitude of the variable
@@ -140,20 +147,22 @@ std::array<double, Dim> absolute_truncation_error(
   return result;
 }
 
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template std::array<DataVector, DIM(data)> power_monitors(            \
-      const DataVector& u, const Mesh<DIM(data)>& mesh);                \
-  template void power_monitors(                                         \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*> result,   \
-      const DataVector& u, const Mesh<DIM(data)>& mesh);                \
-  template std::array<double, DIM(data)> relative_truncation_error(     \
-      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh); \
-  template std::array<double, DIM(data)> absolute_truncation_error(     \
-      const DataVector& tensor_component, const Mesh<DIM(data)>& mesh);
+#define INSTANTIATE_DIM(_, data)                                          \
+  template std::array<DataVector, DIM(data)> power_monitors(              \
+      const DTYPE(data) & u, const Mesh<DIM(data)>& mesh);                \
+  template void power_monitors(                                           \
+      const gsl::not_null<std::array<DataVector, DIM(data)>*> result,     \
+      const DTYPE(data) & u, const Mesh<DIM(data)>& mesh);                \
+  template std::array<double, DIM(data)> relative_truncation_error(       \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh); \
+  template std::array<double, DIM(data)> absolute_truncation_error(       \
+      const DTYPE(data) & tensor_component, const Mesh<DIM(data)>& mesh);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DIM, (DataVector, ComplexDataVector),
+                        (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
