@@ -3,6 +3,7 @@
 
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 
+#include <algorithm>
 #include <deque>
 #include <utility>
 
@@ -11,6 +12,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NonUniform1D.hpp"
 #include "NumericalAlgorithms/Interpolation/LinearLeastSquares.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -500,6 +502,29 @@ void time_deriv_of_strahlkorper(
   time_deriv->coefficients() = std::move(new_coefficients);
 }
 
+template <typename Frame>
+void power_monitor(gsl::not_null<DataVector*> result,
+                   const Strahlkorper<Frame>& strahlkorper) {
+  result->destructive_resize(strahlkorper.l_max() + 1);
+  *result = 0.0;
+  for (SpherepackIterator it(strahlkorper.l_max(), strahlkorper.m_max()); it;
+       ++it) {
+    (*result)[it.l()] += square(strahlkorper.coefficients()[it()]);
+  }
+  for (size_t l = 0; l <= strahlkorper.l_max(); ++l) {
+    const double normalization =
+        2.0 * static_cast<double>(std::min(l, strahlkorper.m_max())) + 1.0;
+    (*result)[l] = sqrt((*result)[l] / normalization);
+  }
+}
+
+template <typename Frame>
+DataVector power_monitor(const Strahlkorper<Frame>& strahlkorper) {
+  DataVector result{strahlkorper.l_max() + 1, 0.0};
+  power_monitor(make_not_null(&result), strahlkorper);
+  return result;
+}
+
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
@@ -615,7 +640,12 @@ void time_deriv_of_strahlkorper(
       const std::vector<Strahlkorper<FRAME(data)>>& strahlkorpers);           \
   template void ylm::time_deriv_of_strahlkorper(                              \
       const gsl::not_null<Strahlkorper<FRAME(data)>*>,                        \
-      const std::deque<std::pair<double, Strahlkorper<FRAME(data)>>>&);
+      const std::deque<std::pair<double, Strahlkorper<FRAME(data)>>>&);       \
+  template void ylm::power_monitor(                                           \
+      gsl::not_null<DataVector*> result,                                      \
+      const Strahlkorper<FRAME(data)>& strahlkorper);                         \
+  template DataVector ylm::power_monitor(                                     \
+      const Strahlkorper<FRAME(data)>& strahlkorper);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Distorted, Frame::Grid, Frame::Inertial))

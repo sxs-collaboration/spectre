@@ -3,14 +3,18 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <deque>
+#include <random>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -511,6 +515,47 @@ void test_time_deriv_strahlkorper() {
     }
   }
 }
+
+void test_power_monitor() {
+  constexpr size_t l_max = 5;
+  constexpr size_t m_max = 4;
+
+  // Check that all power monitors for a spherical Strahlkorper vanish, except
+  // for the l=0 power monitor, which has a value of 2 sqrt(2) * radius.
+  // This is because f = (1/2)(1/sqrt(2)) P_0^0 a00, and the associated
+  // Legendre polynomial P_0^0 == 1.
+  constexpr double radius = 4.567;
+  const std::array<double, 3> center{0.1, -1.2, 2.3};
+  Strahlkorper<Frame::Inertial> spherical_strahlkorper{l_max, m_max, radius,
+                                                       center};
+  const DataVector power_spherical = power_monitor(spherical_strahlkorper);
+  DataVector expected_power_spherical{l_max + 1, 0.0};
+  expected_power_spherical[0] = 2.0 * sqrt(2.0) * radius;
+  CHECK_ITERABLE_APPROX(power_spherical, expected_power_spherical);
+
+  // Check that power monitor behaves as expected for Strahlkorper that is
+  // not spherical, performing the calculation in a slightly different way
+  // from the code being tested
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-0.01, 0.01);
+  const auto nonspherical_coefs = make_with_random_values<ModalVector>(
+      make_not_null(&generator), make_not_null(&distribution),
+      spherical_strahlkorper.coefficients());
+  const Strahlkorper<Frame::Inertial> nonspherical_strahlkorper{
+      l_max, m_max, nonspherical_coefs, center};
+  const DataVector power_nonspherical =
+      power_monitor(nonspherical_strahlkorper);
+  const auto nonspherical_coefs_sq = square(nonspherical_coefs);
+  DataVector power_nonspherical_expected = DataVector{l_max + 1, 0.0};
+  for (SpherepackIterator it(l_max, m_max); it; ++it) {
+    power_nonspherical_expected[it.l()] +=
+        nonspherical_coefs_sq[it()] /
+        (2.0 * static_cast<double>(std::min(it.l(), m_max)) + 1.0);
+  }
+  power_nonspherical_expected = sqrt(power_nonspherical_expected);
+
+  CHECK_ITERABLE_APPROX(power_nonspherical, power_nonspherical_expected);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.StrahlkorperFunctions",
@@ -523,5 +568,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.StrahlkorperFunctions",
   test_fit_ylm_coeffs_same();
   test_fit_ylm_coeffs_diff();
   test_time_deriv_strahlkorper();
+  test_power_monitor();
 }
 }  // namespace ylm
