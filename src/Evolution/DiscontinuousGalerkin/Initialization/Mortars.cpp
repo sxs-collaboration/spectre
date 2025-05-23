@@ -9,8 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "Domain/Domain.hpp"
-#include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Evolution/DiscontinuousGalerkin/InterfaceDataPolicy.hpp"
@@ -37,12 +35,10 @@ std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>>
-mortars_apply_impl(const Domain<Dim>& domain,
-                   const std::vector<std::array<size_t, Dim>>& initial_extents,
-                   const Spectral::Quadrature quadrature,
-                   const Element<Dim>& element,
+mortars_apply_impl(const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
-                   const Mesh<Dim>& volume_mesh) {
+                   const Mesh<Dim>& volume_mesh,
+                   const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_mesh) {
   MortarMap<evolution::dg::MortarDataHolder<Dim>, Dim> mortar_data{};
   MortarMap<Mesh<Dim - 1>, Dim> mortar_meshes{};
   MortarMap<MortarInfo<Dim>, Dim> mortar_infos{};
@@ -56,16 +52,12 @@ mortars_apply_impl(const Domain<Dim>& domain,
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
-      const auto& neighbor_block = domain.blocks()[neighbor.block_id()];
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       mortar_meshes.emplace(
           mortar_id,
           ::dg::mortar_mesh(
               volume_mesh.slice_away(direction.dimension()),
-              neighbor_orientation
-                  .inverse_map()(::domain::Initialization::create_initial_mesh(
-                      initial_extents, neighbor_block, neighbor, quadrature))
-                  .slice_away(direction.dimension())));
+              neighbor_mesh.at(mortar_id).slice_away(direction.dimension())));
       mortar_infos.emplace(
           mortar_id,
           MortarInfo<Dim>{
@@ -104,12 +96,9 @@ mortars_apply_impl(const Domain<Dim>& domain,
                        evolution::dg::Tags::MagnitudeOfNormal,                 \
                        evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>     \
   mortars_apply_impl(                                                          \
-      const Domain<DIM(data)>& domain,                                         \
-                                                                               \
-      const std::vector<std::array<size_t, DIM(data)>>& initial_extents,       \
-      const Spectral::Quadrature quadrature,                                   \
       const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,   \
-      const Mesh<DIM(data)>& volume_mesh);
+      const Mesh<DIM(data)>& volume_mesh,                                      \
+      const DirectionalIdMap<DIM(data), Mesh<DIM(data)>>& neighbor_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

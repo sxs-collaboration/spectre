@@ -32,6 +32,7 @@
 #include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
@@ -921,6 +922,7 @@ struct component {
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
                                                   Frame::Grid, Frame::Inertial>,
       domain::Tags::Element<Metavariables::volume_dim>,
+      domain::Tags::NeighborMesh<Metavariables::volume_dim>,
       domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>,
       domain::Tags::InverseJacobian<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,
@@ -1117,8 +1119,19 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   std::array<size_t, Dim> extents{};
   alg::iota(extents, 2_st);
-
+  const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre, quadrature};
   const Element<Dim> element{self_id, neighbors};
+
+  DirectionalIdMap<Dim, Mesh<Dim>> neighbor_mesh{};
+  for (const auto& [direction, direction_neighbors] : neighbors) {
+    for (const auto& neighbor : direction_neighbors) {
+      const auto& neighbor_orientation =
+          direction_neighbors.orientation(neighbor);
+      neighbor_mesh.emplace(DirectionalId{direction, neighbor},
+                            neighbor_orientation.inverse_map()(mesh));
+    }
+  }
+
   MockRuntimeSystem runner = [&dg_formulation, &extents, &south_orientation,
                               &grid_to_inertial_map]() {
     std::vector<DirectionMap<
@@ -1186,8 +1199,6 @@ void test_impl(const Spectral::Quadrature quadrature,
     return ActionTesting::get_databox_tag<component<metavars>, tag>(runner,
                                                                     self_id);
   };
-
-  const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre, quadrature};
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
@@ -1346,6 +1357,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          clone_unique_ptrs(functions_of_time),
          grid_to_inertial_map->get_clone(),
          element,
+         neighbor_mesh,
          inertial_coords,
          inv_jac,
          mesh_velocity,
@@ -1377,6 +1389,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              clone_unique_ptrs(functions_of_time),
              grid_to_inertial_map->get_clone(),
              element,
+             neighbor_mesh,
              inertial_coords,
              inv_jac,
              mesh_velocity,
@@ -1409,6 +1422,7 @@ void test_impl(const Spectral::Quadrature quadrature,
          clone_unique_ptrs(functions_of_time),
          grid_to_inertial_map->get_clone(),
          element,
+         neighbor_mesh,
          inertial_coords,
          inv_jac,
          mesh_velocity,
@@ -1439,6 +1453,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              clone_unique_ptrs(functions_of_time),
              grid_to_inertial_map->get_clone(),
              element,
+             neighbor_mesh,
              inertial_coords,
              inv_jac,
              mesh_velocity,

@@ -54,6 +54,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -204,10 +205,12 @@ void test(const Spectral::Quadrature quadrature) {
   PUPable_reg(TimeDependentMap<Dim>);
   PUPable_reg(domain::FunctionsOfTime::PiecewisePolynomial<2>);
 
+  std::array<size_t, Dim> neighbor_extents{};
+  alg::iota(neighbor_extents, 2_st);
   const std::vector<std::array<size_t, Dim>> initial_extents{
-      make_array<Dim>(4_st)};
+      make_array<Dim>(4_st), neighbor_extents};
   const std::vector<std::array<size_t, Dim>> initial_refinement{
-      make_array<Dim>(0_st)};
+      make_array<Dim>(0_st), make_array<Dim>(0_st)};
   const size_t num_pts = pow<Dim>(4_st);
   const DataVector velocity{Dim, 3.6};
   const double initial_time = 0.0;
@@ -223,13 +226,40 @@ void test(const Spectral::Quadrature quadrature) {
           std::array<DataVector, 3>{{{Dim, 0.0}, velocity, {Dim, 0.0}}},
           expiration_time)));
 
-  std::vector<Block<Dim>> blocks{1};
+  auto neighbor_orientation = OrientationMap<Dim>::create_aligned();
+  Mesh<Dim> expected_neighbor_mesh(2_st, Spectral::Basis::Legendre, quadrature);
+  if constexpr (Dim == 2) {
+    neighbor_orientation = OrientationMap<2>(
+        std::array{Direction<2>::upper_eta(), Direction<2>::lower_xi()});
+    expected_neighbor_mesh =
+        Mesh<2>({{3_st, 2_st}}, Spectral::Basis::Legendre, quadrature);
+  } else if constexpr (Dim == 3) {
+    neighbor_orientation = OrientationMap<3>(
+        std::array{Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
+                   Direction<3>::upper_xi()});
+    expected_neighbor_mesh =
+        Mesh<3>({{3_st, 4_st, 2_st}}, Spectral::Basis::Legendre, quadrature);
+  }
+
+  DirectionMap<Dim, BlockNeighbors<Dim>> block_neighbors{};
+  DirectionMap<Dim, BlockNeighbors<Dim>> other_block_neighbors{};
+  block_neighbors.emplace(Direction<Dim>::upper_xi(),
+                          BlockNeighbors<Dim>{1, neighbor_orientation});
+  other_block_neighbors.emplace(
+      neighbor_orientation(Direction<Dim>::lower_xi()),
+      BlockNeighbors<Dim>{0, neighbor_orientation.inverse_map()});
+
+  std::vector<Block<Dim>> blocks{2};
   blocks[0] = Block<Dim>{
       std::make_unique<
           TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Inertial>>(
           create_affine_map<Dim, Frame::BlockLogical, Frame::Inertial>()),
-      0,
-      {}};
+      0, block_neighbors};
+  blocks[1] = Block<Dim>{
+      std::make_unique<
+          TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Inertial>>(
+          create_affine_map<Dim, Frame::BlockLogical, Frame::Inertial>()),
+      1, other_block_neighbors};
   Domain<Dim> domain{std::move(blocks)};
 
   if (TimeDependent) {
@@ -249,10 +279,13 @@ void test(const Spectral::Quadrature quadrature) {
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
   ActionTesting::next_action<component>(make_not_null(&runner), self_id);
 
-  CHECK(ActionTesting::get_databox_tag<component,
-                                       domain::Tags::NeighborMesh<Dim>>(runner,
-                                                                        self_id)
-            .empty());
+  const auto& neighbor_mesh =
+      ActionTesting::get_databox_tag<component,
+                                     domain::Tags::NeighborMesh<Dim>>(runner,
+                                                                      self_id);
+  CHECK(neighbor_mesh.size() == 1);
+  CHECK(neighbor_mesh.at({Direction<Dim>::upper_xi(), ElementId<Dim>(1)}) ==
+        expected_neighbor_mesh);
 
   // Set up data to be used for checking correctness
   const auto logical_to_grid_map =

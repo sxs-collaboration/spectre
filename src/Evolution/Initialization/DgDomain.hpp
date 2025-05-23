@@ -80,8 +80,7 @@ struct Domain {
                  evolution::dg::Tags::Quadrature>;
 
   /// Tags for simple DataBox items that are default initialized.
-  using default_initialized_simple_tags =
-      tmpl::list<::domain::Tags::NeighborMesh<Dim>>;
+  using default_initialized_simple_tags = tmpl::list<>;
 
   /// Tags for items fetched by the DataBox and passed to the apply function
   using argument_tags =
@@ -92,8 +91,9 @@ struct Domain {
   using return_tags =
       tmpl::list<::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>,
                  ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 ::domain::CoordinateMaps::Tags::CoordinateMap<
-                     Dim, Frame::Grid, Frame::Inertial>>;
+                 ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                               Frame::Inertial>,
+                 ::domain::Tags::NeighborMesh<Dim>>;
 
   /// Tags for mutable DataBox items that are either default initialized or
   /// initialized by the apply function
@@ -138,6 +138,7 @@ struct Domain {
       const gsl::not_null<std::unique_ptr<
           ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>*>
           grid_to_inertial_map,
+      const gsl::not_null<DirectionalIdMap<Dim, Mesh<Dim>>*> neighbor_mesh,
       const ::Domain<Dim>& domain,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
@@ -157,6 +158,18 @@ struct Domain {
       *grid_to_inertial_map =
           ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
               ::domain::CoordinateMaps::Identity<Dim>{});
+    }
+
+    for (const auto& [direction, neighbors] : element->neighbors()) {
+      for (const auto& neighbor : neighbors) {
+        const auto& neighbor_block = domain.blocks()[neighbor.block_id()];
+        const auto& neighbor_orientation = neighbors.orientation(neighbor);
+        neighbor_mesh->emplace(
+            DirectionalId{direction, neighbor},
+            neighbor_orientation.inverse_map()(
+                ::domain::Initialization::create_initial_mesh(
+                    initial_extents, neighbor_block, neighbor, quadrature)));
+      }
     }
   }
 };
