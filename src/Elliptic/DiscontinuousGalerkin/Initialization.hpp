@@ -31,6 +31,7 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
@@ -468,9 +469,9 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
         const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
         const auto& neighbor_mesh = neighbor_meshes.at(mortar_id);
         mortar_meshes->emplace(
-            mortar_id, ::dg::mortar_mesh(
-                           face_mesh, orientation.inverse_map()(neighbor_mesh)
-                                          .slice_away(direction.dimension())));
+            mortar_id,
+            ::dg::mortar_mesh(face_mesh,
+                              neighbor_mesh.slice_away(direction.dimension())));
         mortar_sizes->emplace(
             mortar_id, ::dg::mortar_size(element_id, neighbor_id,
                                          direction.dimension(), orientation));
@@ -504,9 +505,8 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
         // calculated on both sides of the mortar. So we switch perspective to
         // the neighbor here.
         const auto direction_in_neighbor = orientation(direction).opposite();
-        const auto reoriented_mortar_mesh = ::dg::mortar_mesh(
-            orientation(mesh).slice_away(direction_in_neighbor.dimension()),
-            neighbor_mesh.slice_away(direction_in_neighbor.dimension()));
+        const auto reoriented_mortar_mesh = orient_mesh_on_slice(
+            mortar_mesh, direction.dimension(), orientation);
         const auto mortar_size_in_neighbor = ::dg::mortar_size(
             neighbor_id, element_id, direction_in_neighbor.dimension(),
             orientation.inverse_map());
@@ -533,13 +533,13 @@ struct InitializeFacesAndMortars : tt::ConformsTo<::amr::protocols::Projector> {
             reoriented_mortar_mesh.extents(), direction_in_neighbor.dimension(),
             orientation.inverse_map());
         penalty_factors->emplace(
-            mortar_id, elliptic::dg::penalty(
-                           blaze::min(get(perpendicular_element_size),
-                                      neighbor_element_size),
-                           std::max(mesh.extents(direction.dimension()),
-                                    neighbor_mesh.extents(
-                                        direction_in_neighbor.dimension())),
-                           penalty_parameter));
+            mortar_id,
+            elliptic::dg::penalty(
+                blaze::min(get(perpendicular_element_size),
+                           neighbor_element_size),
+                std::max(mesh.extents(direction.dimension()),
+                         neighbor_mesh.extents(direction.dimension())),
+                penalty_parameter));
       }  // neighbors
     }    // internal directions
     // Mortars (external directions)

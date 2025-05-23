@@ -47,7 +47,8 @@ void InitializeOverlapGeometry<Dim>::operator()(
       const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
       const auto& neighbor_mesh = neighbor_meshes.at(mortar_id);
       const auto neighbor_face_mesh =
-          neighbor_mesh.slice_away(direction_from_neighbor.dimension());
+          orientation(neighbor_mesh)
+              .slice_away(direction_from_neighbor.dimension());
       neighbor_mortar_meshes->emplace(
           mortar_id,
           ::dg::mortar_mesh(reoriented_face_mesh, neighbor_face_mesh));

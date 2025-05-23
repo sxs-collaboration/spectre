@@ -72,96 +72,95 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
          std::array<SegmentId, 1>({{new_segment_id}})},
         previous_neighbors_amr_info.at(previous_neighbor_id).new_mesh);
     return new_neighbors_in_direction;
-  }
+  } else {
+    for (const auto& previous_neighbor_id :
+         previous_neighbors_in_direction.ids()) {
+      const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
+          previous_neighbors_in_direction.orientation(previous_neighbor_id);
+      const Direction<VolumeDim> direction_to_me_in_neighbor_frame =
+          orientation_map_from_me_to_neighbors(direction.opposite());
+      const size_t dim_of_direction_to_me_in_neighbor_frame =
+          direction_to_me_in_neighbor_frame.dimension();
+      const std::array<SegmentId, VolumeDim> my_segment_ids_in_neighbor_frame =
+          orientation_map_from_me_to_neighbors(my_id.segment_ids());
 
-  for (const auto& previous_neighbor_id :
-       previous_neighbors_in_direction.ids()) {
-    const OrientationMap<VolumeDim>& orientation_map_from_me_to_neighbors =
-        previous_neighbors_in_direction.orientation(previous_neighbor_id);
-    const Direction<VolumeDim> direction_to_me_in_neighbor_frame =
-        orientation_map_from_me_to_neighbors(direction.opposite());
-    const size_t dim_of_direction_to_me_in_neighbor_frame =
-        direction_to_me_in_neighbor_frame.dimension();
-    const std::array<SegmentId, VolumeDim> my_segment_ids_in_neighbor_frame =
-        orientation_map_from_me_to_neighbors(my_id.segment_ids());
-
-    // a neighbor_segment_id is valid if it touches me in the normal direction
-    // (which is in dim_of_direction_to_me_in_neighbor_frame) or overlaps with
-    // me in the transverse directions
-    std::array<std::vector<SegmentId>, VolumeDim> valid_neighbor_segment_ids;
-    // it is possible that a previous neighbor (or its children) will not be
-    // a neighbor of me (Note: the previous_neighbors may be those of my parent
-    // or children if I am the result of h-refinement)
-    bool there_is_no_neighbor = false;
-    const auto neighbor_segment_ids = previous_neighbor_id.segment_ids();
-    const auto& new_neighbor_mesh =
-        previous_neighbors_amr_info.at(previous_neighbor_id).new_mesh;
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      const amr::Flag neighbor_flag =
-          previous_neighbors_amr_info.at(previous_neighbor_id).flags.at(d);
-      const SegmentId neighbor_segment_id = gsl::at(neighbor_segment_ids, d);
-      if (dim_of_direction_to_me_in_neighbor_frame == d) {
-        // This is the normal direction.  I know my previous neighbor touched
-        // me so there is exactly one valid segment.
-        gsl::at(valid_neighbor_segment_ids, d)
-            .push_back(
-                amr::Flag::Join == neighbor_flag
-                    ? neighbor_segment_id.id_of_parent()
-                    : (amr::Flag::Split == neighbor_flag
-                           ? neighbor_segment_id.id_of_child(
-                                 direction_to_me_in_neighbor_frame.side())
-                           : neighbor_segment_id));
-      } else {
-        // This is a transverse direction.  Since we keep refinement levels
-        // within one, there can be 0 to 2 valid segments.
-        if (amr::Flag::Join == neighbor_flag) {
-          if (overlapping_within_one_level(
-                  neighbor_segment_id.id_of_parent(),
-                  gsl::at(my_segment_ids_in_neighbor_frame, d))) {
-            gsl::at(valid_neighbor_segment_ids, d)
-                .push_back(neighbor_segment_id.id_of_parent());
-          }
-        } else if (amr::Flag::Split == neighbor_flag) {
-          if (overlapping_within_one_level(
-                  neighbor_segment_id.id_of_child(Side::Lower),
-                  gsl::at(my_segment_ids_in_neighbor_frame, d))) {
-            gsl::at(valid_neighbor_segment_ids, d)
-                .push_back(neighbor_segment_id.id_of_child(Side::Lower));
-          }
-          if (overlapping_within_one_level(
-                  neighbor_segment_id.id_of_child(Side::Upper),
-                  gsl::at(my_segment_ids_in_neighbor_frame, d))) {
-            gsl::at(valid_neighbor_segment_ids, d)
-                .push_back(neighbor_segment_id.id_of_child(Side::Upper));
-          }
+      // a neighbor_segment_id is valid if it touches me in the normal
+      // direction (which is in dim_of_direction_to_me_in_neighbor_frame) or
+      // overlaps with me in the transverse directions
+      std::array<std::vector<SegmentId>, VolumeDim> valid_neighbor_segment_ids;
+      // it is possible that a previous neighbor (or its children) will not be
+      // a neighbor of me (Note: the previous_neighbors may be those of my
+      // parent or children if I am the result of h-refinement)
+      bool there_is_no_neighbor = false;
+      const auto neighbor_segment_ids = previous_neighbor_id.segment_ids();
+      const auto new_neighbor_mesh =
+          orientation_map_from_me_to_neighbors.inverse_map()(
+              previous_neighbors_amr_info.at(previous_neighbor_id).new_mesh);
+      for (size_t d = 0; d < VolumeDim; ++d) {
+        const amr::Flag neighbor_flag =
+            previous_neighbors_amr_info.at(previous_neighbor_id).flags.at(d);
+        const SegmentId neighbor_segment_id = gsl::at(neighbor_segment_ids, d);
+        if (dim_of_direction_to_me_in_neighbor_frame == d) {
+          // This is the normal direction.  I know my previous neighbor touched
+          // me so there is exactly one valid segment.
+          gsl::at(valid_neighbor_segment_ids, d)
+              .push_back(
+                  amr::Flag::Join == neighbor_flag
+                      ? neighbor_segment_id.id_of_parent()
+                      : (amr::Flag::Split == neighbor_flag
+                             ? neighbor_segment_id.id_of_child(
+                                   direction_to_me_in_neighbor_frame.side())
+                             : neighbor_segment_id));
         } else {
-          if (overlapping_within_one_level(
-                  neighbor_segment_id,
-                  gsl::at(my_segment_ids_in_neighbor_frame, d))) {
-            gsl::at(valid_neighbor_segment_ids, d)
-                .push_back(neighbor_segment_id);
-          }
-        }  // if-elseif-else on neighbor_flag
+          // This is a transverse direction.  Since we keep refinement levels
+          // within one, there can be 0 to 2 valid segments.
+          if (amr::Flag::Join == neighbor_flag) {
+            if (overlapping_within_one_level(
+                    neighbor_segment_id.id_of_parent(),
+                    gsl::at(my_segment_ids_in_neighbor_frame, d))) {
+              gsl::at(valid_neighbor_segment_ids, d)
+                  .push_back(neighbor_segment_id.id_of_parent());
+            }
+          } else if (amr::Flag::Split == neighbor_flag) {
+            if (overlapping_within_one_level(
+                    neighbor_segment_id.id_of_child(Side::Lower),
+                    gsl::at(my_segment_ids_in_neighbor_frame, d))) {
+              gsl::at(valid_neighbor_segment_ids, d)
+                  .push_back(neighbor_segment_id.id_of_child(Side::Lower));
+            }
+            if (overlapping_within_one_level(
+                    neighbor_segment_id.id_of_child(Side::Upper),
+                    gsl::at(my_segment_ids_in_neighbor_frame, d))) {
+              gsl::at(valid_neighbor_segment_ids, d)
+                  .push_back(neighbor_segment_id.id_of_child(Side::Upper));
+            }
+          } else {
+            if (overlapping_within_one_level(
+                    neighbor_segment_id,
+                    gsl::at(my_segment_ids_in_neighbor_frame, d))) {
+              gsl::at(valid_neighbor_segment_ids, d)
+                  .push_back(neighbor_segment_id);
+            }
+          }  // if-elseif-else on neighbor_flag
 
-        if (gsl::at(valid_neighbor_segment_ids, d).empty()) {
-          there_is_no_neighbor = true;
+          if (gsl::at(valid_neighbor_segment_ids, d).empty()) {
+            there_is_no_neighbor = true;
+          }
+        }  // if-else on normal vs transverse dimension
+
+        if (there_is_no_neighbor) {
+          // No need to loop over the remaining dimensions
+          break;
         }
-      }  // if-else on normal vs transverse dimension
+      }  // loop over dimensions
 
       if (there_is_no_neighbor) {
-        // No need to loop over the remaining dimensions
-        break;
+        // This previous neighbor produced no new neighbors, continue with the
+        // next neighbor
+        continue;
       }
-    }  // loop over dimensions
 
-    if (there_is_no_neighbor) {
-      // This previous neighbor produced no new neighbors, continue with the
-      // next neighbor
-      continue;
-    }
-
-    for (const auto segment_id_xi : valid_neighbor_segment_ids[0]) {
-      if constexpr (VolumeDim > 1) {
+      for (const auto segment_id_xi : valid_neighbor_segment_ids[0]) {
         for (const auto segment_id_eta : valid_neighbor_segment_ids[1]) {
           if constexpr (VolumeDim == 2) {
             // multiple previous neighbors may have joined to form a new
@@ -184,8 +183,8 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
           }
         }
       }
-    }
-  }  // loop over previous neighbors
+    }  // loop over previous neighbors
+  }
 
   return new_neighbors_in_direction;
 }

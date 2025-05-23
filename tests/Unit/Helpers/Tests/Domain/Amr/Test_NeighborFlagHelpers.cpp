@@ -29,7 +29,7 @@ void test_valid_neighbor_info_1d() {
   const auto split = std::array{::amr::Flag::Split};
   const auto join = std::array{::amr::Flag::Join};
   const auto stay = std::array{::amr::Flag::IncreaseResolution};
-  const Mesh<1> mesh{5, Spectral::Basis::Legendre,
+  const Mesh<1> mesh{2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const auto all_allowed = [&join, &stay, &split,
                             &mesh](const ElementId<1>& neighbor_id) {
@@ -97,8 +97,8 @@ void test_valid_neighbor_info_2d() {
   const Neighbors<2> neighbors_0{std::unordered_set{neighbor_0}, aligned};
   ::TestHelpers::domain::check_neighbors(neighbors_0, element_id,
                                          Direction<2>::upper_xi());
-  const Mesh<2> mesh{5, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
+  const Mesh<2> mesh{
+      {{2, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   CHECK(valid_neighbor_info(element_id, stay_stay, neighbors_0) ==
         std::vector{neighbor_info_t<2>{{neighbor_0, {join_join, mesh}}},
                     neighbor_info_t<2>{{neighbor_0, {join_stay, mesh}}},

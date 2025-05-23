@@ -340,8 +340,8 @@ struct InitializeSubdomain {
         const auto direction_from_neighbor = orientation(direction.opposite());
         const ::dg::MortarId<Dim> mortar_id{direction, neighbor_id};
         const auto neighbor_face_mesh =
-            neighbor_meshes.at(mortar_id).slice_away(
-                direction_from_neighbor.dimension());
+            orientation(neighbor_meshes.at(mortar_id))
+                .slice_away(direction_from_neighbor.dimension());
         const auto neighbor_face_logical_coords = interface_logical_coordinates(
             neighbor_face_mesh, direction_from_neighbor);
         const auto& neighbor_block = domain.blocks()[neighbor_id.block_id()];
