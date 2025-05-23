@@ -153,7 +153,18 @@ void test_compute_extrinsic_curvature(const DataType& used_for_size) {
       "ComputeSpacetimeQuantities", "extrinsic_curvature", {{{-10., 10.}}},
       used_for_size);
 }
-
+template <size_t SpatialDim, typename DataType>
+void test_cov_deriv_extrinsic_curvature_adm(const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::ijj<DataType, SpatialDim, Frame::Inertial> (*)(
+          const tnsr::ijj<DataType, SpatialDim, Frame::Inertial>&,
+          const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
+          const tnsr::Ijj<DataType, SpatialDim, Frame::Inertial>&)>(
+          &::gr::covariant_derivative_of_extrinsic_curvature<
+              DataType, SpatialDim, Frame::Inertial>),
+      "ComputeSpacetimeQuantities", "covariant_deriv_extrinsic_curvture_adm",
+      {{{-1., 1.}}}, used_for_size);
+}
 template <size_t Dim, typename T>
 void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
   // Set up random values for lapse, shift, and spatial_metric.
@@ -232,6 +243,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_deriv_inverse_spatial_metric,
                                     (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_cov_deriv_extrinsic_curvature_adm,
+                                    (1, 2, 3));
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
@@ -263,6 +276,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   TestHelpers::db::test_compute_tag<
       gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>>(
       "DerivativesOfSpacetimeMetric");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::CovariantDerivativeOfExtrinsicCurvatureCompute<
+          3, Frame::Inertial>>("CovariantDerivativeOfExtrinsicCurvature");
 
   // Second, put the compute items into a data box and check that they
   // put the correct results

@@ -153,6 +153,22 @@ def extrinsic_curvature(
     return ext_curve
 
 
+def covariant_deriv_extrinsic_curvture_adm(
+    d_ex_curv,
+    ex_curv,
+    spatial_christoffel_second_kind,
+):
+    grad_ex_curv = d_ex_curv
+    grad_ex_curv += -np.einsum(
+        "lki,lj->kij", spatial_christoffel_second_kind, ex_curv
+    )
+    grad_ex_curv += -np.einsum(
+        "lkj,il->kij", spatial_christoffel_second_kind, ex_curv
+    )
+
+    return grad_ex_curv
+
+
 def deriv_inverse_spatial_metric(inverse_spatial_metric, d_spatial_metric):
     return -np.einsum(
         "in,mj,knm->kij",

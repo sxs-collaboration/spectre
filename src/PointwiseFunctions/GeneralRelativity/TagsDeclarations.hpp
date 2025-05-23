@@ -61,6 +61,8 @@ template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct ExtrinsicCurvature;
 template <typename DataType>
 struct TraceExtrinsicCurvature;
+template <typename DataType, size_t Dim, typename Frame>
+struct CovariantDerivativeOfExtrinsicCurvature;
 template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct SpatialRicci;
 template <typename DataType>

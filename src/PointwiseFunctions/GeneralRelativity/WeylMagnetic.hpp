@@ -84,8 +84,7 @@ template <typename DataType, size_t Dim, typename Frame>
 struct WeylMagneticCompute : WeylMagnetic<DataType, Dim, Frame>,
                              db::ComputeTag {
   using argument_tags = tmpl::list<
-      ::Tags::deriv<gr::Tags::ExtrinsicCurvature<DataType, Dim, Frame>,
-                    tmpl::size_t<Dim>, Frame>,
+      gr::Tags::CovariantDerivativeOfExtrinsicCurvature<DataType, Dim, Frame>,
       gr::Tags::SpatialMetric<DataType, Dim, Frame>,
       gr::Tags::SqrtDetSpatialMetric<DataType>>;
 
