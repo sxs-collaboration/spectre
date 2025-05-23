@@ -69,7 +69,9 @@ window.onload = function(){
         var tooltip_base = this;
         // Get the reference id, e.g. `CITEREF_Kopriva`. This is the one used as
         // anchor on the bibliography page.
-        var ref_id = $(this).attr('href').match(/CITEREF_([a-zA-Z0-9]+)/)[0];
+        var ref_id = $(this).attr('href').match(/CITEREF_(.*)/)[0];
+        // Backslashify colons, which indicate CSS pseudo-selectors
+        ref_id = ref_id.replaceAll(":", "\\:");
         // Load the bibliography page to retrieve the reference data as nicely
         // formatted HTML.
         // This does not work locally because it is forbidden to access files,
