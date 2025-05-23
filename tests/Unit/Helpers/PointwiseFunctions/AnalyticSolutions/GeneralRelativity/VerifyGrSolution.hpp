@@ -375,7 +375,8 @@ void verify_consistency(const Solution& solution, const double time,
                  Tags::dt<SpatialMetric>, detail::deriv<SpatialMetric, Frame>,
                  Tags::dt<Lapse>, Tags::dt<Shift>, detail::deriv<Lapse, Frame>>;
 
-  auto derivative_approx = approx.epsilon(derivative_tolerance);
+  auto derivative_approx = approx;
+  derivative_approx.epsilon(derivative_tolerance);
 
   const auto vars = solution.variables(position, time, tags{});
 
@@ -445,7 +446,8 @@ void verify_spatial_consistency(const Solution& solution, const double time,
                  Tags::dt<SpatialMetric>, detail::deriv<SpatialMetric, Frame>,
                  Tags::dt<Lapse>, Tags::dt<Shift>, detail::deriv<Lapse, Frame>>;
 
-  auto derivative_approx = approx.epsilon(derivative_tolerance);
+  auto derivative_approx = approx;
+  derivative_approx.epsilon(derivative_tolerance);
 
   const auto vars = solution.variables(position, time, tags{});
 

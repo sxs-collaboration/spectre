@@ -53,12 +53,13 @@ void check_burgers_solution(const Solution& solution,
       CHECK(get(solution.du_dt(xp, time)) == approx(dtup));
       // Check that the time derivative is the derivative of the
       // value.
+      const auto deriv_approx = Approx::custom().epsilon(1.e-10);
       CHECK(numerical_derivative(
                 [&solution, &xp](const std::array<double, 1>& t) {
                   return std::array<double, 1>{{get(solution.u(xp, t[0]))}};
                 },
                 std::array<double, 1>{{time}}, 0,
-                1e-4)[0] == approx.epsilon(1e-10)(dtup));
+                1e-4)[0] == deriv_approx(dtup));
       // Check that the Burgers equation is satisfied.
       CHECK(numerical_derivative(
                 [&solution, &time](const std::array<double, 1>& x) {
@@ -69,7 +70,7 @@ void check_burgers_solution(const Solution& solution,
                   return std::array<double, 1>{{get<0>(flux)[0]}};
                 },
                 std::array<double, 1>{{get<0>(xp)}}, 0,
-                1e-4)[0] == approx(-dtup));
+                1e-4)[0] == deriv_approx(-dtup));
     }
   }
 }
