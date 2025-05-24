@@ -309,8 +309,85 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   template <typename Metavariables, typename DbTags, typename TemporalId>
   static tnsr::I<DataVector, 3, Frame> points(
       db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& /*meta*/,
-      const TemporalId& /*temporal_id*/) {
+      const TemporalId& temporal_id) {
     const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
+
+    if (fast_flow.current_iteration() == 0) {
+      // Put new initial guess into ylm::Tags::Strahlkorper<Frame>.
+      // We need to do this now, and not at the end of the previous horizon
+      // search, because only now do we know the temporal_id of this horizon
+      // search.
+      db::mutate<ylm::Tags::Strahlkorper<Frame>>(
+          [&temporal_id](
+              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
+              const std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>&
+                  previous_strahlkorpers) {
+            // If we have zero previous_strahlkorpers, then the
+            // initial guess is already in strahlkorper, so do
+            // nothing.
+            //
+            // If we have one previous_strahlkorper, then we have had
+            // a successful horizon find, and the initial guess for the
+            // next horizon find is already in strahlkorper, so
+            // again we do nothing.
+            //
+            // If we have 2 previous_strahlkorpers and the time of the second
+            // one is a NaN, this means that the corresponding
+            // previous_strahlkorper is the original initial guess, so
+            // again we do nothing.
+            //
+            // If we have 2 valid previous_strahlkorpers, then
+            // we set the initial guess by linear extrapolation in time
+            // using the last 2 previous_strahlkorpers.
+            //
+            // If we have 3 valid previous_strahlkorpers, then
+            // we set the initial guess by quadratic extrapolation in time
+            // using the last 3 previous_strahlkorpers.
+            //
+            // For extrapolation, we assume that
+            // * Expansion center of all the Strahlkorpers are equal.
+            // * Maximum L of all the Strahlkorpers are equal.
+            // It is easy to relax the max L assumption once we start
+            // adaptively changing the L of the strahlkorpers.
+            if (previous_strahlkorpers.size() > 1 and
+                not std::isnan(previous_strahlkorpers[1].first)) {
+              if (previous_strahlkorpers.size() > 2 and
+                  not std::isnan(previous_strahlkorpers[2].first)) {
+                // Quadratic extrapolation
+                const double new_time =
+                    InterpolationTarget_detail::get_temporal_id_value(
+                        temporal_id);
+                const double dt_0 = previous_strahlkorpers[0].first - new_time;
+                const double dt_1 = previous_strahlkorpers[1].first - new_time;
+                const double dt_2 = previous_strahlkorpers[2].first - new_time;
+                const double fac_0 =
+                    dt_1 * dt_2 / ((dt_1 - dt_0) * (dt_2 - dt_0));
+                const double fac_1 =
+                    dt_0 * dt_2 / ((dt_2 - dt_1) * (dt_0 - dt_1));
+                const double fac_2 = 1.0 - fac_0 - fac_1;
+                strahlkorper->coefficients() =
+                    fac_0 * previous_strahlkorpers[0].second.coefficients() +
+                    fac_1 * previous_strahlkorpers[1].second.coefficients() +
+                    fac_2 * previous_strahlkorpers[2].second.coefficients();
+              } else {
+                // Linear extrapolation
+                const double new_time =
+                    InterpolationTarget_detail::get_temporal_id_value(
+                        temporal_id);
+                const double dt_0 = previous_strahlkorpers[0].first - new_time;
+                const double dt_1 = previous_strahlkorpers[1].first - new_time;
+                const double fac_0 = dt_1 / (dt_1 - dt_0);
+                const double fac_1 = 1.0 - fac_0;
+                strahlkorper->coefficients() =
+                    fac_0 * previous_strahlkorpers[0].second.coefficients() +
+                    fac_1 * previous_strahlkorpers[1].second.coefficients();
+              }
+            }
+          },
+          make_not_null(&box),
+          db::get<ylm::Tags::PreviousStrahlkorpers<Frame>>(box));
+    }
+
     const auto& strahlkorper = db::get<ylm::Tags::Strahlkorper<Frame>>(box);
 
     const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
