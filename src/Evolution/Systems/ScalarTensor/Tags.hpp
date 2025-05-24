@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
@@ -53,6 +54,17 @@ struct ScalarMass {
   using type = double;
   static constexpr Options::String help{
       "Mass of the scalar field in code units"};
+};
+
+/*!
+ * \ingroup OptionGroupsGroup
+ * Groups option tags related to the ScalarTensor evolution system.
+ */
+struct Group {
+  static std::string name() { return "ScalarTensor"; }
+  static constexpr Options::String help{
+      "Options for the ScalarTensor evolution system"};
+  using group = evolution::OptionTags::SystemGroup;
 };
 }  // namespace OptionTags
 
