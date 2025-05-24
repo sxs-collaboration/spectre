@@ -101,6 +101,9 @@ EvolutionSystem:
         Width: 11.313708499
         Center: [0.0, 0.0, 0.0]
   ScalarTensor:
+    # Ramp up effectively disabled
+    RampUpStart: -1.0
+    RampUpDuration: 0.0
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: 0.0

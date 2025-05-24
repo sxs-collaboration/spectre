@@ -128,6 +128,7 @@
 #include "PointwiseFunctions/ScalarTensor/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintGammas.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarCharge.hpp"
+#include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -416,6 +417,7 @@ struct ScalarTensorTemplateBase {
       ScalarTensor::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
       ScalarTensor::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>,
       // Source parameters
+      ScalarTensor::Tags::RampUpParameters,
       ScalarTensor::Tags::ScalarMass>;
 
   using dg_registration_list =
