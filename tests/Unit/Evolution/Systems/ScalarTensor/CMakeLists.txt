@@ -9,8 +9,6 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
-  Test_Sources.cpp
-  Test_StressEnergy.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
   )
@@ -25,4 +23,5 @@ target_link_libraries(
   GhScalarTensorAnalyticData
   ScalarTensor
   ScalarTensorAnalyticData
+  ScalarTensorPointwise
   )

@@ -7,15 +7,17 @@ set(LIBRARY_SOURCES
   Test_ConstraintGammas.cpp
   Test_RampUpFunction.cpp
   Test_ScalarCharge.cpp
+  Test_ScalarSources.cpp
   Test_SourceTags.cpp
+  Test_StressEnergy.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  ConstraintDamping
   Framework
   ScalarTensor
-  ScalarTensorAnalyticData
   ScalarTensorPointwise
   )

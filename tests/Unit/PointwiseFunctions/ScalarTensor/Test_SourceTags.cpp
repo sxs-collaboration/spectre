@@ -9,6 +9,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "PointwiseFunctions/ScalarTensor/RampUpFunction.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 #include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.SourceTags",
@@ -19,4 +20,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.SourceTags",
       "0.0");
   TestHelpers::test_option_tag<ScalarTensor::OptionTags::RampUpDuration>(
       "100.0");
+  TestHelpers::db::test_compute_tag<ScalarTensor::Tags::ScalarSourceCompute>(
+      "ScalarSource");
 }

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"

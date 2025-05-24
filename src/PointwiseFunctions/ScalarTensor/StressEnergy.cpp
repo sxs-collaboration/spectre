@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
+#include "PointwiseFunctions/ScalarTensor/StressEnergy.hpp"
 
 #include <cstddef>
 

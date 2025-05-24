@@ -10,6 +10,8 @@ spectre_target_sources(
   PRIVATE
   RampUpFunction.cpp
   ScalarCharge.cpp
+  ScalarSource.cpp
+  StressEnergy.cpp
   )
 
 spectre_target_headers(
@@ -21,6 +23,8 @@ spectre_target_headers(
   RampUpFunction.hpp
   ScalarCharge.hpp
   SourceTags.hpp
+  ScalarSource.hpp
+  StressEnergy.hpp
   )
 
 target_link_libraries(

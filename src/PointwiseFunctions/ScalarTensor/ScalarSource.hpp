@@ -72,7 +72,7 @@ void add_scalar_source_to_dt_pi_scalar(
  * \see `ScalarTensor::Tags::ScalarMass` for details about the mass.
  */
 void mass_source(gsl::not_null<Scalar<DataVector>*> scalar_source,
-                 const Scalar<DataVector>& psi, const double mass_psi);
+                 const Scalar<DataVector>& psi, double mass_psi);
 
 namespace Tags {
 

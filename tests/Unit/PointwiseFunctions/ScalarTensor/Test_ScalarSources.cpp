@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -14,17 +13,12 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.SourceTags",
-                  "[Unit][Evolution]") {
-  TestHelpers::db::test_compute_tag<ScalarTensor::Tags::ScalarSourceCompute>(
-      "ScalarSource");
-}
-
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.Sources",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.ScalarSource",
+                  "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/ScalarTensor"};
+      "PointwiseFunctions/ScalarTensor"};
 
   pypp::check_with_random_values<1>(&ScalarTensor::mass_source, "Sources",
                                     {"mass_source"}, {{{1.0e-2, 0.5}}},
