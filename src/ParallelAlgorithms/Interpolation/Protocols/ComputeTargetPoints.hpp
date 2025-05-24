@@ -30,7 +30,8 @@ namespace intrp::protocols {
  *   in
  *
  * - a function `points` with signature matching the one in the example that
- *   will compute the points in the given `frame`.
+ *   will compute the points in the given `frame` (with or without the `const &`
+ *   on the box argument).
  *
  * A struct that conforms to this protocol can optionally have any of these
  * members as well:
@@ -65,17 +66,6 @@ struct ComputeTargetPoints {
                   std::is_same_v<is_sequential, std::false_type>);
 
     using frame = typename ConformingType::frame;
-
-    template <size_t Dim>
-    static constexpr bool conforms = std::is_same_v<
-        tnsr::I<DataVector, Dim, frame>,
-        decltype(ConformingType::points(
-            std::declval<const db::DataBox<DummyTag>&>(),
-            std::declval<const tmpl::type_<DummyMetavariables>&>(),
-            std::declval<const double&>()))>;
-
-    static_assert(conforms<1> or conforms<2> or conforms<3>);
-
     // We don't check the initialize() function because it is optional
   };
 };

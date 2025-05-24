@@ -308,8 +308,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
   static tnsr::I<DataVector, 3, Frame> points(
-      const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/,
+      db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& /*meta*/,
       const TemporalId& /*temporal_id*/) {
     const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
     const auto& strahlkorper = db::get<ylm::Tags::Strahlkorper<Frame>>(box);

@@ -30,7 +30,7 @@ namespace intrp::callbacks {
 struct ErrorOnFailedApparentHorizon {
   template <typename InterpolationTargetTag, typename DbTags,
             typename Metavariables, typename TemporalId>
-  static void apply(const db::DataBox<DbTags>& box,
+  static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const TemporalId& temporal_id,
                     const FastFlow::Status failure_reason) {

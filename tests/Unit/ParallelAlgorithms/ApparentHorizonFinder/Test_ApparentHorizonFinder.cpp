@@ -115,7 +115,7 @@ struct TestHorizonFindFailureCallback {
   // [horizon_find_failure_callbacks_example]
   template <typename InterpolationTargetTag, typename DbTags,
             typename Metavariables, typename TemporalId>
-  static void apply(const db::DataBox<DbTags>& box,
+  static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id,
                     const FastFlow::Status failure_reason) {
@@ -129,7 +129,7 @@ FastFlow::Status callback_failure_status = FastFlow::Status::MaxIts;  // NOLINT
 struct ExtraHorizonFindFailureCallback {
   template <typename InterpolationTargetTag, typename DbTags,
             typename Metavariables, typename TemporalId>
-  static void apply(const db::DataBox<DbTags>& /*box*/,
+  static void apply(db::DataBox<DbTags>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const TemporalId& /*temporal_id*/,
                     const FastFlow::Status failure_reason) {
