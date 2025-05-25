@@ -135,12 +135,18 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
     const auto interpolated_data =
         interpolate_to_points<2>(h5_file_name, "/VolumeData",
                                  ObservationId{123}, {"Psi"}, {{{0.}, {0.}}});
+    const spectre::Exporter::PointwiseInterpolator<2> interpolator{
+        h5_file_name, "/VolumeData", ObservationId{123}, {"Psi"}};
+    std::vector<double> interpolated_data2{};
+    interpolator.interpolate_to_point(make_not_null(&interpolated_data2),
+                                      tnsr::I<double, 2>{{0., 0.}});
     // Compare to single precision
     Approx custom_approx =
         Approx::custom()
             .epsilon(10. * std::numeric_limits<float>::epsilon())
             .scale(1.0);
     CHECK(interpolated_data[0][0] == custom_approx(1.));
+    CHECK(interpolated_data2[0] == custom_approx(1.));
     // Delete the test file
     if (file_system::check_if_file_exists(h5_file_name)) {
       file_system::rm(h5_file_name, true);

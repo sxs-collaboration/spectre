@@ -75,27 +75,14 @@ auto load_grids(const h5::VolumeData& volfile, const size_t obs_id) {
   return std::make_pair(std::move(element_ids), std::move(meshes));
 }
 
-std::vector<DataVector> load_tensor_data(
+std::vector<std::variant<DataVector, std::vector<float>>> load_tensor_data(
     const h5::VolumeData& volfile, const size_t obs_id,
     const std::vector<std::string>& tensor_components) {
-  std::vector<DataVector> tensor_data{};
+  std::vector<std::variant<DataVector, std::vector<float>>> tensor_data{};
   tensor_data.reserve(tensor_components.size());
   for (const auto& tensor_component : tensor_components) {
-    auto component_data =
-        volfile.get_tensor_component(obs_id, tensor_component).data;
-    if (std::holds_alternative<DataVector>(component_data)) {
-      tensor_data.push_back(std::get<DataVector>(std::move(component_data)));
-    } else {
-      // Possible optimization: do single-precision interpolation if the
-      // volume data is single-precision
-      const auto& float_component_data =
-          std::get<std::vector<float>>(component_data);
-      DataVector double_component_data(float_component_data.size());
-      for (size_t i = 0; i < float_component_data.size(); ++i) {
-        double_component_data[i] = float_component_data[i];
-      }
-      tensor_data.push_back(std::move(double_component_data));
-    }
+    tensor_data.push_back(
+        volfile.get_tensor_component(obs_id, tensor_component).data);
   }
   return tensor_data;
 }
@@ -109,11 +96,13 @@ void interpolate_to_points_impl(
     const std::vector<ElementId<Dim>>& element_ids,
     const std::unordered_map<ElementId<Dim>,
                              std::tuple<Mesh<Dim>, size_t, size_t>>& meshes,
-    const std::vector<DataVector>& tensor_data,
+    const std::vector<std::variant<DataVector, std::vector<float>>>&
+        tensor_data,
     [[maybe_unused]] const size_t resolved_num_threads) {
 #pragma omp parallel num_threads(resolved_num_threads)
   {
-    DataVector interpolated_data{};
+    DataVector interpolated_data_double{};
+    std::vector<float> interpolated_data_float{};
 #pragma omp for
     for (const auto& element_id : element_ids) {
       const auto found_points = element_logical_coords.find(element_id);
@@ -131,18 +120,34 @@ void interpolate_to_points_impl(
                                               points.element_logical_coords);
       const size_t num_element_target_points =
           points.element_logical_coords.begin()->size();
-      if (interpolated_data.size() < num_element_target_points) {
-        interpolated_data.destructive_resize(num_element_target_points);
-      }
       for (size_t i = 0; i < tensor_data.size(); ++i) {
-        auto output_data =
-            gsl::make_span(interpolated_data.data(), num_element_target_points);
-        const auto input_data =
-            gsl::make_span(tensor_data[i].data() + offset, length);
-        interpolant.interpolate(make_not_null(&output_data), input_data);
-        for (size_t j = 0; j < num_element_target_points; ++j) {
-          (*result)[i][points.offsets[j]] = interpolated_data[j];
-          (*filled_data)[points.offsets[j]] = true;
+        const auto& component = tensor_data[i];
+        if (std::holds_alternative<DataVector>(component)) {
+          if (interpolated_data_double.size() < num_element_target_points) {
+            interpolated_data_double.destructive_resize(
+                num_element_target_points);
+          }
+          auto output_data = gsl::make_span(interpolated_data_double.data(),
+                                            num_element_target_points);
+          const auto input_data = gsl::make_span(
+              std::get<DataVector>(component).data() + offset, length);
+          interpolant.interpolate(make_not_null(&output_data), input_data);
+          for (size_t j = 0; j < num_element_target_points; ++j) {
+            (*result)[i][points.offsets[j]] = interpolated_data_double[j];
+            (*filled_data)[points.offsets[j]] = true;
+          }
+        } else {
+          interpolated_data_float.resize(num_element_target_points);
+          auto output_data = gsl::make_span(interpolated_data_float.data(),
+                                            num_element_target_points);
+          const auto input_data = gsl::make_span(
+              // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+              std::get<std::vector<float>>(component).data() + offset, length);
+          interpolant.interpolate(make_not_null(&output_data), input_data);
+          for (size_t j = 0; j < num_element_target_points; ++j) {
+            (*result)[i][points.offsets[j]] = interpolated_data_float[j];
+            (*filled_data)[points.offsets[j]] = true;
+          }
         }
       }
     }  // omp for
@@ -154,15 +159,27 @@ void interpolate_to_point_impl(
     const gsl::not_null<std::vector<double>*> result,
     const tnsr::I<double, Dim, Frame::ElementLogical>& x_element_logical,
     const Mesh<Dim>& mesh, const size_t offset, const size_t length,
-    const std::vector<DataVector>& tensor_data) {
+    const std::vector<std::variant<DataVector, std::vector<float>>>&
+        tensor_data) {
   const intrp::Irregular<Dim> interpolant(mesh, x_element_logical);
   const size_t num_components = tensor_data.size();
   result->resize(num_components);
   for (size_t i = 0; i < num_components; ++i) {
-    auto output_data = gsl::make_span(&(*result)[i], 1);
-    const auto input_data =
-        gsl::make_span(tensor_data[i].data() + offset, length);
-    interpolant.interpolate(make_not_null(&output_data), input_data);
+    const auto& component = tensor_data[i];
+    if (std::holds_alternative<DataVector>(component)) {
+      const auto input_data = gsl::make_span(
+          std::get<DataVector>(component).data() + offset, length);
+      auto output_data = gsl::make_span(&(*result)[i], 1);
+      interpolant.interpolate(make_not_null(&output_data), input_data);
+    } else {
+      const auto input_data = gsl::make_span(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+          std::get<std::vector<float>>(component).data() + offset, length);
+      float output_value = std::numeric_limits<float>::signaling_NaN();
+      auto output_data = gsl::make_span(&output_value, 1);
+      interpolant.interpolate(make_not_null(&output_data), input_data);
+      (*result)[i] = output_value;
+    }
   }
 }
 
