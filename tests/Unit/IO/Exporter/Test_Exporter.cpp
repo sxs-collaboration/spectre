@@ -266,8 +266,7 @@ SPECTRE_TEST_CASE("Unit.IO.Exporter", "[Unit]") {
                                           tnsr::I<double, 3>{{10., 0., 0.}});
         return result;
       };
-      std::vector<size_t> block_order(domain.blocks().size());
-      std::iota(block_order.begin(), block_order.end(), 0);
+      std::vector<size_t> block_order;
       // 137 us / 143 us
       BENCHMARK(
           "PointwiseInterpolator::interpolate_to_point with block order") {
