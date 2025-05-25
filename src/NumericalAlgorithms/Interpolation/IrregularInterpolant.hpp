@@ -83,6 +83,8 @@ class Irregular {
                    const gsl::span<const double>& input) const;
   void interpolate(gsl::not_null<gsl::span<std::complex<double>>*> result,
                    const gsl::span<const std::complex<double>>& input) const;
+  void interpolate(gsl::not_null<gsl::span<float>*> result,
+                   const gsl::span<const float>& input) const;
   /// @}
 
  private:

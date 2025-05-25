@@ -322,11 +322,14 @@ ComplexDataVector Irregular<Dim>::interpolate(
   return result;
 }
 
-template <size_t Dim>
-void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<double>*> result,
-                                 const gsl::span<const double>& input) const {
-  const size_t m = interpolation_matrix_.rows();
-  const size_t k = interpolation_matrix_.columns();
+namespace {
+
+template <typename ValueType>
+void span_interpolate_impl(const gsl::not_null<gsl::span<ValueType>*> result,
+                           const gsl::span<const ValueType>& input,
+                           const Matrix& interpolation_matrix) {
+  const size_t m = interpolation_matrix.rows();
+  const size_t k = interpolation_matrix.columns();
   ASSERT(input.size() % k == 0,
          "Number of points in 'input', "
              << input.size()
@@ -336,42 +339,59 @@ void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<double>*> result,
   ASSERT(result->size() == number_of_components * m,
          "The result must be of size " << number_of_components * m
                                        << " but got " << result->size());
-  dgemm_<true>('N', 'N', interpolation_matrix_.rows(), number_of_components,
-               interpolation_matrix_.columns(), 1.0,
-               interpolation_matrix_.data(), interpolation_matrix_.spacing(),
-               input.data(), interpolation_matrix_.columns(), 0.0,
-               result->data(), interpolation_matrix_.rows());
+  if constexpr (std::is_same_v<ValueType, double>) {
+    dgemm_<true>('N', 'N', m, number_of_components, k, 1.0,
+                 interpolation_matrix.data(), interpolation_matrix.spacing(),
+                 input.data(), k, 0.0, result->data(), m);
+  } else if constexpr (std::is_same_v<ValueType, float>) {
+    // No BLAS function exists for mixed precision so we do the matrix multiply
+    // manually. A possible performance optimization would be to compute the
+    // interpolation matrix in single precision and then use sgemm.
+    for (size_t j = 0; j < number_of_components; ++j) {
+      for (size_t i = 0; i < m; ++i) {
+        float sum = interpolation_matrix.data()[i] * input[j * k];
+        for (size_t l = 1; l < k; ++l) {
+          sum += interpolation_matrix.data()[i + l * m] * input[l + j * k];
+        }
+        (*result)[i + j * m] = sum;
+      }
+    }
+  } else if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+    // BLAS zgemm operates on complex matrices, so we need to copy the real
+    // matrix to a complex matrix with zero imaginary part before calling zgemm.
+    // Note by Nils Vu (Aug 2024): Profiling of partial derivatives showed that
+    // this zgemm approach with a complex matrix is still faster than
+    // transposing the complex input data and applying the real matrix with
+    // dgemm (though maybe the transpose can be avoided with smarter dgemm
+    // strides). Possible performance optimization: avoid the copy here by
+    // caching the complex matrix.
+    const blaze::DynamicMatrix<std::complex<double>, blaze::columnMajor>
+        matrix_complex{interpolation_matrix};
+    zgemm_<true>('N', 'N', m, number_of_components, k,
+                 std::complex<double>{1.0, 0.0}, matrix_complex.data(),
+                 matrix_complex.spacing(), input.data(), k,
+                 std::complex<double>{0.0, 0.0}, result->data(), m);
+  }
+}
+}  // namespace
+
+template <size_t Dim>
+void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<double>*> result,
+                                 const gsl::span<const double>& input) const {
+  span_interpolate_impl(result, input, interpolation_matrix_);
 }
 
 template <size_t Dim>
 void Irregular<Dim>::interpolate(
     const gsl::not_null<gsl::span<std::complex<double>>*> result,
     const gsl::span<const std::complex<double>>& input) const {
-  const size_t m = interpolation_matrix_.rows();
-  const size_t k = interpolation_matrix_.columns();
-  ASSERT(input.size() % k == 0,
-         "Number of points in 'input', "
-             << input.size()
-             << ",\n must be a multiple of the source grid points, " << k
-             << ", that was passed into the constructor");
-  const size_t number_of_components = input.size() / k;
-  ASSERT(result->size() == number_of_components * m,
-         "The result must be of size " << number_of_components * m
-                                       << " but got " << result->size());
-  // BLAS zgemm operates on complex matrices, so we need to copy the real matrix
-  // to a complex matrix with zero imaginary part before calling zgemm.
-  // Note by Nils Vu (Aug 2024): Profiling of partial derivatives showed that
-  // this zgemm approach with a complex matrix is still faster than transposing
-  // the complex input data and applying the real matrix with dgemm (though
-  // maybe the transpose can be avoided with smarter dgemm strides).
-  // Possible performance optimization: avoid the copy here by caching the
-  // complex matrix.
-  const blaze::DynamicMatrix<std::complex<double>, blaze::columnMajor>
-      matrix_complex{interpolation_matrix_};
-  zgemm_<true>('N', 'N', m, number_of_components, k,
-               std::complex<double>{1.0, 0.0}, matrix_complex.data(),
-               matrix_complex.spacing(), input.data(), k,
-               std::complex<double>{0.0, 0.0}, result->data(), m);
+  span_interpolate_impl(result, input, interpolation_matrix_);
+}
+
+template <size_t Dim>
+void Irregular<Dim>::interpolate(const gsl::not_null<gsl::span<float>*> result,
+                                 const gsl::span<const float>& input) const {
+  span_interpolate_impl(result, input, interpolation_matrix_);
 }
 
 template <size_t Dim>

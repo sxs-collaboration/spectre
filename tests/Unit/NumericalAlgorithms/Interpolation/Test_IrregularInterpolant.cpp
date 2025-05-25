@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <pup.h>
@@ -266,6 +267,31 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) {
       CHECK_ITERABLE_APPROX(
           result_cdv, get<0>(get<TestTags::Vector<ComplexDataVector, Dim>>(
                           expected_complex)));
+      std::vector<std::complex<double>> result_data(expected_complex.size());
+      auto result_span = gsl::make_span(result_data);
+      irregular_interpolant.interpolate(
+          make_not_null(&result_span),
+          gsl::make_span(src_vars_complex.data(), src_vars_complex.size()));
+    }
+    {
+      INFO("Single precision data");
+      // Copy the data above into single precision
+      std::vector<float> src_vars_single(src_vars.size());
+      std::vector<float> expected_dest_single(expected_dest_vars.size());
+      std::copy_n(src_vars.data(), src_vars.size(), src_vars_single.data());
+      std::copy_n(expected_dest_vars.data(), expected_dest_vars.size(),
+                  expected_dest_single.data());
+      // Interpolate the single precision data
+      std::vector<float> result_single(expected_dest_single.size());
+      auto result_single_span = gsl::make_span(result_single);
+      irregular_interpolant.interpolate(make_not_null(&result_single_span),
+                                        gsl::make_span(src_vars_single));
+      const Approx custom_approx =
+          Approx::custom()
+              .epsilon(std::numeric_limits<float>::epsilon() * 10.)
+              .scale(1.);
+      CHECK_ITERABLE_CUSTOM_APPROX(result_single, expected_dest_single,
+                                   custom_approx);
     }
   }
 }
