@@ -186,19 +186,24 @@ struct FindApparentHorizon
       const auto& options = Parallel::get<
           intrp::Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(*cache);
 
-      // Can't recover from the first iteration or if we've exceeded our number
-      // of attempts
-      if (current_iteration > 0 and failed_interpolation_iterations <=
-                                        options.max_interpolation_retries) {
-        // Move the new trial surface halfway between the current surface and
-        // the previous surface
+      // Can't recover if we've exceeded our number of attempts
+      if (failed_interpolation_iterations <=
+          options.max_interpolation_retries) {
         db::mutate<ylm::Tags::Strahlkorper<Frame>>(
-            [](const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
-               const ylm::Strahlkorper<Frame>&
-                   previous_strahlkorper_iteration) {
-              strahlkorper->coefficients() +=
-                  0.5 * (previous_strahlkorper_iteration.coefficients() -
-                         strahlkorper->coefficients());
+            [&](const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
+                const ylm::Strahlkorper<Frame>&
+                    previous_strahlkorper_iteration) {
+              if (current_iteration == 0) {
+                // If this is the zeroth iteration and we couldn't interpolate,
+                // then just try increasing the size of the horizon by 50%
+                strahlkorper->coefficients()[0] *= 1.5;
+              } else {
+                // Otherwise move the new trial surface halfway between the
+                // current surface and the previous surface
+                strahlkorper->coefficients() +=
+                    0.5 * (previous_strahlkorper_iteration.coefficients() -
+                           strahlkorper->coefficients());
+              }
             },
             box, db::get<ah::Tags::PreviousIterationStrahlkorper<Frame>>(*box));
 
