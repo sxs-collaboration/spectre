@@ -266,10 +266,13 @@ class TestTransformVolumeData(unittest.TestCase):
                 "psi_squared",
                 "-k",
                 "coordinate_radius",
+                "-i",
+                "psi=Psi",
             ],
             catch_exceptions=False,
+            input="PsiSquared\nCoordinateRadius\n",
         )
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 0, msg=result.output)
         with spectre_h5.H5File(self.h5_filename, "r") as open_h5_file:
             volfile = open_h5_file.get_vol("/element_data")
             obs_id = volfile.list_observation_ids()[0]
@@ -302,8 +305,9 @@ class TestTransformVolumeData(unittest.TestCase):
                 "--integrate",
             ],
             catch_exceptions=False,
+            input="Sinusoid\n",
         )
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 0, result.output)
         self.assertIn("63.88", result.output)
 
         output_filename = os.path.join(self.test_dir, "integrals.h5")
@@ -320,8 +324,9 @@ class TestTransformVolumeData(unittest.TestCase):
                 "integrals",
             ],
             catch_exceptions=False,
+            input="Sinusoid\n",
         )
-        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(result.exit_code, 0, result.output)
         with spectre_h5.H5File(output_filename, "r") as open_h5_file:
             datfile = open_h5_file.get_dat("/integrals")
             self.assertEqual(
