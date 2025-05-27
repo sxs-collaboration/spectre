@@ -6,7 +6,7 @@ import click
 from spectre.support.CliExceptions import RequiredChoiceError
 
 
-class Render3DCommands(click.MultiCommand):
+class Render3DCommands(click.Group):
     def list_commands(self, ctx):
         return [
             "bbh",

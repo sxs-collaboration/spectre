@@ -8,7 +8,7 @@ from spectre.support.CliExceptions import RequiredChoiceError
 
 # Load subcommands lazily, i.e., only import the module when the subcommand is
 # invoked. This is important so the CLI responds quickly.
-class Bns(click.MultiCommand):
+class Bns(click.Group):
     def list_commands(self, ctx):
         return [
             "compute-trajectories",

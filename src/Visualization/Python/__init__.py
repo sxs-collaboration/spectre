@@ -6,7 +6,7 @@ import click
 from spectre.support.CliExceptions import RequiredChoiceError
 
 
-class PlotCommands(click.MultiCommand):
+class PlotCommands(click.Group):
     def list_commands(self, ctx):
         return [
             "along-line",

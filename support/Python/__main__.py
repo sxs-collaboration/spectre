@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Load subcommands lazily, i.e., only import the module when the subcommand is
 # invoked. This is important so the CLI responds quickly.
-class Cli(click.MultiCommand):
+class Cli(click.Group):
     def list_commands(self, ctx):
         return [
             "bbh",
