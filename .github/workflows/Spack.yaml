@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         host: [ubuntu-latest, macos-latest]
-        compiler: [gcc, clang, apple-clang]
+        compiler: [gcc, llvm, apple-clang]
         exclude:
           - host: ubuntu-latest
             compiler: apple-clang
@@ -44,13 +44,13 @@ jobs:
           executables=SolvePoisson1D
           +python
           ~debug_symbols
-          %${{ matrix.compiler }}
+          ^${{ matrix.compiler }}
           ^charmpp backend=multicore
           ^hdf5~mpi
       SPACK_COLOR: always
     steps:
       - name: Install compiler
-        if: matrix.host == 'macos-latest' && matrix.compiler == 'clang'
+        if: matrix.host == 'macos-latest' && matrix.compiler == 'llvm'
         run: |
           brew install llvm
           echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
@@ -65,15 +65,6 @@ jobs:
           spack compiler find
           spack compiler info ${{ matrix.compiler }}
           spack external find
-      - name: Configure mixed toolchain
-        if: matrix.host == 'ubuntu-latest' && matrix.compiler == 'clang'
-        # Clang doesn't bundle a fortran compiler, so we specify one
-        run: |
-          export FC=$(which gfortran)
-          export COMPILERS_CONFIG="$HOME/.spack/*/compilers.yaml"
-          sed -i "s|f77: null$|f77: $FC|" $COMPILERS_CONFIG
-          sed -i "s|fc: null$|fc: $FC|" $COMPILERS_CONFIG
-          cat $COMPILERS_CONFIG
       - name: Print packages to install
         run: |
           spack spec -I ${SPECTRE_SPEC}
