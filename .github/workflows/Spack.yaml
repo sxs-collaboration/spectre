@@ -1,12 +1,14 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Regularly scheduled installation test with the Spack package manager
+# Installation test with the Spack package manager
 name: Spack
 
 on:
-  schedule:
-    - cron: '0 0 * * 1' # every Monday morning
+  # Could run this on a schedule once Spack is stable enough to not break every
+  # week.
+  # schedule:
+  #   - cron: '0 0 * * 1' # every Monday morning
   workflow_dispatch:
 
 concurrency:
