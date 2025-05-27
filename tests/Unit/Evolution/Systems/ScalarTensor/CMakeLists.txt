@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ScalarTensor")
 
 set(LIBRARY_SOURCES
+  Actions/Test_SetInitialData.cpp
   BoundaryConditions/Test_ConstraintPreserving.cpp
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
   Test_Characteristics.cpp
