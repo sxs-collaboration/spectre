@@ -157,98 +157,20 @@ struct FindApparentHorizon
     if (current_iteration == 0) {
       // If we get here, we are in a new apparent horizon search, as
       // opposed to a subsequent iteration of the same horizon search.
-      //
-      // So put new initial guess into ylm::Tags::Strahlkorper<Frame>.
-      // We need to do this now, and not at the end of the previous horizon
-      // search, because only now do we know the temporal_id of this horizon
-      // search.
-      db::mutate<ylm::Tags::Strahlkorper<Frame>,
-                 ylm::Tags::PreviousStrahlkorpers<Frame>,
-                 ah::Tags::PreviousIterationStrahlkorper<Frame>,
+      db::mutate<ah::Tags::PreviousIterationStrahlkorper<Frame>,
                  ah::Tags::FailedInterpolationIterations>(
-          [&temporal_id](
-              const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
-              const gsl::not_null<
-                  std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>*>
-                  previous_strahlkorpers,
-              const gsl::not_null<ylm::Strahlkorper<Frame>*>
-                  previous_fast_flow_strahlkorper,
-              const gsl::not_null<size_t*> failed_interpolation_iterations) {
+          [](const gsl::not_null<ylm::Strahlkorper<Frame>*>
+                 previous_fast_flow_strahlkorper,
+             const gsl::not_null<size_t*> failed_interpolation_iterations,
+             const ylm::Strahlkorper<Frame>& strahlkorper) {
             // Reset to zero. Will only be used starting from the second
             // iteration
             *failed_interpolation_iterations = 0;
 
-            // If we have zero previous_strahlkorpers, then the
-            // initial guess is already in strahlkorper, so do
-            // nothing.
-            //
-            // If we have one previous_strahlkorper, then we have had
-            // a successful horizon find, and the initial guess for the
-            // next horizon find is already in strahlkorper, so
-            // again we do nothing.
-            //
-            // If we have 2 previous_strahlkorpers and the time of the second
-            // one is a NaN, this means that the corresponding
-            // previous_strahlkorper is the original initial guess, so
-            // again we do nothing.
-            //
-            // If we have 2 valid previous_strahlkorpers, then
-            // we set the initial guess by linear extrapolation in time
-            // using the last 2 previous_strahlkorpers.
-            //
-            // If we have 3 valid previous_strahlkorpers, then
-            // we set the initial guess by quadratic extrapolation in time
-            // using the last 3 previous_strahlkorpers.
-            //
-            // For extrapolation, we assume that
-            // * Expansion center of all the Strahlkorpers are equal.
-            // * Maximum L of all the Strahlkorpers are equal.
-            // It is easy to relax the max L assumption once we start
-            // adaptively changing the L of the strahlkorpers.
-            if (previous_strahlkorpers->size() > 1 and
-                not std::isnan((*previous_strahlkorpers)[1].first)) {
-              if (previous_strahlkorpers->size() > 2 and
-                  not std::isnan((*previous_strahlkorpers)[2].first)) {
-                // Quadratic extrapolation
-                const double new_time =
-                    InterpolationTarget_detail::get_temporal_id_value(
-                        temporal_id);
-                const double dt_0 =
-                    (*previous_strahlkorpers)[0].first - new_time;
-                const double dt_1 =
-                    (*previous_strahlkorpers)[1].first - new_time;
-                const double dt_2 =
-                    (*previous_strahlkorpers)[2].first - new_time;
-                const double fac_0 =
-                    dt_1 * dt_2 / ((dt_1 - dt_0) * (dt_2 - dt_0));
-                const double fac_1 =
-                    dt_0 * dt_2 / ((dt_2 - dt_1) * (dt_0 - dt_1));
-                const double fac_2 = 1.0 - fac_0 - fac_1;
-                strahlkorper->coefficients() =
-                    fac_0 * (*previous_strahlkorpers)[0].second.coefficients() +
-                    fac_1 * (*previous_strahlkorpers)[1].second.coefficients() +
-                    fac_2 * (*previous_strahlkorpers)[2].second.coefficients();
-              } else {
-                // Linear extrapolation
-                const double new_time =
-                    InterpolationTarget_detail::get_temporal_id_value(
-                        temporal_id);
-                const double dt_0 =
-                    (*previous_strahlkorpers)[0].first - new_time;
-                const double dt_1 =
-                    (*previous_strahlkorpers)[1].first - new_time;
-                const double fac_0 = dt_1 / (dt_1 - dt_0);
-                const double fac_1 = 1.0 - fac_0;
-                strahlkorper->coefficients() =
-                    fac_0 * (*previous_strahlkorpers)[0].second.coefficients() +
-                    fac_1 * (*previous_strahlkorpers)[1].second.coefficients();
-              }
-            }
-
             // First iteration the previous is just the initial guess
-            (*previous_fast_flow_strahlkorper) = *strahlkorper;
+            (*previous_fast_flow_strahlkorper) = strahlkorper;
           },
-          box);
+          box, db::get<ylm::Tags::Strahlkorper<Frame>>(*box));
     }
 
     // Deal with the possibility that some of the points might be
@@ -264,19 +186,24 @@ struct FindApparentHorizon
       const auto& options = Parallel::get<
           intrp::Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(*cache);
 
-      // Can't recover from the first iteration or if we've exceeded our number
-      // of attempts
-      if (current_iteration > 0 and failed_interpolation_iterations <=
-                                        options.max_interpolation_retries) {
-        // Move the new trial surface halfway between the current surface and
-        // the previous surface
+      // Can't recover if we've exceeded our number of attempts
+      if (failed_interpolation_iterations <=
+          options.max_interpolation_retries) {
         db::mutate<ylm::Tags::Strahlkorper<Frame>>(
-            [](const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
-               const ylm::Strahlkorper<Frame>&
-                   previous_strahlkorper_iteration) {
-              strahlkorper->coefficients() +=
-                  0.5 * (previous_strahlkorper_iteration.coefficients() -
-                         strahlkorper->coefficients());
+            [&](const gsl::not_null<ylm::Strahlkorper<Frame>*> strahlkorper,
+                const ylm::Strahlkorper<Frame>&
+                    previous_strahlkorper_iteration) {
+              if (current_iteration == 0) {
+                // If this is the zeroth iteration and we couldn't interpolate,
+                // then just try increasing the size of the horizon by 50%
+                strahlkorper->coefficients()[0] *= 1.5;
+              } else {
+                // Otherwise move the new trial surface halfway between the
+                // current surface and the previous surface
+                strahlkorper->coefficients() +=
+                    0.5 * (previous_strahlkorper_iteration.coefficients() -
+                           strahlkorper->coefficients());
+              }
             },
             box, db::get<ah::Tags::PreviousIterationStrahlkorper<Frame>>(*box));
 

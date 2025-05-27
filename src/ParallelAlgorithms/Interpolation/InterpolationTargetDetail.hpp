@@ -701,7 +701,7 @@ auto block_logical_coords(
 ///                             and by FindApparentHorizon)
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
-auto block_logical_coords(const db::DataBox<DbTags>& box,
+auto block_logical_coords(db::DataBox<DbTags>& box,
                           const Parallel::GlobalCache<Metavariables>& cache,
                           const TemporalId& temporal_id) {
   return block_logical_coords<InterpolationTargetTag>(
