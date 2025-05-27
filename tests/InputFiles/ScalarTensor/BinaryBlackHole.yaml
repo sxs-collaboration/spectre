@@ -1,0 +1,592 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveScalarTensorBinaryBlackHole
+Testing:
+  Check: parse
+  Priority: High
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPointsAndGridSpacing
+
+# initial_data.h5 should contain numerical initial data on a grid that covers
+# the domain given above
+# - One way to produce initial data is with the code of 2406.08410.
+InitialData:
+  NumericInitialData:
+    FileGlob: "ScalarVolume*.h5"
+    Subgroup: "VolumeData"
+    ObservationValue: Last
+    ObservationValueEpsilon: Auto
+    ElementsAreIdentical: False
+    GhVariables:
+      Lapse: Lapse
+      # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`
+      # for details.
+      Shift: ShiftExcess
+      SpatialMetric: SpatialMetric
+      ExtrinsicCurvature: ExtrinsicCurvature
+    ScalarVariables:
+      Psi: Psi
+      Pi: Pi
+      Phi: Phi
+
+DomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: &ExcisionRadiusA 0.782463129803071
+      # Found that the max allowable value for the OuterRadius is 6.0. Higher
+      # values cause the constraints to blow up the cubes around each object.
+      OuterRadius: 6.0
+      XCoord: &XCoordA 7.226257309744553
+      Interior:
+        ExciseWithBoundaryCondition:
+          DemandOutgoingCharSpeeds:
+      UseLogarithmicMap: True
+    ObjectB:
+      InnerRadius: &ExcisionRadiusB 0.782463129803071
+      # Found that the max allowable value for the OuterRadius is 6.0. Higher
+      # values cause the constraints to blow up the cubes around each object.
+      OuterRadius: 6.0
+      XCoord: &XCoordB  -7.226257338692947
+      Interior:
+        ExciseWithBoundaryCondition:
+          DemandOutgoingCharSpeeds:
+      UseLogarithmicMap: True
+    CenterOfMassOffset:
+      - &YOffset 0.0
+      - &ZOffset 0.0
+    Envelope:
+      Radius: 100.0
+      # Radial distribution is logarithmic to transition from grid point
+      # spacing around the excisions to the grid point spacing in the
+      # outer shell
+      RadialDistribution: Logarithmic
+    OuterShell:
+      Radius: 600.0
+      # Radial distribution is linear to resolve gravitational waves
+      RadialPartitioning: []
+      RadialDistribution: Linear
+      OpeningAngle: 120.0
+      BoundaryCondition:
+        ConstraintPreserving:
+          Type: ConstraintPreservingPhysical
+    UseEquiangularMap: True
+    # Found that a CubeScale of 1.2 worked well for equal mass non-spinning
+    # inspirals and allowed for more common horizon finds.
+    CubeScale: 1.2
+    InitialRefinement:
+      ObjectAShell:   [2, 2, 2]
+      ObjectACube:    [3, 3, 2]
+      ObjectBShell:   [2, 2, 2]
+      ObjectBCube:    [3, 3, 2]
+      Envelope:       [2, 2, 2]
+      OuterShell0:     [1, 1, 4]
+    InitialGridPoints:
+      ObjectAShell:   [11, 11,  9]
+      ObjectACube:    [ 8,  8,  7]
+      ObjectBShell:   [11, 11,  9]
+      ObjectBCube:    [ 8,  8,  7]
+      Envelope:       [11, 11, 13]
+      OuterShell0:     [11, 11,  9]
+    TimeDependentMaps:
+      InitialTime: &InitialTime 0.0
+      ExpansionMap:
+        InitialValues: [1.0, 3.167324597e-05, 0.0]
+        AsymptoticVelocityOuterBoundary: -1.0e-6
+        DecayTimescaleOuterBoundary: 50.0
+      RotationMap:
+        InitialAngularVelocity: [0.0, 0.0, 0.0173677559]
+      TranslationMap:
+        InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+      SkewMap:
+        InitialValuesY: [0.0, 0.0, 0.0]
+        InitialValuesZ: [0.0, 0.0, 0.0]
+      ShapeMapA:
+        LMax: &LMax 10
+        InitialValues:
+          Mass: 0.40542158211154317
+          Spin:
+            - 1.3571478494105597e-09
+            - -1.1160923792097793e-09
+            - 0.001634585661285914
+        SizeInitialValues: [0.0, 0.0, 0.0]
+        TransitionEndsAtCube: True
+      ShapeMapB:
+        LMax: *LMax
+        InitialValues:
+          Mass: 0.4054215821214474
+          Spin:
+            - 2.2877377153624073e-10
+            - -9.103224130152744e-10
+            - 0.001634588250962496
+        SizeInitialValues: [0.0, 0.0, 0.0]
+        TransitionEndsAtCube: True
+      GridCenters: None
+
+
+Evolution:
+  InitialTime: *InitialTime
+  InitialTimeStep: 0.0002
+  MinimumTimeStep: 1e-7
+  # This is the smallest interval we'd need to observe time step/constraints. If
+  # you need it smaller you can edit it, but make sure to change the slab
+  # intervals in the EventsAndTriggers
+  InitialSlabSize: 0.1
+  StepChoosers:
+    - LimitIncrease:
+        Factor: 2
+    - PreventRapidIncrease
+    - ErrorControl:
+        AbsoluteTolerance: 1e-10
+        RelativeTolerance: 1e-8
+        MaxFactor: 2
+        MinFactor: 0.25
+        SafetyFactor: 0.95
+  # Found that order 4 offers a significant speedup compared to order 5
+  TimeStepper:
+    AdamsMoultonPcMonotonic:
+      Order: 4
+
+# Set gauge and constraint damping parameters.
+# The values here are chosen empirically based on values that proved
+# sucessful in SpEC evolutions of binary black holes.
+# Note: Gaussian width = W / sqrt(34.54), so exp(-W^2/w^2) = 1e-15 at x=W,
+# is used in the damped-harmonic gauge parameters.
+# In SpEC, GaugeItems.input set what spectre calls W and spec calls
+# SecondaryWeightRmax. See
+# EvolutionSystems/GeneralizedHarmonic/DampedHarmonicGaugeItems.cpp
+# line 463 in https://github.com/sxs-collaboration/spec for where the Gaussian
+# is actually computed in SpEC.
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeCondition:
+      DampedHarmonic:
+        SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0/sqrt(34.54)
+        Amplitudes: [1.0, 0.0, 1.0]         # From SpEC run: damped harmonic
+        Exponents: [2, 2, 2]                # From SpEC run
+    DampingFunctionGamma0: &ConstraintDampingTripleGaussian
+      TimeDependentTripleGaussian:
+        Constant: 0.01
+        Gaussian1:
+          Amplitude: 8.000002659495916
+          Width: 3.4999988364709234
+          Center: [*XCoordA, 0.0, 0.0]
+        Gaussian2:
+          Amplitude: 8.000002659575738
+          Width:  3.499998836436001
+          Center: [*XCoordB, 0.0, 0.0]
+        Gaussian3:
+          Amplitude: 0.7500002493314838
+          Width: &ConDampWidth 36.13128662109375
+          Center: [0.0, 0.0, 0.0]
+        MovementMethod: ExpansionFactor
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -0.999
+        Amplitude: 0.999
+        Width: 144.525146484375
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2: *ConstraintDampingTripleGaussian
+  ScalarTensor:
+    RampUpStart: -1.0
+    RampUpDuration: 0.0
+    ScalarMass: 0.0
+    CouplingParameters:
+      Linear: 0.0
+      Quadratic: 0.0
+      Quartic: 0.0
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: 0.0
+        Amplitude: 0.0
+        Width: 144.525146484375
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2: *ConstraintDampingTripleGaussian
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 420
+    Enable: true
+    BlocksToFilter: All
+  ExpFilter1:
+    Alpha: 36.0
+    HalfPower: 420
+    Enable: true
+    BlocksToFilter: All
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    ProductUpwindPenaltyGHAndUpwindPenaltyScalar:
+      UpwindPenaltyGH:
+      UpwindPenaltyScalar:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+Observers:
+  VolumeFileName: "BbhVolume"
+  ReductionFileName: "BbhReductions"
+  SurfaceFileName: "BbhSurfaces"
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
+
+Amr:
+  Criteria:
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: Auto
+      NumGridPoints: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  Verbosity: Quiet
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          # Trigger checkpoint often enough so it triggers within the last 30
+          # minutes of the run
+          Interval: 10
+          Offset: 0
+    PhaseChanges:
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 23.5
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    Events:
+      - ObserveTimeStep:
+          SubfileName: TimeSteps
+          PrintTimeToTerminal: True
+          ObservePerCore: False
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+          - Name: Lapse
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(GaugeConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(Csw(OneIndexConstraint))
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(Csw(TwoIndexConstraint))
+            NormType: L2Norm
+            Components: Sum
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 0
+    Events:
+      # Observe constraint energy while we need it for ErrorIfDataTooBig so we
+      # only compute it once
+      - ObserveNorms:
+          SubfileName: ConstraintEnergy
+          TensorsToObserve:
+          - Name: ConstraintEnergy
+            NormType: L2Norm
+            Components: Sum
+      - ErrorIfDataTooBig:
+          Threshold: 10
+          VariablesToCheck: [ConstraintEnergy]
+      - ErrorIfDataTooBig:
+          Threshold: 100
+          VariablesToCheck: [SpacetimeMetric]
+      - ErrorIfDataTooBig:
+          Threshold: 100
+          VariablesToCheck: [Csw(Psi)]
+  # Observe apparent horizons often enough so they find the next horizon based
+  # on the previous initial guess. This is an issue with the AH finders not
+  # sharing initial guesses and needs to be fixed.
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    Events:
+      - ObservationAhA
+      - ObservationAhB
+      - ObservationExcisionBoundaryA
+      - ObservationExcisionBoundaryB
+  # Observe volume data for visualization and debugging
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 2000
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Csw(Psi)
+            # For diagnostics:
+            - ConstraintEnergy
+            - PointwiseL2Norm(Csw(OneIndexConstraint))
+            - PointwiseL2Norm(Csw(TwoIndexConstraint))
+            # For visualization:
+            - Lapse
+            - SpatialRicciScalar
+            - Psi4Real
+          InterpolateToMesh: None
+          # Save disk space by saving single precision data. This is enough
+          # for visualization.
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
+          BlocksToObserve: All
+# Trigger to find common horizon and gather volume data needed for ringdown.
+  - Trigger:
+      SeparationLessThan:
+        Value: 2.38 # for q=1, spin=0, quasicircular
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - Constant: 0.01
+      - ObservationAhC:
+          SubfileName: ForContinuation
+          VariablesToObserve:
+            - Lapse
+            - ConstraintEnergy
+            - SpacetimeMetric
+            - Pi
+            - Phi
+            - Csw(Psi)
+            - Csw(Pi)
+            - Csw(Phi)
+          InterpolateToMesh: None
+          # This volume data is for starting the ringdown, so double precision
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+  # This separation has enough common horizon finds to start ringdown for q=1,
+  # spin=0, quasicircular
+  - Trigger:
+      SeparationLessThan:
+        Value: 2.138
+    Events:
+      - Completion
+
+EventsAndTriggersAtSteps:
+
+EventsAndDenseTriggers:
+  # BondiSachs output needs to be often enough for CCE to run properly. An
+  # interval of 0.1 was found to work well in SpEC.
+  - Trigger:
+      Times:
+        EvenlySpaced:
+          Interval: 0.1
+          Offset: 0.0
+    Events:
+      - BondiSachsInterpolation
+      - SphericalSurface1
+
+EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:
+    - ObserveTimeStepVolume:
+        SubfileName: FailureTimeStep
+        FloatingPointType: Double
+        CoordinatesFloatingPointType: Float
+
+Interpolator:
+  DumpVolumeDataOnFailure: false
+  Verbosity: Silent
+
+ApparentHorizons:
+  ObservationAhA: &AhA
+    InitialGuess:
+      LMax: *LMax
+      Radius: 1.13083425250694
+      Center: [*XCoordA, 0.0, 0.0]
+    FastFlow: &DefaultFastFlow
+      Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Quiet
+    MaxInterpolationRetries: 3
+    BlocksForInterpolation: ["ObjectAShell", "ObjectACube"]
+  ObservationAhB: &AhB
+    InitialGuess:
+      LMax: *LMax
+      Radius: 1.1308342525150354
+      Center: [*XCoordB, 0.0, 0.0]
+    FastFlow: *DefaultFastFlow
+    Verbosity: Quiet
+    MaxInterpolationRetries: 3
+    BlocksForInterpolation: ["ObjectBShell", "ObjectBCube"]
+  ObservationAhC:
+    InitialGuess:
+      LMax: 33
+      Radius: 10.0
+      Center: [0.0, 0.0, 0.0]
+    FastFlow: *DefaultFastFlow
+    Verbosity: Quiet
+    MaxInterpolationRetries: 3
+    BlocksForInterpolation:
+      - "ObjectAShell"
+      - "ObjectACube"
+      - "ObjectBShell"
+      - "ObjectBCube"
+      - "Envelope"
+  ControlSystemAhA: *AhA
+  ControlSystemAhB: *AhB
+  ControlSystemCharSpeedAhA: *AhA
+  ControlSystemCharSpeedAhB: *AhB
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    LMax: 16
+    Radius: [100, 150, 200]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+  ObservationExcisionBoundaryA: &ExBdryA
+    LMax: *LMax
+    Center: [*XCoordA, *YOffset, *ZOffset]
+    Radius: *ExcisionRadiusA
+    AngularOrdering: "Strahlkorper"
+  ObservationExcisionBoundaryB: &ExBdryB
+    LMax: *LMax
+    Center: [*XCoordB, *YOffset, *ZOffset]
+    Radius: *ExcisionRadiusB
+    AngularOrdering: "Strahlkorper"
+  SphericalSurface1:
+    LMax: 16
+    Radius: [100, 150, 200]
+    Center: [0, 0, 0]
+    AngularOrdering: "Strahlkorper"
+  ControlSystemCharSpeedExcisionA: *ExBdryA
+  ControlSystemCharSpeedExcisionB: *ExBdryB
+
+ControlSystems:
+  WriteDataToDisk: True
+  MeasurementsPerUpdate: 4
+  Verbosity: Silent
+  Expansion: &KinematicControlSystem
+    Averager: &KinematicAverager
+      AverageTimescaleFraction: &AvgTimescaleFrac 0.25
+      Average0thDeriv: false
+    Controller: &KinematicController
+      # Changed UpdateFraction from 0.03 to 0.3 to increase run speed
+      UpdateFraction: 0.3
+    TimescaleTuner: &KinematicTuner
+      InitialTimescales: 0.19999993351162643
+      MinTimescale: &MinTimescale 1.0e-2
+      MaxTimescale: &MaxTimescale 20.0
+      IncreaseThreshold: &IncreaseThreshold 2.5e-05
+      DecreaseThreshold: &DecreaseThreshold 0.0001
+      IncreaseFactor: &IncreaseFactor 1.01
+      DecreaseFactor: &DecreaseFactor 0.98
+    ControlError:
+  Rotation: *KinematicControlSystem
+  Translation: None
+  Skew:
+    Averager: *KinematicAverager
+    Controller: *KinematicController
+    TimescaleTuner:
+      InitialTimescales: 10.025
+      MinTimescale: 0.05
+      MaxTimescale: *MaxTimescale
+      IncreaseThreshold: *IncreaseThreshold
+      DecreaseThreshold: *DecreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+      DecreaseFactor: *DecreaseFactor
+    ControlError:
+  ShapeA:
+    Averager: &SizeShapeAverager
+      AverageTimescaleFraction: *AvgTimescaleFrac
+      Average0thDeriv: True
+    Controller: *KinematicController
+    TimescaleTuner:
+      InitialTimescales: 0.9999996675581322
+      MinTimescale: *MinTimescale
+      MaxTimescale: *MaxTimescale
+      IncreaseThreshold: *IncreaseThreshold
+      DecreaseThreshold: *DecreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+      DecreaseFactor: *DecreaseFactor
+    ControlError:
+  ShapeB:
+    Averager: *SizeShapeAverager
+    Controller: *KinematicController
+    TimescaleTuner:
+      InitialTimescales: 0.9999996675581322
+      MinTimescale: *MinTimescale
+      MaxTimescale: *MaxTimescale
+      IncreaseThreshold: *IncreaseThreshold
+      DecreaseThreshold: *DecreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+      DecreaseFactor: *DecreaseFactor
+    ControlError:
+  SizeA:
+    Averager: *SizeShapeAverager
+    Controller: &SizeController
+      UpdateFraction: 0.2
+    TimescaleTuner:
+      InitialTimescales: &SizeATimescale 0.019999993351062867
+      MinTimescale: &SizeMinTimescale 1.0e-4
+      MaxTimescale: 20
+      IncreaseThreshold: &SizeIncreaseThreshold 0.001
+      IncreaseFactor: *IncreaseFactor
+    ControlError:
+      MaxNumTimesForZeroCrossingPredictor: 4
+      SmoothAvgTimescaleFraction: 0.25
+      DeltaRDriftOutwardOptions: None
+      DeltaRDriftInwardOptions: None
+      InitialState: Initial
+      SmootherTuner:
+        InitialTimescales: *SizeATimescale
+        MinTimescale: *MinTimescale
+        MaxTimescale: *MaxTimescale
+        IncreaseThreshold: *IncreaseThreshold
+        DecreaseThreshold: *DecreaseThreshold
+        IncreaseFactor: *IncreaseFactor
+        DecreaseFactor: *DecreaseFactor
+  SizeB:
+    Averager: *SizeShapeAverager
+    Controller: *SizeController
+    TimescaleTuner:
+      InitialTimescales: &SizeBTimescale 0.019999993351262423
+      MinTimescale: *SizeMinTimescale
+      MaxTimescale: 20
+      IncreaseThreshold: *SizeIncreaseThreshold
+      IncreaseFactor: *IncreaseFactor
+    ControlError:
+      MaxNumTimesForZeroCrossingPredictor: 4
+      SmoothAvgTimescaleFraction: 0.25
+      DeltaRDriftOutwardOptions: None
+      DeltaRDriftInwardOptions: None
+      InitialState: Initial
+      SmootherTuner:
+        InitialTimescales: *SizeBTimescale
+        MinTimescale: *MinTimescale
+        MaxTimescale: *MaxTimescale
+        IncreaseThreshold: *IncreaseThreshold
+        DecreaseThreshold: *DecreaseThreshold
+        IncreaseFactor: *IncreaseFactor
+        DecreaseFactor: *DecreaseFactor
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

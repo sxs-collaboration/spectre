@@ -26,8 +26,10 @@ set(LIBS_TO_LINK
   Observer
   Options
   Parallel
+  ParallelAmr
   ParallelInterpolation
   PhaseControl
+  Printf
   ScalarGaussBonnetPointwise
   ScalarTensor
   ScalarTensorAnalyticData
@@ -48,4 +50,19 @@ target_link_libraries(
   PRIVATE
   ${LIBS_TO_LINK}
   Cce
+  )
+
+set(BBH_EXECUTABLE EvolveScalarTensorBinaryBlackHole)
+add_spectre_executable(
+  ${BBH_EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  EvolveScalarTensorBinaryBlackHole.cpp
+  )
+target_link_libraries(
+  ${BBH_EXECUTABLE}
+  PRIVATE
+  ${LIBS_TO_LINK}
+  Cce
+  Deadlock
+  EvolutionTriggers
   )
