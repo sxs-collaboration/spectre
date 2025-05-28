@@ -23,6 +23,7 @@ spectre_target_headers(
   NeutrinoSystems.hpp
   SetPiAndPhiFromConstraints.hpp
   System.hpp
+  SystemM1.hpp
   StressEnergy.hpp
   Tags.hpp
   TimeDerivativeTerms.hpp
