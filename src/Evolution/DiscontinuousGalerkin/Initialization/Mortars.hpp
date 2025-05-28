@@ -70,77 +70,6 @@ mortars_apply_impl(const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
                    const Mesh<Dim>& volume_mesh,
                    const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_mesh);
-
-template <size_t Dim, typename MortarDataHistoryType>
-void p_project(
-    const gsl::not_null<
-        ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
-    /* mortar_data */,
-    const gsl::not_null<::dg::MortarMap<Dim, Mesh<Dim - 1>>*> mortar_mesh,
-    const gsl::not_null<::dg::MortarMap<Dim, MortarInfo<Dim>>*>
-    /* mortar_infos */,
-    const gsl::not_null<::dg::MortarMap<Dim, TimeStepId>*>
-    /* mortar_next_temporal_id */,
-    const gsl::not_null<
-        DirectionMap<Dim, std::optional<Variables<tmpl::list<
-                              evolution::dg::Tags::MagnitudeOfNormal,
-                              evolution::dg::Tags::NormalCovector<Dim>>>>>*>
-        normal_covector_and_magnitude,
-    const gsl::not_null<MortarDataHistoryType*> mortar_data_history,
-    const Mesh<Dim>& new_mesh, const Element<Dim>& new_element,
-    const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
-  const auto& [old_mesh, old_element] = old_mesh_and_element;
-  ASSERT(old_element.id() == new_element.id(),
-         "p-refinement should not have changed the element id");
-
-  if (old_mesh == new_mesh) {
-    return;
-  }
-
-  for (const auto& [direction, neighbors] : new_element.neighbors()) {
-    const auto sliced_away_dimension = direction.dimension();
-    const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
-    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
-    const bool face_mesh_changed = old_face_mesh != new_face_mesh;
-    if (face_mesh_changed) {
-      (*normal_covector_and_magnitude)[direction] = std::nullopt;
-    }
-    for (const auto& neighbor : neighbors) {
-      const DirectionalId<Dim> mortar_id{direction, neighbor};
-      if (mortar_mesh->contains(mortar_id)) {
-        // mortar_data does not need projecting as it has already been used
-        // and will be resized automatically
-        // mortar_size does not change as the mortar has not changed
-        // next_temporal_id does not change as the mortar has not changed
-        if (not mortar_data_history->empty()) {
-          auto& boundary_history = mortar_data_history->at(mortar_id);
-          auto local_history = boundary_history.local();
-          const auto project_local_boundary_data =
-              [&new_face_mesh, &new_mesh](
-                  const TimeStepId& /* id */,
-                  const gsl::not_null<::evolution::dg::MortarData<Dim>*>
-                      mortar_data) {
-                p_project_geometric_data(mortar_data, new_face_mesh, new_mesh);
-              };
-          local_history.for_each(project_local_boundary_data);
-          boundary_history.clear_coupling_cache();
-        }
-      } else {
-        ERROR("h-refinement not implemented yet");
-      }
-    }
-  }
-
-  for (const auto& direction : new_element.external_boundaries()) {
-    const auto sliced_away_dimension = direction.dimension();
-    const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
-    const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
-    const bool face_mesh_changed = old_face_mesh != new_face_mesh;
-    if (face_mesh_changed) {
-      (*normal_covector_and_magnitude)[direction] = std::nullopt;
-    }
-  }
-}
 }  // namespace detail
 
 /*!
@@ -261,11 +190,12 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
   static void apply(
       const gsl::not_null<
           ::dg::MortarMap<dim, evolution::dg::MortarDataHolder<dim>>*>
-          mortar_data,
+      /*mortar_data*/,
       const gsl::not_null<::dg::MortarMap<dim, Mesh<dim - 1>>*> mortar_mesh,
-      const gsl::not_null<::dg::MortarMap<dim, MortarInfo<dim>>*> mortar_infos,
+      const gsl::not_null<
+          ::dg::MortarMap<dim, MortarInfo<dim>>*> /*mortar_infos*/,
       const gsl::not_null<::dg::MortarMap<dim, TimeStepId>*>
-          mortar_next_temporal_id,
+      /*mortar_next_temporal_id*/,
       const gsl::not_null<
           DirectionMap<dim, std::optional<magnitude_and_normal_type>>*>
           normal_covector_and_magnitude,
@@ -273,10 +203,58 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const Mesh<dim>& new_mesh, const Element<dim>& new_element,
       const ::dg::MortarMap<dim, Mesh<dim>>& /*neighbor_mesh*/,
       const std::pair<Mesh<dim>, Element<dim>>& old_mesh_and_element) {
-    detail::p_project(mortar_data, mortar_mesh, mortar_infos,
-                      mortar_next_temporal_id, normal_covector_and_magnitude,
-                      mortar_data_history, new_mesh, new_element,
-                      old_mesh_and_element);
+    const auto& [old_mesh, old_element] = old_mesh_and_element;
+    ASSERT(old_element.id() == new_element.id(),
+           "p-refinement should not have changed the element id");
+
+    if (old_mesh == new_mesh) {
+      return;
+    }
+
+    for (const auto& [direction, neighbors] : new_element.neighbors()) {
+      const auto sliced_away_dimension = direction.dimension();
+      const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
+      const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+      const bool face_mesh_changed = old_face_mesh != new_face_mesh;
+      if (face_mesh_changed) {
+        (*normal_covector_and_magnitude)[direction] = std::nullopt;
+      }
+      for (const auto& neighbor : neighbors) {
+        const DirectionalId<dim> mortar_id{direction, neighbor};
+        if (mortar_mesh->contains(mortar_id)) {
+          // mortar_data does not need projecting as it has already been used
+          // and will be resized automatically
+          // mortar_size does not change as the mortar has not changed
+          // next_temporal_id does not change as the mortar has not changed
+          if (not mortar_data_history->empty()) {
+            auto& boundary_history = mortar_data_history->at(mortar_id);
+            auto local_history = boundary_history.local();
+            const auto project_local_boundary_data =
+                [&new_face_mesh, &new_mesh](
+                    const TimeStepId& /* id */,
+                    const gsl::not_null<::evolution::dg::MortarData<dim>*>
+                        mortar_data) {
+                  p_project_geometric_data(mortar_data, new_face_mesh,
+                                           new_mesh);
+                };
+            local_history.for_each(project_local_boundary_data);
+            boundary_history.clear_coupling_cache();
+          }
+        } else {
+          ERROR("h-refinement not implemented yet");
+        }
+      }
+    }
+
+    for (const auto& direction : new_element.external_boundaries()) {
+      const auto sliced_away_dimension = direction.dimension();
+      const auto old_face_mesh = old_mesh.slice_away(sliced_away_dimension);
+      const auto new_face_mesh = new_mesh.slice_away(sliced_away_dimension);
+      const bool face_mesh_changed = old_face_mesh != new_face_mesh;
+      if (face_mesh_changed) {
+        (*normal_covector_and_magnitude)[direction] = std::nullopt;
+      }
+    }
   }
 
   template <typename... Tags>
