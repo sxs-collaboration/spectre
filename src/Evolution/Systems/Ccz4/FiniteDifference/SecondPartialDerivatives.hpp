@@ -89,7 +89,7 @@ void second_logical_partial_derivatives(
 template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
 void second_partial_derivatives(
     gsl::not_null<
-        Variables<db::wrap_tags_in<Tags::second_deriv, DerivativeTags,
+        Variables<db::wrap_tags_in<::Tags::second_deriv, DerivativeTags,
                                    tmpl::size_t<Dim>, DerivativeFrame>>*>
         second_partial_derivatives,
     const gsl::span<const double>& volume_vars,
