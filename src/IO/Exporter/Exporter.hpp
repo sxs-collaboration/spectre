@@ -21,6 +21,7 @@ namespace spectre::Exporter {
 
 /// Identifies an observation by its ID in the volume data file.
 struct ObservationId {
+  ObservationId() = default;
   explicit ObservationId(size_t local_value) : value(local_value) {}
   size_t value;
 };
@@ -28,6 +29,7 @@ struct ObservationId {
 /// Identifies an observation by its index in the ordered list of observations.
 /// Negative indices are counted from the end of the list.
 struct ObservationStep {
+  ObservationStep() = default;
   explicit ObservationStep(int local_value) : value(local_value) {}
   int value;
 };

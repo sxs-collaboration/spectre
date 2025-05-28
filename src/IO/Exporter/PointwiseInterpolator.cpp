@@ -411,22 +411,20 @@ auto parse_volume_files(const std::variant<std::vector<std::string>,
   // `Visualization.ReadH5:select_observation` and possibly move it to C++.
   const size_t obs_id =
       std::visit(SelectObservation{first_volfile}, observation);
-  // Get domain, time, functions of time
+  const double time = first_volfile.get_observation_value(obs_id);
+  // Get domain, functions of time
   auto domain =
       deserialize<Domain<Dim>>(first_volfile.get_domain(obs_id)->data());
-  auto time_and_fot = [&first_volfile, &obs_id, &domain]() {
-    if (domain.is_time_dependent()) {
-      return std::make_pair(
-          first_volfile.get_observation_value(obs_id),
-          deserialize<domain::FunctionsOfTimeMap>(
-              first_volfile.get_functions_of_time(obs_id)->data()));
-    } else {
-      return std::make_pair(0., domain::FunctionsOfTimeMap{});
+  auto functions_of_time = [&first_volfile, &obs_id]() {
+    const auto serialized_fot = first_volfile.get_functions_of_time(obs_id);
+    if (not serialized_fot.has_value()) {
+      return domain::FunctionsOfTimeMap{};
     }
+    return deserialize<domain::FunctionsOfTimeMap>(serialized_fot->data());
   }();
   first_h5file.close();
-  return std::make_tuple(std::move(filenames), obs_id, time_and_fot.first,
-                         std::move(domain), std::move(time_and_fot.second));
+  return std::make_tuple(std::move(filenames), obs_id, time, std::move(domain),
+                         std::move(functions_of_time));
 }
 
 template <typename DataType, size_t Dim, typename Frame>
@@ -717,7 +715,14 @@ void PointwiseInterpolator<Dim, Frame>::interpolate_to_points(
     // Clear the anchor points from the result
     for (size_t i = 0; i < result->size(); ++i) {
       DataVector& component = (*result)[i];
-      component.destructive_resize(num_target_points);
+      // Can't use `destructive_resize` because we want to preserve the
+      // leading elements of the DataVector
+      DataVector new_component(num_target_points);
+      std::copy(
+          component.begin(),
+          component.begin() + static_cast<std::ptrdiff_t>(num_target_points),
+          new_component.begin());
+      component = std::move(new_component);
     }
   }
 }

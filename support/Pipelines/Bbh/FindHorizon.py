@@ -12,7 +12,7 @@ import spectre.IO.H5 as spectre_h5
 from spectre.ApparentHorizonFinder import FastFlow, FlowType, Status
 from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import tnsr
-from spectre.IO.Exporter import interpolate_tensors_to_points
+from spectre.IO.Exporter import ObservationId, interpolate_tensors_to_points
 from spectre.PointwiseFunctions.GeneralRelativity.Surfaces import (
     horizon_quantities,
 )
@@ -174,7 +174,7 @@ def find_horizon(
         ) = interpolate_tensors_to_points(
             h5_files,
             subfile_name,
-            observation_id=obs_id,
+            observation=ObservationId(obs_id),
             target_points=cartesian_coords(prolonged_strahlkorper),
             tensor_names=tensor_names[1:4],
             tensor_types=[
@@ -219,7 +219,7 @@ def find_horizon(
     ) = interpolate_tensors_to_points(
         h5_files,
         subfile_name,
-        observation_id=obs_id,
+        observation=ObservationId(obs_id),
         target_points=cartesian_coords(strahlkorper),
         tensor_names=tensor_names,
         tensor_types=[

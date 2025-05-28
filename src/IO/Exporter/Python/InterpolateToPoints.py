@@ -9,7 +9,7 @@ import rich
 
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures.Tensor import DataVector, Frame, tnsr
-from spectre.IO.Exporter import interpolate_to_points
+from spectre.IO.Exporter import ObservationId, interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles_command,
     parse_points,
@@ -114,7 +114,7 @@ def interpolate_to_points_command(
         interpolate_to_points(
             h5_files,
             subfile_name=subfile_name,
-            observation_id=obs_id,
+            observation=ObservationId(obs_id),
             tensor_components=vars,
             target_points=target_points,
             **kwargs,

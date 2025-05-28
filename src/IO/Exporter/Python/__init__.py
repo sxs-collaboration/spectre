@@ -47,3 +47,10 @@ def interpolate_tensors_to_points(
             tensor[i] = DataVector(data[j])
             j += 1
     return list(tensors.values())
+
+
+SpacetimeInterpolator = {
+    1: SpacetimeInterpolator1D,
+    2: SpacetimeInterpolator2D,
+    3: SpacetimeInterpolator3D,
+}

@@ -6,3 +6,9 @@ spectre_add_python_bindings_test(
   Test_InterpolateToPoints.py
   "unit;python"
   PyExporter)
+
+spectre_add_python_bindings_test(
+  "Unit.IO.Exporter.Python.SpacetimeInterpolator"
+  Test_SpacetimeInterpolator.py
+  "unit;python"
+  PyExporter)

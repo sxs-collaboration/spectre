@@ -14,7 +14,7 @@ import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
-from spectre.IO.Exporter import interpolate_to_points
+from spectre.IO.Exporter import ObservationId, interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles,
     open_volfiles_command,
@@ -198,7 +198,7 @@ def plot_slice(
             interpolate_to_points(
                 h5_files,
                 subfile_name=subfile_name,
-                observation_id=obs_id,
+                observation=ObservationId(obs_id),
                 tensor_components=[var_name],
                 target_points=target_coords.reshape(3, np.prod(num_samples)),
                 extrapolate_into_excisions=extrapolate_into_excisions,

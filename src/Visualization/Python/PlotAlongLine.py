@@ -11,7 +11,7 @@ import matplotlib.animation
 import matplotlib.pyplot as plt
 import numpy as np
 
-from spectre.IO.Exporter import interpolate_to_points
+from spectre.IO.Exporter import ObservationId, interpolate_to_points
 from spectre.Visualization.OpenVolfiles import (
     open_volfiles,
     open_volfiles_command,
@@ -145,7 +145,7 @@ def plot_along_line(
         vars_on_line = interpolate_to_points(
             h5_files,
             subfile_name=subfile_name,
-            observation_id=obs_id,
+            observation=ObservationId(obs_id),
             tensor_components=vars,
             target_points=target_coords,
             extrapolate_into_excisions=extrapolate_into_excisions,
