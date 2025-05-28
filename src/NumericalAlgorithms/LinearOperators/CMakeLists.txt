@@ -44,6 +44,7 @@ target_link_libraries(
   BLAS::BLAS
   DataStructures
   ErrorHandling
+  Interpolation
   Options
   Serialization
   Spectral

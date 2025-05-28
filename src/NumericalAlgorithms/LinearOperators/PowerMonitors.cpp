@@ -3,14 +3,17 @@
 
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearRegression.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -51,7 +54,7 @@ void power_monitors(const gsl::not_null<std::array<DataVector, Dim>*> result,
           slice_sum += square(mode);
         }
       }
-      slice_sum /= n_slice;
+      slice_sum /= static_cast<double>(n_slice);
       slice_sum = sqrt(slice_sum);
 
       gsl::at(*result, sliced_dim)[index] = slice_sum;
@@ -145,6 +148,68 @@ std::array<double, Dim> absolute_truncation_error(
     gsl::at(result, d) = umax * relative_truncation_error_in_d;
   }
   return result;
+}
+
+double convergence_rate(const DataVector& power_monitor,
+                        const size_t number_of_filtered_modes) {
+  // Need enough unfiltered modes to compute the convergence rate. Here,
+  // require at least 4 unfiltered modes.
+  ASSERT(
+      power_monitor.size() > number_of_filtered_modes + 3,
+      "Power monitor needs at least 4 unfiltered modes to compute convergence "
+      "rate, but power monitor has size "
+          << power_monitor.size() << " with " << number_of_filtered_modes
+          << " filtered modes");
+
+  const size_t n_tilde = power_monitor.size() - number_of_filtered_modes;
+  std::vector<double> mode_numbers_for_fit{};
+  std::vector<double> mode_powers_for_fit{};
+  mode_numbers_for_fit.reserve(n_tilde);
+  mode_powers_for_fit.reserve(n_tilde);
+
+  const size_t n_tilde_minus_one = n_tilde - 1;
+  std::vector<double> slopes{};
+  std::vector<double> delta_slopes{};
+
+  // It turns out (as can be verified empirically) that the number of terms
+  // in this loop is 3 * (n_tilde - 5) for n_tilde > 6, 4 for n_tilde == 5,
+  // and 3 for n_tilde == 4 or n_tilde == 3. Here reserve the correct number of
+  // elements in terms of n_tilde, except don't use an extra if to
+  // distinguish between the 3 and 4 special cases (no harm in reserving space
+  // for a single extra double).
+  const size_t max_slope_size = n_tilde > 6 ? 3 * (n_tilde - 5) : 4;
+  slopes.reserve(max_slope_size);
+  delta_slopes.reserve(max_slope_size);
+  for (size_t k1 = 0; k1 < 3; ++k1) {
+    for (size_t k2 = std::min(k1 + 4, n_tilde_minus_one);
+         k2 <= n_tilde_minus_one; ++k2) {
+      mode_numbers_for_fit.resize(k2 - k1 + 1);
+      mode_powers_for_fit.resize(k2 - k1 + 1);
+      for (size_t k = k1; k <= k2; ++k) {
+        mode_numbers_for_fit[k - k1] = static_cast<double>(k);
+        mode_powers_for_fit[k - k1] = log10(power_monitor[k]);
+      }
+      const intrp::LinearRegressionResult regression_result =
+          intrp::linear_regression(mode_numbers_for_fit, mode_powers_for_fit);
+      slopes.push_back(regression_result.slope);
+      delta_slopes.push_back(regression_result.delta_slope);
+    }
+  }
+  const auto max_delta =
+      std::max_element(delta_slopes.begin(), delta_slopes.end());
+  // Scale the small factor to be a few orders of magnitude smaller than
+  // the max slope delta, as SpEC does. But in case the fit happens to have
+  // identically zero errors, make sure eps is still nonzero.
+  const double eps = std::max(*max_delta * 1.e-3, 1.e-15);
+  double num = 0.0;
+  double denom = 0.0;
+  for (size_t i = 0; i < slopes.size(); ++i) {
+    const double one_over_denom_this_term =
+        1.0 / (eps + gsl::at(delta_slopes, i));
+    denom += one_over_denom_this_term;
+    num += gsl::at(slopes, i) * one_over_denom_this_term;
+  }
+  return -num / denom;
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)

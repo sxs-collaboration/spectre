@@ -83,7 +83,7 @@ std::array<DataVector, Dim> power_monitors(const VectorType& u,
  *
  */
 double relative_truncation_error(const DataVector& power_monitor,
-                                 const size_t num_modes_to_use);
+                                 size_t num_modes_to_use);
 /// @}
 
 /*!
@@ -119,4 +119,39 @@ template <typename VectorType, size_t Dim>
 std::array<double, Dim> absolute_truncation_error(
     const VectorType& tensor_component, const Mesh<Dim>& mesh);
 /// @}
+
+/*!
+ * \ingroup SpectralGroup
+ * \brief Returns the convergence rate of a power monitor.
+ *
+ * \details Returns the convergence rate of a power monitor as a weighted
+ * average of slopes measured using different subsets of spectral modes
+ * in the power monitor. Equation (53) of \cite Szilagyi2014fna gives
+ * the convergence rate $\mathcal{C}$ in terms of a power monitor $P_k$ as
+ * \begin{equation}
+ * \mathcal{C}(P_k) = -\frac{\sum_{k_1=0}^2\sum_{k_2=\tilde{k}_1}^{\tilde{N}-1}
+ *   \frac{\mathcal{S}(k_1,k_2)}{\epsilon + \mathcal{E}(k_1,k_2)}}{
+ *   \sum_{k_1=0}^2\sum_{k_2=\tilde{k}_1}^{\tilde{N}-1}
+ *   \frac{1}{\epsilon + \mathcal{E}(k_1,k_2)}}.
+ * \end{equation}
+ * Here, $\mathcal{S}(k_1,k_2)$ is the slope of a linear regression fit of
+ * $\log_{10}(P_k)$ with $k$ satisfying $k_1\leq k \leq k_2$,
+ * $\mathcal{E}(k_1,k_2)$ is the error of the slope in that fit,
+ * $\epsilon=\max\left(10^{-3}\max\left(\mathcal{E}(k_1,k_2)\right),
+ * 10^{-15}\right)$ is a small number to avoid dividing by zero in the event the
+ * fit errors vanish,
+ * $\max\left(\mathcal{E}(k_1,k_2)\right)$ is the maximum fit error of each
+ * fit whose slope is included in the summation,
+ * $\tilde{k}_1 = \min\left(k_1+4,\tilde{N}-1\right)$,
+ * $\tilde{N} = N-N_f$, $N$ is the number of modes in the
+ * power monitor, and the highest $N_f$ modes are filtered. Note that the
+ * way $\epsilon$ is defined is so that it matches SpEC's definition, while
+ * also ensuring that it is nonzero even if the error in the slope fit is
+ * exactly zero.
+ * \param power_monitor The power monitor.
+ * \param number_of_filtered_modes How many of the highest modes of the
+ * power monitor are filtered (default 0).
+ */
+double convergence_rate(const DataVector& power_monitor,
+                        size_t number_of_filtered_modes = 0);
 }  // namespace PowerMonitors

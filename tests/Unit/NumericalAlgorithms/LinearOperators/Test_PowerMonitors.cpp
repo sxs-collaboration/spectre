@@ -10,11 +10,13 @@
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PowerMonitors.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -234,6 +236,59 @@ void test_relative_truncation_error_linear_function() {
   }
 }
 
+void test_convergence_rate() {
+  // First, check that a power monitor with an exact, constant slope has the
+  // expected convergence rate
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> slope_dis(-4.0, -1.0);
+  const double expected_slope = slope_dis(gen);
+  std::uniform_real_distribution<> offset_dis(-0.4, -0.1);
+  const double offset = offset_dis(gen);
+  const size_t size_of_power_monitor{10};
+  DataVector power_monitor_with_known_slope{size_of_power_monitor};
+  for (size_t i = 0; i < size_of_power_monitor; ++i) {
+    power_monitor_with_known_slope[i] =
+        pow(10.0, static_cast<double>(i) * expected_slope + offset);
+  }
+  constexpr size_t filtered_modes = 2;
+
+  double convergence_rate = PowerMonitors::convergence_rate(
+      power_monitor_with_known_slope, filtered_modes);
+  CHECK(approx(convergence_rate) == -expected_slope);
+
+  // Change the filtered modes' power to a NaN, and ensure that this mode
+  // is ignored when computing the convergence rate.
+  power_monitor_with_known_slope[8] =
+      std::numeric_limits<double>::signaling_NaN();
+  power_monitor_with_known_slope[9] =
+      std::numeric_limits<double>::signaling_NaN();
+  convergence_rate = PowerMonitors::convergence_rate(
+      power_monitor_with_known_slope, filtered_modes);
+  CHECK(approx(convergence_rate) == -expected_slope);
+
+  // Test that adding noise of amplitude 1e-2 affects the slope recovered
+  // by no more than that amount
+  constexpr double noise_amp = 0.01;
+  std::uniform_real_distribution<> noise_dis(-noise_amp, noise_amp);
+  for (size_t i = 0; i < size_of_power_monitor - filtered_modes; ++i) {
+    power_monitor_with_known_slope[i] *= pow(10.0, noise_dis(gen));
+  }
+  convergence_rate = PowerMonitors::convergence_rate(
+      power_monitor_with_known_slope, filtered_modes);
+  // define custom approx for higher derivative checks
+  const Approx custom_approx = Approx::custom().epsilon(noise_amp).scale(1.0);
+  CHECK(custom_approx(convergence_rate) == -expected_slope);
+
+// Check assert that sufficient modes were provided
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      PowerMonitors::convergence_rate(power_monitor_with_known_slope,
+                                      size_of_power_monitor - 3),
+      Catch::Matchers::ContainsSubstring(
+          "Power monitor needs at least 4 unfiltered modes to compute "
+          "convergence"));
+#endif
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
@@ -243,4 +298,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
   test_relative_truncation_error_impl();
   test_relative_truncation_error_with_symmetry();
   test_relative_truncation_error_linear_function();
+  test_convergence_rate();
 }
