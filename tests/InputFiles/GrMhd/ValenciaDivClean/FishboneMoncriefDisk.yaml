@@ -111,6 +111,7 @@ SpatialDiscretization:
   SubcellSolver:
     Reconstructor:
       MonotonisedCentralPrim:
+        ReconstructRhoTimesTemperature: true
 
 
 EvolutionSystem:

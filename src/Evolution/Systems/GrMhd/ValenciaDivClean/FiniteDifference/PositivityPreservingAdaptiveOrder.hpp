@@ -112,8 +112,15 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
         "The 2nd/3rd-order reconstruction scheme to use if unlimited 5th-order "
         "isn't okay."};
   };
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
 
-  using options = tmpl::list<Alpha5, Alpha7, Alpha9, LowOrderReconstructor>;
+  using options = tmpl::list<Alpha5, Alpha7, Alpha9, LowOrderReconstructor,
+                             ReconstructRhoTimesTemperature>;
 
   static constexpr Options::String help{
       "Positivity-preserving adaptive-order reconstruction."};
@@ -133,6 +140,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       double alpha_5, std::optional<double> alpha_7,
       std::optional<double> alpha_9,
       FallbackReconstructorType low_order_reconstructor,
+      bool reconstruct_rho_times_temperature,
       const Options::Context& context = {});
 
   explicit PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* msg);
@@ -183,7 +191,9 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
-      const Direction<dim> direction_to_reconstruct) const;
+      Direction<dim> direction_to_reconstruct) const;
+
+  bool reconstruct_rho_times_temperature() const override;
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -198,6 +208,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
   std::optional<double> eight_to_the_alpha_9_{};
   FallbackReconstructorType low_order_reconstructor_ =
       FallbackReconstructorType::None;
+  bool reconstruct_rho_times_temperature_{false};
 
   using PointerReconsOrder = void (*)(
       gsl::not_null<std::array<gsl::span<double>, dim>*>,

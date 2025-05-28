@@ -42,9 +42,11 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
     const std::optional<double> alpha_9,
     const ::fd::reconstruction::FallbackReconstructorType
         low_order_reconstructor,
+    const bool reconstruct_rho_times_temperature,
     const Options::Context& context)
     : four_to_the_alpha_5_(pow(4.0, alpha_5)),
-      low_order_reconstructor_(low_order_reconstructor) {
+      low_order_reconstructor_(low_order_reconstructor),
+      reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {
   if (low_order_reconstructor_ ==
       ::fd::reconstruction::FallbackReconstructorType::None) {
     PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
@@ -86,6 +88,7 @@ void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   p | six_to_the_alpha_7_;
   p | eight_to_the_alpha_9_;
   p | low_order_reconstructor_;
+  p | reconstruct_rho_times_temperature_;
   if (p.isUnpacking()) {
     set_function_pointers();
   }
@@ -129,7 +132,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
                             std::numeric_limits<double>::signaling_NaN()));
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), false);
+      ghost_zone_size(), false, reconstruct_rho_times_temperature());
   reconstruct_prims_work<non_positive_tags>(
       vars_on_lower_face, vars_on_upper_face,
       [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
@@ -144,7 +147,7 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
                          std::numeric_limits<double>::signaling_NaN()));
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), true);
+      ghost_zone_size(), true, reconstruct_rho_times_temperature());
 }
 
 template <size_t ThermodynamicDim>
@@ -190,7 +193,8 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
                 std::numeric_limits<double>::signaling_NaN()));
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
-      direction_to_reconstruct, ghost_zone_size(), false);
+      direction_to_reconstruct, ghost_zone_size(), false,
+      reconstruct_rho_times_temperature());
   reconstruct_fd_neighbor_work<non_positive_tags, prims_to_reconstruct_tags>(
       vars_on_face,
       [this](const auto tensor_component_on_face_ptr,
@@ -224,7 +228,13 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
                 std::numeric_limits<double>::signaling_NaN()));
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
-      direction_to_reconstruct, ghost_zone_size(), true);
+      direction_to_reconstruct, ghost_zone_size(), true,
+      reconstruct_rho_times_temperature());
+}
+
+bool PositivityPreservingAdaptiveOrderPrim::reconstruct_rho_times_temperature()
+    const {
+  return reconstruct_rho_times_temperature_;
 }
 
 bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
@@ -234,7 +244,9 @@ bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
   return lhs.four_to_the_alpha_5_ == rhs.four_to_the_alpha_5_ and
          lhs.six_to_the_alpha_7_ == rhs.six_to_the_alpha_7_ and
          lhs.eight_to_the_alpha_9_ == rhs.eight_to_the_alpha_9_ and
-         lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_;
+         lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_ and
+         lhs.reconstruct_rho_times_temperature() ==
+             rhs.reconstruct_rho_times_temperature();
 }
 
 bool operator!=(const PositivityPreservingAdaptiveOrderPrim& lhs,
