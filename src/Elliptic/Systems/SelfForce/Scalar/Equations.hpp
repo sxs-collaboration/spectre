@@ -1,0 +1,116 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#pragma once
+
+#include <cstddef>
+#include <pup.h>
+
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/Tags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace ScalarSelfForce {
+
+/*!
+ * \brief The first-order flux
+ * $F^i=\{\partial_{r_\star}, \alpha \partial_{\cos\theta}\}\Psi_m$.
+ */
+void fluxes(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
+            const Scalar<ComplexDataVector>& alpha,
+            const tnsr::i<ComplexDataVector, 2>& field_gradient);
+
+/*!
+ * \brief The first-order flux on an element face
+ * $F^i=\{n_{r_\star}, \alpha n_{\cos\theta}\}\Psi_m$.
+ */
+void fluxes_on_face(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
+                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::I<DataVector, 2>& face_normal_vector,
+                    const Scalar<ComplexDataVector>& field);
+
+/*!
+ * \brief The source term $\beta \Psi_m + \gamma_i F^i$.
+ */
+void add_sources(gsl::not_null<Scalar<ComplexDataVector>*> source,
+                 const Scalar<ComplexDataVector>& beta,
+                 const tnsr::i<ComplexDataVector, 2>& gamma,
+                 const Scalar<ComplexDataVector>& field,
+                 const tnsr::I<ComplexDataVector, 2>& flux);
+
+/// Fluxes $F^i$ for the scalar self-force system.
+/// \see ScalarSelfForce::FirstOrderSystem
+struct Fluxes {
+  using argument_tags = tmpl::list<Tags::Alpha>;
+  using volume_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<>;
+  static constexpr bool is_trivial = false;
+  static constexpr bool is_discontinuous = false;
+  static void apply(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
+                    const Scalar<ComplexDataVector>& alpha,
+                    const Scalar<ComplexDataVector>& /*field*/,
+                    const tnsr::i<ComplexDataVector, 2>& field_gradient);
+  static void apply(gsl::not_null<tnsr::I<ComplexDataVector, 2>*> flux,
+                    const Scalar<ComplexDataVector>& alpha,
+                    const tnsr::i<DataVector, 2>& /*face_normal*/,
+                    const tnsr::I<DataVector, 2>& face_normal_vector,
+                    const Scalar<ComplexDataVector>& field);
+};
+
+/// Sources terms for the scalar self-force system.
+/// \see ScalarSelfForce::FirstOrderSystem
+struct Sources {
+  using argument_tags = tmpl::list<Tags::Beta, Tags::Gamma>;
+  using const_global_cache_tags = tmpl::list<>;
+  static void apply(gsl::not_null<Scalar<ComplexDataVector>*> scalar_equation,
+                    const Scalar<ComplexDataVector>& beta,
+                    const tnsr::i<ComplexDataVector, 2>& gamma,
+                    const Scalar<ComplexDataVector>& field,
+                    const tnsr::I<ComplexDataVector, 2>& flux);
+};
+
+/*!
+ * \brief Adds or subtracts the singular field to/from the received data on
+ * element boundaries.
+ *
+ * In the regularized region we solve for the regularized field
+ * \begin{equation}
+ *   \Psi_m^R = \Psi_m - \Psi_m^P
+ *   \text{,}
+ * \end{equation}
+ * so we subtract the singular field on the regularized side and add it on the
+ * other side of the boundary. We do the same for the received normal dot flux
+ * $n_i F^i$, but with an extra minus sign because this quantity is defined with
+ * the face normal from the perspective of the sending element (see
+ * `elliptic::protocols::FirstOrderSystem`).
+ */
+struct ModifyBoundaryData {
+ private:
+  static constexpr size_t Dim = 2;
+  using singular_vars_on_mortars_tag =
+      ::Tags::Variables<tmpl::list<Tags::SingularField,
+                                   ::Tags::NormalDotFlux<Tags::SingularField>>>;
+
+ public:
+  using argument_tags =
+      tmpl::list<Tags::FieldIsRegularized,
+                 ::Tags::Mortars<Tags::FieldIsRegularized, Dim>,
+                 ::Tags::Mortars<singular_vars_on_mortars_tag, Dim>>;
+  static void apply(
+      gsl::not_null<Scalar<ComplexDataVector>*> field,
+      gsl::not_null<Scalar<ComplexDataVector>*> n_dot_flux,
+      const DirectionalId<Dim>& mortar_id, bool field_is_regularized,
+      const DirectionalIdMap<Dim, bool>& neighbors_field_is_regularized,
+      const DirectionalIdMap<Dim, typename singular_vars_on_mortars_tag::type>&
+          singular_vars_on_mortars);
+};
+
+}  // namespace ScalarSelfForce
