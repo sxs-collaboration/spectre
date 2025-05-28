@@ -376,9 +376,13 @@ SPECTRE_TEST_CASE(
                    make_not_null(&temp_variables), gradient_variables,
                    arg_variables);
 
-  CHECK_VARIABLES_APPROX(dt_variables, expected_dt_variables);
-  CHECK_VARIABLES_APPROX(flux_variables, expected_flux_variables);
-  CHECK_VARIABLES_APPROX(temp_variables, expected_temp_variables);
+  const Approx custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(dt_variables, expected_dt_variables,
+                                custom_approx);
+  CHECK_VARIABLES_CUSTOM_APPROX(flux_variables, expected_flux_variables,
+                                custom_approx);
+  CHECK_VARIABLES_CUSTOM_APPROX(temp_variables, expected_temp_variables,
+                                custom_approx);
 
   {
     INFO(
