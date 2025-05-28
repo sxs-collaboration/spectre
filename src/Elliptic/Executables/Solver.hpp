@@ -401,7 +401,6 @@ struct Solver {
           // AMR because they will get re-initialized after communication.
           typename init_subdomain_action::simple_tags>>,
       ::amr::projectors::ProjectVariables<volume_dim, fields_tag>,
-      elliptic::Actions::InitializeFixedSources<system, background_tag>,
       init_analytic_solution_action,
       elliptic::dg::Actions::amr_projectors<system, background_tag>,
       typename dg_operator<true>::amr_projectors,
