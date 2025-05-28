@@ -88,13 +88,14 @@ void p_project(
         normal_covector_and_magnitude,
     const gsl::not_null<MortarDataHistoryType*> mortar_data_history,
     const Mesh<Dim>& new_mesh, const Element<Dim>& new_element,
-    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
     const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
   const auto& [old_mesh, old_element] = old_mesh_and_element;
   ASSERT(old_element.id() == new_element.id(),
          "p-refinement should not have changed the element id");
 
-  const bool mesh_changed = old_mesh != new_mesh;
+  if (old_mesh == new_mesh) {
+    return;
+  }
 
   for (const auto& [direction, neighbors] : new_element.neighbors()) {
     const auto sliced_away_dimension = direction.dimension();
@@ -107,42 +108,22 @@ void p_project(
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       if (mortar_mesh->contains(mortar_id)) {
-        const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
-        const auto& old_mortar_mesh = mortar_mesh->at(mortar_id);
-        auto new_mortar_mesh = ::dg::mortar_mesh(
-            new_mesh.slice_away(direction.dimension()),
-            new_neighbor_mesh.slice_away(direction.dimension()));
-        const bool mortar_mesh_changed = old_mortar_mesh != new_mortar_mesh;
-
-        if (mortar_mesh_changed or mesh_changed) {
-          // mortar_data does not need projecting as it has already been used
-          // and will be resized automatically
-          // mortar_size does not change as the mortar has not changed
-          // next_temporal_id does not change as the mortar has not changed
-          if (not mortar_data_history->empty()) {
-            auto& boundary_history = mortar_data_history->at(mortar_id);
-            auto local_history = boundary_history.local();
-            auto remote_history = boundary_history.remote();
-            const auto project_local_boundary_data =
-                [&new_mortar_mesh, &new_face_mesh, &new_mesh](
-                    const TimeStepId& /* id */,
-                    const gsl::not_null<::evolution::dg::MortarData<Dim>*>
-                        mortar_data) {
-                  p_project(mortar_data, new_mortar_mesh, new_face_mesh,
-                            new_mesh);
-                };
-            local_history.for_each(project_local_boundary_data);
-            const auto project_remote_boundary_data =
-                [&new_mortar_mesh](
-                    const TimeStepId& /* id */,
-                    const gsl::not_null<::evolution::dg::MortarData<Dim>*>
-                        mortar_data) {
-                  p_project_only_mortar_data(mortar_data, new_mortar_mesh);
-                };
-            remote_history.for_each(project_remote_boundary_data);
-            boundary_history.clear_coupling_cache();
-          }
-          mortar_mesh->at(mortar_id) = std::move(new_mortar_mesh);
+        // mortar_data does not need projecting as it has already been used
+        // and will be resized automatically
+        // mortar_size does not change as the mortar has not changed
+        // next_temporal_id does not change as the mortar has not changed
+        if (not mortar_data_history->empty()) {
+          auto& boundary_history = mortar_data_history->at(mortar_id);
+          auto local_history = boundary_history.local();
+          const auto project_local_boundary_data =
+              [&new_face_mesh, &new_mesh](
+                  const TimeStepId& /* id */,
+                  const gsl::not_null<::evolution::dg::MortarData<Dim>*>
+                      mortar_data) {
+                p_project_geometric_data(mortar_data, new_face_mesh, new_mesh);
+              };
+          local_history.for_each(project_local_boundary_data);
+          boundary_history.clear_coupling_cache();
         }
       } else {
         ERROR("h-refinement not implemented yet");
@@ -248,10 +229,11 @@ struct Mortars {
 ///   - Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>
 ///
 /// For p-refinement:
-///   - Does nothing to MortarDataHistory (only valid for global time-stepping)
-///     or MortarNextTemporalId (only valid for no h-refinement)
-///   - Sets the other Mortar tags to be default initialized for each neighbor
-///   - Sets the NormalCovectorAndMagnitude to std::nullopt
+///   - Sets the NormalCovectorAndMagnitude to std::nullopt if the face mesh
+///     changed
+///   - Projects the local geometric data (but not the data on the mortar-mesh)
+///     in the MortarDataHistory, if present
+///   - Does nothing to the other tags
 template <typename Metavariables>
 struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
  private:
@@ -289,11 +271,11 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           normal_covector_and_magnitude,
       const gsl::not_null<mortar_data_history_type*> mortar_data_history,
       const Mesh<dim>& new_mesh, const Element<dim>& new_element,
-      const ::dg::MortarMap<dim, Mesh<dim>>& neighbor_mesh,
+      const ::dg::MortarMap<dim, Mesh<dim>>& /*neighbor_mesh*/,
       const std::pair<Mesh<dim>, Element<dim>>& old_mesh_and_element) {
     detail::p_project(mortar_data, mortar_mesh, mortar_infos,
                       mortar_next_temporal_id, normal_covector_and_magnitude,
-                      mortar_data_history, new_mesh, new_element, neighbor_mesh,
+                      mortar_data_history, new_mesh, new_element,
                       old_mesh_and_element);
   }
 

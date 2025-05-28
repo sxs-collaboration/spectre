@@ -273,12 +273,12 @@ void test_p_project() {
                                    std::optional(initial_mortar_mesh),
                                    std::nullopt,
                                    std::nullopt};
-  p_project(make_not_null(&only_mortar_data), final_mortar_mesh,
-            final_face_mesh, final_volume_mesh);
+  p_project_geometric_data(make_not_null(&only_mortar_data), final_face_mesh,
+                           final_volume_mesh);
   check_mortar_data(only_mortar_data,
-                    MortarData<Dim>{std::optional(final_mortar_data),
+                    MortarData<Dim>{std::optional(initial_mortar_data),
                                     std::nullopt, std::nullopt, std::nullopt,
-                                    std::optional(final_mortar_mesh),
+                                    std::optional(initial_mortar_mesh),
                                     std::nullopt, std::nullopt});
   MortarData<Dim> only_mortar_data_2{std::optional(initial_mortar_data),
                                      std::nullopt,
@@ -287,8 +287,7 @@ void test_p_project() {
                                      std::optional(initial_mortar_mesh),
                                      std::nullopt,
                                      std::nullopt};
-  p_project_only_mortar_data(make_not_null(&only_mortar_data_2),
-                             final_mortar_mesh);
+  p_project_mortar_data(make_not_null(&only_mortar_data_2), final_mortar_mesh);
   check_mortar_data(only_mortar_data_2,
                     MortarData<Dim>{std::optional(final_mortar_data),
                                     std::nullopt, std::nullopt, std::nullopt,
@@ -301,13 +300,13 @@ void test_p_project() {
                                std::optional(initial_mortar_mesh),
                                std::optional(initial_face_mesh),
                                std::nullopt};
-  p_project(make_not_null(&only_gl_data), final_mortar_mesh, final_face_mesh,
-            final_volume_mesh);
+  p_project_geometric_data(make_not_null(&only_gl_data), final_face_mesh,
+                           final_volume_mesh);
   check_mortar_data(
       only_gl_data,
-      MortarData<Dim>{std::optional(final_mortar_data),
+      MortarData<Dim>{std::optional(initial_mortar_data),
                       std::optional(final_face_normal_magnitude), std::nullopt,
-                      std::nullopt, std::optional(final_mortar_mesh),
+                      std::nullopt, std::optional(initial_mortar_mesh),
                       std::optional(final_face_mesh), std::nullopt});
   MortarData<Dim> g_data{std::optional(initial_mortar_data),
                          std::optional(initial_face_normal_magnitude),
@@ -316,14 +315,14 @@ void test_p_project() {
                          std::optional(initial_mortar_mesh),
                          std::optional(initial_face_mesh),
                          std::optional(initial_volume_mesh)};
-  p_project(make_not_null(&g_data), final_mortar_mesh, final_face_mesh,
-            final_volume_mesh);
+  p_project_geometric_data(make_not_null(&g_data), final_face_mesh,
+                           final_volume_mesh);
   check_mortar_data(
-      g_data, MortarData<Dim>{std::optional(final_mortar_data),
+      g_data, MortarData<Dim>{std::optional(initial_mortar_data),
                               std::optional(final_face_normal_magnitude),
                               std::optional(final_face_det_jacobian),
                               std::optional(final_volume_det_inv_jacobian),
-                              std::optional(final_mortar_mesh),
+                              std::optional(initial_mortar_mesh),
                               std::optional(final_face_mesh),
                               std::optional(final_volume_mesh)});
 }
