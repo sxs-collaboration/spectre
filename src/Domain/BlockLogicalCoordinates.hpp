@@ -78,9 +78,10 @@ block_logical_coordinates_single_point(
 
 /// A `block_order` can be provided to this overload to speed up the search for
 /// the block containing the point. When the point is found, the containing
-/// block will be pushed to the front of the list. Note that when a block order
-/// is provided, the block with the smallest `BlockId` is no longer guaranteed
-/// to be chosen.
+/// block will be pushed to the front of the list. If an empty block order is
+/// provided, it will be initially filled with the list of blocks in the domain
+/// and then updated. Note that when a block order is provided, the block with
+/// the smallest `BlockId` is no longer guaranteed to be chosen.
 template <size_t Dim, typename Fr>
 BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
     const tnsr::I<double, Dim, Fr>& input_point, const Domain<Dim>& domain,

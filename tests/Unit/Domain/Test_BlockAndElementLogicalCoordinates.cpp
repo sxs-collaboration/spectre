@@ -36,7 +36,9 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace {
@@ -566,14 +568,18 @@ void test_block_and_element_logical_coordinates(
 
   std::vector<tnsr::I<double, Dim, Frame::BlockLogical>>
       block_logical_single_point_result(x_inertial.size());
-  std::vector<size_t> block_order(domain.blocks().size());
+  std::vector<size_t> block_order;
   for (size_t i = 0; i < x_inertial.size(); i++) {
     tnsr::I<double, Dim, Frame::Inertial> inertial_coords_double{};
     for (size_t d = 0; d < Dim; d++) {
       inertial_coords_double.get(d) = inertial_coords.get(d)[i];
     }
-    // Reset the block order so we always find the same block
-    std::iota(block_order.begin(), block_order.end(), 0);
+    if (i > 0) {
+      // Reset the block order so we always find the same block. In the first
+      // iteration the block order should be initially set to the list of blocks
+      // in the domain.
+      alg::iota(block_order, 0_st);
+    }
     auto inv_point = block_logical_coordinates_single_point(
         inertial_coords_double, domain, 0., {}, make_not_null(&block_order));
     REQUIRE(inv_point.has_value());

@@ -16,6 +16,8 @@
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/Numeric.hpp"
 
 template <size_t Dim, typename Fr>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>
@@ -148,6 +150,12 @@ BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
   // the smallest block_id).
   // In case a block_order is provided, it is no longer guaranteed that the
   // block with the smallest block_id is chosen.
+  if (block_order.has_value() and block_order.value()->empty()) {
+    // If the block order is empty, fill it with the list of blocks in the
+    // domain
+    block_order.value()->resize(domain.blocks().size());
+    alg::iota(*block_order.value(), 0_st);
+  }
   const size_t num_blocks = block_order.has_value()
                                 ? block_order.value()->size()
                                 : domain.blocks().size();

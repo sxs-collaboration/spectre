@@ -218,7 +218,8 @@ struct PointwiseInterpolator {
   std::vector<
       std::unordered_map<ElementId<Dim>, std::tuple<Mesh<Dim>, size_t, size_t>>>
       meshes_;
-  std::vector<std::vector<DataVector>> tensor_data_;
+  std::vector<std::vector<std::variant<DataVector, std::vector<float>>>>
+      tensor_data_;
 };
 
 }  // namespace spectre::Exporter
