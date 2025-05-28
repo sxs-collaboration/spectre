@@ -39,6 +39,9 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <caption>List of checks</caption>
  * <tr><th> Description <th> TCI status
  *
+ * <tr><td> the element is not troubled.
+ * <td> `+0`
+ *
  * <tr><td> if `min(tilde_d)` is less than
  *  `tci_options.minimum_rest_mass_density_times_lorentz_factor`, then we
  *  remain on FD.
@@ -58,9 +61,8 @@ namespace grmhd::ValenciaDivClean::subcell {
  * `tci_options.atmosphere_density`, then we remain on FD.
  * <td> `+4`
  *
- * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$, \f$\tilde{Y}_e\f$, and
- * pressure if the maximum of rest mass density on FD grid is greater than
- * `tci_options.atmosphere_density`.
+ * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$ if the maximum of rest
+ * mass density on FD grid is greater than `tci_options.atmosphere_density`.
  * <td> `+5`
  *
  * <tr><td> apply the Persson TCI to \f$\tilde{Y}_e\f$ if the maximum of rest
