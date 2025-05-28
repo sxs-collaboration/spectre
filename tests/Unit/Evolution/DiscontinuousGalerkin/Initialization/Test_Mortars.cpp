@@ -429,17 +429,17 @@ void check_mortar_data(const MortarData<Dim>& projected,
 
 template <size_t Dim, bool UsingLts>
 void test_p_refine(
-    ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>& mortar_data,
-    ::dg::MortarMap<Dim, Mesh<Dim - 1>>& mortar_mesh,
-    ::dg::MortarMap<Dim, MortarInfo<Dim>>& mortar_infos,
-    ::dg::MortarMap<Dim, TimeStepId>& mortar_next_temporal_id,
+    ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data,
+    ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh,
+    ::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos,
+    ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_id,
     DirectionMap<Dim, std::optional<Variables<tmpl::list<
                           evolution::dg::Tags::MagnitudeOfNormal,
-                          evolution::dg::Tags::NormalCovector<Dim>>>>>&
+                          evolution::dg::Tags::NormalCovector<Dim>>>>>
         normal_covector_and_magnitude,
-    mortar_data_history_type<Dim>& mortar_data_history,
-    const Mesh<Dim>& old_mesh, Mesh<Dim>& new_mesh,
-    const Element<Dim>& old_element, Element<Dim>& new_element,
+    mortar_data_history_type<Dim> mortar_data_history,
+    const Mesh<Dim>& old_mesh, Mesh<Dim> new_mesh,
+    const Element<Dim>& old_element, Element<Dim> new_element,
     ::dg::MortarMap<Dim, Mesh<Dim>> neighbor_meshes,
     const ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
         expected_mortar_data,
@@ -634,12 +634,13 @@ void test_p_refine_gts() {
   }
 
   test_p_refine<Dim, false>(
-      mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_ids,
-      normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
-      old_element, new_element, neighbor_meshes, expected_mortar_data,
-      expected_mortar_mesh, expected_mortar_infos,
-      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
-      expected_mortar_data_history);
+      std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_infos),
+      std::move(mortar_next_temporal_ids),
+      std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
+      old_mesh, std::move(new_mesh), old_element, std::move(new_element),
+      neighbor_meshes, expected_mortar_data, expected_mortar_mesh,
+      expected_mortar_infos, expected_mortar_next_temporal_ids,
+      expected_normal_covector_and_magnitude, expected_mortar_data_history);
 }
 
 template <size_t Dim>
@@ -795,12 +796,13 @@ void test_p_refine_lts() {
   }
 
   test_p_refine<Dim, true>(
-      mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_ids,
-      normal_covector_and_magnitude, mortar_data_history, old_mesh, new_mesh,
-      old_element, new_element, neighbor_meshes, expected_mortar_data,
-      expected_mortar_mesh, expected_mortar_infos,
-      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
-      expected_mortar_data_history);
+      std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_infos),
+      std::move(mortar_next_temporal_ids),
+      std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
+      old_mesh, std::move(new_mesh), old_element, std::move(new_element),
+      neighbor_meshes, expected_mortar_data, expected_mortar_mesh,
+      expected_mortar_infos, expected_mortar_next_temporal_ids,
+      expected_normal_covector_and_magnitude, expected_mortar_data_history);
 }
 
 }  // namespace
