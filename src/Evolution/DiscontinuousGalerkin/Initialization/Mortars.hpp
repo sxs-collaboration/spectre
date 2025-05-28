@@ -59,17 +59,17 @@ class TaggedTuple;
 namespace evolution::dg::Initialization {
 namespace detail {
 template <size_t Dim>
-std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
-           DirectionalIdMap<Dim, Mesh<Dim - 1>>,
-           DirectionalIdMap<Dim, MortarInfo<Dim>>,
-           DirectionalIdMap<Dim, TimeStepId>,
+std::tuple<::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
+           ::dg::MortarMap<Dim, Mesh<Dim - 1>>,
+           ::dg::MortarMap<Dim, MortarInfo<Dim>>,
+           ::dg::MortarMap<Dim, TimeStepId>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
                    const Mesh<Dim>& volume_mesh,
-                   const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_mesh);
+                   const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh);
 }  // namespace detail
 
 /*!
@@ -95,9 +95,6 @@ mortars_apply_impl(const Element<Dim>& element,
  */
 template <size_t Dim, typename System>
 struct Mortars {
-  template <typename MappedType>
-  using MortarMap = DirectionalIdMap<Dim, MappedType>;
-
  public:
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags_from_options = tmpl::list<>;
