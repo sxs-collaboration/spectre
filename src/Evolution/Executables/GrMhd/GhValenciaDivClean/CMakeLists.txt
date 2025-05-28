@@ -26,6 +26,7 @@ set(LIBS_TO_LINK
   Limiters
   LinearOperators
   MathFunctions
+  MonteCarloSolutions
   Observer
   Options
   Parallel

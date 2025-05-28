@@ -12,6 +12,7 @@
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -45,6 +46,8 @@ class HomogeneousSphere : public evolution::initial_data::InitialData,
   equation_of_state() const {
     return *equation_of_state_;
   }
+
+  static const size_t volume_dim = 3;
 
   /// The radius of the sphere
   struct Radius {
@@ -131,6 +134,11 @@ class HomogeneousSphere : public evolution::initial_data::InitialData,
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                  tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
@@ -158,9 +166,13 @@ class HomogeneousSphere : public evolution::initial_data::InitialData,
   }
 
   /// Retrieve the metric variables
-  template <typename DataType, typename Tag>
-  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x, double t,
-                                     tmpl::list<Tag> /*meta*/) const {
+  template <typename DataType, typename Tag,
+            Requires<not tmpl::list_contains_v<
+                tmpl::push_back<hydro::grmhd_tags<DataType>,
+                                hydro::Tags::SpecificEnthalpy<DataType>>,
+                Tag>> = nullptr>
+  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
+                                     double t, tmpl::list<Tag> /*meta*/) const {
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
 
@@ -183,7 +195,8 @@ class HomogeneousSphere : public evolution::initial_data::InitialData,
        std::numeric_limits<double>::signaling_NaN()}};
 
   std::unique_ptr<equation_of_state_type> equation_of_state_;
-  gr::Solutions::Minkowski<3> background_spacetime_{};
+  gh::Solutions::WrappedGr<gr::Solutions::Minkowski<3>>
+      background_spacetime_{};
 };
 
 bool operator!=(const HomogeneousSphere& lhs, const HomogeneousSphere& rhs);

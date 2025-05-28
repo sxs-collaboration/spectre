@@ -146,6 +146,23 @@ HomogeneousSphere::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
+HomogeneousSphere::variables(
+    const tnsr::I<DataType, 3>& x, double t,
+    tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
+  auto primitives = this->variables<DataType>(
+      x, t,
+      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::Pressure<DataType>,
+                 hydro::Tags::SpecificInternalEnergy<DataType>>{});
+  return tuples::get<hydro::Tags::Pressure<DataType>>(primitives) /
+             tuples::get<hydro::Tags::RestMassDensity<DataType>>(primitives) +
+         tuples::get<hydro::Tags::SpecificInternalEnergy<DataType>>(
+             primitives) +
+         1.0;
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 HomogeneousSphere::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
