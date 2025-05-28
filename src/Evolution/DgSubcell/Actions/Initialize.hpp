@@ -104,7 +104,8 @@ struct SetSubcellGrid {
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>,
-      typename System::variables_tag>;
+      typename System::variables_tag,
+      evolution::dg::subcell::Tags::ExtensionDirections<Dim>>;
   using compute_tags =
       tmpl::list<Tags::MeshCompute<Dim>, Tags::LogicalCoordinatesCompute<Dim>,
                  ::domain::Tags::MappedCoordinates<

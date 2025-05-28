@@ -244,7 +244,7 @@ void test(const bool always_use_subcell, const bool interior_element,
       {SystemAnalyticSolution{},
        evolution::dg::subcell::SubcellOptions{
            evolution::dg::subcell::SubcellOptions{
-               4.1, 1_st, 1.0e-3, 1.0e-4, always_use_subcell,
+               4.1, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
                evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
                false,
                allow_subcell_in_block
@@ -548,6 +548,9 @@ void test(const bool always_use_subcell, const bool interior_element,
         comp,
         evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>(
       runner, self_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::ExtensionDirections<Dim>>(runner,
+                                                                      self_id));
 
   // Check things have correct values.
   CHECK(ActionTesting::get_databox_tag<

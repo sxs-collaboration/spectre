@@ -237,6 +237,7 @@ SpatialDiscretization:
           MinTciCallsAfterRollback: 10
           MinimumClearTcis: 2
         AlwaysUseSubcells: false
+        EnableExtensionDirections: false
         UseHalo: false
         OnlyDgBlocksAndGroups: [Envelope, OuterShell0, OuterShell1, OuterShell2]
       SubcellToDgReconstructionMethod: DimByDim

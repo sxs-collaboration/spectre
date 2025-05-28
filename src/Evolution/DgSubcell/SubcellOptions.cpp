@@ -14,6 +14,7 @@
 
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Structure/BlockGroups.hpp"
+#include "Options/Context.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -24,7 +25,8 @@ namespace evolution::dg::subcell {
 SubcellOptions::SubcellOptions(
     double persson_exponent, size_t persson_num_highest_modes,
     double rdmp_delta0, double rdmp_epsilon, bool always_use_subcells,
-    fd::ReconstructionMethod recons_method, bool use_halo,
+    bool enable_extension_directions, fd::ReconstructionMethod recons_method,
+    bool use_halo,
     std::optional<std::vector<std::string>> only_dg_block_and_group_names,
     ::fd::DerivativeOrder finite_difference_derivative_order,
     const size_t number_of_steps_between_tci_calls,
@@ -35,6 +37,7 @@ SubcellOptions::SubcellOptions(
       rdmp_delta0_(rdmp_delta0),
       rdmp_epsilon_(rdmp_epsilon),
       always_use_subcells_(always_use_subcells),
+      enable_extension_directions_(enable_extension_directions),
       reconstruction_method_(recons_method),
       use_halo_(use_halo),
       only_dg_block_and_group_names_(std::move(only_dg_block_and_group_names)),
@@ -51,6 +54,11 @@ SubcellOptions::SubcellOptions(
          "min_tci_calls_after_rollback_ must be greater than zero.");
   ASSERT(min_clear_tci_before_dg_ > 0,
          "min_clear_tci_before_dg_ must be greater than zero.");
+  if (!always_use_subcells_ && enable_extension_directions_) {
+    PARSE_ERROR(Options::Context{},
+                "The extension directions are only enabled when "
+                "always_use_subcells_ is true.");
+  }
 }
 
 template <size_t Dim>
@@ -83,6 +91,7 @@ void SubcellOptions::pup(PUP::er& p) {
   p | rdmp_delta0_;
   p | rdmp_epsilon_;
   p | always_use_subcells_;
+  p | enable_extension_directions_;
   p | reconstruction_method_;
   p | use_halo_;
   p | only_dg_block_and_group_names_;
@@ -99,6 +108,8 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
          lhs.rdmp_delta0() == rhs.rdmp_delta0() and
          lhs.rdmp_epsilon() == rhs.rdmp_epsilon() and
          lhs.always_use_subcells() == rhs.always_use_subcells() and
+         lhs.enable_extension_directions() ==
+             rhs.enable_extension_directions() and
          lhs.reconstruction_method() == rhs.reconstruction_method() and
          lhs.use_halo() == rhs.use_halo() and
          lhs.only_dg_block_and_group_names_ ==

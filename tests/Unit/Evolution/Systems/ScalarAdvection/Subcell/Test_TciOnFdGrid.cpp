@@ -71,6 +71,7 @@ void test(const TestThis& test_this) {
       1.0e-16,
       1.0e-4,
       false,
+      false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,

@@ -206,7 +206,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>{},
       normal_vectors,
       evolution::dg::subcell::SubcellOptions{
-          4.0, 1_st, 1.0e-3, 1.0e-4, false,
+          4.0, 1_st, 1.0e-3, 1.0e-4, false, false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
           std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1});
 

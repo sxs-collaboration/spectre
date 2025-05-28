@@ -115,6 +115,7 @@ void test(const TestThis test_this, const int expected_tci_status,
       1.0e-60,  // Tiny value because the magnetic field is so small
       1.0e-4,
       false,
+      false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
       false,
       std::nullopt,

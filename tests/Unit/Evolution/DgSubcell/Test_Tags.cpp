@@ -254,6 +254,7 @@ void test(const bool moving_mesh) {
           1.0e-7,
           1.0e-7,
           false,
+          false,
           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
           false,
           {},

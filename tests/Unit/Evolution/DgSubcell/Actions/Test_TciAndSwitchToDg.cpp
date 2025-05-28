@@ -246,7 +246,7 @@ void test_impl(
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
       evolution::dg::subcell::SubcellOptions{
-          4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, recons_method,
+          4.0, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false, recons_method,
           use_halo,
           test_block_id_assert
               ? std::optional{std::vector<std::string>{"Block0"}}

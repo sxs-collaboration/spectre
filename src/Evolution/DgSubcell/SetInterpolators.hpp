@@ -14,6 +14,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -56,7 +57,8 @@ struct SetInterpolators {
   using return_tags = tmpl::list<
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromDgToNeighborFd<Dim>,
-      evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>;
+      evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>,
+      evolution::dg::subcell::Tags::ExtensionDirections<Dim>>;
   using argument_tags =
       tmpl::list<::domain::Tags::Element<Dim>, ::domain::Tags::Domain<Dim>,
                  domain::Tags::Mesh<Dim>, domain::Tags::Mesh<Dim>,
@@ -77,6 +79,9 @@ struct SetInterpolators {
       const gsl::not_null<
           DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>*>
           interpolators_neighbor_dg_to_fd_ptr,
+      const gsl::not_null<
+          DirectionMap<Dim, interpolators_detail::ExtensionDirection<Dim>>*>
+          extension_direction_ptr,
       const Element<Dim>& element, const Domain<Dim>& domain,
       const Mesh<Dim>& my_dg_mesh,
       // Needs to be updated to support non-uniform h/p-refinement
@@ -90,6 +95,11 @@ struct SetInterpolators {
                    element.id().block_id())) {
       return;
     }
+    const bool enable_extension_directions =
+        subcell_options.enable_extension_directions();
+    if (enable_extension_directions) {
+      *extension_direction_ptr = {};
+    }  // Initialize the extension directions to empty.
 
     const size_t number_of_ghost_zones = reconstructor.ghost_zone_size();
     const size_t my_block_id = element.id().block_id();
@@ -178,11 +188,116 @@ struct SetInterpolators {
             neighbor_logical_ghost_zone_coords = get_logical_coords(
                 element_map, neighbor_grid_ghost_zone_coords);
 
+        // We need to check if the neighbor's ghost zone coordinates
+        // are in the same element as the current element. If not, we
+        // need to extend the mesh in the direction of the ghost zone
+        // coordinates.
+        // Note, we only need to do this check if we enable extending
+        // the mesh to avoid extrapolation. If not, we simply
+        // allow the extrapolation to happen.
+
+        // 'needs_extension' is set to true if the neighbor's ghost zone
+        // coordinates are outside the current element's mesh and if
+        // we enable extending the mesh.
+        bool needs_extension = false;
+        std::optional<Direction<Dim>> direction_to_extend;
+        if (enable_extension_directions) {
+          for (size_t d = 0; d < Dim; ++d) {
+            // small epsilon of 1e-10 used to ensure we are not unncessarily
+            // flagging as problematic
+            const double ext = 1. - (1. / my_fd_mesh.extents(d)) + 1.e-10;
+            const auto& coords = neighbor_logical_ghost_zone_coords.get(d);
+
+            for (size_t i = 0; i < coords.size(); ++i) {
+              if (std::abs(coords[i]) > ext) {
+                needs_extension = true;
+                Direction<Dim> new_direction = Direction<Dim>{
+                    d, coords[i] > 0 ? Side::Upper : Side::Lower};
+
+                if (!direction_to_extend.has_value()) {
+                  direction_to_extend = new_direction;
+                } else if (direction_to_extend.value() != new_direction) {
+                  ERROR("Multiple directions to extend: existing = "
+                        << direction_to_extend.value()
+                        << ", new = " << new_direction);
+                }
+                break;  // no reason to check remaining coords.
+              }
+            }
+          }
+        }
+
+        if (needs_extension) {
+          if (!direction_to_extend.has_value()) {
+            ERROR(
+                "Should have direction to extend if flagged "
+                "as problematic!");
+          }
+          const auto& external_boundaries = element.external_boundaries();
+          if (external_boundaries.find(direction_to_extend.value()) !=
+              external_boundaries.end()) {
+            ERROR(
+                "Direction to extend is toward the "
+                "faces of the Element that are external boundaries.");
+          }
+
+          auto new_basis = make_array<Dim>(my_fd_mesh.basis(0));
+          auto new_extents = make_array<Dim>(my_fd_mesh.extents(0));
+          auto new_quads = make_array<Dim>(my_fd_mesh.quadrature(0));
+
+          const size_t problematic_dim =
+              direction_to_extend.value().dimension();
+
+          // note we are extending our current volume by including its own ghost
+          // points in the problematic direction (direction to extend)
+          // which means the logical coordinates of the ghost (to be sent)
+          // must be transformed to accommodate the extended mesh in
+          // direction to extend.
+
+          const double rescale_factor =
+              static_cast<double>(my_fd_mesh.extents(problematic_dim)) /
+              (my_fd_mesh.extents(problematic_dim) + number_of_ghost_zones);
+          double translation =
+              static_cast<double>(number_of_ghost_zones) /
+              (my_fd_mesh.extents(problematic_dim) + number_of_ghost_zones);
+          // translation above is based on extending to Upper Side.
+          if (direction_to_extend.value().side() == Side::Lower) {
+            translation *= -1.;
+          }
+          auto new_neighbor_logical_ghost_zone_coords =
+              neighbor_logical_ghost_zone_coords;
+          for (size_t i = 0;
+               i < new_neighbor_logical_ghost_zone_coords[0].size(); ++i) {
+            new_neighbor_logical_ghost_zone_coords.get(problematic_dim)[i] *=
+                rescale_factor;
+            new_neighbor_logical_ghost_zone_coords.get(problematic_dim)[i] -=
+                translation;
+          }
+
+          for (size_t d = 0; d < Dim; ++d) {
+            gsl::at(new_basis, d) = my_fd_mesh.basis(d);
+            gsl::at(new_quads, d) = my_fd_mesh.quadrature(d);
+            if (d == problematic_dim) {
+              gsl::at(new_extents, d) =
+                  my_fd_mesh.extents(d) + number_of_ghost_zones;
+            } else {
+              gsl::at(new_extents, d) = my_fd_mesh.extents(d);
+            }
+          }
+          const Mesh<Dim> new_mesh{new_extents, new_basis, new_quads};
+          (*interpolators_fd_to_neighbor_fd_ptr)[DirectionalId<Dim>{
+              direction, neighbor_id}] = intrp::Irregular<Dim>{
+              new_mesh, new_neighbor_logical_ghost_zone_coords};
+          (*extension_direction_ptr)[direction] =
+              interpolators_detail::ExtensionDirection<Dim>{
+                  direction_to_extend.value()};
+        } else {
+          (*interpolators_fd_to_neighbor_fd_ptr)[DirectionalId<Dim>{
+              direction, neighbor_id}] = intrp::Irregular<Dim>{
+              my_fd_mesh, neighbor_logical_ghost_zone_coords};
+        }
         // Set up interpolators for our local element to our neighbor's
         // ghost zones.
-        (*interpolators_fd_to_neighbor_fd_ptr)[DirectionalId<Dim>{
-            direction, neighbor_id}] = intrp::Irregular<Dim>{
-            my_fd_mesh, neighbor_logical_ghost_zone_coords};
         (*interpolators_dg_to_neighbor_fd_ptr)[DirectionalId<Dim>{
             direction, neighbor_id}] = intrp::Irregular<Dim>{
             my_dg_mesh, neighbor_logical_ghost_zone_coords};
