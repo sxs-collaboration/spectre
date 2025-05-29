@@ -20,9 +20,10 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Structure/Element.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 
 // Charm looks for this function but since we build without a main function or
