@@ -74,8 +74,8 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
                       make_not_null(&inverse_spatial_metric), used_for_size);
 
   const auto box = db::create<
-      db::AddSimpleTags<::Tags::deriv<gr::Tags::ExtrinsicCurvature<DataType, 3>,
-                                      tmpl::size_t<3>, Frame::Inertial>,
+      db::AddSimpleTags<gr::Tags::CovariantDerivativeOfExtrinsicCurvature<
+                            DataType, 3, Frame::Inertial>,
                         gr::Tags::SpatialMetric<DataType, 3>,
                         gr::Tags::SqrtDetSpatialMetric<DataType>,
                         gr::Tags::InverseSpatialMetric<DataType, 3>>,

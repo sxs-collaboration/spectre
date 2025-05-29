@@ -81,6 +81,9 @@ void test_simple_tags() {
       gr::Tags::ExtrinsicCurvature<Type, Dim, Frame>>("ExtrinsicCurvature");
   TestHelpers::db::test_simple_tag<gr::Tags::TraceExtrinsicCurvature<Type>>(
       "TraceExtrinsicCurvature");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::CovariantDerivativeOfExtrinsicCurvature<Type, Dim, Frame>>(
+      "CovariantDerivativeOfExtrinsicCurvature");
   TestHelpers::db::test_simple_tag<gr::Tags::SpatialRicci<Type, Dim, Frame>>(
       "SpatialRicci");
   TestHelpers::db::test_simple_tag<gr::Tags::EnergyDensity<Type>>(
