@@ -176,3 +176,23 @@ def deriv_inverse_spatial_metric(inverse_spatial_metric, d_spatial_metric):
         inverse_spatial_metric,
         d_spatial_metric,
     )
+
+
+def pontryagin_scalar_in_vacuum(
+    weyl_electric, weyl_magnetic, inverse_spatial_metric
+):
+    pontryagin_scalar = -16.0 * np.trace(
+        weyl_electric
+        @ inverse_spatial_metric
+        @ weyl_magnetic
+        @ inverse_spatial_metric
+    )
+
+    return pontryagin_scalar
+
+
+def gauss_bonnet_scalar_in_vacuum(
+    weyl_electric_scalar,
+    weyl_magnetic_scalar,
+):
+    return 8 * (weyl_electric_scalar - weyl_magnetic_scalar)
