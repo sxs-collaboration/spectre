@@ -105,9 +105,8 @@ struct ExpansionMapOptions {
  * \brief Helper functions that take the variant of the expansion map options,
  * and return the fully constructed expansion functions of time.
  *
- * \details Even if the functions of time are read from a file, they will have a
- * new \p initial_time and \p expiration_time (no expiration time for the outer
- * boundary function of time though).
+ * \details The function of time will have a new \p initial_time and \p
+ * expiration_time, unless it is read from a file and is replaying.
  */
 template <bool AllowSettleFoTs>
 FunctionsOfTimeMap get_expansion(

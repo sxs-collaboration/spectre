@@ -57,8 +57,8 @@ struct TranslationMapOptions {
  * \brief Helper function that takes the variant of the translation map options,
  * and returns the fully constructed translation function of time.
  *
- * \details Even if the function of time is read from a file, it will have a
- * new \p initial_time and \p expiration_time.
+ * \details The function of time will have a new \p initial_time and \p
+ * expiration_time, unless it is read from a file and is replaying.
  */
 template <size_t Dim>
 std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> get_translation(

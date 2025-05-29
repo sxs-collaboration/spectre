@@ -44,7 +44,9 @@ struct FromVolumeFile {
       "Read function of time coefficients from a volume subfile of an H5 file.";
 
   FromVolumeFile() = default;
-  FromVolumeFile(std::string h5_filename, std::string subfile_name);
+  // The replay option cannot be set from options
+  FromVolumeFile(std::string h5_filename, std::string subfile_name,
+                 bool replay = false);
 
   /*!
    * \brief Searches the last observation in the volume subfile and returns
@@ -58,9 +60,16 @@ struct FromVolumeFile {
       const std::unordered_set<std::string>& function_of_time_names,
       const std::optional<double>& time) const;
 
+  /*!
+   * \brief Whether the function of time from the volume file should just be
+   * replayed (read in and unmodified), or not.
+   */
+  bool replay() const { return replay_; }
+
  private:
   std::string h5_filename_;
   std::string subfile_name_;
+  bool replay_{false};
 };
 /// @}
 }  // namespace domain::creators::time_dependent_options

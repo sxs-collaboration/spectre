@@ -86,8 +86,8 @@ struct RotationMapOptions {
  * \brief Helper function that takes the variant of the rotation map options,
  * and returns the fully constructed rotation function of time.
  *
- * \details Even if the function of time is read from a file, it will have a
- * new \p initial_time and \p expiration_time.
+ * \details The function of time will have a new \p initial_time and \p
+ * expiration_time, unless it is read from a file and is replaying.
  */
 template <bool AllowSettleFoTs>
 std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> get_rotation(
