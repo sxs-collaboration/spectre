@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
@@ -133,7 +134,7 @@ GENERATE_INSTANTIATIONS(
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>,
      tmpl::list<ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>,
      NewmanThenPalenzuela, KastaunThenNewmanThenPalenzuela),
-    (RadiationTransport::NoNeutrinos::System))
+    GHMHD_NEUTRINOS)
 
 #undef INSTANTIATION
 #undef RECOVERY

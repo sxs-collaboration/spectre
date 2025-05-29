@@ -2,8 +2,8 @@
 // See LICENSE.txt for details.
 
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
-#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 
 #include <pup.h>
 
@@ -24,8 +24,7 @@ void Reconstructor<System>::pup(PUP::er& p) {
   template class Reconstructor< \
       typename grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, GHMHD_NEUTRINOS)
 
 #undef INSTANTIATION
 #undef NEUTRINO

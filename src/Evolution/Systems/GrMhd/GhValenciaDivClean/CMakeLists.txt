@@ -20,6 +20,7 @@ spectre_target_headers(
   AllSolutions.hpp
   Characteristics.hpp
   Constraints.hpp
+  NeutrinoSystems.hpp
   SetPiAndPhiFromConstraints.hpp
   System.hpp
   StressEnergy.hpp

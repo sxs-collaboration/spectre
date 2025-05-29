@@ -32,11 +32,11 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
@@ -371,8 +371,7 @@ void DirichletAnalytic<System>::fd_ghost(
 #define INSTANTIATION(r, data) \
   template class DirichletAnalytic<GhValenciaDivClean::System<NEUTRINO(data)>>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, GHMHD_NEUTRINOS)
 
 #undef INSTANTIATION
 #undef NEUTRINO

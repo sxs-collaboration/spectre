@@ -41,10 +41,10 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
-#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -334,8 +334,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
 #define INSTANTIATION(r, data)          \
   template struct NeighborPackagedData< \
       grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, GHMHD_NEUTRINOS)
 #undef INSTANTIATION
 #undef NEUTRINO
 }  // namespace grmhd::GhValenciaDivClean::subcell
@@ -344,6 +343,14 @@ template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
     3, grmhd::GhValenciaDivClean::subcell::NeighborPackagedData<
            grmhd::GhValenciaDivClean::System<
                RadiationTransport::NoNeutrinos::System>>>(
+    gsl::not_null<db::Access*> box,
+    gsl::not_null<std::pair<
+        TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>
+        received_temporal_id_and_data);
+
+template void evolution::dg::subcell::neighbor_reconstructed_face_solution<
+    3, grmhd::GhValenciaDivClean::subcell::NeighborPackagedData<
+           grmhd::GhValenciaDivClean::System<Particles::MonteCarlo::System>>>(
     gsl::not_null<db::Access*> box,
     gsl::not_null<std::pair<
         TimeStepId, DirectionalIdMap<3, evolution::dg::BoundaryData<3>>>*>

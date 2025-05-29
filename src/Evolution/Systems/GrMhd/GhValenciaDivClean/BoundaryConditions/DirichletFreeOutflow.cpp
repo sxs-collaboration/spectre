@@ -33,6 +33,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/HydroFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
@@ -343,8 +344,7 @@ void DirichletFreeOutflow<System>::fd_ghost(
   template class DirichletFreeOutflow< \
       GhValenciaDivClean::System<NEUTRINO(data)>>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, GHMHD_NEUTRINOS)
 
 #undef INSTANTIATION
 #undef NEUTRINO

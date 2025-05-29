@@ -23,9 +23,9 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
@@ -305,8 +305,7 @@ bool operator!=(const Wcns5zPrim<System>& lhs, const Wcns5zPrim<System>& rhs) {
           lhs,                                                             \
       const Wcns5zPrim<grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>& \
           rhs);
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, GHMHD_NEUTRINOS)
 #undef INSTANTIATION
 #undef NEUTRINO
 
@@ -351,8 +350,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION,
           const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,       \
           const Direction<3>& direction_to_reconstruct) const;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), GHMHD_NEUTRINOS)
 
 #undef INSTANTIATION
 #undef TAGS_LIST

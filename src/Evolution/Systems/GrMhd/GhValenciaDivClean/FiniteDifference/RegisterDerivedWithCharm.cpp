@@ -5,7 +5,7 @@
 
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
-#include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/NeutrinoSystems.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
@@ -23,8 +23,7 @@ void register_derived_with_charm() {
   template void                \
   register_derived_with_charm<GhValenciaDivClean::System<NEUTRINO(data)>>();
 
-GENERATE_INSTANTIATIONS(INSTANTIATION,
-                        (RadiationTransport::NoNeutrinos::System))
+GENERATE_INSTANTIATIONS(INSTANTIATION, GHMHD_NEUTRINOS)
 
 #undef INSTANTIATION
 #undef NEUTRINO
