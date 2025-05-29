@@ -44,6 +44,10 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
   // species, and energy group.
   const size_t grid_size = mesh.number_of_grid_points();
   const Index<3>& extents = mesh.extents();
+  const Index<3> extents_with_ghost{
+    extents[0] + 2 * num_ghost_zones,
+    extents[1] + 2 * num_ghost_zones,
+    extents[2] + 2 * num_ghost_zones};
   std::array<std::array<std::vector<size_t>, EnergyBins>, NeutrinoSpecies>
       number_of_packets_to_create_per_cell;
   size_t number_of_packets_to_create_total = 0;
@@ -54,12 +58,11 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::emit_packets(
       for (size_t i = 0; i < extents[0]; i++){
         for (size_t j = 0; j < extents[1]; j++){
           for (size_t k = 0; k < extents[2]; k++){
-            const size_t local_idx = i + j * extents[0] +
-              k * extents[0] * extents[1];
-            const size_t extended_idx = num_ghost_zones + i +
-              (num_ghost_zones + j) * (extents[0] + 2 * num_ghost_zones) +
-              (num_ghost_zones + k) * (extents[0] + 2 * num_ghost_zones) *
-                                      (extents[1] + 2 * num_ghost_zones);
+            const size_t local_idx = collapsed_index(Index<3>{i,j,k}, extents);
+            const size_t extended_idx = collapsed_index(
+              Index<3>{num_ghost_zones + i,
+                num_ghost_zones + j, num_ghost_zones + k},
+              extents_with_ghost);
             const double& emission_this_cell =
               gsl::at(gsl::at(emissivity_in_cell, s), g)[extended_idx] *
               get(cell_proper_four_volume)[local_idx];

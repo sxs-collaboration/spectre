@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_CommunicationTags.cpp
   Test_EmitPackets.cpp
   Test_EvolvePackets.cpp
+  Test_FluidCouplingAction.cpp
   Test_ImplicitMonteCarloCorrections.cpp
   Test_InitializeAction.cpp
   Test_InterpolateOpacities.cpp
