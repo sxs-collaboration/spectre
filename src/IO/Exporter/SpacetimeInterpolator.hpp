@@ -51,6 +51,11 @@ namespace spectre::Exporter {
 template <size_t Dim, typename Frame = ::Frame::Inertial>
 struct SpacetimeInterpolator {
   SpacetimeInterpolator() = default;
+  SpacetimeInterpolator(const SpacetimeInterpolator&) = delete;
+  SpacetimeInterpolator& operator=(const SpacetimeInterpolator&) = delete;
+  SpacetimeInterpolator(SpacetimeInterpolator&&);
+  SpacetimeInterpolator& operator=(SpacetimeInterpolator&&);
+  ~SpacetimeInterpolator() = default;
 
   /*!
    * \brief Construct the interpolator without loading any volume data

@@ -74,6 +74,34 @@ SpacetimeInterpolator<Dim, Frame>::SpacetimeInterpolator(
 }
 
 template <size_t Dim, typename Frame>
+SpacetimeInterpolator<Dim, Frame>::SpacetimeInterpolator(
+    SpacetimeInterpolator&& rhs)
+    : volume_files_or_glob_(std::move(rhs.volume_files_or_glob_)),
+      subfile_name_(std::move(rhs.subfile_name_)),
+      tensor_components_(std::move(rhs.tensor_components_)),
+      functions_of_time_(std::move(rhs.functions_of_time_)),
+      all_observation_ids_(std::move(rhs.all_observation_ids_)),
+      all_observation_values_(std::move(rhs.all_observation_values_)),
+      time_bounds_(std::move(rhs.time_bounds_)),
+      interpolators_(std::move(rhs.interpolators_)) {}
+
+template <size_t Dim, typename Frame>
+SpacetimeInterpolator<Dim, Frame>& SpacetimeInterpolator<Dim, Frame>::operator=(
+    SpacetimeInterpolator&& rhs) {
+  if (this != &rhs) {
+    volume_files_or_glob_ = std::move(rhs.volume_files_or_glob_);
+    subfile_name_ = std::move(rhs.subfile_name_);
+    tensor_components_ = std::move(rhs.tensor_components_);
+    functions_of_time_ = std::move(rhs.functions_of_time_);
+    all_observation_ids_ = std::move(rhs.all_observation_ids_);
+    all_observation_values_ = std::move(rhs.all_observation_values_);
+    time_bounds_ = std::move(rhs.time_bounds_);
+    interpolators_ = std::move(rhs.interpolators_);
+  }
+  return *this;
+}
+
+template <size_t Dim, typename Frame>
 std::array<double, 2> SpacetimeInterpolator<Dim, Frame>::max_time_bounds()
     const {
   return {*(all_observation_values_.begin() + num_ghost_slices_),
