@@ -44,6 +44,15 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace CurvedScalarWave::Tags {
+struct Psi;
+struct Pi;
+template <size_t SpatialDim>
+struct Phi;
+}  // namespace CurvedScalarWave::Tags
+/// \endcond
+
 namespace intrp::callbacks {
 /*!
  * \brief Post interpolation callback that dumps metric data in Bondi-Sachs form
@@ -57,6 +66,13 @@ namespace intrp::callbacks {
  * - `gr::Tags::SpacetimeMetric`
  * - `gh::Tags::Pi`
  * - `gh::Tags::Phi`
+ *
+ * If IncludeKleinGordon is true, also expect:
+ * - `CurvedScalarWave::Tags::Psi`
+ * - `CurvedScalarWave::Tags::Pi`
+ * - `CurvedScalarWave::Tags::Phi`
+ * - `gr::Tags::Lapse`
+ * - `gr::Tags::Shift`
  *
  * This callback will write a new `H5` file for each extraction radius in the
  * Sphere target. The name of this file will be a file prefix specified by the
@@ -74,33 +90,46 @@ namespace intrp::callbacks {
  * - `Cce::Tags::BondiU`
  * - `Cce::Tags::BondiW`
  *
- * \note For all real quantities (Beta, DuR, R, W) we omit writing the
- * negative m modes, and the imaginary part of the m = 0 mode.
+ * If IncludeKleinGordon is true, also writes:
+ * - `Cce::Tags::KleinGordonPsi`
+ * - `Cce::Tags::KleinGordonPi`
+ *
+ * \note For all real quantities (Beta, DuR, R, W) (as well as the Klein-Gordon
+ * Psi an Pi if included) we omit writing the negative m modes, and the
+ * imaginary part of the m = 0 mode.
  */
-template <typename InterpolationTargetTag>
+template <typename InterpolationTargetTag, bool IncludeKleinGordon = false>
 struct DumpBondiSachsOnWorldtube
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  static constexpr bool include_klein_gordon = IncludeKleinGordon;
   static constexpr double fill_invalid_points_with =
       std::numeric_limits<double>::quiet_NaN();
 
   using const_global_cache_tags = tmpl::list<Cce::Tags::FilePrefix>;
 
   using cce_boundary_tags = Cce::Tags::characteristic_worldtube_boundary_tags<
-      Cce::Tags::BoundaryValue, false>;
+      Cce::Tags::BoundaryValue, include_klein_gordon>;
 
-  using gh_source_vars_for_cce =
+  using extra_klein_gordon_cce_tags =
+      tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                 CurvedScalarWave::Tags::Phi<3>, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<DataVector, 3>>;
+
+  using gh_source_vars_for_cce = tmpl::append<
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
+                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>,
+      tmpl::conditional_t<include_klein_gordon, extra_klein_gordon_cce_tags,
+                          tmpl::list<>>>;
 
   using gh_source_vars_from_interpolation =
       typename InterpolationTargetTag::vars_to_interpolate_to_target;
 
   static_assert(
-      std::is_same_v<
-          tmpl::list_difference<Cce::Tags::worldtube_boundary_tags_for_writing<
-                                    Cce::Tags::BoundaryValue, false>,
-                                cce_boundary_tags>,
-          tmpl::list<>>,
+      std::is_same_v<tmpl::list_difference<
+                         Cce::Tags::worldtube_boundary_tags_for_writing<
+                             Cce::Tags::BoundaryValue, include_klein_gordon>,
+                         cce_boundary_tags>,
+                     tmpl::list<>>,
       "Cce tags to dump are not in the boundary tags.");
 
   static_assert(
@@ -112,13 +141,15 @@ struct DumpBondiSachsOnWorldtube
                                              gh_source_vars_from_interpolation>,
                        tmpl::list<>>>::type::value,
       "To use DumpBondiSachsOnWorldtube, the GH source variables must be the "
-      "spacetime metric, pi, and phi.");
+      "spacetime metric, pi, and phi. If Klein Gordon variables are included, "
+      "the source variables must also include the CurvedScalarWave Psi and Pi, "
+      "as well as Lapse and shift.");
 
   static_assert(
       std::is_same_v<typename InterpolationTargetTag::compute_target_points,
                      intrp::TargetPoints::Sphere<InterpolationTargetTag,
                                                  ::Frame::Inertial>>,
-      "To use the DumpBondiSachsOnWorltube post interpolation callback, you "
+      "To use the DumpBondiSachsOnWorldtube post interpolation callback, you "
       "must use the intrp::TargetPoints::Sphere target in the inertial "
       "frame");
 
@@ -156,6 +187,18 @@ struct DumpBondiSachsOnWorldtube
     const tnsr::aa<DataVector, 3, ::Frame::Inertial> pi;
     const tnsr::iaa<DataVector, 3, ::Frame::Inertial> phi;
 
+    const Scalar<DataVector> csw_psi;
+    const Scalar<DataVector> csw_pi;
+    const tnsr::i<DataVector, 3, ::Frame::Inertial> csw_phi;
+    const Scalar<DataVector> lapse;
+    const tnsr::I<DataVector, 3, ::Frame::Inertial> shift;
+
+    (void)csw_psi;
+    (void)csw_pi;
+    (void)csw_phi;
+    (void)lapse;
+    (void)shift;
+
     // Bondi data
     Variables<cce_boundary_tags> bondi_boundary_data{num_points_single_sphere};
 
@@ -187,10 +230,37 @@ struct DumpBondiSachsOnWorldtube
         }
       }
 
-      offset += num_points_single_sphere;
-
       Cce::create_bondi_boundary_data(make_not_null(&bondi_boundary_data), phi,
                                       pi, spacetime_metric, radius, l_max);
+
+      if constexpr (include_klein_gordon) {
+        const auto& all_csw_psi = get<CurvedScalarWave::Tags::Psi>(all_gh_vars);
+        const auto& all_csw_pi = get<CurvedScalarWave::Tags::Pi>(all_gh_vars);
+        const auto& all_csw_phi =
+            get<CurvedScalarWave::Tags::Phi<3>>(all_gh_vars);
+        const auto& all_lapse = get<gr::Tags::Lapse<DataVector>>(all_gh_vars);
+        const auto& all_shift =
+            get<gr::Tags::Shift<DataVector, 3>>(all_gh_vars);
+
+        make_const_view(make_not_null(&csw_psi.get()), all_csw_psi.get(),
+                        offset, num_points_single_sphere);
+        make_const_view(make_not_null(&csw_pi.get()), all_csw_pi.get(), offset,
+                        num_points_single_sphere);
+        make_const_view(make_not_null(&lapse.get()), all_lapse.get(), offset,
+                        num_points_single_sphere);
+        for (size_t i = 0; i < 3; i++) {
+          make_const_view(make_not_null(&csw_phi.get(i)), all_csw_phi.get(i),
+                          offset, num_points_single_sphere);
+          make_const_view(make_not_null(&shift.get(i)), all_shift.get(i),
+                          offset, num_points_single_sphere);
+        }
+
+        Cce::create_klein_gordon_boundary_data(
+            make_not_null(&bondi_boundary_data), csw_phi, csw_pi, csw_psi,
+            lapse, shift);
+      }
+
+      offset += num_points_single_sphere;
 
       const std::string filename =
           MakeString{} << filename_prefix << "CceR" << std::setfill('0')
@@ -202,17 +272,18 @@ struct DumpBondiSachsOnWorldtube
       Cce::WorldtubeModeRecorder recorder{l_max, filename};
 
       tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<
-          Cce::Tags::BoundaryValue, false>>([&](auto tag_v) {
-        using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-        constexpr int spin = tag::tag::type::type::spin;
+          Cce::Tags::BoundaryValue, include_klein_gordon>>(
+          [&](auto tag_v) {
+            using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
+            constexpr int spin = tag::tag::type::type::spin;
 
-        const ComplexDataVector& bondi_nodal_data =
-            get(get<tag>(bondi_boundary_data)).data();
+            const ComplexDataVector& bondi_nodal_data =
+                get(get<tag>(bondi_boundary_data)).data();
 
-        recorder.append_modal_data<spin>(
-            Cce::dataset_label_for_tag<typename tag::tag>(), time,
-            bondi_nodal_data, l_max);
-      });
+            recorder.append_modal_data<spin>(
+                Cce::dataset_label_for_tag<typename tag::tag>(), time,
+                bondi_nodal_data, l_max);
+          });
     }
   }
 };
