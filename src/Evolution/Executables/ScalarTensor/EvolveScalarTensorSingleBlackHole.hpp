@@ -15,6 +15,7 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/Executables/ScalarTensor/ScalarTensorBase.hpp"
+#include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/ScalarTensor/Actions/SetInitialData.hpp"
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -137,14 +138,34 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
   static constexpr bool use_control_systems =
       tmpl::size<control_systems>::value > 0;
 
+  struct BondiSachs;
+
   using interpolation_target_tags = tmpl::push_back<
       control_system::metafunctions::interpolation_target_tags<control_systems>,
-      AhA, ExcisionBoundaryA, SphericalSurface>;
+      AhA, ExcisionBoundaryA, SphericalSurface, BondiSachs>;
   using interpolator_source_vars = ::ah::source_vars<volume_dim>;
 
   using scalar_charge_interpolator_source_vars =
       detail::ObserverTags::scalar_charge_vars_to_interpolate_to_target;
+  using source_vars_no_deriv = tmpl::list<
+      gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
+      gh::Tags::Pi<DataVector, volume_dim>,
+      gh::Tags::Phi<DataVector, volume_dim>, CurvedScalarWave::Tags::Psi,
+      CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<volume_dim>,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, volume_dim>>;
 
+  struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    static std::string name() { return "BondiSachsInterpolation"; }
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target = source_vars_no_deriv;
+    using compute_target_points =
+        intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
+    using post_interpolation_callbacks = tmpl::list<
+        intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs, true>>;
+    using compute_items_on_target = tmpl::list<>;
+    template <typename Metavariables>
+    using interpolating_component = typename Metavariables::st_dg_element_array;
+  };
   // The interpolator_source_vars need to be the same in both the
   // Interpolate event and the InterpolateWithoutInterpComponent event.  The
   // Interpolate event interpolates to the horizon, and the
@@ -161,16 +182,18 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                         LtsTimeStepper>,
             tmpl::pair<LtsTimeStepper,
                        TimeSteppers::monotonic_lts_time_steppers>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       intrp::Events::Interpolate<volume_dim, AhA,
-                                                  interpolator_source_vars>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                         volume_dim, ExcisionBoundaryA,
-                           interpolator_source_vars>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           volume_dim, SphericalSurface,
-                           scalar_charge_interpolator_source_vars>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                intrp::Events::Interpolate<volume_dim, AhA,
+                                           interpolator_source_vars>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, BondiSachs, source_vars_no_deriv>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    volume_dim, ExcisionBoundaryA, interpolator_source_vars>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    volume_dim, SphericalSurface,
+                    scalar_charge_interpolator_source_vars>>>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>>;
   };
