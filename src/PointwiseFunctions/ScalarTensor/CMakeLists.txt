@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  RampUpFunction.cpp
   ScalarCharge.cpp
   )
 
@@ -17,7 +18,9 @@ spectre_target_headers(
   HEADERS
   ConstraintDampingTags.hpp
   ConstraintGammas.hpp
+  RampUpFunction.hpp
   ScalarCharge.hpp
+  SourceTags.hpp
   )
 
 target_link_libraries(
