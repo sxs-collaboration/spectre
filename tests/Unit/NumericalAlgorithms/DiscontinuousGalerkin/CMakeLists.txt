@@ -35,5 +35,6 @@ target_link_libraries(
   Interpolation
   LinearOperators
   Spectral
+  SphericalHarmonicsHelpers
   Utilities
   )
