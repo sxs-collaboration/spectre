@@ -64,6 +64,16 @@ std::string dataset_label_for_tag<Cce::Tags::Du<Cce::Tags::BondiR>>() {
   return "DuR";
 }
 
+template <>
+std::string dataset_label_for_tag<Cce::Tags::KleinGordonPsi>() {
+  return "KGPsi";
+}
+
+template <>
+std::string dataset_label_for_tag<Cce::Tags::KleinGordonPi>() {
+  return "dtKGPsi";
+}
+
 WorldtubeModeRecorder::WorldtubeModeRecorder() = default;
 WorldtubeModeRecorder::WorldtubeModeRecorder(const size_t output_l_max,
                                              const std::string& h5_filename)

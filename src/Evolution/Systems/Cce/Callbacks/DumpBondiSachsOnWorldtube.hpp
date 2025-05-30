@@ -86,7 +86,7 @@ struct DumpBondiSachsOnWorldtube
   using const_global_cache_tags = tmpl::list<Cce::Tags::FilePrefix>;
 
   using cce_boundary_tags = Cce::Tags::characteristic_worldtube_boundary_tags<
-      Cce::Tags::BoundaryValue>;
+      Cce::Tags::BoundaryValue, false>;
 
   using gh_source_vars_for_cce =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
@@ -96,10 +96,11 @@ struct DumpBondiSachsOnWorldtube
       typename InterpolationTargetTag::vars_to_interpolate_to_target;
 
   static_assert(
-      std::is_same_v<tmpl::list_difference<
-                         Cce::Tags::worldtube_boundary_tags_for_writing<>,
-                         cce_boundary_tags>,
-                     tmpl::list<>>,
+      std::is_same_v<
+          tmpl::list_difference<Cce::Tags::worldtube_boundary_tags_for_writing<
+                                    Cce::Tags::BoundaryValue, false>,
+                                cce_boundary_tags>,
+          tmpl::list<>>,
       "Cce tags to dump are not in the boundary tags.");
 
   static_assert(
@@ -200,18 +201,18 @@ struct DumpBondiSachsOnWorldtube
       const std::lock_guard lock(*hdf5_lock);
       Cce::WorldtubeModeRecorder recorder{l_max, filename};
 
-      tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
-          [&](auto tag_v) {
-            using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-            constexpr int spin = tag::tag::type::type::spin;
+      tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<
+          Cce::Tags::BoundaryValue, false>>([&](auto tag_v) {
+        using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
+        constexpr int spin = tag::tag::type::type::spin;
 
-            const ComplexDataVector& bondi_nodal_data =
-                get(get<tag>(bondi_boundary_data)).data();
+        const ComplexDataVector& bondi_nodal_data =
+            get(get<tag>(bondi_boundary_data)).data();
 
-            recorder.append_modal_data<spin>(
-                Cce::dataset_label_for_tag<typename tag::tag>(), time,
-                bondi_nodal_data, l_max);
-          });
+        recorder.append_modal_data<spin>(
+            Cce::dataset_label_for_tag<typename tag::tag>(), time,
+            bondi_nodal_data, l_max);
+      });
     }
   }
 };

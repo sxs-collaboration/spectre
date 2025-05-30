@@ -178,60 +178,58 @@ void test(const std::string& filename_prefix,
     const auto file = h5::H5File<h5::AccessType::ReadOnly>(
         get_filename(filename_prefix, radius));
 
-    tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
-        [&file, &bondi_boundary_data, &times, &l_max, &expected_all_legend,
-         &expected_real_legend](auto tag_v) {
-          using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
-          const auto& bondi_data = get(get<tag>(bondi_boundary_data));
-          constexpr int spin = tag::tag::type::type::spin;
-          constexpr bool is_real = spin == 0;
-          const auto& expected_legend =
-              is_real ? expected_real_legend : expected_all_legend;
+    tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<
+        Cce::Tags::BoundaryValue, false>>([&file, &bondi_boundary_data, &times,
+                                           &l_max, &expected_all_legend,
+                                           &expected_real_legend](auto tag_v) {
+      using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
+      const auto& bondi_data = get(get<tag>(bondi_boundary_data));
+      constexpr int spin = tag::tag::type::type::spin;
+      constexpr bool is_real = spin == 0;
+      const auto& expected_legend =
+          is_real ? expected_real_legend : expected_all_legend;
 
-          SpinWeighted<ComplexModalVector, spin> expected_data{
-              square(l_max + 1)};
-          Spectral::Swsh::libsharp_to_goldberg_modes(
-              make_not_null(&expected_data),
-              Spectral::Swsh::swsh_transform(l_max, 1, bondi_data), l_max);
+      SpinWeighted<ComplexModalVector, spin> expected_data{square(l_max + 1)};
+      Spectral::Swsh::libsharp_to_goldberg_modes(
+          make_not_null(&expected_data),
+          Spectral::Swsh::swsh_transform(l_max, 1, bondi_data), l_max);
 
-          const std::string tag_path =
-              Cce::dataset_label_for_tag<typename tag::tag>();
-          CAPTURE(tag_path);
-          const auto& dat_file = file.get<h5::Dat>(tag_path);
-          const Matrix written_data = dat_file.get_data();
+      const std::string tag_path =
+          Cce::dataset_label_for_tag<typename tag::tag>();
+      CAPTURE(tag_path);
+      const auto& dat_file = file.get<h5::Dat>(tag_path);
+      const Matrix written_data = dat_file.get_data();
 
-          CHECK(expected_legend == dat_file.get_legend());
-          CHECK(times.size() == written_data.rows());
-          const size_t expected_data_size =
-              square(l_max + 1) * (is_real ? 1 : 2);
-          CHECK(expected_data_size == written_data.columns() - 1);
+      CHECK(expected_legend == dat_file.get_legend());
+      CHECK(times.size() == written_data.rows());
+      const size_t expected_data_size = square(l_max + 1) * (is_real ? 1 : 2);
+      CHECK(expected_data_size == written_data.columns() - 1);
 
-          // Since the metric isn't changing it should be the same data on each
-          // row just with a different time
-          for (size_t j = 0; j < times.size(); j++) {
-            const double time = times[j];
-            CAPTURE(time);
-            CHECK(time == written_data(j, 0));
-            size_t counter = 1;
-            for (size_t ell = 0; ell <= l_max; ell++) {
-              for (size_t m = is_real ? 0 : -ell; m <= ell; m++) {
-                const size_t goldberg_index =
-                    Spectral::Swsh::goldberg_mode_index(l_max, ell,
-                                                        static_cast<int>(m));
-                CHECK(written_data(j, counter) ==
-                      real(expected_data.data()[goldberg_index]));
-                counter++;
-                if (not is_real or m != 0) {
-                  CHECK(written_data(j, counter) ==
-                        imag(expected_data.data()[goldberg_index]));
-                  counter++;
-                }
-              }
+      // Since the metric isn't changing it should be the same data on each
+      // row just with a different time
+      for (size_t j = 0; j < times.size(); j++) {
+        const double time = times[j];
+        CAPTURE(time);
+        CHECK(time == written_data(j, 0));
+        size_t counter = 1;
+        for (size_t ell = 0; ell <= l_max; ell++) {
+          for (size_t m = is_real ? 0 : -ell; m <= ell; m++) {
+            const size_t goldberg_index = Spectral::Swsh::goldberg_mode_index(
+                l_max, ell, static_cast<int>(m));
+            CHECK(written_data(j, counter) ==
+                  real(expected_data.data()[goldberg_index]));
+            counter++;
+            if (not is_real or m != 0) {
+              CHECK(written_data(j, counter) ==
+                    imag(expected_data.data()[goldberg_index]));
+              counter++;
             }
           }
+        }
+      }
 
-          file.close_current_object();
-        });
+      file.close_current_object();
+    });
   }
 }
 
