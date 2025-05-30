@@ -193,7 +193,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
     get(get<hydro::Tags::DivergenceCleaningField<DataVector>>(*dg_prim_vars)) =
         get(tilde_phi) / get(sqrt_det_spatial_metric);
 
-    return {false, std::move(rdmp_tci_data)};
+    return {+0, std::move(rdmp_tci_data)};
   }
 
   {
@@ -227,7 +227,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
   if (max(get(get<hydro::Tags::RestMassDensity<DataVector>>(pre_tci_prims))) <
       tci_options.atmosphere_density) {
     equate_pre_tci_prims();
-    return {false, std::move(rdmp_tci_data)};
+    return {+0, std::move(rdmp_tci_data)};
   }
 
   // Check that tilde_d, tilde_ye, and pressure satisfy the Persson TCI
@@ -271,7 +271,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
 
   // If no TCI failures, assign proper primitives variables
   *dg_prim_vars = std::move(pre_tci_prims);
-  return {0, std::move(rdmp_tci_data)};
+  return {+0, std::move(rdmp_tci_data)};
 }
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)

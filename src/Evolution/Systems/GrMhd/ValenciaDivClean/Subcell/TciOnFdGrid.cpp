@@ -55,7 +55,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
                  min(get(subcell_tilde_tau)), min(get(subcell_mag_tilde_b))};
 
   if (need_rdmp_data_only) {
-    return {false, rdmp_tci_data};
+    return {+0, rdmp_tci_data};
   }
 
   Scalar<DataVector> dg_tilde_d{};
@@ -163,6 +163,6 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     return {+12, rdmp_tci_data};
   }
 
-  return {0, rdmp_tci_data};
+  return {+0, rdmp_tci_data};
 }
 }  // namespace grmhd::ValenciaDivClean::subcell
