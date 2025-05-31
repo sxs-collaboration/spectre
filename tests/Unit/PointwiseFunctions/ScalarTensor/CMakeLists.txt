@@ -21,3 +21,5 @@ target_link_libraries(
   ScalarTensor
   ScalarTensorPointwise
   )
+
+add_subdirectory(Xcts)

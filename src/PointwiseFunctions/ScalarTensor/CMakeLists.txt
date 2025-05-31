@@ -34,3 +34,5 @@ target_link_libraries(
   INTERFACE
   ErrorHandling
   )
+
+add_subdirectory(Xcts)

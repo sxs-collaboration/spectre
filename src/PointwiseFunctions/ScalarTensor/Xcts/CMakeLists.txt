@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY ScalarGaussBonnetPointwiseFunctions)
+set(LIBRARY ScalarTensorXcts)
 
 add_spectre_library(${LIBRARY})
 

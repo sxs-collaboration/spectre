@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Test_ScalarGaussBonnetPointwiseFunctions)
+set(LIBRARY Test_ScalarTensorXcts)
 
 set(LIBRARY_SOURCES
   Test_ScalarMomentum.cpp
@@ -13,7 +13,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  ScalarTensorXcts
   Spectral
-  ScalarGaussBonnetPointwiseFunctions
   Utilities
   )

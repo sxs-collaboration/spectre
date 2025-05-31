@@ -13,14 +13,14 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "PointwiseFunctions/ScalarGaussBonnet/ScalarMomentum.hpp"
+#include "PointwiseFunctions/ScalarTensor/Xcts/ScalarMomentum.hpp"
 
 namespace sgb {
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarGaussBonnet.ScalarMomentum",
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.Xcts.ScalarMomentum",
                   "[Unit][PointwiseFunctions]") {
   const pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/ScalarGaussBonnet"};
+      "PointwiseFunctions/ScalarTensor/Xcts"};
   const DataVector used_for_size{5};
   pypp::check_with_random_values<1>(
       static_cast<void (*)(gsl::not_null<Scalar<DataVector>*>,

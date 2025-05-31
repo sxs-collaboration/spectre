@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/ScalarGaussBonnet/ScalarMomentum.hpp"
+#include "PointwiseFunctions/ScalarTensor/Xcts/ScalarMomentum.hpp"
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
