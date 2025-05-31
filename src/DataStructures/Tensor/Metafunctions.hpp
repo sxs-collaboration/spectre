@@ -83,8 +83,7 @@ constexpr bool check_index_symmetry_v =
  * \tparam VolumeDim the volume dimension of the tensor index to prepend
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
-template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
-          typename Fr = Frame::Grid>
+template <typename TheTensor, std::size_t VolumeDim, UpLo Ul, typename Fr>
 using prepend_spatial_index =
     ::Tensor<typename TheTensor::type,
              tmpl::push_front<typename TheTensor::symmetry,
@@ -101,8 +100,7 @@ using prepend_spatial_index =
  * \tparam VolumeDim the volume dimension of the tensor indices to prepend
  * \tparam Fr the ::Frame of the tensor indices to prepend
  */
-template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
-          typename Fr = Frame::Grid>
+template <typename TheTensor, std::size_t VolumeDim, UpLo Ul, typename Fr>
 using prepend_two_symmetric_spatial_indices = ::Tensor<
     typename TheTensor::type,
     tmpl::push_front<tmpl::push_front<typename TheTensor::symmetry,
@@ -120,8 +118,7 @@ using prepend_two_symmetric_spatial_indices = ::Tensor<
  * \tparam VolumeDim the volume dimension of the tensor index to prepend
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
-template <typename TheTensor, std::size_t VolumeDim, UpLo Ul,
-          typename Fr = Frame::Grid>
+template <typename TheTensor, std::size_t VolumeDim, UpLo Ul, typename Fr>
 using prepend_spacetime_index =
     ::Tensor<typename TheTensor::type,
              tmpl::push_front<typename TheTensor::symmetry,
