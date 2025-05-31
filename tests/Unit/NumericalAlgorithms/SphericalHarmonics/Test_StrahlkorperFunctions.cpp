@@ -467,19 +467,15 @@ void test_time_deriv_strahlkorper() {
   // Set a random coefficient non-zero
   strahlkorper.coefficients()[iter.set(2, 1)()] = 1.3;
 
-  for (size_t num_times = 2; num_times <= 4; num_times++) {
+  for (size_t num_times = 1; num_times <= 4; num_times++) {
     CAPTURE(num_times);
     std::deque<std::pair<double, Strahlkorper<Frame::Inertial>>>
         previous_strahlkorpers{};
 
     // Set all strahlkorpers to be the same
     for (size_t i = 0; i < num_times; i++) {
-      // If num_times = 3, set one of the times == NaN to test that we get back
-      // zero
-      previous_strahlkorpers.emplace_front(std::make_pair(
-          (num_times == 3 and i == 0) ? std::numeric_limits<double>::quiet_NaN()
-                                      : static_cast<double>(i),
-          strahlkorper));
+      previous_strahlkorpers.emplace_front(static_cast<double>(i),
+                                           strahlkorper);
     }
 
     auto time_deriv = strahlkorper;
