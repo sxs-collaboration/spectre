@@ -253,8 +253,10 @@ void test_convergence_rate() {
   }
   constexpr size_t filtered_modes = 2;
 
-  double convergence_rate = PowerMonitors::convergence_rate(
-      power_monitor_with_known_slope, filtered_modes);
+  double convergence_rate =
+      PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+          power_monitor_with_known_slope, filtered_modes)
+          .convergence_rate;
   CHECK(approx(convergence_rate) == -expected_slope);
 
   // Change the filtered modes' power to a NaN, and ensure that this mode
@@ -263,8 +265,10 @@ void test_convergence_rate() {
       std::numeric_limits<double>::signaling_NaN();
   power_monitor_with_known_slope[9] =
       std::numeric_limits<double>::signaling_NaN();
-  convergence_rate = PowerMonitors::convergence_rate(
-      power_monitor_with_known_slope, filtered_modes);
+  convergence_rate =
+      PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+          power_monitor_with_known_slope, filtered_modes)
+          .convergence_rate;
   CHECK(approx(convergence_rate) == -expected_slope);
 
   // Test that adding noise of amplitude 1e-2 affects the slope recovered
@@ -274,8 +278,10 @@ void test_convergence_rate() {
   for (size_t i = 0; i < size_of_power_monitor - filtered_modes; ++i) {
     power_monitor_with_known_slope[i] *= pow(10.0, noise_dis(gen));
   }
-  convergence_rate = PowerMonitors::convergence_rate(
-      power_monitor_with_known_slope, filtered_modes);
+  convergence_rate =
+      PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+          power_monitor_with_known_slope, filtered_modes)
+          .convergence_rate;
   // define custom approx for higher derivative checks
   const Approx custom_approx = Approx::custom().epsilon(noise_amp).scale(1.0);
   CHECK(custom_approx(convergence_rate) == -expected_slope);
@@ -283,12 +289,80 @@ void test_convergence_rate() {
 // Check assert that sufficient modes were provided
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
-      PowerMonitors::convergence_rate(power_monitor_with_known_slope,
-                                      size_of_power_monitor - 3),
+      PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+          power_monitor_with_known_slope, size_of_power_monitor - 3),
       Catch::Matchers::ContainsSubstring(
           "Power monitor needs at least 4 unfiltered modes to compute "
           "convergence"));
 #endif
+}
+
+void test_pile_up_modes() {
+  // Check assert that sufficient modes were provided
+  // First, check that a power monitor with an exact, constant slope has the
+  // vanishing pile up modes
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> slope_dis(-2.0, -1.0);
+  const double expected_slope = slope_dis(gen);
+  std::uniform_real_distribution<> offset_dis(-0.4, -0.1);
+  const double offset = offset_dis(gen);
+  const size_t size_of_power_monitor{20};
+  DataVector power_monitor_with_known_slope{size_of_power_monitor};
+  for (size_t i = 0; i < size_of_power_monitor; ++i) {
+    power_monitor_with_known_slope[i] =
+        pow(10.0, static_cast<double>(i) * expected_slope + offset);
+  }
+  constexpr size_t filtered_modes = 2;
+
+  const double pile_up_modes_known_slope =
+      PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+          power_monitor_with_known_slope, filtered_modes)
+          .number_of_pile_up_modes;
+  const Approx custom_approx = Approx::custom().epsilon(1.e-10).scale(1.0);
+  CHECK(custom_approx(pile_up_modes_known_slope) == 0.0);
+
+  // Revise the power monitor to artificially introduce pile up modes
+  // Set the top n modes to be equal to the n-1 power, so the slope is zero.
+  // Because the number of pile up modes is defined as a double, the computed
+  // pile up mode count will have a fractional part as well as the expected
+  // integer number of pile up modes. In the test, ignore the fractional part,
+  // but make sure that the expected integer number of pile up modes is
+  // recovered. Always leave at least 2 unfiltered modes not piled up.
+  for (size_t expected_pile_up_modes = 1;
+       expected_pile_up_modes < size_of_power_monitor - filtered_modes - 2;
+       ++expected_pile_up_modes) {
+    DataVector power_monitor_with_pile_up_modes =
+        power_monitor_with_known_slope;
+    for (size_t i =
+             size_of_power_monitor - filtered_modes - expected_pile_up_modes;
+         i < size_of_power_monitor - filtered_modes; ++i) {
+      power_monitor_with_pile_up_modes[i] =
+          power_monitor_with_pile_up_modes[size_of_power_monitor -
+                                           filtered_modes -
+                                           expected_pile_up_modes - 1];
+    }
+    // Ensure that filtered modes are not used by replacing them with NaN
+    for (size_t i = size_of_power_monitor - filtered_modes;
+         i < size_of_power_monitor; ++i) {
+      power_monitor_with_pile_up_modes[i] =
+          std::numeric_limits<double>::signaling_NaN();
+    }
+    const double pile_up_modes =
+        PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+            power_monitor_with_pile_up_modes, filtered_modes)
+            .number_of_pile_up_modes;
+    CHECK(static_cast<size_t>(std::floor(pile_up_modes)) ==
+          expected_pile_up_modes);
+  }
+
+  // Check that a power monitor with zero convergence rate returns zero piled up
+  // modes
+  power_monitor_with_known_slope = power_monitor_with_known_slope[0];
+  const double pile_up_modes_zero_convergence =
+      PowerMonitors::convergence_rate_and_number_of_pile_up_modes(
+          power_monitor_with_known_slope, filtered_modes)
+          .number_of_pile_up_modes;
+  CHECK(pile_up_modes_zero_convergence == 0.0);
 }
 }  // namespace
 
@@ -300,4 +374,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PowerMonitors",
   test_relative_truncation_error_with_symmetry();
   test_relative_truncation_error_linear_function();
   test_convergence_rate();
+  test_pile_up_modes();
 }

@@ -120,11 +120,18 @@ std::array<double, Dim> absolute_truncation_error(
     const VectorType& tensor_component, const Mesh<Dim>& mesh);
 /// @}
 
+/// Holds convergence rate and pile up modes of a power monitor
+struct ConvergenceInfo {
+  double convergence_rate{std::numeric_limits<double>::signaling_NaN()};
+  double number_of_pile_up_modes{std::numeric_limits<double>::signaling_NaN()};
+};
+
 /*!
  * \ingroup SpectralGroup
- * \brief Returns the convergence rate of a power monitor.
+ * \brief Returns the convergence rate and the number of pile up modes of a
+ * power monitor as a ConvergenceInfo.
  *
- * \details Returns the convergence rate of a power monitor as a weighted
+ * \details Computes the convergence rate of a power monitor as a weighted
  * average of slopes measured using different subsets of spectral modes
  * in the power monitor. Equation (53) of \cite Szilagyi2014fna gives
  * the convergence rate $\mathcal{C}$ in terms of a power monitor $P_k$ as
@@ -148,10 +155,42 @@ std::array<double, Dim> absolute_truncation_error(
  * way $\epsilon$ is defined is so that it matches SpEC's definition, while
  * also ensuring that it is nonzero even if the error in the slope fit is
  * exactly zero.
+ *
+ * Also computes the number of pile up modes in a power monitor. Pile up
+ * modes are modes where the power is no longer converging at the overall
+ * convergence rate. Following Eq. (56) of \cite Szilagyi2014fna, the number of
+ * pile up modes $\mathcal{P}$ is defined as
+ * \begin{equation}
+ * \mathcal{P}(P_k) = \sum_{j=2}^{\tilde{N}-2}
+ * \exp\left[-32\left(\frac{\tilde{\mathcal{C}}_j}
+ * {\mathcal{C}(P_k)}\right)^2\right],
+ * \end{equation}
+ * where $\mathcal{C}(P_k)$ is the convergence rate of the power monitor $P_k$,
+ * the local convergence rate $\tilde{\mathcal{C}}_j$ of mode $j$ is
+ * \begin{equation}
+ * \tilde{\mathcal{C}}_j = -\mathcal{S}(j,\min(\tilde{N}-1,j+4)),
+ * \end{equation}
+ * $\mathcal{S}(k_1,k_2)$ is the slope of a linear regression fit of
+ * $\log_{10}(P_k)$ with $k$ satisfying $k_1\leq k \leq k_2$,
+ * $\tilde{N} = N-N_f$, $N$ is the number of modes in the
+ * power monitor, and the highest $N_f$ modes are filtered.
+ * The motivation of this definition is the following: if the local
+ * convergence rate $\tilde{\mathcal{C}}_j$ is comparable to the overall
+ * convergence rate $\mathcal{C}(P_k)$, then the $j^{\rm th}$ term in the
+ * summation becomes $\approx \exp(-32) \approx 10^{-14}$, while if
+ * $\tilde{\mathcal{C}}_j \ll \mathcal{C}(P_k)$, then the $j^{\rm th}$ term in
+ * the summation is $\approx \exp(0) = 1$. Note that the coefficient value 32
+ * is chosen to agree with SpEC.
+ * \note The summation goes up to $\tilde{N}-2$ so that there is it least one
+ * larger unfiltered mode for use in computing the slope. The highest mode
+ * used when computing the slope is the highest unfiltered mode, $\tilde{N}-1$.
+ * Mode numbers in the power monitor are zero based. These choices are off by
+ * one vs. Eqs. (55) and (56) of \cite Szilagyi2014fna, because those formulas
+ * apparently assume one-based indexing.
  * \param power_monitor The power monitor.
  * \param number_of_filtered_modes How many of the highest modes of the
  * power monitor are filtered (default 0).
  */
-double convergence_rate(const DataVector& power_monitor,
-                        size_t number_of_filtered_modes = 0);
+ConvergenceInfo convergence_rate_and_number_of_pile_up_modes(
+    const DataVector& power_monitor, size_t number_of_filtered_modes = 0);
 }  // namespace PowerMonitors
