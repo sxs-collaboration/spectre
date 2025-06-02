@@ -25,6 +25,8 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "Options/Context.hpp"
+#include "Options/ParseError.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -64,13 +66,18 @@ template <ObjectLabel Object>
 FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
     const std::optional<size_t>& l_max_in,
     const bool transition_ends_at_cube_in, std::string h5_filename,
-    std::string subfile_name)
+    std::string subfile_name, const Options::Context& context)
     : FromVolumeFile(std::move(h5_filename), std::move(subfile_name)),
       transition_ends_at_cube(transition_ends_at_cube_in) {
+  if (this->replay() and l_max_in.has_value()) {
+    PARSE_ERROR(context,
+                "Cannot supply LMax for shape map while also replaying.");
+  }
+
   if (l_max_in.has_value()) {
     l_max = l_max_in.value();
   } else {
-    const auto shape_fot_map = retrieve_function_of_time(
+    const auto shape_fot_map = this->retrieve_function_of_time(
         {std::string{"Shape" + name(Object)}}, std::nullopt);
     const auto& shape_fot = shape_fot_map.at("Shape" + name(Object));
 
@@ -80,7 +87,7 @@ FromVolumeFileShapeSize<Object>::FromVolumeFileShapeSize(
     // num_components = 2 * (l_max + 1)**2 if l_max == m_max which it is for the
     // shape map. This is why we can divide by 2 and take the sqrt without
     // worrying about odd numbers or non-perfect squares
-    l_max = -1 + sqrt(function[0].size() / 2);
+    l_max = -1 + sqrt(function[0].size() / 2);  // NOLINT
   }
 }
 
@@ -119,7 +126,7 @@ FunctionsOfTimeMap get_shape_and_size(
           shape_map_options)) {
     const auto& from_vol_file =
         std::get<FromVolumeFileShapeSize<Object>>(shape_map_options);
-    const auto volume_fots = from_vol_file.retrieve_function_of_time(
+    auto volume_fots = from_vol_file.retrieve_function_of_time(
         {shape_name, size_name}, initial_time);
 
     const auto check_fot = [&]<size_t MaxDeriv>(const std::string& name) {
@@ -137,34 +144,44 @@ FunctionsOfTimeMap get_shape_and_size(
     check_fot.template operator()<2>(shape_name);
     check_fot.template operator()<3>(size_name);
 
-    // Not const in case we move it below
-    auto temporary_shape_fot =
-        volume_fots.at(shape_name)
-            ->create_at_time(initial_time, shape_expiration_time);
-    const auto shape_funcs =
-        temporary_shape_fot->func_and_2_derivs(initial_time);
-
-    const size_t file_l_max = -1 + sqrt(shape_funcs[0].size() / 2);
-
-    // Prolong or restrict if necessary, otherwise just use the exact function
-    // of time from the volume file
-    if (file_l_max != l_max) {
-      std::array<DataVector, 3> new_shape_funcs{};
-      const ylm::Spherepack file_spherepack{file_l_max, file_l_max};
-      const ylm::Spherepack new_spherepack{l_max, l_max};
-      for (size_t i = 0; i < shape_funcs.size(); i++) {
-        gsl::at(new_shape_funcs, i) = file_spherepack.prolong_or_restrict(
-            gsl::at(shape_funcs, i), new_spherepack);
-      }
-
-      result[shape_name] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-              initial_time, std::move(new_shape_funcs), shape_expiration_time);
+    if (from_vol_file.replay()) {
+      result[shape_name] = std::move(volume_fots.at(shape_name));
     } else {
-      result[shape_name] = std::move(temporary_shape_fot);
+      // Not const in case we move it below
+      auto temporary_shape_fot =
+          volume_fots.at(shape_name)
+              ->create_at_time(initial_time, shape_expiration_time);
+      const auto shape_funcs =
+          temporary_shape_fot->func_and_2_derivs(initial_time);
+
+      const size_t file_l_max = -1 + sqrt(shape_funcs[0].size() / 2);  // NOLINT
+
+      // Prolong or restrict if necessary, otherwise just use the exact function
+      // of time from the volume file
+      if (file_l_max != l_max) {
+        std::array<DataVector, 3> new_shape_funcs{};
+        const ylm::Spherepack file_spherepack{file_l_max, file_l_max};
+        const ylm::Spherepack new_spherepack{l_max, l_max};
+        for (size_t i = 0; i < shape_funcs.size(); i++) {
+          gsl::at(new_shape_funcs, i) = file_spherepack.prolong_or_restrict(
+              gsl::at(shape_funcs, i), new_spherepack);
+        }
+
+        result[shape_name] =
+            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+                initial_time, std::move(new_shape_funcs),
+                shape_expiration_time);
+      } else {
+        result[shape_name] = std::move(temporary_shape_fot);
+      }
     }
-    result[size_name] = volume_fots.at(size_name)->create_at_time(
-        initial_time, size_expiration_time);
+
+    if (from_vol_file.replay()) {
+      result[size_name] = std::move(volume_fots.at(size_name));
+    } else {
+      result[size_name] = volume_fots.at(size_name)->create_at_time(
+          initial_time, size_expiration_time);
+    }
 
     return result;
   }

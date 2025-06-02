@@ -28,7 +28,7 @@ std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> get_skew(
 
   if (std::holds_alternative<FromVolumeFile>(skew_map_options)) {
     const auto& from_vol_file = std::get<FromVolumeFile>(skew_map_options);
-    const auto volume_fot =
+    auto volume_fot =
         from_vol_file.retrieve_function_of_time({name}, initial_time);
 
     // It must be a PiecewisePolynomial
@@ -39,7 +39,12 @@ std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> get_skew(
           "PiecewisePolynomial<2>. Cannot use it to initialize the skew map.");
     }
 
-    result = volume_fot.at(name)->create_at_time(initial_time, expiration_time);
+    if (from_vol_file.replay()) {
+      result = std::move(volume_fot.at(name));
+    } else {
+      result =
+          volume_fot.at(name)->create_at_time(initial_time, expiration_time);
+    }
   } else if (std::holds_alternative<SkewMapOptions>(skew_map_options)) {
     const auto& hard_coded_options = std::get<SkewMapOptions>(skew_map_options);
 

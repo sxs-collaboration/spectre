@@ -82,9 +82,10 @@ std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> get_function_of_time(
 }  // namespace
 
 FromVolumeFile::FromVolumeFile(std::string h5_filename,
-                               std::string subfile_name)
+                               std::string subfile_name, const bool replay)
     : h5_filename_(std::move(h5_filename)),
-      subfile_name_(std::move(subfile_name)) {}
+      subfile_name_(std::move(subfile_name)),
+      replay_(replay) {}
 
 FunctionsOfTimeMap FromVolumeFile::retrieve_function_of_time(
     const std::unordered_set<std::string>& function_of_time_names,

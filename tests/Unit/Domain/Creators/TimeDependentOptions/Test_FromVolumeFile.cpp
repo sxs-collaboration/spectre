@@ -68,6 +68,18 @@ void test(const std::string& function_of_time_name) {
         dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<2>&>(
             *functions_of_time.at(function_of_time_name)));
 
+  const auto from_volume_file_replay =
+      domain::creators::time_dependent_options::FromVolumeFile(
+          filename, subfile_name, true);
+
+  const domain::FunctionsOfTimeMap fot_from_file_replay =
+      from_volume_file.retrieve_function_of_time({function_of_time_name}, time);
+
+  CHECK(dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<2>&>(
+            *fot_from_file_replay.at(function_of_time_name)) ==
+        dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<2>&>(
+            *functions_of_time.at(function_of_time_name)));
+
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }

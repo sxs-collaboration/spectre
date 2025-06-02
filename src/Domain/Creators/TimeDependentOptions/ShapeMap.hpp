@@ -211,7 +211,8 @@ struct FromVolumeFileShapeSize : public FromVolumeFile {
   FromVolumeFileShapeSize() = default;
   FromVolumeFileShapeSize(const std::optional<size_t>& l_max_in,
                           bool transition_ends_at_cube_in,
-                          std::string h5_filename, std::string subfile_name);
+                          std::string h5_filename, std::string subfile_name,
+                          const Options::Context& context = {});
 
   size_t l_max{};
   bool transition_ends_at_cube{};

@@ -79,7 +79,7 @@ FunctionsOfTimeMap get_expansion(
 
   if (std::holds_alternative<FromVolumeFile>(expansion_map_options)) {
     const auto& from_vol_file = std::get<FromVolumeFile>(expansion_map_options);
-    const auto volume_fot = from_vol_file.retrieve_function_of_time(
+    auto volume_fot = from_vol_file.retrieve_function_of_time(
         {name, name_outer_boundary}, initial_time);
 
     // Expansion must be either a PiecewisePolynomial or a SettleToConstant
@@ -97,8 +97,12 @@ FunctionsOfTimeMap get_expansion(
           "initialize the expansion map.");
     }
 
-    result[name] =
-        volume_fot.at(name)->create_at_time(initial_time, expiration_time);
+    if (from_vol_file.replay()) {
+      result[name] = std::move(volume_fot.at(name));
+    } else {
+      result[name] =
+          volume_fot.at(name)->create_at_time(initial_time, expiration_time);
+    }
 
     // Outer boundary must be either a FixedSpeedCubic or a SettleToConstant
     const auto* outer_boundary_cubic_volume_fot =
@@ -121,8 +125,12 @@ FunctionsOfTimeMap get_expansion(
            "SettleToConstant, but SettleToConstant functions of time aren't "
            "allowed.");
 
-    result[name_outer_boundary] =
-        volume_fot.at(name_outer_boundary)->get_clone();
+    if (from_vol_file.replay()) {
+      result[name] = std::move(volume_fot.at(name_outer_boundary));
+    } else {
+      result[name_outer_boundary] =
+          volume_fot.at(name_outer_boundary)->get_clone();
+    }
   } else if (std::holds_alternative<ExpansionMapOptions<AllowSettleFoTs>>(
                  expansion_map_options)) {
     const auto& hard_coded_options =
