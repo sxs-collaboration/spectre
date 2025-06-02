@@ -25,7 +25,6 @@ spectre_target_headers(
   FindCommonHorizon.hpp
   HorizonAliases.hpp
   InterpolationTarget.hpp
-  ObserveCenters.hpp
   Tags.hpp
   )
 
