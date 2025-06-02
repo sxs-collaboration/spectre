@@ -49,7 +49,6 @@ target_link_libraries(
   Options
   Serialization
   Spectral
-  SphericalHarmonicsHelpers
   Utilities
   INTERFACE
   Domain

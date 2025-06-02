@@ -69,7 +69,6 @@ target_link_libraries(
   GrMhdSolutions
   H5
   Hydro
-  HydroHelpers
   Limiters
   Options
   RelativisticEulerSolutions
