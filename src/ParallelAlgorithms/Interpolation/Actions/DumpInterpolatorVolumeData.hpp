@@ -17,7 +17,6 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"

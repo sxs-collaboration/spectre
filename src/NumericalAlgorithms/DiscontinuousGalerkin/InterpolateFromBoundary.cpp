@@ -9,7 +9,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

@@ -10,8 +10,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "Utilities/Gsl.hpp"
 

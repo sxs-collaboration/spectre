@@ -12,8 +12,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

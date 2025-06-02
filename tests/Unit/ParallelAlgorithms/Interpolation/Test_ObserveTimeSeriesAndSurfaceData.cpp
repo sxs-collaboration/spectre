@@ -45,7 +45,6 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/AngularOrdering.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"

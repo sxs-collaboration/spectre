@@ -21,7 +21,6 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"

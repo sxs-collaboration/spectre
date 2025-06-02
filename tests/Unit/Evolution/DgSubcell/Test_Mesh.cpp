@@ -9,9 +9,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
+#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/MinimumNumberOfPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {
 void print_comparison_point_computation() {

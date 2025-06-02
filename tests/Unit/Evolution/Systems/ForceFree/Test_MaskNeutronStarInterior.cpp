@@ -23,7 +23,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticData/ForceFree/RotatingDipole.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"

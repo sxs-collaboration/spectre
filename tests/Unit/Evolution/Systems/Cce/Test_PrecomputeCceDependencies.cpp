@@ -19,7 +19,6 @@
 #include "Helpers/Evolution/Systems/Cce/CceComputationTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"

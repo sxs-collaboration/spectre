@@ -8,7 +8,7 @@
 
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "Options/ParseError.hpp"
 
 namespace amr {

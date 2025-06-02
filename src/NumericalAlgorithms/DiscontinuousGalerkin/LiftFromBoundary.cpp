@@ -12,8 +12,8 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/Spectral/BoundaryInterpolationMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

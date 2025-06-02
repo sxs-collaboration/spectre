@@ -10,7 +10,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/MaximumNumberOfPoints.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 
 namespace {

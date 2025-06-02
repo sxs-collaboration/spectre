@@ -1,8 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
 #include <cmath>
 #include <cstddef>
 #include <limits>
@@ -12,6 +10,12 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctionNormalizationSquare.hpp"
+#include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
+#include "NumericalAlgorithms/Spectral/InverseWeightFunctionValues.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"

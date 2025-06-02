@@ -8,8 +8,12 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
+#include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/QuadratureWeights.hpp"
 
 namespace {
 
