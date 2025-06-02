@@ -72,7 +72,7 @@ DomainCreator:
       InnerRadius: &ExcisionRadiusA {{ ExcisionRadiusA }}
       # Found that the max allowable value for the OuterRadius is 6.0. Higher
       # values cause the constraints to blow up the cubes around each object.
-      OuterRadius: 6.0
+      OuterRadius: {{ ObjectOuterRadius }}
       XCoord: &XCoordA {{ XCoordA }}
       Interior:
         ExciseWithBoundaryCondition:
@@ -82,7 +82,7 @@ DomainCreator:
       InnerRadius: &ExcisionRadiusB {{ ExcisionRadiusB }}
       # Found that the max allowable value for the OuterRadius is 6.0. Higher
       # values cause the constraints to blow up the cubes around each object.
-      OuterRadius: 6.0
+      OuterRadius: {{ ObjectOuterRadius }}
       XCoord: &XCoordB {{ XCoordB }}
       Interior:
         ExciseWithBoundaryCondition:
@@ -92,13 +92,13 @@ DomainCreator:
       - &YOffset {{ CenterOfMassOffset_y }}
       - &ZOffset {{ CenterOfMassOffset_z }}
     Envelope:
-      Radius: 100.0
+      Radius: {{ EnvelopeRadius }}
       # Radial distribution is logarithmic to transition from grid point
       # spacing around the excisions to the grid point spacing in the
       # outer shell
       RadialDistribution: Logarithmic
     OuterShell:
-      Radius: 600.0
+      Radius: {{ OuterShellRadius }}
       # Radial distribution is linear to resolve gravitational waves
       RadialPartitioning: []
       RadialDistribution: Linear
@@ -115,17 +115,17 @@ DomainCreator:
     InitialRefinement:
       ObjectAShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
       ObjectACube:    [{{ L + 2 }}, {{ L + 2 }}, {{ L + 1 }}]
-      ObjectBShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
+      ObjectBShell:   [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 + ExtraRadRef }}]
       ObjectBCube:    [{{ L + 2 }}, {{ L + 2 }}, {{ L + 1 }}]
       Envelope:       [{{ L + 1 }}, {{ L + 1 }}, {{ L + 1 }}]
-      OuterShell0:     [{{ L     }}, {{ L     }}, {{ L + 2 }}]
+      OuterShell0:    [{{ L     }}, {{ L     }}, {{ L + 2 }}]
     InitialGridPoints:
       ObjectAShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
       ObjectACube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
-      ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 }}]
+      ObjectBShell:   [{{ P + 3 }}, {{ P + 3 }}, {{ P + 1 + ExtraRadPoints }}]
       ObjectBCube:    [{{ P     }}, {{ P     }}, {{ P - 1 }}]
       Envelope:       [{{ P + 3 }}, {{ P + 3 }}, {{ P + 5 }}]
-      OuterShell0:     [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
+      OuterShell0:    [{{ P + 3 }}, {{ P + 3 }}, {{ P + 4 }}]
 {% if IdFromEvolution %}
     TimeDependentMaps:
       InitialTime: &InitialTime {{ InitialTime }}
@@ -540,7 +540,7 @@ ControlSystems:
       DecreaseFactor: &DecreaseFactor 0.98
     ControlError:
   Rotation: *KinematicControlSystem
-  Translation: None
+  Translation: *KinematicControlSystem
   Skew:
     Averager: *KinematicAverager
     Controller: *KinematicController

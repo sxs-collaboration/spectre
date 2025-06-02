@@ -807,8 +807,8 @@ void test_binary_factory() {
 void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{20.0},
           Distribution::Linear, 120.0, std::nullopt,
@@ -817,8 +817,8 @@ void test_parse_errors() {
           "First radial partition must be larger than the envelope radius"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{40.0},
           Distribution::Linear, 120.0, std::nullopt,
@@ -827,8 +827,8 @@ void test_parse_errors() {
           "Last radial partition must be smaller than the outer radius"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{28.0, 28.0},
           Distribution::Linear, 120.0, std::nullopt,
@@ -837,8 +837,8 @@ void test_parse_errors() {
           "Radial partitioning contains duplicate element"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{28.0, 29.0},
           std::vector{Distribution::Linear}, 120.0, std::nullopt,
@@ -847,8 +847,8 @@ void test_parse_errors() {
           "Specify a 'RadialDistribution' for every spherical shell."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
@@ -857,8 +857,8 @@ void test_parse_errors() {
           "The x-coordinate of ObjectA's center is expected to be positive."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
@@ -889,8 +889,8 @@ void test_parse_errors() {
           "separation between the two objects."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{1.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
@@ -899,8 +899,8 @@ void test_parse_errors() {
           "ObjectB's inner radius must be less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{3.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
@@ -910,7 +910,29 @@ void test_parse_errors() {
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.5, 1.0, -1.0, std::nullopt, true},
+          Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
+          Distribution::Projective, std::vector<double>{}, Distribution::Linear,
+          120.0, std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "ObjectA's outer radius is too large for the given separation,  try "
+          "using 0.8"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
+          Distribution::Projective, std::vector<double>{}, Distribution::Linear,
+          120.0, std::nullopt, create_outer_boundary_condition(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::ContainsSubstring(
+          "ObjectB's outer radius is too large for the given separation,  try "
+          "using 0.8"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, -1.0, std::nullopt, true},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, true, 6_st,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
@@ -921,8 +943,8 @@ void test_parse_errors() {
           "of Object B"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.3, 1.0, 1.0, std::nullopt, true},
-          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, 1.0, std::nullopt, true},
+          Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
           120.0, std::nullopt, create_outer_boundary_condition(),
@@ -933,15 +955,15 @@ void test_parse_errors() {
           "of Object A"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.3, 1.0, 1.0, false, false},
-          Object{0.5, 1.0, -1.0, false, false},
+          Object{0.3, 0.8, 1.0, false, false},
+          Object{0.5, 0.8, -1.0, false, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.2, 2_st, 6_st),
       Catch::Matchers::ContainsSubstring(
           "A filled object cannot be offset within its cube."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0,
           std::vector<std::array<size_t, 3>>{}, 6_st, true,
           Distribution::Projective, std::vector<double>{}, Distribution::Linear,
@@ -950,8 +972,8 @@ void test_parse_errors() {
       Catch::Matchers::ContainsSubstring("Invalid 'InitialRefinement'"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          Object{0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          Object{0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.3, 0.8, 1.0, {{create_inner_boundary_condition()}}, false},
+          Object{0.5, 0.8, -1.0, {{create_inner_boundary_condition()}}, false},
           std::array<double, 2>{{0.1, 0.2}}, 25.5, 32.4, 1.0, 2_st,
           std::vector<std::array<size_t, 3>>{}, true, Distribution::Projective,
           std::vector<double>{}, Distribution::Linear, 120.0, std::nullopt,

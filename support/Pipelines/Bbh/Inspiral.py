@@ -46,6 +46,15 @@ def _control_system_params(
     increase_threshold_fraction = 0.25
     min_kinematic_timescale = 1e-2
 
+    size_b_timescale = damping_time_base * 0.2 * mass_left
+    # Found that changing the size_a timescale to be the same timescale as
+    # size_b fixed early incoming char speeds for higher mass ratio runs.
+    size_a_timescale = (
+        size_b_timescale
+        if (mass_ratio > 2.0)
+        else damping_time_base * 0.2 * mass_right
+    )
+
     return {
         "MinKinematicTimescale": min_kinematic_timescale,
         "MaxDampingTimescale": max_damping_timescale,
@@ -54,8 +63,8 @@ def _control_system_params(
         "SkewTimescale": 0.5 * (
             5.0 * min_kinematic_timescale + max_damping_timescale
         ),
-        "SizeATimescale": damping_time_base * 0.2 * mass_right,
-        "SizeBTimescale": damping_time_base * 0.2 * mass_left,
+        "SizeATimescale": size_a_timescale,
+        "SizeBTimescale": size_b_timescale,
         "ShapeATimescale": 5.0 * kinematic_timescale,
         "ShapeBTimescale": 5.0 * kinematic_timescale,
         "SizeIncreaseThreshold": 1e-3,
@@ -112,15 +121,42 @@ def inspiral_parameters(
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
     """
+    # For constraints and control system params we just use the target masses
+    # and spins, not the values measured on the horizons, because these numbers
+    # don't have to be exact and the horizon quantities will change a bit during
+    # the evolution anyway.
+    target_params = id_metadata["TargetParams"]
+    mass_ratio = target_params["MassRatio"]
+    mass_a = mass_ratio / (1.0 + mass_ratio)
+    mass_b = 1.0 / (1.0 + mass_ratio)
+    spin_magnitude_a = np.linalg.norm(target_params["DimensionlessSpinA"])
+    spin_magnitude_b = np.linalg.norm(target_params["DimensionlessSpinB"])
     # Initial data can be either from an ID solve or from a previous evolution
     id_from_evolution = "Evolution" in id_input_file
-    target_params = id_metadata["TargetParams"]
     id_domain_creator = id_input_file["DomainCreator"]["BinaryCompactObject"]
     # This factor is to account for the ID excision not being the same shape as
     # the final horizon found after the last iteration. Found through trial and
     # error that increasing the excision size by this factor allowed the runs to
     # evolve without early incoming char speeds.
-    excision_radius_factor = 1.0 if id_from_evolution else 1.0385
+    # For unequal masses, this was found through trial and error that
+    # decreasing the excision size of object b allowed the runs to evolve
+    # without early incoming char speeds.
+    excision_radius_factor_a = 1.0 if id_from_evolution else 1.0385
+    excision_radius_factor_b = (
+        1.0 if (id_from_evolution or mass_ratio > 2.0) else 1.0385
+    )
+    initial_separation = (
+        id_domain_creator["ObjectA"]["XCoord"]
+        - id_domain_creator["ObjectB"]["XCoord"]
+    )
+    # This extra refinement was found through trial and error and allowed mass
+    # ratio 6 to evolve through inspiral stably.
+    extra_radial_refinement_l = (
+        round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0
+    )
+    extra_radial_refinement_p = (
+        round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
+    )
     params = {
         # Initial data files
         "IdFileGlob": str(
@@ -130,18 +166,29 @@ def inspiral_parameters(
         "IdFromEvolution": id_from_evolution,
         # Domain geometry
         "ExcisionRadiusA": (
-            id_domain_creator["ObjectA"]["InnerRadius"] * excision_radius_factor
+            id_domain_creator["ObjectA"]["InnerRadius"]
+            * excision_radius_factor_a
         ),
         "ExcisionRadiusB": (
-            id_domain_creator["ObjectB"]["InnerRadius"] * excision_radius_factor
+            id_domain_creator["ObjectB"]["InnerRadius"]
+            * excision_radius_factor_b
         ),
+        "ObjectOuterRadius": initial_separation / 2.5,
         "XCoordA": id_domain_creator["ObjectA"]["XCoord"],
         "XCoordB": id_domain_creator["ObjectB"]["XCoord"],
         "CenterOfMassOffset_y": id_domain_creator["CenterOfMassOffset"][0],
         "CenterOfMassOffset_z": id_domain_creator["CenterOfMassOffset"][1],
+        "EnvelopeRadius": 100.0 / 15.0 * initial_separation,
+        # SpEC chooses the outer radius based on a Newtonian estimate of the
+        # wave zone (See function AutoRmax in SpEC/Support/Perl/SpEC.pm). This
+        # may need to be ported over eventually. The CCE extraction radii may
+        # also need to be adjusted to account for different outer shell radii.
+        "OuterShellRadius": 600.0 / 15.0 * initial_separation,
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
+        "ExtraRadRef": extra_radial_refinement_l,
+        "ExtraRadPoints": extra_radial_refinement_p,
     }
 
     # Initial functions of time (set from ID or load from evolution data)
@@ -183,21 +230,6 @@ def inspiral_parameters(
                 "ExcisionBShapeSpin_z": id_shape_B["InitialValues"]["Spin"][2],
             }
         )
-
-    # For constraints and control system params we just use the target masses
-    # and spins, not the values measured on the horizons, because these numbers
-    # don't have to be exact and the horizon quantities will change a bit during
-    # the evolution anyway.
-    target_params = id_metadata["TargetParams"]
-    mass_ratio = target_params["MassRatio"]
-    mass_a = mass_ratio / (1.0 + mass_ratio)
-    mass_b = 1.0 / (1.0 + mass_ratio)
-    spin_magnitude_a = np.linalg.norm(target_params["DimensionlessSpinA"])
-    spin_magnitude_b = np.linalg.norm(target_params["DimensionlessSpinB"])
-    initial_separation = (
-        id_domain_creator["ObjectA"]["XCoord"]
-        - id_domain_creator["ObjectB"]["XCoord"]
-    )
 
     # Constraint damping parameters
     params.update(
@@ -270,6 +302,12 @@ def inspiral_parameters_spec(
     spin_magnitude_left = id_params["ID_chiBMagnitude"]
     spin_magnitude_right = id_params["ID_chiAMagnitude"]
     initial_separation = id_params["ID_d"]
+    extra_radial_refinement_l = (
+        round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0
+    )
+    extra_radial_refinement_p = (
+        round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
+    )
 
     params = {
         # Initial data files
@@ -280,6 +318,7 @@ def inspiral_parameters_spec(
         # or about 0.9434 * horizon radius.
         "ExcisionRadiusA": id_params["ID_rExcA"] * 1.06,
         "ExcisionRadiusB": id_params["ID_rExcB"] * 1.06,
+        "ObjectOuterRadius": initial_separation / 2.5,
         "XCoordA": id_params["ID_cA"][0],
         "XCoordB": id_params["ID_cB"][0],
         # COM offset in y and z is the same for both objects
@@ -288,9 +327,16 @@ def inspiral_parameters_spec(
         # Initial functions of time
         "InitialAngularVelocity": id_params["ID_Omega0"],
         "RadialExpansionVelocity": id_params["ID_adot0"],
+        "EnvelopeRadius": 100.0 / 15.0 * initial_separation,
+        # SpEC chooses the outer radius based on a Newtonian estimate of the
+        # wave zone (See function AutoRmax in SpEC/Support/Perl/SpEC.pm). This
+        # may need to be ported over eventually. The CCE extraction radii may
+        # also need to be adjusted to account for different outer shell radii.
+        "OuterShellRadius": 600.0 / 15.0 * initial_separation,
         # Resolution
         "L": refinement_level,
-        "P": polynomial_order,
+        "ExtraRadRef": extra_radial_refinement_l,
+        "ExtraRadPoints": extra_radial_refinement_p,
     }
 
     # Constraint damping parameters

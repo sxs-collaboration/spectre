@@ -92,6 +92,15 @@ def id_parameters(
     L1_dist_B = separation - L1_dist_A
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
+    # This extra refinement was found through trial and error and allowed mass
+    # ratio 6 to evolve through inspiral stably.
+    mass_ratio = conformal_mass_a / conformal_mass_b
+    extra_radial_refinement_l = (
+        round(mass_ratio / 3.0) - 1 if (mass_ratio > 3.0) else 0
+    )
+    extra_radial_refinement_p = (
+        round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
+    )
     return {
         "ConformalMassRight": conformal_mass_a,
         "ConformalMassLeft": conformal_mass_b,
@@ -104,6 +113,7 @@ def id_parameters(
         "LinearVelocity_z": linear_velocity[2],
         "ExcisionRadiusRight": 0.93 * r_plus_A,
         "ExcisionRadiusLeft": 0.93 * r_plus_B,
+        "ObjectOuterRadius": separation / 3.75,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
         "ConformalSpinRight_x": chi_A[0],
@@ -120,9 +130,12 @@ def id_parameters(
         "HorizonRotationLeft_z": Omega_B[2],
         "FalloffWidthRight": falloff_width_A,
         "FalloffWidthLeft": falloff_width_B,
+        "EnvelopeRadius": 4.0 * separation,
         # Resolution
         "L": refinement_level,
         "P": polynomial_order,
+        "ExtraRadRef": extra_radial_refinement_l,
+        "ExtraRadPoints": extra_radial_refinement_p,
     }
 
 
