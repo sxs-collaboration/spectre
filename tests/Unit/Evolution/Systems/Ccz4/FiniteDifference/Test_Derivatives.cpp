@@ -48,7 +48,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
   const Element<3> element = TestHelpers::Ccz4::fd::detail::set_element();
 
   // Testing spacetime_derivatives()
-  const DirectionalIdMap<3, evolution::dg::subcell::GhostData> all_ghost_data =
+  DirectionalIdMap<3, evolution::dg::subcell::GhostData> all_ghost_data =
       TestHelpers::Ccz4::fd::detail::compute_ghost_data(
           subcell_mesh, logical_coords, element.neighbors(), ghost_zone_size,
           TestHelpers::Ccz4::fd::detail::compute_prim_solution);
@@ -76,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
       get<gr::Tags::Shift<DataVector, 3>>(volume_prims_for_recons);
   get<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>>(volume_evolved_vars) =
       get<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>>(
-        volume_prims_for_recons);
+          volume_prims_for_recons);
   get<gr::Tags::Lapse<DataVector>>(volume_evolved_vars) =
       get<gr::Tags::Lapse<DataVector>>(volume_prims_for_recons);
 
@@ -213,7 +213,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
 
   auto& expected_d_field_b =
       get<::Tags::deriv<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>,
-        tmpl::size_t<3>, Frame::Inertial>>(expected_deriv_of_Ccz4_vars);
+                        tmpl::size_t<3>, Frame::Inertial>>(
+          expected_deriv_of_Ccz4_vars);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       expected_d_field_b.get(i, j) = 1;
@@ -222,8 +223,222 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
 
   CHECK_ITERABLE_APPROX(
       (get<::Tags::deriv<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>,
-        tmpl::size_t<3>, Frame::Inertial>>(deriv_of_Ccz4_vars)),
-          expected_d_field_b);
+                         tmpl::size_t<3>, Frame::Inertial>>(
+          deriv_of_Ccz4_vars)),
+      expected_d_field_b);
+
+  // Testing second_spacetime_derivatives()
+  all_ghost_data = TestHelpers::Ccz4::fd::detail::compute_ghost_data(
+      subcell_mesh, logical_coords, element.neighbors(), ghost_zone_size,
+      TestHelpers::Ccz4::fd::detail::compute_prim_solution_for_second_deriv);
+
+  volume_prims_for_recons =
+      TestHelpers::Ccz4::fd::detail::compute_prim_solution_for_second_deriv(
+          logical_coords);
+
+  get<::Ccz4::Tags::ConformalMetric<DataVector, 3>>(volume_evolved_vars) =
+      get<::Ccz4::Tags::ConformalMetric<DataVector, 3>>(
+          volume_prims_for_recons);
+  get<::Ccz4::Tags::ATilde<DataVector, 3>>(volume_evolved_vars) =
+      get<::Ccz4::Tags::ATilde<DataVector, 3>>(volume_prims_for_recons);
+  get<::Ccz4::Tags::ConformalFactor<DataVector>>(volume_evolved_vars) =
+      get<::Ccz4::Tags::ConformalFactor<DataVector>>(volume_prims_for_recons);
+  get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(volume_evolved_vars) =
+      get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(
+          volume_prims_for_recons);
+  get<::Ccz4::Tags::Theta<DataVector>>(volume_evolved_vars) =
+      get<::Ccz4::Tags::Theta<DataVector>>(volume_prims_for_recons);
+  get<::Ccz4::Tags::GammaHat<DataVector, 3>>(volume_evolved_vars) =
+      get<::Ccz4::Tags::GammaHat<DataVector, 3>>(volume_prims_for_recons);
+  get<gr::Tags::Shift<DataVector, 3>>(volume_evolved_vars) =
+      get<gr::Tags::Shift<DataVector, 3>>(volume_prims_for_recons);
+  get<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>>(volume_evolved_vars) =
+      get<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>>(
+          volume_prims_for_recons);
+  get<gr::Tags::Lapse<DataVector>>(volume_evolved_vars) =
+      get<gr::Tags::Lapse<DataVector>>(volume_prims_for_recons);
+
+  Variables<db::wrap_tags_in<::Tags::second_deriv,
+                             typename Ccz4::fd::System::gradients_tags,
+                             tmpl::size_t<3>, Frame::Inertial>>
+      second_deriv_of_Ccz4_vars{subcell_mesh.number_of_grid_points()};
+
+  ::Ccz4::fd::second_spacetime_derivatives(
+      make_not_null(&second_deriv_of_Ccz4_vars), volume_evolved_vars,
+      all_ghost_data, fd_deriv_order, subcell_mesh,
+      cell_centered_logical_to_inertial_inv_jacobian);
+
+  Variables<db::wrap_tags_in<::Tags::second_deriv,
+                             typename Ccz4::fd::System::gradients_tags,
+                             tmpl::size_t<3>, Frame::Inertial>>
+      expected_second_deriv_of_Ccz4_vars{subcell_mesh.number_of_grid_points()};
+
+  auto& expected_second_d_metric =
+      get<::Tags::second_deriv<::Ccz4::Tags::ConformalMetric<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t l = 0; l < 3; ++l) {
+          expected_second_d_metric.get(i, j, k, l) =
+              (i == j and i == k)
+                  ? static_cast<double>(2 * (10 * k + 50 * l + 1))
+                  : 0.0;
+        }
+      }
+    }
+  }
+
+  const Approx custom_approx =
+      Approx::custom().epsilon(1.0e-12).scale(*std::max_element(
+          volume_evolved_vars.data(),
+          volume_evolved_vars.data() + volume_evolved_vars.size() - 1));
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<::Ccz4::Tags::ConformalMetric<DataVector, 3>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_metric, custom_approx);
+
+  auto& expected_second_d_atilde =
+      get<::Tags::second_deriv<::Ccz4::Tags::ATilde<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        for (size_t l = 0; l < 3; ++l) {
+          expected_second_d_atilde.get(i, j, k, l) =
+              (i == j and i == k)
+                  ? static_cast<double>(2 * (1000 * k + 5000 * l + 1))
+                  : 0.0;
+        }
+      }
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<::Ccz4::Tags::ATilde<DataVector, 3>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_atilde, custom_approx);
+
+  auto& expected_second_d_conformal_factor =
+      get<::Tags::second_deriv<::Ccz4::Tags::ConformalFactor<DataVector>,
+                               tmpl::size_t<3>, Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      expected_second_d_conformal_factor.get(i, j) = i == j ? 2 : 0.0;
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<::Ccz4::Tags::ConformalFactor<DataVector>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_conformal_factor, custom_approx);
+
+  auto& expected_second_d_trace_extrinsic_curvature =
+      get<::Tags::second_deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                               tmpl::size_t<3>, Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      expected_second_d_trace_extrinsic_curvature.get(i, j) = i == j ? 2 : 0.0;
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_trace_extrinsic_curvature, custom_approx);
+
+  auto& expected_second_d_theta =
+      get<::Tags::second_deriv<::Ccz4::Tags::Theta<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      expected_second_d_theta.get(i, j) = i == j ? 2 : 0.0;
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<::Ccz4::Tags::Theta<DataVector>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_theta, custom_approx);
+
+  auto& expected_second_d_gamma_hat =
+      get<::Tags::second_deriv<::Ccz4::Tags::GammaHat<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        expected_second_d_gamma_hat.get(i, j, k) = i == j ? 2 : 0.0;
+      }
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<::Ccz4::Tags::GammaHat<DataVector, 3>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_gamma_hat, custom_approx);
+
+  auto& expected_second_d_lapse =
+      get<::Tags::second_deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                               Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      expected_second_d_lapse.get(i, j) = i == j ? 2 : 0.0;
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                                Frame::Inertial>>(second_deriv_of_Ccz4_vars)),
+      expected_second_d_lapse, custom_approx);
+
+  auto& expected_second_d_shift =
+      get<::Tags::second_deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                               Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        expected_second_d_shift.get(i, j, k) = i == j ? 2 : 0.0;
+      }
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                                Frame::Inertial>>(second_deriv_of_Ccz4_vars)),
+      expected_second_d_shift, custom_approx);
+
+  auto& expected_second_d_field_b =
+      get<::Tags::second_deriv<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>,
+                               tmpl::size_t<3>, Frame::Inertial>>(
+          expected_second_deriv_of_Ccz4_vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k < 3; ++k) {
+        expected_second_d_field_b.get(i, j, k) = i == j ? 2 : 0.0;
+      }
+    }
+  }
+
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      (get<::Tags::second_deriv<::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>,
+                                tmpl::size_t<3>, Frame::Inertial>>(
+          second_deriv_of_Ccz4_vars)),
+      expected_second_d_field_b, custom_approx);
 
 // Test ASSERT triggers for incorrect neighbor size.
 #ifdef SPECTRE_DEBUG
@@ -245,6 +460,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.FiniteDifference.Derivatives",
     CHECK_THROWS_WITH(
         Ccz4::fd::spacetime_derivatives(
             make_not_null(&deriv_of_Ccz4_vars), volume_evolved_vars,
+            bad_ghost_data, fd_deriv_order, subcell_mesh,
+            cell_centered_logical_to_inertial_inv_jacobian),
+        Catch::Matchers::ContainsSubstring(match_string));
+    CHECK_THROWS_WITH(
+        Ccz4::fd::second_spacetime_derivatives(
+            make_not_null(&second_deriv_of_Ccz4_vars), volume_evolved_vars,
             bad_ghost_data, fd_deriv_order, subcell_mesh,
             cell_centered_logical_to_inertial_inv_jacobian),
         Catch::Matchers::ContainsSubstring(match_string));
