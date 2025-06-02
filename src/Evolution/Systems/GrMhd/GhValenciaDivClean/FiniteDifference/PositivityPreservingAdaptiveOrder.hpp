@@ -121,9 +121,16 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor<System> {
     static constexpr Options::String help = {
         "What reconstructed states to fix to their atmosphere values."};
   };
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
 
-  using options = tmpl::list<Alpha5, Alpha7, Alpha9, LowOrderReconstructor,
-                             AtmosphereTreatment>;
+  using options =
+      tmpl::list<Alpha5, Alpha7, Alpha9, LowOrderReconstructor,
+                 AtmosphereTreatment, ReconstructRhoTimesTemperature>;
 
   static constexpr Options::String help{
       "Positivity-preserving adaptive-order reconstruction."};
@@ -145,6 +152,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor<System> {
       FallbackReconstructorType low_order_reconstructor,
       ::VariableFixing::FixReconstructedStateToAtmosphere
           fix_reconstructed_state_to_atmosphere,
+      bool reconstruct_rho_times_temperature,
       const Options::Context& context = {});
 
   explicit PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* msg);
@@ -205,6 +213,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor<System> {
       const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
       Direction<dim> direction_to_reconstruct) const;
 
+  bool reconstruct_rho_times_temperature() const override;
+
  private:
   template <typename LocalSystem>
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -227,6 +237,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor<System> {
   ::VariableFixing::FixReconstructedStateToAtmosphere
       fix_reconstructed_state_to_atmosphere_{
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never};
+  bool reconstruct_rho_times_temperature_{false};
 
   using PointerReconsOrder = void (*)(
       gsl::not_null<std::array<gsl::span<double>, dim>*>,

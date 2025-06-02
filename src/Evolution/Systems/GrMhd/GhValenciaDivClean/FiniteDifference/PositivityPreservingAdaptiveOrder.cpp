@@ -63,11 +63,13 @@ PositivityPreservingAdaptiveOrderPrim<System>::
             low_order_reconstructor,
         const ::VariableFixing::FixReconstructedStateToAtmosphere
             fix_reconstructed_state_to_atmosphere,
+        const bool reconstruct_rho_times_temperature,
         const Options::Context& context)
     : four_to_the_alpha_5_(pow(4.0, alpha_5)),
       low_order_reconstructor_(low_order_reconstructor),
       fix_reconstructed_state_to_atmosphere_(
-          fix_reconstructed_state_to_atmosphere) {
+          fix_reconstructed_state_to_atmosphere),
+      reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {
   if (low_order_reconstructor_ ==
       ::fd::reconstruction::FallbackReconstructorType::None) {
     PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
@@ -111,6 +113,7 @@ void PositivityPreservingAdaptiveOrderPrim<System>::pup(PUP::er& p) {
   p | eight_to_the_alpha_9_;
   p | low_order_reconstructor_;
   p | fix_reconstructed_state_to_atmosphere_;
+  p | reconstruct_rho_times_temperature_;
   if (p.isUnpacking()) {
     set_function_pointers();
   }
@@ -195,7 +198,8 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct(
             shift, spacetime_metric);
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
-      neighbor_variables_data, subcell_mesh, ghost_zone_size(), false, nullptr);
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), false,
+      reconstruct_rho_times_temperature(), nullptr);
 
   reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>>,
                          non_positive_tags>(
@@ -244,6 +248,7 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct(
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
       neighbor_variables_data, subcell_mesh, ghost_zone_size(), true,
+      reconstruct_rho_times_temperature(),
       (fix_reconstructed_state_to_atmosphere_ ==
                    FixReconstructedStateToAtmosphere::Always or
                fix_reconstructed_state_to_atmosphere_ ==
@@ -361,13 +366,19 @@ void PositivityPreservingAdaptiveOrderPrim<System>::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
-      true,
+      true, reconstruct_rho_times_temperature(),
       (fix_reconstructed_state_to_atmosphere_ ==
                    FixReconstructedStateToAtmosphere::Always or
                fix_reconstructed_state_to_atmosphere_ ==
                    FixReconstructedStateToAtmosphere::AtDgFdInterfaceOnly
            ? &fix_to_atmosphere
            : nullptr));
+}
+
+template <typename System>
+bool PositivityPreservingAdaptiveOrderPrim<
+    System>::reconstruct_rho_times_temperature() const {
+  return reconstruct_rho_times_temperature_;
 }
 
 template <typename System>
@@ -380,7 +391,9 @@ bool operator==(const PositivityPreservingAdaptiveOrderPrim<System>& lhs,
          lhs.eight_to_the_alpha_9_ == rhs.eight_to_the_alpha_9_ and
          lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_ and
          lhs.fix_reconstructed_state_to_atmosphere_ ==
-             rhs.fix_reconstructed_state_to_atmosphere_;
+             rhs.fix_reconstructed_state_to_atmosphere_ and
+         lhs.reconstruct_rho_times_temperature() ==
+             rhs.reconstruct_rho_times_temperature();
 }
 
 template <typename System>
