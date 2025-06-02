@@ -104,7 +104,7 @@ Scalar<DataType> ricci_scalar(
           inverse_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial),
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial),
                         (IndexType::Spatial, IndexType::Spacetime))
 
 #undef DIM
