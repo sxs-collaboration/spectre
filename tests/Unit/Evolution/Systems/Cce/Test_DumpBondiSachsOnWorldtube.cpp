@@ -19,6 +19,7 @@
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeModeRecorder.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -51,16 +52,25 @@ struct MockObserverWriter {
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
 };
 
+template <bool IncludeKleinGordon>
 struct test_metavariables {
   struct Target : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target =
+    using vars_to_interpolate_to_target = tmpl::append<
         tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                   gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
+                   gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>,
+        tmpl::conditional_t<
+            IncludeKleinGordon,
+            tmpl::list<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
+                       CurvedScalarWave::Tags::Phi<3>,
+                       gr::Tags::Lapse<DataVector>,
+                       gr::Tags::Shift<DataVector, 3>>,
+            tmpl::list<>>>;
     using compute_target_points =
         intrp::TargetPoints::Sphere<Target, ::Frame::Inertial>;
     using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<Target>>;
+        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<
+            Target, IncludeKleinGordon>>;
     using compute_items_on_target = tmpl::list<>;
   };
 
@@ -70,7 +80,8 @@ struct test_metavariables {
 
   using const_global_cache_tags =
       tmpl::list<intrp::Tags::Sphere<Target>, Cce::Tags::FilePrefix>;
-  using component_list = tmpl::list<MockObserverWriter<test_metavariables>>;
+  using component_list =
+      tmpl::list<MockObserverWriter<test_metavariables<IncludeKleinGordon>>>;
 };
 
 std::string get_filename(const std::string& filename_prefix,
@@ -79,8 +90,9 @@ std::string get_filename(const std::string& filename_prefix,
                       << std::setw(4) << std::lround(radius) << ".h5";
 }
 
-template <typename Tags>
+template <typename Tags, bool IncludeKleinGordon>
 auto make_spacetime_variables(const size_t size) {
+  static constexpr bool include_klein_gordon = IncludeKleinGordon;
   Variables<Tags> spacetime_variables{size, 0.0};
   auto& spacetime_metric =
       get<gr::Tags::SpacetimeMetric<DataVector, 3>>(spacetime_variables);
@@ -88,12 +100,22 @@ auto make_spacetime_variables(const size_t size) {
   for (size_t i = 1; i < 4; i++) {
     spacetime_metric.get(i, i) = 1.0;
   }
+  if constexpr (include_klein_gordon) {
+    auto& csw_psi = get<CurvedScalarWave::Tags::Psi>(spacetime_variables);
+    auto& lapse = get<gr::Tags::Lapse<DataVector>>(spacetime_variables);
+    get(csw_psi) = 1.0;
+    get(lapse) = 1.0;
+  }
   return spacetime_variables;
 }
 
-void test(const std::string& filename_prefix,
-          const std::vector<double>& radii) {
-  using metavars = test_metavariables;
+// True when Klein Gordon scalar variables are also dumped on the worldtube
+template <bool IncludeKleinGordon>
+void test_impl(const std::string& filename_prefix,
+               const std::vector<double>& radii) {
+  static constexpr bool include_klein_gordon = IncludeKleinGordon;
+  CAPTURE(include_klein_gordon);
+  using metavars = test_metavariables<include_klein_gordon>;
   using target = typename metavars::Target;
   using writer = MockObserverWriter<metavars>;
   using spacetime_tags = typename target::vars_to_interpolate_to_target;
@@ -118,10 +140,11 @@ void test(const std::string& filename_prefix,
   // It doesn't really matter what the GH data is so long as we are able to
   // calculate bondi data, because this is just testing that we can write the
   // data. So choose Minkowski spacetime. This means pi, phi, and deriv phi are
-  // trivially 0.
+  // trivially 0. If the Klein-Gordon variables are included, choose constant
+  // scalar (csw_pi and csw_phi are zero in this case).
   Variables<spacetime_tags> spacetime_variables =
-      make_spacetime_variables<spacetime_tags>(radii.size() *
-                                               num_points_single_sphere);
+      make_spacetime_variables<spacetime_tags, include_klein_gordon>(
+          radii.size() * num_points_single_sphere);
 
   // Options for Sphere
   const ylm::AngularOrdering angular_ordering = ylm::AngularOrdering::Cce;
@@ -164,21 +187,43 @@ void test(const std::string& filename_prefix,
     callback::apply(box, cache, time);
   }
 
-  Variables<spacetime_tags> single_spacetime_variables =
-      make_spacetime_variables<spacetime_tags>(num_points_single_sphere);
-  const auto& [spacetime_metric, pi, phi] = single_spacetime_variables;
+  const Variables<spacetime_tags> single_spacetime_variables =
+      make_spacetime_variables<spacetime_tags, include_klein_gordon>(
+          num_points_single_sphere);
   Variables<cce_tags> bondi_boundary_data{num_points_single_sphere};
 
-  for (size_t i = 0; i < radii.size(); i++) {
-    const double radius = radii[i];
+  const auto& spacetime_metric =
+      get<gr::Tags::SpacetimeMetric<DataVector, 3>>(single_spacetime_variables);
+  const auto& pi = get<gh::Tags::Pi<DataVector, 3>>(single_spacetime_variables);
+  const auto& phi =
+      get<gh::Tags::Phi<DataVector, 3>>(single_spacetime_variables);
+
+  for (const auto& radius : radii) {
     CAPTURE(radius);
     // Have to create the bondi data for every radius individually
     Cce::create_bondi_boundary_data(make_not_null(&bondi_boundary_data), phi,
                                     pi, spacetime_metric, radius, l_max);
+    if constexpr (include_klein_gordon) {
+      const auto& csw_psi =
+          get<CurvedScalarWave::Tags::Psi>(single_spacetime_variables);
+      const auto& csw_pi =
+          get<CurvedScalarWave::Tags::Pi>(single_spacetime_variables);
+      const auto& csw_phi =
+          get<CurvedScalarWave::Tags::Phi<3>>(single_spacetime_variables);
+      const auto& lapse =
+          get<gr::Tags::Lapse<DataVector>>(single_spacetime_variables);
+      const auto& shift =
+          get<gr::Tags::Shift<DataVector, 3>>(single_spacetime_variables);
+
+      Cce::create_klein_gordon_boundary_data(
+          make_not_null(&bondi_boundary_data), csw_phi, csw_pi, csw_psi, lapse,
+          shift);
+    }
     const auto file = h5::H5File<h5::AccessType::ReadOnly>(
         get_filename(filename_prefix, radius));
 
-    tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<>>(
+    tmpl::for_each<Cce::Tags::worldtube_boundary_tags_for_writing<
+        Cce::Tags::BoundaryValue, include_klein_gordon>>(
         [&file, &bondi_boundary_data, &times, &l_max, &expected_all_legend,
          &expected_real_legend](auto tag_v) {
           using tag = tmpl::type_from<std::decay_t<decltype(tag_v)>>;
@@ -245,20 +290,27 @@ void delete_files(const std::string& filename_prefix,
   }
 }
 
-// [Timeout, 10]
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.DumpBondiSachsOnWorldtube",
-                  "[Unit][Cce]") {
-  const std::string filename_prefix{"Shrek-the-Third"};
+template <bool IncludeKleinGordon>
+void test() {
+  const std::string& filename_prefix = "Shrek-the-Third";
   std::vector<double> radii{100.0};
 
   delete_files(filename_prefix, radii);
-  test(filename_prefix, radii);
+  test_impl<IncludeKleinGordon>(filename_prefix, radii);
 
   radii.push_back(150.0);
   radii.push_back(200.0 - std::numeric_limits<double>::epsilon());
 
   delete_files(filename_prefix, radii);
-  test(filename_prefix, radii);
+  test_impl<IncludeKleinGordon>(filename_prefix, radii);
   delete_files(filename_prefix, radii);
+}
+
+// [Timeout, 10]
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.DumpBondiSachsOnWorldtube",
+                  "[Unit][Cce]") {
+  test<false>();
+  // Test with Klein-Gordon variables included
+  test<true>();
 }
 }  // namespace

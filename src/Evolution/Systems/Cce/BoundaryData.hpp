@@ -566,34 +566,65 @@ void du_j_worldtube_data(
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
     const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad);
 
+/*!
+ * \brief Convert real scalar to complex spinweighted scalar
+ */
+void klein_gordon_psi_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> kg_psi,
+    const Scalar<DataVector>& csw_psi);
+
+/*!
+ * \brief Compute the time derivative of the scalar for cce and store as a
+ * complex spinweighted scalar
+ */
+void klein_gordon_pi_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> kg_pi,
+    const Scalar<DataVector>& csw_pi, const tnsr::i<DataVector, 3>& csw_phi,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift);
+
 namespace Tags {
 /*!
- * \brief The collection of tags mutated by `create_bondi_boundary_data`
+ * \brief The collection of tags mutated by `create_bondi_boundary_data` (and
+ * `create_klein_gordon_boundary_data` if Klein-Gordon variables are included)
  *
  * \details This list is used in the evolution of `CharacteristicExtract`
  */
-template <template <typename> class BoundaryPrefix>
+template <template <typename> class BoundaryPrefix,
+          bool IncludeKleinGordon = false>
 using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
     BoundaryPrefix,
-    tmpl::list<Tags::BondiBeta, Tags::BondiU, Tags::Dr<Tags::BondiU>,
-               Tags::BondiQ, Tags::BondiW, Tags::BondiJ, Tags::Dr<Tags::BondiJ>,
-               Tags::BondiH, Tags::Du<Tags::BondiJ>, Tags::BondiR,
-               Tags::Du<Tags::BondiR>, Tags::DuRDividedByR>>;
+    tmpl::append<
+        tmpl::list<Tags::BondiBeta, Tags::BondiU, Tags::Dr<Tags::BondiU>,
+                   Tags::BondiQ, Tags::BondiW, Tags::BondiJ,
+                   Tags::Dr<Tags::BondiJ>, Tags::BondiH, Tags::Du<Tags::BondiJ>,
+                   Tags::BondiR, Tags::Du<Tags::BondiR>, Tags::DuRDividedByR>,
+        tmpl::conditional_t<
+            IncludeKleinGordon,
+            tmpl::list<Cce::Tags::KleinGordonPsi, Cce::Tags::KleinGordonPi>,
+            tmpl::list<>>>>;
 
 /*!
  * \brief The collection of tags for worldtube quantities that need to be
  * written to disk during the Cauchy evolution that the `CharacateristicExtract`
  * need.
  *
- * \details This list is used when writing Bondi quantities to disk.
+ * \details This list is used when writing Bondi quantities to disk. For the
+ * combined ScalarTensor system, this list also includes the Klein-Gordon scalar
+ * variables.
  */
-template <template <typename> class BoundaryPrefix = Cce::Tags::BoundaryValue>
+template <template <typename> class BoundaryPrefix = Cce::Tags::BoundaryValue,
+          bool IncludeKleinGordon = false>
 using worldtube_boundary_tags_for_writing = db::wrap_tags_in<
     BoundaryPrefix,
-    tmpl::list<Cce::Tags::BondiBeta, Cce::Tags::Dr<Cce::Tags::BondiJ>,
-               Cce::Tags::Du<Cce::Tags::BondiR>, Cce::Tags::BondiJ,
-               Cce::Tags::Du<Cce::Tags::BondiJ>, Cce::Tags::BondiQ,
-               Cce::Tags::BondiR, Cce::Tags::BondiU, Cce::Tags::BondiW>>;
+    tmpl::append<
+        tmpl::list<Cce::Tags::BondiBeta, Cce::Tags::Dr<Cce::Tags::BondiJ>,
+                   Cce::Tags::Du<Cce::Tags::BondiR>, Cce::Tags::BondiJ,
+                   Cce::Tags::Du<Cce::Tags::BondiJ>, Cce::Tags::BondiQ,
+                   Cce::Tags::BondiR, Cce::Tags::BondiU, Cce::Tags::BondiW>,
+        tmpl::conditional_t<
+            IncludeKleinGordon,
+            tmpl::list<Cce::Tags::KleinGordonPsi, Cce::Tags::KleinGordonPi>,
+            tmpl::list<>>>>;
 
 using klein_gordon_worldtube_boundary_tags =
     tmpl::list<Tags::BoundaryValue<Tags::KleinGordonPsi>,
@@ -1426,4 +1457,26 @@ void create_bondi_boundary_data(
       spacetime_metric, null_l, du_null_l, cartesian_to_spherical_jacobian,
       l_max, extraction_radius);
 }
+
+/*!
+ * \brief Process the worldtube data from CurvedScalarWave quantities
+ *  to desired cce scalar quantities
+ */
+template <typename BoundaryTagList>
+void create_klein_gordon_boundary_data(
+    const gsl::not_null<Variables<BoundaryTagList>*> bondi_boundary_data,
+    const tnsr::i<DataVector, 3>& csw_phi, const Scalar<DataVector>& csw_pi,
+    const Scalar<DataVector>& csw_psi, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, 3>& shift) {
+  klein_gordon_psi_worldtube_data(
+      make_not_null(&get<Tags::BoundaryValue<Tags::KleinGordonPsi>>(
+          *bondi_boundary_data)),
+      csw_psi);
+
+  klein_gordon_pi_worldtube_data(
+      make_not_null(
+          &get<Tags::BoundaryValue<Tags::KleinGordonPi>>(*bondi_boundary_data)),
+      csw_pi, csw_phi, lapse, shift);
+}
+
 }  // namespace Cce

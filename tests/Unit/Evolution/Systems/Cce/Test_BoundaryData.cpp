@@ -93,6 +93,12 @@ void pypp_test_worldtube_computation_steps() {
   pypp::check_with_random_values<1>(&du_j_worldtube_data, "BoundaryData",
                                     {"du_j_worldtube_data"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
+  pypp::check_with_random_values<1>(
+      &klein_gordon_psi_worldtube_data, "BoundaryData",
+      {"klein_gordon_psi_worldtube_data"}, {{{1.0, 5.0}}}, DataVector{num_pts});
+  pypp::check_with_random_values<1>(
+      &klein_gordon_pi_worldtube_data, "BoundaryData",
+      {"klein_gordon_pi_worldtube_data"}, {{{1.0, 5.0}}}, DataVector{num_pts});
 }
 
 template <typename Generator>

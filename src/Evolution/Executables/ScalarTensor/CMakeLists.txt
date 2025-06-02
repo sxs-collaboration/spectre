@@ -14,6 +14,7 @@ target_link_libraries(
   PRIVATE
   Actions
   ApparentHorizonFinder
+  Cce
   Charmxx::main
   ControlSystem
   CoordinateMaps

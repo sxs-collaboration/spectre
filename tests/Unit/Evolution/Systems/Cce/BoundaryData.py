@@ -554,3 +554,11 @@ def du_j_worldtube_data(
         )
         / local_bondi_r**2
     )
+
+
+def klein_gordon_psi_worldtube_data(csw_psi):
+    return csw_psi + 0j
+
+
+def klein_gordon_pi_worldtube_data(csw_pi, csw_phi, lapse, shift):
+    return -lapse * csw_pi + np.dot(shift, csw_phi) + 0j

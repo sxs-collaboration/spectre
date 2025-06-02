@@ -1059,4 +1059,25 @@ void du_j_worldtube_data(
     }
   }
 }
+
+void klein_gordon_psi_worldtube_data(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> kg_psi,
+    const Scalar<DataVector>& csw_psi) {
+  get(*kg_psi).data() = std::complex<double>(1.0, 0.0) * get(csw_psi);
+}
+
+void klein_gordon_pi_worldtube_data(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> kg_pi,
+    const Scalar<DataVector>& csw_pi, const tnsr::i<DataVector, 3>& csw_phi,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift) {
+  // Pure time derivative
+  // dt Psi = - lapse * Pi + shift^{i} Phi_{i}
+  get(*kg_pi).data() =
+      std::complex<double>(-1.0, 0.0) * get(lapse) * get(csw_pi);
+  for (size_t i = 0; i < 3; i++) {
+    get(*kg_pi).data() +=
+        std::complex<double>(1.0, 0.0) * shift.get(i) * csw_phi.get(i);
+  }
+}
+
 }  // namespace Cce
