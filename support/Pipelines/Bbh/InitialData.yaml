@@ -74,7 +74,7 @@ DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: {{ ExcisionRadiusRight }}
-      OuterRadius: 4.
+      OuterRadius: {{ ObjectOuterRadius }}
       XCoord: *x_right
       Interior:
         ExciseWithBoundaryCondition:
@@ -89,7 +89,7 @@ DomainCreator:
       UseLogarithmicMap: True
     ObjectB:
       InnerRadius: {{ ExcisionRadiusLeft }}
-      OuterRadius: 4.
+      OuterRadius: {{ ObjectOuterRadius }}
       XCoord: *x_left
       Interior:
         ExciseWithBoundaryCondition:
@@ -104,7 +104,7 @@ DomainCreator:
       UseLogarithmicMap: True
     CenterOfMassOffset: [*y_offset, *z_offset]
     Envelope:
-      Radius: &outer_shell_inner_radius 60.
+      Radius: &outer_shell_inner_radius {{ EnvelopeRadius }}
       RadialDistribution: Projective
     OuterShell:
       Radius: &outer_radius 1e5
@@ -116,7 +116,7 @@ DomainCreator:
     CubeScale: 1.0
     InitialRefinement:
       ObjectAShell:     [{{ L }}, {{ L }}, {{ L }}]
-      ObjectBShell:     [{{ L }}, {{ L }}, {{ L }}]
+      ObjectBShell:     [{{ L }}, {{ L }}, {{ L + ExtraRadRef }}]
       ObjectACube:      [{{ L }}, {{ L }}, {{ L }}]
       ObjectBCube:      [{{ L }}, {{ L }}, {{ L }}]
       Envelope:         [{{ L }}, {{ L }}, {{ L + 1 }}]
@@ -125,7 +125,7 @@ DomainCreator:
     # will need AMR to optimize the domain further.
     InitialGridPoints:
       ObjectAShell:   [{{ P + 1}}, {{ P + 1}}, {{ P + 5}}]
-      ObjectBShell:   [{{ P + 1}}, {{ P + 1}}, {{ P + 5}}]
+      ObjectBShell:   [{{ P + 1}}, {{ P + 1}}, {{ P + 5 + ExtraRadPoints}}]
       ObjectACube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       ObjectBCube:    [{{ P + 1}}, {{ P + 1}}, {{ P + 2}}]
       Envelope:       [{{ P + 1}}, {{ P + 1}}, {{ P + 1}}]

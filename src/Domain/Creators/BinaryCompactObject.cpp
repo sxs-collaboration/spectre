@@ -193,6 +193,16 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
       PARSE_ERROR(context,
                   "ObjectA's inner radius must be less than its outer radius.");
     }
+    // The length of the cube surrounding each object is length_inner_cube_
+    // / 2.0, this checks to make sure that the shell is not touching the cube.
+    if (object_a.outer_radius >=
+        (length_inner_cube_ / 2.0) + offset_x_coord_a_) {
+      PARSE_ERROR(
+          context,
+          "ObjectA's outer radius is too large for the given separation, "
+          " try using "
+              << length_inner_cube_ / (2.5 * cube_scale));
+    }
     if (object_a.use_logarithmic_map and not object_a.is_excised()) {
       PARSE_ERROR(
           context,
@@ -220,6 +230,16 @@ BinaryCompactObject<UseWorldtube>::BinaryCompactObject(
     if (object_b.outer_radius < object_b.inner_radius) {
       PARSE_ERROR(context,
                   "ObjectB's inner radius must be less than its outer radius.");
+    }
+    // The length of the cube surrounding each object is length_inner_cube_
+    // / 2.0, this checks to make sure that the shell is not touching the cube.
+    if (object_b.outer_radius >=
+        (length_inner_cube_ / 2.0) - offset_x_coord_b_) {
+      PARSE_ERROR(
+          context,
+          "ObjectB's outer radius is too large for the given separation, "
+          " try using "
+              << length_inner_cube_ / (2.5 * cube_scale));
     }
     if (object_b.use_logarithmic_map and not object_b.is_excised()) {
       PARSE_ERROR(

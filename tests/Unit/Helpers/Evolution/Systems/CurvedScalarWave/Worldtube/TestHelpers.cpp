@@ -42,7 +42,7 @@ std::unique_ptr<DomainCreator<3>> worldtube_binary_compact_object(
       "    UseLogarithmicMap: false\n"
       "  ObjectB:\n"
       "    InnerRadius: 1.9\n"
-      "    OuterRadius: 3.0\n"
+      "    OuterRadius: 2.4\n"
       "    XCoord: -1e-99\n"
       "    Interior:\n"
       "      ExciseWithBoundaryCondition:\n"
