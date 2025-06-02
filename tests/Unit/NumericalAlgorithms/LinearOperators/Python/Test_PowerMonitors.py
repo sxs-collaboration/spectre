@@ -8,6 +8,7 @@ import numpy as np
 from spectre.DataStructures import DataVector
 from spectre.NumericalAlgorithms.LinearOperators import (
     absolute_truncation_error,
+    convergence_rate,
     power_monitors,
     relative_truncation_error,
 )
@@ -79,6 +80,15 @@ class TestPowerMonitors(unittest.TestCase):
         np.testing.assert_allclose(
             abs_error, expected_absolute_truncation_error, 1e-12, 1e-12
         )
+
+    # Check that the convergence rate for a straight line is consistent with
+    # the analytic expectation
+    def test_convergence_rate(self):
+        slope, offset = -0.4, 1.4
+        modes = np.arange(0, 14, 1)
+        test_power_monitor = 10.0 ** (slope * modes + offset)
+        rate = convergence_rate(test_power_monitor, 3)
+        np.testing.assert_allclose(rate, -slope)
 
 
 if __name__ == "__main__":
