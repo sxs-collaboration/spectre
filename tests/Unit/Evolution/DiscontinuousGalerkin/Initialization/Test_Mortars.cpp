@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -481,6 +482,7 @@ void test_p_refine(
     const Mesh<Dim>& old_mesh, Mesh<Dim> new_mesh,
     const Element<Dim>& old_element, Element<Dim> new_element,
     ::dg::MortarMap<Dim, Mesh<Dim>> neighbor_meshes,
+    const TimeStepId& temporal_id,
     const ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
         expected_mortar_data,
     const ::dg::MortarMap<Dim, MortarInfo<Dim>>& expected_mortar_infos,
@@ -492,13 +494,13 @@ void test_p_refine(
     const mortar_data_history_type<Dim>& expected_mortar_data_history) {
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      domain::Tags::NeighborMesh<Dim>, Tags::MortarData<Dim>,
-      Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
+      domain::Tags::NeighborMesh<Dim>, ::Tags::TimeStepId,
+      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
       Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
       std::move(new_mesh), std::move(new_element), std::move(neighbor_meshes),
-      std::move(mortar_data), mortar_mesh, std::move(mortar_infos),
+      temporal_id, std::move(mortar_data), mortar_mesh, std::move(mortar_infos),
       std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
 
@@ -652,9 +654,9 @@ void test_p_refine_gts() {
       std::move(mortar_next_temporal_ids),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       old_mesh, std::move(new_mesh), old_element, std::move(new_element),
-      neighbor_meshes, expected_mortar_data, expected_mortar_infos,
-      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
-      expected_mortar_data_history);
+      neighbor_meshes, next_temporal_id, expected_mortar_data,
+      expected_mortar_infos, expected_mortar_next_temporal_ids,
+      expected_normal_covector_and_magnitude, expected_mortar_data_history);
 }
 
 // The data arrays are set to linear functions, with element_size and
@@ -863,11 +865,1195 @@ void test_p_refine_lts() {
       std::move(mortar_next_temporal_ids),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       old_mesh, std::move(new_mesh), old_element, std::move(new_element),
-      neighbor_meshes, expected_mortar_data, expected_mortar_infos,
-      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
-      expected_mortar_data_history);
+      neighbor_meshes, next_temporal_id, expected_mortar_data,
+      expected_mortar_infos, expected_mortar_next_temporal_ids,
+      expected_normal_covector_and_magnitude, expected_mortar_data_history);
 }
 
+template <size_t Dim>
+Mesh<Dim> lgl_mesh(const size_t uniform_extents) {
+  return {uniform_extents, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto};
+}
+
+template <size_t Dim>
+Mesh<Dim> lgl_mesh(const std::array<size_t, Dim>& extents) {
+  return {extents, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto};
+}
+
+template <size_t NumMortars>
+::dg::MortarMap<2, evolution::dg::MortarDataHolder<2>> empty_mortar_data(
+    const std::array<DirectionalId<2>, NumMortars>& mortar_ids) {
+  ::dg::MortarMap<2, evolution::dg::MortarDataHolder<2>> mortar_data{};
+  for (const auto& mortar_id : mortar_ids) {
+    mortar_data.emplace(mortar_id, evolution::dg::MortarDataHolder<2>{});
+  }
+  return mortar_data;
+}
+
+template <size_t NumMortars>
+::dg::MortarMap<2, TimeStepId> constant_next_temporal_ids(
+    const std::array<DirectionalId<2>, NumMortars>& mortar_ids,
+    const TimeStepId& temporal_id) {
+  ::dg::MortarMap<2, TimeStepId> next_temporal_ids{};
+  for (const auto& mortar_id : mortar_ids) {
+    next_temporal_ids.emplace(mortar_id, temporal_id);
+  }
+  return next_temporal_ids;
+}
+
+template <size_t Dim>
+boundary_history_type<Dim> make_boundary_history(
+    const DirectionalId<Dim>& mortar_id, const Mesh<Dim>& volume_mesh,
+    const Mesh<Dim - 1>& mortar_mesh,
+    const std::array<Spectral::SegmentSize, Dim>& element_size,
+    const std::array<Spectral::SegmentSize, Dim - 1>& mortar_size,
+    const bool include_local, const bool include_remote) {
+  const TimeStepId history_temporal_id(true, 4, Slab(2.0, 3.0).start());
+  boundary_history_type<Dim> history{};
+  if (include_local) {
+    const auto face_mesh =
+        volume_mesh.slice_away(mortar_id.direction().dimension());
+    history.local().insert(
+        history_temporal_id, 1,
+        make_mortar_data<Dim>(
+            mortar_mesh, face_mesh, volume_mesh, true,
+            static_cast<double>(mortar_id.id().block_id()) + 1.0, element_size,
+            mortar_size, mortar_id.direction().dimension()));
+  }
+  if (include_remote) {
+    history.remote().insert(
+        history_temporal_id, 1,
+        make_mortar_data<Dim>(
+            mortar_mesh, {}, {}, false,
+            static_cast<double>(mortar_id.id().block_id()) + 2.0, element_size,
+            mortar_size, mortar_id.direction().dimension()));
+  }
+  return history;
+}
+
+template <size_t NumMortars>
+Tags::MortarDataHistory<2, dt_variables_tag<2>::type>::type
+make_boundary_histories(
+    const std::array<DirectionalId<2>, NumMortars>& mortar_ids,
+    const Mesh<2>& volume_mesh,
+    const ::dg::MortarMap<2, Mesh<1>>& mortar_meshes,
+    const std::array<Spectral::SegmentSize, 2>& element_size,
+    const ::dg::MortarMap<2, MortarInfo<2>>& mortar_infos,
+    const bool include_local, const bool include_remote) {
+  Tags::MortarDataHistory<2, dt_variables_tag<2>::type>::type histories{};
+  for (const auto& mortar_id : mortar_ids) {
+    histories.emplace(
+        mortar_id, make_boundary_history(
+                       mortar_id, volume_mesh, mortar_meshes.at(mortar_id),
+                       element_size, mortar_infos.at(mortar_id).mortar_size(),
+                       include_local, include_remote));
+  }
+  return histories;
+}
+
+// For h-refinement tests, we use a 2D element and have neighbors
+// change as:
+//
+//     +---+   eta        +---+
+//     |a  |   |          |   |
+//     |   |   +- xi      | p-|
+//     |   |              |ref|
+// +---+---+---+      +-+-+---+---+
+// |b  |   |c  |      | |f|   |g  |
+// |   | X |   |  =>  | | | X +---+
+// |   |   |   |      | | |   |h  |
+// +---+-+-+---+      +-+-+---+---+
+//     |d|e|              |i  |
+//     | | |              |   |
+//     | | |              |   |
+//     +-+-+              +---+
+//
+// Originally, a,b,c,d have mesh (3,4) and e has (5,6), all in the
+// coordinates of the central element.  After refining, a has (4,5), i
+// has (5,6), and the others are still (3,4).
+//
+// The central region can do nothing, p-refine, split, or join.
+template <bool LocalTimeStepping>
+void test_h_refinement() {
+  using NormalVars =
+      Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                           evolution::dg::Tags::NormalCovector<2>>>;
+  using mortar_data_history_tag =
+      Tags::MortarDataHistory<2, dt_variables_tag<2>::type>;
+
+  const DirectionalId<2> mortar_id_a(Direction<2>::upper_eta(),
+                                     ElementId<2>(0));
+  const DirectionalId<2> mortar_id_b(Direction<2>::lower_xi(), ElementId<2>(1));
+  const DirectionalId<2> mortar_id_c(Direction<2>::upper_xi(), ElementId<2>(3));
+  const DirectionalId<2> mortar_id_d(Direction<2>::lower_eta(),
+                                     ElementId<2>(4, {{{1, 0}, {0, 0}}}));
+  const DirectionalId<2> mortar_id_e(Direction<2>::lower_eta(),
+                                     ElementId<2>(4, {{{1, 1}, {0, 0}}}));
+  // rotated
+  const DirectionalId<2> mortar_id_f(Direction<2>::lower_xi(),
+                                     ElementId<2>(1, {{{0, 0}, {1, 1}}}));
+  const DirectionalId<2> mortar_id_g(Direction<2>::upper_xi(),
+                                     ElementId<2>(3, {{{0, 0}, {1, 1}}}));
+  const DirectionalId<2> mortar_id_h(Direction<2>::upper_xi(),
+                                     ElementId<2>(3, {{{0, 0}, {1, 0}}}));
+  const DirectionalId<2> mortar_id_i(Direction<2>::lower_eta(),
+                                     ElementId<2>(4));
+  const std::array orig_mortar_ids{mortar_id_a, mortar_id_b, mortar_id_c,
+                                   mortar_id_d, mortar_id_e};
+  const std::array refined_mortar_ids{mortar_id_a, mortar_id_f, mortar_id_g,
+                                      mortar_id_h, mortar_id_i};
+
+  const OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
+  const OrientationMap<2> rotated{
+      std::array{Direction<2>::upper_eta(), Direction<2>::lower_xi()}};
+  const TimeStepId temporal_id(true, 5, Slab(3.0, 6.0).start());
+  const Mesh<2> orig_mesh = lgl_mesh<2>({{3, 4}});
+
+  tuples::TaggedTuple<domain::Tags::Mesh<2>, domain::Tags::Element<2>,
+                      domain::Tags::NeighborMesh<2>, ::Tags::TimeStepId,
+                      Tags::MortarData<2>, Tags::MortarMesh<2>,
+                      Tags::MortarInfo<2>, Tags::MortarNextTemporalId<2>,
+                      evolution::dg::Tags::NormalCovectorAndMagnitude<2>,
+                      mortar_data_history_tag>
+      orig_single_items{};
+  {
+    const ElementId<2> id(2);
+
+    get<domain::Tags::Mesh<2>>(orig_single_items) = orig_mesh;
+
+    get<domain::Tags::Element<2>>(orig_single_items) = Element<2>(
+        id,
+        {{mortar_id_a.direction(), Neighbors<2>({mortar_id_a.id()}, rotated)},
+         {mortar_id_b.direction(), Neighbors<2>({mortar_id_b.id()}, rotated)},
+         {mortar_id_c.direction(), Neighbors<2>({mortar_id_c.id()}, aligned)},
+         {mortar_id_d.direction(),
+          Neighbors<2>({mortar_id_d.id(), mortar_id_e.id()}, aligned)}});
+
+    get<domain::Tags::NeighborMesh<2>>(orig_single_items) = {
+        {mortar_id_a, orig_mesh},
+        {mortar_id_b, orig_mesh},
+        {mortar_id_c, orig_mesh},
+        {mortar_id_d, orig_mesh},
+        {mortar_id_e, lgl_mesh<2>({{5, 6}})}};
+
+    get<::Tags::TimeStepId>(orig_single_items) = temporal_id;
+
+    get<Tags::MortarData<2>>(orig_single_items) =
+        empty_mortar_data(orig_mortar_ids);
+
+    get<Tags::MortarMesh<2>>(orig_single_items) = {
+        {mortar_id_a, lgl_mesh<1>(3)},
+        {mortar_id_b, lgl_mesh<1>(4)},
+        {mortar_id_c, lgl_mesh<1>(4)},
+        {mortar_id_d, lgl_mesh<1>(3)},
+        {mortar_id_e, lgl_mesh<1>(5)}};
+
+    get<Tags::MortarInfo<2>>(orig_single_items) = {
+        {mortar_id_a,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+        {mortar_id_b,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+        {mortar_id_c,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_d,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::LowerHalf}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_e,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::UpperHalf}},
+                        .policy = InterfaceDataPolicy::CopyProject}}}};
+
+    get<Tags::MortarNextTemporalId<2>>(orig_single_items) =
+        constant_next_temporal_ids(orig_mortar_ids, temporal_id);
+
+    // Values aren't used, except for checking that they haven't changed.
+    get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(
+        orig_single_items) = {{Direction<2>::upper_eta(), NormalVars(3, 1.0)},
+                              {Direction<2>::lower_xi(), NormalVars(4, 2.0)},
+                              {Direction<2>::upper_xi(), NormalVars(4, 3.0)},
+                              {Direction<2>::lower_eta(), NormalVars(3, 4.0)}};
+
+    if (LocalTimeStepping) {
+      get<mortar_data_history_tag>(orig_single_items) = make_boundary_histories(
+          orig_mortar_ids, orig_mesh,
+          get<Tags::MortarMesh<2>>(orig_single_items),
+          make_array<2>(Spectral::SegmentSize::Full),
+          get<Tags::MortarInfo<2>>(orig_single_items), true, true);
+    }
+  }
+
+  const auto refined_a_mesh = lgl_mesh<2>({{4, 5}});
+
+  const Element<2> refined_single_element(
+      get<domain::Tags::Element<2>>(orig_single_items).id(),
+      {{mortar_id_a.direction(), Neighbors<2>({mortar_id_a.id()}, rotated)},
+       {mortar_id_f.direction(), Neighbors<2>({mortar_id_f.id()}, rotated)},
+       {mortar_id_g.direction(),
+        Neighbors<2>({mortar_id_g.id(), mortar_id_h.id()}, aligned)},
+       {mortar_id_i.direction(), Neighbors<2>({mortar_id_i.id()}, aligned)}});
+
+  const auto& orig_neighbor_meshes =
+      get<domain::Tags::NeighborMesh<2>>(orig_single_items);
+  const ::dg::MortarMap<2, Mesh<2>> refined_single_neighbor_meshes{
+      {mortar_id_a, refined_a_mesh},
+      {mortar_id_f, orig_neighbor_meshes.at(mortar_id_b)},
+      {mortar_id_g, orig_neighbor_meshes.at(mortar_id_c)},
+      {mortar_id_h, orig_neighbor_meshes.at(mortar_id_c)},
+      {mortar_id_i, orig_neighbor_meshes.at(mortar_id_e)}};
+
+  const ::dg::MortarMap<2, MortarInfo<2>> expected_single_mortar_infos{
+      {mortar_id_a,
+       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                      .policy = InterfaceDataPolicy::OrientCopyProject}}},
+      {mortar_id_f,
+       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                      .policy = InterfaceDataPolicy::OrientCopyProject}}},
+      {mortar_id_g,
+       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::UpperHalf}},
+                      .policy = InterfaceDataPolicy::CopyProject}}},
+      {mortar_id_h,
+       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::LowerHalf}},
+                      .policy = InterfaceDataPolicy::CopyProject}}},
+      {mortar_id_i,
+       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                      .policy = InterfaceDataPolicy::CopyProject}}}};
+
+  const DirectionMap<2, std::optional<NormalVars>>
+      empty_normal_covector_and_magnitude{
+          {Direction<2>::upper_eta(), std::nullopt},
+          {Direction<2>::lower_xi(), std::nullopt},
+          {Direction<2>::upper_xi(), std::nullopt},
+          {Direction<2>::lower_eta(), std::nullopt}};
+
+  {
+    INFO("No local refinement");
+    auto box = tmpl::as_pack<decltype(orig_single_items)>(
+        [&]<typename... Tags>(tmpl::type_<Tags>... /*meta*/) {
+          return db::create<db::AddSimpleTags<Tags...>>(
+              get<Tags>(orig_single_items)...);
+        });
+
+    const auto& mortar_ids = refined_mortar_ids;
+    db::mutate<domain::Tags::Element<2>, domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = refined_single_element;
+          *neighbor_meshes = refined_single_neighbor_meshes;
+        },
+        make_not_null(&box));
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(
+        make_not_null(&box),
+        std::pair(get<domain::Tags::Mesh<2>>(orig_single_items),
+                  get<domain::Tags::Element<2>>(orig_single_items)));
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        // Mortars where neither side h-refines are not projected.
+        {mortar_id_a, lgl_mesh<1>(3)},
+        {mortar_id_f, lgl_mesh<1>(4)},
+        {mortar_id_g, lgl_mesh<1>(4)},
+        {mortar_id_h, lgl_mesh<1>(4)},
+        {mortar_id_i, lgl_mesh<1>(5)}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      expected_mortar_data_history = make_boundary_histories(
+          refined_mortar_ids, orig_mesh, expected_mortar_meshes,
+          make_array<2>(Spectral::SegmentSize::Full),
+          expected_single_mortar_infos, true, false);
+      // No projection when no h-refinement
+      expected_mortar_data_history[mortar_id_a] =
+          get<mortar_data_history_tag>(orig_single_items).at(mortar_id_a);
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_single_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(
+              orig_single_items));
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+
+  {
+    INFO("Local p-refinement");
+    auto box = tmpl::as_pack<decltype(orig_single_items)>(
+        [&]<typename... Tags>(tmpl::type_<Tags>... /*meta*/) {
+          return db::create<db::AddSimpleTags<Tags...>>(
+              get<Tags>(orig_single_items)...);
+        });
+
+    const auto& mortar_ids = refined_mortar_ids;
+    const auto refined_mesh = lgl_mesh<2>({{4, 5}});
+    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+               domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<Mesh<2>*> mesh,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = refined_single_element;
+          *mesh = refined_mesh;
+          *neighbor_meshes = refined_single_neighbor_meshes;
+        },
+        make_not_null(&box));
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(
+        make_not_null(&box),
+        std::pair(get<domain::Tags::Mesh<2>>(orig_single_items),
+                  get<domain::Tags::Element<2>>(orig_single_items)));
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        // Mortars where neither side h-refines are not projected.
+        {mortar_id_a, lgl_mesh<1>(3)},
+        {mortar_id_f, lgl_mesh<1>(5)},
+        {mortar_id_g, lgl_mesh<1>(5)},
+        {mortar_id_h, lgl_mesh<1>(5)},
+        {mortar_id_i, lgl_mesh<1>(5)}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      expected_mortar_data_history = make_boundary_histories(
+          refined_mortar_ids, refined_mesh, expected_mortar_meshes,
+          make_array<2>(Spectral::SegmentSize::Full),
+          expected_single_mortar_infos, true, false);
+
+      // No projection of mortar data when no h-refinement, but
+      // geometric data is projected.
+      expected_mortar_data_history[mortar_id_a] = make_boundary_history(
+          mortar_id_a, refined_mesh,
+          get<Tags::MortarMesh<2>>(orig_single_items).at(mortar_id_a),
+          make_array<2>(Spectral::SegmentSize::Full),
+          expected_single_mortar_infos.at(mortar_id_a).mortar_size(), true,
+          true);
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_single_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          empty_normal_covector_and_magnitude);
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+
+  const ElementId<2> id_nw(2, {{{1, 0}, {1, 1}}});
+  const ElementId<2> id_ne(2, {{{1, 1}, {1, 1}}});
+  const ElementId<2> id_sw(2, {{{1, 0}, {1, 0}}});
+  const ElementId<2> id_se(2, {{{1, 1}, {1, 0}}});
+  const auto element_size_nw = domain::child_size(
+      id_nw.segment_ids(), refined_single_element.id().segment_ids());
+  const auto element_size_ne = domain::child_size(
+      id_ne.segment_ids(), refined_single_element.id().segment_ids());
+  const auto element_size_sw = domain::child_size(
+      id_sw.segment_ids(), refined_single_element.id().segment_ids());
+  const auto element_size_se = domain::child_size(
+      id_se.segment_ids(), refined_single_element.id().segment_ids());
+  const DirectionalId<2> mortar_id_nw_ne(Direction<2>::upper_xi(), id_ne);
+  const DirectionalId<2> mortar_id_nw_sw(Direction<2>::lower_eta(), id_sw);
+  const DirectionalId<2> mortar_id_ne_nw(Direction<2>::lower_xi(), id_nw);
+  const DirectionalId<2> mortar_id_ne_se(Direction<2>::lower_eta(), id_se);
+  const DirectionalId<2> mortar_id_sw_se(Direction<2>::upper_xi(), id_se);
+  const DirectionalId<2> mortar_id_sw_nw(Direction<2>::upper_eta(), id_nw);
+  const DirectionalId<2> mortar_id_se_sw(Direction<2>::lower_xi(), id_sw);
+  const DirectionalId<2> mortar_id_se_ne(Direction<2>::upper_eta(), id_ne);
+
+  {
+    INFO("Join");
+    auto box = db::create<decltype(orig_single_items)::tags_list>();
+
+    const auto& mortar_ids = refined_mortar_ids;
+    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+               domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<Mesh<2>*> mesh,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = refined_single_element;
+          *mesh = orig_mesh;
+          *neighbor_meshes = refined_single_neighbor_meshes;
+        },
+        make_not_null(&box));
+
+    using ChildItems =
+        tuples::TaggedTuple<::Tags::TimeStepId, mortar_data_history_tag>;
+    mortar_data_history_tag::type history_nw{};
+    mortar_data_history_tag::type history_ne{};
+    mortar_data_history_tag::type history_sw{};
+    mortar_data_history_tag::type history_se{};
+    if (LocalTimeStepping) {
+      // Only the mortar_size is used for constructing the histories
+      const auto dummy_mortar_infos = [](const auto& ids) {
+        ::dg::MortarMap<2, MortarInfo<2>> infos{};
+        for (const auto& id : ids) {
+          infos.emplace(
+              id,
+              MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}}}});
+        }
+        return infos;
+      };
+      const std::array mortar_ids_nw{mortar_id_a, mortar_id_b, mortar_id_nw_ne,
+                                     mortar_id_nw_sw};
+      const std::array mortar_ids_ne{mortar_id_a, mortar_id_ne_nw, mortar_id_c,
+                                     mortar_id_ne_se};
+      const std::array mortar_ids_sw{mortar_id_sw_nw, mortar_id_b,
+                                     mortar_id_sw_se, mortar_id_d};
+      const std::array mortar_ids_se{mortar_id_se_ne, mortar_id_se_sw,
+                                     mortar_id_c, mortar_id_e};
+      const ::dg::MortarMap<2, Mesh<1>> mortar_meshes_nw{
+          {mortar_id_a, lgl_mesh<1>(3)},
+          {mortar_id_b, lgl_mesh<1>(4)},
+          {mortar_id_nw_ne, lgl_mesh<1>(4)},
+          {mortar_id_nw_sw, lgl_mesh<1>(3)}};
+      const ::dg::MortarMap<2, Mesh<1>> mortar_meshes_ne{
+          {mortar_id_a, lgl_mesh<1>(3)},
+          {mortar_id_ne_nw, lgl_mesh<1>(4)},
+          {mortar_id_c, lgl_mesh<1>(4)},
+          {mortar_id_ne_se, lgl_mesh<1>(3)}};
+      const ::dg::MortarMap<2, Mesh<1>> mortar_meshes_sw{
+          {mortar_id_sw_nw, lgl_mesh<1>(3)},
+          {mortar_id_b, lgl_mesh<1>(4)},
+          {mortar_id_sw_se, lgl_mesh<1>(4)},
+          {mortar_id_d, lgl_mesh<1>(3)}};
+      const ::dg::MortarMap<2, Mesh<1>> mortar_meshes_se{
+          {mortar_id_se_ne, lgl_mesh<1>(3)},
+          {mortar_id_se_sw, lgl_mesh<1>(4)},
+          {mortar_id_c, lgl_mesh<1>(4)},
+          {mortar_id_e, lgl_mesh<1>(5)}};
+      history_nw = make_boundary_histories(
+          mortar_ids_nw, orig_mesh, mortar_meshes_nw, element_size_nw,
+          dummy_mortar_infos(mortar_ids_nw), true, true);
+      history_ne = make_boundary_histories(
+          mortar_ids_ne, orig_mesh, mortar_meshes_ne, element_size_ne,
+          dummy_mortar_infos(mortar_ids_ne), true, true);
+      history_sw = make_boundary_histories(
+          mortar_ids_sw, orig_mesh, mortar_meshes_sw, element_size_sw,
+          dummy_mortar_infos(mortar_ids_sw), true, true);
+      history_se = make_boundary_histories(
+          mortar_ids_se, orig_mesh, mortar_meshes_se, element_size_se,
+          dummy_mortar_infos(mortar_ids_se), true, true);
+    }
+    const std::unordered_map<ElementId<2>, ChildItems> children_items{
+        {id_nw, {temporal_id, std::move(history_nw)}},
+        {id_ne, {temporal_id, std::move(history_ne)}},
+        {id_sw, {temporal_id, std::move(history_sw)}},
+        {id_se, {temporal_id, std::move(history_se)}}};
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
+                                              children_items);
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        {mortar_id_a, lgl_mesh<1>(4)},
+        {mortar_id_f, lgl_mesh<1>(4)},
+        {mortar_id_g, lgl_mesh<1>(4)},
+        {mortar_id_h, lgl_mesh<1>(4)},
+        {mortar_id_i, lgl_mesh<1>(5)}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      for (const auto& mortar_id : refined_mortar_ids) {
+        expected_mortar_data_history.emplace(mortar_id,
+                                             boundary_history_type<2>{});
+      }
+      expected_mortar_data_history[mortar_id_a] = make_boundary_history(
+          mortar_id_a, orig_mesh, expected_mortar_meshes.at(mortar_id_a),
+          make_array<2>(Spectral::SegmentSize::Full),
+          {{Spectral::SegmentSize::Full}}, false, true);
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_single_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          empty_normal_covector_and_magnitude);
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+
+  {
+    INFO("Split - nw");
+    auto box = db::create<decltype(orig_single_items)::tags_list>();
+
+    const std::array mortar_ids{mortar_id_a, mortar_id_f, mortar_id_nw_ne,
+                                mortar_id_nw_sw};
+    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+               domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<Mesh<2>*> mesh,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = Element<2>(
+              id_nw, {{mortar_id_a.direction(),
+                       Neighbors<2>({mortar_id_a.id()}, rotated)},
+                      {mortar_id_f.direction(),
+                       Neighbors<2>({mortar_id_f.id()}, rotated)},
+                      {mortar_id_nw_ne.direction(),
+                       Neighbors<2>({mortar_id_nw_ne.id()}, aligned)},
+                      {mortar_id_nw_sw.direction(),
+                       Neighbors<2>({mortar_id_nw_sw.id()}, aligned)}});
+          *mesh = orig_mesh;
+          *neighbor_meshes = {
+              {mortar_id_a, refined_single_neighbor_meshes.at(mortar_id_a)},
+              {mortar_id_f, refined_single_neighbor_meshes.at(mortar_id_f)},
+              {mortar_id_nw_ne, orig_mesh},
+              {mortar_id_nw_sw, orig_mesh}};
+        },
+        make_not_null(&box));
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
+                                              orig_single_items);
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        {mortar_id_a, lgl_mesh<1>(4)},
+        {mortar_id_f, lgl_mesh<1>(4)},
+        {mortar_id_nw_ne, lgl_mesh<1>(4)},
+        {mortar_id_nw_sw, lgl_mesh<1>(3)}};
+
+    const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
+        {mortar_id_a,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+        {mortar_id_f,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+        {mortar_id_nw_ne,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_nw_sw,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      for (const auto& mortar_id : mortar_ids) {
+        expected_mortar_data_history.emplace(mortar_id,
+                                             boundary_history_type<2>{});
+      }
+      expected_mortar_data_history[mortar_id_a] = make_boundary_history(
+          mortar_id_a, orig_mesh, expected_mortar_meshes.at(mortar_id_a),
+          element_size_nw, {{Spectral::SegmentSize::Full}}, false, true);
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          empty_normal_covector_and_magnitude);
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+
+  {
+    INFO("Split - ne");
+    auto box = db::create<decltype(orig_single_items)::tags_list>();
+
+    const std::array mortar_ids{mortar_id_a, mortar_id_ne_nw, mortar_id_g,
+                                mortar_id_ne_se};
+    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+               domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<Mesh<2>*> mesh,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = Element<2>(
+              id_ne, {{mortar_id_a.direction(),
+                       Neighbors<2>({mortar_id_a.id()}, rotated)},
+                      {mortar_id_ne_nw.direction(),
+                       Neighbors<2>({mortar_id_ne_nw.id()}, aligned)},
+                      {mortar_id_g.direction(),
+                       Neighbors<2>({mortar_id_g.id()}, aligned)},
+                      {mortar_id_ne_se.direction(),
+                       Neighbors<2>({mortar_id_ne_se.id()}, aligned)}});
+          *mesh = orig_mesh;
+          *neighbor_meshes = {
+              {mortar_id_a, refined_single_neighbor_meshes.at(mortar_id_a)},
+              {mortar_id_ne_nw, orig_mesh},
+              {mortar_id_g, refined_single_neighbor_meshes.at(mortar_id_g)},
+              {mortar_id_ne_se, orig_mesh}};
+        },
+        make_not_null(&box));
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
+                                              orig_single_items);
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        {mortar_id_a, lgl_mesh<1>(4)},
+        {mortar_id_ne_nw, lgl_mesh<1>(4)},
+        {mortar_id_g, lgl_mesh<1>(4)},
+        {mortar_id_ne_se, lgl_mesh<1>(3)}};
+
+    const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
+        {mortar_id_a,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+        {mortar_id_ne_nw,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_g,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_ne_se,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      for (const auto& mortar_id : mortar_ids) {
+        expected_mortar_data_history.emplace(mortar_id,
+                                             boundary_history_type<2>{});
+      }
+      expected_mortar_data_history[mortar_id_a] = make_boundary_history(
+          mortar_id_a, orig_mesh, expected_mortar_meshes.at(mortar_id_a),
+          element_size_ne, {{Spectral::SegmentSize::Full}}, false, true);
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          empty_normal_covector_and_magnitude);
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+
+  {
+    INFO("Split - sw");
+    auto box = db::create<decltype(orig_single_items)::tags_list>();
+
+    const std::array mortar_ids{mortar_id_sw_nw, mortar_id_f, mortar_id_sw_se,
+                                mortar_id_i};
+    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+               domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<Mesh<2>*> mesh,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = Element<2>(
+              id_sw, {{mortar_id_sw_nw.direction(),
+                       Neighbors<2>({mortar_id_sw_nw.id()}, aligned)},
+                      {mortar_id_f.direction(),
+                       Neighbors<2>({mortar_id_f.id()}, rotated)},
+                      {mortar_id_sw_se.direction(),
+                       Neighbors<2>({mortar_id_sw_se.id()}, aligned)},
+                      {mortar_id_i.direction(),
+                       Neighbors<2>({mortar_id_i.id()}, aligned)}});
+          *mesh = orig_mesh;
+          *neighbor_meshes = {
+              {mortar_id_sw_nw, orig_mesh},
+              {mortar_id_f, refined_single_neighbor_meshes.at(mortar_id_f)},
+              {mortar_id_sw_se, orig_mesh},
+              {mortar_id_i, refined_single_neighbor_meshes.at(mortar_id_i)}};
+        },
+        make_not_null(&box));
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
+                                              orig_single_items);
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        {mortar_id_sw_nw, lgl_mesh<1>(3)},
+        {mortar_id_f, lgl_mesh<1>(4)},
+        {mortar_id_sw_se, lgl_mesh<1>(4)},
+        {mortar_id_i, lgl_mesh<1>(5)}};
+
+    const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
+        {mortar_id_sw_nw,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_f,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+        {mortar_id_sw_se,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_i,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      for (const auto& mortar_id : mortar_ids) {
+        expected_mortar_data_history.emplace(mortar_id,
+                                             boundary_history_type<2>{});
+      }
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          empty_normal_covector_and_magnitude);
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+
+  {
+    INFO("Split - se");
+    auto box = db::create<decltype(orig_single_items)::tags_list>();
+
+    const std::array mortar_ids{mortar_id_se_ne, mortar_id_se_sw, mortar_id_h,
+                                mortar_id_i};
+    db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
+               domain::Tags::NeighborMesh<2>>(
+        [&](const gsl::not_null<Element<2>*> element,
+            const gsl::not_null<Mesh<2>*> mesh,
+            const gsl::not_null<::dg::MortarMap<2, Mesh<2>>*> neighbor_meshes) {
+          *element = Element<2>(
+              id_se, {{mortar_id_se_ne.direction(),
+                       Neighbors<2>({mortar_id_se_ne.id()}, aligned)},
+                      {mortar_id_se_sw.direction(),
+                       Neighbors<2>({mortar_id_se_sw.id()}, aligned)},
+                      {mortar_id_g.direction(),
+                       Neighbors<2>({mortar_id_h.id()}, aligned)},
+                      {mortar_id_i.direction(),
+                       Neighbors<2>({mortar_id_i.id()}, aligned)}});
+          *mesh = orig_mesh;
+          *neighbor_meshes = {
+              {mortar_id_se_ne, orig_mesh},
+              {mortar_id_se_sw, orig_mesh},
+              {mortar_id_h, refined_single_neighbor_meshes.at(mortar_id_h)},
+              {mortar_id_i, refined_single_neighbor_meshes.at(mortar_id_i)}};
+        },
+        make_not_null(&box));
+
+    db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
+        Metavariables<2, LocalTimeStepping>>>(make_not_null(&box),
+                                              orig_single_items);
+
+    const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
+        {mortar_id_se_ne, lgl_mesh<1>(3)},
+        {mortar_id_se_sw, lgl_mesh<1>(4)},
+        {mortar_id_h, lgl_mesh<1>(4)},
+        {mortar_id_i, lgl_mesh<1>(5)}};
+
+    const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
+        {mortar_id_se_ne,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_se_sw,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_h,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}},
+        {mortar_id_i,
+         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                        .policy = InterfaceDataPolicy::CopyProject}}}};
+
+    mortar_data_history_tag::type expected_mortar_data_history{};
+    if (LocalTimeStepping) {
+      for (const auto& mortar_id : mortar_ids) {
+        expected_mortar_data_history.emplace(mortar_id,
+                                             boundary_history_type<2>{});
+      }
+    }
+
+    CHECK(db::get<Tags::MortarData<2>>(box) == empty_mortar_data(mortar_ids));
+    CHECK(db::get<Tags::MortarMesh<2>>(box) == expected_mortar_meshes);
+    CHECK(db::get<Tags::MortarInfo<2>>(box) == expected_mortar_infos);
+    CHECK(db::get<Tags::MortarNextTemporalId<2>>(box) ==
+          constant_next_temporal_ids(mortar_ids, temporal_id));
+    CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<2>>(box) ==
+          empty_normal_covector_and_magnitude);
+    check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                             expected_mortar_data_history);
+  }
+}
+
+void test_h_refinement_mortar_sizes_local_impl(
+    const std::vector<SegmentId>& pre_xi, const std::vector<SegmentId>& pre_eta,
+    const std::vector<SegmentId>& post_xi,
+    const std::vector<SegmentId>& post_eta,
+    const OrientationMap<3>& orientation) {
+  using NormalVars =
+      Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                           evolution::dg::Tags::NormalCovector<3>>>;
+  using mortar_data_history_tag =
+      Tags::MortarDataHistory<3, dt_variables_tag<3>::type>;
+
+  const ElementId<3> self_id(1, {{{1, 0}, {1, 0}, {0, 0}}});
+  const auto direction = Direction<3>::upper_zeta();
+  const Mesh<3> mesh = lgl_mesh<3>(4);
+  const Mesh<2> mortar_mesh = lgl_mesh<2>(4);
+  const TimeStepId time_step_id(true, 5, Slab(1.2, 3.4).start());
+
+  // Pre-refinement data
+  ::dg::MortarMap<3, evolution::dg::MortarDataHolder<3>> mortar_data{};
+  ::dg::MortarMap<3, Mesh<2>> mortar_meshes{};
+  ::dg::MortarMap<3, MortarInfo<3>> mortar_infos{};
+  ::dg::MortarMap<3, TimeStepId> mortar_next_temporal_ids{};
+  // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
+  DirectionMap<3, std::optional<NormalVars>> normal_covector_and_magnitude{
+      {direction, std::nullopt}};
+  mortar_data_history_tag::type mortar_data_history{};
+  std::unordered_set<ElementId<3>> old_neighbors{};
+  for (const auto& segment_xi : pre_xi) {
+    for (const auto& segment_eta : pre_eta) {
+      const ElementId<3> neighbor(
+          2, orientation(std::array{segment_xi, segment_eta, SegmentId{0, 0}}));
+      const DirectionalId mortar_id{direction, neighbor};
+      const auto mortar_size =
+          ::dg::mortar_size(self_id, neighbor, 2, orientation);
+      old_neighbors.emplace(neighbor);
+      mortar_data.emplace(mortar_id, evolution::dg::MortarDataHolder<3>{});
+      mortar_meshes.emplace(mortar_id, mortar_mesh);
+      mortar_infos.emplace(
+          mortar_id,
+          MortarInfo<3>{
+              {.mortar_size = mortar_size,
+               .policy = orientation.is_aligned()
+                             ? InterfaceDataPolicy::CopyProject
+                             : InterfaceDataPolicy::OrientCopyProject}});
+      mortar_next_temporal_ids.emplace(mortar_id, time_step_id);
+      mortar_data_history.emplace(
+          mortar_id,
+          make_boundary_history(mortar_id, mesh, mortar_mesh,
+                                make_array<3>(Spectral::SegmentSize::Full),
+                                mortar_size, true, true));
+    }
+  }
+  const Element<3> old_element(
+      self_id,
+      {{direction, Neighbors<3>(std::move(old_neighbors), orientation)}});
+
+  // Post-refinement data
+  std::unordered_set<ElementId<3>> neighbors{};
+  ::dg::MortarMap<3, Mesh<3>> neighbor_meshes{};
+  mortar_data_history_tag::type expected_mortar_data_history{};
+  for (const auto& segment_xi : post_xi) {
+    for (const auto& segment_eta : post_eta) {
+      const ElementId<3> neighbor(
+          2, orientation(std::array{segment_xi, segment_eta, SegmentId{0, 0}}));
+      const DirectionalId mortar_id{direction, neighbor};
+      const auto mortar_size =
+          ::dg::mortar_size(self_id, neighbor, 2, orientation);
+      neighbors.emplace(neighbor);
+      neighbor_meshes.emplace(mortar_id, mesh);
+      expected_mortar_data_history.emplace(
+          mortar_id,
+          make_boundary_history(mortar_id, mesh, mortar_mesh,
+                                make_array<3>(Spectral::SegmentSize::Full),
+                                mortar_size, true,
+                                pre_xi == post_xi and pre_eta == post_eta));
+    }
+  }
+  // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
+  Element<3> element(
+      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
+
+  auto box = db::create<db::AddSimpleTags<
+      Tags::MortarData<3>, Tags::MortarMesh<3>, Tags::MortarInfo<3>,
+      Tags::MortarNextTemporalId<3>,
+      evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
+      mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
+      domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
+      std::move(mortar_data), std::move(mortar_meshes), std::move(mortar_infos),
+      std::move(mortar_next_temporal_ids),
+      std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
+      mesh, std::move(element), std::move(neighbor_meshes), time_step_id);
+
+  db::mutate_apply<
+      evolution::dg::Initialization::ProjectMortars<Metavariables<3, true>>>(
+      make_not_null(&box), std::pair(mesh, old_element));
+
+  check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                           expected_mortar_data_history);
+}
+
+// Test projections of local mortar data in different 3D mortar configurations.
+void test_h_refinement_mortar_sizes_local() {
+  // In each tangential dimension, neighbors can change (or not) in
+  // five ways, left-to-right for splitting, right-to-left for joining:
+  const std::vector<std::pair<std::vector<SegmentId>, std::vector<SegmentId>>>
+      dimension_cases{{{{0, 0}}, {{0, 0}}},
+                      {{{0, 0}}, {{1, 0}}},
+                      {{{1, 0}}, {{1, 0}}},
+                      {{{1, 0}}, {{2, 0}, {2, 1}}},
+                      {{{2, 0}, {2, 1}}, {{2, 0}, {2, 1}}}};
+  const std::vector<OrientationMap<3>> orientations{
+      OrientationMap<3>::create_aligned(),
+      OrientationMap<3>(std::array{Direction<3>::lower_xi(),
+                                   Direction<3>::lower_eta(),
+                                   Direction<3>::upper_zeta()}),
+      OrientationMap<3>(std::array{Direction<3>::upper_xi(),
+                                   Direction<3>::lower_eta(),
+                                   Direction<3>::lower_zeta()}),
+      OrientationMap<3>(std::array{Direction<3>::upper_eta(),
+                                   Direction<3>::upper_zeta(),
+                                   Direction<3>::upper_xi()})};
+
+  for (const auto& [large_xi, small_xi] : dimension_cases) {
+    for (const auto& [large_eta, small_eta] : dimension_cases) {
+      for (const auto& orientation : orientations) {
+        // Split
+        test_h_refinement_mortar_sizes_local_impl(large_xi, large_eta, small_xi,
+                                                  small_eta, orientation);
+        // Join
+        test_h_refinement_mortar_sizes_local_impl(small_xi, small_eta, large_xi,
+                                                  large_eta, orientation);
+      }
+    }
+  }
+}
+
+void test_h_refinement_mortar_sizes_remote_impl_split(
+    const SegmentId& pre_xi, const SegmentId& pre_eta, const SegmentId& post_xi,
+    const SegmentId& post_eta, const OrientationMap<3>& orientation) {
+  using mortar_data_history_tag =
+      Tags::MortarDataHistory<3, dt_variables_tag<3>::type>;
+
+  const auto direction = Direction<3>::upper_zeta();
+  const Mesh<3> mesh = lgl_mesh<3>(4);
+  const Mesh<2> mortar_mesh = lgl_mesh<2>(4);
+  const TimeStepId time_step_id(true, 5, Slab(1.2, 3.4).start());
+
+  const std::array neighbor_segments{SegmentId{1, 0}, SegmentId{1, 1}};
+
+  const ElementId<3> parent_id(1, {{pre_xi, pre_eta, {0, 0}}});
+  const ElementId<3> self_id(1, {{post_xi, post_eta, {0, 0}}});
+  CAPTURE(parent_id);
+  CAPTURE(self_id);
+
+  // Pre-refinement data
+  mortar_data_history_tag::type parent_mortar_data_history{};
+  std::unordered_set<ElementId<3>> parent_neighbors{};
+  for (const auto& segment_xi : neighbor_segments) {
+    if (not overlapping(segment_xi, pre_xi)) {
+      continue;
+    }
+    for (const auto& segment_eta : neighbor_segments) {
+      if (not overlapping(segment_eta, pre_eta)) {
+        continue;
+      }
+      const ElementId<3> neighbor(
+          2, orientation(std::array{segment_xi, segment_eta, SegmentId{0, 0}}));
+      const DirectionalId mortar_id{direction, neighbor};
+      const auto mortar_size =
+          ::dg::mortar_size(parent_id, neighbor, 2, orientation);
+      parent_neighbors.emplace(neighbor);
+      parent_mortar_data_history.emplace(
+          mortar_id,
+          make_boundary_history(mortar_id, mesh, mortar_mesh,
+                                make_array<3>(Spectral::SegmentSize::Full),
+                                mortar_size, true, true));
+    }
+  }
+  Element<3> parent_element(
+      parent_id,
+      {{direction, Neighbors<3>(std::move(parent_neighbors), orientation)}});
+
+  const tuples::TaggedTuple<domain::Tags::Element<3>, ::Tags::TimeStepId,
+                            mortar_data_history_tag>
+      parent_items{std::move(parent_element), time_step_id,
+                   std::move(parent_mortar_data_history)};
+
+  // Post-refinement data
+  std::unordered_set<ElementId<3>> neighbors{};
+  ::dg::MortarMap<3, Mesh<3>> neighbor_meshes{};
+  mortar_data_history_tag::type expected_mortar_data_history{};
+  for (const auto& segment_xi : neighbor_segments) {
+    if (not overlapping(segment_xi, post_xi)) {
+      continue;
+    }
+    for (const auto& segment_eta : neighbor_segments) {
+      if (not overlapping(segment_eta, post_eta)) {
+        continue;
+      }
+      const ElementId<3> neighbor(
+          2, orientation(std::array{segment_xi, segment_eta, SegmentId{0, 0}}));
+      const DirectionalId mortar_id{direction, neighbor};
+      const auto element_size =
+          domain::child_size(self_id.segment_ids(), parent_id.segment_ids());
+      const auto mortar_size =
+          ::dg::mortar_size(self_id, neighbor, 2, orientation);
+      neighbors.emplace(neighbor);
+      neighbor_meshes.emplace(mortar_id, mesh);
+      expected_mortar_data_history.emplace(
+          mortar_id,
+          make_boundary_history(mortar_id, mesh, mortar_mesh, element_size,
+                                mortar_size, false, true));
+    }
+  }
+  // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
+  Element<3> element(
+      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
+
+  auto box = db::create<db::AddSimpleTags<
+      Tags::MortarData<3>, Tags::MortarMesh<3>, Tags::MortarInfo<3>,
+      Tags::MortarNextTemporalId<3>,
+      evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
+      mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
+      domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
+      Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
+      Tags::MortarInfo<3>::type{}, Tags::MortarNextTemporalId<3>::type{},
+      evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type{},
+      mortar_data_history_tag::type{}, mesh, std::move(element),
+      std::move(neighbor_meshes), time_step_id);
+
+  db::mutate_apply<
+      evolution::dg::Initialization::ProjectMortars<Metavariables<3, true>>>(
+      make_not_null(&box), parent_items);
+
+  check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                           expected_mortar_data_history);
+}
+
+void test_h_refinement_mortar_sizes_remote_impl_join(
+    const std::vector<SegmentId>& pre_xi, const std::vector<SegmentId>& pre_eta,
+    const SegmentId& post_xi, const SegmentId& post_eta,
+    const OrientationMap<3>& orientation) {
+  using mortar_data_history_tag =
+      Tags::MortarDataHistory<3, dt_variables_tag<3>::type>;
+
+  const auto direction = Direction<3>::upper_zeta();
+  const Mesh<3> mesh = lgl_mesh<3>(4);
+  const Mesh<2> mortar_mesh = lgl_mesh<2>(4);
+  const TimeStepId time_step_id(true, 5, Slab(1.2, 3.4).start());
+
+  const std::array neighbor_segments{SegmentId{1, 0}, SegmentId{1, 1}};
+
+  const ElementId<3> self_id(1, {{post_xi, post_eta, {0, 0}}});
+
+  // Pre-refinement data
+  using ChildItems =
+      tuples::TaggedTuple<::Tags::TimeStepId, mortar_data_history_tag>;
+  std::unordered_map<ElementId<3>, ChildItems> children_items{};
+  for (const auto& segment_xi : pre_xi) {
+    for (const auto& segment_eta : pre_eta) {
+      const ElementId<3> child_id(1, {{segment_xi, segment_eta, {0, 0}}});
+      const auto child_size =
+          domain::child_size(child_id.segment_ids(), self_id.segment_ids());
+      mortar_data_history_tag::type mortar_data_history{};
+      for (const auto& neighbor_xi : neighbor_segments) {
+        if (not overlapping(neighbor_xi, segment_xi)) {
+          continue;
+        }
+        for (const auto& neighbor_eta : neighbor_segments) {
+          if (not overlapping(neighbor_eta, segment_eta)) {
+            continue;
+          }
+          const ElementId<3> neighbor(
+              2, orientation(
+                     std::array{neighbor_xi, neighbor_eta, SegmentId{0, 0}}));
+          const DirectionalId mortar_id{direction, neighbor};
+          const auto mortar_size =
+              ::dg::mortar_size(child_id, neighbor, 2, orientation);
+          mortar_data_history.emplace(
+              mortar_id,
+              make_boundary_history(mortar_id, mesh, mortar_mesh, child_size,
+                                    mortar_size, true, true));
+        }
+      }
+      children_items.emplace(
+          child_id, ChildItems{time_step_id, std::move(mortar_data_history)});
+    }
+  }
+
+  // Post-refinement data
+  std::unordered_set<ElementId<3>> neighbors{};
+  ::dg::MortarMap<3, Mesh<3>> neighbor_meshes{};
+  mortar_data_history_tag::type expected_mortar_data_history{};
+  for (const auto& segment_xi : neighbor_segments) {
+    if (not overlapping(segment_xi, post_xi)) {
+      continue;
+    }
+    for (const auto& segment_eta : neighbor_segments) {
+      if (not overlapping(segment_eta, post_eta)) {
+        continue;
+      }
+      const ElementId<3> neighbor(
+          2, orientation(std::array{segment_xi, segment_eta, SegmentId{0, 0}}));
+      const DirectionalId mortar_id{direction, neighbor};
+      const auto mortar_size =
+          ::dg::mortar_size(self_id, neighbor, 2, orientation);
+      neighbors.emplace(neighbor);
+      neighbor_meshes.emplace(mortar_id, mesh);
+      expected_mortar_data_history.emplace(
+          mortar_id,
+          make_boundary_history(mortar_id, mesh, mortar_mesh,
+                                make_array<3>(Spectral::SegmentSize::Full),
+                                mortar_size, false, true));
+    }
+  }
+  // NOLINTNEXTLINE(misc-const-correctness) - false positive - object is moved
+  Element<3> element(
+      self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
+
+  auto box = db::create<db::AddSimpleTags<
+      Tags::MortarData<3>, Tags::MortarMesh<3>, Tags::MortarInfo<3>,
+      Tags::MortarNextTemporalId<3>,
+      evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
+      mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
+      domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
+      Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
+      Tags::MortarInfo<3>::type{}, Tags::MortarNextTemporalId<3>::type{},
+      evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type{},
+      mortar_data_history_tag::type{}, mesh, std::move(element),
+      std::move(neighbor_meshes), time_step_id);
+
+  db::mutate_apply<
+      evolution::dg::Initialization::ProjectMortars<Metavariables<3, true>>>(
+      make_not_null(&box), children_items);
+
+  check_boundary_histories(db::get<mortar_data_history_tag>(box),
+                           expected_mortar_data_history);
+}
+
+// Test projections of remote data in different 3D mortar configurations.
+void test_h_refinement_mortar_sizes_remote() {
+  // In each tangential dimension, our element can change (or not) in
+  // five ways, left-to-right for splitting, right-to-left for
+  // joining.  In each case, we will just check the mortar with the
+  // element with xi-eta segments {{1, 0}, {1, 0}}.
+  const std::vector<std::pair<SegmentId, std::vector<SegmentId>>>
+      dimension_cases{{{0, 0}, {{0, 0}}},
+                      {{0, 0}, {{1, 0}, {1, 1}}},
+                      {{1, 0}, {{1, 0}}},
+                      {{1, 0}, {{2, 0}, {2, 1}}},
+                      {{2, 0}, {{2, 0}}}};
+  const std::vector<OrientationMap<3>> orientations{
+      OrientationMap<3>::create_aligned(),
+      OrientationMap<3>(std::array{Direction<3>::lower_xi(),
+                                   Direction<3>::lower_eta(),
+                                   Direction<3>::upper_zeta()}),
+      OrientationMap<3>(std::array{Direction<3>::upper_xi(),
+                                   Direction<3>::lower_eta(),
+                                   Direction<3>::lower_zeta()}),
+      OrientationMap<3>(std::array{Direction<3>::upper_eta(),
+                                   Direction<3>::upper_zeta(),
+                                   Direction<3>::upper_xi()})};
+
+  for (const auto& [large_xi, small_xis] : dimension_cases) {
+    for (const auto& [large_eta, small_etas] : dimension_cases) {
+      if (small_xis.size() == 1 and small_etas.size() == 1) {
+        continue;
+      }
+      for (const auto& orientation : orientations) {
+        test_h_refinement_mortar_sizes_remote_impl_split(
+            large_xi, large_eta, small_xis.front(), small_etas.front(),
+            orientation);
+        test_h_refinement_mortar_sizes_remote_impl_join(
+            small_xis, small_etas, large_xi, large_eta, orientation);
+      }
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
@@ -892,5 +2078,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
   test_p_refine_lts<1>();
   test_p_refine_lts<2>();
   test_p_refine_lts<3>();
+  test_h_refinement<false>();
+  test_h_refinement<true>();
+  test_h_refinement_mortar_sizes_local();
+  test_h_refinement_mortar_sizes_remote();
 }
 }  // namespace evolution::dg
