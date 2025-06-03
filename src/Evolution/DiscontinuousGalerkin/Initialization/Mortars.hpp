@@ -59,9 +59,14 @@ class TaggedTuple;
 namespace evolution::dg::Initialization {
 namespace detail {
 template <size_t Dim>
-std::tuple<::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
-           ::dg::MortarMap<Dim, Mesh<Dim - 1>>,
-           ::dg::MortarMap<Dim, MortarInfo<Dim>>,
+::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> empty_mortar_data(
+    const Element<Dim>& element);
+
+template <size_t Dim>
+::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos(const Element<Dim>& element);
+
+template <size_t Dim>
+std::tuple<::dg::MortarMap<Dim, Mesh<Dim - 1>>,
            ::dg::MortarMap<Dim, TimeStepId>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
@@ -118,11 +123,12 @@ struct Mortars {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto [mortar_data, mortar_meshes, mortar_infos, mortar_next_temporal_ids,
-          normal_covector_quantities] =
+    const auto& element = db::get<::domain::Tags::Element<Dim>>(box);
+    auto mortar_data = detail::empty_mortar_data(element);
+    auto mortar_infos = detail::mortar_infos(element);
+    auto [mortar_meshes, mortar_next_temporal_ids, normal_covector_quantities] =
         detail::mortars_apply_impl(
-            db::get<::domain::Tags::Element<Dim>>(box),
-            db::get<::Tags::Next<::Tags::TimeStepId>>(box),
+            element, db::get<::Tags::Next<::Tags::TimeStepId>>(box),
             db::get<::domain::Tags::Mesh<Dim>>(box),
             db::get<::domain::Tags::NeighborMesh<Dim>>(box));
     typename Tags::MortarDataHistory<
