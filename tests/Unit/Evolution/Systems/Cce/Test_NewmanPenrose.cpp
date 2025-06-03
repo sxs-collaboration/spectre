@@ -14,14 +14,58 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/VolumeTestHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
 namespace {
+void pypp_test_volume_np_spin_coefficients() {
+  const pypp::SetupLocalPythonEnvironment
+      local_python_env{"Evolution/Systems/Cce/"};
+
+  const size_t num_pts = 5;
+
+  pypp::check_with_random_values<1>(&newman_penrose_alpha, "NewmanPenrose",
+                                    {"newman_penrose_alpha"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_beta, "NewmanPenrose",
+                                    {"newman_penrose_beta"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_gamma, "NewmanPenrose",
+                                    {"newman_penrose_gamma"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_epsilon, "NewmanPenrose",
+                                    {"newman_penrose_epsilon"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  // In our choice of tetrad, \kappa=0
+  pypp::check_with_random_values<1>(&newman_penrose_tau, "NewmanPenrose",
+                                    {"newman_penrose_tau"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_sigma, "NewmanPenrose",
+                                    {"newman_penrose_sigma"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_rho, "NewmanPenrose",
+                                    {"newman_penrose_rho"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_pi, "NewmanPenrose",
+                                    {"newman_penrose_pi"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_nu, "NewmanPenrose",
+                                    {"newman_penrose_nu"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_mu, "NewmanPenrose",
+                                    {"newman_penrose_mu"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+  pypp::check_with_random_values<1>(&newman_penrose_lambda, "NewmanPenrose",
+                                    {"newman_penrose_lambda"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts});
+}
+
 void pypp_test_volume_weyl() {
-  pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
+  const pypp::SetupLocalPythonEnvironment
+      local_python_env{"Evolution/Systems/Cce/"};
 
   const size_t num_pts = 5;
 
@@ -35,6 +79,35 @@ void pypp_test_volume_weyl() {
 }  // namespace
 
 namespace {
+
+void test_np_spin_coefficient_compute_tags() {
+  using ::TestHelpers::db::test_compute_tag;
+
+  test_compute_tag<Cce::Tags::NewmanPenroseAlphaCompute>(
+      "NewmanPenroseAlpha");
+  test_compute_tag<Cce::Tags::NewmanPenroseBetaCompute>(
+      "NewmanPenroseBeta");
+  test_compute_tag<Cce::Tags::NewmanPenroseGammaCompute>(
+      "NewmanPenroseGamma");
+  test_compute_tag<Cce::Tags::NewmanPenroseEpsilonCompute>(
+      "NewmanPenroseEpsilon");
+  // In our choice of tetrad, \kappa=0
+  test_compute_tag<Cce::Tags::NewmanPenroseTauCompute>(
+      "NewmanPenroseTau");
+  test_compute_tag<Cce::Tags::NewmanPenroseSigmaCompute>(
+      "NewmanPenroseSigma");
+  test_compute_tag<Cce::Tags::NewmanPenroseRhoCompute>(
+      "NewmanPenroseRho");
+  test_compute_tag<Cce::Tags::NewmanPenrosePiCompute>(
+      "NewmanPenrosePi");
+  test_compute_tag<Cce::Tags::NewmanPenroseNuCompute>(
+      "NewmanPenroseNu");
+  test_compute_tag<Cce::Tags::NewmanPenroseMuCompute>(
+      "NewmanPenroseMu");
+  test_compute_tag<Cce::Tags::NewmanPenroseLambdaCompute>(
+      "NewmanPenroseLambda");
+}
+
 // This unit test is to validate the calculation of the Weyl scalar psi0 on the
 // worldtube. The structure is in parallel with Test_GaugeTransformBoundaryData
 // (most codes are copied from there). The test constructs a stationary Kerr
@@ -97,7 +170,11 @@ void compute_psi0_of_bh_on_wt(const gsl::not_null<Generator*> gen) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.NewmanPenrose", "[Unit][Cce]") {
+  test_np_spin_coefficient_compute_tags();
+  pypp_test_volume_np_spin_coefficients();
+
   pypp_test_volume_weyl();
+
   MAKE_GENERATOR(gen);
   compute_psi0_of_bh_on_wt(make_not_null(&gen));
 }

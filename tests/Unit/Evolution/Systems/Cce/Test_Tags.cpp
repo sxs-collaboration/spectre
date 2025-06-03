@@ -73,6 +73,30 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
       "JbarQMinus2EthBeta");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiR>("R");
 
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseAlpha>(
+      "NewmanPenroseAlpha");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseBeta>(
+      "NewmanPenroseBeta");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseGamma>(
+      "NewmanPenroseGamma");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseEpsilon>(
+      "NewmanPenroseEpsilon");
+  // In our choice of tetrad, \kappa=0
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseTau>(
+      "NewmanPenroseTau");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseSigma>(
+      "NewmanPenroseSigma");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseRho>(
+      "NewmanPenroseRho");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenrosePi>(
+      "NewmanPenrosePi");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseNu>(
+      "NewmanPenroseNu");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseMu>(
+      "NewmanPenroseMu");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NewmanPenroseLambda>(
+      "NewmanPenroseLambda");
+
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi0>("Psi0");
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi1>("Psi1");
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi2>("Psi2");

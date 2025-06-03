@@ -1,0 +1,145 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: AnalyticTestCharacteristicExtract
+Testing:
+  Check: parse;execute_check_output
+  Timeout: 20
+  Priority: High
+ExpectedOutput:
+  - CharacteristicExtractVolume.h5
+OutputFileChecks:
+  - Label: "check_alpha"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseAlpha"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_beta"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseBeta"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  # NewmanPenroseGamma is non-vanishing and is checked below by the script
+  # AnalyticTestVolumeNewmanPenroseSpinCoefficientsRhoGammaMu.py
+  - Label: "check_epsilon"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseEpsilon"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_tau"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseTau"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_sigma"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseSigma"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  # NewmanPenroseRho is non-vanishing and is checked below by the script
+  # AnalyticTestVolumeNewmanPenroseSpinCoefficientsRhoGammaMu.py
+  - Label: "check_pi"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenrosePi"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  - Label: "check_nu"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseNu"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+  # NewmanPenroseMu is non-vanishing and is checked below by the script
+  # AnalyticTestVolumeNewmanPenroseSpinCoefficientsRhoGammaMu.py
+  - Label: "check_lambda"
+    Subfile: "/CceVolumeData/VolumeData.vol/Obs.*/NewmanPenroseLambda"
+    FileGlob: "CharacteristicExtractVolume.h5"
+    # By not specifying an expected value, we test against 0
+    AbsoluteTolerance: 1e-8
+ExtraFileCheckExecs:
+  - Label: "check_rho_gamma_and_mu"
+    Executable: "AnalyticTestVolumeNewmanPenroseSpinCoefficientsRhoGammaMu.py"
+    Arguments: ["--atol", "1.e-10", "--rtol", "1.e-10"]
+
+---
+
+Evolution:
+  InitialTimeStep: 0.01
+  MinimumTimeStep: 1e-7
+  InitialSlabSize: 0.8
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons:
+    CharacteristicEvolution:
+      Proc: Auto
+      Exclusive: false
+    AnalyticWorldtubeBoundary:
+      Proc: Auto
+      Exclusive: false
+
+Observers:
+  VolumeFileName: "CharacteristicExtractVolume"
+  ReductionFileName: "CharacteristicExtractReduction"
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Offset: 0
+          Interval: 1
+    Events:
+      - ObserveTimeStep:
+          SubfileName: CceTimeStep
+          PrintTimeToTerminal: false
+      - ObserveFields:
+          SubgroupName: "CceVolumeData"
+          VariablesToObserve:
+            - OneMinusY
+            - InertialRetardedTime
+            - NewmanPenroseAlpha
+            - NewmanPenroseBeta
+            - NewmanPenroseGamma
+            - NewmanPenroseEpsilon
+            # - NewmanPenroseKappa # In our choice of tetrad, $\kappa=0$
+            - NewmanPenroseTau
+            - NewmanPenroseSigma
+            - NewmanPenroseRho
+            - NewmanPenrosePi
+            - NewmanPenroseNu
+            - NewmanPenroseMu
+            - NewmanPenroseLambda
+
+EventsAndTriggersAtSteps:
+
+Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforth:
+        Order: 3
+    StepChoosers:
+      - Constant: 0.1
+      - LimitIncrease:
+          Factor: 2
+
+  LMax: 8
+  NumberOfRadialPoints: 8
+  ObservationLMax: 8
+
+  StartTime: 0.0
+  EndTime: 0.8
+  ExtractionRadius: 30.0
+
+  AnalyticSolution:
+    BouncingBlackHole:
+      Period: 40.0
+      ExtractionRadius: 30.0
+      Mass: 1.0
+      Amplitude: 0.0
+
+  Filtering:
+    RadialFilterHalfPower: 24
+    RadialFilterAlpha: 35.0
+    FilterLMax: 6
+
+  ScriInterpOrder: 3
+  ScriOutputDensity: 1
