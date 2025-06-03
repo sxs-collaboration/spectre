@@ -9,6 +9,7 @@
 #include <memory>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -18,21 +19,33 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/OptionTags.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Sphere.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
 #include "Evolution/DgSubcell/Actions/ReconstructionCommunication.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/CombineVolumeGhostData.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DgSubcell/SetInterpolators.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/CellCenteredFlux.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
@@ -48,6 +61,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -85,13 +99,14 @@ struct System {
   using flux_variables = tmpl::list<Var1>;
 };
 
-template <size_t Dim, typename Metavariables, bool UseNodegroupDgElements>
+template <size_t Dim, typename Metavariables, bool UseNodegroupDgElements,
+          bool ExtraTesting = false>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Dim>;
 
-  using initial_tags = tmpl::list<
+  using initial_tags = tmpl::flatten<tmpl::list<
       Tags::Reconstructor, ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
       domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::ActiveGrid, domain::Tags::Element<Dim>,
@@ -108,26 +123,44 @@ struct component {
       evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
       evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>,
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
-      evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>;
+      evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>,
+      tmpl::conditional_t<
+          ExtraTesting,
+          tmpl::list<evolution::dg::subcell::Tags::
+                         InterpolatorsFromDgToNeighborFd<Dim>,
+                     ::domain::Tags::ElementMap<Dim, Frame::Grid>>,
+          tmpl::list<>>,
+      evolution::dg::subcell::Tags::ExtensionDirections<Dim>,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<
-          ActionTesting::InitializeDataBox<initial_tags>,
-          evolution::dg::subcell::Actions::SendDataForReconstruction<
-              Dim, typename Metavariables::GhostDataMutator,
-              // No local time stepping
-              false, UseNodegroupDgElements>,
-          evolution::dg::subcell::Actions::ReceiveDataForReconstruction<Dim>>>>;
+      tmpl::flatten<tmpl::list<
+          tmpl::list<ActionTesting::InitializeDataBox<initial_tags>>,
+          tmpl::conditional_t<
+              ExtraTesting,
+              tmpl::list<Actions::MutateApply<
+                  evolution::dg::subcell::SetInterpolators<Dim>>>,
+              tmpl::list<>>,
+          tmpl::list<evolution::dg::subcell::Actions::SendDataForReconstruction<
+                         Dim, typename Metavariables::GhostDataMutator, false,
+                         UseNodegroupDgElements>,
+                     evolution::dg::subcell::Actions::
+                         ReceiveAndSendDataForReconstruction<
+                             Dim, typename Metavariables::GhostDataMutator,
+                             false, UseNodegroupDgElements>,
+                     evolution::dg::subcell::Actions::
+                         ReceiveDataForReconstruction<Dim>>>>>>;
 };
 
-template <size_t Dim, bool UseNodegroupDgElements>
+template <size_t Dim, bool UseNodegroupDgElements, bool ExtraTesting = false>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
-  using component_list =
-      tmpl::list<component<Dim, Metavariables, UseNodegroupDgElements>>;
+  using component_list = tmpl::list<
+      component<Dim, Metavariables, UseNodegroupDgElements, ExtraTesting>>;
   using system = System<Dim>;
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::flatten<tmpl::list<tmpl::conditional_t<
+      ExtraTesting, ::domain::Tags::Domain<Dim>, tmpl::list<>>>>;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool ghost_zone_size_invoked;
@@ -154,21 +187,25 @@ struct Metavariables {
   };
 };
 
-template <size_t Dim, bool UseNodegroupDgElements>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool Metavariables<Dim, UseNodegroupDgElements>::ghost_zone_size_invoked =
-    false;
-template <size_t Dim, bool UseNodegroupDgElements>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool Metavariables<Dim, UseNodegroupDgElements>::ghost_data_mutator_invoked =
-    false;
+template <size_t Dim, bool UseNodegroupDgElements, bool ExtraTesting>
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+bool Metavariables<Dim, UseNodegroupDgElements,
+                   ExtraTesting>::ghost_zone_size_invoked = false;
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+template <size_t Dim, bool UseNodegroupDgElements, bool ExtraTesting>
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+bool Metavariables<Dim, UseNodegroupDgElements,
+                   ExtraTesting>::ghost_data_mutator_invoked = false;
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 template <size_t Dim, bool UseNodegroupDgElements>
 void test(const bool use_cell_centered_flux) {
   CAPTURE(Dim);
   CAPTURE(use_cell_centered_flux);
-
   using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using ExtensionDirs =
+      DirectionMap<Dim, interpolators_detail::ExtensionDirection<Dim>>;
+  using SubcellOptions = evolution::dg::subcell::SubcellOptions;
 
   using metavars = Metavariables<Dim, UseNodegroupDgElements>;
   metavars::ghost_zone_size_invoked = false;
@@ -320,12 +357,19 @@ void test(const bool use_cell_centered_flux) {
            typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
            cell_centered_flux,
            Interps{},
-           Interps{}});
+           Interps{},
+           ExtensionDirs{},
+           SubcellOptions{}});
       ++neighbor_tci_decision;
     }
   }
   Interps fd_to_neighbor_fd_interpolants{};
   Interps neighbor_dg_to_fd_interpolants{};
+  ExtensionDirs extension_directions{};
+  SubcellOptions subcell_options(
+      4.0, 1, 2.0e-3, 2.0e-4, false, false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
   const int self_tci_decision = 100;
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
@@ -339,7 +383,7 @@ void test(const bool use_cell_centered_flux) {
        typename domain::Tags::NeighborMesh<Dim>::type{},
        typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
        cell_centered_flux, fd_to_neighbor_fd_interpolants,
-       neighbor_dg_to_fd_interpolants});
+       neighbor_dg_to_fd_interpolants, extension_directions, subcell_options});
 
   using ghost_data_tag =
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>;
@@ -487,8 +531,6 @@ void test(const bool use_cell_centered_flux) {
   auto& self_inbox = ActionTesting::get_inbox_tag<
       comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
                 Dim, UseNodegroupDgElements>>(make_not_null(&runner), self_id);
-  REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
-      make_not_null(&runner), self_id));
 
   // Send data from east neighbor
   DataVector east_ghost_cells_and_rdmp{};
@@ -516,9 +558,6 @@ void test(const bool use_cell_centered_flux) {
   }
   [[maybe_unused]] DataVector south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
-    REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
-        make_not_null(&runner), self_id));
-
     south_ghost_cells_and_rdmp = DataVector{
         subcell_mesh.slice_away(0).number_of_grid_points() * ghost_zone_size +
         rdmp_size};
@@ -537,6 +576,11 @@ void test(const bool use_cell_centered_flux) {
                     subcell_mesh, std::nullopt, south_ghost_cells_and_rdmp,
                     std::nullopt, next_time_step_id, -15}});
   }
+
+  // Run the ReceiveAndSendDataForReconstruction action on self_id
+  // As for this test, we are using EnableExtensionDirections = false,
+  // This action will not do anything.
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
   // Run the ReceiveDataForReconstruction action on self_id
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
@@ -588,11 +632,11 @@ void test(const bool use_cell_centered_flux) {
   // Check that we got a neighbor mesh from all neighbors.
   size_t total_neighbors = 0;
   const auto& neighbor_meshes =
-      get_databox_tag<comp, ::domain::Tags::NeighborMesh<Dim>>(runner, self_id);
-  const auto& meshes_for_ghost_data =
-      get_databox_tag<comp,
-                      evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(
+      get_databox_tag<comp, ::domain::Tags::NeighborMesh<Dim>>(
           runner, self_id);
+  const auto& meshes_for_ghost_data = get_databox_tag<
+      comp, evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(runner,
+                                                                 self_id);
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     for (const auto& neighbor : neighbors_in_direction) {
       const auto it =
@@ -609,12 +653,455 @@ void test(const bool use_cell_centered_flux) {
   CHECK(neighbor_meshes.size() == total_neighbors);
 }
 
+template <size_t Dim>
+Element<Dim> create_element(const std::vector<Block<Dim>>& blocks,
+                            const ElementId<Dim>& self_id,
+                            const std::vector<Direction<Dim>>& directions,
+                            const std::vector<ElementId<Dim>>& neighbor_ids) {
+  ASSERT(neighbor_ids.size() == directions.size(),
+         "The number of neighbor IDs must match the number of directions.");
+  DirectionMap<Dim, Neighbors<Dim>> neighbors{};
+  const size_t self_block_id = self_id.block_id();
+  for (size_t i = 0; i < directions.size(); ++i) {
+    const auto& direction = directions[i];
+    const auto& neighbor_id = neighbor_ids[i];
+    neighbors[direction] = Neighbors<Dim>{
+        {neighbor_id},
+        self_block_id == neighbor_id.block_id()
+            ? OrientationMap<Dim>::create_aligned()
+            : blocks[self_block_id].neighbors().at(direction).orientation(
+                  neighbor_id.block_id())};
+  }
+  return Element<Dim>{self_id, std::move(neighbors)};
+}
+
+void add_rdmp_data_to_datavector(
+    gsl::not_null<DataVector*> data_to_fill, const size_t original_data_size,
+    const evolution::dg::subcell::RdmpTciData& rdmp_tci_data) {
+  const size_t rdmp_max_values_size = rdmp_tci_data.max_variables_values.size();
+
+  // Copy max_variables_values after the original data
+  std::copy(
+      rdmp_tci_data.max_variables_values.cbegin(),
+      rdmp_tci_data.max_variables_values.cend(),
+      data_to_fill->begin() + static_cast<std::ptrdiff_t>(original_data_size));
+
+  // Copy min_variables_values after max_variables_values
+  std::copy(
+      rdmp_tci_data.min_variables_values.cbegin(),
+      rdmp_tci_data.min_variables_values.cend(),
+      data_to_fill->begin() + static_cast<std::ptrdiff_t>(
+                                  original_data_size + rdmp_max_values_size));
+}
+
+template <size_t Dim, bool UseNodegroupDgElements, typename MetaVars>
+DataVector compute_expected_ghost_data(
+    const ActionTesting::MockRuntimeSystem<MetaVars>& runner,
+    const Element<Dim>& element, const Direction<Dim>& direction,
+    const ::Mesh<3> subcell_mesh, const bool enable_extension,
+    const bool use_cell_centered_flux,
+    const Variables<tmpl::list<Var1>>& evolved_vars,
+    const evolution::dg::subcell::RdmpTciData& rdmp_tci_data,
+    const TimeStepId time_step_id, const size_t ghost_zone_size) {
+  using comp = component<Dim, MetaVars, UseNodegroupDgElements, true>;
+  using CellCenteredFluxTag =
+      evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>;
+  using ActionTesting::get_databox_tag;
+  const auto& element_id = element.id();
+  const auto& fd_to_neighbor_fd_interpolants = get_databox_tag<
+      comp, evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>>(
+      runner, element_id);
+  const auto& extension_directions = get_databox_tag<
+      comp, evolution::dg::subcell::Tags::ExtensionDirections<Dim>>(runner,
+                                                                    element_id);
+  const size_t rdmp_size = rdmp_tci_data.max_variables_values.size() +
+                           rdmp_tci_data.min_variables_values.size();
+
+  if (enable_extension and extension_directions.contains(direction)) {
+    const auto& receiver_id = element.neighbors().at(direction).ids().begin();
+    const auto& extender_direction =
+        extension_directions.at(direction).direction_to_extend;
+    const auto& extender_id =
+        element.neighbors().at(extender_direction).ids().begin();
+    const auto& data_from_extender =
+        ActionTesting::get_inbox_tag<
+            comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim, UseNodegroupDgElements>>(runner, element_id)
+            .at(time_step_id)
+            .at(DirectionalId<Dim>{extender_direction, *extender_id})
+            .ghost_cell_data.value();
+
+    const DataVector relevant_ghost_data;
+    const size_t ghost_data_size = data_from_extender.size() - rdmp_size;
+    make_const_view(make_not_null(&relevant_ghost_data), data_from_extender, 0,
+                    ghost_data_size);
+
+    DataVector volume_data_to_slice = [&evolved_vars, use_cell_centered_flux,
+                                       &runner, &element_id]() {
+      if (use_cell_centered_flux) {
+        const auto& cell_centered_flux =
+            get_databox_tag<comp, CellCenteredFluxTag>(
+                runner, element_id);
+        DataVector buffer{evolved_vars.size() +
+                          cell_centered_flux.value().size()};
+        std::copy(evolved_vars.data(),
+                  std::next(evolved_vars.data(),
+                            static_cast<std::ptrdiff_t>(evolved_vars.size())),
+                  buffer.data());
+        std::copy(cell_centered_flux.value().data(),
+                  std::next(cell_centered_flux.value().data(),
+                            static_cast<std::ptrdiff_t>(
+                                cell_centered_flux.value().size())),
+                  std::next(buffer.data(),
+                            static_cast<std::ptrdiff_t>(evolved_vars.size())));
+        return buffer;
+      } else {
+        return get(get<Var1>(evolved_vars));
+      }
+    }();
+    for (size_t i = 0; i < evolved_vars.size(); ++i) {
+      volume_data_to_slice[i] *= 2.0;
+    }
+    const DataVector combined_data =
+        evolution::dg::subcell::combine_volume_ghost_data(
+            volume_data_to_slice, relevant_ghost_data, subcell_mesh.extents(),
+            ghost_zone_size, extender_direction);
+    DataVector exepected_ghost_data{ghost_data_size + rdmp_size};
+    auto result_span =
+        gsl::make_span(exepected_ghost_data.data(), ghost_data_size);
+    const auto& interpolant =
+        fd_to_neighbor_fd_interpolants
+            .at(DirectionalId<Dim>{direction, *receiver_id})
+            .value();
+    interpolant.interpolate(
+        make_not_null(&result_span),
+        gsl::make_span(combined_data.data(), combined_data.size()));
+    add_rdmp_data_to_datavector(make_not_null(&exepected_ghost_data),
+                                ghost_data_size, rdmp_tci_data);
+    return exepected_ghost_data;
+  } else {
+    std::unordered_set<Direction<Dim>> directions_to_slice{direction};
+    const DirectionMap<Dim, DataVector> sliced_volume_data =
+        [&evolved_vars, &subcell_mesh, ghost_zone_size, &directions_to_slice,
+         &fd_to_neighbor_fd_interpolants, &runner, use_cell_centered_flux,
+         &element_id]() {
+          if (use_cell_centered_flux) {
+            const auto& cell_centered_flux =
+                get_databox_tag<comp, CellCenteredFluxTag>(
+                    runner, element_id);
+            DataVector buffer{evolved_vars.size() +
+                              cell_centered_flux.value().size()};
+            std::copy(
+                evolved_vars.data(),
+                std::next(evolved_vars.data(),
+                          static_cast<std::ptrdiff_t>(evolved_vars.size())),
+                buffer.data());
+            std::copy(cell_centered_flux.value().data(),
+                      std::next(cell_centered_flux.value().data(),
+                                static_cast<std::ptrdiff_t>(
+                                    cell_centered_flux.value().size())),
+                      std::next(buffer.data(), static_cast<std::ptrdiff_t>(
+                                                   evolved_vars.size())));
+            return evolution::dg::subcell::slice_data(
+                buffer, subcell_mesh.extents(), ghost_zone_size,
+                directions_to_slice, 0, fd_to_neighbor_fd_interpolants);
+          } else {
+            return evolution::dg::subcell::slice_data(
+                evolved_vars, subcell_mesh.extents(), ghost_zone_size,
+                directions_to_slice, 0, fd_to_neighbor_fd_interpolants);
+          }
+        }();
+    const DataVector& sliced_data_for_direction =
+        sliced_volume_data.at(direction);
+    const size_t sliced_data_size = sliced_data_for_direction.size();
+    const size_t total_size = sliced_data_size + rdmp_size;
+    DataVector expected_ghost_data(total_size);
+
+    // Copy the sliced data into the beginning of the result
+    std::copy(sliced_data_for_direction.begin(),
+              sliced_data_for_direction.end(), expected_ghost_data.begin());
+    // We only multiple Var1 by 2, not the fluxes.
+    const size_t bound_for_vars_to_multiply =
+        sliced_data_size / (use_cell_centered_flux ? (1 + Dim) : 1_st);
+
+    for (size_t i = 0; i < bound_for_vars_to_multiply; i++) {
+      expected_ghost_data[i] *= 2.0;
+    }
+    add_rdmp_data_to_datavector(make_not_null(&expected_ghost_data),
+                                sliced_data_size, rdmp_tci_data);
+
+    return expected_ghost_data;
+  }
+}
+
+// Test ReceiveAndSendDataForReconstruction action
+// for both EnableExtensionDirections options.
+template <size_t Dim, bool UseNodegroupDgElements>
+void test_receive_and_send_data(const bool enable_extension,
+                                const bool use_cell_centered_flux) {
+  CAPTURE(Dim);
+  CAPTURE(enable_extension);
+  CAPTURE(use_cell_centered_flux);
+  // create Sphere domain, and 4 releveant elements.
+  domain::creators::register_derived_with_charm();
+
+  using Sphere = domain::creators::Sphere;
+  using Interior = std::variant<domain::creators::Sphere::Excision,
+                                domain::creators::Sphere::InnerCube>;
+  size_t refinement_level = 2;
+  const Sphere domain_creator{1.,
+                              5.,
+                              Interior{Sphere::Excision{}},
+                              refinement_level,
+                              6_st,
+                              true,
+                              std::nullopt,
+                              {},
+                              domain::CoordinateMaps::Distribution::Linear,
+                              ShellWedges::All,
+                              std::nullopt};
+  auto domain = domain_creator.create_domain();
+
+  using metavars = Metavariables<Dim, UseNodegroupDgElements, true>;
+  metavars::ghost_zone_size_invoked = false;
+  metavars::ghost_data_mutator_invoked = false;
+  using comp = component<Dim, metavars, UseNodegroupDgElements, true>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
+  MockRuntimeSystem runner{{std::move(domain_creator.create_domain())}};
+
+  const std::vector<Block<3>>& blocks = domain.blocks();
+  // Create the elements that we will use in the test.
+  // We creat a sender, an extender, a receiver, and a receiver extender.
+  // sender and recevier are in different blocks.
+  // extender and receiver extender are in the same block as sender and
+  // receiver, respectively. they provide the data that is sent to the
+  // sender and receiver such that the sender and receiver can
+  // perform the new action when enable_extension is true.
+  const auto sender =
+      create_element<3>(blocks, ElementId<3>{0, {{{2, 0}, {2, 0}, {2, 0}}}},
+                        {Direction<3>::upper_eta(), Direction<3>::lower_xi()},
+                        {ElementId<3>{0, {{{2, 0}, {2, 1}, {2, 0}}}},
+                         ElementId<3>{5, {{{2, 3}, {2, 3}, {2, 0}}}}});
+  const auto extender =
+      create_element<3>(blocks, ElementId<3>{0, {{{2, 0}, {2, 1}, {2, 0}}}},
+                        {Direction<3>::lower_eta()},
+                        {ElementId<3>{0, {{{2, 0}, {2, 0}, {2, 0}}}}});
+  const auto receiver =
+      create_element<3>(blocks, ElementId<3>{5, {{{2, 3}, {2, 3}, {2, 0}}}},
+                        {Direction<3>::upper_eta(), Direction<3>::lower_xi()},
+                        {ElementId<3>{0, {{{2, 0}, {2, 0}, {2, 0}}}},
+                         ElementId<3>{5, {{{2, 2}, {2, 3}, {2, 0}}}}});
+  const auto receiver_extender =
+      create_element<3>(blocks, ElementId<3>{5, {{{2, 2}, {2, 3}, {2, 0}}}},
+                        {Direction<3>::upper_xi()},
+                        {ElementId<3>{5, {{{2, 3}, {2, 3}, {2, 0}}}}});
+
+  const std::array<const Element<Dim>*, 4> elements{
+      &sender, &extender, &receiver, &receiver_extender};
+
+  // Create a map from ElementId to Element* for easy access
+  std::unordered_map<ElementId<Dim>, const Element<Dim>*> id_to_element;
+  for (const auto* element : elements) {
+    id_to_element[element->id()] = element;
+  }
+
+  using Interps = DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>;
+  using ExtensionDirs =
+      DirectionMap<Dim, interpolators_detail::ExtensionDirection<Dim>>;
+  using SubcellOptions = evolution::dg::subcell::SubcellOptions;
+  const SubcellOptions subcell_options(
+      4.0, 1, 2.0e-3, 2.0e-4, enable_extension, enable_extension,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+      std::nullopt, ::fd::DerivativeOrder::Two, 1, 1, 1);
+  const ::Mesh<3> dg_mesh{6, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
+  const ::Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
+
+  const TimeStepId time_step_id{true, 1, Time{Slab{1.0, 2.0}, {0, 10}}};
+  const TimeStepId next_time_step_id{true, 1, Time{Slab{1.0, 2.0}, {1, 10}}};
+  const evolution::dg::subcell::ActiveGrid active_grid =
+      evolution::dg::subcell::ActiveGrid::Subcell;
+  using MortarData = typename evolution::dg::Tags::MortarData<Dim>::type;
+  using MortarMesh = typename evolution::dg::Tags::MortarMesh<Dim>::type;
+  using MortarNextId =
+      typename evolution::dg::Tags::MortarNextTemporalId<Dim>::type;
+  using ActionTesting::get_databox_tag;
+  using evolved_vars_tags = tmpl::list<Var1>;
+  Variables<evolved_vars_tags> evolved_vars{
+      subcell_mesh.number_of_grid_points()};
+  // Set Var1 to the logical coords, just need some data
+  get(get<Var1>(evolved_vars)) = get<0>(logical_coordinates(subcell_mesh));
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{};
+
+  using CellCenteredFluxTag =
+      evolution::dg::subcell::Tags::CellCenteredFlux<tmpl::list<Var1>, Dim>;
+  typename CellCenteredFluxTag::type cell_centered_flux{};
+  if (use_cell_centered_flux) {
+    cell_centered_flux = typename CellCenteredFluxTag::type{
+        subcell_mesh.number_of_grid_points()};
+    const auto logical_coords = logical_coordinates(subcell_mesh);
+    for (size_t i = 0; i < Dim; ++i) {
+      get<::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
+          cell_centered_flux.value())
+          .get(i) = logical_coords.get(i) + (static_cast<double>(i) + 1.0);
+    }
+  }
+  Interps fd_to_neighbor_fd_interpolants{};
+  Interps neighbor_dg_to_fd_interpolants{};
+  Interps dg_to_neighbor_fd_interpolants{};
+  ExtensionDirs extension_directions{};
+
+  const int self_tci_decision = 100;
+
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    DirectionalIdMap<Dim, evolution::dg::subcell::GhostData> neighbor_data{};
+    typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
+        neighbor_decision{};
+
+    MortarData mortar_data{};
+    MortarMesh mortar_mesh{};
+    MortarNextId mortar_next_id{};
+
+    for (const auto& [direction, neighbors] : element->neighbors()) {
+      for (const auto& neighbor_id : neighbors.ids()) {
+        neighbor_data[DirectionalId<Dim>{direction, neighbor_id}] =
+            evolution::dg::subcell::GhostData{};
+        neighbor_decision.insert(
+            std::pair{DirectionalId<Dim>{direction, neighbor_id}, 100});
+
+        mortar_data[DirectionalId<Dim>{direction, neighbor_id}] = {};
+        mortar_mesh[DirectionalId<Dim>{direction, neighbor_id}] =
+            dg_mesh.slice_away(direction.dimension());
+        mortar_next_id[DirectionalId<Dim>{direction, neighbor_id}] = {};
+      }
+    }
+
+    ActionTesting::emplace_array_component_and_initialize<comp>(
+        &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
+        element_id,
+        {std::make_unique<DummyReconstructor>(), time_step_id,
+         next_time_step_id, dg_mesh, subcell_mesh, active_grid, *element,
+         neighbor_data,
+         // Explicitly set RDMP data since this would be set previously by the
+         // TCI
+         evolution::dg::subcell::RdmpTciData{
+             {max(get(get<Var1>(evolved_vars)))},
+             {min(get(get<Var1>(evolved_vars)))}},
+         self_tci_decision, neighbor_decision, evolved_vars,
+         time_stepper_history, mortar_mesh, mortar_data, mortar_next_id,
+         typename domain::Tags::NeighborMesh<Dim>::type{},
+         typename evolution::dg::subcell::Tags::MeshForGhostData<Dim>::type{},
+         cell_centered_flux, fd_to_neighbor_fd_interpolants,
+         neighbor_dg_to_fd_interpolants, dg_to_neighbor_fd_interpolants,
+         ElementMap<3, Frame::Grid>{element_id, blocks[element_id.block_id()]},
+         extension_directions, subcell_options});
+  }
+
+  // SetInterpolator
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    ActionTesting::next_action<comp>(make_not_null(&runner), element_id);
+    if (not enable_extension) {
+      const size_t extension_directions_size =
+          get_databox_tag<
+              comp, evolution::dg::subcell::Tags::ExtensionDirections<Dim>>(
+              runner, element_id)
+              .size();
+      REQUIRE(extension_directions_size == 0);
+    }
+  }
+
+  // Let use generate expected sender_ghost_data_non_block_boundary
+  // and sender_ghost_data_block_boundary.
+  const size_t ghost_zone_size = 2;
+  using rdmp_tci_data_tag = evolution::dg::subcell::Tags::DataForRdmpTci;
+  const evolution::dg::subcell::RdmpTciData& rdmp_tci_data =
+      get_databox_tag<comp, rdmp_tci_data_tag>(runner, sender.id());
+
+  // SendDataForReconstruction
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    ActionTesting::next_action<comp>(make_not_null(&runner), element_id);
+  }
+  // Check that the inbox has the expected data size depending on the
+  // enable_extension option.
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    const size_t neighbor_size = element->neighbors().size();
+    const size_t extension_directions_size =
+        get_databox_tag<comp,
+                        evolution::dg::subcell::Tags::ExtensionDirections<Dim>>(
+            runner, element_id)
+            .size();
+    const size_t received_data_size =
+        ActionTesting::get_inbox_tag<
+            comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim, UseNodegroupDgElements>>(runner, element_id)
+            .at(time_step_id)
+            .size();
+    REQUIRE(received_data_size == (neighbor_size - extension_directions_size));
+  }
+
+  // ReceiveAndSendDataForReconstruction
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    ActionTesting::next_action<comp>(make_not_null(&runner), element_id);
+  }
+  // The inbox size should match the neighbor size at this point for
+  // all elements, regardless of the enable_extension option.
+  // Compare the contents as well between the data in the inbox
+  // versus the expected data.
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    const size_t neighbor_size = element->neighbors().size();
+    const size_t received_data_size =
+        ActionTesting::get_inbox_tag<
+            comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim, UseNodegroupDgElements>>(runner, element_id)
+            .at(time_step_id)
+            .size();
+    REQUIRE(received_data_size == neighbor_size);
+
+    for (const auto& [direction, neighbors] : element->neighbors()) {
+      // only one neighbor in each direction
+      const auto& neighbor_id = neighbors.ids().begin();
+      const DirectionalId<Dim> directional_id{direction, *neighbor_id};
+      const auto& orientation = neighbors.orientation(*neighbor_id);
+      const Direction<Dim> direction_from_neighbor =
+          orientation(direction.opposite());
+      const auto& neighbor_element = *(id_to_element.at(*neighbor_id));
+      const auto& ghost_data =
+          ActionTesting::get_inbox_tag<
+              comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                        Dim, UseNodegroupDgElements>>(runner, element_id)
+              .at(time_step_id)
+              .at(directional_id)
+              .ghost_cell_data.value();
+      const DataVector expected_ghost_data =
+          compute_expected_ghost_data<Dim, UseNodegroupDgElements>(
+              runner, neighbor_element, direction_from_neighbor, subcell_mesh,
+              enable_extension, use_cell_centered_flux, evolved_vars,
+              rdmp_tci_data, time_step_id, ghost_zone_size);
+      CHECK_ITERABLE_APPROX(expected_ghost_data, ghost_data);
+    }
+  }
+
+  // ReceiveDataForReconstruction
+  for (const auto* element : elements) {
+    const auto& element_id = element->id();
+    ActionTesting::next_action<comp>(make_not_null(&runner), element_id);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.ReconstructionCommunication",
                   "[Evolution][Unit]") {
   for (const bool use_cell_centered_flux : {false, true}) {
     test<1, false>(use_cell_centered_flux);
     test<2, false>(use_cell_centered_flux);
     test<3, false>(use_cell_centered_flux);
+    test_receive_and_send_data<3, false>(false, use_cell_centered_flux);
+    test_receive_and_send_data<3, false>(true, use_cell_centered_flux);
   }
 }
 }  // namespace

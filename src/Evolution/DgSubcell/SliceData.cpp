@@ -154,6 +154,13 @@ DirectionMap<Dim, DataVector> slice_data_impl(
         interpolated[directional_element_id.direction()] = false;
         continue;
       }
+      // fd_to_fd_neighbor_fd_interpolants contain interpolants
+      // for all direction where interpolation is necessary, and we only
+      // want to slice data for the directions that are in
+      // `directions_to_slice`.
+      if (!directions_to_slice.contains(directional_element_id.direction())) {
+        continue;
+      }
       interpolated[directional_element_id.direction()] = true;
       auto result_span =
           gsl::make_span(result.at(directional_element_id.direction()).data(),
