@@ -57,6 +57,8 @@ done
 if [ "$check_output_values" = "true" ]; then
     @Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/tools/CheckOutputFiles.py \
         --input-file $input_file --run-directory $test_dir \
+        --cmake-source-directory @CMAKE_SOURCE_DIR@ \
+        --cmake-bin-directory @CMAKE_BINARY_DIR@ \
         || exit 1
 fi
 if [ "$check_output_present" = "true" ]; then

@@ -363,6 +363,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-filename")
     parser.add_argument("--run-directory")
+    parser.add_argument("--cmake-source-directory")
+    parser.add_argument("--cmake-bin-directory")
     logging.basicConfig(level=logging.INFO)
     duplicate_test_case, remaining_args = parser.parse_known_args(
         namespace=H5CheckTestCase
