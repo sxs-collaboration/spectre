@@ -39,6 +39,7 @@ target_link_libraries(
   Parallel
   ParallelInterpolation
   PhaseControl
+  ScalarGaussBonnet
   ScalarTensor
   ScalarTensorAnalyticData
   ScalarTensorPointwise

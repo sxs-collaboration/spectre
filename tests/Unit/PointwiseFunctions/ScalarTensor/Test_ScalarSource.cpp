@@ -15,6 +15,8 @@
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 
+namespace {
+
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.ScalarSource",
                   "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
@@ -29,3 +31,4 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.ScalarSource",
       {"add_scalar_source_to_dt_pi_scalar"}, {{{1.0e-2, 0.5}}}, DataVector{5},
       1.0e-12, std::random_device{}(), 0.1234);
 }
+}  // namespace
