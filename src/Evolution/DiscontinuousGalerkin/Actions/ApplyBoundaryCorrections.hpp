@@ -524,9 +524,6 @@ bool receive_boundary_data_local_time_stepping(
                        << "\nTimeStepId: " << mortar_next_time_step_id);
             neighbor_mesh->insert_or_assign(
                 mortar_id, received_mortar_data->second.volume_mesh);
-            neighbor_mortar_data.face_mesh =
-                received_mortar_data->second.volume_mesh.slice_away(
-                    mortar_id.direction().dimension());
             neighbor_mortar_data.mortar_mesh =
                 received_mortar_data->second.boundary_correction_mesh.value();
             neighbor_mortar_data.mortar_data = std::move(
