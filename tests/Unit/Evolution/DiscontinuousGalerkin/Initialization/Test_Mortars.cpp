@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -33,6 +34,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
@@ -42,7 +44,8 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -427,6 +430,43 @@ void check_mortar_data(const MortarData<Dim>& projected,
   }
 }
 
+template <size_t Dim, typename CouplingResult>
+void check_boundary_histories(
+    const ::dg::MortarMap<
+        Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
+                                           ::evolution::dg::MortarData<Dim>,
+                                           CouplingResult>>& value,
+    const ::dg::MortarMap<
+        Dim, TimeSteppers::BoundaryHistory<::evolution::dg::MortarData<Dim>,
+                                           ::evolution::dg::MortarData<Dim>,
+                                           CouplingResult>>& expected) {
+  using HistMap = std::decay_t<decltype(value)>;
+  const auto compare_entries = [](const HistMap& a, const HistMap& b) {
+    for (const auto& [mortar, history_a] : a) {
+      CAPTURE(mortar);
+      const auto it = b.find(mortar);
+      REQUIRE(it != b.end());
+      const auto& history_b = it->second;
+      const auto local_a = history_a.local();
+      const auto local_b = history_b.local();
+      local_a.for_each([&](const TimeStepId& id,
+                           const ::evolution::dg::MortarData<Dim>& data) {
+        CHECK(local_a.integration_order(id) == local_b.integration_order(id));
+        check_mortar_data(data, local_b.data(id));
+      });
+      const auto remote_a = history_a.remote();
+      const auto remote_b = history_b.remote();
+      remote_a.for_each([&](const TimeStepId& id,
+                            const ::evolution::dg::MortarData<Dim>& data) {
+        CHECK(remote_a.integration_order(id) == remote_b.integration_order(id));
+        check_mortar_data(data, remote_b.data(id));
+      });
+    }
+  };
+  compare_entries(value, expected);
+  compare_entries(expected, value);
+}
+
 template <size_t Dim, bool UsingLts>
 void test_p_refine(
     ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data,
@@ -473,30 +513,11 @@ void test_p_refine(
         expected_mortar_next_temporal_id);
   CHECK(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(box) ==
         expected_normal_covector_and_magnitude);
-  if (UsingLts) {
-    const auto& projected_mortar_data_history = db::get<
-        Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>(
-        box);
-    for (const auto& [mortar_id, history] : projected_mortar_data_history) {
-      for (size_t i = 0; i < 3; ++i) {
-        check_mortar_data(
-            history.local().data(i),
-            expected_mortar_data_history.at(mortar_id).local().data(i));
-      }
-      for (size_t i = 0; i < 2; ++i) {
-        check_mortar_data(
-            history.remote().data(i),
-            expected_mortar_data_history.at(mortar_id).remote().data(i));
-      }
-    }
-  } else {
-    (void)(expected_mortar_data_history);
-    CHECK(
-        db::get<
-            Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>(
-            box)
-            .empty());
-  }
+  check_boundary_histories(
+      db::get<
+          Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>(
+          box),
+      expected_mortar_data_history);
 }
 
 template <size_t Dim>
@@ -636,27 +657,82 @@ void test_p_refine_gts() {
       expected_mortar_data_history);
 }
 
+// The data arrays are set to linear functions, with element_size and
+// mortar_size are used to choose the domain the function is evaluated
+// on.  The mortar_size is relative to the size of the element, and at
+// least one of the two must be Full in each dimension.
+template <size_t Dim>
+MortarData<Dim> make_mortar_data(
+    const Mesh<Dim - 1>& mortar_mesh, const Mesh<Dim - 1>& face_mesh,
+    const Mesh<Dim>& volume_mesh, const bool is_local_side, const double value,
+    const std::array<Spectral::SegmentSize, Dim>& element_size,
+    const std::array<Spectral::SegmentSize, Dim - 1>& mortar_size,
+    const size_t dimension) {
+  const auto linear_func =
+      []<size_t D>(const Mesh<D>& mesh,
+                   const std::array<Spectral::SegmentSize, D>& size) {
+        if constexpr (D == 0) {
+          return DataVector{1.0};
+        } else {
+          const auto coords = logical_coordinates(mesh);
+          DataVector linear(mesh.number_of_grid_points(), 0.0);
+          for (size_t i = 0; i < D; ++i) {
+            switch (gsl::at(size, i)) {
+              case Spectral::SegmentSize::LowerHalf:
+                linear += 0.5 * (coords.get(i) - 1.0);
+                break;
+              case Spectral::SegmentSize::UpperHalf:
+                linear += 0.5 * (coords.get(i) + 1.0);
+                break;
+              default:
+                ASSERT(gsl::at(size, i) == Spectral::SegmentSize::Full,
+                       "Bad argument: " << gsl::at(size, i));
+                linear += coords.get(i);
+                break;
+            }
+          }
+          return linear;
+        }
+      };
+
+  const auto face_size = all_but_specified_element_of(element_size, dimension);
+  auto absolute_mortar_size = mortar_size;
+  for (size_t i = 0; i < Dim - 1; ++i) {
+    if (gsl::at(face_size, i) != Spectral::SegmentSize::Full) {
+      ASSERT(gsl::at(mortar_size, i) == Spectral::SegmentSize::Full,
+             "Can't represent a quarter segment.");
+      gsl::at(absolute_mortar_size, i) = gsl::at(face_size, i);
+    }
+  }
+
+  MortarData<Dim> mortar_data;
+  mortar_data.mortar_data.emplace(
+      value * linear_func(mortar_mesh, absolute_mortar_size));
+  mortar_data.mortar_mesh.emplace(mortar_mesh);
+  if (is_local_side) {
+    mortar_data.face_normal_magnitude.emplace(
+        2.0 * value * linear_func(face_mesh, face_size));
+    mortar_data.face_det_jacobian.emplace(3.0 * value *
+                                          linear_func(face_mesh, face_size));
+    mortar_data.face_mesh.emplace(face_mesh);
+    mortar_data.volume_det_inv_jacobian.emplace(
+        4.0 * value * linear_func(volume_mesh, element_size));
+    mortar_data.volume_mesh.emplace(volume_mesh);
+  }
+  return mortar_data;
+}
+
 template <size_t Dim>
 MortarData<Dim> make_mortar_data(const Mesh<Dim - 1>& mortar_mesh,
                                  const Mesh<Dim - 1>& face_mesh,
                                  const Mesh<Dim>& volume_mesh,
                                  const bool is_local_side, const double value) {
-  constexpr size_t number_of_components = 1 + Dim;
-  MortarData<Dim> mortar_data;
-  mortar_data.mortar_data = DataVector{
-      mortar_mesh.number_of_grid_points() * number_of_components, value};
-  mortar_data.mortar_mesh = mortar_mesh;
-  if (is_local_side) {
-    mortar_data.face_normal_magnitude = Scalar<DataVector>{
-        DataVector{face_mesh.number_of_grid_points(), 2.0 * value}};
-    mortar_data.face_det_jacobian = Scalar<DataVector>{
-        DataVector{face_mesh.number_of_grid_points(), 3.0 * value}};
-    mortar_data.face_mesh = face_mesh;
-    mortar_data.volume_det_inv_jacobian = Scalar<DataVector>{
-        DataVector{volume_mesh.number_of_grid_points(), 4.0 * value}};
-    mortar_data.volume_mesh = volume_mesh;
-  }
-  return mortar_data;
+  return make_mortar_data<Dim>(
+      mortar_mesh, face_mesh, volume_mesh, is_local_side, value,
+      make_array<Dim>(Spectral::SegmentSize::Full),
+      make_array<Dim - 1>(Spectral::SegmentSize::Full),
+      // Dimension doesn't matter for full-size elements
+      0);
 }
 
 template <size_t Dim>
