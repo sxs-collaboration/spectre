@@ -1,0 +1,19 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+set(LIBRARY Test_ScalarTensorXcts)
+
+set(LIBRARY_SOURCES
+  Test_ScalarMomentum.cpp
+  )
+
+add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  ScalarTensorXcts
+  Spectral
+  Utilities
+  )

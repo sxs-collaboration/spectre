@@ -26,6 +26,7 @@
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/QuadraticCurvatureScalars.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
@@ -216,6 +217,28 @@ void test_compute_deriv_inverse_spatial_metric(const DataType& used_for_size) {
       "ComputeSpacetimeQuantities", "deriv_inverse_spatial_metric",
       {{{-10., 10.}}}, used_for_size);
 }
+
+void test_compute_pontryagin_scalar_in_vacuum(const DataVector& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataVector> (*)(
+          const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+          const tnsr::ii<DataVector, 3, Frame::Inertial>&,
+          const tnsr::II<DataVector, 3, Frame::Inertial>&)>(
+          &gr::pontryagin_scalar_in_vacuum),
+      "ComputeSpacetimeQuantities", "pontryagin_scalar_in_vacuum",
+      {{{-10., 10.}}}, used_for_size);
+}
+
+void test_compute_gauss_bonnet_scalar_in_vacuum(
+    const DataVector& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataVector> (*)(const Scalar<DataVector>&,
+                                         const Scalar<DataVector>&)>(
+          &gr::gauss_bonnet_scalar_in_vacuum),
+      "ComputeSpacetimeQuantities", "gauss_bonnet_scalar_in_vacuum",
+      {{{-10., 10.}}}, used_for_size);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
@@ -245,6 +268,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_cov_deriv_extrinsic_curvature_adm,
                                     (1, 2, 3));
+  test_compute_pontryagin_scalar_in_vacuum(DataVector{5});
+  test_compute_gauss_bonnet_scalar_in_vacuum(DataVector{5});
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct

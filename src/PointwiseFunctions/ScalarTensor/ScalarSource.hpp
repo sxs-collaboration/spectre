@@ -8,6 +8,8 @@
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
+#include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace ScalarTensor {
@@ -72,7 +74,7 @@ void add_scalar_source_to_dt_pi_scalar(
  * \see `ScalarTensor::Tags::ScalarMass` for details about the mass.
  */
 void mass_source(gsl::not_null<Scalar<DataVector>*> scalar_source,
-                 const Scalar<DataVector>& psi, const double mass_psi);
+                 const Scalar<DataVector>& psi, double mass_psi);
 
 namespace Tags {
 

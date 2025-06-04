@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "DataStructures/DataVector.hpp"
-#include "Evolution/Systems/ScalarTensor/StressEnergy.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/Pypp.hpp"
@@ -13,22 +12,21 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "PointwiseFunctions/ScalarTensor/StressEnergy.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.StressEnergy",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.StressEnergy",
+                  "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/ScalarTensor"};
+      "PointwiseFunctions/ScalarTensor"};
 
   pypp::check_with_random_values<1>(
       &ScalarTensor::trace_reversed_stress_energy, "StressEnergy",
-      {"trace_reversed_stress_energy"},
-      {{{1.0e-2, 0.5}}}, DataVector{5});
+      {"trace_reversed_stress_energy"}, {{{1.0e-2, 0.5}}}, DataVector{5});
 
   pypp::check_with_random_values<1>(
-      &ScalarTensor::add_stress_energy_term_to_dt_pi,
-      "StressEnergy", {"add_stress_energy_term_to_dt_pi"},
-      {{{1.0e-2, 0.5}}}, DataVector{5}, 1.0e-12, std::random_device{}(),
-      0.1234);
+      &ScalarTensor::add_stress_energy_term_to_dt_pi, "StressEnergy",
+      {"add_stress_energy_term_to_dt_pi"}, {{{1.0e-2, 0.5}}}, DataVector{5},
+      1.0e-12, std::random_device{}(), 0.1234);
 
   TestHelpers::db::test_compute_tag<
       ScalarTensor::Tags::TraceReversedStressEnergyCompute>(

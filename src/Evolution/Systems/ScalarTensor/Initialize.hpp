@@ -10,7 +10,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "Evolution/Systems/ScalarTensor/Sources/ScalarSource.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
@@ -31,6 +30,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintGammas.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarTensor::Initialization {
