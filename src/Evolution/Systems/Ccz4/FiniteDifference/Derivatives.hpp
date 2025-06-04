@@ -51,4 +51,26 @@ void spacetime_derivatives(
     const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                           Frame::Inertial>&
         cell_centered_logical_to_inertial_inv_jacobian);
+
+/*!
+ * \brief Compute second partial derivatives of all the evolved variables in the
+ * second order Ccz4 system
+ * \details
+ * The derivatives are computed using FD of order deriv_order.
+ *
+ * \note Only 3D 4-th order second derivatives are implemented.
+ */
+void second_spacetime_derivatives(
+    gsl::not_null<Variables<
+        db::wrap_tags_in<::Tags::second_deriv, System::gradients_tags,
+                         tmpl::size_t<3>, Frame::Inertial>>*>
+        result,
+    const Variables<typename System::variables_tag::tags_list>&
+        volume_evolved_variables,
+    const DirectionalIdMap<3, evolution::dg::subcell::GhostData>&
+        all_ghost_data,
+    const size_t& deriv_order, const Mesh<3>& volume_mesh,
+    const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                          Frame::Inertial>&
+        cell_centered_logical_to_inertial_inv_jacobian);
 }  // namespace Ccz4::fd

@@ -82,8 +82,7 @@ DirectionalIdMap<3, GhostData> compute_ghost_data(
                             coords_range, std::forward<Args>(args)...);
 }
 
-inline Variables<
-    ::Ccz4::fd::Tags::spacetime_reconstruction_tags>
+inline Variables<::Ccz4::fd::Tags::spacetime_reconstruction_tags>
 compute_prim_solution(
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) {
   using ConformalMetric = ::Ccz4::Tags::ConformalMetric<DataVector, 3>;
@@ -96,8 +95,8 @@ compute_prim_solution(
   using Shift = gr::Tags::Shift<DataVector, 3>;
   using AuxiliaryShiftB = ::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>;
 
-  Variables<::Ccz4::fd::Tags::spacetime_reconstruction_tags>
-      vars{get<0>(coords).size(), 0.0};
+  Variables<::Ccz4::fd::Tags::spacetime_reconstruction_tags> vars{
+      get<0>(coords).size(), 0.0};
   for (size_t i = 0; i < 3; ++i) {
     get(get<ConformalFactor>(vars)) += coords.get(i);
     get(get<TraceExtrinsicCurvature>(vars)) += coords.get(i);
@@ -117,7 +116,7 @@ compute_prim_solution(
     get<GammaHat>(vars).get(j) += 1.0e-2 * static_cast<double>((j + 2) + 10);
     get<Shift>(vars).get(j) += 1.0e-2 * static_cast<double>((j + 2) + 60);
     get<AuxiliaryShiftB>(vars).get(j) +=
-      1.0e-2 * static_cast<double>((j + 2) + 110);
+        1.0e-2 * static_cast<double>((j + 2) + 110);
   }
 
   auto& conformal_metric = get<ConformalMetric>(vars);
@@ -130,6 +129,63 @@ compute_prim_solution(
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       atilde.get(i, j) = (1000 * i + 5000 * j + 1) * coords.get(i);
+    }
+  }
+  return vars;
+}
+
+inline Variables<::Ccz4::fd::Tags::spacetime_reconstruction_tags>
+compute_prim_solution_for_second_deriv(
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) {
+  using ConformalMetric = ::Ccz4::Tags::ConformalMetric<DataVector, 3>;
+  using ATilde = ::Ccz4::Tags::ATilde<DataVector, 3>;
+  using ConformalFactor = ::Ccz4::Tags::ConformalFactor<DataVector>;
+  using TraceExtrinsicCurvature = gr::Tags::TraceExtrinsicCurvature<DataVector>;
+  using Theta = ::Ccz4::Tags::Theta<DataVector>;
+  using GammaHat = ::Ccz4::Tags::GammaHat<DataVector, 3>;
+  using Lapse = gr::Tags::Lapse<DataVector>;
+  using Shift = gr::Tags::Shift<DataVector, 3>;
+  using AuxiliaryShiftB = ::Ccz4::Tags::AuxiliaryShiftB<DataVector, 3>;
+
+  Variables<::Ccz4::fd::Tags::spacetime_reconstruction_tags> vars{
+      get<0>(coords).size(), 0.0};
+  for (size_t i = 0; i < 3; ++i) {
+    get(get<ConformalFactor>(vars)) += square(coords.get(i)) + coords.get(i);
+    get(get<TraceExtrinsicCurvature>(vars)) +=
+        square(coords.get(i)) + coords.get(i);
+    get(get<Theta>(vars)) += square(coords.get(i)) + coords.get(i);
+    get(get<Lapse>(vars)) += square(coords.get(i)) + coords.get(i);
+    for (size_t j = 0; j < 3; ++j) {
+      get<GammaHat>(vars).get(j) += square(coords.get(i)) + coords.get(i);
+      get<Shift>(vars).get(j) += square(coords.get(i)) + coords.get(i);
+      get<AuxiliaryShiftB>(vars).get(j) +=
+          square(coords.get(i)) + coords.get(i);
+    }
+  }
+  get(get<ConformalFactor>(vars)) += 2.0;
+  get(get<TraceExtrinsicCurvature>(vars)) += 15.0;
+  get(get<Theta>(vars)) += 30.0;
+  get(get<Lapse>(vars)) += 50.0;
+  for (size_t j = 0; j < 3; ++j) {
+    get<GammaHat>(vars).get(j) += 1.0e-2 * static_cast<double>((j + 2) + 10);
+    get<Shift>(vars).get(j) += 1.0e-2 * static_cast<double>((j + 2) + 60);
+    get<AuxiliaryShiftB>(vars).get(j) +=
+        1.0e-2 * static_cast<double>((j + 2) + 110);
+  }
+
+  auto& conformal_metric = get<ConformalMetric>(vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      conformal_metric.get(i, j) =
+          (10 * i + 50 * j + 1) * square(coords.get(i)) +
+          (10 * i + 50 * j + 1) * coords.get(i);
+    }
+  }
+  auto& atilde = get<ATilde>(vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      atilde.get(i, j) = (1000 * i + 5000 * j + 1) * square(coords.get(i)) +
+                         (1000 * i + 5000 * j + 1) * coords.get(i);
     }
   }
   return vars;
