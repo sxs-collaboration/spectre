@@ -61,7 +61,7 @@ using ConformalMetric =
  * inverse spatial metric, then we define
  * \f$\bar{\gamma}^{ij} = \phi^{-2} \gamma^{ij}\f$.
  */
-template <typename DataType, size_t Dim, typename Frame>
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 using InverseConformalMetric =
     gr::Tags::Conformal<gr::Tags::InverseSpatialMetric<DataType, Dim, Frame>,
                         -2>;

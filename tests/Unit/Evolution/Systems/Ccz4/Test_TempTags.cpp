@@ -61,6 +61,47 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       Ccz4::Tags::LapseTimesSlicingCondition<DataType>>(
       "LapseTimesSlicingCondition");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::DetConformalSpatialMetric<DataType>>(
+      "DetConformalSpatialMetric");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::InvATilde<DataType, Dim, Frame>>(
+      "InvATilde");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ATildeTimesFieldB<DataType, Dim, Frame>>(
+      "ATildeTimesFieldB");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::SymmetrizedDerivFieldB<DataType, Dim, Frame>>(
+      "SymmetrizedDerivFieldB");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ContractedSymmetrizedDerivFieldB<DataType, Dim, Frame>>(
+      "ContractedSymmetrizedDerivFieldB");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ContractedFieldDUp<DataType, Dim, Frame>>(
+      "ContractedFieldDUp");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::HalfConformalFactorSquared<DataType>>(
+      "HalfConformalFactorSquared");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::DerivGammaHatMinusContractedConformalChristoffel<
+          DataType, Dim, Frame>>(
+      "DerivGammaHatMinusContractedConformalChristoffel");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ContractedChristoffelSecondKind<DataType, Dim, Frame>>(
+      "ContractedChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::ContractedDerivConformalChristoffelDifference<
+          DataType, Dim, Frame>>(
+      "ContractedDerivConformalChristoffelDifference");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::LapseTimesConformalMetric<DataType, Dim, Frame>>(
+      "LapseTimesConformalMetric");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::SpatialRicciTensor<DataType, Dim, Frame>>(
+      "SpatialRicciTensor");
+  TestHelpers::db::test_simple_tag<
+      Ccz4::Tags::UpperSpatialZ4Contraint<DataType, Dim, Frame>>(
+      "UpperSpatialZ4Contraint");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.TempTags", "[Unit][Evolution]") {

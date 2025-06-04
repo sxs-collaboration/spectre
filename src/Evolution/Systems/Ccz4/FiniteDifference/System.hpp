@@ -18,12 +18,8 @@ struct System {
       gr::Tags::TraceExtrinsicCurvature<DataVector>, Tags::Theta<DataVector>,
       Tags::GammaHat<DataVector, 3>, Tags::AuxiliaryShiftB<DataVector, 3>>>;
 
-  using gradients_tags =
-      tmpl::list<Tags::ConformalMetric<DataVector, 3>,
-                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
-                 Tags::ConformalFactor<DataVector>, Tags::ATilde<DataVector, 3>,
-                 gr::Tags::TraceExtrinsicCurvature<DataVector>,
-                 Tags::Theta<DataVector>, Tags::GammaHat<DataVector, 3>,
-                 Tags::AuxiliaryShiftB<DataVector, 3>>;
+  using variables_tag_list = typename variables_tag::tags_list;
+
+  using gradients_tags = variables_tag_list;
 };
 }  // namespace Ccz4::fd

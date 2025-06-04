@@ -19,6 +19,7 @@ spectre_target_headers(
   Derivatives.hpp
   SecondPartialDerivatives.hpp
   SecondPartialDerivatives.tpp
+  SoTimeDerivative.hpp
   System.hpp
   Tags.hpp
   )
