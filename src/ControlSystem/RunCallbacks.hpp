@@ -11,6 +11,9 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/Callback.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -40,7 +43,8 @@ namespace control_system {
 /// `post_interpolation_callback`.
 template <typename Submeasurement, typename ControlSystems>
 struct RunCallbacks
-    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback>,
+      tt::ConformsTo<ah::protocols::Callback> {
  private:
   static_assert(
       tt::assert_conforms_to_v<Submeasurement, protocols::Submeasurement>);
@@ -57,6 +61,32 @@ struct RunCallbacks
     static_assert(
         std::is_same_v<TemporalId, LinkedMessageId<double>>,
         "RunCallbacks expects a LinkedMessageId<double> as its temporal id");
+    tmpl::for_each<ControlSystems>(
+        [&box, &cache, &measurement_id](auto control_system_v) {
+          using ControlSystem = tmpl::type_from<decltype(control_system_v)>;
+          db::apply<typename ControlSystem::process_measurement::
+                        template argument_tags<Submeasurement>>(
+              [&cache, &measurement_id](const auto&... args) {
+                ControlSystem::process_measurement::apply(
+                    Submeasurement{}, args..., cache, measurement_id);
+              },
+              box);
+        });
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+      Parallel::printf(
+          "time = %.16f: For the '%s' measurement, calling process_measurement "
+          "for the following control systems: (%s).\n",
+          measurement_id.id, pretty_type::name<Submeasurement>(),
+          pretty_type::list_of_names<ControlSystems>());
+    }
+  }
+
+  template <typename DbTags, typename Metavariables>
+  static void apply(const db::DataBox<DbTags>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const FastFlow::Status /*status*/) {
+    const auto& measurement_id = db::get<ah::Tags::CurrentTime>(box).value();
     tmpl::for_each<ControlSystems>(
         [&box, &cache, &measurement_id](auto control_system_v) {
           using ControlSystem = tmpl::type_from<decltype(control_system_v)>;

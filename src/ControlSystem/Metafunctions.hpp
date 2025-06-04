@@ -76,6 +76,17 @@ struct interpolation_target_tags_for_submeasurement {
   using type = tmpl::conditional_t<std::is_same_v<declared_type, void>,
                                    tmpl::list<>, tmpl::list<declared_type>>;
 };
+
+template <typename Submeasurement, typename ControlSystems>
+struct horizon_metavars_for_submeasurement {
+ private:
+  using declared_type =
+      typename Submeasurement::template horizon_metavars<ControlSystems>;
+
+ public:
+  using type = tmpl::conditional_t<std::is_same_v<declared_type, void>,
+                                   tmpl::list<>, tmpl::list<declared_type>>;
+};
 }  // namespace detail
 
 /// Extract the `interpolation_target_tag` aliases from all
@@ -88,6 +99,16 @@ using interpolation_target_tags = tmpl::flatten<tmpl::transform<
     tmpl::lazy::transform<
         submeasurements<tmpl::_1>,
         tmpl::defer<detail::interpolation_target_tags_for_submeasurement<
+            tmpl::_1,
+            control_systems_with_measurement<tmpl::pin<ControlSystems>,
+                                             tmpl::parent<tmpl::_1>>>>>>>;
+
+template <typename ControlSystems>
+using horizon_metavars = tmpl::flatten<tmpl::transform<
+    measurements_t<ControlSystems>,
+    tmpl::lazy::transform<
+        submeasurements<tmpl::_1>,
+        tmpl::defer<detail::horizon_metavars_for_submeasurement<
             tmpl::_1,
             control_systems_with_measurement<tmpl::pin<ControlSystems>,
                                              tmpl::parent<tmpl::_1>>>>>>>;
