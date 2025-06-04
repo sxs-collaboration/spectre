@@ -8,11 +8,12 @@ set(LIBRARY_SOURCES
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_FastFlow.cpp
-  Test_FindCommonHorizon.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_ObserveCenters.cpp
   Test_Tags.cpp
   )
+
+add_subdirectory(Events)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
