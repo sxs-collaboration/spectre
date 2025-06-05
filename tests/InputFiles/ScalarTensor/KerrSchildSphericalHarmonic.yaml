@@ -50,8 +50,6 @@ InitialData: &InitialData
     Width: 2.0
     Mode: [0, 0]
 
-ScalarMass: 0.0
-
 DomainCreator:
   Sphere:
     InnerRadius: &InnerRadius 1.9
@@ -101,9 +99,14 @@ EvolutionSystem:
         Width: 11.313708499
         Center: [0.0, 0.0, 0.0]
   ScalarTensor:
+    ScalarMass: 0.0
     # Ramp up effectively disabled
     RampUpStart: -1.0
     RampUpDuration: 0.0
+    CouplingParameters:
+      Linear: 0.0
+      Quadratic: 0.0
+      Quartic: 0.0
     DampingFunctionGamma1:
       GaussianPlusConstant:
         Constant: 0.0

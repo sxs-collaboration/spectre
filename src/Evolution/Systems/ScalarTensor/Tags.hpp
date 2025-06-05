@@ -16,6 +16,12 @@
 #include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace ScalarTensor::OptionTags {
+struct Group;
+}  // namespace ScalarTensor::OptionTags
+/// \endcond
+
 /*!
  * \brief Tags for the scalar tensor system.
  */
@@ -54,6 +60,7 @@ struct ScalarMass {
   using type = double;
   static constexpr Options::String help{
       "Mass of the scalar field in code units"};
+  using group = ::ScalarTensor::OptionTags::Group;
 };
 
 /*!

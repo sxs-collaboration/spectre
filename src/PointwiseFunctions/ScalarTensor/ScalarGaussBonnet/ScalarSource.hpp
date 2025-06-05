@@ -8,6 +8,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/CouplingParameters.hpp"
 #include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
@@ -46,14 +47,14 @@ void gauss_bonnet_scalar_source(
     const Scalar<DataVector>& weyl_electric_scalar,
     const Scalar<DataVector>& weyl_magnetic_scalar,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters, double mass_psi,
+    const CouplingParameterOptions& coupling_parameters, double mass_psi,
     std::pair<double, double> start_and_ramp_times, double time);
 
 Scalar<DataVector> gauss_bonnet_scalar_source(
     const Scalar<DataVector>& weyl_electric_scalar,
     const Scalar<DataVector>& weyl_magnetic_scalar,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters, double mass_psi,
+    const CouplingParameterOptions& coupling_parameters, double mass_psi,
     std::pair<double, double> start_and_ramp_times, double time);
 /// @}
 
@@ -71,7 +72,7 @@ Scalar<DataVector> gauss_bonnet_scalar_source(
 void multiply_by_negative_deriv_of_coupling_func(
     gsl::not_null<Scalar<DataVector>*> scalar_source,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters,
+    const CouplingParameterOptions& coupling_parameters,
     std::pair<double, double> start_and_ramp_times, double time);
 
 /*!
@@ -88,7 +89,7 @@ void multiply_by_negative_deriv_of_coupling_func(
 void multiply_by_negative_second_deriv_of_coupling_func(
     gsl::not_null<Scalar<DataVector>*> scalar_source,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters,
+    const CouplingParameterOptions& coupling_parameters,
     std::pair<double, double> start_and_ramp_times, double time);
 
 }  // namespace ScalarTensor

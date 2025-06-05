@@ -3,7 +3,9 @@
 set(LIBRARY "Test_ScalarGaussBonnetPointwise")
 
 set(LIBRARY_SOURCES
+  Test_CouplingParameters.cpp
   Test_ScalarSource.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

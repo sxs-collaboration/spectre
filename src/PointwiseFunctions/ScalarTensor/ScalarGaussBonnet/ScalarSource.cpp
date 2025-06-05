@@ -17,7 +17,7 @@ void gauss_bonnet_scalar_source(
     const Scalar<DataVector>& weyl_electric_scalar,
     const Scalar<DataVector>& weyl_magnetic_scalar,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters, const double mass_psi,
+    const CouplingParameterOptions& coupling_parameters, const double mass_psi,
     const std::pair<double, double> start_and_ramp_times, const double time) {
   // Compute the Riemann squared scalar in vacuum
   gr::gauss_bonnet_scalar_in_vacuum(scalar_source, weyl_electric_scalar,
@@ -33,7 +33,7 @@ Scalar<DataVector> gauss_bonnet_scalar_source(
     const Scalar<DataVector>& weyl_electric_scalar,
     const Scalar<DataVector>& weyl_magnetic_scalar,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters, const double mass_psi,
+    const CouplingParameterOptions& coupling_parameters, const double mass_psi,
     const std::pair<double, double> start_and_ramp_times, const double time) {
   Scalar<DataVector> result{};
   gauss_bonnet_scalar_source(make_not_null(&result), weyl_electric_scalar,
@@ -45,22 +45,19 @@ Scalar<DataVector> gauss_bonnet_scalar_source(
 void multiply_by_negative_deriv_of_coupling_func(
     const gsl::not_null<Scalar<DataVector>*> scalar_source,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters,
+    const CouplingParameterOptions& coupling_parameters,
     const std::pair<double, double> start_and_ramp_times, const double time) {
-  const double linear_coupling_psi = gsl::at(coupling_parameters, 0);
-  const double first_coupling_psi = gsl::at(coupling_parameters, 1);
-  const double second_coupling_psi = gsl::at(coupling_parameters, 2);
   const auto ones_scalar = make_with_value<Scalar<DataVector>>(psi, 1.0);
 
   // Ramp up factor
   const double ramp_factor = nonic_ramp_function(time, start_and_ramp_times);
 
   const double linear_coupling_psi_over_four =
-      0.25 * ramp_factor * linear_coupling_psi;
+      0.25 * ramp_factor * coupling_parameters.linear;
   const double first_coupling_psi_over_four =
-      0.25 * ramp_factor * first_coupling_psi;
+      0.25 * ramp_factor * coupling_parameters.quadratic;
   const double second_coupling_psi_over_four =
-      0.25 * ramp_factor * second_coupling_psi;
+      0.25 * ramp_factor * coupling_parameters.quartic;
 
   *scalar_source->get() *= -linear_coupling_psi_over_four * ones_scalar.get() -
                            first_coupling_psi_over_four * psi.get() -
@@ -70,20 +67,18 @@ void multiply_by_negative_deriv_of_coupling_func(
 void multiply_by_negative_second_deriv_of_coupling_func(
     const gsl::not_null<Scalar<DataVector>*> scalar_source,
     const Scalar<DataVector>& psi,
-    const std::array<double, 3>& coupling_parameters,
+    const CouplingParameterOptions& coupling_parameters,
     const std::pair<double, double> start_and_ramp_times, const double time) {
-  // Linear coupling drops out here
-  const double first_coupling_psi = gsl::at(coupling_parameters, 1);
-  const double second_coupling_psi = gsl::at(coupling_parameters, 2);
   const auto ones_scalar = make_with_value<Scalar<DataVector>>(psi, 1.0);
 
   // Ramp up factor
   const double ramp_factor = nonic_ramp_function(time, start_and_ramp_times);
 
+  // Linear coupling drops out here
   const double first_coupling_psi_over_four =
-      0.25 * ramp_factor * first_coupling_psi;
+      0.25 * ramp_factor * coupling_parameters.quadratic;
   const double second_coupling_psi_over_four =
-      0.25 * ramp_factor * second_coupling_psi;
+      0.25 * ramp_factor * coupling_parameters.quartic;
 
   *scalar_source->get() *=
       -first_coupling_psi_over_four * ones_scalar.get() -
