@@ -14,6 +14,7 @@
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/ScalarSource.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace {
 namespace detail {
@@ -23,8 +24,11 @@ Scalar<DataVector> test_gauss_bonnet_scalar_source(
     const Scalar<DataVector>& psi,
     const std::array<double, 3>& coupling_parameters, const double mass_psi,
     const double start_time, const double ramp_time, const double time) {
+  const ScalarTensor::CouplingParameterOptions coupling_parameters_opts{
+      gsl::at(coupling_parameters, 0), gsl::at(coupling_parameters, 1),
+      gsl::at(coupling_parameters, 2)};
   return ::ScalarTensor::gauss_bonnet_scalar_source(
-      weyl_electric_scalar, weyl_magnetic_scalar, psi, coupling_parameters,
+      weyl_electric_scalar, weyl_magnetic_scalar, psi, coupling_parameters_opts,
       mass_psi, std::pair<double, double>{start_time, ramp_time}, time);
 }
 
@@ -33,8 +37,11 @@ Scalar<DataVector> test_multiply_by_negative_deriv_of_coupling_func(
     const std::array<double, 3>& coupling_parameters, const double start_time,
     const double ramp_time, const double time) {
   Scalar<DataVector> result = make_with_value<Scalar<DataVector>>(psi, 1.0);
+  const ScalarTensor::CouplingParameterOptions coupling_parameters_opts{
+      gsl::at(coupling_parameters, 0), gsl::at(coupling_parameters, 1),
+      gsl::at(coupling_parameters, 2)};
   ::ScalarTensor::multiply_by_negative_deriv_of_coupling_func(
-      make_not_null(&result), psi, coupling_parameters,
+      make_not_null(&result), psi, coupling_parameters_opts,
       std::pair<double, double>{start_time, ramp_time}, time);
   return result;
 }
@@ -44,8 +51,11 @@ Scalar<DataVector> test_multiply_by_negative_second_deriv_of_coupling_func(
     const std::array<double, 3>& coupling_parameters, const double start_time,
     const double ramp_time, const double time) {
   Scalar<DataVector> result = make_with_value<Scalar<DataVector>>(psi, 1.0);
+  const ScalarTensor::CouplingParameterOptions coupling_parameters_opts{
+      gsl::at(coupling_parameters, 0), gsl::at(coupling_parameters, 1),
+      gsl::at(coupling_parameters, 2)};
   ::ScalarTensor::multiply_by_negative_second_deriv_of_coupling_func(
-      make_not_null(&result), psi, coupling_parameters,
+      make_not_null(&result), psi, coupling_parameters_opts,
       std::pair<double, double>{start_time, ramp_time}, time);
   return result;
 }
@@ -57,8 +67,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.Sgb.ScalarSource",
   const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/ScalarTensor"};
 
-  // Test for ::ScalarTensor::gauss_bonnet_scalar_source
-  // Had issues with std::pair and ambiguous calls
   pypp::check_with_random_values<
       1,
       Scalar<DataVector> (*)(
