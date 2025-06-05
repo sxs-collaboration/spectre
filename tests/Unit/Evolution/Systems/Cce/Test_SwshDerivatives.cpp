@@ -340,6 +340,42 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
   mutate_all_swsh_derivatives_for_tag<TestSpinWeightedScalar<1>>(
       make_not_null(&computation_box));
 
+  // Test that ManualSwshDerivs agree with the automatic ones
+  using manual_swsh_derivs_to_check =
+      tmpl::list<Tags::ManualSwshDerivativeCompute<Tags::BondiBeta,
+                                                   Spectral::Swsh::Tags::Eth>,
+                 Tags::ManualSwshDerivativeCompute<Tags::BondiU,
+                                                   Spectral::Swsh::Tags::Eth>,
+                 Tags::ManualSwshDerivativeCompute<
+                     Tags::BondiJ, Spectral::Swsh::Tags::Ethbar>>;
+
+  using manual_swsh_derivs_base =
+      tmpl::transform<manual_swsh_derivs_to_check,
+                      tmpl::bind<db::detail::get_base, tmpl::_1>>;
+
+  auto manual_swsh_deriv_box = db::create<
+      db::AddSimpleTags<Tags::LMax, Tags::NumberOfRadialPoints, Tags::OneMinusY,
+                        Tags::EthRDividedByR,
+                        /* Ideally we would get Tags::BondBeta... from
+                         * manual_swsh_derivs_to_check above, except then we
+                         * would need to be able to expand a parameter pack for
+                         * the arguments of db::create, and that would require
+                         * a helper; so instead we do it manually */
+                        Tags::BondiBeta, Tags::BondiU, Tags::BondiJ,
+                        Tags::Dy<Tags::BondiBeta>, Tags::Dy<Tags::BondiU>,
+                        Tags::Dy<Tags::BondiJ>>,
+      db::AddComputeTags<manual_swsh_derivs_to_check>>(
+      db::get<Tags::LMax>(computation_box),
+      db::get<Tags::NumberOfRadialPoints>(computation_box),
+      db::get<Tags::OneMinusY>(computation_box),
+      db::get<Tags::EthRDividedByR>(computation_box),
+      db::get<Tags::BondiBeta>(computation_box),
+      db::get<Tags::BondiU>(computation_box),
+      db::get<Tags::BondiJ>(computation_box),
+      db::get<Tags::Dy<Tags::BondiBeta>>(computation_box),
+      db::get<Tags::Dy<Tags::BondiU>>(computation_box),
+      db::get<Tags::Dy<Tags::BondiJ>>(computation_box));
+
   // this can be tightened at the cost of needing a higher resolution due to the
   // inherent aliasing in this system. A loose approx allows the test to be
   // (relatively) fast
@@ -351,5 +387,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
   CHECK_VARIABLES_CUSTOM_APPROX(
       db::get<swsh_derivatives_variables_tag>(computation_box),
       db::get<swsh_derivatives_variables_tag>(expected_box), loose_cce_approx);
+
+  tmpl::for_each<manual_swsh_derivs_base>(
+      [&manual_swsh_deriv_box, &computation_box,
+       &loose_cce_approx]<typename TagToTest>(tmpl::type_<TagToTest> /*meta*/) {
+        CHECK_ITERABLE_CUSTOM_APPROX(db::get<TagToTest>(manual_swsh_deriv_box),
+                                     db::get<TagToTest>(computation_box),
+                                     loose_cce_approx);
+      });
 }
 }  // namespace Cce

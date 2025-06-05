@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
@@ -639,4 +640,52 @@ void mutate_all_swsh_derivatives_for_tag(
                      derivative_tag>::on_demand_argument_tags{});
       });
 }
+
+namespace Tags {
+
+/*!
+ * \brief Compute tag for a manually-handled Swsh derivative in the volume.
+ *
+ * \details Numerical swsh derivatives are $\breve\eth$ (at fixed $y$), but we
+ * prefer to write our calculations here in terms of $\eth$ (at fixed $r$). This
+ * involves a correction term that depends on the $\partial_{\breve{y}}$
+ * derivative of the field being differentiated. Most of these are handled in
+ * place by `ApplySwshJacobianInplace`. However, that infrastructure is specific
+ * to the Cce evolution system itself, so it won't work for other uses
+ * (e.g. observers that are invoked periodically). This compute tag instead
+ * manually computes a certain swsh derivative (at fixed $r$).  Right now this
+ * will only work when `DerivativeKind` is either `Spectral::Swsh::Tags::Eth` or
+ * `Spectral::Swsh::Tags::Ethbar`. If you want to extend it to second
+ * derivatives, there will have to be more template specializations.
+ */
+template <typename ArgumentTag, typename DerivativeKind>
+struct ManualSwshDerivativeCompute
+    : Spectral::Swsh::Tags::Derivative<ArgumentTag, DerivativeKind>,
+      db::ComputeTag {
+  using base = Spectral::Swsh::Tags::Derivative<ArgumentTag, DerivativeKind>;
+  using return_type = typename base::type;
+
+  using ApplySwshJac = ApplySwshJacobianInplace<base>;
+
+  using argument_tags = tmpl::append<
+      tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints, ArgumentTag>,
+      typename ApplySwshJac::argument_tags,
+      typename ApplySwshJac::on_demand_argument_tags>;
+
+  static constexpr auto function(
+      const gsl::not_null<return_type*> eth_field, size_t l_max,
+      size_t number_of_radial_points, const typename ArgumentTag::type& field,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_r_divided_by_r,
+      const typename Tags::Dy<ArgumentTag>::type& dy_field) {
+    get(*eth_field) = Spectral::Swsh::angular_derivative<DerivativeKind>(
+        l_max, number_of_radial_points, get(field));
+
+    ApplySwshJac::apply(eth_field, one_minus_y, eth_r_divided_by_r,
+                        get(dy_field).data());
+  }
+};
+
+}  // namespace Tags
+
 }  // namespace Cce
