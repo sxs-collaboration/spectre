@@ -374,6 +374,81 @@ struct EndTime : db::BaseTag {};
 
 struct StartTime : db::BaseTag {};
 
+/// The (adapted) Newman-Penrose spin coefficient $\alpha^{SW}$. See
+/// documentation of `newman_penrose_alpha()` for definition.
+struct NewmanPenroseAlpha : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
+};
+
+/// The (adapted) Newman-Penrose spin coefficient $\beta_{NP}^{SW}$. See
+/// documentation of `newman_penrose_beta()` for definition.
+struct NewmanPenroseBeta : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, +1>>;
+};
+
+/// The (adapted) Newman-Penrose spin coefficient $\gamma^{SW}$. See
+/// documentation of `newman_penrose_gamma()` for definition.
+struct NewmanPenroseGamma : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+/// The (adapted) Newman-Penrose spin coefficient $\epsilon^{SW}$. See
+/// documentation of `newman_penrose_epsilon()` for definition.
+struct NewmanPenroseEpsilon : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+/// The Newman-Penrose spin coefficient $\kappa$. In the choice of tetrad of
+/// \cite Moxon2020gha, $\kappa=0$. Therefore, this tag should never actually be
+/// used.  It is declared here so it does not seem like it is "missing", and to
+/// document that any calculation involving $\kappa$ should be simplified with
+/// $\kappa=0$.
+struct NewmanPenroseKappa : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, +1>>;
+};
+
+/// The Newman-Penrose spin coefficient $\tau$. See documentation of
+/// `newman_penrose_tau()` for definition.
+struct NewmanPenroseTau : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, +1>>;
+};
+
+/// The Newman-Penrose spin coefficient $\sigma$. See documentation of
+/// `newman_penrose_sigma()` for definition.
+struct NewmanPenroseSigma : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, +2>>;
+};
+
+/// The Newman-Penrose spin coefficient $\rho$. See documentation of
+/// `newman_penrose_rho()` for definition.
+struct NewmanPenroseRho : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+/// The Newman-Penrose spin coefficient $\pi$. See documentation of
+/// `newman_penrose_pi()` for definition.
+struct NewmanPenrosePi : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
+};
+
+/// The Newman-Penrose spin coefficient $\nu$. See documentation of
+/// `newman_penrose_nu()` for definition.
+struct NewmanPenroseNu : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
+};
+
+/// The Newman-Penrose spin coefficient $\mu$. See documentation of
+/// `newman_penrose_mu()` for definition.
+struct NewmanPenroseMu : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+/// The Newman-Penrose spin coefficient $\lambda$. See documentation of
+/// `newman_penrose_lambda()` for definition.
+struct NewmanPenroseLambda : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -2>>;
+};
+
 /// The Weyl scalar \f$\Psi_0\f$
 struct Psi0 : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;

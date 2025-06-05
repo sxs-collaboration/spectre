@@ -14,6 +14,268 @@
 
 namespace Cce {
 namespace {
+void newman_penrose_alpha_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, -1>*> np_alpha,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 3>& eth_j,
+    const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_q,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+  const auto sqrt_one_plus_k = sqrt(one_plus_k);
+  const auto q_plus_two_eth_beta = bondi_q + 2. * eth_beta;
+
+  *np_alpha =
+      one_minus_y / (32. * bondi_r)
+      * (
+          1. / sqrt_one_plus_k *
+          (
+            (square(conj(bondi_j)) * eth_j) / (bondi_k * one_plus_k)
+            +
+            1. / bondi_k *
+            ( bondi_j * conj(eth_j) + conj(bondi_j) * ethbar_j
+              - conj(ethbar_j))
+            + ( 2. * conj(bondi_j) * q_plus_two_eth_beta
+                - 3. * conj(ethbar_j) )
+          )
+          - 2. * sqrt_one_plus_k * conj(q_plus_two_eth_beta)
+        );
+}
+
+void newman_penrose_beta_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, +1>*> np_beta,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 3>& eth_j,
+    const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_q,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+  const auto sqrt_one_plus_k = sqrt(one_plus_k);
+  const auto q_plus_two_eth_beta = bondi_q + 2. * eth_beta;
+
+  *np_beta =
+      one_minus_y / (32. * bondi_r)
+      * (
+          1. / sqrt_one_plus_k *
+          (
+            ( - square(bondi_j) * conj(eth_j) / (bondi_k * one_plus_k)
+              +
+              1. / bondi_k *
+              ( - bondi_j * conj(ethbar_j) - conj(bondi_j) * eth_j
+                + ethbar_j)
+              + ( 2. * bondi_j * conj(q_plus_two_eth_beta)
+                  - 3. * ethbar_j )
+            )
+          )
+          - 2. * sqrt_one_plus_k * q_plus_two_eth_beta
+       );
+}
+
+void newman_penrose_gamma_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> np_gamma,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 2>& dy_j,
+    const SpinWeighted<ComplexDataVector, 3>& eth_j,
+    const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_h,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_u,
+    const SpinWeighted<ComplexDataVector, 2>& eth_u,
+    const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_w,
+    const SpinWeighted<ComplexDataVector, 0>& dy_w,
+    const SpinWeighted<ComplexDataVector, 0>& exp_2_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+
+  *np_gamma =
+    1. / ( sqrt(32.) * exp_2_beta )
+      * ( 0.5 / one_plus_k
+          * ( one_minus_y * ( 0.5 * one_minus_y / bondi_r + bondi_w )
+              * ( conj(bondi_j) * dy_j - bondi_j * conj(dy_j) )
+              + ( 2. * conj(bondi_h) * bondi_j - 2. * bondi_h * conj(bondi_j)
+                  + bondi_u * ( bondi_j * conj(eth_j)
+                                - conj(bondi_j) * ethbar_j)
+                  + conj(bondi_u) * ( bondi_j * conj(ethbar_j)
+                                      - conj(bondi_j) * eth_j )
+                )
+             )
+          + 2. * one_minus_y * dy_w
+          + ( 2. * bondi_w + bondi_j * conj(eth_u) - conj(bondi_j) * eth_u
+              + bondi_k * ( ethbar_u - conj(ethbar_u) ) )
+    );
+}
+
+void newman_penrose_epsilon_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> np_epsilon,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 2>& dy_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 0>& dy_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  *np_epsilon =
+      square(one_minus_y) / ( sqrt(8.) * bondi_r)
+      * ( dy_beta +
+          ( bondi_j * conj(dy_j) - conj(bondi_j) * dy_j )
+          * 0.125 / (1. + bondi_k)
+      );
+}
+
+void newman_penrose_tau_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, +1>*> np_tau,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_q,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+  const auto sqrt_one_plus_k = sqrt(one_plus_k);
+  const auto two_eth_beta_minus_q = 2. * eth_beta - bondi_q;
+
+  *np_tau =
+      0.125 * one_minus_y / bondi_r *
+      ( sqrt_one_plus_k * two_eth_beta_minus_q
+        - bondi_j * conj(two_eth_beta_minus_q) / sqrt_one_plus_k
+      );
+}
+
+void newman_penrose_sigma_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, +2>*> np_sigma,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 2>& dy_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+
+  *np_sigma =
+      square(one_minus_y) / ( sqrt(128.) * bondi_k * bondi_r ) *
+      ( square(bondi_j) * conj(dy_j) / one_plus_k
+        - one_plus_k * dy_j
+      );
+}
+
+void newman_penrose_rho_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> np_rho,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  *np_rho = - one_minus_y / ( sqrt(8.) * bondi_r );
+}
+
+void newman_penrose_pi_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, -1>*> np_pi,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_q,
+    const SpinWeighted<ComplexDataVector, 1>& eth_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+  const auto sqrt_one_plus_k = sqrt(one_plus_k);
+  const auto q_plus_two_eth_beta = bondi_q + 2. * eth_beta;
+
+  *np_pi =
+      0.125 * one_minus_y / bondi_r *
+      ( conj(bondi_j) * q_plus_two_eth_beta / sqrt_one_plus_k
+        - sqrt_one_plus_k * conj(q_plus_two_eth_beta)
+      );
+}
+
+void newman_penrose_nu_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, -1>*> np_nu,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 1>& eth_w,
+    const SpinWeighted<ComplexDataVector, 0>& exp_2_beta) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+  const auto sqrt_one_plus_k = sqrt(one_plus_k);
+
+  *np_nu = 0.5 / exp_2_beta *
+           ( conj(bondi_j) * eth_w / sqrt_one_plus_k
+             - sqrt_one_plus_k * conj(eth_w) );
+}
+
+void newman_penrose_mu_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> np_mu,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_w,
+    const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
+    const SpinWeighted<ComplexDataVector, 0>& exp_2_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  *np_mu = 1. / ( sqrt(8.) * exp_2_beta ) *
+           ( conj(ethbar_u) + ethbar_u - one_minus_y / bondi_r - 2. * bondi_w );
+}
+
+void newman_penrose_lambda_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, -2>*> np_lambda,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_j,
+    const SpinWeighted<ComplexDataVector, 2>& dy_j,
+    const SpinWeighted<ComplexDataVector, 3>& eth_j,
+    const SpinWeighted<ComplexDataVector, 1>& ethbar_j,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_k,
+    const SpinWeighted<ComplexDataVector, 2>& bondi_h,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_r,
+    const SpinWeighted<ComplexDataVector, 1>& bondi_u,
+    const SpinWeighted<ComplexDataVector, 2>& eth_u,
+    const SpinWeighted<ComplexDataVector, 0>& ethbar_u,
+    const SpinWeighted<ComplexDataVector, 0>& bondi_w,
+    const SpinWeighted<ComplexDataVector, 0>& exp_2_beta,
+    const SpinWeighted<ComplexDataVector, 0>& one_minus_y) {
+
+  // Intentionally using expressions with auto. This code is only used for
+  // observing, and should be profiled if used more often
+  const auto one_plus_k = 1. + bondi_k;
+
+  const auto inner1 =
+      0.5 * one_minus_y / one_plus_k *
+      ( ( square(conj(bondi_j)) * dy_j - conj(dy_j) ) / bondi_k
+        - (2. + bondi_k) * conj(dy_j) );
+
+  const auto inner2 = 2. * bondi_h + bondi_u * ethbar_j + conj(bondi_u) * eth_j;
+
+  *np_lambda =
+      1. / ( sqrt(32.) * exp_2_beta ) *
+      ( ( one_minus_y / bondi_r + 2. * bondi_w ) * inner1
+        + 2. * one_plus_k * conj(eth_u)
+        + ( conj(inner2) + 2. * conj(bondi_j) * ( ethbar_u - conj(ethbar_u) ) )
+        + conj(inner2) / bondi_k
+        - square(conj(bondi_j)) * ( inner2 + 2. * bondi_k * eth_u ) /
+          ( bondi_k * one_plus_k ) );
+}
+
 void weyl_psi0_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> psi_0,
     const SpinWeighted<ComplexDataVector, 2>& bondi_j,
@@ -80,6 +342,169 @@ void weyl_psi1_impl(
           + 0.25 * inner_expr / bondi_k));
 }
 }  // namespace
+
+
+void newman_penrose_alpha(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*> np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 3>>& eth_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_q,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_alpha_impl(
+      make_not_null(&get(*np_alpha)), get(bondi_j), get(eth_j),
+      get(ethbar_j), get(bondi_k), get(bondi_r), get(bondi_q),
+      get(eth_beta), get(one_minus_y));
+}
+
+void newman_penrose_beta(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, +1>>*> np_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 3>>& eth_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_q,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_beta_impl(
+      make_not_null(&get(*np_beta)), get(bondi_j), get(eth_j),
+      get(ethbar_j), get(bondi_k), get(bondi_r), get(bondi_q),
+      get(eth_beta), get(one_minus_y));
+}
+
+void newman_penrose_gamma(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> np_gamma,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 3>>& eth_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_h,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& ethbar_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_w,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_w,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_gamma_impl(
+      make_not_null(&get(*np_gamma)), get(bondi_j), get(dy_j),
+      get(eth_j), get(ethbar_j), get(bondi_k), get(bondi_h),
+      get(bondi_r), get(bondi_u), get(eth_u), get(ethbar_u),
+      get(bondi_w), get(dy_w), get(exp_2_beta), get(one_minus_y));
+}
+
+void newman_penrose_epsilon(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> np_epsilon,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_epsilon_impl(
+      make_not_null(&get(*np_epsilon)), get(bondi_j), get(dy_j),
+      get(bondi_k), get(bondi_r), get(dy_beta), get(one_minus_y));
+}
+
+// There is no newmpan_penrose_kappa because in our conventions, it's 0.
+
+void newman_penrose_tau(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, +1>>*> np_tau,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_q,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_tau_impl(
+      make_not_null(&get(*np_tau)), get(bondi_j), get(bondi_k),
+      get(bondi_r), get(bondi_q), get(eth_beta), get(one_minus_y));
+}
+
+void newman_penrose_sigma(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, +2>>*> np_sigma,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_sigma_impl(
+      make_not_null(&get(*np_sigma)), get(bondi_j), get(dy_j),
+      get(bondi_k), get(bondi_r), get(one_minus_y));
+}
+
+void newman_penrose_rho(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_rho_impl(
+      make_not_null(&get(*np_rho)), get(bondi_r), get(one_minus_y));
+}
+
+void newman_penrose_pi(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*> np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_q,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_pi_impl(
+      make_not_null(&get(*np_pi)), get(bondi_j), get(bondi_k),
+      get(bondi_r), get(bondi_q), get(eth_beta), get(one_minus_y));
+}
+
+void newman_penrose_nu(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*> np_nu,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& eth_w,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) {
+  newman_penrose_nu_impl(
+      make_not_null(&get(*np_nu)), get(bondi_j), get(bondi_k),
+      get(eth_w), get(exp_2_beta));
+}
+
+void newman_penrose_mu(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> np_mu,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_w,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& ethbar_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_mu_impl(
+      make_not_null(&get(*np_mu)), get(bondi_r), get(bondi_w),
+      get(ethbar_u), get(exp_2_beta), get(one_minus_y));
+}
+
+
+void newman_penrose_lambda(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> np_lambda,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 3>>& eth_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& ethbar_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_h,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& eth_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& ethbar_u,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_w,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+  newman_penrose_lambda_impl(
+      make_not_null(&get(*np_lambda)), get(bondi_j), get(dy_j),
+      get(eth_j), get(ethbar_j), get(bondi_k), get(bondi_h),
+      get(bondi_r), get(bondi_u), get(eth_u), get(ethbar_u),
+      get(bondi_w), get(exp_2_beta), get(one_minus_y));
+}
 
 void VolumeWeyl<Tags::Psi0>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> psi_0,
