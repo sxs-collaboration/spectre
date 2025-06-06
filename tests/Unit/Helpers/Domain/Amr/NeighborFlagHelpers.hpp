@@ -29,6 +29,9 @@ using valid_info_t = std::vector<neighbor_info_t<Dim>>;
 
 /// Returns all permutations of valid flags for the `neighbors` (in a single
 /// direction) of an Element with `element_id` and `element_flags`
+///
+/// The neighbor meshes are (2), (2, 3), or (2, 3, 4) point LGL meshes,
+/// depending on dimension.
 template <size_t Dim>
 valid_info_t<Dim> valid_neighbor_info(
     const ElementId<Dim>& element_id,

@@ -16,7 +16,8 @@ class Mesh;
 
 namespace domain::Tags {
 /*!
- * \brief Holds the mesh of each neighboring element.
+ * \brief Holds the mesh of each neighboring element, oriented to the
+ * host's logical frame.
  *
  * This knowledge can be used to determine the geometry of mortars between
  * elements. It is kept up to date by AMR.

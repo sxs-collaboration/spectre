@@ -20,9 +20,14 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/Amr/NeighborFlagHelpers.hpp"
 #include "Helpers/Domain/Structure/NeighborHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 namespace {
@@ -59,6 +64,11 @@ std::vector<ElementId<Dim>> element_ids_to_test() {
 
 template <size_t Dim>
 void test(const gsl::not_null<std::mt19937*> generator) {
+  std::array<size_t, Dim> extents{};
+  alg::iota(extents, 2_st);
+  const Mesh<Dim> expected_mesh{extents, Spectral::Basis::Legendre,
+                                Spectral::Quadrature::GaussLobatto};
+
   for (const auto& element_id : element_ids_to_test<Dim>()) {
     CAPTURE(element_id);
     for (const auto& direction :
@@ -91,6 +101,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
               std::unordered_set<ElementId<Dim>> new_neighbor_ids;
               for (const auto& [id, mesh] : neighbor_ids_and_meshes) {
                 new_neighbor_ids.insert(id);
+                CHECK(neighbors.orientation(id)(mesh) == expected_mesh);
               }
               const auto new_neighbors = Neighbors<Dim>{
                   std::move(new_neighbor_ids), neighbors.orientations(),
@@ -121,6 +132,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
             std::unordered_set<ElementId<Dim>> new_neighbor_ids;
             for (const auto& [id, mesh] : neighbor_ids_and_meshes) {
               new_neighbor_ids.insert(id);
+              CHECK(neighbors.orientation(id)(mesh) == expected_mesh);
             }
             const auto new_neighbors =
                 Neighbors<Dim>{new_neighbor_ids, neighbors.orientations(),

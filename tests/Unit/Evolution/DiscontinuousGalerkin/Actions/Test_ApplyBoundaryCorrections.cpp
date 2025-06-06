@@ -19,6 +19,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -569,6 +570,11 @@ void test_impl(const Spectral::Quadrature quadrature,
   const size_t number_of_grid_points_per_dimension = 5;
   const Mesh<Dim> mesh{number_of_grid_points_per_dimension,
                        Spectral::Basis::Legendre, quadrature};
+  typename domain::Tags::NeighborMesh<Dim>::type neighbor_mesh{};
+  neighbor_mesh[{Direction<Dim>::upper_xi(), east_id}] = mesh;
+  if constexpr (Dim > 1) {
+    neighbor_mesh[{Direction<Dim>::lower_eta(), south_id}] = mesh;
+  }
 
   // Set the Jacobian to not be the identity because otherwise bugs creep in
   // easily.
@@ -616,7 +622,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       {10, time_step_id, local_next_time_step_id, time_step,
        std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper),
        dt_evolved_vars, evolved_vars, mesh, element, inertial_coords, inv_jac,
-       quadrature, typename domain::Tags::NeighborMesh<Dim>::type{}});
+       quadrature, neighbor_mesh});
 
   // Initialize both the mortars
   ActionTesting::next_action<comp>(make_not_null(&runner), self_id);

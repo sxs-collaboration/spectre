@@ -4,6 +4,7 @@
 #include "Helpers/Domain/Amr/NeighborFlagHelpers.hpp"
 
 #include <array>
+#include <cstddef>
 #include <vector>
 
 #include "Domain/Amr/Flag.hpp"
@@ -15,6 +16,8 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
+#include "Utilities/Numeric.hpp"
 
 namespace {
 template <size_t Dim>
@@ -143,8 +146,10 @@ valid_info_t<Dim> valid_neighbor_info(
     const std::array<::amr::Flag, Dim>& element_flags,
     const Neighbors<Dim>& neighbors) {
   valid_info_t<Dim> result{};
-  Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
-                 Spectral::Quadrature::GaussLobatto};
+  std::array<size_t, Dim> extents{};
+  alg::iota(extents, 2_st);
+  const Mesh<Dim> mesh{extents, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
   const auto& first_neighbor_id = *(neighbors.begin());
   const auto& orientation_of_first_neighbor =
       neighbors.orientation(first_neighbor_id);

@@ -112,10 +112,11 @@ void InitializeGeometry<Dim>::apply(
   for (const auto& [direction, neighbors] : element->neighbors()) {
     for (const auto& neighbor_id : neighbors) {
       const auto& neighbor_block = domain.blocks()[neighbor_id.block_id()];
+      const auto& orientation = neighbors.orientation(neighbor_id);
       neighbor_meshes->emplace(
           DirectionalId<Dim>{direction, neighbor_id},
-          domain::Initialization::create_initial_mesh(
-              initial_extents, neighbor_block, neighbor_id, quadrature));
+          orientation.inverse_map()(domain::Initialization::create_initial_mesh(
+              initial_extents, neighbor_block, neighbor_id, quadrature)));
     }
   }
   // Element map

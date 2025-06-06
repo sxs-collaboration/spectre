@@ -28,6 +28,8 @@ namespace amr {
 /// `direction` of the Element whose ElementId is `my_id` given the
 /// `previous_neighbors_in_direction` and their amr::Info\.
 ///
+/// The new meshes are given with respect to the host element's orientation.
+///
 /// \note `previous_neighbors_in_direction` should be from the parent (or a
 /// child) of the Element with `my_id` if `my_id` corresponds to a newly created
 /// child (or parent) Element.

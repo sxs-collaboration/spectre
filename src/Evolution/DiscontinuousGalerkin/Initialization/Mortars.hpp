@@ -16,10 +16,6 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Amr/Info.hpp"
-#include "Domain/Amr/Tags/NeighborFlags.hpp"
-#include "Domain/Creators/Tags/Domain.hpp"
-#include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -70,11 +66,10 @@ std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>>
-mortars_apply_impl(const Domain<Dim>& domain,
-                   const std::vector<std::array<size_t, Dim>>& initial_extents,
-                   Spectral::Quadrature quadrature, const Element<Dim>& element,
+mortars_apply_impl(const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
-                   const Mesh<Dim>& volume_mesh);
+                   const Mesh<Dim>& volume_mesh,
+                   const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_mesh);
 
 template <size_t Dim, typename MortarDataHistoryType>
 void p_project(
@@ -93,7 +88,6 @@ void p_project(
         normal_covector_and_magnitude,
     const gsl::not_null<MortarDataHistoryType*> mortar_data_history,
     const Mesh<Dim>& new_mesh, const Element<Dim>& new_element,
-    const std::unordered_map<ElementId<Dim>, amr::Info<Dim>>& neighbor_info,
     const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
     const std::pair<Mesh<Dim>, Element<Dim>>& old_mesh_and_element) {
   const auto& [old_mesh, old_element] = old_mesh_and_element;
@@ -101,7 +95,6 @@ void p_project(
          "p-refinement should not have changed the element id");
 
   const bool mesh_changed = old_mesh != new_mesh;
-  const bool have_neighbor_info = not neighbor_info.empty();
 
   for (const auto& [direction, neighbors] : new_element.neighbors()) {
     const auto sliced_away_dimension = direction.dimension();
@@ -114,10 +107,7 @@ void p_project(
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       if (mortar_mesh->contains(mortar_id)) {
-        const auto new_neighbor_mesh =
-            have_neighbor_info ? neighbors.orientation(neighbor).inverse_map()(
-                                     neighbor_info.at(neighbor).new_mesh)
-                               : neighbor_mesh.at(mortar_id);
+        const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
         const auto& old_mortar_mesh = mortar_mesh->at(mortar_id);
         auto new_mortar_mesh = ::dg::mortar_mesh(
             new_mesh.slice_away(direction.dimension()),
@@ -199,10 +189,8 @@ struct Mortars {
   using MortarMap = DirectionalIdMap<Dim, MappedType>;
 
  public:
-  using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
-  using simple_tags_from_options =
-      tmpl::list<::domain::Tags::InitialExtents<Dim>,
-                 evolution::dg::Tags::Quadrature>;
+  using const_global_cache_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
 
   using simple_tags = tmpl::list<
       Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
@@ -226,12 +214,10 @@ struct Mortars {
     auto [mortar_data, mortar_meshes, mortar_infos, mortar_next_temporal_ids,
           normal_covector_quantities] =
         detail::mortars_apply_impl(
-            db::get<::domain::Tags::Domain<Dim>>(box),
-            db::get<::domain::Tags::InitialExtents<Dim>>(box),
-            db::get<evolution::dg::Tags::Quadrature>(box),
             db::get<::domain::Tags::Element<Dim>>(box),
             db::get<::Tags::Next<::Tags::TimeStepId>>(box),
-            db::get<::domain::Tags::Mesh<Dim>>(box));
+            db::get<::domain::Tags::Mesh<Dim>>(box),
+            db::get<::domain::Tags::NeighborMesh<Dim>>(box));
     typename Tags::MortarDataHistory<
         Dim, typename db::add_tag_prefix<
                  ::Tags::dt, typename System::variables_tag>::type>::type
@@ -288,7 +274,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                  Tags::MortarDataHistory<dim, typename dt_variables_tag::type>>;
   using argument_tags =
       tmpl::list<domain::Tags::Mesh<dim>, domain::Tags::Element<dim>,
-                 amr::Tags::NeighborInfo<dim>, domain::Tags::NeighborMesh<dim>>;
+                 domain::Tags::NeighborMesh<dim>>;
 
   static void apply(
       const gsl::not_null<
@@ -303,13 +289,12 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
           normal_covector_and_magnitude,
       const gsl::not_null<mortar_data_history_type*> mortar_data_history,
       const Mesh<dim>& new_mesh, const Element<dim>& new_element,
-      const std::unordered_map<ElementId<dim>, amr::Info<dim>>& neighbor_info,
       const ::dg::MortarMap<dim, Mesh<dim>>& neighbor_mesh,
       const std::pair<Mesh<dim>, Element<dim>>& old_mesh_and_element) {
     detail::p_project(mortar_data, mortar_mesh, mortar_infos,
                       mortar_next_temporal_id, normal_covector_and_magnitude,
-                      mortar_data_history, new_mesh, new_element, neighbor_info,
-                      neighbor_mesh, old_mesh_and_element);
+                      mortar_data_history, new_mesh, new_element, neighbor_mesh,
+                      old_mesh_and_element);
   }
 
   template <typename... Tags>
@@ -328,8 +313,6 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,
       const Mesh<dim>& /*new_mesh*/, const Element<dim>& /*new_element*/,
-      const std::unordered_map<ElementId<dim>,
-                               amr::Info<dim>>& /*neighbor_info*/,
       const ::dg::MortarMap<dim, Mesh<dim>>& /*neighbor_mesh*/,
       const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
     ERROR("h-refinement not implemented yet");
@@ -351,8 +334,6 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<mortar_data_history_type*>
       /*mortar_data_history*/,
       const Mesh<dim>& /*new_mesh*/, const Element<dim>& /*new_element*/,
-      const std::unordered_map<ElementId<dim>,
-                               amr::Info<dim>>& /*neighbor_info*/,
       const ::dg::MortarMap<dim, Mesh<dim>>& /*neighbor_mesh*/,
       const std::unordered_map<ElementId<dim>, tuples::TaggedTuple<Tags...>>&
       /*children_items*/) {
