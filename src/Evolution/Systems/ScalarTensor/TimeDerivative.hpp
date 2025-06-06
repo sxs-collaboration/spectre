@@ -38,9 +38,14 @@ namespace ScalarTensor {
  * to the \f$\partial_t \Pi_{a b}\f$ variable in the Generalized Harmonic
  * system, as well as adding any scalar sources to the variable \f$\partial_t
  * \Pi\f$.
+ *
+ * \warning Backreaction of the scalar field onto the metric is currently
+ * disabled and the system is evolved in the test-field (or decoupling)
+ * approximation.
  */
 struct TimeDerivative {
   static constexpr size_t dim = 3;
+  static constexpr bool backreaction_is_enabled = false;
   using gh_dt_tags =
       db::wrap_tags_in<::Tags::dt,
                        typename gh::System<dim>::variables_tag::tags_list>;

@@ -170,7 +170,9 @@ evolution::dg::TimeDerivativeDecisions<3> TimeDerivative::apply(
   trace_reversed_stress_energy(stress_energy, pi_scalar, phi_scalar,
                                lapse_scalar, shift_scalar);
 
-  add_stress_energy_term_to_dt_pi(dt_pi, *stress_energy, lapse_scalar);
+  if constexpr (backreaction_is_enabled) {
+    add_stress_energy_term_to_dt_pi(dt_pi, *stress_energy, lapse_scalar);
+  }
 
   add_scalar_source_to_dt_pi_scalar(dt_pi_scalar, scalar_source, lapse_scalar);
   return {true};

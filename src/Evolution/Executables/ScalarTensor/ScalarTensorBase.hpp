@@ -178,6 +178,7 @@ constexpr auto make_default_phase_order() {
 
 struct ObserverTags {
   static constexpr size_t volume_dim = 3_st;
+  static constexpr bool backreaction_is_enabled = false;
 
   using system = ScalarTensor::System;
 
@@ -267,8 +268,12 @@ struct ObserverTags {
           ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>>,
       // The 4-index constraint is only implemented in 3d
       tmpl::list<
+          tmpl::conditional_t<
+              backreaction_is_enabled,
+              ScalarTensor::Tags::FConstraintCompute<
+                  volume_dim, Frame::Inertial>,
+              gh::Tags::FConstraintCompute<volume_dim, Frame::Inertial>>,
           gh::Tags::FourIndexConstraintCompute<volume_dim, Frame::Inertial>,
-          ScalarTensor::Tags::FConstraintCompute<volume_dim, Frame::Inertial>,
           ::Tags::PointwiseL2NormCompute<
               gh::Tags::FConstraint<DataVector, volume_dim>>,
           ::Tags::PointwiseL2NormCompute<
