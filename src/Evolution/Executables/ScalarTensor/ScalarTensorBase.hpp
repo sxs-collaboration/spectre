@@ -459,9 +459,6 @@ struct ScalarTensorTemplateBase {
       dg::Actions::Filter<Filters::Exponential<1>,
                           system::scalar_system::variables_tag::tags_list>>;
 
-  //   // For labeling the yaml option for RandomizeVariables
-  //   struct RandomizeInitialGuess {};
-
   template <bool UseControlSystems>
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
@@ -469,11 +466,6 @@ struct ScalarTensorTemplateBase {
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>,
-      // Random noise system::variables_tag
-      //   Actions::RandomizeVariables<typename system::variables_tag,
-      //                               RandomizeInitialGuess>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
           typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,

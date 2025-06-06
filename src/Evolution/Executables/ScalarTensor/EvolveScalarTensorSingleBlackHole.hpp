@@ -8,9 +8,13 @@
 
 #include "ControlSystem/Actions/InitializeMeasurements.hpp"
 #include "ControlSystem/Component.hpp"
+#include "ControlSystem/ControlErrors/Size/Factory.hpp"
+#include "ControlSystem/ControlErrors/Size/State.hpp"
 #include "ControlSystem/Measurements/SingleHorizon.hpp"
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Systems/Shape.hpp"
+#include "ControlSystem/Systems/Size.hpp"
+#include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Trigger.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
@@ -32,6 +36,8 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -53,9 +59,13 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
@@ -70,26 +80,30 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
       "field \n"
       "on a domain with a single horizon and corresponding excised region"};
 
-  struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  template <typename Frame>
+  struct Ah : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using tags_to_observe = ::ah::tags_for_observing<Frame::Inertial>;
+    using tags_to_observe = ::ah::tags_for_observing<Frame>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>;
+        ::ah::vars_to_interpolate_to_target<volume_dim, Frame>;
     using compute_items_on_target =
-        ::ah::compute_items_on_target<volume_dim, Frame::Inertial>;
+        ::ah::compute_items_on_target<volume_dim, Frame>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
-    using post_interpolation_callbacks = tmpl::list<
-        intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>>;
+        intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
     using horizon_find_failure_callbacks =
         tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>;
     using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA,
-                                             ::Frame::Inertial>>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
+                                             Frame>,
+        ::ah::callbacks::ObserveCenters<Ah, Frame>>;
   };
+
+  using ApparentHorizon = Ah<::Frame::Distorted>;
 
   struct ExcisionBoundaryA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -130,10 +144,17 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
     using interpolating_component = typename metavariables::st_dg_element_array;
   };
 
-  using control_systems = tmpl::list<control_system::Systems::Shape<
-      ::domain::ObjectLabel::None, 2,
-      control_system::measurements::SingleHorizon<
-          ::domain::ObjectLabel::None>>>;
+  using control_systems =
+      tmpl::list<control_system::Systems::Shape<
+                     ::domain::ObjectLabel::None, 2,
+                     control_system::measurements::SingleHorizon<
+                         ::domain::ObjectLabel::None>>,
+                 control_system::Systems::Translation<
+                     2,
+                     control_system::measurements::SingleHorizon<
+                         ::domain::ObjectLabel::None>,
+                     1>,
+                 control_system::Systems::Size<::domain::ObjectLabel::None, 2>>;
 
   static constexpr bool use_control_systems =
       tmpl::size<control_systems>::value > 0;
@@ -142,7 +163,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
 
   using interpolation_target_tags = tmpl::push_back<
       control_system::metafunctions::interpolation_target_tags<control_systems>,
-      AhA, ExcisionBoundaryA, SphericalSurface, BondiSachs>;
+      ApparentHorizon, ExcisionBoundaryA, SphericalSurface, BondiSachs>;
   using interpolator_source_vars = ::ah::source_vars<volume_dim>;
 
   using scalar_charge_interpolator_source_vars =
@@ -185,17 +206,21 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
-                intrp::Events::Interpolate<volume_dim, AhA,
+                intrp::Events::Interpolate<volume_dim, ApparentHorizon,
                                            interpolator_source_vars>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, BondiSachs, source_vars_no_deriv>,
+                control_system::metafunctions::control_system_events<
+                    control_systems>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     volume_dim, ExcisionBoundaryA, interpolator_source_vars>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     volume_dim, SphericalSurface,
                     scalar_charge_interpolator_source_vars>>>>,
         tmpl::pair<DenseTrigger,
-                   control_system::control_system_triggers<control_systems>>>;
+                   control_system::control_system_triggers<control_systems>>,
+        tmpl::pair<control_system::size::State,
+                   control_system::size::States::factory_creatable_states>>;
   };
 
   using typename st_base::const_global_cache_tags;
@@ -203,7 +228,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename AhA::post_horizon_find_callbacks>>;
+          typename ApparentHorizon::post_horizon_find_callbacks>>;
 
   using dg_registration_list =
       tmpl::push_back<typename st_base::dg_registration_list,
@@ -252,7 +277,14 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
                   ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
                   evolution::Actions::RunEventsAndTriggers<local_time_stepping>,
                   Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange>>>>>;
+                  PhaseControl::Actions::ExecutePhaseChange>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::PostFailureCleanup,
+              tmpl::list<Actions::RunEventsOnFailure<::Tags::Time>,
+                         Parallel::Actions::TerminatePhase>>>>>;
+
+  // ControlSystem/Measurements/CharSpeed.hpp assumes gh_dg_element_array
+  using gh_dg_element_array = st_dg_element_array;
 
   template <typename ParallelComponent>
   struct registration_list {
