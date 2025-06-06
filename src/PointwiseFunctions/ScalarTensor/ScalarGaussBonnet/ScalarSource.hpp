@@ -9,6 +9,7 @@
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/CouplingParameters.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/Tags.hpp"
 #include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
@@ -91,5 +92,29 @@ void multiply_by_negative_second_deriv_of_coupling_func(
     const Scalar<DataVector>& psi,
     const CouplingParameterOptions& coupling_parameters,
     std::pair<double, double> start_and_ramp_times, double time);
+
+namespace Tags {
+/*!
+ * \copydoc ScalarTensor::gauss_bonnet_scalar_source
+ */
+struct ScalarSourceCompute : ScalarSource, db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::WeylElectricScalar<DataVector>,
+      gr::Tags::WeylMagneticScalar<DataVector>, CurvedScalarWave::Tags::Psi,
+      ScalarTensor::Tags::CouplingParameters, ScalarTensor::Tags::ScalarMass,
+      ScalarTensor::Tags::RampUpParameters, ::Tags::Time>;
+  using return_type = Scalar<DataVector>;
+  static constexpr void (*function)(
+      const gsl::not_null<Scalar<DataVector>*> /* scalar_source */,
+      const Scalar<DataVector>& /* weyl_electric_scalar */,
+      const Scalar<DataVector>& /* weyl_magnetic_scalar */,
+      const Scalar<DataVector>& /* psi */,
+      const CouplingParameterOptions& /* coupling_parameters */,
+      const double /* mass_psi */,
+      const std::pair<double, double> /* start_and_ramp_times */,
+      const double /* time */) = &gauss_bonnet_scalar_source;
+  using base = ScalarSource;
+};
+}  // namespace Tags
 
 }  // namespace ScalarTensor

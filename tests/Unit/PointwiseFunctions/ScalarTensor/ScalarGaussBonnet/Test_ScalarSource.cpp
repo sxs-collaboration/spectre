@@ -67,6 +67,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.Sgb.ScalarSource",
   const pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/ScalarTensor"};
 
+  TestHelpers::db::test_compute_tag<ScalarTensor::Tags::ScalarSourceCompute>(
+      "ScalarSource");
+
   pypp::check_with_random_values<
       1,
       Scalar<DataVector> (*)(

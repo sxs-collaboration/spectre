@@ -36,8 +36,8 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylMagnetic.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ConstraintGammas.hpp"
+#include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/ScalarSource.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarGaussBonnet/Tags.hpp"
-#include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 #include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "Utilities/TMPL.hpp"
 

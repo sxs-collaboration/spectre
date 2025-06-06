@@ -3,13 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
-#include "Evolution/Systems/ScalarTensor/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
-#include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace ScalarTensor {
@@ -76,23 +70,4 @@ void add_scalar_source_to_dt_pi_scalar(
 void mass_source(gsl::not_null<Scalar<DataVector>*> scalar_source,
                  const Scalar<DataVector>& psi, double mass_psi);
 
-namespace Tags {
-
-/*!
- * \brief Compute tag for the scalar source.
- *
- * \details Compute the scalar source from data box items using
- * `mass_source`.
- */
-struct ScalarSourceCompute : ScalarSource, db::ComputeTag {
-  using argument_tags =
-      tmpl::list<CurvedScalarWave::Tags::Psi, ScalarTensor::Tags::ScalarMass>;
-  using return_type = Scalar<DataVector>;
-  static constexpr void (*function)(const gsl::not_null<return_type*> result,
-                                    const Scalar<DataVector>&,
-                                    const double) = &mass_source;
-  using base = ScalarSource;
-};
-
-}  // namespace Tags
 }  // namespace ScalarTensor

@@ -20,6 +20,4 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.SourceTags",
       "0.0");
   TestHelpers::test_option_tag<ScalarTensor::OptionTags::RampUpDuration>(
       "100.0");
-  TestHelpers::db::test_compute_tag<ScalarTensor::Tags::ScalarSourceCompute>(
-      "ScalarSource");
 }
