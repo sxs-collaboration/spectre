@@ -6,6 +6,7 @@ import glob
 import logging
 import os
 import re
+import subprocess
 import unittest
 
 import h5py
@@ -311,15 +312,15 @@ class H5Check:
             )
 
 
-class H5CheckTestCase(unittest.TestCase):
-    """The unit test object for performing all H5 checks for a given input file
+class OutputCheckTestCase(unittest.TestCase):
+    """The unit test object for performing output checks for a given input file
 
     The parameters for the H5 output checks are determined by the
-    command-line arguments. The first argument (sys.argv[1]) is the yaml
-    input file. The second argument is the directory in which to find the
-    run's.h5 files.
+    command-line arguments. The `--input-filename` flag specifies the yaml
+    input file. The `--run-directory` specifies the directory in which to find
+    the run's .h5 files.
 
-    The H5 checks and arguments are parsed from the "OutputFileChecks" in the
+    The H5 checks and arguments are parsed from the `OutputFileChecks` in the
     input file metadata:
 
     ```yaml
@@ -336,6 +337,26 @@ class H5CheckTestCase(unittest.TestCase):
         RelativeTolerance: 1e-6
         SkipColumns: [0, 1]
     ```
+
+    Extra checking executables can be invoked from the `ExtraFileCheckExecs`
+    section in the input file metadata:
+
+    ```yaml
+    ExtraFileCheckExecs:
+      - Label: "label1"
+        Executable: "check1.py"
+        Arguments: ["--additional", "--arguments"]
+      - Label: "label2"
+        Executable: "check2.py"
+        Arguments:
+          - "--other"
+          - "--arguments"
+    ```
+    Each `Executable` will be invoked with `subprocess.run`, so it must be
+    executable (with a shebang if a it's e.g. a python script). It will receive
+    command line arguments corresponding to --input-filename, --run-directory,
+    --cmake-source-directory, --cmake-bin-directory, and the contents of
+    `Arguments`.
     """
 
     def test_h5_output(self):
@@ -358,14 +379,43 @@ class H5CheckTestCase(unittest.TestCase):
             with self.subTest(test=h5_check.test_h5_label):
                 h5_check.perform_check(self.run_directory)
 
+    def test_extra_execs(self):
+        extra_check_list = []
+        with open(self.input_filename, "r") as open_input_file:
+            parsed_yaml = next(yaml.safe_load_all(open_input_file))
+        if "ExtraFileCheckExecs" in parsed_yaml:
+            for check_block in parsed_yaml["ExtraFileCheckExecs"]:
+                logging.info("Parsed extra check : " + check_block["Label"])
+                extra_check_list.append(check_block)
+        for extra_check in extra_check_list:
+            with self.subTest(test=extra_check["Label"]):
+                dirname = os.path.dirname(self.input_filename)
+                cmdline = [
+                    os.path.join(dirname, extra_check["Executable"]),
+                    "--input-filename",
+                    self.input_filename,
+                    "--run-directory",
+                    self.run_directory,
+                    "--cmake-source-directory",
+                    self.cmake_source_directory,
+                    "--cmake-bin-directory",
+                    self.cmake_bin_directory,
+                ]
+                if "Arguments" in extra_check:
+                    cmdline = cmdline + extra_check["Arguments"]
+                run_result = subprocess.run(cmdline)
+                self.assertEqual(run_result.returncode, 0)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-filename")
     parser.add_argument("--run-directory")
+    parser.add_argument("--cmake-source-directory")
+    parser.add_argument("--cmake-bin-directory")
     logging.basicConfig(level=logging.INFO)
     duplicate_test_case, remaining_args = parser.parse_known_args(
-        namespace=H5CheckTestCase
+        namespace=OutputCheckTestCase
     )
     del duplicate_test_case
     # Use of full command-line arguments breaks the unit-test framework
