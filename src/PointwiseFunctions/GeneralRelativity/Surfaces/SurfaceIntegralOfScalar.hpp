@@ -26,4 +26,14 @@ template <typename Frame>
 double surface_integral_of_scalar(const Scalar<DataVector>& area_element,
                                   const Scalar<DataVector>& scalar,
                                   const ylm::Strahlkorper<Frame>& strahlkorper);
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Surface average of a scalar on a 2D `Strahlkorper`
+ *
+ */
+template <typename Frame>
+double surface_average_of_scalar(const Scalar<DataVector>& area_element,
+                                 const Scalar<DataVector>& scalar,
+                                 const ylm::Strahlkorper<Frame>& strahlkorper);
 }  // namespace gr::surfaces

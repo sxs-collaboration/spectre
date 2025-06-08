@@ -16,11 +16,28 @@ double surface_integral_of_scalar(
   const DataVector integrand = get(area_element) * get(scalar);
   return strahlkorper.ylm_spherepack().definite_integral(integrand.data());
 }
+
+template <typename Frame>
+double surface_average_of_scalar(const Scalar<DataVector>& area_element,
+                                 const Scalar<DataVector>& scalar,
+                                 const ylm::Strahlkorper<Frame>& strahlkorper) {
+  const DataVector integrand = get(area_element) * get(scalar);
+
+  const double surface_integral =
+      strahlkorper.ylm_spherepack().definite_integral(integrand.data());
+  const double surface_area =
+      strahlkorper.ylm_spherepack().definite_integral(get(area_element).data());
+  return surface_integral / surface_area;
+}
 }  // namespace gr::surfaces
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                \
   template double gr::surfaces::surface_integral_of_scalar( \
+      const Scalar<DataVector>& area_element,               \
+      const Scalar<DataVector>& scalar,                     \
+      const ylm::Strahlkorper<FRAME(data)>& strahlkorper);  \
+  template double gr::surfaces::surface_average_of_scalar(  \
       const Scalar<DataVector>& area_element,               \
       const Scalar<DataVector>& scalar,                     \
       const ylm::Strahlkorper<FRAME(data)>& strahlkorper);

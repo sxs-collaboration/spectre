@@ -136,6 +136,17 @@ void ComputeHorizonVolumeQuantities::apply(
                           Frame::Inertial>>(src_vars),
         inv_metric);
   }
+
+  if constexpr (tmpl::list_contains_v<DestTagList,
+                                      CurvedScalarWave::Tags::Psi>) {
+    static_assert(
+        tmpl::list_contains_v<SrcTagList, CurvedScalarWave::Tags::Psi>,
+        "If the scalar field Psi is requested, SrcTags must include"
+        " CurvedScalarWave::Psi");
+    const auto& psi_scalar = get<CurvedScalarWave::Tags::Psi>(src_vars);
+    *(get<CurvedScalarWave::Tags::Psi>(target_vars, make_not_null(&buffer))) =
+        psi_scalar;
+  }
 }
 
 /// Dual frame case
@@ -322,6 +333,17 @@ void ComputeHorizonVolumeQuantities::apply(
                                     inertial_spatial_ricci,
                                     jac_target_to_inertial);
     }
+  }
+
+  if constexpr (tmpl::list_contains_v<DestTagList,
+                                      CurvedScalarWave::Tags::Psi>) {
+    static_assert(
+        tmpl::list_contains_v<SrcTagList, CurvedScalarWave::Tags::Psi>,
+        "If the scalar field Psi is requested, SrcTags must include"
+        " CurvedScalarWave::Psi");
+    const auto& psi_scalar = get<CurvedScalarWave::Tags::Psi>(src_vars);
+    *(get<CurvedScalarWave::Tags::Psi>(target_vars, make_not_null(&buffer))) =
+        psi_scalar;
   }
 }
 

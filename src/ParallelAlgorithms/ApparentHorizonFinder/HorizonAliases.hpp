@@ -17,6 +17,9 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 struct DataVector;
+namespace CurvedScalarWave::Tags {
+struct Psi;
+}
 /// \endcond
 
 namespace ah {
@@ -25,7 +28,8 @@ using source_vars =
     tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>,
                ::Tags::deriv<gh::Tags::Phi<DataVector, Dim>, tmpl::size_t<Dim>,
-                             Frame::Inertial>>;
+                             Frame::Inertial>,
+               CurvedScalarWave::Tags::Psi>;
 
 template <size_t Dim, typename Frame>
 using vars_to_interpolate_to_target =
@@ -33,7 +37,8 @@ using vars_to_interpolate_to_target =
                gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame>,
                gr::Tags::ExtrinsicCurvature<DataVector, Dim, Frame>,
                gr::Tags::SpatialChristoffelSecondKind<DataVector, Dim, Frame>,
-               gr::Tags::SpatialRicci<DataVector, Dim, Frame>>;
+               gr::Tags::SpatialRicci<DataVector, Dim, Frame>,
+               CurvedScalarWave::Tags::Psi>;
 
 template <typename Frame>
 using tags_for_observing = tmpl::list<
@@ -42,10 +47,12 @@ using tags_for_observing = tmpl::list<
     ylm::Tags::MaxRicciScalarCompute, ylm::Tags::MinRicciScalarCompute,
     gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
     gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>,
-    gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame, Frame>
-    >;
+    gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame, Frame>,
+    gr::surfaces::Tags::SurfaceAverageCompute<CurvedScalarWave::Tags::Psi,
+                                              Frame>>;
 
-using surface_tags_for_observing = tmpl::list<ylm::Tags::RicciScalar>;
+using surface_tags_for_observing =
+    tmpl::list<ylm::Tags::RicciScalar, CurvedScalarWave::Tags::Psi>;
 
 template <size_t Dim, typename Frame>
 using compute_items_on_target = tmpl::append<

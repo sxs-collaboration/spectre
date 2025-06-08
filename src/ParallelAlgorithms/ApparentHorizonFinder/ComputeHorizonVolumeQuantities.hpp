@@ -23,6 +23,9 @@ namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
+namespace CurvedScalarWave::Tags {
+struct Psi;
+}
 /// \endcond
 
 namespace ah {
@@ -83,7 +86,8 @@ struct ComputeHorizonVolumeQuantities
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
                  gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>,
                  ::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
-                               Frame::Inertial>>;
+                               Frame::Inertial>,
+                 CurvedScalarWave::Tags::Psi>;
 
   using required_src_tags =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
@@ -95,7 +99,8 @@ struct ComputeHorizonVolumeQuantities
       gr::Tags::InverseSpatialMetric<DataVector, 3, TargetFrame>,
       gr::Tags::ExtrinsicCurvature<DataVector, 3, TargetFrame>,
       gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, TargetFrame>,
-      gr::Tags::SpatialRicci<DataVector, 3, TargetFrame>>;
+      gr::Tags::SpatialRicci<DataVector, 3, TargetFrame>,
+      CurvedScalarWave::Tags::Psi>;
 
   template <typename TargetFrame>
   using allowed_dest_tags = tmpl::remove_duplicates<
