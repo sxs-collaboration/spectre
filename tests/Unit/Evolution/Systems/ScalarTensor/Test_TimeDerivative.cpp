@@ -32,6 +32,8 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
                   "[Unit][Evolution]") {
+  // Backreaction of the scalar on the metric is currently disabled
+  static constexpr bool backreaction_is_enabled = false;
 
   using gh_dt_variables_tags = ScalarTensor::TimeDerivative::gh_dt_tags;
   using scalar_dt_variables_tags = ScalarTensor::TimeDerivative::scalar_dt_tags;
@@ -268,14 +270,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarTensor.TimeDerivative",
 
   // When we have backreaction we also need to compute and apply the correction
   // to dt pi for the expected variables
-
-  ScalarTensor::add_stress_energy_term_to_dt_pi(
-      make_not_null(
-          &get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(expected_dt_variables)),
-      get<ScalarTensor::Tags::TraceReversedStressEnergy<DataVector, 3,
-                                                        ::Frame::Inertial>>(
-          expected_temp_variables),
-      tuples::get<gr::Tags::Lapse<DataVector>>(arg_variables));
+  if constexpr (backreaction_is_enabled) {
+    ScalarTensor::add_stress_energy_term_to_dt_pi(
+        make_not_null(&get<::Tags::dt<gh::Tags::Pi<DataVector, 3>>>(
+            expected_dt_variables)),
+        get<ScalarTensor::Tags::TraceReversedStressEnergy<DataVector, 3,
+                                                          ::Frame::Inertial>>(
+            expected_temp_variables),
+        tuples::get<gr::Tags::Lapse<DataVector>>(arg_variables));
+  }
 
   ScalarTensor::add_scalar_source_to_dt_pi_scalar(
       make_not_null(
