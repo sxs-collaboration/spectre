@@ -245,7 +245,7 @@ def plot_power_monitors(
             else num_elements[subplot_index]
         )
         ax.set_title(
-            f"{num_elements_i} element" + "s"[: num_elements_i != 1],
+            f"{num_elements_i} element" + ("" if num_elements_i == 1 else "s"),
             loc="right",
         )
 
