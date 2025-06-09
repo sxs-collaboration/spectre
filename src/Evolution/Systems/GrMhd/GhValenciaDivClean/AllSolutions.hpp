@@ -8,6 +8,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GhGrMhd/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/MonteCarlo/Factory.hpp"
 #include "Utilities/TMPL.hpp"
 
 // Check if SpEC is linked and therefore we can load SpEC initial data
@@ -33,6 +34,7 @@ namespace ghmhd::GhValenciaDivClean::InitialData {
 using analytic_solutions_and_data_list =
     tmpl::append<gh::RelativisticEuler::Solutions::all_solutions,
                  gh::grmhd::Solutions::all_solutions,
+                 RadiationTransport::MonteCarlo::Solutions::all_solutions,
                  gh::grmhd::AnalyticData::all_analytic_data>;
 using initial_data_list = tmpl::flatten<tmpl::list<
     analytic_solutions_and_data_list,

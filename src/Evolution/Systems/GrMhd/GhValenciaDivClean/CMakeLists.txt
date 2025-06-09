@@ -43,6 +43,7 @@ target_link_libraries(
   GhRelativisticEulerSolutions
   Hydro
   LinearOperators
+  MonteCarloSolutions
   Serialization
   Utilities
   ValenciaDivClean
