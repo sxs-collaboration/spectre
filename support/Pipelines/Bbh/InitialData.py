@@ -154,7 +154,7 @@ def generate_id(
     linear_velocity: Sequence[float] = [0.0, 0.0, 0.0],
     # Resolution
     refinement_level: int = 1,
-    polynomial_order: int = 6,
+    polynomial_order: int = 9,
     # Scheduling options
     id_input_file_template: Union[str, Path] = ID_INPUT_FILE_TEMPLATE,
     control: bool = False,
@@ -409,7 +409,7 @@ def generate_id(
     "-P",
     type=click.IntRange(1, None),
     help="p-refinement level.",
-    default=6,
+    default=9,
     show_default=True,
 )
 # Scheduling options
