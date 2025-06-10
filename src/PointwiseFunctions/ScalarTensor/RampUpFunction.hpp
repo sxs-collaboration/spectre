@@ -16,8 +16,8 @@ namespace ScalarTensor {
  *    F(t) &= t_*^5  (126 + t_* (-420 + t_* (540 + t_* (-315 + 70 t_*))))~,
  * \end{align}
  * where $ t_\mathrm{s} $ and $ t_\mathrm{ramp} $ are parameters that
- control the start time and duration of the turn-on period.
- *
+ * control the start time and duration of the turn-on period.
+ * Note that $F(t)$ is `smoothstep<4>`.
  */
 double nonic_ramp_function(double time, double start_time, double ramp_time);
 
