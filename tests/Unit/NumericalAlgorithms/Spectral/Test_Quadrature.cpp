@@ -20,7 +20,9 @@ SPECTRE_TEST_CASE("Unit.SpatialDiscreitization.Quadrature",
   CHECK(get_output(Spectral::Quadrature::Equiangular) == "Equiangular");
   CHECK(get_output(Spectral::Quadrature::GaussRadauLower) == "GaussRadauLower");
   CHECK(get_output(Spectral::Quadrature::GaussRadauUpper) == "GaussRadauUpper");
-
+  CHECK(get_output(Spectral::Quadrature::AxialSymmetry) == "AxialSymmetry");
+  CHECK(get_output(Spectral::Quadrature::SphericalSymmetry) ==
+        "SphericalSymmetry");
   for (const auto quadrature : Spectral::all_quadratures()) {
     CHECK(quadrature == TestHelpers::test_creation<Spectral::Quadrature>(
                             get_output(quadrature)));

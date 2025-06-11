@@ -18,6 +18,7 @@ SPECTRE_TEST_CASE("Unit.Spectral.Basis", "[NumericalAlgorithms][Unit]") {
   CHECK(get_output(Spectral::Basis::SphericalHarmonic) == "SphericalHarmonic");
   CHECK(get_output(Spectral::Basis::Fourier) == "Fourier");
   CHECK(get_output(Spectral::Basis::B2Marcus) == "B2Marcus");
+  CHECK(get_output(Spectral::Basis::Cartoon) == "Cartoon");
 
   for (const auto basis : Spectral::all_bases()) {
     CHECK(basis ==

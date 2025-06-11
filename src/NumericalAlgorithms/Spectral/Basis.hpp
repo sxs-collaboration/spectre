@@ -70,11 +70,12 @@ enum class Basis : uint8_t {
   FiniteDifference = 3 << basis_shift,
   SphericalHarmonic = 4 << basis_shift,
   Fourier = 5 << basis_shift,
-  B2Marcus = 6 << basis_shift
+  B2Marcus = 6 << basis_shift,
+  Cartoon = 7 << basis_shift
 };
 
 /// All possible values of Basis
-std::array<Basis, 7> all_bases();
+std::array<Basis, 8> all_bases();
 
 /// Convert a string to a Basis enum.
 Basis to_basis(const std::string& basis);
