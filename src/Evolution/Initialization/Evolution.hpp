@@ -3,32 +3,29 @@
 
 #pragma once
 
-#include <array>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <optional>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/ApplyMatrices.hpp"
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Domain/Amr/Flag.hpp"
+#include "DataStructures/TaggedVariant.hpp"
 #include "Domain/Amr/Helpers.hpp"
-#include "Domain/Amr/Info.hpp"
-#include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Structure/ChildSize.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
-#include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
-#include "Parallel/Tags/ArrayIndex.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
+#include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
@@ -44,10 +41,33 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace Parallel::Tags {
+template <typename Index>
+struct ArrayIndex;
+}  // namespace Parallel::Tags
+namespace Tags {
+template <typename Tag>
+struct StepperErrors;
+}  // namespace Tags
+namespace amr::Tags {
+template <size_t VolumeDim>
+struct Info;
+}  // namespace amr::Tags
+namespace domain::Tags {
+template <size_t VolumeDim>
+struct Element;
+template <size_t VolumeDim>
+struct Mesh;
+}  // namespace domain::Tags
+/// \endcond
 
 namespace Initialization {
 
@@ -335,6 +355,10 @@ struct TimeStepperHistory {
 
 /// \brief Initialize/update items related to time stepper history after an AMR
 /// change
+///
+/// \note `Tags::TimeStep` and `Tags::Next<Tags::TimeStepId>` are not
+/// initially set by this projector.  They are only updated if the
+/// time stepper must be restarted because of LTS h-refinement.
 template <typename Metavariables>
 struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
   static constexpr size_t dim = Metavariables::volume_dim;
@@ -342,14 +366,19 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
 
-  using return_tags = tmpl::list<dt_variables_tag, history_tag>;
+  using return_tags =
+      tmpl::list<dt_variables_tag, history_tag,
+                 ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>;
   using argument_tags = tmpl::list<domain::Tags::Mesh<dim>,
-                                   Parallel::Tags::ArrayIndex<ElementId<dim>>>;
+                                   Parallel::Tags::ArrayIndex<ElementId<dim>>,
+                                   ::Tags::TimeStepper<TimeStepper>>;
 
   static void apply(
       const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
       const gsl::not_null<typename history_tag::type*> history,
-      const Mesh<dim>& new_mesh, const ElementId<dim>& /*element_id*/,
+      const gsl::not_null<TimeStepId*> /*next_time_step_id*/,
+      const gsl::not_null<TimeDelta*> /*time_step*/, const Mesh<dim>& new_mesh,
+      const ElementId<dim>& /*element_id*/, const TimeStepper& /*time_stepper*/,
       const std::pair<Mesh<dim>, Element<dim>>& old_mesh_and_element) {
     const auto& old_mesh = old_mesh_and_element.first;
     if (old_mesh == new_mesh) {
@@ -369,55 +398,146 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
   static void apply(
       const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
       const gsl::not_null<typename history_tag::type*> history,
-      const Mesh<dim>& new_mesh, const ElementId<dim>& element_id,
+      const gsl::not_null<TimeStepId*> next_time_step_id,
+      const gsl::not_null<TimeDelta*> time_step, const Mesh<dim>& new_mesh,
+      const ElementId<dim>& element_id, const TimeStepper& time_stepper,
       const tuples::TaggedTuple<Tags...>& parent_items) {
-    const auto& parent_id = get<domain::Tags::Element<dim>>(parent_items).id();
-    const auto& parent_mesh = get<domain::Tags::Mesh<dim>>(parent_items);
-    const auto child_sizes =
-        domain::child_size(element_id.segment_ids(), parent_id.segment_ids());
-    const auto projection_matrices =
-        Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
-                                                    child_sizes);
-    transform(history, get<history_tag>(parent_items),
-              [&](const auto& source_entry) {
-                return apply_matrices(projection_matrices, source_entry,
-                                      parent_mesh.extents());
-              });
     dt_vars->initialize(new_mesh.number_of_grid_points());
+    if constexpr (Metavariables::local_time_stepping) {
+      if (time_stepper.number_of_past_steps() != 0) {
+        ERROR_NO_TRACE(
+            "Cannot perform h-refinement with LTS steppers requiring "
+            "initialization.");
+      }
+      const auto integrator_order = time_stepper.order();
+      if (variants::holds_alternative<TimeSteppers::Tags::FixedOrder>(
+              integrator_order)) {
+        *history = typename history_tag::type{
+            get<TimeSteppers::Tags::FixedOrder>(integrator_order)};
+        return;
+      }
+      const auto start_order =
+          get<TimeSteppers::Tags::VariableOrder>(integrator_order).minimum;
+      *history = typename history_tag::type{start_order};
+
+      const auto reduced_step = restart_time_step(parent_items, start_order);
+      if (abs(reduced_step) < abs(*time_step)) {
+        *time_step = reduced_step;
+        *next_time_step_id = time_stepper.next_time_id(
+            get<::Tags::TimeStepId>(parent_items), *time_step);
+      }
+    } else {
+      (void)next_time_step_id;  // gcc 9 warning
+      (void)time_step;  // gcc 9 warning
+      const auto& parent_id =
+          get<domain::Tags::Element<dim>>(parent_items).id();
+      const auto& parent_mesh = get<domain::Tags::Mesh<dim>>(parent_items);
+      const auto child_sizes =
+          domain::child_size(element_id.segment_ids(), parent_id.segment_ids());
+      const auto projection_matrices =
+          Spectral::projection_matrix_parent_to_child(parent_mesh, new_mesh,
+                                                      child_sizes);
+      transform(history, get<history_tag>(parent_items),
+                [&](const auto& source_entry) {
+                  return apply_matrices(projection_matrices, source_entry,
+                                        parent_mesh.extents());
+                });
+    }
   }
 
   template <typename... Tags>
   static void apply(
       const gsl::not_null<typename dt_variables_tag::type*> dt_vars,
       const gsl::not_null<typename history_tag::type*> history,
-      const Mesh<dim>& new_mesh, const ElementId<dim>& element_id,
+      const gsl::not_null<TimeStepId*> next_time_step_id,
+      const gsl::not_null<TimeDelta*> time_step, const Mesh<dim>& new_mesh,
+      const ElementId<dim>& element_id, const TimeStepper& time_stepper,
       const std::unordered_map<ElementId<dim>, tuples::TaggedTuple<Tags...>>&
           children_items) {
-    bool first_child = true;
-    for (const auto& [child_id, child_items] : children_items) {
-      const auto& child_mesh = get<domain::Tags::Mesh<dim>>(child_items);
-      const auto child_sizes =
-          domain::child_size(child_id.segment_ids(), element_id.segment_ids());
-      const auto projection_matrices =
-          Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
-                                                      child_sizes);
-      if (first_child) {
-        transform(history, get<history_tag>(child_items),
-                  [&](const auto& source_entry) {
-                    return apply_matrices(projection_matrices, source_entry,
-                                          child_mesh.extents());
-                  });
-        first_child = false;
-      } else {
-        transform_mutate(history, get<history_tag>(child_items),
-                         [&](const auto dest_entry, const auto& source_entry) {
-                           *dest_entry +=
-                               apply_matrices(projection_matrices, source_entry,
+    dt_vars->initialize(new_mesh.number_of_grid_points());
+    if constexpr (Metavariables::local_time_stepping) {
+      if (time_stepper.number_of_past_steps() != 0) {
+        ERROR_NO_TRACE(
+            "Cannot perform h-refinement with LTS steppers requiring "
+            "initialization.");
+      }
+      const auto integrator_order = time_stepper.order();
+      if (variants::holds_alternative<TimeSteppers::Tags::FixedOrder>(
+              integrator_order)) {
+        *history = typename history_tag::type{
+            get<TimeSteppers::Tags::FixedOrder>(integrator_order)};
+        return;
+      }
+      const auto start_order =
+          get<TimeSteppers::Tags::VariableOrder>(integrator_order).minimum;
+      *history = typename history_tag::type{start_order};
+
+      for (const auto& [child, child_items] : children_items) {
+        const auto reduced_step = restart_time_step(child_items, start_order);
+        if (abs(reduced_step) < abs(*time_step)) {
+          *time_step = reduced_step;
+          *next_time_step_id = time_stepper.next_time_id(
+              get<::Tags::TimeStepId>(children_items.begin()->second),
+              *time_step);
+        }
+      }
+    } else {
+      (void)next_time_step_id;  // gcc 9 warning
+      (void)time_step;  // gcc 9 warning
+      bool first_child = true;
+      for (const auto& [child_id, child_items] : children_items) {
+        const auto& child_mesh = get<domain::Tags::Mesh<dim>>(child_items);
+        const auto child_sizes = domain::child_size(child_id.segment_ids(),
+                                                    element_id.segment_ids());
+        const auto projection_matrices =
+            Spectral::projection_matrix_child_to_parent(child_mesh, new_mesh,
+                                                        child_sizes);
+        if (first_child) {
+          transform(history, get<history_tag>(child_items),
+                    [&](const auto& source_entry) {
+                      return apply_matrices(projection_matrices, source_entry,
+                                            child_mesh.extents());
+                    });
+          first_child = false;
+        } else {
+          transform_mutate(
+              history, get<history_tag>(child_items),
+              [&](const auto dest_entry, const auto& source_entry) {
+                *dest_entry += apply_matrices(projection_matrices, source_entry,
                                               child_mesh.extents());
-                         });
+              });
+        }
       }
     }
-    dt_vars->initialize(new_mesh.number_of_grid_points());
+  }
+
+ private:
+  template <typename... Tags>
+  static TimeDelta restart_time_step(
+      const tuples::TaggedTuple<Tags...>& old_items, const size_t start_order) {
+    const auto& old_history = get<history_tag>(old_items);
+    if (old_history.integration_order() == start_order) {
+      return get<::Tags::TimeStep>(old_items);
+    }
+
+    const auto& time_step_id = get<::Tags::TimeStepId>(old_items);
+    const auto& errors = get<::Tags::StepperErrors<variables_tag>>(old_items);
+    if (not errors[1].has_value()) {
+      ERROR_NO_TRACE(
+          "Evolutions performing h-refinement with variable-order local "
+          "time-stepping must use ErrorControl for step size choosing.");
+    }
+    ASSERT(errors[1]->errors[start_order - 1].has_value(),
+           "Start-order estimate not available.");
+
+    // At this low an order, we are almost certainly step-size-limited
+    // by accuracy rather than stability, so ignore things like the
+    // change to the grid spacing.
+    return choose_lts_step_size(
+        time_step_id.step_time(),
+        errors[1]->step_size.value() *
+            pow(1.0 / std::max(*errors[1]->errors[start_order - 1], 1e-14),
+                1.0 / static_cast<double>(start_order)));
   }
 };
 }  // namespace Initialization
