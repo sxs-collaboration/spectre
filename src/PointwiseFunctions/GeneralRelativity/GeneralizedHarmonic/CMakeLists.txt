@@ -7,6 +7,7 @@ spectre_target_sources(
   Christoffel.cpp
   CovariantDerivOfExtrinsicCurvature.cpp
   DerivSpatialMetric.cpp
+  Expansion1D.cpp
   ExtrinsicCurvature.cpp
   GaugeSource.cpp
   Phi.cpp
@@ -34,6 +35,7 @@ spectre_target_headers(
   ConstraintGammas.hpp
   CovariantDerivOfExtrinsicCurvature.hpp
   DerivSpatialMetric.hpp
+  Expansion1D.hpp
   ExtrinsicCurvature.hpp
   GaugeSource.hpp
   Phi.hpp
