@@ -25,5 +25,6 @@ add_subdirectory(BnsInitialData)
 add_subdirectory(Poisson)
 add_subdirectory(Punctures)
 add_subdirectory(ScalarGaussBonnet)
+add_subdirectory(SelfForce)
 add_subdirectory(Xcts)
 
