@@ -68,7 +68,13 @@ void ParameterizedDeleptonization::operator()(
     const Scalar<DataVector>& rest_mass_density,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) const {
-  if (LIKELY(enable_)) {
+  // Turn off param deleptonization if:
+  // i) disabled
+  // ii) if max rest mass density > 2e14 g/cm^3.  Note, at this point, bounce
+  // has occured/is close and one should switch to proper neutrino transport.
+  // Formally, it should disable when rest mass density > 2e14 g/cm^3 AND
+  // entropy is also > 3 k_B/baryon, but entropy is not a variable yet.
+  if (LIKELY(enable_) and max(rest_mass_density.get()) < 3.24e-4) {
     for (size_t i = 0; i < rest_mass_density.get().size(); i++) {
       correct_electron_fraction(specific_internal_energy, electron_fraction,
                                 pressure, temperature, rest_mass_density,

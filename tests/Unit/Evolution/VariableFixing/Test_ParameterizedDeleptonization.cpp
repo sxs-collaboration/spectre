@@ -99,6 +99,7 @@ void test_variable_fixer(
     const VariableFixing::ParameterizedDeleptonization& variable_fixer,
     const EquationsOfState::EquationOfState<true, 3>& equation_of_state) {
   const Scalar<DataVector> density{DataVector{3.0e-9, 3.7e-9, 4.0e-9}};
+  const Scalar<DataVector> high_density{DataVector{5.0e-4, 2.5e-9, 3.0e-9}};
   const Scalar<DataVector> initial_density = density;
   Scalar<DataVector> electron_fraction{DataVector{0.5, 0.5, 0.5}};
   Scalar<DataVector> temperature{DataVector{1.0, 1.0, 1.0}};
@@ -140,10 +141,28 @@ void test_variable_fixer(
   CHECK_ITERABLE_APPROX(specific_internal_energy,
                         initial_specific_internal_energy);
 
-  // pressure should change
+  // pressure should not change
   CHECK_FALSE(pressure == initial_pressure);
 
-  // temperature should change
+  // temperature should not change
+  CHECK_FALSE(temperature == initial_temperature);
+
+  // Check parameterized deleptonization does not activate if density is too
+  // high, simulating post bounce phase of supernova.
+  const auto electron_fraction_compare = electron_fraction;
+
+  variable_fixer(&specific_internal_energy, &electron_fraction, &pressure,
+                 &temperature, high_density, equation_of_state);
+
+  // Ye, eint, pressure, & temperature should not change b/c the density is too
+  // high
+  CHECK(electron_fraction == electron_fraction_compare);
+
+  CHECK_ITERABLE_APPROX(specific_internal_energy,
+                        initial_specific_internal_energy);
+
+  CHECK_FALSE(pressure == initial_pressure);
+
   CHECK_FALSE(temperature == initial_temperature);
 
 }  // end 3D
