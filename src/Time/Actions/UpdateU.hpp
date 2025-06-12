@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -58,7 +57,7 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
               const gsl::not_null<typename error_tag::type*> errors,
               const typename history_tag::type& history,
               const ::TimeDelta& time_step, const TimeStepper& time_stepper,
-              const std::optional<StepperErrorTolerances>& tolerances) {
+              const StepperErrorTolerances& tolerances) {
             const auto error =
                 time_stepper.update_u(vars, history, time_step, tolerances);
             if (error.has_value()) {

@@ -91,7 +91,7 @@ class TimeStepper : public PUP::able {
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
           data)>& history,                                                 \
       const TimeDelta& time_step,                                          \
-      const std::optional<StepperErrorTolerances>& tolerances) const = 0;  \
+      const StepperErrorTolerances& tolerances) const = 0;                 \
   virtual void clean_history_forward(                                      \
       const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
           data)>& history) const = 0;                                      \
@@ -137,9 +137,10 @@ class TimeStepper : public PUP::able {
   /// compare two orders of step. Whenever the error measure is unavailable,
   /// the return value is empty
   ///
-  /// If \p tolerances is empty, no error measures are calculated, but
-  /// any additional substeps necessary for error estimation are still
-  /// taken.  This is useful when a system integrates multiple
+  /// If \p tolerances requests no estimates (e.g., a
+  /// default-constructed object), no error measures are calculated,
+  /// but any additional substeps necessary for error estimation are
+  /// still taken.  This is useful when a system integrates multiple
   /// variables in separate calls to the TimeStepper, but only uses
   /// estimates from some of them.
   ///
@@ -151,13 +152,13 @@ class TimeStepper : public PUP::able {
   ///     gsl::not_null<T*> u,
   ///     const ConstUntypedHistory<T>& history,
   ///     const TimeDelta& time_step,
-  ///     const std::optional<StepperErrorTolerances>& tolerances) const;
+  ///     const StepperErrorTolerances& tolerances) const;
   /// ```
   template <typename Vars>
   std::optional<StepperErrorEstimate> update_u(
       const gsl::not_null<Vars*> u, const TimeSteppers::History<Vars>& history,
       const TimeDelta& time_step,
-      const std::optional<StepperErrorTolerances>& tolerances) const {
+      const StepperErrorTolerances& tolerances) const {
     return update_u_forward(&*make_math_wrapper(u), history.untyped(),
                             time_step, tolerances);
   }
@@ -286,7 +287,7 @@ class TimeStepper : public PUP::able {
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(       \
           data)>& history,                                                     \
       const TimeDelta& time_step,                                              \
-      const std::optional<StepperErrorTolerances>& tolerances) const override; \
+      const StepperErrorTolerances& tolerances) const override;                \
   void clean_history_forward(                                                  \
       const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(     \
           data)>& history) const override;                                     \
@@ -307,7 +308,7 @@ class TimeStepper : public PUP::able {
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
           data)>& history,                                                 \
       const TimeDelta& time_step) const {                                  \
-    return update_u_impl(u, history, time_step);                           \
+    update_u_impl(u, history, time_step);                                  \
   }                                                                        \
   TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                                \
   std::optional<StepperErrorEstimate>                                      \
@@ -316,7 +317,7 @@ class TimeStepper : public PUP::able {
       const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
           data)>& history,                                                 \
       const TimeDelta& time_step,                                          \
-      const std::optional<StepperErrorTolerances>& tolerances) const {     \
+      const StepperErrorTolerances& tolerances) const {                    \
     return update_u_impl(u, history, time_step, tolerances);               \
   }                                                                        \
   TIME_STEPPER_DERIVED_CLASS_TEMPLATE(data)                                \

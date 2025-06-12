@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -19,7 +18,7 @@ struct StepperErrorTolerances : db::PrefixTag, db::SimpleTag {
   static std::string name() {
     return "StepperErrorTolerances(" + db::tag_name<Tag>() + ")";
   }
-  using type = std::optional<::StepperErrorTolerances>;
+  using type = ::StepperErrorTolerances;
   using tag = Tag;
 };
 }  // namespace Tags

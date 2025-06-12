@@ -118,7 +118,7 @@ void test_gts() {
           DataVector{5, 0.0}, std::move(history),
           static_cast<std::unique_ptr<TimeStepper>>(
               std::make_unique<TimeSteppers::AdamsBashforth>(5)),
-          false, std::optional<StepperErrorTolerances>{}, 1e-8);
+          false, StepperErrorTolerances{}, 1e-8);
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
                                         db::get<EvolvedVariable>(box));
@@ -188,7 +188,7 @@ void test_lts() {
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       std::move(step_choosers),
       0.3 / TimeSteppers::AdamsBashforth{5}.stable_step(), false,
-      std::optional<StepperErrorTolerances>{},
+      StepperErrorTolerances{},
       AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5}, 1e-8);
 
   // update the rhs

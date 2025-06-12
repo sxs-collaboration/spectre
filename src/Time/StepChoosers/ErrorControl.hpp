@@ -216,11 +216,12 @@ class ErrorControl
     double new_step;
     if (std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep> or
         not errors[0].has_value() or errors[0]->order != errors[1]->order) {
-      new_step = errors[1]->step_size.value() *
-                 std::clamp(safety_factor_ *
-                                pow(1.0 / std::max(errors[1]->error, 1e-14),
-                                    1.0 / (errors[1]->order + 1)),
-                            min_factor_, max_factor_);
+      new_step =
+          errors[1]->step_size.value() *
+          std::clamp(safety_factor_ *
+                         pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
+                             1.0 / (errors[1]->order + 1)),
+                     min_factor_, max_factor_);
     } else {
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
@@ -230,8 +231,9 @@ class ErrorControl
           errors[1]->step_size.value() *
           std::clamp(
               safety_factor_ *
-                  pow(1.0 / std::max(errors[1]->error, 1e-14), alpha_factor) *
-                  pow(std::max(errors[0]->error, 1e-14), beta_factor),
+                  pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
+                      alpha_factor) *
+                  pow(std::max(errors[0]->step_error(), 1e-14), beta_factor),
               min_factor_, max_factor_);
     }
     return ::TimeStepRequest{.size_goal = new_step};
@@ -241,7 +243,9 @@ class ErrorControl
   bool can_be_delayed() const override { return true; }
 
   StepperErrorTolerances tolerances() const override {
-    return {.absolute = absolute_tolerance_, .relative = relative_tolerance_};
+    return {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
+            .absolute = absolute_tolerance_,
+            .relative = relative_tolerance_};
   }
 
   void pup(PUP::er& p) override {  // NOLINT
@@ -344,11 +348,11 @@ struct StepperErrorTolerancesCompute
 
   // local time stepping
   static void function(
-      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
           step_choosers) {
-    tolerances->reset();
+    *tolerances = ::StepperErrorTolerances{};
     for (const auto& step_chooser : step_choosers) {
       set_tolerances_if_error_control(tolerances, *step_chooser);
     }
@@ -356,9 +360,9 @@ struct StepperErrorTolerancesCompute
 
   // global time stepping
   static void function(
-      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const ::EventsAndTriggers& events_and_triggers) {
-    tolerances->reset();
+    *tolerances = ::StepperErrorTolerances{};
     // In principle the slab size could be changed based on a dense
     // trigger, but it's not clear that there is ever a good reason to
     // do so, and it wouldn't make sense to use error control in that
@@ -377,7 +381,7 @@ struct StepperErrorTolerancesCompute
  private:
   template <typename StepChooserUse>
   static void set_tolerances_if_error_control(
-      const gsl::not_null<std::optional<::StepperErrorTolerances>*> tolerances,
+      const gsl::not_null<::StepperErrorTolerances*> tolerances,
       const StepChooser<StepChooserUse>& step_chooser) {
     if (const auto* const error_control =
             dynamic_cast<const ::StepChoosers::ErrorControl_detail::
@@ -385,12 +389,13 @@ struct StepperErrorTolerancesCompute
                 &step_chooser);
         error_control != nullptr) {
       const auto this_tolerances = error_control->tolerances();
-      if (tolerances->has_value() and tolerances->value() != this_tolerances) {
+      if (tolerances->estimates != ::StepperErrorTolerances::Estimates::None and
+          *tolerances != this_tolerances) {
         ERROR_NO_TRACE("All ErrorControl events for "
                        << db::tag_name<EvolvedVariableTag>()
                        << " must use the same tolerances.");
       }
-      tolerances->emplace(this_tolerances);
+      *tolerances = this_tolerances;
     }
   }
 };

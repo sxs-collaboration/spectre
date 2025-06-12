@@ -23,7 +23,8 @@ class StepperErrorTolerances;
  *
  * where $v$ is \p values, $e$ is \p errors, and $a$ and $r$ are the
  * tolerances from \p tolerances.  For vector types, calculates the
- * largest error over all the points.
+ * largest error over all the points.  Only the `absolute` and
+ * `relative` fields from \p tolerances are used.
  *
  * Instantiated for `double`, `std::complex<double>`, `DataVector`,
  * and `ComplexDataVector`.

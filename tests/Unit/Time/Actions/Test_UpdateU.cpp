@@ -210,7 +210,10 @@ void test_stepper_error() {
       std::move(time_stepper), initial_id,
       time_stepper->next_time_id(initial_id, initial_time_step),
       initial_time_step, true,
-      std::optional<StepperErrorTolerances>{{.absolute = 1.0, .relative = 0.0}},
+      StepperErrorTolerances{
+          .estimates = StepperErrorTolerances::Estimates::StepperOrder,
+          .absolute = 1.0,
+          .relative = 0.0},
       1., history_tag::type{3}, Tags::StepperErrors<variables_tag>::type{});
 
   const auto do_substep = [&box](const bool repeat_substep = false) {
@@ -254,7 +257,7 @@ void test_stepper_error() {
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
 
-  const auto first_step_error = db::get<error_tag>(box)[1]->error;
+  const auto first_step_errors = db::get<error_tag>(box)[1]->errors;
   const auto second_step = slab.start() + initial_time_step;
   do_substep();
   CHECK(not db::get<error_tag>(box)[0].has_value());
@@ -269,8 +272,8 @@ void test_stepper_error() {
   REQUIRE(db::get<error_tag>(box)[1].has_value());
   CHECK(db::get<error_tag>(box)[0]->step_time == slab.start());
   CHECK(db::get<error_tag>(box)[1]->step_time == second_step);
-  CHECK(db::get<error_tag>(box)[0]->error == first_step_error);
-  CHECK(db::get<error_tag>(box)[1]->error != first_step_error);
+  CHECK(db::get<error_tag>(box)[0]->errors == first_step_errors);
+  CHECK(db::get<error_tag>(box)[1]->errors != first_step_errors);
 }
 }  // namespace
 
