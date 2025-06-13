@@ -110,8 +110,8 @@ void OverlapIterator::reset() {
 
 namespace detail {
 
-template <size_t Dim>
-void data_on_overlap_impl(double* overlap_data, const double* volume_data,
+template <typename ValueType, size_t Dim>
+void data_on_overlap_impl(ValueType* overlap_data, const ValueType* volume_data,
                           const size_t num_components,
                           const Index<Dim>& volume_extents,
                           const size_t overlap_extent,
@@ -133,8 +133,9 @@ void data_on_overlap_impl(double* overlap_data, const double* volume_data,
   }
 }
 
-template <size_t Dim>
-void add_overlap_data_impl(double* volume_data, const double* overlap_data,
+template <typename ValueType, size_t Dim>
+void add_overlap_data_impl(ValueType* volume_data,
+                           const ValueType* overlap_data,
                            const size_t num_components,
                            const Index<Dim>& volume_extents,
                            const size_t overlap_extent,
@@ -159,18 +160,23 @@ void add_overlap_data_impl(double* volume_data, const double* overlap_data,
 }  // namespace detail
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+
 #define INSTANTIATE(r, data)                                                   \
   template size_t overlap_num_points(const Index<DIM(data)>&, size_t, size_t); \
   template OverlapIterator::OverlapIterator(const Index<DIM(data)>&, size_t,   \
-                                            const Direction<DIM(data)>&);      \
-  template void detail::add_overlap_data_impl(double*, const double*, size_t,  \
-                                              const Index<DIM(data)>&, size_t, \
-                                              const Direction<DIM(data)>&);    \
-  template void detail::data_on_overlap_impl(double*, const double*, size_t,   \
-                                             const Index<DIM(data)>&, size_t,  \
-                                             const Direction<DIM(data)>&);
+                                            const Direction<DIM(data)>&);
+#define INSTANTIATE_DTYPE(r, data)                                       \
+  template void detail::add_overlap_data_impl(                           \
+      DTYPE(data)*, const DTYPE(data)*, size_t, const Index<DIM(data)>&, \
+      size_t, const Direction<DIM(data)>&);                              \
+  template void detail::data_on_overlap_impl(                            \
+      DTYPE(data)*, const DTYPE(data)*, size_t, const Index<DIM(data)>&, \
+      size_t, const Direction<DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (1, 2, 3),
+                        (double, std::complex<double>))
 
 #undef DIM
 #undef INSTANTIATE

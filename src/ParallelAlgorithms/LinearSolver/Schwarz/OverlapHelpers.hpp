@@ -163,8 +163,8 @@ Tensor<DataType, TensorStructure...> data_on_overlap(
 }
 
 namespace detail {
-template <size_t Dim>
-void data_on_overlap_impl(double* overlap_data, const double* volume_data,
+template <typename ValueType, size_t Dim>
+void data_on_overlap_impl(ValueType* overlap_data, const ValueType* volume_data,
                           size_t num_components,
                           const Index<Dim>& volume_extents,
                           size_t overlap_extent,
@@ -209,9 +209,9 @@ Variables<TagsList> data_on_overlap(const Variables<TagsList>& volume_data,
 /// @}
 
 namespace detail {
-template <size_t Dim>
-void add_overlap_data_impl(double* volume_data, const double* overlap_data,
-                           size_t num_components,
+template <typename ValueType, size_t Dim>
+void add_overlap_data_impl(ValueType* volume_data,
+                           const ValueType* overlap_data, size_t num_components,
                            const Index<Dim>& volume_extents,
                            size_t overlap_extent,
                            const Direction<Dim>& direction);
