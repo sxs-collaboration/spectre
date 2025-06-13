@@ -105,6 +105,32 @@ template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
 struct InverseTauTimesConformalMetric;
 template <typename DataType>
 struct LapseTimesSlicingCondition;
+template <typename DataType>
+struct DetConformalSpatialMetric;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct InvATilde;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct ATildeTimesFieldB;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct SymmetrizedDerivFieldB;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct ContractedSymmetrizedDerivFieldB;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct ContractedFieldDUp;
+template <typename DataType>
+struct HalfConformalFactorSquared;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct DerivGammaHatMinusContractedConformalChristoffel;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct ContractedChristoffelSecondKind;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct ContractedDerivConformalChristoffelDifference;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct LapseTimesConformalMetric;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct SpatialRicciTensor;
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+struct UpperSpatialZ4Contraint;
 }  // namespace Tags
 
 /// \brief Input option tags for the CCZ4 evolution system

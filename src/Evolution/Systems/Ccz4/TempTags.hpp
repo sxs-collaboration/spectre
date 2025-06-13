@@ -228,5 +228,116 @@ template <typename DataType>
 struct LapseTimesSlicingCondition : db::SimpleTag {
   using type = Scalar<DataType>;
 };
+
+/*!
+ * \brief The CCZ4 temporary expression
+ * (\f$ \mathrm{det}\tilde{\gamma}_{ij} \f$)
+ */
+template <typename DataType>
+struct DetConformalSpatialMetric : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ \tilde{A}^{ij} \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct InvATilde : db::SimpleTag {
+  using type = tnsr::II<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ \tilde{A}_{ki}\partial_j\beta^k \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct ATildeTimesFieldB : db::SimpleTag {
+  using type = tnsr::ij<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ \partial_k\partial_l\beta^i \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct SymmetrizedDerivFieldB : db::SimpleTag {
+  using type = tnsr::ijK<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ \partial_k\partial_l\beta^l \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct ContractedSymmetrizedDerivFieldB : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression
+ * \f$ \tilde{\gamma}^{kn}\tilde{\gamma}^{mj}D_{knm} \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct ContractedFieldDUp : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ (1/2)\phi^2 \f$
+ */
+template <typename DataType>
+struct HalfConformalFactorSquared : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression
+ * \f$ \hat{\Gamma}^l-\tilde{\Gamma}^l \f$ in eq. (26) of \cite Dumbser2017okk
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct DerivGammaHatMinusContractedConformalChristoffel : db::SimpleTag {
+  using type = tnsr::iJ<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ \Gamma^k_{ik} \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct ContractedChristoffelSecondKind : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression
+ * \f$ \partial_m\tilde{\Gamma}^m_{ij}-\partial_j\tilde{Gamma}^m_{im} \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct ContractedDerivConformalChristoffelDifference : db::SimpleTag {
+  using type = tnsr::ij<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ \alpha\tilde{\gamma}_{ij} \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct LapseTimesConformalMetric : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ R_{ij} \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct SpatialRicciTensor : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+};
+
+/*!
+ * \brief The CCZ4 temporary expression \f$ Z^i \f$
+ */
+template <typename DataType, size_t Dim, typename Frame>
+struct UpperSpatialZ4Contraint : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
+};
+
+
+
 }  // namespace Tags
 }  // namespace Ccz4

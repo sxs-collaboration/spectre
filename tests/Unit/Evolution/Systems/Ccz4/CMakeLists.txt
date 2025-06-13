@@ -6,6 +6,7 @@ set(LIBRARY "Test_Ccz4")
 set(LIBRARY_SOURCES
   FiniteDifference/Test_Derivatives.cpp
   FiniteDifference/Test_SecondPartialDerivatives.cpp
+  FiniteDifference/Test_SoTimeDerivative.cpp
   Test_ATilde.cpp
   Test_Christoffel.cpp
   Test_DerivChristoffel.cpp
