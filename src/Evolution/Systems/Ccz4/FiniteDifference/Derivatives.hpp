@@ -58,7 +58,8 @@ void spacetime_derivatives(
  * \details
  * The derivatives are computed using FD of order deriv_order.
  *
- * \note Only 3D 4-th order second derivatives are implemented.
+ * \note Only 3D 4-th order second derivatives are implemented
+ * in this stencil
  */
 void second_spacetime_derivatives(
     gsl::not_null<Variables<

@@ -15,12 +15,12 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/Tags.hpp"
-#include "Evolution/Systems/Ccz4/FiniteDifference/SecondPartialDerivatives.hpp"
-#include "Evolution/Systems/Ccz4/FiniteDifference/SecondPartialDerivatives.tpp"
 #include "Evolution/Systems/Ccz4/System.hpp"
 #include "Evolution/Systems/Ccz4/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/FiniteDifference/SecondPartialDerivatives.hpp"
+#include "NumericalAlgorithms/FiniteDifference/SecondPartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -154,7 +154,7 @@ void second_spacetime_derivatives(
                      number_of_Ccz4_components *
                          volume_evolved_variables.number_of_grid_points());
 
-  second_partial_derivatives<gradients_tags>(
+  ::fd::second_partial_derivatives<gradients_tags>(
       result, volume_Ccz4_vars, ghost_cell_vars, volume_mesh,
       number_of_Ccz4_components, deriv_order,
       cell_centered_logical_to_inertial_inv_jacobian);

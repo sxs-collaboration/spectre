@@ -18,6 +18,7 @@ spectre_target_sources(
   NonUniform1D.cpp
   PartialDerivatives.cpp
   PositivityPreservingAdaptiveOrder.cpp
+  SecondPartialDerivatives.cpp
   Unlimited.cpp
   Wcns5z.cpp
   )
@@ -42,6 +43,8 @@ spectre_target_headers(
   PositivityPreservingAdaptiveOrder.hpp
   Reconstruct.hpp
   Reconstruct.tpp
+  SecondPartialDerivatives.hpp
+  SecondPartialDerivatives.tpp
   Unlimited.hpp
   Wcns5z.hpp
   )

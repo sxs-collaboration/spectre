@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/Ccz4/FiniteDifference/SecondPartialDerivatives.hpp"
+#include "NumericalAlgorithms/FiniteDifference/SecondPartialDerivatives.hpp"
 
 #include <array>
 #include <cstddef>
@@ -21,7 +21,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace Ccz4::fd {
+namespace fd {
 namespace {
 template <size_t Order, bool UnitStride>
 struct ComputeImpl;
@@ -1097,7 +1097,7 @@ void second_logical_partial_derivatives_impl(
     const size_t fd_order) {
   switch (fd_order) {
     case 4:
-      ::Ccz4::fd::second_logical_partial_derivatives_impl<ComputeImpl<4, true>>(
+      ::fd::second_logical_partial_derivatives_impl<ComputeImpl<4, true>>(
           pure_second_logical_derivatives, mixed_second_logical_derivatives,
           buffer, volume_vars, ghost_cell_vars, volume_mesh,
           number_of_variables);
@@ -1152,4 +1152,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (3))
 #undef GET_DIM
 #undef INSTANTIATION
 
-}  // namespace Ccz4::fd
+}  // namespace fd
