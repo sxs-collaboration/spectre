@@ -31,4 +31,5 @@ target_link_libraries(
   PoissonBoundaryConditions
   Spectral
   Utilities
+  ScalarSelfForce
   )

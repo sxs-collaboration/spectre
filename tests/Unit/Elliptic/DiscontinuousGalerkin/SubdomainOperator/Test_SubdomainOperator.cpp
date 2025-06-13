@@ -50,6 +50,7 @@
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
+#include "Elliptic/Systems/SelfForce/Scalar/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -91,6 +92,8 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+
+using namespace std::complex_literals;
 
 // The tests in this file check that the subdomain operator is equivalent to
 // applying the full DG-operator to a domain where all points outside the
@@ -262,6 +265,32 @@ struct RandomBackground : elliptic::analytic_data::Background {
     }
     return result;
   }
+  // ScalarSelfForce background to test complex numbers
+  static Scalar<ComplexDataVector> variables(
+      const tnsr::I<DataVector, Dim>& x,
+      ScalarSelfForce::Tags::Alpha /*meta*/) {
+    Scalar<ComplexDataVector> result{x.begin()->size()};
+    const DataVector r = get(magnitude(x));
+    get(result) = r;
+    return result;
+  }
+  static Scalar<ComplexDataVector> variables(
+      const tnsr::I<DataVector, Dim>& x, ScalarSelfForce::Tags::Beta /*meta*/) {
+    Scalar<ComplexDataVector> result{x.begin()->size()};
+    const DataVector r = get(magnitude(x));
+    get(result) = r + 1i * square(r);
+    return result;
+  }
+  static tnsr::i<ComplexDataVector, Dim> variables(
+      const tnsr::I<DataVector, Dim>& x,
+      ScalarSelfForce::Tags::Gamma /*meta*/) {
+    tnsr::i<ComplexDataVector, Dim> result{x.begin()->size()};
+    const DataVector r = get(magnitude(x));
+    for (size_t i = 0; i < Dim; ++i) {
+      result.get(i) = x.get(i) / (1. + r) + 1i * square(r);
+    }
+    return result;
+  }
 };
 
 template <size_t Dim>
@@ -320,6 +349,8 @@ struct ApplySubdomainOperator {
 
 template <typename SubdomainOperator, typename Fields>
 struct TestSubdomainOperatorMatrix {
+  using ValueType = typename Variables<Fields>::value_type;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
@@ -335,7 +366,7 @@ struct TestSubdomainOperatorMatrix {
     const auto& subdomain_operator =
         db::get<SubdomainOperatorTag<SubdomainOperator>>(box);
     const size_t operator_size = subdomain_data.size();
-    blaze::DynamicMatrix<double, blaze::columnMajor> operator_matrix{
+    blaze::DynamicMatrix<ValueType, blaze::columnMajor> operator_matrix{
         operator_size, operator_size};
     auto operand_buffer =
         make_with_value<std::decay_t<decltype(subdomain_data)>>(subdomain_data,
@@ -351,10 +382,10 @@ struct TestSubdomainOperatorMatrix {
     // Check the matrix is equivalent to the operator by applying it to the
     // data. We need to do the matrix multiplication on a contiguous buffer
     // because the `ElementCenteredSubdomainData` is not contiguous.
-    blaze::DynamicVector<double> contiguous_operand(operator_size);
+    blaze::DynamicVector<ValueType> contiguous_operand(operator_size);
     std::copy(subdomain_data.begin(), subdomain_data.end(),
               contiguous_operand.begin());
-    const blaze::DynamicVector<double> contiguous_result =
+    const blaze::DynamicVector<ValueType> contiguous_result =
         operator_matrix * contiguous_operand;
     std::copy(contiguous_result.begin(), contiguous_result.end(),
               result_buffer.begin());
@@ -1092,5 +1123,19 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
     test_subdomain_operator<system,
                             tmpl::list<InitializeConstitutiveRelation<3>>>(
         domain_creator);
+  }
+  {
+    INFO("Complex-valued system");
+    using system = ScalarSelfForce::FirstOrderSystem;
+    const auto dirichlet_bc = make_boundary_condition<system>(
+        elliptic::BoundaryConditionType::Dirichlet);
+    const domain::creators::Rectangle domain_creator{
+        {{-50., -1.}},
+        {{350., 1.}},
+        {{1, 1}},
+        {{3, 3}},
+        {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
+          {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
+    test_subdomain_operator<system>(domain_creator);
   }
 }
