@@ -44,7 +44,7 @@ set(LIBS_TO_LINK_WITH_CONTROL_SYSTEM
   ControlSystemMeasurements
   )
 
-function(add_ghmhd_executable SUFFIX USE_CONTROL_SYSTEMS)
+function(add_ghmhd_executable SUFFIX USE_CONTROL_SYSTEMS USE_PARAMETRIZED_DELEPTONIZATION)
   set(EXECUTABLE "EvolveGhValenciaDivClean${SUFFIX}")
   add_spectre_executable(
     ${EXECUTABLE}
@@ -55,6 +55,7 @@ function(add_ghmhd_executable SUFFIX USE_CONTROL_SYSTEMS)
     ${EXECUTABLE}
     PRIVATE
     USE_CONTROL_SYSTEMS=${USE_CONTROL_SYSTEMS}
+    USE_PARAMETRIZED_DELEPTONIZATION=${USE_PARAMETRIZED_DELEPTONIZATION}
     )
   target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
   if (USE_CONTROL_SYSTEMS STREQUAL "true")
@@ -69,10 +70,17 @@ endfunction()
 add_ghmhd_executable(
   ""
   "false"
+  "false"
   )
 
 add_ghmhd_executable(
   "Bns"
+   "true"
+   "false"
+  )
+add_ghmhd_executable(
+  "CoreCollapseSupernova"
+   "false"
    "true"
   )
 

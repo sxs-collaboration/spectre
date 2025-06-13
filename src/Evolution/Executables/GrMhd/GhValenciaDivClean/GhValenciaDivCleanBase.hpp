@@ -113,6 +113,7 @@
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/LimitLorentzFactor.hpp"
+#include "Evolution/VariableFixing/ParameterizedDeleptonization.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/Actions/ReceiveVolumeData.hpp"
@@ -339,18 +340,23 @@ struct GhValenciaDivCleanDefaults {
 };
 
 template <typename EvolutionMetavarsDerived, bool UseDgSubcell,
-          bool UseControlSystems, bool WithHorizon>
+          bool UseControlSystems, bool UseParametrizedDeleptonization,
+          bool WithHorizon>
 struct GhValenciaDivCleanTemplateBase;
 
-template <bool UseDgSubcell, bool UseControlSystems, bool WithHorizon,
-          template <bool, typename...> class EvolutionMetavarsDerived,
+template <bool UseDgSubcell, bool UseControlSystems,
+          bool UseParametrizedDeleptonization, bool WithHorizon,
+          template <bool, bool, typename...> class EvolutionMetavarsDerived,
           typename... InterpolationTargetTags>
 struct GhValenciaDivCleanTemplateBase<
-    EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>,
-    UseDgSubcell, UseControlSystems, WithHorizon>
-    : public virtual GhValenciaDivCleanDefaults<UseDgSubcell> {
+    EvolutionMetavarsDerived<UseControlSystems, UseParametrizedDeleptonization,
+                             InterpolationTargetTags...>,
+    UseDgSubcell, UseControlSystems, UseParametrizedDeleptonization,
+    WithHorizon> : public virtual GhValenciaDivCleanDefaults<UseDgSubcell> {
   using derived_metavars =
-      EvolutionMetavarsDerived<UseControlSystems, InterpolationTargetTags...>;
+      EvolutionMetavarsDerived<UseControlSystems,
+                               UseParametrizedDeleptonization,
+                               InterpolationTargetTags...>;
   using defaults = GhValenciaDivCleanDefaults<UseDgSubcell>;
   static constexpr size_t volume_dim = defaults::volume_dim;
   using domain_frame = typename defaults::domain_frame;
@@ -362,7 +368,7 @@ struct GhValenciaDivCleanTemplateBase<
   static constexpr bool use_dg_element_collection =
       defaults::use_dg_element_collection;
   using system = typename defaults::system;
-  // using neutrino_system = typename defaults::neutrino_system;
+
   using analytic_variables_tags = typename defaults::analytic_variables_tags;
   using analytic_solution_fields = typename defaults::analytic_solution_fields;
   using ordered_list_of_primitive_recovery_schemes =
@@ -373,9 +379,16 @@ struct GhValenciaDivCleanTemplateBase<
 
   static constexpr bool use_dg_subcell = UseDgSubcell;
   static constexpr bool use_control_systems = UseControlSystems;
-
   using initial_data_list =
       ghmhd::GhValenciaDivClean::InitialData::initial_data_list;
+
+  // Boolean verifying if parameterized deleptonization will be active.  This
+  // will only be active for CCSN evolution.
+  using parameterized_deleptonization =
+      tmpl::conditional_t<UseParametrizedDeleptonization,
+                          VariableFixing::Actions::FixVariables<
+                              VariableFixing::ParameterizedDeleptonization>,
+                          tmpl::list<>>;
 
   using initial_data_tag = evolution::initial_data::Tags::InitialData;
   using equation_of_state_tag = hydro::Tags::GrmhdEquationOfState;
@@ -786,6 +799,7 @@ struct GhValenciaDivCleanTemplateBase<
           grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
       Actions::CleanHistory<system, local_time_stepping>,
+      parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
@@ -823,6 +837,7 @@ struct GhValenciaDivCleanTemplateBase<
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::ResizeAndComputePrims<
               ordered_list_of_primitive_recovery_schemes>>,
+      parameterized_deleptonization,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
       VariableFixing::Actions::FixVariables<VariableFixing::LimitLorentzFactor>,
@@ -898,6 +913,7 @@ struct GhValenciaDivCleanTemplateBase<
               Parallel::Phase::Evolve,
               tmpl::list<
                   ::domain::Actions::CheckFunctionsOfTimeAreReady<volume_dim>,
+                  parameterized_deleptonization,
                   VariableFixing::Actions::FixVariables<
                       VariableFixing::FixToAtmosphere<volume_dim>>,
                   VariableFixing::Actions::FixVariables<
