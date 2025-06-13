@@ -6,6 +6,7 @@
 #include <boost/stacktrace.hpp>
 #include <charm++.h>
 #include <cstdlib>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -24,6 +25,7 @@ template <bool ShowTrace, typename ExceptionTypeToThrow>
                                                 const char* pretty_function,
                                                 const std::string& message) {
   std::ostringstream os;
+  os.precision(std::numeric_limits<double>::max_digits10 - 1);
   os << "\n"
      << "############ ERROR ############\n";
   if constexpr (ShowTrace) {
@@ -47,6 +49,7 @@ void abort_with_error_message(const char* expression, const char* file,
                               const int line, const char* pretty_function,
                               const std::string& message) {
   std::ostringstream os;
+  os.precision(std::numeric_limits<double>::max_digits10 - 1);
   os << "\n"
      << "############ ASSERT FAILED ############\n"
      << "Stack trace:\n\n"
