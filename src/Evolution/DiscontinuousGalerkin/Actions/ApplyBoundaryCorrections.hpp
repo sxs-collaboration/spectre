@@ -532,7 +532,7 @@ bool receive_boundary_data_local_time_stepping(
             neighbor_mortar_data.mortar_data = std::move(
                 received_mortar_data->second.boundary_correction_data.value());
             boundary_data_history->at(mortar_id).remote().insert(
-                mortar_next_time_step_id,
+                time_entry->first,
                 received_mortar_data->second.integration_order,
                 std::move(neighbor_mortar_data));
             if (mortar_mesh !=
