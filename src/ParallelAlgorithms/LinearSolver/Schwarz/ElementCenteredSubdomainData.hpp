@@ -160,7 +160,7 @@ struct ElementCenteredSubdomainData {
     return *this;
   }
 
-  ElementCenteredSubdomainData& operator*=(const double scalar) {
+  ElementCenteredSubdomainData& operator*=(const value_type scalar) {
     element_data *= scalar;
     for (auto& [overlap_id, data] : overlap_data) {
       data *= scalar;
@@ -170,7 +170,7 @@ struct ElementCenteredSubdomainData {
     return *this;
   }
 
-  ElementCenteredSubdomainData& operator/=(const double scalar) {
+  ElementCenteredSubdomainData& operator/=(const value_type scalar) {
     element_data /= scalar;
     for (auto& [overlap_id, data] : overlap_data) {
       data /= scalar;
@@ -209,23 +209,29 @@ decltype(auto) operator-(
   return lhs;
 }
 
-template <size_t Dim, typename TagsList>
-decltype(auto) operator*(const double scalar,
+template <size_t Dim, typename TagsList,
+          typename ValueType =
+              typename ElementCenteredSubdomainData<Dim, TagsList>::value_type>
+decltype(auto) operator*(const ValueType scalar,
                          ElementCenteredSubdomainData<Dim, TagsList> data) {
   data *= scalar;
   return data;
 }
 
-template <size_t Dim, typename TagsList>
+template <size_t Dim, typename TagsList,
+          typename ValueType =
+              typename ElementCenteredSubdomainData<Dim, TagsList>::value_type>
 decltype(auto) operator*(ElementCenteredSubdomainData<Dim, TagsList> data,
-                         const double scalar) {
+                         const ValueType scalar) {
   data *= scalar;
   return data;
 }
 
-template <size_t Dim, typename TagsList>
+template <size_t Dim, typename TagsList,
+          typename ValueType =
+              typename ElementCenteredSubdomainData<Dim, TagsList>::value_type>
 decltype(auto) operator/(ElementCenteredSubdomainData<Dim, TagsList> data,
-                         const double scalar) {
+                         const ValueType scalar) {
   data /= scalar;
   return data;
 }
@@ -279,7 +285,7 @@ struct ElementCenteredSubdomainDataIterator {
 
  public:
   using difference_type = ptrdiff_t;
-  using value_type = double;
+  using value_type = typename Variables<TagsList>::value_type;
   using pointer = value_type*;
   using reference = value_type&;
   using iterator_category = std::forward_iterator_tag;
@@ -317,7 +323,7 @@ struct ElementCenteredSubdomainDataIterator {
     return *this;
   }
 
-  tmpl::conditional_t<Const, double, double&> operator*() const {
+  tmpl::conditional_t<Const, value_type, value_type&> operator*() const {
     return vars_ref_->data()[data_index_];
   }
 
@@ -361,10 +367,10 @@ template <size_t Dim, typename LhsTagsList, typename RhsTagsList>
 struct InnerProductImpl<
     Schwarz::ElementCenteredSubdomainData<Dim, LhsTagsList>,
     Schwarz::ElementCenteredSubdomainData<Dim, RhsTagsList>> {
-  static double apply(
+  static auto apply(
       const Schwarz::ElementCenteredSubdomainData<Dim, LhsTagsList>& lhs,
       const Schwarz::ElementCenteredSubdomainData<Dim, RhsTagsList>& rhs) {
-    double result = inner_product(lhs.element_data, rhs.element_data);
+    auto result = inner_product(lhs.element_data, rhs.element_data);
     for (const auto& [overlap_id, lhs_data] : lhs.overlap_data) {
       result += inner_product(lhs_data, rhs.overlap_data.at(overlap_id));
     }
