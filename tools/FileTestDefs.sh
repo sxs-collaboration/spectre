@@ -259,7 +259,8 @@ long_lines_exclude() {
         grep -v '"""' | \
         grep -v 'import' | \
         grep -v '\\link' | \
-        grep -v '\\endlink'
+        grep -v '\\endlink' | \
+        grep -v 'CopyFiles:'
 }
 long_lines() {
     whitelist "$1" \

@@ -1,0 +1,298 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+Executable: EvolveGhValenciaDivCleanCoreCollapseSupernova
+Testing:
+  Check: parse
+  Timeout: 8
+  Priority: High
+  CopyFiles: ../../../../tests/Unit/PointwiseFunctions/AnalyticData/GrMhd/CcsnCollapseID.dat; ../../../../tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/dd2_unit_test.h5
+ExpectedOutput:
+  - GhMhdCCSNVolume0.h5
+  - GhMhdCCSNReductions.h5
+
+---
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 1.0e-5
+  MinimumTimeStep: 1.0e-7
+  TimeStepper:
+    Rk3HesthavenSsp:
+
+PhaseChangeAndTriggers:
+
+InitialData: &InitialData
+  GeneralizedHarmonic(CcsnCollapse):
+    ProgenitorFilename: "./CcsnCollapseID.dat"
+    TableFilename: "./dd2_unit_test.h5"
+    TableSubFilename: "/dd2"
+    CentralAngularVelocity: 0.0 #2.4635e-5 #5 rad/s
+    DifferentialRotationParameter: 338.53
+    MaxDensityRatioForLinearInterpolation: 100
+
+EquationOfState:
+  FromInitialData
+
+# Note: this domain is chosen so that we only need to simulate the interior
+# of the star
+DomainCreator:
+  AlignedLattice:
+    BlockBounds: [[0.0, 33.853, 13541.2],
+                  [-1.0, 1.0],
+                  [-1.0, 1.0]]
+    InitialGridPoints: [1, 1, 1]
+    InitialLevels: [1, 0, 0]
+    RefinedLevels:
+      # inner block
+      - LowerCornerIndex: [0, 0, 0]
+        UpperCornerIndex: [1, 1, 1]
+        Refinement: [1, 0, 0]
+      #outer block
+      - LowerCornerIndex: [1, 0, 0]
+        UpperCornerIndex: [2, 1, 1]
+        Refinement: [1, 0, 0]
+    RefinedGridPoints: []
+    BlocksToExclude: []
+    BoundaryConditions:
+        - DirichletAnalytic:
+            AnalyticPrescription: *InitialData
+        - DirichletAnalytic:
+            AnalyticPrescription: *InitialData
+        - DirichletAnalytic:
+            AnalyticPrescription: *InitialData
+
+VariableFixing:
+  FixConservatives:
+    Enable: false # Only needed when not using Kastaun for recovery
+    CutoffD: &CutoffD 1.0e-16
+    MinimumValueOfD: &MinimumD 1.0e-16
+    CutoffYe: 0.0
+    MinimumValueOfYe: 0.0
+    SafetyFactorForB: 1.0e-12
+    SafetyFactorForS: 1.0e-12
+    SafetyFactorForSCutoffD: 1.0e-12
+    SafetyFactorForSSlope: 0.0
+    MagneticField: AssumeZero
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-15
+    DensityCutoff: &AtmosphereDensityCutoff 1.1e-15
+    VelocityLimiting:
+      AtmosphereMaxVelocity: 0
+      NearAtmosphereMaxVelocity: 1.0e-4
+      AtmosphereDensityCutoff: 3.0e-15
+      TransitionDensityBound: 3.0e-14
+    KappaLimiting:
+      DensityLowerBound: 2.0e-14
+      EplisonKappaMinus: 1.0e-3
+      DensityUpperBound: 2.0e-13
+      EpsilonKappaMax: 0.01
+      LimitAboveDensityUpperBound: False
+      MinTemperature: FromEos
+  LimitLorentzFactor:
+    Enable: false # Only needed when not using Kastaun for recovery
+    MaxDensityCutoff: 1.0e-12
+    LorentzFactorCap: 1.0
+  ParameterizedDeleptonization:
+    Enable: true
+    HighDensityScale: 3.24e-5
+    LowDensityScale: 3.24e-11
+    ElectronFractionAtHighDensity: 0.285
+    ElectronFractionAtLowDensity: 0.5
+    ElectronFractionCorrectionScale: 0.035
+
+PrimitiveFromConservative:
+  CutoffDForInversion: *CutoffD
+  DensityWhenSkippingInversion: *MinimumD
+  KastaunMaxLorentzFactor: 10.0
+
+
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
+  GeneralizedHarmonic:
+    GaugeCondition:
+      Harmonic:
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 0
+        Amplitude: 0
+        Width: 90
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: 0
+        Amplitude: 0
+        Width: 210
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.01
+        Amplitude: 4
+        Width: 90
+        Center: [0.0, 0.0, 0.0]
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    ProductUpwindPenaltyAndHll:
+      UpwindPenalty:
+      Hll:
+        MagneticFieldMagnitudeForHydro: 1.0e-16
+        LightSpeedDensityCutoff: 1.0e-8
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: Gauss
+    Subcell:
+      TroubledCellIndicator:
+        PerssonTci:
+          Exponent: 4.0
+          NumHighestModes: 1
+        RdmpTci:
+          Delta0: 1.0e-7
+          Epsilon: 1.0e-3
+        FdToDgTci:
+          NumberOfStepsBetweenTciCalls: 1
+          MinTciCallsAfterRollback: 1
+          MinimumClearTcis: 1
+        AlwaysUseSubcells: true
+        EnableExtensionDirections: false
+        UseHalo: false
+        OnlyDgBlocksAndGroups: None
+      SubcellToDgReconstructionMethod: DimByDim
+      FiniteDifferenceDerivativeOrder: 6
+    TciOptions:
+      MinimumValueOfD: 1.0e-15
+      MinimumValueOfYe: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-40
+      AtmosphereDensity: 1.0e-15
+      SafetyFactorForB: 1.0e-12
+      MagneticFieldCutoff: DoNotCheckMagneticField
+  SubcellSolver:
+    Reconstructor:
+      MonotonisedCentralPrim:
+        AtmosphereTreatment: Never
+        ReconstructRhoTimesTemperature: true
+    FilterOptions:
+      SpacetimeDissipation: 0.9
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36
+    HalfPower: 64
+    Enable: true
+    BlocksToFilter: All
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 1
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 5
+          StepChoosers:
+            - ErrorControl:
+                AbsoluteTolerance: 1.0e-6
+                RelativeTolerance: 1.0e-4
+                MaxFactor: 2
+                MinFactor: 0.25
+                SafetyFactor: 0.95
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 40
+          Offset: 0
+    Events:
+      - ObserveNorms:
+          SubfileName: max_density
+          TensorsToObserve:
+            - Name: RestMassDensity
+              NormType: Max
+              Components: Individual
+      - ObserveNorms:
+          SubfileName: min_data_lapse
+          TensorsToObserve:
+            - Name: Lapse
+              NormType: Min
+              Components: Individual
+      - ObserveNorms:
+          SubfileName: max_three_index_constraint
+          TensorsToObserve:
+            - Name: PointwiseL2Norm(ThreeIndexConstraint)
+              NormType: Max
+              Components: Individual
+
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 0
+    Events:
+      - ObserveTimeStep:
+            SubfileName: TimeSteps
+            PrintTimeToTerminal: True
+            ObservePerCore: False
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1000
+          Offset: 0
+    Events:
+      - ObserveFields:
+          SubfileName: VolumeData
+          BlocksToObserve: All
+          VariablesToObserve:
+            - SpacetimeMetric
+            - RestMassDensity
+            - Pressure
+            - ElectronFraction
+            - MagneticField
+            - Temperature
+            - SpatialVelocity
+            - SpecificInternalEnergy
+            - PointwiseL2Norm(GaugeConstraint)
+            - TildeD
+            - TildeS
+            - TildeTau
+            - Phi
+            - Pi
+            - Lapse
+            - PointwiseL2Norm(ThreeIndexConstraint)
+            - ThreeIndexConstraint
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 40592
+    Events:
+      - Completion
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    LMax: 16
+    Radius: [1]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
+
+Observers:
+  VolumeFileName: "GhMhdCCSNVolume"
+  ReductionFileName: "GhMhdCCSNReductions"
+
+Interpolator:
+  Verbosity: Silent
+EventsAndDenseTriggers:
+
+EventsRunAtCleanup:
+  ObservationValue: -1000.0
+  Events:

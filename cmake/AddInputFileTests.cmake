@@ -238,7 +238,7 @@ function(add_input_file_tests INPUT_FILE_DIR INPUT_FILE_WHITELIST)
       string(STRIP "${INPUT_FILE_TIMEOUT}" INPUT_FILE_TIMEOUT)
     endif()
 
-    # Read out the semicolon list of of files to copy to the run directory.
+    # Read out the semicolon list of files to copy to the run directory.
     # The files are currently restricted to being in the same location
     # as the input file. This can be relaxed if necessary.
     set(COPY_FILES "")
