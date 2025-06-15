@@ -35,4 +35,6 @@ template <size_t Dim>
 struct EnergyDensity;
 template <size_t Dim>
 struct MomentumDensity;
+template <size_t Dim>
+struct Potential;
 }  // namespace ScalarWave::Tags

@@ -12,11 +12,25 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/ScalarWave/OptionTags.hpp"
 #include "Evolution/Systems/ScalarWave/TagsDeclarations.hpp"
 
 class DataVector;
 
 namespace ScalarWave::Tags {
+
+struct MassSquared : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<ScalarWave::OptionTags::MassSquared>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double mass_squared) {
+    return mass_squared;
+  }
+
+  static std::string name() { return "Squared mass of field"; }
+};
+
 /*!
  * \brief The scalar field.
  */
@@ -104,6 +118,12 @@ struct CharacteristicFields : db::SimpleTag {
 template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<Psi, Pi, Phi<Dim>>>;
+};
+
+/// The potential of the scalar wave
+template <size_t Dim>
+struct Potential : db::SimpleTag {
+  using type = Scalar<DataVector>;
 };
 
 /// The energy density of the scalar wave

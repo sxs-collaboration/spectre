@@ -31,6 +31,7 @@
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
 #include "Evolution/Systems/ScalarWave/MomentumDensity.hpp"
+#include "Evolution/Systems/ScalarWave/Potential.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Evolution/Tags/Filter.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
@@ -158,6 +159,7 @@ struct EvolutionMetavars {
   using observe_fields = tmpl::push_back<
       tmpl::append<typename system::variables_tag::tags_list,
                    typename deriv_compute::type::tags_list, error_tags>,
+      ScalarWave::Tags::PotentialCompute<volume_dim>,
       ScalarWave::Tags::EnergyDensityCompute<volume_dim>,
       ScalarWave::Tags::MomentumDensityCompute<volume_dim>,
       ScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
@@ -255,7 +257,8 @@ struct EvolutionMetavars {
           tmpl::list<>>>>;
 
   using const_global_cache_tags =
-      tmpl::list<evolution::initial_data::Tags::InitialData>;
+      tmpl::list<evolution::initial_data::Tags::InitialData,
+                 ScalarWave::Tags::MassSquared>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

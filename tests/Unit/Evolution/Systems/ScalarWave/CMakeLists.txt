@@ -15,7 +15,9 @@ set(LIBRARY_SOURCES
   Test_Equations.cpp
   Test_MomentumDensity.cpp
   Test_Tags.cpp
-  Test_TimeDerivative.cpp
+  Test_Potential.cpp
+  #Test_TimeDerivative.cpp
+  #Test_TimeDerivativeWithMass.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

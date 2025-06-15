@@ -24,7 +24,8 @@ evolution::dg::TimeDerivativeDecisions<Dim> TimeDerivative<Dim>::apply(
 
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-    const Scalar<DataVector>& gamma2) {
+    const Scalar<DataVector>& psi, const Scalar<DataVector>& gamma2,
+    const double& mass_squared) {
   // The constraint damping parameter gamma2 is needed for boundary corrections,
   // which means we need it as a temporary tag in order to project it to the
   // boundary. We prevent slicing/projecting directly from the volume to prevent
@@ -35,7 +36,7 @@ evolution::dg::TimeDerivativeDecisions<Dim> TimeDerivative<Dim>::apply(
   *result_gamma2 = gamma2;
 
   get(*dt_psi) = -get(pi);
-  get(*dt_pi) = -get<0, 0>(d_phi);
+  get(*dt_pi) = -get<0, 0>(d_phi) + mass_squared * get(psi);
   for (size_t d = 1; d < Dim; ++d) {
     get(*dt_pi) -= d_phi.get(d, d);
   }

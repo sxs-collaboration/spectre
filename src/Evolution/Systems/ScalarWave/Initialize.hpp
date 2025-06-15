@@ -4,8 +4,9 @@
 #pragma once
 
 #include <optional>
-
+#include <utility>
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Protocols/Mutator.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/ScalarWave/Constraints.hpp"
@@ -54,5 +55,6 @@ struct InitializeConstraints {
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
+
 }  // namespace Actions
 }  // namespace ScalarWave

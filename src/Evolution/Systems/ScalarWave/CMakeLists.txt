@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   Constraints.cpp
   EnergyDensity.cpp
+  Potential.cpp
   Equations.cpp
   MomentumDensity.cpp
   TimeDerivative.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   Characteristics.hpp
   Constraints.hpp
   EnergyDensity.hpp
+  Potential.hpp
   Equations.hpp
   Initialize.hpp
   MomentumDensity.hpp

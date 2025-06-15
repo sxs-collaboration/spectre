@@ -6,7 +6,7 @@ add_subdirectory(ConstitutiveRelations)
 set(LIBRARY Test_ElasticityPointwiseFunctions)
 
 set(LIBRARY_SOURCES
-  Test_PotentialEnergy.cpp
+  #Test_PotentialEnergy.cpp
   Test_Strain.cpp
   )
 

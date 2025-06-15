@@ -8,6 +8,7 @@
 #include "Evolution/DiscontinuousGalerkin/TimeDerivativeDecisions.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -27,7 +28,8 @@ template <size_t Dim>
 struct TimeDerivative {
   using temporary_tags = tmpl::list<Tags::ConstraintGamma2>;
   using argument_tags =
-      tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::ConstraintGamma2>;
+      tmpl::list<Tags::Pi, Tags::Phi<Dim>, Tags::Psi, Tags::ConstraintGamma2,
+                 ScalarWave::Tags::MassSquared>;
 
   static evolution::dg::TimeDerivativeDecisions<Dim> apply(
       // Time derivatives returned by reference. All the tags in the
@@ -47,6 +49,7 @@ struct TimeDerivative {
       // Terms list in argument_tags above
       const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-      const Scalar<DataVector>& gamma2);
+      const Scalar<DataVector>& psi, const Scalar<DataVector>& gamma2,
+      const double& mass_sq);
 };
 }  // namespace ScalarWave

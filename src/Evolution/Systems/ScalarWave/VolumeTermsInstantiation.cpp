@@ -52,7 +52,8 @@
       const std::optional<Scalar<DataVector>>& div_mesh_velocity,             \
       const Scalar<DataVector>& pi,                                           \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
-      const Scalar<DataVector>& gamma2);                                      \
+      const Scalar<DataVector>& psi, const Scalar<DataVector>& gamma2,        \
+      const double& mass_squared);                                            \
   INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(ScalarWave::System<DIM(data)>,  \
                                               DIM(data), Frame::Inertial)
 
