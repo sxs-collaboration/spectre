@@ -149,7 +149,7 @@ struct MockElement {
           tmpl::list_difference<
             ObserveFields::available_tags_to_observe,
             tmpl::list<
-              Tags::Psi0, Tags::Psi1,
+              Tags::Psi0, Tags::Psi1, Tags::Psi2,
               Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
               Tags::NewmanPenroseGamma, Tags::NewmanPenroseEpsilon,
               // Tags::NewmanPenroseKappa, // in our tetrad, \kappa=0
@@ -186,7 +186,7 @@ void test(const bool write_synchronously) {
   using element = MockElement<metavars>;
 
   const std::vector<std::string> observe_field_names{
-    "InertialRetardedTime", "J", "Psi0", "Psi1", "Dy(H)", "OneMinusY",
+    "InertialRetardedTime", "J", "Psi0", "Psi1", "Psi2", "Dy(H)", "OneMinusY",
     "NewmanPenroseAlpha"};
   const std::string subgroup_name{"CceVolumeData"};
   const Cce::Events::ObserveFields fields{subgroup_name, observe_field_names};
@@ -243,11 +243,14 @@ void test(const bool write_synchronously) {
   size_data(Tags::ComplexInertialRetardedTime{}, num_angular_grid_points);
 
   tmpl::for_each<
-      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiH>, Tags::OneMinusY,
+      tmpl::list<Tags::BondiJ, Tags::OneMinusY,
                  Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
                  Tags::BondiK, Tags::BondiQ, Tags::Dy<Tags::BondiQ>,
                  Tags::EthRDividedByR,
-                 Tags::Dy<Tags::BondiBeta>,
+                 Tags::BondiBeta, Tags::Dy<Tags::BondiBeta>,
+                 Tags::BondiH, Tags::Dy<Tags::BondiH>,
+                 Tags::BondiU, Tags::Dy<Tags::BondiU>,
+                 Tags::BondiW, Tags::Dy<Tags::BondiW>,
                  Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                                   Spectral::Swsh::Tags::Eth>,
                  Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,

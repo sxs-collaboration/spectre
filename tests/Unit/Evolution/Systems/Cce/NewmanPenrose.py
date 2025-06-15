@@ -328,3 +328,37 @@ def psi1(
             )
         )
     )
+
+
+def psi2(
+    bondi_j,
+    bondi_k,
+    bondi_r,
+    dy_mu,
+    eth_pi,
+    ethbar_pi,
+    np_alpha,
+    np_beta,
+    np_epsilon,
+    np_sigma,
+    np_rho,
+    np_pi,
+    np_mu,
+    np_lambda,
+    one_minus_y,
+):
+    sqrt_one_plus_k = np.sqrt(1.0 + bondi_k)
+
+    return (
+        0.25
+        * one_minus_y
+        / bondi_r
+        * (
+            np.sqrt(2.0) * one_minus_y * dy_mu
+            + sqrt_one_plus_k * eth_pi
+            - bondi_j * ethbar_pi / sqrt_one_plus_k
+        )
+        + (np_epsilon + np.conj(np_epsilon) - np.conj(np_rho)) * np_mu
+        + (np.conj(np_alpha) - np_beta - np.conj(np_pi)) * np_pi
+        - np_sigma * np_lambda
+    )

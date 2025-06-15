@@ -341,6 +341,35 @@ void weyl_psi1_impl(
                        - bondi_j * conj(eth_r_divided_by_r))
           + 0.25 * inner_expr / bondi_k));
 }
+
+void weyl_psi2_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> psi_2,
+    const SpinWeighted<ComplexDataVector, +2>& bondi_j,
+    const SpinWeighted<ComplexDataVector,  0>& bondi_k,
+    const SpinWeighted<ComplexDataVector,  0>& bondi_r,
+    const SpinWeighted<ComplexDataVector,  0>& dy_mu,
+    const SpinWeighted<ComplexDataVector,  0>& eth_pi,
+    const SpinWeighted<ComplexDataVector, -2>& ethbar_pi,
+    const SpinWeighted<ComplexDataVector, -1>& np_alpha,
+    const SpinWeighted<ComplexDataVector, +1>& np_beta,
+    const SpinWeighted<ComplexDataVector,  0>& np_epsilon,
+    const SpinWeighted<ComplexDataVector, +2>& np_sigma,
+    const SpinWeighted<ComplexDataVector,  0>& np_rho,
+    const SpinWeighted<ComplexDataVector, -1>& np_pi,
+    const SpinWeighted<ComplexDataVector,  0>& np_mu,
+    const SpinWeighted<ComplexDataVector, -2>& np_lambda,
+    const SpinWeighted<ComplexDataVector,  0>& one_minus_y) {
+
+  const auto sqrt_one_plus_k = sqrt(1. + bondi_k);
+
+  *psi_2 = 0.25 * one_minus_y / bondi_r *
+           ( sqrt(2.) * one_minus_y * dy_mu
+             + sqrt_one_plus_k * eth_pi
+             - bondi_j * ethbar_pi / sqrt_one_plus_k )
+           + ( np_epsilon + conj(np_epsilon) - conj(np_rho) ) * np_mu
+           + ( conj(np_alpha) - np_beta - conj(np_pi) ) * np_pi
+           - np_sigma * np_lambda;
+}
 }  // namespace
 
 
@@ -535,6 +564,30 @@ void VolumeWeyl<Tags::Psi1>::apply(
                  get(bondi_k), get(bondi_q), get(dy_q),
                  get(bondi_r), get(eth_r_divided_by_r), get(dy_beta),
                  get(eth_beta), get(eth_dy_beta), get(one_minus_y));
+}
+
+void VolumeWeyl<Tags::Psi2>::apply(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& bondi_k,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& dy_mu,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& eth_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, -2>>& ethbar_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, +1>>& np_beta,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_epsilon,
+    const Scalar<SpinWeighted<ComplexDataVector, +2>>& np_sigma,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_mu,
+    const Scalar<SpinWeighted<ComplexDataVector, -2>>& np_lambda,
+    const Scalar<SpinWeighted<ComplexDataVector,  0>>& one_minus_y) {
+  weyl_psi2_impl(make_not_null(&get(*psi_2)), get(bondi_j), get(bondi_k),
+                 get(bondi_r), get(dy_mu), get(eth_pi), get(ethbar_pi),
+                 get(np_alpha), get(np_beta), get(np_epsilon), get(np_sigma),
+                 get(np_rho), get(np_pi), get(np_mu), get(np_lambda),
+                 get(one_minus_y));
 }
 
 void TransformBondiJToCauchyCoords::apply(
