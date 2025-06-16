@@ -6,6 +6,7 @@ add_subdirectory("Python")
 set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES
+  Test_Basis.cpp
   Test_ChebyshevGauss.cpp
   Test_ChebyshevGaussLobatto.cpp
   Test_Clenshaw.cpp
@@ -17,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_LogicalCoordinates.cpp
   Test_Mesh.cpp
   Test_Projection.cpp
+  Test_Quadrature.cpp
   Test_SegmentSize.cpp
   Test_Spectral.cpp
   )
