@@ -46,11 +46,15 @@ namespace Spectral {
  * \note When using Basis::SphericalHarmonic in consecutive dimensions, choose
  * `Gauss` for the first dimension and `Equiangular` in the second dimension.
  *
- * \note When using Basis::B2Marcus in consecutive dimensions, choose
+ * \note When using Basis::ZernikeB2 in consecutive dimensions, choose
  * `GaussRadauUpper` for the first dimension and `Equiangular` in the second
  * dimension.
  *
- * \note We store these effectively as a 4-bit integer using the lowest 4
+ * \note When using Basis::ZernikeB3 in consecutive dimensions, choose
+ * `GaussRadauUpper` for the first dimension, `Gauss` for the second dimension,
+ * and `Equiangular` in the second dimension.
+ *
+ * \remark We store these effectively as a 4-bit integer using the lowest 4
  * bits of a uint8_t. Unlike Basis, this does not need a bitshift. We cannot
  * have more than 16 quadratures to fit into the 4 bits, including the
  * `Uninitialized` value.
