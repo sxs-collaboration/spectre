@@ -61,7 +61,7 @@ namespace Initialization::Actions {
 /// - Adds:
 ///   * Particles::MonteCarlo::Tags::PacketsOnElement
 ///   * Particles::MonteCarlo::Tags::RandomNumberGenerator
-///   * Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
+///   * Particles::MonteCarlo::Tags::MinimumPacketEnergyAtEmission<
 ///                                  NeutrinoSpecies>
 ///   * Background hydro variables
 ///   * Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>
@@ -82,7 +82,7 @@ struct InitializeMCTags {
   using simple_tags =
       tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement,
                  Particles::MonteCarlo::Tags::RandomNumberGenerator,
-                 Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
+                 Particles::MonteCarlo::Tags::MinimumPacketEnergyAtEmission<
                      NeutrinoSpecies>,
                  hydro_variables_tag,
                  Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>,
@@ -110,7 +110,6 @@ struct InitializeMCTags {
     }
     const Mesh<dim>& mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<dim>>(box);
-    const size_t num_grid_points = mesh.number_of_grid_points();
     // Number of ghost zones for MC is assumed to be 1 for now.
     const size_t num_ghost_zones = 1;
     size_t mesh_size_with_ghost_zones = 1;
@@ -129,9 +128,12 @@ struct InitializeMCTags {
     using HydroVars = typename hydro_variables_tag::type;
     call_with_dynamic_type<void, derived_classes>(
         &db::get<evolution::initial_data::Tags::InitialData>(box),
-        [&box, &num_grid_points](const auto* const data_or_solution) {
+        [&box](const auto* const data_or_solution) {
           static constexpr size_t dim = System::volume_dim;
           const double initial_time = db::get<::Tags::Time>(box);
+          const size_t num_grid_points =
+              db::get<evolution::dg::subcell::Tags::Mesh<dim>>(box)
+                  .number_of_grid_points();
           const auto& inertial_coords = db::get<
               evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>>(
               box);
@@ -172,17 +174,10 @@ struct InitializeMCTags {
         make_not_null(&box), std::move(rng));
 
     // Initial energy of packets, read from MC options
-    typename Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
-        NeutrinoSpecies>::type packet_energy_at_emission =
-        make_with_value<std::array<DataVector, NeutrinoSpecies>>(
-            DataVector{num_grid_points}, 0.0);
-    for (size_t s = 0; s < NeutrinoSpecies; s++) {
-      packet_energy_at_emission[s] = initial_packet_energy[s];
-    }
     Initialization::mutate_assign<
-        tmpl::list<Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
+        tmpl::list<Particles::MonteCarlo::Tags::MinimumPacketEnergyAtEmission<
             NeutrinoSpecies>>>(make_not_null(&box),
-                               std::move(packet_energy_at_emission));
+                               std::move(initial_packet_energy));
 
     // Initialize mortar data and coupling data.
     // Currently assumes a single neighbor on each face (i.e. no h-refinement)

@@ -16,6 +16,7 @@ template <size_t NeutrinoSpecies>
 void MonteCarloOptions<NeutrinoSpecies>::pup(PUP::er& p) {
   PUP::able::pup(p);
   p | initial_packet_energy_;
+  p | desired_packets_per_species_;
 }
 
 }  // namespace Particles::MonteCarlo

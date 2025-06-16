@@ -68,9 +68,7 @@ struct TemplatedLocalFunctions {
       gsl::not_null<Scalar<DataVector>*> coupling_tilde_ye,
       gsl::not_null<tnsr::i<DataVector, 3>*> coupling_tilde_s,
       gsl::not_null<std::mt19937*> random_number_generator,
-      gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
-          single_packet_energy,
-
+      const std::array<double, NeutrinoSpecies>& minimum_packet_energy,
       double start_time, double target_end_time,
       const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
       const NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>&
@@ -116,9 +114,9 @@ struct TemplatedLocalFunctions {
    * We emit a total energy emissivity_in_cell * cell_proper_four_volume
    * for each grid
    * cell, neutrino species, and neutrino energy bin. We aim for packets of
-   * energy single_packet_energy in the fluid frame. The number of packets
+   * energy minimum_packet_energy in the fluid frame. The number of packets
    * is, in each bin b and for each species s,
-   * `N = emission_in_cell[s][b] / single_packet_energy[s]`
+   * `N = emission_in_cell[s][b] / minimum_packet_energy[s]`
    * and randomly rounded up or down to get integer number of packets (i.e.
    * if we want N=2.6 packets, there is a 60 percent chance of creating a 3rd
    * packet). The position of the packets is drawn from a homogeneous
@@ -136,8 +134,10 @@ struct TemplatedLocalFunctions {
    * \f$\phi\f$ from a uniform distribution in \f$[0,2*\pi]\f$. We
    * transform to the inertial frame \f$p_t\f$ and \f$p^x,p^y,p^z\f$ using the
    * jacobian/inverse jacobian passed as option. The number of neutrinos in
+
+
    * each packet is defined as
-   * `n = single_packet_energy[s] / energy_at_bin_center[b]`
+   * `n = minimum_packet_energy[s] / energy_at_bin_center[b]`
    * Note that the packet energy is in code units and energy of a bin in MeV.
    *
    * All tensors are assumed to correspond to live points only, except for
@@ -153,7 +153,7 @@ struct TemplatedLocalFunctions {
       const Mesh<3>& mesh, size_t num_ghost_zones,
       const std::array<std::array<DataVector, EnergyBins>, NeutrinoSpecies>&
           emissivity_in_cell,
-      const std::array<DataVector, NeutrinoSpecies>& single_packet_energy,
+      const std::array<double, NeutrinoSpecies>& minimum_packet_energy,
       const std::array<double, EnergyBins>& energy_at_bin_center,
       const Scalar<DataVector>& lorentz_factor,
       const tnsr::i<DataVector, 3, Frame::Inertial>&
@@ -161,7 +161,7 @@ struct TemplatedLocalFunctions {
       const Jacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
           inertial_to_fluid_jacobian,
       const InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>&
-        inertial_to_fluid_inverse_jacobian,
+          inertial_to_fluid_inverse_jacobian,
       const Scalar<DataVector>& cell_proper_four_volume);
 
   /*!

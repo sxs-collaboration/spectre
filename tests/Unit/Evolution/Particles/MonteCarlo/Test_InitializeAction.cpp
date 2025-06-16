@@ -187,10 +187,11 @@ void test_initialize_monte_carlo() {
   // Set up Monte Carlo options
   std::array<double, neutrino_species> initial_packet_energy = {1.e-12, 1.e-12,
                                                                 1.e-12};
+  const size_t desired_packets_per_species = 1e6;
   std::unique_ptr<Particles::MonteCarlo::MonteCarloOptions<neutrino_species>>
       monte_carlo_options_ptr = std::make_unique<
           Particles::MonteCarlo::MonteCarloOptions<neutrino_species>>(
-          initial_packet_energy);
+          initial_packet_energy, desired_packets_per_species);
 
   // Set up mock initial data
   std::unique_ptr<RadiationTransport::MonteCarlo::Solutions::HomogeneousSphere>
@@ -222,15 +223,13 @@ void test_initialize_monte_carlo() {
   // Min value is always zero per the mersenner twister engine documentation;
   // called as a simple use of the generator.
   CHECK(generator.min() == 0);
-  const std::array<DataVector, neutrino_species>& desired_energy_at_emission =
+  const std::array<double, neutrino_species>& minimum_energy_at_emission =
       ActionTesting::get_databox_tag<
-          comp, Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
+          comp, Particles::MonteCarlo::Tags::MinimumPacketEnergyAtEmission<
                     neutrino_species>>(runner, self_id);
   for (size_t s = 0; s < neutrino_species; s++) {
-    for (size_t i = 0; i < n_pts; i++) {
-      CHECK(gsl::at(desired_energy_at_emission, s)[i] ==
-            gsl::at(initial_packet_energy, s));
-    }
+    CHECK(gsl::at(minimum_energy_at_emission, s) ==
+          gsl::at(initial_packet_energy, s));
   }
   // Check size of the fluid variables
   const Scalar<DataVector>& lorentz_factor =

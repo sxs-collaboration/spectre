@@ -44,12 +44,12 @@ struct TimeStepMutator {
                  Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>,
                  Particles::MonteCarlo::Tags::CouplingTildeRhoYe<DataVector>,
                  Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>,
-                 Particles::MonteCarlo::Tags::RandomNumberGenerator,
-                 Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
-                     NeutrinoSpecies>>;
+                 Particles::MonteCarlo::Tags::RandomNumberGenerator>;
   // To do : check carefully DG vs Subcell quantities... everything should
   // be on the Subcell grid!
   using argument_tags = tmpl::list<
+      Particles::MonteCarlo::Tags::MinimumPacketEnergyAtEmission<
+          NeutrinoSpecies>,
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
       hydro::Tags::GrmhdEquationOfState,
       Particles::MonteCarlo::Tags::InteractionRatesTable<EnergyBins,
@@ -86,8 +86,7 @@ struct TimeStepMutator {
       const gsl::not_null<Scalar<DataVector>*> coupling_tilde_rho_ye,
       const gsl::not_null<tnsr::i<DataVector, Dim>*> coupling_tilde_s,
       const gsl::not_null<std::mt19937*> random_number_generator,
-      const gsl::not_null<std::array<DataVector, NeutrinoSpecies>*>
-          single_packet_energy,
+      const std::array<double, NeutrinoSpecies>& minimum_packet_energy,
       const TimeStepId& current_step_id, const TimeStepId& next_step_id,
 
       const EquationsOfState::EquationOfState<true, 3>& equation_of_state,
@@ -147,7 +146,7 @@ struct TimeStepMutator {
     TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies> templated_functions;
     templated_functions.take_time_step_on_element(
         packets, coupling_tilde_tau, coupling_tilde_rho_ye, coupling_tilde_s,
-        random_number_generator, single_packet_energy, start_time, end_time,
+        random_number_generator, minimum_packet_energy, start_time, end_time,
         equation_of_state, interaction_table, electron_fraction,
         rest_mass_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,

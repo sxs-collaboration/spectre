@@ -35,7 +35,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
   std::array<std::array<DataVector, 2>, 2> emissivity_in_cells = {
       std::array<DataVector, 2>{{zero_dv, zero_dv}},
       std::array<DataVector, 2>{{zero_dv, zero_dv}}};
-  std::array<DataVector, 2> single_packet_energy = {zero_dv, zero_dv};
+  std::array<double, 2> single_packet_energy = {0.0, 0.0};
   const std::array<double, 2> energy_at_bin_center = {2.0, 5.0};
   InverseJacobian<DataVector, 4, Frame::Inertial, Frame::Fluid>
       inverse_jacobian = make_with_value<
@@ -49,8 +49,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Particles.MonteCarloEmission",
 
   // Set data
   for (size_t s = 0; s < 2; s++) {
+    gsl::at(single_packet_energy, s) = 2.0;
     for (size_t i = 0; i < zero_dv.size(); i++) {
-      gsl::at(single_packet_energy, s)[i] = 2.0;
       for (size_t g = 0; g < 2; g++) {
         if (i == 25) {
           gsl::at(gsl::at(emissivity_in_cells, s), g)[i] =
