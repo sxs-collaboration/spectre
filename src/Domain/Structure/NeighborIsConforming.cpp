@@ -12,6 +12,7 @@
 #include "Domain/Structure/Topology.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace {
 template <size_t VolumeDim>

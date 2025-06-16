@@ -19,6 +19,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 template <size_t VolumeDim>
 Block<VolumeDim>::Block(
