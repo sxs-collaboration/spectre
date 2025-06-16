@@ -9,7 +9,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Derivatives.cpp
-  SecondPartialDerivatives.cpp
   )
 
 spectre_target_headers(
@@ -17,8 +16,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Derivatives.hpp
-  SecondPartialDerivatives.hpp
-  SecondPartialDerivatives.tpp
   SoTimeDerivative.hpp
   System.hpp
   Tags.hpp

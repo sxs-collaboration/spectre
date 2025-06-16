@@ -21,10 +21,10 @@ class Variables;
 /// \endcond
 
 /*!
-* \brief The finite difference second derivatives for implementing the CCZ4
-* system.
+* \brief The finite difference second derivatives originally
+* designed for implementing the CCZ4 system.
 */
-namespace Ccz4::fd {
+namespace fd {
 /*!
  * \brief Compute the pure and mixed second logical partial derivatives using
  * finite difference derivatives. Only 3 dimensions 4th-order fd is supported.
@@ -81,7 +81,7 @@ void second_logical_partial_derivatives(
  *
  * First and second logical partial derivatives are first computed using the
  * `fd::logical_partial_derivatives()` and
- * `Ccz4::fd::second_logical_partial_derivatives()` function.
+ * `fd::second_logical_partial_derivatives()` function.
  *
  * \note The `inverse_hessian` has not been implemented, so currently inertial
  * coordinates cannot mix logical coordinates.
@@ -98,4 +98,4 @@ void second_partial_derivatives(
     size_t fd_order,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
-}  // namespace Ccz4::fd
+}  // namespace fd

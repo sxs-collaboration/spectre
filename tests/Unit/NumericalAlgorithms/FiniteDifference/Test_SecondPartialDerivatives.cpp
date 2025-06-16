@@ -12,10 +12,10 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
-#include "Evolution/Systems/Ccz4/FiniteDifference/SecondPartialDerivatives.hpp"
-#include "Evolution/Systems/Ccz4/FiniteDifference/SecondPartialDerivatives.tpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/FiniteDifference/SecondPartialDerivatives.hpp"
+#include "NumericalAlgorithms/FiniteDifference/SecondPartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -207,7 +207,7 @@ void test(const size_t points_per_dimension, const size_t fd_order) {
     ghost_cell_vars[direction] = gsl::make_span(data.data(), data.size());
   }
 
-  ::Ccz4::fd::second_logical_partial_derivatives(
+  ::fd::second_logical_partial_derivatives(
       make_not_null(&pure_second_logical_derivative_view),
       make_not_null(&mixed_second_logical_derivative_view),
       gsl::make_span(volume_vars.data(), volume_vars.size()), ghost_cell_vars,
@@ -339,7 +339,7 @@ void test(const size_t points_per_dimension, const size_t fd_order) {
     ghost_cell_vars[direction] = gsl::make_span(data.data(), data.size());
   }
 
-  ::Ccz4::fd::second_partial_derivatives<derivative_tags>(
+  ::fd::second_partial_derivatives<derivative_tags>(
       make_not_null(&second_partial_derivatives),
       gsl::make_span(volume_vars_for_tensor.data(),
                      volume_vars_for_tensor.size()),

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Evolution/Systems/Ccz4/FiniteDifference/SecondPartialDerivatives.hpp"
+#include "NumericalAlgorithms/FiniteDifference/SecondPartialDerivatives.hpp"
 
 #include <array>
 
@@ -18,7 +18,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Ccz4::fd {
+namespace fd {
 namespace detail {
 template <size_t Dim>
 void second_logical_partial_derivatives_impl(
@@ -247,4 +247,4 @@ void second_partial_derivatives(
       Variables<DerivativeTags>::number_of_independent_components,
       inverse_jacobian);
 }
-}  // namespace Ccz4::fd
+}  // namespace fd
