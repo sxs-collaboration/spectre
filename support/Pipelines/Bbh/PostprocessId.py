@@ -10,6 +10,7 @@ import click
 import yaml
 
 from spectre.Pipelines.Bbh.ControlId import (
+    DEFAULT_CONTROL_DELAY,
     DEFAULT_MAX_ITERATIONS,
     DEFAULT_RESIDUAL_TOLERANCE,
     TargetParams,
@@ -35,6 +36,7 @@ def postprocess_id(
     control_max_iterations: int = DEFAULT_MAX_ITERATIONS,
     control_refinement_level: int = 1,
     control_polynomial_order: int = 6,
+    control_delay: int = DEFAULT_CONTROL_DELAY,
     control_params: List[TargetParams] = [],
     evolve: bool = False,
     eccentricity_control: bool = False,
@@ -76,6 +78,8 @@ def postprocess_id(
       control_max_iterations: Maximum of iterations allowed for control.
       control_refinement_level: h-refinement used for control.
       control_polynomial_order: p-refinement used for control.
+      control_delay: Numer of iterations before control of delayed parameters
+        starts. See ControlId.py for details.
       control_params: List of parameters to control. See ControlId.py
         for details.
       evolve: Evolve the initial data after postprocessing (default: False).
@@ -141,6 +145,7 @@ def postprocess_id(
             id_run_dir=id_run_dir,
             residual_tolerance=control_residual_tolerance,
             max_iterations=control_max_iterations,
+            control_delay=control_delay,
             refinement_level=control_refinement_level,
             polynomial_order=control_polynomial_order,
         )

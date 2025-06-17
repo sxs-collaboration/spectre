@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 # controlled paramaters, which  is about 1.0e-3.
 DEFAULT_RESIDUAL_TOLERANCE = 1.0e-4
 DEFAULT_MAX_ITERATIONS = 30
+DEFAULT_CONTROL_DELAY = 2
 
 # Free data choices associated with each physical parameter
 # Note 1: the values below need to match the argument names of `generate_id`.
@@ -55,6 +56,7 @@ def control_id(
     id_run_dir: Optional[Union[str, Path]] = None,
     residual_tolerance: float = DEFAULT_RESIDUAL_TOLERANCE,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
+    control_delay: int = DEFAULT_CONTROL_DELAY,
     refinement_level: int = 1,
     polynomial_order: int = 6,
 ):
@@ -109,6 +111,10 @@ def control_id(
       max_iterations: Maximum of iterations allowed. Note: each iteration is
         very expensive as it needs to solve an entire initial data problem.
         (Default: 30)
+      control_delay: Number of iterations before control of delayed parameters
+        starts. We have found that delaying the control of asymptotic quantities
+        (ADM mass, ADM momenta, and center of mass) helps convergence.
+        (Default: 2)
       refinement_level: h-refinement used in control loop.
       polynomial_order: p-refinement used in control loop.
     """
@@ -145,8 +151,25 @@ def control_id(
         orbital_angular_velocity=binary_data["AngularVelocity"],
     )
 
-    # File to write control diagnostic data
-    data_file = open(f"{id_run_dir}/../ControlParamsData.txt", "w")
+    # Prepare file and legends to output diagnostic data
+    output_filename = f"{id_run_dir}/../ControlParams.h5"
+    residual_legend = []
+    jacobian_legend = []
+    for param in control_params:
+        if param in ScalarQuantities:
+            residual_legend.append(param)
+        else:
+            residual_legend.extend([f"{param}_{xyz}" for xyz in "xyz"])
+    for residual in residual_legend:
+        for free_data in [
+            FreeDataFromParams[param] for param in control_params
+        ]:
+            if free_data in ScalarQuantities:
+                jacobian_legend.append(f"d{residual} / d{free_data}")
+            else:
+                jacobian_legend.extend(
+                    [f"d{residual} / d{free_data}_{xyz}" for xyz in "xyz"]
+                )
 
     iteration = 0
     control_run_dir = id_run_dir
@@ -270,10 +293,11 @@ def control_id(
             else:
                 residual = np.append(residual, measured_params[key] - target)
         logger.info(f"Control Residual = {np.max(np.abs(residual)):e}")
-        data_file.write(
-            f" {iteration}, " + ", ".join(map(str, residual)) + " \n"
-        )
-        data_file.flush()
+        with spectre_h5.H5File(output_filename, "a") as output_file:
+            dat_file = output_file.try_insert_dat(
+                "Residuals", residual_legend, 0
+            )
+            dat_file.append(residual)
 
         return residual
 
@@ -291,31 +315,69 @@ def control_id(
     # Initialize Jacobian as an identity matrix
     J = np.identity(len(u))
 
+    # Prepare map between parameters and their indices so that we can specify
+    # Jacobian terms below
+    param_index_map = dict()
+    param_index = 0
+    for param in control_params:
+        param_index_map[param] = param_index
+        param_index_map[FreeDataFromParams[param]] = param_index
+        param_index += 1 if param in ScalarQuantities else 3
+
     # Adjust non-unity components of the Jacobian
     q = target_params["MassRatio"]
     # The expression below is the reduced mass of the system, which shows up in
     # the Newtonian expressions further below.
     eta = q / (q + 1) ** 2
-    param_index = 0
-    for param in control_params:
-        if param == "AdmMass":
-            # The expression below comes from differentiating the Newtonian
-            # approximation E_ADM ~ 1 + 1/2 eta adot0^2 D0^2, where adot0 is the
-            # initial radial expansion velocity and D0 is the initial
-            # separation.
-            J[param_index, param_index] = (
-                eta
-                * initial_free_data["radial_expansion_velocity"]
-                * separation**2
+    # The expressions below come from differentiating the Newtonian
+    # approximation E_ADM ~ M + 1/2 eta adot0^2 D0^2, where adot0 is the
+    # initial radial expansion velocity and D0 is the initial
+    # separation. They are evaluated under the conditions M=1 and q=MA/MB, which
+    # holds (at least approximately) for the initial guess of the free data.
+    if "AdmMass" in control_params:
+        adot0 = initial_free_data["radial_expansion_velocity"]
+        J[
+            param_index_map["AdmMass"],
+            param_index_map["radial_expansion_velocity"],
+        ] = (
+            eta * adot0 * separation**2
+        )
+        if "MassA" in control_params:
+            J[
+                param_index_map["AdmMass"], param_index_map["conformal_mass_a"]
+            ] = (1.0 + 0.5 * eta / q * adot0**2 * separation**2)
+        if "MassB" in control_params:
+            J[
+                param_index_map["AdmMass"], param_index_map["conformal_mass_b"]
+            ] = (1.0 + 0.5 * q * eta * adot0**2 * separation**2)
+    # The expressions below come from differentiating the Newtonian
+    # approximation J_ADM ~ eta D0^2 Omega0, where D0 is the initial
+    # separation and Omega0 is the initial angular orbital velocity.
+    if "AdmAngularMomentumZ" in control_params:
+        OmegaZ0 = initial_free_data["orbital_angular_velocity"]
+        J[
+            param_index_map["AdmAngularMomentumZ"],
+            param_index_map["orbital_angular_velocity"],
+        ] = (
+            eta * separation**2
+        )
+        if "MassA" in control_params:
+            J[
+                param_index_map["AdmAngularMomentumZ"],
+                param_index_map["conformal_mass_a"],
+            ] = (
+                eta / q * separation**2 * OmegaZ0
             )
-        elif param == "AdmAngularMomentumZ":
-            # The expression below comes from differentiating the Newtonian
-            # approximation J_ADM ~ eta D0^2 Omega0, where D0 is the initial
-            # separation and Omega0 is the initial angular orbital velocity.
-            J[param_index, param_index] = eta * separation**2
-        # Note: We can also set cross terms here to start with a more realistic
-        # Jacobian.
-        param_index += 1 if param in ScalarQuantities else 3
+        if "MassB" in control_params:
+            J[
+                param_index_map["AdmAngularMomentumZ"],
+                param_index_map["conformal_mass_b"],
+            ] = (
+                q * eta * separation**2 * OmegaZ0
+            )
+    with spectre_h5.H5File(output_filename, "a") as output_file:
+        dat_file = output_file.try_insert_dat("Jacobian", jacobian_legend, 0)
+        dat_file.append(J.flatten())
 
     # Indices of parameters for which the control is delayed in the first
     # iterations to avoid going off-bounds
@@ -333,7 +395,6 @@ def control_id(
         "AdmMass",
         "AdmAngularMomentumZ",
     ]
-    max_delayed_iteration = 1
     for key in control_params:
         if key in ScalarQuantities:
             delayed_indices = np.append(
@@ -349,7 +410,7 @@ def control_id(
 
         # Update the free parameters using a quasi-Newton-Raphson method
         Delta_u = -np.dot(np.linalg.inv(J), F)
-        if iteration <= max_delayed_iteration:
+        if iteration < control_delay:
             Delta_u[delayed_indices] = 0.0
         u += Delta_u
 
@@ -357,12 +418,15 @@ def control_id(
         F = Residual(u)
         if np.max(np.abs(F)) < residual_tolerance:
             break
-        if iteration <= max_delayed_iteration:
+        if iteration < control_delay:
             F[delayed_indices] = 0.0
 
         # Update the Jacobian using Broyden's method
         J += np.outer(F, Delta_u) / np.dot(Delta_u, Delta_u)
-
-    data_file.close()
+        with spectre_h5.H5File(output_filename, "a") as output_file:
+            dat_file = output_file.try_insert_dat(
+                "Jacobian", jacobian_legend, 0
+            )
+            dat_file.append(J.flatten())
 
     return control_run_dir
