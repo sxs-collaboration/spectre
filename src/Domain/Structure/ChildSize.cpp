@@ -50,7 +50,7 @@ std::array<Spectral::SegmentSize, Dim> child_size(
       const std::array<SegmentId, DIM(data)>& child_segment_ids,    \
       const std::array<SegmentId, DIM(data)>& parent_segment_ids);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM

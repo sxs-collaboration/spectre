@@ -67,14 +67,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId", "[Domain][Unit]") {
       midpoint += segment_length;
       CHECK(id == id.id_of_child(Side::Lower).id_of_parent());
       CHECK(id == id.id_of_child(Side::Upper).id_of_parent());
-      CHECK(id.overlaps(id));
+      CHECK(overlapping(id, id));
       if (0 != level) {
-        CHECK(id.overlaps(id.id_of_parent()));
+        CHECK(overlapping(id, id.id_of_parent()));
+        CHECK(overlapping(id.id_of_parent(), id));
         const Side side_of_parent =
             0 == segment_index % 2 ? Side::Lower : Side::Upper;
         CHECK(id == id.id_of_parent().id_of_child(side_of_parent));
-        CHECK_FALSE(id.overlaps(
-            id.id_of_parent().id_of_child(opposite(side_of_parent))));
+        CHECK(id.id_of_sibling() ==
+              id.id_of_parent().id_of_child(opposite(side_of_parent)));
+        CHECK_FALSE(overlapping(id, id.id_of_sibling()));
       }
       CHECK(id.id_of_child(Side::Lower).id_of_sibling() ==
             id.id_of_child(Side::Upper));

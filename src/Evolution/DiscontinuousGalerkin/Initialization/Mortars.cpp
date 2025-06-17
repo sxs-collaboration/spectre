@@ -22,27 +22,23 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg::Initialization::detail {
-namespace {
-template <typename MappedType, size_t Dim>
-using MortarMap = DirectionalIdMap<Dim, MappedType>;
-}  // namespace
 
 template <size_t Dim>
-std::tuple<DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
-           DirectionalIdMap<Dim, Mesh<Dim - 1>>,
-           DirectionalIdMap<Dim, MortarInfo<Dim>>,
-           DirectionalIdMap<Dim, TimeStepId>,
+std::tuple<::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>,
+           ::dg::MortarMap<Dim, Mesh<Dim - 1>>,
+           ::dg::MortarMap<Dim, MortarInfo<Dim>>,
+           ::dg::MortarMap<Dim, TimeStepId>,
            DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                  evolution::dg::Tags::MagnitudeOfNormal,
                                  evolution::dg::Tags::NormalCovector<Dim>>>>>>
 mortars_apply_impl(const Element<Dim>& element,
                    const TimeStepId& next_temporal_id,
                    const Mesh<Dim>& volume_mesh,
-                   const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_mesh) {
-  MortarMap<evolution::dg::MortarDataHolder<Dim>, Dim> mortar_data{};
-  MortarMap<Mesh<Dim - 1>, Dim> mortar_meshes{};
-  MortarMap<MortarInfo<Dim>, Dim> mortar_infos{};
-  MortarMap<TimeStepId, Dim> mortar_next_temporal_ids{};
+                   const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh) {
+  ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data{};
+  ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_meshes{};
+  ::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos{};
+  ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_ids{};
   DirectionMap<Dim, std::optional<Variables<
                         tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
                                    evolution::dg::Tags::NormalCovector<Dim>>>>>
@@ -85,20 +81,20 @@ mortars_apply_impl(const Element<Dim>& element,
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                                 \
-  template std::tuple<                                                         \
-      DirectionalIdMap<DIM(data), evolution::dg::MortarDataHolder<DIM(data)>>, \
-      DirectionalIdMap<DIM(data), Mesh<DIM(data) - 1>>,                        \
-      DirectionalIdMap<DIM(data), MortarInfo<DIM(data)>>,                      \
-      DirectionalIdMap<DIM(data), TimeStepId>,                                 \
-      DirectionMap<DIM(data),                                                  \
-                   std::optional<Variables<tmpl::list<                         \
-                       evolution::dg::Tags::MagnitudeOfNormal,                 \
-                       evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>     \
-  mortars_apply_impl(                                                          \
-      const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,   \
-      const Mesh<DIM(data)>& volume_mesh,                                      \
-      const DirectionalIdMap<DIM(data), Mesh<DIM(data)>>& neighbor_mesh);
+#define INSTANTIATION(r, data)                                                \
+  template std::tuple<                                                        \
+      ::dg::MortarMap<DIM(data), evolution::dg::MortarDataHolder<DIM(data)>>, \
+      ::dg::MortarMap<DIM(data), Mesh<DIM(data) - 1>>,                        \
+      ::dg::MortarMap<DIM(data), MortarInfo<DIM(data)>>,                      \
+      ::dg::MortarMap<DIM(data), TimeStepId>,                                 \
+      DirectionMap<DIM(data),                                                 \
+                   std::optional<Variables<tmpl::list<                        \
+                       evolution::dg::Tags::MagnitudeOfNormal,                \
+                       evolution::dg::Tags::NormalCovector<DIM(data)>>>>>>    \
+  mortars_apply_impl(                                                         \
+      const Element<DIM(data)>& element, const TimeStepId& next_temporal_id,  \
+      const Mesh<DIM(data)>& volume_mesh,                                     \
+      const ::dg::MortarMap<DIM(data), Mesh<DIM(data)>>& neighbor_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

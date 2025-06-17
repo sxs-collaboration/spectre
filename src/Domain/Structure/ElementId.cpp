@@ -20,6 +20,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/StdHelpers/Bit.hpp"
@@ -447,6 +448,21 @@ bool operator<(const ElementId<VolumeDim>& lhs,
   return false;
 }
 
+template <size_t VolumeDim>
+bool overlapping(const ElementId<VolumeDim>& a, const ElementId<VolumeDim>& b) {
+  if (a.block_id() != b.block_id()) {
+    return false;
+  }
+  const auto segments_a = a.segment_ids();
+  const auto segments_b = b.segment_ids();
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    if (not overlapping(gsl::at(segments_a, d), gsl::at(segments_b, d))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 template <size_t Dim>
 bool is_zeroth_element(const ElementId<Dim>& id,
                        const std::optional<size_t>& grid_index) {
@@ -502,6 +518,8 @@ size_t hash<ElementId<VolumeDim>>::operator()(
                                     const ElementId<GET_DIM(data)>&);       \
   template bool operator<(const ElementId<GET_DIM(data)>& lhs,              \
                           const ElementId<GET_DIM(data)>& rhs);             \
+  template bool overlapping(const ElementId<GET_DIM(data)>& a,              \
+                            const ElementId<GET_DIM(data)>& b);             \
   template bool is_zeroth_element(const ElementId<GET_DIM(data)>& id,       \
                                   const std::optional<size_t>& grid_index); \
   template bool is_zeroth_element(const ElementId<GET_DIM(data)>& id);      \

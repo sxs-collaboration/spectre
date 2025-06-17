@@ -25,6 +25,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral {
@@ -379,26 +380,45 @@ projection_matrix_parent_to_child(
 }
 
 template <size_t Dim>
-std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
-    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh) {
+std::array<std::reference_wrapper<const Matrix>, Dim> projection_matrices(
+    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
+    const std::array<SegmentSize, Dim>& source_sizes,
+    const std::array<SegmentSize, Dim>& target_sizes) {
   static const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
   const auto source_mesh_slices = source_mesh.slices();
   const auto target_mesh_slices = target_mesh.slices();
   for (size_t d = 0; d < Dim; ++d) {
-    const auto source_mesh_slice = gsl::at(source_mesh_slices, d);
-    const auto target_mesh_slice = gsl::at(target_mesh_slices, d);
-    if (source_mesh_slice == target_mesh_slice) {
-      // No projection necessary, keep matrix the identity in this dimension
-    } else if (source_mesh_slice.extents(0) <= target_mesh_slice.extents(0)) {
+    const auto& source_mesh_slice = gsl::at(source_mesh_slices, d);
+    const auto& target_mesh_slice = gsl::at(target_mesh_slices, d);
+    const auto source_size = gsl::at(source_sizes, d);
+    const auto target_size = gsl::at(target_sizes, d);
+    if (source_size == target_size) {
+      if (source_mesh_slice == target_mesh_slice) {
+        // No projection necessary, keep matrix the identity in this dimension
+      } else {
+        gsl::at(projection_matrices, d) = projection_matrix_child_to_parent(
+            source_mesh_slice, target_mesh_slice, SegmentSize::Full);
+      }
+    } else if (source_size == SegmentSize::Full) {
       gsl::at(projection_matrices, d) = projection_matrix_parent_to_child(
-          source_mesh_slice, target_mesh_slice, SegmentSize::Full);
+          source_mesh_slice, target_mesh_slice, target_size);
     } else {
+      ASSERT(target_size == SegmentSize::Full,
+             "Cannot project from one half of segment to the other.");
       gsl::at(projection_matrices, d) = projection_matrix_child_to_parent(
-          source_mesh_slice, target_mesh_slice, SegmentSize::Full);
+          source_mesh_slice, target_mesh_slice, source_size);
     }
   }
   return projection_matrices;
+}
+
+template <size_t Dim>
+std::array<std::reference_wrapper<const Matrix>, Dim> p_projection_matrices(
+    const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh) {
+  return projection_matrices(source_mesh, target_mesh,
+                             make_array<Dim>(SegmentSize::Full),
+                             make_array<Dim>(SegmentSize::Full));
 }
 
 template <size_t DimMinusOne>
@@ -429,21 +449,26 @@ size_t MortarSizeHash<Dim>::operator()(
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(r, data)                                                 \
-  template bool needs_projection(                                            \
-      const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,            \
-      const std::array<SegmentSize, DIM(data)>& child_sizes);                \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
-  projection_matrix_child_to_parent(                                         \
-      const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh, \
-      const std::array<SegmentSize, DIM(data)>& child_sizes,                 \
-      bool operand_is_massive);                                              \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
-  projection_matrix_parent_to_child(                                         \
-      const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh, \
-      const std::array<SegmentSize, DIM(data)>& child_sizes);                \
-  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>       \
-  p_projection_matrices(const Mesh<DIM(data)>& source_mesh,                  \
+#define INSTANTIATE(r, data)                                                   \
+  template bool needs_projection(                                              \
+      const Mesh<DIM(data)>& mesh1, const Mesh<DIM(data)>& mesh2,              \
+      const std::array<SegmentSize, DIM(data)>& child_sizes);                  \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
+  projection_matrix_child_to_parent(                                           \
+      const Mesh<DIM(data)>& child_mesh, const Mesh<DIM(data)>& parent_mesh,   \
+      const std::array<SegmentSize, DIM(data)>& child_sizes,                   \
+      bool operand_is_massive);                                                \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
+  projection_matrix_parent_to_child(                                           \
+      const Mesh<DIM(data)>& parent_mesh, const Mesh<DIM(data)>& child_mesh,   \
+      const std::array<SegmentSize, DIM(data)>& child_sizes);                  \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
+  projection_matrices(const Mesh<DIM(data)>& source_mesh,                      \
+                      const Mesh<DIM(data)>& target_mesh,                      \
+                      const std::array<SegmentSize, DIM(data)>& source_sizes,  \
+                      const std::array<SegmentSize, DIM(data)>& target_sizes); \
+  template std::array<std::reference_wrapper<const Matrix>, DIM(data)>         \
+  p_projection_matrices(const Mesh<DIM(data)>& source_mesh,                    \
                         const Mesh<DIM(data)>& target_mesh);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3))

@@ -192,6 +192,12 @@ bool operator>=(const ElementId<VolumeDim>& lhs,
   return !(lhs < rhs);
 }
 
+/// \ingroup ComputationalDomainGroup
+/// Check if two elements overlap, i.e., they are in the same block
+/// and all their segments overlap.
+template <size_t VolumeDim>
+bool overlapping(const ElementId<VolumeDim>& a, const ElementId<VolumeDim>& b);
+
 /// @{
 /// \brief Returns a bool if the element is the zeroth element in the domain.
 ///

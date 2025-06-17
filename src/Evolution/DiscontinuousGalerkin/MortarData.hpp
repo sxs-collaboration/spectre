@@ -72,7 +72,8 @@ struct MortarData {
   void pup(PUP::er& p);
 };
 
-/// \brief Projects the mortar data when p-refined
+/// \brief Projects the geometric data (but not the data on the mortar
+/// grid) when p-refined
 ///
 /// \details only updates the stored mesh if the corresponding data exists
 ///
@@ -80,10 +81,9 @@ struct MortarData {
 /// the geometric data are not used.  Currently projection of MortarData is only
 ///  needed for local time-stepping which is not yet supported for DG-subcell.
 template <size_t Dim>
-void p_project(gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
-               const Mesh<Dim - 1>& new_mortar_mesh,
-               const Mesh<Dim - 1>& new_face_mesh,
-               const Mesh<Dim>& new_volume_mesh);
+void p_project_geometric_data(
+    gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
+    const Mesh<Dim - 1>& new_face_mesh, const Mesh<Dim>& new_volume_mesh);
 
 /// \brief Projects the mortar data (but not the geometric data) when p-refined
 ///
@@ -92,7 +92,7 @@ void p_project(gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
 /// geometric data does not need to be updated as it already used the correct
 /// face/volume mesh.
 template <size_t Dim>
-void p_project_only_mortar_data(
+void p_project_mortar_data(
     gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
     const Mesh<Dim - 1>& new_mortar_mesh);
 

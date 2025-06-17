@@ -100,6 +100,12 @@ void test_p_mortar_to_element() {
           const auto& points_source = Spectral::collocation_points(mesh_source);
           const auto& projection = projection_matrix_child_to_parent(
               mesh_source, mesh_dest, Spectral::SegmentSize::Full);
+          if (num_points_source <= num_points_dest) {
+            const auto& parent_to_child_projection =
+                projection_matrix_parent_to_child(mesh_source, mesh_dest,
+                                                  Spectral::SegmentSize::Full);
+            CHECK(projection == parent_to_child_projection);
+          }
           for (size_t test_order = 0; test_order < num_points_source;
                ++test_order) {
             CAPTURE(test_order);
@@ -531,9 +537,66 @@ void test_p_projection_matrices() {
     }
     if constexpr (Dim > 2) {
       CHECK(&projection_matrix[2].get() ==
-            &Spectral::projection_matrix_parent_to_child(
+            &Spectral::projection_matrix_child_to_parent(
                 {4, basis, quadrature}, {5, basis, quadrature},
                 Spectral::SegmentSize::Full));
+    }
+  }
+}
+
+template <size_t Dim>
+void test_projection_matrices() {
+  INFO("generic projection operators");
+  CAPTURE(Dim);
+  // Higher-dimensional operators are just Cartesian products of the 1D
+  // matrices, we only test here if they are constructed correctly.
+  // The particular basis and quadrature don't matter for this test.
+  const auto basis = Spectral::Basis::Legendre;
+  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  {
+    INFO("Identity");
+    const auto identity = Spectral::projection_matrices(
+        Mesh<Dim>{3, basis, quadrature}, Mesh<Dim>{3, basis, quadrature},
+        make_array<Dim>(SegmentSize::Full), make_array<Dim>(SegmentSize::Full));
+    for (size_t d = 0; d < Dim; ++d) {
+      CHECK(gsl::at(identity, d).get() == Matrix{});
+    }
+  }
+  {
+    const size_t source_extents = 4;
+    std::array<size_t, Dim> target_extents{};
+    std::iota(target_extents.begin(), target_extents.end(), size_t{3});
+    std::array<SegmentSize, Dim> source_sizes{};
+    std::array<SegmentSize, Dim> target_sizes{};
+    source_sizes[0] = SegmentSize::LowerHalf;
+    target_sizes[0] = SegmentSize::LowerHalf;
+    if constexpr (Dim > 1) {
+      source_sizes[1] = SegmentSize::Full;
+      target_sizes[1] = SegmentSize::UpperHalf;
+    }
+    if constexpr (Dim > 2) {
+      source_sizes[2] = SegmentSize::LowerHalf;
+      target_sizes[2] = SegmentSize::Full;
+    }
+    const auto projection_matrix = Spectral::projection_matrices(
+        Mesh<Dim>{source_extents, basis, quadrature},
+        Mesh<Dim>{target_extents, basis, quadrature}, source_sizes,
+        target_sizes);
+    CHECK(&projection_matrix[0].get() ==
+          &Spectral::projection_matrix_child_to_parent(
+              {4, basis, quadrature}, {3, basis, quadrature},
+              Spectral::SegmentSize::Full));
+    if constexpr (Dim > 1) {
+      CHECK(&projection_matrix[1].get() ==
+            &Spectral::projection_matrix_parent_to_child(
+                {4, basis, quadrature}, {4, basis, quadrature},
+                Spectral::SegmentSize::UpperHalf));
+    }
+    if constexpr (Dim > 2) {
+      CHECK(&projection_matrix[2].get() ==
+            &Spectral::projection_matrix_child_to_parent(
+                {4, basis, quadrature}, {5, basis, quadrature},
+                Spectral::SegmentSize::LowerHalf));
     }
   }
 }

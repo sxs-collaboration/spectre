@@ -84,9 +84,6 @@ class SegmentId {
     return -1.0 + (1.0 + 2.0 * index_) / two_to_the(refinement_level_);
   }
 
-  /// Does the segment overlap with another?
-  bool overlaps(const SegmentId& other) const;
-
   // NOLINTNEXTLINE
   void pup(PUP::er& p);
 
@@ -103,6 +100,10 @@ bool operator==(const SegmentId& lhs, const SegmentId& rhs);
 
 /// Inequivalence operator for SegmentId.
 bool operator!=(const SegmentId& lhs, const SegmentId& rhs);
+
+/// \ingroup ComputationalDomainGroup
+/// Check if two segments overlap.
+bool overlapping(const SegmentId& a, const SegmentId& b);
 
 // #############################################################################
 //  INLINE DEFINITIONS
@@ -155,13 +156,6 @@ inline double SegmentId::endpoint(Side side) const {
     return -1.0 + (2.0 * index()) / two_to_the(refinement_level());
   }
   return -1.0 + (2.0 * index() + 2.0) / two_to_the(refinement_level());
-}
-
-inline bool SegmentId::overlaps(const SegmentId& other) const {
-  const size_t this_denom = two_to_the(refinement_level());
-  const size_t other_denom = two_to_the(other.refinement_level());
-  return index() * other_denom < (other.index() + 1) * this_denom and
-         other.index() * this_denom < (index() + 1) * other_denom;
 }
 
 // These are defined so that a SegmentId can be used as part of a key of an

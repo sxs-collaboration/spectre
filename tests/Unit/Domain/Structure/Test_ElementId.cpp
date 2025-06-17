@@ -333,6 +333,12 @@ void test_element_id() {
             .number_of_block_boundaries() == 1);
   CHECK(ElementId<3>{0, {{{2, 1}, {2, 1}, {2, 1}}}}
             .number_of_block_boundaries() == 0);
+
+  CHECK(overlapping(element1, element1));
+  CHECK(overlapping(element1, element2));
+  CHECK(not overlapping(element1, element3));
+  CHECK(overlapping(element1, element5));
+  CHECK(not overlapping(element5, element7));
 }
 
 template <size_t VolumeDim>

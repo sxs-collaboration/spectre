@@ -344,7 +344,7 @@ bool receive_boundary_data_global_time_stepping(
               ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
           if (mortar_mesh != mortar_meshes->at(mortar_id)) {
             mortar_meshes->at(mortar_id) = mortar_mesh;
-            p_project_only_mortar_data(
+            p_project_mortar_data(
                 make_not_null(&mortar_data->at(mortar_id).local()),
                 mortar_mesh);
           }
@@ -371,7 +371,7 @@ bool receive_boundary_data_global_time_stepping(
                 received_mortar_data.second.boundary_correction_data.value());
             if (mortar_mesh !=
                 received_mortar_data.second.boundary_correction_mesh) {
-              p_project_only_mortar_data(
+              p_project_mortar_data(
                   make_not_null(&mortar_data->at(mortar_id).neighbor()),
                   mortar_mesh);
             }
@@ -499,7 +499,7 @@ bool receive_boundary_data_local_time_stepping(
                     const TimeStepId& /*id*/,
                     const gsl::not_null<::evolution::dg::MortarData<Dim>*>
                         mortar_data) {
-                  p_project_only_mortar_data(mortar_data, mortar_mesh);
+                  p_project_mortar_data(mortar_data, mortar_mesh);
                 };
 
             if (mortar_mesh != mortar_meshes->at(mortar_id)) {
@@ -524,9 +524,6 @@ bool receive_boundary_data_local_time_stepping(
                        << "\nTimeStepId: " << mortar_next_time_step_id);
             neighbor_mesh->insert_or_assign(
                 mortar_id, received_mortar_data->second.volume_mesh);
-            neighbor_mortar_data.face_mesh =
-                received_mortar_data->second.volume_mesh.slice_away(
-                    mortar_id.direction().dimension());
             neighbor_mortar_data.mortar_mesh =
                 received_mortar_data->second.boundary_correction_mesh.value();
             neighbor_mortar_data.mortar_data = std::move(

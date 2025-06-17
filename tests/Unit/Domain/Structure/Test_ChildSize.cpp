@@ -9,11 +9,12 @@
 
 namespace domain {
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentSize", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.ChildSize", "[Domain][Unit]") {
   CHECK(child_size({0, 0}, {0, 0}) == Spectral::SegmentSize::Full);
   CHECK(child_size({1, 0}, {0, 0}) == Spectral::SegmentSize::LowerHalf);
   CHECK(child_size({1, 1}, {0, 0}) == Spectral::SegmentSize::UpperHalf);
   CHECK(child_size({1, 1}, {1, 1}) == Spectral::SegmentSize::Full);
+  CHECK(child_size<0>({}, {}).empty());
   CHECK(
       child_size<1>({{{2, 3}}}, {{{1, 1}}}) ==
       std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::UpperHalf}});
