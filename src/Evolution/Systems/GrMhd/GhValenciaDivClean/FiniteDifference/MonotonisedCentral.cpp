@@ -48,9 +48,11 @@ namespace grmhd::GhValenciaDivClean::fd {
 template <typename System>
 MonotonisedCentralPrim<System>::MonotonisedCentralPrim(
     const ::VariableFixing::FixReconstructedStateToAtmosphere
-        fix_reconstructed_state_to_atmosphere)
+        fix_reconstructed_state_to_atmosphere,
+    const bool reconstruct_rho_times_temperature)
     : fix_reconstructed_state_to_atmosphere_(
-          fix_reconstructed_state_to_atmosphere) {}
+          fix_reconstructed_state_to_atmosphere),
+      reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
 template <typename System>
 MonotonisedCentralPrim<System>::MonotonisedCentralPrim(
@@ -67,6 +69,7 @@ template <typename System>
 void MonotonisedCentralPrim<System>::pup(PUP::er& p) {
   Reconstructor<System>::pup(p);
   p | fix_reconstructed_state_to_atmosphere_;
+  p | reconstruct_rho_times_temperature_;
 }
 
 template <typename System>
@@ -143,6 +146,7 @@ void MonotonisedCentralPrim<System>::reconstruct(
       },
       volume_prims, volume_spacetime_and_cons_vars, eos, element,
       neighbor_variables_data, subcell_mesh, ghost_zone_size(), true,
+      reconstruct_rho_times_temperature(),
       (fix_reconstructed_state_to_atmosphere_ ==
                    FixReconstructedStateToAtmosphere::Always or
                fix_reconstructed_state_to_atmosphere_ ==
@@ -252,7 +256,7 @@ void MonotonisedCentralPrim<System>::reconstruct_fd_neighbor(
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
       ghost_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
-      true,
+      true, reconstruct_rho_times_temperature(),
       (fix_reconstructed_state_to_atmosphere_ ==
                    FixReconstructedStateToAtmosphere::Always or
                fix_reconstructed_state_to_atmosphere_ ==
@@ -262,10 +266,17 @@ void MonotonisedCentralPrim<System>::reconstruct_fd_neighbor(
 }
 
 template <typename System>
+bool MonotonisedCentralPrim<System>::reconstruct_rho_times_temperature() const {
+  return reconstruct_rho_times_temperature_;
+}
+
+template <typename System>
 bool operator==(const MonotonisedCentralPrim<System>& lhs,
                 const MonotonisedCentralPrim<System>& rhs) {
   return lhs.fix_reconstructed_state_to_atmosphere_ ==
-         rhs.fix_reconstructed_state_to_atmosphere_;
+             rhs.fix_reconstructed_state_to_atmosphere_ and
+         lhs.reconstruct_rho_times_temperature() ==
+             rhs.reconstruct_rho_times_temperature();
 }
 
 template <typename System>

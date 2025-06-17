@@ -97,7 +97,7 @@ void reconstruct_prims_work(
     const DirectionalIdMap<3, Variables<PrimsTagsSentByNeighbor>>&
         neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size,
-    bool compute_conservatives,
+    bool compute_conservatives, bool reconstruct_density_times_temperature,
     const VariableFixing::FixToAtmosphere<3>* fix_to_atmosphere);
 
 /*!
@@ -134,5 +134,6 @@ void reconstruct_fd_neighbor_work(
     const DirectionalIdMap<3, evolution::dg::subcell::GhostData>& ghost_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     size_t ghost_zone_size, bool compute_conservatives,
+    bool reconstruct_density_times_temperature,
     const VariableFixing::FixToAtmosphere<3>* fix_to_atmosphere);
 }  // namespace grmhd::GhValenciaDivClean::fd

@@ -80,6 +80,7 @@ SpatialDiscretization:
         Epsilon: 1.0e-15
         FallbackReconstructor: MonotonisedCentral
         MaxNumberOfExtrema: 0
+        ReconstructRhoTimesTemperature: true
 
 InitialData:
   BlastWave:

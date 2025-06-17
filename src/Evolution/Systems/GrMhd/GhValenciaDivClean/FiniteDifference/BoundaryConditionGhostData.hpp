@@ -27,10 +27,13 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -203,6 +206,86 @@ void BoundaryConditionGhostData<System>::apply(
                   << " when using finite-difference");
           }
         });
-  }
+    if (dynamic_cast<const BoundaryConditions::DirichletAnalytic<System>*>(
+            &boundary_condition_at_direction) != nullptr and
+        reconstructor.reconstruct_rho_times_temperature()) {
+      // If we reconstruct rho*T we end up having to divide by rho to compute
+      // T. In some cases, like when evolving a TOV star with an analytic
+      // boundary condition, the boundary condition sets rho=0. While
+      // unphysical in general, this is how we have implemented the
+      // solutions. We deal with this by applying our atmosphere treatment to
+      // the reconstructed stated.
+
+      const auto& atmosphere_fixer =
+          db::get<::Tags::VariableFixer<VariableFixing::FixToAtmosphere<3>>>(
+              *box);
+      const auto& equation_of_state =
+          db::get<hydro::Tags::GrmhdEquationOfState>(*box);
+
+      tnsr::ii<DataVector, 3, Frame::Inertial> spatial_metric{};
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = i; j < 3; ++j) {
+          spatial_metric.get(i, j).set_data_ref(
+              &get<SpacetimeMetric>(ghost_data_vars).get(i + 1, j + 1));
+        }
+      }
+
+      Variables<tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>,
+                           hydro::Tags::LorentzFactor<DataVector>,
+                           hydro::Tags::SpecificInternalEnergy<DataVector>,
+                           hydro::Tags::Pressure<DataVector>>>
+          temp_hydro_vars{ghost_data_vars.number_of_grid_points()};
+
+      const auto& lorentz_factor_times_spatial_velocity =
+          get<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>(
+              ghost_data_vars);
+      auto& lorentz_factor =
+          get<hydro::Tags::LorentzFactor<DataVector>>(temp_hydro_vars);
+      get(lorentz_factor) = 0.0;
+      for (size_t i = 0; i < 3; ++i) {
+        get(lorentz_factor) +=
+            spatial_metric.get(i, i) *
+            square(lorentz_factor_times_spatial_velocity.get(i));
+        for (size_t j = i + 1; j < 3; ++j) {
+          get(lorentz_factor) += 2.0 * spatial_metric.get(i, j) *
+                                 lorentz_factor_times_spatial_velocity.get(i) *
+                                 lorentz_factor_times_spatial_velocity.get(j);
+        }
+      }
+      get(lorentz_factor) = sqrt(1.0 + get(lorentz_factor));
+      auto& spatial_velocity =
+          get<hydro::Tags::SpatialVelocity<DataVector, 3>>(temp_hydro_vars) =
+              lorentz_factor_times_spatial_velocity;
+      for (size_t i = 0; i < 3; ++i) {
+        spatial_velocity.get(i) /= get(lorentz_factor);
+      }
+
+      get<hydro::Tags::SpecificInternalEnergy<DataVector>>(temp_hydro_vars) =
+          equation_of_state
+              .specific_internal_energy_from_density_and_temperature(
+                  get<RestMassDensity>(ghost_data_vars),
+                  get<Temperature>(ghost_data_vars),
+                  get<ElectronFraction>(ghost_data_vars));
+      get<hydro::Tags::Pressure<DataVector>>(temp_hydro_vars) =
+          equation_of_state.pressure_from_density_and_temperature(
+              get<RestMassDensity>(ghost_data_vars),
+              get<Temperature>(ghost_data_vars),
+              get<ElectronFraction>(ghost_data_vars));
+
+      atmosphere_fixer(
+          make_not_null(&get<RestMassDensity>(ghost_data_vars)),
+          make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
+              temp_hydro_vars)),
+          make_not_null(&get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
+              temp_hydro_vars)),
+          make_not_null(
+              &get<hydro::Tags::LorentzFactor<DataVector>>(temp_hydro_vars)),
+          make_not_null(
+              &get<hydro::Tags::Pressure<DataVector>>(temp_hydro_vars)),
+          make_not_null(&get<Temperature>(ghost_data_vars)),
+          get<ElectronFraction>(ghost_data_vars), spatial_metric,
+          equation_of_state);
+    }
+  }  // for (direction : external boundaries)
 }
 }  // namespace grmhd::GhValenciaDivClean::fd

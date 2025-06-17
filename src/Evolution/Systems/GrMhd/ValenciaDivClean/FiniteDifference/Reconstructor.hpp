@@ -44,6 +44,8 @@ class Reconstructor : public PUP::able {
 
   virtual bool supports_adaptive_order() const { return false; }
 
+  virtual bool reconstruct_rho_times_temperature() const = 0;
+
   void pup(PUP::er& p) override;
 };
 }  // namespace grmhd::ValenciaDivClean::fd

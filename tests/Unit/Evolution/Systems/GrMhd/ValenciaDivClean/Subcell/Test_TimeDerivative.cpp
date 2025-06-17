@@ -159,7 +159,8 @@ std::array<double, 5> test(const size_t num_dg_pts,
   const grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim
       recons{
           3.8, std::nullopt, 4.0,
-          ::fd::reconstruction::FallbackReconstructorType::MonotonisedCentral};
+          ::fd::reconstruction::FallbackReconstructorType::MonotonisedCentral,
+          true};
   REQUIRE((static_cast<int>(fd_derivative_order) < 0 or
            (static_cast<size_t>(fd_derivative_order) / 2 <=
             recons.ghost_zone_size())));

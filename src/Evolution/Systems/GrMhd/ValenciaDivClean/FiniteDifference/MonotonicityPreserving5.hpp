@@ -88,8 +88,14 @@ class MonotonicityPreserving5Prim : public Reconstructor {
         "off. Suresh & Huynh (1997) suggests 1e-10, but for hydro simulations "
         "with atmosphere treatment setting Epsilon=0.0 would be safe."};
   };
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
 
-  using options = tmpl::list<Alpha, Epsilon>;
+  using options = tmpl::list<Alpha, Epsilon, ReconstructRhoTimesTemperature>;
   static constexpr Options::String help{
       "MP5 reconstruction scheme using primitive variables."};
 
@@ -102,7 +108,8 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       default;
   ~MonotonicityPreserving5Prim() override = default;
 
-  MonotonicityPreserving5Prim(double alpha, double epsilon);
+  MonotonicityPreserving5Prim(double alpha, double epsilon,
+                              bool reconstruct_rho_times_temperature);
 
   explicit MonotonicityPreserving5Prim(CkMigrateMessage* msg);
 
@@ -145,7 +152,9 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
-      const Direction<dim> direction_to_reconstruct) const;
+      Direction<dim> direction_to_reconstruct) const;
+
+  bool reconstruct_rho_times_temperature() const override;
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -156,6 +165,7 @@ class MonotonicityPreserving5Prim : public Reconstructor {
 
   double alpha_ = std::numeric_limits<double>::signaling_NaN();
   double epsilon_ = std::numeric_limits<double>::signaling_NaN();
+  bool reconstruct_rho_times_temperature_{false};
 };
 
 }  // namespace grmhd::ValenciaDivClean::fd

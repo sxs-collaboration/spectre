@@ -23,32 +23,33 @@ SPECTRE_TEST_CASE(
                          System>));
   const auto mc_from_options_base = TestHelpers::test_factory_creation<
       grmhd::GhValenciaDivClean::fd::Reconstructor<System>,
-      grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor<
-          System>>(
+      grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor<System>>(
       "MonotonisedCentralPrim:\n"
-      "  AtmosphereTreatment: Never\n");
+      "  AtmosphereTreatment: Never\n"
+      "  ReconstructRhoTimesTemperature: false\n");
   const auto mc_deserialized = serialize_and_deserialize(mc_from_options_base);
   auto* const mc_from_options =
       dynamic_cast<const grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<
           System>*>(mc_deserialized.get());
   REQUIRE(mc_from_options != nullptr);
-  CHECK(grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<
-            System>{
-            ::VariableFixing::FixReconstructedStateToAtmosphere::Always} !=
-        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<
-            System>{
-            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+  CHECK(
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false} !=
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never, false});
+  CHECK(
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, false} !=
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Always, true});
   CHECK(*mc_from_options ==
-        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<
-            System>{
-            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+        grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never, false});
   test_move_semantics(
-      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<
-          System>{
-          ::VariableFixing::FixReconstructedStateToAtmosphere::Never},
-      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<
-          System>{
-          ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never, false},
+      grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>{
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never, false});
 
   helpers::test_prim_reconstructor(5, *mc_from_options);
 }

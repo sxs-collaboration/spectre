@@ -71,7 +71,14 @@ class MonotonisedCentralPrim : public Reconstructor {
  public:
   static constexpr size_t dim = 3;
 
-  using options = tmpl::list<>;
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
+
+  using options = tmpl::list<ReconstructRhoTimesTemperature>;
   static constexpr Options::String help{
       "Monotonised central reconstruction scheme using primitive variables."};
 
@@ -81,6 +88,8 @@ class MonotonisedCentralPrim : public Reconstructor {
   MonotonisedCentralPrim(const MonotonisedCentralPrim&) = default;
   MonotonisedCentralPrim& operator=(const MonotonisedCentralPrim&) = default;
   ~MonotonisedCentralPrim() override = default;
+
+  explicit MonotonisedCentralPrim(bool reconstruct_rho_times_temperature);
 
   explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
 
@@ -123,11 +132,16 @@ class MonotonisedCentralPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
-      const Direction<dim> direction_to_reconstruct) const;
+      Direction<dim> direction_to_reconstruct) const;
+
+  bool reconstruct_rho_times_temperature() const override;
+
+ private:
+  bool reconstruct_rho_times_temperature_{false};
 };
 
-bool operator==(const MonotonisedCentralPrim& /*lhs*/,
-                const MonotonisedCentralPrim& /*rhs*/);
+bool operator==(const MonotonisedCentralPrim& lhs,
+                const MonotonisedCentralPrim& rhs);
 
 bool operator!=(const MonotonisedCentralPrim& lhs,
                 const MonotonisedCentralPrim& rhs);

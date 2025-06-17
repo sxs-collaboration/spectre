@@ -4,7 +4,7 @@
 Executable: EvolveGhValenciaDivClean
 Testing:
   Check: parse;execute
-  Timeout: 8
+  Timeout: 30
   Priority: High
 ExpectedOutput:
   - GhMhdTovStarVolume0.h5
@@ -24,8 +24,11 @@ Evolution:
   InitialTimeStep: 0.0001
   MinimumTimeStep: 1e-7
   TimeStepper:
-    AdamsMoultonPc:
-      Order: 3
+    # Both RK3 and AM-PC 3 should work. These are the "standard" time steppers
+    # for spectre for hydro right now.
+    Rk3HesthavenSsp:
+    # AdamsMoultonPc:
+    #   Order: 3
 
 PhaseChangeAndTriggers:
   - Trigger:
@@ -55,7 +58,7 @@ DomainCreator:
     UpperBound: [5.0, 5.0, 5.0]
     Distribution: [Linear, Linear, Linear]
     InitialRefinement: [1, 1, 1]
-    InitialGridPoints: [3, 3, 3]
+    InitialGridPoints: [5, 5, 5]
     TimeDependence: None
     BoundaryConditions:
       - DirichletAnalytic:
@@ -170,6 +173,7 @@ SpatialDiscretization:
     Reconstructor:
       MonotonisedCentralPrim:
         AtmosphereTreatment: Never
+        ReconstructRhoTimesTemperature: true
     FilterOptions:
       SpacetimeDissipation: 0.1
 

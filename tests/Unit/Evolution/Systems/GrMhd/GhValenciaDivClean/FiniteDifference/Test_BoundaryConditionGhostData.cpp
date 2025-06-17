@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -51,6 +52,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -231,22 +233,27 @@ void test(const BoundaryConditionType& boundary_condition,
   }
   get(get<DivergenceCleaningField>(volume_prim_vars)) = 1e-2;
 
+  using Vlo =
+      typename VariableFixing::FixToAtmosphere<3>::VelocityLimitingOptions;
+  const VariableFixing::FixToAtmosphere<3> variable_fixer{
+      1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11}, std::nullopt};
+
   // create a box for test
   auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<
-          EvolutionMetaVars<System>>,
+      Parallel::Tags::MetavariablesImpl<EvolutionMetaVars<System>>,
       domain::Tags::Domain<3>, domain::Tags::ExternalBoundaryConditions<3>,
       evolution::dg::subcell::Tags::Mesh<3>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
-      fd::Tags::Reconstructor<System>,
-      domain::Tags::MeshVelocity<3>,
+      fd::Tags::Reconstructor<System>, domain::Tags::MeshVelocity<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
-      typename System::primitive_variables_tag>>(
+      typename System::primitive_variables_tag,
+      ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>,
+      hydro::Tags::GrmhdEquationOfState>>(
       EvolutionMetaVars<System>{}, std::move(domain),
       std::move(boundary_conditions), subcell_mesh, subcell_logical_coords,
       neighbor_data,
@@ -260,7 +267,8 @@ void test(const BoundaryConditionType& boundary_condition,
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_prim_vars);
+      volume_prim_vars, variable_fixer,
+      solution.equation_of_state().promote_to_3d_eos());
 
   // compute FD ghost data and retrieve the result
   fd::BoundaryConditionGhostData<System>::apply(

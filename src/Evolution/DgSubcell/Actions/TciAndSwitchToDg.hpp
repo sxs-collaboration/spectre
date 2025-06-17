@@ -285,7 +285,7 @@ struct TciAndSwitchToDg {
         not cell_is_troubled and
 
         (((is_substep_method and
-           tci_history.size() == subcell_options.min_clear_tci_before_dg() - 1)
+           tci_history.size() >= subcell_options.min_clear_tci_before_dg() - 1)
 
           or
 

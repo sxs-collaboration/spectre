@@ -23,14 +23,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Wcns5z",
       grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>));
   const auto wcns5z_from_options_base = TestHelpers::test_factory_creation<
       grmhd::GhValenciaDivClean::fd::Reconstructor<System>,
-      grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor<
-          System>>(
+      grmhd::GhValenciaDivClean::fd::OptionTags::Reconstructor<System>>(
       "Wcns5zPrim:\n"
       "  NonlinearWeightExponent: 2\n"
       "  Epsilon: 1.e-42\n"
       "  FallbackReconstructor: None\n"
       "  MaxNumberOfExtrema: 0\n"
-      "  AtmosphereTreatment: Never\n");
+      "  AtmosphereTreatment: Never\n"
+      "  ReconstructRhoTimesTemperature: true\n");
   const auto wcns5z_deserialized =
       serialize_and_deserialize(wcns5z_from_options_base);
   auto* const wcns5z_from_options =
@@ -39,20 +39,49 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Wcns5z",
   REQUIRE(wcns5z_from_options != nullptr);
   CHECK(grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
             2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
-            ::VariableFixing::FixReconstructedStateToAtmosphere::Always} !=
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
+            true} !=
         grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
             2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
-            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never, true});
+  CHECK(grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
+            true} !=
+        grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            1, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always, true});
+  CHECK(grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
+            true} !=
+        grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 2.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always, true});
+  CHECK(grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
+            true} !=
+        grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 1.e-42, fd::reconstruction::FallbackReconstructorType::Minmod, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always, true});
+  CHECK(grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always,
+            true} !=
+        grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
+            2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 1,
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Always, true});
   CHECK(*wcns5z_from_options ==
         grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
             2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
-            ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+            ::VariableFixing::FixReconstructedStateToAtmosphere::Never, true});
   test_move_semantics(
       grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
           2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
-          ::VariableFixing::FixReconstructedStateToAtmosphere::Never},
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never, true},
       grmhd::GhValenciaDivClean::fd::Wcns5zPrim<System>{
           2, 1.e-42, fd::reconstruction::FallbackReconstructorType::None, 0,
-          ::VariableFixing::FixReconstructedStateToAtmosphere::Never});
+          ::VariableFixing::FixReconstructedStateToAtmosphere::Never, true});
   helpers::test_prim_reconstructor(7, *wcns5z_from_options);
 }

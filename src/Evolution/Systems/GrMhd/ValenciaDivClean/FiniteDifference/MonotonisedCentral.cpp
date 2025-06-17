@@ -29,6 +29,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::ValenciaDivClean::fd {
+MonotonisedCentralPrim::MonotonisedCentralPrim(
+    const bool reconstruct_rho_times_temperature)
+    : reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
+
 MonotonisedCentralPrim::MonotonisedCentralPrim(CkMigrateMessage* const msg)
     : Reconstructor(msg) {}
 
@@ -36,7 +40,10 @@ std::unique_ptr<Reconstructor> MonotonisedCentralPrim::get_clone() const {
   return std::make_unique<MonotonisedCentralPrim>(*this);
 }
 
-void MonotonisedCentralPrim::pup(PUP::er& p) { Reconstructor::pup(p); }
+void MonotonisedCentralPrim::pup(PUP::er& p) {
+  Reconstructor::pup(p);
+  p | reconstruct_rho_times_temperature_;
+}
 
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
@@ -67,7 +74,7 @@ void MonotonisedCentralPrim::reconstruct(
             ghost_cell_vars, subcell_extents, number_of_variables);
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), true);
+      ghost_zone_size(), true, reconstruct_rho_times_temperature());
 }
 
 template <size_t ThermodynamicDim>
@@ -109,12 +116,18 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
             local_direction_to_reconstruct);
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
-      direction_to_reconstruct, ghost_zone_size(), true);
+      direction_to_reconstruct, ghost_zone_size(), true,
+      reconstruct_rho_times_temperature());
 }
 
-bool operator==(const MonotonisedCentralPrim& /*lhs*/,
-                const MonotonisedCentralPrim& /*rhs*/) {
-  return true;
+bool MonotonisedCentralPrim::reconstruct_rho_times_temperature() const {
+  return reconstruct_rho_times_temperature_;
+}
+
+bool operator==(const MonotonisedCentralPrim& lhs,
+                const MonotonisedCentralPrim& rhs) {
+  return lhs.reconstruct_rho_times_temperature() ==
+         rhs.reconstruct_rho_times_temperature();
 }
 
 bool operator!=(const MonotonisedCentralPrim& lhs,

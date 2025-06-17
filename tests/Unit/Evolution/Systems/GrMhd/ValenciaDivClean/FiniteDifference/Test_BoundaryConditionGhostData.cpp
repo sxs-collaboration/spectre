@@ -301,6 +301,11 @@ void test(const BoundaryConditionType& boundary_condition,
         get<hydro::Tags::MagneticField<DataVector, 3>>(volume_prim_vars));
   }
 
+  using Vlo =
+      typename VariableFixing::FixToAtmosphere<3>::VelocityLimitingOptions;
+  const VariableFixing::FixToAtmosphere<3> variable_fixer{
+      1.e-12, 3.e-12, Vlo{0.0, 1.e-4, 3.e-12, 1.e-11}, std::nullopt};
+
   // create a box for test
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<EvolutionMetaVars>,
@@ -317,7 +322,9 @@ void test(const BoundaryConditionType& boundary_condition,
       typename System::spacetime_variables_tag,
       typename System::primitive_variables_tag,
       evolution::dg::subcell::Tags::CellCenteredFlux<
-          typename System::flux_variables, 3>>>(
+          typename System::flux_variables, 3>,
+      ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>,
+      hydro::Tags::GrmhdEquationOfState>>(
       EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
       subcell_mesh, subcell_logical_coords, neighbor_data,
       std::unique_ptr<fd::Reconstructor>{
@@ -330,7 +337,8 @@ void test(const BoundaryConditionType& boundary_condition,
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_spacetime_vars, volume_prim_vars, cell_centered_fluxes);
+      volume_spacetime_vars, volume_prim_vars, cell_centered_fluxes,
+      variable_fixer, solution.equation_of_state().promote_to_3d_eos());
 
   {
     // compute FD ghost data and retrieve the result

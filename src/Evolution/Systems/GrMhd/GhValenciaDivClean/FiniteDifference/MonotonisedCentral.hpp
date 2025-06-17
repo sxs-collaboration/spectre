@@ -80,15 +80,22 @@ class MonotonisedCentralPrim : public Reconstructor<System> {
     static constexpr Options::String help = {
         "What reconstructed states to fix to their atmosphere values."};
   };
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
 
-  using options = tmpl::list<AtmosphereTreatment>;
+  using options =
+      tmpl::list<AtmosphereTreatment, ReconstructRhoTimesTemperature>;
   static constexpr Options::String help{
       "Monotonised central reconstruction scheme using primitive variables and "
       "the metric variables."};
 
-  explicit MonotonisedCentralPrim(
-      ::VariableFixing::FixReconstructedStateToAtmosphere
-          fix_reconstructed_state_to_atmosphere);
+  MonotonisedCentralPrim(::VariableFixing::FixReconstructedStateToAtmosphere
+                             fix_reconstructed_state_to_atmosphere,
+                         bool reconstruct_rho_times_temperature);
 
   MonotonisedCentralPrim() = default;
   MonotonisedCentralPrim(MonotonisedCentralPrim&&) = default;
@@ -148,6 +155,8 @@ class MonotonisedCentralPrim : public Reconstructor<System> {
       const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
       Direction<dim> direction_to_reconstruct) const;
 
+  bool reconstruct_rho_times_temperature() const override;
+
  private:
   template <typename LocalSystem>
   friend bool operator==(const MonotonisedCentralPrim<LocalSystem>& lhs,
@@ -159,5 +168,6 @@ class MonotonisedCentralPrim : public Reconstructor<System> {
   ::VariableFixing::FixReconstructedStateToAtmosphere
       fix_reconstructed_state_to_atmosphere_{
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never};
+  bool reconstruct_rho_times_temperature_{false};
 };
 }  // namespace grmhd::GhValenciaDivClean::fd

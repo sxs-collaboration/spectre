@@ -97,9 +97,16 @@ class Wcns5zPrim : public Reconstructor {
         "reconstruction before switching to a low-order reconstruction. If "
         "FallbackReconstructor=None, this option is ignored"};
   };
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
 
-  using options = tmpl::list<NonlinearWeightExponent, Epsilon,
-                             FallbackReconstructor, MaxNumberOfExtrema>;
+  using options =
+      tmpl::list<NonlinearWeightExponent, Epsilon, FallbackReconstructor,
+                 MaxNumberOfExtrema, ReconstructRhoTimesTemperature>;
 
   static constexpr Options::String help{
       "WCNS 5Z reconstruction scheme using primitive variables."};
@@ -113,7 +120,8 @@ class Wcns5zPrim : public Reconstructor {
 
   Wcns5zPrim(size_t nonlinear_weight_exponent, double epsilon,
              FallbackReconstructorType fallback_reconstructor,
-             size_t max_number_of_extrema);
+             size_t max_number_of_extrema,
+             bool reconstruct_rho_times_temperature);
 
   explicit Wcns5zPrim(CkMigrateMessage* msg);
 
@@ -155,7 +163,9 @@ class Wcns5zPrim : public Reconstructor {
       const DirectionalIdMap<dim, evolution::dg::subcell::GhostData>&
           ghost_data,
       const Mesh<dim>& subcell_mesh,
-      const Direction<dim> direction_to_reconstruct) const;
+      Direction<dim> direction_to_reconstruct) const;
+
+  bool reconstruct_rho_times_temperature() const override;
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -167,6 +177,7 @@ class Wcns5zPrim : public Reconstructor {
   FallbackReconstructorType fallback_reconstructor_ =
       FallbackReconstructorType::None;
   size_t max_number_of_extrema_ = 0;
+  bool reconstruct_rho_times_temperature_{false};
 
   void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        gsl::not_null<std::array<gsl::span<double>, dim>*>,

@@ -257,6 +257,7 @@ SpatialDiscretization:
         Alpha9: None
         LowOrderReconstructor: MonotonisedCentral
         AtmosphereTreatment: Never
+        ReconstructRhoTimesTemperature: true
     FilterOptions:
       SpacetimeDissipation: 0.3
 

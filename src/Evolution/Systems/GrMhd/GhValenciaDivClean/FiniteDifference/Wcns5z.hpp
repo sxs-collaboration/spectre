@@ -113,9 +113,17 @@ class Wcns5zPrim : public Reconstructor<System> {
         "What reconstructed states to fix to their atmosphere values."};
   };
 
+  struct ReconstructRhoTimesTemperature {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If 'true' then we reconstruct the rho*T, if 'false' we reconstruct "
+        "T."};
+  };
+
   using options =
       tmpl::list<NonlinearWeightExponent, Epsilon, FallbackReconstructor,
-                 MaxNumberOfExtrema, AtmosphereTreatment>;
+                 MaxNumberOfExtrema, AtmosphereTreatment,
+                 ReconstructRhoTimesTemperature>;
 
   static constexpr Options::String help{
       "WCNS 5Z reconstruction scheme using primitive variables."};
@@ -131,7 +139,8 @@ class Wcns5zPrim : public Reconstructor<System> {
              FallbackReconstructorType fallback_reconstructor,
              size_t max_number_of_extrema,
              ::VariableFixing::FixReconstructedStateToAtmosphere
-                 fix_reconstructed_state_to_atmosphere);
+                 fix_reconstructed_state_to_atmosphere,
+             bool reconstruct_rho_times_temperature);
 
   explicit Wcns5zPrim(CkMigrateMessage* msg);
 
@@ -182,6 +191,8 @@ class Wcns5zPrim : public Reconstructor<System> {
       const VariableFixing::FixToAtmosphere<dim>& fix_to_atmosphere,
       const Direction<dim>& direction_to_reconstruct) const;
 
+  bool reconstruct_rho_times_temperature() const override;
+
  private:
   template <typename LocalSystem>
   // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -200,6 +211,7 @@ class Wcns5zPrim : public Reconstructor<System> {
   ::VariableFixing::FixReconstructedStateToAtmosphere
       fix_reconstructed_state_to_atmosphere_{
           ::VariableFixing::FixReconstructedStateToAtmosphere::Never};
+  bool reconstruct_rho_times_temperature_{false};
 
   void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        gsl::not_null<std::array<gsl::span<double>, dim>*>,

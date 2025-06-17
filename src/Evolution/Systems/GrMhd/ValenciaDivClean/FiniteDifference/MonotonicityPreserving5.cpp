@@ -30,9 +30,12 @@
 
 namespace grmhd::ValenciaDivClean::fd {
 
-MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(const double alpha,
-                                                         const double epsilon)
-    : alpha_(alpha), epsilon_(epsilon) {}
+MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(
+    const double alpha, const double epsilon,
+    const bool reconstruct_rho_times_temperature)
+    : alpha_(alpha),
+      epsilon_(epsilon),
+      reconstruct_rho_times_temperature_(reconstruct_rho_times_temperature) {}
 
 MonotonicityPreserving5Prim::MonotonicityPreserving5Prim(
     CkMigrateMessage* const msg)
@@ -46,6 +49,7 @@ void MonotonicityPreserving5Prim::pup(PUP::er& p) {
   Reconstructor::pup(p);
   p | alpha_;
   p | epsilon_;
+  p | reconstruct_rho_times_temperature_;
 }
 
 // NOLINTNEXTLINE
@@ -79,7 +83,7 @@ void MonotonicityPreserving5Prim::reconstruct(
             epsilon_);
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
-      ghost_zone_size(), true);
+      ghost_zone_size(), true, reconstruct_rho_times_temperature());
 }
 
 template <size_t ThermodynamicDim>
@@ -121,12 +125,19 @@ void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(
             local_direction_to_reconstruct, alpha_, epsilon_);
       },
       subcell_volume_prims, eos, element, ghost_data, subcell_mesh,
-      direction_to_reconstruct, ghost_zone_size(), true);
+      direction_to_reconstruct, ghost_zone_size(), true,
+      reconstruct_rho_times_temperature());
+}
+
+bool MonotonicityPreserving5Prim::reconstruct_rho_times_temperature() const {
+  return reconstruct_rho_times_temperature_;
 }
 
 bool operator==(const MonotonicityPreserving5Prim& lhs,
                 const MonotonicityPreserving5Prim& rhs) {
-  return lhs.alpha_ == rhs.alpha_ and lhs.epsilon_ == rhs.epsilon_;
+  return lhs.alpha_ == rhs.alpha_ and lhs.epsilon_ == rhs.epsilon_ and
+         lhs.reconstruct_rho_times_temperature() ==
+             rhs.reconstruct_rho_times_temperature();
 }
 
 bool operator!=(const MonotonicityPreserving5Prim& lhs,
