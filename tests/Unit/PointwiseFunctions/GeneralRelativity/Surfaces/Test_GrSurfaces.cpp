@@ -26,11 +26,14 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Expansion1D.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/AreaElement.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Expansion.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/ExtrinsicCurvature.hpp"
@@ -815,6 +818,115 @@ void test_dimensionless_spin_magnitude(
   CHECK_ITERABLE_APPROX(dimensionless_spin_void, expected);
 }
 
+// Testing 1D Expansion calculations for finding horizons
+void test_expansion_1d() {
+  using DerivSpatialMetric =
+      ::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial>;
+
+  // create line of points along x axis
+  const size_t num_points = 10;
+  auto x = make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(
+      DataVector(num_points), 0.0);
+  for (size_t i = 0; i < num_points; ++i) {
+    get<0>(x)[i] = 0.8 + static_cast<double>(i) * 0.2;
+  }
+
+  // Harmonic coords for Schwarzschild BH
+  const double mass_sc = 1.0;
+  const auto solution_sc =
+      gr::Solutions::HarmonicSchwarzschild{mass_sc, {{0.0, 0.0, 0.0}}};
+
+  const auto vars_sc = solution_sc.variables(
+      x, 0.0,
+      tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                 gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+                 DerivSpatialMetric>{});
+
+  {
+    const auto& spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(vars_sc);
+    const auto& extrinsic_curvature =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(vars_sc);
+
+    const auto& deriv_spatial_metric = get<DerivSpatialMetric>(vars_sc);
+
+    const auto result_sc = gh::expansion1D(spatial_metric, deriv_spatial_metric,
+                                           extrinsic_curvature, x);
+    CAPTURE(result_sc);
+    CAPTURE(mass_sc);
+    CAPTURE(x);
+    // To have a horizon, the sign of the expansion should change
+    CHECK(min(result_sc.get()) < 0.0);
+    CHECK(max(result_sc.get()) > 0.0);
+    // In harmonic coordinates, the expansion should be zero at x = M
+    CHECK((result_sc.get()[1] == 0.0 && get<0>(x)[1] == mass_sc));
+  }
+
+  // BH Isotropic coords
+  {
+    const double mass = 2.0;
+    const auto solution = Xcts::Solutions::Schwarzschild(
+        mass, Xcts::Solutions::SchwarzschildCoordinates::Isotropic);
+
+    const auto vars = solution.variables(
+        x, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>,
+                      gr::Tags::ExtrinsicCurvature<DataVector, 3>,
+                      DerivSpatialMetric>{});
+
+    const auto& spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(vars);
+    const auto& extrinsic_curvature =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(vars);
+
+    const auto& deriv_spatial_metric = get<DerivSpatialMetric>(vars);
+
+    const auto result = gh::expansion1D(spatial_metric, deriv_spatial_metric,
+                                        extrinsic_curvature, x);
+    CAPTURE(spatial_metric);
+    CAPTURE(extrinsic_curvature);
+    CAPTURE(x);
+    CAPTURE(result);
+
+    // Need opposite signs for horizon to form
+    CHECK(min(result.get()) < 0.0);
+    CHECK(max(result.get()) > 0.0);
+    // In isotropic coordinates, the expansion should be zero at x = M / 2
+    CHECK((result.get()[1] == 0.0 && get<0>(x)[1] == mass / 2.0));
+  }
+
+  {
+    // Minkowski
+    const double t = 0.0;
+    const gr::Solutions::Minkowski<3> minkowski{};
+    const auto spatial_metric =
+        get<gr::Tags::SpatialMetric<DataVector, 3>>(minkowski.variables(
+            x, t, tmpl::list<gr::Tags::SpatialMetric<DataVector, 3>>{}));
+
+    const auto deriv_spatial_metric =
+        get<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>>(
+            minkowski.variables(
+                x, t,
+                tmpl::list<Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
+                                       tmpl::size_t<3>, Frame::Inertial>>{}));
+
+    const auto extrinsic_curvature =
+        get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(minkowski.variables(
+            x, t, tmpl::list<gr::Tags::ExtrinsicCurvature<DataVector, 3>>{}));
+
+    const auto result = gh::expansion1D(spatial_metric, deriv_spatial_metric,
+                                        extrinsic_curvature, x);
+    CAPTURE(spatial_metric);
+    CAPTURE(extrinsic_curvature);
+    CAPTURE(x);
+    CAPTURE(result);
+
+    // One of these has to be false b/c flat space should not have a horizon
+    CHECK_FALSE((min(result.get()) <= 0.0 && max(result.get()) > 0.0));
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion",
                   "[ApparentHorizonFinder][Unit]") {
   const auto sphere =
@@ -842,6 +954,9 @@ SPECTRE_TEST_CASE("Unit.GrSurfaces.Expansion",
 
   test_expansion(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
                  [](const size_t size) { return DataVector(size, 0.0); });
+
+  // 1D expansion test below
+  test_expansion_1d();
 }
 
 SPECTRE_TEST_CASE("Unit.GrSurfaces.ExtrinsicCurvature",
