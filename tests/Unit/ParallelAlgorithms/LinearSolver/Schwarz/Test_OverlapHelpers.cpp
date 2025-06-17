@@ -3,6 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <complex>
+
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -17,15 +20,19 @@
 
 namespace LinearSolver::Schwarz {
 
-template <size_t Dim>
+using namespace std::complex_literals;
+
+template <typename DataType, size_t Dim>
 void test_data_on_overlap_consistency(const Index<Dim>& volume_extents,
                                       const size_t overlap_extent,
                                       const Direction<Dim>& direction) {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(-1., 1.);
-  const DataVector used_for_size{volume_extents.product()};
-  using tags_list = tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, Dim>,
-                               ::Tags::Tempijj<2, Dim>>;
+  const DataType used_for_size{volume_extents.product()};
+  using tags_list =
+      tmpl::list<::Tags::TempScalar<0, DataType>,
+                 ::Tags::TempI<1, Dim, Frame::Inertial, DataType>,
+                 ::Tags::Tempijj<2, Dim, Frame::Inertial, DataType>>;
   const auto vars = make_with_random_values<Variables<tags_list>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   CAPTURE(vars);
@@ -59,40 +66,39 @@ void test_data_on_overlap_consistency(const Index<Dim>& volume_extents,
   }
 }
 
-template <size_t Dim>
-void test_data_on_overlap(const DataVector& scalar_volume_data,
+template <typename DataType, size_t Dim>
+void test_data_on_overlap(const DataType& scalar_volume_data,
                           const Index<Dim>& volume_extents,
                           const size_t overlap_extent,
                           const Direction<Dim>& direction,
-                          const DataVector& expected_overlap_data,
-                          const DataVector& expected_extended_data) {
+                          const DataType& expected_overlap_data,
+                          const DataType& expected_extended_data) {
   CAPTURE(volume_extents);
   CAPTURE(overlap_extent);
   CAPTURE(direction);
   {
     INFO("Tensor data on overlap");
-    const Scalar<DataVector> scalar{scalar_volume_data};
+    const Scalar<DataType> scalar{scalar_volume_data};
     CHECK_ITERABLE_APPROX(
         get(data_on_overlap(scalar, volume_extents, overlap_extent, direction)),
         expected_overlap_data);
   }
-  Variables<tmpl::list<::Tags::TempScalar<0>>> vars{scalar_volume_data.size()};
-  get(get<::Tags::TempScalar<0>>(vars)) = scalar_volume_data;
+  using tag = ::Tags::TempScalar<0, DataType>;
+  Variables<tmpl::list<tag>> vars{scalar_volume_data.size()};
+  get(get<tag>(vars)) = scalar_volume_data;
   const auto vars_on_overlap =
       data_on_overlap(vars, volume_extents, overlap_extent, direction);
   {
     INFO("Variables data on overlap");
-    CHECK_ITERABLE_APPROX(get(get<::Tags::TempScalar<0>>(vars_on_overlap)),
+    CHECK_ITERABLE_APPROX(get(get<tag>(vars_on_overlap)),
                           expected_overlap_data);
   }
-  Variables<tmpl::list<::Tags::TempScalar<0>>> extended_vars{
-      scalar_volume_data.size(), 0.};
+  Variables<tmpl::list<tag>> extended_vars{scalar_volume_data.size(), 0.};
   add_overlap_data(make_not_null(&extended_vars), vars_on_overlap,
                    volume_extents, overlap_extent, direction);
   {
     INFO("Add overlap data");
-    CHECK_ITERABLE_APPROX(get(get<::Tags::TempScalar<0>>(extended_vars)),
-                          expected_extended_data);
+    CHECK_ITERABLE_APPROX(get(get<tag>(extended_vars)), expected_extended_data);
   }
   {
     INFO("Extended overlap data");
@@ -103,7 +109,8 @@ void test_data_on_overlap(const DataVector& scalar_volume_data,
   }
   {
     INFO("Test consistency with non-scalars");
-    test_data_on_overlap_consistency(volume_extents, overlap_extent, direction);
+    test_data_on_overlap_consistency<DataType>(volume_extents, overlap_extent,
+                                               direction);
   }
 }
 
@@ -263,7 +270,7 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
       INFO("1D");
       const Index<1> volume_extents{3};
       const size_t overlap_extent = 2;
-      DataVector scalar{1., 2., 3.};
+      const DataVector scalar{1., 2., 3.};
       // Overlap region: [X X O] -xi->
       test_data_on_overlap(scalar, volume_extents, overlap_extent,
                            Direction<1>::lower_xi(), {1., 2.}, {1., 2., 0.});
@@ -272,11 +279,25 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
                            Direction<1>::upper_xi(), {2., 3.}, {0., 2., 3.});
     }
     {
+      INFO("1D complex");
+      const Index<1> volume_extents{3};
+      const size_t overlap_extent = 2;
+      const ComplexDataVector scalar{1. + 2.i, 2. + 3.i, 3. + 4.i};
+      // Overlap region: [X X O] -xi->
+      test_data_on_overlap(scalar, volume_extents, overlap_extent,
+                           Direction<1>::lower_xi(), {1. + 2.i, 2. + 3.i},
+                           {1. + 2.i, 2. + 3.i, 0. + 0.i});
+      // Overlap region: [O X X] -xi->
+      test_data_on_overlap(scalar, volume_extents, overlap_extent,
+                           Direction<1>::upper_xi(), {2. + 3.i, 3. + 4.i},
+                           {0. + 0.i, 2. + 3.i, 3. + 4.i});
+    }
+    {
       INFO("2D");
       const Index<2> volume_extents{{{3, 2}}};
       const size_t overlap_extent_xi = 2;
       const size_t overlap_extent_eta = 1;
-      DataVector scalar{1., 2., 3., 4., 5., 6.};
+      const DataVector scalar{1., 2., 3., 4., 5., 6.};
       // Overlap region:
       // + - - - + -xi->
       // | X X O |
@@ -320,8 +341,8 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
       const size_t overlap_extent_xi = 2;
       const size_t overlap_extent_eta = 1;
       const size_t overlap_extent_zeta = 2;
-      DataVector scalar{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
-                        10., 11., 12., 13., 14., 15., 16., 17., 18.};
+      const DataVector scalar{1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
+                              10., 11., 12., 13., 14., 15., 16., 17., 18.};
       test_data_on_overlap(
           scalar, volume_extents, overlap_extent_xi, Direction<3>::lower_xi(),
           {1., 2., 4., 5., 7., 8., 10., 11., 13., 14., 16., 17.},
