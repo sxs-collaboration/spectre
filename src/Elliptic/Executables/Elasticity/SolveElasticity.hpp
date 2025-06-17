@@ -183,6 +183,7 @@ struct Metavariables {
     using projectors = tmpl::push_back<
         typename solver::amr_projectors,
         Elasticity::Actions::InitializeConstitutiveRelation<Dim>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   struct registration

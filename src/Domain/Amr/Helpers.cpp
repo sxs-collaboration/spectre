@@ -98,14 +98,15 @@ ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> ids_of_children(
     const ElementId<VolumeDim>& element_id,
-    const std::array<amr::Flag, VolumeDim>& flags) {
+    const std::array<amr::Flag, VolumeDim>& flags,
+    const std::optional<size_t>& child_grid_index) {
   using ::operator<<;
   ASSERT(alg::count(flags, Flag::Split) > 0,
          "Element " << element_id << " has no children given flags " << flags);
   ASSERT(alg::count(flags, Flag::Join) == 0,
          "Splitting and joining an Element is not supported");
   const size_t block_id = element_id.block_id();
-  const size_t grid_index = element_id.grid_index();
+  const size_t grid_index = child_grid_index.value_or(element_id.grid_index());
   if constexpr (VolumeDim == 1) {
     return {{block_id,
              {{element_id.segment_id(0).id_of_child(Side::Lower)}},
@@ -220,7 +221,8 @@ bool prevent_element_from_joining_while_splitting(
       const std::array<amr::Flag, DIM(data)>& flags);                          \
   template std::vector<ElementId<DIM(data)>> ids_of_children(                  \
       const ElementId<DIM(data)>& element_id,                                  \
-      const std::array<amr::Flag, DIM(data)>& flags);                          \
+      const std::array<amr::Flag, DIM(data)>& flags,                           \
+      const std::optional<size_t>& child_grid_index);                          \
   template std::deque<ElementId<DIM(data)>> ids_of_joining_neighbors(          \
       const Element<DIM(data)>& element,                                       \
       const std::array<Flag, DIM(data)>& flags);                               \

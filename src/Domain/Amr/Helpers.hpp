@@ -10,6 +10,7 @@
 #include <boost/rational.hpp>
 #include <cstddef>
 #include <deque>
+#include <optional>
 #include <vector>
 
 #include "Domain/Amr/Flag.hpp"
@@ -94,7 +95,8 @@ ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
 template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> ids_of_children(
     const ElementId<VolumeDim>& element_id,
-    const std::array<Flag, VolumeDim>& flags);
+    const std::array<Flag, VolumeDim>& flags,
+    const std::optional<size_t>& child_grid_index = std::nullopt);
 
 /// \ingroup AmrGroup
 /// \brief The ElementIds of the neighbors of `element` that will join with it

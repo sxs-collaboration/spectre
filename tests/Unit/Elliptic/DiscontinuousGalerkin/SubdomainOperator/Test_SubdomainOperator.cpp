@@ -425,7 +425,7 @@ struct ElementArray {
                      ::elliptic::dg::Actions::initialize_operator<
                          System, background_tag>,
                      Initialization::Actions::InitializeItems<
-                         ::amr::Initialization::Initialize<Dim>>,
+                         ::amr::Initialization::Initialize<Dim, metavariables>>,
                      ExtraInitActions, Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -487,6 +487,8 @@ struct Metavariables {
   using overlaps_tag =
       LinearSolver::Schwarz::Tags::Overlaps<Tag, volume_dim, DummyOptionsGroup>;
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = ElementArray<Metavariables, System, SubdomainOperator,
+                                       ExtraInitActions>;
     using projectors = tmpl::flatten<tmpl::list<
         ::amr::projectors::DefaultInitialize<tmpl::append<
             tmpl::list<domain::Tags::InitialExtents<volume_dim>,
@@ -513,6 +515,7 @@ struct Metavariables {
         elliptic::dg::Actions::amr_projectors<
             System, typename element_array::background_tag>,
         typename element_array::dg_operator::amr_projectors, ExtraInitActions>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   // NOLINTNEXTLINE(google-runtime-references)

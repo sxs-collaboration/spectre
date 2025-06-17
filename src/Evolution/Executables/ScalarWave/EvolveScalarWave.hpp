@@ -264,7 +264,7 @@ struct EvolutionMetavars {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim>,
-          ::amr::Initialization::Initialize<volume_dim>,
+          ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
@@ -308,7 +308,6 @@ struct EvolutionMetavars {
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
-
     using projectors = tmpl::list<
         Initialization::ProjectTimeStepping<volume_dim>,
         evolution::dg::Initialization::ProjectDomain<volume_dim>,
@@ -332,6 +331,7 @@ struct EvolutionMetavars {
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   struct registration

@@ -271,7 +271,6 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = gh_dg_element_array;
-
     using projectors = tmpl::list<
         Initialization::ProjectTimeStepping<volume_dim>,
         evolution::dg::Initialization::ProjectDomain<volume_dim>,
@@ -296,6 +295,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
             intrp::Tags::InterpPointInfo<EvolutionMetavars>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
+    static constexpr bool keep_coarse_grids = false;
   };
 
   struct registration

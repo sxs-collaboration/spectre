@@ -1,0 +1,63 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: RandomAmrKeepCoarseGrids1D
+Testing:
+  Check: parse;execute
+  Timeout: 10
+  ExpectedExitCode: 2
+  Priority: High
+ExpectedOutput:
+  - Checkpoints/Checkpoint_0000
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+Amr:
+  Criteria:
+    - Random:
+        ProbabilityWeights:
+          Split: 2
+          Join: 1
+          DoNothing: 1
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: [0, 8]
+      NumGridPoints: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: False
+  MaxCoarseLevels: Auto
+  Verbosity: Verbose
+
+DomainCreator:
+  Interval:
+    LowerBound: [-0.5]
+    UpperBound: [6.5]
+    Distribution: [Linear]
+    InitialRefinement: [2]
+    InitialGridPoints: [2]
+    TimeDependence: None
+    IsPeriodicIn: [False]
+
+PhaseChangeAndTriggers:
+  - Trigger:
+      Always
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(UpdateSections)
+      - VisitAndReturn(CheckDomain)
+      - CheckpointAndExitAfterWallclock:
+          WallclockHours: 0.0
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto

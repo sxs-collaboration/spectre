@@ -31,6 +31,7 @@
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -81,6 +82,12 @@ struct Metavariables {
     using factory_classes = tmpl::map<tmpl::pair<
         amr::Criterion, tmpl::list<amr::Criteria::Random,
                                    amr::Criteria::DriveToTarget<volume_dim>>>>;
+  };
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = Component<Metavariables>;
+    using projectors = tmpl::list<>;
+    static constexpr bool keep_coarse_grids = false;
   };
 };
 

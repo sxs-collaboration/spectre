@@ -401,7 +401,7 @@ struct GeneralizedHarmonicTemplateBase {
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<DerivedMetavars, TimeStepperBase>,
           evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
-          ::amr::Initialization::Initialize<volume_dim>,
+          ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>,
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<

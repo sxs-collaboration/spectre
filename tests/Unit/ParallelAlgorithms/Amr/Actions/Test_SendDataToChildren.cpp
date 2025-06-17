@@ -29,6 +29,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Amr/Actions/SendDataToChildren.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
@@ -118,6 +119,12 @@ struct Metavariables {
     using element_registrars =
         tmpl::map<tmpl::pair<Component<Metavariables>,
                              tmpl::list<TestHelpers::amr::RegisterElement>>>;
+  };
+
+  struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
+    using element_array = Component<Metavariables>;
+    using projectors = tmpl::list<>;
+    static constexpr bool keep_coarse_grids = false;
   };
 };
 

@@ -69,16 +69,39 @@ struct MockCreateChild {
       const size_t index_of_child_id,
       const std::unordered_map<Parallel::Phase, size_t>&
           parent_phase_bookmarks) {
-    CHECK(parent_id == ElementId<1>{0, std::array{SegmentId{1, 1}}});
-    if (index_of_child_id == 0) {
-      CHECK(children_ids ==
-            std::vector{ElementId<1>{0, std::array{SegmentId{2, 2}}},
-                        ElementId<1>{0, std::array{SegmentId{2, 3}}}});
+    if constexpr (Metavariables::amr::keep_coarse_grids) {
+      if (parent_id == ElementId<1>{0, std::array{SegmentId{3, 0}}}) {
+        // Element 1 does nothing
+        CHECK(children_ids ==
+              std::vector{ElementId<1>{0, std::array{SegmentId{3, 0}}, 1}});
+      } else if (parent_id == ElementId<1>{0, std::array{SegmentId{3, 1}}}) {
+        // Element 2 does nothing
+        CHECK(children_ids ==
+              std::vector{ElementId<1>{0, std::array{SegmentId{3, 1}}, 1}});
+      } else if (parent_id == ElementId<1>{0, std::array{SegmentId{2, 1}}}) {
+        // Element 3 increases resolution
+        CHECK(children_ids ==
+              std::vector{ElementId<1>{0, std::array{SegmentId{2, 1}}, 1}});
+      } else if (parent_id == ElementId<1>{0, std::array{SegmentId{1, 1}}}) {
+        // Element 4 splits
+        CHECK(children_ids ==
+              std::vector{ElementId<1>{0, std::array{SegmentId{2, 2}}, 1},
+                          ElementId<1>{0, std::array{SegmentId{2, 3}}, 1}});
+      } else {
+        ERROR("Unexpected parent id");
+      }
     } else {
-      CHECK(index_of_child_id == 1);
-      CHECK(children_ids ==
-            std::vector{ElementId<1>{0, std::array{SegmentId{2, 2}}},
-                        ElementId<1>{0, std::array{SegmentId{2, 3}}}});
+      CHECK(parent_id == ElementId<1>{0, std::array{SegmentId{1, 1}}});
+      if (index_of_child_id == 0) {
+        CHECK(children_ids ==
+              std::vector{ElementId<1>{0, std::array{SegmentId{2, 2}}},
+                          ElementId<1>{0, std::array{SegmentId{2, 3}}}});
+      } else {
+        CHECK(index_of_child_id == 1);
+        CHECK(children_ids ==
+              std::vector{ElementId<1>{0, std::array{SegmentId{2, 2}}},
+                          ElementId<1>{0, std::array{SegmentId{2, 3}}}});
+      }
     }
     CHECK(parent_phase_bookmarks.empty());
   }
@@ -120,6 +143,7 @@ struct SingletonComponent {
       tmpl::list<MockCreateChild, MockCreateParent>;
 };
 
+template <bool KeepCoarseGrids>
 struct Metavariables {
   static constexpr size_t volume_dim = 1;
   using component_list = tmpl::list<ArrayComponent<Metavariables>,
@@ -131,9 +155,11 @@ struct Metavariables {
     using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
         Parallel::Tags::GlobalCacheImpl<Metavariables>,
         domain::Tags::NeighborMesh<1>>>;
+    static constexpr bool keep_coarse_grids = KeepCoarseGrids;
   };
 };
 
+template <typename Metavariables>
 void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
                const ElementId<1>& element_id,
                const Element<1>& expected_element, const Mesh<1>& expected_mesh,
@@ -141,6 +167,7 @@ void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
                const amr::Info<1>& expected_info,
                const std::unordered_map<ElementId<1>, amr::Info<1>>&
                    expected_neighbor_info) {
+  CAPTURE(element_id);
   using array_component = ArrayComponent<Metavariables>;
   CHECK(
       ActionTesting::get_databox_tag<array_component, domain::Tags::Element<1>>(
@@ -161,9 +188,11 @@ void check_box(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
   }
 }
 
+template <bool KeepCoarseGrids>
 void test() {
-  using array_component = ArrayComponent<Metavariables>;
-  using singleton_component = SingletonComponent<Metavariables>;
+  using metavariables = Metavariables<KeepCoarseGrids>;
+  using array_component = ArrayComponent<metavariables>;
+  using singleton_component = SingletonComponent<metavariables>;
 
   const OrientationMap<1> aligned = OrientationMap<1>::create_aligned();
 
@@ -215,6 +244,20 @@ void test() {
                               element_3_mesh_post_refinement};
   amr::Info<1> element_4_info{{amr::Flag::Split}, element_4_mesh};
 
+  if constexpr (KeepCoarseGrids) {
+    // Disable coarsening
+    const amr::Policies policies{amr::Isotropy::Anisotropic, amr::Limits{},
+                                 true, false};
+    amr::enforce_policies(make_not_null(&element_1_info.flags), policies,
+                          element_1_id, element_1_mesh);
+    amr::enforce_policies(make_not_null(&element_2_info.flags), policies,
+                          element_2_id, element_2_mesh);
+    amr::enforce_policies(make_not_null(&element_3_info.flags), policies,
+                          element_3_id, element_3_mesh);
+    amr::enforce_policies(make_not_null(&element_4_info.flags), policies,
+                          element_4_id, element_4_mesh);
+  }
+
   std::unordered_map<ElementId<1>, amr::Info<1>> element_1_neighbor_info{
       {element_2_id, element_2_info}};
   std::unordered_map<ElementId<1>, amr::Info<1>> element_2_neighbor_info{
@@ -226,7 +269,7 @@ void test() {
 
   using NeighborMeshes = DirectionalIdMap<1, Mesh<1>>;
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{::Verbosity::Debug}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{::Verbosity::Debug}};
   ActionTesting::emplace_component_and_initialize<array_component>(
       &runner, element_1_id,
       {element_1, element_1_mesh, NeighborMeshes{}, element_1_info,
@@ -258,6 +301,7 @@ void test() {
             runner, 0) == 0);
 
   // This should queue CreateParent on the singleton
+  // If KeepCoarseGrids is true: this should queue CreateChild
   ActionTesting::simple_action<array_component, amr::Actions::AdjustDomain>(
       make_not_null(&runner), element_1_id);
   check_for_empty_queues_on_elements();
@@ -265,38 +309,37 @@ void test() {
             runner, 0) == 1);
 
   // This should do nothing
+  // If KeepCoarseGrids is true: this should queue CreateChild
   ActionTesting::simple_action<array_component, amr::Actions::AdjustDomain>(
       make_not_null(&runner), element_2_id);
   check_for_empty_queues_on_elements();
   CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
-            runner, 0) == 1);
+            runner, 0) == (KeepCoarseGrids ? 2 : 1));
 
   // This should p-refine element_3
+  // If KeepCoarseGrids is true: this should queue CreateChild
   ActionTesting::simple_action<array_component, amr::Actions::AdjustDomain>(
       make_not_null(&runner), element_3_id);
   check_for_empty_queues_on_elements();
   CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
-            runner, 0) == 1);
+            runner, 0) == (KeepCoarseGrids ? 3 : 1));
 
   // This should queue CreateChild on the singleton
   ActionTesting::simple_action<array_component, amr::Actions::AdjustDomain>(
       make_not_null(&runner), element_4_id);
   check_for_empty_queues_on_elements();
   CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
-            runner, 0) == 2);
+            runner, 0) == (KeepCoarseGrids ? 4 : 2));
 
   // This will invoke the queued actions on the singleton calling the mock
   // actions
-  ActionTesting::invoke_queued_simple_action<singleton_component>(
-      make_not_null(&runner), 0);
-  check_for_empty_queues_on_elements();
-  CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
-            runner, 0) == 1);
-  ActionTesting::invoke_queued_simple_action<singleton_component>(
-      make_not_null(&runner), 0);
-  check_for_empty_queues_on_elements();
-  CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
-            runner, 0) == 0);
+  for (size_t i = 0; i < (KeepCoarseGrids ? 4 : 2); ++i) {
+    ActionTesting::invoke_queued_simple_action<singleton_component>(
+        make_not_null(&runner), 0);
+    check_for_empty_queues_on_elements();
+    CHECK(ActionTesting::number_of_queued_simple_actions<singleton_component>(
+              runner, 0) == (KeepCoarseGrids ? 4 : 2) - i - 1);
+  }
 
   check_box(runner, element_1_id, element_1, element_1_mesh, NeighborMeshes{},
             element_1_info, element_1_neighbor_info);
@@ -304,31 +347,38 @@ void test() {
             element_2_info, element_2_neighbor_info);
   check_box(runner, element_4_id, element_4, element_4_mesh, NeighborMeshes{},
             element_4_info, element_4_neighbor_info);
-  const ElementId<1> new_parent_id{
-      ElementId<1>{0, std::array{SegmentId{2, 0}}}};
-  const ElementId<1> new_lower_child_id{
-      ElementId<1>{0, std::array{SegmentId{2, 2}}}};
-  const Element<1> element_3_post_refinement{
-      element_3_id,
-      DirectionMap<1, Neighbors<1>>{
-          {Direction<1>::lower_xi(),
-           Neighbors<1>{std::unordered_set{new_parent_id}, aligned}},
-          {Direction<1>::upper_xi(),
-           Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}}};
-  DirectionalIdMap<1, Mesh<1>> expected_element_3_neighbor_meshes;
-  expected_element_3_neighbor_meshes.emplace(std::pair{
-      DirectionalId{Direction<1>::lower_xi(), new_parent_id}, element_2_mesh});
-  expected_element_3_neighbor_meshes.emplace(
-      std::pair{DirectionalId{Direction<1>::upper_xi(), new_lower_child_id},
-                element_4_mesh});
-  check_box(runner, element_3_id, element_3_post_refinement,
-            element_3_mesh_post_refinement, expected_element_3_neighbor_meshes,
-            {std::array{amr::Flag::Undefined}, element_3_mesh_post_refinement},
-            {});
+  if constexpr (KeepCoarseGrids) {
+    check_box(runner, element_3_id, element_3, element_3_mesh, NeighborMeshes{},
+              element_3_info, element_3_neighbor_info);
+  } else {
+    const ElementId<1> new_parent_id{
+        ElementId<1>{0, std::array{SegmentId{2, 0}}}};
+    const ElementId<1> new_lower_child_id{
+        ElementId<1>{0, std::array{SegmentId{2, 2}}}};
+    const Element<1> element_3_post_refinement{
+        element_3_id,
+        DirectionMap<1, Neighbors<1>>{
+            {Direction<1>::lower_xi(),
+             Neighbors<1>{std::unordered_set{new_parent_id}, aligned}},
+            {Direction<1>::upper_xi(),
+             Neighbors<1>{std::unordered_set{new_lower_child_id}, aligned}}}};
+    DirectionalIdMap<1, Mesh<1>> expected_element_3_neighbor_meshes;
+    expected_element_3_neighbor_meshes.emplace(
+        std::pair{DirectionalId{Direction<1>::lower_xi(), new_parent_id},
+                  element_2_mesh});
+    expected_element_3_neighbor_meshes.emplace(
+        std::pair{DirectionalId{Direction<1>::upper_xi(), new_lower_child_id},
+                  element_4_mesh});
+    check_box(
+        runner, element_3_id, element_3_post_refinement,
+        element_3_mesh_post_refinement, expected_element_3_neighbor_meshes,
+        {std::array{amr::Flag::Undefined}, element_3_mesh_post_refinement}, {});
+  }
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Actions.AdjustDomain",
                   "[Unit][ParallelAlgorithms]") {
-  test();
+  test<false>();
+  test<true>();
 }

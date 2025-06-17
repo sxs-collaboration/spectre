@@ -10,8 +10,13 @@
 #include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Amr/Tags/NeighborFlags.hpp"
+#include "IO/Observer/Tags.hpp"
+#include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace amr::Initialization {
@@ -19,18 +24,34 @@ namespace amr::Initialization {
 /// \brief Initialize items related to adaptive mesh refinement
 ///
 /// \see InitializeItems
-template <size_t Dim>
+template <size_t Dim, typename Metavariables>
 struct Initialize {
+  static_assert(tt::assert_conforms_to_v<typename Metavariables::amr,
+                                         amr::protocols::AmrMetavariables>);
+  using ElementArray = typename Metavariables::amr::element_array;
+
   using const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags = tmpl::list<>;
   using simple_tags_from_options = tmpl::list<>;
 
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<amr::Tags::Info<Dim>>;
-  using simple_tags =
-      tmpl::push_back<return_tags, amr::Tags::NeighborInfo<Dim>>;
+  using simple_tags = tmpl::append<
+      return_tags, tmpl::list<amr::Tags::NeighborInfo<Dim>>,
+      tmpl::conditional_t<
+          Metavariables::amr::keep_coarse_grids,
+          tmpl::list<
+              amr::Tags::ParentId<Dim>, amr::Tags::ChildIds<Dim>,
+              amr::Tags::ParentMesh<Dim>,
+              Parallel::Tags::Section<ElementArray, amr::Tags::GridIndex>,
+              Parallel::Tags::Section<ElementArray, amr::Tags::IsFinestGrid>>,
+          tmpl::list<>>>;
 
-  using compute_tags = tmpl::list<>;
+  using compute_tags = tmpl::conditional_t<
+      Metavariables::amr::keep_coarse_grids,
+      tmpl::list<amr::Tags::GridIndexObservationKeyCompute<Dim>,
+                 amr::Tags::IsFinestGridObservationKeyCompute<Dim>>,
+      tmpl::list<>>;
 
   /// Given the items fetched from a DataBox by the argument_tags, mutate
   /// the items in the DataBox corresponding to return_tags

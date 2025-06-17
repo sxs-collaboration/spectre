@@ -71,6 +71,9 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 
   for (const auto& element_id : element_ids_to_test<Dim>()) {
     CAPTURE(element_id);
+    const ElementId<Dim> new_element_id{element_id.block_id(),
+                                        element_id.segment_ids(),
+                                        element_id.grid_index() + 1};
     for (const auto& direction :
          random_sample(2, Direction<Dim>::all_directions(), generator)) {
       CAPTURE(direction);
@@ -97,7 +100,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                      generator)) {
               CAPTURE(neighbor_info);
               const auto neighbor_ids_and_meshes = new_neighbor_ids(
-                  element_id, direction, neighbors, neighbor_info);
+                  new_element_id, direction, neighbors, neighbor_info);
               std::unordered_set<ElementId<Dim>> new_neighbor_ids;
               for (const auto& [id, mesh] : neighbor_ids_and_meshes) {
                 new_neighbor_ids.insert(id);
@@ -107,8 +110,8 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                   std::move(new_neighbor_ids), neighbors.orientations(),
                   neighbors.are_conforming()};
               CAPTURE(new_neighbors);
-              TestHelpers::domain::check_neighbors(new_neighbors, element_id,
-                                                   direction);
+              TestHelpers::domain::check_neighbors(new_neighbors,
+                                                   new_element_id, direction);
             }
           }
         }
@@ -128,7 +131,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                    generator)) {
             CAPTURE(neighbor_info);
             const auto neighbor_ids_and_meshes = new_neighbor_ids(
-                element_id, direction, neighbors, neighbor_info);
+                new_element_id, direction, neighbors, neighbor_info);
             std::unordered_set<ElementId<Dim>> new_neighbor_ids;
             for (const auto& [id, mesh] : neighbor_ids_and_meshes) {
               new_neighbor_ids.insert(id);
@@ -138,7 +141,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
                 Neighbors<Dim>{new_neighbor_ids, neighbors.orientations(),
                                neighbors.are_conforming()};
             CAPTURE(new_neighbors);
-            TestHelpers::domain::check_neighbors(new_neighbors, element_id,
+            TestHelpers::domain::check_neighbors(new_neighbors, new_element_id,
                                                  direction);
           }
         }

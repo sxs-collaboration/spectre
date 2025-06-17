@@ -14,6 +14,7 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/IsDgElementCollection.hpp"
+#include "Parallel/GetSection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Reduction.hpp"
@@ -44,6 +45,8 @@ struct SendAmrDiagnostics {
       tmpl::list<logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>;
 
   using ReductionData = Parallel::ReductionData<
+      // Grid index
+      Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
       // fraction of Block volume
       Parallel::ReductionDatum<boost::rational<size_t>, funcl::Plus<>>,
       // number of elements
@@ -53,11 +56,11 @@ struct SendAmrDiagnostics {
       // average refinement level by dimension
       Parallel::ReductionDatum<
           std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
-          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<1>>,
+          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<2>>,
       // average number of grid points by dimension
       Parallel::ReductionDatum<
           std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
-          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<1>>>;
+          funcl::ElementWise<funcl::Divides<>>, std::index_sequence<2>>>;
 
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
@@ -89,12 +92,24 @@ struct SendAmrDiagnostics {
         Parallel::printf("%s h-refinement %s, p-refinement %s\n",
                          get_output(element_id), get_output(refinement_levels),
                          get_output(mesh.extents()));
+        if constexpr (Metavariables::amr::keep_coarse_grids) {
+          const auto& parent_id = db::get<amr::Tags::ParentId<Dim>>(box);
+          const auto& child_ids = db::get<amr::Tags::ChildIds<Dim>>(box);
+          Parallel::printf("%s parent %s, children %s\n",
+                           get_output(element_id), get_output(parent_id),
+                           get_output(child_ids));
+        }
       }
+      auto& grid_index_section = Parallel::get_section<
+          ParallelComponent,
+          tmpl::conditional_t<Metavariables::amr::keep_coarse_grids,
+                              amr::Tags::GridIndex, void>>(make_not_null(&box));
       Parallel::contribute_to_reduction<amr::Actions::RunAmrDiagnostics>(
-          ReductionData{amr::fraction_of_block_volume(element_id), 1,
+          ReductionData{element_id.grid_index(),
+                        amr::fraction_of_block_volume(element_id), 1,
                         mesh.number_of_grid_points(), refinement_levels_by_dim,
                         extents_by_dim},
-          my_proxy, target_proxy);
+          my_proxy, target_proxy, make_not_null(&grid_index_section));
     }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

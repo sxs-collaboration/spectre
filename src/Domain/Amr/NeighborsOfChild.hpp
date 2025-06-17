@@ -29,10 +29,22 @@ class Neighbors;
 /// \endcond
 
 namespace amr {
-/// \ingroup AmrGroup
-/// \brief returns the neighbors and their Mesh%es of the Element with ElementId
-/// `child_id`, whose parent Element is `parent` which has Info `parent_info`
-/// and neighbor Info `parent_neighbor_info`
+/*!
+ * \ingroup AmrGroup
+ * \brief Determine the new neighbors of an element during AMR, and the
+ * neighbors' meshes.
+ *
+ * Can be used for both h-refinement and p-refinement.
+ *
+ * \param parent The parent element that is being refined. For h-refinement,
+ * this is the element that is being split into children. For p-refinement,
+ * this is the element that is being increased in resolution.
+ * \param parent_info The AMR info of the parent element.
+ * \param parent_neighbor_info The AMR info of the parent element's neighbors.
+ * \param child_id The ID of the child element that is being created. For
+ * h-refinement, this is the ID of the new child element. For p-refinement,
+ * this is the same as the ID of the parent element.
+ */
 template <size_t VolumeDim>
 std::pair<DirectionMap<VolumeDim, Neighbors<VolumeDim, ElementId<VolumeDim>>>,
           DirectionalIdMap<VolumeDim, Mesh<VolumeDim>>>

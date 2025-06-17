@@ -23,6 +23,7 @@
 #include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Tags/Section.hpp"
 #include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/Amr/Actions/UpdateAmrDecision.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
@@ -31,6 +32,7 @@
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -84,10 +86,20 @@ namespace amr::Actions {
 /// - Sends the (possibly updated) decision to all of the neighboring Elements
 struct EvaluateRefinementCriteria {
   template <typename ParallelComponent, typename DbTagList,
-            typename Metavariables>
+            typename Metavariables, size_t Dim>
   static void apply(db::DataBox<DbTagList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ElementId<Metavariables::volume_dim>& element_id) {
+                    const ElementId<Dim>& element_id) {
+    if constexpr (Metavariables::amr::keep_coarse_grids) {
+      // Only evaluate the criteria on the finest grid. The other elements keep
+      // their flags as Undefined and will therefore be skipped by AdjustDomain.
+      const bool is_finest_grid =
+          db::get<amr::Tags::ChildIds<Dim>>(box).empty();
+      if (not is_finest_grid) {
+        return;
+      }
+    }
+
     constexpr size_t volume_dim = Metavariables::volume_dim;
     auto overall_decision = make_array<volume_dim>(amr::Flag::Undefined);
 

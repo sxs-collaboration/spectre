@@ -47,6 +47,7 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
         previous_neighbors_amr_info) {
   std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>>
       new_neighbors_in_direction;
+  const size_t grid_index = my_id.grid_index();
 
   // Only one neighbor in 1D in a given direction
   if constexpr (VolumeDim == 1) {
@@ -69,7 +70,7 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
                     : previous_segment_id));
     new_neighbors_in_direction.try_emplace(
         {previous_neighbor_id.block_id(),
-         std::array<SegmentId, 1>({{new_segment_id}})},
+         std::array<SegmentId, 1>({{new_segment_id}}), grid_index},
         previous_neighbors_amr_info.at(previous_neighbor_id).new_mesh);
     return new_neighbors_in_direction;
   } else {
@@ -167,8 +168,7 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
             // neighbor; it is assumed they have the same new_mesh
             new_neighbors_in_direction.try_emplace(
                 {previous_neighbor_id.block_id(),
-                 std::array{segment_id_xi, segment_id_eta},
-                 previous_neighbor_id.grid_index()},
+                 std::array{segment_id_xi, segment_id_eta}, grid_index},
                 new_neighbor_mesh);
           } else if constexpr (VolumeDim == 3) {
             for (const auto segment_id_zeta : valid_neighbor_segment_ids[2]) {
@@ -177,7 +177,7 @@ std::unordered_map<ElementId<VolumeDim>, Mesh<VolumeDim>> new_neighbor_ids(
               new_neighbors_in_direction.try_emplace(
                   {previous_neighbor_id.block_id(),
                    std::array{segment_id_xi, segment_id_eta, segment_id_zeta},
-                   previous_neighbor_id.grid_index()},
+                   grid_index},
                   new_neighbor_mesh);
             }
           }

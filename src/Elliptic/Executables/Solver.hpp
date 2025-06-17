@@ -245,7 +245,7 @@ struct Solver {
       typename multigrid::initialize_element,
       typename schwarz_smoother::initialize_element,
       Initialization::Actions::InitializeItems<
-          ::amr::Initialization::Initialize<volume_dim>,
+          ::amr::Initialization::Initialize<volume_dim, Metavariables>,
           elliptic::amr::Actions::Initialize>,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       ::Actions::RandomizeVariables<fields_tag, RandomizeInitialGuess>,
