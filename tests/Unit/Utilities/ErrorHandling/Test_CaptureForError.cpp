@@ -47,6 +47,12 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.CaptureForError",
   CHECK_THROWS_WITH([]() { ERROR("Boom"); }(),
                     not Catch::Matchers::ContainsSubstring("another_int"));
 
+  // Check precision
+  const double high_precision = 1.2345678901234;
+  CAPTURE_FOR_ERROR(high_precision);
+  CHECK_THROWS_WITH([]() { ERROR("Boom"); }(),
+                    Catch::Matchers::ContainsSubstring("234567890123"));
+
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       []() { ASSERT(false, "Boom"); }(),
