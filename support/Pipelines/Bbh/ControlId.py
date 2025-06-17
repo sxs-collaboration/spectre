@@ -351,6 +351,47 @@ def control_id(
         Delta_u = -np.dot(np.linalg.inv(J), F)
         if iteration <= max_delayed_iteration:
             Delta_u[delayed_indices] = 0.0
+
+        # Check if free data updates are valid
+        index = 0
+        for param in control_params:
+            if (
+                param == "DimensionlessSpinA" or param == "DimensionlessSpinB"
+            ) and np.linalg.norm((u + Delta_u)[index : index + 3]) > 1.0:
+                # Solve for alpha in a*alpha^2 + b*alpha + c = 0, which comes
+                # from enforcing ||u + alpha * Delta_u|| = 1 - epsilon
+                epsilon = 1.0e-14
+                a = np.dot(
+                    Delta_u[index : index + 3], Delta_u[index : index + 3]
+                )
+                b = 2.0 * np.dot(
+                    u[index : index + 3], Delta_u[index : index + 3]
+                )
+                c = (
+                    np.dot(u[index : index + 3], u[index : index + 3])
+                    - 1.0
+                    + epsilon
+                )
+                discriminant = b**2 - 4.0 * a * c
+                if discriminant < 0:
+                    logger.warning(
+                        f"Norm of {FreeDataFromParams[param]} ({prev_spin})"
+                        " exceeds 1.0, and there's no valid update that"
+                        " doesn't violate the spin constraint."
+                    )
+                else:
+                    alpha = (-b + np.sqrt(discriminant)) / (2 * a)
+                    prev_spin = np.linalg.norm((u + Delta_u)[index : index + 3])
+                    Delta_u[index : index + 3] *= alpha
+                    new_spin = np.linalg.norm((u + Delta_u)[index : index + 3])
+                    logger.warning(
+                        f"Norm of {FreeDataFromParams[param]} ({prev_spin})"
+                        " exceeded 1.0. Update was scaled down so that the new"
+                        f" norm is {new_spin}."
+                    )
+
+            index += 1 if param in ScalarQuantities else 3
+
         u += Delta_u
 
         # Compute residual and check stopping condition
