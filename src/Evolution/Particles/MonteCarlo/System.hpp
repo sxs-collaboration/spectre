@@ -7,6 +7,7 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
@@ -28,8 +29,12 @@ struct System {
   using flux_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
   // GR tags needed for background metric
-  using spacetime_variables_tag =
-      ::Tags::Variables<gr::tags_for_hydro<volume_dim, DataVector>>;
+  using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, volume_dim>,
+      gr::Tags::SpatialMetric<DataVector, volume_dim>,
+      gr::Tags::InverseSpatialMetric<DataVector, volume_dim>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
+      gh::Tags::Phi<DataVector, volume_dim, Frame::Inertial>>>;
   using flux_spacetime_variables_tag = ::Tags::Variables<tmpl::list<>>;
   // Hydro tags needed for background fluid
   using hydro_variables_tag = ::Tags::Variables<hydro::grmhd_tags<DataVector>>;

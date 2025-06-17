@@ -38,10 +38,10 @@
 #include "Evolution/Particles/MonteCarlo/GhostZoneCommunicationTags.hpp"
 #include "Evolution/Particles/MonteCarlo/MonteCarloOptions.hpp"
 #include "Evolution/Particles/MonteCarlo/NeutrinoMomentsFromMonteCarlo.hpp"
+#include "Evolution/Particles/MonteCarlo/SwapGrTags.hpp"
 #include "Evolution/Particles/MonteCarlo/System.hpp"
 #include "Evolution/Particles/MonteCarlo/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/SwapGrTags.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -76,9 +76,9 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/InitialMagneticField.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/MonteCarlo/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "PointwiseFunctions/Hydro/LowerSpatialFourVelocity.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -211,11 +211,10 @@ struct EvolutionMetavars {
       Initialization::Actions::AddSimpleTags<
           evolution::dg::subcell::BackgroundGrVars<system, EvolutionMetavars,
                                                    true, false>>,
-      Actions::MutateApply<grmhd::ValenciaDivClean::subcell::SwapGrTags>,
+      Actions::MutateApply<Particles::MonteCarlo::SwapGrTags>,
       Initialization::Actions::InitializeMCTags<system, EnergyBins,
-                                                NeutrinoSpecies>,
+                                                NeutrinoSpecies, true>,
       Initialization::Actions::AddComputeTags<tmpl::list<
-          hydro::Tags::LowerSpatialFourVelocityCompute,
           Particles::MonteCarlo::CellLightCrossingTimeCompute,
           Particles::MonteCarlo::InertialFrameEnergyDensityCompute,
           Particles::MonteCarlo::InverseJacobianInertialToFluidCompute,
@@ -229,9 +228,6 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           Parallel::PhaseActions<Parallel::Phase::Register,
-                                 tmpl::list<dg_registration_list,
-                                            Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<Parallel::Phase::Restart,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<

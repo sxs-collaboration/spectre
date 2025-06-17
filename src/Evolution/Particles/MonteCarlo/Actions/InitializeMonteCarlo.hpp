@@ -73,7 +73,8 @@ namespace Initialization::Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename System, size_t EnergyBins, size_t NeutrinoSpecies>
+template <typename System, size_t EnergyBins, size_t NeutrinoSpecies,
+          bool InitializeBackground>
 struct InitializeMCTags {
  public:
   using hydro_variables_tag = typename System::hydro_variables_tag;
@@ -123,26 +124,29 @@ struct InitializeMCTags {
     const tnsr::i<DataVector, dim, Frame::Inertial> zero_tnsr_with_ghost_zones =
         make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(
             zero_dv_with_ghost_zones, 0.0);
-    using derived_classes =
-        tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                 evolution::initial_data::InitialData>;
-    using HydroVars = typename hydro_variables_tag::type;
-    call_with_dynamic_type<void, derived_classes>(
-        &db::get<evolution::initial_data::Tags::InitialData>(box),
-        [&box, &num_grid_points](const auto* const data_or_solution) {
-          static constexpr size_t dim = System::volume_dim;
-          const double initial_time = db::get<::Tags::Time>(box);
-          const auto& inertial_coords = db::get<
-              evolution::dg::subcell::Tags::Coordinates<dim, Frame::Inertial>>(
-              box);
-          // Get hydro variables
-          HydroVars hydro_variables{num_grid_points};
-          hydro_variables.assign_subset(evolution::Initialization::initial_data(
-              *data_or_solution, inertial_coords, initial_time,
-              typename hydro_variables_tag::tags_list{}));
-          Initialization::mutate_assign<tmpl::list<hydro_variables_tag>>(
-              make_not_null(&box), std::move(hydro_variables));
-        });
+    if constexpr (InitializeBackground) {
+      using derived_classes =
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   evolution::initial_data::InitialData>;
+      using HydroVars = typename hydro_variables_tag::type;
+      call_with_dynamic_type<void, derived_classes>(
+          &db::get<evolution::initial_data::Tags::InitialData>(box),
+          [&box, &num_grid_points](const auto* const data_or_solution) {
+            static constexpr size_t dim = System::volume_dim;
+            const double initial_time = db::get<::Tags::Time>(box);
+            const auto& inertial_coords =
+                db::get<evolution::dg::subcell::Tags::Coordinates<
+                    dim, Frame::Inertial>>(box);
+            // Get hydro variables
+            HydroVars hydro_variables{num_grid_points};
+            hydro_variables.assign_subset(
+                evolution::Initialization::initial_data(
+                    *data_or_solution, inertial_coords, initial_time,
+                    typename hydro_variables_tag::tags_list{}));
+            Initialization::mutate_assign<tmpl::list<hydro_variables_tag>>(
+                make_not_null(&box), std::move(hydro_variables));
+          });
+    }
 
     Initialization::mutate_assign<
         tmpl::list<Particles::MonteCarlo::Tags::CouplingTildeTau<DataVector>>>(

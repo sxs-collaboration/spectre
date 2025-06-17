@@ -137,13 +137,9 @@ void TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies>::
   // calculate the coupling to the fluid.
   Scalar<DataVector> cell_proper_four_volume =
       make_with_value<Scalar<DataVector>>(lapse, 0.0);
-  Scalar<DataVector> cell_inertial_three_volume =
-      make_with_value<Scalar<DataVector>>(lapse, 0.0);
   cell_proper_four_volume_finite_difference(
       &cell_proper_four_volume, lapse, sqrt_determinant_spatial_metric,
       time_step, mesh, det_jacobian_logical_to_inertial);
-  cell_inertial_coordinate_three_volume_finite_difference(
-      &cell_inertial_three_volume, mesh, det_jacobian_logical_to_inertial);
 
   Index<3> extents_with_ghost_zone = mesh.extents();
   size_t mesh_size_with_ghost_zones = 1;

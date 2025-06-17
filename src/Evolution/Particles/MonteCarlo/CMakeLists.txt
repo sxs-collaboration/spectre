@@ -18,6 +18,7 @@ spectre_target_sources(
   NeutrinoMomentsFromMonteCarlo.cpp
   Packet.cpp
   Scattering.cpp
+  SwapGrTags.cpp
   TemplatedLocalFunctions.cpp
   )
 
@@ -42,6 +43,7 @@ spectre_target_headers(
   NeutrinoMomentsFromMonteCarlo.hpp
   Packet.hpp
   Scattering.hpp
+  SwapGrTags.hpp
   System.hpp
   Tags.hpp
   TakeTimeStep.tpp
