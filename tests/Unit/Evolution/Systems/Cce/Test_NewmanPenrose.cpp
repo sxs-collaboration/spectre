@@ -22,8 +22,8 @@
 namespace Cce {
 namespace {
 void pypp_test_volume_np_spin_coefficients() {
-  const pypp::SetupLocalPythonEnvironment
-      local_python_env{"Evolution/Systems/Cce/"};
+  const pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/Cce/"};
 
   const size_t num_pts = 5;
 
@@ -64,8 +64,8 @@ void pypp_test_volume_np_spin_coefficients() {
 }
 
 void pypp_test_volume_weyl() {
-  const pypp::SetupLocalPythonEnvironment
-      local_python_env{"Evolution/Systems/Cce/"};
+  const pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/Cce/"};
 
   const size_t num_pts = 5;
 
@@ -79,6 +79,20 @@ void pypp_test_volume_weyl() {
                                     "NewmanPenrose", {"psi2"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 }
+
+void pypp_test_volume_np_bianchi() {
+  const pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/Cce/"};
+
+  const size_t num_pts = 5;
+
+  pypp::check_with_random_values<1>(&bianchi_constraint_d_psi1, "NewmanPenrose",
+                                    {"bianchi_constraint_d_psi1"},
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
+  pypp::check_with_random_values<1>(&bianchi_constraint_d_psi2, "NewmanPenrose",
+                                    {"bianchi_constraint_d_psi2"},
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
+}
 }  // namespace
 
 namespace {
@@ -86,29 +100,29 @@ namespace {
 void test_np_spin_coefficient_compute_tags() {
   using ::TestHelpers::db::test_compute_tag;
 
-  test_compute_tag<Cce::Tags::NewmanPenroseAlphaCompute>(
-      "NewmanPenroseAlpha");
-  test_compute_tag<Cce::Tags::NewmanPenroseBetaCompute>(
-      "NewmanPenroseBeta");
-  test_compute_tag<Cce::Tags::NewmanPenroseGammaCompute>(
-      "NewmanPenroseGamma");
+  test_compute_tag<Cce::Tags::NewmanPenroseAlphaCompute>("NewmanPenroseAlpha");
+  test_compute_tag<Cce::Tags::NewmanPenroseBetaCompute>("NewmanPenroseBeta");
+  test_compute_tag<Cce::Tags::NewmanPenroseGammaCompute>("NewmanPenroseGamma");
   test_compute_tag<Cce::Tags::NewmanPenroseEpsilonCompute>(
       "NewmanPenroseEpsilon");
   // In our choice of tetrad, \kappa=0
-  test_compute_tag<Cce::Tags::NewmanPenroseTauCompute>(
-      "NewmanPenroseTau");
-  test_compute_tag<Cce::Tags::NewmanPenroseSigmaCompute>(
-      "NewmanPenroseSigma");
-  test_compute_tag<Cce::Tags::NewmanPenroseRhoCompute>(
-      "NewmanPenroseRho");
-  test_compute_tag<Cce::Tags::NewmanPenrosePiCompute>(
-      "NewmanPenrosePi");
-  test_compute_tag<Cce::Tags::NewmanPenroseNuCompute>(
-      "NewmanPenroseNu");
-  test_compute_tag<Cce::Tags::NewmanPenroseMuCompute>(
-      "NewmanPenroseMu");
+  test_compute_tag<Cce::Tags::NewmanPenroseTauCompute>("NewmanPenroseTau");
+  test_compute_tag<Cce::Tags::NewmanPenroseSigmaCompute>("NewmanPenroseSigma");
+  test_compute_tag<Cce::Tags::NewmanPenroseRhoCompute>("NewmanPenroseRho");
+  test_compute_tag<Cce::Tags::NewmanPenrosePiCompute>("NewmanPenrosePi");
+  test_compute_tag<Cce::Tags::NewmanPenroseNuCompute>("NewmanPenroseNu");
+  test_compute_tag<Cce::Tags::NewmanPenroseMuCompute>("NewmanPenroseMu");
   test_compute_tag<Cce::Tags::NewmanPenroseLambdaCompute>(
       "NewmanPenroseLambda");
+}
+
+void test_np_bianchi_compute_tags() {
+  using ::TestHelpers::db::test_compute_tag;
+
+  test_compute_tag<Cce::Tags::BianchiConstraintDPsi1Compute>(
+      "BianchiConstraintDPsi1");
+  test_compute_tag<Cce::Tags::BianchiConstraintDPsi2Compute>(
+      "BianchiConstraintDPsi2");
 }
 
 // This unit test is to validate the calculation of the Weyl scalar psi0 on the
@@ -177,6 +191,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.NewmanPenrose", "[Unit][Cce]") {
   pypp_test_volume_np_spin_coefficients();
 
   pypp_test_volume_weyl();
+
+  test_np_bianchi_compute_tags();
+  pypp_test_volume_np_bianchi();
 
   MAKE_GENERATOR(gen);
   compute_psi0_of_bh_on_wt(make_not_null(&gen));

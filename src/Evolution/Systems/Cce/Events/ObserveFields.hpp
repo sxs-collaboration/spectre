@@ -190,6 +190,10 @@ class ObserveFields : public Event {
                  Tags::NewmanPenroseNu,
                  Tags::NewmanPenroseMu,
                  Tags::NewmanPenroseLambda,
+                 Tags::BianchiConstraintDPsi1,
+                 Tags::BianchiConstraintDPsi2,
+                 Tags::NewmanPenroseD<Tags::Psi1>,
+                 Tags::NewmanPenroseD<Tags::Psi2>,
                  Tags::EthRDividedByR,
                  Tags::DuRDividedByR>>;
   // clang-format on
@@ -250,8 +254,18 @@ class ObserveFields : public Event {
                                   Spectral::Swsh::Tags::Eth>,
       Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
                                   Spectral::Swsh::Tags::Ethbar>,
+      Tags::SwshDerivativeCompute<Tags::Psi0, Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::Psi0, Spectral::Swsh::Tags::Ethbar>,
+      Tags::SwshDerivativeCompute<Tags::Psi1, Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::Psi1, Spectral::Swsh::Tags::Ethbar>,
       Tags::DyCompute<Tags::NewmanPenrosePi>,
-      Tags::DyCompute<Tags::NewmanPenroseMu>>;
+      Tags::DyCompute<Tags::NewmanPenroseMu>, Tags::DyCompute<Tags::Psi0>,
+      Tags::DyCompute<Tags::Psi1>, Tags::DyCompute<Tags::Psi2>,
+      Tags::NewmanPenroseDCompute<Tags::Psi1>,
+      Tags::NewmanPenroseDeltaBarCompute<Tags::Psi0>,
+      Tags::NewmanPenroseDCompute<Tags::Psi2>,
+      Tags::NewmanPenroseDeltaBarCompute<Tags::Psi1>,
+      Tags::BianchiConstraintDPsi1Compute, Tags::BianchiConstraintDPsi2Compute>;
 
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;

@@ -39,8 +39,7 @@ namespace Tags {
  * y derivative.
  */
 template <typename Tag>
-struct DyCompute
-    : Dy<Tag>, db::ComputeTag {
+struct DyCompute : Dy<Tag>, db::ComputeTag {
   using base = Dy<Tag>;
   using return_type = typename base::type;
 
@@ -67,6 +66,98 @@ struct DyCompute
         // 2 for differentiating in y; coordinate ordering is:
         // {\phi, \theta, y}.
         2);
+  }
+};
+
+/*!
+ * \brief Compute tag for a manually-handled Newman Penrose D derivative in the
+ * volume.
+ * D<J>
+ */
+template <typename Tag>
+struct NewmanPenroseDCompute : NewmanPenroseD<Tag>, db::ComputeTag {
+  using base = NewmanPenroseD<Tag>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<Tags::Dy<Tag>, Tags::BondiR, Tags::OneMinusY>;
+
+  static auto function(
+      const gsl::not_null<
+          Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>*>
+          np_D_val,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
+          dy_val,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+    get(*np_D_val) =
+        get(dy_val) * square(get(one_minus_y)) / (2 * sqrt(2.) * get(bondi_r));
+  }
+};
+
+/*!
+ * \brief Compute tag for a manually-handled Newman Penrose delta derivative in
+the
+ * volume.
+ *
+ */
+template <typename Tag>
+struct NewmanPenroseDeltaCompute : NewmanPenroseDelta<Tag>, db::ComputeTag {
+  using base = NewmanPenroseDelta<Tag>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<
+      Spectral::Swsh::Tags::Derivative<Tag, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tag, Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiJ, Tags::BondiK, Tags::BondiR, Tags::OneMinusY>;
+
+  static auto function(
+      const gsl::not_null<
+          Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin + 1>>*>
+          np_delta_val,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin + 1>>&
+          eth_val,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin - 1>>&
+          ethbar_val,
+      const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+    const auto sqrt_one_plus_k = sqrt(1. + get(bondi_k));
+    const auto prefactor = get(one_minus_y) / (2 * sqrt(2.) * get(bondi_r));
+    get(*np_delta_val) =
+        -prefactor *
+        (get(eth_val) * sqrt_one_plus_k / sqrt(2.) -
+         get(ethbar_val) * get(bondi_j) / sqrt_one_plus_k / sqrt(2.));
+  }
+};
+
+template <typename Tag>
+struct NewmanPenroseDeltaBarCompute : NewmanPenroseDeltaBar<Tag>,
+                                      db::ComputeTag {
+  using base = NewmanPenroseDelta<Tag>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<
+      Spectral::Swsh::Tags::Derivative<Tag, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tag, Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiJ, Tags::BondiK, Tags::BondiR, Tags::OneMinusY>;
+
+  static auto function(
+      const gsl::not_null<
+          Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin - 1>>*>
+          np_deltabar_val,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin + 1>>&
+          eth_val,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin - 1>>&
+          ethbar_val,
+      const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) {
+    const auto sqrt_one_plus_k = sqrt(1. + get(bondi_k));
+    const auto prefactor = get(one_minus_y) / (2 * sqrt(2.) * get(bondi_r));
+    get(*np_deltabar_val) =
+        -prefactor *
+        (get(ethbar_val) * sqrt_one_plus_k / sqrt(2.) -
+         get(eth_val) * conj(get(bondi_j)) / sqrt_one_plus_k / sqrt(2.));
   }
 };
 

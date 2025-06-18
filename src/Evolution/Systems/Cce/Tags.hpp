@@ -163,6 +163,29 @@ struct Du : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
+/// Newman-Penrose D directional derivative,
+template <typename Tag>
+struct NewmanPenroseD : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+};
+
+/// Newman-Penrose delta directional derivative,
+template <typename Tag>
+struct NewmanPenroseDelta : db::PrefixTag, db::SimpleTag {
+  using type =
+      Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin + 1>>;
+  using tag = Tag;
+};
+
+/// Newman-Penrose delta bar directional derivative,
+template <typename Tag>
+struct NewmanPenroseDeltaBar : db::PrefixTag, db::SimpleTag {
+  using type =
+      Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin - 1>>;
+  using tag = Tag;
+};
+
 /// The spin-weight 2 angular Jacobian factor in the partially flat Bondi-like
 /// coordinates, see Eq. (31a) of \cite Moxon2020gha
 struct PartiallyFlatGaugeC : db::SimpleTag {
@@ -483,6 +506,16 @@ struct Psi3 : db::SimpleTag {
 /// The Weyl scalar \f$\Psi_4\f$
 struct Psi4 : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, -2>>;
+};
+
+/// First NP Bianchi constraint violation \f$ D\Psi_1\f$ - ...
+struct BianchiConstraintDPsi1 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
+};
+
+/// Second NP Bianchi constraint violation \f$ D\Psi_2\f$ - ...
+struct BianchiConstraintDPsi2 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
 };
 
 /// The gravitational wave strain \f$h\f$

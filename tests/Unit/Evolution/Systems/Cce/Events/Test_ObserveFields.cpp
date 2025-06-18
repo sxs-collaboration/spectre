@@ -64,8 +64,7 @@ struct MockWriteVolumeData {
     } else if (subfile_path.find("OneMinusY") != std::string::npos) {
       CHECK(data_v.size() == num_radial_grid_points);
     } else {
-      CHECK(data_v.size() ==
-            2 * l_plus_one_squared * num_radial_grid_points);
+      CHECK(data_v.size() == 2 * l_plus_one_squared * num_radial_grid_points);
     }
   }
 };
@@ -96,7 +95,7 @@ void check_h5_file(const std::string& filename_prefix) {
 
     const TensorComponent one_minus_y_component =
         one_minus_y_volume_data.get_tensor_component(observation_id,
-                                           "OneMinusY");
+                                                     "OneMinusY");
 
     const DataVector one_minus_y =
         std::get<DataVector>(one_minus_y_component.data);
@@ -112,8 +111,7 @@ void check_h5_file(const std::string& filename_prefix) {
     const TensorComponent J_component =
         volume_data.get_tensor_component(observation_id, "J");
 
-    const DataVector J_interleaved =
-        std::get<DataVector>(J_component.data);
+    const DataVector J_interleaved = std::get<DataVector>(J_component.data);
     CHECK(J_interleaved.size() ==
           2 * l_plus_one_squared * num_radial_grid_points);
     h5_file.close_current_object();
@@ -129,8 +127,7 @@ struct MockObserverWriter {
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  tmpl::list<observers::Tags::H5FileLock>>>>>;
-  using const_global_cache_tags =
-      tmpl::list<observers::Tags::VolumeFileName>;
+  using const_global_cache_tags = tmpl::list<observers::Tags::VolumeFileName>;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
 
   using replace_these_threaded_actions =
@@ -147,17 +144,17 @@ struct MockElement {
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
           tmpl::list_difference<
-            ObserveFields::available_tags_to_observe,
-            tmpl::list<
-              Tags::Psi0, Tags::Psi1, Tags::Psi2,
-              Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
-              Tags::NewmanPenroseGamma, Tags::NewmanPenroseEpsilon,
-              // Tags::NewmanPenroseKappa, // in our tetrad, \kappa=0
-              Tags::NewmanPenroseTau, Tags::NewmanPenroseSigma,
-              Tags::NewmanPenroseRho,
-              Tags::NewmanPenrosePi, Tags::NewmanPenroseNu,
-              Tags::NewmanPenroseMu, Tags::NewmanPenroseLambda
-              >>,
+              ObserveFields::available_tags_to_observe,
+              tmpl::list<Tags::Psi0, Tags::Psi1, Tags::Psi2,
+                         Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
+                         Tags::NewmanPenroseGamma, Tags::NewmanPenroseEpsilon,
+                         // Tags::NewmanPenroseKappa, // in our tetrad, \kappa=0
+                         Tags::NewmanPenroseTau, Tags::NewmanPenroseSigma,
+                         Tags::NewmanPenroseRho, Tags::NewmanPenrosePi,
+                         Tags::NewmanPenroseNu, Tags::NewmanPenroseMu,
+                         Tags::NewmanPenroseLambda,
+                         Tags::BianchiConstraintDPsi1,
+                         Tags::BianchiConstraintDPsi2>>,
           Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                            Spectral::Swsh::Tags::Eth>,
           Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
@@ -168,8 +165,7 @@ struct MockElement {
                                            Spectral::Swsh::Tags::Ethbar>,
           Spectral::Swsh::Tags::Derivative<Tags::BondiU,
                                            Spectral::Swsh::Tags::Eth>,
-          Tags::Exp2Beta,
-          Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
+          Tags::Exp2Beta, Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
           ::Tags::Time>>>>>;
 };
 
@@ -186,8 +182,8 @@ void test(const bool write_synchronously) {
   using element = MockElement<metavars>;
 
   const std::vector<std::string> observe_field_names{
-    "InertialRetardedTime", "J", "Psi0", "Psi1", "Psi2", "Dy(H)", "OneMinusY",
-    "NewmanPenroseAlpha"};
+      "InertialRetardedTime", "J", "Psi0", "Psi1", "Psi2", "Dy(H)", "OneMinusY",
+      "NewmanPenroseAlpha"};
   const std::string subgroup_name{"CceVolumeData"};
   const Cce::Events::ObserveFields fields{subgroup_name, observe_field_names};
   const Cce::Events::ObserveFields serialized_fields =
@@ -242,27 +238,23 @@ void test(const bool write_synchronously) {
   set_number(::Tags::Time{}, time);
   size_data(Tags::ComplexInertialRetardedTime{}, num_angular_grid_points);
 
-  tmpl::for_each<
-      tmpl::list<Tags::BondiJ, Tags::OneMinusY,
-                 Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
-                 Tags::BondiK, Tags::BondiQ, Tags::Dy<Tags::BondiQ>,
-                 Tags::EthRDividedByR,
-                 Tags::BondiBeta, Tags::Dy<Tags::BondiBeta>,
-                 Tags::BondiH, Tags::Dy<Tags::BondiH>,
-                 Tags::BondiU, Tags::Dy<Tags::BondiU>,
-                 Tags::BondiW, Tags::Dy<Tags::BondiW>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Tags::Exp2Beta,
-                 Tags::BondiR>>([&size_data](auto tag_v) {
+  tmpl::for_each<tmpl::list<
+      Tags::BondiJ, Tags::OneMinusY, Tags::Dy<Tags::BondiJ>,
+      Tags::Dy<Tags::Dy<Tags::BondiJ>>, Tags::BondiK, Tags::BondiQ,
+      Tags::Dy<Tags::BondiQ>, Tags::EthRDividedByR, Tags::BondiBeta,
+      Tags::Dy<Tags::BondiBeta>, Tags::BondiH, Tags::Dy<Tags::BondiH>,
+      Tags::BondiU, Tags::Dy<Tags::BondiU>, Tags::BondiW,
+      Tags::Dy<Tags::BondiW>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU, Spectral::Swsh::Tags::Eth>,
+      Tags::Exp2Beta, Tags::BondiR>>([&size_data](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     size_data(tag{}, num_volume_grid_points);
   });
@@ -285,14 +277,16 @@ void test(const bool write_synchronously) {
 }
 
 void test_errors() {
-  CHECK_THROWS_WITH((Cce::Events::ObserveFields{"CceVolumeData",
-        std::vector<std::string>{"Unique", "Duplicate", "Duplicate"}}),
-                    Catch::Matchers::ContainsSubstring(
-                        "more than once in list of variables to observe"));
+  CHECK_THROWS_WITH(
+      (Cce::Events::ObserveFields{
+          "CceVolumeData",
+          std::vector<std::string>{"Unique", "Duplicate", "Duplicate"}}),
+      Catch::Matchers::ContainsSubstring(
+          "more than once in list of variables to observe"));
 
   CHECK_THROWS_WITH(
       (Cce::Events::ObserveFields{"CceVolumeData",
-         std::vector<std::string>{"MisspelledTag"}}),
+                                  std::vector<std::string>{"MisspelledTag"}}),
       Catch::Matchers::ContainsSubstring(
           "MisspelledTag is not an available variable. Available variables:"));
 }

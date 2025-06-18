@@ -326,6 +326,38 @@ void weyl_psi2_impl(
            (conj(np_alpha) - np_beta - conj(np_pi)) * np_pi -
            np_sigma * np_lambda;
 }
+
+// Definition of the NP derivatives terms in the Bianchi identities
+
+void bianchi_constraint_d_psi1_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 1>*> constraint_d_psi1,
+    const SpinWeighted<ComplexDataVector, -1>& np_alpha,
+    const SpinWeighted<ComplexDataVector, 0>& np_epsilon,
+    const SpinWeighted<ComplexDataVector, 0>& np_rho,
+    const SpinWeighted<ComplexDataVector, -1>& np_pi,
+    const SpinWeighted<ComplexDataVector, 2>& psi_0,
+    const SpinWeighted<ComplexDataVector, 1>& psi_1,
+    const SpinWeighted<ComplexDataVector, 1>& np_d_psi_1,
+    const SpinWeighted<ComplexDataVector, 1>& np_deltabar_psi_0) {
+  *constraint_d_psi1 = np_d_psi_1 - np_deltabar_psi_0 +
+                       (4 * np_alpha - np_pi) * psi_0 -
+                       2 * (2 * np_rho + np_epsilon) * psi_1;
+}
+
+void bianchi_constraint_d_psi2_impl(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*> constraint_d_psi2,
+    const SpinWeighted<ComplexDataVector, -1>& np_alpha,
+    const SpinWeighted<ComplexDataVector, -2>& np_lambda,
+    const SpinWeighted<ComplexDataVector, 0>& np_rho,
+    const SpinWeighted<ComplexDataVector, -1>& np_pi,
+    const SpinWeighted<ComplexDataVector, 2>& psi_0,
+    const SpinWeighted<ComplexDataVector, 1>& psi_1,
+    const SpinWeighted<ComplexDataVector, 0>& psi_2,
+    const SpinWeighted<ComplexDataVector, 0>& np_d_psi_2,
+    const SpinWeighted<ComplexDataVector, 0>& np_deltabar_psi_1) {
+  *constraint_d_psi2 = np_d_psi_2 + np_lambda * psi_0 - np_deltabar_psi_1 -
+                       2 * (np_pi - np_alpha) * psi_1 - 3 * np_rho * psi_2;
+}
 }  // namespace
 
 void newman_penrose_alpha(
@@ -486,6 +518,41 @@ void newman_penrose_lambda(
                              get(bondi_h), get(bondi_r), get(bondi_u),
                              get(eth_u), get(ethbar_u), get(bondi_w),
                              get(exp_2_beta), get(one_minus_y));
+}
+
+void bianchi_constraint_d_psi1(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        constraint_d_psi1,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_epsilon,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& np_d_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& np_deltabar_psi_0) {
+  bianchi_constraint_d_psi1_impl(make_not_null(&get(*constraint_d_psi1)),
+                                 get(np_alpha), get(np_epsilon), get(np_rho),
+                                 get(np_pi), get(psi_0), get(psi_1),
+                                 get(np_d_psi_1), get(np_deltabar_psi_0));
+}
+
+void bianchi_constraint_d_psi2(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        constraint_d_psi2,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, -2>>& np_lambda,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_d_psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_deltabar_psi_1) {
+  bianchi_constraint_d_psi2_impl(make_not_null(&get(*constraint_d_psi2)),
+                                 get(np_alpha), get(np_lambda), get(np_rho),
+                                 get(np_pi), get(psi_0), get(psi_1), get(psi_2),
+                                 get(np_d_psi_2), get(np_deltabar_psi_1));
 }
 
 void VolumeWeyl<Tags::Psi0>::apply(

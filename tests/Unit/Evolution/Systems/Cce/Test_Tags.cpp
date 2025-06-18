@@ -110,10 +110,21 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonPsi>("KGPsi");
   TestHelpers::db::test_simple_tag<Cce::Tags::KleinGordonPi>("KGPi");
 
+  TestHelpers::db::test_simple_tag<Cce::Tags::BianchiConstraintDPsi1>(
+      "BianchiConstraintDPsi1");
+  TestHelpers::db::test_simple_tag<Cce::Tags::BianchiConstraintDPsi2>(
+      "BianchiConstraintDPsi2");
+
   TestHelpers::db::test_prefix_tag<::Tags::dt<Cce::Tags::BondiJ>>("H");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dy<SomeTag>>("Dy(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Du<SomeTag>>("Du(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dr<SomeTag>>("Dr(SomeTag)");
+  TestHelpers::db::test_prefix_tag<Cce::Tags::NewmanPenroseD<SomeTag>>(
+      "NewmanPenroseD(SomeTag)");
+  TestHelpers::db::test_prefix_tag<Cce::Tags::NewmanPenroseDelta<SomeTag>>(
+      "NewmanPenroseDelta(SomeTag)");
+  TestHelpers::db::test_prefix_tag<Cce::Tags::NewmanPenroseDeltaBar<SomeTag>>(
+      "NewmanPenroseDeltaBar(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dlambda<SomeTag>>(
       "Dlambda(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Integrand<SomeTag>>(

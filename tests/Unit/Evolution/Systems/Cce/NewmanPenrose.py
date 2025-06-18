@@ -362,3 +362,41 @@ def psi2(
         + (np.conj(np_alpha) - np_beta - np.conj(np_pi)) * np_pi
         - np_sigma * np_lambda
     )
+
+
+def bianchi_constraint_d_psi1(
+    np_alpha,
+    np_epsilon,
+    np_rho,
+    np_pi,
+    psi_0,
+    psi_1,
+    np_d_psi_1,
+    np_deltabar_psi_0,
+):
+    return (
+        np_d_psi_1
+        - np_deltabar_psi_0
+        + (4 * np_alpha - np_pi) * psi_0
+        - 2 * (2 * np_rho + np_epsilon) * psi_1
+    )
+
+
+def bianchi_constraint_d_psi2(
+    np_alpha,
+    np_lambda,
+    np_rho,
+    np_pi,
+    psi_0,
+    psi_1,
+    psi_2,
+    np_d_psi_2,
+    np_deltabar_psi_1,
+):
+    return (
+        np_d_psi_2
+        + np_lambda * psi_0
+        - np_deltabar_psi_1
+        - 2 * (np_pi - np_alpha) * psi_1
+        - 3 * np_rho * psi_2
+    )

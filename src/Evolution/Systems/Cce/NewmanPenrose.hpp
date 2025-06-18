@@ -1047,4 +1047,108 @@ struct InnerBoundaryWeyl {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_beta_cauchy,
       const size_t l_max);
 };
+
+/*!
+ * \brief Compute the first NP Bianchi identity violation:
+ *
+ * \begin{align}
+ *      D\Psi_1 - \bar{\delta}\Psi_0 + (4\alpha - \pi)\Psi_0 -
+ *      2(2\rho + \epsilon)\Psi_1 = 0
+ * \end{align}
+ *
+ * \details The Bianchi identity violation has spin weight 1.
+ */
+void bianchi_constraint_d_psi1(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        constraint_d_psi1,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_epsilon,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& np_d_psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& np_deltabar_psi_0);
+
+/*!
+ * \brief Compute the second NP Bianchi identity violation:
+ *
+ * \begin{align}
+ *      D\Psi_2 + \lambda\Psi_0 - \bar{\delta}\Psi_1 -
+ *      2(\pi - \alpha)\Psi_1 - 3\rho\Psi_2 = 0
+ * \end{align}
+ *
+ * \details The Bianchi identity violation has spin weight 0.
+ */
+void bianchi_constraint_d_psi2(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        constraint_d_psi2,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+    const Scalar<SpinWeighted<ComplexDataVector, -2>>& np_lambda,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
+    const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& psi_0,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& psi_1,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_d_psi_2,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_deltabar_psi_1);
+
+namespace Tags {
+/*!
+ * \brief Compute tag for first NP Bianchi identity violation in the volume.
+ *
+ * \details See documentation of `bianchi_constraint_d_psi1()` for definition.
+ */
+struct BianchiConstraintDPsi1Compute : Tags::BianchiConstraintDPsi1,
+                                       db::ComputeTag {
+  using base = Tags::BianchiConstraintDPsi1;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<Tags::NewmanPenroseAlpha, Tags::NewmanPenroseEpsilon,
+                 Tags::NewmanPenroseRho, Tags::NewmanPenrosePi, Tags::Psi0,
+                 Tags::Psi1, NewmanPenroseD<Tags::Psi1>,
+                 NewmanPenroseDeltaBar<Tags::Psi0>>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>&)>(
+      &bianchi_constraint_d_psi1);
+};
+
+/*!
+ * \brief Compute tag for second NP Bianchi identity violation in the volume.
+ *
+ * \details See documentation of `bianchi_constraint_d_psi2()` for definition.
+ */
+struct BianchiConstraintDPsi2Compute : Tags::BianchiConstraintDPsi2,
+                                       db::ComputeTag {
+  using base = Tags::BianchiConstraintDPsi2;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<Tags::NewmanPenroseAlpha, Tags::NewmanPenroseLambda,
+                 Tags::NewmanPenroseRho, Tags::NewmanPenrosePi, Tags::Psi0,
+                 Tags::Psi1, Tags::Psi2, NewmanPenroseD<Tags::Psi2>,
+                 NewmanPenroseDeltaBar<Tags::Psi1>>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
+      &bianchi_constraint_d_psi2);
+};
+}  // namespace Tags
 }  // namespace Cce
