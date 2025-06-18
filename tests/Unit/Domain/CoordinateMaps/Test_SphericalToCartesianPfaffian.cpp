@@ -43,6 +43,21 @@ void test_map(const CoordinateMaps::SphericalToCartesianPfaffian& map) {
   const std::array<double, 3> source_south_pole{{0.25, M_PI, 0.0}};
   const std::array<double, 3> target_south_pole{{0.0, 0.0, -0.25}};
   test_map_at_point(map, source_south_pole, target_south_pole);
+  test_map_at_point(map, {{0.0, M_PI_2, 0.0}}, {{0.0, 0.0, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, 0.0}}, {{1.0, 0.0, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, M_PI_4}},
+                    {{M_SQRT1_2, M_SQRT1_2, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, M_PI_2}}, {{0.0, 1.0, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, 3.0 * M_PI_4}},
+                    {{-M_SQRT1_2, M_SQRT1_2, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, M_PI}}, {{-1.0, 0.0, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, 5.0 * M_PI_4}},
+                    {{-M_SQRT1_2, -M_SQRT1_2, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, 3.0 * M_PI_2}}, {{0.0, -1.0, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, 7.0 * M_PI_4}},
+                    {{M_SQRT1_2, -M_SQRT1_2, 0.0}});
+  test_map_at_point(map, {{1.0, M_PI_2, M_PI}},
+                    {{-1.0, std::copysign(0.0, -1.0), 0.0}});
   const Mesh<3> mesh{
       {5, 3, 5},
       {Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,

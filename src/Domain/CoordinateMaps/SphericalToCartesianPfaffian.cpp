@@ -45,8 +45,8 @@ std::optional<std::array<double, 3>> SphericalToCartesianPfaffian::inverse(
     }
   } else {
     const double r = std::hypot(x, y, z);
-    return std::array{r, acos(z / r),
-                      x > 0.0 ? atan2(y, x) : atan2(y, x) + 2.0 * M_PI};
+    const double phi = atan2(y, x);
+    return std::array{r, acos(z / r), phi < 0.0 ? phi + 2.0 * M_PI : phi};
   }
 }
 
