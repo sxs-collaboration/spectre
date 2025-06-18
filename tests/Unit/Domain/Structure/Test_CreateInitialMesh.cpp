@@ -92,8 +92,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
       CHECK(create_initial_mesh({{{3, 4}}}, disk, element_id_2d,
                                 legendre_quadrature) ==
             Mesh<2>{{{3, 4}},
-                    std::array{Spectral::Basis::B2Marcus,
-                               Spectral::Basis::B2Marcus},
+                    std::array{Spectral::Basis::ZernikeB2,
+                               Spectral::Basis::ZernikeB2},
                     std::array{Spectral::Quadrature::GaussRadauUpper,
                                Spectral::Quadrature::Equiangular}});
     }
@@ -123,13 +123,13 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
          {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
       CHECK(create_initial_mesh({{{3, 2, 4}}}, full_cylinder, element_id_3d,
                                 legendre_quadrature) ==
-            Mesh<3>{
-                {{3, 2, 4}},
-                std::array{Spectral::Basis::B2Marcus, Spectral::Basis::B2Marcus,
-                           Spectral::Basis::Legendre},
-                std::array{Spectral::Quadrature::GaussRadauUpper,
-                           Spectral::Quadrature::Equiangular,
-                           legendre_quadrature}});
+            Mesh<3>{{{3, 2, 4}},
+                    std::array{Spectral::Basis::ZernikeB2,
+                               Spectral::Basis::ZernikeB2,
+                               Spectral::Basis::Legendre},
+                    std::array{Spectral::Quadrature::GaussRadauUpper,
+                               Spectral::Quadrature::Equiangular,
+                               legendre_quadrature}});
     }
   }
 #ifdef SPECTRE_DEBUG

@@ -27,16 +27,14 @@ constexpr uint8_t basis_shift = 4;
  * Galerkin (DG) method, or the value `FiniteDifference` when a finite
  * difference method is used
  *
- * \details The particular choices of Basis and Quadrature determine
- * where the collocation points of a Mesh are located in an Element.
- * For a spectral or DG method, the Basis also represents the choice
- * of basis functions used to represent a function on an Element,
- * which then provides a convenient choice for the operators used for
- * differentiation, interpolation, etc.  For a finite difference
- * method, one needs to choose the order of the scheme (and hence the
- * weights, differentiation matrix, integration weights, and
- * interpolant) locally in space and time to handle discontinuous
- * solutions.
+ * \details The particular choices of Basis and Quadrature determine where the
+ * collocation points of a Mesh are located in an Element. For a spectral or DG
+ * method, the Basis also represents the choice of basis functions used to
+ * represent a function on an Element, which then provides a convenient choice
+ * for the operators used for differentiation, interpolation, etc.  For a finite
+ * difference method, one needs to choose the order of the scheme (and hence the
+ * weights, differentiation matrix, integration weights, and interpolant)
+ * locally in space and time to handle discontinuous solutions.
  *
  * \note Choose `Legendre` for a general-purpose spectral or DG mesh, unless
  * you have a particular reason for choosing `Chebyshev`.
@@ -47,20 +45,30 @@ constexpr uint8_t basis_shift = 4;
  *
  * \note Choose two consecutive dimensions to have `SphericalHarmonic` to choose
  * a spherical harmonic basis.  By convention, the first dimension represents
- * the polar/zentith angle (or colatitude), while the second dimension
- * represents the azimuthal angle (or longitude).  A Mesh with this Basis cannot
- * be split by h-refinement in these dimensions.
+ * the polar/zenith angle (or colatitude), while the second dimension represents
+ * the azimuthal angle (or longitude).  A Mesh with this Basis cannot be split
+ * by h-refinement in these dimensions.
  *
- * \note Choose two consecutive dimensions to have `B2Marcus` to choose
+ * \note Choose two consecutive dimensions to have `ZernikeB2` to choose
  * a basis used on a disk or cross-section of a cylinder.  By convention, the
  * first dimension represents the radial direction, while the second dimension
- * represents the azimuthal angle. A Mesh with this Basis cannot
- * be split by h-refinement in these dimensions.
+ * represents the azimuthal angle. A Mesh with this Basis cannot be split by
+ * h-refinement in these dimensions.
  *
- * \note We store these effectively as a 4-bit integer using the highest 4
- * bits of a uint8_t, which is why we do the left shift.  We cannot
- * have more than 16 bases to fit into the 4 bits, including the
- * `Uninitialized` value. The number of bits to shift is encoded in the variable
+ * \note Choose three consecutive dimensions to have `ZernikeB3` to choose
+ * a basis used on a sphere.  By convention, the first dimension represents the
+ * radial direction, the second dimension represents the polar/zenith angle (or
+ * colatitude), while the third dimension represents the azimuthal angle (or
+ * longitude). A Mesh with this Basis cannot be split by h-refinement in these
+ * dimensions.
+ *
+ * \note Choose `Cartoon` for a dimension (or consecutive dimensions) that
+ * represent axial (or spherical) symmetry.
+ *
+ * \remark We store these effectively as a 4-bit integer using the highest 4
+ * bits of a uint8_t, which is why we do the left shift.  We cannot have more
+ * than 16 bases to fit into the 4 bits, including the `Uninitialized` value.
+ * The number of bits to shift is encoded in the variable
  * `Spectral::detail::basis_shift`.
  */
 enum class Basis : uint8_t {
@@ -70,12 +78,13 @@ enum class Basis : uint8_t {
   FiniteDifference = 3 << basis_shift,
   SphericalHarmonic = 4 << basis_shift,
   Fourier = 5 << basis_shift,
-  B2Marcus = 6 << basis_shift,
-  Cartoon = 7 << basis_shift
+  ZernikeB2 = 6 << basis_shift,
+  ZernikeB3 = 7 << basis_shift,
+  Cartoon = 8 << basis_shift
 };
 
 /// All possible values of Basis
-std::array<Basis, 8> all_bases();
+std::array<Basis, 9> all_bases();
 
 /// Convert a string to a Basis enum.
 Basis to_basis(const std::string& basis);

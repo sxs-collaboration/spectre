@@ -34,7 +34,7 @@ std::array<Spectral::Basis, Dim> make_basis(
       case (domain::Topology::B2Radial):
         [[fallthrough]];
       case (domain::Topology::B2Angular):
-        return Spectral::Basis::B2Marcus;
+        return Spectral::Basis::ZernikeB2;
       default:
         ERROR("Invalid topology");
     }
