@@ -422,7 +422,7 @@ def control_id(
                 param == "DimensionlessSpinA" or param == "DimensionlessSpinB"
             ) and np.linalg.norm((u + Delta_u)[index : index + 3]) > 1.0:
                 # Solve for alpha in a*alpha^2 + b*alpha + c = 0, which comes
-                # from enforcing ||u + alpha * Delta_u|| = 1 - epsilon
+                # from enforcing (u + alpha * Delta_u)^2 = 1 - epsilon
                 epsilon = 1.0e-14
                 a = np.dot(
                     Delta_u[index : index + 3], Delta_u[index : index + 3]
@@ -443,7 +443,10 @@ def control_id(
                         " doesn't violate the spin constraint."
                     )
                 else:
-                    alpha = (-b + np.sqrt(discriminant)) / (2 * a)
+                    if b < 0:
+                        alpha = (-b + np.sqrt(discriminant)) / (2 * a)
+                    else:
+                        alpha = (2 * c) / (-b - np.sqrt(discriminant))
                     prev_spin = np.linalg.norm((u + Delta_u)[index : index + 3])
                     Delta_u[index : index + 3] *= alpha
                     new_spin = np.linalg.norm((u + Delta_u)[index : index + 3])
