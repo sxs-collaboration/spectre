@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_Identity.cpp
   Test_Interval.cpp
   Test_KerrHorizonConforming.cpp
+  Test_PolarToCartesian.cpp
   Test_ProductMaps.cpp
   Test_Rotation.cpp
   Test_SpecialMobius.cpp
