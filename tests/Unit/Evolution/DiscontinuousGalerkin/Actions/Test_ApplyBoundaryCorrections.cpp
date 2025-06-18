@@ -249,13 +249,21 @@ struct SetLocalMortarData {
         if (LocalTimeStepping) {
           const TimeStepId past_time_step_id{true, 3,
                                              Time{Slab{0.2, 3.4}, {1, 4}}};
-          // When doing local time stepping we need a past history, starting an
-          // 1/4 the slab.
+          // Pass an incorrect slab end for the east element to
+          // simulate the slab size changing.  This previously caused
+          // a bug when a slab-size change happened at a time only
+          // needed on the remote side.
+          const auto remote_past_time_step_id =
+              direction == Direction<Metavariables::volume_dim>::upper_xi()
+                  ? TimeStepId{true, 3, Time{Slab{0.2, 1.3}, {0, 4}}}
+                  : past_time_step_id;
+          // When doing local time stepping we need a past history.
           db::mutate<evolution::dg::Tags::MortarNextTemporalId<
               Metavariables::volume_dim>>(
-              [&mortar_id,
-               &past_time_step_id](const auto mortar_next_temporal_id_ptr) {
-                mortar_next_temporal_id_ptr->at(mortar_id) = past_time_step_id;
+              [&mortar_id, &remote_past_time_step_id](
+                  const auto mortar_next_temporal_id_ptr) {
+                mortar_next_temporal_id_ptr->at(mortar_id) =
+                    remote_past_time_step_id;
               },
               make_not_null(&box));
           // We also need to set the local history one step back to get to 2nd
@@ -488,10 +496,15 @@ void test_impl(const Spectral::Quadrature quadrature,
   using dt_variables_tags = db::wrap_tags_in<::Tags::dt, variables_tags>;
   using mortar_tags_list = typename BoundaryTerms<Dim>::dg_package_field_tags;
 
-  // Use a second-order time stepper so that we test the local Jacobian and
-  // normal magnitude history is handled correctly.
-  const size_t integration_order = 2;
-  const TimeSteppers::AdamsBashforth time_stepper{integration_order};
+  // Use a second-order time stepper so that we test the local
+  // Jacobian and normal magnitude history is handled correctly.  Use
+  // higher-order on the element doing nontrivial LTS to test that the
+  // correct TimeStepId is stored in the history, as at slab
+  // boundaries only the local TimeStepId is used for equal-order
+  // boundaries.
+  const size_t common_integration_order = 2;
+  const size_t east_integration_order = 3;
+  const TimeSteppers::AdamsBashforth time_stepper{std::nullopt};
 
   // The reference element in 2d denoted by X below:
   // ^ eta
@@ -605,13 +618,13 @@ void test_impl(const Spectral::Quadrature quadrature,
   const TimeStepId local_next_time_step_id{true, 3,
                                            Time{Slab{0.2, 3.4}, {3, 4}}};
   const std::vector<TimeStepId> east_id_time_steps{
+      {true, 3, Time{Slab{0.2, 3.4}, {0, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {2, 8}}},
-      {true, 3, Time{Slab{0.2, 3.4}, {3, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {4, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {5, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {6, 8}}}};
   const std::vector<TimeStepId> east_id_next_time_steps{
-      {true, 3, Time{Slab{0.2, 3.4}, {3, 8}}},
+      {true, 3, Time{Slab{0.2, 3.4}, {2, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {4, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {5, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {6, 8}}},
@@ -638,33 +651,9 @@ void test_impl(const Spectral::Quadrature quadrature,
   typename evolution::dg::Tags::MortarDataHistory<
       Dim, typename dt_variables_tag::type>::type mortar_data_history{};
   if (UseLocalTimeStepping) {
-    const TimeStepId past_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {1, 4}}};
     // Copy local mortar data from all_mortar_data to mortar_data_history
-    for (const auto& [direction, neighbors_in_direction] :
-         element.neighbors()) {
-      for (const auto& neighbor : neighbors_in_direction) {
-        const DirectionalId<Dim> mortar_id{direction, neighbor};
-        // Copy past and current mortar data from element's DataBox
-        mortar_data_history.insert({mortar_id, {}});
-        mortar_data_history.at(mortar_id).local().insert(
-            past_time_step_id, integration_order,
-            get_tag<evolution::dg::Tags::MortarDataHistory<
-                Dim, typename dt_variables_tag::type>>(runner, self_id)
-                .at(mortar_id)
-                .local().data(past_time_step_id));
-        mortar_data_history.at(mortar_id).local().insert(
-            time_step_id, integration_order,
-            get_tag<evolution::dg::Tags::MortarDataHistory<
-                Dim, typename dt_variables_tag::type>>(runner, self_id)
-                .at(mortar_id)
-                .local().data(time_step_id));
-      }
-    }
-    // If the local history doesn't agree, the rest of the test will fail.
-    const auto& element_mortar_data_hist =
-        get_tag<evolution::dg::Tags::MortarDataHistory<
-            Dim, typename dt_variables_tag::type>>(runner, self_id);
-    REQUIRE(mortar_data_history.size() == element_mortar_data_hist.size());
+    mortar_data_history = get_tag<evolution::dg::Tags::MortarDataHistory<
+        Dim, typename dt_variables_tag::type>>(runner, self_id);
   }
 
   // "Send" mortar data to element
@@ -693,7 +682,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                                           const TimeStepId&
                                               neighbor_time_step_id,
                                           const TimeStepId&
-                                              neighbor_next_time_step_id) {
+                                              neighbor_next_time_step_id,
+                                          const size_t integration_order) {
       CAPTURE(neighbor_next_time_step_id);
       DirectionalId<Dim> mortar_id{direction, neighbor_id};
       const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
@@ -745,7 +735,8 @@ void test_impl(const Spectral::Quadrature quadrature,
               make_not_null(&runner), self_id));
         }
         insert_neighbor_data(east_id_time_steps[east_id_time_steps_index],
-                             east_id_next_time_steps[east_id_time_steps_index]);
+                             east_id_next_time_steps[east_id_time_steps_index],
+                             east_integration_order);
       }
     } else {
       // Insert the mortar data (history) running at the same speed as the
@@ -757,13 +748,14 @@ void test_impl(const Spectral::Quadrature quadrature,
         const Time prev_time = time_step_id.step_time() - time_step;
         insert_neighbor_data(TimeStepId{time_step_id.time_runs_forward(),
                                         time_step_id.slab_number(), prev_time},
-                             time_step_id);
+                             time_step_id, common_integration_order);
         REQUIRE(not ActionTesting::next_action_if_ready<comp>(
             make_not_null(&runner), self_id));
       }
-      insert_neighbor_data(time_step_id, UseLocalTimeStepping
-                                             ? local_next_time_step_id
-                                             : time_step_id);
+      insert_neighbor_data(
+          time_step_id,
+          UseLocalTimeStepping ? local_next_time_step_id : time_step_id,
+          common_integration_order);
     }
   }
   // Check expected inboxes
