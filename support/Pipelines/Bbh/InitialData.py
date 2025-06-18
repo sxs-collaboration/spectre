@@ -54,6 +54,7 @@ def id_parameters(
     radial_expansion_velocity: float,
     refinement_level: int,
     polynomial_order: int,
+    negative_expansion_bc: bool,
 ):
     """Determine initial data parameters from options.
 
@@ -87,6 +88,7 @@ def id_parameters(
     r_plus_B = conformal_mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
     Omega_B = -0.5 * chi_B / r_plus_B
     Omega_B[2] += orbital_angular_velocity
+    excision_factor = 0.93 if negative_expansion_bc else 1.0
     # Falloff widths of superposition
     L1_dist_A = L1_distance(conformal_mass_a, conformal_mass_b, separation)
     L1_dist_B = separation - L1_dist_A
@@ -111,8 +113,8 @@ def id_parameters(
         "LinearVelocity_x": linear_velocity[0],
         "LinearVelocity_y": linear_velocity[1],
         "LinearVelocity_z": linear_velocity[2],
-        "ExcisionRadiusRight": 0.93 * r_plus_A,
-        "ExcisionRadiusLeft": 0.93 * r_plus_B,
+        "ExcisionRadiusRight": excision_factor * r_plus_A,
+        "ExcisionRadiusLeft": excision_factor * r_plus_B,
         "ObjectOuterRadius": separation / 3.75,
         "OrbitalAngularVelocity": orbital_angular_velocity,
         "RadialExpansionVelocity": radial_expansion_velocity,
@@ -160,6 +162,7 @@ def generate_id(
     control: bool = False,
     evolve: bool = False,
     eccentricity_control: bool = False,
+    negative_expansion_bc: bool = True,
     pipeline_dir: Optional[Union[str, Path]] = None,
     run_dir: Optional[Union[str, Path]] = None,
     segments_dir: Optional[Union[str, Path]] = None,
@@ -206,6 +209,10 @@ def generate_id(
       evolve: Set to True to evolve the initial data after generation.
       eccentricity_control: If set to True, an eccentricity reduction script is
         run on the initial data to correct the initial orbital parameters.
+      negative_expansion_bc: If set to True, the excision boundaries are set to
+        be inside of the apparent horizons. This helps to find horizons and
+        start an evolution from the initial data without extrapolation.
+        (default: True)
       pipeline_dir: Directory where steps in the pipeline are created. Required
         when 'evolve' is set to True. The initial data will be created in a
         subdirectory '001_InitialData'.
@@ -289,6 +296,7 @@ def generate_id(
         linear_velocity=linear_velocity,
         refinement_level=refinement_level,
         polynomial_order=polynomial_order,
+        negative_expansion_bc=negative_expansion_bc,
     )
     logger.debug(f"Initial data parameters: {pretty_repr(id_params)}")
 
@@ -305,6 +313,7 @@ def generate_id(
         control=control,
         evolve=evolve,
         eccentricity_control=eccentricity_control,
+        negative_expansion_bc=negative_expansion_bc,
         pipeline_dir=pipeline_dir,
         run_dir=run_dir,
         segments_dir=segments_dir,
@@ -447,6 +456,17 @@ def generate_id(
     help=(
         "Perform eccentricity reduction script that finds current eccentricity"
         "and better guesses for the input orbital parameters."
+    ),
+)
+@click.option(
+    "--negative-expansion-bc/--no-negative-expansion-bc",
+    default=True,
+    show_default=True,
+    help=(
+        "Use negative expansion boundary condition so that the excision"
+        "boundaries are inside of the apparent horizons. This helps to find"
+        "horizons and start an evolution from the initial data without"
+        "extrapolation."
     ),
 )
 @click.option(
