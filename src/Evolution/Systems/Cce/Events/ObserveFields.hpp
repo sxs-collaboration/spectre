@@ -20,6 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/Cce/NewmanPenrose.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
+#include "Evolution/Systems/Cce/SwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
@@ -173,6 +174,19 @@ class ObserveFields : public Event {
                  Tags::BondiR,
                  Tags::Psi0,
                  Tags::Psi1,
+                 Tags::NewmanPenroseAlpha,
+                 Tags::NewmanPenroseBeta,
+                 Tags::NewmanPenroseGamma,
+                 Tags::NewmanPenroseEpsilon,
+                 // Tags::NewmanPenroseKappa,
+                 // in our choice of tetrad, \kappa=0
+                 Tags::NewmanPenroseTau,
+                 Tags::NewmanPenroseSigma,
+                 Tags::NewmanPenroseRho,
+                 Tags::NewmanPenrosePi,
+                 Tags::NewmanPenroseNu,
+                 Tags::NewmanPenroseMu,
+                 Tags::NewmanPenroseLambda,
                  Tags::EthRDividedByR,
                  Tags::DuRDividedByR>>;
   // clang-format on
@@ -218,7 +232,20 @@ class ObserveFields : public Event {
                 const Options::Context& context = {});
 
   using compute_tags_for_observation_box =
-    tmpl::list<Tags::Psi0Compute, Tags::Psi1Compute>;
+    tmpl::list<Tags::Psi0Compute, Tags::Psi1Compute,
+               Tags::ManualSwshDerivativeCompute<Tags::BondiJ,
+                                                  Spectral::Swsh::Tags::Eth>,
+               Tags::ManualSwshDerivativeCompute<Tags::BondiW,
+                                                  Spectral::Swsh::Tags::Eth>,
+               Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
+               Tags::NewmanPenroseGammaCompute,
+               Tags::NewmanPenroseEpsilonCompute,
+               // Tags::NewmanPenroseKappaCompute,
+               // in our choice of tetrad, \kappa=0
+               Tags::NewmanPenroseTauCompute,
+               Tags::NewmanPenroseSigmaCompute, Tags::NewmanPenroseRhoCompute,
+               Tags::NewmanPenrosePiCompute, Tags::NewmanPenroseNuCompute,
+               Tags::NewmanPenroseMuCompute, Tags::NewmanPenroseLambdaCompute>;
 
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;

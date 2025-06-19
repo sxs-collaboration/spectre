@@ -4,6 +4,250 @@
 import numpy as np
 
 
+def newman_penrose_alpha(
+    bondi_j, eth_j, ethbar_j, bondi_k, bondi_r, bondi_q, eth_beta, one_minus_y
+):
+    one_plus_k = 1.0 + bondi_k
+    sqrt_one_plus_k = np.sqrt(one_plus_k)
+    q_plus_two_eth_beta = bondi_q + 2.0 * eth_beta
+
+    return (
+        one_minus_y
+        / (32.0 * bondi_r)
+        * (
+            1.0
+            / sqrt_one_plus_k
+            * (
+                (np.conj(bondi_j) ** 2 * eth_j) / (bondi_k * one_plus_k)
+                + 1.0
+                / bondi_k
+                * (
+                    bondi_j * np.conj(eth_j)
+                    + np.conj(bondi_j) * ethbar_j
+                    - np.conj(ethbar_j)
+                )
+                + (
+                    2.0 * np.conj(bondi_j) * q_plus_two_eth_beta
+                    - 3.0 * np.conj(ethbar_j)
+                )
+            )
+            - 2.0 * sqrt_one_plus_k * np.conj(q_plus_two_eth_beta)
+        )
+    )
+
+
+def newman_penrose_beta(
+    bondi_j, eth_j, ethbar_j, bondi_k, bondi_r, bondi_q, eth_beta, one_minus_y
+):
+    one_plus_k = 1.0 + bondi_k
+    sqrt_one_plus_k = np.sqrt(one_plus_k)
+    q_plus_two_eth_beta = bondi_q + 2.0 * eth_beta
+
+    return (
+        one_minus_y
+        / (32.0 * bondi_r)
+        * (
+            1.0
+            / sqrt_one_plus_k
+            * (
+                (
+                    -(bondi_j**2) * np.conj(eth_j) / (bondi_k * one_plus_k)
+                    + 1.0
+                    / bondi_k
+                    * (
+                        -bondi_j * np.conj(ethbar_j)
+                        - np.conj(bondi_j) * eth_j
+                        + ethbar_j
+                    )
+                    + (
+                        2.0 * bondi_j * np.conj(q_plus_two_eth_beta)
+                        - 3.0 * ethbar_j
+                    )
+                )
+            )
+            - 2.0 * sqrt_one_plus_k * q_plus_two_eth_beta
+        )
+    )
+
+
+def newman_penrose_gamma(
+    bondi_j,
+    dy_j,
+    eth_j,
+    ethbar_j,
+    bondi_k,
+    bondi_h,
+    bondi_r,
+    bondi_u,
+    eth_u,
+    ethbar_u,
+    bondi_w,
+    dy_w,
+    exp_2_beta,
+    one_minus_y,
+):
+    one_plus_k = 1.0 + bondi_k
+
+    return (
+        1.0
+        / (np.sqrt(32.0) * exp_2_beta)
+        * (
+            1.0
+            / (2.0 * one_plus_k)
+            * (
+                one_minus_y
+                * (one_minus_y / (2.0 * bondi_r) + bondi_w)
+                * (np.conj(bondi_j) * dy_j - bondi_j * np.conj(dy_j))
+                + (
+                    2.0 * np.conj(bondi_h) * bondi_j
+                    - 2.0 * bondi_h * np.conj(bondi_j)
+                    + bondi_u
+                    * (bondi_j * np.conj(eth_j) - np.conj(bondi_j) * ethbar_j)
+                    + np.conj(bondi_u)
+                    * (bondi_j * np.conj(ethbar_j) - np.conj(bondi_j) * eth_j)
+                )
+            )
+            + 2.0 * one_minus_y * dy_w
+            + (
+                2.0 * bondi_w
+                + bondi_j * np.conj(eth_u)
+                - np.conj(bondi_j) * eth_u
+                + bondi_k * (ethbar_u - np.conj(ethbar_u))
+            )
+        )
+    )
+
+
+def newman_penrose_epsilon(
+    bondi_j, dy_j, bondi_k, bondi_r, dy_beta, one_minus_y
+):
+    return (
+        one_minus_y**2
+        / (np.sqrt(8.0) * bondi_r)
+        * (
+            dy_beta
+            + (bondi_j * np.conj(dy_j) - np.conj(bondi_j) * dy_j)
+            / (8.0 * (1.0 + bondi_k))
+        )
+    )
+
+
+def newman_penrose_tau(
+    bondi_j, bondi_k, bondi_r, bondi_q, eth_beta, one_minus_y
+):
+    one_plus_k = 1.0 + bondi_k
+    sqrt_one_plus_k = np.sqrt(one_plus_k)
+    two_eth_beta_minus_q = 2.0 * eth_beta - bondi_q
+
+    return (
+        one_minus_y
+        / (8.0 * bondi_r)
+        * (
+            sqrt_one_plus_k * two_eth_beta_minus_q
+            - bondi_j * np.conj(two_eth_beta_minus_q) / sqrt_one_plus_k
+        )
+    )
+
+
+def newman_penrose_sigma(bondi_j, dy_j, bondi_k, bondi_r, one_minus_y):
+    one_plus_k = 1.0 + bondi_k
+
+    return (
+        one_minus_y**2
+        / (np.sqrt(128.0) * bondi_k * bondi_r)
+        * (bondi_j**2 * np.conj(dy_j) / one_plus_k - one_plus_k * dy_j)
+    )
+
+
+def newman_penrose_rho(bondi_r, one_minus_y):
+    return -one_minus_y / (np.sqrt(8.0) * bondi_r)
+
+
+def newman_penrose_pi(
+    bondi_j, bondi_k, bondi_r, bondi_q, eth_beta, one_minus_y
+):
+    one_plus_k = 1.0 + bondi_k
+    sqrt_one_plus_k = np.sqrt(one_plus_k)
+    q_plus_two_eth_beta = bondi_q + 2.0 * eth_beta
+
+    return (
+        one_minus_y
+        / (8.0 * bondi_r)
+        * (
+            np.conj(bondi_j) * q_plus_two_eth_beta / sqrt_one_plus_k
+            - sqrt_one_plus_k * np.conj(q_plus_two_eth_beta)
+        )
+    )
+
+
+def newman_penrose_nu(bondi_j, bondi_k, eth_w, exp_2_beta):
+    one_plus_k = 1.0 + bondi_k
+    sqrt_one_plus_k = np.sqrt(one_plus_k)
+
+    return (
+        1.0
+        / (2.0 * exp_2_beta)
+        * (
+            np.conj(bondi_j) * eth_w / sqrt_one_plus_k
+            - sqrt_one_plus_k * np.conj(eth_w)
+        )
+    )
+
+
+def newman_penrose_mu(bondi_r, bondi_w, ethbar_u, exp_2_beta, one_minus_y):
+    return (
+        1.0
+        / (np.sqrt(8.0) * exp_2_beta)
+        * (np.conj(ethbar_u) + ethbar_u - one_minus_y / bondi_r - 2.0 * bondi_w)
+    )
+
+
+def newman_penrose_lambda(
+    bondi_j,
+    dy_j,
+    eth_j,
+    ethbar_j,
+    bondi_k,
+    bondi_h,
+    bondi_r,
+    bondi_u,
+    eth_u,
+    ethbar_u,
+    bondi_w,
+    exp_2_beta,
+    one_minus_y,
+):
+    one_plus_k = 1.0 + bondi_k
+
+    inner1 = (
+        one_minus_y
+        / (2.0 * one_plus_k)
+        * (
+            (np.conj(bondi_j) ** 2 * dy_j - np.conj(dy_j)) / bondi_k
+            - (2.0 + bondi_k) * np.conj(dy_j)
+        )
+    )
+
+    inner2 = 2.0 * bondi_h + bondi_u * ethbar_j + np.conj(bondi_u) * eth_j
+
+    return (
+        1.0
+        / (np.sqrt(32.0) * exp_2_beta)
+        * (
+            (one_minus_y / bondi_r + 2.0 * bondi_w) * inner1
+            + 2.0 * one_plus_k * np.conj(eth_u)
+            + (
+                np.conj(inner2)
+                + 2.0 * np.conj(bondi_j) * (ethbar_u - np.conj(ethbar_u))
+            )
+            + np.conj(inner2) / bondi_k
+            - np.conj(bondi_j) ** 2
+            * (inner2 + 2.0 * bondi_k * eth_u)
+            / (bondi_k * one_plus_k)
+        )
+    )
+
+
 def psi0(bondi_j, dy_j, dy_dy_j, bondi_k, bondi_r, one_minus_y):
     dy_beta = (
         0.125

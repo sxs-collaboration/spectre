@@ -148,11 +148,27 @@ struct MockElement {
       tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
           tmpl::list_difference<
             ObserveFields::available_tags_to_observe,
-            tmpl::list<Tags::Psi0, Tags::Psi1>>,
+            tmpl::list<
+              Tags::Psi0, Tags::Psi1,
+              Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
+              Tags::NewmanPenroseGamma, Tags::NewmanPenroseEpsilon,
+              // Tags::NewmanPenroseKappa, // in our tetrad, \kappa=0
+              Tags::NewmanPenroseTau, Tags::NewmanPenroseSigma,
+              Tags::NewmanPenroseRho,
+              Tags::NewmanPenrosePi, Tags::NewmanPenroseNu,
+              Tags::NewmanPenroseMu, Tags::NewmanPenroseLambda
+              >>,
           Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                            Spectral::Swsh::Tags::Eth>,
           Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
                                            Spectral::Swsh::Tags::Eth>,
+          Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                           Spectral::Swsh::Tags::Ethbar>,
+          Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                           Spectral::Swsh::Tags::Ethbar>,
+          Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                           Spectral::Swsh::Tags::Eth>,
+          Tags::Exp2Beta,
           Tags::BondiK, Tags::LMax, Tags::NumberOfRadialPoints,
           ::Tags::Time>>>>>;
 };
@@ -170,7 +186,8 @@ void test(const bool write_synchronously) {
   using element = MockElement<metavars>;
 
   const std::vector<std::string> observe_field_names{
-    "InertialRetardedTime", "J", "Psi0", "Psi1", "Dy(H)", "OneMinusY"};
+    "InertialRetardedTime", "J", "Psi0", "Psi1", "Dy(H)", "OneMinusY",
+    "NewmanPenroseAlpha"};
   const std::string subgroup_name{"CceVolumeData"};
   const Cce::Events::ObserveFields fields{subgroup_name, observe_field_names};
   const Cce::Events::ObserveFields serialized_fields =
@@ -235,6 +252,13 @@ void test(const bool write_synchronously) {
                                                   Spectral::Swsh::Tags::Eth>,
                  Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
                                                   Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                                  Spectral::Swsh::Tags::Ethbar>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                                  Spectral::Swsh::Tags::Ethbar>,
+                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Tags::Exp2Beta,
                  Tags::BondiR>>([&size_data](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     size_data(tag{}, num_volume_grid_points);
