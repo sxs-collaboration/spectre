@@ -20,14 +20,17 @@
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <bool UseControlSystems, typename... InterpolationTargetTags>
+template <bool UseControlSystems, bool UseParametrizedDeleptonization,
+          typename... InterpolationTargetTags>
 struct EvolutionMetavars
     : public GhValenciaDivCleanTemplateBase<
-          EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>,
-          true, UseControlSystems, false> {
+          EvolutionMetavars<UseControlSystems, UseParametrizedDeleptonization,
+                            InterpolationTargetTags...>,
+          true, UseControlSystems, UseParametrizedDeleptonization, false> {
   using base = GhValenciaDivCleanTemplateBase<
-      EvolutionMetavars<UseControlSystems, InterpolationTargetTags...>, true,
-      UseControlSystems, false>;
+      EvolutionMetavars<UseControlSystems, UseParametrizedDeleptonization,
+                        InterpolationTargetTags...>,
+      true, UseControlSystems, UseParametrizedDeleptonization, false>;
   using const_global_cache_tags = typename base::const_global_cache_tags;
   using observed_reduction_data_tags =
       typename base::observed_reduction_data_tags;
