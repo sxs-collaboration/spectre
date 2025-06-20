@@ -8,7 +8,7 @@ import numpy as np
 from spectre.DataStructures import DataVector
 from spectre.NumericalAlgorithms.LinearOperators import (
     absolute_truncation_error,
-    convergence_rate,
+    convergence_rate_and_number_of_pile_up_modes,
     power_monitors,
     relative_truncation_error,
 )
@@ -19,6 +19,7 @@ from spectre.Spectral import (
     Quadrature,
     logical_coordinates,
 )
+from spectre.SphericalHarmonics import Frame, Strahlkorper, power_monitor
 
 
 class TestPowerMonitors(unittest.TestCase):
@@ -83,12 +84,30 @@ class TestPowerMonitors(unittest.TestCase):
 
     # Check that the convergence rate for a straight line is consistent with
     # the analytic expectation
-    def test_convergence_rate(self):
+    def test_convergence_rate_and_pile_up_modes(self):
         slope, offset = -0.4, 1.4
         modes = np.arange(0, 14, 1)
+        filtered_modes = 3
         test_power_monitor = 10.0 ** (slope * modes + offset)
-        rate = convergence_rate(test_power_monitor, 3)
+        rate = convergence_rate_and_number_of_pile_up_modes(
+            test_power_monitor, filtered_modes
+        )["convergence_rate"]
         np.testing.assert_allclose(rate, -slope)
+
+        # Check that a straight line with some pile up modes added by hand
+        # recovers the correct integer number of pile up modes
+        expected_pile_up_modes = 5
+        modes_to_fill = filtered_modes + expected_pile_up_modes
+        for i in range(0, modes_to_fill, 1):
+            test_power_monitor[len(test_power_monitor) - i - 1] = (
+                test_power_monitor[len(test_power_monitor) - modes_to_fill - 1]
+            )
+        pile_up_modes = convergence_rate_and_number_of_pile_up_modes(
+            test_power_monitor, filtered_modes
+        )["number_of_pile_up_modes"]
+        np.testing.assert_allclose(
+            np.floor(pile_up_modes), expected_pile_up_modes
+        )
 
 
 if __name__ == "__main__":

@@ -36,9 +36,19 @@ void bind_power_monitors(py::module& m) {
   bind_power_monitors_impl<1>(m);
   bind_power_monitors_impl<2>(m);
   bind_power_monitors_impl<3>(m);
-  m.def("convergence_rate",
-        py::overload_cast<const DataVector&, const size_t>(&convergence_rate),
-        py::arg("power_monitor"), py::arg("number_of_filtered_modes") = 0);
+  m.def(
+      "convergence_rate_and_number_of_pile_up_modes",
+      [](const DataVector& power_monitor,
+         const size_t number_of_filtered_modes) {
+        py::dict result{};
+        const ConvergenceInfo info =
+            convergence_rate_and_number_of_pile_up_modes(
+                power_monitor, number_of_filtered_modes);
+        result["convergence_rate"] = info.convergence_rate;
+        result["number_of_pile_up_modes"] = info.number_of_pile_up_modes;
+        return result;
+      },
+      py::arg("power_monitor"), py::arg("number_of_filtered_modes") = 0);
 }
 
 }  // namespace PowerMonitors::py_bindings

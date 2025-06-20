@@ -150,16 +150,17 @@ std::array<double, Dim> absolute_truncation_error(
   return result;
 }
 
-double convergence_rate(const DataVector& power_monitor,
-                        const size_t number_of_filtered_modes) {
+ConvergenceInfo convergence_rate_and_number_of_pile_up_modes(
+    const DataVector& power_monitor, const size_t number_of_filtered_modes) {
   // Need enough unfiltered modes to compute the convergence rate. Here,
   // require at least 4 unfiltered modes.
   ASSERT(
       power_monitor.size() > number_of_filtered_modes + 3,
       "Power monitor needs at least 4 unfiltered modes to compute convergence "
-      "rate, but power monitor has size "
+      "rate and number of pile up modes, but power monitor has size "
           << power_monitor.size() << " with " << number_of_filtered_modes
           << " filtered modes");
+  ConvergenceInfo result{};
 
   const size_t n_tilde = power_monitor.size() - number_of_filtered_modes;
   std::vector<double> mode_numbers_for_fit{};
@@ -172,14 +173,29 @@ double convergence_rate(const DataVector& power_monitor,
   std::vector<double> delta_slopes{};
 
   // It turns out (as can be verified empirically) that the number of terms
-  // in this loop is 3 * (n_tilde - 5) for n_tilde > 6, 4 for n_tilde == 5,
-  // and 3 for n_tilde == 4 or n_tilde == 3. Here reserve the correct number of
-  // elements in terms of n_tilde, except don't use an extra if to
-  // distinguish between the 3 and 4 special cases (no harm in reserving space
-  // for a single extra double).
+  // in the loop to compute the convergence rate is 3 * (n_tilde - 5) for
+  // n_tilde > 6, 4 for n_tilde == 5, and 3 for n_tilde == 4 or n_tilde == 3.
+  // Here reserve the correct number of elements in terms of n_tilde, except
+  // don't use an extra if to distinguish between the 3 and 4 special cases (no
+  // harm in reserving space for a single extra double).
   const size_t max_slope_size = n_tilde > 6 ? 3 * (n_tilde - 5) : 4;
   slopes.reserve(max_slope_size);
   delta_slopes.reserve(max_slope_size);
+
+  // Compute log of the power monitor only for unfiltered modes, and
+  // ensure that log10 never causes a floating point exception here.
+  constexpr double eps_for_log = 100.0 * std::numeric_limits<double>::min();
+  const double log_floor = log10(eps_for_log);
+  DataVector log_power = power_monitor;
+  for (size_t i = 0; i < power_monitor.size() - number_of_filtered_modes; ++i) {
+    if (abs(log_power[i]) < eps_for_log) {
+      log_power[i] = log_floor;
+    } else {
+      log_power[i] = log10(abs(log_power[i]));
+    }
+  }
+
+  // Compute convergence rate
   for (size_t k1 = 0; k1 < 3; ++k1) {
     for (size_t k2 = std::min(k1 + 4, n_tilde_minus_one);
          k2 <= n_tilde_minus_one; ++k2) {
@@ -187,12 +203,22 @@ double convergence_rate(const DataVector& power_monitor,
       mode_powers_for_fit.resize(k2 - k1 + 1);
       for (size_t k = k1; k <= k2; ++k) {
         mode_numbers_for_fit[k - k1] = static_cast<double>(k);
-        mode_powers_for_fit[k - k1] = log10(power_monitor[k]);
+        mode_powers_for_fit[k - k1] = log_power[k];
       }
-      const intrp::LinearRegressionResult regression_result =
-          intrp::linear_regression(mode_numbers_for_fit, mode_powers_for_fit);
-      slopes.push_back(regression_result.slope);
-      delta_slopes.push_back(regression_result.delta_slope);
+      if (mode_numbers_for_fit.size() > 2) {
+        const intrp::LinearRegressionResult regression_result =
+            intrp::linear_regression(mode_numbers_for_fit, mode_powers_for_fit);
+        slopes.push_back(regression_result.slope);
+        delta_slopes.push_back(regression_result.delta_slope);
+      } else if (mode_numbers_for_fit.size() == 2 and
+                 mode_numbers_for_fit[0] != mode_numbers_for_fit[1]) {
+        slopes.push_back((mode_powers_for_fit[1] - mode_powers_for_fit[0]) /
+                         (mode_numbers_for_fit[1] - mode_numbers_for_fit[0]));
+        delta_slopes.push_back(0.0);
+      } else {
+        // Cannot construct a slope; skip this term in sum
+        continue;
+      }
     }
   }
   const auto max_delta =
@@ -209,7 +235,55 @@ double convergence_rate(const DataVector& power_monitor,
     denom += one_over_denom_this_term;
     num += gsl::at(slopes, i) * one_over_denom_this_term;
   }
-  return -num / denom;
+  result.convergence_rate = -num / denom;
+
+  // Compute number of pile up modes
+  // First, if the convergence rate is nearly zero, return zero pile up modes.
+  // A convergence rate near zero typically means that the function is not at
+  // all resolved (e.g. a step function), so the power spectrum is approximately
+  // flat. If the convergence rate is approximately flat, it's not realistic to
+  // attempt to distinguish whatever small, residual convergence might be
+  // present vs. pile up modes. Returning zero for an approximately flat power
+  // monitor also avoids dividing by approximately zero (or, in the case of
+  // an exactly flat power monitor, by exactly zero).
+  if (std::abs(result.convergence_rate) < 1.e-10) {
+    result.number_of_pile_up_modes = 0.0;
+  } else {
+    double number_of_pile_up_modes = 0.0;
+    for (size_t j = 2; j < n_tilde - 1; ++j) {
+      const size_t j_max = std::min(n_tilde - 1, j + 4);
+      mode_numbers_for_fit.resize(j_max - j + 1);
+      mode_powers_for_fit.resize(j_max - j + 1);
+      for (size_t i = j; i <= j_max; ++i) {
+        mode_numbers_for_fit[i - j] = static_cast<double>(i);
+        mode_powers_for_fit[i - j] = log_power[i];
+      }
+      double local_convergence_rate =
+          std::numeric_limits<double>::signaling_NaN();
+      if (mode_numbers_for_fit.size() > 2) {
+        local_convergence_rate =
+            -intrp::linear_regression(mode_numbers_for_fit, mode_powers_for_fit)
+                 .slope;
+      } else if (mode_numbers_for_fit.size() == 2 and
+                 mode_numbers_for_fit[1] != mode_numbers_for_fit[0]) {
+        local_convergence_rate =
+            (mode_powers_for_fit[1] - mode_powers_for_fit[0]) /
+            (mode_numbers_for_fit[1] - mode_numbers_for_fit[0]);
+      } else {
+        // cannot measure slope, so skip this term in sum
+        continue;
+      }
+      const double conv_ratio =
+          square(local_convergence_rate / result.convergence_rate);
+      // Avoid underflow: if conv_ratio < 16, just add zero.
+      // exp(-32.0*16.0) ~ 1.0e-195, which is still large enough to
+      // avoid underflow.
+      number_of_pile_up_modes +=
+          conv_ratio < 16.0 ? exp(-32.0 * conv_ratio) : 0.0;
+    }
+    result.number_of_pile_up_modes = number_of_pile_up_modes;
+  }
+  return result;
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
