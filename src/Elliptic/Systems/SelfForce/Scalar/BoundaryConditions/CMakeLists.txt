@@ -1,32 +1,30 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY ScalarSelfForce)
+set(LIBRARY ScalarSelfForceBoundaryConditions)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Equations.cpp
+  Angular.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Equations.hpp
-  FirstOrderSystem.hpp
-  Tags.hpp
+  Factory.hpp
+  Angular.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
-  DomainStructure
-  ErrorHandling
+  Elliptic
+  Options
+  Parallel
   Utilities
   )
-
-add_subdirectory(BoundaryConditions)
