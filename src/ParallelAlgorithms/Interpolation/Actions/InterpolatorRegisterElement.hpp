@@ -87,13 +87,7 @@ struct RegisterElement {
             }
 
             if (blocks_to_interpolate.at(target_name).contains(block_name)) {
-              auto inserted = (*num_elements)[target_name].insert(element_id);
-              if (not inserted.second) {
-                ERROR("Unable to insert element "
-                      << element_id << " into interpolator core "
-                      << Parallel::my_proc<size_t>(cache) << " for target "
-                      << target_name);
-              }
+              (*num_elements)[target_name].insert(element_id);
             }
           });
         },
