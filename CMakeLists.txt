@@ -49,7 +49,6 @@ endif()
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
   cmake_policy(SET CMP0167 NEW)
 endif ()
-
 # FetchContent can be used to download and build some dependencies. We can
 # consider turning this on by default later.
 option(SPECTRE_FETCH_MISSING_DEPS "Download missing dependencies" OFF)
@@ -76,6 +75,7 @@ include(SpectreSetSiteName)
 # We need Python in the build system and throughout the code. Setting it up
 # early so we can rely on a consistent Python version in the build system.
 find_package(Python 3.8 REQUIRED)
+# find_package(COCAL REQUIRED)
 
 # Define the location of Python code in the build directory. Unit tests etc. can
 # add this location to their `PYTHONPATH`.
@@ -112,6 +112,7 @@ include(ProhibitInSourceBuild)
 include(SpectreSetupFlagsTarget)
 include(SetupFortran)
 include(SetupNinjaColors)
+include(SetupCocal)  # Add this line
 include(SetOutputDirectory)
 include(SpectreAddInterfaceLibraryHeaders)
 include(SpectreTargetHeaders)
@@ -170,8 +171,6 @@ include(SetupParaView)
 
 add_subdirectory(external)
 
-include(SetupKokkos)
-
 include(SetupLIBCXXCharm)
 # The precompiled header must be setup after all libraries have been found
 if (USE_PCH)
@@ -190,6 +189,7 @@ include(UpdateAddExecutables)
 # dependencies on the PCH if necessary.
 include(SetupClangFormat)
 include(SetupClangTidy)
+#include(SetupIwyu) // This somehow doesn't work for COCAL reader
 if(BUILD_DOCS)
   include(SetupDoxygen)
   include(SetupSphinx)
@@ -216,6 +216,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(SYSTEM ${CMAKE_BINARY_DIR}/src)
 
 add_subdirectory(src)
+# add_subdirectory(src/PointwiseFunctions/AnalyticData/GrMhd/COCAL_reader)
+# target_link_libraries(EvolveGhValenciaDivCleanBns PRIVATE COCALReader)
 add_subdirectory(support)
 if(BUILD_TESTING)
   add_subdirectory(tests)

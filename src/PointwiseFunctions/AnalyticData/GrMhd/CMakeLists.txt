@@ -93,4 +93,37 @@ if (TARGET FUKA::Exporter)
     )
 endif()
 
+if (TARGET COCAL::Exporter)
+add_custom_command(
+  OUTPUT ${CMAKE_SOURCE_DIR}/src/PointwiseFunctions/AnalyticData/GrMhd/COCAL_reader/libcocal.a
+  COMMAND make -C ${CMAKE_SOURCE_DIR}/src/PointwiseFunctions/AnalyticData/GrMhd/COCAL_reader clean
+  COMMAND make -C ${CMAKE_SOURCE_DIR}/src/PointwiseFunctions/AnalyticData/GrMhd/COCAL_reader
+  COMMENT "Building COCAL library..."
+  VERBATIM
+)
+
+add_custom_target(BuildCocalLibrary
+  DEPENDS ${CMAKE_SOURCE_DIR}/src/PointwiseFunctions/AnalyticData/GrMhd/COCAL_reader/libcocal.a
+)
+
+add_dependencies(${LIBRARY} BuildCocalLibrary)
+
+  spectre_target_sources(
+    ${LIBRARY}
+    PRIVATE
+    CocalInitialData.cpp
+    )
+  spectre_target_headers(
+    ${LIBRARY}
+    INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+    HEADERS
+    CocalInitialData.hpp
+    )
+  target_link_libraries(
+    ${LIBRARY}
+    PUBLIC
+    ExternalIO
+    )
+endif()
+
 add_subdirectory(InitialMagneticFields)
