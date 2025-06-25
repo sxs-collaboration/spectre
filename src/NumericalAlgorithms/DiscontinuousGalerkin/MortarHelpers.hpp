@@ -20,6 +20,7 @@
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -68,6 +69,14 @@ MortarSize<Dim - 1> mortar_size(const ElementId<Dim>& self,
                                 const ElementId<Dim>& neighbor,
                                 size_t dimension,
                                 const OrientationMap<Dim>& orientation);
+
+/// \ingroup DiscontinuousGalerkinGroup
+/// Determine the size of the mortar in block coordinates.  The
+/// segments are given in the block of \p self.
+template <size_t Dim>
+std::array<SegmentId, Dim - 1> mortar_segments(
+    const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
+    size_t dimension, const OrientationMap<Dim>& orientation);
 
 /// @{
 /// \ingroup DiscontinuousGalerkinGroup

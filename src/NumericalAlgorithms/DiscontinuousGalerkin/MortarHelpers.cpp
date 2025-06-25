@@ -75,11 +75,50 @@ std::array<Spectral::SegmentSize, Dim - 1> mortar_size(
   return result;
 }
 
+template <size_t Dim>
+std::array<SegmentId, Dim - 1> mortar_segments(
+    const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
+    const size_t dimension, const OrientationMap<Dim>& orientation) {
+  const auto self_segments =
+      all_but_specified_element_of(self.segment_ids(), dimension);
+  const auto neighbor_segments = all_but_specified_element_of(
+      orientation.inverse_map()(neighbor.segment_ids()), dimension);
+
+  std::array<SegmentId, Dim - 1> result{};
+  for (size_t d = 0; d < Dim - 1; ++d) {
+    const auto& self_segment = gsl::at(self_segments, d);
+    const auto& neighbor_segment = gsl::at(neighbor_segments, d);
+    if (self_segment.refinement_level() ==
+        neighbor_segment.refinement_level()) {
+      ASSERT(self_segment == neighbor_segment,
+             "Neighbor elements do not overlap: "
+                 << self_segment << " " << neighbor_segment);
+      gsl::at(result, d) = self_segment;
+    } else if (self_segment.refinement_level() <
+               neighbor_segment.refinement_level()) {
+      ASSERT(self_segment == neighbor_segment.id_of_parent(),
+             "Neighbor elements do not overlap 1:1 or 2:1: "
+                 << self_segment << " " << neighbor_segment);
+      gsl::at(result, d) = neighbor_segment;
+    } else {
+      ASSERT(neighbor_segment == self_segment.id_of_parent(),
+             "Neighbor elements do not overlap 1:1 or 2:1: "
+                 << self_segment << " " << neighbor_segment);
+      gsl::at(result, d) = self_segment;
+    }
+  }
+  return result;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(_, data)                                               \
   template Mesh<DIM(data)> mortar_mesh(const Mesh<DIM(data)>& face_mesh1,  \
                                        const Mesh<DIM(data)>& face_mesh2); \
   template std::array<Spectral::SegmentSize, DIM(data)> mortar_size(       \
+      const ElementId<DIM(data) + 1>& self,                                \
+      const ElementId<DIM(data) + 1>& neighbor, size_t dimension,          \
+      const OrientationMap<DIM(data) + 1>& orientation);                   \
+  template std::array<SegmentId, DIM(data)> mortar_segments(               \
       const ElementId<DIM(data) + 1>& self,                                \
       const ElementId<DIM(data) + 1>& neighbor, size_t dimension,          \
       const OrientationMap<DIM(data) + 1>& orientation);
