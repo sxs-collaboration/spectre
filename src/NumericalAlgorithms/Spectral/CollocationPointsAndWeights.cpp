@@ -19,6 +19,10 @@ CollocationPointsAndWeightsGenerator<BasisType, QuadratureType>::operator()(
       num_points);
 }
 
+template struct CollocationPointsAndWeightsGenerator<Basis::Cartoon,
+                                                     Quadrature::AxialSymmetry>;
+template struct CollocationPointsAndWeightsGenerator<
+    Basis::Cartoon, Quadrature::SphericalSymmetry>;
 template struct CollocationPointsAndWeightsGenerator<Basis::Chebyshev,
                                                      Quadrature::Gauss>;
 template struct CollocationPointsAndWeightsGenerator<Basis::Chebyshev,

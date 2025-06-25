@@ -67,6 +67,10 @@ SPECTRAL_QUANTITY_FOR_MESH(nodal_to_modal_matrix, Matrix)
 #undef SPECTRAL_QUANTITY_FOR_MESH
 
 template const Matrix&
+    nodal_to_modal_matrix<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
+template const Matrix& nodal_to_modal_matrix<
+    Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
+template const Matrix&
     nodal_to_modal_matrix<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const Matrix&
     nodal_to_modal_matrix<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);

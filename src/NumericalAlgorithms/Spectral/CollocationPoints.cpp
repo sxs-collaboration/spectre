@@ -30,6 +30,10 @@ SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
 #undef SPECTRAL_QUANTITY_FOR_MESH
 
 template const DataVector&
+    collocation_points<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
+template const DataVector&
+    collocation_points<Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
+template const DataVector&
     collocation_points<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const DataVector&
     collocation_points<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);

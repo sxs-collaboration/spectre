@@ -13,6 +13,7 @@ spectre_target_sources(
   BoundaryInterpolationMatrices.cpp
   BoundaryInterpolationTerm.cpp
   BoundaryLiftingTerm.cpp
+  Cartoon.cpp
   Chebyshev.cpp
   CollocationPoints.cpp
   CollocationPointsAndWeights.cpp
