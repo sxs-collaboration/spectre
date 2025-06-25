@@ -54,6 +54,23 @@ if (ENABLE_PYTHON)
   # if(PARAVIEW_PYTHON_ENV_VARS)
   #   string(APPEND PYTHON_EXEC_ENV_VARS " ${PARAVIEW_PYTHON_ENV_VARS}")
   # endif()
+  #
+  # HDF5 file locking can be a problem when a simulation is writing data and we
+  # try to read it at the same time. We disable file locking by default when
+  # writing H5 files in simulations (see H5File.hpp), but readers may still have
+  # file locking enabled (e.g. h5py does this by default) and this creates file
+  # locks at the system level that prevent the simulation from writing to the
+  # file. Therefore we disable file locking here to avoid crashing simulations.
+  # Better solutions are described in H5File.hpp.
+  string(APPEND PYTHON_EXEC_ENV_VARS " HDF5_USE_FILE_LOCKING=FALSE")
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+    "${CMAKE_BINARY_DIR}/tmp/spectre")
+  file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
+    DESTINATION "${CMAKE_BINARY_DIR}/bin"
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
   configure_file(
     "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
     "${CMAKE_BINARY_DIR}/tmp/spectre")
