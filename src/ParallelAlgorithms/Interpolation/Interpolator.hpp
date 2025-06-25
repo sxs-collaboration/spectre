@@ -74,7 +74,7 @@ struct get_temporal_id {
 template <class Metavariables>
 struct Interpolator {
   using chare_type = Parallel::Algorithms::Group;
-  static constexpr bool checkpoint_data = false;
+  static constexpr bool checkpoint_data = true;
   using metavariables = Metavariables;
   using all_interpolation_target_tags = tmpl::transform<
       tmpl::filter<typename Metavariables::component_list,

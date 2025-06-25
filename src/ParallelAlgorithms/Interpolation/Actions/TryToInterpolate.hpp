@@ -201,7 +201,7 @@ void try_to_interpolate(
 
   // Send interpolated data only if interpolation has been done on all
   // of the local elements.
-  const auto all_num_elements =
+  const auto& all_num_elements =
       db::get<Tags::NumberOfElements<Metavariables::volume_dim>>(*box);
   const std::string& target_name = pretty_type::name<InterpolationTargetTag>();
   if (not all_num_elements.contains(target_name)) {
