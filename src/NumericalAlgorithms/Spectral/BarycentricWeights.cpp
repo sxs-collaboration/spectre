@@ -44,6 +44,10 @@ const DataVector& barycentric_weights(const size_t num_points) {
 }
 
 template const DataVector&
+    barycentric_weights<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
+template const DataVector&
+    barycentric_weights<Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
+template const DataVector&
     barycentric_weights<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const DataVector&
     barycentric_weights<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);

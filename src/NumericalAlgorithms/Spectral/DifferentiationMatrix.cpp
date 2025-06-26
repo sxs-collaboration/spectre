@@ -411,6 +411,10 @@ SPECTRAL_QUANTITY_FOR_MESH(weak_flux_differentiation_matrix, Matrix)
 #undef SPECTRAL_QUANTITY_FOR_MESH
 
 template const Matrix&
+    differentiation_matrix<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
+template const Matrix& differentiation_matrix<
+    Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
+template const Matrix&
     differentiation_matrix<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const Matrix&
     differentiation_matrix<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);

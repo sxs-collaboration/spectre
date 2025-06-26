@@ -7,6 +7,7 @@ set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES
   Test_Basis.cpp
+  Test_Cartoon.cpp
   Test_ChebyshevGauss.cpp
   Test_ChebyshevGaussLobatto.cpp
   Test_Clenshaw.cpp

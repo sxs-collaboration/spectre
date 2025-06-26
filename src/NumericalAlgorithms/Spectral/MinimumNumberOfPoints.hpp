@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -24,7 +25,13 @@ constexpr size_t minimum_number_of_points(const Basis /*basis*/,
     // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::FaceCentered) {
     return 2;
+    // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::Equiangular) {
+    return 1;
+    // NOLINTNEXTLINE(bugprone-branch-clone)
+  } else if (quadrature == Quadrature::AxialSymmetry) {
+    return 1;
+  } else if (quadrature == Quadrature::SphericalSymmetry) {
     return 1;
   }
   return std::numeric_limits<size_t>::max();

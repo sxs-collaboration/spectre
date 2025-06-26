@@ -41,6 +41,10 @@ SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 #undef SPECTRAL_QUANTITY_FOR_MESH
 
 template const DataVector&
+    quadrature_weights<Basis::Cartoon, Quadrature::AxialSymmetry>(size_t);
+template const DataVector&
+    quadrature_weights<Basis::Cartoon, Quadrature::SphericalSymmetry>(size_t);
+template const DataVector&
     quadrature_weights<Basis::Chebyshev, Quadrature::Gauss>(size_t);
 template const DataVector&
     quadrature_weights<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);
