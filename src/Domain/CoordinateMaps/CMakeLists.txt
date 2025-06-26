@@ -30,6 +30,7 @@ spectre_target_sources(
   Identity.cpp
   Interval.cpp
   KerrHorizonConforming.cpp
+  PolarToCartesian.cpp
   Rotation.cpp
   SpecialMobius.cpp
   SphericalToCartesianPfaffian.cpp
@@ -69,6 +70,7 @@ spectre_target_headers(
   Interval.hpp
   KerrHorizonConforming.hpp
   MapInstantiationMacros.hpp
+  PolarToCartesian.hpp
   ProductMaps.hpp
   ProductMaps.tpp
   Rotation.hpp
