@@ -11,6 +11,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -766,8 +767,14 @@ EventsAndDenseTriggers make_events_and_dense_triggers() {
 
 void test_p_refine() {
   auto box = db::create<db::AddSimpleTags<::Tags::EventsAndDenseTriggers,
-                                          ::Tags::PreviousTriggerTime>>(
-      make_events_and_dense_triggers(), std::optional<double>{});
+                                          ::Tags::PreviousTriggerTime,
+                                          ::Tags::TimeStepId, ::Tags::Time>>(
+      make_events_and_dense_triggers(), std::optional<double>{},
+      TimeStepId(true, 5, Slab(0.0, 4.0).start()), 0.0);
+  const double next_trigger_time =
+      db::get_mutable_reference<::Tags::EventsAndDenseTriggers>(
+          make_not_null(&box))
+          .next_trigger(box);
 
   const Element<1> element{ElementId<1>{0}, DirectionMap<1, Neighbors<1>>{}};
   const Mesh<1> mesh{2, Spectral::Basis::Legendre,
@@ -776,10 +783,61 @@ void test_p_refine() {
       make_not_null(&box), std::make_pair(mesh, element));
 
   // There is no comparison operator for EventsAndDenseTriggers
-  // const auto expected_events_and_dense_triggers =
-  //     make_events_and_dense_triggers();
-  // CHECK(db::get<::Tags::EventsAndDenseTriggers>(box) ==
-  //       expected_events_and_dense_triggers);
+  CHECK(db::get_mutable_reference<::Tags::EventsAndDenseTriggers>(
+            make_not_null(&box))
+            .next_trigger(box) == next_trigger_time);
+  CHECK(db::get<::Tags::PreviousTriggerTime>(box) == std::nullopt);
+}
+
+void test_h_split() {
+  tuples::TaggedTuple<::Tags::EventsAndDenseTriggers> parent_items{
+      make_events_and_dense_triggers()};
+  auto box = db::create<db::AddSimpleTags<::Tags::EventsAndDenseTriggers,
+                                          ::Tags::PreviousTriggerTime,
+                                          ::Tags::TimeStepId, ::Tags::Time>>(
+      EventsAndDenseTriggers{}, std::optional<double>{},
+      TimeStepId(true, 5, Slab(0.0, 4.0).start()), 0.0);
+  const double next_trigger_time =
+      get<::Tags::EventsAndDenseTriggers>(parent_items).next_trigger(box);
+
+  db::mutate_apply<evolution::Actions::ProjectRunEventsAndDenseTriggers>(
+      make_not_null(&box), std::as_const(parent_items));
+
+  // There is no comparison operator for EventsAndDenseTriggers
+  CHECK(db::get_mutable_reference<::Tags::EventsAndDenseTriggers>(
+            make_not_null(&box))
+            .next_trigger(box) == next_trigger_time);
+  CHECK(db::get<::Tags::PreviousTriggerTime>(box) == std::nullopt);
+}
+
+void test_h_join() {
+  std::unordered_map<ElementId<1>,
+                     tuples::TaggedTuple<::Tags::EventsAndDenseTriggers>>
+      children_items{};
+  children_items.emplace(ElementId<1>(2, {{{2, 2}}}),
+                         make_events_and_dense_triggers());
+  children_items.emplace(ElementId<1>(2, {{{2, 3}}}),
+                         make_events_and_dense_triggers());
+  auto box = db::create<db::AddSimpleTags<::Tags::EventsAndDenseTriggers,
+                                          ::Tags::PreviousTriggerTime,
+                                          ::Tags::TimeStepId, ::Tags::Time>>(
+      EventsAndDenseTriggers{}, std::optional<double>{},
+      TimeStepId(true, 5, Slab(0.0, 4.0).start()), 0.0);
+  const double next_trigger_time =
+      get<::Tags::EventsAndDenseTriggers>(children_items.begin()->second)
+          .next_trigger(box);
+  for (auto& child_items : children_items) {
+    REQUIRE(get<::Tags::EventsAndDenseTriggers>(child_items.second)
+                .next_trigger(box) == next_trigger_time);
+  }
+
+  db::mutate_apply<evolution::Actions::ProjectRunEventsAndDenseTriggers>(
+      make_not_null(&box), std::as_const(children_items));
+
+  // There is no comparison operator for EventsAndDenseTriggers
+  CHECK(db::get_mutable_reference<::Tags::EventsAndDenseTriggers>(
+            make_not_null(&box))
+            .next_trigger(box) == next_trigger_time);
   CHECK(db::get<::Tags::PreviousTriggerTime>(box) == std::nullopt);
 }
 }  // namespace
@@ -801,4 +859,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndDenseTriggers",
                 evolution::Actions::ProjectRunEventsAndDenseTriggers,
                 amr::protocols::Projector>);
   test_p_refine();
+  test_h_split();
+  test_h_join();
 }
