@@ -7,21 +7,23 @@
 spectre_load_sys_modules() {
     # impi is loaded, which it should be by default
     # but explicitly load it in just in case
-    module load impi/19.0.9
-    module load gcc/9.1.0
-    module load mkl/19.0.5
+    module load gcc/13.2.0
+    module load impi
+    module load mkl
     module load gsl
     module load hdf5
     module load boost
+    module load cmake/3.24.2
 }
 
 # Unload system modules
 spectre_unload_sys_modules() {
+    module unload cmake
     module unload boost
     module unload hdf5
     module unload gsl
-    module unload mkl/19.0.5
-    module unload gcc/9.1.0
+    module unload mkl
+    module unload gcc/13.2.0
     # Don't unload impi as this is one of the default system modules
 }
 
@@ -48,7 +50,6 @@ spectre_unload_modules() {
     module unload spectre_boost
     module unload libxsmm
     module unload libsharp
-    module unload catch
     module unload brigand
     module unload blaze
 
@@ -60,7 +61,6 @@ spectre_load_modules() {
 
     module load blaze
     module load brigand
-    module load catch
     module load libsharp
     module load libxsmm
     module load spectre_boost
@@ -76,14 +76,16 @@ spectre_run_cmake() {
     fi
     spectre_load_modules
     # -D USE_LD=ld - ld.gold seems to hang linking the main executables
+    # no functioning Python 3.8 with newer gcc version
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
-          -D BUILD_PYTHON_BINDINGS=ON \
-          -D Python_EXECUTABLE=`which python3` \
+          -D ENABLE_PYTHON=OFF \
+          -D BUILD_TESTING=OFF \
+          -D BUILD_PYTHON_BINDINGS=OFF \
+          -D BUILD_DOCS=OFF \
           -D USE_LD=ld \
-          -D SPECTRE_TEST_RUNNER="$(pwd)/bin/charmrun" \
           "$@" \
           $SPECTRE_HOME
 }
