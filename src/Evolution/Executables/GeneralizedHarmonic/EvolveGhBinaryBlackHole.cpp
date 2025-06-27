@@ -11,6 +11,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Parallel/CharmMain.tpp"
+#include "ParallelAlgorithms/Amr/Actions/RegisterCallbacks.hpp"
 #include "PointwiseFunctions/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/System/AttachDebugger.hpp"
@@ -24,6 +25,8 @@ extern "C" void CkRegisterMainModule() {
        &gh::BoundaryCorrections::register_derived_with_charm,
        &ConstraintDamping::register_derived_with_charm,
        &control_system::size::register_derived_with_charm,
-       &register_factory_classes_with_charm<EvolutionMetavars>},
+       &register_factory_classes_with_charm<EvolutionMetavars>,
+       &amr::register_callbacks<EvolutionMetavars,
+                                EvolutionMetavars::gh_dg_element_array>},
       {});
 }
