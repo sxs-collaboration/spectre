@@ -47,7 +47,7 @@ InitialData:
   {% if IdFromEvolution %}
     ObservationValue: {{ InitialTime }}
     ObservationValueEpsilon: Auto
-    ElementsAreIdentical: True
+    ElementsAreIdentical: False
     Variables:
       SpacetimeMetric: SpacetimeMetric
       Pi: Pi
@@ -136,7 +136,8 @@ DomainCreator:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "VolumeData"
       TranslationMap:
-        InitialValues: [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+        H5Filename: "{{ FotFilename }}"
+        SubfileName: "VolumeData"
       SkewMap:
         H5Filename: "{{ FotFilename }}"
         SubfileName: "VolumeData"

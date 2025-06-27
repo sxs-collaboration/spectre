@@ -11,6 +11,7 @@ from spectre.support.CliExceptions import RequiredChoiceError
 class Bbh(click.Group):
     def list_commands(self, ctx):
         return [
+            "branch-runs",
             "eccentricity-control",
             "find-horizon",
             "generate-id",
@@ -20,7 +21,11 @@ class Bbh(click.Group):
         ]
 
     def get_command(self, ctx, name):
-        if name in ["eccentricity-control", "ecc-control"]:
+        if name == "branch-runs":
+            from .BranchRuns import branch_runs_command
+
+            return branch_runs_command
+        elif name in ["eccentricity-control", "ecc-control"]:
             from .EccentricityControl import eccentricity_control_command
 
             return eccentricity_control_command
