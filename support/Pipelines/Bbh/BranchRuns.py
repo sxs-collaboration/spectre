@@ -158,7 +158,10 @@ def branch_runs(
     "--requested-levs",
     type=click.IntRange(-2, 10),
     nargs=2,
-    help="Minimum and maximum Levs used for branching.",
+    help=(
+        "Minimum and maximum Levs used for branching. LevN corresponds to a"
+        " polynomial order of P=N+7."
+    ),
 )
 @click.option(
     "-i",
