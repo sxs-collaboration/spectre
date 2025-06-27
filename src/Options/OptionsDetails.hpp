@@ -28,6 +28,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
+#include "Utilities/TypeTraits/IsInteger.hpp"
 #include "Utilities/WrapText.hpp"
 
 namespace Options::Options_detail {
@@ -318,7 +319,8 @@ struct wrap_create_types_impl<CreateWrapper<T, Metavariables>> {
 };
 
 template <typename T>
-struct wrap_create_types_impl<T, Requires<std::is_fundamental<T>::value>> {
+struct wrap_create_types_impl<
+    T, Requires<std::is_fundamental_v<T> and not tt::is_integer_v<T>>> {
   template <typename Metavariables>
   using wrapped_type = T;
 

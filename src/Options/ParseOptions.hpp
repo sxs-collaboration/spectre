@@ -42,6 +42,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
+#include "Utilities/TypeTraits/IsInteger.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
 #include "Utilities/TypeTraits/IsStdArray.hpp"
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
@@ -1292,13 +1293,34 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
   static bool decode(
       const Node& node,
       Options::Options_detail::CreateWrapper<T, Metavariables>& rhs) {
-    Options::Context context;
-    context.top_level = false;
-    context.append("While creating a " + pretty_type::name<T>());
-    Options::Option options(node, std::move(context));
-    rhs = Options::Options_detail::CreateWrapper<T, Metavariables>{
-        Options::create_from_yaml<T>::template create<Metavariables>(options)};
-    return true;
+    if constexpr (tt::is_integer_v<T>) {
+      // Try parsing integers as floating point to allow scientific
+      // notation for large values.
+      T result{};
+      if (not YAML::convert<T>::decode(node, result)) {
+        double float_result{};
+        if (not YAML::convert<double>::decode(node, float_result) or
+            float_result > static_cast<double>(std::numeric_limits<T>::max()) or
+            float_result < static_cast<double>(std::numeric_limits<T>::min())) {
+          return false;
+        }
+        result = static_cast<T>(float_result);
+        if (static_cast<double>(result) != float_result) {
+          return false;
+        }
+      }
+      rhs = Options::Options_detail::CreateWrapper<T, Metavariables>{result};
+      return true;
+    } else {
+      Options::Context context;
+      context.top_level = false;
+      context.append("While creating a " + pretty_type::name<T>());
+      Options::Option options(node, std::move(context));
+      rhs = Options::Options_detail::CreateWrapper<T, Metavariables>{
+          Options::create_from_yaml<T>::template create<Metavariables>(
+              options)};
+      return true;
+    }
   }
 };
 /// \endcond

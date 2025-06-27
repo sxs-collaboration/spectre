@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <map>
@@ -21,6 +22,7 @@
 #include "Options/String.hpp"
 #include "Options/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -1646,6 +1648,51 @@ void test_load_and_check_yaml() {
       }(),
       Catch::Matchers::ContainsSubstring("the running executable is"));
 }
+
+template <typename T>
+struct GenericTag {
+  using type = T;
+  static constexpr Options::String help = "halp";
+};
+
+void test_integer_scientific() {
+  tmpl::for_each<tmpl::list<int, unsigned, size_t, int64_t, uint64_t>>(
+      []<typename T>(tmpl::type_<T> /*meta*/) {
+        INFO(pretty_type::name<T>());
+        const auto check = [](const std::string& input, const T& expected) {
+          CAPTURE(input);
+          Options::Parser<tmpl::list<GenericTag<T>>> parser("");
+          parser.parse("GenericTag: " + input);
+          CHECK(parser.template get<GenericTag<T>>() == expected);
+        };
+        const auto check_fail = [](const std::string& input) {
+          CAPTURE(input);
+          Options::Parser<tmpl::list<GenericTag<T>>> parser("");
+          parser.parse("GenericTag: " + input);
+          CHECK_THROWS_WITH(parser.template get<GenericTag<T>>(),
+                            Catch::Matchers::ContainsSubstring(
+                                "Failed to convert value to type"));
+        };
+
+        check("1234", 1234);
+        check("1e8", 100'000'000);
+        check("1.23e5", 123000);
+        if constexpr (std::is_signed_v<T>) {
+          check("-1234", -1234);
+          check("-1e8", -100'000'000);
+          check("-1.23e5", -123000);
+        } else {
+          check_fail("-1234");
+          check_fail("-1e8");
+          check_fail("-1.23e5");
+        }
+        check_fail("1.2");
+        check_fail("");
+        check_fail("bla");
+        check_fail("1e-3");
+        check_fail("1e100");
+      });
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -1672,4 +1719,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_overlay();
   test_options_serialization();
   test_load_and_check_yaml();
+  test_integer_scientific();
 }
