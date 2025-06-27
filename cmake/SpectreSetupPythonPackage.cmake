@@ -1,120 +1,121 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-spectre_define_test_timeout_factor_option(PYTHON "Python")
+if (ENABLE_PYTHON)
+  spectre_define_test_timeout_factor_option(PYTHON "Python")
 
-option(PY_DEV_MODE "Enable development mode for the Python package, meaning \
-that Python files are symlinked rather than copied to the build directory" OFF)
-function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
-  if(PY_DEV_MODE)
-    get_filename_component(_TARGET_FILE_DIR ${TARGET_FILE} DIRECTORY)
-    execute_process(COMMAND
-      ${CMAKE_COMMAND} -E make_directory ${_TARGET_FILE_DIR})
-    execute_process(COMMAND
-      ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
-  else()
-    configure_file(${SOURCE_FILE} ${TARGET_FILE} @ONLY)
-  endif()
-endfunction()
+  option(PY_DEV_MODE "Enable development mode for the Python package, meaning \
+  that Python files are symlinked rather than copied to the build directory" OFF)
+  function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
+    if(PY_DEV_MODE)
+      get_filename_component(_TARGET_FILE_DIR ${TARGET_FILE} DIRECTORY)
+      execute_process(COMMAND
+        ${CMAKE_COMMAND} -E make_directory ${_TARGET_FILE_DIR})
+      execute_process(COMMAND
+        ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
+    else()
+      configure_file(${SOURCE_FILE} ${TARGET_FILE} @ONLY)
+    endif()
+  endfunction()
 
-set(SPECTRE_PYTHON_PREFIX "${SPECTRE_PYTHON_PREFIX_PARENT}/spectre")
+  set(SPECTRE_PYTHON_PREFIX "${SPECTRE_PYTHON_PREFIX_PARENT}/spectre")
 
-# Create the root __init__.py file
-configure_or_symlink_py_file(
-  "${CMAKE_SOURCE_DIR}/support/Python/__init__.py"
-  "${SPECTRE_PYTHON_PREFIX}/__init__.py"
-)
-
-# Create the root __main__.py entry point
-configure_or_symlink_py_file(
-  "${CMAKE_SOURCE_DIR}/support/Python/__main__.py"
-  "${SPECTRE_PYTHON_PREFIX}/__main__.py"
-)
-# Also link the main entry point to bin/
-set(PYTHON_EXE_COMMAND "-m spectre")
-set(PYTHON_EXEC_ENV_VARS "")
-# At some point we needed to preload jemalloc for the Python bindings to work,
-# otherwise we got "cannot allocate memory in static TLS block" errors when
-# using jemalloc. This is fixed by avoiding to link jemalloc into libraries in
-# the first place (we only dynamically link it into executables). If we want to
-# link jemalloc into libraries again (e.g. to use jemalloc features explicitly
-# in the code), the best way to do this would be to build jemalloc with a prefix
-# and use it as a custom allocator where needed, instead of generically
-# replacing the system allocator.
-#
-# ParaView needs specific environment variables set, e.g. 'LD_LIBRARY_PATH', but
-# they can interfere with simulations, e.g. when they point to ParaView's
-# bundled MPI which may be different to the MPI we built with. Therefore we
-# disable this for now. This means we can't use the pre-built ParaView binaries
-# that bundle their own MPI and Python, unless we find a way to set the needed
-# environment variables only when running ParaView. Everything should work
-# when using a ParaView built with the same MPI and Python as the rest of
-# SpECTRE.
-# if(PARAVIEW_PYTHON_ENV_VARS)
-#   string(APPEND PYTHON_EXEC_ENV_VARS " ${PARAVIEW_PYTHON_ENV_VARS}")
-# endif()
-configure_file(
-  "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
-  "${CMAKE_BINARY_DIR}/tmp/spectre")
-file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
-  DESTINATION "${CMAKE_BINARY_DIR}/bin"
-  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
-# Also link the Python interpreter to bin/python-spectre as an easy way to jump
-# into a Python shell or run a script that uses pybindings
-set(PYTHON_EXE_COMMAND "")
-configure_file(
-  "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
-  "${CMAKE_BINARY_DIR}/tmp/python-spectre")
-file(COPY "${CMAKE_BINARY_DIR}/tmp/python-spectre"
-  DESTINATION "${CMAKE_BINARY_DIR}/bin"
-  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-
-# Write configuration files for installing the Python modules
-file(STRINGS
-  ${CMAKE_SOURCE_DIR}/support/Python/requirements.txt
-  SPECTRE_PY_DEPS)
-file(STRINGS
-  ${CMAKE_SOURCE_DIR}/support/Python/dev_requirements.txt
-  SPECTRE_PY_DEV_DEPS)
-list(FILTER SPECTRE_PY_DEPS EXCLUDE REGEX "^#")
-list(FILTER SPECTRE_PY_DEV_DEPS EXCLUDE REGEX "^#")
-list(REMOVE_ITEM SPECTRE_PY_DEPS "")
-list(REMOVE_ITEM SPECTRE_PY_DEV_DEPS "")
-list(JOIN SPECTRE_PY_DEPS "\n    " SPECTRE_PY_DEPS_OUTPUT)
-list(JOIN SPECTRE_PY_DEV_DEPS "\n    " SPECTRE_PY_DEV_DEPS_OUTPUT)
-configure_or_symlink_py_file(
-  "${CMAKE_SOURCE_DIR}/pyproject.toml"
-  "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")
-configure_or_symlink_py_file(
-  "${CMAKE_SOURCE_DIR}/setup.cfg"
-  "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
-
-# Write a file to be able to set up the new python path.
-file(WRITE
-  "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
-  "#!/bin/sh\n"
-  "export PYTHONPATH=${PYTHONPATH}\n"
-  )
-configure_file(
-  "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
-  "${CMAKE_BINARY_DIR}/bin/LoadPython.sh")
-
-# Install the SpECTRE Python package to the CMAKE_INSTALL_PREFIX, using pip.
-# This will install the package into the expected subdirectory, typically
-# `lib/pythonX.Y/site-packages/`. It also creates symlinks to entry points
-# specified in `setup.py`.
-install(
-  CODE "execute_process(\
-    COMMAND ${Python_EXECUTABLE} -m pip install \
-      --no-deps --no-input --no-cache-dir --no-index --ignore-installed \
-      --disable-pip-version-check --no-build-isolation \
-      --prefix ${CMAKE_INSTALL_PREFIX} ${SPECTRE_PYTHON_PREFIX_PARENT} \
-    )"
+  # Create the root __init__.py file
+  configure_or_symlink_py_file(
+    "${CMAKE_SOURCE_DIR}/support/Python/__init__.py"
+    "${SPECTRE_PYTHON_PREFIX}/__init__.py"
   )
 
+  # Create the root __main__.py entry point
+  configure_or_symlink_py_file(
+    "${CMAKE_SOURCE_DIR}/support/Python/__main__.py"
+    "${SPECTRE_PYTHON_PREFIX}/__main__.py"
+  )
+  # Also link the main entry point to bin/
+  set(PYTHON_EXE_COMMAND "-m spectre")
+  set(PYTHON_EXEC_ENV_VARS "")
+  # At some point we needed to preload jemalloc for the Python bindings to work,
+  # otherwise we got "cannot allocate memory in static TLS block" errors when
+  # using jemalloc. This is fixed by avoiding to link jemalloc into libraries in
+  # the first place (we only dynamically link it into executables). If we want to
+  # link jemalloc into libraries again (e.g. to use jemalloc features explicitly
+  # in the code), the best way to do this would be to build jemalloc with a prefix
+  # and use it as a custom allocator where needed, instead of generically
+  # replacing the system allocator.
+  #
+  # ParaView needs specific environment variables set, e.g. 'LD_LIBRARY_PATH', but
+  # they can interfere with simulations, e.g. when they point to ParaView's
+  # bundled MPI which may be different to the MPI we built with. Therefore we
+  # disable this for now. This means we can't use the pre-built ParaView binaries
+  # that bundle their own MPI and Python, unless we find a way to set the needed
+  # environment variables only when running ParaView. Everything should work
+  # when using a ParaView built with the same MPI and Python as the rest of
+  # SpECTRE.
+  # if(PARAVIEW_PYTHON_ENV_VARS)
+  #   string(APPEND PYTHON_EXEC_ENV_VARS " ${PARAVIEW_PYTHON_ENV_VARS}")
+  # endif()
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+    "${CMAKE_BINARY_DIR}/tmp/spectre")
+  file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
+    DESTINATION "${CMAKE_BINARY_DIR}/bin"
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+  # Also link the Python interpreter to bin/python-spectre as an easy way to jump
+  # into a Python shell or run a script that uses pybindings
+  set(PYTHON_EXE_COMMAND "")
+  configure_file(
+    "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+    "${CMAKE_BINARY_DIR}/tmp/python-spectre")
+  file(COPY "${CMAKE_BINARY_DIR}/tmp/python-spectre"
+    DESTINATION "${CMAKE_BINARY_DIR}/bin"
+    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+      GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+  # Write configuration files for installing the Python modules
+  file(STRINGS
+    ${CMAKE_SOURCE_DIR}/support/Python/requirements.txt
+    SPECTRE_PY_DEPS)
+  file(STRINGS
+    ${CMAKE_SOURCE_DIR}/support/Python/dev_requirements.txt
+    SPECTRE_PY_DEV_DEPS)
+  list(FILTER SPECTRE_PY_DEPS EXCLUDE REGEX "^#")
+  list(FILTER SPECTRE_PY_DEV_DEPS EXCLUDE REGEX "^#")
+  list(REMOVE_ITEM SPECTRE_PY_DEPS "")
+  list(REMOVE_ITEM SPECTRE_PY_DEV_DEPS "")
+  list(JOIN SPECTRE_PY_DEPS "\n    " SPECTRE_PY_DEPS_OUTPUT)
+  list(JOIN SPECTRE_PY_DEV_DEPS "\n    " SPECTRE_PY_DEV_DEPS_OUTPUT)
+  configure_or_symlink_py_file(
+    "${CMAKE_SOURCE_DIR}/pyproject.toml"
+    "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")
+  configure_or_symlink_py_file(
+    "${CMAKE_SOURCE_DIR}/setup.cfg"
+    "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
+
+  # Write a file to be able to set up the new python path.
+  file(WRITE
+    "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
+    "#!/bin/sh\n"
+    "export PYTHONPATH=${PYTHONPATH}\n"
+    )
+  configure_file(
+    "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
+    "${CMAKE_BINARY_DIR}/bin/LoadPython.sh")
+
+  # Install the SpECTRE Python package to the CMAKE_INSTALL_PREFIX, using pip.
+  # This will install the package into the expected subdirectory, typically
+  # `lib/pythonX.Y/site-packages/`. It also creates symlinks to entry points
+  # specified in `setup.py`.
+  install(
+    CODE "execute_process(\
+      COMMAND ${Python_EXECUTABLE} -m pip install \
+        --no-deps --no-input --no-cache-dir --no-index --ignore-installed \
+        --disable-pip-version-check --no-build-isolation \
+        --prefix ${CMAKE_INSTALL_PREFIX} ${SPECTRE_PYTHON_PREFIX_PARENT} \
+      )"
+    )
+endif()
 add_custom_target(all-pybindings)
 
 # Add a python module, either with or without python bindings and with
@@ -137,6 +138,9 @@ add_custom_target(all-pybindings)
 #                 ${CMAKE_SOURCE_DIR}/src) to add to the module. Omit if
 #                 no python files are to be provided.
 function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
+  if (NOT ENABLE_PYTHON)
+    return()
+  endif()
   set(SINGLE_VALUE_ARGS MODULE_PATH LIBRARY_NAME)
   set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES)
   cmake_parse_arguments(

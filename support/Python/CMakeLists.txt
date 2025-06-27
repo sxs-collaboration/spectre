@@ -1,9 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+if (NOT ENABLE_PYTHON)
+  return()
+endif()
+
 option(MACHINE "Select a machine that we know how to run on, such as a \
 particular supercomputer" OFF)
-
 spectre_python_add_module(
   support
   PYTHON_FILES

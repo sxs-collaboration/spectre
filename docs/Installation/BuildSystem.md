@@ -143,6 +143,13 @@ alphabetical order):
 - ENABLE_PROFILING
   - Enables various options to make profiling SpECTRE easier
     (default is `OFF`)
+- ENABLE_PYTHON
+  - Enables Python. (default is `ON`)
+  - Set to `OFF` for a minimal build on systems without a recent Python
+    installation. Warning: Many things will not work!!
+  - Note: Even when disabled, a minimal Python installation
+    (Python ≥ 2.7) is still required.
+  - BUILD_PYTHON_BINDINGS, BUILD_TESTING, BUILD_DOCS should be `OFF`.
 - ENABLE_WARNINGS
   - Whether or not warning flags are enabled (default is `ON`)
 - FUKA_ROOT
