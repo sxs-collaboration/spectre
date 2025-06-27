@@ -32,7 +32,7 @@ namespace ScalarSelfForce {
  * F^i = \{\partial_{r_\star}, \alpha \partial_{\cos\theta}\} \Psi_m
  * \text{,}
  * \end{equation}
- * where $\alpha$, $\beta$, and $\gamma^i$ are coefficients that define the
+ * where $\alpha$, $\beta$, and $\gamma_i$ are coefficients that define the
  * elliptic equations. The particular coefficients that match Eq. (2.9) of
  * \cite Osburn:2022bby for a circular equatorial orbit in Kerr are implemented
  * in `ScalarSelfForce::AnalyticData::CircularOrbit`.
