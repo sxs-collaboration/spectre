@@ -659,7 +659,7 @@ namespace Tags {
  * derivatives, there will have to be more template specializations.
  */
 template <typename ArgumentTag, typename DerivativeKind>
-struct ManualSwshDerivativeCompute
+struct SwshDerivativeCompute
     : Spectral::Swsh::Tags::Derivative<ArgumentTag, DerivativeKind>,
       db::ComputeTag {
   using base = Spectral::Swsh::Tags::Derivative<ArgumentTag, DerivativeKind>;

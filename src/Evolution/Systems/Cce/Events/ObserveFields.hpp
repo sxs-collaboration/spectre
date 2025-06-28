@@ -236,9 +236,9 @@ class ObserveFields : public Event {
 
   using compute_tags_for_observation_box =
     tmpl::list<Tags::Psi0Compute, Tags::Psi1Compute, Tags::Psi2Compute,
-               Tags::ManualSwshDerivativeCompute<Tags::BondiJ,
+               Tags::SwshDerivativeCompute<Tags::BondiJ,
                                                   Spectral::Swsh::Tags::Eth>,
-               Tags::ManualSwshDerivativeCompute<Tags::BondiW,
+               Tags::SwshDerivativeCompute<Tags::BondiW,
                                                   Spectral::Swsh::Tags::Eth>,
                Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
                Tags::NewmanPenroseGammaCompute,
@@ -249,9 +249,9 @@ class ObserveFields : public Event {
                Tags::NewmanPenroseSigmaCompute, Tags::NewmanPenroseRhoCompute,
                Tags::NewmanPenrosePiCompute, Tags::NewmanPenroseNuCompute,
                Tags::NewmanPenroseMuCompute, Tags::NewmanPenroseLambdaCompute,
-               Tags::ManualSwshDerivativeCompute<Tags::NewmanPenrosePi,
+               Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
                                                  Spectral::Swsh::Tags::Eth>,
-               Tags::ManualSwshDerivativeCompute<Tags::NewmanPenrosePi,
+               Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
                                                  Spectral::Swsh::Tags::Ethbar>,
                Tags::DyCompute<Tags::NewmanPenrosePi>,
                Tags::DyCompute<Tags::NewmanPenroseMu>

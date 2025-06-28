@@ -340,13 +340,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
   mutate_all_swsh_derivatives_for_tag<TestSpinWeightedScalar<1>>(
       make_not_null(&computation_box));
 
-  // Test that ManualSwshDerivs agree with the automatic ones
+  // Test that manual SwshDerivs agree with the automatic ones
   using manual_swsh_derivs_to_check =
-      tmpl::list<Tags::ManualSwshDerivativeCompute<Tags::BondiBeta,
+      tmpl::list<Tags::SwshDerivativeCompute<Tags::BondiBeta,
                                                    Spectral::Swsh::Tags::Eth>,
-                 Tags::ManualSwshDerivativeCompute<Tags::BondiU,
+                 Tags::SwshDerivativeCompute<Tags::BondiU,
                                                    Spectral::Swsh::Tags::Eth>,
-                 Tags::ManualSwshDerivativeCompute<
+                 Tags::SwshDerivativeCompute<
                      Tags::BondiJ, Spectral::Swsh::Tags::Ethbar>>;
 
   using manual_swsh_derivs_base =
