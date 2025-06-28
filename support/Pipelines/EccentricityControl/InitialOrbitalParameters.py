@@ -7,9 +7,52 @@ from typing import Optional, Sequence, Tuple
 import numpy as np
 from scipy.optimize import minimize
 
-from spectre.support.CheckSpecImport import check_spec_import
-
 logger = logging.getLogger(__name__)
+
+
+# The following two functions are modernized versions of those in SpEC's
+# `ZeroEccParamsFromPN.py`. They use higher PN orders (whichever are implemented
+# in the PostNewtonian module), are much faster, and avoid spurious output from
+# old Fortran code (LSODA) that was used in SpEC's `ZeroEccParamsFromPN.py`.
+# They are consistent with SpEC up to 2.5 PN order, as tested by Mike Boyle (see
+# https://github.com/moble/PostNewtonian.jl/issues/41).
+#
+# Since these functions use Julia through Python bindings, they will download
+# Julia and precompile the packages on first use, which may take a few minutes
+# (see https://moble.github.io/PostNewtonian.jl/dev/interface/python/).
+
+
+def omega_and_adot(r, q, chiA, chiB):
+    from sxs.julia import PostNewtonian
+
+    # The BBH system state vector is documented here:
+    # https://moble.github.io/PostNewtonian.jl/stable/internals/pn_systems/#PostNewtonian.BBH
+    # The 14 state variables are:
+    # M1, M2, chi1 (3 components), chi2 (3 components), R (4 components), v, Phi
+    # These state variables are documented here:
+    # https://moble.github.io/PostNewtonian.jl/stable/internals/fundamental_variables
+    pn = PostNewtonian.BBH(
+        np.array(
+            [q / (1.0 + q), 1.0 / (1.0 + q), *chiA, *chiB, 1, 0, 0, 0, 1, 0]
+        )
+    )
+    # Set velocity by computing it from separation and the rest of the state
+    # variables
+    pn.state[12] = PostNewtonian.separation_inverse(r, pn)
+    return PostNewtonian.Omega(pn), PostNewtonian.separation_dot(pn) / r
+
+
+def num_orbits_and_time_to_merger(q, chiA, chiB, omega0):
+    from sxs.julia import PNWaveform
+
+    pn_waveform = PNWaveform(
+        M1=q / (1.0 + q),
+        M2=1.0 / (1.0 + q),
+        chi1=chiA,
+        chi2=chiB,
+        Omega_i=omega0,
+    )
+    return 0.5 * pn_waveform.orbital_phase[-1] / np.pi, pn_waveform.time[-1]
 
 
 def initial_orbital_parameters(
@@ -27,9 +70,9 @@ def initial_orbital_parameters(
     The result can be used to start an eccentricity control procedure to tune
     the initial orbital parameters further.
 
-    Currently only zero eccentricity (circular orbits) are supported, and the
-    implementation uses functions from SpEC's ZeroEccParamsFromPN.py. This
-    should be generalized.
+    Currently only zero eccentricity (circular orbits) are supported, since the
+    implementation uses functions from 'sxs.julia.PostNewtonian' that currently
+    work only for zero eccentricity. Eccentric terms could be added there.
 
     Arguments:
       mass_ratio: Defined as q = M_A / M_B >= 1.
@@ -80,8 +123,9 @@ def initial_orbital_parameters(
             "If you specify a nonzero 'eccentricity' you must also specify a"
             " 'mean_anomaly_fraction'."
         )
-    # The functions from SpEC currently work only for zero eccentricity. We will
-    # need to generalize this for eccentric orbits.
+
+    # The functions from the PostNewtonian module currently work only for zero
+    # eccentricity. We will need to generalize this for eccentric orbits.
     assert eccentricity == 0.0, (
         "Initial orbital parameters can currently only be computed for zero"
         " eccentricity."
@@ -101,22 +145,16 @@ def initial_orbital_parameters(
         " 'time_to_merger'."
     )
 
-    # Import functions from SpEC until we have ported them over. These functions
-    # call old Fortran code (LSODA) through scipy.integrate.odeint, which leads
-    # to lots of noise in stdout. When porting these functions, we should
-    # modernize them to use scipy.integrate.solve_ivp.
-    check_spec_import()
-    from ZeroEccParamsFromPN import nOrbitsAndTotalTime, omegaAndAdot
-
     # Find an omega0 that gives the right number of orbits or time to merger
     if num_orbits is not None or time_to_merger is not None:
+        logger.info("Finding orbital angular velocity...")
         opt_result = minimize(
             lambda x: (
                 abs(
-                    nOrbitsAndTotalTime(
+                    num_orbits_and_time_to_merger(
                         q=mass_ratio,
-                        chiA0=dimensionless_spin_a,
-                        chiB0=dimensionless_spin_b,
+                        chiA=dimensionless_spin_a,
+                        chiB=dimensionless_spin_b,
                         omega0=x[0],
                     )[0 if num_orbits is not None else 1]
                     - (num_orbits if num_orbits is not None else time_to_merger)
@@ -138,14 +176,14 @@ def initial_orbital_parameters(
 
     # Find the separation that gives the desired orbital angular velocity
     if orbital_angular_velocity is not None:
+        logger.info("Finding separation...")
         opt_result = minimize(
             lambda x: abs(
-                omegaAndAdot(
+                omega_and_adot(
                     r=x[0],
                     q=mass_ratio,
                     chiA=dimensionless_spin_a,
                     chiB=dimensionless_spin_b,
-                    rPrime0=1.0,  # Choice also made in SpEC
                 )[0]
                 - orbital_angular_velocity
             ),
@@ -161,12 +199,11 @@ def initial_orbital_parameters(
         logger.debug(f"Found initial separation: {separation}")
 
     # Find the radial expansion velocity
-    new_orbital_angular_velocity, radial_expansion_velocity = omegaAndAdot(
+    new_orbital_angular_velocity, radial_expansion_velocity = omega_and_adot(
         r=separation,
         q=mass_ratio,
         chiA=dimensionless_spin_a,
         chiB=dimensionless_spin_b,
-        rPrime0=1.0,  # Choice also made in SpEC
     )
     if orbital_angular_velocity is None:
         orbital_angular_velocity = new_orbital_angular_velocity
@@ -179,10 +216,10 @@ def initial_orbital_parameters(
         )
 
     # Estimate number of orbits and time to merger
-    num_orbits, time_to_merger = nOrbitsAndTotalTime(
+    num_orbits, time_to_merger = num_orbits_and_time_to_merger(
         q=mass_ratio,
-        chiA0=dimensionless_spin_a,
-        chiB0=dimensionless_spin_b,
+        chiA=dimensionless_spin_a,
+        chiB=dimensionless_spin_b,
         omega0=orbital_angular_velocity,
     )
     logger.info(
