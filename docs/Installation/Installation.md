@@ -254,6 +254,8 @@ The following dependencies will be fetched automatically if you set
   <details>
   \include support/Python/dev_requirements.txt
   </details>
+* [Kokkos](https://github.com/kokkos/kokkos) (experimental) - for GPU support.
+  See \ref gpu_support for details.
 * [Google Benchmark](https://github.com/google/benchmark) - to do
   microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and

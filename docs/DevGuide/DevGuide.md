@@ -45,6 +45,10 @@ and patterns.
 - \subpage variables_foundations "Using the Variables class" to improve
   efficiency
 
+### GPU Support
+Information on how to use and develop GPU support in SpECTRE.
+- \subpage gpu_support "GPU support"
+
 ### General SpECTRE Terminology
 Terms with SpECTRE-specific meanings are defined here.
 - \subpage domain_concepts "Domain Concepts" used throughout the code are
