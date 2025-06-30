@@ -6,6 +6,7 @@ name: Parse compiler
 description: |
   Parse the compiler name and version from the input and set the environment
   variables CC, CXX, FC, COMPILER_ID, and COMPILER_VERSION.
+  For nvcc, it sets CC, CXX, and FC to the host compilers (gcc, g++, gfortran).
 
 inputs:
   compiler:
@@ -28,8 +29,9 @@ runs:
             CXX=clang++-${COMPILER_VERSION};
             FC=gfortran-11;
           elif [[ $COMPILER_ID = nvcc ]]; then
+            # Set host compilers
             CC=gcc;
-            CXX=nvcc;
+            CXX=g++;
             FC=gfortran-11;
           fi
         fi
