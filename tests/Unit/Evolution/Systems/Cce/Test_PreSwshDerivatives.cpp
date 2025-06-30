@@ -17,6 +17,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/LinearOperators.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
@@ -244,5 +245,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
       generated_h.data() - one_minus_y.data() *
                                generated_du_r_divided_by_r.data() *
                                generated_dy_j.data());
+
+  // Check that DyCompute agrees with the automatic one
+  auto manual_dy_box = db::create<
+    db::AddSimpleTags<Tags::LMax, Tags::OneMinusY, Tags::BondiJ>,
+    db::AddComputeTags<Tags::DyCompute<Tags::BondiJ>>>(
+        db::get<Tags::LMax>(spare_computation_box),
+        db::get<Tags::OneMinusY>(spare_computation_box),
+        db::get<Tags::BondiJ>(spare_computation_box));
+
+  CHECK_ITERABLE_APPROX(
+      get(db::get<Tags::Dy<Tags::BondiJ>>(manual_dy_box)),
+      generated_dy_j);
+
 }
 }  // namespace Cce

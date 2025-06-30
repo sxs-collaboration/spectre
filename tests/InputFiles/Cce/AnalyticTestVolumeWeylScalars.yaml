@@ -19,6 +19,10 @@ OutputFileChecks:
     FileGlob: "CharacteristicExtractVolume.h5"
     # By not specifying an expected value, we test against 0
     AbsoluteTolerance: 1e-8
+ExtraFileCheckExecs:
+  - Label: "check_psi2"
+    Executable: "AnalyticTestVolumeWeylPsi2.py"
+    Arguments: ["--atol", "1.e-10", "--rtol", "1.e-10"]
 
 ---
 
@@ -58,6 +62,7 @@ EventsAndTriggersAtSlabs:
             - InertialRetardedTime
             - Psi0
             - Psi1
+            - Psi2
 
 EventsAndTriggersAtSteps:
 

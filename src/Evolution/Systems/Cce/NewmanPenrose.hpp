@@ -872,6 +872,98 @@ struct Psi1Compute : Tags::Psi1, db::ComputeTag {
 }  // namespace Tags
 
 /*!
+ * \brief Compute the Weyl scalar $\Psi_2$ in the volume according to the
+ * standard set of Newman-Penrose vectors.
+ *
+ * \details Our convention is $\Psi_2 =
+ * l^\alpha m^\beta \bar{m}^\mu n^\nu
+ * C_{\alpha \beta \mu \nu}$.
+ *
+ * \begin{align}
+ *   \Psi_2 = {}&\frac{1-y}{4 R} \left[ \sqrt{2}(1-y)\partial_y \mu +
+ *   \sqrt{1+K}\eth\pi - \frac{J}{\sqrt{1+K}}\bar{\eth}\pi\right]
+ *   \nonumber \\
+ *   & {}+ (\epsilon^{SW}+\bar{\epsilon}^{SW}-\bar{\rho})\mu +
+ *    (\bar{\alpha}^{SW}-\beta^{SW}_{NP}-\bar{\pi})\pi
+ *    - \sigma\lambda + \nu\kappa
+ * \end{align}
+ *
+ * In our choice of tetrad, $\kappa=0$, so the final term is omitted.
+ */
+template <>
+struct VolumeWeyl<Tags::Psi2> {
+  using return_tags = tmpl::list<Tags::Psi2>;
+  using argument_tags =
+      tmpl::list<Tags::BondiJ,
+                 Tags::BondiK,
+                 Tags::BondiR,
+                 Tags::Dy<Tags::NewmanPenroseMu>,
+                 Spectral::Swsh::Tags::Derivative<Tags::NewmanPenrosePi,
+                                                  Spectral::Swsh::Tags::Eth>,
+                 Spectral::Swsh::Tags::Derivative<Tags::NewmanPenrosePi,
+                                                  Spectral::Swsh::Tags::Ethbar>,
+                 Tags::NewmanPenroseAlpha,
+                 Tags::NewmanPenroseBeta,
+                 Tags::NewmanPenroseEpsilon,
+                 Tags::NewmanPenroseSigma,
+                 Tags::NewmanPenroseRho,
+                 Tags::NewmanPenrosePi,
+                 Tags::NewmanPenroseMu,
+                 Tags::NewmanPenroseLambda,
+                 Tags::OneMinusY>;
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> psi_2,
+      const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& bondi_k,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& bondi_r,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& dy_mu,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& eth_pi,
+      const Scalar<SpinWeighted<ComplexDataVector, -2>>& ethbar_pi,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
+      const Scalar<SpinWeighted<ComplexDataVector, +1>>& np_beta,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_epsilon,
+      const Scalar<SpinWeighted<ComplexDataVector, +2>>& np_sigma,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_rho,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_mu,
+      const Scalar<SpinWeighted<ComplexDataVector, -2>>& np_lambda,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>& one_minus_y);
+};
+
+namespace Tags {
+/*!
+ * \brief Compute tag for $\Psi_2$ in the volume.
+ *
+ * \details Uses `VolumeWeyl<Tags::Psi2>::apply()` for the
+ * computation.
+ */
+struct Psi2Compute : Tags::Psi2, db::ComputeTag {
+  using base = Tags::Psi2;
+  using return_type = typename base::type;
+  using argument_tags = typename VolumeWeyl<Tags::Psi2>::argument_tags;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>,
+      const Scalar<SpinWeighted<ComplexDataVector,  2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, +1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, +2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, -2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector,  0>>&)>(
+      &VolumeWeyl<Tags::Psi2>::apply);
+};
+}  // namespace Tags
+
+/*!
  * \brief Transform `Tags::BondiJ` from the partially flat coordinates
  * to the Cauchy coordinates.
  *
