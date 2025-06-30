@@ -88,9 +88,9 @@ cd $SPECTRE_DEPS_ROOT
 # Install Charm++
 git clone https://github.com/UIUC-PPL/charm
 pushd charm
-git checkout v7.0.0
-git apply $SPECTRE_HOME/support/Charm/v7.0.0.patch
-./build charm++ multicore-darwin-arm8 --with-production -g3 -j --build-shared
+git checkout v8.0.0
+./build charm++ multicore-darwin-arm8 --with-production -g3 -j --build-shared \
+  --disable-tls
 popd
 
 # The following dependencies are optional! They will be installed in the build

@@ -113,9 +113,8 @@ The easiest way of installing SpECTRE natively on a new machine is this:
   ```sh
   git clone https://github.com/UIUC-PPL/charm
   cd charm
-  git checkout v7.0.0
-  git apply $SPECTRE_HOME/support/Charm/v7.0.0.patch
-  ./build charm++ <version> --with-production --build-shared
+  git checkout v8.0.0
+  ./build charm++ <version> --with-production --build-shared --disable-tls
   export CHARM_ROOT=$PWD/<version>
   ```
 
@@ -208,7 +207,7 @@ apt), or AppleClang 13.0.0 or later
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
   \cite Hdf5
 * [Python](https://www.python.org/) 3.8 or later.
-* [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental).
+* [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (8 preferred).
   See also \ref building-charm. \cite Charmpp1 \cite Charmpp2 \cite Charmpp3
 
 The following dependencies will be fetched automatically if you set
@@ -496,7 +495,7 @@ and in their [documentation](https://charm.readthedocs.io/en/latest/quickstart.h
 Here are a few notes:
 
 - Once you cloned the [Charm++ repository](https://github.com/UIUC-PPL/charm),
-  run `git checkout v7.0.0` to switch to a supported, stable release of
+  run `git checkout v8.0.0` to switch to a supported, stable release of
   Charm++.
 - Apply the appropriate patch (if there is one) for the version from
   `${SPECTRE_ROOT}/support/Charm`. For example, if you have Charm++ v7.0.0
@@ -512,6 +511,8 @@ Here are a few notes:
   `--build-shared` to the `./build` command or pass `BUILD_SHARED=ON` to the
   CMake configuration (see the [Charm++ installation
   instructions](https://github.com/UIUC-PPL/charm#building-dynamic-libraries)).
+- Passing the `--disable-tls` option to `build` or `-D DISABLE_TLS=ON` to
+  cmake is required for SpECTRE's Python bindings to work.
 - When compiling Charm++ you can specify the compiler using, for example,
   ```
   ./build LIBS ARCH clang
