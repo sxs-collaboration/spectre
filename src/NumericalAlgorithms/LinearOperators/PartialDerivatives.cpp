@@ -341,6 +341,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (DataVector, ComplexDataVector),
 
 #undef INSTANTIATION
 
+// Some additional mixed-dimension instantiations
+template TensorMetafunctions::prepend_spatial_index<
+    tnsr::aa<ComplexDataVector, 3, Frame::Inertial>, 2, UpLo::Lo,
+    Frame::Inertial>
+partial_derivative(const tnsr::aa<ComplexDataVector, 3, Frame::Inertial>& u,
+                   const Mesh<2>& mesh,
+                   const InverseJacobian<DataVector, 2, Frame::ElementLogical,
+                                         Frame::Inertial>& inverse_jacobian);
+
 #define INSTANTIATION(r, data)                                                 \
   template void logical_partial_derivative(                                    \
       gsl::not_null<TensorMetafunctions::prepend_spatial_index<                \

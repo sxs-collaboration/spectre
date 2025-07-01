@@ -65,7 +65,7 @@ struct Fluxes {
                     const Scalar<ComplexDataVector>& field);
 };
 
-/// Sources terms for the scalar self-force system.
+/// Source terms for the scalar self-force system.
 /// \see ScalarSelfForce::FirstOrderSystem
 struct Sources {
   using argument_tags = tmpl::list<Tags::Beta, Tags::Gamma>;

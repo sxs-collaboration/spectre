@@ -31,7 +31,7 @@ namespace ScalarSelfForce::Tags {
  *
  * \begin{equation}
  * \Phi(t,r,\theta,\phi) = \frac{1}{r} \sum_{m=-\infty}^{\infty}
- *   \Psi_m(r,\theta) \exp{im\Delta\phi(r)} \exp{im(\phi - \Omega t)}
+ *   \Psi_m(r,\theta) e^{im\Delta\phi(r)} e^{im(\phi - \Omega t)}
  * \end{equation}
  *
  * where $\Delta\phi(r) = \frac{a}{r_\plus - r_\minus}
@@ -80,7 +80,7 @@ struct Beta : db::SimpleTag {
 /*!
  * \brief The factor multiplying the first-derivative terms in the equations.
  *
- * This is the factor $\gamma^i$ in the general form of the equations
+ * This is the factor $\gamma_i$ in the general form of the equations
  * \begin{equation}
  * -\partial_i F^i + \beta \Psi_m + \gamma_i F^i = S_m
  * \text{.}
