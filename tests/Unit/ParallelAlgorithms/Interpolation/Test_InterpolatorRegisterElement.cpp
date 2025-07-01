@@ -184,7 +184,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
     CHECK_FALSE(number_of_elements.at(target_name).contains(id_1));
     runner.simple_action<interp_component, ::intrp::Actions::DeregisterElement>(
         0, id_2);
-    CHECK(number_of_elements.empty());
+    CHECK(number_of_elements.contains(target_name));
+    CHECK(number_of_elements.at(target_name).empty());
   }
 }
 

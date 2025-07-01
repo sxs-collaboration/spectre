@@ -150,10 +150,6 @@ struct DeregisterElement {
                       << Parallel::my_proc<size_t>(cache) << " for target "
                       << target_name);
               }
-
-              if (num_elements->at(target_name).empty()) {
-                num_elements->erase(target_name);
-              }
             }
           });
         },
