@@ -3,19 +3,28 @@
 
 set(LIBRARY GrSelfForce)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Equations.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Equations.hpp
+  FirstOrderSystem.hpp
   Tags.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE
+  PUBLIC
   DataStructures
+  DomainStructure
   ErrorHandling
   Utilities
   )
