@@ -70,6 +70,9 @@ void verify_adm_constraints(const Solution& solution,
       ::Xcts::Tags::ConformalRicciScalar<DataVector>,
       ::Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
+      ::Tags::deriv<
+          ::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
+          tmpl::size_t<3>, Frame::Inertial>,
       gr::Tags::Shift<DataVector, 3>, gr::Tags::Lapse<DataVector>,
       ::Xcts::Tags::LapseTimesConformalFactorMinusOne<DataVector>,
       ::Xcts::Tags::LapseTimesConformalFactor<DataVector>,
@@ -133,6 +136,9 @@ void verify_adm_constraints(const Solution& solution,
   const auto& shift_background =
       get<::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>>(
           analytic_vars);
+  const auto& deriv_shift_background = get<::Tags::deriv<
+      ::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
+      tmpl::size_t<3>, Frame::Inertial>>(analytic_vars);
   const auto& shift = get<gr::Tags::Shift<DataVector, 3>>(analytic_vars);
   const auto& extrinsic_curvature =
       get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(analytic_vars);
@@ -250,6 +256,7 @@ void verify_adm_constraints(const Solution& solution,
       trace_extrinsic_curvature,
       deriv_trace_extrinsic_curvature,
       shift_background,
+      deriv_shift_background,
       longitudinal_shift_background_minus_dt_conformal_metric,
       div_longitudinal_shift_background_minus_dt_conformal_metric,
       energy_density,

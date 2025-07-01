@@ -14,7 +14,6 @@
 #include "PointwiseFunctions/AnalyticData/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/Xcts/LongitudinalOperator.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -72,28 +71,6 @@ void BinaryVariables<DataType>::operator()(
   get<0, 0>(*deriv_shift_background) = expansion;
   get<1, 1>(*deriv_shift_background) = expansion;
   get<2, 2>(*deriv_shift_background) = expansion;
-}
-
-template <typename DataType>
-void BinaryVariables<DataType>::operator()(
-    const gsl::not_null<tnsr::II<DataType, Dim>*> longitudinal_shift_background,
-    const gsl::not_null<Cache*> cache,
-    Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
-        DataType, Dim, Frame::Inertial> /*meta*/) const {
-  const auto& shift_background = cache->get_var(
-      *this, Tags::ShiftBackground<DataType, Dim, Frame::Inertial>{});
-  const auto& deriv_shift_background = cache->get_var(
-      *this,
-      ::Tags::deriv<Tags::ShiftBackground<DataType, Dim, Frame::Inertial>,
-                    tmpl::size_t<Dim>, Frame::Inertial>{});
-  const auto& inv_conformal_metric = cache->get_var(
-      *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
-  const auto& conformal_christoffel_second_kind = cache->get_var(
-      *this,
-      Tags::ConformalChristoffelSecondKind<DataType, Dim, Frame::Inertial>{});
-  Xcts::longitudinal_operator(longitudinal_shift_background, shift_background,
-                              deriv_shift_background, inv_conformal_metric,
-                              conformal_christoffel_second_kind);
 }
 
 template class BinaryVariables<DataVector>;

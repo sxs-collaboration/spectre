@@ -114,7 +114,11 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
@@ -194,6 +198,11 @@ struct ObserverTags {
                                                  Frame::Inertial>,
           gr::Tags::InverseSpacetimeMetricCompute<DataVector, volume_dim,
                                                   Frame::Inertial>,
+          gh::Tags::DerivLapseCompute<volume_dim, Frame::Inertial>,
+          gh::Tags::DerivShiftCompute<volume_dim, Frame::Inertial>,
+          gh::Tags::DerivSpatialMetricCompute<volume_dim, Frame::Inertial>,
+          gr::Tags::DerivInverseSpatialMetricCompute<volume_dim,
+                                                     Frame::Inertial>,
 
           gh::Tags::GaugeConstraintCompute<volume_dim, Frame::Inertial>,
           gh::Tags::TwoIndexConstraintCompute<volume_dim, Frame::Inertial>,

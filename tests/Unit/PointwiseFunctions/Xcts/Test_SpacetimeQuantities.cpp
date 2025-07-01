@@ -97,6 +97,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
           make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   const auto shift_background = make_with_random_values<tnsr::I<DataVector, 3>>(
       make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto deriv_shift_background =
+      make_with_random_values<tnsr::iJ<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   const auto longitudinal_shift_background_minus_dt_conformal_metric =
       make_with_random_values<tnsr::II<DataVector, 3>>(
           make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
@@ -118,28 +121,49 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
       deriv_conformal_metric, conformal_christoffel_first_kind,
       conformal_christoffel_second_kind, conformal_christoffel_contracted,
       conformal_ricci_tensor, conformal_ricci_scalar, trace_extrinsic_curvature,
-      deriv_trace_extrinsic_curvature, shift_background,
+      deriv_trace_extrinsic_curvature, shift_background, deriv_shift_background,
       longitudinal_shift_background_minus_dt_conformal_metric,
       div_longitudinal_shift_background_minus_dt_conformal_metric,
       energy_density, momentum_density, std::move(inv_jacobian));
   const auto& vars =
       get<::Tags::Variables<typename SpacetimeQuantities::tags_list>>(box);
+  const auto& deriv_conformal_factor =
+      get<::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
+                        Frame::Inertial>>(box);
+  const auto& deriv_lapse_times_conformal_factor =
+      get<::Tags::deriv<Tags::LapseTimesConformalFactor<DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>>(box);
   check_with_python(get<gr::Tags::SpatialMetric<DataVector, 3>>(vars),
                     "spatial_metric", conformal_factor, conformal_metric);
   check_with_python(get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(vars),
                     "inv_spatial_metric", conformal_factor,
                     inv_conformal_metric);
   check_with_python(
+      get<::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                        tmpl::size_t<3>, Frame::Inertial>>(vars),
+      "deriv_inv_spatial_metric", conformal_factor, deriv_conformal_factor,
+      inv_conformal_metric, deriv_conformal_metric);
+  check_with_python(
       get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3>>(vars),
       "spatial_christoffel_second_kind", conformal_factor,
-      get<::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
-                        Frame::Inertial>>(vars),
-      conformal_metric, inv_conformal_metric,
+      deriv_conformal_factor, conformal_metric, inv_conformal_metric,
       conformal_christoffel_second_kind);
   check_with_python(get<gr::Tags::Lapse<DataVector>>(vars), "lapse",
                     conformal_factor, lapse_times_conformal_factor);
+  check_with_python(get<::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                      tmpl::size_t<3>, Frame::Inertial>>(vars),
+                    "deriv_lapse", conformal_factor, deriv_conformal_factor,
+                    lapse_times_conformal_factor,
+                    deriv_lapse_times_conformal_factor);
   check_with_python(get<gr::Tags::Shift<DataVector, 3>>(vars), "shift",
                     shift_excess, shift_background);
+  check_with_python(
+      get<::Tags::deriv<gr::Tags::Shift<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars),
+      "deriv_shift",
+      get<::Tags::deriv<Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
+                        tmpl::size_t<3>, Frame::Inertial>>(vars),
+      deriv_shift_background);
   check_with_python(
       get<gr::Tags::ExtrinsicCurvature<DataVector, 3>>(vars),
       "extrinsic_curvature", conformal_factor,

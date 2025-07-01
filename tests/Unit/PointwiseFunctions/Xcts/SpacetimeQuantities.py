@@ -13,6 +13,24 @@ def inv_spatial_metric(conformal_factor, inv_conformal_metric):
     return conformal_factor ** (-4) * inv_conformal_metric
 
 
+def deriv_inv_spatial_metric(
+    conformal_factor,
+    deriv_conformal_factor,
+    inv_conformal_metric,
+    deriv_conformal_metric,
+):
+    deriv_inv_conformal_metric = -np.einsum(
+        "in,mj,knm->kij",
+        inv_conformal_metric,
+        inv_conformal_metric,
+        deriv_conformal_metric,
+    )
+    return conformal_factor ** (-4) * deriv_inv_conformal_metric - 4.0 * (
+        conformal_factor ** (-5)
+        * np.einsum("k,ij->kij", deriv_conformal_factor, inv_conformal_metric)
+    )
+
+
 def spatial_christoffel_second_kind(
     conformal_factor,
     deriv_conformal_factor,
@@ -40,8 +58,26 @@ def lapse(conformal_factor, lapse_times_conformal_factor):
     return lapse_times_conformal_factor / conformal_factor
 
 
+def deriv_lapse(
+    conformal_factor,
+    deriv_conformal_factor,
+    lapse_times_conformal_factor,
+    deriv_lapse_times_conformal_factor,
+):
+    return (
+        deriv_lapse_times_conformal_factor / conformal_factor
+        - lapse_times_conformal_factor
+        * deriv_conformal_factor
+        / conformal_factor**2
+    )
+
+
 def shift(shift_excess, shift_background):
     return shift_excess + shift_background
+
+
+def deriv_shift(deriv_shift_excess, deriv_shift_background):
+    return deriv_shift_excess + deriv_shift_background
 
 
 def hamiltonian_constraint(

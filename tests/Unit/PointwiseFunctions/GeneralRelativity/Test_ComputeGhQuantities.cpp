@@ -40,6 +40,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DerivativeSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
@@ -968,6 +969,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       gh::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>>(
       "deriv(SpatialMetric)");
   TestHelpers::db::test_compute_tag<
+      gr::Tags::DerivInverseSpatialMetricCompute<3, Frame::Inertial>>(
+      "deriv(InverseSpatialMetric)");
+  TestHelpers::db::test_compute_tag<
       gh::Tags::DerivLapseCompute<3, Frame::Inertial>>("deriv(Lapse)");
   TestHelpers::db::test_compute_tag<
       gh::Tags::DerivShiftCompute<3, Frame::Inertial>>("deriv(Shift)");
@@ -1063,21 +1067,32 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       spacetime_normal_vector, expected_pi, expected_phi);
   const auto expected_trace_extrinsic_curvature =
       trace(expected_extrinsic_curvature, inverse_spatial_metric);
+  const auto expected_deriv_inv_spatial_metric =
+      gr::deriv_inverse_spatial_metric(inverse_spatial_metric,
+                                       expected_deriv_spatial_metric);
 
   const auto box = db::create<
       db::AddSimpleTags<gr::Tags::Lapse<DataVector>,
                         gr::Tags::SpacetimeNormalVector<DataVector, 3>,
                         gr::Tags::InverseSpacetimeMetric<DataVector, 3>,
+                        gr::Tags::InverseSpatialMetric<DataVector, 3>,
                         gh::Tags::Phi<DataVector, 3>>,
       db::AddComputeTags<
           gh::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>,
+          gr::Tags::DerivInverseSpatialMetricCompute<3, Frame::Inertial>,
           gh::Tags::DerivLapseCompute<3, Frame::Inertial>,
           gh::Tags::DerivShiftCompute<3, Frame::Inertial>>>(
-      lapse, spacetime_normal_vector, inverse_spacetime_metric, expected_phi);
+      lapse, spacetime_normal_vector, inverse_spacetime_metric,
+      inverse_spatial_metric, expected_phi);
   CHECK_ITERABLE_APPROX(
       SINGLE_ARG(db::get<::Tags::deriv<gr::Tags::SpatialMetric<DataVector, 3>,
                                        tmpl::size_t<3>, Frame::Inertial>>(box)),
       expected_deriv_spatial_metric);
+  CHECK_ITERABLE_APPROX(
+      SINGLE_ARG(
+          db::get<::Tags::deriv<gr::Tags::InverseSpatialMetric<DataVector, 3>,
+                                tmpl::size_t<3>, Frame::Inertial>>(box)),
+      expected_deriv_inv_spatial_metric);
   CHECK_ITERABLE_APPROX(
       SINGLE_ARG(db::get<::Tags::deriv<gr::Tags::Lapse<DataVector>,
                                        tmpl::size_t<3>, Frame::Inertial>>(box)),

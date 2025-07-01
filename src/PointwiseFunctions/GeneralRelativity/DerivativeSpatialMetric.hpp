@@ -5,8 +5,12 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace gr {
 /// @{
@@ -34,4 +38,31 @@ tnsr::iJJ<DataType, Dim, Frame> deriv_inverse_spatial_metric(
     const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& d_spatial_metric);
 /// @}
+
+namespace Tags {
+
+/// \brief Compute item for the spatial derivative of the inverse spatial
+/// metric.
+/// \see deriv_inverse_spatial_metric
+template <size_t Dim, typename Frame>
+struct DerivInverseSpatialMetricCompute
+    : ::Tags::deriv<InverseSpatialMetric<DataVector, Dim, Frame>,
+                    tmpl::size_t<Dim>, Frame>,
+      db::ComputeTag {
+  using base = ::Tags::deriv<InverseSpatialMetric<DataVector, Dim, Frame>,
+                             tmpl::size_t<Dim>, Frame>;
+  using argument_tags =
+      tmpl::list<InverseSpatialMetric<DataVector, Dim, Frame>,
+                 ::Tags::deriv<SpatialMetric<DataVector, Dim, Frame>,
+                               tmpl::size_t<Dim>, Frame>>;
+  using return_type = tnsr::iJJ<DataVector, Dim, Frame>;
+  static constexpr auto function =
+      static_cast<void (*)(gsl::not_null<tnsr::iJJ<DataVector, Dim, Frame>*>,
+                           const tnsr::II<DataVector, Dim, Frame>&,
+                           const tnsr::ijj<DataVector, Dim, Frame>&)>(
+          &gr::deriv_inverse_spatial_metric<DataVector, Dim, Frame>);
+};
+
+}  // namespace Tags
+
 }  // namespace gr

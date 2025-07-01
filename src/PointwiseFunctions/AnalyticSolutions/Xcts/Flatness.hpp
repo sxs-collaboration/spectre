@@ -84,6 +84,8 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
         ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>,
                       tmpl::size_t<3>, Frame::Inertial>,
         Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+        ::Tags::deriv<Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+                      tmpl::size_t<3>, Frame::Inertial>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
         ::Tags::deriv<Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>,

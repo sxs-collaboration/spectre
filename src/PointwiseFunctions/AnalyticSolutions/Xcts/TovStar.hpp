@@ -135,6 +135,12 @@ struct TovVariables : CommonVariables<DataType, TovVariablesCache<DataType>> {
                   gsl::not_null<Cache*> cache,
                   Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
       const override;
+  void operator()(
+      gsl::not_null<tnsr::iJ<DataType, 3, Frame::Inertial>*>
+          deriv_shift_background,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
   void operator()(gsl::not_null<tnsr::II<DataType, 3, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,

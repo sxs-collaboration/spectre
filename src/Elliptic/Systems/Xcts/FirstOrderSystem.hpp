@@ -200,6 +200,11 @@ struct FirstOrderSystem
               ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
                             tmpl::size_t<3>, Frame::Inertial>,
               Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
+              // The deriv(ShiftBackground) is only needed for some observables,
+              // not to evaluate the equations
+              ::Tags::deriv<
+                  Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>,
               Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
                   DataVector, 3, Frame::Inertial>,
               // Note that this is the plain divergence, i.e. with no
