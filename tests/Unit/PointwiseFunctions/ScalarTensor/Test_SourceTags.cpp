@@ -16,8 +16,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.SourceTags",
                   "[Unit][PointwiseFunctions]") {
   TestHelpers::db::test_simple_tag<ScalarTensor::Tags::RampUpParameters>(
       "RampUpParameters");
-  TestHelpers::test_option_tag<ScalarTensor::OptionTags::RampUpStart>(
-      "0.0");
+  TestHelpers::test_option_tag<ScalarTensor::OptionTags::RampUpStart>("0.0");
   TestHelpers::test_option_tag<ScalarTensor::OptionTags::RampUpDuration>(
       "100.0");
+  CHECK_THROWS_WITH(
+      ScalarTensor::Tags::RampUpParameters::create_from_options(0.0, 0.0),
+      Catch::Matchers::ContainsSubstring(
+          "Ramp up duration time must be greater than zero"));
 }
