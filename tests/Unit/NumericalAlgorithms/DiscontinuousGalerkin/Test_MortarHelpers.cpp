@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -47,26 +48,39 @@ void test_mortar_mesh() {
         lgl_mesh<2>({{3, 5}}));
 }
 
+template <size_t Dim>
+std::array<Spectral::SegmentSize, Dim - 1> call_mortar_size(
+    const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
+    const size_t dimension, const OrientationMap<Dim>& orientation) {
+  const auto size = dg::mortar_size(self, neighbor, dimension, orientation);
+  const auto segments =
+      dg::mortar_segments(self, neighbor, dimension, orientation);
+  CHECK(size ==
+        domain::child_size(segments, all_but_specified_element_of(
+                                         self.segment_ids(), dimension)));
+  return size;
+}
+
 void test_mortar_size() {
-  CHECK(dg::mortar_size(ElementId<1>(0, {{{0, 0}}}),
-                        ElementId<1>(0, {{{5, 2}}}), 0,
-                        OrientationMap<1>::create_aligned()) ==
+  CHECK(call_mortar_size(ElementId<1>(0, {{{0, 0}}}),
+                         ElementId<1>(0, {{{5, 2}}}), 0,
+                         OrientationMap<1>::create_aligned()) ==
         std::array<Spectral::SegmentSize, 0>{});
 
   // Check the root segment to make sure the code doesn't try to get
   // its parent.
-  CHECK(dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
-                        OrientationMap<2>::create_aligned()) ==
+  CHECK(call_mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                         ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
+                         OrientationMap<2>::create_aligned()) ==
         std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::Full}});
-  CHECK(dg::mortar_size(ElementId<2>(0, {{{1, 0}, {0, 0}}}),
-                        ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
-                        OrientationMap<2>::create_aligned()) ==
+  CHECK(call_mortar_size(ElementId<2>(0, {{{1, 0}, {0, 0}}}),
+                         ElementId<2>(1, {{{0, 0}, {0, 0}}}), 1,
+                         OrientationMap<2>::create_aligned()) ==
         std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::Full}});
   CHECK(
-      dg::mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
-                      ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1,
-                      OrientationMap<2>::create_aligned()) ==
+      call_mortar_size(ElementId<2>(0, {{{0, 0}, {0, 0}}}),
+                       ElementId<2>(1, {{{1, 0}, {0, 0}}}), 1,
+                       OrientationMap<2>::create_aligned()) ==
       std::array<Spectral::SegmentSize, 1>{{Spectral::SegmentSize::LowerHalf}});
 
   // Check all the aligned cases in 3D
@@ -121,18 +135,19 @@ void test_mortar_size() {
         CAPTURE(neighbor);
         const std::array<Spectral::SegmentSize, 2> expected{
             {expected_size(test0), expected_size(test1)}};
-        CHECK(dg::mortar_size(self, neighbor, dimension,
-                              OrientationMap<3>::create_aligned()) == expected);
+        CHECK(call_mortar_size(self, neighbor, dimension,
+                               OrientationMap<3>::create_aligned()) ==
+              expected);
       }
     }
   }
 
   // Check an orientation case
-  CHECK(dg::mortar_size(ElementId<3>(1, {{{0, 0}, {3, 2}, {7, 5}}}),
-                        ElementId<3>(4, {{{6, 61}, {3, 0}, {4, 5}}}), 0,
-                        OrientationMap<3>{{{Direction<3>::upper_eta(),
-                                            Direction<3>::upper_zeta(),
-                                            Direction<3>::lower_xi()}}}) ==
+  CHECK(call_mortar_size(ElementId<3>(1, {{{0, 0}, {3, 2}, {7, 5}}}),
+                         ElementId<3>(4, {{{6, 61}, {3, 0}, {4, 5}}}), 0,
+                         OrientationMap<3>{{{Direction<3>::upper_eta(),
+                                             Direction<3>::upper_zeta(),
+                                             Direction<3>::lower_xi()}}}) ==
         std::array<Spectral::SegmentSize, 2>{
             {Spectral::SegmentSize::UpperHalf, Spectral::SegmentSize::Full}});
 }
