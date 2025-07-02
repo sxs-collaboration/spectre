@@ -344,21 +344,27 @@ struct ProjectRunEventsAndDenseTriggers
 
   template <typename... Tags>
   static void apply(
-      const gsl::not_null<
-          EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+      const gsl::not_null<EventsAndDenseTriggers*> events_and_dense_triggers,
       const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
-      const tuples::TaggedTuple<Tags...>& /*parent_items*/) {
-    ERROR("h-refinement not implemented yet");
+      const tuples::TaggedTuple<Tags...>& parent_items) {
+    *events_and_dense_triggers = deserialize<EventsAndDenseTriggers>(
+        serialize(get<::Tags::EventsAndDenseTriggers>(parent_items)).data());
   }
 
   template <size_t Dim, typename... Tags>
   static void apply(
-      const gsl::not_null<
-          EventsAndDenseTriggers*> /*events_and_dense_triggers*/,
+      const gsl::not_null<EventsAndDenseTriggers*> events_and_dense_triggers,
       const gsl::not_null<std::optional<double>*> /*previous_trigger_time*/,
       const std::unordered_map<ElementId<Dim>, tuples::TaggedTuple<Tags...>>&
-      /*children_items*/) {
-    ERROR("h-refinement not implemented yet");
+          children_items) {
+    // Serialization of equivalent Events and DenseTriggers is not
+    // guaranteed to produce the same byte stream when there are
+    // things like unordered containers involved, so we can't compare
+    // with other children.
+    *events_and_dense_triggers = deserialize<EventsAndDenseTriggers>(
+        serialize(
+            get<::Tags::EventsAndDenseTriggers>(children_items.begin()->second))
+            .data());
   }
 };
 }  // namespace evolution::Actions
