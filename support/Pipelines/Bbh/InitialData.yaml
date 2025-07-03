@@ -12,6 +12,7 @@ Next:
     id_input_file_path: __file__
     id_run_dir: ./
     pipeline_dir: {{ pipeline_dir | default("None") }}
+    horizon_l_max: {{ HorizonLMax }}
     control: {{ control }}
     control_refinement_level: {{ L }}
     control_polynomial_order: {{ P }}
@@ -146,18 +147,18 @@ DomainCreator:
       TranslationMap: None
       SkewMap: None
       ShapeMapA:
-        LMax: 20
+        LMax: {{ HorizonLMax }}
         InitialValues:
           Mass: *mass_right
           Spin: *spin_right
-        SizeInitialValues: [0, 0, 0]
+        SizeInitialValues: Auto
         TransitionEndsAtCube: False
       ShapeMapB:
-        LMax: 20
+        LMax: {{ HorizonLMax }}
         InitialValues:
           Mass: *mass_left
           Spin: *spin_left
-        SizeInitialValues: [0, 0, 0]
+        SizeInitialValues: Auto
         TransitionEndsAtCube: False
       GridCenters: None
 

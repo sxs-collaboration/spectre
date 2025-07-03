@@ -103,6 +103,9 @@ def id_parameters(
     extra_radial_refinement_p = (
         round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
     )
+    horizon_l_max = (
+        40 if max(np.linalg.norm(chi_A), np.linalg.norm(chi_B)) > 0.9 else 20
+    )
     return {
         "ConformalMassRight": conformal_mass_a,
         "ConformalMassLeft": conformal_mass_b,
@@ -138,6 +141,7 @@ def id_parameters(
         "P": polynomial_order,
         "ExtraRadRef": extra_radial_refinement_l,
         "ExtraRadPoints": extra_radial_refinement_p,
+        "HorizonLMax": horizon_l_max,
     }
 
 
