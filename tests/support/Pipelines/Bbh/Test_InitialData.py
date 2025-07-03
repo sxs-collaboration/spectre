@@ -171,6 +171,7 @@ class TestInitialData(unittest.TestCase):
                     "id_input_file_path": "__file__",
                     "id_run_dir": "./",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
+                    "horizon_l_max": 20,
                     "control": True,
                     "control_refinement_level": 1,
                     "control_polynomial_order": 5,

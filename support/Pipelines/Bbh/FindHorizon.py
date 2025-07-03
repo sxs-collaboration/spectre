@@ -167,7 +167,7 @@ def find_horizon(
             truncation_tol=0.01,
             divergence_tol=1.2,
             divergence_iter=5,
-            max_its=100,
+            max_its=300,
         )
     strahlkorper = initial_guess
     while True:
