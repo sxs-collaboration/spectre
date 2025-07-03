@@ -48,36 +48,59 @@ namespace Particles::MonteCarlo::Actions {
 /// Mutator to get required volume data for communication
 /// before a MC step; i.e. data sent from live points
 /// to ghost points in neighbors.
+/// Currently assume that we do MC on Subcell elements only.
+/// If not, we need to first project the fluid variables onto
+/// the subcell mesh (the cell light crossing time should always
+/// be on the subcell grid).
+template <size_t Dim>
 struct GhostDataMutatorPreStep {
   using return_tags = tmpl::list<>;
-  using argument_tags = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::ElectronFraction<DataVector>,
-      hydro::Tags::Temperature<DataVector>,
-      Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>>;
+  using argument_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
+                 hydro::Tags::Temperature<DataVector>,
+                 Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
+                 evolution::dg::subcell::Tags::Mesh<Dim>,
+                 evolution::dg::subcell::Tags::ActiveGrid>;
   static const size_t number_of_vars = 4;
 
-  static DataVector apply(const Scalar<DataVector>& rest_mass_density,
-                          const Scalar<DataVector>& electron_fraction,
-                          const Scalar<DataVector>& temperature,
-                          const Scalar<DataVector>& cell_light_crossing_time) {
-    const size_t dv_size = get(rest_mass_density).size();
+  static DataVector apply(
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& electron_fraction,
+      const Scalar<DataVector>& temperature,
+      const Scalar<DataVector>& cell_light_crossing_time, const Mesh<Dim>& mesh,
+      const evolution::dg::subcell::ActiveGrid& active_grid) {
+    const size_t dv_size = mesh.number_of_grid_points();
     DataVector buffer{dv_size * number_of_vars};
-    std::copy(
-        get(rest_mass_density).data(),
-        std::next(get(rest_mass_density).data(), static_cast<int>(dv_size)),
-        buffer.data());
-    std::copy(
-        get(electron_fraction).data(),
-        std::next(get(electron_fraction).data(), static_cast<int>(dv_size)),
-        std::next(buffer.data(), static_cast<int>(dv_size)));
-    std::copy(get(temperature).data(),
-              std::next(get(temperature).data(), static_cast<int>(dv_size)),
-              std::next(buffer.data(), static_cast<int>(dv_size * 2)));
-    std::copy(get(cell_light_crossing_time).data(),
-              std::next(get(cell_light_crossing_time).data(),
-                        static_cast<int>(dv_size)),
-              std::next(buffer.data(), static_cast<int>(dv_size * 3)));
+    if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell) {
+      ASSERT(get(rest_mass_density).size() == dv_size,
+             "Size inconsistency between mesh and fluid variable in MC comm");
+      std::copy(
+          get(rest_mass_density).data(),
+          std::next(get(rest_mass_density).data(), static_cast<int>(dv_size)),
+          buffer.data());
+      std::copy(
+          get(electron_fraction).data(),
+          std::next(get(electron_fraction).data(), static_cast<int>(dv_size)),
+          std::next(buffer.data(), static_cast<int>(dv_size)));
+      std::copy(get(temperature).data(),
+                std::next(get(temperature).data(), static_cast<int>(dv_size)),
+                std::next(buffer.data(), static_cast<int>(dv_size * 2)));
+      std::copy(get(cell_light_crossing_time).data(),
+                std::next(get(cell_light_crossing_time).data(),
+                          static_cast<int>(dv_size)),
+                std::next(buffer.data(), static_cast<int>(dv_size * 3)));
+    } else {
+      // The current element is NOT evolving MC, and may only serve
+      // as an outflow boundary condition on the rest of the evolution.
+      // Set light crossing time to 1.0 and everything else to 0
+      buffer = 0.0;
+      DataVector one_dv{dv_size};
+      one_dv = 1.0;
+      std::copy(one_dv.data(),
+                std::next(one_dv.data(), static_cast<int>(dv_size)),
+                std::next(buffer.data(), static_cast<int>(dv_size * 3)));
+    }
     return buffer;
   }
 };
@@ -86,7 +109,8 @@ struct GhostDataMutatorPreStep {
 /// after a MC step; i.e. data sent from ghost points
 /// in neighbors to live points evolving the fluid. The
 /// data contains information about the back reaction of
-/// neutrinos on the fluid
+/// neutrinos on the fluid. Everything here lives on the
+/// subcell grid.
 template <size_t Dim>
 struct GhostDataMutatorPostStep {
   using return_tags = tmpl::list<>;
@@ -99,6 +123,7 @@ struct GhostDataMutatorPostStep {
   static DataVector apply(const Scalar<DataVector>& coupling_tilde_tau,
                           const Scalar<DataVector>& coupling_tilde_rho_ye,
                           const tnsr::i<DataVector, Dim>& coupling_tilde_s) {
+    // Coupling terms are always stored on the subcell grid
     const size_t dv_size = get(coupling_tilde_tau).size();
     DataVector buffer{dv_size * number_of_components};
     std::copy(
@@ -122,7 +147,7 @@ struct GhostDataMutatorPostStep {
 /// Mutator that returns packets currently in ghost zones in a
 /// DirectionMap<Dim,std::vector<Particles::MonteCarlo::Packet>>
 /// and remove them from the list of packets of the current
-/// element
+/// element.
 template <size_t Dim>
 struct GhostDataMcPackets {
   using return_tags = tmpl::list<Particles::MonteCarlo::Tags::PacketsOnElement>;
@@ -207,6 +232,8 @@ struct GhostDataMcPackets {
 // THIS FUNCTION IS CURRENTLY ONLY IMPLENTED IN 3D!
 // As other parts of the MC communication, it is also incompatible with
 // mesh refinement.
+// As coupling terms live on the Subcell grid, it should not require
+// changes when using MC on Dg elements.
 template <size_t Dim>
 struct CombineCouplingDataPostStep {
   using return_tags =
@@ -319,10 +346,6 @@ struct SendDataForMcCommunication {
     static_assert(not LocalTimeStepping,
                   "Monte Carlo is not tested with local time stepping.");
 
-    ASSERT(db::get<evolution::dg::subcell::Tags::ActiveGrid>(box) ==
-               evolution::dg::subcell::ActiveGrid::Subcell,
-           "The SendDataForReconstructionPreStep action in MC "
-           "can only be called when Subcell is the active scheme.");
     db::mutate<Particles::MonteCarlo::Tags::McGhostZoneDataTag<Dim>>(
         [](const auto ghost_data_ptr) {
           // Clear the previous neighbor data and add current local data
@@ -351,21 +374,25 @@ struct SendDataForMcCommunication {
     // ghost points.
     DataVector volume_data_to_slice =
         CommStep == Particles::MonteCarlo::CommunicationStep::PreStep
-            ? db::mutate_apply(GhostDataMutatorPreStep{}, make_not_null(&box))
+            ? db::mutate_apply(GhostDataMutatorPreStep<Dim>{},
+                               make_not_null(&box))
             : db::mutate_apply(GhostDataMutatorPostStep<Dim>{},
                                make_not_null(&box));
+    const DirectionalIdMap<Dim, std::optional<intrp::Irregular<Dim>>>
+        empty_interpolators{};
     const DirectionMap<Dim, DataVector> all_sliced_data =
         CommStep == Particles::MonteCarlo::CommunicationStep::PreStep
             ? evolution::dg::subcell::slice_data(
                   volume_data_to_slice, subcell_mesh.extents(), ghost_zone_size,
-                  element.internal_boundaries(), 0,
-                  db::get<evolution::dg::subcell::Tags::
-                              InterpolatorsFromFdToNeighborFd<Dim>>(box))
+                  element.internal_boundaries(), 0, empty_interpolators)
+            // db::get<evolution::dg::subcell::Tags::
+            //             InterpolatorsFromFdToNeighborFd<Dim>>(box))
             : evolution::dg::subcell::slice_data(
                   volume_data_to_slice, extents_with_ghost_zone,
                   ghost_zone_size, element.internal_boundaries(), 0,
-                  db::get<evolution::dg::subcell::Tags::
-                              InterpolatorsFromFdToNeighborFd<Dim>>(box));
+                  empty_interpolators);
+    // db::get<evolution::dg::subcell::Tags::
+    //              InterpolatorsFromFdToNeighborFd<Dim>>(box));
     const DirectionMap<Dim, std::vector<Particles::MonteCarlo::Packet>>
         all_packets_ghost_zone =
             CommStep == Particles::MonteCarlo::CommunicationStep::PostStep
@@ -414,8 +441,10 @@ struct SendDataForMcCommunication {
 /// metric variables needed for evolution of MC packets.
 /// If CommStep == PostStep, this gets packets that
 /// have moved into the current element.
-/// The current code does not yet deal with data required
-/// to calculate the backreaction on the fluid.
+/// Everything here is done on the subcell mesh. The only
+/// change needed to handle evolution on Dg elements is to
+/// remove the code that erases packets and avoids copying
+/// boundary data when on a Dg element.
 template <size_t Dim, CommunicationStep CommStep>
 struct ReceiveDataForMcCommunication {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
@@ -427,7 +456,12 @@ struct ReceiveDataForMcCommunication {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
-    const auto number_of_expected_messages = element.neighbors().size();
+    size_t number_of_expected_messages = 0;
+    for (const auto& [direction, neighbors_in_direction] :
+         element.neighbors()) {
+      number_of_expected_messages += neighbors_in_direction.size();
+    }
+
     if (UNLIKELY(number_of_expected_messages == 0)) {
       // We have no neighbors, so just continue without doing any work
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
@@ -471,36 +505,59 @@ struct ReceiveDataForMcCommunication {
                     mortar_data->rest_mass_density[directional_element_id]
                         .value()
                         .size();
-                ASSERT(received_data_direction.size() == mortar_data_size * 4,
-                       "Inconsistent sizes between inbox and mortar data");
-                std::copy(received_data_direction.data(),
-                          std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size)),
-                          mortar_data->rest_mass_density[directional_element_id]
-                              .value()
-                              .data());
-                std::copy(std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size)),
-                          std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size * 2)),
-                          mortar_data->electron_fraction[directional_element_id]
-                              .value()
-                              .data());
-                std::copy(std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size * 2)),
-                          std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size * 3)),
-                          mortar_data->temperature[directional_element_id]
-                              .value()
-                              .data());
-                std::copy(std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size * 3)),
-                          std::next(received_data_direction.data(),
-                                    static_cast<int>(mortar_data_size * 4)),
-                          mortar_data
-                              ->cell_light_crossing_time[directional_element_id]
-                              .value()
-                              .data());
+                // Case 1 : data received from a neighbor with the same mesh
+                // size
+                if (received_data_direction.size() == mortar_data_size * 4) {
+                  // ASSERT(received_data_direction.size() == mortar_data_size *
+                  // 4,
+                  //      "Inconsistent sizes between inbox and mortar data with
+                  //      sizes "
+                  //     <<received_data_direction.size()<<" and "
+                  //     << mortar_data_size * 4<<"\n");
+                  std::copy(
+                      received_data_direction.data(),
+                      std::next(received_data_direction.data(),
+                                static_cast<int>(mortar_data_size)),
+                      mortar_data->rest_mass_density[directional_element_id]
+                          .value()
+                          .data());
+                  std::copy(
+                      std::next(received_data_direction.data(),
+                                static_cast<int>(mortar_data_size)),
+                      std::next(received_data_direction.data(),
+                                static_cast<int>(mortar_data_size * 2)),
+                      mortar_data->electron_fraction[directional_element_id]
+                          .value()
+                          .data());
+                  std::copy(std::next(received_data_direction.data(),
+                                      static_cast<int>(mortar_data_size * 2)),
+                            std::next(received_data_direction.data(),
+                                      static_cast<int>(mortar_data_size * 3)),
+                            mortar_data->temperature[directional_element_id]
+                                .value()
+                                .data());
+                  std::copy(
+                      std::next(received_data_direction.data(),
+                                static_cast<int>(mortar_data_size * 3)),
+                      std::next(received_data_direction.data(),
+                                static_cast<int>(mortar_data_size * 4)),
+                      mortar_data
+                          ->cell_light_crossing_time[directional_element_id]
+                          .value()
+                          .data());
+                } else {
+                  // Case 2: interpolation should have been done... but not
+                  // coded so far. At the moment, we assume that no MC is done
+                  // in neighboring cells...
+                  mortar_data->rest_mass_density[directional_element_id]
+                      .value() = DataVector{mortar_data_size, 0.0};
+                  mortar_data->temperature[directional_element_id].value() =
+                      DataVector{mortar_data_size, 0.0};
+                  mortar_data->electron_fraction[directional_element_id]
+                      .value() = DataVector{mortar_data_size, 0.2};
+                  mortar_data->cell_light_crossing_time[directional_element_id]
+                      .value() = DataVector{mortar_data_size, 1.0};
+                }
               }
             }
           },
@@ -508,9 +565,11 @@ struct ReceiveDataForMcCommunication {
     } else {
       const Mesh<Dim>& subcell_mesh =
           db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
+      const evolution::dg::subcell::ActiveGrid& active_grid =
+          db::get<evolution::dg::subcell::Tags::ActiveGrid>(box);
       db::mutate<Particles::MonteCarlo::Tags::GhostZoneCouplingDataTag<Dim>,
                  Particles::MonteCarlo::Tags::PacketsOnElement>(
-          [&element, &received_data, &subcell_mesh](
+          [&element, &received_data, &subcell_mesh, &active_grid](
               const gsl::not_null<GhostZoneCouplingData<Dim>*> coupling_data,
               const gsl::not_null<std::vector<Particles::MonteCarlo::Packet>*>
                   packet_list) {
@@ -533,36 +592,57 @@ struct ReceiveDataForMcCommunication {
                       coupling_data->coupling_tilde_tau[directional_element_id]
                           .value()
                           .size();
-                  ASSERT(received_data_direction.size() ==
-                             coupling_data_size * (2 + Dim),
-                         "Inconsistent sizes between inbox and coupling data");
-                  std::copy(
-                      received_data_direction.data(),
-                      std::next(received_data_direction.data(),
-                                static_cast<int>(coupling_data_size)),
-                      coupling_data->coupling_tilde_tau[directional_element_id]
-                          .value()
-                          .data());
-                  std::copy(std::next(received_data_direction.data(),
-                                      static_cast<int>(coupling_data_size)),
-                            std::next(received_data_direction.data(),
-                                      static_cast<int>(coupling_data_size * 2)),
-                            coupling_data
-                                ->coupling_tilde_rho_ye[directional_element_id]
-                                .value()
-                                .data());
-                  for (size_t d = 0; d < Dim; d++) {
+                  // Same as for PreStep: right now, we do not interpolate,
+                  // and assume that MC is only done on cubes with fixed
+                  // grid size. This will need to be fixed.
+                  if (received_data_direction.size() ==
+                      coupling_data_size * (2 + Dim)) {
+                    // ASSERT(received_data_direction.size() ==
+                    //          coupling_data_size * (2 + Dim),
+                    //      "Inconsistent sizes between inbox and coupling data:
+                    //      "
+                    //          << received_data_direction.size() << " vs "
+                    //          << coupling_data_size * (2 + Dim));
+                    std::copy(received_data_direction.data(),
+                              std::next(received_data_direction.data(),
+                                        static_cast<int>(coupling_data_size)),
+                              coupling_data
+                                  ->coupling_tilde_tau[directional_element_id]
+                                  .value()
+                                  .data());
                     std::copy(
-                        std::next(
-                            received_data_direction.data(),
-                            static_cast<int>(coupling_data_size * (2 + d))),
-                        std::next(
-                            received_data_direction.data(),
-                            static_cast<int>(coupling_data_size * (3 + d))),
-                        coupling_data->coupling_tilde_s[directional_element_id]
+                        std::next(received_data_direction.data(),
+                                  static_cast<int>(coupling_data_size)),
+                        std::next(received_data_direction.data(),
+                                  static_cast<int>(coupling_data_size * 2)),
+                        coupling_data
+                            ->coupling_tilde_rho_ye[directional_element_id]
                             .value()
-                            .get(d)
                             .data());
+                    for (size_t d = 0; d < Dim; d++) {
+                      std::copy(
+                          std::next(
+                              received_data_direction.data(),
+                              static_cast<int>(coupling_data_size * (2 + d))),
+                          std::next(
+                              received_data_direction.data(),
+                              static_cast<int>(coupling_data_size * (3 + d))),
+                          coupling_data
+                              ->coupling_tilde_s[directional_element_id]
+                              .value()
+                              .get(d)
+                              .data());
+                    }
+                  } else {
+                    coupling_data->coupling_tilde_tau[directional_element_id]
+                        .value() = DataVector{coupling_data_size, 0.0};
+                    coupling_data->coupling_tilde_rho_ye[directional_element_id]
+                        .value() = DataVector{coupling_data_size, 0.0};
+                    for (size_t d = 0; d < Dim; d++) {
+                      coupling_data->coupling_tilde_s[directional_element_id]
+                          .value()
+                          .get(d) = DataVector{coupling_data_size, 0.0};
+                    }
                   }
                 }
                 // Get packet data
@@ -570,7 +650,18 @@ struct ReceiveDataForMcCommunication {
                     received_data_packets =
                         received_data[directional_element_id]
                             .packets_entering_this_element;
-                if (received_data_packets == std::nullopt) {
+                // If we are not in an element using subcell, we discard
+                // all packets within the element. This may not be the
+                // best place to do this; to be reviewed in the future
+                if (active_grid !=
+                    evolution::dg::subcell::ActiveGrid::Subcell) {
+                  packet_list->clear();
+                }
+                // If we didn't receive data or are not in a subcell element,
+                // we don't gather packets
+                if (received_data_packets == std::nullopt ||
+                    active_grid !=
+                        evolution::dg::subcell::ActiveGrid::Subcell) {
                   continue;
                 } else {
                   const size_t n_packets = received_data_packets.value().size();

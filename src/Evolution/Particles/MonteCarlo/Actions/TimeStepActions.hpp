@@ -15,6 +15,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
@@ -52,8 +53,10 @@ struct TimeStepMutator {
                  Particles::MonteCarlo::Tags::RandomNumberGenerator,
                  Particles::MonteCarlo::Tags::DesiredPacketEnergyAtEmission<
                      NeutrinoSpecies>>;
-  // To do : check carefully DG vs Subcell quantities... everything should
-  // be on the Subcell grid!
+  // Note: At the moment, all fluid / metric background variables are
+  // on the active grid, and so is the fluid-to-inertial jacobian and
+  // inverse jacobian. These will need to be projected onto the subcell
+  // grid if using MC with DG.
   using argument_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
       hydro::Tags::GrmhdEquationOfState,
@@ -71,7 +74,7 @@ struct TimeStepMutator {
       gr::Tags::InverseSpatialMetric<DataVector, Dim, Frame::Inertial>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       Particles::MonteCarlo::Tags::CellLightCrossingTime<DataVector>,
-      evolution::dg::subcell::Tags::Mesh<Dim>,
+      domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
       domain::Tags::MeshVelocity<Dim>,
       evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<Dim>,
@@ -105,10 +108,11 @@ struct TimeStepMutator {
       const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_determinant_spatial_metric,
-      const Scalar<DataVector>& cell_light_crossing_time, const Mesh<Dim>& mesh,
+      const Scalar<DataVector>& cell_light_crossing_time,
+      const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& mesh_coordinates,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-          mesh_velocity,
+          mesh_velocity_dg,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                             Frame::Inertial>&
           inverse_jacobian_logical_to_inertial,
@@ -124,6 +128,11 @@ struct TimeStepMutator {
     // the format expected by take_time_step_on_element
     const double start_time = current_step_id.step_time().value();
     const double end_time = next_step_id.step_time().value();
+    if (end_time <= start_time) {
+      Parallel::printf("Negative time step from %.5e to %.5e\n", start_time,
+                       end_time);
+      return;
+    }
     Scalar<DataVector> det_jacobian_logical_to_inertial(lapse);
     get(det_jacobian_logical_to_inertial) =
         1.0 / get(det_inverse_jacobian_logical_to_inertial);
@@ -152,7 +161,8 @@ struct TimeStepMutator {
         gr::Tags::SpacetimeNormalVector<DataVector, 3>,
         gr::Tags::InverseSpacetimeMetric<DataVector, 3>, deriv_lapse,
         deriv_shift, deriv_spatial_metric, deriv_inverse_spatial_metric>;
-    Variables<temporary_tags> temp_tags{mesh.number_of_grid_points(), 0.0};
+    Variables<temporary_tags> temp_tags{subcell_mesh.number_of_grid_points(),
+                                        0.0};
 
     // u_i = \gamma_{ij} v^j W
     auto& lower_spatial_four_velocity =
@@ -224,6 +234,19 @@ struct TimeStepMutator {
     gr::deriv_inverse_spatial_metric(make_not_null(&d_inv_spatial_metric),
                                      inv_spatial_metric, d_spatial_metric);
 
+    std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>
+        mesh_velocity_subcell = {};
+    if (mesh_velocity_dg.has_value()) {
+      mesh_velocity_subcell = tnsr::I<DataVector, 3, Frame::Inertial>{
+          subcell_mesh.number_of_grid_points()};
+      for (size_t i = 0; i < 3; i++) {
+        mesh_velocity_subcell.value().get(i) =
+            evolution::dg::subcell::fd::project(mesh_velocity_dg.value().get(i),
+                                                dg_mesh,
+                                                subcell_mesh.extents());
+      }
+    }
+
     TemplatedLocalFunctions<EnergyBins, NeutrinoSpecies> templated_functions;
     templated_functions.take_time_step_on_element(
         packets, coupling_tilde_tau, coupling_tilde_rho_ye, coupling_tilde_s,
@@ -232,8 +255,8 @@ struct TimeStepMutator {
         rest_mass_density, temperature, lorentz_factor,
         lower_spatial_four_velocity, lapse, shift, d_lapse, d_shift,
         d_inv_spatial_metric, spatial_metric, inv_spatial_metric,
-        sqrt_determinant_spatial_metric, cell_light_crossing_time, mesh,
-        mesh_coordinates, num_ghost_zones, mesh_velocity,
+        sqrt_determinant_spatial_metric, cell_light_crossing_time, subcell_mesh,
+        mesh_coordinates, num_ghost_zones, mesh_velocity_subcell,
         inverse_jacobian_logical_to_inertial, det_jacobian_logical_to_inertial,
         inertial_to_fluid_jacobian, inertial_to_fluid_inverse_jacobian,
         electron_fraction_ghost, baryon_density_ghost, temperature_ghost,
@@ -257,12 +280,16 @@ struct TakeTimeStep {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    ASSERT(db::get<evolution::dg::subcell::Tags::ActiveGrid>(box) ==
-               evolution::dg::subcell::ActiveGrid::Subcell,
-           "MC assumes that we are using the Subcell grid!");
-
-    db::mutate_apply(TimeStepMutator<EnergyBins, NeutrinoSpecies>{},
-                     make_not_null(&box));
+    // Currently, evolve MC if we are on the FD subcell. In the future,
+    // we will likely want a separate tag determining whether MC
+    // is active or not so that we can have DG cell in which MC
+    // is evolved (after projection onto the subcell grid) and
+    // subcell elements where MC is not evolved.
+    if (db::get<evolution::dg::subcell::Tags::ActiveGrid>(box) ==
+        evolution::dg::subcell::ActiveGrid::Subcell) {
+      db::mutate_apply(TimeStepMutator<EnergyBins, NeutrinoSpecies>{},
+                       make_not_null(&box));
+    }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

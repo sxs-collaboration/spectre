@@ -21,6 +21,9 @@ namespace Particles::MonteCarlo {
 
 /// Mutator adding the Monte-Carlo contribution
 /// to the evolution of the fluid.
+/// Currently only implemented for Subcell elements.
+/// In DG, we need to restrict the coupling terms (which live on
+/// the subcell grid) to the Dg grid, then couple to the fluid.
 struct FluidCouplingMutator {
   static const size_t Dim = 3;
 

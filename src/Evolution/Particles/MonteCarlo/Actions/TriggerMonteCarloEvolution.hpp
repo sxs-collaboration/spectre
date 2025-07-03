@@ -53,19 +53,19 @@ struct TriggerMonteCarloEvolution {
     const auto& next_time_id = db::get<::Tags::Next<::Tags::TimeStepId>>(box);
     // We only run MC if we are at the beginning of a full time step
     const bool trigger_mc = (next_time_id.substep() == 0);
-    // Note: we jump to the `Label+1` because the label actions don't do
-    // anything anyway
     if (trigger_mc) {
+      // Note: we jump to the `Label+1` because the label actions don't do
+      // anything anyway
       const size_t mc_index =
           tmpl::index_of<ActionList,
                          ::Actions::Label<Labels::BeginMonteCarlo>>::value +
           1;
       return {Parallel::AlgorithmExecution::Continue, mc_index};
     } else {
+      // Here we use `Label', because there might not be a `Label + 1'
       const size_t post_mc_index =
           tmpl::index_of<ActionList,
-                         ::Actions::Label<Labels::EndMonteCarlo>>::value +
-          1;
+                         ::Actions::Label<Labels::EndMonteCarlo>>::value;
       return {Parallel::AlgorithmExecution::Continue, post_mc_index};
     }
   }
