@@ -5,20 +5,16 @@
 
 #include <cmath>
 #include <optional>
+#include <pup.h>
 
 #include "Options/String.hpp"
+#include "Time/History.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Time/Utilities.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace PUP {
-class er;
-}  // namespace PUP
-/// \endcond
 
 namespace StepChoosers {
 /// Limits the time step to prevent multistep integrator instabilities.
@@ -28,6 +24,7 @@ namespace StepChoosers {
 /// time-stepper history increased.  If there have been recent step
 /// size increases, the new size bound is the size of the most recent
 /// step, otherwise no restriction is imposed.
+template <typename VariablesTag>
 class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
                              public StepChooser<StepChooserUse::LtsStep> {
  public:
@@ -42,11 +39,12 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
       "Limits the time step to prevent multistep integrator instabilities."};
   using options = tmpl::list<>;
 
-  using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
+  using argument_tags =
+      tmpl::list<::Tags::HistoryEvolvedVariables<VariablesTag>>;
 
-  template <typename History>
-  TimeStepRequest operator()(const History& history,
-                             const double last_step) const {
+  TimeStepRequest operator()(
+      const ::TimeSteppers::History<typename VariablesTag::type>& history,
+      const double last_step) const {
     if (history.size() < 2) {
       return {};
     }
@@ -71,9 +69,17 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse::Slab>,
     return {};
   }
 
-  bool uses_local_data() const override;
-  bool can_be_delayed() const override;
+  bool uses_local_data() const override { return false; }
+  bool can_be_delayed() const override { return true; }
 
-  void pup(PUP::er& p) override;
+  void pup(PUP::er& p) override {
+    StepChooser<StepChooserUse::Slab>::pup(p);
+    StepChooser<StepChooserUse::LtsStep>::pup(p);
+  }
 };
+
+/// \cond
+template <typename VariablesTag>
+PUP::able::PUP_ID PreventRapidIncrease<VariablesTag>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
 }  // namespace StepChoosers
