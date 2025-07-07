@@ -36,7 +36,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/FindCommonHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindCommonHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
@@ -186,8 +186,8 @@ struct MockMetavariables {
                    gh::Tags::Phi<DataVector, volume_dim>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::TargetPoints::ApparentHorizon<InterpolationTargetA,
-                                               ::Frame::Inertial>;
+        ::ah::TargetPoints::ApparentHorizon<InterpolationTargetA,
+                                            ::Frame::Inertial>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<>, InterpolationTargetA>>;

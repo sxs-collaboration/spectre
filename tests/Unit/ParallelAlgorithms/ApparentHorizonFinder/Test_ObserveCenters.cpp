@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
 #include "Utilities/Gsl.hpp"

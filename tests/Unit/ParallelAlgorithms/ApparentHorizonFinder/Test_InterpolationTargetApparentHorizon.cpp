@@ -42,7 +42,7 @@ struct HorizonTag : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using vars_to_interpolate_to_target = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using compute_items_on_target = tmpl::list<>;
   using compute_target_points =
-      ::intrp::TargetPoints::ApparentHorizon<HorizonTag, ::Frame::Inertial>;
+      ::ah::TargetPoints::ApparentHorizon<HorizonTag, ::Frame::Inertial>;
   using post_interpolation_callbacks = tmpl::list<>;
 };
 }  // namespace
@@ -61,13 +61,13 @@ SPECTRE_TEST_CASE(
   const std::array<double, 3> center = {{0.05, 0.06, 0.07}};
 
   // Options for ApparentHorizon
-  intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
+  ah::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
       ylm::Strahlkorper<Frame::Inertial>{l_max, radius, center}, FastFlow{},
       Verbosity::Verbose, 3_st, std::nullopt);
 
   // Test creation of options
   const auto created_opts = TestHelpers::test_creation<
-      intrp::OptionHolders::ApparentHorizon<Frame::Inertial>>(
+      ah::OptionHolders::ApparentHorizon<Frame::Inertial>>(
       "FastFlow:\n"
       "  Flow: Fast\n"
       "  Alpha: 1.0\n"
@@ -125,20 +125,20 @@ SPECTRE_TEST_CASE(
   }();
 
   TestHelpers::db::test_simple_tag<
-      intrp::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
+      ah::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
       "ApparentHorizon");
 
   InterpTargetTestHelpers::test_interpolation_target<
-      HorizonTag, 3, intrp::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
+      HorizonTag, 3, ah::Tags::ApparentHorizon<HorizonTag, Frame::Inertial>>(
       apparent_horizon_opts, expected_block_coord_holders,
       std::unordered_map<std::string, std::unordered_set<std::string>>{});
 
-  TestHelpers::db::test_simple_tag<intrp::Tags::BlocksForInterpolation>(
+  TestHelpers::db::test_simple_tag<ah::Tags::BlocksForInterpolation>(
       "BlocksForInterpolation");
 
   {
     const auto blocks_for_interpolation =
-        intrp::Tags::BlocksForInterpolation::create_from_options<
+        ah::Tags::BlocksForInterpolation::create_from_options<
             InterpTargetTestHelpers::MockMetavars<HorizonTag, 3>>(
             std::make_unique<domain::creators::Sphere>(
                 1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st,
@@ -152,7 +152,7 @@ SPECTRE_TEST_CASE(
   }
   {
     const auto new_created_opts = TestHelpers::test_creation<
-        intrp::OptionHolders::ApparentHorizon<Frame::Inertial>>(
+        ah::OptionHolders::ApparentHorizon<Frame::Inertial>>(
         "FastFlow:\n"
         "  Flow: Fast\n"
         "  Alpha: 1.0\n"
@@ -170,7 +170,7 @@ SPECTRE_TEST_CASE(
         "MaxInterpolationRetries: 3\n"
         "BlocksForInterpolation: [Shell0]");
     const auto blocks_for_interpolation =
-        intrp::Tags::BlocksForInterpolation::create_from_options<
+        ah::Tags::BlocksForInterpolation::create_from_options<
             InterpTargetTestHelpers::MockMetavars<HorizonTag, 3>>(
             std::make_unique<domain::creators::Sphere>(
                 1.8, 2.2, domain::creators::Sphere::Excision{}, 1_st, 5_st,

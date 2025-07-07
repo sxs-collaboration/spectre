@@ -99,8 +99,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
     using compute_items_on_target =
         ::ah::compute_items_on_target<volume_dim, Frame::Inertial>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<ApparentHorizon,
-                                             ::Frame::Inertial>;
+        ah::TargetPoints::ApparentHorizon<ApparentHorizon, ::Frame::Inertial>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<ApparentHorizon,
                                                          ::Frame::Inertial>>;

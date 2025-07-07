@@ -111,15 +111,15 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/IgnoreFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/SendDependencyToObserverWriter.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/FindCommonHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindCommonHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
@@ -273,8 +273,7 @@ struct EvolutionMetavars {
         tmpl::list<::Tags::AhObservationTimeCompute<index>>;
     using compute_items_on_target =
         ::ah::compute_items_on_target<volume_dim, Frame>;
-    using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
+    using compute_target_points = ah::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
     using horizon_find_failure_callbacks = tmpl::append<

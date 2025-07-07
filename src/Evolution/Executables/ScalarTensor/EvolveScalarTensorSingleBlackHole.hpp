@@ -30,13 +30,13 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/IgnoreFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
@@ -91,7 +91,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
     using compute_items_on_target =
         ::ah::compute_items_on_target<volume_dim, Frame>;
     using compute_target_points =
-        intrp::TargetPoints::ApparentHorizon<Ah, Frame>;
+        ah::TargetPoints::ApparentHorizon<Ah, Frame>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
     using horizon_find_failure_callbacks =

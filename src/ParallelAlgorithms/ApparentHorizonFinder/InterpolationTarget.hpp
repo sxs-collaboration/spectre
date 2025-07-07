@@ -64,8 +64,7 @@ struct Verbosity;
 }  // namespace Tags
 /// \endcond
 
-namespace intrp {
-
+namespace ah {
 namespace OptionHolders {
 /// Options for finding an apparent horizon.
 template <typename Frame>
@@ -184,12 +183,13 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
  * \brief Holds a map between interpolation target tag name (aka a horizon) and
  * a set of block names that should be used for interpolation for that target.
  */
-struct BlocksForInterpolation : db::SimpleTag, BlocksForInterpolationBase {
+struct BlocksForInterpolation : db::SimpleTag,
+                                intrp::Tags::BlocksForInterpolationBase {
   using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
   template <typename Metavariables>
   using option_tags = tmpl::push_front<
       typename detail::get_horizon_options<
-          InterpolationTarget_detail::get_sequential_target_tags<
+          intrp::InterpolationTarget_detail::get_sequential_target_tags<
               Metavariables>>::type,
       ::domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
 
@@ -288,12 +288,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
             cache);
 
     // Put Strahlkorper and its ComputeItems, FastFlow, and verbosity
-    // into a new DataBox.  The first element of PreviousStrahlkorpers
-    // is initialized to (time=NaN, strahlkorper=options.initial_guess).
-    // The NaN is a sentinel value which indicates that the
-    // PreviousStrahlkorper has not been computed but is instead the
-    // supplied initial guess.  Note that the NaN must be quiet_NaN,
-    // so we can test for it later without generating an FPE.
+    // into a new DataBox.
     //
     // Note that if frame is not inertial,
     // ylm::Tags::Strahlkorper<::Frame::Inertial> is already
@@ -301,8 +296,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     // here for ylm::Tags::Strahlkorper<::Frame::Inertial>.
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
-        std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>{std::make_pair(
-            std::numeric_limits<double>::quiet_NaN(), options.initial_guess)},
+        std::deque<std::pair<double, ylm::Strahlkorper<Frame>>>{},
         options.initial_guess, 0_st);
   }
 
@@ -331,11 +325,6 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
             // next horizon find is already in strahlkorper, so
             // again we do nothing.
             //
-            // If we have 2 previous_strahlkorpers and the time of the second
-            // one is a NaN, this means that the corresponding
-            // previous_strahlkorper is the original initial guess, so
-            // again we do nothing.
-            //
             // If we have 2 valid previous_strahlkorpers, then
             // we set the initial guess by linear extrapolation in time
             // using the last 2 previous_strahlkorpers.
@@ -349,39 +338,35 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
             // * Maximum L of all the Strahlkorpers are equal.
             // It is easy to relax the max L assumption once we start
             // adaptively changing the L of the strahlkorpers.
-            if (previous_strahlkorpers.size() > 1 and
-                not std::isnan(previous_strahlkorpers[1].first)) {
-              if (previous_strahlkorpers.size() > 2 and
-                  not std::isnan(previous_strahlkorpers[2].first)) {
-                // Quadratic extrapolation
-                const double new_time =
-                    InterpolationTarget_detail::get_temporal_id_value(
-                        temporal_id);
-                const double dt_0 = previous_strahlkorpers[0].first - new_time;
-                const double dt_1 = previous_strahlkorpers[1].first - new_time;
-                const double dt_2 = previous_strahlkorpers[2].first - new_time;
-                const double fac_0 =
-                    dt_1 * dt_2 / ((dt_1 - dt_0) * (dt_2 - dt_0));
-                const double fac_1 =
-                    dt_0 * dt_2 / ((dt_2 - dt_1) * (dt_0 - dt_1));
-                const double fac_2 = 1.0 - fac_0 - fac_1;
-                strahlkorper->coefficients() =
-                    fac_0 * previous_strahlkorpers[0].second.coefficients() +
-                    fac_1 * previous_strahlkorpers[1].second.coefficients() +
-                    fac_2 * previous_strahlkorpers[2].second.coefficients();
-              } else {
-                // Linear extrapolation
-                const double new_time =
-                    InterpolationTarget_detail::get_temporal_id_value(
-                        temporal_id);
-                const double dt_0 = previous_strahlkorpers[0].first - new_time;
-                const double dt_1 = previous_strahlkorpers[1].first - new_time;
-                const double fac_0 = dt_1 / (dt_1 - dt_0);
-                const double fac_1 = 1.0 - fac_0;
-                strahlkorper->coefficients() =
-                    fac_0 * previous_strahlkorpers[0].second.coefficients() +
-                    fac_1 * previous_strahlkorpers[1].second.coefficients();
-              }
+            if (LIKELY(previous_strahlkorpers.size() > 2)) {
+              // Quadratic extrapolation
+              const double new_time =
+                  intrp::InterpolationTarget_detail::get_temporal_id_value(
+                      temporal_id);
+              const double dt_0 = previous_strahlkorpers[0].first - new_time;
+              const double dt_1 = previous_strahlkorpers[1].first - new_time;
+              const double dt_2 = previous_strahlkorpers[2].first - new_time;
+              const double fac_0 =
+                  dt_1 * dt_2 / ((dt_1 - dt_0) * (dt_2 - dt_0));
+              const double fac_1 =
+                  dt_0 * dt_2 / ((dt_2 - dt_1) * (dt_0 - dt_1));
+              const double fac_2 = 1.0 - fac_0 - fac_1;
+              strahlkorper->coefficients() =
+                  fac_0 * previous_strahlkorpers[0].second.coefficients() +
+                  fac_1 * previous_strahlkorpers[1].second.coefficients() +
+                  fac_2 * previous_strahlkorpers[2].second.coefficients();
+            } else if (previous_strahlkorpers.size() > 1) {
+              // Linear extrapolation
+              const double new_time =
+                  intrp::InterpolationTarget_detail::get_temporal_id_value(
+                      temporal_id);
+              const double dt_0 = previous_strahlkorpers[0].first - new_time;
+              const double dt_1 = previous_strahlkorpers[1].first - new_time;
+              const double fac_0 = dt_1 / (dt_1 - dt_0);
+              const double fac_1 = 1.0 - fac_0;
+              strahlkorper->coefficients() =
+                  fac_0 * previous_strahlkorpers[0].second.coefficients() +
+                  fac_1 * previous_strahlkorpers[1].second.coefficients();
             }
           },
           make_not_null(&box),
@@ -400,4 +385,4 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
 };
 
 }  // namespace TargetPoints
-}  // namespace intrp
+}  // namespace ah

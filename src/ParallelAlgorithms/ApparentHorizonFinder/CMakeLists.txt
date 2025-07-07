@@ -22,10 +22,8 @@ spectre_target_headers(
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
   FastFlow.hpp
-  FindCommonHorizon.hpp
   HorizonAliases.hpp
   InterpolationTarget.hpp
-  ObserveCenters.hpp
   Tags.hpp
   )
 
@@ -53,4 +51,5 @@ target_link_libraries(
   )
 
 add_subdirectory(Callbacks)
+add_subdirectory(Events)
 add_subdirectory(Python)

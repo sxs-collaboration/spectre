@@ -184,7 +184,7 @@ struct FindApparentHorizon
       ++failed_interpolation_iterations;
 
       const auto& options = Parallel::get<
-          intrp::Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(*cache);
+          ah::Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(*cache);
 
       // Can't recover if we've exceeded our number of attempts
       if (failed_interpolation_iterations <=

@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Spherepack.cpp
   Test_SpherepackIterator.cpp
   Test_Strahlkorper.cpp
+  Test_StrahlkorperDataBox.cpp
   Test_StrahlkorperFunctions.cpp
   Test_Tags.cpp
   Test_YlmToStf.cpp
@@ -21,6 +22,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  GrSurfaces
   RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers

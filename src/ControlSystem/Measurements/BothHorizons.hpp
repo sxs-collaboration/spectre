@@ -13,10 +13,10 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ObserveCenters.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
@@ -75,8 +75,8 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using compute_items_on_source =
           tmpl::list<::Tags::TimeAndPreviousCompute<0>>;
       using compute_target_points =
-          intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
-                                               ::Frame::Distorted>;
+          ah::TargetPoints::ApparentHorizon<InterpolationTarget,
+                                            ::Frame::Distorted>;
       using post_interpolation_callbacks =
           tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
                                                            ::Frame::Distorted>>;
