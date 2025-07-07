@@ -18,6 +18,7 @@ spectre_target_sources(
   SpherepackCache.cpp
   SpherepackHelper.cpp
   Tags.cpp
+  WignerThreeJ.cpp
   YlmToStf.cpp
   )
 
@@ -37,6 +38,7 @@ spectre_target_headers(
   Tags.hpp
   TagsDeclarations.hpp
   TagsTypeAliases.hpp
+  WignerThreeJ.hpp
   YlmToStf.hpp
   )
 
@@ -47,6 +49,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   ErrorHandling
+  slatec
   SPHEREPACK
   Utilities
   PRIVATE
