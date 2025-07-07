@@ -4,6 +4,7 @@
 add_subdirectory(brigand)
 add_subdirectory(EffectiveSource)
 add_subdirectory(SPHEREPACK)
+add_subdirectory(slatec)
 
 set(LIBRARY Libsharp)
 set(LIBSHARP_LIBDIR ${CMAKE_CURRENT_BINARY_DIR}/libsharp/auto/lib)
