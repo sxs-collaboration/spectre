@@ -88,9 +88,9 @@ class DgElementArrayMember<Dim, Metavariables,
       Tags::MetavariablesImpl<metavariables>,
       Tags::ArrayIndexImpl<ElementId<Dim>>,
       Tags::GlobalCacheProxy<metavariables>, SimpleTagsFromOptions,
-      Tags::GlobalCacheImplCompute<metavariables>,
+      Tags::GlobalCacheCompute<metavariables>,
       Tags::ResourceInfoReference<metavariables>,
-      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>,
+      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags, metavariables>,
       Algorithm_detail::get_pdal_simple_tags<phase_dependent_action_lists>,
       Algorithm_detail::get_pdal_compute_tags<phase_dependent_action_lists>>>>;
 

@@ -103,13 +103,14 @@ void test_gts() {
       std::move(const_global_cache_items));
   auto box = db::create<
       db::AddSimpleTags<
-          Parallel::Tags::GlobalCacheImpl<TestMetavariables<TimeStepper>>,
+          Parallel::Tags::GlobalCache<TestMetavariables<TimeStepper>>,
           ::Tags::Time, Initialization::Tags::InitialTimeDelta,
           Initialization::Tags::InitialSlabSize<false>,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
           ::Tags::ChangeSlabSize::SlabSizeGoal>,
       tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::Tags::ConcreteTimeStepper<TimeStepper>>>>(
+          ::Tags::ConcreteTimeStepper<TimeStepper>,
+          TestMetavariables<TimeStepper>>>>(
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
       TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 
@@ -147,13 +148,14 @@ void test_lts() {
 
   auto box = db::create<
       db::AddSimpleTags<
-          Parallel::Tags::GlobalCacheImpl<TestMetavariables<LtsTimeStepper>>,
+          Parallel::Tags::GlobalCache<TestMetavariables<LtsTimeStepper>>,
           ::Tags::Time, Initialization::Tags::InitialTimeDelta,
           Initialization::Tags::InitialSlabSize<true>,
           ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
           ::Tags::ChangeSlabSize::SlabSizeGoal>,
       tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::Tags::ConcreteTimeStepper<LtsTimeStepper>>>>(
+          ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
+          TestMetavariables<LtsTimeStepper>>>>(
       &global_cache, initial_time, initial_dt, initial_slab_size, TimeStepId{},
       TimeDelta{}, std::numeric_limits<double>::signaling_NaN());
 

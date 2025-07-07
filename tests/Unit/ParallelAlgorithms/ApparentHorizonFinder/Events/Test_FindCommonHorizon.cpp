@@ -265,7 +265,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
   const auto logical_coords = logical_coordinates(mesh);
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavars>,
-      Parallel::Tags::GlobalCacheImpl<metavars>,
+      Parallel::Tags::GlobalCache<metavars>,
       metavars::InterpolationTargetA::temporal_id, ::Tags::Time,
       ::Events::Tags::ObserverMesh<metavars::volume_dim>,
       ::domain::Tags::Coordinates<3, ::Frame::Inertial>,
@@ -294,7 +294,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
   // test just puts the tags in the regular box
   auto obs_box =
       make_observation_box<tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::domain::Tags::Domain<metavars::volume_dim>>>>(make_not_null(&box));
+          ::domain::Tags::Domain<metavars::volume_dim>, metavars>>>(
+          make_not_null(&box));
   find_common_horizon(obs_box, mesh, cache, array_index,
                       std::add_pointer_t<elem_component>{}, observation_value);
 

@@ -114,9 +114,11 @@ struct Domain {
           ::domain::Tags::ElementMap<dim, Frame::Grid>,
           ::domain::Tags::Coordinates<dim, Frame::ElementLogical>>,
       // Compute tag to retrieve functions of time from global cache.
-      Parallel::Tags::FromGlobalCache<tmpl::conditional_t<
-          UseControlSystems, ::control_system::Tags::FunctionsOfTimeInitialize,
-          ::domain::Tags::FunctionsOfTimeInitialize>>,
+      Parallel::Tags::FromGlobalCache<
+          tmpl::conditional_t<UseControlSystems,
+                              ::control_system::Tags::FunctionsOfTimeInitialize,
+                              ::domain::Tags::FunctionsOfTimeInitialize>,
+          Metavariables>,
       // Compute tags for Frame::Inertial quantities
       ::domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
           ::domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,

@@ -83,11 +83,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   resource_info.build_singleton_map(cache);
   cache.set_resource_info(resource_info);
   auto box = db::create<
-      db::AddSimpleTags<Tags::GlobalCacheImpl<Metavars>>,
-      db::AddComputeTags<Tags::FromGlobalCache<Tags::IntegerList>,
-                         Tags::FromGlobalCache<Tags::UniquePtrIntegerList>,
-                         Tags::ResourceInfoReference<Metavars>>>(&cache);
-  CHECK(db::get<Tags::GlobalCache>(box) == &cache);
+      db::AddSimpleTags<Tags::GlobalCache<Metavars>>,
+      db::AddComputeTags<
+          Tags::FromGlobalCache<Tags::IntegerList, Metavars>,
+          Tags::FromGlobalCache<Tags::UniquePtrIntegerList, Metavars>,
+          Tags::ResourceInfoReference<Metavars>>>(&cache);
+  CHECK(db::get<Tags::GlobalCache<Metavars>>(box) == &cache);
   CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
@@ -110,13 +111,13 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   tuples::get<Tags::UniquePtrIntegerList>(tuple2) =
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{100, -7, -300}});
   GlobalCache<Metavars> cache2{std::move(tuple2)};
-  db::mutate<Tags::GlobalCache>(
+  db::mutate<Tags::GlobalCache<Metavars>>(
       [&cache2](const gsl::not_null<Parallel::GlobalCache<Metavars>**> t) {
         *t = std::addressof(cache2);
       },
       make_not_null(&box));
 
-  CHECK(db::get<Tags::GlobalCache>(box) == &cache2);
+  CHECK(db::get<Tags::GlobalCache<Metavars>>(box) == &cache2);
   CHECK(std::array<int, 3>{{10, -3, 700}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{100, -7, -300}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
@@ -129,13 +130,11 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache2) ==
         &db::get<Tags::UniquePtrIntegerListBase>(box));
 
-  TestHelpers::db::test_base_tag<Tags::GlobalCache>("GlobalCache");
-  TestHelpers::db::test_simple_tag<Tags::GlobalCacheImpl<Metavars>>(
-      "GlobalCache");
-  TestHelpers::db::test_reference_tag<Tags::FromGlobalCache<Tags::IntegerList>>(
-      "IntegerList");
+  TestHelpers::db::test_simple_tag<Tags::GlobalCache<Metavars>>("GlobalCache");
   TestHelpers::db::test_reference_tag<
-      Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>(
+      Tags::FromGlobalCache<Tags::IntegerList, Metavars>>("IntegerList");
+  TestHelpers::db::test_reference_tag<
+      Tags::FromGlobalCache<Tags::UniquePtrIntegerList, Metavars>>(
       "UniquePtrIntegerList");
   TestHelpers::db::test_reference_tag<Tags::ResourceInfoReference<Metavars>>(
       "ResourceInfo");
