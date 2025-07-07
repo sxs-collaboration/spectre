@@ -192,7 +192,7 @@ class FixToAtmosphere {
    * $\rho\in[\rho_{\tau_-},\rho_{\tau_+}]$, and $\rho>\rho_{\tau_+}$.
    *
    * When $\rho<\rho_{\tau_-}$ we set $T=T_{\mathrm{min}}$ if
-   * $|T-T_{\mathrm{min}}|<\epsilon_{\kappa_-} |T|$, otherwise we don't change
+   * $|T-T_{\mathrm{min}}|>\epsilon_{\kappa_-} |T|$, otherwise we don't change
    * $T$. SpEC uses $\epsilon_{\kappa_-}=10^{-3}$.
    *
    * When $\rho\in[\rho_{\tau_-},\rho_{\tau_+}]$ we apply a more complicated
