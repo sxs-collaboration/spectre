@@ -440,9 +440,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       ActionTesting::get_databox_tag<comp,
                                      ::Tags::Variables<evolved_vars_tags>>(
           runner, 0);
-  const auto& time_stepper_history_from_box =
-      ActionTesting::get_databox_tag<comp, ::Tags::HistoryEvolvedVariables<>>(
-          runner, 0);
+  const auto& time_stepper_history_from_box = ActionTesting::get_databox_tag<
+      comp,
+      ::Tags::HistoryEvolvedVariables<::Tags::Variables<evolved_vars_tags>>>(
+      runner, 0);
   const auto& did_rollback_from_box =
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::DidRollback>(

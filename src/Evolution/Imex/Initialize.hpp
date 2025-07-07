@@ -25,6 +25,7 @@ template <typename System, typename... Sectors>
 struct Initialize<System, tmpl::list<Sectors...>> {
   static_assert(tt::assert_conforms_to_v<System, protocols::ImexSystem>);
 
+  using variables_tag = typename System::variables_tag;
   using example_tensor_tag =
       tmpl::front<typename tmpl::front<tmpl::list<Sectors...>>::tensors>;
 
@@ -37,14 +38,15 @@ struct Initialize<System, tmpl::list<Sectors...>> {
 
   using return_tags = simple_tags;
   using argument_tags =
-      tmpl::list<::Tags::HistoryEvolvedVariables<>, example_tensor_tag>;
+      tmpl::list<::Tags::HistoryEvolvedVariables<variables_tag>,
+                 example_tensor_tag>;
 
   static void apply(
       const gsl::not_null<
           typename Tags::ImplicitHistory<Sectors>::type*>... histories,
       const gsl::not_null<
           typename Tags::SolveFailures<Sectors>::type*>... solve_failures,
-      const TimeSteppers::History<typename System::variables_tag::type>&
+      const TimeSteppers::History<typename variables_tag::type>&
           explicit_history,
       const typename example_tensor_tag::type& example_tensor) {
     const auto order = explicit_history.integration_order();

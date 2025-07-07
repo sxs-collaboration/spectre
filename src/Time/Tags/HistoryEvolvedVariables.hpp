@@ -13,21 +13,11 @@ namespace Tags {
 /// \ingroup TimeGroup
 /// Tag for the TimeStepper history
 ///
-/// Leaving the template parameter unspecified gives a base tag.
-///
 /// \tparam Tag tag for the variables
-template <typename Tag = void>
-struct HistoryEvolvedVariables;
-
-/// \cond
-template <>
-struct HistoryEvolvedVariables<> : db::BaseTag {};
-
 template <typename Tag>
-struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
+struct HistoryEvolvedVariables : db::SimpleTag {
   using type = TimeSteppers::History<typename Tag::type>;
 };
-/// \endcond
 
 /// \ingroup TimeGroup
 /// From a list of tags `TagList`, extract all tags that are template

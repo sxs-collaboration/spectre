@@ -282,7 +282,7 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
 /// DataBox changes:
 /// - Adds:
 ///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
-///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
+///   * `Tags::HistoryEvolvedVariables<variables_tag>`
 /// - Removes: nothing
 /// - Modifies: nothing
 ///

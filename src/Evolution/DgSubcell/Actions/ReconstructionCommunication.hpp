@@ -222,8 +222,10 @@ struct SendDataForReconstruction {
 
     const int tci_decision =
         db::get<evolution::dg::subcell::Tags::TciDecision>(box);
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
+    static_assert(tmpl::size<history_tags>::value == 1);
     const auto& integration_order =
-        db::get<::Tags::HistoryEvolvedVariables<>>(box).integration_order();
+        db::get<tmpl::front<history_tags>>(box).integration_order();
     // Compute and send actual variables
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
@@ -487,8 +489,10 @@ struct ReceiveAndSendDataForReconstruction {
 
     const int tci_decision =
         db::get<evolution::dg::subcell::Tags::TciDecision>(box);
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
+    static_assert(tmpl::size<history_tags>::value == 1);
     const auto& integration_order =
-        db::get<::Tags::HistoryEvolvedVariables<>>(box).integration_order();
+        db::get<tmpl::front<history_tags>>(box).integration_order();
 
     const size_t number_of_points = subcell_mesh.extents().product();
     // Number of independent components per grid point.
