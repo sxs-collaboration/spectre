@@ -22,5 +22,6 @@ struct Metavariables {
 // [main_function]
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<Metavariables>();
+  Parallel::charmxx::register_init_node_and_proc({}, {});
 }
 // [main_function]

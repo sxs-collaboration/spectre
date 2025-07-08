@@ -968,6 +968,9 @@ void Main<Metavariables>::did_all_elements_terminate(
 
 template <typename Metavariables>
 void Main<Metavariables>::check_if_component_terminated_correctly() {
+  if constexpr (tmpl::size<component_list>::value == 0) {
+    post_deadlock_analysis_termination();
+  }
   auto* global_cache = Parallel::local_branch(global_cache_proxy_);
   ASSERT(global_cache != nullptr, "Could not retrieve the local global cache.");
 
