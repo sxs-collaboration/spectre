@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
