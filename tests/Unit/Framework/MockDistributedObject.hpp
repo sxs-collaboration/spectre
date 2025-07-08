@@ -335,7 +335,7 @@ class MockDistributedObject {
           Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
-      Parallel::Tags::ArrayIndexImpl<array_index>,
+      Parallel::Tags::ArrayIndex<array_index>,
       Parallel::Tags::GlobalCache<metavariables>, simple_tags_from_options,
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags,
                        metavariables>,
@@ -363,9 +363,9 @@ class MockDistributedObject {
         array_index_(index),
         global_cache_(cache),
         inboxes_(inboxes) {
-    ::Initialization::mutate_assign<
-        tmpl::push_front<simple_tags_from_options, Parallel::Tags::ArrayIndex,
-                         Parallel::Tags::GlobalCache<metavariables>>>(
+    ::Initialization::mutate_assign<tmpl::push_front<
+        simple_tags_from_options, Parallel::Tags::ArrayIndex<array_index>,
+        Parallel::Tags::GlobalCache<metavariables>>>(
         make_not_null(&box_), array_index_, global_cache_,
         std::forward<Options>(opts)...);
   }

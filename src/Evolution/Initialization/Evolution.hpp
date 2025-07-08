@@ -176,7 +176,7 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
                  ::Tags::TimeStep, ::Tags::Time, ::Tags::StepNumberWithinSlab,
                  ::Tags::AdaptiveSteppingDiagnostics,
                  ::Tags::ChangeSlabSize::SlabSizeGoal>;
-  using argument_tags = tmpl::list<Parallel::Tags::ArrayIndex>;
+  using argument_tags = tmpl::list<Parallel::Tags::ArrayIndex<ElementId<Dim>>>;
 
   static void apply(
       const gsl::not_null<TimeStepId*> /*time_step_id*/,
@@ -218,7 +218,7 @@ struct ProjectTimeStepping : tt::ConformsTo<amr::protocols::Projector> {
     const auto& parent_amr_flags =
         get<amr::Tags::Info<Dim>>(parent_items).flags;
     const auto& parent_id =
-        get<Parallel::Tags::ArrayIndexImpl<ElementId<Dim>>>(parent_items);
+        get<Parallel::Tags::ArrayIndex<ElementId<Dim>>>(parent_items);
     auto children_ids = amr::ids_of_children(parent_id, parent_amr_flags);
     if (element_id == children_ids.front()) {
       *adaptive_stepping_diagnostics = parent_diagnostics;
@@ -343,8 +343,8 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
   using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
 
   using return_tags = tmpl::list<dt_variables_tag, history_tag>;
-  using argument_tags =
-      tmpl::list<domain::Tags::Mesh<dim>, Parallel::Tags::ArrayIndex>;
+  using argument_tags = tmpl::list<domain::Tags::Mesh<dim>,
+                                   Parallel::Tags::ArrayIndex<ElementId<dim>>>;
 
   static void apply(
       const gsl::not_null<typename dt_variables_tag::type*> dt_vars,

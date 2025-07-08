@@ -85,8 +85,7 @@ class DgElementArrayMember<Dim, Metavariables,
   using all_cache_tags = get_const_global_cache_tags<metavariables>;
 
   using databox_type = db::compute_databox_type<tmpl::flatten<tmpl::list<
-      Tags::MetavariablesImpl<metavariables>,
-      Tags::ArrayIndexImpl<ElementId<Dim>>,
+      Tags::MetavariablesImpl<metavariables>, Tags::ArrayIndex<ElementId<Dim>>,
       Tags::GlobalCacheProxy<metavariables>, SimpleTagsFromOptions,
       Tags::GlobalCacheCompute<metavariables>,
       Tags::ResourceInfoReference<metavariables>,
@@ -223,8 +222,8 @@ DgElementArrayMember<Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
       global_cache_proxy_(global_cache_proxy) {
   (void)initialization_items;  // avoid potential compiler warnings if unused
   ::Initialization::mutate_assign<
-      tmpl::list<Tags::ArrayIndex, Tags::GlobalCacheProxy<Metavariables>,
-                 InitializationTags...>>(
+      tmpl::list<Tags::ArrayIndex<ElementId<Dim>>,
+                 Tags::GlobalCacheProxy<Metavariables>, InitializationTags...>>(
       make_not_null(&box_), this->element_id_, global_cache_proxy_,
       std::move(get<InitializationTags>(initialization_items))...);
 }

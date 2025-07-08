@@ -27,6 +27,11 @@
 #include "Utilities/Serialization/PupStlCpp17.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+template <size_t VolumeDim>
+class ElementId;
+/// \endcond
+
 namespace LinearSolver::Serial {
 
 /// \cond
@@ -206,26 +211,25 @@ ExplicitInverse<ValueType, LinearSolverRegistrars>::solve(
                  make_not_null(&result_buffer), linear_operator, operator_args);
     // Write to file before inverting
     if (UNLIKELY(matrix_filename_.has_value())) {
-      const auto filename_suffix =
-          [&operator_args]() -> std::optional<std::string> {
-        using DataBoxType =
-            std::decay_t<tmpl::front<tmpl::list<OperatorArgs..., NoSuchType>>>;
-        if constexpr (tt::is_a_v<db::DataBox, DataBoxType>) {
-          if constexpr (db::tag_is_retrievable_v<Parallel::Tags::ArrayIndex,
-                                                 DataBoxType>) {
-            const auto& box = std::get<0>(operator_args);
-            return "_" + get_output(db::get<Parallel::Tags::ArrayIndex>(box));
-          } else {
-            (void)operator_args;
-            return std::nullopt;
-          }
-        } else {
-          (void)operator_args;
-          return std::nullopt;
-        }
-      }();
-      std::ofstream matrix_file(matrix_filename_.value() +
-                                filename_suffix.value_or("") + ".txt");
+      std::string filename_suffix{};
+      using DataBoxType =
+          std::decay_t<tmpl::front<tmpl::list<OperatorArgs..., NoSuchType>>>;
+      if constexpr (tt::is_a_v<db::DataBox, DataBoxType>) {
+        tmpl::for_each<tmpl::range<size_t, 1, 4>>(
+            [&]<size_t Dim>(tmpl::type_<tmpl::size_t<Dim>> /*meta*/) {
+              using index_tag = Parallel::Tags::ArrayIndex<ElementId<Dim>>;
+              if constexpr (db::tag_is_retrievable_v<index_tag, DataBoxType>) {
+                const auto& box = std::get<0>(operator_args);
+                filename_suffix = "_" + get_output(db::get<index_tag>(box));
+              } else {
+                (void)operator_args;
+              }
+            });
+      } else {
+        (void)operator_args;
+      }
+      std::ofstream matrix_file(matrix_filename_.value() + filename_suffix +
+                                ".txt");
       write_csv(matrix_file, inverse_, " ");
     }
     // Directly invert the matrix

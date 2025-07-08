@@ -45,7 +45,7 @@ struct Domain {
 
   using argument_tags =
       tmpl::append<const_global_cache_tags, simple_tags_from_options,
-                   tmpl::list<::Parallel::Tags::ArrayIndex>>;
+                   tmpl::list<::Parallel::Tags::ArrayIndex<ElementId<Dim>>>>;
 
   using return_tags =
       tmpl::list<::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>>;
