@@ -463,7 +463,8 @@ struct ScalarTensorTemplateBase {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
+          evolution::dg::Initialization::Domain<derived_metavars,
+                                                UseControlSystems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<

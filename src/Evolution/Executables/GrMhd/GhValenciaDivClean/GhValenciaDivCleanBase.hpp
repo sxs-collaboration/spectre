@@ -851,7 +851,8 @@ struct GhValenciaDivCleanTemplateBase<
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<3, use_control_systems>,
+          evolution::dg::Initialization::Domain<derived_metavars,
+                                                use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       // This conditional is untested and probably doesn't work if

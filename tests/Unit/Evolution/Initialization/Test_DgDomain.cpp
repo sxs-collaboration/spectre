@@ -146,7 +146,7 @@ struct IncrementTime {
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
-  static constexpr size_t dim = metavariables::dim;
+  static constexpr size_t dim = metavariables::volume_dim;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<dim>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<dim>>;
@@ -166,15 +166,14 @@ struct Component {
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<Initialization::Actions::InitializeItems<
-                         evolution::dg::Initialization::Domain<dim>>,
+                         evolution::dg::Initialization::Domain<metavariables>>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
 };
 
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  static constexpr size_t dim = Dim;
-
+  static constexpr size_t volume_dim = Dim;
 };
 
 template <size_t Dim, bool TimeDependent>
@@ -187,11 +186,11 @@ void test(const Spectral::Quadrature quadrature) {
 
   static_assert(
       std::is_same_v<typename evolution::dg::Initialization::Domain<
-                         Dim>::mutable_global_cache_tags,
+                         metavars>::mutable_global_cache_tags,
                      tmpl::list<::domain::Tags::FunctionsOfTimeInitialize>>);
   static_assert(std::is_same_v<
                 typename evolution::dg::Initialization::Domain<
-                    Dim, true>::mutable_global_cache_tags,
+                    metavars, true>::mutable_global_cache_tags,
                 tmpl::list<control_system::Tags::FunctionsOfTimeInitialize>>);
 
   PUPable_reg(SINGLE_ARG(

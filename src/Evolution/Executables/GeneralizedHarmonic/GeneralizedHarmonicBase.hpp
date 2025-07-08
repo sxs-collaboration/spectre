@@ -409,7 +409,8 @@ struct GeneralizedHarmonicTemplateBase {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<DerivedMetavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim, UseControlSystems>,
+          evolution::dg::Initialization::Domain<DerivedMetavars,
+                                                UseControlSystems>,
           ::amr::Initialization::Initialize<volume_dim, DerivedMetavars>,
           Initialization::TimeStepperHistory<DerivedMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
