@@ -32,11 +32,10 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/GenerateInstantiations.hpp"
 
 namespace gh::gauges {
 template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
-void SetPiAndPhiFromConstraints<AllSolutionsForChristoffelAnalytic, Dim>::apply(
+void SetPiAndPhiFromConstraints<AllSolutionsForChristoffelAnalytic, Dim>::impl(
     const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
     const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*> phi,
     const double time, const Mesh<Dim>& mesh,

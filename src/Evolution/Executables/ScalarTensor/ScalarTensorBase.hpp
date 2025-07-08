@@ -407,8 +407,8 @@ struct ScalarTensorTemplateBase {
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       ScalarTensor::Actions::InitializeGhAnd3Plus1Variables,
-      Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
-          gh::ScalarTensor::AnalyticData::all_analytic_data, volume_dim>>,
+      gh::gauges::SetPiAndPhiFromConstraints<
+          gh::ScalarTensor::AnalyticData::all_analytic_data, volume_dim>,
       Parallel::Actions::TerminatePhase>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the

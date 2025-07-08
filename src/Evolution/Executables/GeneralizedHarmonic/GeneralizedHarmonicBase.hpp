@@ -348,8 +348,8 @@ struct GeneralizedHarmonicTemplateBase {
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
 
   using initialize_initial_data_dependent_quantities_actions =
-      tmpl::list<Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
-                     gh::Solutions::all_solutions<volume_dim>, volume_dim>>,
+      tmpl::list<gh::gauges::SetPiAndPhiFromConstraints<
+                     gh::Solutions::all_solutions<volume_dim>, volume_dim>,
                  Parallel::Actions::TerminatePhase>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the
