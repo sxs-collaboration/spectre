@@ -37,7 +37,7 @@ namespace elliptic::Actions {
 /*!
  * \brief Place the analytic solution of the system fields in the DataBox.
  *
- * The `::Tags::AnalyticSolutionsBase` tag retrieved from the DataBox will hold
+ * The `::Tags::AnalyticSolutions` tag retrieved from the DataBox will hold
  * a `std::optional`. The analytic solution is only evaluated and stored in the
  * DataBox if the `BackgroundTag` holds a type that inherits from the
  * `AnalyticSolutionType`.
@@ -49,7 +49,7 @@ namespace elliptic::Actions {
  *
  * DataBox:
  * - Adds:
- *   - `::Tags::AnalyticSolutionsBase`
+ *   - `::Tags::AnalyticSolutions<AnalyticSolutionFields>`
  */
 template <size_t Dim, typename BackgroundTag, typename AnalyticSolutionFields,
           typename AnalyticSolutionType>

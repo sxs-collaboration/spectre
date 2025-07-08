@@ -68,11 +68,6 @@ struct Analytic : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
-/// Base tag for the analytic solution tensors.
-///
-/// \see ::Tags::AnalyticSolutions
-struct AnalyticSolutionsBase : db::BaseTag {};
-
 namespace detail {
 template <typename Tag>
 struct AnalyticImpl : db::PrefixTag, db::SimpleTag {
@@ -90,7 +85,7 @@ struct AnalyticImpl : db::PrefixTag, db::SimpleTag {
  * `std::optional<Tensor>`.
  */
 template <typename FieldTags>
-struct AnalyticSolutions : ::Tags::AnalyticSolutionsBase, db::SimpleTag {
+struct AnalyticSolutions : db::SimpleTag {
   using field_tags = FieldTags;
   using type = std::optional<
       ::Variables<db::wrap_tags_in<detail::AnalyticImpl, FieldTags>>>;
