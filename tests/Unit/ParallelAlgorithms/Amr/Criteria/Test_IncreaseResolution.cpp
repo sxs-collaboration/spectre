@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.Amr.Criteria.IncreaseResolution",
           "IncreaseResolution");
   Parallel::GlobalCache<Metavariables<2>> empty_cache{};
   auto databox = db::create<tmpl::list<>>();
-  ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<>>> box{
+  const ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<>>> box{
       make_not_null(&databox)};
   const ElementId<2> element_id{0};
   const auto flags = criterion->evaluate(box, empty_cache, element_id);
