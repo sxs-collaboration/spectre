@@ -37,7 +37,7 @@ namespace amr {
 /// `compute_tags_for_observation_box`.
 ///
 /// \example
-/// \snippet Test_Criterion.cpp criterion_examples
+/// \snippet Amr/Criteria/Test_Criterion.cpp criterion_examples
 class Criterion : public PUP::able {
  protected:
   /// \cond

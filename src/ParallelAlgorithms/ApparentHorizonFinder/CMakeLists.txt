@@ -51,5 +51,6 @@ target_link_libraries(
   )
 
 add_subdirectory(Callbacks)
+add_subdirectory(Criteria)
 add_subdirectory(Events)
 add_subdirectory(Python)
