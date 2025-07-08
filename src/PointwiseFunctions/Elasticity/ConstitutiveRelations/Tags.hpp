@@ -58,9 +58,5 @@ struct ConstitutiveRelation : db::SimpleTag {
     return deserialize<type>(serialize<type>(value).data());
   }
 };
-
-/// A constitutive relation in every block of the domain
-struct ConstitutiveRelationPerBlockBase : db::BaseTag {};
-
 }  // namespace Tags
 }  // namespace Elasticity
