@@ -36,14 +36,14 @@ using vars_to_interpolate_to_target =
                gr::Tags::SpatialRicci<DataVector, Dim, Frame>>;
 
 template <typename Frame>
-using tags_for_observing = tmpl::list<
-    gr::surfaces::Tags::AreaCompute<Frame>,
-    gr::surfaces::Tags::IrreducibleMassCompute<Frame>,
-    ylm::Tags::MaxRicciScalarCompute, ylm::Tags::MinRicciScalarCompute,
-    gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
-    gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>,
-    gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame, Frame>
-    >;
+using tags_for_observing =
+    tmpl::list<gr::surfaces::Tags::AreaCompute<Frame>,
+               gr::surfaces::Tags::IrreducibleMassCompute<Frame>,
+               ylm::Tags::MaxRicciScalarCompute,
+               ylm::Tags::MinRicciScalarCompute,
+               gr::surfaces::Tags::ChristodoulouMassCompute<Frame>,
+               gr::surfaces::Tags::DimensionlessSpinMagnitudeCompute<Frame>,
+               gr::surfaces::Tags::DimensionfulSpinVectorCompute<Frame, Frame>>;
 
 using surface_tags_for_observing = tmpl::list<ylm::Tags::RicciScalar>;
 
