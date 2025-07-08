@@ -1,7 +1,25 @@
+# Jack's Objective: Modify the script to include an option that allows it to read only the surface horizon data and ignore the volume data if prompted. I.e., if the user specifies where the volume data is, you can just use it. If the user doesn't specify it, ignore and utilize only the surface data. Utilizing an if-else statement, set an option for a default value of None and only include the horizons.
+
+# New Objective: Smooth out horizon surfaces
+
+# Provide an option that allows the user to choose color based on the ricci scalar found inside the bbh file (solid white if not specified).
+
+# Make a movie that allows the BH's to come together and allow the individual horizons to disappear.
+
 #!/usr/bin/env python
 
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
+
+import faulthandler
+
+# force prints to show up immediately and dump C stacks on hard crashes
+import os
+import sys
+
+faulthandler.enable()
+sys.stdout.reconfigure(line_buffering=True)
+os.environ["PARAVIEW_DEBUG"] = "1"
 
 import logging
 import os
@@ -22,35 +40,82 @@ def _parse_step(ctx, param, value):
     return int(value)
 
 
-def ah_vis(ah_xmf: str, render_view: str):
-    """Helper function for visualizing the apparent horizons of the objects.
+from vtkmodules.vtkCommonCore import vtkObject
 
-    Arguments:
-    ah_xmf: Path to the xmf file of the object.
-    render_view: The current view in paraview to add the horizon to."""
+vtkObject.GlobalWarningDisplayOff()
+
+
+def ah_vis(ah_xmf, render_view): 
     import paraview.simple as pv
 
-    Ah_xmf = pv.XDMFReader(registrationName=ah_xmf, FileNames=[ah_xmf])
-    transform_1 = pv.Transform(registrationName="Transform1", Input=Ah_xmf)
-    transform_1.Transform = "Transform"
-    transform_1.Transform.Translate = [0.0, 0.0, 2.0]
-    transform_1_display = pv.Show(
-        transform_1, render_view, "UnstructuredGridRepresentation"
+    # 1) Read & translate
+    reader = pv.XDMFReader(registrationName="Reader", FileNames=[ah_xmf])
+    pv.UpdatePipeline(proxy=reader)
+    print("Passed Reader")
+
+    trans = pv.Transform(registrationName="Transform", Input=reader)
+    trans.Transform.Translate = [0, 0, 2]
+    pv.UpdatePipeline(proxy=trans)
+    print("Passed Transform")
+
+    # 2) Extract pure polydata
+    ext = pv.ExtractSurface(registrationName="ExtractSurface", Input=trans)
+    pv.UpdatePipeline(proxy=ext)
+    print("Passed Extract")
+
+    # 2.5) Merge blocks so we get a single vtkPolyData
+    merged = pv.MergeBlocks(registrationName="MergeBlocks", Input=ext)
+    pv.UpdatePipeline(proxy=merged)
+    print("Passed Merge")
+
+    # 2.6) Extract a pure vtkPolyData surface
+    surf = pv.ExtractSurface(registrationName="Flatten", Input=merged)
+    pv.UpdatePipeline(proxy=surf)
+    print("Passed Surface")
+
+    # 3) (Optional) Triangulate if you really need triangles
+    tri = pv.Triangulate(registrationName="Triangulate", Input=surf)
+    pv.UpdatePipeline(proxy=tri)
+    print(
+        "Cells after Triangulate:",
+        tri.GetClientSideObject().GetOutputDataObject(0).GetNumberOfCells(),
     )
-    transform_1_display.SetScalarBarVisibility(render_view, False)
-    # Sets apparent horizon color to black
-    transform_1_display.AmbientColor = [0.0, 0.0, 0.0]
-    transform_1_display.DiffuseColor = [0.0, 0.0, 0.0]
+    print("Passed Triangulate")
+
+    # 4) Subdivide
+    subdiv = pv.LoopSubdivision(registrationName="Subdivide", Input=tri)
+    subdiv.NumberofSubdivisions = 1
+    pv.UpdatePipeline(proxy=subdiv)
+    print("Passed Subdivide")
+
+    # 5) Smooth
+    smooth = pv.Smooth(registrationName="SmoothHorizon", Input=subdiv)
+    smooth.NumberofIterations = 200
+    smooth.Convergence = 0.01
+    pv.UpdatePipeline(proxy=smooth)
+    print("Passed Smooth")
+
+    # 6) Show only the smoothed mesh
+    rep = pv.Show(smooth, render_view, "UnstructuredGridRepresentation")
+    rep.InterpolateScalarsBeforeMapping = True
+    rep.Representation = "Surface"
+    rep.AmbientColor = [1, 1, 1]
+    rep.DiffuseColor = [1, 1, 1]
+    rep.ColorArrayName = [None, ""]
+
+    # 7) Hide upstream
+    for src in (reader, trans, ext, merged, tri, subdiv):
+        pv.Hide(src)
 
     render_view.Update()
-    pv.ColorBy(transform_1_display, None)
+    print("▶ smoothed horizon:", ah_xmf)
 
 
 def render_bbh(
-    volume_xmf: str,
     output: str,
-    aha_xmf: str,
-    ahb_xmf: str,
+    volume_xmf: str = None,  # now defaults to None
+    aha_xmf: str = None,  # now defaults to None
+    ahb_xmf: str = None,  # now defaults to None
     time_step: int = 0,
     animate: bool = False,
     camera_angle: str = "Side",
@@ -59,7 +124,8 @@ def render_bbh(
     show_grid: bool = False,
     show_time: bool = False,
 ):
-    """Generate Pictures from XMF files for BBH Visualizations
+    """
+    Generate Pictures from XMF files for BBH Visualizations
 
     Generates pictures from BBH runs using the XMF files generated using
     generate-xdmf. This script requires that the Lapse and SpatialRicciScalar
@@ -79,8 +145,70 @@ def render_bbh(
       show_grid: Shows the grid lines of the domain.
       show_time: Shows the simulation time.
 
-    To splice all the pictures into a video, try using FFmpeg"""
+    To splice all the pictures into a video, try using FFmpeg
+    """
+
     import paraview.simple as pv
+
+    # Surface-only mode: no volume data supplied
+    if volume_xmf is None:
+        render_view = pv.GetActiveViewOrCreate("RenderView")
+        # overlay A/B horizons and then save directly
+        if aha_xmf:
+            ah_vis(aha_xmf, render_view)
+        if ahb_xmf:
+            ah_vis(ahb_xmf, render_view)
+        # set up camera exactly as in the full routine:
+        # Camera placements
+        # Top down view
+        if camera_angle == "Top":
+            render_view.CameraPosition = [0.0, 0.0, 36.90869716569761]
+            render_view.CameraFocalPoint = [0.0, 0.0, 0.6894899550131899]
+            render_view.CameraViewUp = [0, 1, 0]
+            render_view.CameraParallelScale = 424.27024700303446
+        # Wide/Inbetween View
+        elif camera_angle == "Wide":
+            render_view.CameraPosition = [
+                -89.0,
+                -17.0,
+                25.0,
+            ]
+            render_view.CameraFocalPoint = [
+                -0.3921962951264054,
+                1.6346750682876983,
+                -0.34522248814953405,
+            ]
+            render_view.CameraViewUp = [
+                0.0,
+                0.0,
+                1.0,
+            ]
+        # Side View
+        else:
+            render_view.CameraPosition = [
+                -29.944619336722987,
+                -3.666072157343372,
+                2.895224044348878,
+            ]
+            render_view.CameraFocalPoint = [
+                -0.13267040638072278,
+                0.6356115665206243,
+                -0.37352608789235847,
+            ]
+            render_view.CameraViewUp = [0.0, 0.0, 1.0]
+            render_view.CameraParallelScale = 519.6152422706632
+        camera = pv.GetActiveCamera()
+        pv.ResetCamera()
+        camera.Zoom(zoom_factor)
+        # and finally write out a screenshot or animation:
+        if animate:
+            pv.SaveAnimation(output, render_view)
+        else:
+            pv.Render()
+            pv.SaveScreenshot(output, render_view)
+        return
+        # Skip the full pipeline and render only horizons if no volume_xmf.
+        # Otherwise run the normal slice/warp/color steps below.
 
     version = pv.GetParaViewVersion()
     if version < (5, 11) or version > (5, 11):
@@ -216,9 +344,16 @@ def render_bbh(
 
 
 @click.command(name="bbh", help=render_bbh.__doc__)
-@click.argument(
-    "volume_xmf",
+@click.option(
+    "--volume-xmf",
+    "-v",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
+    required=False,
+    default=None,
+    help=(
+        "Optional XMF file for the volume data. If omitted, only horizons are"
+        " drawn."
+    ),
 )
 @click.option(
     "--output",
