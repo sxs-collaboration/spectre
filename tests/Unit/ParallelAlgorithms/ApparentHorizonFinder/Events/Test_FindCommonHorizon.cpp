@@ -171,7 +171,7 @@ struct MockElement {
       db::AddSimpleTags<::ah::source_vars<Metavariables::volume_dim>>>;
   using const_global_cache_tags =
       tmpl::list<::domain::Tags::Domain<metavariables::volume_dim>,
-                 InterpTargetTestHelpers::Tags::BlocksForInterpolation>;
+                 ah::Tags::BlocksForInterpolation>;
 };
 
 struct MockMetavariables {

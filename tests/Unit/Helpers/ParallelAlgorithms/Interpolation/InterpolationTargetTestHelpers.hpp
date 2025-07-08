@@ -57,20 +57,6 @@ struct NumberOfElements;
 /// \endcond
 
 namespace InterpTargetTestHelpers {
-namespace Tags {
-// Tag used for tests that will never be created from options, but will be
-// created in a mock runtime system
-struct BlocksForInterpolation : db::SimpleTag,
-                                intrp::Tags::BlocksForInterpolationBase {
-  using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
-
-  using option_tags = tmpl::list<>;
-
-  static constexpr bool pass_metavariables = false;
-  static type create_from_options() { return {}; }
-};
-}  // namespace Tags
-
 enum class ValidPoints { All, None, Some };
 
 template <typename Metavariables, typename InterpolationTargetTag>
