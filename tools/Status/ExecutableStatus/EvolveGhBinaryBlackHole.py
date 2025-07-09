@@ -27,6 +27,36 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         "3-Index Constraint": None,
     }
 
+    def time_status(self, input_file, open_reductions_file, avg_num_slabs=50):
+        """Report the simulation time and speed, normalized by total mass.
+        
+        Overrides the parent class method to normalize time and speed by
+        the total mass of the binary system (mass_a + mass_b).
+        """
+        # Get the unnormalized time status from parent
+        result = super().time_status(input_file, open_reductions_file, avg_num_slabs)
+        
+        # Try to get total mass for normalization
+        try:
+            # Read the most recent horizon masses
+            mass_a = to_dataframe(
+                open_reductions_file["ObservationAhA.dat"], slice=np.s_[-1:]
+            ).iloc[-1]["ChristodoulouMass"]
+            mass_b = to_dataframe(
+                open_reductions_file["ObservationAhB.dat"], slice=np.s_[-1:]
+            ).iloc[-1]["ChristodoulouMass"]
+            total_mass = mass_a + mass_b
+            
+            # Normalize time and speed by total mass
+            if "Time" in result:
+                result["Time"] = result["Time"] / total_mass
+            if "Speed" in result:
+                result["Speed"] = result["Speed"] / total_mass
+        except:
+            logger.debug("Unable to normalize by total mass.", exc_info=True)
+        
+        return result
+
     def status(self, input_file, work_dir):
         try:
             reductions_file = input_file["Observers"]["ReductionFileName"]

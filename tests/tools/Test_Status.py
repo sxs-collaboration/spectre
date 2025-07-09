@@ -95,6 +95,21 @@ class TestExecutableStatus(unittest.TestCase):
             )
             constraints_subfile.append([1.0e-3, 1.0e-4])
             open_h5_file.close_current_object()
+            # Horizon masses for BBH normalization
+            aha_masses_subfile = open_h5_file.insert_dat(
+                "/ObservationAhA",
+                legend=["ChristodoulouMass"],
+                version=0,
+            )
+            aha_masses_subfile.append([0.5])
+            open_h5_file.close_current_object()
+            ahb_masses_subfile = open_h5_file.insert_dat(
+                "/ObservationAhB",
+                legend=["ChristodoulouMass"],
+                version=0,
+            )
+            ahb_masses_subfile.append([0.5])
+            open_h5_file.close_current_object()
             # Elliptic solver residuals
             residuals_subfile = open_h5_file.insert_dat(
                 "/NewtonRaphsonResiduals",
