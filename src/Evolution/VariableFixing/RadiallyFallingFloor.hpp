@@ -137,7 +137,7 @@ class RadiallyFallingFloor {
                  hydro::Tags::ElectronFraction<DataVector>>;
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 hydro::Tags::EquationOfStateBase>;
+                 hydro::Tags::GrmhdEquationOfState>;
 
   template <size_t ThermodynamicDim>
   void operator()(
