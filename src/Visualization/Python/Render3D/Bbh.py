@@ -45,7 +45,7 @@ from vtkmodules.vtkCommonCore import vtkObject
 vtkObject.GlobalWarningDisplayOff()
 
 
-def ah_vis(ah_xmf, render_view): 
+def ah_vis(ah_xmf, render_view, use_ricci=False):
     import paraview.simple as pv
 
     # 1) Read & translate
@@ -99,12 +99,22 @@ def ah_vis(ah_xmf, render_view):
     rep = pv.Show(smooth, render_view, "UnstructuredGridRepresentation")
     rep.InterpolateScalarsBeforeMapping = True
     rep.Representation = "Surface"
-    rep.AmbientColor = [1, 1, 1]
-    rep.DiffuseColor = [1, 1, 1]
-    rep.ColorArrayName = [None, ""]
+
+    # Color by the user‐selected scalar
+    if use_ricci:
+        horizon_source = rep.Input
+        if "RicciScalar" in horizon_source.PointData.keys():
+            lut = pv.GetColorTransferFunction("RicciScalar")
+            lut.ApplyPreset("Viridis (matplotlib)", True)
+            pv.ColorBy(rep, ("POINTS", "RicciScalar"))
+            rep.LookupTable = lut
+        else:
+            pv.ColorBy(rep, None)
+    else:
+        pv.ColorBy(rep, None)
 
     # 7) Hide upstream
-    for src in (reader, trans, ext, merged, tri, subdiv):
+    for src in (reader, trans, ext, merged, tri, subdiv, horizon_source):
         pv.Hide(src)
 
     render_view.Update()
@@ -117,6 +127,7 @@ def render_bbh(
     aha_xmf: str = None,  # now defaults to None
     ahb_xmf: str = None,  # now defaults to None
     time_step: int = 0,
+    color_ricci: bool = False,
     animate: bool = False,
     camera_angle: str = "Side",
     zoom_factor: float = 1.0,
@@ -155,9 +166,9 @@ def render_bbh(
         render_view = pv.GetActiveViewOrCreate("RenderView")
         # overlay A/B horizons and then save directly
         if aha_xmf:
-            ah_vis(aha_xmf, render_view)
+            ah_vis(aha_xmf, render_view, use_ricci=color_ricci)
         if ahb_xmf:
-            ah_vis(ahb_xmf, render_view)
+            ah_vis(ahb_xmf, render_view, use_ricci=color_ricci)
         # set up camera exactly as in the full routine:
         # Camera placements
         # Top down view
@@ -262,9 +273,9 @@ def render_bbh(
 
     # Apparent Horizon Visualization
     if aha_xmf:
-        ah_vis(aha_xmf, render_view)
+        ah_vis(aha_xmf, render_view, use_ricci=color_ricci)
     if ahb_xmf:
-        ah_vis(ahb_xmf, render_view)
+        ah_vis(ahb_xmf, render_view, use_ricci=color_ricci)
 
     if show_grid:
         warp_by_scalar_display.Representation = "Surface With Edges"
@@ -420,6 +431,15 @@ def render_bbh(
     "--show-time",
     is_flag=True,
     help="Show simulation time",
+)
+@click.option(
+    "--color-ricci",
+    is_flag=True,
+    help=(
+        "…If given (and volume-XMF is provided),"
+        "resample SpatialRicciScalar"
+        "onto each horizon and color by it."
+    ),
 )
 def render_bbh_command(**kwargs):
     _rich_traceback_guard = True
