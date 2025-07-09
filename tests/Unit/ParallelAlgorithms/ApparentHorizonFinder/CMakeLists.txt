@@ -36,4 +36,5 @@ target_link_libraries(
   Utilities
   )
 
+add_subdirectory(Criteria)
 add_subdirectory(Python)
