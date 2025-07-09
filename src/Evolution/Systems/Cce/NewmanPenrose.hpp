@@ -407,16 +407,15 @@ namespace Tags {
 struct NewmanPenroseAlphaCompute : Tags::NewmanPenroseAlpha, db::ComputeTag {
   using base = Tags::NewmanPenroseAlpha;
   using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::BondiK, Tags::BondiR, Tags::BondiQ,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Tags::OneMinusY>;
+  using argument_tags = tmpl::list<
+      Tags::BondiJ,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiK, Tags::BondiR, Tags::BondiQ,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                       Spectral::Swsh::Tags::Eth>,
+      Tags::OneMinusY>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*>,
@@ -439,16 +438,15 @@ struct NewmanPenroseAlphaCompute : Tags::NewmanPenroseAlpha, db::ComputeTag {
 struct NewmanPenroseBetaCompute : Tags::NewmanPenroseBeta, db::ComputeTag {
   using base = Tags::NewmanPenroseBeta;
   using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::BondiK, Tags::BondiR, Tags::BondiQ,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Tags::OneMinusY>;
+  using argument_tags = tmpl::list<
+      Tags::BondiJ,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiK, Tags::BondiR, Tags::BondiQ,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                       Spectral::Swsh::Tags::Eth>,
+      Tags::OneMinusY>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, +1>>*>,
@@ -459,8 +457,7 @@ struct NewmanPenroseBetaCompute : Tags::NewmanPenroseBeta, db::ComputeTag {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
-      &newman_penrose_beta);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(&newman_penrose_beta);
 };
 
 /*!
@@ -471,20 +468,16 @@ struct NewmanPenroseBetaCompute : Tags::NewmanPenroseBeta, db::ComputeTag {
 struct NewmanPenroseGammaCompute : Tags::NewmanPenroseGamma, db::ComputeTag {
   using base = Tags::NewmanPenroseGamma;
   using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::BondiK, Tags::BondiH, Tags::BondiR,
-                 Tags::BondiU,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::BondiW, Tags::Dy<Tags::BondiW>,
-                 Tags::Exp2Beta, Tags::OneMinusY>;
+  using argument_tags = tmpl::list<
+      Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiK, Tags::BondiH, Tags::BondiR, Tags::BondiU,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiW, Tags::Dy<Tags::BondiW>, Tags::Exp2Beta, Tags::OneMinusY>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>,
@@ -510,14 +503,13 @@ struct NewmanPenroseGammaCompute : Tags::NewmanPenroseGamma, db::ComputeTag {
  *
  * \details See documentation of `newman_penrose_epsilon()` for definition.
  */
-struct NewmanPenroseEpsilonCompute :
-      Tags::NewmanPenroseEpsilon, db::ComputeTag {
+struct NewmanPenroseEpsilonCompute : Tags::NewmanPenroseEpsilon,
+                                     db::ComputeTag {
   using base = Tags::NewmanPenroseEpsilon;
   using return_type = typename base::type;
   using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
-                 Tags::BondiK, Tags::BondiR,
-                 Tags::Dy<Tags::BondiBeta>, Tags::OneMinusY>;
+      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::BondiK,
+                 Tags::BondiR, Tags::Dy<Tags::BondiBeta>, Tags::OneMinusY>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>,
@@ -541,8 +533,7 @@ struct NewmanPenroseTauCompute : Tags::NewmanPenroseTau, db::ComputeTag {
   using base = Tags::NewmanPenroseTau;
   using return_type = typename base::type;
   using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::BondiK,
-                 Tags::BondiR, Tags::BondiQ,
+      tmpl::list<Tags::BondiJ, Tags::BondiK, Tags::BondiR, Tags::BondiQ,
                  Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                                   Spectral::Swsh::Tags::Eth>,
                  Tags::OneMinusY>;
@@ -554,8 +545,7 @@ struct NewmanPenroseTauCompute : Tags::NewmanPenroseTau, db::ComputeTag {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
-      &newman_penrose_tau);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(&newman_penrose_tau);
 };
 
 /*!
@@ -566,9 +556,8 @@ struct NewmanPenroseTauCompute : Tags::NewmanPenroseTau, db::ComputeTag {
 struct NewmanPenroseSigmaCompute : Tags::NewmanPenroseSigma, db::ComputeTag {
   using base = Tags::NewmanPenroseSigma;
   using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
-                 Tags::BondiK, Tags::BondiR, Tags::OneMinusY>;
+  using argument_tags = tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
+                                   Tags::BondiK, Tags::BondiR, Tags::OneMinusY>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, +2>>*>,
@@ -593,8 +582,7 @@ struct NewmanPenroseRhoCompute : Tags::NewmanPenroseRho, db::ComputeTag {
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
-      &newman_penrose_rho);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(&newman_penrose_rho);
 };
 
 /*!
@@ -606,8 +594,7 @@ struct NewmanPenrosePiCompute : Tags::NewmanPenrosePi, db::ComputeTag {
   using base = Tags::NewmanPenrosePi;
   using return_type = typename base::type;
   using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::BondiK,
-                 Tags::BondiR, Tags::BondiQ,
+      tmpl::list<Tags::BondiJ, Tags::BondiK, Tags::BondiR, Tags::BondiQ,
                  Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                                   Spectral::Swsh::Tags::Eth>,
                  Tags::OneMinusY>;
@@ -619,8 +606,7 @@ struct NewmanPenrosePiCompute : Tags::NewmanPenrosePi, db::ComputeTag {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
-      &newman_penrose_pi);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(&newman_penrose_pi);
 };
 
 /*!
@@ -631,19 +617,17 @@ struct NewmanPenrosePiCompute : Tags::NewmanPenrosePi, db::ComputeTag {
 struct NewmanPenroseNuCompute : Tags::NewmanPenroseNu, db::ComputeTag {
   using base = Tags::NewmanPenroseNu;
   using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::BondiK,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiW,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Tags::Exp2Beta>;
+  using argument_tags = tmpl::list<
+      Tags::BondiJ, Tags::BondiK,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiW, Spectral::Swsh::Tags::Eth>,
+      Tags::Exp2Beta>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*>,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>&,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
-      &newman_penrose_nu);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(&newman_penrose_nu);
 };
 
 /*!
@@ -666,8 +650,7 @@ struct NewmanPenroseMuCompute : Tags::NewmanPenroseMu, db::ComputeTag {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
-      &newman_penrose_mu);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(&newman_penrose_mu);
 };
 
 /*!
@@ -678,20 +661,16 @@ struct NewmanPenroseMuCompute : Tags::NewmanPenroseMu, db::ComputeTag {
 struct NewmanPenroseLambdaCompute : Tags::NewmanPenroseLambda, db::ComputeTag {
   using base = Tags::NewmanPenroseLambda;
   using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::BondiK, Tags::BondiH,
-                 Tags::BondiR, Tags::BondiU,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::BondiU,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::BondiW,
-                 Tags::Exp2Beta, Tags::OneMinusY>;
+  using argument_tags = tmpl::list<
+      Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiK, Tags::BondiH, Tags::BondiR, Tags::BondiU,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::BondiW, Tags::Exp2Beta, Tags::OneMinusY>;
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*>,
@@ -815,10 +794,9 @@ template <>
 struct VolumeWeyl<Tags::Psi1> {
   using return_tags = tmpl::list<Tags::Psi1>;
   using argument_tags =
-      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>,
-                 Tags::BondiK, Tags::BondiQ,
-                 Tags::Dy<Tags::BondiQ>, Tags::BondiR, Tags::EthRDividedByR,
-                 Tags::Dy<Tags::BondiBeta>,
+      tmpl::list<Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::BondiK,
+                 Tags::BondiQ, Tags::Dy<Tags::BondiQ>, Tags::BondiR,
+                 Tags::EthRDividedByR, Tags::Dy<Tags::BondiBeta>,
                  Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
                                                   Spectral::Swsh::Tags::Eth>,
                  Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
@@ -890,41 +868,33 @@ struct Psi1Compute : Tags::Psi1, db::ComputeTag {
 template <>
 struct VolumeWeyl<Tags::Psi2> {
   using return_tags = tmpl::list<Tags::Psi2>;
-  using argument_tags =
-      tmpl::list<Tags::BondiJ,
-                 Tags::BondiK,
-                 Tags::BondiR,
-                 Tags::Dy<Tags::NewmanPenroseMu>,
-                 Spectral::Swsh::Tags::Derivative<Tags::NewmanPenrosePi,
-                                                  Spectral::Swsh::Tags::Eth>,
-                 Spectral::Swsh::Tags::Derivative<Tags::NewmanPenrosePi,
-                                                  Spectral::Swsh::Tags::Ethbar>,
-                 Tags::NewmanPenroseAlpha,
-                 Tags::NewmanPenroseBeta,
-                 Tags::NewmanPenroseEpsilon,
-                 Tags::NewmanPenroseSigma,
-                 Tags::NewmanPenroseRho,
-                 Tags::NewmanPenrosePi,
-                 Tags::NewmanPenroseMu,
-                 Tags::NewmanPenroseLambda,
-                 Tags::OneMinusY>;
+  using argument_tags = tmpl::list<
+      Tags::BondiJ, Tags::BondiK, Tags::BondiR, Tags::Dy<Tags::NewmanPenroseMu>,
+      Spectral::Swsh::Tags::Derivative<Tags::NewmanPenrosePi,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::NewmanPenrosePi,
+                                       Spectral::Swsh::Tags::Ethbar>,
+      Tags::NewmanPenroseAlpha, Tags::NewmanPenroseBeta,
+      Tags::NewmanPenroseEpsilon, Tags::NewmanPenroseSigma,
+      Tags::NewmanPenroseRho, Tags::NewmanPenrosePi, Tags::NewmanPenroseMu,
+      Tags::NewmanPenroseLambda, Tags::OneMinusY>;
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> psi_2,
       const Scalar<SpinWeighted<ComplexDataVector, +2>>& bondi_j,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& bondi_k,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& bondi_r,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& dy_mu,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& eth_pi,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_k,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& dy_mu,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& eth_pi,
       const Scalar<SpinWeighted<ComplexDataVector, -2>>& ethbar_pi,
       const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_alpha,
       const Scalar<SpinWeighted<ComplexDataVector, +1>>& np_beta,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_epsilon,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_epsilon,
       const Scalar<SpinWeighted<ComplexDataVector, +2>>& np_sigma,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_rho,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_rho,
       const Scalar<SpinWeighted<ComplexDataVector, -1>>& np_pi,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& np_mu,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& np_mu,
       const Scalar<SpinWeighted<ComplexDataVector, -2>>& np_lambda,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>& one_minus_y);
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y);
 };
 
 namespace Tags {
@@ -941,21 +911,21 @@ struct Psi2Compute : Tags::Psi2, db::ComputeTag {
 
   static constexpr auto function = static_cast<void (*)(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>,
-      const Scalar<SpinWeighted<ComplexDataVector,  2>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, -2>>&,
       const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
       const Scalar<SpinWeighted<ComplexDataVector, +1>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, +2>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, -1>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&,
       const Scalar<SpinWeighted<ComplexDataVector, -2>>&,
-      const Scalar<SpinWeighted<ComplexDataVector,  0>>&)>(
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>&)>(
       &VolumeWeyl<Tags::Psi2>::apply);
 };
 }  // namespace Tags
@@ -989,8 +959,7 @@ struct TransformBondiJToCauchyCoords {
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& volume_j,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_cauchy_d,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& omega_cauchy,
-      const Spectral::Swsh::SwshInterpolator& interpolator,
-      const size_t l_max);
+      const Spectral::Swsh::SwshInterpolator& interpolator, size_t l_max);
 };
 
 /*!

@@ -209,8 +209,8 @@ class ObserveFields : public Event {
   struct SubgroupName {
     using type = std::string;
     static constexpr Options::String help = {
-      "The name of the subgroup inside the HDF5 file without an extension and "
-      "without a preceding '/'."};
+        "The name of the subgroup inside the HDF5 file without an extension "
+        "and without a preceding '/'."};
   };
 
   struct VariablesToObserve {
@@ -234,28 +234,24 @@ class ObserveFields : public Event {
                 const std::vector<std::string>& variables_to_observe,
                 const Options::Context& context = {});
 
-  using compute_tags_for_observation_box =
-    tmpl::list<Tags::Psi0Compute, Tags::Psi1Compute, Tags::Psi2Compute,
-               Tags::SwshDerivativeCompute<Tags::BondiJ,
-                                                  Spectral::Swsh::Tags::Eth>,
-               Tags::SwshDerivativeCompute<Tags::BondiW,
-                                                  Spectral::Swsh::Tags::Eth>,
-               Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
-               Tags::NewmanPenroseGammaCompute,
-               Tags::NewmanPenroseEpsilonCompute,
-               // Tags::NewmanPenroseKappaCompute,
-               // in our choice of tetrad, \kappa=0
-               Tags::NewmanPenroseTauCompute,
-               Tags::NewmanPenroseSigmaCompute, Tags::NewmanPenroseRhoCompute,
-               Tags::NewmanPenrosePiCompute, Tags::NewmanPenroseNuCompute,
-               Tags::NewmanPenroseMuCompute, Tags::NewmanPenroseLambdaCompute,
-               Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
-                                                 Spectral::Swsh::Tags::Eth>,
-               Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
-                                                 Spectral::Swsh::Tags::Ethbar>,
-               Tags::DyCompute<Tags::NewmanPenrosePi>,
-               Tags::DyCompute<Tags::NewmanPenroseMu>
-      >;
+  using compute_tags_for_observation_box = tmpl::list<
+      Tags::Psi0Compute, Tags::Psi1Compute, Tags::Psi2Compute,
+      Tags::SwshDerivativeCompute<Tags::BondiJ, Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::BondiW, Spectral::Swsh::Tags::Eth>,
+      Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
+      Tags::NewmanPenroseGammaCompute, Tags::NewmanPenroseEpsilonCompute,
+      // Tags::NewmanPenroseKappaCompute,
+      // in our choice of tetrad, \kappa=0
+      Tags::NewmanPenroseTauCompute, Tags::NewmanPenroseSigmaCompute,
+      Tags::NewmanPenroseRhoCompute, Tags::NewmanPenrosePiCompute,
+      Tags::NewmanPenroseNuCompute, Tags::NewmanPenroseMuCompute,
+      Tags::NewmanPenroseLambdaCompute,
+      Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
+                                  Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
+                                  Spectral::Swsh::Tags::Ethbar>,
+      Tags::DyCompute<Tags::NewmanPenrosePi>,
+      Tags::DyCompute<Tags::NewmanPenroseMu>>;
 
   using return_tags = tmpl::list<>;
   using argument_tags = tmpl::list<::Tags::ObservationBox>;
@@ -298,17 +294,16 @@ class ObserveFields : public Event {
     const std::string inertial_retarded_time_name =
         detail::name<Tags::ComplexInertialRetardedTime>();
     if (variables_to_observe_.count(inertial_retarded_time_name) == 1) {
-      const std::string subfile_name = subgroup_path_
-                                       + "/" + inertial_retarded_time_name;
+      const std::string subfile_name =
+          subgroup_path_ + "/" + inertial_retarded_time_name;
       const observers::ObservationId observation_id{time,
-        subfile_name + ".vol"};
+                                                    subfile_name + ".vol"};
       const std::vector<size_t> extents_vector{{l_max, l_max}};
       const std::vector<Spectral::Basis> bases_vector{
-        {Spectral::Basis::SphericalHarmonic,
-         Spectral::Basis::SphericalHarmonic}};
+          {Spectral::Basis::SphericalHarmonic,
+           Spectral::Basis::SphericalHarmonic}};
       const std::vector<Spectral::Quadrature> quadratures_vector{
-        {Spectral::Quadrature::Gauss,
-         Spectral::Quadrature::Equiangular}};
+          {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
 
       const SpinWeighted<ComplexDataVector, 0>& complex_inertial_retarded_time =
           get(get<Tags::ComplexInertialRetardedTime>(box));
@@ -322,41 +317,38 @@ class ObserveFields : public Event {
       // with the correct spin
       SpinWeighted<ComplexModalVector, 0> goldberg_mode_view;
       goldberg_mode_view.set_data_ref(
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        reinterpret_cast<std::complex<double>*>(
-          goldberg_modes_interleaved_dv.data()),
-        l_max_plus_one_squared);
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+          reinterpret_cast<std::complex<double>*>(
+              goldberg_modes_interleaved_dv.data()),
+          l_max_plus_one_squared);
 
       Spectral::Swsh::libsharp_to_goldberg_modes(
           make_not_null(&goldberg_mode_view),
-          Spectral::Swsh::swsh_transform(
-              l_max, 1, complex_inertial_retarded_time),
+          Spectral::Swsh::swsh_transform(l_max, 1,
+                                         complex_inertial_retarded_time),
           l_max);
 
       const std::vector<TensorComponent> tensor_components{
-        {inertial_retarded_time_name, goldberg_modes_interleaved_dv}};
+          {inertial_retarded_time_name, goldberg_modes_interleaved_dv}};
 
       if (write_synchronously) {
         Parallel::local_synchronous_action<
-          observers::ThreadedActions::WriteVolumeData>(
-              observer_proxy, cache,
-              Parallel::get<observers::Tags::VolumeFileName>(cache),
-              subfile_name, observation_id,
-              std::vector<ElementVolumeData>{
-                {inertial_retarded_time_name, tensor_components,
-                 extents_vector, bases_vector,
-                 quadratures_vector}});
+            observers::ThreadedActions::WriteVolumeData>(
+            observer_proxy, cache,
+            Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+            observation_id,
+            std::vector<ElementVolumeData>{{inertial_retarded_time_name,
+                                            tensor_components, extents_vector,
+                                            bases_vector, quadratures_vector}});
       } else {
         // Send to observer writer
-        Parallel::threaded_action<
-          observers::ThreadedActions::WriteVolumeData>(
-              observer_proxy,
-              Parallel::get<observers::Tags::VolumeFileName>(cache),
-              subfile_name, observation_id,
-              std::vector<ElementVolumeData>{
-                {inertial_retarded_time_name, tensor_components,
-                 extents_vector, bases_vector,
-                 quadratures_vector}});
+        Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
+            observer_proxy,
+            Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+            observation_id,
+            std::vector<ElementVolumeData>{{inertial_retarded_time_name,
+                                            tensor_components, extents_vector,
+                                            bases_vector, quadratures_vector}});
       }
     }
 
@@ -369,12 +361,12 @@ class ObserveFields : public Event {
     if (variables_to_observe_.count(one_minus_y_name) == 1) {
       const std::string subfile_name = subgroup_path_ + "/" + one_minus_y_name;
       const observers::ObservationId observation_id{time,
-        subfile_name + ".vol"};
+                                                    subfile_name + ".vol"};
       const std::vector<size_t> extents_vector{number_of_radial_grid_points};
       const std::vector<Spectral::Basis> bases_vector{
-        Spectral::Basis::Legendre};
+          Spectral::Basis::Legendre};
       const std::vector<Spectral::Quadrature> quadratures_vector{
-        Spectral::Quadrature::GaussLobatto};
+          Spectral::Quadrature::GaussLobatto};
 
       const ComplexDataVector& one_minus_y =
           get(get<Tags::OneMinusY>(box)).data();
@@ -388,29 +380,26 @@ class ObserveFields : public Event {
       }
 
       const std::vector<TensorComponent> tensor_components{
-        {one_minus_y_name, one_minus_y_to_write}};
+          {one_minus_y_name, one_minus_y_to_write}};
 
       if (write_synchronously) {
         Parallel::local_synchronous_action<
-          observers::ThreadedActions::WriteVolumeData>(
-              observer_proxy, cache,
-              Parallel::get<observers::Tags::VolumeFileName>(cache),
-              subfile_name, observation_id,
-              std::vector<ElementVolumeData>{
-                {one_minus_y_name, tensor_components,
-                 extents_vector, bases_vector,
-                 quadratures_vector}});
+            observers::ThreadedActions::WriteVolumeData>(
+            observer_proxy, cache,
+            Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+            observation_id,
+            std::vector<ElementVolumeData>{{one_minus_y_name, tensor_components,
+                                            extents_vector, bases_vector,
+                                            quadratures_vector}});
       } else {
         // Send to observer writer
-        Parallel::threaded_action<
-          observers::ThreadedActions::WriteVolumeData>(
-              observer_proxy,
-              Parallel::get<observers::Tags::VolumeFileName>(cache),
-              subfile_name, observation_id,
-              std::vector<ElementVolumeData>{
-                {one_minus_y_name, tensor_components,
-                 extents_vector, bases_vector,
-                 quadratures_vector}});
+        Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
+            observer_proxy,
+            Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+            observation_id,
+            std::vector<ElementVolumeData>{{one_minus_y_name, tensor_components,
+                                            extents_vector, bases_vector,
+                                            quadratures_vector}});
       }
     }
 
@@ -420,18 +409,15 @@ class ObserveFields : public Event {
 
     // Field-independent info for writing into volume data file
     const std::string subfile_name = subgroup_path_ + "/VolumeData";
-    const observers::ObservationId observation_id{time,
-      subfile_name + ".vol"};
+    const observers::ObservationId observation_id{time, subfile_name + ".vol"};
     const std::vector<size_t> extents_vector{
-      {number_of_radial_grid_points, l_max, l_max}};
+        {number_of_radial_grid_points, l_max, l_max}};
     const std::vector<Spectral::Basis> bases_vector{
-      {Spectral::Basis::Legendre,
-       Spectral::Basis::SphericalHarmonic,
-       Spectral::Basis::SphericalHarmonic}};
+        {Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+         Spectral::Basis::SphericalHarmonic}};
     const std::vector<Spectral::Quadrature> quadratures_vector{
-      {Spectral::Quadrature::GaussLobatto,
-       Spectral::Quadrature::Gauss,
-       Spectral::Quadrature::Equiangular}};
+        {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
+         Spectral::Quadrature::Equiangular}};
 
     // Create tensor_components by looping over all available spin
     // weighted tags and checking if we are observing this tag.
@@ -446,55 +432,50 @@ class ObserveFields : public Event {
         return;
       }
 
-      const SpinWeighted<ComplexDataVector, spin>& field =
-        get(get<tag>(box));
+      const SpinWeighted<ComplexDataVector, spin>& field = get(get<tag>(box));
 
       // Allocate a buffer to receive the transformed data, since
       // WriteVolumeData only understands DataVectors, not
       // ComplexDataVectors.
-      DataVector goldberg_modes_interleaved_dv(2 *
-        l_max_plus_one_squared * number_of_radial_grid_points);
+      DataVector goldberg_modes_interleaved_dv(2 * l_max_plus_one_squared *
+                                               number_of_radial_grid_points);
 
       // A non-owning view of goldberg_modes_interleaved_dv,
       // with the correct spin
       SpinWeighted<ComplexModalVector, spin> goldberg_mode_view;
       goldberg_mode_view.set_data_ref(
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        reinterpret_cast<std::complex<double>*>(
-          goldberg_modes_interleaved_dv.data()),
-        l_max_plus_one_squared * number_of_radial_grid_points);
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+          reinterpret_cast<std::complex<double>*>(
+              goldberg_modes_interleaved_dv.data()),
+          l_max_plus_one_squared * number_of_radial_grid_points);
 
       Spectral::Swsh::libsharp_to_goldberg_modes(
-        make_not_null(&goldberg_mode_view),
-        Spectral::Swsh::swsh_transform(l_max,
-          number_of_radial_grid_points, field), l_max);
+          make_not_null(&goldberg_mode_view),
+          Spectral::Swsh::swsh_transform(l_max, number_of_radial_grid_points,
+                                         field),
+          l_max);
 
-      tensor_components.emplace_back(
-        name, std::move(goldberg_modes_interleaved_dv));
-
+      tensor_components.emplace_back(name,
+                                     std::move(goldberg_modes_interleaved_dv));
     });
 
     if (write_synchronously) {
       Parallel::local_synchronous_action<
-        observers::ThreadedActions::WriteVolumeData>(
-        observer_proxy, cache,
-        Parallel::get<observers::Tags::VolumeFileName>(cache),
-        subfile_name, observation_id,
-        std::vector<ElementVolumeData>{
-          {"VolumeData", tensor_components,
-           extents_vector, bases_vector,
-           quadratures_vector}});
+          observers::ThreadedActions::WriteVolumeData>(
+          observer_proxy, cache,
+          Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+          observation_id,
+          std::vector<ElementVolumeData>{{"VolumeData", tensor_components,
+                                          extents_vector, bases_vector,
+                                          quadratures_vector}});
     } else {
       // Send to observer writer
-      Parallel::threaded_action<
-        observers::ThreadedActions::WriteVolumeData>(
-        observer_proxy,
-        Parallel::get<observers::Tags::VolumeFileName>(cache),
-        subfile_name, observation_id,
-        std::vector<ElementVolumeData>{
-          {"VolumeData", tensor_components,
-           extents_vector, bases_vector,
-           quadratures_vector}});
+      Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
+          observer_proxy, Parallel::get<observers::Tags::VolumeFileName>(cache),
+          subfile_name, observation_id,
+          std::vector<ElementVolumeData>{{"VolumeData", tensor_components,
+                                          extents_vector, bases_vector,
+                                          quadratures_vector}});
     }
   }
 
