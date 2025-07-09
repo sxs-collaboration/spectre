@@ -32,9 +32,9 @@ using common_step_choosers = tmpl::push_back<
         tmpl::list<>>,
     StepChoosers::Constant, StepChoosers::LimitIncrease, StepChoosers::Maximum>;
 template <typename Use, typename System>
-using step_choosers_for_step_only =
-    tmpl::list<StepChoosers::PreventRapidIncrease,
-               StepChoosers::ErrorControl<Use, typename System::variables_tag>>;
+using step_choosers_for_step_only = tmpl::list<
+    StepChoosers::PreventRapidIncrease<typename System::variables_tag>,
+    StepChoosers::ErrorControl<Use, typename System::variables_tag>>;
 using step_choosers_for_slab_only = tmpl::list<StepChoosers::StepToTimes>;
 
 template <typename System, bool HasCharSpeedFunctions>

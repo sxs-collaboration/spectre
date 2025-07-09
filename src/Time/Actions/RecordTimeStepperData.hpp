@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -22,6 +21,8 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
+template <typename Tag>
+struct HistoryEvolvedVariables;
 struct TimeStepId;
 }  // namespace Tags
 /// \endcond

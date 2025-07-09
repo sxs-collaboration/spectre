@@ -42,12 +42,18 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace Tags {
+template <typename Tag>
+struct HistoryEvolvedVariables;
+}  // namespace Tags
+/// \endcond
 
 namespace evolution::dg::subcell::Actions {
 /*!

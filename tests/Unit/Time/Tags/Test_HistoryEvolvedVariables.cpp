@@ -17,8 +17,6 @@ using DummyVariablesTag =
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Tags.HistoryEvolvedVariables", "[Unit][Time]") {
-  TestHelpers::db::test_base_tag<Tags::HistoryEvolvedVariables<>>(
-      "HistoryEvolvedVariables");
   TestHelpers::db::test_simple_tag<
       Tags::HistoryEvolvedVariables<DummyVariablesTag>>(
       "HistoryEvolvedVariables");

@@ -367,9 +367,9 @@ void test_impl(
   const auto& active_vars_from_box =
       ActionTesting::get_databox_tag<comp, Tags::Variables<evolved_vars_tags>>(
           runner, 0);
-  const auto& time_stepper_history_from_box =
-      ActionTesting::get_databox_tag<comp, Tags::HistoryEvolvedVariables<>>(
-          runner, 0);
+  const auto& time_stepper_history_from_box = ActionTesting::get_databox_tag<
+      comp, Tags::HistoryEvolvedVariables<Tags::Variables<evolved_vars_tags>>>(
+      runner, 0);
   const auto& tci_grid_history_from_box = ActionTesting::get_databox_tag<
       comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0);
   const auto& cell_centered_flux_from_box = ActionTesting::get_databox_tag<
