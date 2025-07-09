@@ -148,6 +148,62 @@ class TestExecutableStatus(unittest.TestCase):
         self.assertEqual(status["Separation"], 2.0)
         self.assertEqual(status["3-Index Constraint"], 1.0e-4)
 
+    def test_evolve_bbh_status_mass_normalization(self):
+        # Test with total mass != 1.0 to verify normalization works
+        work_dir = os.path.join(
+            unit_test_build_path(), "tools/ExecutableStatus_mass_norm"
+        )
+        shutil.rmtree(work_dir, ignore_errors=True)
+        os.makedirs(work_dir, exist_ok=True)
+        
+        with spectre_h5.H5File(
+            os.path.join(work_dir, "Reductions.h5"), "w"
+        ) as open_h5_file:
+            # Time data - same as setUp
+            time_subfile = open_h5_file.insert_dat(
+                "/TimeSteps",
+                legend=[
+                    "Time",
+                    "Slab size",
+                    "Minimum Walltime",
+                    "Maximum Walltime",
+                ],
+                version=0,
+            )
+            time_subfile.append([0.0, 0.5, 0.5, 1.0])
+            time_subfile.append([1.0, 0.5, 2.0, 3.0])
+            time_subfile.append([2.0, 0.5, 3.0, 4.0])
+            open_h5_file.close_current_object()
+            
+            # Horizon masses with total mass = 2.0 (instead of 1.0)
+            aha_masses_subfile = open_h5_file.insert_dat(
+                "/ObservationAhA",
+                legend=["ChristodoulouMass"],
+                version=0,
+            )
+            aha_masses_subfile.append([0.8])  # mass A = 0.8
+            open_h5_file.close_current_object()
+            
+            ahb_masses_subfile = open_h5_file.insert_dat(
+                "/ObservationAhB",
+                legend=["ChristodoulouMass"],
+                version=0,
+            )
+            ahb_masses_subfile.append([1.2])  # mass B = 1.2, total = 2.0
+            open_h5_file.close_current_object()
+        
+        try:
+            executable_status = match_executable_status("EvolveGhBinaryBlackHole")
+            status = executable_status.status(self.input_file, work_dir)
+            
+            # With total mass = 2.0, time and speed should be normalized:
+            # Unnormalized time = 2.0, normalized = 2.0 / 2.0 = 1.0
+            # Unnormalized speed = 2400.0, normalized = 2400.0 / 2.0 = 1200.0
+            self.assertEqual(status["Time"], 1.0)
+            self.assertEqual(status["Speed"], 1200.0)
+        finally:
+            shutil.rmtree(work_dir, ignore_errors=True)
+
     def test_evolve_single_bh_status(self):
         executable_status = match_executable_status("EvolveGhSingleBlackHole")
         status = executable_status.status(self.input_file, self.work_dir)
