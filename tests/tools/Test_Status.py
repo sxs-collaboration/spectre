@@ -204,6 +204,47 @@ class TestExecutableStatus(unittest.TestCase):
         finally:
             shutil.rmtree(work_dir, ignore_errors=True)
 
+    def test_evolve_bbh_status_mass_normalization_exception(self):
+        # Test case where mass normalization fails (missing mass data)
+        work_dir = os.path.join(
+            unit_test_build_path(), "tools/ExecutableStatus_no_mass"
+        )
+        shutil.rmtree(work_dir, ignore_errors=True)
+        os.makedirs(work_dir, exist_ok=True)
+        
+        with spectre_h5.H5File(
+            os.path.join(work_dir, "Reductions.h5"), "w"
+        ) as open_h5_file:
+            # Time data - same as setUp
+            time_subfile = open_h5_file.insert_dat(
+                "/TimeSteps",
+                legend=[
+                    "Time",
+                    "Slab size",
+                    "Minimum Walltime",
+                    "Maximum Walltime",
+                ],
+                version=0,
+            )
+            time_subfile.append([0.0, 0.5, 0.5, 1.0])
+            time_subfile.append([1.0, 0.5, 2.0, 3.0])
+            time_subfile.append([2.0, 0.5, 3.0, 4.0])
+            open_h5_file.close_current_object()
+            
+            # Deliberately omit ObservationAhA and ObservationAhB data
+            # to trigger an exception in mass normalization
+        
+        try:
+            executable_status = match_executable_status("EvolveGhBinaryBlackHole")
+            status = executable_status.status(self.input_file, work_dir)
+            
+            # Since mass normalization fails, should return unnormalized values
+            # Same as parent class: time = 2.0, speed = 2400.0
+            self.assertEqual(status["Time"], 2.0)
+            self.assertEqual(status["Speed"], 2400.0)
+        finally:
+            shutil.rmtree(work_dir, ignore_errors=True)
+
     def test_evolve_single_bh_status(self):
         executable_status = match_executable_status("EvolveGhSingleBlackHole")
         status = executable_status.status(self.input_file, self.work_dir)
