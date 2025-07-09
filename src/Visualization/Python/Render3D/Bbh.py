@@ -6,6 +6,8 @@
 
 # Make a movie that allows the BH's to come together and allow the individual horizons to disappear.
 
+# Make a unit test - talk to Alex and Lovelace
+
 #!/usr/bin/env python
 
 # Distributed under the MIT License.
@@ -45,7 +47,7 @@ from vtkmodules.vtkCommonCore import vtkObject
 vtkObject.GlobalWarningDisplayOff()
 
 
-def ah_vis(ah_xmf, render_view, use_ricci=False):
+def ah_vis(ah_xmf, render_view, volume_src=None, use_ricci=False):
     import paraview.simple as pv
 
     # 1) Read & translate
@@ -102,19 +104,32 @@ def ah_vis(ah_xmf, render_view, use_ricci=False):
 
     # Color by the user‐selected scalar
     if use_ricci:
-        horizon_source = rep.Input
-        if "RicciScalar" in horizon_source.PointData.keys():
+        if volume_src is not None:
+            # resample volume’s SpatialRicciScalar onto the smooth horizon
+            samp = pv.ResampleWithDataset(
+                Source=volume_src, DestinationMesh=smooth
+            )
+            pv.UpdatePipeline(samp)
+            disp = pv.Show(samp, render_view, "UnstructuredGridRepresentation")
+            # … color by SpatialRicciScalar …
+        elif "RicciScalar" in reader.PointData.keys():
+            # horizon file itself has RicciScalar – color that directly
             lut = pv.GetColorTransferFunction("RicciScalar")
             lut.ApplyPreset("Viridis (matplotlib)", True)
             pv.ColorBy(rep, ("POINTS", "RicciScalar"))
             rep.LookupTable = lut
         else:
+            # horizon file doesn’t even have RicciScalar → fall back
             pv.ColorBy(rep, None)
     else:
-        pv.ColorBy(rep, None)
+        # fallback: solid white
+        disp = rep
+        disp.AmbientColor = [1, 1, 1]
+        disp.DiffuseColor = [1, 1, 1]
+        pv.ColorBy(disp, None)
 
     # 7) Hide upstream
-    for src in (reader, trans, ext, merged, tri, subdiv, horizon_source):
+    for src in (reader, trans, ext, merged, tri, subdiv):
         pv.Hide(src)
 
     render_view.Update()
@@ -139,7 +154,7 @@ def render_bbh(
     Generate Pictures from XMF files for BBH Visualizations
 
     Generates pictures from BBH runs using the XMF files generated using
-    generate-xdmf. This script requires that the Lapse and SpatialRicciScalar
+    generate-xdmf. This script requires that the Lapse and RicciScalar
     were output in the volume data.
 
     Arguments:
@@ -233,13 +248,13 @@ def render_bbh(
         registrationName=volume_xmf, FileNames=[volume_xmf]
     )
 
-    # Check for Lapse and SpatialRicciScalar
+    # Check for Lapse and RicciScalar
     variables = list(volume_files_xmf.PointData.keys())
     assert (
         "Lapse" in variables
     ), "Lapse not found in volume data, the script will not work correctly."
-    assert "SpatialRicciScalar" in variables, (
-        "SpatialRicciScalar not found in volume data, the script will not work"
+    assert "RicciScalar" in variables, (
+        "RicciScalar not found in volume data, the script will not work"
         " correctly."
     )
 
@@ -263,7 +278,7 @@ def render_bbh(
     warp_by_scalar = pv.WarpByScalar(
         registrationName="WarpByScalar", Input=slice
     )
-    warp_by_scalar.Scalars = ["POINTS", "SpatialRicciScalar"]
+    warp_by_scalar.Scalars = ["POINTS", "RicciScalar"]
     warp_by_scalar.ScaleFactor = 2.5
     warp_by_scalar.Normal = [0.0, 0.0, -1.0]
     warp_by_scalar_display = pv.Show(
@@ -273,9 +288,19 @@ def render_bbh(
 
     # Apparent Horizon Visualization
     if aha_xmf:
-        ah_vis(aha_xmf, render_view, use_ricci=color_ricci)
+        ah_vis(
+            aha_xmf,
+            render_view,
+            volume_src=volume_files_xmf,
+            use_ricci=color_ricci,
+        )
     if ahb_xmf:
-        ah_vis(ahb_xmf, render_view, use_ricci=color_ricci)
+        ah_vis(
+            ahb_xmf,
+            render_view,
+            volume_src=volume_files_xmf,
+            use_ricci=color_ricci,
+        )
 
     if show_grid:
         warp_by_scalar_display.Representation = "Surface With Edges"
@@ -437,7 +462,7 @@ def render_bbh(
     is_flag=True,
     help=(
         "…If given (and volume-XMF is provided),"
-        "resample SpatialRicciScalar"
+        "resample RicciScalar"
         "onto each horizon and color by it."
     ),
 )
