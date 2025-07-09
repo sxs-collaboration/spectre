@@ -175,13 +175,13 @@ class TestExecutableStatus(unittest.TestCase):
             time_subfile.append([2.0, 0.5, 3.0, 4.0])
             open_h5_file.close_current_object()
             
-            # Horizon masses with total mass = 2.0 (instead of 1.0)
+            # Horizon masses with total mass = 2.1 (instead of 1.0)
             aha_masses_subfile = open_h5_file.insert_dat(
                 "/ObservationAhA",
                 legend=["ChristodoulouMass"],
                 version=0,
             )
-            aha_masses_subfile.append([0.8])  # mass A = 0.8
+            aha_masses_subfile.append([0.9])  # mass A = 0.9
             open_h5_file.close_current_object()
             
             ahb_masses_subfile = open_h5_file.insert_dat(
@@ -189,18 +189,18 @@ class TestExecutableStatus(unittest.TestCase):
                 legend=["ChristodoulouMass"],
                 version=0,
             )
-            ahb_masses_subfile.append([1.2])  # mass B = 1.2, total = 2.0
+            ahb_masses_subfile.append([1.2])  # mass B = 1.2, total = 2.1
             open_h5_file.close_current_object()
         
         try:
             executable_status = match_executable_status("EvolveGhBinaryBlackHole")
             status = executable_status.status(self.input_file, work_dir)
             
-            # With total mass = 2.0, time and speed should be normalized:
-            # Unnormalized time = 2.0, normalized = 2.0 / 2.0 = 1.0
-            # Unnormalized speed = 2400.0, normalized = 2400.0 / 2.0 = 1200.0
-            self.assertEqual(status["Time"], 1.0)
-            self.assertEqual(status["Speed"], 1200.0)
+            # With total mass = 2.1, time and speed should be normalized:
+            # Unnormalized time = 2.0, normalized = 2.0 / 2.1 = 0.9523809523809523
+            # Unnormalized speed = 2400.0, normalized = 2400.0 / 2.1 = 1142.857142857143
+            self.assertEqual(status["Time"], 2.0 / 2.1)
+            self.assertEqual(status["Speed"], 2400.0 / 2.1)
         finally:
             shutil.rmtree(work_dir, ignore_errors=True)
 
