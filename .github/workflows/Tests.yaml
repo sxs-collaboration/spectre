@@ -506,6 +506,9 @@ jobs:
             KOKKOS_ARCH: "AMPERE80"
             # Compile in Release mode to speed up the build
             build_type: Release
+            # Build with static libs because Kokkos CUDA doesn't support shared
+            # libs
+            BUILD_SHARED_LIBS: OFF
             # Build only a subset of the code because compiling the full code is
             # too slow and exceeds the available memory. We should extend this
             # to the full code once we have a better solution for the memory
@@ -596,7 +599,10 @@ jobs:
             -D Kokkos_ENABLE_SERIAL=ON \
             -D Kokkos_ENABLE_OPENMP=ON \
             -D Kokkos_ENABLE_CUDA=${{ matrix.CUDA || 'OFF' }} \
-            -D Kokkos_ARCH_${{ matrix.KOKKOS_ARCH || 'NATIVE' }}=ON
+            -D Kokkos_ARCH_${{ matrix.KOKKOS_ARCH || 'NATIVE' }}=ON \
+            -D Kokkos_ENABLE_CUDA_CONSTEXPR=ON \
+            -D Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE=ON \
+            -D CMAKE_POSITION_INDEPENDENT_CODE=ON
           make -j ${NUMBER_OF_CORES} install
           cd ../../ && rm -rf kokkos.tar.gz kokkos
           # Use Kokkos compiler wrapper for nvcc
@@ -799,12 +805,14 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           make -j${NUMBER_OF_CORES} \
             Test_DataStructures \
+            Test_Kokkos \
             Test_Spectral \
             Test_Utilities \
             EvolveScalarWave3D
           # Can't run these tests on GitHub-hosted runners because they don't
           # have GPU hardware.
           # ./bin/Test_DataStructures
+          # ./bin/Test_Kokkos
           # ./bin/Test_Spectral
           # ./bin/Test_Utilities
           # ctest -R PlaneWave3D.yaml --output-on-failure
@@ -960,7 +968,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
 
           cd .. && rm -r build-formaline
       - name: Test bundled exporter
-        if: matrix.ASAN != 'ON'
+        if: matrix.ASAN != 'ON' && matrix.CUDA != 'ON'
         working-directory: build
         run: |
           make -j${NUMBER_OF_CORES} BundledExporter
