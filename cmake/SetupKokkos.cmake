@@ -64,3 +64,17 @@ if (NOT DEFINED KOKKOS_CXX_COMPILER_ID)
     set(KOKKOS_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
   endif()
 endif()
+
+# Include CUDA as system headers to suppress warnings. NVCC seems to include
+# CUDA headers as `-I` instead of `-isystem` for some reason (as of
+# version 12.6).
+if (CUDAToolkit_INCLUDE_DIRS)
+  create_cxx_flag_target(
+    "-Xcompiler \"-isystem${CUDAToolkit_INCLUDE_DIRS}\""
+    SpectreCudaSystemInclude)
+  target_link_libraries(
+    SpectreWarnings
+    INTERFACE
+    SpectreCudaSystemInclude
+    )
+endif()
