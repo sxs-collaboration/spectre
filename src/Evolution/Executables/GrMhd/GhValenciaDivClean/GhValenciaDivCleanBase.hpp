@@ -294,12 +294,12 @@ struct GhValenciaDivCleanDefaults {
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      Actions::MutateApply<tmpl::conditional_t<
-          UseDgSubcell, grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints,
-          gh::gauges::SetPiAndPhiFromConstraints<
-              ghmhd::GhValenciaDivClean::InitialData::
-                  analytic_solutions_and_data_list,
-              3>>>,
+      tmpl::conditional_t<UseDgSubcell,
+                          grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints,
+                          gh::gauges::SetPiAndPhiFromConstraints<
+                              ghmhd::GhValenciaDivClean::InitialData::
+                                  analytic_solutions_and_data_list,
+                              3>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
               DataVector, volume_dim, domain_frame>>>,
@@ -330,8 +330,7 @@ struct GhValenciaDivCleanDefaults {
               VariableFixing::Actions::FixVariables<
                   VariableFixing::LimitLorentzFactor>,
               Actions::UpdateConservatives,
-              Actions::MutateApply<
-                  grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>>,
+              grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
 
@@ -852,7 +851,8 @@ struct GhValenciaDivCleanTemplateBase<
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<3, use_control_systems>,
+          evolution::dg::Initialization::Domain<derived_metavars,
+                                                use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       // This conditional is untested and probably doesn't work if

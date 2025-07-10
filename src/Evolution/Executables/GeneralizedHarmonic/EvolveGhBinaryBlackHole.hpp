@@ -253,8 +253,8 @@ struct EvolutionMetavars {
   static constexpr bool use_dg_element_collection = false;
 
   using initialize_initial_data_dependent_quantities_actions =
-      tmpl::list<Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
-                     gh::Solutions::all_solutions<volume_dim>, volume_dim>>,
+      tmpl::list<gh::gauges::SetPiAndPhiFromConstraints<
+                     gh::Solutions::all_solutions<volume_dim>, volume_dim>,
                  Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -585,7 +585,7 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim,
+          evolution::dg::Initialization::Domain<EvolutionMetavars,
                                                 use_control_systems>,
           ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,

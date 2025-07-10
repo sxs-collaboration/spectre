@@ -21,6 +21,7 @@
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -62,27 +63,35 @@ struct SetPiAndPhiFromConstraintsCacheMutator {
  */
 template <class AllSolutionsForChristoffelAnalytic, size_t Dim>
 struct SetPiAndPhiFromConstraints {
- public:
-  using return_tags =
-      tmpl::list<gh::Tags::Pi<DataVector, Dim>, gh::Tags::Phi<DataVector, Dim>>;
-  using argument_tags =
-      tmpl::list<::Tags::Time, domain::Tags::Mesh<Dim>,
-                 domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                             Frame::Inertial>,
-                 domain::Tags::FunctionsOfTime,
-                 domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
-                 gr::Tags::SpacetimeMetric<DataVector, Dim>,
-                 gh::gauges::Tags::GaugeCondition,
-                 gh::Tags::SetPiAndPhiFromConstraints>;
-
-  using compute_tags = tmpl::list<
-      Parallel::Tags::FromGlobalCache<gh::Tags::SetPiAndPhiFromConstraints>>;
   using const_global_cache_tags = tmpl::list<gh::gauges::Tags::GaugeCondition>;
   using mutable_global_cache_tags =
       tmpl::list<gh::Tags::SetPiAndPhiFromConstraints>;
 
-  static void apply(
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    db::mutate_apply<
+        tmpl::list<gh::Tags::Pi<DataVector, Dim>,
+                   gh::Tags::Phi<DataVector, Dim>>,
+        tmpl::list<::Tags::Time, domain::Tags::Mesh<Dim>,
+                   domain::Tags::ElementMap<Dim, Frame::Grid>,
+                   domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                               Frame::Inertial>,
+                   domain::Tags::FunctionsOfTime,
+                   domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
+                   gr::Tags::SpacetimeMetric<DataVector, Dim>,
+                   gh::gauges::Tags::GaugeCondition>>(
+        [](const auto&... args) { impl(args...); }, make_not_null(&box),
+        Parallel::get<gh::Tags::SetPiAndPhiFromConstraints>(cache));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+  static void impl(
       gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
       gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*> phi,
       double time, const Mesh<Dim>& mesh,
@@ -97,7 +106,7 @@ struct SetPiAndPhiFromConstraints {
           logical_coordinates,
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
       const gauges::GaugeCondition& gauge_condition,
-      bool set_pi_and_phi_from_constraints = true);
+      bool set_pi_and_phi_from_constraints);
 };
 }  // namespace gauges
 }  // namespace gh

@@ -102,7 +102,7 @@ struct Initialize {
                  control_system::Tags::CurrentNumberOfMeasurements,
                  control_system::Tags::UpdateAggregators>;
 
-  using argument_tags = tmpl::list<Parallel::Tags::GlobalCache>;
+  using argument_tags = tmpl::list<Parallel::Tags::GlobalCache<Metavariables>>;
 
   static void apply(
       const gsl::not_null<::Averager<deriv_order - 1>*> averager,

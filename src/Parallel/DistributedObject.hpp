@@ -188,9 +188,9 @@ class DistributedObject<ParallelComponent,
   using databox_type = db::compute_databox_type<tmpl::flatten<tmpl::list<
       distributed_object_tags,
       typename parallel_component::simple_tags_from_options,
-      Tags::GlobalCacheImplCompute<metavariables>,
+      Tags::GlobalCacheCompute<metavariables>,
       Tags::ResourceInfoReference<metavariables>,
-      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>,
+      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags, metavariables>,
       Algorithm_detail::action_list_simple_tags<parallel_component>,
       Algorithm_detail::action_list_compute_tags<parallel_component>>>>;
 
