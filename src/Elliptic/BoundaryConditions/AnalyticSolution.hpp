@@ -37,18 +37,12 @@ struct AnalyticSolution;
 /// \endcond
 
 /*!
- * \brief Impose the analytic solution on the boundary. Works only if an
- * analytic solution exists.
+ * \brief Impose the analytic solution on the boundary.
  *
- * The analytic solution is retrieved from `::Tags::AnalyticSolutionsBase`. It
- * must hold solutions for both the `System::primal_fields` and the
- * `System::primal_fluxes`. The user can select to impose the analytic solution
- * as Dirichlet or Neumann boundary conditions for each field separately.
- * Dirichlet boundary conditions are imposed on the fields and Neumann boundary
+ * The user can select to impose the analytic solution as Dirichlet or
+ * Neumann boundary conditions for each field separately.  Dirichlet
+ * boundary conditions are imposed on the fields and Neumann boundary
  * conditions are imposed on the fluxes.
- *
- * See `elliptic::Actions::InitializeAnalyticSolutions` for an action that can
- * add the analytic solutions to the DataBox.
  */
 template <typename System, size_t Dim, typename... FieldTags,
           typename... FluxTags>

@@ -183,8 +183,7 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(component_being_mocked)
  * \brief Holds a map between interpolation target tag name (aka a horizon) and
  * a set of block names that should be used for interpolation for that target.
  */
-struct BlocksForInterpolation : db::SimpleTag,
-                                intrp::Tags::BlocksForInterpolationBase {
+struct BlocksForInterpolation : db::SimpleTag {
   using type = std::unordered_map<std::string, std::unordered_set<std::string>>;
   template <typename Metavariables>
   using option_tags = tmpl::push_front<

@@ -11,7 +11,6 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
-#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -26,6 +25,10 @@ namespace ConstitutiveRelations {
 template <size_t Dim>
 class ConstitutiveRelation;
 }  // namespace ConstitutiveRelations
+namespace Tags {
+template <size_t Dim>
+struct ConstitutiveRelationPerBlock;
+}  // namespace Tags
 }  // namespace Elasticity
 /// \endcond
 
@@ -66,9 +69,9 @@ void add_curved_sources(
 template <size_t Dim>
 struct Fluxes {
   using argument_tags =
-      tmpl::list<Tags::ConstitutiveRelationPerBlockBase,
+      tmpl::list<Tags::ConstitutiveRelationPerBlock<Dim>,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
-  using volume_tags = tmpl::list<Tags::ConstitutiveRelationPerBlockBase>;
+  using volume_tags = tmpl::list<Tags::ConstitutiveRelationPerBlock<Dim>>;
   using const_global_cache_tags = volume_tags;
   static constexpr bool is_trivial = false;
   static constexpr bool is_discontinuous = true;

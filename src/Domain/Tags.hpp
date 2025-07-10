@@ -239,11 +239,6 @@ struct DetTimesInvJacobian : db::SimpleTag {
   }
 };
 
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// Base tag for boundary data needed for updating the variables.
-struct VariablesBoundaryData : db::BaseTag {};
-
 /// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup

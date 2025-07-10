@@ -50,8 +50,7 @@ namespace Tags {
 
 /// A constitutive relation in every block of the domain
 template <size_t Dim>
-struct ConstitutiveRelationPerBlock : db::SimpleTag,
-                                      ConstitutiveRelationPerBlockBase {
+struct ConstitutiveRelationPerBlock : db::SimpleTag {
   using ConstRelPtr =
       std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>;
   using type = std::vector<ConstRelPtr>;
@@ -84,7 +83,7 @@ struct ConstitutiveRelationReference : ConstitutiveRelation<Dim>,
                                        db::ReferenceTag {
   using base = ConstitutiveRelation<Dim>;
   using argument_tags =
-      tmpl::list<ConstitutiveRelationPerBlockBase, domain::Tags::Element<Dim>>;
+      tmpl::list<ConstitutiveRelationPerBlock<Dim>, domain::Tags::Element<Dim>>;
   static const ConstitutiveRelations::ConstitutiveRelation<Dim>& get(
       const std::vector<
           std::unique_ptr<ConstitutiveRelations::ConstitutiveRelation<Dim>>>&

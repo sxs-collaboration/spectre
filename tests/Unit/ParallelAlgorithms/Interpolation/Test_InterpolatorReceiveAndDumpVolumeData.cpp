@@ -33,7 +33,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
@@ -46,6 +45,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/DumpInterpolatorVolumeData.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
@@ -250,7 +250,7 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+      tmpl::list<ah::Tags::BlocksForInterpolation,
                  domain::Tags::Domain<Metavariables::volume_dim>>;
 
   using phase_dependent_action_list = tmpl::list<
