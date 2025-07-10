@@ -8,7 +8,7 @@
 namespace Parallel::Tags {
 /// \cond
 template <typename Index>
-struct ArrayIndexImpl;
+struct ArrayIndex;
 template <typename Metavariables>
 struct GlobalCacheProxy;
 template <typename Metavariables>
@@ -22,7 +22,6 @@ struct MetavariablesImpl;
 /// mutable items corresponding to these tags.
 template <typename Metavariables, typename Index>
 using distributed_object_tags =
-    tmpl::list<Tags::MetavariablesImpl<Metavariables>,
-               Tags::ArrayIndexImpl<Index>,
+    tmpl::list<Tags::MetavariablesImpl<Metavariables>, Tags::ArrayIndex<Index>,
                Tags::GlobalCacheProxy<Metavariables>>;
 }  // namespace Parallel::Tags

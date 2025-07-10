@@ -9,11 +9,8 @@ namespace Parallel::Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ParallelGroup
 /// Tag to retrieve the `ArrayIndex` from the DataBox.
-struct ArrayIndex : db::BaseTag {};
-
 template <typename Index>
-struct ArrayIndexImpl : ArrayIndex, db::SimpleTag {
-  using base = ArrayIndex;
+struct ArrayIndex : db::SimpleTag {
   using type = Index;
 };
 }  // namespace Parallel::Tags

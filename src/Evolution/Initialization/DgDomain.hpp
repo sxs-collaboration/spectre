@@ -87,7 +87,7 @@ struct Domain {
   /// Tags for items fetched by the DataBox and passed to the apply function
   using argument_tags =
       tmpl::append<const_global_cache_tags, simple_tags_from_options,
-                   tmpl::list<::Parallel::Tags::ArrayIndex>>;
+                   tmpl::list<::Parallel::Tags::ArrayIndex<ElementId<dim>>>>;
 
   /// Tags for items in the DataBox that are mutated by the apply function
   using return_tags =

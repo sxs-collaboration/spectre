@@ -262,7 +262,7 @@ void test() {
 
   using TaggedTupleType =
       tuples::TaggedTuple<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                          Parallel::Tags::ArrayIndexImpl<ElementId<3>>,
+                          Parallel::Tags::ArrayIndex<ElementId<3>>,
                           Parallel::Tags::GlobalCache<Metavariables>,
                           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
                           domain::Tags::NeighborMesh<3>, amr::Tags::Info<3>,

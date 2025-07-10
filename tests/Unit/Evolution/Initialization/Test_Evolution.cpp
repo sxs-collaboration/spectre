@@ -169,13 +169,13 @@ void test_lts() {
         initial_slab_size);
 }
 using items_type = tuples::TaggedTuple<
-    Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
+    Parallel::Tags::ArrayIndex<ElementId<1>>, ::Tags::TimeStepId,
     ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
     ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
     ::Tags::ChangeSlabSize::SlabSizeGoal>;
 
 using parent_items_type = tuples::TaggedTuple<
-    Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
+    Parallel::Tags::ArrayIndex<ElementId<1>>, ::Tags::TimeStepId,
     ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
     ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
     ::Tags::ChangeSlabSize::SlabSizeGoal, ::amr::Tags::Info<1>>;
@@ -218,7 +218,7 @@ void test_p_refine() {
   const double slab_size_goal = 1.34;
 
   auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
+      Parallel::Tags::ArrayIndex<ElementId<1>>, ::Tags::TimeStepId,
       ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
@@ -260,7 +260,7 @@ void test_split() {
       ::amr::Info<1>{std::array{::amr::Flag::Split}, Mesh<1>{}}};
 
   auto child_1_box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
+      Parallel::Tags::ArrayIndex<ElementId<1>>, ::Tags::TimeStepId,
       ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
@@ -269,7 +269,7 @@ void test_split() {
       std::numeric_limits<double>::signaling_NaN());
 
   auto child_2_box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
+      Parallel::Tags::ArrayIndex<ElementId<1>>, ::Tags::TimeStepId,
       ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
@@ -333,7 +333,7 @@ void test_join() {
                  slab_size_goal_2});
 
   auto parent_box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndexImpl<ElementId<1>>, ::Tags::TimeStepId,
+      Parallel::Tags::ArrayIndex<ElementId<1>>, ::Tags::TimeStepId,
       ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
       ::Tags::StepNumberWithinSlab, ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::ChangeSlabSize::SlabSizeGoal>>(
@@ -606,7 +606,7 @@ void compare_p_refine() {
   const auto old_data =
       element_data(&gen, element_id, old_mesh, time_step_id0, time_step_id1);
   auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndexImpl<ElementId<3>>, domain::Tags::Element<3>,
+      Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
       domain::Tags::Mesh<3>, dt_variables_tag,
       Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
       HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -660,7 +660,7 @@ void compare_h_refine() {
 
   {
     auto box = db::create<db::AddSimpleTags<
-        Parallel::Tags::ArrayIndexImpl<ElementId<3>>, domain::Tags::Element<3>,
+        Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
         domain::Tags::Mesh<3>, dt_variables_tag,
         Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
         HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -693,7 +693,7 @@ void compare_h_refine() {
 
   {
     auto box = db::create<db::AddSimpleTags<
-        Parallel::Tags::ArrayIndexImpl<ElementId<3>>, domain::Tags::Element<3>,
+        Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
         domain::Tags::Mesh<3>, dt_variables_tag,
         Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
         HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -752,7 +752,7 @@ void compare_nonuniform_join() {
       element_data(&gen, child1_id, child1_mesh, time_step_id0, time_step_id1);
 
   auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndexImpl<ElementId<3>>, domain::Tags::Element<3>,
+      Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
       domain::Tags::Mesh<3>, dt_variables_tag,
       Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
       HistoryDeriv<0>, HistoryDeriv<1>>>(
