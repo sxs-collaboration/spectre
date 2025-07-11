@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(Events)
+add_subdirectory(Protocols)
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 
