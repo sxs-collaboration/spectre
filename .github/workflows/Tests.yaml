@@ -816,6 +816,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         run: |
           make -j${NUMBER_OF_CORES} \
             Test_DataStructures \
+            Test_Tensor \
             Test_Kokkos \
             Test_Spectral \
             Test_Utilities \
@@ -823,6 +824,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # Can't run these tests on GitHub-hosted runners because they don't
           # have GPU hardware.
           # ./bin/Test_DataStructures
+          # ./bin/Test_Tensor
           # ./bin/Test_Kokkos
           # ./bin/Test_Spectral
           # ./bin/Test_Utilities

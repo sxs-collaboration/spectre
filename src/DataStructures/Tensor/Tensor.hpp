@@ -141,13 +141,13 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \example
   /// \snippet Test_Tensor.cpp init_vector
   /// \param data the values of the individual components of the Vector
-  explicit Tensor(storage_type data)
+  explicit constexpr Tensor(storage_type data)
     requires(sizeof...(Indices) <= 1);
 
   /// Constructor that passes "args" to constructor of X and initializes each
   /// component to be the same
   template <typename Arg0, typename... Args>
-  explicit Tensor(Arg0&& arg0, Args&&... args)
+  explicit constexpr Tensor(Arg0&& arg0, Args&&... args)
       // NOLINTNEXTLINE(readability-simplify-boolean-expr)
     requires(not(sizeof...(Args) == 0 and
                  std::same_as<std::decay_t<Arg0>, Tensor>) and
@@ -163,21 +163,21 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   using reverse_iterator = typename storage_type::reverse_iterator;
   using const_reverse_iterator = typename storage_type::const_reverse_iterator;
 
-  iterator begin() { return data_.begin(); }
-  const_iterator begin() const { return data_.begin(); }
-  const_iterator cbegin() const { return data_.begin(); }
+  constexpr iterator begin() { return data_.begin(); }
+  constexpr const_iterator begin() const { return data_.begin(); }
+  constexpr const_iterator cbegin() const { return data_.begin(); }
 
-  iterator end() { return data_.end(); }
-  const_iterator end() const { return data_.end(); }
-  const_iterator cend() const { return data_.end(); }
+  constexpr iterator end() { return data_.end(); }
+  constexpr const_iterator end() const { return data_.end(); }
+  constexpr const_iterator cend() const { return data_.end(); }
 
-  reverse_iterator rbegin() { return data_.rbegin(); }
-  const_reverse_iterator rbegin() const { return data_.rbegin(); }
-  const_reverse_iterator crbegin() const { return data_.rbegin(); }
+  constexpr reverse_iterator rbegin() { return data_.rbegin(); }
+  constexpr const_reverse_iterator rbegin() const { return data_.rbegin(); }
+  constexpr const_reverse_iterator crbegin() const { return data_.rbegin(); }
 
-  reverse_iterator rend() { return data_.rend(); }
-  const_reverse_iterator rend() const { return data_.rend(); }
-  const_reverse_iterator crend() const { return data_.rend(); }
+  constexpr reverse_iterator rend() { return data_.rend(); }
+  constexpr const_reverse_iterator rend() const { return data_.rend(); }
+  constexpr const_reverse_iterator crend() const { return data_.rend(); }
 
   /// @{
   /// Get data entry using an array representing a tensor index
@@ -484,14 +484,15 @@ Tensor<X, Symm, IndexList<Indices...>>::component_suffix(
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data)
+constexpr Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data)
   requires(sizeof...(Indices) <= 1)
     : data_(std::move(data)) {}
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 template <typename Arg0, typename... Args>
-Tensor<X, Symm, IndexList<Indices...>>::Tensor(Arg0&& arg0, Args&&... args)
+constexpr Tensor<X, Symm, IndexList<Indices...>>::Tensor(Arg0&& arg0,
+                                                         Args&&... args)
     // NOLINTNEXTLINE(readability-simplify-boolean-expr)
   requires(not(sizeof...(Args) == 0 and
                std::same_as<std::decay_t<Arg0>, Tensor>) and

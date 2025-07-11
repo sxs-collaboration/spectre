@@ -7,19 +7,19 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
 
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 // Arithmetic operators for std::array<T, Dim>
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim>& operator+=(std::array<T, Dim>& lhs,
-                                      const std::array<U, Dim>& rhs) {
+inline constexpr std::array<T, Dim>& operator+=(std::array<T, Dim>& lhs,
+                                                const std::array<U, Dim>& rhs) {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) += gsl::at(rhs, i);
   }
@@ -27,8 +27,8 @@ inline std::array<T, Dim>& operator+=(std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
-inline auto operator+(const std::array<T, Dim>& lhs,
-                      const std::array<U, Dim>& rhs)
+inline constexpr auto operator+(const std::array<T, Dim>& lhs,
+                                const std::array<U, Dim>& rhs)
     -> std::array<decltype(lhs[0] + rhs[0]), Dim> {
   std::array<decltype(lhs[0] + rhs[0]), Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
@@ -38,8 +38,8 @@ inline auto operator+(const std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim>& operator-=(std::array<T, Dim>& lhs,
-                                      const std::array<U, Dim>& rhs) {
+inline constexpr std::array<T, Dim>& operator-=(std::array<T, Dim>& lhs,
+                                                const std::array<U, Dim>& rhs) {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) -= gsl::at(rhs, i);
   }
@@ -47,8 +47,8 @@ inline std::array<T, Dim>& operator-=(std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
-inline auto operator-(const std::array<T, Dim>& lhs,
-                      const std::array<U, Dim>& rhs)
+inline constexpr auto operator-(const std::array<T, Dim>& lhs,
+                                const std::array<U, Dim>& rhs)
     -> std::array<decltype(lhs[0] - rhs[0]), Dim> {
   std::array<decltype(lhs[0] - rhs[0]), Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
@@ -58,7 +58,8 @@ inline auto operator-(const std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim>& operator*=(std::array<T, Dim>& lhs, const U& scale) {
+inline constexpr std::array<T, Dim>& operator*=(std::array<T, Dim>& lhs,
+                                                const U& scale) {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) *= scale;
   }
@@ -66,22 +67,22 @@ inline std::array<T, Dim>& operator*=(std::array<T, Dim>& lhs, const U& scale) {
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
-                                    const U& scale) {
+inline constexpr std::array<T, Dim> operator*(const std::array<T, Dim>& lhs,
+                                              const U& scale) {
   std::array<T, Dim> result = lhs;
   result *= scale;
   return result;
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim> operator*(const U& scale,
-                                    const std::array<T, Dim>& rhs) {
+inline constexpr std::array<T, Dim> operator*(const U& scale,
+                                              const std::array<T, Dim>& rhs) {
   return rhs * scale;
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim>& operator/=(std::array<T, Dim>& lhs,
-                                      const U& scale) {
+inline constexpr std::array<T, Dim>& operator/=(std::array<T, Dim>& lhs,
+                                                const U& scale) {
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(lhs, i) /= scale;
   }
@@ -89,15 +90,15 @@ inline std::array<T, Dim>& operator/=(std::array<T, Dim>& lhs,
 }
 
 template <size_t Dim, typename T, typename U>
-inline std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
-                                    const U& scale) {
+inline constexpr std::array<T, Dim> operator/(const std::array<T, Dim>& lhs,
+                                              const U& scale) {
   std::array<T, Dim> result = lhs;
   result /= scale;
   return result;
 }
 
 template <size_t Dim, typename T>
-inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) {
+inline constexpr std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) {
   std::array<T, Dim> result{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(result, i) = -gsl::at(rhs, i);
@@ -108,9 +109,9 @@ inline std::array<T, Dim> operator-(const std::array<T, Dim>& rhs) {
 /// \ingroup UtilitiesGroup
 /// \brief Construct an array from an existing array omitting one element
 template <typename T, size_t Dim>
-inline std::array<T, Dim - 1> all_but_specified_element_of(
+inline constexpr std::array<T, Dim - 1> all_but_specified_element_of(
     const std::array<T, Dim>& a, const size_t element_to_remove) {
-  ASSERT(element_to_remove < Dim, "Specified element does not exist");
+  assert(element_to_remove < Dim);
   std::array<T, Dim - 1> result{};
   for (size_t i = 0; i < element_to_remove; ++i) {
     gsl::at(result, i) = gsl::at(a, i);
@@ -124,10 +125,9 @@ inline std::array<T, Dim - 1> all_but_specified_element_of(
 /// \ingroup UtilitiesGroup
 /// \brief Construct an array from an existing array adding one element
 template <typename T, size_t Dim>
-inline std::array<T, Dim + 1> insert_element(std::array<T, Dim> a,
-                                             const size_t element_to_add,
-                                             T value) {
-  ASSERT(element_to_add <= Dim, "Specified element is out of range");
+inline constexpr std::array<T, Dim + 1> insert_element(
+    std::array<T, Dim> a, const size_t element_to_add, T value) {
+  assert(element_to_add <= Dim);
   std::array<T, Dim + 1> result{};
   for (size_t i = 0; i < element_to_add; ++i) {
     gsl::at(result, i) = std::move(gsl::at(a, i));
@@ -178,18 +178,18 @@ constexpr std::array<T, Dim1 + Dim2> concatenate(std::array<T, Dim1> a,
 /// abs(), sqrt(), and element-wise addition and multiplication.  In addition,
 /// each T in the array must have the same size.
 template <typename T>
-decltype(auto) magnitude(const std::array<T, 1>& a) {
+constexpr decltype(auto) magnitude(const std::array<T, 1>& a) {
   using std::abs;
   return abs(a[0]);
 }
 
 template <typename T>
-decltype(auto) magnitude(const std::array<T, 2>& a) {
+constexpr decltype(auto) magnitude(const std::array<T, 2>& a) {
   return sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
 template <typename T>
-decltype(auto) magnitude(const std::array<T, 3>& a) {
+constexpr decltype(auto) magnitude(const std::array<T, 3>& a) {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 /// @}
@@ -202,20 +202,20 @@ decltype(auto) magnitude(const std::array<T, 3>& a) {
 /// type of the multiplication which may be a blaze expression template.
 
 template <typename T, typename R>
-decltype(auto) dot(const std::array<T, 1>& first,
-                   const std::array<R, 1>& second) {
+constexpr decltype(auto) dot(const std::array<T, 1>& first,
+                             const std::array<R, 1>& second) {
   return first[0] * second[0];
 }
 
 template <typename T, typename R>
-decltype(auto) dot(const std::array<T, 2>& first,
-                   const std::array<R, 2>& second) {
+constexpr decltype(auto) dot(const std::array<T, 2>& first,
+                             const std::array<R, 2>& second) {
   return first[0] * second[0] + first[1] * second[1];
 }
 
 template <typename T, typename R>
-decltype(auto) dot(const std::array<T, 3>& first,
-                   const std::array<R, 3>& second) {
+constexpr decltype(auto) dot(const std::array<T, 3>& first,
+                             const std::array<R, 3>& second) {
   return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
 }
 /// @}
