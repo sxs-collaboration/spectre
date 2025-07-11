@@ -7,9 +7,11 @@ set(LIBRARY_SOURCES
   Test_ApparentHorizonFinder.cpp
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
+  Test_Destination.cpp
   Test_FastFlow.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_ObserveCenters.cpp
+  Test_Storage.cpp
   Test_Tags.cpp
   )
 
