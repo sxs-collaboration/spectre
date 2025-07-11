@@ -3,7 +3,17 @@
 
 #pragma once
 
+#include <deque>
+#include <optional>
+#include <set>
+#include <string>
+#include <unordered_map>
+
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
+#include "IO/Logging/Verbosity.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Storage.hpp"
 
 /// \cond
 class FastFlow;
@@ -17,8 +27,82 @@ class Strahlkorper;
  * \brief Tags for the apparent horizon finder.
  */
 namespace ah::Tags {
+/*!
+ * \brief Verbosity of horizon finder
+ */
+struct Verbosity : db::SimpleTag {
+  using type = ::Verbosity;
+};
+
+/*!
+ * \brief Holds a `::FastFlow` object. Needs to be reset after each horizon
+ * find.
+ */
 struct FastFlow : db::SimpleTag {
   using type = ::FastFlow;
+};
+
+/*!
+ * \brief Tag that holds the current time.
+ *
+ * \details The value of this tag is `std::nullopt` if the current time isn't
+ * set.
+ */
+struct CurrentTime : db::SimpleTag {
+  using type = std::optional<LinkedMessageId<double>>;
+};
+
+/*!
+ * \brief List of times waiting for previous horizon finds to finish
+ * before they can be started.
+ */
+struct PendingTimes : db::SimpleTag {
+  using type = std::set<LinkedMessageId<double>>;
+};
+
+/*!
+ * \brief Tag that holds all completed times
+ */
+struct CompletedTimes : db::SimpleTag {
+  using type = std::set<LinkedMessageId<double>>;
+};
+
+/*!
+ * \brief Holds potential dependency for apparent horizon callbacks.
+ */
+struct Dependency : db::SimpleTag {
+  using type = std::optional<std::string>;
+};
+
+/*!
+ * \brief Storage of all variables (volume or interpolated) for all times of the
+ * horizon finder.
+ */
+template <typename Fr>
+struct Storage : db::SimpleTag {
+  using type = std::unordered_map<LinkedMessageId<double>,
+                                  ah::Storage::SingleTimeStorage<Fr>>;
+};
+
+/*!
+ * \brief Deque of `ah::Storage::PreviousSurface`s.
+ */
+template <typename Fr>
+struct PreviousSurfaces : db::SimpleTag {
+  using type = std::deque<ah::Storage::PreviousSurface<Fr>>;
+};
+
+/*!
+ * \brief Global cache tag that holds horizon finder options
+ */
+template <typename HorizonMetavars>
+struct ApparentHorizonOptions : db::SimpleTag {
+  using type = HorizonOptions<typename HorizonMetavars::frame>;
+  using option_tags =
+      tmpl::list<OptionTags::ApparentHorizonOptions<HorizonMetavars>>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option) { return option; }
 };
 
 /*!
