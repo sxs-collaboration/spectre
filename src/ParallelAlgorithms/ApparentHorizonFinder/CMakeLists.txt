@@ -27,6 +27,7 @@ spectre_target_headers(
   Destination.hpp
   FastFlow.hpp
   HorizonAliases.hpp
+  Initialization.hpp
   InterpolationTarget.hpp
   OptionTags.hpp
   Storage.hpp
