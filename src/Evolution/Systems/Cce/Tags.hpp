@@ -370,9 +370,16 @@ struct BondiR : db::SimpleTag {
   static std::string name() { return "R"; }
 };
 
-struct EndTime : db::BaseTag {};
+struct EndTime : db::SimpleTag {
+  using type = double;
+};
 
-struct StartTime : db::BaseTag {};
+struct StartTime : db::SimpleTag {
+  using type = double;
+};
+
+using LMax = Spectral::Swsh::Tags::LMax;
+using NumberOfRadialPoints = Spectral::Swsh::Tags::NumberOfRadialPoints;
 
 /// The (adapted) Newman-Penrose spin coefficient $\alpha^{SW}$. See
 /// documentation of `newman_penrose_alpha()` for definition.

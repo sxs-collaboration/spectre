@@ -82,7 +82,7 @@ struct InitializeCharacteristicEvolutionScri {
         db::get<InitializationTags::ScriInterpolationOrder>(*box);
     const size_t vector_size =
         Spectral::Swsh::number_of_swsh_collocation_points(
-            db::get<Spectral::Swsh::Tags::LMaxBase>(*box));
+            db::get<Spectral::Swsh::Tags::LMax>(*box));
     // silence compiler warnings when pack is empty
     (void)vector_size;
     if constexpr (sizeof...(TagPack) > 0) {

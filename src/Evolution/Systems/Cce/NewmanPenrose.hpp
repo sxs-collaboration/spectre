@@ -20,9 +20,6 @@ class ComplexDataVector;
 namespace Cce {
 
 /// \cond
-namespace Tags {
-struct LMax;
-}  // namespace Tags
 template <typename Tag>
 struct VolumeWeyl;
 /// \endcond

@@ -132,9 +132,9 @@ struct InitializeCharacteristicEvolutionVariables {
 
   template <typename TagList>
   static void initialize_impl(const gsl::not_null<db::DataBox<TagList>*> box) {
-    const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(*box);
+    const size_t l_max = db::get<Spectral::Swsh::Tags::LMax>(*box);
     const size_t number_of_radial_points =
-        db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(*box);
+        db::get<Spectral::Swsh::Tags::NumberOfRadialPoints>(*box);
     const size_t boundary_size =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     const size_t volume_size = boundary_size * number_of_radial_points;

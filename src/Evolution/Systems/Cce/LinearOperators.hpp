@@ -29,10 +29,6 @@ void logical_partial_directional_derivative_of_complex(
     const Mesh<3>& mesh, size_t dimension_to_differentiate);
 
 namespace Tags {
-/// \cond
-struct LMax;
-/// \endcond
-
 /*!
  * \brief Compute tag for a manually-handled partial y derivative in the volume.
  *
