@@ -227,8 +227,29 @@ def render_bbh(
         pv.ResetCamera()
         camera.Zoom(zoom_factor)
         # and finally write out a screenshot or animation:
+        """
         if animate:
-            pv.SaveAnimation(output, render_view)
+            pv.animation(output, render_view)
+        else:
+            pv.Render()
+            pv.SaveScreenshot(output, render_view)
+        return
+        """
+        if animate:
+            anim = pv.GetAnimationScene()
+            anim.PlayMode       = "Sequence"
+            # reuse the same reader you passed into ah_vis:
+            horizon_reader = pv.XDMFReader(FileNames=[aha_xmf])
+            anim.StartTime      = horizon_reader.TimestepValues[0]
+            anim.EndTime        = horizon_reader.TimestepValues[-1]
+            anim.NumberOfFrames = 120
+
+            pv.SaveAnimation(
+                output,
+                render_view,
+                FrameRate=30,
+                ImageResolution=[1920, 1080],
+            )
         else:
             pv.Render()
             pv.SaveScreenshot(output, render_view)
