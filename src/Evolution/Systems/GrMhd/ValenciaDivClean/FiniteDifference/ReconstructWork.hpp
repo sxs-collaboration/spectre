@@ -9,16 +9,15 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-template <typename TagsList>
-class Variables;
 namespace gsl {
 template <typename>
 class not_null;

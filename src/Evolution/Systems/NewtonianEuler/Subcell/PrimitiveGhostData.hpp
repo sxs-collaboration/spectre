@@ -5,14 +5,10 @@
 
 #include <cstddef>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-template <typename TagsList>
-class Variables;
-/// \endcond
 
 namespace NewtonianEuler::subcell {
 /*!

@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
@@ -27,8 +28,6 @@ namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace NewtonianEuler::subcell {

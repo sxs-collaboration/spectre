@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -21,8 +22,6 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace Filters {

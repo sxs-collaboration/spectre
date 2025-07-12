@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
@@ -39,8 +40,6 @@ class not_null;
 }  // namespace gsl
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 namespace evolution::dg::subcell {
 class GhostData;
 }  // namespace evolution::dg::subcell

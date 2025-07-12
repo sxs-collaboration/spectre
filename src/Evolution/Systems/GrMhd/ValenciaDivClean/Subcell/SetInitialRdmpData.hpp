@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
@@ -21,8 +22,6 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::subcell {

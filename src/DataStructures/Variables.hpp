@@ -34,6 +34,7 @@
 #include "DataStructures/TaggedTuple.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -50,8 +51,6 @@
 /// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
-template <typename TagsList>
-class Variables;
 template <typename T, typename VectorType, size_t StaticSize>
 class VectorImpl;
 namespace Tags {
@@ -86,8 +85,8 @@ class Variables;
  * If the macro `SPECTRE_NAN_INIT` is defined, the contents are
  * initialized with `NaN`s.
  */
-template <typename... Tags>
-class Variables<tmpl::list<Tags...>> {
+template <typename... Tags, typename VectorType>
+class Variables<tmpl::list<Tags...>, VectorType> {
  public:
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
@@ -101,21 +100,17 @@ class Variables<tmpl::list<Tags...>> {
   static_assert((db::is_simple_tag_v<Tags> and ...));
   static_assert(tmpl2::flat_all_v<tt::is_a_v<Tensor, typename Tags::type>...>);
 
- private:
-  using first_tensors_type = typename tmpl::front<tags_list>::type::type;
-
  public:
-  static_assert(tmpl2::flat_all_v<std::is_same_v<typename Tags::type::type,
-                                                 first_tensors_type>...> or
+  static_assert(tmpl2::flat_all_v<
+                    std::is_same_v<typename Tags::type::type, VectorType>...> or
                     tmpl2::flat_all_v<is_spin_weighted_of_same_type_v<
-                        typename Tags::type::type, first_tensors_type>...>,
+                        typename Tags::type::type, VectorType>...>,
                 "All tensors stored in a single Variables must "
                 "have the same internal storage type.");
 
   using vector_type =
-      tmpl::conditional_t<is_any_spin_weighted_v<first_tensors_type>,
-                          typename first_tensors_type::value_type,
-                          first_tensors_type>;
+      tmpl::conditional_t<is_any_spin_weighted_v<VectorType>,
+                          typename VectorType::value_type, VectorType>;
   using value_type = typename vector_type::value_type;
   using pointer = value_type*;
   using const_pointer = const value_type*;
@@ -170,23 +165,25 @@ class Variables<tmpl::list<Tags...>> {
             Requires<tmpl2::flat_all<std::is_same<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
-  explicit Variables(Variables<tmpl::list<WrappedTags...>>&& rhs);
+  explicit Variables(Variables<tmpl::list<WrappedTags...>, VectorType>&& rhs);
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
-  Variables& operator=(Variables<tmpl::list<WrappedTags...>>&& rhs);
+  Variables& operator=(Variables<tmpl::list<WrappedTags...>, VectorType>&& rhs);
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
-  explicit Variables(const Variables<tmpl::list<WrappedTags...>>& rhs);
+  explicit Variables(
+      const Variables<tmpl::list<WrappedTags...>, VectorType>& rhs);
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
-  Variables& operator=(const Variables<tmpl::list<WrappedTags...>>& rhs);
+  Variables& operator=(
+      const Variables<tmpl::list<WrappedTags...>, VectorType>& rhs);
   /// @}
 
   /// \cond HIDDEN_SYMBOLS
@@ -261,12 +258,12 @@ class Variables<tmpl::list<Tags...>> {
   bool is_owning() const { return owning_; }
 
   // clang-tidy: redundant-declaration
-  template <typename Tag, typename TagList>
+  template <typename Tag, typename TagList, typename VT>
   friend constexpr typename Tag::type& get(  // NOLINT
-      Variables<TagList>& v);
-  template <typename Tag, typename TagList>
+      Variables<TagList, VT>& v);
+  template <typename Tag, typename TagList, typename VT>
   friend constexpr const typename Tag::type& get(  // NOLINT
-      const Variables<TagList>& v);
+      const Variables<TagList, VT>& v);
 
   /// Serialization for Charm++.
   // NOLINTNEXTLINE(google-runtime-references)
@@ -280,7 +277,8 @@ class Variables<tmpl::list<Tags...>> {
   /// \note There is no need for an rvalue overload because we need to copy into
   /// the contiguous array anyway
   template <typename... SubsetOfTags>
-  void assign_subset(const Variables<tmpl::list<SubsetOfTags...>>& vars) {
+  void assign_subset(
+      const Variables<tmpl::list<SubsetOfTags...>, VectorType>& vars) {
     EXPAND_PACK_LEFT_TO_RIGHT([this, &vars]() {
       if constexpr (tmpl::list_contains_v<tmpl::list<Tags...>, SubsetOfTags>) {
         get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars);
@@ -388,17 +386,17 @@ class Variables<tmpl::list<Tags...>> {
 
   // Prevent the previous two declarations from implicitly converting
   // DataVectors and similar to Variables.
-  template <typename T, typename VectorType, size_t StaticSize>
-  Variables(const VectorImpl<T, VectorType, StaticSize>&) = delete;
-  template <typename T, typename VectorType, size_t StaticSize>
-  Variables& operator=(const VectorImpl<T, VectorType, StaticSize>&) = delete;
+  template <typename T, typename VT, size_t StaticSize>
+  Variables(const VectorImpl<T, VT, StaticSize>&) = delete;
+  template <typename T, typename VT, size_t StaticSize>
+  Variables& operator=(const VectorImpl<T, VT, StaticSize>&) = delete;
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same_v<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator+=(
-      const Variables<tmpl::list<WrappedTags...>>& rhs) {
+      const Variables<tmpl::list<WrappedTags...>, VectorType>& rhs) {
     static_assert(
         (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
          ...),
@@ -418,7 +416,7 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator-=(
-      const Variables<tmpl::list<WrappedTags...>>& rhs) {
+      const Variables<tmpl::list<WrappedTags...>, VectorType>& rhs) {
     static_assert(
         (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
          ...),
@@ -444,7 +442,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <
-      typename... WrappedTags,
+      typename... WrappedTags, typename VT,
       Requires<
           sizeof...(WrappedTags) == sizeof...(Tags) and
           tmpl2::flat_all_v<std::is_same_v<db::remove_all_prefixes<WrappedTags>,
@@ -455,7 +453,8 @@ class Variables<tmpl::list<Tags...>> {
 #endif
           > = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
-      const Variables<tmpl::list<WrappedTags...>>& lhs, const Variables& rhs) {
+      const Variables<tmpl::list<WrappedTags...>, VT>& lhs,
+      const Variables& rhs) {
 #ifndef __CUDACC__
     // nvcc incorrectly hits this static_assert and variants of it, but using
     // the additional requires part above is fine.
@@ -478,7 +477,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <
-      typename... WrappedTags,
+      typename... WrappedTags, typename VT,
       Requires<
           sizeof...(WrappedTags) == sizeof...(Tags) and
           tmpl2::flat_all_v<std::is_same_v<db::remove_all_prefixes<WrappedTags>,
@@ -489,7 +488,8 @@ class Variables<tmpl::list<Tags...>> {
 #endif
           > = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
-      const Variables<tmpl::list<WrappedTags...>>& lhs, const Variables& rhs) {
+      const Variables<tmpl::list<WrappedTags...>, VT>& lhs,
+      const Variables& rhs) {
 #ifndef __CUDACC__
     // nvcc incorrectly hits this static_assert and variants of it, but using
     // the additional requires part above is fine.
@@ -571,7 +571,7 @@ class Variables<tmpl::list<Tags...>> {
     return blaze::equal<blaze::strict>(*lhs, rhs.variable_data_);
   }
 
-  template <class FriendTags>
+  template <class FriendTags, typename FriendVectorType>
   friend class Variables;
 
   std::array<value_type, number_of_independent_components>
@@ -594,8 +594,8 @@ class Variables<tmpl::list<Tags...>> {
 
 // The above Variables implementation doesn't work for an empty parameter pack,
 // so specialize here.
-template <>
-class Variables<tmpl::list<>> {
+template <typename VectorType>
+class Variables<tmpl::list<>, VectorType> {
  public:
   using tags_list = tmpl::list<>;
   static constexpr size_t number_of_independent_components = 0;
@@ -636,33 +636,38 @@ inline std::ostream& operator<<(std::ostream& os,
   return os << "{}";
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables() {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables() {
   add_reference_variable_data();
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points) {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
+    const size_t number_of_grid_points) {
   initialize(number_of_grid_points);
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
-                                          const value_type value) {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
+    const size_t number_of_grid_points, const value_type value) {
   initialize(number_of_grid_points, value);
 }
 
-template <typename... Tags>
-void Variables<tmpl::list<Tags...>>::initialize(
+template <typename... Tags, typename VectorType>
+void Variables<tmpl::list<Tags...>, VectorType>::initialize(
     const size_t number_of_grid_points) {
   if (number_of_grid_points_ == number_of_grid_points) {
     return;
   }
   if (UNLIKELY(not is_owning())) {
-    ERROR("Variables::initialize cannot be called on a non-owning Variables.  "
-          "This likely happened because of an attempted resize.  The current "
-          "number of grid points is " << number_of_grid_points_ << " and the "
-          "requested number is " << number_of_grid_points << ".");
+    ERROR(
+        "Variables::initialize cannot be called on a non-owning Variables.  "
+        "This likely happened because of an attempted resize.  The current "
+        "number of grid points is "
+        << number_of_grid_points_
+        << " and the "
+           "requested number is "
+        << number_of_grid_points << ".");
   }
   number_of_grid_points_ = number_of_grid_points;
   size_ = number_of_grid_points * number_of_independent_components;
@@ -678,26 +683,27 @@ void Variables<tmpl::list<Tags...>>::initialize(
 #endif  // SPECTRE_NAN_INIT
 }
 
-template <typename... Tags>
-void Variables<tmpl::list<Tags...>>::initialize(
+template <typename... Tags, typename VectorType>
+void Variables<tmpl::list<Tags...>, VectorType>::initialize(
     const size_t number_of_grid_points, const value_type value) {
   initialize(number_of_grid_points);
   std::fill(variable_data_.data(), variable_data_.data() + size_, value);
 }
 
 /// \cond HIDDEN_SYMBOLS
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<Tags...>>& rhs) {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
+    const Variables<tmpl::list<Tags...>, VectorType>& rhs) {
   initialize(rhs.number_of_grid_points());
   variable_data_ =
       static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
           rhs.variable_data_);
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    const Variables<tmpl::list<Tags...>>& rhs) {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>&
+Variables<tmpl::list<Tags...>, VectorType>::operator=(
+    const Variables<tmpl::list<Tags...>, VectorType>& rhs) {
   if (&rhs == this) {
     return *this;
   }
@@ -708,8 +714,9 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   return *this;
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
+    Variables<tmpl::list<Tags...>, VectorType>&& rhs)
     : variable_data_impl_dynamic_(std::move(rhs.variable_data_impl_dynamic_)),
       owning_(rhs.owning_),
       size_(rhs.size()),
@@ -725,9 +732,10 @@ Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
   add_reference_variable_data();
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    Variables<tmpl::list<Tags...>>&& rhs) {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>&
+Variables<tmpl::list<Tags...>, VectorType>::operator=(
+    Variables<tmpl::list<Tags...>, VectorType>&& rhs) {
   if (this == &rhs) {
     return *this;
   }
@@ -748,13 +756,13 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   return *this;
 }
 
-template <typename... Tags>
+template <typename... Tags, typename VectorType>
 template <typename... WrappedTags,
           Requires<tmpl2::flat_all<
               std::is_same<db::remove_all_prefixes<WrappedTags>,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
-Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<WrappedTags...>>& rhs) {
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
+    const Variables<tmpl::list<WrappedTags...>, VectorType>& rhs) {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
@@ -764,13 +772,14 @@ Variables<tmpl::list<Tags...>>::Variables(
           rhs.variable_data_);
 }
 
-template <typename... Tags>
+template <typename... Tags, typename VectorType>
 template <typename... WrappedTags,
           Requires<tmpl2::flat_all<
               std::is_same<db::remove_all_prefixes<WrappedTags>,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
-Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    const Variables<tmpl::list<WrappedTags...>>& rhs) {
+Variables<tmpl::list<Tags...>, VectorType>&
+Variables<tmpl::list<Tags...>, VectorType>::operator=(
+    const Variables<tmpl::list<WrappedTags...>, VectorType>& rhs) {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
@@ -781,13 +790,13 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   return *this;
 }
 
-template <typename... Tags>
+template <typename... Tags, typename VectorType>
 template <typename... WrappedTags,
           Requires<tmpl2::flat_all<
               std::is_same<db::remove_all_prefixes<WrappedTags>,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
-Variables<tmpl::list<Tags...>>::Variables(
-    Variables<tmpl::list<WrappedTags...>>&& rhs)
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
+    Variables<tmpl::list<WrappedTags...>, VectorType>&& rhs)
     : variable_data_impl_dynamic_(std::move(rhs.variable_data_impl_dynamic_)),
       owning_(rhs.owning_),
       size_(rhs.size()),
@@ -806,13 +815,14 @@ Variables<tmpl::list<Tags...>>::Variables(
   add_reference_variable_data();
 }
 
-template <typename... Tags>
+template <typename... Tags, typename VectorType>
 template <typename... WrappedTags,
           Requires<tmpl2::flat_all<
               std::is_same<db::remove_all_prefixes<WrappedTags>,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
-Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    Variables<tmpl::list<WrappedTags...>>&& rhs) {
+Variables<tmpl::list<Tags...>, VectorType>&
+Variables<tmpl::list<Tags...>, VectorType>::operator=(
+    Variables<tmpl::list<WrappedTags...>, VectorType>&& rhs) {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
@@ -833,14 +843,14 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   return *this;
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables(const pointer start,
-                                          const size_t size) {
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables(const pointer start,
+                                                      const size_t size) {
   set_data_ref(start, size);
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>::Variables(vector_type vector)
+template <typename... Tags, typename VectorType>
+Variables<tmpl::list<Tags...>, VectorType>::Variables(vector_type vector)
     : variable_data_impl_dynamic_(std::move(vector)),
       size_(variable_data_impl_dynamic_.size()),
       number_of_grid_points_(size_ / number_of_independent_components) {
@@ -861,8 +871,8 @@ Variables<tmpl::list<Tags...>>::Variables(vector_type vector)
   add_reference_variable_data();
 }
 
-template <typename... Tags>
-auto Variables<tmpl::list<Tags...>>::release() && -> vector_type {
+template <typename... Tags, typename VectorType>
+auto Variables<tmpl::list<Tags...>, VectorType>::release() && -> vector_type {
   ASSERT(is_owning(), "Cannot release storage from a non-owning Variables.");
   auto result = std::move(variable_data_impl_dynamic_);
   if (number_of_grid_points_ == 1) {
@@ -872,8 +882,8 @@ auto Variables<tmpl::list<Tags...>>::release() && -> vector_type {
   return result;
 }
 
-template <typename... Tags>
-void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
+template <typename... Tags, typename VectorType>
+void Variables<tmpl::list<Tags...>, VectorType>::pup(PUP::er& p) {
   ASSERT(
       owning_,
       "Cannot pup a non-owning Variables! It may be reasonable to pack a "
@@ -895,8 +905,8 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
  *
  * \tparam Tag the variable to return
  */
-template <typename Tag, typename TagList>
-constexpr typename Tag::type& get(Variables<TagList>& v) {
+template <typename Tag, typename TagList, typename VT>
+constexpr typename Tag::type& get(Variables<TagList, VT>& v) {
   static_assert(tmpl::list_contains_v<TagList, Tag>,
                 "Could not retrieve Tag from Variables. See the first "
                 "template parameter of the instantiation for what Tag is "
@@ -904,8 +914,8 @@ constexpr typename Tag::type& get(Variables<TagList>& v) {
                 "what Tags are available.");
   return tuples::get<Tag>(v.reference_variable_data_);
 }
-template <typename Tag, typename TagList>
-constexpr const typename Tag::type& get(const Variables<TagList>& v) {
+template <typename Tag, typename TagList, typename VT>
+constexpr const typename Tag::type& get(const Variables<TagList, VT>& v) {
   static_assert(tmpl::list_contains_v<TagList, Tag>,
                 "Could not retrieve Tag from Variables. See the first "
                 "template parameter of the instantiation for what Tag is "
@@ -915,25 +925,26 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) {
 }
 /// @}
 
-template <typename... Tags>
+template <typename... Tags, typename VectorType>
 template <typename VT, bool VF>
-Variables<tmpl::list<Tags...>>::Variables(
+Variables<tmpl::list<Tags...>, VectorType>::Variables(
     const blaze::DenseVector<VT, VF>& expression) {
   ASSERT((*expression).size() % number_of_independent_components == 0,
          "Invalid size " << (*expression).size() << " for a Variables with "
-         << number_of_independent_components << " components.");
+                         << number_of_independent_components << " components.");
   initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
 }
 
 /// \cond
-template <typename... Tags>
+template <typename... Tags, typename VectorType>
 template <typename VT, bool VF>
-Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
+Variables<tmpl::list<Tags...>, VectorType>&
+Variables<tmpl::list<Tags...>, VectorType>::operator=(
     const blaze::DenseVector<VT, VF>& expression) {
   ASSERT((*expression).size() % number_of_independent_components == 0,
          "Invalid size " << (*expression).size() << " for a Variables with "
-         << number_of_independent_components << " components.");
+                         << number_of_independent_components << " components.");
   initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
   return *this;
@@ -941,8 +952,8 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 /// \endcond
 
 /// \cond HIDDEN_SYMBOLS
-template <typename... Tags>
-void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
+template <typename... Tags, typename VectorType>
+void Variables<tmpl::list<Tags...>, VectorType>::add_reference_variable_data() {
   if (is_owning()) {
     if (number_of_grid_points_ == 0) {
       variable_data_.clear();
@@ -976,10 +987,10 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
 }
 /// \endcond
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>& operator*=(
-    Variables<tmpl::list<Tags...>>& lhs,
-    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) {
+template <typename... Tags, typename VT>
+Variables<tmpl::list<Tags...>, VT>& operator*=(
+    Variables<tmpl::list<Tags...>, VT>& lhs,
+    const typename Variables<tmpl::list<Tags...>, VT>::vector_type& rhs) {
   using value_type = typename Variables<tmpl::list<Tags...>>::value_type;
   ASSERT(lhs.number_of_grid_points() == rhs.size(),
          "Size mismatch in multiplication: " << lhs.number_of_grid_points()
@@ -995,28 +1006,28 @@ Variables<tmpl::list<Tags...>>& operator*=(
   return lhs;
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>> operator*(
-    const Variables<tmpl::list<Tags...>>& lhs,
-    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) {
+template <typename... Tags, typename VT>
+Variables<tmpl::list<Tags...>, VT> operator*(
+    const Variables<tmpl::list<Tags...>, VT>& lhs,
+    const typename Variables<tmpl::list<Tags...>, VT>::vector_type& rhs) {
   auto result = lhs;
   result *= rhs;
   return result;
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>> operator*(
-    const typename Variables<tmpl::list<Tags...>>::vector_type& lhs,
-    const Variables<tmpl::list<Tags...>>& rhs) {
+template <typename... Tags, typename VT>
+Variables<tmpl::list<Tags...>, VT> operator*(
+    const typename Variables<tmpl::list<Tags...>, VT>::vector_type& lhs,
+    const Variables<tmpl::list<Tags...>, VT>& rhs) {
   auto result = rhs;
   result *= lhs;
   return result;
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>>& operator/=(
-    Variables<tmpl::list<Tags...>>& lhs,
-    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) {
+template <typename... Tags, typename VT>
+Variables<tmpl::list<Tags...>, VT>& operator/=(
+    Variables<tmpl::list<Tags...>, VT>& lhs,
+    const typename Variables<tmpl::list<Tags...>, VT>::vector_type& rhs) {
   ASSERT(lhs.number_of_grid_points() == rhs.size(),
          "Size mismatch in multiplication: " << lhs.number_of_grid_points()
                                              << " and " << rhs.size());
@@ -1032,18 +1043,19 @@ Variables<tmpl::list<Tags...>>& operator/=(
   return lhs;
 }
 
-template <typename... Tags>
-Variables<tmpl::list<Tags...>> operator/(
-    const Variables<tmpl::list<Tags...>>& lhs,
-    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) {
+template <typename... Tags, typename VT>
+Variables<tmpl::list<Tags...>, VT> operator/(
+    const Variables<tmpl::list<Tags...>, VT>& lhs,
+    const typename Variables<tmpl::list<Tags...>, VT>::vector_type& rhs) {
   auto result = lhs;
   result /= rhs;
   return result;
 }
 
-template <typename... Tags, Requires<sizeof...(Tags) != 0> = nullptr>
+template <typename... Tags, typename VT,
+          Requires<sizeof...(Tags) != 0> = nullptr>
 std::ostream& operator<<(std::ostream& os,
-                         const Variables<tmpl::list<Tags...>>& d) {
+                         const Variables<tmpl::list<Tags...>, VT>& d) {
   size_t count = 0;
   const auto helper = [&os, &d, &count](auto tag_v) {
     count++;
@@ -1058,17 +1070,17 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-template <typename TagsList>
-bool operator!=(const Variables<TagsList>& lhs,
-                const Variables<TagsList>& rhs) {
+template <typename TagsList, typename VT>
+bool operator!=(const Variables<TagsList, VT>& lhs,
+                const Variables<TagsList, VT>& rhs) {
   return not(lhs == rhs);
 }
 
-template <typename... TagsLhs, typename... TagsRhs,
+template <typename... TagsLhs, typename... TagsRhs, typename VT,
           Requires<not std::is_same<tmpl::list<TagsLhs...>,
                                     tmpl::list<TagsRhs...>>::value> = nullptr>
-void swap(Variables<tmpl::list<TagsLhs...>>& lhs,
-          Variables<tmpl::list<TagsRhs...>>& rhs) {
+void swap(Variables<tmpl::list<TagsLhs...>, VT>& lhs,
+          Variables<tmpl::list<TagsRhs...>, VT>& rhs) {
   Variables<tmpl::list<TagsLhs...>> temp{std::move(lhs)};
   lhs = std::move(rhs);
   rhs = std::move(temp);

@@ -6,12 +6,11 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <typename T>
-class Variables;
 namespace Tags {
 template <typename TagsList>
 struct Variables;

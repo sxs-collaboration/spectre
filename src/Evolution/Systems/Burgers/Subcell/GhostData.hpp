@@ -5,12 +5,11 @@
 
 #include <cstddef>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <typename T>
-class Variables;
 namespace Tags {
 template <typename TagsList>
 struct Variables;

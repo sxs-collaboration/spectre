@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Evolution/Imex/Mode.hpp"
 #include "Evolution/Imex/Protocols/ImplicitSector.hpp"
 #include "Utilities/Gsl.hpp"
@@ -17,8 +18,6 @@
 class DataVector;
 class ImexTimeStepper;
 class TimeDelta;
-template <typename TagsList>
-class Variables;
 namespace Tags {
 struct TimeStep;
 template <typename StepperInterface>

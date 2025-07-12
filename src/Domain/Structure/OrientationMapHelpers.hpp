@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -17,8 +18,6 @@ template <size_t VolumeDim>
 class OrientationMap;
 template <size_t>
 class Index;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup

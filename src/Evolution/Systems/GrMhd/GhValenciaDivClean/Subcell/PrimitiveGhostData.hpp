@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
@@ -13,8 +14,6 @@
 
 /// \cond
 class DataVector;
-template <typename T>
-class Variables;
 /// \endcond
 
 namespace grmhd::GhValenciaDivClean::subcell {

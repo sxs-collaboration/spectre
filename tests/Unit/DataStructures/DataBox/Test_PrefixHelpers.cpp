@@ -4,6 +4,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Helpers/DataStructures/TestTags.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -11,8 +12,6 @@
 #include "Utilities/TypeTraits.hpp"
 
 class DataVector;
-template <typename TagsList>
-class Variables;
 
 namespace {
 using Var = TestHelpers::Tags::Scalar<>;
@@ -26,7 +25,9 @@ template <typename Tag>
 using Prefix2 = TestHelpers::Tags::Prefix2<Tag>;
 
 template <typename Arg0, typename Arg1, typename Arg2>
-struct SomeType;
+struct SomeType {
+  using type = void;
+};
 
 template <typename Tag, typename Arg1, typename Arg2>
 struct PrefixWithArgs : db::PrefixTag, db::SimpleTag {

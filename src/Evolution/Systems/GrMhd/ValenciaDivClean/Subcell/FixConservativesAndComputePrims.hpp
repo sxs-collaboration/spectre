@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservativeOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -25,8 +26,6 @@ namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::subcell {

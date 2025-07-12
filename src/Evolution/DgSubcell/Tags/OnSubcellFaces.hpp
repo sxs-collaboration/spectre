@@ -5,13 +5,12 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 
 /// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace evolution::dg::subcell::Tags {

@@ -49,8 +49,6 @@ class not_null;
 namespace PUP {
 class er;
 }  // namespace PUP
-template <typename TagsList>
-class Variables;
 namespace evolution::dg::subcell {
 class GhostData;
 }  // namespace evolution::dg::subcell

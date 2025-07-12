@@ -7,14 +7,13 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-template <typename TagsList>
-class Variables;
 namespace gsl {
 template <typename>
 class not_null;

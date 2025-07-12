@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionalId.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
@@ -22,8 +23,6 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 namespace evolution::dg::subcell {
 class GhostData;
 }  // namespace evolution::dg::subcell

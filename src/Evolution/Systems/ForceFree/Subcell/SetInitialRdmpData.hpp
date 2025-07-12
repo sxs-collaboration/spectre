@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -19,8 +20,6 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace ForceFree::subcell {

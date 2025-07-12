@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -21,15 +22,10 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
-
-namespace domain {
-namespace Tags {
+namespace domain::Tags {
 template <size_t Dim>
 struct Mesh;
-}  // namespace Tags
-}  // namespace domain
+}  // namespace domain::Tags
 /// \endcond
 
 namespace Tags {

@@ -13,6 +13,7 @@
 
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "NumericalAlgorithms/LinearOperators/Filters/Filter.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
@@ -24,8 +25,6 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 namespace PUP {
 class er;
 }  // namespace PUP

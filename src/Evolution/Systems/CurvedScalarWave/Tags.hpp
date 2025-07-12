@@ -11,12 +11,11 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TagsDeclarations.hpp"
 
 /// \cond
 class DataVector;
-template <class>
-class Variables;
 /// \endcond
 
 /// \brief Option tags for the curved scalar wave system.

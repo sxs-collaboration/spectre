@@ -5,14 +5,13 @@
 
 #include <cstddef>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace Spectral::filtering {

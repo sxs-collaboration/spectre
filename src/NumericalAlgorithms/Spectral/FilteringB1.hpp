@@ -3,14 +3,13 @@
 
 #pragma once
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
 class Matrix;
 template <size_t>
 class Mesh;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace Spectral::filtering {

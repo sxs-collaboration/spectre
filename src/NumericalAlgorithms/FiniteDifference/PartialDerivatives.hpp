@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -16,8 +17,6 @@ template <size_t Dim, typename T>
 class DirectionMap;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace fd {

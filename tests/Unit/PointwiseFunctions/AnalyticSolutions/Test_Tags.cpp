@@ -20,11 +20,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct DummyType {};
-struct DummyTag : db::SimpleTag {
-  using type = DummyType;
-};
-
 struct FieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
@@ -32,12 +27,12 @@ struct FieldTag : db::SimpleTag {
 
 SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
   // [analytic_name]
-  TestHelpers::db::test_prefix_tag<Tags::Analytic<DummyTag>>(
-      "Analytic(DummyTag)");
+  TestHelpers::db::test_prefix_tag<Tags::Analytic<FieldTag>>(
+      "Analytic(FieldTag)");
   // [analytic_name]
-  TestHelpers::db::test_prefix_tag<Tags::Error<DummyTag>>("Error(DummyTag)");
+  TestHelpers::db::test_prefix_tag<Tags::Error<FieldTag>>("Error(FieldTag)");
   TestHelpers::db::test_simple_tag<
-      Tags::AnalyticSolutions<tmpl::list<DummyTag>>>("AnalyticSolutions");
+      Tags::AnalyticSolutions<tmpl::list<FieldTag>>>("AnalyticSolutions");
   TestHelpers::db::test_compute_tag<Tags::ErrorsCompute<tmpl::list<FieldTag>>>(
       "Errors");
 

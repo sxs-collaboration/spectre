@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -30,16 +31,10 @@ template <size_t Dim>
 class ElementId;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 namespace gsl {
 template <typename>
 class not_null;
 }  // namespace gsl
-namespace Tags {
-template <typename TagsList>
-class Variables;
-}  // namespace Tags
 namespace PUP {
 class er;
 }  // namespace PUP

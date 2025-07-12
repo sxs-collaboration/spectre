@@ -10,14 +10,13 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Evolution/Systems/Cce/BoundaryDataTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-template <typename TagsList>
-class Variables;
 namespace gsl {
 template <class T>
 class not_null;

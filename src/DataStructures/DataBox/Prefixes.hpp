@@ -13,12 +13,8 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
-
-/// \cond
-template <class>
-class Variables;
-/// \endcond
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup

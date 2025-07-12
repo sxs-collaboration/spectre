@@ -3,12 +3,11 @@
 
 #pragma once
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class ImexTimeStepper;
-template <typename TagsList>
-class Variables;
 namespace Tags {
 template <typename StepperInterface>
 struct TimeStepper;

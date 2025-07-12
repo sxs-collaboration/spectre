@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -21,8 +22,6 @@ template <size_t Dim>
 class ElementId;
 template <size_t Dim>
 class Mesh;
-template <typename TagsList>
-class Variables;
 namespace gsl {
 template <typename>
 class not_null;

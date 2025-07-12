@@ -72,6 +72,7 @@ spectre_target_headers(
   TempBuffer.hpp
   Transpose.hpp
   Variables.hpp
+  VariablesDeclaration.hpp
   VariablesTag.hpp
   VectorImpl.hpp
   )

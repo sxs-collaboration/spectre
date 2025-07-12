@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
@@ -44,8 +45,6 @@ class not_null;
 namespace PUP {
 class er;
 }  // namespace PUP
-template <typename TagsList>
-class Variables;
 namespace evolution::dg::subcell {
 class GhostData;
 }  // namespace evolution::dg::subcell

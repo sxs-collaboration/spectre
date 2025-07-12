@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -45,8 +46,6 @@ class not_null;
 namespace PUP {
 class er;
 }  // namespace PUP
-template <typename TagsList>
-class Variables;
 namespace evolution::dg::subcell {
 class GhostData;
 }  // namespace evolution::dg::subcell

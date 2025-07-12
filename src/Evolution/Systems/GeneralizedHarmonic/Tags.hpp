@@ -11,7 +11,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/String.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 namespace gh {
 namespace Tags {

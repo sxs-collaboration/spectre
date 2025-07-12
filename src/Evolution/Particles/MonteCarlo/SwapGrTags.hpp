@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
@@ -20,8 +21,6 @@ namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace Particles::MonteCarlo {

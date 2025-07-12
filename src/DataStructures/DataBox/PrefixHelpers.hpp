@@ -3,11 +3,10 @@
 
 #pragma once
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <typename TagsList>
-class Variables;
 namespace db {
 struct PrefixTag;
 struct SimpleTag;

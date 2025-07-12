@@ -3,14 +3,13 @@
 
 #pragma once
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-template <typename T>
-class Variables;
 /// \endcond
 
 namespace grmhd::ValenciaDivClean::subcell {

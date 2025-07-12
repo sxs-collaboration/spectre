@@ -3,14 +3,13 @@
 
 #pragma once
 
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/System.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-template <typename T>
-class Variables;
 /// \endcond
 
 namespace Ccz4::fd {

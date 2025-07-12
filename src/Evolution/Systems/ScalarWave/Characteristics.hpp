@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -16,9 +17,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <typename>
-class Variables;
-
 namespace Tags {
 template <typename Tag>
 struct Normalized;

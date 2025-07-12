@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Tags.hpp"
@@ -36,8 +37,6 @@ template <size_t dim>
 class ElementId;
 template <size_t dim>
 class Mesh;
-template <typename recons_tags>
-class Variables;
 namespace gsl {
 template <typename>
 class not_null;

@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
@@ -19,8 +20,6 @@
 class DataVector;
 template <size_t Dim>
 class Mesh;
-template <typename VariablesTags>
-class Variables;
 namespace gsl {
 template <typename T>
 class not_null;

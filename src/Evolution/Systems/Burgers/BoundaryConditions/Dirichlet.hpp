@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
@@ -26,8 +27,6 @@ class Direction;
 namespace PUP {
 class er;
 }  // namespace PUP
-template <typename>
-class Variables;
 /// \endcond
 
 namespace Burgers::BoundaryConditions {

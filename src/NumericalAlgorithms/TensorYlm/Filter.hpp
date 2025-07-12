@@ -8,13 +8,12 @@
 
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "NumericalAlgorithms/TensorYlm/TensorYlm.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
 class DataVector;
-template <typename TagsList>
-class Variables;
 /// \endcond
 
 namespace ylm::TensorYlm {

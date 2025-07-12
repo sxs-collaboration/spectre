@@ -5,13 +5,9 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/VariablesDeclaration.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
-
-/// \cond
-template <typename TagsList>
-class Variables;
-/// \endcond
 
 namespace evolution::dg::subcell::Tags {
 /// Mark a tag as holding data for the inactive grid.
