@@ -11,6 +11,7 @@ spectre_target_sources(
   Destination.cpp
   FastFlow.cpp
   InterpolationTarget.cpp
+  OptionTags.cpp
   Storage.cpp
   )
 
@@ -27,6 +28,7 @@ spectre_target_headers(
   FastFlow.hpp
   HorizonAliases.hpp
   InterpolationTarget.hpp
+  OptionTags.hpp
   Storage.hpp
   Tags.hpp
   )
