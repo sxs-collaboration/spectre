@@ -106,13 +106,10 @@ struct ElectronFraction : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
-/// Base tag for the equation of state
-struct EquationOfStateBase : db::BaseTag {};
-
 /// The equation of state retrieved from the analytic solution / data in the
 /// input file
 template <bool IsRelativistic, size_t ThermodynamicDim>
-struct EquationOfState : EquationOfStateBase, db::SimpleTag {
+struct EquationOfState : db::SimpleTag {
   using type = std::unique_ptr<
       EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
 
@@ -180,7 +177,7 @@ struct InversePlasmaBeta : db::SimpleTag {
 
 /// The equation of state constructed from options in the input file
 template <bool IsRelativistic, size_t ThermodynamicDim>
-struct EquationOfStateFromOptions : EquationOfStateBase, db::SimpleTag {
+struct EquationOfStateFromOptions : db::SimpleTag {
   static std::string name() { return "EquationOfState"; }
   using type = std::unique_ptr<
       EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
@@ -357,8 +354,7 @@ struct MassFlux : db::SimpleTag {
 
 /// The equation of state retrieved from the analytic solution / data in the
 /// input file
-struct GrmhdEquationOfState : ::hydro::Tags::EquationOfStateBase,
-                              db::SimpleTag {
+struct GrmhdEquationOfState : db::SimpleTag {
   using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>;
 
   template <typename Metavariables>
