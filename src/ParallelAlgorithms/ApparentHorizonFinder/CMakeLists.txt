@@ -20,6 +20,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ApparentHorizon.hpp
+  Component.hpp
   ComputeExcisionBoundaryVolumeQuantities.hpp
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
@@ -27,6 +28,7 @@ spectre_target_headers(
   Destination.hpp
   FastFlow.hpp
   HorizonAliases.hpp
+  Initialization.hpp
   InterpolationTarget.hpp
   OptionTags.hpp
   Storage.hpp
