@@ -32,8 +32,6 @@ namespace grmhd {
 /// - Black hole-neutron star mergers with a hot nuclear equation of state:
 /// outflow and neutrino-cooled disk for a low-mass, high-spin case
 /// \cite Deaton2013
-/// - A Simflowny-based finite-difference code for high-performance computing
-/// in Relativity \cite Palenzuela2018
 ///
 namespace ValenciaDivClean {
 
@@ -136,7 +134,7 @@ namespace ValenciaDivClean {
  *      \delta^i_j - \alpha b_j \tilde{B}^i / W \\
  * F^i({\tilde \tau}) &= {\tilde \tau} v^i_{tr} + \alpha \sqrt{\gamma} p^* v^i
  *      - \alpha^2 b^0 \tilde{B}^i / W \\
- * F^i({\tilde B}^j) &= {\tilde B}^j v^i_{tr} - v^j_{tr} {\tilde B}^i
+ * F^i({\tilde B}^j) &= {\tilde B}^j v^i_{tr} - \alpha v^j {\tilde B}^i
  *      + \alpha \gamma^{ij} {\tilde \Phi} \\
  * F^i({\tilde \Phi}) &= \alpha {\tilde B^i} - {\tilde \Phi} \beta^i
  * \f}
@@ -151,7 +149,8 @@ namespace ValenciaDivClean {
  *      + {\tilde \tau}) \partial_j \alpha \\
  * S({\tilde \tau}) &= \alpha {\tilde S}^{mn} K_{mn}
  *      - {\tilde S}^m \partial_m \alpha \\
- * S({\tilde B}^j) &= \Phi \partial_k (\alpha \sqrt{\gamma}\gamma^{jk}) \\
+ * S({\tilde B}^j) &= -{\tilde B}^m \partial_m \beta^j
+ *      + \Phi \partial_k (\alpha \sqrt{\gamma}\gamma^{jk}) \\
  * S({\tilde \Phi}) &= {\tilde B}^k \partial_k \alpha - \alpha K
  *      {\tilde \Phi} - \alpha \kappa {\tilde \Phi}
  * \f}
@@ -166,9 +165,6 @@ namespace ValenciaDivClean {
  * \f$\kappa\f$ is a damping parameter that damps violations of the
  * divergence-free (no-monopole) condition \f$\Phi = \partial_i {\tilde B}^i =
  * 0\f$.
- *
- * \note The fluxes and sources of ${\tilde B}$ follow eq. 32 of
- * \cite Palenzuela2018 rather than eq. 87 of \cite Moesta2014
  *
  * \note On the electron fraction side, the source term is currently set to
  * \f$S(\tilde{Y}_e) = 0\f$. Implementing the source term using neutrino scheme

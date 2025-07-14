@@ -83,7 +83,7 @@ void sources_impl(
  * \alpha \\
  * S({\tilde \tau}) = & \alpha {\tilde S}^{mn} K_{mn} - {\tilde S}^m \partial_m
  * \alpha \\
- * S({\tilde B}^i) = & {\tilde \Phi}
+ * S({\tilde B}^i) = & -{\tilde B}^m \partial_m \beta^i + {\tilde \Phi}
  * \gamma^{im} \partial_m \alpha + \alpha {\tilde \Phi} \left( \frac{1}{2}
  * \gamma^{il} \gamma^{jk} - \gamma^{ij} \gamma^{lk} \right) \partial_l
  * \gamma_{jk} \\ S({\tilde \Phi}) = & {\tilde B}^k \partial_k \alpha - \alpha K

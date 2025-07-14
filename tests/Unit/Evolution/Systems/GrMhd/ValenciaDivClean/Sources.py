@@ -159,11 +159,15 @@ def source_tilde_b(
 ):
     term_one = np.einsum("ab, iab", inv_spatial_metric, d_spatial_metric)
     term_two = np.einsum("ab, aib", inv_spatial_metric, d_spatial_metric)
-    return tilde_phi * np.einsum(
-        "a, ia", d_lapse, inv_spatial_metric
-    ) + lapse * tilde_phi * (
-        0.5 * np.einsum("ia, a", inv_spatial_metric, term_one)
-        - np.einsum("ia, a", inv_spatial_metric, term_two)
+    return (
+        tilde_phi * np.einsum("a, ia", d_lapse, inv_spatial_metric)
+        - np.einsum("a, ai", tilde_b, d_shift)
+        + lapse
+        * tilde_phi
+        * (
+            0.5 * np.einsum("ia, a", inv_spatial_metric, term_one)
+            - np.einsum("ia, a", inv_spatial_metric, term_two)
+        )
     )
 
 
