@@ -91,6 +91,32 @@ void divergence(gsl::not_null<Scalar<DataType>*> div_input,
 
 /// @{
 /*!
+ * \ingroup NumericalAlgorithmsGroup
+ * \brief Compute the divergence of fluxes where a Cartoon basis is being
+ * utilized.
+ *
+ * The additional parameter `inertial_coords` is used for division by the
+ * \f$x\f$ coordinates. If \f$x=0\f$ is included in the domain, it is assumed to
+ * be present only at the first index and is handled by L'H&ocirc;pital's rule.
+ *
+ * The mesh is required to have the Cartoon basis in the last and potentially
+ * second-to-last coordinates and the inverse jacobian is accordingly used only
+ * in the first and potentially second dimensions.
+ *
+ * \see `cartoon_partial_derivatives` for details on Cartoon derivatives.
+ */
+template <typename... DivTags, typename... FluxTags, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3> = nullptr>
+void cartoon_divergence(
+    gsl::not_null<Variables<tmpl::list<DivTags...>>*> divergence_of_F,
+    const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+/// @}
+
+/// @{
+/*!
  * \brief Compute the divergence of fluxes in logical coordinates
  *
  * Applies the logical differentiation matrix to the fluxes in each dimension
