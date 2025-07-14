@@ -41,7 +41,7 @@ void RadiallyFallingFloor<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> density,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> temperature,
+    const gsl::not_null<Scalar<DataVector>*> temperature,
     [[maybe_unused]] const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
@@ -53,13 +53,12 @@ void RadiallyFallingFloor<Dim>::operator()(
     if (UNLIKELY(radius < minimum_radius_at_which_to_apply_floor_)) {
       continue;
     }
-    pressure->get()[i] = std::max(
-        pressure->get()[i], pressure_scale_ * pow(radius, pressure_power_));
 
-    density->get()[i] =
-        std::max(density->get()[i], rest_mass_density_scale_ *
-                                        pow(radius, rest_mass_density_power_));
     if constexpr (ThermodynamicDim == 1) {
+      density->get()[i] = std::max(
+          density->get()[i],
+          rest_mass_density_scale_ * pow(radius, rest_mass_density_power_));
+
       // For the 1D EoS, density will be used to calculate the remaining
       // primitives, even overwriting pressure.  This decision prioritizes
       // thermodynamic consistency over the user defined pressure profile.
@@ -72,8 +71,14 @@ void RadiallyFallingFloor<Dim>::operator()(
 
       temperature->get()[i] = get(equation_of_state.temperature_from_density(
           Scalar<double>{density->get()[i]}));
-
     } else if constexpr (ThermodynamicDim == 2) {
+      density->get()[i] = std::max(
+          density->get()[i],
+          rest_mass_density_scale_ * pow(radius, rest_mass_density_power_));
+
+      pressure->get()[i] = std::max(
+          pressure->get()[i], pressure_scale_ * pow(radius, pressure_power_));
+
       specific_internal_energy->get()[i] = get(
           equation_of_state.specific_internal_energy_from_density_and_pressure(
               Scalar<double>{density->get()[i]},
@@ -85,32 +90,26 @@ void RadiallyFallingFloor<Dim>::operator()(
               Scalar<double>{specific_internal_energy->get()[i]}));
 
     } else if constexpr (ThermodynamicDim == 3) {
-      ERROR("RadiallyFallingFloor: 3D EoS currently not supported");
-      (void)specific_internal_energy;
-      // For posterity: 3D EoS
-      // // We need to assume either specific internal energy or temperature
-      // remain
-      // // unchanged.  We choose temperature remaining the same.  A choice
-      // needs
-      // // to be made b/c no energy/temperature_from_density_and_pressure()
-      // call
-      // // exists, yet.
-      // specific_internal_energy->get()[i] =
-      //     get(equation_of_state
-      //             .specific_internal_energy_from_density_and_temperature(
-      //                 Scalar<double>{density->get()[i]},
-      //                 Scalar<double>{temperature->get()[i]},
-      //                 Scalar<double>{electron_fraction->get()[i]}));
+      density->get()[i] = std::max(
+          density->get()[i],
+          rest_mass_density_scale_ * pow(radius, rest_mass_density_power_));
 
-      // // B/c temperature is assumed to be constant, we need to call pressure
-      // EoS
-      // // one more time
-      // pressure->get()[i] =
-      //     get(equation_of_state.pressure_from_density_and_energy(
-      //         Scalar<double>{density->get()[i]},
-      //         Scalar<double>{specific_internal_energy->get()[i]},
-      //         Scalar<double>{electron_fraction->get()[i]}));
+      temperature->get()[i] =
+          std::max(density->get()[i] * temperature->get()[i],
+                   pressure_scale_ * pow(radius, pressure_power_)) /
+          density->get()[i];
 
+      specific_internal_energy->get()[i] =
+          get(equation_of_state
+                  .specific_internal_energy_from_density_and_temperature(
+                      Scalar<double>{density->get()[i]},
+                      Scalar<double>{temperature->get()[i]},
+                      Scalar<double>{electron_fraction->get()[i]}));
+      pressure->get()[i] =
+          get(equation_of_state.pressure_from_density_and_energy(
+              Scalar<double>{density->get()[i]},
+              Scalar<double>{specific_internal_energy->get()[i]},
+              Scalar<double>{electron_fraction->get()[i]}));
     } else {
       ERROR("RadiallyFallingFloor: Must specify 1D, 2D, or 3D EoS");
     }

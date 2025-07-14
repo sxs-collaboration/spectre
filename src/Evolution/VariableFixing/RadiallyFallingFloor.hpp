@@ -61,6 +61,10 @@ namespace VariableFixing {
 /// \note In \cite Porth2016rfi, the following floors are applied:
 /// \f$\rho(r) \geq \rho_{\mathrm{fl}}(r) = 10^{-5}r^{-3/2}\f$
 /// and \f$P(r) \geq P_{\mathrm{fl}}(r) = \frac{1}{3} \times 10^{-7}r^{-5/2}\f$
+///
+/// \note For 3d equations of state we treat the product \f$\rho T\f$ as the
+/// "pressure" that we floor and then compute the pressure from the
+/// temperature. The floor is applied after flooring the density.
 template <size_t Dim>
 class RadiallyFallingFloor {
  public:
