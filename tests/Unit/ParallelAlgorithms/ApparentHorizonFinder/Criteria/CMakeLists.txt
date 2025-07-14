@@ -6,6 +6,7 @@ set(LIBRARY "Test_ApparentHorizonFinderCriteria")
 set(LIBRARY_SOURCES
   Test_Criterion.cpp
   Test_IncreaseResolution.cpp
+  Test_Residual.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

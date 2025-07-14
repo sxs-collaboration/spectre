@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   IncreaseResolution.cpp
+  Residual.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   Criterion.hpp
   Factory.hpp
   IncreaseResolution.hpp
+  Residual.hpp
   )
 
 add_dependencies(
