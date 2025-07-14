@@ -433,6 +433,10 @@ jobs:
             # test_3d_rendering: ON
             # Need Python version consistent with ParaView
             PYTHON_VERSION: "3.9"
+          # Test with Kokkos enabled but without CUDA
+          - compiler: gcc-10
+            build_type: Release
+            KOKKOS: ON
           # Don't modify the gcc-11 Debug build so its cache can be reused for
           # the documentation build
           # - compiler: gcc-11
@@ -492,8 +496,14 @@ jobs:
             # Test `install` target with clang in Release mode because it uses
             # little disk space
             install: ON
+          # Test compiling with nvcc and CUDA
           - compiler: nvcc-12-6
             CUDA: ON
+            KOKKOS: ON
+            # Compile for NVIDIA Ampere architecture. Can't run this on
+            # GitHub-hosted runners because they don't have the GPU hardware,
+            # but we can test the compilation.
+            KOKKOS_ARCH: "AMPERE80"
             # Compile in Release mode to speed up the build
             build_type: Release
             # Build only a subset of the code because compiling the full code is
@@ -568,12 +578,30 @@ jobs:
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
             dpkg -i cuda-keyring_1.1-1_all.deb
             apt-get update -y
-            apt-get install -y cuda-nvcc-${COMPILER_VERSION}
+            apt-get install -y cuda-nvcc-${COMPILER_VERSION} \
+              build-essential libc6-dev pkg-config
             echo "/usr/local/cuda-${COMPILER_VERSION/-/.}/bin" >> $GITHUB_PATH
-            # Install Kokkos compiler wrapper
-            git clone https://github.com/kokkos/kokkos
-            CXX=$PWD/kokkos/bin/nvcc_wrapper
-            echo "CXX=$CXX" >> $GITHUB_ENV
+          fi
+      - name: Install Kokkos
+        if: matrix.KOKKOS == 'ON'
+        working-directory: /work
+        run: |
+          KOKKOS_VERSION=4.4.00
+          wget -O kokkos.tar.gz "https://github.com/kokkos/kokkos/releases/download/${KOKKOS_VERSION}/kokkos-${KOKKOS_VERSION}.tar.gz"
+          tar -xzf kokkos.tar.gz && mv kokkos-* kokkos && cd kokkos
+          mkdir build && cd build
+          cmake .. \
+            -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -D CMAKE_INSTALL_PREFIX=/usr/local \
+            -D Kokkos_ENABLE_SERIAL=ON \
+            -D Kokkos_ENABLE_OPENMP=ON \
+            -D Kokkos_ENABLE_CUDA=${{ matrix.CUDA || 'OFF' }} \
+            -D Kokkos_ARCH_${{ matrix.KOKKOS_ARCH || 'NATIVE' }}=ON
+          make -j ${NUMBER_OF_CORES} install
+          cd ../../ && rm -rf kokkos.tar.gz kokkos
+          # Use Kokkos compiler wrapper for nvcc
+          if [[ $COMPILER_ID = nvcc ]]; then
+            echo "CXX=/usr/local/bin/nvcc_wrapper" >> $GITHUB_ENV
           fi
       # Install specific CMake version if requested
       - name: Install CMake version
@@ -672,6 +700,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           PYTHON_VERSION=${{ matrix.PYTHON_VERSION }}
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
+          KOKKOS=${{ matrix.KOKKOS }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
           ASAN=${{ matrix.ASAN }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
@@ -707,6 +736,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
           -D USE_CCACHE=ON
           -D ENABLE_OPENMP=ON
+          -D SPECTRE_KOKKOS=${KOKKOS:-'OFF'}
           -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
@@ -772,10 +802,12 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             Test_Spectral \
             Test_Utilities \
             EvolveScalarWave3D
-          ./bin/Test_DataStructures
-          ./bin/Test_Spectral
-          ./bin/Test_Utilities
-          ctest -R PlaneWave3D.yaml --output-on-failure
+          # Can't run these tests on GitHub-hosted runners because they don't
+          # have GPU hardware.
+          # ./bin/Test_DataStructures
+          # ./bin/Test_Spectral
+          # ./bin/Test_Utilities
+          # ctest -R PlaneWave3D.yaml --output-on-failure
       # Avoid running out of disk space by cleaning up the build directory
       - name: Clean up unit tests
         working-directory: build
