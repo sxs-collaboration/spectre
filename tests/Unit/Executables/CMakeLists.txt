@@ -29,6 +29,7 @@ add_dependencies(
 add_dependencies(
   test-executables
   ConvertComposeTable
+  MinimalExample
   )
 
 add_standalone_test(
@@ -73,3 +74,8 @@ add_test(
    cd PreprocessCceWorldtube && \
    ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE}"
   )
+
+add_standalone_test(
+  "Unit.Executables.MinimalExample"
+  EXECUTABLE "MinimalExample"
+)
