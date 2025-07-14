@@ -437,6 +437,9 @@ jobs:
           - compiler: gcc-10
             build_type: Release
             KOKKOS: ON
+            # Disable FMA optimizations to avoid this issue:
+            # https://github.com/sxs-collaboration/spectre/issues/5145
+            EXTRA_CXX_FLAGS: "-mno-fma"
           # Don't modify the gcc-11 Debug build so its cache can be reused for
           # the documentation build
           # - compiler: gcc-11
