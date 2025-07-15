@@ -53,7 +53,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
       "PreviousIterationStrahlkorper");
   TestHelpers::db::test_simple_tag<ah::Tags::FailedInterpolationIterations>(
       "FailedInterpolationIterations");
-  TestHelpers::db::test_base_tag<ah::Tags::ObserveCentersBase>(
-      "ObserveCentersBase");
   TestHelpers::db::test_simple_tag<ah::Tags::ObserveCenters>("ObserveCenters");
 }

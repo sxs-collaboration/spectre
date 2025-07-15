@@ -14,8 +14,12 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Storage.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace control_system::OptionTags {
+struct WriteDataToDisk;
+}  // namespace control_system::OptionTags
 class FastFlow;
 namespace ylm {
 template <typename Frame>
@@ -122,16 +126,12 @@ struct FailedInterpolationIterations : db::SimpleTag {
   using type = size_t;
 };
 
-/// Base tag for whether or not to write the centers of the horizons to disk.
-/// Most likely to be used in the `ObserveCenters` post horizon find callback
-///
-/// Other things can control whether the horizon centers are output by defining
-/// their own simple tag from this base tag.
-struct ObserveCentersBase : db::BaseTag {};
-
 /// Simple tag for whether to write the centers of the horizons to disk.
-/// Currently this tag is not creatable by options
-struct ObserveCenters : ObserveCentersBase, db::SimpleTag {
+struct ObserveCenters : db::SimpleTag {
   using type = bool;
+  using option_tags = tmpl::list<control_system::OptionTags::WriteDataToDisk>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option) { return option; }
 };
 }  // namespace ah::Tags

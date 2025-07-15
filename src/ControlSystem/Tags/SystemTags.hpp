@@ -62,19 +62,7 @@ struct WriteDataToDisk : db::SimpleTag {
   static type create_from_options(const type& option) { return option; }
 };
 
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ControlSystemGroup
-/// DataBox tag for writing the centers of the horizons to disk.
-///
-/// This is controlled by the `control_system::OptionTags::WriteDataToDisk`
-/// option in the input file.
-struct ObserveCenters : ::ah::Tags::ObserveCentersBase, db::SimpleTag {
-  using type = bool;
-  using option_tags = tmpl::list<OptionTags::WriteDataToDisk>;
-
-  static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& option) { return option; }
-};
+using ObserveCenters = ah::Tags::ObserveCenters;
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup

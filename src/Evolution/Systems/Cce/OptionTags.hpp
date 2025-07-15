@@ -66,13 +66,6 @@ struct BondiSachsOutputFilePrefix {
   using group = Cce;
 };
 
-struct LMax {
-  using type = size_t;
-  static constexpr Options::String help{
-      "Maximum l value for spin-weighted spherical harmonics"};
-  using group = Cce;
-};
-
 struct FilterLMax {
   using type = size_t;
   static constexpr Options::String help{"l mode cutoff for angular filtering"};
@@ -96,13 +89,6 @@ struct RadialFilterHalfPower {
 struct ObservationLMax {
   using type = size_t;
   static constexpr Options::String help{"Maximum l value for swsh output"};
-  using group = Cce;
-};
-
-struct NumberOfRadialPoints {
-  using type = size_t;
-  static constexpr Options::String help{
-      "Number of radial grid points in the spherical domain"};
   using group = Cce;
 };
 
@@ -233,11 +219,12 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
-struct ExtractionRadius : db::BaseTag {};
-
-struct ExtractionRadiusSimple : ExtractionRadius, db::SimpleTag {
-  static std::string name() { return "ExtractionRadius"; }
+struct ExtractionRadius : db::SimpleTag {
   using type = double;
+};
+
+struct ExtractionRadiusSimple : ExtractionRadius {
+  using base = ExtractionRadius;
   using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
@@ -246,9 +233,8 @@ struct ExtractionRadiusSimple : ExtractionRadius, db::SimpleTag {
   }
 };
 
-struct ExtractionRadiusFromH5 : ExtractionRadius, db::SimpleTag {
-  static std::string name() { return "ExtractionRadius"; }
-  using type = double;
+struct ExtractionRadiusFromH5 : ExtractionRadius {
+  using base = ExtractionRadius;
   using option_tags = tmpl::list<OptionTags::BoundaryDataFilename,
                                  OptionTags::StandaloneExtractionRadius>;
 
@@ -296,8 +282,9 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using type = std::unique_ptr<WorldtubeDataManager<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>>;
   using option_tags =
-      tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
-                 OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
+      tmpl::list<Spectral::Swsh::OptionTags::LMax,
+                 OptionTags::BoundaryDataFilename, OptionTags::H5LookaheadTimes,
+                 OptionTags::H5Interpolator,
                  OptionTags::StandaloneExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
@@ -335,7 +322,8 @@ struct KleinGordonH5WorldtubeBoundaryDataManager : db::SimpleTag {
   using type = std::unique_ptr<
       WorldtubeDataManager<Tags::klein_gordon_worldtube_boundary_tags>>;
   using option_tags =
-      tmpl::list<OptionTags::LMax, OptionTags::KleinGordonBoundaryDataFilename,
+      tmpl::list<Spectral::Swsh::OptionTags::LMax,
+                 OptionTags::KleinGordonBoundaryDataFilename,
                  OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
                  OptionTags::StandaloneExtractionRadius>;
 
@@ -349,25 +337,6 @@ struct KleinGordonH5WorldtubeBoundaryDataManager : db::SimpleTag {
         std::make_unique<KleinGordonWorldtubeH5BufferUpdater>(
             filename, extraction_radius),
         l_max, number_of_lookahead_times, interpolator->get_clone());
-  }
-};
-
-struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
-  using type = size_t;
-  using option_tags = tmpl::list<OptionTags::LMax>;
-
-  static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(const size_t l_max) { return l_max; }
-};
-
-struct NumberOfRadialPoints : db::SimpleTag,
-                              Spectral::Swsh::Tags::NumberOfRadialPointsBase {
-  using type = size_t;
-  using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
-
-  static constexpr bool pass_metavariables = false;
-  static size_t create_from_options(const size_t number_of_radial_points) {
-    return number_of_radial_points;
   }
 };
 
@@ -418,8 +387,8 @@ struct RadialFilterHalfPower : db::SimpleTag {
 /// `OptionTags::StartTime` is set to "Auto"), this will find the start time
 /// from the provided H5 file. If `OptionTags::StartTime` takes any other value,
 /// it will be used directly as the start time for the CCE evolution instead.
-struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
-  using type = double;
+struct StartTimeFromFile : Tags::StartTime {
+  using base = Tags::StartTime;
   using option_tags =
       tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename,
                  OptionTags::StandaloneExtractionRadius>;
@@ -441,8 +410,8 @@ struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
 
 /// \brief Represents the start time of a bounded CCE evolution that must be
 /// supplied in the input file (for e.g. analytic tests).
-struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
-  using type = double;
+struct SpecifiedStartTime : Tags::StartTime {
+  using base = Tags::StartTime;
   using option_tags = tmpl::list<OptionTags::StartTime>;
 
   static constexpr bool pass_metavariables = false;
@@ -463,8 +432,8 @@ struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
 /// `OptionTags::EndTime` is set to "Auto"), this will find the end time
 /// from the provided H5 file. If `OptionTags::EndTime` takes any other value,
 /// it will be used directly as the final time for the CCE evolution instead.
-struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
-  using type = double;
+struct EndTimeFromFile : Tags::EndTime {
+  using base = Tags::EndTime;
   using option_tags =
       tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename,
                  OptionTags::StandaloneExtractionRadius>;
@@ -485,8 +454,8 @@ struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
 
 /// \brief Represents the final time of a CCE evolution that should just proceed
 /// until it receives no more boundary data and becomes quiescent.
-struct NoEndTime : Tags::EndTime, db::SimpleTag {
-  using type = double;
+struct NoEndTime : Tags::EndTime {
+  using base = Tags::EndTime;
   using option_tags = tmpl::list<>;
 
   static constexpr bool pass_metavariables = false;
@@ -497,8 +466,8 @@ struct NoEndTime : Tags::EndTime, db::SimpleTag {
 
 /// \brief Represents the final time of a bounded CCE evolution that must be
 /// supplied in the input file (for e.g. analytic tests).
-struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
-  using type = double;
+struct SpecifiedEndTime : Tags::EndTime {
+  using base = Tags::EndTime;
   using option_tags = tmpl::list<OptionTags::EndTime>;
 
   static constexpr bool pass_metavariables = false;
@@ -560,8 +529,9 @@ struct AnalyticInitializeJ : db::SimpleTag, InitializeJBase {
 /// A tag that constructs a `AnalyticBoundaryDataManager` from options
 struct AnalyticBoundaryDataManager : db::SimpleTag {
   using type = ::Cce::AnalyticBoundaryDataManager;
-  using option_tags = tmpl::list<OptionTags::ExtractionRadius, OptionTags::LMax,
-                                 OptionTags::AnalyticSolution>;
+  using option_tags =
+      tmpl::list<OptionTags::ExtractionRadius, Spectral::Swsh::OptionTags::LMax,
+                 OptionTags::AnalyticSolution>;
 
   static constexpr bool pass_metavariables = false;
   static Cce::AnalyticBoundaryDataManager create_from_options(

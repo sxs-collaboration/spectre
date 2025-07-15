@@ -12,14 +12,36 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Options/String.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+namespace Cce::OptionTags {
+struct Cce;
+}  // namespace Cce::OptionTags
+/// \endcond
 
 namespace Spectral {
 namespace Swsh {
 /// \cond
 class SwshInterpolator;
 /// \endcond
+
+namespace OptionTags {
+struct LMax {
+  using type = size_t;
+  static constexpr Options::String help{
+      "Maximum l value for spin-weighted spherical harmonics"};
+  using group = Cce::OptionTags::Cce;
+};
+struct NumberOfRadialPoints {
+  using type = size_t;
+  static constexpr Options::String help{
+      "Number of radial grid points in the spherical domain"};
+  using group = Cce::OptionTags::Cce;
+};
+}  // namespace OptionTags
 
 namespace Tags {
 
@@ -189,27 +211,27 @@ struct SwshTransform : db::PrefixTag, db::SimpleTag {
 };
 
 /// \ingroup SwshGroup
-/// \brief Base Tag for the maximum spin-weighted spherical harmonic l; sets
-/// angular resolution.
-struct LMaxBase : db::BaseTag {};
-
-/// \ingroup SwshGroup
 /// \brief Tag for the maximum spin-weighted spherical harmonic l; sets angular
 /// resolution.
-struct LMax : db::SimpleTag, LMaxBase {
+struct LMax : db::SimpleTag {
   using type = size_t;
-};
+  using option_tags = tmpl::list<OptionTags::LMax>;
 
-/// \ingroup SwshGroup
-/// \brief Base Tag for the number of radial grid points in the
-/// three-dimensional representation of radially concentric spherical shells.
-struct NumberOfRadialPointsBase : db::BaseTag {};
+  static constexpr bool pass_metavariables = false;
+  static size_t create_from_options(const size_t l_max) { return l_max; }
+};
 
 /// \ingroup SwshGroup
 /// \brief Tag for the number of radial grid points in the three-dimensional
 /// representation of radially concentric spherical shells
-struct NumberOfRadialPoints : db::SimpleTag, NumberOfRadialPointsBase {
+struct NumberOfRadialPoints : db::SimpleTag {
   using type = size_t;
+  using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
+
+  static constexpr bool pass_metavariables = false;
+  static size_t create_from_options(const size_t number_of_radial_points) {
+    return number_of_radial_points;
+  }
 };
 
 /// \ingroup SwshGroup

@@ -67,11 +67,6 @@ struct Var : db::SimpleTag {
   using type = double;
 };
 
-struct FunctionsOfTimeTag : domain::Tags::FunctionsOfTime, db::SimpleTag {
-  using type = std::unordered_map<
-      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-};
-
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
@@ -79,7 +74,7 @@ struct Component {
   using array_index = ElementId<3>;
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales,
-                 FunctionsOfTimeTag>;
+                 domain::Tags::FunctionsOfTime>;
   using simple_tags =
       db::AddSimpleTags<control_system::Tags::FutureMeasurements<systemsA>,
                         control_system::Tags::FutureMeasurements<systemsB>,
@@ -144,7 +139,7 @@ void test(const std::string& test_label, const double initial_time,
   control_system::Tags::MeasurementTimescales::type timescales{};
   timescales["LabelA"] = setup_fot(measurement_updatesA);
   timescales["LabelBLabelC"] = setup_fot(measurement_updatesBC);
-  FunctionsOfTimeTag::type functions_of_time{};
+  domain::Tags::FunctionsOfTime::type functions_of_time{};
   functions_of_time["LabelA"] = setup_fot(fot_updatesA);
   functions_of_time["LabelB"] = setup_fot(fot_updatesB);
   functions_of_time["LabelC"] = setup_fot(fot_updatesC);

@@ -54,11 +54,6 @@ struct Inertial;
 }  // namespace Frame
 
 namespace {
-namespace LocalTags {
-struct FunctionsOfTime : domain::Tags::FunctionsOfTime, db::SimpleTag {
-  using type = domain::FunctionsOfTimeMap;
-};
-}  // namespace LocalTags
 
 template <size_t VolumeDim>
 struct Metavariables {
@@ -127,7 +122,7 @@ void test() {
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavars>, Tags::Time,
-      LocalTags::FunctionsOfTime, domain::Tags::Domain<VolumeDim>,
+      domain::Tags::FunctionsOfTime, domain::Tags::Domain<VolumeDim>,
       Tags::TimeStep,
       domain::Tags::MinimumGridSpacing<VolumeDim, Frame::Inertial>>>(
       metavars{}, time, std::move(functions_of_time), std::move(domain),

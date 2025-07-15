@@ -870,8 +870,9 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
       });
 
   // Set mutation function
-  tmpl::for_each<mutable_item_tags>([&result](auto tag_v) {
-    using tag = tmpl::type_from<decltype(tag_v)>;
+  tmpl::for_each<mutable_item_tags>([&result]<typename Tag>(
+                                        tmpl::type_<Tag> /*meta*/) {
+    using tag = detail::get_base<Tag>;
     const std::string tag_name = pretty_type::get_name<tag>();
     if (result.tag_mutate_functions.find(tag_name) ==
         result.tag_mutate_functions.end()) {
@@ -988,7 +989,8 @@ void DataBox<tmpl::list<Tags...>>::reset_compute_items(
 template <typename... Tags>
 template <typename MutatedTag>
 void DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate() {
-  static const std::string mutated_tag = pretty_type::get_name<MutatedTag>();
+  using tag = detail::get_base<MutatedTag>;
+  static const std::string mutated_tag = pretty_type::get_name<tag>();
   if (tag_graphs_.tags_and_dependents.find(mutated_tag) !=
       tag_graphs_.tags_and_dependents.end()) {
     reset_compute_items(mutated_tag);
@@ -1069,7 +1071,9 @@ template <typename... Tags>
 template <typename Tag>
 void* DataBox<tmpl::list<Tags...>>::get_item_as_void_pointer_for_mutate() {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  return reinterpret_cast<void*>(&this->template get_item<Tag>());
+  return reinterpret_cast<void*>(
+      &this->template get_item<
+          detail::first_matching_tag<tmpl::list<Tags...>, Tag>>());
 }
 
 template <typename... Tags>

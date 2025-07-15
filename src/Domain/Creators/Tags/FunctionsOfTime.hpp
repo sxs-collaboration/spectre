@@ -21,9 +21,8 @@ struct FunctionOfTime;
 
 namespace domain::Tags {
 /// \brief The FunctionsOfTime initialized from a DomainCreator
-struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
-  using type = std::unordered_map<
-      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
+struct FunctionsOfTimeInitialize : FunctionsOfTime {
+  using base = FunctionsOfTime;
 
   static constexpr bool pass_metavariables = true;
 

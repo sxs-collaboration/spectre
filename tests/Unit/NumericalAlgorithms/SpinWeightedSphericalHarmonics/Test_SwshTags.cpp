@@ -9,6 +9,8 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -112,9 +114,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Tags",
   TestHelpers::db::test_simple_tag<LMax>("LMax");
   TestHelpers::db::test_simple_tag<NumberOfRadialPoints>(
       "NumberOfRadialPoints");
-  TestHelpers::db::test_base_tag<LMaxBase>("LMaxBase");
-  TestHelpers::db::test_base_tag<NumberOfRadialPointsBase>(
-      "NumberOfRadialPointsBase");
+  CHECK(TestHelpers::test_option_tag<OptionTags::LMax>("8") == 8_st);
+  CHECK(TestHelpers::test_option_tag<OptionTags::NumberOfRadialPoints>("3") ==
+        3_st);
 }
 }  // namespace
 }  // namespace Spectral::Swsh::Tags

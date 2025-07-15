@@ -50,16 +50,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::Tags::KleinGordonH5WorldtubeBoundaryDataManager>(
       "KleinGordonH5WorldtubeBoundaryDataManager");
-  TestHelpers::db::test_base_tag<Cce::Tags::ExtractionRadius>(
+  TestHelpers::db::test_simple_tag<Cce::Tags::ExtractionRadius>(
       "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::Tags::ExtractionRadiusSimple>(
       "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::Tags::ExtractionRadiusFromH5>(
       "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::Tags::FilePrefix>("FilePrefix");
-  TestHelpers::db::test_simple_tag<Cce::Tags::LMax>("LMax");
-  TestHelpers::db::test_simple_tag<Cce::Tags::NumberOfRadialPoints>(
-      "NumberOfRadialPoints");
   TestHelpers::db::test_simple_tag<Cce::Tags::ObservationLMax>(
       "ObservationLMax");
   TestHelpers::db::test_simple_tag<Cce::Tags::FilterLMax>("FilterLMax");
@@ -67,15 +64,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "RadialFilterAlpha");
   TestHelpers::db::test_simple_tag<Cce::Tags::RadialFilterHalfPower>(
       "RadialFilterHalfPower");
-  TestHelpers::db::test_simple_tag<Cce::Tags::StartTimeFromFile>(
-      "StartTimeFromFile");
-  TestHelpers::db::test_simple_tag<Cce::Tags::EndTimeFromFile>(
-      "EndTimeFromFile");
-  TestHelpers::db::test_simple_tag<Cce::Tags::NoEndTime>("NoEndTime");
-  TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedStartTime>(
-      "SpecifiedStartTime");
-  TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedEndTime>(
-      "SpecifiedEndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::StartTimeFromFile>("StartTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::EndTimeFromFile>("EndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NoEndTime>("EndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedStartTime>("StartTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedEndTime>("EndTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::GhInterfaceManager>(
       "GhInterfaceManager");
   TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
@@ -94,7 +87,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(
       TestHelpers::test_option_tag<Cce::OptionTags::BondiSachsOutputFilePrefix>(
           "Shrek") == "Shrek");
-  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::LMax>("8") == 8_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::FilterLMax>("7") == 7_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::RadialFilterAlpha>(
             "32.5") == 32.5);
@@ -102,8 +94,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
             "20") == 20_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ObservationLMax>("6") ==
         6_st);
-  CHECK(TestHelpers::test_option_tag<Cce::OptionTags::NumberOfRadialPoints>(
-            "3") == 3_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::ExtractionRadius>(
             "100.0") == 100.0);
 

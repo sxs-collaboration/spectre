@@ -88,7 +88,7 @@ struct ObserveCenters {
         "DataBox must contain ylm::Tags::EuclideanAreaElement<Frame>");
 
     // Only print the centers if we want to.
-    if (not Parallel::get<ah::Tags::ObserveCentersBase>(cache)) {
+    if (not Parallel::get<ah::Tags::ObserveCenters>(cache)) {
       return;
     }
 

@@ -187,9 +187,8 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
   using return_tags =
       tmpl::list<DerivativeTags..., Tags::SwshTransform<DerivativeTags>...,
                  Tags::SwshTransform<UniqueDifferentiatedFromTags>...>;
-  using argument_tags =
-      tmpl::list<UniqueDifferentiatedFromTags..., Tags::LMaxBase,
-                 Tags::NumberOfRadialPointsBase>;
+  using argument_tags = tmpl::list<UniqueDifferentiatedFromTags..., Tags::LMax,
+                                   Tags::NumberOfRadialPoints>;
 
   static void apply(
       const gsl::not_null<typename DerivativeTags::type*>... derivative_scalars,

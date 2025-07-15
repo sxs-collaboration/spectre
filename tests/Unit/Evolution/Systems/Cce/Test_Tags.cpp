@@ -20,8 +20,8 @@ struct SomeTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
-  TestHelpers::db::test_base_tag<Cce::Tags::EndTime>("EndTime");
-  TestHelpers::db::test_base_tag<Cce::Tags::StartTime>("StartTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::EndTime>("EndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::StartTime>("StartTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiBeta>("BondiBeta");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiH>("H");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiJ>("J");
