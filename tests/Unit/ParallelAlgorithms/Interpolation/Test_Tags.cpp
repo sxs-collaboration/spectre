@@ -14,6 +14,7 @@
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/TagsMetafunctions.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintDampingTags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -30,6 +31,8 @@ struct Metavars {
 };
 struct InterpolationTargetTag {
   using vars_to_interpolate_to_target = tmpl::list<>;
+  using compute_target_points =
+      intrp::TargetPoints::Sphere<InterpolationTargetTag, Frame::Inertial>;
 };
 
 void test_tags_metafunctions() {
@@ -115,11 +118,9 @@ SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
       "InterpolatedVarsHolders");
   TestHelpers::db::test_simple_tag<intrp::Tags::NumberOfElements<3>>(
       "NumberOfElements");
-  TestHelpers::db::test_simple_tag<intrp::Tags::InterpPointInfo<Metavars>>(
-      "InterpPointInfo");
+  TestHelpers::db::test_simple_tag<intrp::Tags::PointInfo<
+      InterpolationTargetTag, tmpl::size_t<Metavars::volume_dim>>>("PointInfo");
   TestHelpers::db::test_simple_tag<intrp::Tags::Verbosity>("Verbosity");
-  TestHelpers::db::test_base_tag<intrp::Tags::InterpPointInfoBase>(
-      "InterpPointInfoBase");
 
   CHECK(
       TestHelpers::test_option_tag<intrp::OptionTags::DumpVolumeDataOnFailure>(

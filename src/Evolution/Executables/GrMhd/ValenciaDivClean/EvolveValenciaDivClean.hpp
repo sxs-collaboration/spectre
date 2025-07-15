@@ -569,8 +569,8 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<3>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       Parallel::Actions::TerminatePhase>>;
 
   using dg_element_array_component = DgElementArray<

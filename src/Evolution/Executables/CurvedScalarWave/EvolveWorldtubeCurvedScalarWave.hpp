@@ -312,8 +312,8 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::FaceQuantitiesCompute,
           ::domain::Tags::GridToInertialInverseJacobian<volume_dim>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

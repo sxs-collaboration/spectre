@@ -240,8 +240,8 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
       tmpl::pop_back<typename st_base::template initialization_actions<
           use_control_systems>>,
       control_system::Actions::InitializeMeasurements<control_systems>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       tmpl::back<typename st_base::template initialization_actions<
           use_control_systems>>>;
 

@@ -144,7 +144,9 @@
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
@@ -617,8 +619,8 @@ struct EvolutionMetavars {
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,
       Parallel::Actions::TerminatePhase>;
@@ -705,9 +707,15 @@ struct EvolutionMetavars {
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
             evolution::dg::Tags::BoundaryData<volume_dim>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
-            typename control_system::Actions::InitializeMeasurements<
-                control_systems>::simple_tags,
-            intrp::Tags::InterpPointInfo<EvolutionMetavars>,
+            tmpl::append<
+                typename control_system::Actions::InitializeMeasurements<
+                    control_systems>::simple_tags,
+                tmpl::transform<
+                    intrp::InterpolationTarget_detail::
+                        get_non_sequential_target_tags<
+                            interpolation_target_tags>,
+                    tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
+                               tmpl::pin<tmpl::size_t<volume_dim>>>>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;

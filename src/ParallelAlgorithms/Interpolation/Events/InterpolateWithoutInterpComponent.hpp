@@ -116,24 +116,24 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                                        tmpl::list<>>;
 
   using return_tags = tmpl::list<>;
-  using argument_tags =
-      tmpl::list<typename InterpolationTargetTag::temporal_id,
-                 Tags::InterpPointInfoBase,
-                 ::Events::Tags::ObserverMesh<VolumeDim>,
-                 // We always grab the DG coords because we use them to create a
-                 // bounding box for the sphere target optimization. DG coords
-                 // have points on the boundary, while FD coords don't. If we
-                 // had used FD coords, it's possible a target point would fall
-                 // between the outermost gridpoints of two elements. This point
-                 // would be outside our bounding box, and thus wouldn't get
-                 // interpolated to. We avoid this by always using DG coords,
-                 // even if the mesh is FD.
-                 domain::Tags::Coordinates<VolumeDim, frame>, SourceVarTags...>;
+  using argument_tags = tmpl::list<
+      typename InterpolationTargetTag::temporal_id,
+      Tags::PointInfo<InterpolationTargetTag, tmpl::size_t<VolumeDim>>,
+      ::Events::Tags::ObserverMesh<VolumeDim>,
+      // We always grab the DG coords because we use them to create a
+      // bounding box for the sphere target optimization. DG coords
+      // have points on the boundary, while FD coords don't. If we
+      // had used FD coords, it's possible a target point would fall
+      // between the outermost gridpoints of two elements. This point
+      // would be outside our bounding box, and thus wouldn't get
+      // interpolated to. We avoid this by always using DG coords,
+      // even if the mesh is FD.
+      domain::Tags::Coordinates<VolumeDim, frame>, SourceVarTags...>;
 
   template <typename ParallelComponent, typename Metavariables>
   void operator()(
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
-      const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
+      const tnsr::I<DataVector, VolumeDim, frame>& all_target_points,
       const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, frame> coordinates,
       const typename SourceVarTags::type&... source_vars_input,
@@ -141,8 +141,6 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/,
       const ObservationValue& /*observation_value*/) const {
-    const tnsr::I<DataVector, VolumeDim, frame>& all_target_points =
-        get<Vars::PointInfoTag<InterpolationTargetTag, VolumeDim>>(point_infos);
     std::vector<BlockLogicalCoords<VolumeDim>> block_logical_coords{};
 
     std::stringstream ss{};

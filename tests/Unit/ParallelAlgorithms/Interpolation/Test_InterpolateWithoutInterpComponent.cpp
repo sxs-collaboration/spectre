@@ -52,12 +52,12 @@ struct mock_element {
 
 template <typename Metavariables, typename ElemComponent>
 struct initialize_elements_and_queue_simple_actions {
-  template <typename InterpPointInfo, typename Runner, typename TemporalId>
+  template <typename Runner, typename TemporalId>
   void operator()(const DomainCreator<3>& domain_creator,
                   const Domain<3>& domain,
                   const std::vector<ElementId<3>>& element_ids,
-                  const InterpPointInfo& interp_point_info, Runner& runner,
-                  const TemporalId& temporal_id) {
+                  const tnsr::I<DataVector, 3, Frame::Inertial>& target_points,
+                  Runner& runner, const TemporalId& temporal_id) {
     using metavars = Metavariables;
     using elem_component = ElemComponent;
     // Emplace elements.
@@ -85,13 +85,13 @@ struct initialize_elements_and_queue_simple_actions {
       auto box = db::create<db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<metavars>,
           typename metavars::InterpolationTargetA::temporal_id,
-          intrp::Tags::InterpPointInfo<metavars>,
+          intrp::Tags::PointInfo<typename metavars::InterpolationTargetA,
+                                 tmpl::size_t<3>>,
           ::Events::Tags::ObserverMesh<metavars::volume_dim>,
           domain::Tags::Coordinates<metavars::volume_dim, Frame::Inertial>,
           ::Tags::Variables<
               typename std::remove_reference_t<decltype(vars)>::tags_list>>>(
-          metavars{}, temporal_id, interp_point_info, mesh, inertial_coords,
-          vars);
+          metavars{}, temporal_id, target_points, mesh, inertial_coords, vars);
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.

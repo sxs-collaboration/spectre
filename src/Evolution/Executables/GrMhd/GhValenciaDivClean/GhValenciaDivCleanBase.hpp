@@ -871,8 +871,8 @@ struct GhValenciaDivCleanTemplateBase<
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<3>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<derived_metavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       tmpl::conditional_t<
           use_control_systems,
           control_system::Actions::InitializeMeasurements<control_systems>,

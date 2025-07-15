@@ -221,8 +221,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
       tmpl::pop_back<typename gh_base::template initialization_actions<
           EvolutionMetavars, use_control_systems>>,
       control_system::Actions::InitializeMeasurements<control_systems>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       tmpl::back<typename gh_base::template initialization_actions<
           EvolutionMetavars, use_control_systems>>>;
 
@@ -288,9 +288,15 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
             evolution::dg::Tags::BoundaryData<volume_dim>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
-            typename control_system::Actions::InitializeMeasurements<
-                control_systems>::simple_tags,
-            intrp::Tags::InterpPointInfo<EvolutionMetavars>,
+            tmpl::append<
+                typename control_system::Actions::InitializeMeasurements<
+                    control_systems>::simple_tags,
+                tmpl::transform<
+                    intrp::InterpolationTarget_detail::
+                        get_non_sequential_target_tags<
+                            interpolation_target_tags>,
+                    tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
+                               tmpl::pin<tmpl::size_t<volume_dim>>>>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;
