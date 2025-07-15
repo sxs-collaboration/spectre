@@ -351,6 +351,23 @@ struct EvolutionMetavars {
                  gh::Tags::Pi<DataVector, volume_dim>,
                  gh::Tags::Phi<DataVector, volume_dim>>;
 
+  struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    static std::string name() { return "BondiSachsInterpolation"; }
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target = source_vars_no_deriv;
+    using compute_target_points =
+        intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>>;
+    using compute_items_on_target = tmpl::list<>;
+    template <typename metavariables>
+    using interpolating_component = typename metavariables::gh_dg_element_array;
+  };
+
+  using interpolation_target_tags = tmpl::push_back<
+      control_system::metafunctions::interpolation_target_tags<control_systems>,
+      AhA, AhB, AhC, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
+
   using observe_fields = tmpl::append<
       tmpl::list<
           gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
@@ -646,23 +663,6 @@ struct EvolutionMetavars {
               Parallel::Phase::PostFailureCleanup,
               tmpl::list<Actions::RunEventsOnFailure<::Tags::Time>,
                          Parallel::Actions::TerminatePhase>>>>>;
-
-  struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    static std::string name() { return "BondiSachsInterpolation"; }
-    using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target = source_vars_no_deriv;
-    using compute_target_points =
-        intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>>;
-    using compute_items_on_target = tmpl::list<>;
-    template <typename Metavariables>
-    using interpolating_component = gh_dg_element_array;
-  };
-
-  using interpolation_target_tags = tmpl::push_back<
-      control_system::metafunctions::interpolation_target_tags<control_systems>,
-      AhA, AhB, AhC, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
