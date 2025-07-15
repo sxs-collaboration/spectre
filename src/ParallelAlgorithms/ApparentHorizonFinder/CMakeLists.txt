@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CleanUp.cpp
   Destination.cpp
   FastFlow.cpp
   InterpolationTarget.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ApparentHorizon.hpp
+  CleanUp.hpp
   Component.hpp
   ComputeExcisionBoundaryVolumeQuantities.hpp
   ComputeExcisionBoundaryVolumeQuantities.tpp
