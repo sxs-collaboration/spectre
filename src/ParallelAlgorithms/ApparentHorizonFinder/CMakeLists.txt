@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   CleanUp.cpp
+  ComputeCoords.cpp
   ComputeVarsToInterpolateToTarget.cpp
   Destination.cpp
   FastFlow.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   ApparentHorizon.hpp
   CleanUp.hpp
   Component.hpp
+  ComputeCoords.hpp
   ComputeExcisionBoundaryVolumeQuantities.hpp
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
