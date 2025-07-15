@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_CleanUp.cpp
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
+  Test_ComputeVarsToInterpolateToTarget.cpp
   Test_Destination.cpp
   Test_FastFlow.cpp
   Test_Initialization.cpp

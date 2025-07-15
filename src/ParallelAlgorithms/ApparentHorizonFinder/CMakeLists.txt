@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   CleanUp.cpp
+  ComputeVarsToInterpolateToTarget.cpp
   Destination.cpp
   FastFlow.cpp
   InterpolationTarget.cpp
@@ -27,6 +28,7 @@ spectre_target_headers(
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
+  ComputeVarsToInterpolateToTarget.hpp
   Destination.hpp
   FastFlow.hpp
   HorizonAliases.hpp
@@ -46,6 +48,7 @@ target_link_libraries(
   FiniteDifference
   GeneralRelativity
   LinearAlgebra
+  LinearOperators
   Logging
   Options
   Printf
