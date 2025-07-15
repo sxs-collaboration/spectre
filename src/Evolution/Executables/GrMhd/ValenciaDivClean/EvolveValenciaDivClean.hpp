@@ -403,7 +403,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       Actions::MutateApply<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
@@ -439,7 +439,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       Actions::MutateApply<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
@@ -464,7 +464,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
-          system, EvolutionMetavars, true, false>>,
+          system, EvolutionMetavars, false>>,
       Actions::MutateApply<evolution::dg::subcell::fd::CellCenteredFlux<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, false>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -477,7 +477,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       Actions::MutateApply<evolution::dg::subcell::BackgroundGrVars<
-          system, EvolutionMetavars, true, true>>,
+          system, EvolutionMetavars, true>>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::SwapGrTags>,
       Actions::MutateApply<grmhd::ValenciaDivClean::subcell::PrimsAfterRollback<
           ordered_list_of_primitive_recovery_schemes>>,
@@ -519,7 +519,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
 
       tmpl::conditional_t<
@@ -532,7 +532,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
                   grmhd::ValenciaDivClean::fd::Tags::Reconstructor>>,
               Initialization::Actions::AddSimpleTags<
                   evolution::dg::subcell::BackgroundGrVars<
-                      system, EvolutionMetavars, true, false>,
+                      system, EvolutionMetavars, false>,
                   grmhd::ValenciaDivClean::SetVariablesNeededFixingToFalse>,
               Actions::MutateApply<
                   grmhd::ValenciaDivClean::subcell::SwapGrTags>,
