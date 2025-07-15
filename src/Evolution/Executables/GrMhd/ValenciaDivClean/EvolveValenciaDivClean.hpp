@@ -527,8 +527,9 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           tmpl::list<
               evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
                                                               system, false>,
-              Actions::MutateApply<
-                  evolution::dg::subcell::SetInterpolators<volume_dim>>,
+              Actions::MutateApply<evolution::dg::subcell::SetInterpolators<
+                  volume_dim,
+                  grmhd::ValenciaDivClean::fd::Tags::Reconstructor>>,
               Initialization::Actions::AddSimpleTags<
                   evolution::dg::subcell::BackgroundGrVars<
                       system, EvolutionMetavars, true, false>,

@@ -51,7 +51,6 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -82,8 +81,7 @@ class DummyReconstructor {
 };
 
 namespace Tags {
-struct Reconstructor : db::SimpleTag,
-                       evolution::dg::subcell::Tags::Reconstructor {
+struct Reconstructor : db::SimpleTag {
   using type = std::unique_ptr<DummyReconstructor>;
 };
 }  // namespace Tags
@@ -137,11 +135,11 @@ struct component {
       Parallel::Phase::Initialization,
       tmpl::flatten<tmpl::list<
           tmpl::list<ActionTesting::InitializeDataBox<initial_tags>>,
-          tmpl::conditional_t<
-              ExtraTesting,
-              tmpl::list<Actions::MutateApply<
-                  evolution::dg::subcell::SetInterpolators<Dim>>>,
-              tmpl::list<>>,
+          tmpl::conditional_t<ExtraTesting,
+                              tmpl::list<Actions::MutateApply<
+                                  evolution::dg::subcell::SetInterpolators<
+                                      Dim, Tags::Reconstructor>>>,
+                              tmpl::list<>>,
           tmpl::list<evolution::dg::subcell::Actions::SendDataForReconstruction<
                          Dim, typename Metavariables::GhostDataMutator, false,
                          UseNodegroupDgElements>,
@@ -166,6 +164,14 @@ struct Metavariables {
   static bool ghost_zone_size_invoked;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool ghost_data_mutator_invoked;
+
+  struct SubcellOptions {
+    template <typename DbTagsList>
+    static constexpr size_t ghost_zone_size(
+        const db::DataBox<DbTagsList>& box) {
+      return db::get<Tags::Reconstructor>(box).ghost_zone_size();
+    }
+  };
 
   struct GhostDataMutator {
     using return_tags = tmpl::list<>;

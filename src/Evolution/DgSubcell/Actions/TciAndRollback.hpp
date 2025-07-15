@@ -38,7 +38,6 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
@@ -264,8 +263,7 @@ struct TciAndRollback {
         },
         make_not_null(&box),
         db::get<evolution::dg::subcell::Tags::MeshForGhostData<Dim>>(box),
-        db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
-            .ghost_zone_size(),
+        Metavariables::SubcellOptions::ghost_zone_size(box),
         db::get<
             evolution::dg::subcell::Tags::InterpolatorsFromNeighborDgToFd<Dim>>(
             box));

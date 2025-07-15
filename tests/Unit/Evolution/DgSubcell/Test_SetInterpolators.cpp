@@ -59,8 +59,7 @@ class DummyReconstructor {
 };
 
 namespace Tags {
-struct Reconstructor : db::SimpleTag,
-                       evolution::dg::subcell::Tags::Reconstructor {
+struct Reconstructor : db::SimpleTag {
   using type = std::unique_ptr<DummyReconstructor>;
 };
 }  // namespace Tags
@@ -165,7 +164,8 @@ void test(const bool enable_extension) {
       Domain<Dim>{std::move(blocks)}, dg_mesh, subcell_mesh,
       ElementMap{element_id, make_grid_map<Dim, Frame::Grid>(0)},
       std::make_unique<DummyReconstructor>(), subcell_options);
-  db::mutate_apply<evolution::dg::subcell::SetInterpolators<Dim>>(
+  db::mutate_apply<
+      evolution::dg::subcell::SetInterpolators<Dim, Tags::Reconstructor>>(
       make_not_null(&box));
 
   // Check that the interpolators were set.

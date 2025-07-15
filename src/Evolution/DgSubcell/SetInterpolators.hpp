@@ -25,7 +25,6 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -52,7 +51,7 @@ namespace evolution::dg::subcell {
  * \warning Currently assumes that neighboring DG/FD elements are on the same
  * refinement level and have the same DG mesh and subcell mesh.
  */
-template <size_t Dim>
+template <size_t Dim, typename ReconstructorTag>
 struct SetInterpolators {
   using return_tags = tmpl::list<
       evolution::dg::subcell::Tags::InterpolatorsFromFdToNeighborFd<Dim>,
@@ -64,8 +63,7 @@ struct SetInterpolators {
                  domain::Tags::Mesh<Dim>, domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
-                 ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 evolution::dg::subcell::Tags::Reconstructor,
+                 ::domain::Tags::ElementMap<Dim, Frame::Grid>, ReconstructorTag,
                  evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
   template <typename ReconstructorType>
