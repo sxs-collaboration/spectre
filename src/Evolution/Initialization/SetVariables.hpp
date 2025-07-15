@@ -39,9 +39,7 @@ class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-namespace evolution {
-namespace Initialization {
-namespace Actions {
+namespace evolution::Initialization::Actions {
 /// \ingroup InitializationGroup
 /// \brief Sets variables needed for evolution of hyperbolic systems
 ///
@@ -49,7 +47,7 @@ namespace Actions {
 /// - DataBox:
 ///   * `CoordinatesTag`
 /// - GlobalCache:
-///   * `OptionTags::AnalyticSolutionBase` or `OptionTags::AnalyticDataBase`
+///   * `evolution::initial_data::Tags::InitialData`
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -70,40 +68,26 @@ struct SetVariables {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if constexpr (db::tag_is_retrievable_v<
-                      evolution::initial_data::Tags::InitialData,
-                      db::DataBox<DbTagsList>>) {
-      using derived_classes =
-          tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                   evolution::initial_data::InitialData>;
-      call_with_dynamic_type<void, derived_classes>(
-          &db::get<evolution::initial_data::Tags::InitialData>(box),
-          [&box](const auto* const data_or_solution) {
-            using initial_data_subclass =
-                std::decay_t<decltype(*data_or_solution)>;
-            if constexpr (is_analytic_data_v<initial_data_subclass> or
-                          is_analytic_solution_v<initial_data_subclass>) {
-              impl<Metavariables>(make_not_null(&box), *data_or_solution);
-            } else {
-              ERROR(
-                  "Trying to use "
-                  "'evolution::Initialization::Actions::SetVariables' with a "
-                  "class that's not marked as analytic solution or analytic "
-                  "data. To support numeric initial data, add a "
-                  "system-specific initialization routine to your executable.");
-            }
-          });
-    } else if constexpr (db::tag_is_retrievable_v<
-                             ::Tags::AnalyticSolutionOrData,
-                             db::DataBox<DbTagsList>>) {
-      impl<Metavariables>(make_not_null(&box),
-                          db::get<::Tags::AnalyticSolutionOrData>(box));
-    } else {
-      ERROR(
-          "Either ::Tags::AnalyticSolutionOrData or "
-          "evolution::initial_data::Tags::InitialData must be in the "
-          "DataBox.");
-    }
+    using derived_classes =
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 evolution::initial_data::InitialData>;
+    call_with_dynamic_type<void, derived_classes>(
+        &db::get<evolution::initial_data::Tags::InitialData>(box),
+        [&box](const auto* const data_or_solution) {
+          using initial_data_subclass =
+              std::decay_t<decltype(*data_or_solution)>;
+          if constexpr (is_analytic_data_v<initial_data_subclass> or
+                        is_analytic_solution_v<initial_data_subclass>) {
+            impl<Metavariables>(make_not_null(&box), *data_or_solution);
+          } else {
+            ERROR(
+                "Trying to use "
+                "'evolution::Initialization::Actions::SetVariables' with a "
+                "class that's not marked as analytic solution or analytic "
+                "data. To support numeric initial data, add a "
+                "system-specific initialization routine to your executable.");
+          }
+        });
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
@@ -170,6 +154,4 @@ struct SetVariables {
     }
   }
 };
-}  // namespace Actions
-}  // namespace Initialization
-}  // namespace evolution
+}  // namespace evolution::Initialization::Actions
