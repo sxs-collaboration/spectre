@@ -86,7 +86,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
           "  Center: [0.05, 0.06, 0.07]\n"
           "  Radius: 2.0\n"
           "  LMax: 12\n"
-          "MaxInterpolationRetries: 3\n"
+          "MaxComputeCoordsRetries: 3\n"
           "BlocksForHorizonFind: All");
   CHECK(created_opts == apparent_horizon_opts);
 
@@ -123,7 +123,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
             "  Center: [0.05, 0.06, 0.07]\n"
             "  Radius: 2.0\n"
             "  LMax: 12\n"
-            "MaxInterpolationRetries: 3\n"
+            "MaxComputeCoordsRetries: 3\n"
             "BlocksForHorizonFind: [Shell0]");
     const auto blocks_for_horizon_find =
         ah::Tags::BlocksForHorizonFind::create_from_options<MockMetavariables>(
