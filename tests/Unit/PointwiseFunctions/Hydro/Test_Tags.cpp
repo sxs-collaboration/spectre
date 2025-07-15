@@ -29,8 +29,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
       "EquationOfState");
   TestHelpers::db::test_simple_tag<hydro::Tags::EquationOfState<true, 3>>(
       "EquationOfState");
-  TestHelpers::db::test_simple_tag<
-      hydro::Tags::EquationOfStateFromOptions<true, 1>>("EquationOfState");
   TestHelpers::db::test_simple_tag<hydro::Tags::LorentzFactor<DataVector>>(
       "LorentzFactor");
   TestHelpers::db::test_simple_tag<

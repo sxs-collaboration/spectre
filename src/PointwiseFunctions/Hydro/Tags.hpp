@@ -175,20 +175,6 @@ struct InversePlasmaBeta : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
-/// The equation of state constructed from options in the input file
-template <bool IsRelativistic, size_t ThermodynamicDim>
-struct EquationOfStateFromOptions : db::SimpleTag {
-  static std::string name() { return "EquationOfState"; }
-  using type = std::unique_ptr<
-      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
-
-  static constexpr bool pass_metavariables = false;
-  using option_tags =
-      tmpl::list<OptionTags::EquationOfState<IsRelativistic, ThermodynamicDim>>;
-
-  static type create_from_options(const type& eos) { return eos->get_clone(); }
-};
-
 /// The Lorentz factor \f$W = (1-v^iv_i)^{-1/2}\f$, where \f$v^i\f$ is
 /// the spatial velocity of the fluid.
 template <typename DataType>
