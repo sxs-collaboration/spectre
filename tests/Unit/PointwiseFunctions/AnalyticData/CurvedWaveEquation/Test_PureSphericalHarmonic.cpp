@@ -15,17 +15,36 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/PureSphericalHarmonic.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        evolution::initial_data::InitialData,
+        tmpl::list<CurvedScalarWave::AnalyticData::PureSphericalHarmonic>>>;
+  };
+};
+
 void test_create_from_options() {
   INFO("Testing option creation");
-  const auto option_parsed = TestHelpers::test_creation<
-      CurvedScalarWave::AnalyticData::PureSphericalHarmonic>(
-      "Radius: 0.8 \n"
-      "Width: 2. \n"
-      "Mode: [10, 8]");
+  const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
+      TestHelpers::test_option_tag<
+          evolution::initial_data::OptionTags::InitialData, Metavariables>(
+          "PureSphericalHarmonic:\n"
+          "  Radius: 0.8 \n"
+          "  Width: 2. \n"
+          "  Mode: [10, 8]")
+          ->get_clone();
+  const auto deserialized_option_solution =
+      serialize_and_deserialize(option_solution);
+  const auto& option_parsed = dynamic_cast<
+      const CurvedScalarWave::AnalyticData::PureSphericalHarmonic&>(
+      *deserialized_option_solution);
   const CurvedScalarWave::AnalyticData::PureSphericalHarmonic constructed{
       0.8, 2., {10, 8}};
   CHECK(option_parsed == constructed);
@@ -95,6 +114,7 @@ SPECTRE_TEST_CASE(
     "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticData/CurvedWaveEquation"};
+  register_factory_classes_with_charm<Metavariables>();
   test_create_from_options();
   test_variables();
   test_errors();

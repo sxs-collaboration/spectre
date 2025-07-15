@@ -39,6 +39,14 @@ PureSphericalHarmonic::PureSphericalHarmonic(const double radius,
   }
 }
 
+std::unique_ptr<evolution::initial_data::InitialData>
+PureSphericalHarmonic::get_clone() const {
+  return std::make_unique<PureSphericalHarmonic>(*this);
+}
+
+PureSphericalHarmonic::PureSphericalHarmonic(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 tuples::TaggedTuple<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
                     CurvedScalarWave::Tags::Phi<3>>
 PureSphericalHarmonic::variables(const tnsr::I<DataVector, 3>& x,
@@ -59,10 +67,14 @@ PureSphericalHarmonic::variables(const tnsr::I<DataVector, 3>& x,
 }
 
 void PureSphericalHarmonic::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | radius_;
   p | width_sq_;
   p | mode_;
 }
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID PureSphericalHarmonic::my_PUP_ID = 0;
 
 bool operator==(const PureSphericalHarmonic& lhs,
                 const PureSphericalHarmonic& rhs) {
