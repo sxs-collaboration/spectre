@@ -17,7 +17,11 @@
 #include "Evolution/Systems/ScalarWave/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Tags {
@@ -90,55 +94,70 @@ struct InitializeConstraintDampingGammas
  * - Modifies: Tags::Variables<tmpl::list<CurvedScalarWave::Tags::Psi,
  * CurvedScalarWave::Tags::Pi, CurvedScalarWave::Tags::Phi<Dim>>>
  */
-
-template <size_t Dim>
+template <size_t Dim, typename DerivedClasses>
 struct InitializeEvolvedVariables : tt::ConformsTo<db::protocols::Mutator> {
   using flat_variables_tag = typename ScalarWave::System<Dim>::variables_tag;
   using curved_variables_tag =
       typename CurvedScalarWave::System<Dim>::variables_tag;
+
   using return_tags = tmpl::list<curved_variables_tag>;
   using argument_tags =
       tmpl::list<::Tags::Time, domain::Tags::Coordinates<Dim, Frame::Inertial>,
-                 ::Tags::AnalyticSolutionOrData, gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<DataVector, Dim>>;
-  template <typename AnalyticSolutionOrData>
+                 evolution::initial_data::Tags::InitialData,
+                 gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, Dim>>;
+
   static void apply(
       const gsl::not_null<typename curved_variables_tag::type*> evolved_vars,
       const double initial_time,
       const tnsr::I<DataVector, Dim>& inertial_coords,
-      const AnalyticSolutionOrData& solution_or_data,
+      const evolution::initial_data::InitialData& solution_or_data,
       [[maybe_unused]] const Scalar<DataVector>& lapse,
       [[maybe_unused]] const tnsr::I<DataVector, Dim>& shift) {
-    if constexpr (tmpl::list_contains_v<typename AnalyticSolutionOrData::tags,
-                                        CurvedScalarWave::Tags::Psi>) {
-      // for analytic solutions/data of the CurvedScalarWave system, the evolved
-      // variables are all initialized directly from the solution.
-      evolved_vars->assign_subset(evolution::Initialization::initial_data(
-          solution_or_data, inertial_coords, initial_time,
-          typename curved_variables_tag::tags_list{}));
-    } else {
-      // for analytic solutions/data of the ScalarWave system,`Psi` and `Phi`
-      // are initialized directly from the solution but `Pi` will be adjusted to
-      // account for the curved background.
-      static_assert(tmpl::list_contains_v<typename AnalyticSolutionOrData::tags,
-                                          ScalarWave::Tags::Psi>,
-                    "The initial data class must either calculate ScalarWave "
-                    "or CurvedScalarWave variables.");
-      const auto initial_data = evolution::Initialization::initial_data(
-          solution_or_data, inertial_coords, initial_time,
-          typename flat_variables_tag::tags_list{});
+    call_with_dynamic_type<void, DerivedClasses>(
+        &solution_or_data,
+        [&evolved_vars, initial_time, &inertial_coords, &lapse,
+         &shift]<typename InitialDataSubclass>(
+            const InitialDataSubclass* const data_or_solution) {
+          if constexpr (is_analytic_data_v<InitialDataSubclass> or
+                        is_analytic_solution_v<InitialDataSubclass>) {
+            if constexpr (tmpl::list_contains_v<
+                              typename InitialDataSubclass::tags,
+                              CurvedScalarWave::Tags::Psi>) {
+              (void)lapse, (void)shift;
+              evolved_vars->assign_subset(
+                  evolution::Initialization::initial_data(
+                      *data_or_solution, inertial_coords, initial_time,
+                      typename curved_variables_tag::tags_list{}));
+            } else {
+              static_assert(
+                  tmpl::list_contains_v<typename InitialDataSubclass::tags,
+                                        ScalarWave::Tags::Psi>,
+                  "The initial data class must either calculate ScalarWave "
+                  "or CurvedScalarWave variables.");
+              const auto initial_data = evolution::Initialization::initial_data(
+                  *data_or_solution, inertial_coords, initial_time,
+                  typename flat_variables_tag::tags_list{});
 
-      get<CurvedScalarWave::Tags::Psi>(*evolved_vars) =
-          get<ScalarWave::Tags::Psi>(initial_data);
-      get<CurvedScalarWave::Tags::Phi<Dim>>(*evolved_vars) =
-          get<ScalarWave::Tags::Phi<Dim>>(initial_data);
-      const auto shift_dot_dpsi =
-          dot_product(shift, get<ScalarWave::Tags::Phi<Dim>>(initial_data));
-      get(get<CurvedScalarWave::Tags::Pi>(*evolved_vars)) =
-          (get(shift_dot_dpsi) + get(get<ScalarWave::Tags::Pi>(initial_data))) /
-          get(lapse);
-    }
+              get<CurvedScalarWave::Tags::Psi>(*evolved_vars) =
+                  get<ScalarWave::Tags::Psi>(initial_data);
+              get<CurvedScalarWave::Tags::Phi<Dim>>(*evolved_vars) =
+                  get<ScalarWave::Tags::Phi<Dim>>(initial_data);
+              const auto shift_dot_dpsi = dot_product(
+                  shift, get<ScalarWave::Tags::Phi<Dim>>(initial_data));
+              get(get<CurvedScalarWave::Tags::Pi>(*evolved_vars)) =
+                  (get(shift_dot_dpsi) +
+                   get(get<ScalarWave::Tags::Pi>(initial_data))) /
+                  get(lapse);
+            }
+          } else {
+            ERROR(
+                "Trying to use "
+                "'evolution::Initialization::Actions::SetVariables' with a "
+                "class that's not marked as analytic solution or analytic "
+                "data. To support numeric initial data, add a "
+                "system-specific initialization routine to your executable.");
+          }
+        });
   }
 };
-
 }  // namespace CurvedScalarWave::Initialization

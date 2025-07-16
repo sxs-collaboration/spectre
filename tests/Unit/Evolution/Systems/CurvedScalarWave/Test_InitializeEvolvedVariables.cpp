@@ -24,6 +24,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Tags/Time.hpp"
@@ -52,15 +53,17 @@ void test_initialize_evolved_variables(
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(lapse_and_shift);
   const auto& shift = get<gr::Tags::Shift<DataVector, Dim>>(lapse_and_shift);
 
+  using DerivedClasses = tmpl::list<InitialData>;
+
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Time, domain::Tags::Coordinates<Dim, Frame::Inertial>,
-      Tags::AnalyticData<InitialData>, gr::Tags::Lapse<DataVector>,
+      evolution::initial_data::Tags::InitialData, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<DataVector, Dim>, evolved_var_tag>>(
-      initial_time, random_coords, initial_data, lapse, shift,
+      initial_time, random_coords, initial_data.get_clone(), lapse, shift,
       typename evolved_var_tag::type{grid_size});
-  db::mutate_apply<
-      CurvedScalarWave::Initialization::InitializeEvolvedVariables<Dim>>(
-      make_not_null(&box));
+
+  db::mutate_apply<CurvedScalarWave::Initialization::InitializeEvolvedVariables<
+      Dim, DerivedClasses>>(make_not_null(&box));
 
   if constexpr (tmpl::list_contains_v<typename InitialData::tags,
                                       CurvedScalarWave::Tags::Psi>) {

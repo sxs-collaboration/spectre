@@ -87,6 +87,8 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -129,6 +131,7 @@ struct EvolutionMetavars {
       is_analytic_data_v<InitialData> xor is_analytic_solution_v<InitialData>,
       "initial_data must be either an analytic_data or an analytic_solution");
 
+  using solutions_and_data = tmpl::list<InitialData>;
   using system = CurvedScalarWave::System<Dim>;
   using temporal_id = Tags::TimeStepId;
   using TimeStepperBase = LtsTimeStepper;
@@ -137,7 +140,6 @@ struct EvolutionMetavars {
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
-  using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
@@ -211,6 +213,7 @@ struct EvolutionMetavars {
                     tmpl::list<>>,
                 Events::time_events<system>,
                 dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
+        tmpl::pair<evolution::initial_data::InitialData, solutions_and_data>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
@@ -265,7 +268,7 @@ struct EvolutionMetavars {
 
   using const_global_cache_tags = tmpl::list<
       CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
-      Tags::AnalyticData<InitialData>>;
+      evolution::initial_data::Tags::InitialData>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -281,7 +284,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>,
           CurvedScalarWave::Initialization::InitializeEvolvedVariables<
-              volume_dim>>,
+              volume_dim, solutions_and_data>>,
       Initialization::Actions::AddComputeTags<
           tmpl::flatten<tmpl::list<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>>,
