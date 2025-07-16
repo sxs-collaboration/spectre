@@ -18,6 +18,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeodesicAcceleration.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -33,7 +34,8 @@ namespace CurvedScalarWave::AnalyticData {
  * space.
  */
 
-class ZerothOrderPuncture : public MarkAsAnalyticData {
+class ZerothOrderPuncture : public evolution::initial_data::InitialData,
+                            public MarkAsAnalyticData {
  public:
   struct ParticlePosition {
     using type = std::array<double, 3>;
@@ -69,6 +71,20 @@ class ZerothOrderPuncture : public MarkAsAnalyticData {
                       std::array<double, 3> particle_velocity,
                       double particle_charge,
                       const Options::Context& context = {});
+  ZerothOrderPuncture(const ZerothOrderPuncture&) = default;
+  ZerothOrderPuncture& operator=(const ZerothOrderPuncture&) = default;
+  ZerothOrderPuncture(ZerothOrderPuncture&&) = default;
+  ZerothOrderPuncture& operator=(ZerothOrderPuncture&&) = default;
+  ~ZerothOrderPuncture() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit ZerothOrderPuncture(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(ZerothOrderPuncture);
+  /// \endcond
 
   static constexpr size_t volume_dim = 3;
   using tags =
@@ -81,7 +97,7 @@ class ZerothOrderPuncture : public MarkAsAnalyticData {
   variables(const tnsr::I<DataVector, 3>& x, tags /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/);
+  void pup(PUP::er& /*p*/) override;
 
  private:
   // assume a non-spinning black hole of mass 1M centered on the coordinate

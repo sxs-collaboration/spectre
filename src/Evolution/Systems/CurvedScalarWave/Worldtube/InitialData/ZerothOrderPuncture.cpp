@@ -37,6 +37,14 @@ ZerothOrderPuncture::ZerothOrderPuncture(
       gr::geodesic_acceleration(particle_velocity_, christoffel);
 }
 
+std::unique_ptr<evolution::initial_data::InitialData>
+ZerothOrderPuncture::get_clone() const {
+  return std::make_unique<ZerothOrderPuncture>(*this);
+}
+
+ZerothOrderPuncture::ZerothOrderPuncture(CkMigrateMessage* msg)
+    : InitialData(msg) {}
+
 tuples::TaggedTuple<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
                     CurvedScalarWave::Tags::Phi<3>>
 ZerothOrderPuncture::variables(const tnsr::I<DataVector, 3>& x,
@@ -76,12 +84,16 @@ ZerothOrderPuncture::variables(const tnsr::I<DataVector, 3>& x,
 }
 
 void ZerothOrderPuncture::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | particle_position_;
   p | particle_velocity_;
   p | geodesic_acceleration_;
   p | particle_charge_;
   p | kerr_schild_;
 }
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID ZerothOrderPuncture::my_PUP_ID = 0;
 
 bool operator==(const ZerothOrderPuncture& lhs,
                 const ZerothOrderPuncture& rhs) {
@@ -91,6 +103,7 @@ bool operator==(const ZerothOrderPuncture& lhs,
          lhs.particle_charge_ == rhs.particle_charge_ and
          lhs.kerr_schild_ == rhs.kerr_schild_;
 }
+
 bool operator!=(const ZerothOrderPuncture& lhs,
                 const ZerothOrderPuncture& rhs) {
   return not(lhs == rhs);
