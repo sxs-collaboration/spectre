@@ -48,6 +48,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
   TestHelpers::db::test_simple_tag<
       ah::Tags::ApparentHorizonOptions<MockHorizonMetavars>>(
       "ApparentHorizonOptions");
+  TestHelpers::db::test_simple_tag<ah::Tags::BlocksForHorizonFind>(
+      "BlocksForHorizonFind");
   TestHelpers::db::test_simple_tag<
       ah::Tags::PreviousIterationStrahlkorper<::Frame::Distorted>>(
       "PreviousIterationStrahlkorper");
