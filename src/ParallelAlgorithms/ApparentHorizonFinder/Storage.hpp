@@ -157,6 +157,10 @@ bool operator!=(const SingleTimeStorage<Fr>& lhs,
  */
 template <typename Fr>
 struct PreviousSurface {
+  PreviousSurface() = default;
+  PreviousSurface(const LinkedMessageId<double>& time_in,
+                  ylm::Strahlkorper<Fr> surface_in);
+
   LinkedMessageId<double> time;
   ylm::Strahlkorper<Fr> surface;
 

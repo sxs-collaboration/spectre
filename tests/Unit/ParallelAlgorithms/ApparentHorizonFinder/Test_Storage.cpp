@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <deque>
 #include <optional>
 #include <set>
 #include <unordered_set>
@@ -55,6 +56,14 @@ void test_storage() {
   const ah::Storage::PreviousSurface<Fr> previous_surface{
       LinkedMessageId<double>{3.0, {2.0}}, iteration.strahlkorper};
   test_serialization(previous_surface);
+
+  // Check we can use PreviousSurface with `emplace`
+  std::deque<ah::Storage::PreviousSurface<Fr>> previous_surfaces{};
+  previous_surfaces.emplace_front(LinkedMessageId<double>{1.0, std::nullopt},
+                                  iteration.strahlkorper);
+  CHECK(previous_surfaces.front().time ==
+        LinkedMessageId<double>{1.0, std::nullopt});
+  CHECK(previous_surfaces.front().surface == iteration.strahlkorper);
 }
 }  // namespace
 

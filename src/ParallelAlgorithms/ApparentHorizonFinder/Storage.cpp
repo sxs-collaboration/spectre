@@ -5,6 +5,7 @@
 
 #include <pup.h>
 #include <pup_stl.h>
+#include <utility>
 
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -88,6 +89,11 @@ bool operator!=(const SingleTimeStorage<Fr>& lhs,
                 const SingleTimeStorage<Fr>& rhs) {
   return not(lhs == rhs);
 }
+
+template <typename Fr>
+PreviousSurface<Fr>::PreviousSurface(const LinkedMessageId<double>& time_in,
+                                     ylm::Strahlkorper<Fr> surface_in)
+    : time(time_in), surface(std::move(surface_in)) {}
 
 template <typename Fr>
 void PreviousSurface<Fr>::pup(PUP::er& p) {
