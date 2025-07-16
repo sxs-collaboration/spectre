@@ -40,8 +40,7 @@ struct NoOpFinalize {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*gauge_d*/,
       const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
       /*angular_cauchy_coordinates*/,
-      const Spectral::Swsh::SwshInterpolator& /*interpolator*/) const {
-  }
+      const Spectral::Swsh::SwshInterpolator& /*interpolator*/) const {}
 };
 
 // perform an iterative solve for the set of angular coordinates. The iteration
@@ -318,6 +317,7 @@ struct InverseCubic;
 template <bool evolve_ccm>
 struct InitializeJ;
 struct ConformalFactor;
+struct ReadJFromFile;
 /// \endcond
 
 /*!
@@ -408,8 +408,9 @@ struct InitializeJ<false> : public PUP::able {
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
-  using creatable_classes = tmpl::list<ConformalFactor, InverseCubic<false>,
-                                       NoIncomingRadiation, ZeroNonSmooth>;
+  using creatable_classes =
+      tmpl::list<ConformalFactor, InverseCubic<false>, NoIncomingRadiation,
+                 ZeroNonSmooth, ReadJFromFile>;
 
   InitializeJ() = default;
   explicit InitializeJ(CkMigrateMessage* /*msg*/) {}
@@ -436,4 +437,5 @@ struct InitializeJ<false> : public PUP::able {
 
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
+#include "Evolution/Systems/Cce/Initialize/ReadJFromFile.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"

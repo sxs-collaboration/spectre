@@ -9,6 +9,7 @@ spectre_target_sources(
   InverseCubic.cpp
   NoIncomingRadiation.cpp
   ZeroNonSmooth.cpp
+  ReadJFromFile.cpp
   )
 
 spectre_target_headers(
@@ -21,4 +22,5 @@ spectre_target_headers(
   NoIncomingRadiation.hpp
   RegisterInitializeJWithCharm.hpp
   ZeroNonSmooth.hpp
+  ReadJFromFile.hpp
   )
