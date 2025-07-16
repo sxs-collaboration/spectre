@@ -86,6 +86,7 @@ struct TestAnalyticData : public MarkAsAnalyticData,
   void pup(PUP::er& p) override { InitialData::pup(p); }
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID TestAnalyticData::my_PUP_ID = 0;
 }  // namespace
 
@@ -93,23 +94,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
   tnsr::I<DataVector, 1, Frame::Inertial> inertial_coords{{{{1., 2., 3., 4.}}}};
   const double current_time = 2.;
   const Variables<tmpl::list<FieldTag>> vars{4, 3.};
-  {
-    INFO("Test analytic solution with analytic solution tag");
-    const auto box = db::create<
-        db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
-                          ::Tags::AnalyticSolution<TestAnalyticSolution>,
-                          Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<evolution::Tags::AnalyticSolutionsCompute<
-                               1, tmpl::list<FieldTag>, false>,
-                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
-        inertial_coords, TestAnalyticSolution{}, current_time, vars);
-    const DataVector expected{2., 4., 6., 8.};
-    const DataVector expected_error{1., -1., -3., -5.};
-    CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),
-                          expected);
-    CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
-                          expected_error);
-  }
+  using solutions_and_data = tmpl::list<TestAnalyticSolution, TestAnalyticData>;
   {
     INFO("Test analytic solution with analytic solution tag for dg-subcell");
     tnsr::I<DataVector, 1, Frame::Inertial> subcell_inertial_coords{
@@ -119,15 +104,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
             domain::Tags::Coordinates<1, Frame::Inertial>,
             evolution::dg::subcell::Tags::Coordinates<1, Frame::Inertial>,
             evolution::dg::subcell::Tags::ActiveGrid,
-            ::Tags::AnalyticSolution<TestAnalyticSolution>, Tags::Time,
+            evolution::initial_data::Tags::InitialData, Tags::Time,
             ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<evolution::dg::subcell::Tags::
-                               ObserverCoordinatesCompute<1, Frame::Inertial>,
-                           evolution::Tags::AnalyticSolutionsCompute<
-                               1, tmpl::list<FieldTag>, true>,
-                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        db::AddComputeTags<
+            evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+                1, Frame::Inertial>,
+            evolution::Tags::AnalyticSolutionsCompute<1, tmpl::list<FieldTag>,
+                                                      true, solutions_and_data>,
+            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords, subcell_inertial_coords,
-        evolution::dg::subcell::ActiveGrid::Dg, TestAnalyticSolution{},
+        evolution::dg::subcell::ActiveGrid::Dg,
+        std::unique_ptr<evolution::initial_data::InitialData>{
+            std::make_unique<TestAnalyticSolution>()},
         current_time, vars);
     const DataVector expected{2., 4., 6., 8.};
     const DataVector expected_error{1., -1., -3., -5.};
@@ -156,10 +144,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           evolution::initial_data::Tags::InitialData,
                           Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<evolution::Tags::AnalyticSolutionsCompute<
-                               1, tmpl::list<FieldTag>, false,
-                               tmpl::list<TestAnalyticSolution>>,
-                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        db::AddComputeTags<
+            evolution::Tags::AnalyticSolutionsCompute<
+                1, tmpl::list<FieldTag>, false, solutions_and_data>,
+            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords,
         std::unique_ptr<evolution::initial_data::InitialData>{
             std::make_unique<TestAnalyticSolution>()},
@@ -172,19 +160,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
                           expected_error);
   }
   {
-    INFO("Test analytic data with analytic data tag");
-    const auto box = db::create<
-        db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
-                          ::Tags::AnalyticData<TestAnalyticData>, Tags::Time,
-                          ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<evolution::Tags::AnalyticSolutionsCompute<
-                               1, tmpl::list<FieldTag>, false>,
-                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
-        inertial_coords, TestAnalyticData{}, current_time, vars);
-    CHECK_FALSE(get<Tags::Analytic<FieldTag>>(box).has_value());
-    CHECK_FALSE(get<Tags::Error<FieldTag>>(box).has_value());
-  }
-  {
     INFO("Test analytic data with base class");
     const auto box = db::create<
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
@@ -192,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
                           Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
         db::AddComputeTags<
             evolution::Tags::AnalyticSolutionsCompute<
-                1, tmpl::list<FieldTag>, false, tmpl::list<TestAnalyticData>>,
+                1, tmpl::list<FieldTag>, false, solutions_and_data>,
             Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords,
         std::unique_ptr<evolution::initial_data::InitialData>{
@@ -203,5 +178,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
   }
 
   TestHelpers::db::test_compute_tag<evolution::Tags::AnalyticSolutionsCompute<
-      1, tmpl::list<FieldTag>, false>>("AnalyticSolutions");
+      1, tmpl::list<FieldTag>, false, solutions_and_data>>("AnalyticSolutions");
 }

@@ -45,16 +45,27 @@ struct AnalyticSolutionsCompute
   using field_tags = AnalyticFieldsTagList;
   using base = ::Tags::AnalyticSolutions<AnalyticFieldsTagList>;
   using return_type = typename base::type;
-  using argument_tags = tmpl::list<
-      tmpl::conditional_t<std::is_same_v<InitialDataList, tmpl::list<>>,
-                          ::Tags::AnalyticSolutionOrData,
-                          evolution::initial_data::Tags::InitialData>,
-      tmpl::conditional_t<
-          UsingDgSubcell,
-          Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
-          domain::Tags::Coordinates<Dim, Frame::Inertial>>,
-      ::Tags::Time>;
+  using argument_tags =
+      tmpl::list<evolution::initial_data::Tags::InitialData,
+                 tmpl::conditional_t<
+                     UsingDgSubcell,
+                     Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
+                     domain::Tags::Coordinates<Dim, Frame::Inertial>>,
+                 ::Tags::Time>;
 
+  static void function(
+      const gsl::not_null<return_type*> analytic_solution,
+      const evolution::initial_data::InitialData& initial_data,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
+      const double time) {
+    call_with_dynamic_type<void, InitialDataList>(
+        &initial_data, [&analytic_solution, &inertial_coords,
+                        time](const auto* const data_or_solution) {
+          function(analytic_solution, *data_or_solution, inertial_coords, time);
+        });
+  }
+
+ private:
   template <typename AnalyticSolution>
   static void function(
       const gsl::not_null<return_type*> analytic_solution,
@@ -71,18 +82,6 @@ struct AnalyticSolutionsCompute
       (void)time;
       *analytic_solution = std::nullopt;
     }
-  }
-
-  static void function(
-      const gsl::not_null<return_type*> analytic_solution,
-      const evolution::initial_data::InitialData& initial_data,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-      const double time) {
-    call_with_dynamic_type<void, InitialDataList>(
-        &initial_data, [&analytic_solution, &inertial_coords,
-                        time](const auto* const data_or_solution) {
-          function(analytic_solution, *data_or_solution, inertial_coords, time);
-        });
   }
 };
 }  // namespace evolution::Tags
