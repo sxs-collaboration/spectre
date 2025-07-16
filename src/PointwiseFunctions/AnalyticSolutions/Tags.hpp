@@ -39,15 +39,11 @@ struct AnalyticSolution {
 }  // namespace OptionTags
 
 namespace Tags {
-/// Can be used to retrieve the analytic solution from the cache without having
-/// to know the template parameters of AnalyticSolution.
-struct AnalyticSolutionBase : AnalyticSolutionOrData {};
-
 /// \ingroup OptionTagsGroup
 /// The analytic solution, with the type of the analytic solution set as the
 /// template parameter
 template <typename SolutionType>
-struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
+struct AnalyticSolution : db::SimpleTag {
   using type = SolutionType;
   using option_tags = tmpl::list<::OptionTags::AnalyticSolution<SolutionType>>;
 

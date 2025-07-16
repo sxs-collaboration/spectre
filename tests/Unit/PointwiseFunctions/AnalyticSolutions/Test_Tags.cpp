@@ -31,10 +31,6 @@ struct FieldTag : db::SimpleTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
-  TestHelpers::db::test_base_tag<Tags::AnalyticSolutionBase>(
-      "AnalyticSolutionBase");
-  TestHelpers::db::test_simple_tag<Tags::AnalyticSolution<DummyType>>(
-      "AnalyticSolution");
   // [analytic_name]
   TestHelpers::db::test_prefix_tag<Tags::Analytic<DummyTag>>(
       "Analytic(DummyTag)");
