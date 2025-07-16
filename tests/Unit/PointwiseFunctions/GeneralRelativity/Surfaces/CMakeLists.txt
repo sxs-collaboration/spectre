@@ -17,7 +17,6 @@ target_link_libraries(
   ApparentHorizonFinder
   DataStructures
   GeneralRelativity
-  GeneralRelativitySolutions
   GrSurfaces
   GrSurfacesHelpers
   SphericalHarmonics

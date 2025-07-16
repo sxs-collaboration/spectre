@@ -57,7 +57,7 @@
 #include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "PointwiseFunctions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/MakeArray.hpp"

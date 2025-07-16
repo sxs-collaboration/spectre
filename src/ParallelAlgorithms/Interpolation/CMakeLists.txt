@@ -34,7 +34,7 @@ target_link_libraries(
   DataStructures
   Domain
   ErrorHandling
-  GeneralRelativitySolutions
+  GeneralRelativity
   Interpolation
   Logging
   Observer

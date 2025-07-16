@@ -11,7 +11,6 @@ spectre_target_sources(
   GaugeWave.cpp
   GaugePlaneWave.cpp
   HarmonicSchwarzschild.cpp
-  KerrHorizon.cpp
   KerrSchild.cpp
   Minkowski.cpp
   SphericalKerrSchild.cpp
@@ -27,7 +26,6 @@ spectre_target_headers(
   GaugeWave.hpp
   GaugePlaneWave.hpp
   HarmonicSchwarzschild.hpp
-  KerrHorizon.hpp
   KerrSchild.hpp
   Minkowski.hpp
   Solutions.hpp

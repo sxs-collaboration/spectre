@@ -24,7 +24,7 @@ target_link_libraries(
   DomainHelpers
   DomainStructure
   DomainTimeDependence
-  GeneralRelativitySolutions
+  GeneralRelativity
   Options
   Utilities
   )

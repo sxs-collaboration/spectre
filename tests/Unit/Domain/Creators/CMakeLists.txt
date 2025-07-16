@@ -34,6 +34,7 @@ target_link_libraries(
   DomainBoundaryConditionsHelpers
   DomainCreators
   DomainHelpers
+  GeneralRelativity
   H5
   Informer
   SphericalHarmonics

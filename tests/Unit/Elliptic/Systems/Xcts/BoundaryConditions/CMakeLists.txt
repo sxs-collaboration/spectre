@@ -19,6 +19,7 @@ target_link_libraries(
   Domain
   DomainStructure
   Elliptic
+  GeneralRelativity
   GeneralRelativitySolutions
   LinearOperators
   Utilities

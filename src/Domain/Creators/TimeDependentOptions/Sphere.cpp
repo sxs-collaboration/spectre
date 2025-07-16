@@ -26,7 +26,6 @@
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
 #include "Domain/FunctionsOfTime/SettleToConstantQuaternion.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace domain::creators::sphere {

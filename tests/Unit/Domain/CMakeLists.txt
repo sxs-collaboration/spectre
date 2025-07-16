@@ -52,6 +52,7 @@ target_link_libraries(
   DomainBoundaryConditionsHelpers
   DomainCreators
   DomainHelpers
+  GeneralRelativity
   GeneralRelativitySolutions
   H5
   LinearOperators
