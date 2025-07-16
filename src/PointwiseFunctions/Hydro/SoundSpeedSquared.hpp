@@ -55,11 +55,12 @@ namespace Tags {
 /// \see hydro::sound_speed_squared
 ///
 /// Can be retrieved using `hydro::Tags::SoundSpeedSquared`
-template <typename DataType>
+template <typename DataType, bool IsRelativistic, size_t ThermoDim>
 struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
   using argument_tags = typename tmpl::list<
       RestMassDensity<DataType>, SpecificInternalEnergy<DataType>,
-      SpecificEnthalpy<DataType>, hydro::Tags::EquationOfStateBase>;
+      SpecificEnthalpy<DataType>,
+      hydro::Tags::EquationOfState<IsRelativistic, ThermoDim>>;
 
   using return_type = Scalar<DataType>;
 

@@ -163,7 +163,7 @@ class ParameterizedDeleptonization {
   // Things you want from DataBox that won't be change and are passed in as
   // const-refs
   using argument_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                                   hydro::Tags::EquationOfStateBase>;
+                                   hydro::Tags::GrmhdEquationOfState>;
 
   // for use in `db::mutate_apply`
   template <size_t ThermodynamicDim>

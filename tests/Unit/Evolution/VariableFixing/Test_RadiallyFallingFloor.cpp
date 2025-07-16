@@ -56,10 +56,12 @@ void test_eos_call(
 }
 
 // ThermoDim = 2
+template <size_t ThermoDim>
 void test_eos_call(
     const VariableFixing::RadiallyFallingFloor<3>& variable_fixer,
-    const EquationsOfState::EquationOfState<true, 2>& equation_of_state,
+    const EquationsOfState::EquationOfState<true, ThermoDim>& equation_of_state,
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords) {
+  CAPTURE(ThermoDim);
   Scalar<DataVector> initial_pressure{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}};
   Scalar<DataVector> pressure = initial_pressure;
   Scalar<DataVector> initial_density{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}};
@@ -70,6 +72,11 @@ void test_eos_call(
       initial_specific_internal_energy;
   Scalar<DataVector> initial_temperature{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
   Scalar<DataVector> temperature = initial_temperature;
+  if (ThermoDim == 3) {
+    initial_temperature = initial_pressure;
+    get(initial_pressure) = DataVector{1.0, 2.0, 3.0, 4.0, 5.0};
+    pressure = initial_pressure;
+  }
   Scalar<DataVector> initial_electron_fraction{
       DataVector{1.0, 2.0, 3.0, 4.0, 5.0}};
   Scalar<DataVector> electron_fraction = initial_electron_fraction;
@@ -135,6 +142,10 @@ void test_variable_fixer(
 
   // 2D
   test_eos_call(variable_fixer, ideal_fluid, coords);
+
+  // 3D
+  const auto ideal_fluid_3d = ideal_fluid.promote_to_3d_eos();
+  test_eos_call(variable_fixer, *ideal_fluid_3d, coords);
 }
 }  // namespace
 

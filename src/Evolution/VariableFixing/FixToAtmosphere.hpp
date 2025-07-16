@@ -332,7 +332,7 @@ class FixToAtmosphere {
                  hydro::Tags::Temperature<DataVector>>;
   using argument_tags = tmpl::list<hydro::Tags::ElectronFraction<DataVector>,
                                    gr::Tags::SpatialMetric<DataVector, Dim>,
-                                   hydro::Tags::EquationOfStateBase>;
+                                   hydro::Tags::GrmhdEquationOfState>;
 
   // for use in `db::mutate_apply`
   template <size_t ThermodynamicDim>

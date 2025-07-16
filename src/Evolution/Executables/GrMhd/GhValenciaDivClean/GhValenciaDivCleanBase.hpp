@@ -859,10 +859,12 @@ struct GhValenciaDivCleanTemplateBase<
       // `use_dg_subcell` is `false`
       tmpl::conditional_t<
           use_dg_subcell,
-          tmpl::list<evolution::dg::subcell::Actions::SetSubcellGrid<
-                         volume_dim, system, true>,
-                     Actions::MutateApply<
-                         evolution::dg::subcell::SetInterpolators<volume_dim>>>,
+          tmpl::list<
+              evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
+                                                              system, true>,
+              Actions::MutateApply<evolution::dg::subcell::SetInterpolators<
+                  volume_dim,
+                  grmhd::GhValenciaDivClean::fd::Tags::Reconstructor<system>>>>,
           evolution::Initialization::Actions::SetVariables<
               ::domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<

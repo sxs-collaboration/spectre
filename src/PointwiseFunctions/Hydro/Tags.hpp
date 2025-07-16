@@ -106,13 +106,10 @@ struct ElectronFraction : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
-/// Base tag for the equation of state
-struct EquationOfStateBase : db::BaseTag {};
-
 /// The equation of state retrieved from the analytic solution / data in the
 /// input file
 template <bool IsRelativistic, size_t ThermodynamicDim>
-struct EquationOfState : EquationOfStateBase, db::SimpleTag {
+struct EquationOfState : db::SimpleTag {
   using type = std::unique_ptr<
       EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
 
@@ -176,20 +173,6 @@ struct EquationOfState : EquationOfStateBase, db::SimpleTag {
 template <typename DataType>
 struct InversePlasmaBeta : db::SimpleTag {
   using type = Scalar<DataType>;
-};
-
-/// The equation of state constructed from options in the input file
-template <bool IsRelativistic, size_t ThermodynamicDim>
-struct EquationOfStateFromOptions : EquationOfStateBase, db::SimpleTag {
-  static std::string name() { return "EquationOfState"; }
-  using type = std::unique_ptr<
-      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>>;
-
-  static constexpr bool pass_metavariables = false;
-  using option_tags =
-      tmpl::list<OptionTags::EquationOfState<IsRelativistic, ThermodynamicDim>>;
-
-  static type create_from_options(const type& eos) { return eos->get_clone(); }
 };
 
 /// The Lorentz factor \f$W = (1-v^iv_i)^{-1/2}\f$, where \f$v^i\f$ is
@@ -357,8 +340,7 @@ struct MassFlux : db::SimpleTag {
 
 /// The equation of state retrieved from the analytic solution / data in the
 /// input file
-struct GrmhdEquationOfState : ::hydro::Tags::EquationOfStateBase,
-                              db::SimpleTag {
+struct GrmhdEquationOfState : db::SimpleTag {
   using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 3>>;
 
   template <typename Metavariables>

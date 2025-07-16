@@ -23,14 +23,10 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
-
-struct EquationOfStateTag : db::SimpleTag, hydro::Tags::EquationOfStateBase {
-  using type = EquationsOfState::PolytropicFluid<true>;
-};
-
 template <typename Metavariables>
 struct mock_component {
   using metavariables = Metavariables;
@@ -44,7 +40,7 @@ struct mock_component {
                  hydro::Tags::Temperature<DataVector>,
                  hydro::Tags::ElectronFraction<DataVector>,
                  domain::Tags::Coordinates<3, Frame::Inertial>,
-                 EquationOfStateTag>;
+                 hydro::Tags::GrmhdEquationOfState>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
@@ -63,6 +59,8 @@ struct SomeType {};
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                   "[Unit][Evolution][VariableFixing]") {
+  register_derived_classes_with_charm<
+      EquationsOfState::EquationOfState<true, 3>>();
   TestHelpers::db::test_simple_tag<Tags::VariableFixer<SomeType>>(
       "VariableFixer");
 
@@ -102,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
        Scalar<DataVector>{DataVector{1.0, 2.0, 3.0, 4.0, 5.0}},
        Scalar<DataVector>{DataVector{1.0, 1.0, 1.0, 1.0, 1.0}},
        tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}},
-       std::move(polytrope)});
+       polytrope.promote_to_3d_eos()});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<component>(runner, 0);

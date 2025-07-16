@@ -46,7 +46,6 @@
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/MeshForGhostData.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
@@ -159,8 +158,7 @@ struct SendDataForReconstruction {
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const size_t ghost_zone_size =
-        db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
-            .ghost_zone_size();
+        Metavariables::SubcellOptions::ghost_zone_size(box);
 
     // Optimization note: could save a copy+allocation if we moved
     // all_sliced_data when possible before sending.
@@ -448,8 +446,7 @@ struct ReceiveAndSendDataForReconstruction {
     }
 
     const size_t ghost_zone_size =
-        db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
-            .ghost_zone_size();
+        Metavariables::SubcellOptions::ghost_zone_size(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
     const Index<Dim>& subcell_extents = subcell_mesh.extents();
@@ -711,9 +708,7 @@ struct ReceiveDataForReconstruction {
                evolution::dg::subcell::Tags::MeshForGhostData<Dim>,
                evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
         [&element,
-         ghost_zone_size =
-             db::get<evolution::dg::subcell::Tags::Reconstructor>(box)
-                 .ghost_zone_size(),
+         ghost_zone_size = Metavariables::SubcellOptions::ghost_zone_size(box),
          &received_data, &subcell_mesh, &mortar_meshes](
             const gsl::not_null<DirectionalIdMap<Dim, GhostData>*>
                 ghost_data_ptr,
