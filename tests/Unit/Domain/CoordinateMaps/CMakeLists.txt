@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_Distribution.cpp
   Test_EquatorialCompression.cpp
   Test_Equiangular.cpp
+  Test_FlatOffsetWedge.cpp
   Test_Frustum.cpp
   Test_Identity.cpp
   Test_Interval.cpp

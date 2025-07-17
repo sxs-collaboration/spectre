@@ -20,6 +20,7 @@ spectre_target_sources(
   Distribution.cpp
   EquatorialCompression.cpp
   Equiangular.cpp
+  FlatOffsetWedge.cpp
   FocallyLiftedEndcap.cpp
   FocallyLiftedFlatEndcap.cpp
   FocallyLiftedFlatSide.cpp
@@ -59,6 +60,7 @@ spectre_target_headers(
   Distribution.hpp
   EquatorialCompression.hpp
   Equiangular.hpp
+  FlatOffsetWedge.hpp
   FocallyLiftedEndcap.hpp
   FocallyLiftedFlatEndcap.hpp
   FocallyLiftedFlatSide.hpp
