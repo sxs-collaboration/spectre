@@ -57,7 +57,7 @@ namespace LinearSolver::Schwarz::Actions {
  * optimization would be to decide at runtime whether or not to reset the
  * subdomain solver.
  */
-template <typename OptionsGroup>
+template <typename SubdomainSolverType, typename OptionsGroup>
 struct ResetSubdomainSolver {
   using const_global_cache_tags = tmpl::list<
       LinearSolver::Schwarz::Tags::SkipSubdomainSolverResets<OptionsGroup>,
@@ -77,8 +77,8 @@ struct ResetSubdomainSolver {
         Parallel::printf("%s %s: Reset subdomain solver\n", element_id,
                          pretty_type::name<OptionsGroup>());
       }
-      db::mutate<
-          LinearSolver::Schwarz::Tags::SubdomainSolverBase<OptionsGroup>>(
+      db::mutate<LinearSolver::Schwarz::Tags::SubdomainSolver<
+          SubdomainSolverType, OptionsGroup>>(
           [](const auto subdomain_solver) {
             // Dereference the gsl::not_null pointer, and then the
             // std::unique_ptr for the subdomain solver's abstract superclass.

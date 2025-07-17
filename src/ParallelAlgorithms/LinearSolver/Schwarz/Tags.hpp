@@ -80,22 +80,17 @@ struct MaxOverlap : db::SimpleTag {
   static type create_from_options(const type& value) { return value; }
 };
 
-/// The serial linear solver used to solve subdomain operators
-template <typename OptionsGroup>
-struct SubdomainSolverBase : db::BaseTag {
-  static std::string name() {
-    return "SubdomainSolver(" + pretty_type::name<OptionsGroup>() + ")";
-  }
-};
-
 /// The serial linear solver of type `SolverType` used to solve subdomain
 /// operators
 template <typename SolverType, typename OptionsGroup>
-struct SubdomainSolver : SubdomainSolverBase<OptionsGroup>, db::SimpleTag {
-  using type = SolverType;
+struct SubdomainSolver : db::SimpleTag {
+  using type = std::unique_ptr<SolverType>;
+  static std::string name() {
+    return "SubdomainSolver(" + pretty_type::name<OptionsGroup>() + ")";
+  }
   static constexpr bool pass_metavariables = false;
-  using option_tags =
-      tmpl::list<OptionTags::SubdomainSolver<SolverType, OptionsGroup>>;
+  using option_tags = tmpl::list<
+      OptionTags::SubdomainSolver<std::unique_ptr<SolverType>, OptionsGroup>>;
   static type create_from_options(const type& value) {
     return deserialize<type>(serialize<type>(value).data());
   }
