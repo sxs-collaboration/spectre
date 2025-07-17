@@ -286,8 +286,8 @@ struct EvolutionMetavars {
           tmpl::flatten<tmpl::list<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

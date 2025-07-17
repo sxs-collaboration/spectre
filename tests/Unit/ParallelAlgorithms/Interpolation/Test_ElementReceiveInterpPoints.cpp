@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
@@ -47,9 +48,9 @@ struct mock_element {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<Metavariables>>>>>;
-  using initial_databox = db::compute_databox_type<
-      tmpl::list<intrp::Tags::InterpPointInfo<Metavariables>>>;
+          Metavariables::volume_dim,
+          typename Metavariables::interpolation_target_tags>>>>;
+
   using component_being_mocked =
       DgElementArray<Metavariables, phase_dependent_action_list>;
 };
@@ -162,28 +163,26 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
     ActionTesting::next_action<target_component_b>(make_not_null(&runner), 0);
   }
   ActionTesting::emplace_component<elem_component>(&runner, 0);
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
-  }
+  ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   using point_info_type = tnsr::I<
       DataVector, metavars::volume_dim,
       typename metavars::InterpolationTargetA::compute_target_points::frame>;
 
-  // element should contain an intrp::Tags::InterpPointInfo<Metavariables>
-  // that contains a default-constructed point_info for InterpolationTargetA and
-  // InterpolationTargetB. This tests ElementInitInterpPoints.
-  const auto& init_point_infos =
-      ActionTesting::get_databox_tag<elem_component,
-                                     ::intrp::Tags::InterpPointInfo<metavars>>(
-          runner, 0);
-  CHECK(get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetA,
-                                      metavars::volume_dim>>(
-            init_point_infos) == point_info_type{});
-  CHECK(get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetB,
-                                      metavars::volume_dim>>(
-            init_point_infos) == point_info_type{});
+  // element should contain an intrp::Tags::PointInfo for both A and B
+  // that contains a default-constructed tensor. This tests
+  // ElementInitInterpPoints.
+  CHECK(ActionTesting::get_databox_tag<
+            elem_component,
+            intrp::Tags::PointInfo<typename metavars::InterpolationTargetA,
+                                   tmpl::size_t<metavars::volume_dim>>>(
+            runner, 0) == point_info_type{});
+  CHECK(ActionTesting::get_databox_tag<
+            elem_component,
+            intrp::Tags::PointInfo<typename metavars::InterpolationTargetB,
+                                   tmpl::size_t<metavars::volume_dim>>>(
+            runner, 0) == point_info_type{});
 
   // Now invoke the only Registration action (InterpolationTargetSendPoints).
   ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
@@ -219,18 +218,20 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
     return points;
   }();
 
-  const auto& point_infos =
-      ActionTesting::get_databox_tag<elem_component,
-                                     ::intrp::Tags::InterpPointInfo<metavars>>(
-          runner, 0);
-  const auto& point_info_a =
-      get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetA,
-                                    metavars::volume_dim>>(point_infos);
-  const auto& point_info_b =
-      get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetB,
-                                    metavars::volume_dim>>(point_infos);
-  CHECK_ITERABLE_APPROX(point_info_a, expected_point_info_a);
-  CHECK_ITERABLE_APPROX(point_info_b, expected_point_info_b);
+  CHECK_ITERABLE_APPROX(
+      (ActionTesting::get_databox_tag<
+          elem_component,
+          intrp::Tags::PointInfo<typename metavars::InterpolationTargetA,
+                                 tmpl::size_t<metavars::volume_dim>>>(runner,
+                                                                      0)),
+      expected_point_info_a);
+  CHECK_ITERABLE_APPROX(
+      (ActionTesting::get_databox_tag<
+          elem_component,
+          intrp::Tags::PointInfo<typename metavars::InterpolationTargetB,
+                                 tmpl::size_t<metavars::volume_dim>>>(runner,
+                                                                      0)),
+      expected_point_info_b);
 
   // Should be no queued simple actions on either component.
   CHECK(runner.is_simple_action_queue_empty<target_component_a>(0));

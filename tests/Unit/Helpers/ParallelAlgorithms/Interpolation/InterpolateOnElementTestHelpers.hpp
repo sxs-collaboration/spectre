@@ -318,10 +318,9 @@ void test_interpolate_on_element(
   // Create target points and interp_point_info
   const size_t ell = 4;
   const size_t num_points = is_sphere ? 2 * (ell + 1) * (2 * ell + 1) : 10_st;
-  tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_points);
-  const typename intrp::Tags::InterpPointInfo<
-      metavars>::type interp_point_info = [&target_points, &x_center]() {
+  tnsr::I<DataVector, 3, Frame::Inertial> target_points = [&]() {
     MAKE_GENERATOR(gen);
+    tnsr::I<DataVector, 3, Frame::Inertial> result(num_points);
     std::uniform_real_distribution<> r_dist(0.9001, 2.8999);
     std::uniform_real_distribution<> theta_dist(0.0, M_PI);
     std::uniform_real_distribution<> phi_dist(0.0, 2 * M_PI);
@@ -329,14 +328,11 @@ void test_interpolate_on_element(
       const double r = r_dist(gen);
       const double theta = theta_dist(gen);
       const double phi = phi_dist(gen);
-      get<0>(target_points)[i] = x_center + r * sin(theta) * cos(phi);
-      get<1>(target_points)[i] = r * sin(theta) * sin(phi);
-      get<2>(target_points)[i] = r * cos(theta);
+      get<0>(result)[i] = x_center + r * sin(theta) * cos(phi);
+      get<1>(result)[i] = r * sin(theta) * sin(phi);
+      get<2>(result)[i] = r * cos(theta);
     }
-    typename intrp::Tags::InterpPointInfo<metavars>::type interp_point_info_l{};
-    get<intrp::Vars::PointInfoTag<typename metavars::InterpolationTargetA, 3>>(
-        interp_point_info_l) = target_points;
-    return interp_point_info_l;
+    return result;
   }();
 
   tuples::tagged_tuple_from_typelist<tmpl::conditional_t<
@@ -386,13 +382,13 @@ void test_interpolate_on_element(
                     typename metavars::InterpolationTargetA::temporal_id::type,
                     double>) {
     initialize_elements_and_queue_simple_actions(
-        domain_creator, domain, element_ids, interp_point_info, runner,
+        domain_creator, domain, element_ids, target_points, runner,
         temporal_id.substep_time());
   } else if constexpr (std::is_same_v<typename metavars::InterpolationTargetA::
                                           temporal_id::type,
                                       TimeStepId>) {
     initialize_elements_and_queue_simple_actions(domain_creator, domain,
-                                                 element_ids, interp_point_info,
+                                                 element_ids, target_points,
                                                  runner, temporal_id);
   }
 
