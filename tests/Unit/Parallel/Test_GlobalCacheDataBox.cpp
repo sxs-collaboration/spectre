@@ -23,9 +23,7 @@ struct IntegerList : db::SimpleTag {
   using type = std::array<int, 3>;
 };
 
-struct UniquePtrIntegerListBase : db::BaseTag {};
-
-struct UniquePtrIntegerList : UniquePtrIntegerListBase, db::SimpleTag {
+struct UniquePtrIntegerList : db::SimpleTag {
   using type = std::unique_ptr<std::array<int, 3>>;
 };
 }  // namespace Tags
@@ -93,7 +91,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
-        db::get<Tags::UniquePtrIntegerListBase>(box));
+        db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(cache.get_resource_info() == resource_info);
   CHECK(cache.get_resource_info() ==
         db::get<Tags::ResourceInfo<Metavars>>(box));
@@ -102,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache) ==
         &db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache) ==
-        &db::get<Tags::UniquePtrIntegerListBase>(box));
+        &db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&cache.get_resource_info() ==
         &db::get<Tags::ResourceInfo<Metavars>>(box));
 
@@ -122,13 +120,13 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(std::array<int, 3>{{100, -7, -300}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(std::array<int, 3>{{100, -7, -300}} ==
-        db::get<Tags::UniquePtrIntegerListBase>(box));
+        db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&Parallel::get<Tags::IntegerList>(cache2) ==
         &db::get<Tags::IntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache2) ==
         &db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache2) ==
-        &db::get<Tags::UniquePtrIntegerListBase>(box));
+        &db::get<Tags::UniquePtrIntegerList>(box));
 
   TestHelpers::db::test_simple_tag<Tags::GlobalCache<Metavars>>("GlobalCache");
   TestHelpers::db::test_reference_tag<

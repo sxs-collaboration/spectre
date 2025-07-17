@@ -64,9 +64,7 @@ struct NoCopy {
 };
 
 namespace TestTags {
-struct BaseInt : db::BaseTag {};
-
-struct Int : db::SimpleTag, BaseInt {
+struct Int : db::SimpleTag {
   using type = int;
 };
 
@@ -108,8 +106,8 @@ struct NegateDoubleAddIntCompute : NegateDoubleAddInt, db::ComputeTag {
                                  const double x, const int y) {
     *result = -x + y;
   }
-  using argument_tags = tmpl::list<Double, BaseInt>;
-  using volume_tags = tmpl::list<BaseInt>;
+  using argument_tags = tmpl::list<Double, Int>;
+  using volume_tags = tmpl::list<Int>;
 };
 
 struct IntCompute : db::ComputeTag, Int {

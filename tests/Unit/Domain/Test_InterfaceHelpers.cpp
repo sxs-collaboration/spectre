@@ -18,8 +18,7 @@ struct SomeNumber : db::SimpleTag {
   using type = double;
   static std::string name() { return "SomeNumber"; }
 };
-struct VolumeArgumentBase : db::BaseTag {};
-struct SomeVolumeArgument : VolumeArgumentBase, db::SimpleTag {
+struct SomeVolumeArgument : db::SimpleTag {
   using type = double;
   static std::string name() { return "SomeVolumeArgument"; }
 };
@@ -83,17 +82,6 @@ void test_interface_apply(
         direction_and_expected_result.second);
   }
   // [interface_apply_example]
-
-  // Test volume base tag
-  const auto computed_numbers_with_base_tag =
-      interface_apply<DirectionsTag, tmpl::list<SomeNumber, VolumeArgumentBase>,
-                      tmpl::list<VolumeArgumentBase>>(
-          [](const double some_number_on_interface,
-             const double volume_argument, const double factor) {
-            return factor * some_number_on_interface + volume_argument;
-          },
-          box, 2.);
-  CHECK(computed_numbers_with_base_tag == computed_number_on_interfaces);
 
   // Test overload that takes a stateless invokable
   // [interface_apply_example_stateless]

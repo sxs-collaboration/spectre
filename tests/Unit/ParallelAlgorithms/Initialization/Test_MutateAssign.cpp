@@ -21,9 +21,7 @@ struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
 };
 
-struct Tag2Base : db::BaseTag {};
-
-struct Tag2 : db::SimpleTag, Tag2Base {
+struct Tag2 : db::SimpleTag {
   using type = std::string;
 };
 
@@ -38,9 +36,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Initialization.MutateAssign",
       make_not_null(&box), 1.5, std::vector<double>{1.6, 2.5, 3.0});
   CHECK(db::get<Tag0>(box) == 1.5);
   CHECK(db::get<Tag1>(box) == std::vector<double>{1.6, 2.5, 3.0});
-  Initialization::mutate_assign<tmpl::list<Tag2Base>>(make_not_null(&box),
-                                                      "new string value");
+  Initialization::mutate_assign<tmpl::list<Tag2>>(make_not_null(&box),
+                                                  "new string value");
   CHECK(db::get<Tag2>(box) == "new string value");
-  CHECK(db::get<Tag2Base>(box) == "new string value");
 }
 }  // namespace

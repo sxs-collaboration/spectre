@@ -13,8 +13,6 @@ struct TestMetavariables;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.Tags.Metavariables", "[Unit][Parallel]") {
-  TestHelpers::db::test_base_tag<Parallel::Tags::Metavariables>(
-      "Metavariables");
   TestHelpers::db::test_simple_tag<
       Parallel::Tags::MetavariablesImpl<TestMetavariables>>("Metavariables");
 }

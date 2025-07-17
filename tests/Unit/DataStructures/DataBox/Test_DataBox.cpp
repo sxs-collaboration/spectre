@@ -72,8 +72,7 @@ struct Tag0FromOption : Tag0 {
 struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
 };
-struct Tag2Base : db::BaseTag {};
-struct Tag2 : db::SimpleTag, Tag2Base {
+struct Tag2 : db::SimpleTag {
   using type = std::string;
 };
 struct Tag3 : db::SimpleTag {
@@ -113,7 +112,7 @@ struct Tag6Compute : Tag6, db::ComputeTag {
                        const std::string& s) {
     *result = s;
   }
-  using argument_tags = tmpl::list<Tag2Base>;
+  using argument_tags = tmpl::list<Tag2>;
 };
 
 // [compute_item_tag_function]
@@ -156,15 +155,11 @@ struct TagPrefix : db::PrefixTag, db::SimpleTag {
 };
 // [databox_prefix_tag_example]
 
-struct PointerBase : db::BaseTag {};
-
-struct Pointer : PointerBase, db::SimpleTag {
+struct Pointer : db::SimpleTag {
   using type = std::unique_ptr<int>;
 };
 
-struct PointerToCounterBase : db::BaseTag {};
-
-struct PointerToCounter : PointerToCounterBase, db::SimpleTag {
+struct PointerToCounter : db::SimpleTag {
   using type = std::unique_ptr<int>;
 };
 
@@ -188,7 +183,7 @@ struct PointerToSumCompute : PointerToSum, db::ComputeTag {
                        const int& same_arg) {
     *ret = std::make_unique<int>(arg + same_arg);
   }
-  using argument_tags = tmpl::list<PointerToCounter, PointerToCounterBase>;
+  using argument_tags = tmpl::list<PointerToCounter, PointerToCounter>;
 };
 
 struct Tag0Ref : db::SimpleTag {
@@ -298,16 +293,14 @@ void test_databox() {
     CHECK(db::get<test_databox_tags::Pointer>(db::as_access(box)) == 3);
 
     static_assert(
-        std::is_same_v<
-            db::const_item_type<test_databox_tags::PointerBase, DbTags>,
-            const int&>,
+        std::is_same_v<db::const_item_type<test_databox_tags::Pointer, DbTags>,
+                       const int&>,
         "Wrong type for const_item_type on unique_ptr simple item by base");
     static_assert(
-        std::is_same_v<
-            decltype(db::get<test_databox_tags::PointerBase>(box)),
-            db::const_item_type<test_databox_tags::PointerBase, DbTags>>,
+        std::is_same_v<decltype(db::get<test_databox_tags::Pointer>(box)),
+                       db::const_item_type<test_databox_tags::Pointer, DbTags>>,
         "Wrong type for get on unique_ptr simple item by base");
-    CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
+    CHECK(db::get<test_databox_tags::Pointer>(box) == 3);
 
     static_assert(
         std::is_same_v<
@@ -324,17 +317,16 @@ void test_databox() {
           4);
 
     static_assert(
-        std::is_same_v<db::const_item_type<
-                           test_databox_tags::PointerToCounterBase, DbTags>,
-                       const int&>,
+        std::is_same_v<
+            db::const_item_type<test_databox_tags::PointerToCounter, DbTags>,
+            const int&>,
         "Wrong type for const_item_type on unique_ptr compute item by base");
     static_assert(
         std::is_same_v<
-            decltype(db::get<test_databox_tags::PointerToCounterBase>(box)),
-            db::const_item_type<test_databox_tags::PointerToCounterBase,
-                                DbTags>>,
+            decltype(db::get<test_databox_tags::PointerToCounter>(box)),
+            db::const_item_type<test_databox_tags::PointerToCounter, DbTags>>,
         "Wrong type for get on unique_ptr compute item by base");
-    CHECK(db::get<test_databox_tags::PointerToCounterBase>(box) == 4);
+    CHECK(db::get<test_databox_tags::PointerToCounter>(box) == 4);
 
     static_assert(
         std::is_same_v<
@@ -616,7 +608,7 @@ void test_apply() {
   };
   db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       check_result_no_args, original_box);
-  db::apply<tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::Tag5>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       check_result_no_args, original_box);
 
   // [apply_example]
@@ -647,7 +639,7 @@ void test_apply() {
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   // [apply_struct_example]
-  db::apply<tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::Tag5>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   // [apply_stateless_struct_example]
@@ -668,32 +660,24 @@ void test_apply() {
   db::apply(StatelessApplyCallable{}, original_box,
             db::get<test_databox_tags::Tag1>(original_box));
 
-  db::apply<tmpl::list<
-      test_databox_tags::Pointer, test_databox_tags::PointerToCounter,
-      test_databox_tags::PointerToSum, test_databox_tags::PointerBase,
-      test_databox_tags::PointerToCounterBase>>(
-      [](const int& simple, const int& compute, const int& compute_mutating,
-         const int& simple_base, const int& compute_base) {
+  db::apply<tmpl::list<test_databox_tags::Pointer,
+                       test_databox_tags::PointerToCounter,
+                       test_databox_tags::PointerToSum>>(
+      [](const int& simple, const int& compute, const int& compute_mutating) {
         CHECK(simple == 3);
-        CHECK(simple_base == 3);
         CHECK(compute == 4);
-        CHECK(compute_base == 4);
         CHECK(compute_mutating == 8);
       },
       original_box);
 
   struct PointerApplyCallable {
-    using argument_tags = tmpl::list<
-        test_databox_tags::Pointer, test_databox_tags::PointerToCounter,
-        test_databox_tags::PointerToSum, test_databox_tags::PointerBase,
-        test_databox_tags::PointerToCounterBase>;
+    using argument_tags = tmpl::list<test_databox_tags::Pointer,
+                                     test_databox_tags::PointerToCounter,
+                                     test_databox_tags::PointerToSum>;
     static void apply(const int& simple, const int& compute,
-                      const int& compute_mutating, const int& simple_base,
-                      const int& compute_base) {
+                      const int& compute_mutating) {
       CHECK(simple == 3);
-      CHECK(simple_base == 3);
       CHECK(compute == 4);
-      CHECK(compute_base == 4);
       CHECK(compute_mutating == 8);
     }
   };
@@ -770,8 +754,7 @@ static_assert(
     "Failed db::wrap_tags_in two_vars vector");
 
 namespace test_databox_tags {
-struct ScalarTagBase : db::BaseTag {};
-struct ScalarTag : db::SimpleTag, ScalarTagBase {
+struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 struct VectorTag : db::SimpleTag {
@@ -1358,9 +1341,9 @@ struct TestDataboxMutateApply {
 };
 // [mutate_apply_struct_definition_example]
 
-struct TestDataboxMutateApplyBase {
+struct TestDataboxMutateApply2 {
   using return_tags = tmpl::list<test_databox_tags::ScalarTag>;
-  using argument_tags = tmpl::list<test_databox_tags::Tag2Base>;
+  using argument_tags = tmpl::list<test_databox_tags::Tag2>;
 
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
                     const std::string& tag2) {
@@ -1381,13 +1364,13 @@ struct PointerMutateApply {
   }
 };
 
-struct PointerMutateApplyBase {
+struct PointerMutateApply2 {
   using return_tags = tmpl::list<test_databox_tags::Pointer>;
-  using argument_tags = tmpl::list<test_databox_tags::PointerToCounterBase>;
+  using argument_tags = tmpl::list<test_databox_tags::PointerToCounter>;
   static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
-                    const int& compute_base) {
+                    const int& compute) {
     **ret = 8;
-    CHECK(compute_base == 8);
+    CHECK(compute == 8);
   }
 };
 
@@ -1409,9 +1392,7 @@ void test_mutate_apply(T& box) {
     // [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
     // [mutate_apply_struct_example_stateful]
-    if constexpr (not using_db_access) {
-      db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
-    }
+    db::mutate_apply(TestDataboxMutateApply2{}, make_not_null(&box));
 
     CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
@@ -1440,7 +1421,7 @@ void test_mutate_apply(T& box) {
     // [mutate_apply_lambda_example]
     if constexpr (not using_db_access) {
       db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
-                       tmpl::list<test_databox_tags::Tag2Base>>(
+                       tmpl::list<test_databox_tags::Tag2>>(
           [](const gsl::not_null<Scalar<DataVector>*> scalar,
              const std::string& tag2) {
             CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
@@ -1462,7 +1443,7 @@ void test_mutate_apply(T& box) {
     if constexpr (not using_db_access) {
       size_t size_of_internal_string =
           db::mutate_apply<tmpl::list<test_databox_tags::ScalarTag>,
-                           tmpl::list<test_databox_tags::Tag2Base>>(
+                           tmpl::list<test_databox_tags::Tag2>>(
               [](const gsl::not_null<Scalar<DataVector>*> scalar,
                  const std::string& tag2) {
                 CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
@@ -1550,11 +1531,11 @@ void test_mutate_apply(T& box) {
         make_not_null(&box));
     if constexpr (not using_db_access) {
       db::mutate_apply<tmpl::list<>,
-                       tmpl::list<test_databox_tags::PointerBase,
-                                  test_databox_tags::PointerToCounterBase>>(
-          [](const int& simple_base, const int& compute_base) {
-            CHECK(simple_base == 6);
-            CHECK(compute_base == 7);
+                       tmpl::list<test_databox_tags::Pointer,
+                                  test_databox_tags::PointerToCounter>>(
+          [](const int& simple, const int& compute) {
+            CHECK(simple == 6);
+            CHECK(compute == 7);
           },
           make_not_null(&box));
     }
@@ -1562,10 +1543,8 @@ void test_mutate_apply(T& box) {
     db::mutate_apply<PointerMutateApply>(make_not_null(&box));
     CHECK(db::get<test_databox_tags::Pointer>(box) == 7);
 
-    if constexpr (not using_db_access) {
-      db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
-      CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
-    }
+    db::mutate_apply<PointerMutateApply2>(make_not_null(&box));
+    CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
   }
 
   if constexpr (not using_db_access) {
@@ -3144,12 +3123,11 @@ void test_get_mutable_reference() {
       db::get_mutable_reference<test_databox_tags::Tag2>(make_not_null(&box));
   static_assert(std::is_same_v<decltype(ref), std::string&>);
   decltype(auto) base_ref =
-      db::get_mutable_reference<test_databox_tags::Tag2Base>(
-          make_not_null(&box));
+      db::get_mutable_reference<test_databox_tags::Tag2>(make_not_null(&box));
   static_assert(std::is_same_v<decltype(base_ref), std::string&>);
   CHECK(&ref == &base_ref);
   ref = "New string";
-  CHECK(db::get<test_databox_tags::Tag2Base>(box) == "New string");
+  CHECK(db::get<test_databox_tags::Tag2>(box) == "New string");
 
   // These should all fail to compile:
   // db::get_mutable_reference<test_databox_tags::Tag0>(make_not_null(&box));
@@ -3444,9 +3422,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
 // Test`tag_is_retrievable_v`
 namespace {
 namespace tags_types {
-struct PureBaseTag : db::BaseTag {};
-
-struct SimpleTag : PureBaseTag, db::SimpleTag {
+struct SimpleTag : db::SimpleTag {
   using type = double;
 };
 
@@ -3455,10 +3431,6 @@ struct DummyTag : db::SimpleTag {
 };
 }  // namespace tags_types
 
-static_assert(
-    db::tag_is_retrievable_v<tags_types::PureBaseTag,
-                             db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-    "Failed testing tag_is_retrievable_v");
 static_assert(
     db::tag_is_retrievable_v<tags_types::SimpleTag,
                              db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
@@ -3473,9 +3445,7 @@ static_assert(
     "Failed testing tag_is_retrievable_v");
 
 namespace test_creation_tag {
-struct Base : db::BaseTag {};
-
-struct Simple : Base, db::SimpleTag {
+struct Simple : db::SimpleTag {
   using type = double;
 };
 
@@ -3501,12 +3471,10 @@ using SimpleBox = db::compute_databox_type<tmpl::list<Simple, ScalarTag>>;
 static_assert(std::is_same_v<db::creation_tag<Simple, SimpleBox>, Simple>);
 static_assert(
     std::is_same_v<db::creation_tag<ScalarTag, SimpleBox>, ScalarTag>);
-static_assert(std::is_same_v<db::creation_tag<Base, SimpleBox>, Simple>);
 
 using ComplexBox = db::compute_databox_type<tmpl::list<Compute, VariablesTag>>;
 static_assert(std::is_same_v<db::creation_tag<Compute, ComplexBox>, Compute>);
 static_assert(std::is_same_v<db::creation_tag<Simple, ComplexBox>, Compute>);
-static_assert(std::is_same_v<db::creation_tag<Base, ComplexBox>, Compute>);
 static_assert(
     std::is_same_v<db::creation_tag<VariablesTag, ComplexBox>, VariablesTag>);
 static_assert(
@@ -3528,22 +3496,15 @@ struct Simple : db::SimpleTag {
 struct Simple2 : db::SimpleTag {
   using type = int;
 };
-struct BaseProvider : db::BaseTag {};
-struct BaseProviderSimple : BaseProvider, db::SimpleTag {
+struct Provider : db::SimpleTag {
   using type = int;
 };
-struct BaseConsumer : db::BaseTag {};
-struct BaseConsumerSimple : BaseConsumer, db::SimpleTag {
+struct Consumer : db::SimpleTag {
   using type = int;
 };
-struct BaseConsumerComputeFromSimple : BaseConsumerSimple, db::ComputeTag {
-  using base = BaseConsumerSimple;
-  using argument_tags = tmpl::list<BaseProviderSimple>;
-  static void function(gsl::not_null<int*> /*result*/, int /*base_consumer*/) {}
-};
-struct BaseConsumerComputeFromBase : BaseConsumerSimple, db::ComputeTag {
-  using base = BaseConsumerSimple;
-  using argument_tags = tmpl::list<BaseProvider>;
+struct ConsumerCompute : Consumer, db::ComputeTag {
+  using base = Consumer;
+  using argument_tags = tmpl::list<Provider>;
   static void function(gsl::not_null<int*> /*result*/, int /*base_consumer*/) {}
 };
 struct ChainedConsumer : db::SimpleTag {
@@ -3551,76 +3512,39 @@ struct ChainedConsumer : db::SimpleTag {
 };
 struct ChainedConsumerCompute : ChainedConsumer, db::ComputeTag {
   using base = ChainedConsumer;
-  using argument_tags = tmpl::list<BaseConsumer>;
+  using argument_tags = tmpl::list<Consumer>;
   static void function(gsl::not_null<int*> /*result*/, int /*base_consumer*/) {}
 };
 
-using SimpleBox =
-    db::compute_databox_type<tmpl::list<Simple, Simple2, BaseProviderSimple,
-                                        BaseConsumerComputeFromSimple>>;
+using SimpleBox = db::compute_databox_type<
+    tmpl::list<Simple, Simple2, Provider, ConsumerCompute>>;
 static_assert(db::tag_depends_on_v<Simple, Simple, SimpleBox>);
 static_assert(not db::tag_depends_on_v<Simple2, Simple, SimpleBox>);
-static_assert(not db::tag_depends_on_v<BaseProviderSimple, Simple, SimpleBox>);
-static_assert(not db::tag_depends_on_v<BaseProvider, Simple, SimpleBox>);
-static_assert(
-    not db::tag_depends_on_v<BaseConsumerComputeFromSimple, Simple, SimpleBox>);
-static_assert(not db::tag_depends_on_v<BaseConsumerSimple, Simple, SimpleBox>);
-static_assert(not db::tag_depends_on_v<BaseConsumer, Simple, SimpleBox>);
-static_assert(db::tag_depends_on_v<BaseConsumerComputeFromSimple,
-                                   BaseProviderSimple, SimpleBox>);
-static_assert(
-    db::tag_depends_on_v<BaseConsumerSimple, BaseProviderSimple, SimpleBox>);
-static_assert(
-    db::tag_depends_on_v<BaseConsumer, BaseProviderSimple, SimpleBox>);
-static_assert(db::tag_depends_on_v<BaseConsumerComputeFromSimple, BaseProvider,
-                                   SimpleBox>);
-static_assert(
-    db::tag_depends_on_v<BaseConsumerSimple, BaseProvider, SimpleBox>);
-static_assert(db::tag_depends_on_v<BaseConsumer, BaseProvider, SimpleBox>);
-static_assert(not db::tag_depends_on_v<BaseProvider, BaseConsumer, SimpleBox>);
-static_assert(
-    db::tag_depends_on_v<BaseProviderSimple, BaseProviderSimple, SimpleBox>);
-static_assert(
-    db::tag_depends_on_v<BaseProvider, BaseProviderSimple, SimpleBox>);
-static_assert(
-    db::tag_depends_on_v<BaseProviderSimple, BaseProvider, SimpleBox>);
-static_assert(db::tag_depends_on_v<BaseProvider, BaseProvider, SimpleBox>);
+static_assert(not db::tag_depends_on_v<Provider, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<ConsumerCompute, Simple, SimpleBox>);
+static_assert(not db::tag_depends_on_v<Consumer, Simple, SimpleBox>);
+static_assert(db::tag_depends_on_v<ConsumerCompute, Provider, SimpleBox>);
+static_assert(db::tag_depends_on_v<Consumer, Provider, SimpleBox>);
+static_assert(db::tag_depends_on_v<ConsumerCompute, Provider, SimpleBox>);
+static_assert(db::tag_depends_on_v<Consumer, Provider, SimpleBox>);
+static_assert(not db::tag_depends_on_v<Provider, Consumer, SimpleBox>);
+static_assert(db::tag_depends_on_v<Provider, Provider, SimpleBox>);
 
-using SimpleBox2 = db::compute_databox_type<
-    tmpl::list<BaseProviderSimple, BaseConsumerComputeFromBase>>;
-static_assert(db::tag_depends_on_v<BaseConsumerComputeFromBase,
-                                   BaseProviderSimple, SimpleBox2>);
-static_assert(
-    db::tag_depends_on_v<BaseConsumerSimple, BaseProviderSimple, SimpleBox2>);
-static_assert(
-    db::tag_depends_on_v<BaseConsumer, BaseProviderSimple, SimpleBox2>);
-static_assert(db::tag_depends_on_v<BaseConsumerComputeFromBase, BaseProvider,
-                                   SimpleBox2>);
-static_assert(
-    db::tag_depends_on_v<BaseConsumerSimple, BaseProvider, SimpleBox2>);
-static_assert(db::tag_depends_on_v<BaseConsumer, BaseProvider, SimpleBox2>);
-static_assert(not db::tag_depends_on_v<BaseProvider, BaseConsumer, SimpleBox2>);
+using SimpleBox2 =
+    db::compute_databox_type<tmpl::list<Provider, ConsumerCompute>>;
+static_assert(db::tag_depends_on_v<ConsumerCompute, Provider, SimpleBox2>);
+static_assert(db::tag_depends_on_v<Consumer, Provider, SimpleBox2>);
+static_assert(not db::tag_depends_on_v<Provider, Consumer, SimpleBox2>);
 
-using ChainBox = db::compute_databox_type<tmpl::list<
-    BaseProviderSimple, BaseConsumerComputeFromBase, ChainedConsumerCompute>>;
+using ChainBox = db::compute_databox_type<
+    tmpl::list<Provider, ConsumerCompute, ChainedConsumerCompute>>;
+static_assert(db::tag_depends_on_v<ChainedConsumerCompute, Provider, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumer, Provider, ChainBox>);
 static_assert(
-    db::tag_depends_on_v<ChainedConsumerCompute, BaseProviderSimple, ChainBox>);
-static_assert(
-    db::tag_depends_on_v<ChainedConsumer, BaseProviderSimple, ChainBox>);
-static_assert(
-    db::tag_depends_on_v<ChainedConsumerCompute, BaseProvider, ChainBox>);
-static_assert(db::tag_depends_on_v<ChainedConsumer, BaseProvider, ChainBox>);
-static_assert(db::tag_depends_on_v<ChainedConsumerCompute,
-                                   BaseConsumerComputeFromBase, ChainBox>);
-static_assert(db::tag_depends_on_v<ChainedConsumer, BaseConsumerComputeFromBase,
-                                   ChainBox>);
-static_assert(
-    db::tag_depends_on_v<ChainedConsumerCompute, BaseConsumerSimple, ChainBox>);
-static_assert(
-    db::tag_depends_on_v<ChainedConsumer, BaseConsumerSimple, ChainBox>);
-static_assert(
-    db::tag_depends_on_v<ChainedConsumerCompute, BaseConsumer, ChainBox>);
-static_assert(db::tag_depends_on_v<ChainedConsumer, BaseConsumer, ChainBox>);
+    db::tag_depends_on_v<ChainedConsumerCompute, ConsumerCompute, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumer, ConsumerCompute, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumerCompute, Consumer, ChainBox>);
+static_assert(db::tag_depends_on_v<ChainedConsumer, Consumer, ChainBox>);
 
 struct TensorProvider : db::SimpleTag {
   using type = Scalar<DataVector>;
