@@ -28,8 +28,6 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.Tags",
                   "[Unit][ParallelAlgorithms][LinearSolver]") {
   TestHelpers::db::test_simple_tag<Tags::MaxOverlap<DummyOptionsGroup>>(
       "MaxOverlap(DummyOptionsGroup)");
-  TestHelpers::db::test_base_tag<Tags::SubdomainSolverBase<DummyOptionsGroup>>(
-      "SubdomainSolver(DummyOptionsGroup)");
   TestHelpers::db::test_simple_tag<
       Tags::SubdomainSolver<DummySubdomainSolver, DummyOptionsGroup>>(
       "SubdomainSolver(DummyOptionsGroup)");

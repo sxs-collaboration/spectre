@@ -205,7 +205,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
   using SubdomainSolver =
       subdomain_solver<FieldsTag, SubdomainOperator, SubdomainPreconditioners>;
   using subdomain_solver_tag =
-      Tags::SubdomainSolver<std::unique_ptr<SubdomainSolver>, OptionsGroup>;
+      Tags::SubdomainSolver<SubdomainSolver, OptionsGroup>;
 
  public:  // Iterable action
   using simple_tags_from_options = tmpl::list<subdomain_solver_tag>;
@@ -334,7 +334,7 @@ struct OverlapSolutionInboxTag
 // Apply the weighted solution on this element directly and send the solution on
 // overlap regions to the neighbors that they overlap with.
 template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
-          typename ArraySectionIdTag>
+          typename SubdomainPreconditioners, typename ArraySectionIdTag>
 struct SolveSubdomain {
  private:
   using fields_tag = FieldsTag;
@@ -346,6 +346,10 @@ struct SolveSubdomain {
                                         OptionsGroup>;
   using SubdomainData =
       ElementCenteredSubdomainData<Dim, typename residual_tag::tags_list>;
+  using SubdomainSolver =
+      subdomain_solver<FieldsTag, SubdomainOperator, SubdomainPreconditioners>;
+  using subdomain_solver_tag =
+      Tags::SubdomainSolver<SubdomainSolver, OptionsGroup>;
   using OverlapData = typename SubdomainData::OverlapData;
   using overlap_solution_inbox_tag =
       OverlapSolutionInboxTag<Dim, OptionsGroup, OverlapData>;
@@ -408,8 +412,7 @@ struct SolveSubdomain {
     const SubdomainOperator subdomain_operator{};
 
     // Solve the subdomain problem
-    const auto& subdomain_solver =
-        get<Tags::SubdomainSolverBase<OptionsGroup>>(box);
+    const auto& subdomain_solver = get<subdomain_solver_tag>(box);
     auto subdomain_solve_initial_guess_in_solution_out =
         make_with_value<SubdomainData>(subdomain_residual, 0.);
     const auto subdomain_solve_has_converged = subdomain_solver.solve(

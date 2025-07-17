@@ -42,11 +42,11 @@ struct ElementArray {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<LinearSolver::Schwarz::Tags::SubdomainSolver<
-                  std::unique_ptr<SubdomainSolver>, DummyOptionsGroup>>>>>,
+                  SubdomainSolver, DummyOptionsGroup>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
-              DummyOptionsGroup>>>>;
+              SubdomainSolver, DummyOptionsGroup>>>>;
 };
 
 struct Metavariables {
@@ -67,19 +67,17 @@ void test_reset_subdomain_solver(const bool skip_resets) {
       make_not_null(&runner), element_id,
       {std::make_unique<SubdomainSolver>()});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-  REQUIRE_FALSE(
-      ActionTesting::get_databox_tag<
-          element_array,
-          LinearSolver::Schwarz::Tags::SubdomainSolverBase<DummyOptionsGroup>>(
-          runner, element_id)
-          .is_reset);
+  REQUIRE_FALSE(ActionTesting::get_databox_tag<
+                    element_array, LinearSolver::Schwarz::Tags::SubdomainSolver<
+                                       SubdomainSolver, DummyOptionsGroup>>(
+                    runner, element_id)
+                    .is_reset);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
-  CHECK(
-      ActionTesting::get_databox_tag<
-          element_array,
-          LinearSolver::Schwarz::Tags::SubdomainSolverBase<DummyOptionsGroup>>(
-          runner, element_id)
-          .is_reset != skip_resets);
+  CHECK(ActionTesting::get_databox_tag<
+            element_array, LinearSolver::Schwarz::Tags::SubdomainSolver<
+                               SubdomainSolver, DummyOptionsGroup>>(runner,
+                                                                    element_id)
+            .is_reset != skip_resets);
 }
 
 }  // namespace

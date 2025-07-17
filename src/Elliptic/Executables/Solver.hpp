@@ -336,6 +336,7 @@ struct Solver {
               nonlinear_solver_iteration_id>,
           // Reset Schwarz subdomain solver
           LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
+              typename schwarz_smoother::subdomain_solver,
               typename schwarz_smoother::options_group>,
           // Linear solve for correction
           linear_solve_actions<tmpl::list<>>>,

@@ -186,7 +186,7 @@ struct Schwarz {
                                   ArraySectionIdTag>,
       detail::SendOverlapData<FieldsTag, OptionsGroup, SubdomainOperator>,
       detail::SolveSubdomain<FieldsTag, OptionsGroup, SubdomainOperator,
-                             ArraySectionIdTag>,
+                             SubdomainPreconditioners, ArraySectionIdTag>,
       detail::ReceiveOverlapSolution<FieldsTag, OptionsGroup,
                                      SubdomainOperator>,
       ApplyOperatorActions,
