@@ -28,7 +28,7 @@ ResourceInfo:
       Proc: Auto
       Exclusive: false
 
-AnalyticData:
+InitialData:
   PlaneWave:
     WaveVector: [1.0, 1.0, 1.0]
     Center: [0.0, 0.0, 0.0]

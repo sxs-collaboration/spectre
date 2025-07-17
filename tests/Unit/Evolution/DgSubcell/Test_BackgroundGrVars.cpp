@@ -124,10 +124,7 @@ std::array<Mesh<3>, 3> create_face_centered_meshes(
   return face_centered_meshes;
 }
 
-// if `TestRuntimeInitialData` == false, test for the compile time initial
-// data
-template <bool TestMovingMesh, bool TestRuntimeInitialData,
-          bool ComputeOnlyOnRollback>
+template <bool TestMovingMesh, bool ComputeOnlyOnRollback>
 void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
   //
   // The test is done as follows :
@@ -144,7 +141,6 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
   //
 
   CAPTURE(TestMovingMesh);
-  CAPTURE(TestRuntimeInitialData);
   CAPTURE(ComputeOnlyOnRollback);
   CAPTURE(did_rollback);
 
@@ -225,15 +221,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
           typename SystemForTest::flux_spacetime_variables_tag, 3>;
 
   const auto solution = []() {
-    if constexpr (TestRuntimeInitialData) {
-      return RelativisticEuler::Solutions::TovStar{
-          1.0e-3,
-          EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
-          RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
-    } else {
-      return gr::Solutions::KerrSchild{1.0, make_array<3, double>(0.0),
-                                       make_array<3, double>(0.0)};
-    }
+    return RelativisticEuler::Solutions::TovStar{
+        1.0e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
+        RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
   }();
 
   const auto dg_gr_vars = [&compute_inertial_coords, &dg_mesh, &initial_time,
@@ -258,55 +248,29 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
     // cell-centered and face-centered coordinates, use an empty subcell GR
     // variables objects here for creating a box. GR variables on DG mesh are
     // considered as initialized.
-    if constexpr (TestRuntimeInitialData) {
-      return db::create<db::AddSimpleTags<
-          ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
-          domain::Tags::ElementMap<3, Frame::Grid>,
-          domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
-                                                      Frame::Inertial>,
-          domain::Tags::FunctionsOfTimeInitialize,
-          evolution::dg::subcell::Tags::Mesh<3>,
-          evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
-          gr_variables_tag, inactive_gr_variables_tag,
-          subcell_face_gr_variables_tag,
-          evolution::dg::subcell::Tags::DidRollback,
-          evolution::initial_data::Tags::InitialData>>(
-          initial_time, brick.create_domain(), element,
-          ElementMap<3, Frame::Grid>{
-              element_id,
-              block.is_time_dependent()
-                  ? block.moving_mesh_logical_to_grid_map().get_clone()
-                  : block.stationary_map().get_to_grid_frame()},
-          std::move(grid_to_inertial_map),
-          clone_unique_ptrs(brick.functions_of_time()), subcell_mesh,
-          subcell_initial_inertial_coords, dg_gr_vars,
-          typename inactive_gr_variables_tag::type{}, face_gr_vars, false,
-          solution.get_clone());
-    } else {
-      return db::create<db::AddSimpleTags<
-          ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
-          domain::Tags::ElementMap<3, Frame::Grid>,
-          domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
-                                                      Frame::Inertial>,
-          domain::Tags::FunctionsOfTimeInitialize,
-          evolution::dg::subcell::Tags::Mesh<3>,
-          evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
-          gr_variables_tag, inactive_gr_variables_tag,
-          subcell_face_gr_variables_tag,
-          evolution::dg::subcell::Tags::DidRollback,
-          ::Tags::AnalyticSolution<gr::Solutions::KerrSchild>>>(
-          initial_time, brick.create_domain(), element,
-          ElementMap<3, Frame::Grid>{
-              element_id,
-              block.is_time_dependent()
-                  ? block.moving_mesh_logical_to_grid_map().get_clone()
-                  : block.stationary_map().get_to_grid_frame()},
-          std::move(grid_to_inertial_map),
-          clone_unique_ptrs(brick.functions_of_time()), subcell_mesh,
-          subcell_initial_inertial_coords, dg_gr_vars,
-          typename inactive_gr_variables_tag::type{}, face_gr_vars, false,
-          solution);
-    }
+    return db::create<db::AddSimpleTags<
+        ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
+        domain::Tags::ElementMap<3, Frame::Grid>,
+        domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                    Frame::Inertial>,
+        domain::Tags::FunctionsOfTimeInitialize,
+        evolution::dg::subcell::Tags::Mesh<3>,
+        evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
+        gr_variables_tag, inactive_gr_variables_tag,
+        subcell_face_gr_variables_tag,
+        evolution::dg::subcell::Tags::DidRollback,
+        evolution::initial_data::Tags::InitialData>>(
+        initial_time, brick.create_domain(), element,
+        ElementMap<3, Frame::Grid>{
+            element_id,
+            block.is_time_dependent()
+                ? block.moving_mesh_logical_to_grid_map().get_clone()
+                : block.stationary_map().get_to_grid_frame()},
+        std::move(grid_to_inertial_map),
+        clone_unique_ptrs(brick.functions_of_time()), subcell_mesh,
+        subcell_initial_inertial_coords, dg_gr_vars,
+        typename inactive_gr_variables_tag::type{}, face_gr_vars, false,
+        solution.get_clone());
   }();
 
   // Apply the mutator for initialization phase, and check that it has put
@@ -314,8 +278,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
   // `inactive_gr_variables_tag` and `subcell_face_gr_variables_tag` must be
   // properly initialized.
   db::mutate_apply<evolution::dg::subcell::BackgroundGrVars<
-      SystemForTest, MetavariablesForTest, TestRuntimeInitialData,
-      ComputeOnlyOnRollback>>(make_not_null(&box));
+      SystemForTest, MetavariablesForTest, ComputeOnlyOnRollback>>(
+      make_not_null(&box));
 
   // Compute expected cell-centered and face-centered GR vars
   const auto expected_initial_cell_centered_gr_vars =
@@ -420,8 +384,8 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
   }
 
   db::mutate_apply<evolution::dg::subcell::BackgroundGrVars<
-      SystemForTest, MetavariablesForTest, TestRuntimeInitialData,
-      ComputeOnlyOnRollback>>(make_not_null(&box));
+      SystemForTest, MetavariablesForTest, ComputeOnlyOnRollback>>(
+      make_not_null(&box));
 
   //
   // Chcek the results. All the `if` branches below are organized in the same
@@ -461,24 +425,24 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
   }
 }
 
-template <bool TestMovingMesh, bool TestRuntimeInitialData>
+template <bool TestMovingMesh>
 void test_for_rollback(const gsl::not_null<std::mt19937*> gen) {
-  test<TestMovingMesh, TestRuntimeInitialData, true>(gen, true);
-  test<TestMovingMesh, TestRuntimeInitialData, true>(gen, false);
+  test<TestMovingMesh, true>(gen, true);
+  test<TestMovingMesh, true>(gen, false);
 
-  test<TestMovingMesh, TestRuntimeInitialData, false>(gen, true);
-  test<TestMovingMesh, TestRuntimeInitialData, false>(gen, false);
+  test<TestMovingMesh, false>(gen, true);
+  test<TestMovingMesh, false>(gen, false);
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.BackgroundGrVars",
                   "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
 
-  test_for_rollback<true, true>(make_not_null(&gen));
-  test_for_rollback<true, false>(make_not_null(&gen));
+  test_for_rollback<true>(make_not_null(&gen));
+  test_for_rollback<true>(make_not_null(&gen));
 
-  test_for_rollback<false, true>(make_not_null(&gen));
-  test_for_rollback<false, false>(make_not_null(&gen));
+  test_for_rollback<false>(make_not_null(&gen));
+  test_for_rollback<false>(make_not_null(&gen));
 }
 
 }  // namespace

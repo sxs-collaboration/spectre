@@ -181,7 +181,7 @@ struct EvolutionMetavars {
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       Actions::MutateApply<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
@@ -224,7 +224,7 @@ struct EvolutionMetavars {
           evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<3, Frame::ElementLogical>>,

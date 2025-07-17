@@ -5,7 +5,6 @@ set(LIBRARY "Test_AnalyticData")
 
 set(LIBRARY_SOURCES
   Test_AnalyticData.cpp
-  Test_Tags.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")

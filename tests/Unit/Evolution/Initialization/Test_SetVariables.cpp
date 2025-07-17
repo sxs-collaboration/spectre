@@ -144,6 +144,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   }
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticSolution::my_PUP_ID = 0;
 
 struct SystemAnalyticData : public MarkAsAnalyticData,
@@ -208,12 +209,13 @@ struct SystemAnalyticData : public MarkAsAnalyticData,
   }
   EquationsOfState::PolytropicFluid<true> equation_of_state_{100.0, 2.0};
   // EoS just needs to be a dummy place holder
-  const auto& equation_of_state() { return equation_of_state_; }
+  const auto& equation_of_state() const { return equation_of_state_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { InitialData::pup(p); }
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticData::my_PUP_ID = 0;
 
 template <size_t Dim, bool HasPrimitiveAndConservativeVars>
@@ -295,7 +297,7 @@ auto emplace_component(
       initial_time, functions_of_time);
 }
 
-template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
+template <size_t Dim, bool HasPrimitives>
 struct MetavariablesAnalyticSolution {
   static constexpr size_t volume_dim = Dim;
   using analytic_solution = SystemAnalyticSolution;
@@ -314,26 +316,18 @@ struct MetavariablesAnalyticSolution {
         tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
                              tmpl::list<SystemAnalyticSolution>>>;
   };
-  using const_global_cache_tags = tmpl::list<tmpl::conditional_t<
-      UseInitialDataTag, evolution::initial_data::Tags::InitialData,
-      Tags::AnalyticSolution<analytic_solution>>>;
+  using const_global_cache_tags =
+      tmpl::list<evolution::initial_data::Tags::InitialData>;
 };
 
-template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
+template <size_t Dim, bool HasPrimitives>
 void test_analytic_solution() {
-  using metavars =
-      MetavariablesAnalyticSolution<Dim, HasPrimitives, UseInitialDataTag>;
+  using metavars = MetavariablesAnalyticSolution<Dim, HasPrimitives>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner = []() {
-    if constexpr (UseInitialDataTag) {
-      return MockRuntimeSystem{
-          {std::unique_ptr<evolution::initial_data::InitialData>(
-              std::make_unique<SystemAnalyticSolution>())}};
-    } else {
-      return MockRuntimeSystem{{SystemAnalyticSolution{}}};
-    }
-  }();
+  MockRuntimeSystem runner{
+      {std::unique_ptr<evolution::initial_data::InitialData>(
+          std::make_unique<SystemAnalyticSolution>())}};
   const double initial_time = 1.3;
   const double expiration_time = 2.5;
   const auto inertial_coords = emplace_component<Dim>(
@@ -361,7 +355,7 @@ void test_analytic_solution() {
         get<PrimVar>(prim_var));
 }
 
-template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
+template <size_t Dim, bool HasPrimitives>
 struct MetavariablesAnalyticData {
   static constexpr size_t volume_dim = Dim;
   using analytic_data = SystemAnalyticData;
@@ -380,25 +374,18 @@ struct MetavariablesAnalyticData {
                              tmpl::list<SystemAnalyticData>>>;
   };
   using const_global_cache_tags =
-      tmpl::list<tmpl::conditional_t<UseInitialDataTag,
-                                     evolution::initial_data::Tags::InitialData,
-                                     Tags::AnalyticData<analytic_data>>>;
+      tmpl::list<evolution::initial_data::Tags::InitialData>;
 };
 
-template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
+template <size_t Dim, bool HasPrimitives>
 void test_analytic_data() {
-  using metavars =
-      MetavariablesAnalyticData<Dim, HasPrimitives, UseInitialDataTag>;
+  using metavars = MetavariablesAnalyticData<Dim, HasPrimitives>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner = []() {
-    if constexpr (UseInitialDataTag) {
-      return MockRuntimeSystem{
-          {std::unique_ptr<evolution::initial_data::InitialData>(
-              std::make_unique<SystemAnalyticData>())}};
-    } else {
-      return MockRuntimeSystem{{SystemAnalyticData{}}};
-    }
+    return MockRuntimeSystem{
+        {std::unique_ptr<evolution::initial_data::InitialData>(
+            std::make_unique<SystemAnalyticData>())}};
   }();
   const double initial_time = 1.3;
   const double expiration_time = 2.5;
@@ -430,11 +417,9 @@ void test_analytic_data() {
 template <size_t Dim, bool HasPrimitives>
 void test_impl() {
   // Test setting variables from analytic solution
-  test_analytic_solution<Dim, HasPrimitives, true>();
-  test_analytic_solution<Dim, HasPrimitives, false>();
+  test_analytic_solution<Dim, HasPrimitives>();
   // Test setting variables from analytic data
-  test_analytic_data<Dim, HasPrimitives, true>();
-  test_analytic_data<Dim, HasPrimitives, false>();
+  test_analytic_data<Dim, HasPrimitives>();
 }
 
 template <size_t Dim>

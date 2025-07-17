@@ -27,7 +27,6 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 namespace Tags {
-struct AnalyticSolutionOrData;
 struct Time;
 }  // namespace Tags
 namespace domain {
