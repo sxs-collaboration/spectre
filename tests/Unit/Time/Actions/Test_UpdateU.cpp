@@ -30,10 +30,12 @@
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/Rational.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -275,6 +277,79 @@ void test_stepper_error() {
   CHECK(db::get<error_tag>(box)[0]->errors == first_step_errors);
   CHECK(db::get<error_tag>(box)[1]->errors != first_step_errors);
 }
+
+void test_errors_for_restart() {
+  // We should get low-order errors if we have all of
+  //
+  // 1. variable-order
+  // 2. error-based stepping
+  // 3. stepping to the end of a slab.
+  //
+  // Otherwise, we should get whatever the error-based settings want.
+
+  using Estimates = StepperErrorTolerances::Estimates;
+
+  const auto which_errors = [](const std::optional<size_t>& stepper_order,
+                               const StepperErrorTolerances& tolerances,
+                               const Rational& step_fraction) {
+    using variables_tag = Var;
+    using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
+
+    const Slab slab(1., 3.);
+    const TimeStepId initial_id(true, 0, slab.start() + slab.duration() / 2);
+
+    history_tag::type history{3};
+    history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
+    history.insert(TimeStepId(true, 0, slab.start() + slab.duration() / 4), 0.0,
+                   0.0);
+    history.insert(TimeStepId(true, 0, slab.start() + slab.duration() / 2), 0.0,
+                   0.0);
+
+    std::unique_ptr<TimeStepper> time_stepper =
+        std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order);
+    const auto time_step = slab.duration() * step_fraction;
+
+    auto box = db::create<
+        db::AddSimpleTags<
+            Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+            Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+            ::Tags::IsUsingTimeSteppingErrorControl,
+            ::Tags::StepperErrorTolerances<variables_tag>, variables_tag,
+            history_tag, Tags::StepperErrors<variables_tag>>,
+        time_stepper_ref_tags<TimeStepper>>(
+        std::move(time_stepper), initial_id,
+        time_stepper->next_time_id(initial_id, time_step), time_step, true,
+        tolerances, 1., std::move(history),
+        Tags::StepperErrors<variables_tag>::type{});
+    update_u<SingleVariableSystem>(make_not_null(&box));
+    const auto& errors = db::get<Tags::StepperErrors<variables_tag>>(box)[1];
+    if (not errors.has_value()) {
+      return Estimates::None;
+    }
+    return errors->errors[0].has_value() ? Estimates::AllOrders
+                                         : Estimates::StepperOrder;
+  };
+
+  const StepperErrorTolerances none{};
+  const StepperErrorTolerances order{
+      .estimates = Estimates::StepperOrder, .absolute = 1.0, .relative = 0.0};
+  const StepperErrorTolerances all{
+      .estimates = Estimates::AllOrders, .absolute = 1.0, .relative = 0.0};
+
+  CHECK(which_errors(3, none, {1, 4}) == Estimates::None);
+  CHECK(which_errors(3, order, {1, 4}) == Estimates::StepperOrder);
+  CHECK(which_errors(3, all, {1, 4}) == Estimates::AllOrders);
+  CHECK(which_errors(3, none, {1, 2}) == Estimates::None);
+  CHECK(which_errors(3, order, {1, 2}) == Estimates::StepperOrder);
+  CHECK(which_errors(3, all, {1, 2}) == Estimates::AllOrders);
+  CHECK(which_errors(std::nullopt, none, {1, 4}) == Estimates::None);
+  CHECK(which_errors(std::nullopt, order, {1, 4}) == Estimates::StepperOrder);
+  CHECK(which_errors(std::nullopt, all, {1, 4}) == Estimates::AllOrders);
+  CHECK(which_errors(std::nullopt, none, {1, 2}) == Estimates::None);
+  // Interesting case:
+  CHECK(which_errors(std::nullopt, order, {1, 2}) == Estimates::AllOrders);
+  CHECK(which_errors(std::nullopt, all, {1, 2}) == Estimates::AllOrders);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
@@ -284,4 +359,5 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   test_integration<TwoVariableSystem, true>();
   test_action();
   test_stepper_error();
+  test_errors_for_restart();
 }

@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/TaggedVariant.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/StepperErrorTolerances.hpp"
@@ -58,7 +59,23 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
               const gsl::not_null<typename error_tag::type*> errors,
               const typename history_tag::type& history,
               const ::TimeDelta& time_step, const TimeStepper& time_stepper,
-              const StepperErrorTolerances& tolerances) {
+              StepperErrorTolerances tolerances) {
+            // If we are doing variable-order h-refinement we need
+            // low-order error estimates to restart elements.
+            // Figuring out whether we are actually doing that is
+            // hard, but since it can only happen at LTS slab
+            // boundaries it's not a big deal if we do a little extra
+            // work.  As of this writing, we do not use variable-order
+            // steppers in GTS.
+            if (tolerances.estimates !=
+                    StepperErrorTolerances::Estimates::None and
+                variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
+                    time_stepper.order()) and
+                (history.back().time_step_id.step_time() + time_step)
+                    .is_at_slab_boundary()) {
+              tolerances.estimates =
+                  StepperErrorTolerances::Estimates::AllOrders;
+            }
             const auto error =
                 time_stepper.update_u(vars, history, time_step, tolerances);
             if (error.has_value()) {
