@@ -1,0 +1,16 @@
+SLATEC Common Mathematical Library, Version 4.1, July 1993
+a comprehensive software library containing over
+1400 general purpose mathematical and statistical routines
+written in Fortran 77.
+
+The Library is in the public domain and distributed by the Energy Science
+and Technology Software Center.
+ 
+               Energy Science and Technology Software Center
+               P.O. Box 1020
+               Oak Ridge, TN  37831
+ 
+               Telephone  615-576-2606
+               E-mail  estsc%a1.adonis.mrouter@zeus.osti.gov
+ 
+The library is available at https://www.netlib.org/slatec/src
