@@ -492,13 +492,10 @@ struct GhInterfaceManager : db::SimpleTag {
   }
 };
 
-/// Base tag for first-hypersurface initialization procedure
-struct InitializeJBase : db::BaseTag {};
-
 /// Tag for first-hypersurface initialization procedure specified by input
 /// options.
 template <bool evolve_ccm>
-struct InitializeJ : db::SimpleTag, InitializeJBase {
+struct InitializeJ : db::SimpleTag {
   using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<evolve_ccm>>;
   using option_tags = tmpl::list<OptionTags::InitializeJ<evolve_ccm>>;
 
@@ -513,8 +510,8 @@ struct InitializeJ : db::SimpleTag, InitializeJBase {
 
 // Tags that generates an `Cce::InitializeJ::InitializeJ` derived class from an
 // analytic solution.
-struct AnalyticInitializeJ : db::SimpleTag, InitializeJBase {
-  using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ<false>>;
+struct AnalyticInitializeJ : InitializeJ<false> {
+  using base = InitializeJ<false>;
   using option_tags =
       tmpl::list<OptionTags::AnalyticSolution, OptionTags::StartTime>;
   static constexpr bool pass_metavariables = false;

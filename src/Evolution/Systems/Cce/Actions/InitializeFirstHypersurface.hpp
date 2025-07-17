@@ -44,12 +44,6 @@ namespace Actions {
  * `InitializeScriPlusValue<Tags::InertialRetardedTime>` to perform the
  * computations. Refer to the documentation for those mutators for mathematical
  * details.
- *
- * \note This action accesses the base tag `Cce::Tags::InitializeJBase`,
- * trusting that a tag that inherits from that base tag is present in the box or
- * the global cache. Typically, this tag should be added by the worldtube
- * boundary component, as the type of initial data is decided by the type of the
- * worldtube boundary data.
  */
 template <bool EvolveCcm, typename BoundaryComponent>
 struct InitializeFirstHypersurface {
@@ -84,13 +78,13 @@ struct InitializeFirstHypersurface {
     if constexpr (tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>) {
       db::mutate_apply<typename InitializeJ::InitializeJ<false>::mutate_tags,
                        typename InitializeJ::InitializeJ<false>::argument_tags>(
-          db::get<Tags::InitializeJBase>(box), make_not_null(&box),
+          db::get<Tags::InitializeJ<false>>(box), make_not_null(&box),
           make_not_null(hdf5_lock));
     } else {
       db::mutate_apply<
           typename InitializeJ::InitializeJ<EvolveCcm>::mutate_tags,
           typename InitializeJ::InitializeJ<EvolveCcm>::argument_tags>(
-          db::get<Tags::InitializeJBase>(box), make_not_null(&box),
+          db::get<Tags::InitializeJ<EvolveCcm>>(box), make_not_null(&box),
           make_not_null(hdf5_lock));
     }
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
