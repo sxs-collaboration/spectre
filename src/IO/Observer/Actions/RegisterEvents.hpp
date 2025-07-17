@@ -6,6 +6,7 @@
 #include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -16,7 +17,6 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Protocols/ElementRegistrar.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"

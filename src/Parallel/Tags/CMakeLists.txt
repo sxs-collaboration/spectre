@@ -8,7 +8,6 @@ spectre_target_headers(
   ArrayIndex.hpp
   DistributedObjectTags.hpp
   InputSource.hpp
-  Metavariables.hpp
   Parallelization.hpp
   ResourceInfo.hpp
   Section.hpp

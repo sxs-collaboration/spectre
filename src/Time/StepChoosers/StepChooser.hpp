@@ -6,7 +6,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

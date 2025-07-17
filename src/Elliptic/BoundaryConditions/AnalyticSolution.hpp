@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
@@ -18,7 +19,6 @@
 #include "Elliptic/BoundaryConditions/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "Options/String.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"

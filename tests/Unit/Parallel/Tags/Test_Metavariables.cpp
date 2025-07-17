@@ -5,8 +5,8 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 
 namespace {
 struct TestMetavariables;
