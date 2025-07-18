@@ -5,6 +5,7 @@
 
 #include <pup.h>
 #include <pup_stl.h>
+#include <utility>
 
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -36,7 +37,7 @@ void Iteration<Fr>::reset_for_next_iteration() {
   this->block_coord_holders.reset();
   this->indicies_interpolated_to_thus_far.clear();
   this->interpolation_is_done_for_these_elements.clear();
-  this->interpolation_retries = 0;
+  this->compute_coords_retries = 0;
 }
 
 template <typename Fr>
@@ -46,7 +47,7 @@ void Iteration<Fr>::pup(PUP::er& p) {
   p | interpolated_vars;
   p | indicies_interpolated_to_thus_far;
   p | interpolation_is_done_for_these_elements;
-  p | interpolation_retries;
+  p | compute_coords_retries;
 }
 
 template <typename Fr>
@@ -58,7 +59,7 @@ bool operator==(const Iteration<Fr>& lhs, const Iteration<Fr>& rhs) {
              rhs.indicies_interpolated_to_thus_far and
          lhs.interpolation_is_done_for_these_elements ==
              rhs.interpolation_is_done_for_these_elements and
-         lhs.interpolation_retries == rhs.interpolation_retries;
+         lhs.compute_coords_retries == rhs.compute_coords_retries;
 }
 template <typename Fr>
 bool operator!=(const Iteration<Fr>& lhs, const Iteration<Fr>& rhs) {
@@ -88,6 +89,11 @@ bool operator!=(const SingleTimeStorage<Fr>& lhs,
                 const SingleTimeStorage<Fr>& rhs) {
   return not(lhs == rhs);
 }
+
+template <typename Fr>
+PreviousSurface<Fr>::PreviousSurface(const LinkedMessageId<double>& time_in,
+                                     ylm::Strahlkorper<Fr> surface_in)
+    : time(time_in), surface(std::move(surface_in)) {}
 
 template <typename Fr>
 void PreviousSurface<Fr>::pup(PUP::er& p) {

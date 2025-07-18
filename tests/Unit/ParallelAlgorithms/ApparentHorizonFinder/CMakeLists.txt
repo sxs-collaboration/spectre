@@ -6,6 +6,7 @@ set(LIBRARY "Test_ApparentHorizonFinder")
 set(LIBRARY_SOURCES
   Test_ApparentHorizonFinder.cpp
   Test_CleanUp.cpp
+  Test_ComputeCoords.cpp
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeVarsToInterpolateToTarget.cpp

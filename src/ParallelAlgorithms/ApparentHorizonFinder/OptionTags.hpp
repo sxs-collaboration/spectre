@@ -39,10 +39,12 @@ struct HorizonOptions {
     static constexpr Options::String help = {"Verbosity"};
     using type = ::Verbosity;
   };
-  struct MaxInterpolationRetries {
+  struct MaxComputeCoordsRetries {
     static constexpr Options::String help = {
-        "Number of times to retry the interpolation where, with each retry, "
-        "the two previous surfaces are averaged and that new surface is used."};
+        "Number of times to retry computing the coordinates of the horizon for "
+        "each iteration. For the zeroth iteration, increases the 00 component "
+        "by 50%. For subsequent iterations, two previous surfaces are averaged "
+        "and that new surface is used."};
     using type = size_t;
   };
   struct BlocksForHorizonFind {
@@ -52,7 +54,7 @@ struct HorizonOptions {
     using type = Options::Auto<std::vector<std::string>, All>;
   };
   using options = tmpl::list<InitialGuess, FastFlow, Verbosity,
-                             MaxInterpolationRetries, BlocksForHorizonFind>;
+                             MaxComputeCoordsRetries, BlocksForHorizonFind>;
   static constexpr Options::String help = {
       "Provide an initial guess for the apparent horizon surface\n"
       "(Strahlkorper) and apparent-horizon-finding-algorithm (FastFlow)\n"
@@ -60,7 +62,7 @@ struct HorizonOptions {
 
   HorizonOptions(
       ylm::Strahlkorper<Fr> initial_guess_in, ::FastFlow fast_flow_in,
-      ::Verbosity verbosity_in, size_t max_interpolation_retries_in,
+      ::Verbosity verbosity_in, size_t max_compute_coords_retries_in,
       std::optional<std::vector<std::string>> blocks_for_horizon_find_in);
 
   HorizonOptions() = default;
@@ -76,7 +78,7 @@ struct HorizonOptions {
   ylm::Strahlkorper<Fr> initial_guess{};
   ::FastFlow fast_flow;
   ::Verbosity verbosity{::Verbosity::Quiet};
-  size_t max_interpolation_retries{};
+  size_t max_compute_coords_retries{};
   std::optional<std::vector<std::string>> blocks_for_horizon_find;
 };
 

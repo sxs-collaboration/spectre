@@ -94,10 +94,10 @@ struct Iteration {
   std::unordered_set<ElementId<3>> interpolation_is_done_for_these_elements;
 
   /*!
-   * \brief How many times we've tried to reinterpolate the volume variables for
-   * this iteration.
+   * \brief How many times we've tried to compute the coordinates for this
+   * iteration.
    */
-  size_t interpolation_retries = 0;
+  size_t compute_coords_retries = 0;
 
   void reset_for_next_iteration();
 
@@ -157,6 +157,10 @@ bool operator!=(const SingleTimeStorage<Fr>& lhs,
  */
 template <typename Fr>
 struct PreviousSurface {
+  PreviousSurface() = default;
+  PreviousSurface(const LinkedMessageId<double>& time_in,
+                  ylm::Strahlkorper<Fr> surface_in);
+
   LinkedMessageId<double> time;
   ylm::Strahlkorper<Fr> surface;
 
