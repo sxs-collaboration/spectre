@@ -247,8 +247,11 @@ struct LimitTimeStep {
                    group_expiration_times)...});
         });
 
-    if (not time_stepper.can_change_step_size(
-            time_step_id, db::get<::Tags::HistoryEvolvedVariables<>>(box))) {
+    if (not tmpl::as_pack<::Tags::get_all_history_tags<DbTagsList>>(
+            [&]<typename... HistoryTags>(tmpl::type_<HistoryTags>... /*meta*/) {
+              return (... and time_stepper.can_change_step_size(
+                                  time_step_id, db::get<HistoryTags>(box)));
+            })) {
       if (orig_step_end > latest_valid_step) {
         ERROR(
             "Step must be decreased to avoid control-system deadlock, but "

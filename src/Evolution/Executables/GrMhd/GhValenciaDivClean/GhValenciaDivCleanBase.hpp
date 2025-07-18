@@ -294,12 +294,12 @@ struct GhValenciaDivCleanDefaults {
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      Actions::MutateApply<tmpl::conditional_t<
-          UseDgSubcell, grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints,
-          gh::gauges::SetPiAndPhiFromConstraints<
-              ghmhd::GhValenciaDivClean::InitialData::
-                  analytic_solutions_and_data_list,
-              3>>>,
+      tmpl::conditional_t<UseDgSubcell,
+                          grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints,
+                          gh::gauges::SetPiAndPhiFromConstraints<
+                              ghmhd::GhValenciaDivClean::InitialData::
+                                  analytic_solutions_and_data_list,
+                              3>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
               DataVector, volume_dim, domain_frame>>>,
@@ -330,8 +330,7 @@ struct GhValenciaDivCleanDefaults {
               VariableFixing::Actions::FixVariables<
                   VariableFixing::LimitLorentzFactor>,
               Actions::UpdateConservatives,
-              Actions::MutateApply<
-                  grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>>,
+              grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>,
           tmpl::list<>>,
       Parallel::Actions::TerminatePhase>;
 
@@ -852,17 +851,20 @@ struct GhValenciaDivCleanTemplateBase<
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<derived_metavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<3, use_control_systems>,
+          evolution::dg::Initialization::Domain<derived_metavars,
+                                                use_control_systems>,
           Initialization::TimeStepperHistory<derived_metavars>>,
       Initialization::Actions::ConservativeSystem<system>,
       // This conditional is untested and probably doesn't work if
       // `use_dg_subcell` is `false`
       tmpl::conditional_t<
           use_dg_subcell,
-          tmpl::list<evolution::dg::subcell::Actions::SetSubcellGrid<
-                         volume_dim, system, true>,
-                     Actions::MutateApply<
-                         evolution::dg::subcell::SetInterpolators<volume_dim>>>,
+          tmpl::list<
+              evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim,
+                                                              system, true>,
+              Actions::MutateApply<evolution::dg::subcell::SetInterpolators<
+                  volume_dim,
+                  grmhd::GhValenciaDivClean::fd::Tags::Reconstructor<system>>>>,
           evolution::Initialization::Actions::SetVariables<
               ::domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<
@@ -871,8 +873,8 @@ struct GhValenciaDivCleanTemplateBase<
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<3>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<derived_metavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       tmpl::conditional_t<
           use_control_systems,
           control_system::Actions::InitializeMeasurements<control_systems>,

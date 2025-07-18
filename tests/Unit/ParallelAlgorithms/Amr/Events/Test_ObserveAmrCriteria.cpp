@@ -40,12 +40,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-namespace LocalTags {
-struct FunctionsOfTime : domain::Tags::FunctionsOfTime, db::SimpleTag {
-  using type = domain::FunctionsOfTimeMap;
-};
-}  // namespace LocalTags
-
 struct Metavariables {
   static constexpr size_t volume_dim = 1;
   using component_list = tmpl::list<
@@ -119,7 +113,7 @@ void test() {
 
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        Tags::Time, LocalTags::FunctionsOfTime,
+                        Tags::Time, domain::Tags::FunctionsOfTime,
                         domain::Tags::Domain<1>, domain::Tags::Mesh<1>,
                         amr::Criteria::Tags::Criteria, amr::Tags::Policies>>(
       Metavariables{}, time, std::move(functions_of_time), std::move(domain),

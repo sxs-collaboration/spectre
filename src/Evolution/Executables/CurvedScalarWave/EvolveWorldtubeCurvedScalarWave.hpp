@@ -104,6 +104,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -147,6 +148,7 @@ struct EvolutionMetavars {
       is_analytic_data_v<InitialData> xor is_analytic_solution_v<InitialData>,
       "initial_data must be either an analytic_data or an analytic_solution");
 
+  using solutions_and_data = tmpl::list<InitialData>;
   using system = CurvedScalarWave::System<volume_dim>;
   using temporal_id = Tags::TimeStepId;
   // LTS not implemented yet
@@ -156,7 +158,6 @@ struct EvolutionMetavars {
       TimeStepperBase::local_time_stepping;
   static constexpr bool use_dg_element_collection = false;
 
-  using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
@@ -218,6 +219,7 @@ struct EvolutionMetavars {
                     volume_dim, Spheres, interpolator_source_vars>,
                 dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>>>>,
+        tmpl::pair<evolution::initial_data::InitialData, solutions_and_data>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<PhaseChange,
@@ -267,7 +269,7 @@ struct EvolutionMetavars {
 
   using const_global_cache_tags = tmpl::list<
       CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
-      Tags::AnalyticData<InitialData>,
+      evolution::initial_data::Tags::InitialData,
       CurvedScalarWave::Worldtube::Tags::ExcisionSphere<volume_dim>,
       CurvedScalarWave::Worldtube::Tags::ExpansionOrder,
       CurvedScalarWave::Worldtube::Tags::WorldtubeRadiusParameters,
@@ -286,7 +288,7 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim>,
+          evolution::dg::Initialization::Domain<EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
       Initialization::Actions::NonconservativeSystem<system>,
       CurvedScalarWave::Actions::CalculateGrVars<system, false>,
@@ -294,7 +296,7 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Initialization::
               InitializeCurrentIteration,
           CurvedScalarWave::Initialization::InitializeEvolvedVariables<
-              volume_dim>>,
+              volume_dim, solutions_and_data>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
                                                   local_time_stepping>>,
@@ -312,8 +314,8 @@ struct EvolutionMetavars {
           CurvedScalarWave::Worldtube::Tags::FaceQuantitiesCompute,
           ::domain::Tags::GridToInertialInverseJacobian<volume_dim>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       Parallel::Actions::TerminatePhase>;
 

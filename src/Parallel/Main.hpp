@@ -9,11 +9,11 @@
 #include <array>
 #include <boost/program_options.hpp>
 #include <charm++.h>
+#include <cstddef>
 #include <initializer_list>
 #include <pup.h>
-#include <regex>
-#include <sstream>
 #include <string>
+#include <tuple>
 #include <type_traits>
 
 #include "Informer/InfoFromBuild.hpp"
@@ -58,6 +58,18 @@ namespace Parallel {
 namespace detail {
 CREATE_IS_CALLABLE(run_deadlock_analysis_simple_actions)
 CREATE_IS_CALLABLE_V(run_deadlock_analysis_simple_actions)
+
+// Return the dir name for the Charm++ checkpoints as well as the prefix for
+// checkpoint names and their padding. This is a "detail" function so that
+// these pieces can be defined in one place only.
+std::tuple<std::string, std::string, size_t> checkpoints_dir_prefix_pad();
+
+// Return the dir name for the next Charm++ checkpoint; check and error if
+// this name already exists and writing the checkpoint would be unsafe.
+std::string next_checkpoint_dir(size_t checkpoint_dir_counter);
+
+// Check if future checkpoint dirs are available; error if any already exist.
+void check_future_checkpoint_dirs_available(size_t checkpoint_dir_counter);
 }  // namespace detail
 
 /// \ingroup ParallelGroup
@@ -145,19 +157,6 @@ class Main : public CBase_Main<Metavariables> {
   void post_deadlock_analysis_termination();
 
  private:
-  // Return the dir name for the Charm++ checkpoints as well as the prefix for
-  // checkpoint names and their padding. This is a "detail" function so that
-  // these pieces can be defined in one place only.
-  std::tuple<std::string, std::string, size_t> checkpoints_dir_prefix_pad()
-      const;
-
-  // Return the dir name for the next Charm++ checkpoint; check and error if
-  // this name already exists and writing the checkpoint would be unsafe.
-  std::string next_checkpoint_dir() const;
-
-  // Check if future checkpoint dirs are available; error if any already exist.
-  void check_future_checkpoint_dirs_available() const;
-
   // Starts a reduction on the component specified by
   // the current_termination_check_index_ member variable, then increment
   // current_termination_check_index_
@@ -457,7 +456,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
       // already exist. For example, running the executable with flags like
       // `--help` or `--dump-source-tree-as` should succeed even if checkpoints
       // were previously written.
-      check_future_checkpoint_dirs_available();
+      detail::check_future_checkpoint_dirs_available(checkpoint_dir_counter_);
 
       sys::exit();
     }
@@ -477,7 +476,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     ERROR(e.what());
   }
 
-  check_future_checkpoint_dirs_available();
+  detail::check_future_checkpoint_dirs_available(checkpoint_dir_counter_);
 
   global_cache_proxy_ = CProxy_GlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(options_,
@@ -635,7 +634,7 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | current_termination_check_index_;
   p | components_that_did_not_terminate_;
   if (p.isUnpacking()) {
-    check_future_checkpoint_dirs_available();
+    detail::check_future_checkpoint_dirs_available(checkpoint_dir_counter_);
     // Main doesn't migrate unless checkpointing or restarting, so we can
     // indicate here that we've just restored from checkpoint.
     just_restored_from_checkpoint_ = true;
@@ -869,11 +868,12 @@ template <typename Metavariables>
 void Main<Metavariables>::start_write_checkpoint() {
   // Reset the counter if the checkpoints directory does not exist.
   // This happens when the simulation continues in a new segment.
-  const auto [checkpoints_dir, prefix, pad] = checkpoints_dir_prefix_pad();
+  const auto [checkpoints_dir, prefix, pad] =
+      detail::checkpoints_dir_prefix_pad();
   if (not file_system::check_if_dir_exists(checkpoints_dir)) {
     checkpoint_dir_counter_ = 0;
   }
-  const std::string dir = next_checkpoint_dir();
+  const std::string dir = detail::next_checkpoint_dir(checkpoint_dir_counter_);
   checkpoint_dir_counter_++;
   file_system::create_directory(dir);
   CkStartCheckpoint(
@@ -968,6 +968,9 @@ void Main<Metavariables>::did_all_elements_terminate(
 
 template <typename Metavariables>
 void Main<Metavariables>::check_if_component_terminated_correctly() {
+  if constexpr (tmpl::size<component_list>::value == 0) {
+    post_deadlock_analysis_termination();
+  }
   auto* global_cache = Parallel::local_branch(global_cache_proxy_);
   ASSERT(global_cache != nullptr, "Could not retrieve the local global cache.");
 
@@ -1032,57 +1035,6 @@ void Main<Metavariables>::post_deadlock_analysis_termination() {
 }
 
 template <typename Metavariables>
-std::tuple<std::string, std::string, size_t>
-Main<Metavariables>::checkpoints_dir_prefix_pad() const {
-  const std::string checkpoints_dir = "Checkpoints";
-  const std::string prefix = "Checkpoint_";
-  constexpr size_t pad = 4;
-  return std::make_tuple(checkpoints_dir, prefix, pad);
-}
-
-template <typename Metavariables>
-std::string Main<Metavariables>::next_checkpoint_dir() const {
-  const auto [checkpoints_dir, prefix, pad] = checkpoints_dir_prefix_pad();
-  const std::string counter = std::to_string(checkpoint_dir_counter_);
-  const std::string padded_counter =
-      std::string(pad - counter.size(), '0').append(counter);
-  const std::string result = checkpoints_dir + "/" + prefix + padded_counter;
-  if (file_system::check_if_dir_exists(result)) {
-    ERROR("Can't write checkpoint: dir " + result + " already exists!");
-  }
-  return result;
-}
-
-template <typename Metavariables>
-void Main<Metavariables>::check_future_checkpoint_dirs_available() const {
-  const auto [checkpoints_dir, prefix, pad] = checkpoints_dir_prefix_pad();
-  if (not file_system::check_if_dir_exists(checkpoints_dir)) {
-    return;
-  }
-  const auto next_checkpoint = next_checkpoint_dir();
-
-  // Find existing files with names that match the checkpoint dir name pattern
-  const auto all_files = file_system::ls(checkpoints_dir);
-  const std::regex re(prefix + "[0-9]{" + std::to_string(pad) + "}");
-  std::vector<std::string> checkpoint_files;
-  std::copy_if(all_files.begin(), all_files.end(),
-               std::back_inserter(checkpoint_files),
-               [&re](const std::string& s) { return std::regex_match(s, re); });
-
-  // Using string comparison of filenames, check that all the files we found
-  // are from older checkpoints, but not from future checkpoints
-  const bool found_older_checkpoints_only = std::all_of(
-      checkpoint_files.begin(), checkpoint_files.end(),
-      [&next_checkpoint](const std::string& s) { return s < next_checkpoint; });
-  if (not found_older_checkpoints_only) {
-    ERROR(
-        "Can't start run: found checkpoints that may be overwritten!\n"
-        "Dirs from "
-        << next_checkpoint << " onward must not exist.\n");
-  }
-}
-
-template <typename Metavariables>
 void Main<Metavariables>::update_const_global_cache_from_input_file() {
   if (checkpoint_dir_counter_ < 1) {
     ERROR("Executable is unaware of previous checkpoints, so can't reparse.");
@@ -1091,7 +1043,8 @@ void Main<Metavariables>::update_const_global_cache_from_input_file() {
   // Get the padded counter (e.g., 000XYZ) of the checkpoint we restarted from
   const size_t restart_checkpoint = checkpoint_dir_counter_ - 1;
   const std::string counter = std::to_string(restart_checkpoint);
-  const auto [checkpoints_dir, prefix, pad] = checkpoints_dir_prefix_pad();
+  const auto [checkpoints_dir, prefix, pad] =
+      detail::checkpoints_dir_prefix_pad();
   const std::string padded_counter =
       std::string(pad - counter.size(), '0').append(counter);
   (void)checkpoints_dir;

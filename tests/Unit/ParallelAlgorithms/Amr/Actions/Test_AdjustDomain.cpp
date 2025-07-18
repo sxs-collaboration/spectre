@@ -153,7 +153,7 @@ struct Metavariables {
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using projectors = tmpl::list<::amr::projectors::DefaultInitialize<
-        Parallel::Tags::GlobalCacheImpl<Metavariables>,
+        Parallel::Tags::GlobalCache<Metavariables>,
         domain::Tags::NeighborMesh<1>>>;
     static constexpr bool keep_coarse_grids = KeepCoarseGrids;
   };

@@ -144,7 +144,9 @@
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
@@ -253,8 +255,8 @@ struct EvolutionMetavars {
   static constexpr bool use_dg_element_collection = false;
 
   using initialize_initial_data_dependent_quantities_actions =
-      tmpl::list<Actions::MutateApply<gh::gauges::SetPiAndPhiFromConstraints<
-                     gh::Solutions::all_solutions<volume_dim>, volume_dim>>,
+      tmpl::list<gh::gauges::SetPiAndPhiFromConstraints<
+                     gh::Solutions::all_solutions<volume_dim>, volume_dim>,
                  Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -350,6 +352,23 @@ struct EvolutionMetavars {
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
                  gh::Tags::Pi<DataVector, volume_dim>,
                  gh::Tags::Phi<DataVector, volume_dim>>;
+
+  struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    static std::string name() { return "BondiSachsInterpolation"; }
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target = source_vars_no_deriv;
+    using compute_target_points =
+        intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
+    using post_interpolation_callbacks =
+        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>>;
+    using compute_items_on_target = tmpl::list<>;
+    template <typename metavariables>
+    using interpolating_component = typename metavariables::gh_dg_element_array;
+  };
+
+  using interpolation_target_tags = tmpl::push_back<
+      control_system::metafunctions::interpolation_target_tags<control_systems>,
+      AhA, AhB, AhC, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
 
   using observe_fields = tmpl::append<
       tmpl::list<
@@ -585,7 +604,7 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim,
+          evolution::dg::Initialization::Domain<EvolutionMetavars,
                                                 use_control_systems>,
           ::amr::Initialization::Initialize<volume_dim, EvolutionMetavars>,
           Initialization::TimeStepperHistory<EvolutionMetavars>>,
@@ -600,8 +619,8 @@ struct EvolutionMetavars {
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
               EvolutionMetavars, local_time_stepping>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
-      intrp::Actions::ElementInitInterpPoints<
-          intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
+      intrp::Actions::ElementInitInterpPoints<volume_dim,
+                                              interpolation_target_tags>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,
       Parallel::Actions::TerminatePhase>;
@@ -647,23 +666,6 @@ struct EvolutionMetavars {
               tmpl::list<Actions::RunEventsOnFailure<::Tags::Time>,
                          Parallel::Actions::TerminatePhase>>>>>;
 
-  struct BondiSachs : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    static std::string name() { return "BondiSachsInterpolation"; }
-    using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target = source_vars_no_deriv;
-    using compute_target_points =
-        intrp::TargetPoints::Sphere<BondiSachs, ::Frame::Inertial>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::DumpBondiSachsOnWorldtube<BondiSachs>>;
-    using compute_items_on_target = tmpl::list<>;
-    template <typename Metavariables>
-    using interpolating_component = gh_dg_element_array;
-  };
-
-  using interpolation_target_tags = tmpl::push_back<
-      control_system::metafunctions::interpolation_target_tags<control_systems>,
-      AhA, AhB, AhC, BondiSachs, ExcisionBoundaryA, ExcisionBoundaryB>;
-
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
 
@@ -705,9 +707,15 @@ struct EvolutionMetavars {
             SelfStart::Tags::InitialValue<Tags::TimeStep>,
             evolution::dg::Tags::BoundaryData<volume_dim>>,
         ::amr::projectors::CopyFromCreatorOrLeaveAsIs<tmpl::push_back<
-            typename control_system::Actions::InitializeMeasurements<
-                control_systems>::simple_tags,
-            intrp::Tags::InterpPointInfo<EvolutionMetavars>,
+            tmpl::append<
+                typename control_system::Actions::InitializeMeasurements<
+                    control_systems>::simple_tags,
+                tmpl::transform<
+                    intrp::InterpolationTarget_detail::
+                        get_non_sequential_target_tags<
+                            interpolation_target_tags>,
+                    tmpl::bind<intrp::Tags::PointInfo, tmpl::_1,
+                               tmpl::pin<tmpl::size_t<volume_dim>>>>>,
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;

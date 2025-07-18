@@ -19,9 +19,8 @@ struct NamedSimple : db::SimpleTag {
   using type = int;
 };
 
-struct SimpleWithForwardedBase : TestHelpers::db::Tags::Base, db::SimpleTag {
-  using base = TestHelpers::db::Tags::Base;
-  using type = int;
+struct SimpleFromOption : TestHelpers::db::Tags::Simple {
+  using base = TestHelpers::db::Tags::Simple;
 };
 }  // namespace
 
@@ -35,7 +34,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TestHelpers",
   TestHelpers::db::test_simple_tag<NamedSimple>("NamedSimpleName");
   TestHelpers::db::test_simple_tag<TestHelpers::db::Tags::SimpleWithBase>(
       "SimpleWithBase");
-  TestHelpers::db::test_simple_tag<SimpleWithForwardedBase>("Base");
+  TestHelpers::db::test_simple_tag<SimpleFromOption>("Simple");
   TestHelpers::db::test_compute_tag<TestHelpers::db::Tags::SimpleCompute>(
       "Simple");
 }

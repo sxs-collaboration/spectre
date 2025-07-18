@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellSolver.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
 #include "Options/String.hpp"
@@ -32,8 +31,7 @@ namespace Tags {
  * \brief Tag for the reconstructor
  */
 template <size_t Dim>
-struct Reconstructor : db::SimpleTag,
-                       evolution::dg::subcell::Tags::Reconstructor {
+struct Reconstructor : db::SimpleTag {
   using type = std::unique_ptr<fd::Reconstructor<Dim>>;
   using option_tags = tmpl::list<OptionTags::Reconstructor<Dim>>;
 

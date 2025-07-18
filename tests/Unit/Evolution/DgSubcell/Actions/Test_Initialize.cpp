@@ -53,10 +53,12 @@
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
@@ -69,7 +71,24 @@ struct Var1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
+struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
+                                public evolution::initial_data::InitialData {
+  SystemAnalyticSolution() = default;
+  ~SystemAnalyticSolution() override = default;
+
+  explicit SystemAnalyticSolution(CkMigrateMessage* msg)
+      : evolution::initial_data::InitialData(msg) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(SystemAnalyticSolution);
+#pragma GCC diagnostic pop
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<SystemAnalyticSolution>(*this);
+  }
+
   template <size_t Dim>
   tuples::TaggedTuple<Var1> variables(const tnsr::I<DataVector, Dim>& x,
                                       const double t,
@@ -82,8 +101,11 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   }
 
   // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  void pup(PUP::er& /*p*/) override {}  // NOLINT
 };
+
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+PUP::able::PUP_ID SystemAnalyticSolution::my_PUP_ID = 0;
 
 template <size_t Dim>
 struct System {
@@ -143,9 +165,16 @@ struct Metavariables {
   using system = System<Dim>;
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
-      tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
+      tmpl::list<evolution::initial_data::Tags::InitialData>;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
+                             tmpl::list<SystemAnalyticSolution>>>;
+  };
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled_at_external_boundary =
@@ -241,7 +270,8 @@ void test(const bool always_use_subcell, const bool interior_element,
   using comp = Component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
-      {SystemAnalyticSolution{},
+      {std::unique_ptr<evolution::initial_data::InitialData>(
+           std::make_unique<SystemAnalyticSolution>()),
        evolution::dg::subcell::SubcellOptions{
            evolution::dg::subcell::SubcellOptions{
                4.1, 1_st, 1.0e-3, 1.0e-4, always_use_subcell, false,
@@ -630,6 +660,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
                             domain::CoordinateMaps::Identity<2>>,
       domain::CoordinateMap<Frame::Grid, Frame::Inertial,
                             domain::CoordinateMaps::Identity<3>>>();
+  register_classes_with_charm<SystemAnalyticSolution>();
   for (const bool always_use_subcell : {false, true}) {
     for (const bool interior_element : {false, true}) {
       for (const bool allow_subcell_in_block : {false, true}) {

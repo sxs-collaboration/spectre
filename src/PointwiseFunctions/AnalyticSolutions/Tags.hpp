@@ -39,15 +39,11 @@ struct AnalyticSolution {
 }  // namespace OptionTags
 
 namespace Tags {
-/// Can be used to retrieve the analytic solution from the cache without having
-/// to know the template parameters of AnalyticSolution.
-struct AnalyticSolutionBase : AnalyticSolutionOrData {};
-
 /// \ingroup OptionTagsGroup
 /// The analytic solution, with the type of the analytic solution set as the
 /// template parameter
 template <typename SolutionType>
-struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
+struct AnalyticSolution : db::SimpleTag {
   using type = SolutionType;
   using option_tags = tmpl::list<::OptionTags::AnalyticSolution<SolutionType>>;
 
@@ -68,11 +64,6 @@ struct Analytic : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
-/// Base tag for the analytic solution tensors.
-///
-/// \see ::Tags::AnalyticSolutions
-struct AnalyticSolutionsBase : db::BaseTag {};
-
 namespace detail {
 template <typename Tag>
 struct AnalyticImpl : db::PrefixTag, db::SimpleTag {
@@ -90,7 +81,7 @@ struct AnalyticImpl : db::PrefixTag, db::SimpleTag {
  * `std::optional<Tensor>`.
  */
 template <typename FieldTags>
-struct AnalyticSolutions : ::Tags::AnalyticSolutionsBase, db::SimpleTag {
+struct AnalyticSolutions : db::SimpleTag {
   using field_tags = FieldTags;
   using type = std::optional<
       ::Variables<db::wrap_tags_in<detail::AnalyticImpl, FieldTags>>>;

@@ -46,8 +46,7 @@ struct ElementLocationsReference : ElementLocations<Dim>, db::ReferenceTag {
  public:
   using base = ElementLocations<Dim>;
   using type = typename base::type;
-  using argument_tags =
-      tmpl::list<Parallel::Tags::GlobalCacheImpl<Metavariables>>;
+  using argument_tags = tmpl::list<Parallel::Tags::GlobalCache<Metavariables>>;
 
   static const type& get(
       const Parallel::GlobalCache<Metavariables>* const& cache) {

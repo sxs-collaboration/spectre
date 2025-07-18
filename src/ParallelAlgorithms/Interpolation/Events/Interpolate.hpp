@@ -38,6 +38,9 @@ namespace Events::Tags {
 template <size_t Dim>
 struct ObserverMesh;
 }  // namespace Events::Tags
+namespace ah::Tags {
+struct BlocksForInterpolation;
+}  // namespace ah::Tags
 /// \endcond
 
 namespace intrp {
@@ -97,7 +100,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
                        tmpl::list<InterpolatorSourceVarTags...>>);
 
     const auto& blocks_to_interpolate =
-        Parallel::get<intrp::Tags::BlocksForInterpolationBase>(cache);
+        Parallel::get<ah::Tags::BlocksForInterpolation>(cache);
     ASSERT(blocks_to_interpolate.contains(name()),
            "Blocks to interpolate doesn't contain target " << name());
     const auto& blocks_to_interpolate_for_this_target =

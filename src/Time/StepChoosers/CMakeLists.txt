@@ -9,7 +9,6 @@ spectre_target_sources(
   FixedLtsRatio.cpp
   LimitIncrease.cpp
   Maximum.cpp
-  PreventRapidIncrease.cpp
   Random.cpp
   StepToTimes.cpp
   )

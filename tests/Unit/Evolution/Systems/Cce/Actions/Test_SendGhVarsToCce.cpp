@@ -37,7 +37,8 @@ struct mock_element {
       ::Tags::Time, domain::Tags::Mesh<Metavariables::volume_dim>,
       ::Tags::Variables<
           tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>>,
-      intrp::Tags::InterpPointInfo<Metavariables>,
+      intrp::Tags::PointInfo<typename Metavariables::InterpolationTargetA,
+                             tmpl::size_t<Metavariables::volume_dim>>,
       domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>>;
   using compute_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<

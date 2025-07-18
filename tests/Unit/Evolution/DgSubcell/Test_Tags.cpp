@@ -38,7 +38,6 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcells.hpp"
 #include "Evolution/DgSubcell/Tags/ReconstructionOrder.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/StepsSinceTciCall.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciCallsSinceRollback.hpp"
@@ -453,7 +452,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
       "TciGridHistory");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciStatus>("TciStatus");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciDecision>("TciDecision");
-  TestHelpers::db::test_base_tag<subcell::Tags::Reconstructor>("Reconstructor");
 
   for (const bool moving_mesh : {false, true}) {
     test<1>(moving_mesh);

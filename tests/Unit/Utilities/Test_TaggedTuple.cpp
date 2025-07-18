@@ -44,6 +44,10 @@ constexpr bool operator==(const not_streamable& /*unused*/,
   return true;
 }
 
+struct non_copyable_grades {
+  using type = std::vector<std::unique_ptr<std::string>>;
+};
+
 struct not_streamable_tag {
   using type = not_streamable;
 };
@@ -162,6 +166,30 @@ void test_general() {
         tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
             "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
             "Eamonn"});
+
+  // [tagged_tuple_cat_example]
+  const tuples::TaggedTuple<name, age> test5("Eamonn", 17);
+  const tuples::TaggedTuple<email, parents, not_streamable_tag> test6(
+      "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"}, 0);
+  const auto test7 = tuples::tagged_tuple_cat(test5, test6);
+  // [tagged_tuple_cat_example]
+  CHECK(test7 ==
+        tuples::TaggedTuple<name, age, email, parents, not_streamable_tag>{
+            "Eamonn", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"},
+            0});
+
+  // Test tagged_tuple_cat with a non-copyable type to ensure proper
+  // functionality of rvalue version.
+  std::vector<std::unique_ptr<std::string>> grades{};
+  grades.reserve(2);
+  grades.emplace_back(std::make_unique<std::string>("Aplus"));
+  grades.emplace_back(std::make_unique<std::string>("F"));
+  tuples::TaggedTuple<name, age> test8("Eamonn", 17);
+  tuples::TaggedTuple<non_copyable_grades, parents, not_streamable_tag> test9(
+      std::move(grades), std::vector<std::string>{"Mom", "Dad"}, 0);
+  const auto test10 =
+      tuples::tagged_tuple_cat(std::move(test8), std::move(test9));
+  CHECK(*tuples::get<non_copyable_grades>(test10)[0] == "Aplus");
 
   {
     INFO("Expand tuple");

@@ -541,7 +541,7 @@ struct Metavariables {
             OverrideBoundaryConditionsTag, TemporalIdTag,
             // Work around a segfault because this tag isn't handled
             // correctly by the testing framework
-            Parallel::Tags::GlobalCacheImpl<Metavariables>>,
+            Parallel::Tags::GlobalCache<Metavariables>>,
         elliptic::dg::ProjectGeometry<volume_dim>,
         elliptic::dg::Actions::amr_projectors<
             System, typename element_array::background_tag>,

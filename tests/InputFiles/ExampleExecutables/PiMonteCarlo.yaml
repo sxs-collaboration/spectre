@@ -5,7 +5,6 @@
 Executable: PiMonteCarlo
 Testing:
   Check: parse;execute
-  Priority: Low
 ---
 # Options to control the executable's behavior
 DartsPerIteration: 10000   # How many darts each processor throws each iteration

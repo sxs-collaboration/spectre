@@ -13,6 +13,7 @@
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -40,7 +41,8 @@ namespace CurvedScalarWave::AnalyticData {
  * behavior and late-time tails in different background spacetimes.
  */
 
-class PureSphericalHarmonic : public MarkAsAnalyticData {
+class PureSphericalHarmonic : public evolution::initial_data::InitialData,
+                              public MarkAsAnalyticData {
  public:
   struct Radius {
     using type = double;
@@ -74,6 +76,20 @@ class PureSphericalHarmonic : public MarkAsAnalyticData {
   PureSphericalHarmonic(double radius, double width,
                         std::pair<size_t, int> mode,
                         const Options::Context& context = {});
+  PureSphericalHarmonic(const PureSphericalHarmonic&) = default;
+  PureSphericalHarmonic& operator=(const PureSphericalHarmonic&) = default;
+  PureSphericalHarmonic(PureSphericalHarmonic&&) = default;
+  PureSphericalHarmonic& operator=(PureSphericalHarmonic&&) = default;
+  ~PureSphericalHarmonic() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit PureSphericalHarmonic(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(PureSphericalHarmonic);
+  /// \endcond
 
   static constexpr size_t volume_dim = 3;
   using tags =
@@ -86,7 +102,7 @@ class PureSphericalHarmonic : public MarkAsAnalyticData {
   variables(const tnsr::I<DataVector, 3>& x, tags /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/);
+  void pup(PUP::er& /*p*/) override;
 
  private:
   double radius_{std::numeric_limits<double>::signaling_NaN()};

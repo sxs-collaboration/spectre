@@ -11,7 +11,7 @@ Testing:
 Parallelization:
   ElementDistribution: NumGridPoints
 
-AnalyticData:
+InitialData:
   ZerothOrderPuncture:
     ParticlePosition: [&XCoordWorldtube 10., 0., 0.]
     ParticleVelocity: [0., 0.01, 0.]

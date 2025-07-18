@@ -28,7 +28,6 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -37,6 +36,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -203,7 +203,7 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
-      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+      tmpl::list<ah::Tags::BlocksForInterpolation,
                  domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -325,8 +325,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   const auto block_groups = domain_creator.block_groups();
   tuples::TaggedTuple<
       intrp::Tags::LineSegment<metavars::InterpolationTargetA, 3>,
-      InterpTargetTestHelpers::Tags::BlocksForInterpolation,
-      domain::Tags::Domain<3>,
+      ah::Tags::BlocksForInterpolation, domain::Tags::Domain<3>,
       intrp::Tags::LineSegment<metavars::InterpolationTargetB, 3>,
       intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>,
       intrp::Tags::Verbosity>

@@ -28,7 +28,6 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Interpolators.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -137,8 +136,7 @@ void prepare_neighbor_data(
   } else {
     *ghost_data_mesh = subcell_mesh;
     const size_t ghost_zone_size =
-        db::get<evolution::dg::subcell::Tags::Reconstructor>(*box)
-            .ghost_zone_size();
+        Metavariables::SubcellOptions::ghost_zone_size(*box);
 
     const DataVector data_to_project{};
     make_const_view(make_not_null(&data_to_project), ghost_variables, 0,

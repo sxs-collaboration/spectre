@@ -985,25 +985,22 @@ void mutate(GlobalCache<Metavariables>& cache, Args&&... args) {
 }
 
 namespace Tags {
-/// \ingroup DataBoxTagsGroup
-/// \ingroup ParallelGroup
-/// Tag to retrieve the `Parallel::GlobalCache` from the DataBox.
-struct GlobalCache : db::BaseTag {};
-
 template <class Metavariables>
 struct GlobalCacheProxy : db::SimpleTag {
   using type = CProxy_GlobalCache<Metavariables>;
 };
 
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ParallelGroup
+/// Tag to retrieve the `Parallel::GlobalCache` from the DataBox.
 template <class Metavariables>
-struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
+struct GlobalCache : db::SimpleTag {
   using type = Parallel::GlobalCache<Metavariables>*;
-  static std::string name() { return "GlobalCache"; }
 };
 
 template <class Metavariables>
-struct GlobalCacheImplCompute : GlobalCacheImpl<Metavariables>, db::ComputeTag {
-  using base = GlobalCacheImpl<Metavariables>;
+struct GlobalCacheCompute : GlobalCache<Metavariables>, db::ComputeTag {
+  using base = GlobalCache<Metavariables>;
   using argument_tags = tmpl::list<GlobalCacheProxy<Metavariables>>;
   using return_type = Parallel::GlobalCache<Metavariables>*;
   static void function(
@@ -1018,13 +1015,12 @@ struct GlobalCacheImplCompute : GlobalCacheImpl<Metavariables>, db::ComputeTag {
 /// \ingroup ParallelGroup
 /// Tag used to retrieve data from the `Parallel::GlobalCache`. This is the
 /// recommended way for compute tags to retrieve data out of the global cache.
-template <class CacheTag>
+template <class CacheTag, class Metavariables>
 struct FromGlobalCache : CacheTag, db::ReferenceTag {
   static_assert(db::is_simple_tag_v<CacheTag>);
   using base = CacheTag;
-  using argument_tags = tmpl::list<GlobalCache>;
+  using argument_tags = tmpl::list<GlobalCache<Metavariables>>;
 
-  template <class Metavariables>
   static const auto& get(
       const Parallel::GlobalCache<Metavariables>* const& cache) {
     return Parallel::get<CacheTag>(*cache);
@@ -1034,7 +1030,7 @@ struct FromGlobalCache : CacheTag, db::ReferenceTag {
 template <typename Metavariables>
 struct ResourceInfoReference : ResourceInfo<Metavariables>, db::ReferenceTag {
   using base = ResourceInfo<Metavariables>;
-  using argument_tags = tmpl::list<GlobalCache>;
+  using argument_tags = tmpl::list<GlobalCache<Metavariables>>;
 
   static const auto& get(
       const Parallel::GlobalCache<Metavariables>* const& cache) {

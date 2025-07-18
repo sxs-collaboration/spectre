@@ -330,18 +330,19 @@ struct Metavariables {
       tmpl::list<
           Parallel::PhaseActions<
               Parallel::Phase::Initialization,
-              tmpl::list<Initialization::Actions::InitializeItems<
-                             Initialization::TimeStepping<Metavariables,
-                                                          TimeStepperBase>,
-                             evolution::dg::Initialization::Domain<Dim>,
-                             ::amr::Initialization::Initialize<volume_dim,
-                                                               Metavariables>,
-                             Initialization::SetMeshType<Dim>>,
-                         Initialization::Actions::AddComputeTags<tmpl::list<
-                             ::domain::Tags::MinimumGridSpacingCompute<
-                                 Dim, Frame::Inertial>,
-                             ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
-                         Parallel::Actions::TerminatePhase>>,
+              tmpl::list<
+                  Initialization::Actions::InitializeItems<
+                      Initialization::TimeStepping<Metavariables,
+                                                   TimeStepperBase>,
+                      evolution::dg::Initialization::Domain<Metavariables>,
+                      ::amr::Initialization::Initialize<volume_dim,
+                                                        Metavariables>,
+                      Initialization::SetMeshType<Dim>>,
+                  Initialization::Actions::AddComputeTags<tmpl::list<
+                      ::domain::Tags::MinimumGridSpacingCompute<
+                          Dim, Frame::Inertial>,
+                      ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
+                  Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Register,
               tmpl::push_back<dg_registration_list,

@@ -33,7 +33,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/IO/VolumeData.hpp"
-#include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -49,6 +48,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -133,7 +133,7 @@ struct MockInterpolationTarget {
           tmpl::flatten<tmpl::list<
               typename InterpolationTargetTag::compute_target_points,
               typename InterpolationTargetTag::post_interpolation_callbacks>>>,
-      tmpl::list<InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+      tmpl::list<ah::Tags::BlocksForInterpolation,
                  domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -277,7 +277,7 @@ void run_test(gsl::not_null<Generator*> generator,
                       ::intrp::Tags::LineSegment<typename metavars::LineA, Dim>,
                       ::intrp::Tags::LineSegment<typename metavars::LineB, Dim>,
                       ::intrp::Tags::Verbosity,
-                      InterpTargetTestHelpers::Tags::BlocksForInterpolation,
+                      ah::Tags::BlocksForInterpolation,
                       domain::Tags::Domain<Dim>>
       tuple_of_opts{
           h5_file_prefix,

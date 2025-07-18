@@ -34,14 +34,19 @@
 namespace {
 using Frac = Time::rational_t;
 
+struct Tag : db::SimpleTag {
+  using type = double;
+};
+using history_tag = Tags::HistoryEvolvedVariables<Tag>;
+
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::PreventRapidIncrease>>,
-                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             tmpl::list<StepChoosers::PreventRapidIncrease>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::list<StepChoosers::PreventRapidIncrease<Tag>>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::list<StepChoosers::PreventRapidIncrease<Tag>>>>;
   };
   using component_list = tmpl::list<>;
 };
@@ -77,10 +82,6 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       return TimeStepId(direction > 0, slab_number, Time(time_slab, frac));
     };
 
-    struct Tag : db::SimpleTag {
-      using type = double;
-    };
-    using history_tag = Tags::HistoryEvolvedVariables<Tag>;
     typename history_tag::type lts_history{};
     typename history_tag::type gts_history{};
 
@@ -107,9 +108,9 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
               ? (current_time - history.back().time_step_id.step_time()).value()
               : direction * std::numeric_limits<double>::infinity();
 
-      const StepChoosers::PreventRapidIncrease relax{};
+      const StepChoosers::PreventRapidIncrease<Tag> relax{};
       const std::unique_ptr<StepChooser<Use>> relax_base =
-          std::make_unique<StepChoosers::PreventRapidIncrease>(relax);
+          std::make_unique<StepChoosers::PreventRapidIncrease<Tag>>(relax);
 
       const TimeStepRequest expected{.size = expected_size};
       CHECK(relax(history, current_step) == expected);
@@ -147,10 +148,6 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
 void check_substep_methods() {
   const Slab slab(0.25, 1.5);
 
-  struct Tag : db::SimpleTag {
-    using type = double;
-  };
-  using history_tag = Tags::HistoryEvolvedVariables<Tag>;
   typename history_tag::type history{};
 
   history.insert(TimeStepId(true, 0, slab.start()), 0.0, 0.0);
@@ -160,7 +157,7 @@ void check_substep_methods() {
   history.insert(TimeStepId(true, 0, slab.start(), 2, slab.duration(),
                             (slab.start() + slab.duration() / 2).value()),
                  0.0, 0.0);
-  const StepChoosers::PreventRapidIncrease relax{};
+  const StepChoosers::PreventRapidIncrease<Tag> relax{};
   CHECK(relax(history, 3.14) == TimeStepRequest{});
 }
 }  // namespace
@@ -193,5 +190,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
   TestHelpers::test_creation<std::unique_ptr<StepChooser<StepChooserUse::Slab>>,
                              Metavariables>("PreventRapidIncrease");
 
-  CHECK(not StepChoosers::PreventRapidIncrease{}.uses_local_data());
+  CHECK(not StepChoosers::PreventRapidIncrease<Tag>{}.uses_local_data());
 }

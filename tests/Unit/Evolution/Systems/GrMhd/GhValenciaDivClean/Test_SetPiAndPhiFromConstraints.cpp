@@ -38,6 +38,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiAndPhiFromConstraints.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -47,19 +48,61 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
+
+namespace {
+using evolved_vars_tags =
+    tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
+               gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
+
+template <typename Metavariables>
+struct Component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+  using simple_tags = db::AddSimpleTags<
+      ::Tags::Time, ::Tags::Variables<evolved_vars_tags>, domain::Tags::Mesh<3>,
+      domain::Tags::ElementMap<3, Frame::Grid>,
+      domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                  Frame::Inertial>,
+      domain::Tags::FunctionsOfTimeInitialize,
+      domain::Tags::Coordinates<3, Frame::ElementLogical>,
+      evolution::dg::subcell::Tags::ActiveGrid>;
+  using compute_tags = db::AddComputeTags<
+      evolution::dg::subcell::Tags::MeshCompute<3>,
+      evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>>>;
+};
+
+struct Metavariables {
+  using component_list = tmpl::list<Component<Metavariables>>;
+};
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean."
     "SetPiAndPhiFromConstraints",
     "[Unit][Evolution][Actions]") {
   MAKE_GENERATOR(generator);
+  using component = Component<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+
+  register_classes_with_charm<
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<3>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<3>>,
+      gh::gauges::DampedHarmonic>();
+
   std::uniform_real_distribution<> metric_dist(0.1, 1.);
   std::uniform_real_distribution<> deriv_dist(-1.e-5, 1.e-5);
-
-  using evolved_vars_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<DataVector, 3>,
-                 gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>;
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -89,84 +132,63 @@ SPECTRE_TEST_CASE(
 
   const auto initial_dg_vars = make_vars(dg_mesh);
 
-  // Testing SetPiAndPhiFromConstraints = False. Note that we put the
-  // SetPiAndPhiFromConstraints tag in the box here because we don't have a
-  // cache.
+  // Testing SetPiAndPhiFromConstraints = False.
   {
-    auto box = db::create<
-        db::AddSimpleTags<::Tags::Time, ::Tags::Variables<evolved_vars_tags>,
-                          domain::Tags::Mesh<3>,
-                          domain::Tags::ElementMap<3, Frame::Grid>,
-                          domain::CoordinateMaps::Tags::CoordinateMap<
-                              3, Frame::Grid, Frame::Inertial>,
-                          domain::Tags::FunctionsOfTimeInitialize,
-                          domain::Tags::Coordinates<3, Frame::ElementLogical>,
-                          gh::gauges::Tags::GaugeCondition,
-                          gh::Tags::SetPiAndPhiFromConstraints,
-                          evolution::dg::subcell::Tags::ActiveGrid>,
-        db::AddComputeTags<
-            evolution::dg::subcell::Tags::MeshCompute<3>,
-            evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
-        0., initial_dg_vars, dg_mesh,
-        ElementMap<3, Frame::Grid>{
-            ElementId<3>{0},
-            domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-                domain::CoordinateMaps::Identity<3>{})},
-        domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            domain::CoordinateMaps::Identity<3>{}),
-        std::unordered_map<
-            std::string,
-            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
-        logical_coordinates(dg_mesh),
-        std::unique_ptr<gh::gauges::GaugeCondition>(
+    MockRuntimeSystem runner{
+        {std::unique_ptr<gh::gauges::GaugeCondition>(
             std::make_unique<gh::gauges::DampedHarmonic>(
-                100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6})),
-        false, evolution::dg::subcell::ActiveGrid::Dg);
+                100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6}))},
+        {false}};
+    ActionTesting::emplace_component_and_initialize<component>(
+        &runner, 0,
+        {0., initial_dg_vars, dg_mesh,
+         ElementMap<3, Frame::Grid>{
+             ElementId<3>{0},
+             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+                 domain::CoordinateMaps::Identity<3>{})},
+         domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+             domain::CoordinateMaps::Identity<3>{}),
+         std::unordered_map<
+             std::string,
+             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
+         logical_coordinates(dg_mesh), evolution::dg::subcell::ActiveGrid::Dg});
 
-    db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
-        make_not_null(&box));
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
     // Should be exact since we didn't compute anything
+    const auto& box = ActionTesting::get_databox<component>(runner, 0);
     CHECK(get<gh::Tags::Pi<DataVector, 3>>(initial_dg_vars) ==
           db::get<gh::Tags::Pi<DataVector, 3>>(box));
     CHECK(get<gh::Tags::Phi<DataVector, 3>>(initial_dg_vars) ==
           db::get<gh::Tags::Phi<DataVector, 3>>(box));
   }
 
-  auto box = db::create<
-      db::AddSimpleTags<::Tags::Time, ::Tags::Variables<evolved_vars_tags>,
-                        domain::Tags::Mesh<3>,
-                        domain::Tags::ElementMap<3, Frame::Grid>,
-                        domain::CoordinateMaps::Tags::CoordinateMap<
-                            3, Frame::Grid, Frame::Inertial>,
-                        domain::Tags::FunctionsOfTimeInitialize,
-                        domain::Tags::Coordinates<3, Frame::ElementLogical>,
-                        gh::gauges::Tags::GaugeCondition,
-                        gh::Tags::SetPiAndPhiFromConstraints,
-                        evolution::dg::subcell::Tags::ActiveGrid>,
-      db::AddComputeTags<
-          evolution::dg::subcell::Tags::MeshCompute<3>,
-          evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
-      0., initial_dg_vars, dg_mesh,
-      ElementMap<3, Frame::Grid>{
-          ElementId<3>{0},
-          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-              domain::CoordinateMaps::Identity<3>{})},
-      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-          domain::CoordinateMaps::Identity<3>{}),
-      std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
-      logical_coordinates(dg_mesh),
-      std::unique_ptr<gh::gauges::GaugeCondition>(
+  MockRuntimeSystem runner{
+      {std::unique_ptr<gh::gauges::GaugeCondition>(
           std::make_unique<gh::gauges::DampedHarmonic>(
-              100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6})),
-      true, evolution::dg::subcell::ActiveGrid::Dg);
+              100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6}))},
+      {true}};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0,
+      {0., initial_dg_vars, dg_mesh,
+       ElementMap<3, Frame::Grid>{
+           ElementId<3>{0},
+           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+               domain::CoordinateMaps::Identity<3>{})},
+       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+           domain::CoordinateMaps::Identity<3>{}),
+       std::unordered_map<
+           std::string,
+           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
+       logical_coordinates(dg_mesh), evolution::dg::subcell::ActiveGrid::Dg});
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
+
   const auto initial_subcell_vars =
       make_vars(db::get<evolution::dg::subcell::Tags::Mesh<3>>(box));
 
-  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
-      make_not_null(&box));
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   const auto check = [&box](const Mesh<3>& mesh, const auto& initial_vars) {
     CAPTURE(mesh);
@@ -177,14 +199,14 @@ SPECTRE_TEST_CASE(
     gh::gauges::SetPiAndPhiFromConstraints<
         ghmhd::GhValenciaDivClean::InitialData::
             analytic_solutions_and_data_list,
-        3>::apply(make_not_null(&expected_pi), make_not_null(&expected_phi), 0.,
-                  mesh, db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
-                  db::get<domain::CoordinateMaps::Tags::CoordinateMap<
-                      3, Frame::Grid, Frame::Inertial>>(box),
-                  db::get<domain::Tags::FunctionsOfTime>(box),
-                  logical_coordinates(mesh),
-                  get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
-                  db::get<gh::gauges::Tags::GaugeCondition>(box), true);
+        3>::impl(make_not_null(&expected_pi), make_not_null(&expected_phi), 0.,
+                 mesh, db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box),
+                 db::get<domain::CoordinateMaps::Tags::CoordinateMap<
+                     3, Frame::Grid, Frame::Inertial>>(box),
+                 db::get<domain::Tags::FunctionsOfTime>(box),
+                 logical_coordinates(mesh),
+                 get<gr::Tags::SpacetimeMetric<DataVector, 3>>(initial_vars),
+                 db::get<gh::gauges::Tags::GaugeCondition>(box), true);
 
     const auto& pi = db::get<gh::Tags::Pi<DataVector, 3>>(box);
     CHECK(pi == expected_pi);
@@ -204,8 +226,7 @@ SPECTRE_TEST_CASE(
         *variables_ptr = initial_subcell_vars;
       },
       make_not_null(&box));
-  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
-      make_not_null(&box));
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
   check(db::get<evolution::dg::subcell::Tags::Mesh<3>>(box),
         initial_subcell_vars);
 
@@ -217,7 +238,7 @@ SPECTRE_TEST_CASE(
         *variables_ptr = initial_dg_vars;
       },
       make_not_null(&box));
-  db::mutate_apply<grmhd::GhValenciaDivClean::SetPiAndPhiFromConstraints>(
-      make_not_null(&box));
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
   check(db::get<domain::Tags::Mesh<3>>(box), initial_dg_vars);
 }
+}  // namespace

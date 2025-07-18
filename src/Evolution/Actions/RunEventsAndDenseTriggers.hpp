@@ -16,7 +16,6 @@
 #include "ParallelAlgorithms/EventsAndDenseTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/EvolutionOrdering.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -38,6 +37,8 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
+template <typename Tag>
+struct HistoryEvolvedVariables;
 struct TimeStep;
 struct TimeStepId;
 template <typename StepperInterface>

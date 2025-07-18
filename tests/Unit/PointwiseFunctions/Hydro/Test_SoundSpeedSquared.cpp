@@ -27,8 +27,9 @@ void test_compute_item_in_databox(
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
     const EquationOfStateType& equation_of_state) {
-  TestHelpers::db::test_compute_tag<
-      hydro::Tags::SoundSpeedSquaredCompute<DataType>>("SoundSpeedSquared");
+  TestHelpers::db::test_compute_tag<hydro::Tags::SoundSpeedSquaredCompute<
+      DataType, EquationOfStateType::is_relativistic,
+      EquationOfStateType::thermodynamic_dim>>("SoundSpeedSquared");
   const auto box = db::create<
       db::AddSimpleTags<
           hydro::Tags::RestMassDensity<DataType>,
@@ -36,7 +37,9 @@ void test_compute_item_in_databox(
           hydro::Tags::SpecificEnthalpy<DataType>,
           hydro::Tags::EquationOfState<EquationOfStateType::is_relativistic,
                                        EquationOfStateType::thermodynamic_dim>>,
-      db::AddComputeTags<hydro::Tags::SoundSpeedSquaredCompute<DataType>>>(
+      db::AddComputeTags<hydro::Tags::SoundSpeedSquaredCompute<
+          DataType, EquationOfStateType::is_relativistic,
+          EquationOfStateType::thermodynamic_dim>>>(
       rest_mass_density, specific_internal_energy, specific_enthalpy,
       equation_of_state.get_clone());
 

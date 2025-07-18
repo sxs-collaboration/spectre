@@ -87,8 +87,7 @@ namespace {
 // These solution tag and metavariables are not strictly required for testing
 // subcell time derivative, but needed for compilation since
 // BoundaryConditionGhostData requires this to be in box.
-struct DummyAnalyticSolutionTag : db::SimpleTag,
-                                  ::Tags::AnalyticSolutionOrData {
+struct DummyAnalyticSolutionTag : db::SimpleTag {
   using type =
       gh::Solutions::WrappedGr<::RelativisticEuler::Solutions::TovStar>;
 };

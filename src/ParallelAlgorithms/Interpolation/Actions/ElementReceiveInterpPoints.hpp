@@ -15,8 +15,7 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 
-namespace intrp {
-namespace Actions {
+namespace intrp::Actions {
 
 /// \ingroup ActionsGroup
 /// \brief Receives interpolation points from an InterpolationTarget.
@@ -27,7 +26,7 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `intrp::Tags::InterpPointInfo<Metavariables>`
+///   - `intrp::Tags::PointInfo`
 template <typename InterpolationTargetTag>
 struct ElementReceiveInterpPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -39,16 +38,14 @@ struct ElementReceiveInterpPoints {
       tnsr::I<DataVector, Dim,
               typename InterpolationTargetTag::compute_target_points::frame>&&
           coords) {
-    db::mutate<intrp::Tags::InterpPointInfo<Metavariables>>(
-        [&coords](const gsl::not_null<
-                  typename intrp::Tags::InterpPointInfo<Metavariables>::type*>
-                      point_infos) {
-          get<intrp::Vars::PointInfoTag<InterpolationTargetTag,
-                                        Metavariables::volume_dim>>(
-              *point_infos) = std::move(coords);
-        },
+    db::mutate<
+        intrp::Tags::PointInfo<InterpolationTargetTag, tmpl::size_t<Dim>>>(
+        [&coords](
+            const gsl::not_null<tnsr::I<
+                DataVector, Dim,
+                typename InterpolationTargetTag::compute_target_points::frame>*>
+                point_infos) { (*point_infos) = std::move(coords); },
         make_not_null(&box));
   }
 };
-}  // namespace Actions
-}  // namespace intrp
+}  // namespace intrp::Actions

@@ -142,7 +142,7 @@ struct Component {
 
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time, Tags::TimeStep>;
   using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
-      ::domain::Tags::FunctionsOfTimeInitialize>>;
+      ::domain::Tags::FunctionsOfTimeInitialize, Metavariables>>;
   using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;

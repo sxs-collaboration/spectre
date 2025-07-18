@@ -14,7 +14,6 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/StepperErrorTolerances.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -29,6 +28,8 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
+template <typename Tag>
+struct HistoryEvolvedVariables;
 struct IsUsingTimeSteppingErrorControl;
 template <typename Tag>
 struct StepperErrorTolerances;

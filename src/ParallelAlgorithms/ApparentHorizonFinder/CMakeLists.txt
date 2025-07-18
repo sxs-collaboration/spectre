@@ -8,8 +8,14 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CleanUp.cpp
+  ComputeCoords.cpp
+  ComputeVarsToInterpolateToTarget.cpp
+  Destination.cpp
   FastFlow.cpp
   InterpolationTarget.cpp
+  OptionTags.cpp
+  Storage.cpp
   )
 
 spectre_target_headers(
@@ -17,13 +23,21 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ApparentHorizon.hpp
+  CleanUp.hpp
+  Component.hpp
+  ComputeCoords.hpp
   ComputeExcisionBoundaryVolumeQuantities.hpp
   ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
+  ComputeVarsToInterpolateToTarget.hpp
+  Destination.hpp
   FastFlow.hpp
   HorizonAliases.hpp
+  Initialization.hpp
   InterpolationTarget.hpp
+  OptionTags.hpp
+  Storage.hpp
   Tags.hpp
   )
 
@@ -36,6 +50,7 @@ target_link_libraries(
   FiniteDifference
   GeneralRelativity
   LinearAlgebra
+  LinearOperators
   Logging
   Options
   Printf
@@ -51,5 +66,7 @@ target_link_libraries(
   )
 
 add_subdirectory(Callbacks)
+add_subdirectory(Criteria)
 add_subdirectory(Events)
+add_subdirectory(Protocols)
 add_subdirectory(Python)

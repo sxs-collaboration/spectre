@@ -66,8 +66,7 @@ class DummyReconstructor {
 };
 
 namespace Tags {
-struct Reconstructor : db::SimpleTag,
-                       evolution::dg::subcell::Tags::Reconstructor {
+struct Reconstructor : db::SimpleTag {
   using type = std::unique_ptr<DummyReconstructor>;
 };
 }  // namespace Tags
@@ -151,6 +150,12 @@ struct Metavariables {
 
   struct SubcellOptions {
     static constexpr bool subcell_enabled_at_external_boundary = false;
+
+    template <typename DbTagsList>
+    static constexpr size_t ghost_zone_size(
+        const db::DataBox<DbTagsList>& box) {
+      return db::get<Tags::Reconstructor>(box).ghost_zone_size();
+    }
   };
 
   struct TciOnDgGrid {
@@ -440,9 +445,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       ActionTesting::get_databox_tag<comp,
                                      ::Tags::Variables<evolved_vars_tags>>(
           runner, 0);
-  const auto& time_stepper_history_from_box =
-      ActionTesting::get_databox_tag<comp, ::Tags::HistoryEvolvedVariables<>>(
-          runner, 0);
+  const auto& time_stepper_history_from_box = ActionTesting::get_databox_tag<
+      comp,
+      ::Tags::HistoryEvolvedVariables<::Tags::Variables<evolved_vars_tags>>>(
+      runner, 0);
   const auto& did_rollback_from_box =
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::DidRollback>(

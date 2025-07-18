@@ -55,7 +55,6 @@
 #include "Parallel/Invoke.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/BoundaryHistory.hpp"
-#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/TakeStep.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -64,6 +63,8 @@
 
 /// \cond
 namespace Tags {
+template <typename Tag>
+struct HistoryEvolvedVariables;
 struct TimeStepId;
 }  // namespace Tags
 
@@ -663,13 +664,16 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
         [[maybe_unused]] const Variables<db::wrap_tags_in<
             ::Tags::Flux, typename EvolutionSystem::flux_variables,
             tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes) {
+  using variables_tag = typename EvolutionSystem::variables_tag;
+
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
 
   const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
   const auto integration_order =
-      db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
+      db::get<::Tags::HistoryEvolvedVariables<variables_tag>>(*box)
+          .integration_order();
   const auto& all_mortar_data =
       db::get<evolution::dg::Tags::MortarData<Dim>>(*box);
   const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
@@ -779,7 +783,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
   }
 
   if constexpr (LocalTimeStepping) {
-    using variables_tag = typename EvolutionSystem::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
     // We assume isotropic quadrature, i.e. the quadrature is the same in
     // all directions.

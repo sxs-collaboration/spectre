@@ -66,6 +66,9 @@ struct Tag0 : db::SimpleTag {
   using type = double;
 };
 // [databox_tag_example]
+struct Tag0FromOption : Tag0 {
+  using base = Tag0;
+};
 struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
 };
@@ -204,8 +207,8 @@ void test_databox() {
   const auto create_original_box = []() {
     // [create_databox]
     auto original_box = db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2>,
+        db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                          test_databox_tags::Tag1, test_databox_tags::Tag2>,
         db::AddComputeTags<test_databox_tags::Tag4Compute,
                            test_databox_tags::Tag5Compute,
                            test_databox_tags::Lambda0Compute,
@@ -217,8 +220,9 @@ void test_databox() {
   {
     INFO("Default-construction");
     auto box = db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2, test_databox_tags::Tag3>,
+        db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                          test_databox_tags::Tag1, test_databox_tags::Tag2,
+                          test_databox_tags::Tag3>,
         db::AddComputeTags<test_databox_tags::Tag4Compute>>();
     CHECK(db::get<test_databox_tags::Tag0>(box) == 0.);
     CHECK(db::get<test_databox_tags::Tag1>(box).empty());
@@ -257,8 +261,8 @@ void test_databox() {
         std::is_same<
             decltype(original_box),
             const db::DataBox<db::detail::expand_subitems<tmpl::append<
-                tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                           test_databox_tags::Tag2>,
+                tmpl::list<test_databox_tags::Tag0FromOption,
+                           test_databox_tags::Tag1, test_databox_tags::Tag2>,
                 tmpl::list<test_databox_tags::Tag4Compute,
                            test_databox_tags::Tag5Compute,
                            test_databox_tags::Lambda0Compute,
@@ -387,8 +391,8 @@ void test_create_argument_types() {
 void test_get_databox() {
   INFO("test get databox");
   auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
                          test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
@@ -412,8 +416,8 @@ void test_get_databox() {
 
 void trigger_get_databox_error() {
   auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
                          test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
@@ -493,8 +497,9 @@ void test_mutate() {
   INFO("test mutate");
   const auto create_box = []() {
     return db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2, test_databox_tags::Pointer>,
+        db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                          test_databox_tags::Tag1, test_databox_tags::Tag2,
+                          test_databox_tags::Pointer>,
         db::AddComputeTags<test_databox_tags::Tag4Compute,
                            test_databox_tags::Tag5Compute>>(
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
@@ -514,8 +519,8 @@ void test_mutate() {
 
 void trigger_mutate_locked_get() {
   auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
                          test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
@@ -531,8 +536,8 @@ void trigger_mutate_locked_get() {
 
 void trigger_mutate_locked_mutate() {
   auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
                          test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
@@ -564,7 +569,8 @@ void test_mutate_locked() {
 
 void test_mutate_box() {
   INFO("test mutate entire box");
-  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0>>(3.14);
+  auto box =
+      db::create<db::AddSimpleTags<test_databox_tags::Tag0FromOption>>(3.14);
   db::mutate<Tags::DataBox>(
       [&box](const gsl::not_null<decltype(box)*> mutate_box) {
         CHECK(&box == &*mutate_box);
@@ -593,15 +599,16 @@ struct NonCopyableFunctor {
 
 void test_apply() {
   INFO("test apply");
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2, test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::Tag4Compute,
-                         test_databox_tags::Tag5Compute,
-                         test_databox_tags::PointerToCounterCompute,
-                         test_databox_tags::PointerToSumCompute>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-      std::make_unique<int>(3));
+  auto original_box =
+      db::create<db::AddSimpleTags<
+                     test_databox_tags::Tag0FromOption, test_databox_tags::Tag1,
+                     test_databox_tags::Tag2, test_databox_tags::Pointer>,
+                 db::AddComputeTags<test_databox_tags::Tag4Compute,
+                                    test_databox_tags::Tag5Compute,
+                                    test_databox_tags::PointerToCounterCompute,
+                                    test_databox_tags::PointerToSumCompute>>(
+          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+          std::make_unique<int>(3));
   auto check_result_no_args = [](const std::string& sample_string,
                                  const auto& computed_string) {
     CHECK(sample_string == "My Sample String"s);
@@ -1241,7 +1248,7 @@ void test_reset_compute_items() {
   const auto create_box = []() {
     return db::create<
         db::AddSimpleTags<
-            test_databox_tags::Tag0, test_databox_tags::Tag1,
+            test_databox_tags::Tag0FromOption, test_databox_tags::Tag1,
             test_databox_tags::Tag2,
             Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                        test_databox_tags::VectorTag>>>,
@@ -1604,7 +1611,7 @@ void test_mutate_apply() {
   const auto create_box = []() {
     return db::create<
         db::AddSimpleTags<
-            test_databox_tags::Tag0, test_databox_tags::Tag1,
+            test_databox_tags::Tag0FromOption, test_databox_tags::Tag1,
             test_databox_tags::Tag2,
             Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                        test_databox_tags::VectorTag>>,
@@ -1806,8 +1813,8 @@ void test_mutating_compute_item() {
   INFO("test mutating compute item");
   const auto create_box = []() {
     return db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2>,
+        db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                          test_databox_tags::Tag1, test_databox_tags::Tag2>,
         db::AddComputeTags<test_databox_tags::MutateTag0Compute,
                            test_databox_tags::MutateVariablesCompute,
                            test_databox_tags::Tag4Compute,
@@ -2493,8 +2500,8 @@ void test_with_tagged_tuple() {
 void serialization_non_subitem_simple_items() {
   INFO("serialization of a DataBox with non-Subitem simple items only");
   auto serialization_test_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>>(
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   const double* before_0 =
       &db::get<test_databox_tags::Tag0>(serialization_test_box);
@@ -2537,7 +2544,7 @@ void serialization_non_subitem_simple_items() {
 void serialization_subitems_simple_items() {
   INFO("serialization of a DataBox with Subitem and non-Subitem simple items");
   auto serialization_test_box =
-      db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
+      db::create<db::AddSimpleTags<test_databox_tags::Tag0FromOption, Parent<0>,
                                    test_databox_tags::Tag1,
                                    test_databox_tags::Tag2, Parent<1>>>(
           3.14, std::make_pair(Boxed<int>(5), Boxed<double>(3.5)),
@@ -2657,7 +2664,7 @@ int CountingTagDoubleCompute<SecondId>::count = 0;
 void serialization_subitem_compute_items() {  // NOLINT
   INFO("serialization of a DataBox with Subitem compute items");
   auto serialization_test_box =
-      db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
+      db::create<db::AddSimpleTags<test_databox_tags::Tag0FromOption, Parent<0>,
                                    test_databox_tags::Tag1,
                                    test_databox_tags::Tag2, Parent<1>>,
                  db::AddComputeTags<
@@ -3127,7 +3134,7 @@ void test_get_mutable_reference() {
   INFO("test get_mutable_reference");
   // Make sure the presence of tags that could not be extracted
   // doesn't prevent the function from working on other tags.
-  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0,
+  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0FromOption,
                                           test_databox_tags::Tag2, Parent<0>>,
                         db::AddComputeTags<test_databox_tags::Tag4Compute>>(
       3.14, "Original string"s,
@@ -3156,8 +3163,8 @@ void test_get_mutable_reference() {
 void test_output() {
   INFO("test output");
   auto box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+      db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                        test_databox_tags::Tag1, test_databox_tags::Tag2>,
       db::AddComputeTags<test_databox_tags::Tag4Compute,
                          test_databox_tags::Tag5Compute,
                          test_databox_tags::Tag0Reference>>(
@@ -3165,7 +3172,8 @@ void test_output() {
   std::string output_types = db::as_access(box).print_types();
   std::string expected_types =
       "      DataBox type aliases:"
-      "      using tags_list = [(anonymous namespace)::test_databox_tags::Tag0,"
+      "      using tags_list = [(anonymous "
+      "namespace)::test_databox_tags::Tag0FromOption,"
       "(anonymous namespace)::test_databox_tags::Tag1,"
       "(anonymous namespace)::test_databox_tags::Tag2,"
       "(anonymous namespace)::test_databox_tags::Tag4Compute,"
@@ -3183,7 +3191,7 @@ void test_output() {
       "(anonymous namespace)::test_databox_tags::Tag0Reference,"
       "];"
       "      using mutable_item_tags = ["
-      "(anonymous namespace)::test_databox_tags::Tag0,"
+      "(anonymous namespace)::test_databox_tags::Tag0FromOption,"
       "(anonymous namespace)::test_databox_tags::Tag1,"
       "(anonymous namespace)::test_databox_tags::Tag2,"
       "];"
@@ -3196,7 +3204,7 @@ void test_output() {
       "(anonymous namespace)::test_databox_tags::Tag0Reference,"
       "];"
       "      using edge_list = brigand::list<brigand::edge<(anonymous "
-      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag0FromOption, (anonymous "
       "namespace)::test_databox_tags::Tag4Compute, "
       "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
       "namespace)::test_databox_tags::Tag2, (anonymous "
@@ -3205,7 +3213,7 @@ void test_output() {
       "namespace)::test_databox_tags::Tag4Compute, (anonymous "
       "namespace)::test_databox_tags::Tag5Compute, "
       "brigand::integral_constant<int, 1> >, brigand::edge<(anonymous "
-      "namespace)::test_databox_tags::Tag0, (anonymous "
+      "namespace)::test_databox_tags::Tag0FromOption, (anonymous "
       "namespace)::test_databox_tags::Tag0Reference, "
       "brigand::integral_constant<int, 1> > >;";
   // Remove whitespace since it may vary between compilers
@@ -3219,7 +3227,7 @@ void test_output() {
   std::string output_tags = db::as_access(box).print_tags();
   std::string expected_tags =
       "Simpletags(3)=["
-      "(anonymousnamespace)::test_databox_tags::Tag0,"
+      "(anonymousnamespace)::test_databox_tags::Tag0FromOption,"
       "(anonymousnamespace)::test_databox_tags::Tag1,"
       "(anonymousnamespace)::test_databox_tags::Tag2,"
       "];"
@@ -3239,7 +3247,7 @@ void test_output() {
   std::string expected_mutable_items =
       "Items:\n"
       "----------\n"
-      "Name:  (anonymous namespace)::test_databox_tags::Tag0\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag0FromOption\n"
       "Type:  double\n"
       "Value: 3.14\n"
       "----------\n"
@@ -3255,7 +3263,7 @@ void test_output() {
   std::string expected_items =
       "Items:\n"
       "----------\n"
-      "Name:  (anonymous namespace)::test_databox_tags::Tag0\n"
+      "Name:  (anonymous namespace)::test_databox_tags::Tag0FromOption\n"
       "Type:  double\n"
       "Value: 3.14\n"
       "----------\n"
@@ -3288,7 +3296,8 @@ void test_output() {
   CHECK(output_stream == expected_stream);
   const auto item_size = box.size_of_items();
   CHECK(item_size.size() == 5);
-  CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag0") == 8);
+  CHECK(item_size.at(
+            "(anonymous namespace)::test_databox_tags::Tag0FromOption") == 8);
   CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag1") == 32);
   CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag2") == 24);
   CHECK(item_size.at("(anonymous namespace)::test_databox_tags::Tag4Compute") ==
@@ -3342,9 +3351,9 @@ void test_exception_safety() {
     return vars;
   };
 
-  auto box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, vars1_tag, vars2_tag>,
-      db::AddComputeTags<test_databox_tags::Tag4Compute>>(
+  auto box = db::create<db::AddSimpleTags<test_databox_tags::Tag0FromOption,
+                                          vars1_tag, vars2_tag>,
+                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
       1.0, make_vars1(1, 1.0), make_vars2(1, 1.0));
   // Make sure everything is evaluated
   CHECK(db::get<test_databox_tags::Tag4>(box) == 2.0);

@@ -754,6 +754,27 @@ constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {
 }
 /// @}
 
+/// @{
+/*!
+ * Constructs a TaggedTuple that is a concatenation of two TaggedTuples.
+ * \example
+ * \snippet Test_TaggedTuple.cpp tagged_tuple_cat_example
+ */
+template <typename... Tags1, typename... Tags2>
+tuples::TaggedTuple<Tags1..., Tags2...> tagged_tuple_cat(
+    const tuples::TaggedTuple<Tags1...>& tuple1,
+    const tuples::TaggedTuple<Tags2...>& tuple2) {
+  return {get<Tags1>(tuple1)..., get<Tags2>(tuple2)...};
+}
+
+template <typename... Tags1, typename... Tags2>
+tuples::TaggedTuple<Tags1..., Tags2...> tagged_tuple_cat(
+    tuples::TaggedTuple<Tags1...>&& tuple1,
+    tuples::TaggedTuple<Tags2...>&& tuple2) {
+  return {std::move(get<Tags1>(tuple1))..., std::move(get<Tags2>(tuple2))...};
+}
+/// @}
+
 }  // namespace tuples
 
 namespace std {

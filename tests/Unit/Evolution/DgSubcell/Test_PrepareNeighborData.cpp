@@ -35,7 +35,6 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Reconstructor.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "NumericalAlgorithms/FiniteDifference/DerivativeOrder.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -54,8 +53,7 @@ class DummyReconstructor {
 };
 
 namespace Tags {
-struct Reconstructor : db::SimpleTag,
-                       evolution::dg::subcell::Tags::Reconstructor {
+struct Reconstructor : db::SimpleTag {
   using type = std::unique_ptr<DummyReconstructor>;
 };
 }  // namespace Tags
@@ -74,6 +72,12 @@ struct Metavariables {
   };
 
   struct SubcellOptions {
+    template <typename DbTagsList>
+    static constexpr size_t ghost_zone_size(
+        const db::DataBox<DbTagsList>& box) {
+      return db::get<Tags::Reconstructor>(box).ghost_zone_size();
+    }
+
     struct GhostVariables {
       using return_tags = tmpl::list<>;
       using argument_tags = tmpl::list<typename system::variables_tag>;

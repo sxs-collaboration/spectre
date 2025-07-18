@@ -28,6 +28,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -44,23 +45,6 @@ namespace grmhd::GhValenciaDivClean {
  * gauge.
  */
 struct SetPiAndPhiFromConstraints {
- public:
-  using return_tags = typename gh::gauges::SetPiAndPhiFromConstraints<
-      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
-      3>::return_tags;
-
-  using argument_tags = tmpl::push_back<
-      typename gh::gauges::SetPiAndPhiFromConstraints<
-          ghmhd::GhValenciaDivClean::InitialData::
-              analytic_solutions_and_data_list,
-          3>::argument_tags,
-      evolution::dg::subcell::Tags::Mesh<3>,
-      evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
-      evolution::dg::subcell::Tags::ActiveGrid>;
-
-  using compute_tags = typename gh::gauges::SetPiAndPhiFromConstraints<
-      ghmhd::GhValenciaDivClean::InitialData::analytic_solutions_and_data_list,
-      3>::compute_tags;
   using const_global_cache_tags =
       typename gh::gauges::SetPiAndPhiFromConstraints<
           ghmhd::GhValenciaDivClean::InitialData::
@@ -72,42 +56,69 @@ struct SetPiAndPhiFromConstraints {
               analytic_solutions_and_data_list,
           3>::mutable_global_cache_tags;
 
-  static void apply(
-      const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
-      const gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
-      const double initial_time, const Mesh<3>& dg_mesh,
-      const ElementMap<3, Frame::Grid>& logical_to_grid_map,
-      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
-          grid_to_inertial_map,
-      const std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time,
-      const tnsr::I<DataVector, 3, Frame::ElementLogical>&
-          dg_logical_coordinates,
-      const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-      const gh::gauges::GaugeCondition& gauge_condition,
-      const bool set_pi_and_phi_from_constraints, const Mesh<3>& subcell_mesh,
-      const tnsr::I<DataVector, 3, Frame::ElementLogical>&
-          subcell_logical_coordinates,
-      const evolution::dg::subcell::ActiveGrid active_grid) {
-    if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      gh::gauges::SetPiAndPhiFromConstraints<
-          ghmhd::GhValenciaDivClean::InitialData::
-              analytic_solutions_and_data_list,
-          3>::apply(pi, phi, initial_time, dg_mesh, logical_to_grid_map,
-                    grid_to_inertial_map, functions_of_time,
-                    dg_logical_coordinates, spacetime_metric, gauge_condition,
-                    set_pi_and_phi_from_constraints);
-    } else {
-      gh::gauges::SetPiAndPhiFromConstraints<
-          ghmhd::GhValenciaDivClean::InitialData::
-              analytic_solutions_and_data_list,
-          3>::apply(pi, phi, initial_time, subcell_mesh, logical_to_grid_map,
-                    grid_to_inertial_map, functions_of_time,
-                    subcell_logical_coordinates, spacetime_metric,
-                    gauge_condition, set_pi_and_phi_from_constraints);
-    }
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    db::mutate_apply<
+        tmpl::list<gh::Tags::Pi<DataVector, 3>, gh::Tags::Phi<DataVector, 3>>,
+        tmpl::list<
+            ::Tags::Time, domain::Tags::Mesh<3>,
+            domain::Tags::ElementMap<3, Frame::Grid>,
+            domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                        Frame::Inertial>,
+            domain::Tags::FunctionsOfTime,
+            domain::Tags::Coordinates<3, Frame::ElementLogical>,
+            gr::Tags::SpacetimeMetric<DataVector, 3>,
+            gh::gauges::Tags::GaugeCondition,
+            evolution::dg::subcell::Tags::Mesh<3>,
+            evolution::dg::subcell::Tags::Coordinates<3, Frame::ElementLogical>,
+            evolution::dg::subcell::Tags::ActiveGrid>>(
+        [](const gsl::not_null<tnsr::aa<DataVector, 3, Frame::Inertial>*> pi,
+           const gsl::not_null<tnsr::iaa<DataVector, 3, Frame::Inertial>*> phi,
+           const double initial_time, const Mesh<3>& dg_mesh,
+           const ElementMap<3, Frame::Grid>& logical_to_grid_map,
+           const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>&
+               grid_to_inertial_map,
+           const std::unordered_map<
+               std::string,
+               std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+               functions_of_time,
+           const tnsr::I<DataVector, 3, Frame::ElementLogical>&
+               dg_logical_coordinates,
+           const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
+           const gh::gauges::GaugeCondition& gauge_condition,
+           const Mesh<3>& subcell_mesh,
+           const tnsr::I<DataVector, 3, Frame::ElementLogical>&
+               subcell_logical_coordinates,
+           const evolution::dg::subcell::ActiveGrid active_grid,
+           const bool set_pi_and_phi_from_constraints) {
+          if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
+            gh::gauges::SetPiAndPhiFromConstraints<
+                ghmhd::GhValenciaDivClean::InitialData::
+                    analytic_solutions_and_data_list,
+                3>::impl(pi, phi, initial_time, dg_mesh, logical_to_grid_map,
+                         grid_to_inertial_map, functions_of_time,
+                         dg_logical_coordinates, spacetime_metric,
+                         gauge_condition, set_pi_and_phi_from_constraints);
+          } else {
+            gh::gauges::SetPiAndPhiFromConstraints<
+                ghmhd::GhValenciaDivClean::InitialData::
+                    analytic_solutions_and_data_list,
+                3>::impl(pi, phi, initial_time, subcell_mesh,
+                         logical_to_grid_map, grid_to_inertial_map,
+                         functions_of_time, subcell_logical_coordinates,
+                         spacetime_metric, gauge_condition,
+                         set_pi_and_phi_from_constraints);
+          }
+        },
+        make_not_null(&box),
+        Parallel::get<gh::Tags::SetPiAndPhiFromConstraints>(cache));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace grmhd::GhValenciaDivClean

@@ -54,8 +54,7 @@ namespace evolution::dg::subcell {
  * specifying background spacetime metric is time-independent.
  *
  */
-template <typename System, typename Metavariables, bool UsingRuntimeId,
-          bool ComputeOnlyOnRollback>
+template <typename System, typename Metavariables, bool ComputeOnlyOnRollback>
 struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
   static constexpr size_t volume_dim = System::volume_dim;
 
@@ -77,10 +76,7 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
                                                   Frame::Inertial>,
       evolution::dg::subcell::Tags::Mesh<volume_dim>,
       evolution::dg::subcell::Tags::Coordinates<3, Frame::Inertial>,
-      subcell::Tags::DidRollback,
-      tmpl::conditional_t<UsingRuntimeId,
-                          evolution::initial_data::Tags::InitialData,
-                          ::Tags::AnalyticSolutionOrData>>;
+      subcell::Tags::DidRollback, evolution::initial_data::Tags::InitialData>;
 
   using return_tags =
       tmpl::list<gr_vars_tag, inactive_gr_vars_tag, subcell_faces_gr_tag>;
@@ -189,22 +185,16 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
       const T& solution_or_data) {
     GrVars temp{background_gr_vars->data(), background_gr_vars->size()};
 
-    if constexpr (UsingRuntimeId) {
-      using derived_classes =
-          tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                   evolution::initial_data::InitialData>;
-      call_with_dynamic_type<void, derived_classes>(
-          &solution_or_data, [&temp, &inertial_coords,
-                              &time](const auto* const solution_or_data_ptr) {
-            temp.assign_subset(evolution::Initialization::initial_data(
-                *solution_or_data_ptr, inertial_coords, time,
-                typename GrVars::tags_list{}));
-          });
-    } else {
-      temp.assign_subset(evolution::Initialization::initial_data(
-          solution_or_data, inertial_coords, time,
-          typename GrVars::tags_list{}));
-    }
+    using derived_classes =
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 evolution::initial_data::InitialData>;
+    call_with_dynamic_type<void, derived_classes>(
+        &solution_or_data, [&temp, &inertial_coords,
+                            &time](const auto* const solution_or_data_ptr) {
+          temp.assign_subset(evolution::Initialization::initial_data(
+              *solution_or_data_ptr, inertial_coords, time,
+              typename GrVars::tags_list{}));
+        });
   }
 
   template <typename T>
@@ -240,26 +230,18 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
           logical_to_grid_map(face_centered_logical_coords), time,
           functions_of_time);
 
-      if constexpr (UsingRuntimeId) {
-        using derived_classes =
-            tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                     evolution::initial_data::InitialData>;
-        call_with_dynamic_type<void, derived_classes>(
-            &solution_or_data,
-            [&face_centered_gr_vars, &face_centered_inertial_coords, &dim,
-             &time](const auto* const solution_or_data_ptr) {
-              gsl::at(*face_centered_gr_vars, dim)
-                  .assign_subset(evolution::Initialization::initial_data(
-                      *solution_or_data_ptr, face_centered_inertial_coords,
-                      time,
-                      typename SubcellFaceGrVars::value_type::tags_list{}));
-            });
-      } else {
-        gsl::at(*face_centered_gr_vars, dim)
-            .assign_subset(evolution::Initialization::initial_data(
-                solution_or_data, face_centered_inertial_coords, time,
-                typename SubcellFaceGrVars::value_type::tags_list{}));
-      }
+      using derived_classes =
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   evolution::initial_data::InitialData>;
+      call_with_dynamic_type<void, derived_classes>(
+          &solution_or_data,
+          [&face_centered_gr_vars, &face_centered_inertial_coords, &dim,
+           &time](const auto* const solution_or_data_ptr) {
+            gsl::at(*face_centered_gr_vars, dim)
+                .assign_subset(evolution::Initialization::initial_data(
+                    *solution_or_data_ptr, face_centered_inertial_coords, time,
+                    typename SubcellFaceGrVars::value_type::tags_list{}));
+          });
     }
   }
 };

@@ -47,7 +47,7 @@ struct EmptyStruct {
  * specifying background spacetime metric is time-independent.
  *
  */
-template <typename System, typename Metavariables, bool UsingRuntimeId>
+template <typename System, typename Metavariables>
 struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
   static constexpr size_t volume_dim = System::volume_dim;
 
@@ -65,9 +65,7 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
                  domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
                  domain::Tags::Mesh<volume_dim>,
                  domain::Tags::Element<volume_dim>,
-                 tmpl::conditional_t<UsingRuntimeId,
-                                     evolution::initial_data::Tags::InitialData,
-                                     ::Tags::AnalyticSolutionOrData>>;
+                 evolution::initial_data::Tags::InitialData>;
 
   using return_tags = tmpl::list<gr_variables_tag>;
 
@@ -110,24 +108,17 @@ struct BackgroundGrVars : tt::ConformsTo<db::protocols::Mutator> {
       const gsl::not_null<GrVars*> background_gr_vars, const double time,
       const tnsr::I<DataVector, volume_dim, Frame::Inertial>& inertial_coords,
       const T& solution_or_data) {
-    if constexpr (UsingRuntimeId) {
-      using derived_classes =
-          tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                   evolution::initial_data::InitialData>;
-      call_with_dynamic_type<void, derived_classes>(
-          &solution_or_data, [&background_gr_vars, &inertial_coords,
-                              &time](const auto* const solution_or_data_ptr) {
-            (*background_gr_vars)
-                .assign_subset(evolution::Initialization::initial_data(
-                    *solution_or_data_ptr, inertial_coords, time,
-                    typename GrVars::tags_list{}));
-          });
-    } else {
-      (*background_gr_vars)
-          .assign_subset(evolution::Initialization::initial_data(
-              solution_or_data, inertial_coords, time,
-              typename GrVars::tags_list{}));
-    }
+    using derived_classes =
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 evolution::initial_data::InitialData>;
+    call_with_dynamic_type<void, derived_classes>(
+        &solution_or_data, [&background_gr_vars, &inertial_coords,
+                            &time](const auto* const solution_or_data_ptr) {
+          (*background_gr_vars)
+              .assign_subset(evolution::Initialization::initial_data(
+                  *solution_or_data_ptr, inertial_coords, time,
+                  typename GrVars::tags_list{}));
+        });
   }
 };
 

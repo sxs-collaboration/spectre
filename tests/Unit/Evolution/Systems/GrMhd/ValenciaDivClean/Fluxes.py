@@ -159,8 +159,8 @@ def tilde_b_flux(
     magnetic_field,
 ):
     result = np.outer(lapse * spatial_velocity - shift, tilde_b)
-    result -= np.outer(tilde_b, lapse * spatial_velocity - shift)
     result += lapse * inv_spatial_metric * tilde_phi
+    result -= lapse * np.outer(tilde_b, spatial_velocity)
     return result
 
 

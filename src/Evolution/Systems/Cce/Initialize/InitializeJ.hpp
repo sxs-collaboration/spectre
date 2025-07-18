@@ -27,13 +27,6 @@ class ComplexDataVector;
 /// \endcond
 
 namespace Cce {
-namespace Tags {
-/// \cond
-struct LMax;
-struct NumberOfRadialPoints;
-/// \endcond
-}  // namespace Tags
-
 /// Contains utilities and \ref DataBoxGroup mutators for generating data for
 /// \f$J\f$ on the initial CCE hypersurface.
 namespace InitializeJ {

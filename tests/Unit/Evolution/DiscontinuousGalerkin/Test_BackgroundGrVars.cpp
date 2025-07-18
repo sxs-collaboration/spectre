@@ -98,9 +98,7 @@ domain::creators::Brick create_a_brick(const size_t num_dg_pts,
                                  std::move(time_dependence_ptr));
 }
 
-// if `TestRuntimeInitialData` == false, test for the compile time types
-// of initial data
-template <bool TestMovingMesh, bool TestRuntimeInitialData>
+template <bool TestMovingMesh>
 void test(const gsl::not_null<std::mt19937*> gen) {
   // The test is done as follows :
   //
@@ -169,15 +167,9 @@ void test(const gsl::not_null<std::mt19937*> gen) {
           tmpl::list<typename SystemForTest::inverse_spatial_metric_tag>>>>;
 
   const auto solution = []() {
-    if constexpr (TestRuntimeInitialData) {
-      return RelativisticEuler::Solutions::TovStar{
-          1.0e-3,
-          EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
-          RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
-    } else {
-      return gr::Solutions::KerrSchild{1.0, make_array<3, double>(0.0),
-                                       make_array<3, double>(0.0)};
-    }
+    return RelativisticEuler::Solutions::TovStar{
+        1.0e-3, EquationsOfState::PolytropicFluid<true>{100.0, 2.0}.get_clone(),
+        RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
   }();
 
   // Note the argument `gr_variables_tag` when creating a box. Since we want to
@@ -186,29 +178,19 @@ void test(const gsl::not_null<std::mt19937*> gen) {
   // creation.
   auto box = [&initial_time, &brick, &element, &mesh, &initial_inertial_coords,
               &solution]() {
-    if constexpr (TestRuntimeInitialData) {
-      return db::create<db::AddSimpleTags<
-          ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
-          domain::Tags::Mesh<3>, domain::Tags::Coordinates<3, Frame::Inertial>,
-          gr_variables_tag, evolution::initial_data::Tags::InitialData>>(
-          initial_time, brick.create_domain(), element, mesh,
-          initial_inertial_coords, typename gr_variables_tag::type{},
-          solution.get_clone());
-    } else {
-      return db::create<db::AddSimpleTags<
-          ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
-          domain::Tags::Mesh<3>, domain::Tags::Coordinates<3, Frame::Inertial>,
-          gr_variables_tag,
-          ::Tags::AnalyticSolution<gr::Solutions::KerrSchild>>>(
-          initial_time, brick.create_domain(), element, mesh,
-          initial_inertial_coords, typename gr_variables_tag::type{}, solution);
-    }
+    return db::create<db::AddSimpleTags<
+        ::Tags::Time, domain::Tags::Domain<3>, domain::Tags::Element<3>,
+        domain::Tags::Mesh<3>, domain::Tags::Coordinates<3, Frame::Inertial>,
+        gr_variables_tag, evolution::initial_data::Tags::InitialData>>(
+        initial_time, brick.create_domain(), element, mesh,
+        initial_inertial_coords, typename gr_variables_tag::type{},
+        solution.get_clone());
   }();
 
   // Apply the mutator for initialization phase, and check that it has put
   // correct values of GR variables in the box.
-  db::mutate_apply<evolution::dg::BackgroundGrVars<
-      SystemForTest, MetavariablesForTest, TestRuntimeInitialData>>(
+  db::mutate_apply<
+      evolution::dg::BackgroundGrVars<SystemForTest, MetavariablesForTest>>(
       make_not_null(&box));
 
   const auto expected_initial_gr_vars = solution.variables(
@@ -233,8 +215,8 @@ void test(const gsl::not_null<std::mt19937*> gen) {
       },
       make_not_null(&box));
 
-  db::mutate_apply<evolution::dg::BackgroundGrVars<
-      SystemForTest, MetavariablesForTest, TestRuntimeInitialData>>(
+  db::mutate_apply<
+      evolution::dg::BackgroundGrVars<SystemForTest, MetavariablesForTest>>(
       make_not_null(&box));
 
   if constexpr (TestMovingMesh) {
@@ -261,10 +243,10 @@ void test(const gsl::not_null<std::mt19937*> gen) {
 SPECTRE_TEST_CASE("Unit.Evolution.DG.BackgroundGrVars", "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
 
-  test<false, false>(make_not_null(&gen));
-  test<false, true>(make_not_null(&gen));
-  test<true, false>(make_not_null(&gen));
-  test<true, true>(make_not_null(&gen));
+  test<false>(make_not_null(&gen));
+  test<false>(make_not_null(&gen));
+  test<true>(make_not_null(&gen));
+  test<true>(make_not_null(&gen));
 }
 
 }  // namespace

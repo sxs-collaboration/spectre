@@ -125,8 +125,9 @@ void test_initialize_analytic_solution(
           ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                     element_id);
         }
-        return ActionTesting::get_databox_tag<element_array,
-                                              ::Tags::AnalyticSolutionsBase>(
+        return ActionTesting::get_databox_tag<
+            element_array,
+            ::Tags::AnalyticSolutions<tmpl::list<ScalarFieldTag>>>(
             runner, element_id);
       };
 

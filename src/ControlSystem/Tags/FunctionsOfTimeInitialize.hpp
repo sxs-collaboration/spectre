@@ -46,10 +46,8 @@ void check_expiration_time_consistency(
 /// \ingroup ControlSystemGroup
 /// The FunctionsOfTime initialized from a DomainCreator, initial time, and
 /// control system OptionHolders.
-struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
-                                   db::SimpleTag {
-  using type = std::unordered_map<
-      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
+struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime {
+  using base = domain::Tags::FunctionsOfTime;
 
   static constexpr bool pass_metavariables = true;
 

@@ -153,6 +153,9 @@ void sources_impl(
     source_tilde_b->get(i) *= get(tilde_phi);
     source_tilde_b->get(i) -=
         get(lapse) * get(tilde_phi) * trace_spatial_christoffel_second.get(i);
+    for (size_t m = 0; m < 3; ++m) {
+      source_tilde_b->get(i) -= tilde_b.get(m) * d_shift.get(m, i);
+    }
   }
 
   trace(source_tilde_phi, extrinsic_curvature, inv_spatial_metric);

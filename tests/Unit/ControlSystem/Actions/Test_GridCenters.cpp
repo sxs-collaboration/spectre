@@ -27,18 +27,14 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-struct FunctionsOfTimeTag : domain::Tags::FunctionsOfTime, db::SimpleTag {
-  using type = std::unordered_map<
-      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
-};
-
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<3>;
   using mutable_global_cache_tags =
-      tmpl::list<FunctionsOfTimeTag, control_system::Tags::IsActiveMap>;
+      tmpl::list<domain::Tags::FunctionsOfTime,
+                 control_system::Tags::IsActiveMap>;
   using simple_tags = db::AddSimpleTags<::domain::Tags::Element<3>,
                                         Tags::TimeStepId, ::Tags::Time>;
   using compute_tags = tmpl::list<>;
@@ -180,7 +176,7 @@ void test_action() {
 
   // Remove things we need from FunctionsOfTime map to test ERRORs
   auto& cache = ActionTesting::cache<component>(runner, element_id_zero);
-  Parallel::mutate<FunctionsOfTimeTag, UpdateFot>(
+  Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFot>(
       cache, [&functions_of_time]() {
         auto local_fots = clone_unique_ptrs(functions_of_time);
         local_fots.erase("GridCenters");
@@ -190,7 +186,7 @@ void test_action() {
       make_not_null(&runner), element_id_zero,
       Catch::Matchers::ContainsSubstring("There is no function of time named "
                                          "'GridCenters', which is required ")));
-  Parallel::mutate<FunctionsOfTimeTag, UpdateFot>(
+  Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFot>(
       cache, [&functions_of_time]() {
         auto local_fots = clone_unique_ptrs(functions_of_time);
         local_fots.erase("Rotation");
@@ -200,7 +196,7 @@ void test_action() {
       make_not_null(&runner), element_id_zero,
       Catch::Matchers::ContainsSubstring("There is no function of time named "
                                          "'Rotation', which means that ")));
-  Parallel::mutate<FunctionsOfTimeTag, UpdateFot>(
+  Parallel::mutate<domain::Tags::FunctionsOfTime, UpdateFot>(
       cache, [&functions_of_time]() {
         auto local_fots = clone_unique_ptrs(functions_of_time);
         return local_fots;

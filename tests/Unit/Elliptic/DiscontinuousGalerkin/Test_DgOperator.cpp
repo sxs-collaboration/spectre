@@ -182,7 +182,7 @@ struct ProjectTemporalId : tt::ConformsTo<::amr::protocols::Projector> {
       tmpl::list<TemporalIdTag,
                  // Work around a segfault because this tag isn't handled
                  // correctly by the testing framework
-                 Parallel::Tags::GlobalCacheImpl<Metavariables>>;
+                 Parallel::Tags::GlobalCache<Metavariables>>;
   using argument_tags = tmpl::list<>;
   // p-refinement
   template <size_t Dim>

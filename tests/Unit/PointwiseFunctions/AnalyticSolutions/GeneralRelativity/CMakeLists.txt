@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_KerrSchild.cpp
   Test_Minkowski.cpp
   Test_SphericalKerrSchild.cpp
+  Test_TrumpetSchwarzschild.cpp
   Test_WrappedGr.cpp
   )
 

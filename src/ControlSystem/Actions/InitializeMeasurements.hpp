@@ -48,14 +48,6 @@ class TaggedTuple;
 namespace control_system::Actions {
 /// \ingroup ControlSystemGroup
 /// \brief Set up the element component for control-system measurements.
-///
-/// DataBox changes:
-/// - Adds:
-///   * `Parallel::Tags::FromGlobalCache<
-///     ::control_system::Tags::MeasurementTimescales>`
-///
-/// - Removes: nothing
-/// - Modifies: nothing
 template <typename ControlSystems>
 struct InitializeMeasurements {
   using control_system_groups =

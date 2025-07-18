@@ -27,6 +27,9 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+namespace ah::Tags {
+struct BlocksForInterpolation;
+}  // namespace ah::Tags
 namespace db {
 template <typename TagsList>
 class DataBox;
@@ -66,7 +69,7 @@ struct RegisterElement {
         intrp::InterpolationTarget_detail::get_sequential_target_tags<
             Metavariables>;
     const auto& blocks_to_interpolate =
-        Parallel::get<intrp::Tags::BlocksForInterpolationBase>(cache);
+        Parallel::get<ah::Tags::BlocksForInterpolation>(cache);
     const auto& blocks =
         Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache)
             .blocks();
@@ -121,7 +124,7 @@ struct DeregisterElement {
         intrp::InterpolationTarget_detail::get_sequential_target_tags<
             Metavariables>;
     const auto& blocks_to_interpolate =
-        Parallel::get<intrp::Tags::BlocksForInterpolationBase>(cache);
+        Parallel::get<ah::Tags::BlocksForInterpolation>(cache);
     const auto& blocks =
         Parallel::get<domain::Tags::Domain<Metavariables::volume_dim>>(cache)
             .blocks();

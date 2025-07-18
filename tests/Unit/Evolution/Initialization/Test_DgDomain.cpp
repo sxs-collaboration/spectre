@@ -146,7 +146,7 @@ struct IncrementTime {
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
-  static constexpr size_t dim = metavariables::dim;
+  static constexpr size_t dim = metavariables::volume_dim;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<dim>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<dim>>;
@@ -166,15 +166,14 @@ struct Component {
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<Initialization::Actions::InitializeItems<
-                         evolution::dg::Initialization::Domain<dim>>,
+                         evolution::dg::Initialization::Domain<metavariables>>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
 };
 
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  static constexpr size_t dim = Dim;
-
+  static constexpr size_t volume_dim = Dim;
 };
 
 template <size_t Dim, bool TimeDependent>
@@ -187,11 +186,11 @@ void test(const Spectral::Quadrature quadrature) {
 
   static_assert(
       std::is_same_v<typename evolution::dg::Initialization::Domain<
-                         Dim>::mutable_global_cache_tags,
+                         metavars>::mutable_global_cache_tags,
                      tmpl::list<::domain::Tags::FunctionsOfTimeInitialize>>);
   static_assert(std::is_same_v<
                 typename evolution::dg::Initialization::Domain<
-                    Dim, true>::mutable_global_cache_tags,
+                    metavars, true>::mutable_global_cache_tags,
                 tmpl::list<control_system::Tags::FunctionsOfTimeInitialize>>);
 
   PUPable_reg(SINGLE_ARG(
@@ -568,7 +567,7 @@ struct TestMetavariables {
 };
 
 using items_type =
-    tuples::TaggedTuple<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+    tuples::TaggedTuple<Parallel::Tags::GlobalCache<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             1, Frame::Grid, Frame::Inertial>,
@@ -649,12 +648,13 @@ void test_p_refine() {
   }
 
   auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+      db::AddSimpleTags<Parallel::Tags::GlobalCache<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             1, Frame::Grid, Frame::Inertial>,
                         ::domain::Tags::Element<1>>,
-      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>,
+                                                 TestMetavariables>>>(
       &global_cache, std::move(element_map), std::move(grid_to_inertial_map),
       std::move(element));
 
@@ -703,12 +703,13 @@ void test_split() {
                          Neighbors<1>{std::unordered_set{child_2_id},
                                       OrientationMap<1>::create_aligned()}}}};
   auto child_1_box = db::create<
-      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+      db::AddSimpleTags<Parallel::Tags::GlobalCache<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             1, Frame::Grid, Frame::Inertial>,
                         ::domain::Tags::Element<1>>,
-      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>,
+                                                 TestMetavariables>>>(
       &global_cache, ElementMap<1, Frame::Grid>{},
       std::unique_ptr<GridToInertialMap>{nullptr}, std::move(child_1));
 
@@ -726,12 +727,13 @@ void test_split() {
                          Neighbors<1>{std::unordered_set{child_1_id},
                                       OrientationMap<1>::create_aligned()}}}};
   auto child_2_box = db::create<
-      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+      db::AddSimpleTags<Parallel::Tags::GlobalCache<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             1, Frame::Grid, Frame::Inertial>,
                         ::domain::Tags::Element<1>>,
-      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>,
+                                                 TestMetavariables>>>(
       &global_cache, ElementMap<1, Frame::Grid>{},
       std::unique_ptr<GridToInertialMap>{nullptr}, std::move(child_2));
 
@@ -799,12 +801,13 @@ void test_join() {
 
   Element<1> parent{parent_id, DirectionMap<1, Neighbors<1>>{}};
   auto parent_box = db::create<
-      db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<TestMetavariables>,
+      db::AddSimpleTags<Parallel::Tags::GlobalCache<TestMetavariables>,
                         ::domain::Tags::ElementMap<1, Frame::Grid>,
                         ::domain::CoordinateMaps::Tags::CoordinateMap<
                             1, Frame::Grid, Frame::Inertial>,
                         ::domain::Tags::Element<1>>,
-      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>>>>(
+      tmpl::list<Parallel::Tags::FromGlobalCache<domain::Tags::Domain<1>,
+                                                 TestMetavariables>>>(
       &global_cache, ElementMap<1, Frame::Grid>{},
       std::unique_ptr<GridToInertialMap>{nullptr}, std::move(parent));
   db::mutate_apply<evolution::dg::Initialization::ProjectDomain<1>>(

@@ -90,7 +90,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         make_not_null(&get<Pressure>(prim_vars)),
         get<MassDensityCons>(cons_vars), get<MomentumDensity>(cons_vars),
         get<EnergyDensity>(cons_vars),
-        db::get<hydro::Tags::EquationOfStateBase>(box));
+        db::get<hydro::Tags::EquationOfState<false, 2>>(box));
   }
   CHECK_VARIABLES_APPROX(db::get<::Tags::Variables<prim_tags>>(box), prim_vars);
 }

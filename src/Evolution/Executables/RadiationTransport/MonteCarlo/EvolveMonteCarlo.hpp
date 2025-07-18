@@ -203,14 +203,14 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
           Initialization::TimeStepping<EvolutionMetavars, TimeStepperBase>,
-          evolution::dg::Initialization::Domain<volume_dim>>,
+          evolution::dg::Initialization::Domain<EvolutionMetavars>>,
       Initialization::Actions::AddSimpleTags<
-          evolution::dg::BackgroundGrVars<system, EvolutionMetavars, true>>,
+          evolution::dg::BackgroundGrVars<system, EvolutionMetavars>>,
       evolution::dg::subcell::Actions::SetSubcellGrid<volume_dim, system,
                                                       false>,
       Initialization::Actions::AddSimpleTags<
           evolution::dg::subcell::BackgroundGrVars<system, EvolutionMetavars,
-                                                   true, false>>,
+                                                   false>>,
       Actions::MutateApply<Particles::MonteCarlo::SwapGrTags>,
       Initialization::Actions::InitializeMCTags<system, EnergyBins,
                                                 NeutrinoSpecies, true>,
