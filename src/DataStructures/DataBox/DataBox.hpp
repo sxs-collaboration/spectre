@@ -23,6 +23,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/IsApplyCallable.hpp"
 #include "DataStructures/DataBox/Item.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -277,6 +278,14 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   using reference_item_parent_tags =
       tmpl::filter<reference_item_tags,
                    tmpl::bind<detail::has_subitems, tmpl::_1>>;
+
+  /// If it exists, the Parallel::Tags::MetavariablesImpl tag, otherwise
+  /// NoSuchType
+  ///
+  /// This allows the type-erased Parallel::Tags::Metavariables
+  /// to be used to fetch the metavariables
+  using metavars_tag =
+      typename detail::metavars_tag_impl<mutable_item_tags>::type;
 
   /// \cond
   /*!
@@ -646,10 +655,12 @@ template <typename ImmutableItemTag, typename ArgumentTag, typename TagsList>
 constexpr char check_immutable_item_tag_dependency() {
   using immutable_item_tag_index = tmpl::index_of<TagsList, ImmutableItemTag>;
   static_assert(
-      tmpl::less<tmpl::index_if<TagsList,
-                                std::is_same<tmpl::pin<ArgumentTag>, tmpl::_1>,
-                                immutable_item_tag_index>,
-                 immutable_item_tag_index>::value,
+      std::is_same_v<ArgumentTag, Parallel::Tags::Metavariables> or
+          tmpl::less<
+              tmpl::index_if<TagsList,
+                             std::is_same<tmpl::pin<ArgumentTag>, tmpl::_1>,
+                             immutable_item_tag_index>,
+              immutable_item_tag_index>::value,
       "The argument_tags of an immutable item tag must be added before itself. "
       "This is done to ensure no cyclic dependencies arise.  See the first and "
       "second template arguments of check_immutable_item_tag_dependency for "
@@ -1277,6 +1288,9 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const {
           "restriction exists to avoid complexity.");
     }
     return *this;
+  } else if constexpr (std::is_same_v<Tag, Parallel::Tags::Metavariables>) {
+    static_assert(not std::is_same_v<metavars_tag, NoSuchType>);
+    return get_item<metavars_tag>().get();
   } else {
     DEBUG_STATIC_ASSERT(
         not detail::has_no_matching_tag_v<tags_list, Tag>,

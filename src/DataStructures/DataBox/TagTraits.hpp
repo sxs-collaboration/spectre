@@ -12,6 +12,9 @@ struct BaseTag;
 struct ComputeTag;
 struct ReferenceTag;
 }  // namespace db
+namespace Parallel::Tags {
+struct Metavariables;
+}  // namespace Parallel::Tags
 /// \endcond
 
 namespace db {
@@ -120,8 +123,10 @@ constexpr bool is_non_base_tag_v = is_non_base_tag<Tag>::value;
  * \see is_tag_v
  */
 template <typename Tag>
-struct is_tag : std::bool_constant<std::is_base_of_v<db::SimpleTag, Tag> or
-                                   std::is_base_of_v<db::BaseTag, Tag>> {};
+struct is_tag
+    : std::bool_constant<std::is_base_of_v<db::SimpleTag, Tag> or
+                         std::is_base_of_v<db::BaseTag, Tag> or
+                         std::is_same_v<Tag, Parallel::Tags::Metavariables>> {};
 
 /// \ingroup DataBoxGroup
 /// \brief True if `Tag` is a DataBox tag.
