@@ -16,6 +16,7 @@ target_link_libraries(
   DataStructures
   DomainCreators
   Domain
+  GeneralRelativity
   H5
   Ringdown
   Spectral

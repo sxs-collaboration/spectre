@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_GeodesicAcceleration.cpp
   Test_GeodesicEquation.cpp
   Test_InterfaceNullNormal.cpp
+  Test_KerrHorizon.cpp
   Test_KerrSchildCoords.cpp
   Test_ProjectionOperators.cpp
   Test_Psi4.cpp
@@ -37,7 +38,6 @@ target_link_libraries(
   GeneralizedHarmonic
   GeneralRelativity
   GeneralRelativityHelpers
-  GeneralRelativitySolutions
   LinearOperators
   Spectral
   Utilities

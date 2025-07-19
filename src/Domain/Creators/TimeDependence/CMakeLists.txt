@@ -44,6 +44,6 @@ target_link_libraries(
   Options
   Utilities
   PRIVATE
-  GeneralRelativitySolutions
+  GeneralRelativity
   ErrorHandling
   )

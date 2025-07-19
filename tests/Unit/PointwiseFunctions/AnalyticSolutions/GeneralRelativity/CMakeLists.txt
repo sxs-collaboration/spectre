@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   Test_GaugeWave.cpp
   Test_GaugePlaneWave.cpp
   Test_HarmonicSchwarzschild.cpp
-  Test_KerrHorizon.cpp
   Test_KerrSchild.cpp
   Test_Minkowski.cpp
   Test_SphericalKerrSchild.cpp

@@ -30,6 +30,7 @@ target_link_libraries(
   PRIVATE
   ApparentHorizonFinder
   FiniteDifference
+  GeneralRelativity
   GeneralRelativitySolutions
   InterpolationHelpers
   LinearOperators

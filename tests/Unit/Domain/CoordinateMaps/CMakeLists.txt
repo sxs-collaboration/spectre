@@ -46,7 +46,7 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   FunctionsOfTime
-  GeneralRelativitySolutions
+  GeneralRelativity
   RootFinding
   Spectral
   Utilities

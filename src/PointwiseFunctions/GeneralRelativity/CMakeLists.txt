@@ -16,6 +16,7 @@ spectre_target_sources(
   GeodesicEquation.cpp
   InterfaceNullNormal.cpp
   InverseSpacetimeMetric.cpp
+  KerrHorizon.cpp
   KerrSchildCoords.cpp
   Lapse.cpp
   ProjectionOperators.cpp
@@ -51,6 +52,7 @@ spectre_target_headers(
   GeodesicEquation.hpp
   InterfaceNullNormal.hpp
   InverseSpacetimeMetric.hpp
+  KerrHorizon.hpp
   KerrSchildCoords.hpp
   Lapse.hpp
   ProjectionOperators.hpp
