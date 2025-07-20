@@ -209,8 +209,9 @@ class Shape final : public TimeDependence<3> {
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
   std::array<double, 3> center_{
       make_array<3>(std::numeric_limits<double>::signaling_NaN())};
-  inline static const std::string function_of_time_name_{"Shape" +
-                                                         get_output(Label)};
+  static std::string function_of_time_name() {
+    return "Shape" + get_output(Label);
+  }
   double inner_radius_{std::numeric_limits<double>::signaling_NaN()};
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   std::unique_ptr<TransitionFunction> transition_func_;

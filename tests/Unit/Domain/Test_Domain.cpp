@@ -660,13 +660,12 @@ struct TestTimeDependentMapOptions {
 
   // Names are public because they need to be used when constructing maps in the
   // BCO domain creators themselves
-  inline static const std::string expansion_name{"Expansion"};
-  inline static const std::string expansion_outer_boundary_name{
+  static constexpr const char* expansion_name{"Expansion"};
+  static constexpr const char* expansion_outer_boundary_name{
       "ExpansionOuterBoundary"};
-  inline static const std::string rotation_name{"Rotation"};
-  inline static const std::array<std::string, 2> size_names{{"SizeA", "SizeB"}};
-  inline static const std::array<std::string, 2> shape_names{
-      {"ShapeA", "ShapeB"}};
+  static constexpr const char* rotation_name{"Rotation"};
+  static constexpr std::array<const char*, 2> size_names{{"SizeA", "SizeB"}};
+  static constexpr std::array<const char*, 2> shape_names{{"ShapeA", "ShapeB"}};
 
  private:
   static size_t get_index(const ObjectLabel object) {

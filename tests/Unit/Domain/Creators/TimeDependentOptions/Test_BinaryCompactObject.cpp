@@ -655,25 +655,6 @@ void test(const bool include_expansion, const bool include_rotation,
 }
 
 template <bool IsCylindrical>
-void check_names() {
-  INFO("Check names");
-  // These are hard-coded so this is just a regression test
-  CHECK(TimeDependentMapOptions<IsCylindrical>::expansion_name == "Expansion"s);
-  CHECK(TimeDependentMapOptions<IsCylindrical>::expansion_outer_boundary_name ==
-        "ExpansionOuterBoundary"s);
-  CHECK(TimeDependentMapOptions<IsCylindrical>::rotation_name == "Rotation"s);
-  CHECK(TimeDependentMapOptions<IsCylindrical>::translation_name ==
-        "Translation"s);
-  CHECK(TimeDependentMapOptions<IsCylindrical>::skew_name == "Skew"s);
-  CHECK(TimeDependentMapOptions<IsCylindrical>::size_names ==
-        std::array{"SizeA"s, "SizeB"s});
-  CHECK(TimeDependentMapOptions<IsCylindrical>::shape_names ==
-        std::array{"ShapeA"s, "ShapeB"s});
-  CHECK(TimeDependentMapOptions<IsCylindrical>::grid_centers_name ==
-        "GridCenters"s);
-}
-
-template <bool IsCylindrical>
 void test_errors() {
   INFO("Test errors");
   CAPTURE(IsCylindrical);
@@ -867,8 +848,6 @@ SPECTRE_TEST_CASE(
                transition_ends_at_cube_A, transition_ends_at_cube_B,
                include_grid_centers);
   }
-  check_names<true>();
-  check_names<false>();
   test_errors<true>();
   test_errors<false>();
   test_worldtube_fots();

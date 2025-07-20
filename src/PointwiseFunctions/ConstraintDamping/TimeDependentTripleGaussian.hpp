@@ -181,8 +181,8 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
   double inverse_width_3_ = std::numeric_limits<double>::signaling_NaN();
   std::array<double, 3> center_3_{};
   MovementMethods movement_method_{MovementMethods::ExpansionFactor};
-  inline static const std::string function_of_time_for_scaling_{"Expansion"};
-  inline static const std::string function_of_time_for_centers_{"GridCenters"};
+  static constexpr const char* function_of_time_for_scaling_{"Expansion"};
+  static constexpr const char* function_of_time_for_centers_{"GridCenters"};
 
   template <typename T>
   void apply_call_operator(
