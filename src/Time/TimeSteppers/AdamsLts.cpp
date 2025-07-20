@@ -402,10 +402,11 @@ LtsCoefficients lts_coefficients(const ConstBoundaryHistoryTimes& local_times,
             continue;
           }
           step_coefficients.emplace_back(
-              local_ids[local_step_index], remote_ids[remote_step_index],
-              small_step_coefficients[contributing_small_step] *
-                  local_interpolation_coefficients[local_step_index] *
-                  remote_interpolation_coefficients[remote_step_index]);
+              std::tuple<TimeStepId, TimeStepId, double>{
+                  local_ids[local_step_index], remote_ids[remote_step_index],
+                  small_step_coefficients[contributing_small_step] *
+                      local_interpolation_coefficients[local_step_index] *
+                      remote_interpolation_coefficients[remote_step_index]});
         }
       }
     }

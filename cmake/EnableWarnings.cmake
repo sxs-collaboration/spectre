@@ -85,6 +85,16 @@ target_link_libraries(
   SpectreCudaWarnings
   )
 
+# Have Clang warn about unsupported CUDA versions but don't error
+create_cxx_flags_target(
+  "-Wno-error=unknown-cuda-version"
+  SpectreCudaClangWarnings)
+target_link_libraries(
+  SpectreWarnings
+  INTERFACE
+  SpectreCudaClangWarnings
+  )
+
 target_link_libraries(
   SpectreFlags
   INTERFACE

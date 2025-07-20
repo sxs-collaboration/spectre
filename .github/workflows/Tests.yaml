@@ -460,7 +460,7 @@ jobs:
           - compiler: clang-13
             build_type: Release
             BUILD_SHARED_LIBS: OFF
-            use_xsimd: OFF
+            USE_XSIMD: OFF
             MEMORY_ALLOCATOR: JEMALLOC
           # Add a test without PCH to the build matrix, which only builds core
           # libraries. Building all the tests without the PCH takes very long
@@ -499,6 +499,31 @@ jobs:
             # Test `install` target with clang in Release mode because it uses
             # little disk space
             install: ON
+          # Test compiling with clang and CUDA
+          - compiler: clang-18
+            CUDA: ON
+            KOKKOS: ON
+            # Compile for NVIDIA Ampere architecture. Can't run this on
+            # GitHub-hosted runners because they don't have the GPU hardware,
+            # but we can test the compilation.
+            KOKKOS_ARCH: "AMPERE80"
+            # Compile in Release mode to speed up the build
+            build_type: Release
+            # Disable PCH as clang+cuda seems to have a problem with that
+            USE_PCH: OFF
+            # Disable ccache as it isn't forwarded to the clang+cuda correctly
+            USE_CCACHE: OFF
+            # Build with static libs because Kokkos CUDA doesn't support shared
+            # libs
+            BUILD_SHARED_LIBS: OFF
+            # Build only a subset of the code because compiling the full code is
+            # too slow and exceeds the available memory. We should extend this
+            # to the full code once we have a better solution for the memory
+            # issue. See 'Test nvcc support' step below.
+            # unit_tests: OFF
+            test_executables: OFF
+            # Disable warnings as lots are emitted at the moment
+            ENABLE_WARNINGS: OFF
           # Test compiling with nvcc and CUDA
           - compiler: nvcc-12-6
             CUDA: ON
@@ -578,26 +603,45 @@ jobs:
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
           elif [[ $COMPILER_ID = clang ]]; then
-            apt-get install -y $CC $FC
-          elif [[ $COMPILER_ID = nvcc ]]; then
-            # Install CUDA
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-            dpkg -i cuda-keyring_1.1-1_all.deb
-            apt-get update -y
-            apt-get install -y cuda-nvcc-${COMPILER_VERSION} \
-              build-essential libc6-dev pkg-config
-            echo "/usr/local/cuda-${COMPILER_VERSION/-/.}/bin" >> $GITHUB_PATH
+            if [ "$COMPILER_VERSION" -le 16 ]; then
+              apt-get install -y $CC $FC
+            else
+              wget https://apt.llvm.org/llvm.sh
+              chmod +x llvm.sh
+              ./llvm.sh $COMPILER_VERSION
+              # Also install OMP development headers and clang-tools because
+              # they aren't included by default in the above llvm installation
+              # script but needed for Kokkos
+              apt-get install -y libomp-$COMPILER_VERSION-dev \
+                clang-tools-$COMPILER_VERSION
+            fi
           fi
+      - name: Install CUDA
+        if: matrix.CUDA == 'ON'
+        run: |
+          CUDA_VERSION=12.6
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          dpkg -i cuda-keyring_1.1-1_all.deb
+          apt-get update -y
+          # Install minimal CUDA toolkit:
+          # - nvcc compiler
+          # - cuRAND because clang-18 includes a header from it
+          # - No cuBLAS for now because we don't currently use it and it takes
+          #   up ~270 MB of disk space
+          apt-get install -y cuda-nvcc-${CUDA_VERSION/\./-} \
+            libcurand-dev-${CUDA_VERSION/\./-}
+          echo "/usr/local/cuda-${CUDA_VERSION}/bin" >> $GITHUB_PATH
       - name: Install Kokkos
         if: matrix.KOKKOS == 'ON'
         working-directory: /work
         run: |
-          KOKKOS_VERSION=4.4.00
+          KOKKOS_VERSION=4.7.00
           wget -O kokkos.tar.gz "https://github.com/kokkos/kokkos/releases/download/${KOKKOS_VERSION}/kokkos-${KOKKOS_VERSION}.tar.gz"
           tar -xzf kokkos.tar.gz && mv kokkos-* kokkos && cd kokkos
           mkdir build && cd build
           cmake .. \
             -D CMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -D CMAKE_CXX_STANDARD=20 \
             -D CMAKE_INSTALL_PREFIX=/usr/local \
             -D Kokkos_ENABLE_SERIAL=ON \
             -D Kokkos_ENABLE_OPENMP=ON \
@@ -715,8 +759,9 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
           UBSAN_INTEGER=${{ matrix.UBSAN_INTEGER }}
-          USE_PCH=${{ matrix.use_pch }}
-          USE_XSIMD=${{ matrix.use_xsimd }}
+          USE_PCH=${{ matrix.USE_PCH }}
+          USE_XSIMD=${{ matrix.USE_XSIMD }}
+          USE_CCACHE=${{ matrix.USE_CCACHE }}
           COVERAGE=${{ matrix.COVERAGE }}
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
           INPUT_FILE_MIN_PRIO=${{ matrix.input_file_tests_min_priority }}
@@ -743,7 +788,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D STUB_LIBRARY_OBJECT_FILES=ON
           -D USE_PCH=${USE_PCH:-'ON'}
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
-          -D USE_CCACHE=ON
+          -D USE_CCACHE=${USE_CCACHE:-'ON'}
           -D ENABLE_OPENMP=ON
           -D SPECTRE_KOKKOS=${KOKKOS:-'OFF'}
           -D COVERAGE=${COVERAGE:-'OFF'}
@@ -933,9 +978,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           PYTHON_VERSION=${{ matrix.PYTHON_VERSION }}
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
           MATRIX_CHARM_ROOT=${{ matrix.CHARM_ROOT }}
-          MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
-          USE_PCH=${{ matrix.use_pch }};
-          USE_XSIMD=${{ matrix.use_xsimd }}
+          MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
+          USE_PCH=${{ matrix.USE_PCH }}
+          USE_XSIMD=${{ matrix.USE_XSIMD }}
+          USE_CCACHE=${{ matrix.USE_CCACHE }}
 
           cmake
           -D CMAKE_C_COMPILER=${CC}
@@ -955,7 +1001,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D STUB_LIBRARY_OBJECT_FILES=ON
           -D USE_PCH=${USE_PCH:-'ON'}
           -D USE_XSIMD=${USE_XSIMD:-'ON'}
-          -D USE_CCACHE=ON
+          -D USE_CCACHE=${USE_CCACHE:-'ON'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           -D BUILD_DOCS=OFF
