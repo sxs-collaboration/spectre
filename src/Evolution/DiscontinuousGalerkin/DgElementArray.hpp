@@ -22,7 +22,7 @@
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
-#include "Parallel/CreateElementsUsingDistribution.hpp"
+#include "Parallel/ArrayCollection/CreateElementsUsingDistribution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
