@@ -306,9 +306,11 @@ class ProductOfCorrections final : public BoundaryCorrection {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename DerivedGhCorrection, typename DerivedScalarCorrection>
 PUP::able::PUP_ID ProductOfCorrections<DerivedGhCorrection,
                                        DerivedScalarCorrection>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace ScalarTensor::BoundaryCorrections

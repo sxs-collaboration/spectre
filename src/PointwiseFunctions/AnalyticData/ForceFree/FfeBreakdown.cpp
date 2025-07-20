@@ -27,7 +27,9 @@ void FfeBreakdown::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID FfeBreakdown::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 tuples::TaggedTuple<Tags::TildeE> FfeBreakdown::variables(
     const tnsr::I<DataVector, 3>& coords, tmpl::list<Tags::TildeE> /*meta*/) {

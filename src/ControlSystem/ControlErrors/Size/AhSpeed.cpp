@@ -215,5 +215,7 @@ double AhSpeed::control_error(
          (Y00 * control_error_args.avg_distorted_normal_dot_unit_coord_vector);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID AhSpeed::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace control_system::size::States

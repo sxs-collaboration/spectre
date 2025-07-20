@@ -80,7 +80,9 @@ class SomeEvent : public Event {
   std::string subfile_path_;
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID SomeEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // __CUDA_ARCH__
 
 template <typename Metavariables>
 struct Component {

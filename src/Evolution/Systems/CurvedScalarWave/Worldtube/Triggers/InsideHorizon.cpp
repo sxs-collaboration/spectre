@@ -27,5 +27,7 @@ bool InsideHorizon::operator()(
   return orbit_radius + wt_radius_inertial < 1.99;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID InsideHorizon::my_PUP_ID = 0;  // NOLINT
+#endif                                           // __CUDA_ARCH__
 }  // namespace Triggers

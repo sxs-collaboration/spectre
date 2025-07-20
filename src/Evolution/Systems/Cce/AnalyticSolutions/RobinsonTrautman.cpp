@@ -461,5 +461,7 @@ void RobinsonTrautman::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID RobinsonTrautman::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Cce::Solutions

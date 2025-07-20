@@ -40,8 +40,10 @@ HydroFreeOutflow::get_clone() const {
 
 void HydroFreeOutflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID HydroFreeOutflow::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 std::optional<std::string> HydroFreeOutflow::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

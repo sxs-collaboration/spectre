@@ -190,7 +190,9 @@ BlastWave::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID BlastWave::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const BlastWave& lhs, const BlastWave& rhs) {
   return lhs.inner_radius_ == rhs.inner_radius_ and

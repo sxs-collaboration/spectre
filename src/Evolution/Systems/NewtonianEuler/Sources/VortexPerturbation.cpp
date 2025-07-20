@@ -56,6 +56,8 @@ void VortexPerturbation::operator()(
                                  get(dvz_by_dz);
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID VortexPerturbation::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace NewtonianEuler::Sources

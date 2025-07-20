@@ -377,4 +377,6 @@ TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforth)
 LTS_TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforth)
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::AdamsBashforth::my_PUP_ID = 0;  // NOLINT
+#endif                                                          // __CUDA_ARCH__

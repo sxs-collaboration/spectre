@@ -141,6 +141,8 @@ ObserveTimeStep::ObserveTimeStep(const std::string& subfile_name,
       legend_(std::vector<std::string>{"Time", "Time Step"}) {}
 
 /// \cond
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ObserveTimeStep::my_PUP_ID = 0;  // NOLINT
+#endif                                             // __CUDA_ARCH__
 /// \endcond
 }  // namespace Cce::Events

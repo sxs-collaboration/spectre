@@ -96,7 +96,9 @@ void MagnetizedTovVariables<DataType, Region>::operator()(
 }
 }  // namespace magnetized_tov_detail
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID MagnetizedTovStar::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   bool equal =

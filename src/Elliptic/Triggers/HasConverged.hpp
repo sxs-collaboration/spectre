@@ -37,7 +37,9 @@ class HasConverged : public Trigger {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename Label>
 PUP::able::PUP_ID HasConverged<Label>::my_PUP_ID = 0;  // NOLINT
+#endif                                                 // __CUDA_ARCH__
 /// \endcond
 }  // namespace elliptic::Triggers

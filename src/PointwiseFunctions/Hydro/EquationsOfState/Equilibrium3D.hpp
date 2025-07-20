@@ -175,7 +175,9 @@ class Equilibrium3D : public EquationOfState<EquilEos::is_relativistic, 3> {
   EquilEos underlying_eos_;
 };
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename EquilEos>
 PUP::able::PUP_ID EquationsOfState::Equilibrium3D<EquilEos>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace EquationsOfState

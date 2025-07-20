@@ -155,5 +155,7 @@ double DeltaR::control_error(const Info& /*info*/,
   return control_error_args.control_error_delta_r;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID DeltaR::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace control_system::size::States

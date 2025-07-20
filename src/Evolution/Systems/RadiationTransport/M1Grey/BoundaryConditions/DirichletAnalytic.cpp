@@ -190,10 +190,12 @@ DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::dg_ghost(
   return {};
 }
 
+#ifndef __CUDA_ARCH__
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID =
     0;
+#endif  // __CUDA_ARCH__
 
 template class DirichletAnalytic<tmpl::list<neutrinos::ElectronNeutrinos<1>>>;
 

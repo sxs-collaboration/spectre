@@ -147,7 +147,9 @@ ConstantDensityStar::variables(
   return {compute_piecewise(magnitude(x), radius_, density_, 0.)};
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ConstantDensityStar::my_PUP_ID = 0;  // NOLINT
+#endif                                                 // __CUDA_ARCH__
 
 bool operator==(const ConstantDensityStar& lhs,
                 const ConstantDensityStar& rhs) {

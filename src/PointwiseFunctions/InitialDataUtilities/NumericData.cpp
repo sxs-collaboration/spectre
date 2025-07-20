@@ -55,7 +55,9 @@ bool operator!=(const NumericData& lhs, const NumericData& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID NumericData::my_PUP_ID = 0;  // NOLINT
+#endif                                         // __CUDA_ARCH__
 
 }  // namespace elliptic::analytic_data
 
@@ -83,6 +85,8 @@ bool operator!=(const NumericData& lhs, const NumericData& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID NumericData::my_PUP_ID = 0;  // NOLINT
+#endif                                         // __CUDA_ARCH__
 
 }  // namespace evolution::initial_data

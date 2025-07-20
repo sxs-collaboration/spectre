@@ -119,8 +119,10 @@ void AnalyticChristoffel::gauge_and_spacetime_derivative_impl(
   }
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AnalyticChristoffel::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

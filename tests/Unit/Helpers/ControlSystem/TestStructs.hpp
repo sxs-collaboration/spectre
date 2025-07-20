@@ -126,9 +126,11 @@ template <typename Label, typename ControlSystems, bool CallRunCallbacks>
 size_t TestEvent<Label, ControlSystems, CallRunCallbacks>::call_count = 0;
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename Label, typename ControlSystems, bool CallRunCallbacks>
 PUP::able::PUP_ID
     TestEvent<Label, ControlSystems, CallRunCallbacks>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 // NOLINTEND
 

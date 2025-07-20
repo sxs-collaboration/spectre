@@ -51,7 +51,9 @@ void SpecInitialData::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID SpecInitialData::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename DataType>
 tuples::tagged_tuple_from_typelist<

@@ -43,4 +43,6 @@ void CheckpointAndExitAfterWallclock::pup(PUP::er& p) {
 }
 }  // namespace PhaseControl
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID PhaseControl::CheckpointAndExitAfterWallclock::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__

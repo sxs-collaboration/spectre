@@ -103,10 +103,12 @@ void SeparationLessThan<UseGridCentersFunctionOfTime>::pup(PUP::er& p) {
   p | separation_;
 }
 
+#ifndef __CUDA_ARCH__
 template <bool UseGridCentersFunctionOfTime>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SeparationLessThan<UseGridCentersFunctionOfTime>::my_PUP_ID =
     0;
+#endif  // __CUDA_ARCH__
 
 template class SeparationLessThan<true>;
 template class SeparationLessThan<false>;

@@ -80,8 +80,10 @@ void DirichletAnalytic::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
   p | analytic_prescription_;
 }
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 std::optional<std::string> DirichletAnalytic::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

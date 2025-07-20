@@ -47,6 +47,8 @@ bool operator!=(const LaserBeam& lhs, const LaserBeam& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID LaserBeam::my_PUP_ID = 0;  // NOLINT
+#endif                                       // __CUDA_ARCH__
 
 }  // namespace Elasticity::BoundaryConditions

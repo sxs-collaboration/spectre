@@ -152,7 +152,9 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <bool IsRelativistic>
 PUP::able::PUP_ID EquationsOfState::IdealFluid<IsRelativistic>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace EquationsOfState

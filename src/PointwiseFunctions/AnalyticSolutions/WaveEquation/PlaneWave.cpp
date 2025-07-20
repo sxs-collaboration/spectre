@@ -165,8 +165,10 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const {
   return result;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID PlaneWave<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace ScalarWave::Solutions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

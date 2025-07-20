@@ -145,8 +145,10 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename DataType>
 PUP::able::PUP_ID Lorentzian<Dim, DataType>::my_PUP_ID = 0;  // NOLINT
+#endif                                                       // __CUDA_ARCH__
 /// \endcond
 
 template <size_t Dim, typename DataType>

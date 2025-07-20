@@ -850,7 +850,9 @@ auto CcsnCollapse::variables(
   return {make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0)};
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID CcsnCollapse::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const CcsnCollapse& lhs, const CcsnCollapse& rhs) {
   // The equation of state and progenitor solution aren't explicitly checked.

@@ -386,7 +386,9 @@ void FishboneMoncriefDisk::variables_impl(
   }
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID FishboneMoncriefDisk::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const FishboneMoncriefDisk& lhs,
                 const FishboneMoncriefDisk& rhs) {

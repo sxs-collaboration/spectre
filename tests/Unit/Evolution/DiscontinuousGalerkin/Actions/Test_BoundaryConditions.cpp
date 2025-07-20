@@ -733,12 +733,14 @@ struct BoundaryTerms final
   double sign_of_normal_{0.0};
 };
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim, bool HasPrims, SystemType SysType,
           bool HasInverseSpatialMetric>
 PUP::able::PUP_ID
     // NOLINTNEXTLINE
     BoundaryTerms<Dim, HasPrims, SysType, HasInverseSpatialMetric>::my_PUP_ID =
         0;
+#endif  // __CUDA_ARCH__
 
 // Forward declare different boundary conditions.
 //
@@ -930,9 +932,11 @@ class DemandOutgoingCharSpeeds : public BoundaryCondition<System> {
   bool mesh_is_moving_{false};
 };
 
+#ifndef __CUDA_ARCH__
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<System>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename System>
 class Ghost : public BoundaryCondition<System> {
@@ -1366,9 +1370,11 @@ class Ghost : public BoundaryCondition<System> {
   bool mesh_is_moving_{false};
 };
 
+#ifndef __CUDA_ARCH__
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Ghost<System>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename System>
 class TimeDerivative : public BoundaryCondition<System> {
@@ -1676,9 +1682,11 @@ class TimeDerivative : public BoundaryCondition<System> {
   double expected_dt_var1_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#ifndef __CUDA_ARCH__
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID TimeDerivative<System>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename System>
 class GhostAndTimeDerivative : public BoundaryCondition<System> {
@@ -2061,9 +2069,11 @@ class GhostAndTimeDerivative : public BoundaryCondition<System> {
   TimeDerivative<System> time_derivative_;
 };
 
+#ifndef __CUDA_ARCH__
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID GhostAndTimeDerivative<System>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <bool AddTypeAlias, size_t Dim>
 struct InverseSpatialMetricTagImpl {

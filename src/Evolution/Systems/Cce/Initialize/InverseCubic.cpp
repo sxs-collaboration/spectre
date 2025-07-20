@@ -114,6 +114,8 @@ void InverseCubic<false>::operator()(
 void InverseCubic<true>::pup(PUP::er& /*p*/) {}
 void InverseCubic<false>::pup(PUP::er& /*p*/) {}
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID InverseCubic<true>::my_PUP_ID = 0;
 PUP::able::PUP_ID InverseCubic<false>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Cce::InitializeJ

@@ -104,8 +104,10 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   void pup(PUP::er& /*p*/) override {}  // NOLINT
 };
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SystemAnalyticSolution::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 struct System {

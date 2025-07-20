@@ -406,11 +406,13 @@ void ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
   p | additional_tensor_names_;
 }
 
+#ifndef __CUDA_ARCH__
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveAtExtremum<tmpl::list<ObservableTensorTags...>,
                                     tmpl::list<NonTensorComputeTags...>,
                                     ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace Events

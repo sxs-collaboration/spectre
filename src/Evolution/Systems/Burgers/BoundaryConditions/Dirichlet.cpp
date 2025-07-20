@@ -44,6 +44,8 @@ void Dirichlet::fd_ghost(const gsl::not_null<Scalar<DataVector>*> u,
   get(*u) = u_value_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Dirichlet::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Burgers::BoundaryConditions

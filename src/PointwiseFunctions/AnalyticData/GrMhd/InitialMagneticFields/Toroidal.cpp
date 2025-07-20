@@ -29,8 +29,10 @@ void Toroidal::pup(PUP::er& p) {
   p | max_distance_from_center_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Toroidal::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 Toroidal::Toroidal(const size_t pressure_exponent, const double cutoff_pressure,
                    const double vector_potential_amplitude,

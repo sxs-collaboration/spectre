@@ -40,8 +40,10 @@ void Harmonic::gauge_and_spacetime_derivative(
 
 bool Harmonic::is_harmonic() const { return true; }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Harmonic::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -419,12 +419,14 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... SourceVarTags>
 PUP::able::PUP_ID
     InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                                       tmpl::list<SourceVarTags...>>::my_PUP_ID =
         0;  // NOLINT
+#endif      // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace intrp::Events

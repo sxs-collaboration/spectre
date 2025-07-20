@@ -43,7 +43,9 @@ void AlfvenWave::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID AlfvenWave::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 DataVector AlfvenWave::wave_profile(const DataVector& x_prime) {
   // Compute the B_z'(=-E_x') at the rest frame of the wave

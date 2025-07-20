@@ -326,8 +326,10 @@ void MonitorMemory<Dim>::pup(PUP::er& p) {
   p | components_to_monitor_;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID MonitorMemory<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Events

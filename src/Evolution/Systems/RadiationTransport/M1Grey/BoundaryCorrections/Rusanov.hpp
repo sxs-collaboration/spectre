@@ -205,9 +205,11 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename... NeutrinoSpecies>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov<tmpl::list<NeutrinoSpecies...>>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace RadiationTransport::M1Grey::BoundaryCorrections

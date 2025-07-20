@@ -488,11 +488,13 @@ ObserveFields<VolumeDim, tmpl::list<Tensors...>,
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t VolumeDim, typename... Tensors,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                                 tmpl::list<NonTensorComputeTags...>,
                                 ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace Events
 }  // namespace dg

@@ -121,7 +121,9 @@ OrszagTangVortex::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID OrszagTangVortex::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const OrszagTangVortex& /*lhs*/,
                 const OrszagTangVortex& /*rhs*/) {

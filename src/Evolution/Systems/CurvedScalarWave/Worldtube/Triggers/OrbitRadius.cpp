@@ -43,5 +43,7 @@ bool OrbitRadius::operator()(
 // NOLINTNEXTLINE(google-runtime-references)
 void OrbitRadius::pup(PUP::er& p) { p | radii_; }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID OrbitRadius::my_PUP_ID = 0;  // NOLINT
+#endif                                         // __CUDA_ARCH__
 }  // namespace Triggers

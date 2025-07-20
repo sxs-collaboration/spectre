@@ -34,7 +34,9 @@ void ObserveDataBox::impl(const db::Access& box_access,
   }
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ObserveDataBox::my_PUP_ID = 0;  // NOLINT
+#endif                                            // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

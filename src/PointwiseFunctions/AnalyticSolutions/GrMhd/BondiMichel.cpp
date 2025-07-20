@@ -321,7 +321,9 @@ BondiMichel::variables(
   return result;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID BondiMichel::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const BondiMichel& lhs, const BondiMichel& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

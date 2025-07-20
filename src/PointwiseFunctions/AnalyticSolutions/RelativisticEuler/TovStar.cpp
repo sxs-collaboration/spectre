@@ -760,7 +760,9 @@ void TovVariables<DataType, Region>::operator()(
 #endif  // defined(__GNUC__) && !defined(__clang__)
 }  // namespace tov_detail
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TovStar::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const TovStar& lhs, const TovStar& rhs) {
   return lhs.central_rest_mass_density_ == rhs.central_rest_mass_density_ and

@@ -162,8 +162,10 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
   }
 };
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID BoundaryTerms<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                // __CUDA_ARCH__
 
 template <bool LocalTimeStepping>
 struct SetLocalMortarData {

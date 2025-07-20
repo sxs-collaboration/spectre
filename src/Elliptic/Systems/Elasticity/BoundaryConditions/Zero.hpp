@@ -112,8 +112,10 @@ bool operator!=(const Zero<Dim, BoundaryConditionType>& lhs,
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t Dim, elliptic::BoundaryConditionType BoundaryConditionType>
 PUP::able::PUP_ID Zero<Dim, BoundaryConditionType>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Elasticity::BoundaryConditions

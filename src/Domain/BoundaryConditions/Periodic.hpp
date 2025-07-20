@@ -89,9 +89,11 @@ void Periodic<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename SystemBoundaryConditionBaseClass>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Periodic<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 /// Check if a boundary condition inherits from `MarkAsPeriodic`, which

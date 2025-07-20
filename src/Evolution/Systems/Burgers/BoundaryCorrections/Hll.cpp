@@ -71,5 +71,7 @@ void Hll::dg_boundary_terms(
 }
 }  // namespace Burgers::BoundaryCorrections
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Burgers::BoundaryCorrections::Hll::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__

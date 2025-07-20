@@ -417,7 +417,9 @@ void ConformalFactor::pup(PUP::er& p) {
   p | input_mode_filename_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ConformalFactor::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 std::ostream& operator<<(
     std::ostream& os,
     const Cce::InitializeJ::ConformalFactorIterationHeuristic& heuristic_type) {

@@ -199,7 +199,9 @@ bool operator!=(const QuaternionFunctionOfTime<MaxDeriv>& lhs,
                 const QuaternionFunctionOfTime<MaxDeriv>& rhs);
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t MaxDeriv>
 PUP::able::PUP_ID QuaternionFunctionOfTime<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace domain::FunctionsOfTime

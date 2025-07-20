@@ -86,7 +86,9 @@ inline bool operator!=(const DoNothing& /*lhs*/, const DoNothing& /*rhs*/) {
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID DoNothing::my_PUP_ID = 0;  // NOLINT
+#endif                                       // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace sgb::BoundaryConditions

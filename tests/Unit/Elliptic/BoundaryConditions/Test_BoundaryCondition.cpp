@@ -103,7 +103,9 @@ class TestBoundaryCondition : public BoundaryCondition<1> {
   }
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestBoundaryCondition::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 }  // namespace
 

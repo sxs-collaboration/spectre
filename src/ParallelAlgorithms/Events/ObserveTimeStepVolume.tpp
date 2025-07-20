@@ -74,7 +74,9 @@ std::vector<TensorComponent> ObserveTimeStepVolume<System>::assemble_data(
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename System>
 PUP::able::PUP_ID ObserveTimeStepVolume<System>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace dg::Events

@@ -199,7 +199,9 @@ KhInstability::variables(
           variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID KhInstability::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const KhInstability& lhs, const KhInstability& rhs) {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should

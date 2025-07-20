@@ -132,8 +132,10 @@ class KleinGordonDummyBufferUpdater
   size_t l_max_ = 0;
 };
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID Cce::KleinGordonDummyBufferUpdater::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 namespace {
 

@@ -85,6 +85,8 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
 }  // namespace MathFunctions
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename Fr>
 PUP::able::PUP_ID MathFunctions::PowX<1, Fr>::my_PUP_ID = 0;  // NOLINT
+#endif                                                        // __CUDA_ARCH__
 /// \endcond

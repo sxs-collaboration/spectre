@@ -43,5 +43,7 @@ void Residual::pup(PUP::er& p) {
 }
 Residual::Residual(CkMigrateMessage* msg) : Criterion(msg) {}
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ah::Criteria::Residual::my_PUP_ID = 0;  // NOLINT
+#endif                                                    // __CUDA_ARCH__
 }  // namespace ah::Criteria

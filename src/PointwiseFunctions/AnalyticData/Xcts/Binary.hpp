@@ -520,9 +520,11 @@ class Binary : public elliptic::analytic_data::Background,
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 PUP::able::PUP_ID Binary<IsolatedObjectBase, IsolatedObjectClasses>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Xcts::AnalyticData

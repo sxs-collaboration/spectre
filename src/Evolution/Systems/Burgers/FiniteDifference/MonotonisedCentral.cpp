@@ -40,7 +40,9 @@ std::unique_ptr<Reconstructor> MonotonisedCentral::get_clone() const {
 
 void MonotonisedCentral::pup(PUP::er& p) { Reconstructor::pup(p); }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID MonotonisedCentral::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 void MonotonisedCentral::reconstruct(
     const gsl::not_null<std::array<Variables<face_vars_tags>, 1>*>

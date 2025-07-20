@@ -71,8 +71,10 @@ void SmoothFlow<Dim>::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID SmoothFlow<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 bool operator==(const SmoothFlow<Dim>& lhs, const SmoothFlow<Dim>& rhs) {

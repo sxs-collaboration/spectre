@@ -53,7 +53,9 @@ class ErrorChooser : public StepChooser<StepChooserUse::LtsStep> {
   bool can_be_delayed() const override { return true; }
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ErrorChooser::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 
 struct Metavariables {
   struct factory_creation

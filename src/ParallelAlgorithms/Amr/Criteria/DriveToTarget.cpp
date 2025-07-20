@@ -84,8 +84,10 @@ std::array<Flag, Dim> DriveToTarget<Dim, CriteriaType>::impl(
   return result;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim, Type CriteriaType>
 PUP::able::PUP_ID DriveToTarget<Dim, CriteriaType>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 
 template class DriveToTarget<1, Type::h>;
 template class DriveToTarget<2, Type::h>;

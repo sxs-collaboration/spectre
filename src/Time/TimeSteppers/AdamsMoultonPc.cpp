@@ -604,8 +604,10 @@ TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(AdamsMoultonPc<Monotonic>,
 LTS_TIME_STEPPER_DEFINE_OVERLOADS_TEMPLATED(AdamsMoultonPc<Monotonic>,
                                             bool Monotonic)
 
+#ifndef __CUDA_ARCH__
 template <bool Monotonic>
 PUP::able::PUP_ID AdamsMoultonPc<Monotonic>::my_PUP_ID = 0;  // NOLINT
+#endif                                                       // __CUDA_ARCH__
 
 #define MONOTONIC(data) BOOST_PP_TUPLE_ELEM(0, data)
 

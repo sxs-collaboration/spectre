@@ -39,9 +39,11 @@ void NoSource<Dim>::operator()(
     const EquationsOfState::EquationOfState<false, 2>& /*eos*/,
     const tnsr::I<DataVector, Dim>& /*coords*/, const double /*time*/) const {}
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID NoSource<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

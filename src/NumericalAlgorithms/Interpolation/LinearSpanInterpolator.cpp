@@ -35,5 +35,7 @@ std::complex<double> LinearSpanInterpolator::interpolate(
   return interpolate_impl(source_points, values, target_point);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID intrp::LinearSpanInterpolator::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace intrp

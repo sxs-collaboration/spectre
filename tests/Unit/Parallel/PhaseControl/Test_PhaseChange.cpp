@@ -133,7 +133,9 @@ struct TestPhaseChange : public PhaseChange {
   int stored_multiplier_ = 0;
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestPhaseChange::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 struct Metavariables {
   using component_list = tmpl::list<TestComponentAlpha, TestComponentBeta>;

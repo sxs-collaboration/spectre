@@ -46,4 +46,6 @@ Heun2::implicit_butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::Heun2::my_PUP_ID = 0;  // NOLINT
+#endif                                                 // __CUDA_ARCH__

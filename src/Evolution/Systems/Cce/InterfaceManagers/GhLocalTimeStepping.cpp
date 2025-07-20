@@ -181,5 +181,7 @@ void GhLocalTimeStepping::pup(PUP::er& p) {
   p | latest_removed_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID GhLocalTimeStepping::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Cce::InterfaceManagers

@@ -320,6 +320,7 @@ class PerformAlgorithmCallback : public Callback {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename Proxy>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID PerformAlgorithmCallback<Proxy>::my_PUP_ID = 0;
@@ -341,6 +342,7 @@ template <typename ThreadedAction, typename Proxy>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ThreadedActionCallback<ThreadedAction, Proxy>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Parallel

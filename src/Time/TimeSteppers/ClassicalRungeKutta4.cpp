@@ -54,4 +54,6 @@ const RungeKutta::ButcherTableau& ClassicalRungeKutta4::butcher_tableau()
 }
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::ClassicalRungeKutta4::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__

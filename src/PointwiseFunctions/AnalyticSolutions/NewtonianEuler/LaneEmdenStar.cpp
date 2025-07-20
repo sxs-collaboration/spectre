@@ -35,8 +35,10 @@ std::unique_ptr<evolution::initial_data::InitialData> LaneEmdenStar::get_clone()
 
 LaneEmdenStar::LaneEmdenStar(CkMigrateMessage* msg) : InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID LaneEmdenStar::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 void LaneEmdenStar::pup(PUP::er& p) {
   InitialData::pup(p);

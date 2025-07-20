@@ -27,7 +27,9 @@ void FastWave::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID FastWave::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 DataVector FastWave::initial_profile(const DataVector& coords) {
   // Compute the initial functional form of B_y(=E_z)

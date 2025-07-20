@@ -103,7 +103,9 @@ class ElementSizeCfl : public StepChooser<StepChooserUse::Slab>,
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename System>
 PUP::able::PUP_ID ElementSizeCfl<Dim, System>::my_PUP_ID = 0;  // NOLINT
+#endif                                                         // __CUDA_ARCH__
 /// \endcond
 }  // namespace StepChoosers

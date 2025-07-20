@@ -48,7 +48,9 @@ void FukaInitialData::pup(PUP::er& p) {
   p | electron_fraction_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID FukaInitialData::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 }  // namespace grmhd::AnalyticData

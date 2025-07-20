@@ -996,7 +996,9 @@ auto RotatingStar::variables(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID RotatingStar::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const RotatingStar& lhs, const RotatingStar& rhs) {
   return lhs.rot_ns_filename_ == rhs.rot_ns_filename_ and

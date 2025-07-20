@@ -204,9 +204,11 @@ void UpwindPenalty<Dim>::dg_boundary_terms(
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID UpwindPenalty<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -47,8 +47,10 @@ void ByBlock<Dim>::pup(PUP::er& p) {
   p | sizes_;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID ByBlock<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

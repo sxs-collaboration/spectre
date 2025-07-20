@@ -28,7 +28,9 @@ void Constant::pup(PUP::er& p) {
   p | value_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Constant::my_PUP_ID = 0;  // NOLINT
+#endif                                      // __CUDA_ARCH__
 }  // namespace StepChoosers
 
 template <>

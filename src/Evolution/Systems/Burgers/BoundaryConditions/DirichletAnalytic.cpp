@@ -112,6 +112,8 @@ void DirichletAnalytic::flux_impl(
   Burgers::Fluxes::apply(flux, u_analytic);
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Burgers::BoundaryConditions

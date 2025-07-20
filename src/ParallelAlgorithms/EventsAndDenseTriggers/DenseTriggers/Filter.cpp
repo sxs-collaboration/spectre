@@ -17,5 +17,7 @@ void Filter::pup(PUP::er& p) {
   p | filter_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Filter::my_PUP_ID = 0;  // NOLINT
+#endif                                    // __CUDA_ARCH__
 }  // namespace DenseTriggers

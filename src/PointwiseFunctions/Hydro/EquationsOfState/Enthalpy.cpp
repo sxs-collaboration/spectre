@@ -540,8 +540,10 @@ double Enthalpy<LowDensityEoS>::rest_mass_density_from_enthalpy(
                                1.0e-15);
   }
 }
+#ifndef __CUDA_ARCH__
 template <typename LowDensityEoS>
 PUP::able::PUP_ID EquationsOfState::Enthalpy<LowDensityEoS>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template class EquationsOfState::Enthalpy<Spectral>;
 template class EquationsOfState::Enthalpy<PolytropicFluid<true>>;

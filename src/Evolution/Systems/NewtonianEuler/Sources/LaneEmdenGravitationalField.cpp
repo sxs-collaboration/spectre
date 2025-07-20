@@ -77,6 +77,8 @@ tnsr::I<DataVector, 3> LaneEmdenGravitationalField::gravitational_field(
   return gravitational_field_result;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID LaneEmdenGravitationalField::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace NewtonianEuler::Sources

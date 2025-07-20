@@ -116,8 +116,10 @@ bool operator!=(const Flatness<EnabledEquations>& lhs,
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 template <Xcts::Equations EnabledEquations>
 PUP::able::PUP_ID Flatness<EnabledEquations>::my_PUP_ID = 0;  // NOLINT
+#endif                                                        // __CUDA_ARCH__
 
 #define EQNS(data) BOOST_PP_TUPLE_ELEM(0, data)
 

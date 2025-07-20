@@ -52,8 +52,10 @@ class IncreaseResolution : public Criterion {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID IncreaseResolution<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                     // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace amr::Criteria

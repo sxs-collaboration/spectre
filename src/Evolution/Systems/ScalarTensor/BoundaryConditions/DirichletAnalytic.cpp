@@ -133,6 +133,8 @@ std::optional<std::string> DirichletAnalytic::dg_ghost(
   return {};
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace ScalarTensor::BoundaryConditions

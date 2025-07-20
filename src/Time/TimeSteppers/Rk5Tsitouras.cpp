@@ -52,4 +52,6 @@ const RungeKutta::ButcherTableau& Rk5Tsitouras::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::Rk5Tsitouras::my_PUP_ID = 0;  // NOLINT
+#endif                                                        // __CUDA_ARCH__

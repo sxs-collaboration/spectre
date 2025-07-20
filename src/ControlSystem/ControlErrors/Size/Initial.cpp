@@ -108,5 +108,7 @@ double Initial::control_error(
          control_error_args.time_deriv_of_lambda_00;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Initial::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace control_system::size::States

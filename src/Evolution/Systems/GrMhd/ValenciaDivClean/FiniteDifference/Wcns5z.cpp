@@ -74,8 +74,10 @@ void Wcns5zPrim::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Wcns5zPrim::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t ThermodynamicDim>
 void Wcns5zPrim::reconstruct(

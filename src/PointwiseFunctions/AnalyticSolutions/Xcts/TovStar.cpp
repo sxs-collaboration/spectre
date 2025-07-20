@@ -333,7 +333,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 }  // namespace Xcts::Solutions::tov_detail
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Xcts::Solutions::TovStar::my_PUP_ID = 0;  // NOLINT
+#endif                                                      // __CUDA_ARCH__
 
 // Instantiate implementations for common variables
 template class Xcts::Solutions::CommonVariables<

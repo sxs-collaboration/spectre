@@ -238,9 +238,11 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector>
 PUP::able::PUP_ID ErrorControl<StepChooserUse, EvolvedVariableTag,
                                ErrorControlSelector>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace StepChoosers

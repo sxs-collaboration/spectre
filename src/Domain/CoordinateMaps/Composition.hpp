@@ -226,9 +226,11 @@ Composition(std::unique_ptr<FirstMap>, std::unique_ptr<Maps>... maps)
                    FirstMap::dim>;
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename Frames, size_t Dim, size_t... Is>
 PUP::able::PUP_ID
     Composition<Frames, Dim, std::index_sequence<Is...>>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace domain::CoordinateMaps

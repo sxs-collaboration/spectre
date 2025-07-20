@@ -167,9 +167,12 @@ class ErrorIfDataTooBig : public Event {
 };
 
 /// \cond
+// NOLINTBEGIN
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename Tensors, typename NonTensorComputeTags>
 PUP::able::PUP_ID
-    ErrorIfDataTooBig<Dim, Tensors,
-                      NonTensorComputeTags>::my_PUP_ID = 0;  // NOLINT
+    ErrorIfDataTooBig<Dim, Tensors, NonTensorComputeTags>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
+// NOLINTEND
 /// \endcond
 }  // namespace Events

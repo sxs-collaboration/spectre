@@ -101,8 +101,10 @@ struct SolveTrigger : public Trigger {
   bool operator()(const size_t step) const { return step % 3 == 0; }
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID SolveTrigger::my_PUP_ID = 0;
 PUP::able::PUP_ID RegisterTrigger::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename Metavariables>
 struct ComponentAlpha {

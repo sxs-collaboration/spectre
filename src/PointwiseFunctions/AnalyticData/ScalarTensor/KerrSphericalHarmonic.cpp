@@ -91,7 +91,9 @@ KerrSphericalHarmonic::variables(
   return pi;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID KerrSphericalHarmonic::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const KerrSphericalHarmonic& lhs,
                 const KerrSphericalHarmonic& rhs) {

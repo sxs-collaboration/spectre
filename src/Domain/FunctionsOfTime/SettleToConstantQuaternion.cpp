@@ -124,7 +124,9 @@ bool operator!=(const SettleToConstantQuaternion& lhs,
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID SettleToConstantQuaternion::my_PUP_ID = 0;  // NOLINT
+#endif                                                        // __CUDA_ARCH__
 
 #define DERIV(data) BOOST_PP_TUPLE_ELEM(0, data)
 

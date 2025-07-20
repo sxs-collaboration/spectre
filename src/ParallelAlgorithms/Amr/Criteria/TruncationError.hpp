@@ -186,8 +186,10 @@ void TruncationError<Dim, TensorTags>::pup(PUP::er& p) {
   p | target_rel_truncation_error_;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID TruncationError<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace amr::Criteria

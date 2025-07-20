@@ -51,8 +51,10 @@ std::unique_ptr<evolution::initial_data::InitialData> ShuOsherTube::get_clone()
 ShuOsherTube::ShuOsherTube(CkMigrateMessage* msg)
     : evolution::initial_data::InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ShuOsherTube::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 void ShuOsherTube::pup(PUP::er& p) {
   evolution::initial_data::InitialData::pup(p);

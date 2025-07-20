@@ -73,8 +73,10 @@ void AdaptiveOrder::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AdaptiveOrder::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 void AdaptiveOrder::reconstruct(
     const gsl::not_null<std::array<Variables<recons_tags>, dim>*>

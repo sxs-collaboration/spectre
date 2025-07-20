@@ -127,5 +127,7 @@ void ZeroNonSmooth::pup(PUP::er& p) {
   p | max_iterations_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID ZeroNonSmooth::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Cce::InitializeJ

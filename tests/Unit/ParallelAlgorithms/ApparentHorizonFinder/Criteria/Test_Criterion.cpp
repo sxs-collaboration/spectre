@@ -89,7 +89,9 @@ class CriterionOne : public ah::Criterion {
   double target_value_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID CriterionOne::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 
 class CriterionTwo : public ah::Criterion {
  public:
@@ -135,7 +137,9 @@ class CriterionTwo : public ah::Criterion {
   double target_value_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID CriterionTwo::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 #pragma GCC diagnostic pop
 
 struct Metavariables {

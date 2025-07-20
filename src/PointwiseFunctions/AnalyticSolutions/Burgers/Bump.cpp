@@ -73,7 +73,9 @@ void Bump::pup(PUP::er& p) {
   p | center_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Bump::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)

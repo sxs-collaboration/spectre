@@ -39,9 +39,11 @@ void DemandOutgoingCharSpeeds<Dim>::pup(PUP::er& p) {
   BoundaryCondition<Dim>::pup(p);
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 template <size_t ThermodynamicDim>

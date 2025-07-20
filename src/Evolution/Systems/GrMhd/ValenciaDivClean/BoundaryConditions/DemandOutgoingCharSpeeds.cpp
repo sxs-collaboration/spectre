@@ -354,7 +354,9 @@ void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
   }
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

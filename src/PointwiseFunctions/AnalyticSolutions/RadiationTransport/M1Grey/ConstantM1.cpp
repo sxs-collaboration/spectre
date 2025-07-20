@@ -38,8 +38,10 @@ void ConstantM1::pup(PUP::er& p) {
   p | comoving_energy_density_;
   p | background_spacetime_;
 }
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstantM1::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 // Variables templated on neutrino species.
 template <typename NeutrinoSpecies>

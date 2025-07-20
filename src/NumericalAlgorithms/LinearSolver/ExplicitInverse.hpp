@@ -255,9 +255,11 @@ ExplicitInverse<ValueType, LinearSolverRegistrars>::solve(
 
 /// \cond
 // NOLINTBEGIN
+#ifndef __CUDA_ARCH__
 template <typename ValueType, typename LinearSolverRegistrars>
 PUP::able::PUP_ID
     ExplicitInverse<ValueType, LinearSolverRegistrars>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 // NOLINTEND
 /// \endcond
 
