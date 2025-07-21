@@ -88,6 +88,7 @@ def postprocess_id(
       control_params: List of parameters to control. See ControlId.py
         for details.
       evolve: Evolve the initial data after postprocessing (default: False).
+      negative_expansion_bc: Place the excisions inside of apparent horizons.
       pipeline_dir: Directory where steps in the pipeline are created.
         Required if 'evolve' is set to True.
     """

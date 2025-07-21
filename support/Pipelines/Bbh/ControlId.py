@@ -28,8 +28,8 @@ DEFAULT_CONTROL_DELAY = 2
 FreeDataFromParams: Dict[TargetParams, str] = {
     "MassA": "conformal_mass_a",
     "MassB": "conformal_mass_b",
-    "DimensionlessSpinA": "conformal_spin_a",
-    "DimensionlessSpinB": "conformal_spin_b",
+    "DimensionlessSpinA": "horizon_rotation_a",
+    "DimensionlessSpinB": "horizon_rotation_b",
     "CenterOfMass": "center_of_mass_offset",
     "AdmLinearMomentum": "linear_velocity",
     "AdmMass": "radial_expansion_velocity",
@@ -65,19 +65,17 @@ def control_id(
 
     This function is called after initial data has been generated and horizons
     have been found in 'PostprocessId.py'. It uses an iterative scheme to drive
-    the black hole physical parameters (masses and spins) closer to the desired
-    values.
+    the black hole physical parameters (e.g., masses and spins) closer to the
+    desired values.
 
     For each iteration, this function does the following:
 
     - Determine new guesses for ID input parameters.
 
-    - Generate initial data using these guesses.
+    - Generate initial data using these guesses and post-process it.
 
-    - Find horizons in the generated initial data.
-
-    - Measure the difference between the horizon quantities and the desired
-      values.
+    - Compute the difference between the measured physical parameters and their
+      desired values.
 
     Supported control parameters:
       MassA: Mass of the larger black hole.
@@ -86,6 +84,9 @@ def control_id(
       DimensionlessSpinB: Dimensionless spin of the smaller black hole.
       CenterOfMass: Center of mass integral in general relativity.
       AdmLinearMomentum: ADM linear momentum.
+      AdmMass: ADM mass / energy (useful for hyperbolic encounters).
+      AdmAngularMomentumZ: ADM angular momentum along the z-axis (useful for
+        hyperbolic encounters).
 
     A subset of these parameters can be chosen as the 'control_params'. The
     input file metadata must contain a 'TargetParams' dictionary with the
@@ -108,7 +109,7 @@ def control_id(
       id_run_dir: Directory of the first initial data run. If not provided, the
         directory of the input file is used.
       residual_tolerance: Residual tolerance used for termination condition.
-        (Default: 1.e-6)
+        (Default: 1.e-4)
       max_iterations: Maximum of iterations allowed. Note: each iteration is
         very expensive as it needs to solve an entire initial data problem.
         (Default: 30)
@@ -118,6 +119,7 @@ def control_id(
         (Default: 2)
       refinement_level: h-refinement used in control loop.
       polynomial_order: p-refinement used in control loop.
+      negative_expansion_bc: Place the excisions inside of apparent horizons.
     """
 
     assert (
@@ -131,25 +133,42 @@ def control_id(
         id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
     target_params = id_metadata["TargetParams"]
     binary_data = id_input_file["Background"]["Binary"]
+    domain_data = id_input_file["DomainCreator"]["BinaryCompactObject"]
 
     # Get initial xyz offset
     # Note: CenterOfMassOffset contains only the yz offsets, so we need to get
     # the x offset from XCoords
     x_B, x_A = binary_data["XCoords"]
     separation = x_A - x_B
-    x_offset = x_A - target_params["MassB"] * separation
+    Newtonian_x_A = (
+        target_params["MassB"]
+        / (target_params["MassA"] + target_params["MassB"])
+        * separation
+    )
+    x_offset = x_A - Newtonian_x_A
     y_offset, z_offset = binary_data["CenterOfMassOffset"]
+
+    # Get initial horizon rotations
+    orbital_angular_velocity = binary_data["AngularVelocity"]
+    horizon_rotation_a = domain_data["ObjectA"]["Interior"][
+        "ExciseWithBoundaryCondition"
+    ]["ApparentHorizon"]["Rotation"]
+    horizon_rotation_a[2] -= orbital_angular_velocity
+    horizon_rotation_b = domain_data["ObjectB"]["Interior"][
+        "ExciseWithBoundaryCondition"
+    ]["ApparentHorizon"]["Rotation"]
+    horizon_rotation_b[2] -= orbital_angular_velocity
 
     # Combine initial choices of free data in a dictionary
     initial_free_data = dict(
         conformal_mass_a=binary_data["ObjectRight"]["KerrSchild"]["Mass"],
         conformal_mass_b=binary_data["ObjectLeft"]["KerrSchild"]["Mass"],
-        conformal_spin_a=binary_data["ObjectRight"]["KerrSchild"]["Spin"],
-        conformal_spin_b=binary_data["ObjectLeft"]["KerrSchild"]["Spin"],
+        horizon_rotation_a=horizon_rotation_a,
+        horizon_rotation_b=horizon_rotation_b,
         center_of_mass_offset=[x_offset, y_offset, z_offset],
         linear_velocity=binary_data["LinearVelocity"],
         radial_expansion_velocity=binary_data["Expansion"],
-        orbital_angular_velocity=binary_data["AngularVelocity"],
+        orbital_angular_velocity=orbital_angular_velocity,
     )
 
     # Prepare file and legends to output diagnostic data
@@ -327,9 +346,35 @@ def control_id(
         param_index += 1 if param in ScalarQuantities else 3
 
     # Adjust non-unity components of the Jacobian
-    q = target_params["MassRatio"]
+    #
+    # The expressions below come from differentiating the Kerr expressions
+    # chi = - 2 r Omega and r = M (1 + sqrt(1 - chi^2)), where chi is the
+    # dimensionless spin, r is the horizon radius, Omega is the horizon
+    # rotation, and M is the mass.
+    for spin_key, mass_key, horizon_rotation in zip(
+        ["DimensionlessSpinA", "DimensionlessSpinB"],
+        ["conformal_mass_a", "conformal_mass_b"],
+        [horizon_rotation_a, horizon_rotation_b],
+    ):
+        conformal_mass = u[param_index_map[mass_key]]
+        conformal_spin = target_params[spin_key]
+        spin_term = 1.0 + np.sqrt(1 - np.dot(conformal_spin, conformal_spin))
+        for i in range(3):
+            J[
+                param_index_map[spin_key] + i,
+                param_index_map[mass_key],
+            ] = (
+                -2.0 * horizon_rotation[i] * spin_term
+            )
+            J[
+                param_index_map[spin_key] + i,
+                param_index_map[spin_key] + i,
+            ] = (
+                -2.0 * conformal_mass * spin_term
+            )
     # The expression below is the reduced mass of the system, which shows up in
     # the Newtonian expressions further below.
+    q = target_params["MassRatio"]
     eta = q / (q + 1) ** 2
     # The expressions below come from differentiating the Newtonian
     # approximation E_ADM ~ M + 1/2 eta adot0^2 D0^2, where adot0 is the
@@ -414,49 +459,6 @@ def control_id(
         Delta_u = -np.dot(np.linalg.inv(J), F)
         if iteration < control_delay:
             Delta_u[delayed_indices] = 0.0
-
-        # Check if free data updates are valid
-        index = 0
-        for param in control_params:
-            if (
-                param == "DimensionlessSpinA" or param == "DimensionlessSpinB"
-            ) and np.linalg.norm((u + Delta_u)[index : index + 3]) > 1.0:
-                # Solve for alpha in a*alpha^2 + b*alpha + c = 0, which comes
-                # from enforcing (u + alpha * Delta_u)^2 = 1 - epsilon
-                epsilon = 1.0e-14
-                a = np.dot(
-                    Delta_u[index : index + 3], Delta_u[index : index + 3]
-                )
-                b = 2.0 * np.dot(
-                    u[index : index + 3], Delta_u[index : index + 3]
-                )
-                c = (
-                    np.dot(u[index : index + 3], u[index : index + 3])
-                    - 1.0
-                    + epsilon
-                )
-                discriminant = b**2 - 4.0 * a * c
-                if discriminant < 0:
-                    logger.warning(
-                        f"Norm of {FreeDataFromParams[param]} ({prev_spin})"
-                        " exceeds 1.0, and there's no valid update that"
-                        " doesn't violate the spin constraint."
-                    )
-                else:
-                    if b < 0:
-                        alpha = (-b + np.sqrt(discriminant)) / (2 * a)
-                    else:
-                        alpha = (2 * c) / (-b - np.sqrt(discriminant))
-                    prev_spin = np.linalg.norm((u + Delta_u)[index : index + 3])
-                    Delta_u[index : index + 3] *= alpha
-                    new_spin = np.linalg.norm((u + Delta_u)[index : index + 3])
-                    logger.warning(
-                        f"Norm of {FreeDataFromParams[param]} ({prev_spin})"
-                        " exceeded 1.0. Update was scaled down so that the new"
-                        f" norm is {new_spin}."
-                    )
-
-            index += 1 if param in ScalarQuantities else 3
 
         u += Delta_u
 

@@ -45,8 +45,8 @@ def L1_distance(m1, m2, separation):
 def id_parameters(
     conformal_mass_a: float,
     conformal_mass_b: float,
-    conformal_spin_a: Sequence[float],
-    conformal_spin_b: Sequence[float],
+    horizon_rotation_a: Sequence[float],
+    horizon_rotation_b: Sequence[float],
     center_of_mass_offset: Sequence[float],
     linear_velocity: Sequence[float],
     separation: float,
@@ -55,6 +55,7 @@ def id_parameters(
     refinement_level: int,
     polynomial_order: int,
     negative_expansion_bc: bool,
+    target_params: Dict[TargetParams, Union[float, Sequence[float]]],
 ):
     """Determine initial data parameters from options.
 
@@ -63,8 +64,8 @@ def id_parameters(
     Arguments:
       conformal_mass_a: Mass parameter of the larger black hole.
       conformal_mass_b: Mass parameter of the smaller black hole.
-      conformal_spin_a: Spin parameter of the larger black hole, chi_A.
-      conformal_spin_b: Spin parameter of the smaller black hole, chi_B.
+      horizon_rotation_a: Rotation parameter of the larger black hole, Omega_A.
+      horizon_rotation_b: Rotation parameter of the smaller black hole, Omega_B.
       center_of_mass_offset: Offset from the Newtonian center of mass.
       linear_velocity: Velocity added to the shift boundary condition.
       separation: Coordinate separation D of the black holes.
@@ -72,37 +73,60 @@ def id_parameters(
       radial_expansion_velocity: adot_0.
       refinement_level: h-refinement level.
       polynomial_order: p-refinement level.
+      negative_expansion_bc: Place the excision boundaries inside of the
+        apparent horizons.
+      target_params: Target parameters for the initial data control loop.
     """
+    for required_target in [
+        "MassA",
+        "MassB",
+        "DimensionlessSpinA",
+        "DimensionlessSpinB",
+    ]:
+        assert (
+            required_target in target_params
+        ), f"{required_target} must be specified in 'target_params'."
+
     x_A = (
-        conformal_mass_b / (conformal_mass_a + conformal_mass_b) * separation
+        target_params["MassB"]
+        / (target_params["MassA"] + target_params["MassB"])
+        * separation
         + center_of_mass_offset[0]
     )
     x_B = x_A - separation
 
     # Spins
-    chi_A = np.asarray(conformal_spin_a)
+    chi_A = np.asarray(target_params["DimensionlessSpinA"])
     r_plus_A = conformal_mass_a * (1.0 + np.sqrt(1 - np.dot(chi_A, chi_A)))
-    Omega_A = -0.5 * chi_A / r_plus_A
+    Omega_A = horizon_rotation_a
     Omega_A[2] += orbital_angular_velocity
-    chi_B = np.asarray(conformal_spin_b)
+    chi_B = np.asarray(target_params["DimensionlessSpinB"])
     r_plus_B = conformal_mass_b * (1.0 + np.sqrt(1 - np.dot(chi_B, chi_B)))
-    Omega_B = -0.5 * chi_B / r_plus_B
+    Omega_B = horizon_rotation_b
     Omega_B[2] += orbital_angular_velocity
-    excision_factor = 0.93 if negative_expansion_bc else 1.0
+    if negative_expansion_bc:
+        # For high spins, we need to place the excisions closer to the outer
+        # horizon in order to avoid the inner horizon.
+        excision_factor = (
+            0.97
+            if max(np.linalg.norm(chi_A), np.linalg.norm(chi_B)) > 0.9
+            else 0.93
+        )
+    else:
+        excision_factor = 1.0
     # Falloff widths of superposition
     L1_dist_A = L1_distance(conformal_mass_a, conformal_mass_b, separation)
     L1_dist_B = separation - L1_dist_A
     falloff_width_A = 3.0 / 5.0 * L1_dist_A
     falloff_width_B = 3.0 / 5.0 * L1_dist_B
     # This extra refinement was found through trial and error and allowed mass
-    # ratio 6 to evolve through inspiral stably.
-    mass_ratio = conformal_mass_a / conformal_mass_b
-    extra_radial_refinement_l = (
-        round(mass_ratio / 3.0) - 1 if (mass_ratio > 3.0) else 0
-    )
-    extra_radial_refinement_p = (
-        round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
-    )
+    # ratio 6 to evolve through inspiral stably. This extra refinement doesn't
+    # seem to scale linearly with mass ratio. The current hard-coded limits (3
+    # and 5) were enough to find initial data for mass ratio 50 (no evolution
+    # attempted).
+    q = target_params["MassA"] / target_params["MassB"]
+    extra_radial_refinement_l = min(round(q / 3.0) - 1 if (q > 3.0) else 0, 3)
+    extra_radial_refinement_p = min(round(q / 5.0) if (q > 5.0) else 0, 5)
     horizon_l_max = (
         40 if max(np.linalg.norm(chi_A), np.linalg.norm(chi_B)) > 0.9 else 20
     )
@@ -154,8 +178,8 @@ def generate_id(
     # Control parameters
     conformal_mass_a: Optional[float] = None,
     conformal_mass_b: Optional[float] = None,
-    conformal_spin_a: Optional[Sequence[float]] = None,
-    conformal_spin_b: Optional[Sequence[float]] = None,
+    horizon_rotation_a: Optional[Sequence[float]] = None,
+    horizon_rotation_b: Optional[Sequence[float]] = None,
     center_of_mass_offset: Sequence[float] = [0.0, 0.0, 0.0],
     linear_velocity: Sequence[float] = [0.0, 0.0, 0.0],
     # Resolution
@@ -283,16 +307,46 @@ def generate_id(
             target_params["Eccentricity"] is not None
         ), "For eccentricity control the target eccentricity must be set."
 
+    # This is an empirical factor based on an equal-mass non-spinning case, in
+    # which ~0.41 conformal masses result in ~0.5 horizon masses.
+    # mass_initial_guess_factor = 1.0
+    mass_initial_guess_factor = 0.82
+    if conformal_mass_a is None:
+        conformal_mass_a = mass_initial_guess_factor * target_params["MassA"]
+    if conformal_mass_b is None:
+        conformal_mass_b = mass_initial_guess_factor * target_params["MassB"]
+
+    # The 0.9 is an empirical factor that avoids an ill-posed elliptic problem
+    # for very high spins.
+    if horizon_rotation_a is None:
+        chi_a = np.asarray(target_params["DimensionlessSpinA"])
+        rotation_initial_guess_factor = (
+            0.9 if np.linalg.norm(chi_a) > 0.99 else 1.0
+        )
+        horizon_rotation_a = (
+            -rotation_initial_guess_factor
+            * 0.5
+            * chi_a
+            / (conformal_mass_a * (1.0 + np.sqrt(1 - np.dot(chi_a, chi_a))))
+        )
+    if horizon_rotation_b is None:
+        chi_b = np.asarray(target_params["DimensionlessSpinB"])
+        rotation_initial_guess_factor = (
+            0.9 if np.linalg.norm(chi_b) > 0.99 else 1.0
+        )
+        horizon_rotation_b = (
+            -rotation_initial_guess_factor
+            * 0.5
+            * chi_b
+            / (conformal_mass_b * (1.0 + np.sqrt(1 - np.dot(chi_b, chi_b))))
+        )
+
     # Determine initial data parameters from options
     id_params = id_parameters(
-        conformal_mass_a=conformal_mass_a or target_params["MassA"],
-        conformal_mass_b=conformal_mass_b or target_params["MassB"],
-        conformal_spin_a=(
-            conformal_spin_a or target_params["DimensionlessSpinA"]
-        ),
-        conformal_spin_b=(
-            conformal_spin_b or target_params["DimensionlessSpinB"]
-        ),
+        conformal_mass_a=conformal_mass_a,
+        conformal_mass_b=conformal_mass_b,
+        horizon_rotation_a=horizon_rotation_a,
+        horizon_rotation_b=horizon_rotation_b,
         separation=separation,
         orbital_angular_velocity=orbital_angular_velocity,
         radial_expansion_velocity=radial_expansion_velocity,
@@ -301,6 +355,7 @@ def generate_id(
         refinement_level=refinement_level,
         polynomial_order=polynomial_order,
         negative_expansion_bc=negative_expansion_bc,
+        target_params=target_params,
     )
     logger.debug(f"Initial data parameters: {pretty_repr(id_params)}")
 
