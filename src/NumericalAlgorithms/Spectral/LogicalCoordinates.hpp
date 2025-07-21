@@ -57,7 +57,8 @@ struct not_null;
  * corresponding to the Legendre Gauss points of \f$\cos \theta\f$ (and thus
  * have no points at the poles), while the azimuth has Equiangular quadrature
  * which are distributed uniformly including the left endpoint, but not the
- * right.
+ * right.  For the Cartoon basis, only one logical coordinate is allowed and it
+ * is never used for computations.
  *
  * \example
  * \snippet Test_LogicalCoordinates.cpp logical_coordinates_example
