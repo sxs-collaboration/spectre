@@ -8,7 +8,6 @@
 /// \cond
 namespace db {
 struct SimpleTag;
-struct BaseTag;
 struct ComputeTag;
 struct ReferenceTag;
 }  // namespace db
@@ -103,50 +102,32 @@ constexpr bool is_simple_tag_v = is_simple_tag<Tag>::value;
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `Tag` is not a base tag.
+ * \brief Check if `Tag` is a simple, compute, or reference tag.
  *
  * \see is_non_base_tag_v BaseTag
  */
 template <typename Tag>
-struct is_non_base_tag : std::is_base_of<db::SimpleTag, Tag> {};
+struct is_creation_tag : std::is_base_of<db::SimpleTag, Tag> {};
 
 /// \ingroup DataBoxGroup
 /// \brief True if `Tag` is not a base tag.
 template <typename Tag>
-constexpr bool is_non_base_tag_v = is_non_base_tag<Tag>::value;
+constexpr bool is_creation_tag_v = is_creation_tag<Tag>::value;
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Check if `Tag` is a DataBox tag, i.e. a BaseTag, SimpleTag,
- * ComputeTag, or ReferenceTag.
+ * \brief Check if `Tag` is a DataBox tag, i.e. a SimpleTag, ComputeTag,
+ * ReferenceTag, or the special tag Parallel::Tags::Metavariables.
  *
  * \see is_tag_v
  */
 template <typename Tag>
 struct is_tag
     : std::bool_constant<std::is_base_of_v<db::SimpleTag, Tag> or
-                         std::is_base_of_v<db::BaseTag, Tag> or
                          std::is_same_v<Tag, Parallel::Tags::Metavariables>> {};
 
 /// \ingroup DataBoxGroup
 /// \brief True if `Tag` is a DataBox tag.
 template <typename Tag>
 constexpr bool is_tag_v = is_tag<Tag>::value;
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Check if `Tag` is a base DataBox tag.
- *
- * \see is_base_tag_v BaseTag
- */
-template <typename Tag>
-struct is_base_tag
-    : std::bool_constant<std::is_base_of_v<db::BaseTag, Tag> and
-                         not std::is_base_of_v<db::SimpleTag, Tag>> {};
-
-/// \ingroup DataBoxGroup
-/// \brief True if `Tag` is a base tag.
-template <typename Tag>
-constexpr bool is_base_tag_v = is_base_tag<Tag>::value;
-
 }  // namespace db

@@ -77,9 +77,6 @@ SPECTRE_ALWAYS_INLINE const auto& get(const Access& box) {
 template <typename... MutateTags, typename Invokable, typename... Args>
 decltype(auto) mutate(Invokable&& invokable, const gsl::not_null<Access*> box,
                       Args&&... args) {
-  static_assert((... and (not is_base_tag_v<MutateTags>)),
-                "Cannot mutate base tags with only a db::Access");
-
   if (UNLIKELY(box->lock_box_for_mutate())) {
     ERROR(
         "Unable to mutate a DataBox that is already being mutated. This "

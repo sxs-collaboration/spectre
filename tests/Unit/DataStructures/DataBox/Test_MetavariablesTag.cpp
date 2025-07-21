@@ -53,6 +53,29 @@ struct Mutator : tt::ConformsTo<db::protocols::Mutator> {
   }
 };
 
+static_assert(not db::is_compute_tag_v<Parallel::Tags::Metavariables>);
+static_assert(not db::is_reference_tag_v<Parallel::Tags::Metavariables>);
+static_assert(not db::is_immutable_item_tag_v<Parallel::Tags::Metavariables>);
+static_assert(not db::is_mutable_item_tag_v<Parallel::Tags::Metavariables>);
+static_assert(not db::is_simple_tag_v<Parallel::Tags::Metavariables>);
+static_assert(not db::is_creation_tag_v<Parallel::Tags::Metavariables>);
+static_assert(db::is_tag_v<Parallel::Tags::Metavariables>);
+
+static_assert(not db::is_compute_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+static_assert(not db::is_reference_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+static_assert(not db::is_immutable_item_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+static_assert(db::is_mutable_item_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+static_assert(db::is_simple_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+static_assert(db::is_creation_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+static_assert(db::is_tag_v<
+              Parallel::Tags::MetavariablesImpl<TestMetavariables<11, int>>>);
+
 static_assert(db::tag_is_retrievable_v<
               Parallel::Tags::Metavariables,
               db::DataBox<tmpl::list<Parallel::Tags::MetavariablesImpl<

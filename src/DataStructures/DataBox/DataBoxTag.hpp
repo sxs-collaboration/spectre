@@ -111,21 +111,15 @@ struct ConvertToConst<std::unique_ptr<T>> {
   using type = const T&;
 };
 
-template <typename Tag, typename TagsList, bool = db::is_base_tag_v<Tag>>
+template <typename Tag, typename TagsList>
 struct const_item_type_impl {
   using type = typename db::detail::ConvertToConst<
       std::decay_t<typename Tag::type>>::type;
 };
 
 template <typename TagsList>
-struct const_item_type_impl<Parallel::Tags::Metavariables, TagsList, false> {
+struct const_item_type_impl<Parallel::Tags::Metavariables, TagsList> {
   using type = const typename detail::metavars_tag_impl<TagsList>::type::type&;
-};
-
-template <typename Tag, typename TagsList>
-struct const_item_type_impl<Tag, TagsList, true> {
-  using type = typename db::detail::ConvertToConst<std::decay_t<
-      typename db::detail::first_matching_tag<TagsList, Tag>::type>>::type;
 };
 }  // namespace detail
 

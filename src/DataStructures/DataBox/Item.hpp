@@ -28,7 +28,7 @@ template <typename Tag, ItemType = db::is_mutable_item_tag_v<Tag>
                                                      : ItemType::Invalid))>
 class Item {
   static_assert(
-      db::is_non_base_tag_v<Tag>,
+      std::is_base_of_v<db::SimpleTag, Tag>,
       "The Tag of an Item in the Databox must be derived from db::SimpleTag");
 };
 
