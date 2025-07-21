@@ -16,6 +16,9 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
+/*!
+ * \brief Contains objects related to Tags
+ */
 namespace Tags {
 template <size_t N, typename T>
 struct TempTensor : db::SimpleTag {
@@ -24,6 +27,31 @@ struct TempTensor : db::SimpleTag {
     return std::string("TempTensor") + std::to_string(N);
   }
 };
+
+/*!
+ * \brief A struct that constructs a `TempTensor` given a label \p N and type
+ * \p TensorType. Call with `make_temp_tensor<N>::apply<Type>`
+ *
+ * \see convert_to_temp_tensors
+ */
+template <size_t N>
+struct make_temp_tensor {
+  template <typename TensorType>
+  struct apply {
+    using type = ::Tags::TempTensor<N, TensorType>;
+  };
+};
+
+/*!
+ * \brief Takes a `tmpl::list` of `Tensor` types and a label \p N which is
+ * applied to all `TempTensor`s in the resulting list.
+ *
+ * \see make_temp_tensor
+ */
+template <typename List, size_t N>
+using convert_to_temp_tensors =
+    tmpl::transform<List,
+                    typename make_temp_tensor<N>::template apply<tmpl::_1>>;
 
 /// @{
 /// \ingroup PeoGroup
