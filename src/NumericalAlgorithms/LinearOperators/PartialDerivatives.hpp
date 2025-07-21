@@ -112,6 +112,79 @@ auto logical_partial_derivative(const Tensor<DataType, SymmList, IndexList>& u,
 /// @}
 
 /// @{
+/*!
+ * \ingroup NumericalAlgorithmsGroup
+ * \brief Compute the partial derivatives of each variable, using the Cartoon
+ * method for directions not in the computational domain.
+ *
+ * For a spacetime with some Killing vector \f$\xi^a\f$, not only does the
+ * metric respect the isometry via \f$\mathcal{L}_\xi g_{ab} = 0\f$, but the
+ * fields must as well.
+ *
+ * In the case of axial symmetry about the \f$y\f$-axis, the Killing vector is
+ * \f$\xi^a = (0, -z, 0, x)\f$, so we have that for a vector \f$V^a\f$,
+ *
+ * \f{align*}{
+ *     \mathcal{L}_\xi V^a &= \xi^b \partial_b V^a - V^b \partial_b \xi^a
+ *       = -z \partial_x V^a + x \partial_z V^a - V^b \partial_b \xi^a = 0.
+ * \f}
+ *
+ * Choosing the computational domain to be the \f$z=0\f$ plane, get the result:
+ *
+ * \f{align*}{
+ *     \partial_z V^a &= \frac{V^b \partial_b \xi^a}{x}.
+ * \f}
+ *
+ * In the case that $x=0$ is in the computational domain, L'H&ocirc;pital's
+ * rule is used. For a general tensor,
+ * \f$T^{a_0,\ldots,a_n}{}_{b_0,\ldots,b_m}\f$ we have
+ *
+ * \f{align*}{
+ *   \partial_z T^{a_0,\ldots,a_n}{}_{b_0,\ldots,b_m} &=
+ *   \left\{
+ *   \begin{array}{ll}
+ *     \partial_x(\sum_k
+ *     T^{a_0,\ldots,c_k,\ldots,a_n}{}_{b_0,\ldots,b_m}\partial_{c_k}
+ *     \xi^{a_k} & \\
+ *     \;\;\;\;\;-\sum_k
+ *     T^{a_0,\ldots,a_n}{}_{b_0,\ldots,c_k,\ldots,b_m}\partial_{b_k}
+ *     \xi^{c_k}
+ *     ) & \mathrm{if} \; x=0  \\
+ *     (\sum_k
+ *     T^{a_0,\ldots,c_k,\ldots,a_n}{}_{b_0,\ldots,b_m}\partial_{c_k}
+ *     \xi^{a_k} & \\
+ *     \;-\sum_k
+ *     T^{a_0,\ldots,a_n}{}_{b_0,\ldots,c_k,\ldots,b_m}\partial_{b_k}
+ *     \xi^{c_k})\frac{1}{x} & \mathrm{otherwise}
+ *   \end{array}\right.
+ * \f}
+ *
+ * In the case of spherical symmetry, another Killing vector
+ * \f$\xi'^a = (0, -y, x, 0) \f$ is used as well, with the above equation
+ * easily generalizing. In that case, the computational domain is only the
+ * \f$x\f$-axis.
+ *
+ * This function computes the partial derivatives of _all_ variables in
+ * `VariableTags`. The additional parameter `inertial_coords` is used for
+ * division by the \f$x\f$ coordinates. If \f$x=0\f$ is included in the domain,
+ * it is assumed to be present only at the first index and is handled by
+ * L'H&ocirc;pital's rule.
+ *
+ * The mesh is required to have the Cartoon basis in the last and potentially
+ * second-to-last coordinates and the inverse Jacobian is accordingly used only
+ * in the first and potentially second dimensions.
+ */
+template <typename ResultTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3> = nullptr>
+void cartoon_partial_derivatives(
+    gsl::not_null<Variables<ResultTags>*> du, const Variables<VariableTags>& u,
+    const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+/// @}
+
+/// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.

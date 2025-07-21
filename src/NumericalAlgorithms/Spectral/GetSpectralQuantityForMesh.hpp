@@ -48,6 +48,23 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f, const Mesh<1>& mesh) {
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
+    case Basis::Cartoon:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::AxialSymmetry:
+          return f(
+              std::integral_constant<Basis, Basis::Cartoon>{},
+              std::integral_constant<Quadrature, Quadrature::AxialSymmetry>{},
+              num_points);
+        case Quadrature::SphericalSymmetry:
+          return f(std::integral_constant<Basis, Basis::Cartoon>{},
+                   std::integral_constant<Quadrature,
+                                          Quadrature::SphericalSymmetry>{},
+                   num_points);
+        default:
+          ERROR(
+              "Only Axial and Spherical Symmetry quadratures are allowed for "
+              "a Cartoon basis.");
+      }
     case Basis::FiniteDifference:
       switch (mesh.quadrature(0)) {
         case Quadrature::CellCentered:

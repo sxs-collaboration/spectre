@@ -65,6 +65,15 @@ void logical_coordinates(
         }
         break;
       }
+      case Spectral::Basis::Cartoon: {
+        if (mesh.extents(d) != 1) {
+          ERROR("Only 1 grid point is allowed in a Cartoon basis.");
+        }
+        for (IndexIterator<VolumeDim> index(mesh.extents()); index; ++index) {
+          logical_coords->get(d)[index.collapsed_index()] = 0.0;
+        }
+        break;
+      }
       // NOLINTNEXTLINE(bugprone-branch-clone)
       case Spectral::Basis::Chebyshev:
         [[fallthrough]];

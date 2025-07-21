@@ -9,15 +9,21 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Transpose.hpp"
 #include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -190,6 +196,425 @@ void partial_derivatives(
       inverse_jacobian);
 }
 
+constexpr tnsr::iab<double, 3> Killing_vector_derivatives() {
+  // holds derivative of both (0,-y,x,0) for \partial_y and (0,-z,0,x) for
+  // \partial_z
+  tnsr::iab<double, 3> da_killing_vectors{};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t KV_deriv_index = 0; KV_deriv_index < 4; ++KV_deriv_index) {
+      for (size_t Killing_index = 0; Killing_index < 4; ++Killing_index) {
+        if (i == 1 and KV_deriv_index == 2 and Killing_index == 1) {
+          // y derivative
+          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = -1.0;
+        } else if (i == 1 and KV_deriv_index == 1 and Killing_index == 2) {
+          // y derivative
+          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = 1.0;
+        } else if (i == 2 and KV_deriv_index == 3 and Killing_index == 1) {
+          // z derivative
+          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = -1.0;
+        } else if (i == 2 and KV_deriv_index == 1 and Killing_index == 3) {
+          // z derivative
+          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = 1.0;
+        } else {
+          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = 0.0;
+        }
+      }
+    }
+  }
+  return da_killing_vectors;
+}
+
+template <typename Symm, typename Indices>
+void cartoon_contraction(
+    const gsl::not_null<Tensor<DataVector, Symm, Indices>*> result_tensor,
+    const Tensor<DataVector, Symm, Indices>& tensor, const size_t deriv_index,
+    const Spectral::Quadrature quad_type) {
+  // This function does the contractions in Eqn. (218) of the SXS book's
+  // Numerical Method's chapter, specifically the thing on the RHS that you take
+  // the derivative of or divide by x.
+  // Note that the result_tensor is written over and will have
+  // (*result_tensor)[0].size() == tensor[0].size()
+  auto& contract_tensor = *result_tensor;
+  ASSERT(quad_type == Spectral::Quadrature::AxialSymmetry or
+             quad_type == Spectral::Quadrature::SphericalSymmetry,
+         "Must pass a valid Cartoon quadrature");
+
+  constexpr tnsr::iab<double, 3> da_killing_vectors =
+      Killing_vector_derivatives();
+  const std::array<UpLo, Tensor<DataVector, Symm, Indices>::rank()> valences =
+      tensor.index_valences();
+  const auto type_index = tensor.index_types();
+
+  const size_t valence_size = valences.size();
+  auto input_tensor_array = make_array<valence_size>(0_st);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+  std::array<size_t, 3> Killing_indices;
+  Killing_indices[0] = deriv_index;
+
+  for (size_t i = 0; i < tensor.size(); ++i) {
+    const auto tensor_index = tensor.get_tensor_index(i);
+    contract_tensor.get(tensor_index) = 0.0 * tensor.get(tensor_index);
+    for (size_t rank = 0; rank < valence_size; ++rank) {
+      const double sign = (valences[rank] == UpLo::Up) ? 1.0 : -1.0;
+      const size_t max_dummy = type_index[rank] == IndexType::Spacetime ? 4 : 3;
+      const size_t shift_index =
+          type_index[rank] == IndexType::Spacetime ? 0 : 1;
+
+      // loop over dimension of rank
+      for (size_t dummy = 0; dummy < max_dummy; ++dummy) {
+        if (valences[rank] == UpLo::Lo) {
+          // covariant index
+          Killing_indices[1] = tensor_index[rank] + shift_index;
+          Killing_indices[2] = dummy + shift_index;
+        } else {
+          // contravariant
+          Killing_indices[1] = dummy + shift_index;
+          Killing_indices[2] = tensor_index[rank] + shift_index;
+        }
+        if (da_killing_vectors.get(Killing_indices) != 0) {
+          for (size_t j = 0; j < tensor_index.size(); ++j) {
+            input_tensor_array[j] = tensor_index[j];
+          }
+          input_tensor_array[rank] = dummy;
+
+          contract_tensor.get(tensor_index) +=
+              sign * tensor.get(input_tensor_array) *
+              da_killing_vectors.get(Killing_indices);
+        }
+      }
+    }
+  }
+}
+
+template <typename InputTensorDataType, size_t Dim, typename Frame,
+          Requires<Dim == 3> = nullptr>
+void cartoon_derivative(
+    TensorMetafunctions::prepend_spatial_index<InputTensorDataType, Dim,
+                                               UpLo::Lo, Frame>& d_tensor,
+    const InputTensorDataType& tensor, const DataVector& safe_x_coords,
+    const Spectral::Quadrature quad_type) {
+  // This function assumes `safe_x_coords` does not contain zero (safe in the
+  // sense that having x in the denominator of an expression  will not cause
+  // an FPE).
+  // Therefore, if the domain actually does have zero, the coordinates must be
+  // made safe by replacing all occurances of zero with a non-zero value, and
+  // the output from this function is then not valid at those coords, one must
+  // then manually use L'Hopital's rule
+  ASSERT(quad_type == Spectral::Quadrature::AxialSymmetry or
+             quad_type == Spectral::Quadrature::SphericalSymmetry,
+         "Must pass a valid Cartoon quadrature");
+  ASSERT(
+      not equal_within_roundoff(0.0, safe_x_coords[0],
+                                std::numeric_limits<double>::epsilon() * 100.0,
+                                max(safe_x_coords)),
+      "Invalid coordinate: safe_x_coords[0] is too close to zero ("
+          << safe_x_coords[0]
+          << "). Division by this value may cause an FPE if the value is zero. "
+             "Maximum coordinate: "
+          << max(safe_x_coords));
+
+  const bool spherical_sym =
+      quad_type == Spectral::Quadrature::SphericalSymmetry;
+  const size_t start_deriv_index = spherical_sym ? 1 : 2;
+
+  InputTensorDataType tensor_holder;
+
+  for (size_t deriv_index = start_deriv_index; deriv_index < 3; ++deriv_index) {
+    cartoon_contraction(make_not_null(&tensor_holder), tensor, deriv_index,
+                        quad_type);
+    for (size_t component_index = 0; component_index < tensor_holder.size();
+         ++component_index) {
+      const auto input_index = tensor_holder.get_tensor_index(component_index);
+      const auto output_index = prepend(input_index, deriv_index);
+      d_tensor.get(output_index) =
+          tensor_holder.get(input_index) / safe_x_coords;
+    }
+  }
+}
+
+template <size_t Comp_dim, typename ResultTags, typename VariableTags,
+          size_t Dim, typename DerivativeFrame>
+void cartoon_partial_derivatives_apply(
+    const gsl::not_null<Variables<ResultTags>*> du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  using DerivativeTags =
+      tmpl::front<tmpl::split_at<VariableTags, tmpl::size<ResultTags>>>;
+  static_assert(Dim == 3);
+  static_assert(
+      std::is_same_v<
+          tmpl::transform<ResultTags, tmpl::bind<tmpl::type_from, tmpl::_1>>,
+          tmpl::transform<db::wrap_tags_in<Tags::deriv, DerivativeTags,
+                                           tmpl::size_t<Dim>, DerivativeFrame>,
+                          tmpl::bind<tmpl::type_from, tmpl::_1>>>);
+  ASSERT((Comp_dim == 2 and
+          mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry) or
+             (Comp_dim == 1 and
+              (mesh.quadrature(1) == Spectral::Quadrature::SphericalSymmetry and
+               mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry)),
+         "Invalid Quadrature combinations: axial symmetry requires 2 "
+         "non-Cartoon dimensions, spherical symmetry requires 1 non-Cartoon "
+         "dimension. Got: "
+             << mesh.quadrature());
+
+  using ValueType = typename Variables<VariableTags>::value_type;
+  auto& partial_derivatives_of_u = *du;
+
+  if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
+               mesh.number_of_grid_points())) {
+    partial_derivatives_of_u.initialize(mesh.number_of_grid_points());
+  }
+
+  const size_t vars_size =
+      u.number_of_grid_points() *
+      Variables<DerivativeTags>::number_of_independent_components;
+  const auto logical_derivs_data =
+      cpp20::make_unique_for_overwrite<ValueType[]>(
+          (Comp_dim > 1 ? (Comp_dim + 1) : Comp_dim) * vars_size);
+
+  std::array<ValueType*, Comp_dim> logical_derivs{};
+  for (size_t i = 0; i < Comp_dim; ++i) {
+    gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);
+  }
+  Variables<DerivativeTags> temp{};
+  if constexpr (Comp_dim > 1) {
+    temp.set_data_ref(&logical_derivs_data[Comp_dim * vars_size], vars_size);
+  }
+
+  if constexpr (Comp_dim == 1) {
+    partial_derivatives_detail::
+        LogicalImpl<Comp_dim, VariableTags, DerivativeTags>::apply(
+            make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
+            mesh.slice_through(0));
+  } else {
+    partial_derivatives_detail::
+        LogicalImpl<Comp_dim, VariableTags, DerivativeTags>::apply(
+            make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
+            mesh.slice_through(0, 1));
+  }
+
+  std::array<const ValueType*, Comp_dim> const_logical_derivs{};
+  for (size_t i = 0; i < Comp_dim; ++i) {
+    gsl::at(const_logical_derivs, i) = gsl::at(logical_derivs, i);
+  }
+
+  const Spectral::Quadrature quad_type = mesh.quadrature(2);
+  const auto numerical_deriv_in_this_direction = [](const size_t deriv_num) {
+    if constexpr (Comp_dim == 2) {
+      return deriv_num == 0 or deriv_num == 1;
+    } else {
+      return deriv_num == 0;
+    }
+  };
+  // only the 1st (possibly 2nd) dimensions of the Jacobian are relevant here
+  const InverseJacobian<DataVector, Comp_dim, Frame::ElementLogical,
+                        DerivativeFrame>
+      inverse_jacobian{inverse_jacobian_3d.begin()->size()};
+  for (size_t i = 0; i < Comp_dim; ++i) {
+    for (size_t j = 0; j < Comp_dim; ++j) {
+      make_const_view(make_not_null(&inverse_jacobian.get(i, j)),
+                      inverse_jacobian_3d.get(i, j), 0,
+                      inverse_jacobian_3d.begin()->size());
+    }
+  }
+  // pdu points to du
+  double* pdu = du->data();
+  const size_t num_grid_points = du->number_of_grid_points();
+  DataVector lhs{};
+  DataVector logical_du{};
+  DataVector safe_x_coords = get<0>(inertial_coords);
+  const bool element_contains_zero_of_symmetry_axis = equal_within_roundoff(
+      0.0, safe_x_coords[0], std::numeric_limits<double>::epsilon() * 100.0,
+      max(safe_x_coords));
+  // Having x=0 requires both not dividing by zero (done here by setting to
+  // arbitrary non-zero value) and remembering to then do L'Hopital
+  if (element_contains_zero_of_symmetry_axis) {
+    safe_x_coords[0] = 1.0;
+    if constexpr (Comp_dim == 2) {
+      const size_t x_extents = mesh.extents(0);
+      const size_t y_extents = mesh.extents(1);
+      for (size_t i = 1; i < y_extents; ++i) {
+        ASSERT(
+            equal_within_roundoff(
+                0.0, safe_x_coords[i * x_extents],
+                std::numeric_limits<double>::epsilon() * 100.0,
+                max(safe_x_coords)),
+            "The passed inertial coordinates do not follow the required format "
+            "of a rectangular mesh with x=0 being located at the first index "
+            "of each constant-y subdomain of the x DataVector. x="
+                << safe_x_coords);
+        safe_x_coords[i * x_extents] = 1.0;
+      }
+    }
+  }
+  // If doing L'Hopital's rule, we need to store temporary forms of the data
+  // in two different tensors (hence the 0 & 1 labels) for each tensor type
+  // They only have to hold the x=0 positions, so of size y_extents
+  using VariableTypes = tmpl::remove_duplicates<
+      tmpl::transform<VariableTags, tmpl::bind<tmpl::type_from, tmpl::_1>>>;
+
+  using TempTags0 = ::Tags::convert_to_temp_tensors<VariableTypes, 0>;
+  using TempTags1 = ::Tags::convert_to_temp_tensors<VariableTypes, 1>;
+  using VarTags = tmpl::append<TempTags0, TempTags1>;
+
+  Variables<VarTags> temp_vars{};
+  if (element_contains_zero_of_symmetry_axis) {
+    const size_t y_extents = mesh.extents(1);
+    temp_vars.initialize(y_extents);
+  }
+
+  std::array<std::array<size_t, Comp_dim>, Comp_dim> indices{};
+  for (size_t deriv_index = 0; deriv_index < Comp_dim; ++deriv_index) {
+    for (size_t d = 0; d < Comp_dim; ++d) {
+      gsl::at(gsl::at(indices, d), deriv_index) =
+          InverseJacobian<DataVector, Comp_dim, Frame::ElementLogical,
+                          DerivativeFrame>::get_storage_index(d, deriv_index);
+    }
+  }
+
+  // the non-cartoon derivatives need to know where they are within `u` to
+  // contract with the inverse Jacobian to compute the inertial derivatives
+  size_t global_component_index = 0;
+  tmpl::for_each<VariableTags>(
+      [&u, &du, &lhs, &pdu, &num_grid_points, &logical_du,
+       &const_logical_derivs, &inverse_jacobian, &indices, &temp_vars,
+       &global_component_index, &safe_x_coords,
+       &numerical_deriv_in_this_direction, &quad_type, &mesh,
+       &element_contains_zero_of_symmetry_axis]<typename TensorTag>(
+          tmpl::type_<TensorTag> /*meta*/) {
+        auto& tensor = get<TensorTag>(u);
+
+        TensorMetafunctions::prepend_spatial_index<
+            typename TensorTag::type, Dim, UpLo::Lo, Frame::Inertial>
+            cart_deriv_tensor;
+        cartoon_derivative<typename TensorTag::type, 3, Frame::Inertial>(
+            cart_deriv_tensor, tensor, safe_x_coords, quad_type);
+
+        for (size_t component_index = 0;
+             component_index < TensorTag::type::size();
+             ++component_index, ++global_component_index) {
+          for (size_t deriv_index = 0; deriv_index < Dim; ++deriv_index) {
+            // lhs points to pdu (shifts by num grid points below)
+            lhs.set_data_ref(pdu, num_grid_points);
+
+            if (numerical_deriv_in_this_direction(deriv_index)) {
+              // do normal derivative for x (and possibly y) derivative
+              // clang-tidy: const cast is fine since we won't modify the data
+              // and we need it to easily hook into the expression templates.
+              logical_du.set_data_ref(
+                  const_cast<ValueType*>(                  // NOLINT
+                      gsl::at(const_logical_derivs, 0)) +  // NOLINT
+                      global_component_index * num_grid_points,
+                  num_grid_points);
+              lhs = (*(inverse_jacobian.begin() +
+                       gsl::at(indices[0], deriv_index))) *
+                    logical_du;
+              if constexpr (Comp_dim == 2) {
+                // clang-tidy: const cast is fine since we won't modify the data
+                // and we need it to easily hook into the expression templates.
+                logical_du.set_data_ref(
+                    const_cast<ValueType*>(                  // NOLINT
+                        gsl::at(const_logical_derivs, 1)) +  // NOLINT
+                        global_component_index * num_grid_points,
+                    num_grid_points);
+                lhs += (*(inverse_jacobian.begin() +
+                          gsl::at(gsl::at(indices, 1), deriv_index))) *
+                       logical_du;
+              }
+            } else {
+              // do cartoon dervative
+              const auto input_tensor_index =
+                  tensor.get_tensor_index(component_index);
+              const auto output_tensor_index =
+                  prepend(input_tensor_index, size_t{deriv_index});
+              lhs = cart_deriv_tensor.get(output_tensor_index);
+            }
+            // clang-tidy: no pointer arithmetic
+            pdu += num_grid_points;  // NOLINT
+          }
+        }
+        if (element_contains_zero_of_symmetry_axis) {
+          // need to use L'Hopital
+          using dtensor_type =
+              tmpl::at<ResultTags, tmpl::index_of<VariableTags, TensorTag>>;
+          auto& dtensor = get<dtensor_type>(*du);
+
+          // if spherical symmetry,the zero is only at the first index
+          // if axial symmetry, the zero is repeated every x_extents times
+          const size_t x_extents = mesh.extents(0);
+          // for spherical symmetry, y_extents = 1, so we could use a double
+          // type rather than a size 1 DataVector, but it requires a lot of code
+          // reuse
+          const size_t y_extents = mesh.extents(1);
+
+          auto& dx_tensor =
+              get<::Tags::TempTensor<0, typename TensorTag::type>>(temp_vars);
+          auto& contracted_dx_tensor =
+              get<::Tags::TempTensor<1, typename TensorTag::type>>(temp_vars);
+
+          for (size_t component_index = 0; component_index < dx_tensor.size();
+               ++component_index) {
+            const auto output_index =
+                dx_tensor.get_tensor_index(component_index);
+            // the 0 is because we want the x derivative
+            const size_t input_index =
+                dtensor.get_storage_index(prepend(output_index, size_t{0}));
+            for (size_t i = 0; i < y_extents; ++i) {
+              dx_tensor[component_index][i] =
+                  dtensor[input_index][i * x_extents];
+            }
+          }
+
+          const size_t start_index =
+              quad_type == Spectral::Quadrature::SphericalSymmetry ? 1 : 2;
+          for (size_t deriv_index = start_index; deriv_index < 3;
+               ++deriv_index) {
+            cartoon_contraction(make_not_null(&contracted_dx_tensor), dx_tensor,
+                                deriv_index, quad_type);
+            for (size_t component_index = 0;
+                 component_index < contracted_dx_tensor.size();
+                 ++component_index) {
+              const auto input_index =
+                  contracted_dx_tensor.get_tensor_index(component_index);
+              const size_t output_index =
+                  dtensor.get_storage_index(prepend(input_index, deriv_index));
+              for (size_t i = 0; i < y_extents; ++i) {
+                dtensor[output_index][i * x_extents] =
+                    contracted_dx_tensor[component_index][i];
+              }
+            }
+          }
+        }
+      });
+}
+
+template <typename ResultTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3>>
+void cartoon_partial_derivatives(
+    const gsl::not_null<Variables<ResultTags>*> du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  if (mesh.basis(0) != Spectral::Basis::Cartoon and
+      mesh.basis(2) == Spectral::Basis::Cartoon) {
+    // computational dimension needs to be a constexpr
+    if (mesh.basis(1) == Spectral::Basis::Cartoon) {
+      cartoon_partial_derivatives_apply<1, ResultTags, VariableTags, Dim,
+                                        DerivativeFrame>(
+          du, u, mesh, inverse_jacobian_3d, inertial_coords);
+    } else {
+      cartoon_partial_derivatives_apply<2, ResultTags, VariableTags, Dim,
+                                        DerivativeFrame>(
+          du, u, mesh, inverse_jacobian_3d, inertial_coords);
+    }
+  } else {
+    ERROR("Bases do not match valid Cartoon pattern.");
+  }
+}
+
 template <typename ResultTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 void partial_derivatives(
@@ -253,8 +678,8 @@ partial_derivatives(
   Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                              DerivativeFrame>>
       partial_derivatives_of_u(u.number_of_grid_points());
-  partial_derivatives(make_not_null(&partial_derivatives_of_u),
-                                      u, mesh, inverse_jacobian);
+  partial_derivatives(make_not_null(&partial_derivatives_of_u), u, mesh,
+                      inverse_jacobian);
   return partial_derivatives_of_u;
 }
 

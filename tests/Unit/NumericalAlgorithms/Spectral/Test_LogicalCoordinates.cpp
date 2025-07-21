@@ -13,6 +13,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Structure/Direction.hpp"
@@ -105,6 +106,53 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.LogicalCoordinates",
 
   CHECK(x_3d[2][0] == -32.0);
   CHECK(x_3d[2][15] == 74.0);
+
+  const Mesh<3> mesh_spherical{
+      {3, 1, 1},
+      {Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+       Spectral::Basis::Cartoon},
+      {Spectral::Quadrature::GaussLobatto,
+       Spectral::Quadrature::SphericalSymmetry,
+       Spectral::Quadrature::SphericalSymmetry}};
+  using Affine = domain::CoordinateMaps::Affine;
+  using Identity = domain::CoordinateMaps::Identity<1>;
+  const Identity identity_cartoon_map;
+  const Affine affine_x_map(-1.0, 1.0, -1.0, 1.0);
+  const domain::CoordinateMap<
+      Frame::ElementLogical, Frame::Grid,
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity, Identity>>
+      map_spherical{{affine_x_map, identity_cartoon_map, identity_cartoon_map}};
+  const auto x_spherical = map_spherical(logical_coordinates(mesh_spherical));
+  CHECK(x_spherical[1][0] == 0.0);
+  CHECK(x_spherical[1][1] == 0.0);
+  CHECK(x_spherical[1][2] == 0.0);
+  CHECK(x_spherical[2][0] == 0.0);
+  CHECK(x_spherical[2][1] == 0.0);
+  CHECK(x_spherical[2][2] == 0.0);
+
+  const Mesh<3> mesh_axial{
+      {2, 3, 1},
+      {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+       Spectral::Basis::Cartoon},
+      {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+       Spectral::Quadrature::AxialSymmetry}};
+  const domain::CoordinateMap<
+      Frame::ElementLogical, Frame::Grid,
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity>>
+      map_axial{{affine_x_map, affine_x_map, identity_cartoon_map}};
+  const auto x_axial = map_axial(logical_coordinates(mesh_axial));
+  CHECK(x_axial[2][0] == 0.0);
+  CHECK(x_axial[2][1] == 0.0);
+  CHECK(x_axial[2][2] == 0.0);
+  CHECK(x_axial[2][3] == 0.0);
+  CHECK(x_axial[2][4] == 0.0);
+  CHECK(x_axial[2][5] == 0.0);
+
+  const Mesh<1> mesh_cartoon_error{2, Spectral::Basis::Cartoon,
+                                   Spectral::Quadrature::AxialSymmetry};
+  CHECK_THROWS_WITH((logical_coordinates(mesh_cartoon_error)),
+                    Catch::Matchers::ContainsSubstring(
+                        "Only 1 grid point is allowed in a Cartoon basis."));
 
   TestHelpers::db::test_compute_tag<domain::Tags::LogicalCoordinates<1>>(
       "ElementLogicalCoordinates");
