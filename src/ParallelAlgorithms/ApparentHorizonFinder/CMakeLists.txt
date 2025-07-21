@@ -13,6 +13,7 @@ spectre_target_sources(
   ComputeVarsToInterpolateToTarget.cpp
   Destination.cpp
   FastFlow.cpp
+  InterpolateVolumeVars.cpp
   InterpolationTarget.cpp
   OptionTags.cpp
   Storage.cpp
@@ -35,6 +36,7 @@ spectre_target_headers(
   FastFlow.hpp
   HorizonAliases.hpp
   Initialization.hpp
+  InterpolateVolumeVars.hpp
   InterpolationTarget.hpp
   OptionTags.hpp
   Storage.hpp
