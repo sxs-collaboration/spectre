@@ -318,7 +318,25 @@ void test_3d_regular_interpolation() {
         test_regular_interpolation_override(mesh_lgl, mesh_lgl, coords);
         test_regular_interpolation_override(mesh_lgl, mesh_lg_high_res, coords);
       }
+      const auto mesh_cartoon_axial =
+          Mesh<3>{{{nx, ny, 1}},
+                  {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                    Spectral::Basis::Cartoon}},
+                  {{Spectral::Quadrature::GaussLobatto,
+                    Spectral::Quadrature::GaussLobatto,
+                    Spectral::Quadrature::AxialSymmetry}}};
+      test_regular_interpolation<3, DataVector>(mesh_cartoon_axial,
+                                                mesh_cartoon_axial);
     }
+    const auto mesh_cartoon_spherical =
+        Mesh<3>{{{nx, 1, 1}},
+                {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+                  Spectral::Basis::Cartoon}},
+                {{Spectral::Quadrature::GaussLobatto,
+                  Spectral::Quadrature::SphericalSymmetry,
+                  Spectral::Quadrature::SphericalSymmetry}}};
+    test_regular_interpolation<3, DataVector>(mesh_cartoon_spherical,
+                                              mesh_cartoon_spherical);
   }
 }
 
