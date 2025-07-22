@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -25,6 +26,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Tags.hpp"
@@ -44,6 +46,7 @@
 
 namespace {
 using Affine = domain::CoordinateMaps::Affine;
+using Identity1D = domain::CoordinateMaps::Identity<1>;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
@@ -330,6 +333,295 @@ void test_divergence_compute() {
     }
   }
 }
+
+template <bool Spherical>
+DataVector cartoon_func(const tnsr::I<DataVector, 3, Frame::Inertial>& coords) {
+  if constexpr (Spherical) {
+    // a radial function, f(r) = f(x) because the computational domain is the x
+    // axis
+    return 0.01 * pow(get<0>(coords), 4) + 0.3 * pow(get<0>(coords), 3) -
+           0.1 * pow(get<0>(coords), 2) - 2.0 * get<0>(coords) - 1.5;
+  } else {
+    // an axially symmetric function about the y axis,
+    // f(\sqrt{x^2 + z^2}, y) = f(x, y) because the computational domain is the
+    // x-y plane
+    return square(get<1>(coords)) + square(get<0>(coords)) * get<1>(coords);
+  }
+}
+
+template <bool Spherical>
+DataVector cartoon_dfunc(
+    size_t deriv_index, const tnsr::I<DataVector, 3, Frame::Inertial>& coords) {
+  if constexpr (Spherical) {
+    if (deriv_index == 0) {
+      return 0.04 * pow(get<0>(coords), 3) + 0.9 * pow(get<0>(coords), 2) -
+             0.2 * get<0>(coords) - 2.0;
+    } else {
+      return {get<0>(coords).size(), 0.0};
+    }
+  } else {
+    if (deriv_index == 0) {
+      return 2.0 * get<0>(coords) * get<1>(coords);
+    } else if (deriv_index == 1) {
+      return 2.0 * get<1>(coords) + square(get<0>(coords));
+    } else {
+      return {get<0>(coords).size(), 0.0};
+    }
+  }
+}
+
+template <bool Spherical>
+void test_cartoon(const double x_start) {
+  Mesh<3> mesh;
+  tnsr::I<DataVector, 3, Frame::Inertial> coords;
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+      inv_jacobian;
+
+  const Identity1D identity_cartoon_map;
+
+  if constexpr (Spherical) {
+    // spherical symmetry
+    const size_t num_grid_pts = 8;
+    const double x_end = 4.0;
+
+    mesh = Mesh<3>{{{num_grid_pts, 1, 1}},
+                   {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+                     Spectral::Basis::Cartoon}},
+                   {{Spectral::Quadrature::GaussLobatto,
+                     Spectral::Quadrature::SphericalSymmetry,
+                     Spectral::Quadrature::SphericalSymmetry}}};
+
+    const Affine affine_x_map(-1.0, 1.0, x_start, x_end);
+
+    using Cartoon_map_combination =
+        domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>;
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                Cartoon_map_combination>
+        map{{affine_x_map, identity_cartoon_map, identity_cartoon_map}};
+    inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+    coords = map(logical_coordinates(mesh));
+  } else {
+    // axial symmetry
+    const size_t num_x_grid_pts = 6;
+    const double x_end = 3.25;
+    const size_t num_y_grid_pts = 7;
+    const double y_start = -2.5;
+    const double y_end = 4.0;
+
+    mesh = Mesh<3>{{{num_x_grid_pts, num_y_grid_pts, 1}},
+                   {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+                     Spectral::Basis::Cartoon}},
+                   {{Spectral::Quadrature::GaussLobatto,
+                     Spectral::Quadrature::GaussLobatto,
+                     Spectral::Quadrature::AxialSymmetry}}};
+
+    const Affine affine_x_map(-1.0, 1.0, x_start, x_end);
+    const Affine affine_y_map(-1.0, 1.0, y_start, y_end);
+
+    using Cartoon_map_combination =
+        domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>;
+    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                                Cartoon_map_combination>
+        map{{affine_x_map, affine_y_map, identity_cartoon_map}};
+    inv_jacobian = map.inv_jacobian(logical_coordinates(mesh));
+    coords = map(logical_coordinates(mesh));
+  }
+
+  using TempIjk =
+      ::Tags::TempTensor<0, tnsr::Ijk<DataVector, 3, Frame::Inertial>>;
+
+  using VarTags = tmpl::list<::Tags::TempI<0, 3, Frame::Inertial>,
+                             ::Tags::TempIj<0, 3, Frame::Inertial>, TempIjk>;
+
+  Variables<VarTags> vars{mesh.number_of_grid_points()};
+
+  using div_VarTags =
+      tmpl::transform<VarTags, tmpl::bind<::Tags::div, tmpl::_1>>;
+
+  Variables<div_VarTags> expected_div_vars{mesh.number_of_grid_points()};
+
+  // Here we create "prefactors", which serve to fill out our tensors by being
+  // mulitplied by our cartoon_func(), which themselves make our tensors have
+  // some nontrivial spatial derivative
+  // The point of these prefactors is to ensure the tensors respect the
+  // symmetry of the spacetime: it is not sufficient that each component
+  // follows the symmetry, rather the entire tensor must satisfy
+  // \mathcal{L}_\xi (tensor) = 0. Each rank has it's own form of prefactor
+  Variables<VarTags> prefactor_vars{mesh.number_of_grid_points()};
+
+  using TempiJkl =
+      ::Tags::TempTensor<0, TensorMetafunctions::prepend_spatial_index<
+                                tnsr::Ijk<DataVector, 3, Frame::Inertial>, 3,
+                                UpLo::Lo, Frame::Inertial>>;
+
+  // prepending a spatial index to VarTags (= PrefactorVarTags if it existed)
+  using d_PrefactorVarTags =
+      tmpl::list<::Tags::TempiJ<0, 3, Frame::Inertial>,
+                 ::Tags::TempiJk<0, 3, Frame::Inertial>, TempiJkl>;
+  Variables<d_PrefactorVarTags> d_prefactor_vars{mesh.number_of_grid_points()};
+
+  const size_t dv_size = get<0>(coords).size();
+
+  auto& vector = get<::Tags::TempI<0, 3>>(prefactor_vars);
+  auto& d_vector = get<::Tags::TempiJ<0, 3>>(d_prefactor_vars);
+  if constexpr (Spherical) {
+    // spherical case, vector/one form, using x^i
+    for (size_t i = 0; i < index_dim<0>(vector); ++i) {
+      vector.get(i) = coords.get(i);
+    }
+    // partial_i of x_j is \delta_ij
+    for (size_t i = 0; i < index_dim<0>(d_vector); ++i) {
+      for (size_t j = 0; j < index_dim<1>(d_vector); ++j) {
+        if (i == j) {
+          d_vector.get(i, j) = DataVector(dv_size, 1.0);
+        } else {
+          d_vector.get(i, j) = DataVector(dv_size, 0.0);
+        }
+      }
+    }
+  } else {
+    // axial case, vector/one form, using x^i = (-z, 0, x) (pure rotation)
+    get<0>(vector) = -1.0 * coords.get(2);
+    get<1>(vector) = DataVector(dv_size, 0.0);
+    get<2>(vector) = get<0>(coords);
+
+    // \partial_i of x_j is (\delta_i2, 0, \delta_i0)
+    for (size_t i = 0; i < index_dim<0>(d_vector); ++i) {
+      for (size_t j = 0; j < index_dim<1>(d_vector); ++j) {
+        if (i == 2 and j == 0) {
+          d_vector.get(i, j) = DataVector(dv_size, -1.0);
+        } else if (i == 0 and j == 2) {
+          d_vector.get(i, j) = DataVector(dv_size, 1.0);
+        } else {
+          d_vector.get(i, j) = DataVector(dv_size, 0.0);
+        }
+      }
+    }
+  }
+
+  auto& rank2 = get<::Tags::TempIj<0, 3>>(prefactor_vars);
+  auto& d_rank2 = get<::Tags::TempiJk<0, 3>>(d_prefactor_vars);
+  // Filling with (essenially) projector to tangent space of sphere
+  // P_ij = \delta_ij + x_i x_j
+  // can have arbitrary function in from of each term, not doing here
+  // (the real projector is \delta_ij - x_i x_j / r^2)
+  for (size_t i = 0; i < index_dim<0>(rank2); ++i) {
+    for (size_t j = 0; j < index_dim<1>(rank2); ++j) {
+      if (i == j) {
+        rank2.get(i, j) =
+            DataVector(dv_size, 1.0) + coords.get(i) * coords.get(j);
+      } else {
+        rank2.get(i, j) = coords.get(i) * coords.get(j);
+      }
+    }
+  }
+  // \partial_i of (\delta_jk + x_j x_k) is (x_j \delta_ik + x_k \delta_ij)
+  for (size_t i = 0; i < index_dim<0>(d_rank2); ++i) {
+    for (size_t j = 0; j < index_dim<1>(d_rank2); ++j) {
+      for (size_t k = 0; k < index_dim<2>(d_rank2); ++k) {
+        d_rank2.get(i, j, k) = DataVector(dv_size, 0.0);
+        if (i == k) {
+          d_rank2.get(i, j, k) += coords.get(j);
+        }
+        if (i == j) {
+          d_rank2.get(i, j, k) += coords.get(k);
+        }
+      }
+    }
+  }
+
+  auto& rank3 = get<TempIjk>(prefactor_vars);
+  auto& d_rank3 = get<TempiJkl>(d_prefactor_vars);
+  // x_i x_j x_k + \delta_ij x_k \delta_ik x_j \delta_jk x_i
+  for (size_t i = 0; i < index_dim<0>(rank3); ++i) {
+    for (size_t j = 0; j < index_dim<1>(rank3); ++j) {
+      for (size_t k = 0; k < index_dim<2>(rank3); ++k) {
+        rank3.get(i, j, k) = coords.get(i) * coords.get(j) * coords.get(k);
+        if (i == j) {
+          rank3.get(i, j, k) += coords.get(k);
+        }
+        if (i == k) {
+          rank3.get(i, j, k) += coords.get(j);
+        }
+        if (j == k) {
+          rank3.get(i, j, k) += coords.get(i);
+        }
+      }
+    }
+  }
+  // \partial_i of (x_j x_k x_l + \delta_jk x_l \delta_jl x_k \delta_kl x_j) is
+  // \delta_ij x_k x_l + \delta_ik x_j x_l + \delta_il x_j x_k +
+  //   \delta_jk \delta_il + \delta_jl \delta_ik + \delta_kl \delta_ij
+  for (size_t i = 0; i < index_dim<0>(d_rank3); ++i) {
+    for (size_t j = 0; j < index_dim<1>(d_rank3); ++j) {
+      for (size_t k = 0; k < index_dim<2>(d_rank3); ++k) {
+        for (size_t l = 0; l < index_dim<3>(d_rank3); ++l) {
+          d_rank3.get(i, j, k, l) = DataVector(dv_size, 0.0);
+          if (i == j) {
+            d_rank3.get(i, j, k, l) += coords.get(k) * coords.get(l);
+          }
+          if (i == k) {
+            d_rank3.get(i, j, k, l) += coords.get(j) * coords.get(l);
+          }
+          if (i == l) {
+            d_rank3.get(i, j, k, l) += coords.get(j) * coords.get(k);
+          }
+          if (j == k and i == l) {
+            d_rank3.get(i, j, k, l) += 1.0;
+          }
+          if (j == l and i == k) {
+            d_rank3.get(i, j, k, l) += 1.0;
+          }
+          if (k == l and i == j) {
+            d_rank3.get(i, j, k, l) += 1.0;
+          }
+        }
+      }
+    }
+  }
+
+  tmpl::for_each<VarTags>([&vars, &prefactor_vars, &expected_div_vars,
+                           &d_prefactor_vars, &coords]<typename tensor_tag>(
+                              tmpl::type_<tensor_tag> /*meta*/) {
+    auto& tensor = get<tensor_tag>(vars);
+    auto& prefactor_tensor = get<tensor_tag>(prefactor_vars);
+    using div_tensor_tag = ::Tags::div<tensor_tag>;
+    auto& div_tensor = get<div_tensor_tag>(expected_div_vars);
+    auto& d_prefactor_tensor =
+        get<tmpl::at<d_PrefactorVarTags, tmpl::index_of<VarTags, tensor_tag>>>(
+            d_prefactor_vars);
+
+    for (size_t storage_index = 0; storage_index < tensor.size();
+         ++storage_index) {
+      tensor[storage_index] =
+          prefactor_tensor[storage_index] * cartoon_func<Spherical>(coords);
+
+      const auto input_index = tensor.get_tensor_index(storage_index);
+      std::array<size_t, tensor_tag::type::rank() - 1> output_index{};
+      std::copy(input_index.begin() + 1, input_index.end(),
+                output_index.begin());
+
+      const size_t deriv_index = input_index[0];
+      if (deriv_index == 0) {
+        div_tensor.get(output_index) = 0.0 * tensor.get(input_index);
+      }
+      const auto d_input_index = prepend(input_index, deriv_index);
+
+      div_tensor.get(output_index) +=
+          prefactor_tensor.get(input_index) *
+              cartoon_dfunc<Spherical>(deriv_index, coords) +
+          cartoon_func<Spherical>(coords) *
+              d_prefactor_tensor.get(d_input_index);
+    }
+  });
+
+  Variables<div_VarTags> div_vars{mesh.number_of_grid_points()};
+  cartoon_divergence(make_not_null(&div_vars), vars, mesh, inv_jacobian,
+                     coords);
+
+  const Approx local_approx = Approx::custom().epsilon(1.0e-10).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(div_vars, expected_div_vars, local_approx);
+}
 }  // namespace
 
 // [[Timeout, 20]]
@@ -338,6 +630,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
   test_divergence<DataVector>();
   test_divergence<ComplexDataVector>();
   test_divergence_compute();
+
+  test_cartoon<true>(0.0);
+  test_cartoon<true>(1.0);
+  test_cartoon<false>(0.0);
+  test_cartoon<false>(1.0);
 
   BENCHMARK_ADVANCED("Divergence of vector")
   (Catch::Benchmark::Chronometer meter) {
