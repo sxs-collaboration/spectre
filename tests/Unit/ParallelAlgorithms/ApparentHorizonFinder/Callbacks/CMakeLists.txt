@@ -5,4 +5,5 @@ set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
   Callbacks/Test_InvokeCallbacks.cpp
   Callbacks/Test_FailedHorizonFind.cpp
+  Callbacks/Test_SendDependencyToObserverWriter.cpp
   PARENT_SCOPE)
