@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/QuadratureWeights.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackCache.hpp"
@@ -78,6 +79,28 @@ double definite_integral<2>(const DataVector& integrand, const Mesh<2>& mesh) {
 
 template <>
 double definite_integral<3>(const DataVector& integrand, const Mesh<3>& mesh) {
+  if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+    if (mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry) {
+      // spherical symmetry, integrand should have x^2 and logical to
+      // inertial jacobian determinant already multiplied
+      ASSERT(integrand.size() == mesh.slice_through(0).number_of_grid_points(),
+             "Mismatched input sizes: num_grid_points = "
+                 << mesh.slice_through(0).number_of_grid_points()
+                 << ", integrand size = " << integrand.size());
+      return 4.0 * M_PI *
+             definite_integral<1>(integrand, mesh.slice_through(0));
+    } else {
+      // axial symmetry, integrand should have x and logical to inertial
+      // jacobian already multiplied
+      ASSERT(
+          integrand.size() == mesh.slice_through(0, 1).number_of_grid_points(),
+          "Mismatched input sizes: num_grid_points = "
+              << mesh.slice_through(0, 1).number_of_grid_points()
+              << ", integrand size = " << integrand.size());
+      return 2 * M_PI *
+             definite_integral<2>(integrand, mesh.slice_through(0, 1));
+    }
+  }
   ASSERT(integrand.size() == mesh.number_of_grid_points(),
          "num_grid_points = " << mesh.number_of_grid_points()
                               << ", integrand size = " << integrand.size());

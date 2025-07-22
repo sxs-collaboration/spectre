@@ -33,6 +33,11 @@ template <size_t Dim, typename VectorType>
 void indefinite_integral(const gsl::not_null<VectorType*> integral,
                          const VectorType& integrand, const Mesh<Dim>& mesh,
                          const size_t dim_to_integrate) {
+  if (mesh.basis(dim_to_integrate) == Spectral::Basis::Cartoon) {
+    ERROR("An indefinite integral cannot be preformed on a Cartoon basis. "
+          "dim_to_integrate: "
+          << dim_to_integrate << ", basis: " << mesh.basis());
+  }
   integral->destructive_resize(integrand.size());
   apply_matrices(integral,
                  make_integration_matrices<Dim>(
