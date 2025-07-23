@@ -264,14 +264,12 @@ void test_divergence_compute_item_impl(
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
 
-  auto box =
-      db::create<db::AddSimpleTags<mesh_tag, flux_tag, map_tag>,
-                 db::AddComputeTags<
-                     domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                     Tags::DivVariablesCompute<flux_tag, mesh_tag, inv_jac_tag>,
-                     Tags::DivVectorCompute<Flux1<DataVector, Dim, Frame>,
-                                            mesh_tag, inv_jac_tag>>>(
-          mesh, fluxes, coordinate_map);
+  auto box = db::create<
+      db::AddSimpleTags<mesh_tag, flux_tag, map_tag>,
+      db::AddComputeTags<
+          domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+          Tags::DivVariablesCompute<flux_tag, mesh_tag, inv_jac_tag>>>(
+      mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes = db::get<Tags::Variables<div_tags>>(box);
 
@@ -279,9 +277,15 @@ void test_divergence_compute_item_impl(
   Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
   CHECK_VARIABLES_CUSTOM_APPROX(div_fluxes, expected_div_fluxes, local_approx);
 
+  auto box2 = db::create<
+      db::AddSimpleTags<mesh_tag, flux_tag, map_tag>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                         Tags::DivVectorCompute<Flux1<DataVector, Dim, Frame>,
+                                                mesh_tag, inv_jac_tag>>>(
+      mesh, fluxes, coordinate_map);
+
   const auto& div_flux1 =
-      db::get<Tags::DivVectorCompute<Flux1<DataVector, Dim, Frame>, mesh_tag,
-                                     inv_jac_tag>>(box);
+      db::get<Tags::div<Flux1<DataVector, Dim, Frame>>>(box2);
   const auto& expected =
       get<Tags::div<Flux1<DataVector, Dim, Frame>>>(div_fluxes);
   CHECK_ITERABLE_CUSTOM_APPROX(expected, div_flux1, local_approx);
