@@ -9,6 +9,7 @@ spectre_target_headers(
   ErrorOnFailedApparentHorizon.hpp
   FindApparentHorizon.hpp
   IgnoreFailedApparentHorizon.hpp
+  InvokeCallbacks.hpp
   ObserveCenters.hpp
   SendDependencyToObserverWriter.hpp
   )

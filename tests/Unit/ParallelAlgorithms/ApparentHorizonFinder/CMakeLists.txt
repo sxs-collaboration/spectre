@@ -21,6 +21,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   )
 
+add_subdirectory(Callbacks)
 add_subdirectory(Events)
 add_subdirectory(Protocols)
 
