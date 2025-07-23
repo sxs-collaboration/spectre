@@ -476,6 +476,48 @@ SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
     const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes, size_t l_max);
 /// @}
 
+/// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Compute the set of spin-weighted angular grid point values from a set
+ * of Goldberg modes (following the convention of \cite Goldberg1966uu)
+ *
+ * \details Internally it first transforms the Goldberg modes into libsharp
+ * compatible modes using goldberg_to_libsharp_modes(), then calls
+ * Spectral::Swsh::inverse_swsh_transform() to compute the angular grid points
+ * nodal values.
+ */
+template <int Spin>
+void goldberg_to_nodal(
+    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> nodal_values,
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes, size_t l_max);
+
+template <int Spin>
+SpinWeighted<ComplexDataVector, Spin> goldberg_to_nodal(
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes, size_t l_max);
+/// @}
+
+/// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Compute the set of Goldberg modes (following the convention
+ * of \cite Goldberg1966uu) from a set of spin-weighted grid point values.
+ *
+ * \details Internally it first transforms the angular grid point values into
+ * libsharp compatible modes using Spectral::Swsh::swsh_transform(), then
+ * transforms the libsharp compatible modes to Goldberg modes using
+ * libsharp_to_goldberg_modes()
+ */
+template <int Spin>
+void nodal_to_goldberg(
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> goldberg_modes,
+    const SpinWeighted<ComplexDataVector, Spin>& nodal_values, size_t l_max);
+
+template <int Spin>
+SpinWeighted<ComplexModalVector, Spin> nodal_to_goldberg(
+    const SpinWeighted<ComplexDataVector, Spin>& nodal_values, size_t l_max);
+/// @}
+
 /*!
  * \ingroup SwshGroup
  * \brief Returns the index into a vector of modes consistent with
