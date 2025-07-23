@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_Destination.cpp
   Test_FastFlow.cpp
   Test_Initialization.cpp
+  Test_InterpolateVolumeVars.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_ObserveCenters.cpp
   Test_OptionTags.cpp
