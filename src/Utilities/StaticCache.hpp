@@ -149,6 +149,35 @@ class StaticCache {
     return cached_object;
   }
 
+  // NVCC v12.6 can't handle the unwrapping code below, so we use a simpler
+  // version for CUDA. Note that we don't actually need to use StaticCache on
+  // device at all, so the main issue with NVCC is that it tries to compile this
+  // code for CUDA at all.
+#if defined(__NVCC__) && defined(__CUDA_ARCH__)
+  template <typename... IntegralConstantValues, typename... IntegralConstants,
+            typename... Args>
+  const T& unwrap_cache_combined(
+      std::tuple<size_t, tmpl::list<IntegralConstants...>> parameter0,
+      Args... parameters) const {
+    // note that the act of assigning to the specified function pointer type
+    // fixes the template arguments that need to be inferred.
+    static const std::array<
+        const T& (StaticCache<Generator, T, Ranges...>::*)(Args...) const,
+        sizeof...(IntegralConstants)>
+        cache{{&StaticCache<Generator, T, Ranges...>::unwrap_cache_combined<
+            IntegralConstantValues..., IntegralConstants>...}};
+    // The array `cache` holds pointers to member functions, so we dereference
+    // the pointer and invoke it on `this`.
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+    return (this->*gsl::at(cache, std::get<0>(parameter0)))(parameters...);
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
+#pragma GCC diagnostic pop
+#endif
+  }
+#else  // defined(__NVCC__) && defined(__CUDA_ARCH__)
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -414,6 +443,7 @@ class StaticCache {
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
 #pragma GCC diagnostic pop
 #endif
+#endif  // defined(__NVCC__) && defined(__CUDA_ARCH__)
 
   const Generator generator_;
 };
