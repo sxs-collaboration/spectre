@@ -133,8 +133,8 @@ struct HypercubeElementsIterator {
   /// The number of `ElementDim`-dimensional elements on the boundary of a
   /// `HypercubeDim`-dimensional hypercube.
   static constexpr size_t size() {
-    return two_to_the(num_indices) * factorial(HypercubeDim) /
-           factorial(ElementDim) / factorial(num_indices);
+    return two_to_the(num_indices) *
+           falling_factorial(HypercubeDim, ElementDim) / factorial(ElementDim);
   }
 
   HypercubeElementsIterator();
