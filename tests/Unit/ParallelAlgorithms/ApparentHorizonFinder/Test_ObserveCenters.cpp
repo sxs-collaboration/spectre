@@ -117,7 +117,7 @@ void test() {
   for (size_t i = 0; i < times.size(); i++) {
     update_stored_centers();
 
-    ah::callbacks::ObserveCenters<AhA, Frame>::apply(box, cache, times[i]);
+    intrp::callbacks::ObserveCenters<AhA, Frame>::apply(box, cache, times[i]);
 
     size_t num_threaded_actions =
         ActionTesting::number_of_queued_threaded_actions<observer_writer>(
@@ -163,8 +163,8 @@ void test() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.ObserveCenters",
-                  "[Unit][ApparentHorizonFinder]") {
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ObserveCenters",
+                  "[Unit]") {
   test<::Frame::Grid>();
   test<::Frame::Distorted>();
 }

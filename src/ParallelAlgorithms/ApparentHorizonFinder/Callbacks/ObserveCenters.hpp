@@ -31,8 +31,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace ah {
-namespace callbacks {
+namespace intrp::callbacks {
 /*!
  * \brief Writes the center of an apparent horizon to disk in both the
  * `Frame` template parameter frame and Frame::Inertial frame. Intended to be
@@ -63,11 +62,6 @@ namespace callbacks {
  */
 template <typename InterpolationTargetTag, typename Frame>
 struct ObserveCenters {
-  // Note that we don't add a const_global_cache_tags type alias here with
-  // ah::Tags::ObserveCenters because we want to use the base tag and so must be
-  // agnostic to how the tag was added to the cache. We do this so anything that
-  // uses ObserveCenters can control when it gets printed.
-
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
@@ -139,5 +133,4 @@ struct ObserveCenters {
       {"Time", "GridCenter_x", "GridCenter_y", "GridCenter_z",
        "InertialCenter_x", "InertialCenter_y", "InertialCenter_z"}};
 };
-}  // namespace callbacks
-}  // namespace ah
+}  // namespace intrp::callbacks
