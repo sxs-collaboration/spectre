@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   Callbacks.hpp
   ErrorOnFailedApparentHorizon.hpp
+  FailedHorizonFind.hpp
   FindApparentHorizon.hpp
   IgnoreFailedApparentHorizon.hpp
   InvokeCallbacks.hpp
