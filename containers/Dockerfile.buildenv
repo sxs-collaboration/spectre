@@ -273,7 +273,7 @@ RUN wget https://github.com/ccache/ccache/releases/download/v4.8.2/ccache-4.8.2.
         -D CMAKE_BUILD_TYPE=Release .. \
     && make $PARALLEL_MAKE_ARG
 # - Doxygen
-RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxygen.tar.gz \
+RUN wget https://github.com/doxygen/doxygen/archive/Release_1_14_0.tar.gz -O doxygen.tar.gz \
     && tar -xzf doxygen.tar.gz \
     && mv doxygen-* doxygen \
     && cd doxygen \
