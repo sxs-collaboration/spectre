@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -17,18 +18,34 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Surfaces/Tags.hpp"
+#include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
 
-// This is needed to template ObserveCenters, but it doesn't have to be an
-// actual InterpolationTargetTag. This is only used for the name of the subfile
-// written
-struct AhA {};
+template <typename Fr>
+struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
+  using temporal_id_tag = ::Tags::TimeAndPrevious<0>;
+  using frame = Fr;
+
+  using horizon_find_callbacks =
+      tmpl::list<ah::callbacks::ObserveCenters<HorizonMetavars>>;
+  using horizon_find_failure_callbacks = tmpl::list<>;
+
+  using compute_tags_on_element = tmpl::list<>;
+
+  static constexpr ah::Destination destination = ah::Destination::ControlSystem;
+
+  static std::string name() {
+    return pretty_type::name<Fr>() + "TestingHorizonMetavars";
+  }
+};
 
 struct TestMetavars {
   using const_global_cache_tags = tmpl::list<ah::Tags::ObserveCenters>;
@@ -38,8 +55,9 @@ struct TestMetavars {
 
 using FoTPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
 
-template <typename Frame>
+template <typename LocalHorizonMetavars>
 void test() {
+  using frame = typename LocalHorizonMetavars::frame;
   using observer_writer =
       TestHelpers::observers::MockObserverWriter<TestMetavars>;
   MAKE_GENERATOR(gen);
@@ -63,28 +81,32 @@ void test() {
   std::vector<std::array<double, 3>> grid_centers{};
   std::vector<std::array<double, 3>> inertial_centers{};
 
-  db::DataBox<tmpl::list<ylm::Tags::Strahlkorper<Frame>,
+  db::DataBox<tmpl::list<ah::Tags::CurrentTime, ylm::Tags::Strahlkorper<frame>,
                          ylm::Tags::CartesianCoords<::Frame::Inertial>,
-                         ylm::Tags::EuclideanAreaElement<Frame>>>
+                         ylm::Tags::EuclideanAreaElement<frame>>>
       box{};
 
   const auto update_stored_centers = [&make_center, &grid_centers,
-                                      &inertial_centers, &box]() {
+                                      &inertial_centers,
+                                      &box](const LinkedMessageId<double>&
+                                                current_time) {
     const auto grid_center = make_center();
     const auto inertial_center = make_center();
 
     grid_centers.push_back(grid_center);
     inertial_centers.push_back(inertial_center);
 
-    db::mutate<ylm::Tags::Strahlkorper<Frame>,
+    db::mutate<ah::Tags::CurrentTime, ylm::Tags::Strahlkorper<frame>,
                ylm::Tags::CartesianCoords<::Frame::Inertial>,
-               ylm::Tags::EuclideanAreaElement<Frame>>(
-        [&grid_center, &inertial_center](
-            gsl::not_null<ylm::Strahlkorper<Frame>*> box_grid_horizon,
-            gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
+               ylm::Tags::EuclideanAreaElement<frame>>(
+        [&](const gsl::not_null<std::optional<LinkedMessageId<double>>*>
+                box_current_time,
+            const gsl::not_null<ylm::Strahlkorper<frame>*> box_grid_horizon,
+            const gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
                 box_inertial_coords,
-            gsl::not_null<Scalar<DataVector>*> box_area_element) {
-          *box_grid_horizon = ylm::Strahlkorper<Frame>{10, 1.0, grid_center};
+            const gsl::not_null<Scalar<DataVector>*> box_area_element) {
+          *box_current_time = current_time;
+          *box_grid_horizon = ylm::Strahlkorper<frame>{10, 1.0, grid_center};
           const auto theta_phi = ylm::theta_phi(*box_grid_horizon);
           const auto radius = ylm::radius(*box_grid_horizon);
           const auto rhat = ylm::rhat(theta_phi);
@@ -115,11 +137,14 @@ void test() {
 
   // write some data
   for (size_t i = 0; i < times.size(); i++) {
-    update_stored_centers();
+    const LinkedMessageId<double> current_time{
+        times[i], i == 0 ? std::nullopt : std::optional{times[i - 1]}};
+    update_stored_centers(current_time);
 
-    intrp::callbacks::ObserveCenters<AhA, Frame>::apply(box, cache, times[i]);
+    ah::callbacks::ObserveCenters<LocalHorizonMetavars>::apply(
+        box, cache, FastFlow::Status::AbsTol);
 
-    size_t num_threaded_actions =
+    const size_t num_threaded_actions =
         ActionTesting::number_of_queued_threaded_actions<observer_writer>(
             runner, 0);
     CHECK(num_threaded_actions == 1);
@@ -132,7 +157,7 @@ void test() {
       {"Time", "GridCenter_x", "GridCenter_y", "GridCenter_z",
        "InertialCenter_x", "InertialCenter_y", "InertialCenter_z"}};
   const std::string subfile_name =
-      "/ApparentHorizons/" + pretty_type::name<AhA>() + "_Centers";
+      "/ApparentHorizons/" + LocalHorizonMetavars::name() + "_Centers";
 
   auto& h5_file = ActionTesting::get_databox_tag<
       observer_writer, TestHelpers::observers::MockReductionFileTag>(runner, 0);
@@ -163,9 +188,9 @@ void test() {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ObserveCenters",
-                  "[Unit]") {
-  test<::Frame::Grid>();
-  test<::Frame::Distorted>();
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.ObserveCenters",
+                  "[Unit][ApparentHorizonFinder]") {
+  test<HorizonMetavars<::Frame::Grid>>();
+  test<HorizonMetavars<::Frame::Distorted>>();
 }
 }  // namespace

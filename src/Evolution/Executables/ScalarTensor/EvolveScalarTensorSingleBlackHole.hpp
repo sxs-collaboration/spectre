@@ -100,7 +100,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>,
         intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
                                              Frame>,
-        ::ah::callbacks::ObserveCenters<Ah, Frame>>;
+        ::intrp::callbacks::ObserveCenters<Ah, Frame>>;
   };
 
   using ApparentHorizon = Ah<::Frame::Distorted>;
