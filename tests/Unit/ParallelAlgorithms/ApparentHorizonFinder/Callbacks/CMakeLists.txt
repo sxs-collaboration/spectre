@@ -6,5 +6,6 @@ set(LIBRARY_SOURCES
   Callbacks/Test_InvokeCallbacks.cpp
   Callbacks/Test_FailedHorizonFind.cpp
   Callbacks/Test_ObserveCenters.cpp
+  Callbacks/Test_ObserveFieldsAndTimeSeriesOnHorizon.cpp
   Callbacks/Test_SendDependencyToObserverWriter.cpp
   PARENT_SCOPE)

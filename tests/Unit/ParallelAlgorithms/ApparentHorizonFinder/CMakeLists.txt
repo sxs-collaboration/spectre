@@ -34,7 +34,9 @@ target_link_libraries(
   FiniteDifference
   GeneralRelativity
   GeneralRelativitySolutions
+  GrSurfacesHelpers
   InterpolationHelpers
+  IoTestHelpers
   LinearOperators
   Logging
   ObserverHelpers
