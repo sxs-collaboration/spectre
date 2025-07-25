@@ -157,7 +157,8 @@ struct ScalarVarTimesThreeCompute
       ::Tags::Variables<
           tmpl::list<ScalarVarTimesThree<typename ScalarVar::type::type>>> {
   using DataType = typename ScalarVar::type::type;
-  using base = ScalarVarTimesThree<DataType>;
+  using base = ::Tags::Variables<
+      tmpl::list<ScalarVarTimesThree<typename ScalarVar::type::type>>>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<ScalarVar>;
   static void function(
