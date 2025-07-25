@@ -171,9 +171,8 @@ void test_jacobian_diagnostic_databox() {
   const auto jac =
       db::get<domain::Tags::Jacobian<Dim, Frame::ElementLogical, Frame::Grid>>(
           box);
-  const auto mapped_coords = db::get<domain::Tags::MappedCoordinates<
-      domain::Tags::ElementMap<Dim, Frame::Grid>,
-      domain::Tags::Coordinates<Dim, Frame::ElementLogical>>>(box);
+  const auto mapped_coords =
+      db::get<domain::Tags::Coordinates<Dim, Frame::Grid>>(box);
   const auto mesh = db::get<domain::Tags::Mesh<Dim>>(box);
   const auto jac_diag_by_value =
       domain::jacobian_diagnostic(jac, mapped_coords, mesh);

@@ -2186,7 +2186,7 @@ struct Subitem<LeftAndRight<FirstOrSecond>, LeftAndRightParentCompute,
   using base = LeftAndRight<FirstOrSecond>;
   using return_type = typename base::type;
   using parent_tag = LeftAndRightParentCompute;
-  using argument_tags = tmpl::list<parent_tag>;
+  using argument_tags = tmpl::list<parent_tag::base>;
   static void function(const gsl::not_null<return_type*> subitems,
                        const typename parent_tag::type& parent_value) {
     ::db::Subitems<parent_tag>::template create_compute_item<base>(
@@ -3298,7 +3298,7 @@ void test_output() {
   CHECK(item_size_ptrs.at(
             "(anonymous namespace)::test_databox_tags::PointerToSumCompute") ==
         0);
-  db::get<test_databox_tags::PointerToSumCompute>(box_with_ptrs);
+  db::get<test_databox_tags::PointerToSum>(box_with_ptrs);
   const auto item_size_ptrs_after = box_with_ptrs.size_of_items();
   CHECK(item_size_ptrs_after.size() == 3);
   CHECK(item_size_ptrs_after.at(

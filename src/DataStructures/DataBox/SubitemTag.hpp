@@ -21,7 +21,7 @@ struct Subitem;
 template <typename Tag, typename ParentTag, typename>
 struct Subitem : Tag, db::ReferenceTag {
   using base = Tag;
-  using argument_tags = tmpl::list<ParentTag>;
+  using argument_tags = tmpl::list<typename ParentTag::base>;
   static const auto& get(
       const typename ParentTag::type& parent_value) {
     return ::db::Subitems<ParentTag>::template create_compute_item<base>(

@@ -259,6 +259,7 @@ struct FilePrefix : db::SimpleTag {
 /// options in the Cce::Evolution option group.
 template <typename Tag>
 struct CceEvolutionPrefix : Tag {
+  using base = Tag;
   using type = typename Tag::type;
   using option_tags = db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
                                        typename Tag::option_tags>;

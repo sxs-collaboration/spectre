@@ -99,8 +99,9 @@ double get_suggestion(const double safety_factor,
       element_size_base = std::make_unique<StepChoosers::ElementSizeCfl<
           Dim, typename Metavariables<Dim>::system>>(element_size_cfl);
 
-  const double speed = get<typename Metavariables<
-      Dim>::system::compute_largest_characteristic_speed>(box);
+  const double speed =
+      get<typename Metavariables<Dim>::system::largest_characteristic_speed>(
+          box);
   const std::array<double, Dim> element_size =
       db::get<domain::Tags::SizeOfElement<Dim>>(box);
   const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);

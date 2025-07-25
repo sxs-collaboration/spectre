@@ -341,17 +341,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
       make_not_null(&computation_box));
 
   // Test that manual SwshDerivs agree with the automatic ones
-  using manual_swsh_derivs_to_check =
-      tmpl::list<Tags::SwshDerivativeCompute<Tags::BondiBeta,
-                                                   Spectral::Swsh::Tags::Eth>,
-                 Tags::SwshDerivativeCompute<Tags::BondiU,
-                                                   Spectral::Swsh::Tags::Eth>,
-                 Tags::SwshDerivativeCompute<
-                     Tags::BondiJ, Spectral::Swsh::Tags::Ethbar>>;
+  using manual_swsh_derivs_to_check = tmpl::list<
+      Tags::SwshDerivativeCompute<Tags::BondiBeta, Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::BondiU, Spectral::Swsh::Tags::Eth>,
+      Tags::SwshDerivativeCompute<Tags::BondiJ, Spectral::Swsh::Tags::Ethbar>>;
 
-  using manual_swsh_derivs_base =
-      tmpl::transform<manual_swsh_derivs_to_check,
-                      tmpl::bind<db::detail::get_base, tmpl::_1>>;
+  using manual_swsh_derivs_base = tmpl::list<
+      Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                       Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiU, Spectral::Swsh::Tags::Eth>,
+      Spectral::Swsh::Tags::Derivative<Tags::BondiJ,
+                                       Spectral::Swsh::Tags::Ethbar>>;
 
   auto manual_swsh_deriv_box = db::create<
       db::AddSimpleTags<Tags::LMax, Tags::NumberOfRadialPoints, Tags::OneMinusY,

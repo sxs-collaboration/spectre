@@ -54,7 +54,7 @@ SPECTRE_TEST_CASE(
       lorentz_factor, spatial_velocity, lapse, shift, spatial_metric);
 
   const auto& inverse_jacobian =
-      db::get<Particles::MonteCarlo::InverseJacobianInertialToFluidCompute>(
+      db::get<domain::Tags::InverseJacobian<4, Frame::Inertial, Frame::Fluid>>(
           box);
   const tnsr::aa<DataVector, 3, Frame::Inertial> spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);

@@ -102,7 +102,7 @@ struct WeylTypeD1Compute : WeylTypeD1<DataType, SpatialDim, Frame>,
 template <typename DataType, size_t SpatialDim, typename Frame>
 struct WeylTypeD1ScalarCompute : WeylTypeD1Scalar<DataType>, db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::WeylTypeD1Compute<DataType, SpatialDim, Frame>,
+      tmpl::list<gr::Tags::WeylTypeD1<DataType, SpatialDim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = Scalar<DataType>;

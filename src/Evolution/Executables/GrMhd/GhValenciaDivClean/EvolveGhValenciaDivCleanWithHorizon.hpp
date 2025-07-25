@@ -78,8 +78,7 @@ struct EvolutionMetavars
 
   struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using tags_to_observe =
-        tmpl::list<gr::surfaces::Tags::AreaCompute<domain_frame>>;
+    using tags_to_observe = tmpl::list<gr::surfaces::Tags::Area>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target = tmpl::list<
         gr::Tags::SpatialMetric<DataVector, volume_dim, domain_frame>,
