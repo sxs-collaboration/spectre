@@ -35,9 +35,9 @@ void bind_goldberg_to_nodal_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * nodal_values.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = nodal_values.data()[i].real();
-            result[i + 1] = nodal_values.data()[i].imag();
+          for (size_t i = 0; i < nodal_values.size(); i++) {
+            result[2 * i] = nodal_values.data()[i].real();
+            result[(2 * i) + 1] = nodal_values.data()[i].imag();
           }
           return result;
         } else if (Spin == -2) {
@@ -54,9 +54,9 @@ void bind_goldberg_to_nodal_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * nodal_values.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = nodal_values.data()[i].real();
-            result[i + 1] = nodal_values.data()[i].imag();
+          for (size_t i = 0; i < nodal_values.size(); i++) {
+            result[2 * i] = nodal_values.data()[i].real();
+            result[(2 * i) + 1] = nodal_values.data()[i].imag();
           }
           return result;
         } else if (Spin == -1) {
@@ -73,9 +73,9 @@ void bind_goldberg_to_nodal_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * nodal_values.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = nodal_values.data()[i].real();
-            result[i + 1] = nodal_values.data()[i].imag();
+          for (size_t i = 0; i < nodal_values.size(); i++) {
+            result[2 * i] = nodal_values.data()[i].real();
+            result[(2 * i) + 1] = nodal_values.data()[i].imag();
           }
           return result;
         } else if (Spin == 0) {
@@ -92,9 +92,9 @@ void bind_goldberg_to_nodal_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * nodal_values.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = nodal_values.data()[i].real();
-            result[i + 1] = nodal_values.data()[i].imag();
+          for (size_t i = 0; i < nodal_values.size(); i++) {
+            result[2 * i] = nodal_values.data()[i].real();
+            result[(2 * i) + 1] = nodal_values.data()[i].imag();
           }
           return result;
         } else if (Spin == 1) {
@@ -111,9 +111,9 @@ void bind_goldberg_to_nodal_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * nodal_values.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = nodal_values.data()[i].real();
-            result[i + 1] = nodal_values.data()[i].imag();
+          for (size_t i = 0; i < nodal_values.size(); i++) {
+            result[2 * i] = nodal_values.data()[i].real();
+            result[(2 * i) + 1] = nodal_values.data()[i].imag();
           }
           return result;
         } else if (Spin == 2) {
@@ -126,13 +126,14 @@ void bind_goldberg_to_nodal_impl(pybind11::module& m) {  // NOLINT
           }
           auto nodal_values =
               Spectral::Swsh::goldberg_to_nodal(goldberg_modes, l_max);
+
           // Here we convert the SpinWeighted<ComplexDataVector, Spin> object
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * nodal_values.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = nodal_values.data()[i].real();
-            result[i + 1] = nodal_values.data()[i].imag();
+          for (size_t i = 0; i < nodal_values.size(); i++) {
+            result[2 * i] = nodal_values.data()[i].real();
+            result[(2 * i) + 1] = nodal_values.data()[i].imag();
           }
           return result;
         } else {
@@ -164,9 +165,9 @@ void bind_nodal_to_goldberg_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * goldberg_modes.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = goldberg_modes.data()[i].real();
-            result[i + 1] = goldberg_modes.data()[i].imag();
+          for (size_t i = 0; i < goldberg_modes.size(); i++) {
+            result[2 * i] = goldberg_modes.data()[i].real();
+            result[(2 * i) + 1] = goldberg_modes.data()[i].imag();
           }
           return result;
         } else if (Spin == -2) {
@@ -183,9 +184,9 @@ void bind_nodal_to_goldberg_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * goldberg_modes.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = goldberg_modes.data()[i].real();
-            result[i + 1] = goldberg_modes.data()[i].imag();
+          for (size_t i = 0; i < goldberg_modes.size(); i++) {
+            result[2 * i] = goldberg_modes.data()[i].real();
+            result[(2 * i) + 1] = goldberg_modes.data()[i].imag();
           }
           return result;
         } else if (Spin == -1) {
@@ -202,9 +203,9 @@ void bind_nodal_to_goldberg_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * goldberg_modes.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = goldberg_modes.data()[i].real();
-            result[i + 1] = goldberg_modes.data()[i].imag();
+          for (size_t i = 0; i < goldberg_modes.size(); i++) {
+            result[2 * i] = goldberg_modes.data()[i].real();
+            result[(2 * i) + 1] = goldberg_modes.data()[i].imag();
           }
           return result;
         } else if (Spin == 0) {
@@ -221,9 +222,9 @@ void bind_nodal_to_goldberg_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * goldberg_modes.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = goldberg_modes.data()[i].real();
-            result[i + 1] = goldberg_modes.data()[i].imag();
+          for (size_t i = 0; i < goldberg_modes.size(); i++) {
+            result[2 * i] = goldberg_modes.data()[i].real();
+            result[(2 * i) + 1] = goldberg_modes.data()[i].imag();
           }
           return result;
         } else if (Spin == 1) {
@@ -240,9 +241,9 @@ void bind_nodal_to_goldberg_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * goldberg_modes.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = goldberg_modes.data()[i].real();
-            result[i + 1] = goldberg_modes.data()[i].imag();
+          for (size_t i = 0; i < goldberg_modes.size(); i++) {
+            result[2 * i] = goldberg_modes.data()[i].real();
+            result[(2 * i) + 1] = goldberg_modes.data()[i].imag();
           }
           return result;
         } else if (Spin == 2) {
@@ -259,9 +260,9 @@ void bind_nodal_to_goldberg_impl(pybind11::module& m) {  // NOLINT
           // back to a real interleaved DataVector and that is the returning
           // value
           DataVector result{2 * goldberg_modes.size()};
-          for (size_t i = 0; i < result.size(); i += 2) {
-            result[i] = goldberg_modes.data()[i].real();
-            result[i + 1] = goldberg_modes.data()[i].imag();
+          for (size_t i = 0; i < goldberg_modes.size(); i++) {
+            result[2 * i] = goldberg_modes.data()[i].real();
+            result[(2 * i) + 1] = goldberg_modes.data()[i].imag();
           }
           return result;
         } else {
