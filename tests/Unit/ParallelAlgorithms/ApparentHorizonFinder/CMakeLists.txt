@@ -10,8 +10,10 @@ set(LIBRARY_SOURCES
   Test_ComputeExcisionBoundaryVolumeQuantities.cpp
   Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeVarsToInterpolateToTarget.cpp
+  Test_CurrentTime.cpp
   Test_Destination.cpp
   Test_FastFlow.cpp
+  Test_FindApparentHorizon.cpp
   Test_Initialization.cpp
   Test_InterpolateVolumeVars.cpp
   Test_InterpolationTargetApparentHorizon.cpp

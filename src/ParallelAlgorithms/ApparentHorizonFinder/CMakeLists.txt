@@ -11,6 +11,7 @@ spectre_target_sources(
   CleanUp.cpp
   ComputeCoords.cpp
   ComputeVarsToInterpolateToTarget.cpp
+  CurrentTime.cpp
   Destination.cpp
   FastFlow.cpp
   InterpolateVolumeVars.cpp
@@ -32,8 +33,10 @@ spectre_target_headers(
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
   ComputeVarsToInterpolateToTarget.hpp
+  CurrentTime.hpp
   Destination.hpp
   FastFlow.hpp
+  FindApparentHorizon.hpp
   HorizonAliases.hpp
   Initialization.hpp
   InterpolateVolumeVars.hpp
