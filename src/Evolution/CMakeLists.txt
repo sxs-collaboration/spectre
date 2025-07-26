@@ -47,6 +47,7 @@ target_link_libraries(
   INTERFACE
   Observer
   Parallel
+  ParallelArrayCollection
   SystemUtilities
   )
 

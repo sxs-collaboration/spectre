@@ -32,7 +32,6 @@ spectre_target_headers(
   Callback.hpp
   CharmMain.tpp
   CharmRegistration.hpp
-  CreateElementsUsingDistribution.hpp
   CreateFromOptions.hpp
   DistributedObject.hpp
   DomainDiagnosticInfo.hpp
@@ -63,17 +62,18 @@ spectre_target_headers(
   TypeTraits.hpp
   )
 
+# Depends only on relatively low-level libraries so that compiling small
+# executables (and low-level unit tests) doesn't require building the entire
+# code base. E.g. doesn't depend on Domain.
 target_link_libraries(
   ${LIBRARY}
   INTERFACE
   Boost::boost
   Boost::program_options
   DataStructures
-  Domain
   Informer
   PUBLIC
   Charmxx::charmxx
-  DomainStructure
   ErrorHandling
   Options
   Printf
