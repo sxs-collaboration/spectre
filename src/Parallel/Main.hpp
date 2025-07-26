@@ -638,6 +638,10 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
     // Main doesn't migrate unless checkpointing or restarting, so we can
     // indicate here that we've just restored from checkpoint.
     just_restored_from_checkpoint_ = true;
+    // Initialize Kokkos on restart
+#ifdef SPECTRE_KOKKOS
+  Kokkos::initialize();
+#endif  // SPECTRE_KOKKOS
   }
 
   // For now we only support restarts on the same hardware configuration (same

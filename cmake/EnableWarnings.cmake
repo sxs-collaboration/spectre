@@ -48,6 +48,7 @@ create_cxx_flags_target(
     "-Wno-dangling-reference;\
 -Wno-documentation-unknown-command;\
 -Wno-mismatched-tags;\
+-Wno-interference-size;\
 -Wno-non-template-friend;\
 -Wno-type-limits;\
 -Wno-undefined-var-template;\

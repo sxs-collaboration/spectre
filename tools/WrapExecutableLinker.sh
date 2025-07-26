@@ -28,25 +28,36 @@ if [ -z "${oindex}" ] ; then
 fi
 # Construct a filename from the next argument
 let ++oindex
+executable_name=$(basename "${!oindex}")
 
 # We compile the InfoAtLink.cpp file into the executable at link time
 InfoAtLink_file=@CMAKE_SOURCE_DIR@/src/Informer/InfoAtLink.cpp
 # Read the appropriate flags for compiling InfoAtLink.cpp from the generated
 # file
 InfoAtLink_flags=`cat @CMAKE_BINARY_DIR@/Informer/InfoAtLink_flags.txt`
+# Compile into an object file
+InfoAtLink_ofile=@CMAKE_BINARY_DIR@/tmp/${executable_name}_InfoAtLink.cpp.o
+@CMAKE_CXX_COMPILER@ -c ${InfoAtLink_file} \
+    -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
+    -DLINK_TIME="$(date -u -Iseconds)" ${InfoAtLink_flags} \
+    -DEXECUTABLE_NAME="${executable_name}" \
+    -o ${InfoAtLink_ofile}
+temp_files+=("${InfoAtLink_ofile}")
 
+# We inject the source code archive into the executable at link time
+# by compiling it into an object file (formaline).
 # - Formaline through the linker doesn't work on macOS and since we won't
 #   be doing production runs on macOS we disable it.
 if [ -f @CMAKE_BINARY_DIR@/tmp/Formaline.sh ]; then
-    . @CMAKE_BINARY_DIR@/tmp/Formaline.sh $(basename "${!oindex}")
-    temp_files+=("${formaline_output}" "${formaline_object_output}")
-    "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
-         -DLINK_TIME="$(date -u -Iseconds)" ${InfoAtLink_flags} \
-         "${InfoAtLink_file}" "${formaline_output}" ${formaline_object_output}
+    . @CMAKE_BINARY_DIR@/tmp/Formaline.sh ${executable_name}
+    formaline_ofile=@CMAKE_BINARY_DIR@/tmp/${executable_name}_Formaline.cpp.o
+    @CMAKE_CXX_COMPILER@ -c ${formaline_output} ${InfoAtLink_flags} \
+        -o ${formaline_ofile}
+    temp_files+=("${formaline_output}" "${formaline_object_output}" \
+        "${formaline_ofile}")
+    "$@" ${InfoAtLink_ofile} ${formaline_ofile} ${formaline_object_output}
 else
-    "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
-         -DLINK_TIME="$(date -u -Iseconds)" ${InfoAtLink_flags} \
-         "${InfoAtLink_file}"
+    "$@" ${InfoAtLink_ofile}
 fi
 
 if @WRAP_EXECUTABLE_LINKER_USE_STUB_OBJECT_FILES@; then

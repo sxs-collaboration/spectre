@@ -24,13 +24,27 @@ fetch Kokkos automatically and build it as part of SpECTRE. You also have to
 select a parallelization backend for Kokkos and possibly more configuration
 options like the GPU architecture to build for. Read the
 [Kokkos documentation](https://kokkos.org/kokkos-core-wiki/get-started/configuration-guide.html)
-for details on how to configure Kokkos. Here's an example for selecting the CUDA
-backend:
+for details on how to configure Kokkos. Here's an example for fetching Kokkos
+automatically and building it as part of SpECTRE with the CUDA backend:
+
+```sh
+cmake -D SPECTRE_KOKKOS=ON \
+      -D SPECTRE_FETCH_MISSING_DEPS=ON \
+      -D Kokkos_ENABLE_CUDA=ON \
+      ...
+```
+
+Here's an example for using an existing Kokkos installation:
 
 ```sh
 cmake -D SPECTRE_KOKKOS=ON \
       -D Kokkos_ROOT=path/to/kokkos/build \
-      -D Kokkos_ENABLE_CUDA=ON \
       -D CMAKE_CXX_COMPILER=path/to/kokkos/bin/nvcc_wrapper \
       ...
 ```
+
+When building Kokkos separately with the CUDA backend, you have to set the
+following configuration options:
+
+- `Kokkos_ENABLE_CUDA_CONSTEXPR=ON`
+- `Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE`
