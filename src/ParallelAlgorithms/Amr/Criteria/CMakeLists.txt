@@ -15,6 +15,7 @@ spectre_target_sources(
   Persson.cpp
   Random.cpp
   TruncationError.cpp
+  Type.cpp
   )
 
 spectre_target_headers(
@@ -31,6 +32,7 @@ spectre_target_headers(
   Persson.hpp
   Random.hpp
   TruncationError.hpp
+  Type.hpp
   )
 
 add_dependencies(

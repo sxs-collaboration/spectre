@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Criteria/Test_Persson.cpp
   Criteria/Test_Random.cpp
   Criteria/Test_TruncationError.cpp
+  Criteria/Test_Type.cpp
   Events/Test_ObserveAmrCriteria.cpp
   Events/Test_RefineMesh.cpp
   Policies/Test_EnforcePolicies.cpp
