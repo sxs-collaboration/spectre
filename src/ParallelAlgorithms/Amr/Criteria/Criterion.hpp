@@ -12,6 +12,7 @@
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -53,6 +54,8 @@ class Criterion : public PUP::able {
   explicit Criterion(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(Criterion);  // NOLINT
+
+  virtual Criteria::Type type() = 0;
 
   virtual std::string observation_name() = 0;
 

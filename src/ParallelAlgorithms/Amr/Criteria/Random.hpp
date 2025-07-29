@@ -67,6 +67,8 @@ class Random : public Criterion {
     return CriteriaType == Type::p ? "RandomP" : "RandomH";
   }
 
+  Type type() override { return CriteriaType; }
+
   std::string observation_name() override { return "Random"; }
 
   using compute_tags_for_observation_box = tmpl::list<>;

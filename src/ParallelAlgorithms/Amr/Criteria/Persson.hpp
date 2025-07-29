@@ -22,6 +22,7 @@
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -140,6 +141,8 @@ class Persson : public Criterion {
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Persson);  // NOLINT
   /// \endcond
+
+  Type type() override { return Type::h; }
 
   std::string observation_name() override { return "Persson"; }
 

@@ -75,6 +75,8 @@ class DriveToTarget : public Criterion {
                                    : "DriveToTargetRefinementLevels";
   }
 
+  Type type() override { return CriteriaType; }
+
   std::string observation_name() override { return "DriveToTarget"; }
 
   using compute_tags_for_observation_box = tmpl::list<>;
