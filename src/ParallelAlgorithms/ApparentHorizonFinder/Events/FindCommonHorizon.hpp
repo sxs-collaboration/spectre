@@ -41,7 +41,7 @@ struct ObserverMesh;
 }  // namespace Events::Tags
 /// \endcond
 
-namespace ah::Events {
+namespace intrp::Events {
 /*!
  * \brief Event that combines the `intrp::Events::interpolate` event with
  * `dg::Events::ObserveFields` specifically for common horizon finding.
@@ -169,4 +169,4 @@ PUP::able::PUP_ID FindCommonHorizon<
     tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>>::my_PUP_ID = 0;
 // NOLINTEND
 /// \endcond
-}  // namespace ah::Events
+}  // namespace intrp::Events

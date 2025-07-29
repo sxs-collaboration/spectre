@@ -502,7 +502,7 @@ struct EvolutionMetavars {
             tmpl::flatten<tmpl::list<
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
                 intrp::Events::Interpolate<3, AhB, interpolator_source_vars>,
-                ah::Events::FindCommonHorizon<
+                intrp::Events::FindCommonHorizon<
                     volume_dim, AhC, interpolator_source_vars, observe_fields,
                     non_tensor_compute_tags>,
                 intrp::Events::InterpolateWithoutInterpComponent<

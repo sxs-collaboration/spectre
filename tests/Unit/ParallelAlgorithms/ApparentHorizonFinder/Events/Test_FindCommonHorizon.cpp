@@ -275,7 +275,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
           std::array{logical_coords[0], logical_coords[1], logical_coords[2]}},
       vars);
 
-  using FindCommonHorizon = ah::Events::FindCommonHorizon<
+  using FindCommonHorizon = intrp::Events::FindCommonHorizon<
       metavars::volume_dim, typename metavars::InterpolationTargetA,
       typename metavars::interpolator_source_vars,
       tmpl::push_back<typename metavars::interpolator_source_vars,
