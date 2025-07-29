@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/IncreaseResolution.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
@@ -54,11 +55,14 @@ struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh>>,
-                  tmpl::pair<amr::Criterion,
-                             tmpl::list<amr::Criteria::IncreaseResolution<1>,
-                                        amr::Criteria::DriveToTarget<1>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh>>,
+        tmpl::pair<
+            amr::Criterion,
+            tmpl::list<
+                amr::Criteria::IncreaseResolution<1>,
+                amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>,
+                amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>>>;
   };
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -115,8 +119,10 @@ void test(const Event& event) {
     INFO("Obey policies");
     // Try to drive to smaller number of grid points than we allow
     std::vector<std::unique_ptr<amr::Criterion>> criteria{};
-    criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-        std::array{1_st}, std::array{0_st}, std::array{amr::Flag::DoNothing}));
+    criteria.emplace_back(
+        std::make_unique<
+            amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>>(
+            std::array{1_st}, std::array{amr::Flag::DoNothing}));
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
 
@@ -161,8 +167,10 @@ void test(const Event& event) {
     INFO("Test h-refinement error");
     // Try to drive to larger refinement which isn't allowed for this event
     std::vector<std::unique_ptr<amr::Criterion>> criteria{};
-    criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-        std::array{3_st}, std::array{1_st}, std::array{amr::Flag::DoNothing}));
+    criteria.emplace_back(
+        std::make_unique<
+            amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+            std::array{1_st}, std::array{amr::Flag::DoNothing}));
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
 

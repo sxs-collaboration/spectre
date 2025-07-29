@@ -30,6 +30,7 @@ using standard_criteria = tmpl::list<
     ::amr::Criteria::Loehner<Dim, TensorTags>,
     ::amr::Criteria::Persson<Dim, TensorTags>,
     // Criteria for testing or experimenting
-    ::amr::Criteria::DriveToTarget<Dim>, ::amr::Criteria::Random>;
+    ::amr::Criteria::DriveToTarget<Dim, Type::h>,
+    ::amr::Criteria::DriveToTarget<Dim, Type::p>, ::amr::Criteria::Random>;
 
 }  // namespace amr::Criteria

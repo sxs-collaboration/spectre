@@ -63,6 +63,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -304,7 +305,10 @@ struct Metavariables {
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<
             amr::Criterion,
-            tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
+            tmpl::list<amr::Criteria::DriveToTarget<volume_dim,
+                                                    amr::Criteria::Type::h>,
+                       amr::Criteria::DriveToTarget<volume_dim,
+                                                    amr::Criteria::Type::p>,
                        amr::Criteria::Random,
                        amr::Criteria::TruncationError<
                            volume_dim, tmpl::list<::domain::Tags::Coordinates<

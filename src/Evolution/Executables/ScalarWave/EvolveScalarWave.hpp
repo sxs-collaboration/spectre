@@ -66,6 +66,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
@@ -179,7 +180,10 @@ struct EvolutionMetavars {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<amr::Criterion,
-                   tmpl::list<amr::Criteria::DriveToTarget<volume_dim>,
+                   tmpl::list<amr::Criteria::DriveToTarget<
+                                  volume_dim, amr::Criteria::Type::h>,
+                              amr::Criteria::DriveToTarget<
+                                  volume_dim, amr::Criteria::Type::p>,
                               amr::Criteria::TruncationError<
                                   volume_dim,
                                   typename system::variables_tag::tags_list>>>,

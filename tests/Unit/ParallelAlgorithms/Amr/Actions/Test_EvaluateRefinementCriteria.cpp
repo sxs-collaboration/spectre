@@ -27,6 +27,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
@@ -81,7 +82,8 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<
         amr::Criterion, tmpl::list<amr::Criteria::Random,
-                                   amr::Criteria::DriveToTarget<volume_dim>>>>;
+                                   amr::Criteria::DriveToTarget<
+                                       volume_dim, amr::Criteria::Type::h>>>>;
   };
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -258,9 +260,10 @@ void check_split_while_join_is_avoided() {
   // the refinement criteria wants to drive self to levels (1, 0) so
   // it will return flags (Split, Join).
   std::vector<std::unique_ptr<amr::Criterion>> criteria;
-  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<2>>(
-      std::array{2_st, 2_st}, std::array{1_st, 0_st},
-      std::array{amr::Flag::DoNothing, amr::Flag::DoNothing}));
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<2, amr::Criteria::Type::h>>(
+          std::array{1_st, 0_st},
+          std::array{amr::Flag::DoNothing, amr::Flag::DoNothing}));
 
   Parallel::GlobalCache<Metavariables<2>> empty_cache{};
   auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);

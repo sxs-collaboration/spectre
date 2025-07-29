@@ -106,6 +106,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
@@ -460,7 +461,10 @@ struct EvolutionMetavars {
         tmpl::pair<
             amr::Criterion,
             tmpl::list<
-                amr::Criteria::DriveToTarget<volume_dim>,
+                amr::Criteria::DriveToTarget<volume_dim,
+                                             amr::Criteria::Type::h>,
+                amr::Criteria::DriveToTarget<volume_dim,
+                                             amr::Criteria::Type::p>,
                 amr::Criteria::Constraints<
                     volume_dim,
                     tmpl::list<gh::Tags::ThreeIndexConstraintCompute<
