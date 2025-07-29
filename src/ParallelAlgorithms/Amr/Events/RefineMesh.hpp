@@ -27,6 +27,7 @@
 #include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -45,12 +46,12 @@ struct get_tags {
 };
 
 }  // namespace detail
+
 /// \ingroup AmrGroup
 /// \brief Performs p-refinement on the domain
 ///
 /// \details
-/// - Loops over all refinement criteria specified in the
-///   input file, ignoring any requests to join or split the Element.
+/// - Loops over all p-refinement criteria specified in the input file.
 ///   If no valid p-refinement decision is requested, no change is
 ///   made to the Element.
 /// - Updates the Mesh and all return tags of Metavariables::amr::projectors
@@ -80,11 +81,7 @@ class RefineMesh : public Event {
                   const ElementId<Metavariables::volume_dim>& element_id,
                   const Component* const /*meta*/,
                   const ObservationValue& /*observation_value*/) const {
-    // Evaluate AMR refinement criteria
-    // NOTE: This evaluates all criteria.  In the future this could be
-    // restricted to evaluate only those criteria that do p-refinement that can
-    // be evaluated locally (i.e. do not need neighbor information that is
-    // already in the DataBox)
+    // Evaluate AMR p-refinement criteria
     constexpr size_t volume_dim = Metavariables::volume_dim;
     auto overall_decision = make_array<volume_dim>(amr::Flag::Undefined);
 
@@ -97,16 +94,20 @@ class RefineMesh : public Event {
     const auto& refinement_criteria =
         db::get<amr::Criteria::Tags::Criteria>(*box);
     for (const auto& criterion : refinement_criteria) {
+      if (criterion->type() == amr::Criteria::Type::h) {
+        continue;
+      }
       auto decision = criterion->evaluate(observation_box, cache, element_id);
+      ASSERT(alg::none_of(decision,
+                          [](amr::Flag flag) {
+                            return flag == amr::Flag::Split or
+                                   flag == amr::Flag::Join;
+                          }),
+             "The criterion '" << typeid(*criterion).name()
+                               << "' requested h-refinement, but claims to be "
+                                  "for p-refinement.");
       for (size_t d = 0; d < volume_dim; ++d) {
-        // Ignore h-refinement decisions
-        if (decision[d] == amr::Flag::Split or decision[d] == amr::Flag::Join) {
-          ERROR("The criterion '" << typeid(*criterion).name()
-                                  << "' requested h-refinement, but RefineMesh "
-                                     "only works for p-refinement.");
-        } else {
-          overall_decision[d] = std::max(overall_decision[d], decision[d]);
-        }
+        overall_decision[d] = std::max(overall_decision[d], decision[d]);
       }
     }
     // If no refinement criteria requested p-refinement, then set flag to
