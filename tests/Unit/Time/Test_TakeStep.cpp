@@ -245,7 +245,7 @@ void test_lts() {
   CHECK_ITERABLE_APPROX(db::get<Tags::dt<EvolvedVariable>>(box),
                         1.0e-2 * initial_values * exp(0.0025));
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
-        AdaptiveSteppingDiagnostics{1, 2, 3, 5, 6});
+        AdaptiveSteppingDiagnostics{1, 2, 3, 5, 5});
 }
 }  // namespace
 
