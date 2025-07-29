@@ -65,6 +65,8 @@ struct Submeasurement
     : tt::ConformsTo<control_system::protocols::Submeasurement> {
   template <typename ControlSystems>
   using interpolation_target_tag = void;
+  template <typename ControlSystems>
+  using horizon_metavars = void;
 
   template <typename ControlSystems>
   using event = control_system::TestHelpers::TestEvent<ExpectedSystems,

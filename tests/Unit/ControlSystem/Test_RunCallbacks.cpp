@@ -148,8 +148,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.RunCallbacks", "[ControlSystem][Unit]") {
       make_not_null(&box));
   event.run(make_not_null(&obs_box), cache, 0, element_component_p, {});
 
-  ActionTesting::invoke_queued_simple_action<control_system_component>(
-      make_not_null(&runner), 0);
+  CHECK(
+      ActionTesting::number_of_queued_simple_actions<control_system_component>(
+          runner, 0) == 2);
+  for (size_t i = 0; i < 2; i++) {
+    ActionTesting::invoke_queued_simple_action<control_system_component>(
+        make_not_null(&runner), 0);
+  }
   CHECK(ActionTesting::is_simple_action_queue_empty<control_system_component>(
       runner, 0));
 

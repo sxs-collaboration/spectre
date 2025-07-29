@@ -116,11 +116,15 @@ static_assert(
 namespace InterpolationTargetTags {
 template <typename Systems>
 struct Target;
+template <typename Systems>
+struct HorizonMetavars;
 
-struct SubmeasurementTarget
+struct SubmeasurementNoVoid
     : tt::ConformsTo<control_system::protocols::Submeasurement> {
   template <typename ControlSystems>
   using interpolation_target_tag = Target<ControlSystems>;
+  template <typename ControlSystems>
+  using horizon_metavars = HorizonMetavars<ControlSystems>;
 
   template <typename ControlSystems>
   using event = SomeEvent<LabelA, ControlSystems>;
@@ -130,13 +134,15 @@ struct SubmeasurementVoid
     : tt::ConformsTo<control_system::protocols::Submeasurement> {
   template <typename ControlSystems>
   using interpolation_target_tag = void;
+  template <typename ControlSystems>
+  using horizon_metavars = void;
 
   template <typename ControlSystems>
   using event = SomeEvent<LabelA, ControlSystems>;
 };
 
 struct Measurement : tt::ConformsTo<control_system::protocols::Measurement> {
-  using submeasurements = tmpl::list<SubmeasurementTarget, SubmeasurementVoid>;
+  using submeasurements = tmpl::list<SubmeasurementNoVoid, SubmeasurementVoid>;
 };
 
 struct MeasurementEmpty
@@ -178,6 +184,12 @@ static_assert(
             ControlSystem<LabelA>, ControlSystem<LabelB>, ControlSystemEmpty>>,
         tmpl::list<
             Target<tmpl::list<ControlSystem<LabelA>, ControlSystem<LabelB>>>>>);
+static_assert(
+    std::is_same_v<
+        horizon_metavars<tmpl::list<ControlSystem<LabelA>,
+                                    ControlSystem<LabelB>, ControlSystemEmpty>>,
+        tmpl::list<HorizonMetavars<
+            tmpl::list<ControlSystem<LabelA>, ControlSystem<LabelB>>>>>);
 }  // namespace InterpolationTargetTags
 
 namespace Events {
@@ -186,6 +198,8 @@ struct Submeasurement
     : tt::ConformsTo<control_system::protocols::Submeasurement> {
   template <typename ControlSystems>
   using interpolation_target_tag = void;
+  template <typename ControlSystems>
+  using horizon_metavars = void;
   template <typename ControlSystems>
   using event = SomeEvent<Label, ControlSystems>;
 };

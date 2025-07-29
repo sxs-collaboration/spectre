@@ -11,6 +11,9 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/Callback.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -27,20 +30,23 @@ struct Verbosity;
 /// \endcond
 
 namespace control_system {
-/// \ingroup ControlSystemGroup
-/// Apply the `process_measurement` struct of each of the \p
-/// ControlSystems to the result of the \p Submeasurement.
-///
-/// The submeasurement results are supplied as a `db::DataBox` in
-/// order to allow individual control systems to select the portions
-/// of the submeasurement that they are interested in.
-///
-/// In addition to being manually called, this struct is designed to
-/// be usable as a `post_horizon_find_callback` or a
-/// `post_interpolation_callback`.
+/*!
+ * \ingroup ControlSystemGroup
+ * \details Apply the `process_measurement` struct of each of the \p
+ * ControlSystems to the result of the \p Submeasurement.
+ *
+ * The submeasurement results are supplied as a `db::DataBox` in
+ * order to allow individual control systems to select the portions
+ * of the submeasurement that they are interested in.
+ *
+ * In addition to being manually called, struct can be called as a callback and
+ * conform to the `intrp::protocols::PostInterpolationCallback` and
+ * `ah::protocols::Callback` protocols.
+ */
 template <typename Submeasurement, typename ControlSystems>
 struct RunCallbacks
-    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback>,
+      tt::ConformsTo<ah::protocols::Callback> {
  private:
   static_assert(
       tt::assert_conforms_to_v<Submeasurement, protocols::Submeasurement>);
@@ -57,6 +63,32 @@ struct RunCallbacks
     static_assert(
         std::is_same_v<TemporalId, LinkedMessageId<double>>,
         "RunCallbacks expects a LinkedMessageId<double> as its temporal id");
+    tmpl::for_each<ControlSystems>(
+        [&box, &cache, &measurement_id](auto control_system_v) {
+          using ControlSystem = tmpl::type_from<decltype(control_system_v)>;
+          db::apply<typename ControlSystem::process_measurement::
+                        template argument_tags<Submeasurement>>(
+              [&cache, &measurement_id](const auto&... args) {
+                ControlSystem::process_measurement::apply(
+                    Submeasurement{}, args..., cache, measurement_id);
+              },
+              box);
+        });
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
+      Parallel::printf(
+          "time = %.16f: For the '%s' measurement, calling process_measurement "
+          "for the following control systems: (%s).\n",
+          measurement_id.id, pretty_type::name<Submeasurement>(),
+          pretty_type::list_of_names<ControlSystems>());
+    }
+  }
+
+  template <typename DbTags, typename Metavariables>
+  static void apply(const db::DataBox<DbTags>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const FastFlow::Status /*status*/) {
+    const auto& measurement_id = db::get<ah::Tags::CurrentTime>(box).value();
     tmpl::for_each<ControlSystems>(
         [&box, &cache, &measurement_id](auto control_system_v) {
           using ControlSystem = tmpl::type_from<decltype(control_system_v)>;

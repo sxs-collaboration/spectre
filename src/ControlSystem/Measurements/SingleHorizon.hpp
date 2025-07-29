@@ -10,12 +10,16 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "ControlSystem/RunCallbacks.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
@@ -87,9 +91,33 @@ struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
           control_system::RunCallbacks<Submeasurement, ControlSystems>>;
     };
 
+    template <typename ControlSystems>
+    struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
+      static std::string name() {
+        return "ControlSystemSingleAh" + ::domain::name(Horizon);
+      }
+
+      using time_tag = ::Tags::TimeAndPrevious<0>;
+
+      using frame = ::Frame::Distorted;
+
+      using horizon_find_callbacks = tmpl::list<
+          control_system::RunCallbacks<Submeasurement, ControlSystems>>;
+      using horizon_find_failure_callbacks =
+          tmpl::list<ah::callbacks::FailedHorizonFind<HorizonMetavars, false>>;
+
+      using compute_tags_on_element =
+          tmpl::list<::Tags::TimeAndPreviousCompute<0>>;
+
+      static constexpr ah::Destination destination =
+          ah::Destination::ControlSystem;
+    };
+
    public:
     template <typename ControlSystems>
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
+    template <typename ControlSystems>
+    using horizon_metavars = HorizonMetavars<ControlSystems>;
 
     template <typename ControlSystems>
     using event = NonFactoryCreatableWrapper<intrp::Events::Interpolate<

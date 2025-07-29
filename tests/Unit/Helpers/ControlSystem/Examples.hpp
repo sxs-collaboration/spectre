@@ -81,6 +81,9 @@ struct ExampleSubmeasurement
   // This submeasurement does not use an interpolation component.
   template <typename ControlSystems>
   using interpolation_target_tag = void;
+  // This submeasurement does not find a horizon.
+  template <typename ControlSystems>
+  using horizon_metavars = void;
 
   template <typename ControlSystems>
   using event = SomeEvent<ControlSystems>;

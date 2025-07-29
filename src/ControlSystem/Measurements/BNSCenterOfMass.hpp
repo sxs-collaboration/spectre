@@ -229,9 +229,11 @@ struct SystemCenterOfMass : db::SimpleTag {
 struct BothNSCenters : tt::ConformsTo<protocols::Measurement> {
   struct FindTwoCenters : tt::ConformsTo<protocols::Submeasurement> {
     static std::string name() { return "BothNSCenters::FindTwoCenters"; }
-    /// Unused tag needed to conform to the submeasurement protocol.
+    /// Unused aliases needed to conform to the submeasurement protocol.
     template <typename ControlSystems>
     using interpolation_target_tag = void;
+    template <typename ControlSystems>
+    using horizon_metavars = void;
 
     template <typename ControlSystems>
     using event = BNSEvent<ControlSystems>;
