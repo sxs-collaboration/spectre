@@ -12,5 +12,7 @@ spectre_target_headers(
   IgnoreFailedApparentHorizon.hpp
   InvokeCallbacks.hpp
   ObserveCenters.hpp
+  ObserveFieldsOnHorizon.hpp
+  ObserveTimeSeriesOnHorizon.hpp
   SendDependencyToObserverWriter.hpp
   )
