@@ -25,7 +25,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
-#include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/IncreaseResolution.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
@@ -41,20 +41,59 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
-
-// when called on the specified refinement level, this criteria
-// always will choose to join
-auto create_always_join() {
-  return std::make_unique<amr::Criteria::Random<amr::Criteria::Type::h>>(
-      std::unordered_map<amr::Flag, size_t>{{amr::Flag::Join, 1}});
+auto wants_to_join() {
+  return std::make_unique<
+      amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+      std::array{0_st}, std::array{amr::Flag::DoNothing});
 }
 
-// when called on any refinement level, this criteria always will choose to do
-// nothing
-auto create_always_do_nothing() {
-  return std::make_unique<amr::Criteria::Random<amr::Criteria::Type::h>>(
-      std::unordered_map<amr::Flag, size_t>{{amr::Flag::DoNothing, 1}});
+auto wants_to_split() {
+  return std::make_unique<
+      amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+      std::array{8_st}, std::array{amr::Flag::DoNothing});
 }
+
+auto wants_to_increase_resolution() {
+  return std::make_unique<amr::Criteria::IncreaseResolution<1>>();
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+template <size_t Dim>
+class BadCriterion : public amr::Criterion {
+ public:
+  using options = tmpl::list<>;
+
+  BadCriterion() = default;
+  explicit BadCriterion(CkMigrateMessage* msg) : Criterion(msg) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BadCriterion);  // NOLINT
+
+  amr::Criteria::Type type() override { return amr::Criteria::Type::h; }
+
+  std::string observation_name() override { return "BadCriterion"; }
+
+  using compute_tags_for_observation_box = tmpl::list<>;
+  using argument_tags = tmpl::list<>;
+
+  template <typename Metavariables>
+  auto operator()(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
+    if constexpr (Dim == 1) {
+      return std::array{amr::Flag::DecreaseResolution};
+    } else {
+      return std::array{amr::Flag::DecreaseResolution,
+                        amr::Flag::IncreaseResolution};
+    }
+  }
+
+  void pup(PUP::er& p) override { Criterion::pup(p); }
+};
+
+template <size_t Dim>
+PUP::able::PUP_ID BadCriterion<Dim>::my_PUP_ID = 0;  // NOLINT
+#pragma GCC diagnostic pop
 
 template <typename Metavariables>
 struct Component {
@@ -73,7 +112,7 @@ struct Component {
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, bool IgnoreP>
 struct Metavariables {
   static constexpr size_t volume_dim = VolumeDim;
 
@@ -82,7 +121,8 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<amr::Criterion,
-                   tmpl::list<amr::Criteria::Random<amr::Criteria::Type::h>,
+                   tmpl::list<BadCriterion<volume_dim>,
+                              amr::Criteria::IncreaseResolution<volume_dim>,
                               amr::Criteria::DriveToTarget<
                                   volume_dim, amr::Criteria::Type::h>>>>;
   };
@@ -91,6 +131,7 @@ struct Metavariables {
     using element_array = Component<Metavariables>;
     using projectors = tmpl::list<>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = IgnoreP;
   };
 };
 
@@ -108,10 +149,16 @@ struct Metavariables {
 // parallel environment, it is possible for an Element to execute
 // UpdateAmrDecision (triggered by a neighboring Element) prior to executing
 // EvaluateAmrCriteria
+//
+// If IgnoreP is true, only h-refinement criteria are evaluated
+template <bool IgnoreP>
 void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
                        const std::array<amr::Flag, 1> expected_flags) {
-  using my_component = Component<Metavariables<1>>;
+  using metavariables = Metavariables<1, IgnoreP>;
+  using my_component = Component<metavariables>;
   CAPTURE(expected_flags);
+  const bool p_refined =
+      (expected_flags == std::array{amr::Flag::IncreaseResolution});
   const ElementId<1> self_id(0, {{{1, 1}}});
   const ElementId<1> lo_id(0, {{{1, 0}}});
   const ElementId<1> up_id(1, {{{1, 0}}});
@@ -124,11 +171,17 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<1> up_sibling_mesh{5_st, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> p_self_mesh{3_st, Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> p_lo_mesh{4_st, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> p_up_mesh{5_st, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
 
   amr::Info<1> initial_info{std::array{amr::Flag::Undefined}, Mesh<1>{}};
   std::unordered_map<ElementId<1>, amr::Info<1>> initial_neighbor_info;
 
-  ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::move(criteria),
        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true}}};
 
@@ -178,7 +231,8 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
                                amr::Actions::EvaluateRefinementCriteria>(
       make_not_null(&runner), self_id);
 
-  const amr::Info<1> self_info{expected_flags, self_mesh};
+  const amr::Info<1> self_info{expected_flags,
+                               p_refined ? p_self_mesh : self_mesh};
   for (const auto& id : {self_id, lo_id, up_id}) {
     CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Info<1>>(
               runner, id) == (id == self_id ? self_info : initial_info));
@@ -194,7 +248,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
                                amr::Actions::EvaluateRefinementCriteria>(
       make_not_null(&runner), lo_id);
 
-  const amr::Info<1> lo_info{expected_flags, lo_mesh};
+  const amr::Info<1> lo_info{expected_flags, p_refined ? p_lo_mesh : lo_mesh};
   for (const auto& id : {self_id, lo_id, up_id}) {
     CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Info<1>>(
               runner, id) ==
@@ -228,7 +282,7 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
   ActionTesting::simple_action<my_component,
                                amr::Actions::EvaluateRefinementCriteria>(
       make_not_null(&runner), up_id);
-  const amr::Info<1> up_info{expected_flags, up_mesh};
+  const amr::Info<1> up_info{expected_flags, p_refined ? p_up_mesh : up_mesh};
   for (const auto& id : {self_id, lo_id, up_id}) {
     CHECK(ActionTesting::get_databox_tag<my_component, amr::Tags::Info<1>>(
               runner, id) ==
@@ -246,7 +300,8 @@ void evaluate_criteria(std::vector<std::unique_ptr<amr::Criterion>> criteria,
 }
 
 void check_split_while_join_is_avoided() {
-  using my_component = Component<Metavariables<2>>;
+  using metavariables = Metavariables<2, true>;
+  using my_component = Component<metavariables>;
 
   // The part of action we are testing does not depend upon information
   // from neighbors, so we just use a single Element setup on refinement
@@ -266,7 +321,7 @@ void check_split_while_join_is_avoided() {
           std::array{1_st, 0_st},
           std::array{amr::Flag::DoNothing, amr::Flag::DoNothing}));
 
-  Parallel::GlobalCache<Metavariables<2>> empty_cache{};
+  Parallel::GlobalCache<metavariables> empty_cache{};
   auto databox = db::create<tmpl::list<::domain::Tags::Mesh<2>>>(mesh);
   ObservationBox<tmpl::list<>, db::DataBox<tmpl::list<::domain::Tags::Mesh<2>>>>
       box{make_not_null(&databox)};
@@ -276,7 +331,7 @@ void check_split_while_join_is_avoided() {
 
   // But we do not allow an Element to simultaneously split and join so the
   // action should change the flags to (DoNothing, Split)
-  ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::move(criteria),
        amr::Policies{amr::Isotropy::Anisotropic, amr::Limits{}, true, true}}};
 
@@ -309,27 +364,74 @@ void check_split_while_join_is_avoided() {
   CHECK(ActionTesting::number_of_queued_simple_actions<my_component>(
             runner, self_id) == 0);
 }
-}  // namespace
+}  //  namespace
 
 SPECTRE_TEST_CASE("Unit.Amr.Actions.EvaluateRefinementCriteria",
                   "[Unit][ParallelAlgorithms]") {
-  register_factory_classes_with_charm<Metavariables<2>>();
-  std::vector<std::unique_ptr<amr::Criterion>> criteria;
-  // Run the test 3 times, twice with a single criterion that give known
-  // decisions, and then once with two criteria, one of which always produces
-  // flags of a higher priority than the other
-  criteria.emplace_back(create_always_join());
-  evaluate_criteria(std::move(criteria), std::array{amr::Flag::Join});
-  criteria.clear();
-  criteria.emplace_back(create_always_do_nothing());
-  evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
-  criteria.clear();
-  criteria.emplace_back(create_always_do_nothing());
-  criteria.emplace_back(create_always_join());
-  evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
-  criteria.clear();
-  criteria.emplace_back(create_always_join());
-  criteria.emplace_back(create_always_do_nothing());
-  evaluate_criteria(std::move(criteria), std::array{amr::Flag::DoNothing});
+  register_factory_classes_with_charm<Metavariables<2, true>>();
+  register_factory_classes_with_charm<Metavariables<1, true>>();
+  register_factory_classes_with_charm<Metavariables<1, false>>();
+  {
+    INFO("No criteria");
+    evaluate_criteria<true>(std::vector<std::unique_ptr<amr::Criterion>>{},
+                            std::array{amr::Flag::DoNothing});
+    evaluate_criteria<false>(std::vector<std::unique_ptr<amr::Criterion>>{},
+                             std::array{amr::Flag::DoNothing});
+  }
+  {
+    INFO("Only one p-criteria");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(wants_to_increase_resolution());
+    evaluate_criteria<false>(std::move(criteria),
+                             std::array{amr::Flag::IncreaseResolution});
+  }
+  {
+    INFO("Only one p-criteria, ignored");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(wants_to_increase_resolution());
+    evaluate_criteria<true>(std::move(criteria),
+                            std::array{amr::Flag::DoNothing});
+  }
+  {
+    INFO("Should join");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(wants_to_join());
+    evaluate_criteria<false>(std::move(criteria), std::array{amr::Flag::Join});
+  }
+  {
+    INFO("Should join, p-ignored");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(wants_to_join());
+    criteria.emplace_back(wants_to_increase_resolution());
+    evaluate_criteria<true>(std::move(criteria), std::array{amr::Flag::Join});
+  }
+  {
+    INFO("Should split");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(wants_to_split());
+    criteria.emplace_back(wants_to_join());
+    evaluate_criteria<false>(std::move(criteria), std::array{amr::Flag::Split});
+  }
+  {
+    INFO("Should split, p-ignored");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(wants_to_join());
+    criteria.emplace_back(wants_to_increase_resolution());
+    criteria.emplace_back(wants_to_split());
+    evaluate_criteria<true>(std::move(criteria), std::array{amr::Flag::Split});
+  }
+#ifdef SPECTRE_DEBUG
+  {
+    INFO("Check ASSERT triggers");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria;
+    criteria.emplace_back(std::make_unique<BadCriterion<1>>());
+
+    CHECK_THROWS_WITH(
+        (evaluate_criteria<true>(std::move(criteria),
+                                 std::array{amr::Flag::DoNothing})),
+        Catch::Matchers::ContainsSubstring(
+            "requested p-refinement, but claims to be for h-refinement"));
+  }
+#endif
   check_split_while_join_is_avoided();
 }

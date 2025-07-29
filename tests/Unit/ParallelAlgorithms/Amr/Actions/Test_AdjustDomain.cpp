@@ -156,6 +156,7 @@ struct Metavariables {
         Parallel::Tags::GlobalCache<Metavariables>,
         domain::Tags::NeighborMesh<1>>>;
     static constexpr bool keep_coarse_grids = KeepCoarseGrids;
+    static constexpr bool p_refine_only_in_event = false;
   };
 };
 

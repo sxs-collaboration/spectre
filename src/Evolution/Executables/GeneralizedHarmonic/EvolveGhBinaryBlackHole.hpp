@@ -706,6 +706,7 @@ struct EvolutionMetavars {
             Tags::ChangeSlabSize::NumberOfExpectedMessages,
             Tags::ChangeSlabSize::NewSlabSize>>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = true;
   };
 
   using component_list = tmpl::flatten<tmpl::list<

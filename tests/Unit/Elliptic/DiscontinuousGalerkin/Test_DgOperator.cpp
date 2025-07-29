@@ -251,6 +251,7 @@ struct Metavariables {
             System, typename element_array::analytic_solution_tag>,
         typename element_array::dg_operator::amr_projectors>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   // NOLINTNEXTLINE(google-runtime-references)

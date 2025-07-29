@@ -116,6 +116,7 @@ struct Metavariables {
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
     [[maybe_unused]] static constexpr bool keep_coarse_grids = false;
+    [[maybe_unused]] static constexpr bool p_refine_only_in_event = false;
   };
 
   using component_list = tmpl::flatten<tmpl::list<

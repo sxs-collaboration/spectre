@@ -379,6 +379,7 @@ struct Metavariables {
             ::domain::Tags::InitialRefinementLevels<Dim>,
             evolution::dg::Tags::Quadrature>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   struct registration

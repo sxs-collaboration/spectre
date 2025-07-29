@@ -549,6 +549,7 @@ struct Metavariables {
             System, typename element_array::background_tag>,
         typename element_array::dg_operator::amr_projectors, ExtraInitActions>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   // NOLINTNEXTLINE(google-runtime-references)
