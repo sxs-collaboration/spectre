@@ -6,8 +6,8 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/TMPL.hpp"
 

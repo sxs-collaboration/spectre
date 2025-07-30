@@ -7,12 +7,12 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/Faces.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Utilities/ApplyAt.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

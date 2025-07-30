@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
@@ -16,7 +17,6 @@
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ApplyMassMatrix.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/CallWithDynamicType.hpp"

@@ -384,12 +384,11 @@ void test(const bool moving_mesh) {
       }
     }
     if (moving_mesh) {
-      REQUIRE(db::get<subcell::Tags::ObserverMeshVelocityCompute<Dim>>(
-                  active_coords_box)
-                  .has_value());
+      REQUIRE(
+          db::get<Events::Tags::ObserverMeshVelocity<Dim>>(active_coords_box)
+              .has_value());
       const auto& mesh_velocity =
-          db::get<subcell::Tags::ObserverMeshVelocityCompute<Dim>>(
-              active_coords_box)
+          db::get<Events::Tags::ObserverMeshVelocity<Dim>>(active_coords_box)
               .value();
       const auto [coords, inv_jac, jac, expected_mesh_velocity] =
           grid_to_inertial_map->coords_frame_velocity_jacobians(
@@ -399,9 +398,9 @@ void test(const bool moving_mesh) {
               db::get<domain::Tags::FunctionsOfTime>(active_coords_box));
       CHECK_ITERABLE_APPROX(mesh_velocity, expected_mesh_velocity);
     } else {
-      CHECK_FALSE(db::get<subcell::Tags::ObserverMeshVelocityCompute<Dim>>(
-                      active_coords_box)
-                      .has_value());
+      CHECK_FALSE(
+          db::get<Events::Tags::ObserverMeshVelocity<Dim>>(active_coords_box)
+              .has_value());
     }
   };
 

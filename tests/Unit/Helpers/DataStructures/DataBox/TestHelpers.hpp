@@ -47,18 +47,6 @@ void check_tag_name(const std::string& expected_name) {
 }  // namespace detail
 
 template <typename Tag>
-void test_base_tag(const std::string& expected_name) {
-  static_assert(::db::is_base_tag_v<Tag>,
-                "A base tag must be derived from db::BaseTag, but "
-                "not from db::SimpleTag nor db::ComputeTag");
-  static_assert(
-      not detail::has_type_v<Tag>,
-      "The only reason to use a base tag is fetch an item without knowing the "
-      "type.  Since the type is known, make it a simple tag.");
-  detail::check_tag_name<Tag>(expected_name);
-}
-
-template <typename Tag>
 void test_compute_tag(const std::string& expected_name) {
   static_assert(::db::is_compute_tag_v<Tag>,
                 "A compute tag must be derived from db::ComputeTag");

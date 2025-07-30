@@ -25,21 +25,8 @@ struct Simple : ::db::SimpleTag {
   using type = SomeType;
 };
 
-struct Base : ::db::BaseTag {};
-
-struct SimpleWithBase : Base, ::db::SimpleTag {
-  using type = SomeType;
-};
-
 struct SimpleCompute : Simple, ::db::ComputeTag {
   using base = Simple;
-  using return_type = SomeType;
-  using argument_tags = tmpl::list<>;
-  static constexpr auto function = do_something;
-};
-
-struct SimpleWithBaseCompute : SimpleWithBase, ::db::ComputeTag {
-  using base = SimpleWithBase;
   using return_type = SomeType;
   using argument_tags = tmpl::list<>;
   static constexpr auto function = do_something;
@@ -51,12 +38,6 @@ struct ParentTag : ::db::SimpleTag {
 
 struct SimpleReference : Simple, ::db::ReferenceTag {
   using base = Simple;
-  using argument_tags = tmpl::list<ParentTag>;
-  static const auto& get(const typename ParentTag::type& /* parent_value */);
-};
-
-struct SimpleWithBaseReference : SimpleWithBase, ::db::ReferenceTag {
-  using base = SimpleWithBase;
   using argument_tags = tmpl::list<ParentTag>;
   static const auto& get(const typename ParentTag::type& /* parent_value */);
 };

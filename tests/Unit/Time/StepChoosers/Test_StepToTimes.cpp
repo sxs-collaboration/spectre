@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"

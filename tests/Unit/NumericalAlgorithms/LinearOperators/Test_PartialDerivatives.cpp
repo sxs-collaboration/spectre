@@ -1207,14 +1207,15 @@ void test_partial_derivatives_compute_item(
   using vars_tags = tmpl::list<Var1<DataVector, Dim>, Var2<DataVector>>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
-      map_tag, domain::Tags::LogicalCoordinates<Dim>>;
-  using deriv_tag = Tags::DerivCompute<Tags::Variables<vars_tags>,
-                                       domain::Tags::Mesh<Dim>, inv_jac_tag>;
+      map_tag, typename domain::Tags::LogicalCoordinates<Dim>::base>;
+  using deriv_tag =
+      Tags::DerivCompute<Tags::Variables<vars_tags>, domain::Tags::Mesh<Dim>,
+                         typename inv_jac_tag::base>;
   using prefixed_variables_tag =
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
   using deriv_prefixed_tag =
       Tags::DerivCompute<prefixed_variables_tag, domain::Tags::Mesh<Dim>,
-                         inv_jac_tag,
+                         typename inv_jac_tag::base,
                          tmpl::list<SomePrefix<Var1<DataVector, Dim>>>>;
 
   TestHelpers::db::test_compute_tag<deriv_tag>(
@@ -1251,7 +1252,7 @@ void test_partial_derivatives_compute_item(
                          deriv_tag, deriv_prefixed_tag>>(mesh, u, prefixed_vars,
                                                          map);
 
-  const auto& du = db::get<deriv_tag>(box);
+  const auto& du = db::get<typename deriv_tag::base>(box);
 
   for (size_t n = 0; n < du.size(); ++n) {
     // clang-tidy: pointer arithmetic
@@ -1279,9 +1280,10 @@ void test_partial_derivatives_tensor_compute_item(
   using tensor_tag = Var1<DataVector, Dim>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
-      map_tag, domain::Tags::LogicalCoordinates<Dim>>;
-  using deriv_tensor_tag = Tags::DerivTensorCompute<tensor_tag, inv_jac_tag,
-                                                    domain::Tags::Mesh<Dim>>;
+      map_tag, typename domain::Tags::LogicalCoordinates<Dim>::base>;
+  using deriv_tensor_tag =
+      Tags::DerivTensorCompute<tensor_tag, typename inv_jac_tag::base,
+                               domain::Tags::Mesh<Dim>>;
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};
@@ -1298,7 +1300,7 @@ void test_partial_derivatives_tensor_compute_item(
       db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
                          deriv_tensor_tag>>(mesh, u, map);
 
-  const auto& du = db::get<deriv_tensor_tag>(box);
+  const auto& du = db::get<typename deriv_tensor_tag::base>(box);
 
   // CHECK_ITERABLE_APPROX(du, expected_du.data());
   for (size_t n = 0; n < du.size(); ++n) {

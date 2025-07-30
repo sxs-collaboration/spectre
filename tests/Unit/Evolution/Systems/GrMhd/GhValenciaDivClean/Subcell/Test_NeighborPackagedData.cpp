@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
@@ -63,7 +64,6 @@
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GhRelativisticEuler/Factory.hpp"
 #include "PointwiseFunctions/ConstraintDamping/DampingFunction.hpp"

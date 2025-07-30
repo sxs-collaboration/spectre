@@ -127,7 +127,7 @@ struct Subitem<FacesSubitemTag, FacesComputeTag,
   using base = FacesSubitemTag;
   using return_type = typename base::type;
   using parent_tag = FacesComputeTag;
-  using argument_tags = tmpl::list<parent_tag>;
+  using argument_tags = tmpl::list<typename parent_tag::base>;
   static void function(const gsl::not_null<return_type*> subitems,
                        const typename parent_tag::type& parent_value) {
     ::db::Subitems<parent_tag>::template create_compute_item<base>(

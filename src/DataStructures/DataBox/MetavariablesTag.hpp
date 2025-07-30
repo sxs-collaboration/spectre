@@ -10,9 +10,17 @@
 namespace Parallel::Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ParallelGroup
-/// Tag to retrieve the `Metavariables` from the DataBox.
-struct Metavariables : db::BaseTag {};
+/// \brief Tag to retrieve the `Metavariables` from the DataBox.
+///
+/// \details To insert the metavariables into the DataBox use
+/// `Parallel::Tags::MetavariablesImpl<metavariables>`
+struct Metavariables {};
 
+/// \ingroup DataBoxTagsGroup
+/// \brief Tag to insert Metavars into the DataBox
+///
+/// \details Can be retrieved via `Parallel::Tags::Metavariables` (i.e. without
+/// the template parameter)
 template <typename Metavars>
 struct MetavariablesImpl : Metavariables, db::SimpleTag {
   using type = Metavars;

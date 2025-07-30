@@ -9,6 +9,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -20,7 +21,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/TimeStepper.hpp"
@@ -94,8 +94,7 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
   const double grid_spacing =
       get<domain::Tags::MinimumGridSpacing<dim, frame>>(box);
   const double speed =
-      get<typename Metavariables::system::compute_largest_characteristic_speed>(
-          box);
+      get<typename Metavariables::system::largest_characteristic_speed>(box);
   const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
 
   const Cfl cfl{safety_factor};

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -14,7 +15,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Actions/TakeLtsStep.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"

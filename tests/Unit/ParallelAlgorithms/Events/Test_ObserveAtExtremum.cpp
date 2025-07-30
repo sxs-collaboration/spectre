@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -25,7 +26,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/Gsl.hpp"
@@ -64,7 +64,7 @@ struct Var0TimesThree : db::SimpleTag {
 
 struct Var0TimesThreeCompute : db::ComputeTag,
                                ::Tags::Variables<tmpl::list<Var0TimesThree>> {
-  using base = Var0TimesThree;
+  using base = ::Tags::Variables<tmpl::list<Var0TimesThree>>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<Var0>;
   static void function(

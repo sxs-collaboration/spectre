@@ -10,13 +10,13 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Elliptic/Triggers/EveryNIterations.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"

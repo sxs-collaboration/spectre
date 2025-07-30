@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -32,7 +33,6 @@
 #include "Helpers/ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ArrayComponentId.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"

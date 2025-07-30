@@ -23,6 +23,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/IsApplyCallable.hpp"
 #include "DataStructures/DataBox/Item.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/SubitemTag.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -69,15 +70,6 @@ template <typename Tag, typename DataBoxType>
 constexpr bool tag_is_retrievable_v =
     tag_is_retrievable<Tag, DataBoxType>::value;
 /// @}
-
-namespace detail {
-template <typename TagsList, typename Tag>
-struct get_simple_tag_for_base_tag {
-  using type =
-      tmpl::conditional_t<db::is_base_tag_v<Tag>,
-                          db::detail::first_matching_tag<TagsList, Tag>, Tag>;
-};
-}  // namespace detail
 
 namespace detail {
 template <typename TagsList, typename Tag>
@@ -277,6 +269,14 @@ class DataBox<tmpl::list<Tags...>> : public Access,
   using reference_item_parent_tags =
       tmpl::filter<reference_item_tags,
                    tmpl::bind<detail::has_subitems, tmpl::_1>>;
+
+  /// If it exists, the Parallel::Tags::MetavariablesImpl tag, otherwise
+  /// NoSuchType
+  ///
+  /// This allows the type-erased Parallel::Tags::Metavariables
+  /// to be used to fetch the metavariables
+  using metavars_tag =
+      typename detail::metavars_tag_impl<mutable_item_tags>::type;
 
   /// \cond
   /*!
@@ -646,10 +646,12 @@ template <typename ImmutableItemTag, typename ArgumentTag, typename TagsList>
 constexpr char check_immutable_item_tag_dependency() {
   using immutable_item_tag_index = tmpl::index_of<TagsList, ImmutableItemTag>;
   static_assert(
-      tmpl::less<tmpl::index_if<TagsList,
-                                std::is_same<tmpl::pin<ArgumentTag>, tmpl::_1>,
-                                immutable_item_tag_index>,
-                 immutable_item_tag_index>::value,
+      std::is_same_v<ArgumentTag, Parallel::Tags::Metavariables> or
+          tmpl::less<
+              tmpl::index_if<TagsList,
+                             std::is_same<tmpl::pin<ArgumentTag>, tmpl::_1>,
+                             immutable_item_tag_index>,
+              immutable_item_tag_index>::value,
       "The argument_tags of an immutable item tag must be added before itself. "
       "This is done to ensure no cyclic dependencies arise.  See the first and "
       "second template arguments of check_immutable_item_tag_dependency for "
@@ -667,7 +669,7 @@ SPECTRE_ALWAYS_INLINE constexpr void check_immutable_item_tag_dependencies_impl(
       tmpl2::flat_all_v<is_tag_v<ArgumentsTags>...>,
       "Cannot have non-DataBoxTag arguments to a ComputeItem or ReferenceItem. "
       "Please make sure all the specified argument_tags derive from "
-      "db::SimpleTag or db::BaseTag.");
+      "db::SimpleTag or are the special tag Parallel::Tags::Metavariables.");
   DEBUG_STATIC_ASSERT(
       not tmpl2::flat_any_v<std::is_same_v<ArgumentsTags, ImmutableItemTag>...>,
       "A ComputeItem cannot take its own Tag as an argument.");
@@ -851,10 +853,7 @@ auto DataBox<tmpl::list<Tags...>>::compute_tag_graphs() -> TagGraphs {
             pretty_type::get_name<associated_simple_tag>();
         const std::vector<std::string> argument_tags =
             pretty_type::vector_of_get_names(
-                tmpl::transform<
-                    typename compute_tag::argument_tags,
-                    detail::get_simple_tag_for_base_tag<
-                        tmpl::pin<tmpl::list<Tags...>>, tmpl::_1>>{});
+                typename compute_tag::argument_tags{});
         for (const std::string& argument_tag : argument_tags) {
           result.tags_and_dependents[argument_tag].push_back(simple_tag);
         }
@@ -1277,6 +1276,9 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const {
           "restriction exists to avoid complexity.");
     }
     return *this;
+  } else if constexpr (std::is_same_v<Tag, Parallel::Tags::Metavariables>) {
+    static_assert(not std::is_same_v<metavars_tag, NoSuchType>);
+    return get_item<metavars_tag>().get();
   } else {
     DEBUG_STATIC_ASSERT(
         not detail::has_no_matching_tag_v<tags_list, Tag>,
@@ -1551,8 +1553,8 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   static_assert(tt::is_a_v<tmpl::list, AddMutableItemTags>,
                 "AddMutableItemTags must be a tmpl::list");
   static_assert(
-      tmpl::all<AddMutableItemTags, is_non_base_tag<tmpl::_1>>::value and
-          tmpl::all<AddImmutableItemTags, is_non_base_tag<tmpl::_1>>::value,
+      tmpl::all<AddMutableItemTags, is_creation_tag<tmpl::_1>>::value and
+          tmpl::all<AddImmutableItemTags, is_creation_tag<tmpl::_1>>::value,
       "Can only add tags derived from db::SimpleTag.");
   static_assert(
       tmpl::all<AddMutableItemTags, is_mutable_item_tag<tmpl::_1>>::value,

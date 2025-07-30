@@ -6,9 +6,11 @@
 #include <memory>
 #include <type_traits>
 
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace Tags {
 /*!
@@ -31,10 +33,26 @@ struct DataBox {
 namespace db {
 
 namespace detail {
+template <typename TagsList,
+          typename MatchingTagsList = tmpl::filter<
+              TagsList, tt::is_a<Parallel::Tags::MetavariablesImpl, tmpl::_1>>>
+struct metavars_tag_impl {
+  static_assert(tmpl::size<MatchingTagsList>::value == 1);
+  using type = tmpl::front<MatchingTagsList>;
+};
+
+template <typename TagsList>
+struct metavars_tag_impl<TagsList, tmpl::list<>> {
+  using type = NoSuchType;
+};
+
 template <typename TagList, typename Tag>
 using list_of_matching_tags = tmpl::conditional_t<
     std::is_same_v<Tag, ::Tags::DataBox>, tmpl::list<::Tags::DataBox>,
-    tmpl::filter<TagList, std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>;
+    tmpl::conditional_t<
+        std::is_same_v<Tag, Parallel::Tags::Metavariables>,
+        tmpl::list<Parallel::Tags::Metavariables>,
+        tmpl::filter<TagList, std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>>;
 
 template <typename Tag, typename TagList,
           typename MatchingTagsList = list_of_matching_tags<TagList, Tag>>
@@ -93,16 +111,15 @@ struct ConvertToConst<std::unique_ptr<T>> {
   using type = const T&;
 };
 
-template <typename Tag, typename TagsList, bool = db::is_base_tag_v<Tag>>
+template <typename Tag, typename TagsList>
 struct const_item_type_impl {
   using type = typename db::detail::ConvertToConst<
       std::decay_t<typename Tag::type>>::type;
 };
 
-template <typename Tag, typename TagsList>
-struct const_item_type_impl<Tag, TagsList, true> {
-  using type = typename db::detail::ConvertToConst<std::decay_t<
-      typename db::detail::first_matching_tag<TagsList, Tag>::type>>::type;
+template <typename TagsList>
+struct const_item_type_impl<Parallel::Tags::Metavariables, TagsList> {
+  using type = const typename detail::metavars_tag_impl<TagsList>::type::type&;
 };
 }  // namespace detail
 

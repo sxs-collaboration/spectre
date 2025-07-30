@@ -34,7 +34,8 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) {
       db::AddSimpleTags<Tags::Mesh<Dim>, map_tag>,
       db::AddComputeTags<
           Tags::LogicalCoordinates<Dim>,
-          Tags::MappedCoordinates<map_tag, Tags::LogicalCoordinates<Dim>>>>(
+          Tags::MappedCoordinates<
+              map_tag, Tags::Coordinates<Dim, Frame::ElementLogical>>>>(
       mesh,
       ElementMap<Dim, Frame::Grid>(
           ElementId<Dim>(0),

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
@@ -34,7 +35,6 @@
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"

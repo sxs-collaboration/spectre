@@ -243,13 +243,13 @@ void test_compute_face_coordinates() {
         element, mesh, grid_coords,
         my_block.moving_mesh_grid_to_inertial_map().get_clone());
     const auto centered_grid_1 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, true>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Grid, true>>(box);
     const auto uncentered_grid_1 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, false>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Grid, false>>(box);
     const auto centered_inertial_1 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, true>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Inertial, true>>(box);
     const auto uncentered_inertial_1 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, false>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Inertial, false>>(box);
     if (all_faces_grid_coords.count(element_id)) {
       CHECK(centered_grid_1.has_value());
       CHECK(uncentered_grid_1.has_value());
@@ -279,13 +279,13 @@ void test_compute_face_coordinates() {
         make_not_null(&box), new_time);
 
     const auto centered_grid_2 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, true>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Grid, true>>(box);
     const auto uncentered_grid_2 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Grid, false>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Grid, false>>(box);
     const auto centered_inertial_2 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, true>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Inertial, true>>(box);
     const auto uncentered_inertial_2 =
-        db::get<Tags::FaceCoordinatesCompute<3, Frame::Inertial, false>>(box);
+        db::get<Tags::FaceCoordinates<3, Frame::Inertial, false>>(box);
     if (all_faces_grid_coords.count(element_id)) {
       CHECK(centered_grid_2.has_value());
       CHECK(uncentered_grid_2.has_value());
@@ -301,7 +301,7 @@ void test_compute_face_coordinates() {
           db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
               Dim, Frame::Grid, Frame::Inertial>>(box);
       const auto& functions_of_time =
-          db::get<domain::Tags::FunctionsOfTimeInitialize>(box);
+          db::get<domain::Tags::FunctionsOfTime>(box);
       CHECK_ITERABLE_APPROX(uncentered_inertial_2.value(),
                             grid_to_inertial_map(uncentered_grid_2.value(),
                                                  new_time, functions_of_time));

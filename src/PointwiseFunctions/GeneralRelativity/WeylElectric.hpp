@@ -103,7 +103,7 @@ template <typename DataType, size_t SpatialDim, typename Frame>
 struct WeylElectricScalarCompute : WeylElectricScalar<DataType>,
                                    db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::WeylElectricCompute<DataType, SpatialDim, Frame>,
+      tmpl::list<gr::Tags::WeylElectric<DataType, SpatialDim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataType, SpatialDim, Frame>>;
 
   using return_type = Scalar<DataType>;

@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ<false>>(
       "InitializeJ");
   TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticInitializeJ>(
-      "AnalyticInitializeJ");
+      "InitializeJ");
   TestHelpers::db::test_simple_tag<Cce::Tags::OutputNoninertialNews>(
       "OutputNoninertialNews");
   TestHelpers::db::test_simple_tag<

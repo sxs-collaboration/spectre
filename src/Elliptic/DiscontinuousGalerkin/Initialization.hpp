@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
@@ -46,7 +47,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/CallWithDynamicType.hpp"

@@ -272,7 +272,7 @@ struct Subitem<::domain::Tags::Interface<DirectionsTag, TensorTag>,
     ::db::Subitems<parent_tag>::template create_compute_item<base>(
         subitems, parent_value);
   }
-  using argument_tags = tmpl::list<parent_tag>;
+  using argument_tags = tmpl::list<typename parent_tag::base>;
 };
 
 /// \brief specialization of a subitem tag for an interface compute tag of a
@@ -294,6 +294,6 @@ struct Subitem<::domain::Tags::Interface<DirectionsTag, TensorTag>,
     ::db::Subitems<parent_tag>::template create_compute_item<base>(
         subitems, parent_value);
   }
-  using argument_tags = tmpl::list<parent_tag>;
+  using argument_tags = tmpl::list<typename parent_tag::base>;
 };
 }  // namespace Tags

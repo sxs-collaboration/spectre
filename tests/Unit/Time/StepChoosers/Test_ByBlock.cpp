@@ -8,13 +8,13 @@
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/TimeStepRequest.hpp"

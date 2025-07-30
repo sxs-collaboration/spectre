@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/AsAccess.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -34,7 +35,6 @@
 #include "Evolution/Systems/Burgers/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"

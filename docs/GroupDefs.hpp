@@ -216,8 +216,6 @@
  * argument case, and a variadic function template is provided for the multiple
  * arguments case. Note that in practice few compute tags will be this complex.
  *
- * \snippet Test_BaseTags.cpp compute_template_base_tags
- *
  * #### Subitems and Prefix Tags
  *
  * A simple or compute tag might also hold a collection of data, such as a
@@ -304,59 +302,6 @@
  * the tags. See the documentation of `db::apply` and `db::mutate_apply` for
  * examples of how to use them.
  *
- * #### The Base Tags Mechanism
- *
- * Retrieving items by tags should not require knowing whether the item being
- * retrieved was computed using a compute tag or simply added using a simple
- * tag. The framework that handles this falls under the umbrella term
- * *base tags*. The reason is that a compute tag can inherit from a simple tag
- * with the same item type, and then calls to `db::get` with the simple tag can
- * be used to retrieve the compute item as well. That is, say you have a compute
- * tag `ArrayCompute` that derives off of the simple tag `Array`, then you can
- * retrieve the compute tag `ArrayCompute` and `Array` by calling
- * `db::get<Array>(box)`. The base tags mechanism requires that only one `Array`
- * tag be present in the DataBox, otherwise a static assertion is triggered.
- *
- * The inheritance idea can be generalized further with what are called base
- * tags. A base tag is an empty `struct` that inherits from `db::BaseTag`. Any
- * simple or compute item that derives off of the base tag can be retrieved
- * using `db::get`. Consider the following `VectorBase` and `Vector` tag:
- *
- * \snippet Test_BaseTags.cpp vector_base_definitions
- *
- * It is possible to retrieve `Vector<1>` from the DataBox using
- * `VectorBase<1>`. Most importantly, base tags can also be used in compute tag
- * arguments, as follows:
- *
- * \snippet Test_BaseTags.cpp compute_template_base_tags
- *
- * As shown in the code example, the base tag mechanism works with function
- * template compute tags, enabling generic programming to be combined with the
- * lazy evaluation and automatic dependency analysis offered by the DataBox. To
- * really demonstrate the power of base tags, let's also have `ArrayComputeBase`
- * inherit from a simple tag `Array`, which inherits from a base tag `ArrayBase`
- * as follows:
- *
- * \snippet Test_BaseTags.cpp array_base_definitions
- *
- * To start, let's create a DataBox that holds a `Vector<0>` and an
- * `ArrayComputeBase<0>` (the concrete tag must be used when creating the
- * DataBox, not the base tags), retrieve the tags using the base tag mechanism,
- * including mutating `Vector<0>`, and then verifying that the dependencies are
- * handled correctly.
- *
- * \snippet Test_BaseTags.cpp base_simple_and_compute_mutate
- *
- * Notice that we are able to retrieve `ArrayComputeBase<0>` with `ArrayBase<0>`
- * and `Array<0>`. We were also able to mutate `Vector<0>` using
- * `VectorBase<0>`.
- *
- * The base tags infrastructure even works with Subitems. Even if you mutate the
- * subitem of a parent using a base tag, the appropriate compute item caches
- * will be invalidated.
- *
- * \note All of the base tags infrastructure works for `db::get`, `db::mutate`,
- * `db::apply` and `db::mutate_apply`.
  */
 
 /*!

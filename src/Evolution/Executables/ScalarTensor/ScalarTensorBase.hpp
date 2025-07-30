@@ -335,13 +335,13 @@ struct ObserverTags {
           CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
 
   using scalar_charge_surface_obs_tags = tmpl::list<
-      gr::surfaces::Tags::SurfaceIntegralCompute<
+      gr::surfaces::Tags::SurfaceIntegral<
           ScalarTensor::StrahlkorperScalar::Tags::ScalarChargeIntegrand,
           ::Frame::Inertial>,
-      gr::surfaces::Tags::SurfaceIntegralCompute<CurvedScalarWave::Tags::Psi,
-                                                 ::Frame::Inertial>,
-      gr::surfaces::Tags::SurfaceIntegralCompute<
-          CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>;
+      gr::surfaces::Tags::SurfaceIntegral<CurvedScalarWave::Tags::Psi,
+                                          ::Frame::Inertial>,
+      gr::surfaces::Tags::SurfaceIntegral<CurvedScalarWave::Tags::PsiSquared,
+                                          ::Frame::Inertial>>;
 };
 
 template <bool LocalTimeStepping>

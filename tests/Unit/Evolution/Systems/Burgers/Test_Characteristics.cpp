@@ -22,7 +22,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.Characteristics", "[Unit][Burgers]") {
                           domain::Tags::UnnormalizedFaceNormal<1>>,
         db::AddComputeTags<Burgers::Tags::CharacteristicSpeedsCompute>>(
         Scalar<DataVector>{{{{4.0}}}}, tnsr::i<DataVector, 1>{{{{1.0}}}});
-    CHECK(db::get<Burgers::Tags::CharacteristicSpeedsCompute>(box)[0] == 4.0);
+    CHECK(db::get<Burgers::Tags::CharacteristicSpeeds>(box)[0] == 4.0);
   }
   {
     const auto box = db::create<
@@ -30,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.Characteristics", "[Unit][Burgers]") {
                           domain::Tags::UnnormalizedFaceNormal<1>>,
         db::AddComputeTags<Burgers::Tags::CharacteristicSpeedsCompute>>(
         Scalar<DataVector>{{{{4.0}}}}, tnsr::i<DataVector, 1>{{{{-1.0}}}});
-    CHECK(db::get<Burgers::Tags::CharacteristicSpeedsCompute>(box)[0] == -4.0);
+    CHECK(db::get<Burgers::Tags::CharacteristicSpeeds>(box)[0] == -4.0);
   }
 }
 

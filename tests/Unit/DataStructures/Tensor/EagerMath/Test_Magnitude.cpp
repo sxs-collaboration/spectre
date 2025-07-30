@@ -155,9 +155,9 @@ void test_magnitude_tags() {
           tnsr::I<DataVector, 3, Frame::Grid>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
           tnsr::i<DataVector, 2, Frame::Grid>({{{3., 5.}, {4., 12.}}}));
 
-  CHECK(db::get<Tags::EuclideanMagnitude<Vector>>(box) ==
+  CHECK(db::get<Tags::Magnitude<Vector>>(box) ==
         Scalar<DataVector>({{{3., 7.}}}));
-  CHECK(db::get<Tags::EuclideanMagnitude<Covector<2>>>(box) ==
+  CHECK(db::get<Tags::Magnitude<Covector<2>>>(box) ==
         Scalar<DataVector>({{{5., 13.}}}));
   CHECK(db::get<Tags::Normalized<Vector>>(box) ==
         tnsr::I<DataVector, 3, Frame::Grid>(

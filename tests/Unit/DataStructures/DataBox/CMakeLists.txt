@@ -4,10 +4,10 @@
 set(LIBRARY "Test_DataBox")
 
 set(LIBRARY_SOURCES
-  Test_BaseTags.cpp
   Test_DataBox.cpp
   Test_DataBoxDocumentation.cpp
   Test_DataBoxPrefixes.cpp
+  Test_MetavariablesTag.cpp
   Test_ObservationBox.cpp
   Test_PrefixHelpers.cpp
   Test_Protocols.cpp

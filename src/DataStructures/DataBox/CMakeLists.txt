@@ -12,6 +12,7 @@ spectre_target_headers(
   DataOnSlice.hpp
   IsApplyCallable.hpp
   Item.hpp
+  MetavariablesTag.hpp
   ObservationBox.hpp
   PrefixHelpers.hpp
   Prefixes.hpp

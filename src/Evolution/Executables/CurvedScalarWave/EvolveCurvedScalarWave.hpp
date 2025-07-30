@@ -180,7 +180,7 @@ struct EvolutionMetavars {
         intrp::TargetPoints::Sphere<SphericalSurface, ::Frame::Inertial>;
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<gr::surfaces::Tags::SurfaceIntegralCompute<
+            tmpl::list<gr::surfaces::Tags::SurfaceIntegral<
                 CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>,
             SphericalSurface>>;
     template <typename metavariables>

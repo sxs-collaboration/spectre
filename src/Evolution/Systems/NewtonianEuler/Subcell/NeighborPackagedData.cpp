@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Access.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -44,7 +45,6 @@
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"

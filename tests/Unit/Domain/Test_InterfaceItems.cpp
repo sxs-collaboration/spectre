@@ -64,9 +64,7 @@ struct NoCopy {
 };
 
 namespace TestTags {
-struct BaseInt : db::BaseTag {};
-
-struct Int : db::SimpleTag, BaseInt {
+struct Int : db::SimpleTag {
   using type = int;
 };
 
@@ -108,8 +106,8 @@ struct NegateDoubleAddIntCompute : NegateDoubleAddInt, db::ComputeTag {
                                  const double x, const int y) {
     *result = -x + y;
   }
-  using argument_tags = tmpl::list<Double, BaseInt>;
-  using volume_tags = tmpl::list<BaseInt>;
+  using argument_tags = tmpl::list<Double, Int>;
+  using volume_tags = tmpl::list<Int>;
 };
 
 struct IntCompute : db::ComputeTag, Int {
@@ -289,8 +287,9 @@ void test_interface_items() {
             {Direction<dim>::upper_xi(), {5, 2.5}},
             {Direction<dim>::upper_zeta(), {5, 3.5}}}));
 
-  CHECK((get<Tags::InterfaceCompute<boundary_directions_interior,
-                                    TestTags::ComplexItemCompute<dim>>>(box)) ==
+  CHECK((get<typename Tags::InterfaceCompute<
+             boundary_directions_interior,
+             TestTags::ComplexItemCompute<dim>>::base>(box)) ==
         (std::unordered_map<Direction<dim>, std::pair<int, double>>{
             {Direction<dim>::lower_eta(), {5, 10.5}},
             {Direction<dim>::upper_eta(), {5, 20.5}},
@@ -566,7 +565,8 @@ void test_interface_slice(){
         expected_interface_mesh);
   CHECK(db::get<Tags::Interface<Dirs, Tags::Coordinates<dim, Frame::Inertial>>>(
             box) == expected_boundary_coords);
-  CHECK((db::get<Tags::InterfaceCompute<Dirs, compute_item_tag>>(box)) ==
+  CHECK((db::get<typename Tags::InterfaceCompute<Dirs, compute_item_tag>::base>(
+            box)) ==
         (make_interface_variables<1, 10>({1., 1., 1.}, {5., 5., 5.},
                                          {1., 1., 1., 1.}, {5., 5., 5., 5.})));
   CHECK((db::get<Tags::Interface<Dirs, Compute<2>>>(box)) ==

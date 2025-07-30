@@ -190,7 +190,7 @@ struct MockMetavariables {
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveLineSegment<
             tmpl::append<vars_to_interpolate_to_target,
-                         compute_items_on_target>,
+                         tmpl::list<Tags::Square>>,
             LineA>>;
   };
 
@@ -206,7 +206,7 @@ struct MockMetavariables {
     using post_interpolation_callbacks =
         tmpl::list<intrp::callbacks::ObserveLineSegment<
             tmpl::append<vars_to_interpolate_to_target,
-                         compute_items_on_target>,
+                         tmpl::list<Tags::Square>>,
             LineB>>;
   };
 

@@ -21,6 +21,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
@@ -42,7 +43,6 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "Parallel/Tags/ArrayIndex.hpp"
 #include "Parallel/Tags/DistributedObjectTags.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Algorithm.hpp"

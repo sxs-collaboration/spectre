@@ -105,7 +105,7 @@ template <typename DataType, size_t Dim, typename Frame>
 struct WeylMagneticScalarCompute : WeylMagneticScalar<DataType>,
                                    db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::WeylMagneticCompute<DataType, Dim, Frame>,
+      tmpl::list<gr::Tags::WeylMagnetic<DataType, Dim, Frame>,
                  gr::Tags::InverseSpatialMetric<DataType, Dim, Frame>>;
 
   using return_type = Scalar<DataType>;

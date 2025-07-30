@@ -12,13 +12,17 @@ namespace db {
  * A simple tag is used to uniquely identify an item in a tagged container such
  * as a `DataBox`, `Variables`, or tuples::TaggedTuple.
  *
- * A simple tag may be the base class of a compute tag. In such a case, the
- * simple tag can be used to fetch the item corresponding to the compute tag
- * from a DataBox.
+ * A simple tag may be the base class of a compute or reference tag. In such
+ * a case, the simple tag can be used to fetch the item corresponding to the
+ * compute or reference tag from a DataBox.
  *
- * A simple tag may be derived from a base tag.  In such a case, the base tag
- * can be used to fetch the item corresponding to the simple tag from a DataBox.
- * Also the simple tags should have a type alias `base` that is the base tag.
+ * A simple tag may be the base class of another simple tag.  This should be
+ * done rarely, usually as a means of specifying an alternative way to create
+ * the simple item from input-file options.  In such a case, the base simple
+ * tag can be used to fetch the item, while either the base simple tag or one
+ * othe derived simple tags can be used to insert the item into the DataBox
+ * Te derived simple tags should have a type alias `base` that is the base
+ * simple tag.
  *
  * \derivedrequires
  * - type alias `type` of the type of the item corresponding to the simple tag
@@ -26,47 +30,12 @@ namespace db {
  * A simple tag may optionally specify a static `std::string name()` method to
  * override the default name produced by db::tag_name.
  *
- * \warning Do not derive a simple tag from another simple tag.
- *
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
  *
- * \see DataBoxGroup BaseTag ComputeTag PrefixTag
+ * \see DataBoxGroup ComputeTag PrefixTag ReferenceTag
  */
 struct SimpleTag {};
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Mark a (usually) empty struct as a base tag by inheriting from this.
- *
- * \details
- * A base tag may be the base class of a simple tag.  In such a case, the base
- * tag can be used to fetch the item corresponding to the simple tag (or a
- * compute tag derived from that simple tag) from a DataBox.
- *
- * Base tags are empty structs and therefore do not contain information about
- * the type of the object to which they refer.  Base tags are designed so that
- * retrieving items from the DataBox or setting argument tags in compute items
- * can be done without any knowledge of the type of the item.
- *
- * Base tags should be used rarely, only in cases where it is difficult to
- * propagate the type information to the call site.  Please consult a core
- * developer before introducing a new base tag.
- *
- * By convention, the name of a base tag should either be the name of the simple
- * tag that derives from it appended by `Base`.  Alternatively, if the simple
- * tag is templated with a type used to determine its `type` type alias, the
- * base tag can have the same name as the simple tag template with an empty
- * template parameter list.
- *
- * A base tag may optionally specify a static `std::string name()` method to
- * override the default name produced by db::tag_name.
- *
- * \warning Do not derive a base tag from anything besides db::BaseTag.
- *
- * \see DataBoxGroup SimpleTag
- */
-struct BaseTag {};
 
 /*!
  * \ingroup DataBoxGroup
