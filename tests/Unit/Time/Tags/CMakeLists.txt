@@ -16,4 +16,5 @@ set(LIBRARY_SOURCES
   Tags/Test_TimeAndPrevious.cpp
   Tags/Test_TimeStepId.cpp
   Tags/Test_TimeStepper.cpp
+  Tags/Test_VariableOrderAlgorithm.cpp
   PARENT_SCOPE)

@@ -33,6 +33,8 @@ Evolution:
   # slab size for evolutions would be 0.1 to observe constraints. If you would
   # like more frequent output, consider using dense output.
   InitialSlabSize: 0.001
+  VariableOrderAlgorithm:
+    GoalOrder: 4
   StepChoosers:
     - LimitIncrease:
         Factor: 2

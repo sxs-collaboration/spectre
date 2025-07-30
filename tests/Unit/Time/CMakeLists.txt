@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ApproximateTime.cpp
   Test_BoundaryHistory.cpp
   Test_ChangeStepSize.cpp
+  Test_ChangeTimeStepperOrder.cpp
   Test_ChooseLtsStepSize.cpp
   Test_EvolutionOrdering.cpp
   Test_History.cpp
@@ -39,6 +40,7 @@ target_link_libraries(
   PRIVATE
   CoordinateMaps
   DataStructures
+  DataStructuresHelpers
   Domain
   DomainStructure
   Evolution

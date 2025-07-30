@@ -11,4 +11,5 @@ spectre_target_headers(
   MinimumTimeStep.hpp
   StepChoosers.hpp
   TimeStepper.hpp
+  VariableOrderAlgorithm.hpp
   )

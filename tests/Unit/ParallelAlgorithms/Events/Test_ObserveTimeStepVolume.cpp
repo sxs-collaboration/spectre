@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -30,15 +31,18 @@
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Helpers/DataStructures/TestTags.hpp"
 #include "Helpers/ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ArrayComponentId.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStepVolume.tpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -54,10 +58,17 @@ struct Inertial;
 }  // namespace Frame
 
 namespace {
+template <size_t VolumeDim>
+struct System {
+  constexpr static size_t volume_dim = VolumeDim;
+  using variables_tag =
+      Tags::Variables<tmpl::list<TestHelpers::Tags::Vector<>>>;
+};
 
 template <size_t VolumeDim>
 struct Metavariables {
   static constexpr size_t volume_dim = VolumeDim;
+  using system = System<volume_dim>;
   using component_list = tmpl::list<
       TestHelpers::dg::Events::ObserveFields::ElementComponent<Metavariables>,
       TestHelpers::dg::Events::ObserveFields::MockObserverComponent<
@@ -67,7 +78,7 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<Event,
-                   tmpl::list<dg::Events::ObserveTimeStepVolume<VolumeDim>>>,
+                   tmpl::list<dg::Events::ObserveTimeStepVolume<system>>>,
         tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 };
@@ -102,6 +113,7 @@ void test() {
 
   const double time = 3.0;
   const auto time_step = Slab(4.0, 6.0).duration() / 4;
+  const size_t integration_order = 5;
 
   Domain domain(make_vector(
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
@@ -120,13 +132,17 @@ void test() {
           4.0));
   const double expected_offset = 2.0 + (time - 1.0) * 5.0;
 
+  using history_tag =
+      ::Tags::HistoryEvolvedVariables<typename metavars::system::variables_tag>;
+
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavars>, Tags::Time,
       domain::Tags::FunctionsOfTime, domain::Tags::Domain<VolumeDim>,
       Tags::TimeStep,
-      domain::Tags::MinimumGridSpacing<VolumeDim, Frame::Inertial>>>(
-      metavars{}, time, std::move(functions_of_time), std::move(domain),
-      time_step, 0.23);
+      domain::Tags::MinimumGridSpacing<VolumeDim, Frame::Inertial>,
+      history_tag>>(metavars{}, time, std::move(functions_of_time),
+                    std::move(domain), time_step, 0.23,
+                    typename history_tag::type{integration_order});
 
   const double observation_value = 1.23;
 
@@ -148,7 +164,7 @@ void test() {
   CHECK(results.received_volume_data.extents ==
         std::vector<size_t>(VolumeDim, 2));
   const auto& components = results.received_volume_data.tensor_components;
-  REQUIRE(components.size() == VolumeDim + 3);
+  REQUIRE(components.size() == VolumeDim + 4);
   for (const auto& component : components) {
     std::visit(
         [](const auto& data) { CHECK(data.size() == two_to_the(VolumeDim)); },
@@ -211,6 +227,14 @@ void test() {
         }
       },
       components[VolumeDim + 2].data);
+  CHECK(components[VolumeDim + 3].name == "Integration order");
+  std::visit(
+      [&](const auto& data) {
+        for (size_t i = 0; i < data.size(); ++i) {
+          CHECK(data[i] == integration_order);
+        }
+      },
+      components[VolumeDim + 3].data);
 }
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Events.ObserveTimeStepVolume",

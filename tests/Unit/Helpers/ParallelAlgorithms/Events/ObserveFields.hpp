@@ -114,7 +114,7 @@ struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
   using const_global_cache_tags =
-      tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
+      tmpl::list<::Tags::AnalyticSolution<typename System::solution_for_test>>;
   using initial_data =
       tmpl::conditional_t<HasAnalyticSolution,
                           typename System::solution_for_test, NoSuchType>;

@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Constraints.cpp
+  EventInstantiation.cpp
   Equations.cpp
   TimeDerivative.cpp
   VolumeTermsInstantiation.cpp
@@ -40,6 +41,7 @@ target_link_libraries(
   Domain
   DomainBoundaryConditions
   ErrorHandling
+  Events
   FunctionsOfTime
   GeneralRelativity
   GeneralRelativitySolutions
@@ -55,7 +57,6 @@ target_link_libraries(
   Spectral
   Utilities
   INTERFACE
-  Events # For observer tags
   Initialization
   Parallel
   )

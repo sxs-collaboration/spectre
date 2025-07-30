@@ -89,6 +89,8 @@ Evolution:
   # This is the smallest interval we'd need to observe time step/constraints. If
   # you would like more frequent output, consider using dense output.
   InitialSlabSize: 0.1
+  VariableOrderAlgorithm:
+    GoalOrder: 4
   StepChoosers:
     - LimitIncrease:
         Factor: 2

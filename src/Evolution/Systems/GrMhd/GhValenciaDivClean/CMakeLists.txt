@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  EventInstantiation.cpp
   StressEnergy.cpp
   TimeDerivativeTerms.cpp
   VolumeTermsInstantiation.cpp

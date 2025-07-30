@@ -135,6 +135,7 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -359,7 +360,7 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                      Events::Completion, Events::MonitorMemory<volume_dim>,
                      typename detail::ObserverTags::field_observations,
                      Events::time_events<system>,
-                     dg::Events::ObserveTimeStepVolume<volume_dim>>>>,
+                     dg::Events::ObserveTimeStepVolume<system>>>>,
       tmpl::pair<
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,
@@ -444,7 +445,8 @@ struct ScalarTensorTemplateBase {
                          evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>>,
+                         system, volume_dim, false, use_dg_element_collection>,
+                     Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   system, volume_dim, false, use_dg_element_collection>,

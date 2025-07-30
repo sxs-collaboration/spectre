@@ -23,6 +23,7 @@ spectre_target_sources(
   TimeStepRequest.cpp
   TimeStepRequestProcessor.cpp
   Utilities.cpp
+  VariableOrderAlgorithm.cpp
   )
 
 spectre_target_headers(
@@ -33,6 +34,7 @@ spectre_target_headers(
   ApproximateTime.hpp
   BoundaryHistory.hpp
   ChangeStepSize.hpp
+  ChangeTimeStepperOrder.hpp
   ChooseLtsStepSize.hpp
   EvolutionOrdering.hpp
   History.hpp
@@ -48,6 +50,7 @@ spectre_target_headers(
   TimeStepRequest.hpp
   TimeStepRequestProcessor.hpp
   Utilities.hpp
+  VariableOrderAlgorithm.hpp
   )
 
 target_link_libraries(

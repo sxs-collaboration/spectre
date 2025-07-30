@@ -9,4 +9,5 @@ set(LIBRARY_SOURCES
   OptionTags/Test_MinimumTimeStep.cpp
   OptionTags/Test_StepChoosers.cpp
   OptionTags/Test_TimeStepper.cpp
+  OptionTags/Test_VariableOrderAlgorithm.cpp
   PARENT_SCOPE)
