@@ -49,11 +49,6 @@ static_assert(
 static_assert(
     tt::assert_conforms_to_v<control_system::measurements::BothHorizons,
                              control_system::protocols::Measurement>);
-static_assert(
-    tt::assert_conforms_to_v<
-        control_system::measurements::BothHorizons::FindHorizon<
-            ::domain::ObjectLabel::A>::interpolation_target_tag<example_list>,
-        intrp::protocols::InterpolationTargetTag>);
 static_assert(tt::assert_conforms_to_v<
               control_system::measurements::BothHorizons::FindHorizon<
                   ::domain::ObjectLabel::A>::horizon_metavars<example_list>,
@@ -71,11 +66,6 @@ static_assert(
     tt::assert_conforms_to_v<
         control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>,
         control_system::protocols::Measurement>);
-static_assert(
-    tt::assert_conforms_to_v<
-        control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
-            Submeasurement::interpolation_target_tag<example_list>,
-        intrp::protocols::InterpolationTargetTag>);
 static_assert(
     tt::assert_conforms_to_v<
         control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
@@ -111,10 +101,6 @@ static_assert(
 static_assert(tt::assert_conforms_to_v<
               control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
                   Excision::interpolation_target_tag<example_list>,
-              intrp::protocols::InterpolationTargetTag>);
-static_assert(tt::assert_conforms_to_v<
-              control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
-                  Horizon::interpolation_target_tag<example_list>,
               intrp::protocols::InterpolationTargetTag>);
 static_assert(tt::assert_conforms_to_v<
               control_system::measurements::CharSpeed<domain::ObjectLabel::A>::

@@ -268,7 +268,6 @@ Observers:
   SurfaceFileName: "GhBinaryBlackHoleSurfacesData"
 
 Interpolator:
-  DumpVolumeDataOnFailure: false
   Verbosity: Silent
 
 ApparentHorizons:
@@ -287,8 +286,8 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation: All
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind: All
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *LMax
@@ -296,8 +295,8 @@ ApparentHorizons:
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation: All
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind: All
   ObservationAhC:
     InitialGuess:
       LMax: 20
@@ -305,8 +304,8 @@ ApparentHorizons:
       Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation: All
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind: All
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
   ControlSystemCharSpeedAhA: *AhA

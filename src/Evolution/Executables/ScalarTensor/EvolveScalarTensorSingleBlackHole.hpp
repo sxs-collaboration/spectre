@@ -28,15 +28,21 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/IgnoreFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveCenters.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveFieldsOnHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveTimeSeriesOnHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
@@ -80,30 +86,26 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
       "field \n"
       "on a domain with a single horizon and corresponding excised region"};
 
-  template <typename Frame>
-  struct Ah : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::Time;
-    using tags_to_observe = ::ah::tags_for_observing<Frame>;
-    using surface_tags_to_observe = ::ah::surface_tags_for_observing;
-    using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using vars_to_interpolate_to_target =
-        ::ah::vars_to_interpolate_to_target<volume_dim, Frame>;
-    using compute_items_on_target =
-        ::ah::compute_items_on_target<volume_dim, Frame>;
-    using compute_target_points =
-        ah::TargetPoints::ApparentHorizon<Ah, Frame>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::FindApparentHorizon<Ah, Frame>>;
-    using horizon_find_failure_callbacks =
-        tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>;
-    using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Ah>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, Ah,
-                                             Frame>,
-        ::intrp::callbacks::ObserveCenters<Ah, Frame>>;
-  };
+  struct ApparentHorizon : tt::ConformsTo<ah::protocols::HorizonMetavars> {
+    using time_tag = ah::Tags::ObservationTime<0>;
 
-  using ApparentHorizon = Ah<::Frame::Distorted>;
+    using frame = ::Frame::Distorted;
+
+    using horizon_find_callbacks = tmpl::list<
+        ah::callbacks::ObserveTimeSeriesOnHorizon<
+            ::ah::tags_for_observing<Frame::Distorted>, ApparentHorizon>,
+        ah::callbacks::ObserveFieldsOnHorizon<::ah::surface_tags_for_observing,
+                                              ApparentHorizon>>;
+    using horizon_find_failure_callbacks =
+        tmpl::list<ah::callbacks::FailedHorizonFind<ApparentHorizon, false>>;
+
+    using compute_tags_on_element =
+        tmpl::list<ah::Tags::ObservationTimeCompute<0>>;
+
+    static constexpr ah::Destination destination = ah::Destination::Observation;
+
+    static std::string name() { return "ApparentHorizon"; }
+  };
 
   struct ExcisionBoundaryA
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -163,8 +165,7 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
 
   using interpolation_target_tags = tmpl::push_back<
       control_system::metafunctions::interpolation_target_tags<control_systems>,
-      ApparentHorizon, ExcisionBoundaryA, SphericalSurface, BondiSachs>;
-  using interpolator_source_vars = ::ah::source_vars<volume_dim>;
+      ExcisionBoundaryA, SphericalSurface, BondiSachs>;
 
   using scalar_charge_interpolator_source_vars =
       detail::ObserverTags::scalar_charge_vars_to_interpolate_to_target;
@@ -206,14 +207,13 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
         tmpl::pair<
             Event,
             tmpl::flatten<tmpl::list<
-                intrp::Events::Interpolate<volume_dim, ApparentHorizon,
-                                           interpolator_source_vars>,
+                ah::Events::FindApparentHorizon<ApparentHorizon>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     3, BondiSachs, source_vars_no_deriv>,
                 control_system::metafunctions::control_system_events<
                     control_systems>,
                 intrp::Events::InterpolateWithoutInterpComponent<
-                    volume_dim, ExcisionBoundaryA, interpolator_source_vars>,
+                    volume_dim, ExcisionBoundaryA, ah::source_vars<volume_dim>>,
                 intrp::Events::InterpolateWithoutInterpComponent<
                     volume_dim, SphericalSurface,
                     scalar_charge_interpolator_source_vars>>>>,
@@ -225,14 +225,10 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
 
   using typename st_base::const_global_cache_tags;
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::push_back<
-          tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename ApparentHorizon::post_horizon_find_callbacks>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::at<typename factory_creation::factory_classes, Event>>;
 
-  using dg_registration_list =
-      tmpl::push_back<typename st_base::dg_registration_list,
-                      intrp::Actions::RegisterElementWithInterpolator>;
+  using dg_registration_list = typename st_base::dg_registration_list;
 
   using step_actions = typename st_base::template step_actions<control_systems>;
 
@@ -293,12 +289,18 @@ struct EvolutionMetavars : public ScalarTensorTemplateBase<EvolutionMetavars> {
         dg_registration_list, tmpl::list<>>;
   };
 
+  using control_system_horizon_metavars =
+      control_system::metafunctions::horizon_metavars<control_systems>;
+
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       mem_monitor::MemoryMonitor<EvolutionMetavars>,
       importers::ElementDataReader<EvolutionMetavars>, st_dg_element_array,
-      intrp::Interpolator<EvolutionMetavars>,
+      ah::Component<EvolutionMetavars, ApparentHorizon>,
+      tmpl::transform<
+          control_system_horizon_metavars,
+          tmpl::bind<ah::Component, tmpl::pin<EvolutionMetavars>, tmpl::_1>>,
       control_system::control_components<EvolutionMetavars, control_systems>,
       tmpl::transform<interpolation_target_tags,
                       tmpl::bind<intrp::InterpolationTarget,
