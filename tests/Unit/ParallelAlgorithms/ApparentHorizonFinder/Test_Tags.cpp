@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
@@ -12,6 +13,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
@@ -30,6 +32,12 @@ struct MockHorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
 
   static std::string name() { return "MockHorizonMetavars"; }
 };
+
+void test_observation_time() {
+  LinkedMessageId<double> result{};
+  ah::Tags::ObservationTimeCompute<0>::function(make_not_null(&result), 1.2);
+  CHECK(result == LinkedMessageId<double>{1.2, std::nullopt});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
@@ -50,6 +58,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
       "ApparentHorizonOptions");
   TestHelpers::db::test_simple_tag<ah::Tags::BlocksForHorizonFind>(
       "BlocksForHorizonFind");
+  TestHelpers::db::test_simple_tag<ah::Tags::ObservationTime<0>>(
+      "AhObservationTime0");
+  TestHelpers::db::test_compute_tag<ah::Tags::ObservationTimeCompute<0>>(
+      "AhObservationTime0");
+  test_observation_time();
   TestHelpers::db::test_simple_tag<
       ah::Tags::PreviousIterationStrahlkorper<::Frame::Distorted>>(
       "PreviousIterationStrahlkorper");
