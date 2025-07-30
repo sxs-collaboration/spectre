@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AlignedLattice.cpp
   BinaryCompactObject.cpp
+  CartoonSphere1D.cpp
   Cylinder.cpp
   CylindricalBinaryCompactObject.cpp
   Disk.cpp
@@ -32,6 +33,7 @@ spectre_target_headers(
   HEADERS
   AlignedLattice.hpp
   BinaryCompactObject.hpp
+  CartoonSphere1D.hpp
   Cylinder.hpp
   CylindricalBinaryCompactObject.hpp
   Disk.hpp
