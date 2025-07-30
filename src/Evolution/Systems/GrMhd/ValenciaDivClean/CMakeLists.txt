@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   ComovingMagneticFieldMagnitude.cpp
   ConservativeFromPrimitive.cpp
+  EventInstantiation.cpp
   FixConservatives.cpp
   Flattener.cpp
   Fluxes.cpp
@@ -62,6 +63,7 @@ target_link_libraries(
   DgSubcell
   DiscontinuousGalerkin
   ErrorHandling
+  Events
   Evolution
   FiniteDifference
   GeneralRelativity

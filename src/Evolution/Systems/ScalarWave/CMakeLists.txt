@@ -12,6 +12,7 @@ spectre_target_sources(
   Constraints.cpp
   EnergyDensity.cpp
   Equations.cpp
+  EventInstantiation.cpp
   MomentumDensity.cpp
   TimeDerivative.cpp
   VolumeTermsInstantiation.cpp
@@ -41,6 +42,7 @@ target_link_libraries(
   Domain
   DomainBoundaryConditions
   ErrorHandling
+  Events
   LinearOperators
   Options
   Utilities
