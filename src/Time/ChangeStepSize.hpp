@@ -9,6 +9,7 @@
 #include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Time.hpp"
@@ -24,6 +25,7 @@
 /// \cond
 struct AllStepChoosers;
 namespace Tags {
+struct AdaptiveSteppingDiagnostics;
 struct FixedLtsRatio;
 struct MinimumTimeStep;
 template <typename Tag>
@@ -59,12 +61,14 @@ struct TimeStepper;
 /// choosers that may not be compatible with all components.
 template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
 bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
+  const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
+  if (time_step_id.substep() != 0) {
+    return true;
+  }
+
   const LtsTimeStepper& time_stepper =
       db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
   const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
-
-  const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
-  ASSERT(time_step_id.substep() == 0, "Can't change step size on a substep.");
 
   using history_tags = ::Tags::get_all_history_tags<DbTags>;
   bool can_change_step_size = true;
@@ -153,12 +157,15 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
            "you are using DG.");
   }
 
-  db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
+  db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+             Tags::AdaptiveSteppingDiagnostics>(
       [&](const gsl::not_null<TimeStepId*> local_next_time_id,
-          const gsl::not_null<TimeDelta*> time_step) {
+          const gsl::not_null<TimeDelta*> time_step,
+          const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
         *time_step = new_step;
         *local_next_time_id =
             time_stepper.next_time_id(time_step_id, *time_step);
+        ++diags->number_of_step_fraction_changes;
       },
       box);
   return false;
