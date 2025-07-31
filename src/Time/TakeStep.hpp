@@ -15,7 +15,7 @@ template <typename System, bool LocalTimeStepping,
           typename StepChoosersToUse = AllStepChoosers, typename DbTags>
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
   if constexpr (LocalTimeStepping) {
-    change_step_size<StepChoosersToUse>(box);
+    db::mutate_apply<ChangeStepSize<StepChoosersToUse>>(box);
   }
   record_time_stepper_data<System>(box);
   update_u<System>(box);

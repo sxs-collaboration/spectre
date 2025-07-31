@@ -12,6 +12,7 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
+#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
@@ -26,8 +27,8 @@
 struct AllStepChoosers;
 namespace Tags {
 struct AdaptiveSteppingDiagnostics;
+struct DataBox;
 struct FixedLtsRatio;
-struct MinimumTimeStep;
 template <typename Tag>
 struct Next;
 struct StepChoosers;
@@ -38,8 +39,7 @@ struct TimeStepper;
 }  // namespace Tags
 /// \endcond
 
-/// \brief Adjust the step size for local time stepping, returning true if the
-/// step just completed is accepted, and false if it changed.
+/// \brief Adjust the step size for local time stepping.
 ///
 /// \details
 /// Usually, the new step size is chosen by calling the StepChoosers from
@@ -59,114 +59,121 @@ struct TimeStepper;
 /// indicates that any constructible step chooser may be used. This option is
 /// used when multiple components need to invoke `ChangeStepSize` with step
 /// choosers that may not be compatible with all components.
-template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
-bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
-  const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
-  if (time_step_id.substep() != 0) {
-    return true;
-  }
+template <typename StepChoosersToUse = AllStepChoosers>
+struct ChangeStepSize {
+  using const_global_cache_tags = tmpl::list<Tags::MinimumTimeStep>;
 
-  const LtsTimeStepper& time_stepper =
-      db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
-  const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
+  using return_tags = tmpl::list<Tags::DataBox>;
+  using argument_tags = tmpl::list<>;
 
-  using history_tags = ::Tags::get_all_history_tags<DbTags>;
-  bool can_change_step_size = true;
-  tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
-                                &time_step_id](auto tag_v) {
-    if (not can_change_step_size) {
+  template <typename DbTags>
+  static void apply(const gsl::not_null<db::DataBox<DbTags>*> box) {
+    const auto& time_step_id = db::get<Tags::TimeStepId>(*box);
+    if (time_step_id.substep() != 0) {
       return;
     }
-    using tag = typename decltype(tag_v)::type;
-    const auto& history = db::get<tag>(*box);
-    can_change_step_size =
-        time_stepper.can_change_step_size(time_step_id, history);
-  });
 
-  const auto current_step = db::get<Tags::TimeStep>(*box);
+    const LtsTimeStepper& time_stepper =
+        db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
+    const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
 
-  std::optional<size_t> fixed_lts_ratio{};
-  if constexpr (db::tag_is_retrievable_v<Tags::FixedLtsRatio,
-                                         db::DataBox<DbTags>>) {
-    fixed_lts_ratio = db::get<Tags::FixedLtsRatio>(*box);
-  }
+    using history_tags = ::Tags::get_all_history_tags<DbTags>;
+    bool can_change_step_size = true;
+    tmpl::for_each<history_tags>([&box, &can_change_step_size, &time_stepper,
+                                  &time_step_id](auto tag_v) {
+      if (not can_change_step_size) {
+        return;
+      }
+      using tag = typename decltype(tag_v)::type;
+      const auto& history = db::get<tag>(*box);
+      can_change_step_size =
+          time_stepper.can_change_step_size(time_step_id, history);
+    });
 
-  TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
-  if (fixed_lts_ratio.has_value()) {
-    ASSERT(std::popcount(*fixed_lts_ratio) == 1,
-           "fixed_lts_ratio must be a power of 2, not " << *fixed_lts_ratio);
-    step_requests.process(TimeStepRequest{
-        .size_goal =
-            (current_step.slab().duration() / *fixed_lts_ratio).value()});
-  } else {
-    const double last_step_size = current_step.value();
-    for (const auto& step_chooser : step_choosers) {
-      const auto step_request =
-          step_chooser->template desired_step<StepChoosersToUse>(last_step_size,
-                                                                 *box);
-      step_requests.process(step_request);
+    const auto current_step = db::get<Tags::TimeStep>(*box);
+
+    std::optional<size_t> fixed_lts_ratio{};
+    if constexpr (db::tag_is_retrievable_v<Tags::FixedLtsRatio,
+                                           db::DataBox<DbTags>>) {
+      fixed_lts_ratio = db::get<Tags::FixedLtsRatio>(*box);
     }
-  }
 
-  if (not can_change_step_size) {
+    TimeStepRequestProcessor step_requests(time_step_id.time_runs_forward());
+    if (fixed_lts_ratio.has_value()) {
+      ASSERT(std::popcount(*fixed_lts_ratio) == 1,
+             "fixed_lts_ratio must be a power of 2, not " << *fixed_lts_ratio);
+      step_requests.process(TimeStepRequest{
+          .size_goal =
+              (current_step.slab().duration() / *fixed_lts_ratio).value()});
+    } else {
+      const double last_step_size = current_step.value();
+      for (const auto& step_chooser : step_choosers) {
+        const auto step_request =
+            step_chooser->template desired_step<StepChoosersToUse>(
+                last_step_size, *box);
+        step_requests.process(step_request);
+      }
+    }
+
+    if (not can_change_step_size) {
+      step_requests.error_on_hard_limit(
+          current_step.value(),
+          (time_step_id.step_time() + current_step).value());
+      return;
+    }
+
+    const double desired_step = step_requests.step_size(
+        time_step_id.step_time().value(), current_step.value());
+
+    // We do this check twice, first on the desired value, and then on
+    // the actual chosen value, which is probably slightly smaller.
+    if (std::abs(desired_step) < db::get<::Tags::MinimumTimeStep>(*box)) {
+      ERROR_NO_TRACE(
+          "Chosen step size "
+          << desired_step << " is smaller than the MinimumTimeStep of "
+          << db::get<::Tags::MinimumTimeStep>(*box)
+          << ".\n"
+             "\n"
+             "This can indicate a flaw in the step chooser, the grid, or a "
+             "simulation instability that an error-based stepper is naively "
+             "attempting to resolve. A possible issue is an aliasing-driven "
+             "instability that could be cured by more aggressive filtering if "
+             "you are using DG.");
+    }
+
+    const auto new_step =
+        choose_lts_step_size(time_step_id.step_time(), desired_step);
     step_requests.error_on_hard_limit(
-        current_step.value(),
-        (time_step_id.step_time() + current_step).value());
-    return true;
+        new_step.value(), (time_step_id.step_time() + new_step).value());
+
+    if (new_step == current_step) {
+      return;
+    }
+
+    if (std::abs(new_step.value()) < db::get<::Tags::MinimumTimeStep>(*box)) {
+      ERROR_NO_TRACE(
+          "Chosen step size after conversion to a fraction of a slab "
+          << new_step << " is smaller than the MinimumTimeStep of "
+          << db::get<::Tags::MinimumTimeStep>(*box)
+          << ".\n"
+             "\n"
+             "This can indicate a flaw in the step chooser, the grid, or a "
+             "simulation instability that an error-based stepper is naively "
+             "attempting to resolve. A possible issue is an aliasing-driven "
+             "instability that could be cured by more aggressive filtering if "
+             "you are using DG.");
+    }
+
+    db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+               Tags::AdaptiveSteppingDiagnostics>(
+        [&](const gsl::not_null<TimeStepId*> local_next_time_id,
+            const gsl::not_null<TimeDelta*> time_step,
+            const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
+          *time_step = new_step;
+          *local_next_time_id =
+              time_stepper.next_time_id(time_step_id, *time_step);
+          ++diags->number_of_step_fraction_changes;
+        },
+        box);
   }
-
-  const double desired_step = step_requests.step_size(
-      time_step_id.step_time().value(), current_step.value());
-
-  // We do this check twice, first on the desired value, and then on
-  // the actual chosen value, which is probably slightly smaller.
-  if (std::abs(desired_step) < db::get<::Tags::MinimumTimeStep>(*box)) {
-    ERROR_NO_TRACE(
-        "Chosen step size "
-        << desired_step << " is smaller than the MinimumTimeStep of "
-        << db::get<::Tags::MinimumTimeStep>(*box)
-        << ".\n"
-           "\n"
-           "This can indicate a flaw in the step chooser, the grid, or a "
-           "simulation instability that an error-based stepper is naively "
-           "attempting to resolve. A possible issue is an aliasing-driven "
-           "instability that could be cured by more aggressive filtering if "
-           "you are using DG.");
-  }
-
-  const auto new_step =
-      choose_lts_step_size(time_step_id.step_time(), desired_step);
-  step_requests.error_on_hard_limit(
-      new_step.value(), (time_step_id.step_time() + new_step).value());
-
-  if (new_step == current_step) {
-    return true;
-  }
-
-  if (std::abs(new_step.value()) < db::get<::Tags::MinimumTimeStep>(*box)) {
-    ERROR_NO_TRACE(
-        "Chosen step size after conversion to a fraction of a slab "
-        << new_step << " is smaller than the MinimumTimeStep of "
-        << db::get<::Tags::MinimumTimeStep>(*box)
-        << ".\n"
-           "\n"
-           "This can indicate a flaw in the step chooser, the grid, or a "
-           "simulation instability that an error-based stepper is naively "
-           "attempting to resolve. A possible issue is an aliasing-driven "
-           "instability that could be cured by more aggressive filtering if "
-           "you are using DG.");
-  }
-
-  db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-             Tags::AdaptiveSteppingDiagnostics>(
-      [&](const gsl::not_null<TimeStepId*> local_next_time_id,
-          const gsl::not_null<TimeDelta*> time_step,
-          const gsl::not_null<AdaptiveSteppingDiagnostics*> diags) {
-        *time_step = new_step;
-        *local_next_time_id =
-            time_stepper.next_time_id(time_step_id, *time_step);
-        ++diags->number_of_step_fraction_changes;
-      },
-      box);
-  return false;
-}
+};

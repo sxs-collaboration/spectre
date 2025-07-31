@@ -88,7 +88,7 @@ void check(const bool time_runs_forward,
       AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
   // Nothing should happen on a substep
-  CHECK(change_step_size<StepChoosersToUse>(make_not_null(&box)));
+  db::mutate_apply<ChangeStepSize<StepChoosersToUse>>(make_not_null(&box));
   CHECK(db::get<Tags::TimeStep>(box) == initial_step_size);
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
         AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
@@ -99,13 +99,14 @@ void check(const bool time_runs_forward,
       },
       make_not_null(&box));
 
-  const bool accepted =
-      change_step_size<StepChoosersToUse>(make_not_null(&box));
+  db::mutate_apply<ChangeStepSize<StepChoosersToUse>>(make_not_null(&box));
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
-  CHECK(accepted == (db::get<Tags::TimeStep>(box) == initial_step_size));
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
-        AdaptiveSteppingDiagnostics{1, 2, 3, accepted ? 4_st : 5_st, 5});
+        AdaptiveSteppingDiagnostics{
+            1, 2, 3,
+            db::get<Tags::TimeStep>(box) == initial_step_size ? 4_st : 5_st,
+            5});
 }
 
 void test_fixed_lts_ratio() {
@@ -134,7 +135,7 @@ void test_fixed_lts_ratio() {
       1e-10, std::optional<size_t>(8), initial_id, initial_step, next_id,
       std::move(history), AdaptiveSteppingDiagnostics{1, 2, 3, 4, 5});
 
-  CHECK(change_step_size(make_not_null(&box)));
+  db::mutate_apply<ChangeStepSize<>>(make_not_null(&box));
   // Step size change forbidden after self-start
   CHECK(db::get<Tags::TimeStep>(box) == initial_step);
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
@@ -152,7 +153,7 @@ void test_fixed_lts_ratio() {
       },
       make_not_null(&box));
 
-  CHECK(not change_step_size(make_not_null(&box)));
+  db::mutate_apply<ChangeStepSize<>>(make_not_null(&box));
   CHECK(db::get<Tags::TimeStep>(box).fraction() == Rational(1, 8));
   CHECK(db::get<Tags::AdaptiveSteppingDiagnostics>(box) ==
         AdaptiveSteppingDiagnostics{1, 2, 3, 5, 5});
