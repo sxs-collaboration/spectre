@@ -74,6 +74,22 @@ struct MockContributeVolumeData {
   }
 };
 
+template <typename Metavariables>
+struct MockObserver {
+  using component_being_mocked = observers::Observer<Metavariables>;
+
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockGroupChare;
+  using array_index = int;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+
+  using replace_these_simple_actions =
+      tmpl::list<observers::Actions::ContributeVolumeData>;
+  using with_these_simple_actions = tmpl::list<MockContributeVolumeData>;
+};
+
+namespace test_intrp {
 struct MockInterpolatorReceiveVolumeData {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex, size_t VolumeDim>
@@ -99,21 +115,6 @@ struct MockAddTemporalIdsToInterpolationTarget {
                     std::optional<std::string> dependency) {  // NOLINT
     CHECK(dependency == std::optional{"SubfileName"});
   }
-};
-
-template <typename Metavariables>
-struct MockObserver {
-  using component_being_mocked = observers::Observer<Metavariables>;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockGroupChare;
-  using array_index = int;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-
-  using replace_these_simple_actions =
-      tmpl::list<observers::Actions::ContributeVolumeData>;
-  using with_these_simple_actions = tmpl::list<MockContributeVolumeData>;
 };
 
 template <typename Metavariables>
@@ -201,8 +202,7 @@ struct MockMetavariables {
       MockElement<MockMetavariables>>;
 };
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
-                  "[ApparentHorizonFinder][Unit]") {
+void common_horizon_event() {
   ::domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
   const ElementId<metavars::volume_dim> element_id(0);
@@ -275,7 +275,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
           std::array{logical_coords[0], logical_coords[1], logical_coords[2]}},
       vars);
 
-  using FindCommonHorizon = ah::Events::FindCommonHorizon<
+  using FindCommonHorizon = intrp::Events::FindCommonHorizon<
       metavars::volume_dim, typename metavars::InterpolationTargetA,
       typename metavars::interpolator_source_vars,
       tmpl::push_back<typename metavars::interpolator_source_vars,
@@ -304,4 +304,174 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
   // queued actions on each component.
   check_results(1);
 }
+}  // namespace test_intrp
+
+namespace test_ah {
+struct MockFindApparentHorizon {
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
+  static void apply(
+      db::DataBox<DbTags>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const LinkedMessageId<double>& /*incoming_time*/,
+      const ElementId<3>& /*incoming_element_id*/,
+      const ::Mesh<3>& /*incoming_mesh*/,
+      Variables<ah::source_vars<3>>&& /*incoming_source_vars*/,
+      const std::optional<std::string>& /*dependency*/,
+      const bool /*source_vars_have_already_been_received*/ = false) {}
+};
+
+struct MockHorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
+  using time_tag = ::Tags::TimeAndPrevious<0>;
+
+  using frame = ::Frame::Grid;
+
+  // Don't need callbacks
+  using horizon_find_callbacks = tmpl::list<>;
+  using horizon_find_failure_callbacks = tmpl::list<>;
+
+  using compute_tags_on_element = tmpl::list<>;
+
+  static constexpr ah::Destination destination = ah::Destination::ControlSystem;
+
+  static std::string name() { return "MockHorizonMetavars"; }
+};
+
+template <typename Metavariables>
+struct MockHorizonComponent {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using component_being_mocked =
+      ah::Component<Metavariables, MockHorizonMetavars>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<3>, ah::Tags::BlocksForHorizonFind>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+
+  using replace_these_simple_actions =
+      tmpl::list<ah::FindApparentHorizon<MockHorizonMetavars>>;
+  using with_these_simple_actions = tmpl::list<MockFindApparentHorizon>;
+};
+
+template <typename Metavariables>
+struct MockElement {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementId<3>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+  using initial_databox = db::compute_databox_type<
+      db::AddSimpleTags<::ah::source_vars<Metavariables::volume_dim>>>;
+};
+
+struct MockMetavariables {
+  static constexpr size_t volume_dim = 3;
+  using component_list = tmpl::list<MockObserver<MockMetavariables>,
+                                    MockHorizonComponent<MockMetavariables>,
+                                    MockElement<MockMetavariables>>;
+};
+
+void common_horizon_event() {
+  (void)MockHorizonMetavars::destination;
+  ::domain::creators::register_derived_with_charm();
+  using metavars = MockMetavariables;
+  const ElementId<metavars::volume_dim> element_id(0);
+  const ElementId<metavars::volume_dim> array_index(element_id);
+
+  using obs_component = MockObserver<metavars>;
+  using horizon_component = MockHorizonComponent<metavars>;
+  using elem_component = MockElement<metavars>;
+
+  const ::domain::creators::Brick brick{
+      {0.0, 0.0, 0.0}, {1.0, 1.0, 1.0}, {0, 0, 0}, {5, 5, 5}};
+  const auto block_names = brick.block_names();
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {brick.create_domain(),
+       std::unordered_map<std::string, std::unordered_set<std::string>>{
+           {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}}};
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Parallel::Phase::Initialization);
+  ActionTesting::emplace_group_component<obs_component>(make_not_null(&runner));
+  ActionTesting::emplace_array_component<horizon_component>(
+      make_not_null(&runner), ActionTesting::NodeId{0},
+      ActionTesting::LocalCoreId{0}, 0);
+  ActionTesting::emplace_component<elem_component>(make_not_null(&runner),
+                                                   array_index);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  const auto check_results = [&runner,
+                              &element_id](const size_t num_queued_actions) {
+    CHECK(ActionTesting::is_simple_action_queue_empty<elem_component>(
+        runner, element_id));
+    CHECK(ActionTesting::number_of_queued_simple_actions<obs_component>(
+              runner, 0) == num_queued_actions);
+    CHECK(ActionTesting::number_of_queued_simple_actions<horizon_component>(
+              runner, 0) == num_queued_actions);
+  };
+
+  // No events queued yet
+  check_results(0);
+
+  const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
+                                        Spectral::Quadrature::GaussLobatto);
+  const double observation_time = 2.0;
+  const Variables<ah::source_vars<metavars::volume_dim>> vars(
+      mesh.number_of_grid_points(), 1.0);
+  auto& cache = ActionTesting::cache<elem_component>(runner, array_index);
+
+  const LinkedMessageId<double> temporal_id{observation_time, std::nullopt};
+  const ::Event::ObservationValue observation_value{"FindCommonHorizon",
+                                                    observation_time};
+
+  // Actual coords don't matter
+  const auto logical_coords = logical_coordinates(mesh);
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavars>,
+      Parallel::Tags::GlobalCache<metavars>, MockHorizonMetavars::time_tag,
+      Tags::Time, ::Events::Tags::ObserverMesh<metavars::volume_dim>,
+      ::domain::Tags::Coordinates<3, ::Frame::Inertial>,
+      ::Tags::Variables<typename decltype(vars)::tags_list>>>(
+      metavars{}, &cache, temporal_id, observation_time, mesh,
+      tnsr::I<DataVector, 3, ::Frame::Inertial>{
+          std::array{logical_coords[0], logical_coords[1], logical_coords[2]}},
+      vars);
+
+  using FindCommonHorizon = ah::Events::FindCommonHorizon<
+      MockHorizonMetavars,
+      tmpl::push_back<ah::source_vars<metavars::volume_dim>,
+                      ::domain::Tags::Coordinates<3, ::Frame::Inertial>>>;
+
+  const FindCommonHorizon find_common_horizon{"SubfileName",
+                                              FloatingPointType::Double,
+                                              {FloatingPointType::Double},
+                                              {"Pi"}};
+
+  CHECK(find_common_horizon.needs_evolved_variables());
+  CHECK(find_common_horizon.is_ready(cache, 0,
+                                     std::add_pointer_t<elem_component>{}));
+
+  // Only compute tags for cache items necessary for observation box since this
+  // test just puts the tags in the regular box
+  auto obs_box =
+      make_observation_box<tmpl::list<Parallel::Tags::FromGlobalCache<
+          ::domain::Tags::Domain<metavars::volume_dim>, metavars>>>(
+          make_not_null(&box));
+  find_common_horizon(obs_box, mesh, cache, array_index,
+                      std::add_pointer_t<elem_component>{}, observation_value);
+
+  // Since this event is a combination of two events, and those two events are
+  // individually tested, here we only check we have the correct number of
+  // queued actions on each component.
+  check_results(1);
+}
+}  // namespace test_ah
 }  // namespace
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindCommonHorizon",
+                  "[ApparentHorizonFinder][Unit]") {
+  test_intrp::common_horizon_event();
+  test_ah::common_horizon_event();
+}
