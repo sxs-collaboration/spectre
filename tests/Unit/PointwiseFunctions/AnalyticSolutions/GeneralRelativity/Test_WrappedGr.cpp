@@ -14,6 +14,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugePlaneWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -23,9 +24,19 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<MathFunction<1, Frame::Inertial>,
+                   tmpl::list<MathFunctions::PowX<1, Frame::Inertial>>>>;
+  };
+};
+
 template <typename SolutionType>
 void compare_different_wrapped_solutions(const double mass,
                                          const std::array<double, 3>& spin,
@@ -48,9 +59,10 @@ void test_copy_and_move(const SolutionType& solution) {
 }
 
 template <typename SolutionType, typename... Args>
-void test_generalized_harmonic_solution(const Args&... args) {
-  const SolutionType& solution{args...};
-  const gh::Solutions::WrappedGr<SolutionType>& wrapped_solution{args...};
+void test_generalized_harmonic_solution(Args&&... args) {
+  const SolutionType solution{std::forward<Args>(args)...};
+  const auto wrapped_solution =
+    gh::Solutions::WrappedGr<SolutionType>(solution);
 
   const DataVector data_vector{3.0, 4.0};
   const tnsr::I<DataVector, SolutionType::volume_dim, Frame::Inertial> x{
@@ -119,6 +131,11 @@ void test_generalized_harmonic_solution(const Args&... args) {
   CHECK(wrapped_solution == wrapped_solution);
   CHECK_FALSE(wrapped_solution != wrapped_solution);
 
+  if constexpr (std::is_same_v<SolutionType, gr::Solutions::GaugePlaneWave<1>>
+    or std::is_same_v<SolutionType, gr::Solutions::GaugePlaneWave<2>>
+    or std::is_same_v<SolutionType, gr::Solutions::GaugePlaneWave<3>>) {
+    register_factory_classes_with_charm<Metavariables>();
+  }
   test_serialization(wrapped_solution);
   test_copy_and_move(wrapped_solution);
 }
@@ -166,6 +183,17 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.WrappedGr",
                                                                   wavelength);
   test_generalized_harmonic_solution<gr::Solutions::GaugeWave<3>>(amplitude,
                                                                   wavelength);
+
+  test_generalized_harmonic_solution<gr::Solutions::GaugePlaneWave<1>>(
+    std::array{0.5},
+    std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(2));
+  test_generalized_harmonic_solution<gr::Solutions::GaugePlaneWave<2>>(
+    std::array{0.5, 0.1},
+    std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(2));
+  test_generalized_harmonic_solution<gr::Solutions::GaugePlaneWave<3>>(
+    std::array{0.5, 0.1, -0.2},
+    std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(2));
+
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<1>>();
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<2>>();
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<3>>();
