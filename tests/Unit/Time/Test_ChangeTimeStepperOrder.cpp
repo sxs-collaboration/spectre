@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -25,7 +26,6 @@
 #include "Helpers/DataStructures/TestTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Printf/Printf.hpp"
-#include "Parallel/Tags/Metavariables.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
