@@ -13,10 +13,13 @@
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -43,6 +46,8 @@ struct Submeasurement
     : tt::ConformsTo<control_system::protocols::Submeasurement> {
   template <typename ControlSystems>
   using interpolation_target_tag = void;
+  template <typename ControlSystems>
+  using horizon_metavars = void;
   template <typename ControlSystems>
   using event = TestEvent<Label, ControlSystems, CallRunCallbacks>;
 };
@@ -80,11 +85,16 @@ class TestEvent : public ::Event {
     const LinkedMessageId<double> measurement_id{time, previous_time};
     // Just a hack so we don't have to add a whole other component
     const auto box = db::create<
-        db::AddSimpleTags<control_system::TestHelpers::MeasurementResultTag>>(
-        data_from_element);
+        db::AddSimpleTags<control_system::TestHelpers::MeasurementResultTag,
+                          ah::Tags::CurrentTime>>(
+        data_from_element, std::optional{measurement_id});
     control_system::RunCallbacks<Submeasurement<Label, CallRunCallbacks>,
                                  ControlSystems>::apply(box, cache,
                                                         measurement_id);
+    ++call_count;
+    control_system::RunCallbacks<
+        Submeasurement<Label, CallRunCallbacks>,
+        ControlSystems>::apply(box, cache, FastFlow::Status::AbsTol);
     ++call_count;
   }
 

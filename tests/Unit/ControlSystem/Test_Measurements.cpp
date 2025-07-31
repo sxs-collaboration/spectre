@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/Time.hpp"
@@ -53,6 +54,10 @@ static_assert(
         control_system::measurements::BothHorizons::FindHorizon<
             ::domain::ObjectLabel::A>::interpolation_target_tag<example_list>,
         intrp::protocols::InterpolationTargetTag>);
+static_assert(tt::assert_conforms_to_v<
+              control_system::measurements::BothHorizons::FindHorizon<
+                  ::domain::ObjectLabel::A>::horizon_metavars<example_list>,
+              ah::protocols::HorizonMetavars>);
 static_assert(
     not control_system::measurements::BothHorizons::FindHorizon<
         ::domain::ObjectLabel::A>::event<example_list>::factory_creatable);
@@ -71,6 +76,11 @@ static_assert(
         control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
             Submeasurement::interpolation_target_tag<example_list>,
         intrp::protocols::InterpolationTargetTag>);
+static_assert(
+    tt::assert_conforms_to_v<
+        control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
+            Submeasurement::horizon_metavars<example_list>,
+        ah::protocols::HorizonMetavars>);
 static_assert(
     not control_system::measurements::SingleHorizon<::domain::ObjectLabel::B>::
         Submeasurement::event<example_list>::factory_creatable);
@@ -106,6 +116,10 @@ static_assert(tt::assert_conforms_to_v<
               control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
                   Horizon::interpolation_target_tag<example_list>,
               intrp::protocols::InterpolationTargetTag>);
+static_assert(tt::assert_conforms_to_v<
+              control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
+                  Horizon::horizon_metavars<example_list>,
+              ah::protocols::HorizonMetavars>);
 static_assert(
     not control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
         Excision::event<example_list>::factory_creatable);
