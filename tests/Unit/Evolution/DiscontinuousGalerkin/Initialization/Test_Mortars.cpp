@@ -471,7 +471,7 @@ void check_boundary_histories(
 template <size_t Dim, bool UsingLts>
 void test_p_refine(
     ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>> mortar_data,
-    const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& mortar_mesh,
+    ::dg::MortarMap<Dim, Mesh<Dim - 1>> mortar_mesh,
     ::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos,
     ::dg::MortarMap<Dim, TimeStepId> mortar_next_temporal_id,
     DirectionMap<Dim, std::optional<Variables<tmpl::list<
@@ -485,6 +485,7 @@ void test_p_refine(
     const TimeStepId& temporal_id,
     const ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>&
         expected_mortar_data,
+    const ::dg::MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_mesh,
     const ::dg::MortarMap<Dim, MortarInfo<Dim>>& expected_mortar_infos,
     const ::dg::MortarMap<Dim, TimeStepId>& expected_mortar_next_temporal_id,
     const DirectionMap<Dim, std::optional<Variables<tmpl::list<
@@ -500,8 +501,8 @@ void test_p_refine(
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
       std::move(new_mesh), std::move(new_element), std::move(neighbor_meshes),
-      temporal_id, std::move(mortar_data), mortar_mesh, std::move(mortar_infos),
-      std::move(mortar_next_temporal_id),
+      temporal_id, std::move(mortar_data), std::move(mortar_mesh),
+      std::move(mortar_infos), std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
 
   db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
@@ -509,7 +510,7 @@ void test_p_refine(
                                      std::make_pair(old_mesh, old_element));
 
   CHECK(db::get<Tags::MortarData<Dim>>(box) == expected_mortar_data);
-  CHECK(db::get<Tags::MortarMesh<Dim>>(box) == mortar_mesh);
+  CHECK(db::get<Tags::MortarMesh<Dim>>(box) == expected_mortar_mesh);
   CHECK(db::get<Tags::MortarInfo<Dim>>(box) == expected_mortar_infos);
   CHECK(db::get<Tags::MortarNextTemporalId<Dim>>(box) ==
         expected_mortar_next_temporal_id);
@@ -618,6 +619,7 @@ void test_p_refine_gts() {
 
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>
       expected_mortar_data{};
+  ::dg::MortarMap<Dim, Mesh<Dim - 1>> expected_mortar_mesh{};
   ::dg::MortarMap<Dim, MortarInfo<Dim>> expected_mortar_infos{};
   ::dg::MortarMap<Dim, TimeStepId> expected_mortar_next_temporal_ids{};
   DirectionMap<Dim, std::optional<Variables<
@@ -630,6 +632,10 @@ void test_p_refine_gts() {
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       expected_mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
+      expected_mortar_mesh.emplace(
+          mortar_id,
+          ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),
+                            neighbor_mesh.slice_away(direction.dimension())));
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       expected_mortar_infos.emplace(
           mortar_id,
@@ -650,13 +656,14 @@ void test_p_refine_gts() {
   }
 
   test_p_refine<Dim, false>(
-      std::move(mortar_data), mortar_mesh, std::move(mortar_infos),
+      std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_infos),
       std::move(mortar_next_temporal_ids),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       old_mesh, std::move(new_mesh), old_element, std::move(new_element),
       neighbor_meshes, next_temporal_id, expected_mortar_data,
-      expected_mortar_infos, expected_mortar_next_temporal_ids,
-      expected_normal_covector_and_magnitude, expected_mortar_data_history);
+      expected_mortar_mesh, expected_mortar_infos,
+      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
+      expected_mortar_data_history);
 }
 
 // The data arrays are set to linear functions, with element_size and
@@ -813,6 +820,7 @@ void test_p_refine_lts() {
 
   ::dg::MortarMap<Dim, evolution::dg::MortarDataHolder<Dim>>
       expected_mortar_data{};
+  ::dg::MortarMap<Dim, Mesh<Dim - 1>> expected_mortar_mesh{};
   ::dg::MortarMap<Dim, MortarInfo<Dim>> expected_mortar_infos{};
   ::dg::MortarMap<Dim, TimeStepId> expected_mortar_next_temporal_ids{};
   DirectionMap<Dim, std::optional<Variables<
@@ -825,6 +833,10 @@ void test_p_refine_lts() {
     for (const auto& neighbor : neighbors) {
       const DirectionalId<Dim> mortar_id{direction, neighbor};
       expected_mortar_data.emplace(mortar_id, MortarDataHolder<Dim>{});
+      expected_mortar_mesh.emplace(
+          mortar_id,
+          ::dg::mortar_mesh(new_mesh.slice_away(direction.dimension()),
+                            neighbor_mesh.slice_away(direction.dimension())));
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       expected_mortar_infos.emplace(
           mortar_id,
@@ -838,6 +850,8 @@ void test_p_refine_lts() {
       expected_mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       expected_mortar_data_history.emplace(mortar_id,
                                            boundary_history_type<Dim>{});
+      // These use the old mortar_mesh, not expected_mortar_mesh,
+      // because mortar data is not projected during p-refinement.
       for (size_t i = 0; i < 3; ++i) {
         expected_mortar_data_history.at(mortar_id).local().insert(
             local_past_ids[i], 3,
@@ -861,13 +875,14 @@ void test_p_refine_lts() {
   }
 
   test_p_refine<Dim, true>(
-      std::move(mortar_data), mortar_mesh, std::move(mortar_infos),
+      std::move(mortar_data), std::move(mortar_mesh), std::move(mortar_infos),
       std::move(mortar_next_temporal_ids),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       old_mesh, std::move(new_mesh), old_element, std::move(new_element),
       neighbor_meshes, next_temporal_id, expected_mortar_data,
-      expected_mortar_infos, expected_mortar_next_temporal_ids,
-      expected_normal_covector_and_magnitude, expected_mortar_data_history);
+      expected_mortar_mesh, expected_mortar_infos,
+      expected_mortar_next_temporal_ids, expected_normal_covector_and_magnitude,
+      expected_mortar_data_history);
 }
 
 template <size_t Dim>
@@ -1153,8 +1168,7 @@ void test_h_refinement() {
                   get<domain::Tags::Element<2>>(orig_single_items)));
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
-        // Mortars where neither side h-refines are not projected.
-        {mortar_id_a, lgl_mesh<1>(3)},
+        {mortar_id_a, lgl_mesh<1>(4)},
         {mortar_id_f, lgl_mesh<1>(4)},
         {mortar_id_g, lgl_mesh<1>(4)},
         {mortar_id_h, lgl_mesh<1>(4)},
@@ -1211,8 +1225,7 @@ void test_h_refinement() {
                   get<domain::Tags::Element<2>>(orig_single_items)));
 
     const ::dg::MortarMap<2, Mesh<1>> expected_mortar_meshes{
-        // Mortars where neither side h-refines are not projected.
-        {mortar_id_a, lgl_mesh<1>(3)},
+        {mortar_id_a, lgl_mesh<1>(4)},
         {mortar_id_f, lgl_mesh<1>(5)},
         {mortar_id_g, lgl_mesh<1>(5)},
         {mortar_id_h, lgl_mesh<1>(5)},
