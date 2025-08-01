@@ -109,7 +109,7 @@ EvolutionSystem:
     GaugeCondition:
       DampedHarmonic:
         SpatialDecayWidth: 17.0152695482514
-        Amplitudes: [1.0, 1.0, 1.0]
+        Amplitudes: [1.0, 0.0, 1.0]
         Exponents: [2, 2, 2]
     # The parameter choices here come from our experience with the Spectral
     # Einstein Code (SpEC). They should be suitable for evolutions of a
