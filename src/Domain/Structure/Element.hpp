@@ -14,6 +14,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/FaceType.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/Topology.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -77,6 +78,11 @@ class Element {
     return topologies_;
   }
 
+  /// The FaceType in each direction
+  const DirectionMap<VolumeDim, domain::FaceType>& face_types() const {
+    return face_types_;
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
@@ -87,6 +93,7 @@ class Element {
   std::unordered_set<Direction<VolumeDim>> external_boundaries_{};
   std::unordered_set<Direction<VolumeDim>> internal_boundaries_{};
   std::array<domain::Topology, VolumeDim> topologies_;
+  DirectionMap<VolumeDim, domain::FaceType> face_types_{};
 };
 
 template <size_t VolumeDim>

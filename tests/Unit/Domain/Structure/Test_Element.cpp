@@ -7,7 +7,11 @@
 #include <functional>
 #include <unordered_set>
 
+#include "Domain/Block.hpp"
+#include "Domain/CreateInitialElement.hpp"
+#include "Domain/Structure/BlockNeighbors.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -31,12 +35,18 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
   CHECK(element.number_of_neighbors() == expected_number_of_neighbors);
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
     // The highest spatial dimension has neighbors; else, external boundary.
-    CHECK((direction.dimension() == VolumeDim - 1) !=
-          (element.external_boundaries().count(direction) == 1));
-    CHECK((direction.dimension() != VolumeDim - 1) !=
-          (element.internal_boundaries().count(direction) == 1));
-    CHECK((direction.dimension() != VolumeDim - 1) !=
-          (element.neighbors().count(direction) == 1));
+    if (direction.dimension() == VolumeDim - 1) {
+      CHECK_FALSE(element.external_boundaries().contains(direction));
+      CHECK(element.internal_boundaries().contains(direction));
+      CHECK(element.neighbors().contains(direction));
+      CHECK(element.face_types().at(direction) ==
+            domain::FaceType::ConformingAligned);
+    } else {
+      CHECK(element.external_boundaries().contains(direction));
+      CHECK_FALSE(element.internal_boundaries().contains(direction));
+      CHECK_FALSE(element.neighbors().contains(direction));
+      CHECK(element.face_types().at(direction) == domain::FaceType::External);
+    }
   }
   CHECK(element.neighbors().size() == element.internal_boundaries().size());
   CHECK(element.internal_boundaries().size() +
@@ -68,7 +78,9 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
                                    "\n"
                                    "  External boundaries: " +
                                    get_output(element.external_boundaries()) +
-                                   "\n");
+                                   "\n"
+                                   "  Face types: " +
+                                   get_output(element.face_types()) + "\n");
 
   test_serialization(element);
 }
@@ -157,6 +169,21 @@ void check_spherical_shell() {
   CHECK(
       spherical_shell.external_boundaries().contains(Direction<3>::upper_xi()));
   CHECK(spherical_shell.neighbors().empty());
+  for (const auto& direction : Direction<3>::all_directions()) {
+    if (direction.dimension() == 0) {
+      CHECK(spherical_shell.external_boundaries().contains(direction));
+      CHECK_FALSE(spherical_shell.internal_boundaries().contains(direction));
+      CHECK_FALSE(spherical_shell.neighbors().contains(direction));
+      CHECK(spherical_shell.face_types().at(direction) ==
+            domain::FaceType::External);
+    } else {
+      CHECK_FALSE(spherical_shell.external_boundaries().contains(direction));
+      CHECK_FALSE(spherical_shell.internal_boundaries().contains(direction));
+      CHECK_FALSE(spherical_shell.neighbors().contains(direction));
+      CHECK(spherical_shell.face_types().at(direction) ==
+            domain::FaceType::Topological);
+    }
+  }
 }
 
 void check_assert() {
@@ -175,6 +202,109 @@ void check_assert() {
           "Cannot specify a neighbor in a direction with no boundary"));
 #endif
 }
+
+void test_nonconforming_blocks() {
+  const OrientationMap<2> aligned = OrientationMap<2>::create_aligned();
+  std::vector<Block<2>> blocks;
+  blocks.emplace_back(
+      nullptr, 0,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::upper_xi(),
+           BlockNeighbors<2>{
+               {1, 2, 3, 4},
+               {{1, aligned}, {2, aligned}, {3, aligned}, {4, aligned}},
+               false}}},
+      "Annulus", std::array{domain::Topology::I1, domain::Topology::S1});
+  blocks.emplace_back(
+      nullptr, 1,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(),
+           BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{2, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{4, aligned}}},
+      "North", std::array{domain::Topology::I1, domain::Topology::I1});
+  blocks.emplace_back(
+      nullptr, 2,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(),
+           BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{3, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{1, aligned}}},
+      "East", std::array{domain::Topology::I1, domain::Topology::I1});
+  blocks.emplace_back(
+      nullptr, 3,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(),
+           BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{4, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{2, aligned}}},
+      "South", std::array{domain::Topology::I1, domain::Topology::I1});
+  blocks.emplace_back(
+      nullptr, 4,
+      DirectionMap<2, BlockNeighbors<2>>{
+          {Direction<2>::lower_xi(),
+           BlockNeighbors<2>{{0}, {{0, aligned}}, false}},
+          {Direction<2>::lower_eta(), BlockNeighbors<2>{1, aligned}},
+          {Direction<2>::upper_eta(), BlockNeighbors<2>{3, aligned}}},
+      "West", std::array{domain::Topology::I1, domain::Topology::I1});
+  const std::vector<std::array<size_t, 2>> initial_refinement_levels{
+      std::array{2_st, 0_st}, std::array{0_st, 1_st}, std::array{0_st, 1_st},
+      std::array{0_st, 1_st}, std::array{0_st, 1_st}};
+  const ElementId<2> annulus_id{0,
+                                std::array{SegmentId{2, 3}, SegmentId{0, 0}}};
+  const ElementId<2> wedge_id{1, std::array{SegmentId{0, 0}, SegmentId{1, 0}}};
+  const auto annulus = domain::create_initial_element(
+      annulus_id, blocks, initial_refinement_levels);
+  CHECK(annulus.number_of_neighbors() == 9);
+  CHECK_FALSE(annulus.external_boundaries().contains(Direction<2>::lower_xi()));
+  CHECK(annulus.internal_boundaries().contains(Direction<2>::lower_xi()));
+  CHECK(annulus.neighbors().contains(Direction<2>::lower_xi()));
+  CHECK(annulus.face_types().at(Direction<2>::lower_xi()) ==
+        domain::FaceType::ConformingAligned);
+  CHECK_FALSE(annulus.external_boundaries().contains(Direction<2>::upper_xi()));
+  CHECK(annulus.internal_boundaries().contains(Direction<2>::upper_xi()));
+  CHECK(annulus.neighbors().contains(Direction<2>::upper_xi()));
+  CHECK(annulus.face_types().at(Direction<2>::upper_xi()) ==
+        domain::FaceType::MultipleNonconforming);
+  CHECK_FALSE(
+      annulus.external_boundaries().contains(Direction<2>::lower_eta()));
+  CHECK_FALSE(
+      annulus.internal_boundaries().contains(Direction<2>::lower_eta()));
+  CHECK_FALSE(annulus.neighbors().contains(Direction<2>::lower_eta()));
+  CHECK(annulus.face_types().at(Direction<2>::lower_eta()) ==
+        domain::FaceType::Topological);
+  CHECK_FALSE(
+      annulus.external_boundaries().contains(Direction<2>::upper_eta()));
+  CHECK_FALSE(
+      annulus.internal_boundaries().contains(Direction<2>::upper_eta()));
+  CHECK_FALSE(annulus.neighbors().contains(Direction<2>::upper_eta()));
+  CHECK(annulus.face_types().at(Direction<2>::upper_eta()) ==
+        domain::FaceType::Topological);
+
+  const auto wedge = domain::create_initial_element(wedge_id, blocks,
+                                                    initial_refinement_levels);
+  CHECK(wedge.number_of_neighbors() == 3);
+  CHECK_FALSE(wedge.external_boundaries().contains(Direction<2>::lower_xi()));
+  CHECK(wedge.internal_boundaries().contains(Direction<2>::lower_xi()));
+  CHECK(wedge.neighbors().contains(Direction<2>::lower_xi()));
+  CHECK(wedge.face_types().at(Direction<2>::lower_xi()) ==
+        domain::FaceType::SingleNonconforming);
+  CHECK(wedge.external_boundaries().contains(Direction<2>::upper_xi()));
+  CHECK_FALSE(wedge.internal_boundaries().contains(Direction<2>::upper_xi()));
+  CHECK_FALSE(wedge.neighbors().contains(Direction<2>::upper_xi()));
+  CHECK(wedge.face_types().at(Direction<2>::upper_xi()) ==
+        domain::FaceType::External);
+  CHECK_FALSE(wedge.external_boundaries().contains(Direction<2>::lower_eta()));
+  CHECK(wedge.internal_boundaries().contains(Direction<2>::lower_eta()));
+  CHECK(wedge.neighbors().contains(Direction<2>::lower_eta()));
+  CHECK(wedge.face_types().at(Direction<2>::lower_eta()) ==
+        domain::FaceType::ConformingAligned);
+  CHECK_FALSE(wedge.external_boundaries().contains(Direction<2>::upper_eta()));
+  CHECK(wedge.internal_boundaries().contains(Direction<2>::upper_eta()));
+  CHECK(wedge.neighbors().contains(Direction<2>::upper_eta()));
+  CHECK(wedge.face_types().at(Direction<2>::upper_eta()) ==
+        domain::FaceType::ConformingAligned);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.Element", "[Domain][Unit]") {
@@ -183,4 +313,5 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.Element", "[Domain][Unit]") {
   check_element_3d();
   check_spherical_shell();
   check_assert();
+  test_nonconforming_blocks();
 }
