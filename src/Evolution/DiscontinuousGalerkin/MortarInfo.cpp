@@ -5,8 +5,13 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
+#include <utility>
+
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarInterpolator.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace evolution::dg {
 template <size_t VolumeDim>
@@ -15,6 +20,7 @@ MortarInfo<VolumeDim>::MortarInfo(MortarInfoData data)
 
 template <size_t VolumeDim>
 void MortarInfo<VolumeDim>::MortarInfoData::pup(PUP::er& p) {
+  p | interpolator;
   p | mortar_size;
   p | policy;
 }
@@ -27,7 +33,8 @@ void MortarInfo<VolumeDim>::pup(PUP::er& p) {
 template <size_t VolumeDim>
 bool operator==(const MortarInfo<VolumeDim>& lhs,
                 const MortarInfo<VolumeDim>& rhs) {
-  return lhs.policy() == rhs.policy() and
+  return lhs.interpolator() == rhs.interpolator() and
+         lhs.policy() == rhs.policy() and
          lhs.mortar_size() == rhs.mortar_size();
 }
 
