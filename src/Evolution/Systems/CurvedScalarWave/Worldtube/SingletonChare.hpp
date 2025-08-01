@@ -33,9 +33,9 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/SelfStart.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
@@ -96,7 +96,7 @@ struct WorldtubeSingleton {
       ::Actions::MutateApply<IterateAccelerationTerms>,
       Actions::SendAccelerationTerms<Metavariables>,
       ::Actions::MutateApply<UpdateAcceleration>,
-      ::Actions::RecordTimeStepperData<worldtube_system>,
+      ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
       ::Actions::UpdateU<worldtube_system, local_time_stepping>,
       ::Actions::CleanHistory<worldtube_system, false>,
       Actions::SendToElements<Metavariables>,

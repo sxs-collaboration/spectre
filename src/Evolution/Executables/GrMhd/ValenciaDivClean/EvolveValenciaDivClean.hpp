@@ -161,11 +161,11 @@
 #include "PointwiseFunctions/Hydro/TransportVelocity.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -425,7 +425,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   volume_dim, false, use_dg_element_collection>,
-              Actions::RecordTimeStepperData<system>,
+              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<system::primitive_from_conservative<
                       ordered_list_of_primitive_recovery_schemes>>>,
@@ -453,7 +453,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<system>,
+          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
                      evolution::Actions::RunEventsAndDenseTriggers<
                          events_and_dense_triggers_subcell_postprocessors>,
                      Actions::UpdateU<system, local_time_stepping>>>,
@@ -491,7 +491,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, true>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           grmhd::ValenciaDivClean::subcell::TimeDerivative>,
-      Actions::RecordTimeStepperData<system>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
       Actions::UpdateU<system, local_time_stepping>,

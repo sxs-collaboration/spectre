@@ -91,10 +91,10 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -256,7 +256,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<
-              Actions::RecordTimeStepperData<system>,
+              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
@@ -275,7 +275,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<
-              Actions::RecordTimeStepperData<system>,
+              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system, local_time_stepping>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
@@ -291,7 +291,7 @@ struct EvolutionMetavars {
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           ScalarAdvection::subcell::TimeDerivative<volume_dim>>,
-      Actions::RecordTimeStepperData<system>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       Actions::UpdateU<system, local_time_stepping>,
       Actions::CleanHistory<system, local_time_stepping>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<

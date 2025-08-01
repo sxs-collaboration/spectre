@@ -225,11 +225,11 @@
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -763,7 +763,7 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   volume_dim, false, use_dg_element_collection>,
-              Actions::RecordTimeStepperData<system>,
+              Actions::MutateApply<RecordTimeStepperData<system>>,
               Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<derived_metavars>,
@@ -792,7 +792,7 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::list<>>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<system>,
+          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
                      evolution::Actions::RunEventsAndDenseTriggers<
                          events_and_dense_triggers_subcell_postprocessors>,
                      control_system::Actions::LimitTimeStep<control_systems>,
@@ -826,7 +826,7 @@ struct GhValenciaDivCleanTemplateBase<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, true>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           grmhd::GhValenciaDivClean::subcell::TimeDerivative<system>>,
-      Actions::RecordTimeStepperData<system>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
       control_system::Actions::LimitTimeStep<control_systems>,

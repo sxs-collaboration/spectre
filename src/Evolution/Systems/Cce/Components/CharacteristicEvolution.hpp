@@ -36,11 +36,11 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/TakeLtsStep.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -196,7 +196,7 @@ struct CharacteristicEvolution {
       tmpl::transform<typename metavariables::cce_scri_tags,
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
-      ::Actions::RecordTimeStepperData<cce_system>,
+      ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
       ::Actions::UpdateU<cce_system, Metavariables::local_time_stepping>,
       ::Actions::CleanHistory<cce_system, false>>;
 

@@ -39,6 +39,7 @@ spectre_target_headers(
   EvolutionOrdering.hpp
   History.hpp
   LargestStepperError.hpp
+  RecordTimeStepperData.hpp
   RequestsStepperErrorTolerances.hpp
   SelfStart.hpp
   Slab.hpp

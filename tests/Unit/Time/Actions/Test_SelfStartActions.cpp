@@ -25,13 +25,14 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
@@ -159,7 +160,8 @@ struct Component {
 
   using step_actions =
       tmpl::list<ComputeTimeDerivative,
-                 Actions::RecordTimeStepperData<typename metavariables::system>,
+                 Actions::MutateApply<
+                     RecordTimeStepperData<typename metavariables::system>>,
                  Actions::UpdateU<typename metavariables::system, false>,
                  Actions::CleanHistory<typename metavariables::system, false>,
                  tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
