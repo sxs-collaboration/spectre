@@ -13,13 +13,14 @@ set(LIBRARY_SOURCES
   Test_ExpandOverBlocks.cpp
   Test_FrustalCloak.cpp
   Test_Interval.cpp
-  Test_Tags.cpp
+  Test_NonconformingSphericalShells.cpp
   Test_Rectangle.cpp
   Test_RotatedBricks.cpp
   Test_RotatedIntervals.cpp
   Test_RotatedRectangles.cpp
   Test_Sphere.cpp
   Test_SphericalShells.cpp
+  Test_Tags.cpp
   )
 
 add_subdirectory(TimeDependentOptions)

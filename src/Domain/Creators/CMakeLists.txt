@@ -15,6 +15,7 @@ spectre_target_sources(
   Disk.cpp
   ExpandOverBlocks.cpp
   FrustalCloak.cpp
+  NonconformingSphericalShells.cpp
   Rectilinear.cpp
   RegisterDerivedWithCharm.cpp
   RotatedBricks.cpp
@@ -42,6 +43,7 @@ spectre_target_headers(
   Factory2D.hpp
   Factory3D.hpp
   FrustalCloak.hpp
+  NonconformingSphericalShells.hpp
   OptionTags.hpp
   Rectilinear.hpp
   RegisterDerivedWithCharm.hpp
