@@ -29,6 +29,7 @@ target_link_libraries(
   PRIVATE
   DataStructures
   Domain
+  DomainCreators
   DomainStructure
   DiscontinuousGalerkin
   ErrorHandling
