@@ -8,6 +8,8 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <numeric>
+#include <optional>
 #include <random>
 #include <unordered_map>
 #include <utility>
@@ -21,6 +23,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Amr/Info.hpp"
 #include "Domain/Amr/Tags/Flags.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -50,9 +53,11 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -62,6 +67,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
@@ -474,16 +480,28 @@ void check(const TimeSteppers::History<VariablesType>& original_history,
            const Mesh<Dim>& new_mesh, const ElementId<Dim>& element_id,
            const Mesh<Dim>& old_mesh, const Element<Dim>& element) {
   DtVariablesType dt_vars{};
+  const auto original_time_step = Slab(1.2, 3.4).duration();
+  auto time_step = original_time_step;
+  const TimeSteppers::AdamsBashforth time_stepper(4);
+  const TimeStepId original_next_time_step_id(true, 7,
+                                              time_step.slab().start());
+  auto next_time_step_id = original_next_time_step_id;
   TimeSteppers::History<VariablesType> history = original_history;
   Initialization::ProjectTimeStepperHistory<TestMetavariables<Dim>>::apply(
-      make_not_null(&dt_vars), make_not_null(&history), new_mesh, element_id,
-      std::make_pair(old_mesh, element));
+      make_not_null(&dt_vars), make_not_null(&history),
+      make_not_null(&next_time_step_id), make_not_null(&time_step), new_mesh,
+      element_id, time_stepper, std::make_pair(old_mesh, element));
   CHECK(dt_vars.size() == new_mesh.number_of_grid_points());
+  CHECK(time_step == original_time_step);
+  CHECK(next_time_step_id == original_next_time_step_id);
   check_history(history, expected_history);
   Initialization::ProjectTimeStepperHistory<TestMetavariables<Dim>>::apply(
-      make_not_null(&dt_vars), make_not_null(&history), old_mesh, element_id,
-      std::make_pair(new_mesh, element));
+      make_not_null(&dt_vars), make_not_null(&history),
+      make_not_null(&next_time_step_id), make_not_null(&time_step), old_mesh,
+      element_id, time_stepper, std::make_pair(new_mesh, element));
   CHECK(dt_vars.size() == old_mesh.number_of_grid_points());
+  CHECK(time_step == original_time_step);
+  CHECK(next_time_step_id == original_next_time_step_id);
   check_history(history, original_history);
 }
 
@@ -546,15 +564,17 @@ void test_p_refine() {
   check(history, expected_history, new_mesh, element_id, old_mesh, element);
 }
 
+template <bool LocalTimeStepping>
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
+  static constexpr bool local_time_stepping = LocalTimeStepping;
   struct system {
     using variables_tag =
         Tags::Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>;
   };
 };
 
-using variables_tag = Metavariables::system::variables_tag;
+using variables_tag = Metavariables<false>::system::variables_tag;
 using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
 
 template <size_t Label>
@@ -597,6 +617,8 @@ void compare_p_refine() {
   const TimeStepId time_step_id0(true, 1, slab.start());
   const TimeStepId time_step_id1 =
       time_step_id0.next_substep(slab.duration(), 0.5);
+  const TimeDelta time_step = slab.duration() / 32;
+  const TimeStepId next_time_step_id(true, 7, slab.start());
   const ElementId<3> element_id(3, {});
   const Mesh<3> old_mesh(4, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto);
@@ -605,19 +627,26 @@ void compare_p_refine() {
 
   const auto old_data =
       element_data(&gen, element_id, old_mesh, time_step_id0, time_step_id1);
-  auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
-      domain::Tags::Mesh<3>, dt_variables_tag,
-      Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
-      HistoryDeriv<0>, HistoryDeriv<1>>>(
+  auto box = db::create<
+      db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
+                        Parallel::Tags::ArrayIndex<ElementId<3>>,
+                        domain::Tags::Element<3>, domain::Tags::Mesh<3>,
+                        dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
+                        ::Tags::TimeStep,
+                        Tags::HistoryEvolvedVariables<variables_tag>,
+                        HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
+      time_stepper_ref_tags<TimeStepper>>(
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforth>(4)),
       element_id, get<domain::Tags::Element<3>>(old_data), new_mesh,
-      dt_variables_tag::type{},
+      dt_variables_tag::type{}, next_time_step_id, time_step,
       get<Tags::HistoryEvolvedVariables<variables_tag>>(old_data),
       get<HistoryEntry<0>>(old_data), get<HistoryDeriv<0>>(old_data),
       get<HistoryDeriv<1>>(old_data));
 
   // Compare with the Variables projector
-  db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
+  db::mutate_apply<
+      Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
       make_not_null(&box),
       std::pair(old_mesh, get<domain::Tags::Element<3>>(old_data)));
   db::mutate_apply<amr::projectors::ProjectVariables<
@@ -627,6 +656,8 @@ void compare_p_refine() {
 
   CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
         new_mesh.number_of_grid_points());
+  CHECK(db::get<::Tags::TimeStep>(box) == time_step);
+  CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) == next_time_step_id);
   const auto& history =
       db::get<Tags::HistoryEvolvedVariables<variables_tag>>(box);
   CHECK(history.integration_order() == 4);
@@ -645,6 +676,8 @@ void compare_h_refine() {
   const TimeStepId time_step_id0(true, 1, slab.start());
   const TimeStepId time_step_id1 =
       time_step_id0.next_substep(slab.duration(), 0.5);
+  const TimeDelta time_step = slab.duration() / 32;
+  const TimeStepId next_time_step_id(true, 7, slab.start());
   const ElementId<3> parent_id(3, {});
   const ElementId<3> child0_id = parent_id.id_of_child(1, Side::Lower);
   const ElementId<3> child1_id = parent_id.id_of_child(1, Side::Upper);
@@ -659,19 +692,26 @@ void compare_h_refine() {
       element_data(&gen, child1_id, mesh, time_step_id0, time_step_id1);
 
   {
-    auto box = db::create<db::AddSimpleTags<
-        Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
-        domain::Tags::Mesh<3>, dt_variables_tag,
-        Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
-        HistoryDeriv<0>, HistoryDeriv<1>>>(
+    auto box = db::create<
+        db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
+                          Parallel::Tags::ArrayIndex<ElementId<3>>,
+                          domain::Tags::Element<3>, domain::Tags::Mesh<3>,
+                          dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
+                          ::Tags::TimeStep,
+                          Tags::HistoryEvolvedVariables<variables_tag>,
+                          HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
+        time_stepper_ref_tags<TimeStepper>>(
+        static_cast<std::unique_ptr<TimeStepper>>(
+            std::make_unique<TimeSteppers::AdamsBashforth>(4)),
         child0_id, get<domain::Tags::Element<3>>(child0_data), mesh,
-        dt_variables_tag::type{},
+        dt_variables_tag::type{}, next_time_step_id, time_step,
         Tags::HistoryEvolvedVariables<variables_tag>::type{},
         HistoryEntry<0>::type{}, HistoryDeriv<0>::type{},
         HistoryDeriv<1>::type{});
 
     // Compare with the Variables projector
-    db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
+    db::mutate_apply<
+        Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
         make_not_null(&box), parent_data);
     db::mutate_apply<amr::projectors::ProjectVariables<
         3, HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -679,6 +719,8 @@ void compare_h_refine() {
 
     CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
           mesh.number_of_grid_points());
+    CHECK(db::get<::Tags::TimeStep>(box) == time_step);
+    CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) == next_time_step_id);
     const auto& history =
         db::get<Tags::HistoryEvolvedVariables<variables_tag>>(box);
     CHECK(history.integration_order() == 4);
@@ -692,13 +734,19 @@ void compare_h_refine() {
   }
 
   {
-    auto box = db::create<db::AddSimpleTags<
-        Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
-        domain::Tags::Mesh<3>, dt_variables_tag,
-        Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
-        HistoryDeriv<0>, HistoryDeriv<1>>>(
+    auto box = db::create<
+        db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
+                          Parallel::Tags::ArrayIndex<ElementId<3>>,
+                          domain::Tags::Element<3>, domain::Tags::Mesh<3>,
+                          dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
+                          ::Tags::TimeStep,
+                          Tags::HistoryEvolvedVariables<variables_tag>,
+                          HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
+        time_stepper_ref_tags<TimeStepper>>(
+        static_cast<std::unique_ptr<TimeStepper>>(
+            std::make_unique<TimeSteppers::AdamsBashforth>(4)),
         parent_id, get<domain::Tags::Element<3>>(parent_data), mesh,
-        dt_variables_tag::type{},
+        dt_variables_tag::type{}, next_time_step_id, time_step,
         Tags::HistoryEvolvedVariables<variables_tag>::type{},
         HistoryEntry<0>::type{}, HistoryDeriv<0>::type{},
         HistoryDeriv<1>::type{});
@@ -708,7 +756,8 @@ void compare_h_refine() {
     children_data.emplace(child1_id, child1_data);
 
     // Compare with the Variables projector
-    db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
+    db::mutate_apply<
+        Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
         make_not_null(&box), children_data);
     db::mutate_apply<amr::projectors::ProjectVariables<
         3, HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -716,6 +765,8 @@ void compare_h_refine() {
 
     CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
           mesh.number_of_grid_points());
+    CHECK(db::get<::Tags::TimeStep>(box) == time_step);
+    CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) == next_time_step_id);
     const auto& history =
         db::get<Tags::HistoryEvolvedVariables<variables_tag>>(box);
     CHECK(history.integration_order() == 4);
@@ -735,6 +786,8 @@ void compare_nonuniform_join() {
   const TimeStepId time_step_id0(true, 1, slab.start());
   const TimeStepId time_step_id1 =
       time_step_id0.next_substep(slab.duration(), 0.5);
+  const TimeDelta time_step = slab.duration() / 32;
+  const TimeStepId next_time_step_id(true, 7, slab.start());
   const ElementId<3> parent_id(3, {});
   const ElementId<3> child0_id = parent_id.id_of_child(1, Side::Lower);
   const ElementId<3> child1_id = parent_id.id_of_child(1, Side::Upper);
@@ -751,13 +804,19 @@ void compare_nonuniform_join() {
   const auto child1_data =
       element_data(&gen, child1_id, child1_mesh, time_step_id0, time_step_id1);
 
-  auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::ArrayIndex<ElementId<3>>, domain::Tags::Element<3>,
-      domain::Tags::Mesh<3>, dt_variables_tag,
-      Tags::HistoryEvolvedVariables<variables_tag>, HistoryEntry<0>,
-      HistoryDeriv<0>, HistoryDeriv<1>>>(
+  auto box = db::create<
+      db::AddSimpleTags<::Tags::ConcreteTimeStepper<TimeStepper>,
+                        Parallel::Tags::ArrayIndex<ElementId<3>>,
+                        domain::Tags::Element<3>, domain::Tags::Mesh<3>,
+                        dt_variables_tag, ::Tags::Next<::Tags::TimeStepId>,
+                        ::Tags::TimeStep,
+                        Tags::HistoryEvolvedVariables<variables_tag>,
+                        HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>,
+      time_stepper_ref_tags<TimeStepper>>(
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforth>(4)),
       parent_id, get<domain::Tags::Element<3>>(parent_data), parent_mesh,
-      dt_variables_tag::type{},
+      dt_variables_tag::type{}, next_time_step_id, time_step,
       Tags::HistoryEvolvedVariables<variables_tag>::type{},
       HistoryEntry<0>::type{}, HistoryDeriv<0>::type{},
       HistoryDeriv<1>::type{});
@@ -767,7 +826,8 @@ void compare_nonuniform_join() {
   children_data.emplace(child1_id, child1_data);
 
   // Compare with the Variables projector
-  db::mutate_apply<Initialization::ProjectTimeStepperHistory<Metavariables>>(
+  db::mutate_apply<
+      Initialization::ProjectTimeStepperHistory<Metavariables<false>>>(
       make_not_null(&box), children_data);
   db::mutate_apply<amr::projectors::ProjectVariables<
       3, HistoryEntry<0>, HistoryDeriv<0>, HistoryDeriv<1>>>(
@@ -775,6 +835,8 @@ void compare_nonuniform_join() {
 
   CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
         parent_mesh.number_of_grid_points());
+  CHECK(db::get<::Tags::TimeStep>(box) == time_step);
+  CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) == next_time_step_id);
   const auto& history =
       db::get<Tags::HistoryEvolvedVariables<variables_tag>>(box);
   CHECK(history.integration_order() == 4);
@@ -785,6 +847,183 @@ void compare_nonuniform_join() {
   CHECK(not history[time_step_id1].value.has_value());
   CHECK_VARIABLES_APPROX(history[time_step_id1].derivative,
                          db::get<HistoryDeriv<1>>(box));
+}
+
+tuples::TaggedTuple<::Tags::HistoryEvolvedVariables<variables_tag>,
+                    ::Tags::TimeStepId, ::Tags::TimeStep,
+                    ::Tags::StepperErrors<variables_tag>>
+old_h_refinement_items(const TimeStepId& time_step_id, const size_t order,
+                       const TimeDelta& time_step,
+                       const std::optional<double>& first_order_error) {
+  ::Tags::HistoryEvolvedVariables<variables_tag>::type old_history{order};
+  old_history.insert(time_step_id, variables_tag::type{},
+                     dt_variables_tag::type{});
+  std::optional<StepperErrorEstimate> error_estimate{};
+  if (first_order_error.has_value()) {
+    error_estimate.emplace(time_step_id.step_time(), time_step, order,
+                           std::numeric_limits<double>::signaling_NaN());
+    error_estimate->errors[0] = first_order_error;
+  }
+  return {std::move(old_history), time_step_id, time_step,
+          std::array<std::optional<StepperErrorEstimate>, 2>{
+              {std::nullopt, std::move(error_estimate)}}};
+}
+
+TimeDelta test_h_refine_lts_split(
+    const TimeSteppers::AdamsBashforth& time_stepper, const size_t old_order,
+    const TimeDelta& old_time_step,
+    const std::optional<double>& first_order_error) {
+  const ElementId<3> parent_id(3, {});
+  const ElementId<3> child_id = parent_id.id_of_child(1, Side::Lower);
+  const Mesh<3> mesh(5, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+  const TimeStepId time_step_id(true, 5, old_time_step.slab().start());
+  const TimeStepId old_next_id =
+      time_stepper.next_time_id(time_step_id, old_time_step);
+  using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
+
+  auto box = db::create<
+      db::AddSimpleTags<
+          domain::Tags::Mesh<3>, Parallel::Tags::ArrayIndex<ElementId<3>>,
+          ::Tags::ConcreteTimeStepper<TimeStepper>, dt_variables_tag,
+          history_tag, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
+      time_stepper_ref_tags<TimeStepper>>(
+      mesh, child_id,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
+      dt_variables_tag::type{}, history_tag::type{}, old_next_id,
+      old_time_step);
+
+  const auto parent_items = old_h_refinement_items(
+      time_step_id, old_order, old_time_step, first_order_error);
+
+  db::mutate_apply<
+      Initialization::ProjectTimeStepperHistory<Metavariables<true>>>(
+      make_not_null(&box), parent_items);
+
+  CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
+        mesh.number_of_grid_points());
+  const auto& history = db::get<history_tag>(box);
+  CHECK(history.integration_order() == 1);
+  CHECK(history.empty());
+  const auto& new_time_step = db::get<::Tags::TimeStep>(box);
+  CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
+        time_stepper.next_time_id(time_step_id, new_time_step));
+  return new_time_step;
+}
+
+TimeDelta test_h_refine_lts_join(
+    const TimeSteppers::AdamsBashforth& time_stepper, const size_t old_order0,
+    const TimeDelta& old_time_step0,
+    const std::optional<double>& first_order_error0, const size_t old_order1,
+    const TimeDelta& old_time_step1,
+    const std::optional<double>& first_order_error1) {
+  const ElementId<3> parent_id(3, {});
+  const ElementId<3> child0_id = parent_id.id_of_child(1, Side::Lower);
+  const ElementId<3> child1_id = parent_id.id_of_child(1, Side::Upper);
+  const Mesh<3> mesh(5, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+  const TimeStepId time_step_id(true, 5, old_time_step0.slab().start());
+  const TimeDelta old_min_time_step = abs(old_time_step0) < abs(old_time_step1)
+                                          ? old_time_step0
+                                          : old_time_step1;
+  const TimeStepId next_time_step_id =
+      time_stepper.next_time_id(time_step_id, old_min_time_step);
+  using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
+
+  auto box = db::create<
+      db::AddSimpleTags<
+          domain::Tags::Mesh<3>, Parallel::Tags::ArrayIndex<ElementId<3>>,
+          ::Tags::ConcreteTimeStepper<TimeStepper>, dt_variables_tag,
+          history_tag, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep>,
+      time_stepper_ref_tags<TimeStepper>>(
+      mesh, parent_id,
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper)),
+      dt_variables_tag::type{}, history_tag::type{}, next_time_step_id,
+      old_min_time_step);
+
+  auto child0_items = old_h_refinement_items(
+      time_step_id, old_order0, old_time_step0, first_order_error0);
+  auto child1_items = old_h_refinement_items(
+      time_step_id, old_order1, old_time_step1, first_order_error1);
+  std::unordered_map<ElementId<3>, decltype(child0_items)> children_items{};
+  children_items.emplace(child0_id, std::move(child0_items));
+  children_items.emplace(child1_id, std::move(child1_items));
+
+  db::mutate_apply<
+      Initialization::ProjectTimeStepperHistory<Metavariables<true>>>(
+      make_not_null(&box), children_items);
+
+  CHECK(db::get<dt_variables_tag>(box).number_of_grid_points() ==
+        mesh.number_of_grid_points());
+  const auto& history = db::get<history_tag>(box);
+  CHECK(history.integration_order() == 1);
+  CHECK(history.empty());
+  const auto& new_time_step = db::get<::Tags::TimeStep>(box);
+  CHECK(db::get<::Tags::Next<::Tags::TimeStepId>>(box) ==
+        time_stepper.next_time_id(time_step_id, new_time_step));
+  return new_time_step;
+}
+
+void test_h_refine_lts() {
+  const Slab slab(2.0, 18.0);
+  const auto unit_step = slab.duration() / 16;
+
+  // Fixed-order is OK if no initialization is required
+  CHECK(test_h_refine_lts_split(TimeSteppers::AdamsBashforth(1), 1, unit_step,
+                                std::nullopt) == unit_step);
+  CHECK(test_h_refine_lts_join(TimeSteppers::AdamsBashforth(1), 1, unit_step,
+                               std::nullopt, 1, unit_step * 2,
+                               std::nullopt) == unit_step);
+
+  // Fixed-order with initialization not allowed
+  CHECK_THROWS_WITH(
+      test_h_refine_lts_split(TimeSteppers::AdamsBashforth(2), 2, unit_step,
+                              std::nullopt),
+      Catch::Matchers::ContainsSubstring("Cannot perform h-refinement with LTS "
+                                         "steppers requiring initialization."));
+  CHECK_THROWS_WITH(
+      test_h_refine_lts_join(TimeSteppers::AdamsBashforth(2), 2, unit_step,
+                             std::nullopt, 2, unit_step, std::nullopt),
+      Catch::Matchers::ContainsSubstring("Cannot perform h-refinement with LTS "
+                                         "steppers requiring initialization."));
+
+  // If already at the starting order, nothing should happen, and
+  // errors should not be required (case for the initial time)
+  CHECK(test_h_refine_lts_split(TimeSteppers::AdamsBashforth(std::nullopt), 1,
+                                unit_step, std::nullopt) == unit_step);
+  CHECK(test_h_refine_lts_join(TimeSteppers::AdamsBashforth(std::nullopt), 1,
+                               unit_step, std::nullopt, 1, unit_step * 2,
+                               std::nullopt) == unit_step);
+
+  // Errors are required if the order is changed.
+  CHECK_THROWS_WITH(
+      test_h_refine_lts_split(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                              unit_step, std::nullopt),
+      Catch::Matchers::ContainsSubstring("must use ErrorControl"));
+  CHECK_THROWS_WITH(
+      test_h_refine_lts_join(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                             unit_step, std::nullopt, 2, unit_step,
+                             std::nullopt),
+      Catch::Matchers::ContainsSubstring("must use ErrorControl"));
+
+  // If the order is changed, the step should be shrunk if the error is large
+  CHECK(test_h_refine_lts_split(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                                unit_step, 5.0) == unit_step / 8);
+  CHECK(test_h_refine_lts_join(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                               unit_step, 5.0, 4, unit_step * 2,
+                               5.0e-3) == unit_step / 8);
+  CHECK(test_h_refine_lts_join(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                               unit_step, 5.0e-3, 4, unit_step * 2,
+                               5.0) == unit_step / 4);
+
+  // Step size should not be increased, even if the error is small
+  CHECK(test_h_refine_lts_split(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                                unit_step, 1.0e-3) == unit_step);
+  CHECK(test_h_refine_lts_join(TimeSteppers::AdamsBashforth(std::nullopt), 2,
+                               unit_step, 1.0e-3, 2, unit_step * 2,
+                               1.0e-3) == unit_step);
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.TimeStepperHistory",
@@ -802,6 +1041,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.TimeStepperHistory",
   compare_p_refine();
   compare_h_refine();
   compare_nonuniform_join();
+  test_h_refine_lts();
 }
 }  // namespace time_stepper_history
 }  // namespace
