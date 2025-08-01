@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Divergence.cpp
+  EventInstantiation.cpp
   Fluxes.cpp
   TimeDerivativeTerms.cpp
   VolumeTermsInstantiation.cpp
@@ -35,6 +36,7 @@ target_link_libraries(
   Domain
   DomainBoundaryConditions
   ErrorHandling
+  Events
   FiniteDifference
   Options
   Parallel

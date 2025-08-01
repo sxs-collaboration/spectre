@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
+  EventInstantiation.cpp
   Fluxes.cpp
   M1Closure.cpp
   M1HydroCoupling.cpp
@@ -34,6 +35,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Events
   GeneralRelativity
   Hydro
   LinearOperators

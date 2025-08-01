@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
+  EventInstantiation.cpp
   Fluxes.cpp
   InternalEnergyDensity.cpp
   KineticEnergyDensity.cpp
@@ -48,6 +49,7 @@ target_link_libraries(
   DgSubcell
   Domain
   ErrorHandling
+  Events
   Evolution
   Hydro
   Options

@@ -3,13 +3,16 @@
 
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStep.tpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStepVolume.tpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                      \
-  template class dg::Events::ObserveTimeStepVolume< \
+#define INSTANTIATION(_, data)                            \
+  template class Events::ObserveTimeStep<                 \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>; \
+  template class dg::Events::ObserveTimeStepVolume<       \
       grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION,

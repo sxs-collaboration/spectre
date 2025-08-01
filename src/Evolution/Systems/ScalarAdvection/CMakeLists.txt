@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
+  EventInstantiation.cpp
   Fluxes.cpp
   TimeDerivativeTerms.cpp
   VelocityField.cpp
@@ -39,6 +40,7 @@ target_link_libraries(
   DomainStructure
   DgSubcell
   ErrorHandling
+  Events
   Evolution
   FiniteDifference
   Options

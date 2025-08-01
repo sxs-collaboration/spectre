@@ -3,12 +3,10 @@
 
 #pragma once
 
-#include <cmath>
 #include <cstddef>
-#include <pup.h>
-#include <pup_stl.h>
-#include <sstream>
+#include <optional>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -23,18 +21,22 @@
 #include "Parallel/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
-#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class TimeDelta;
+namespace PUP {
+class er;
+}  // namespace PUP
 namespace Tags {
 struct TimeStep;
 }  // namespace Tags
@@ -58,21 +60,12 @@ using ObserveTimeStepReductionData = Parallel::ReductionData<
 struct FormatTimeOutput
     : tt::ConformsTo<observers::protocols::ReductionDataFormatter> {
   using reduction_data = ObserveTimeStepReductionData;
-  std::string operator()(const double time, const size_t /* num_points */,
-                         const double /* slab_size */,
-                         const double /* min_time_step */,
-                         const double /* max_time_step */,
-                         const double /* effective_time_step */,
-                         const double min_wall_time,
-                         const double max_wall_time) const {
-    std::stringstream ss;
-    ss << "Simulation time: " << std::to_string(time)
-       << "\n  Wall time: " << sys::pretty_wall_time(min_wall_time)
-       << " (min) - " << sys::pretty_wall_time(max_wall_time) << " (max)";
-    return ss.str();
-  }
+  std::string operator()(double time, size_t num_points, double slab_size,
+                         double min_time_step, double max_time_step,
+                         double effective_time_step, double min_wall_time,
+                         double max_wall_time) const;
   // NOLINTNEXTLINE
-  void pup(PUP::er& /*p*/) {}
+  void pup(PUP::er& p);
 };
 }  // namespace detail
 
@@ -129,7 +122,7 @@ class ObserveTimeStep : public Event {
   };
 
   /// \cond
-  explicit ObserveTimeStep(CkMigrateMessage* /*unused*/) {}
+  explicit ObserveTimeStep(CkMigrateMessage* /*m*/);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveTimeStep);  // NOLINT
   /// \endcond
@@ -152,7 +145,7 @@ class ObserveTimeStep : public Event {
       "All values are reported as positive numbers, even for backwards\n"
       "evolutions.";
 
-  ObserveTimeStep() = default;
+  ObserveTimeStep();
   ObserveTimeStep(const std::string& subfile_name, bool output_time,
                   bool observe_per_core);
 
@@ -175,20 +168,8 @@ class ObserveTimeStep : public Event {
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/,
                   const ObservationValue& observation_value) const {
-    // For empty vars, we use 1 grid point to avoid divisions by zero
-    // after reduction.
-    size_t number_of_grid_points = 1;
-    if constexpr (not std::is_same_v<typename System::variables_tag::tags_list,
-                                       tmpl::list<>>) {
-      number_of_grid_points = variables.number_of_grid_points();
-    }
-    const double slab_size = time_step.slab().duration().value();
-    const double step_size = abs(time_step.value());
-    const double wall_time = sys::wall_time();
-
-    auto formatter =
-        output_time_ ? std::make_optional(Events::detail::FormatTimeOutput{})
-                     : std::nullopt;
+    auto [observation_id, legend, reduction_data, formatter] =
+        assemble_data(time_step, variables, observation_value);
 
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<
@@ -196,23 +177,9 @@ class ObserveTimeStep : public Event {
                                 observers::ObserverWriter<Metavariables>,
                                 observers::Observer<Metavariables>>>(cache));
 
-    observers::ObservationId observation_id{observation_value.value,
-                                            subfile_path_ + ".dat"};
     Parallel::ArrayComponentId array_component_id{
         std::add_pointer_t<ParallelComponent>{nullptr},
         Parallel::ArrayIndex<ArrayIndex>(array_index)};
-    std::vector<std::string> legend{
-        observation_value.name, "NumberOfPoints",    "Slab size",
-        "Minimum time step",    "Maximum time step", "Effective time step",
-        "Minimum Walltime",     "Maximum Walltime"};
-    ReductionData reduction_data{observation_value.value,
-                                 number_of_grid_points,
-                                 slab_size,
-                                 step_size,
-                                 step_size,
-                                 number_of_grid_points / step_size,
-                                 wall_time,
-                                 wall_time};
 
     if constexpr (Parallel::is_nodegroup_v<ParallelComponent>) {
       const std::optional<int> observe_with_core_id =
@@ -235,10 +202,7 @@ class ObserveTimeStep : public Event {
 
   using observation_registration_tags = tmpl::list<>;
   std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const {
-    return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey{subfile_path_ + ".dat"}};
-  }
+  get_observation_type_and_key_for_registration() const;
 
   using is_ready_argument_tags = tmpl::list<>;
 
@@ -249,32 +213,21 @@ class ObserveTimeStep : public Event {
     return true;
   }
 
-  bool needs_evolved_variables() const override { return false; }
+  bool needs_evolved_variables() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override {
-    Event::pup(p);
-    p | subfile_path_;
-    p | output_time_;
-    p | observe_per_core_;
-  }
+  void pup(PUP::er& p) override;
 
  private:
+  auto assemble_data(const TimeDelta& time_step,
+                     const typename System::variables_tag::type& variables,
+                     const ObservationValue& observation_value) const
+      -> std::tuple<observers::ObservationId, std::vector<std::string>,
+                    ReductionData,
+                    std::optional<Events::detail::FormatTimeOutput>>;
+
   std::string subfile_path_;
   bool output_time_;
   bool observe_per_core_;
 };
-
-template <typename System>
-ObserveTimeStep<System>::ObserveTimeStep(const std::string& subfile_name,
-                                         const bool output_time,
-                                         const bool observe_per_core)
-    : subfile_path_("/" + subfile_name),
-      output_time_(output_time),
-      observe_per_core_(observe_per_core) {}
-
-/// \cond
-template <typename System>
-PUP::able::PUP_ID ObserveTimeStep<System>::my_PUP_ID = 0;  // NOLINT
-/// \endcond
 }  // namespace Events

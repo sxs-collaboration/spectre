@@ -8,13 +8,9 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-/// \cond
-template <typename TagsList>
-class Variables;
-/// \endcond
 
 namespace Tags {
 template <typename TagsList>

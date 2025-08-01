@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   ElectricCurrentDensity.cpp
   ElectromagneticVariables.cpp
+  EventInstantiation.cpp
   Fluxes.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
@@ -44,6 +45,7 @@ target_link_libraries(
   DomainStructure
   DgSubcell
   ErrorHandling
+  Events
   Evolution
   FiniteDifference
   ForceFreeAnalyticData
