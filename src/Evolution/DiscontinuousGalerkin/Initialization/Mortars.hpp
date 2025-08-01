@@ -269,7 +269,20 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
       }
       for (const auto& neighbor : neighbors) {
         const DirectionalId<dim> mortar_id{direction, neighbor};
+        const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
+        const auto new_mortar_mesh = ::dg::mortar_mesh(
+            new_face_mesh, new_neighbor_mesh.slice_away(sliced_away_dimension));
         if (mortar_mesh->contains(mortar_id)) {
+          // Set the mortar mesh, but do not project any existing mesh
+          // data.  The mesh needs to have a valid value in order to
+          // project data when we send to our neighbors.  If the mesh
+          // resolution needs to be changed afterwards because of a
+          // change in the neighbor, that's fine, because
+          // element-to-mortar projections are lossless.  Projecting
+          // existing data would be bad, because we might erroneously
+          // decrease the mesh resolution, losing the high-order
+          // modes.
+          mortar_mesh->at(mortar_id) = new_mortar_mesh;
           // mortar_data does not need projecting as it has already been used
           // and will be resized automatically
           if (mesh_changed and not mortar_data_history->empty()) {
@@ -286,10 +299,6 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
             boundary_history.clear_coupling_cache();
           }
         } else {
-          const auto& new_neighbor_mesh = neighbor_mesh.at(mortar_id);
-          const auto new_mortar_mesh = ::dg::mortar_mesh(
-              new_face_mesh,
-              new_neighbor_mesh.slice_away(sliced_away_dimension));
           const auto& new_mortar_size =
               new_mortar_infos.at(mortar_id).mortar_size();
 
