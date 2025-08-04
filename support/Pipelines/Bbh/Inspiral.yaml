@@ -453,7 +453,6 @@ EventsRunAtCleanup:
         CoordinatesFloatingPointType: Float
 
 Interpolator:
-  DumpVolumeDataOnFailure: false
   Verbosity: Silent
 
 ApparentHorizons:
@@ -472,8 +471,8 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Quiet
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation: ["ObjectAShell", "ObjectACube"]
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind: ["ObjectAShell", "ObjectACube"]
   ObservationAhB: &AhB
     InitialGuess:
       LMax: *ObsLMax
@@ -481,8 +480,8 @@ ApparentHorizons:
       Center: [*XCoordB, *YOffset, *ZOffset]
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation: ["ObjectBShell", "ObjectBCube"]
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind: ["ObjectBShell", "ObjectBCube"]
   ObservationAhC:
     InitialGuess:
       LMax: 33
@@ -490,8 +489,8 @@ ApparentHorizons:
       Center: [0.0, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Quiet
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation:
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind:
       - "ObjectAShell"
       - "ObjectACube"
       - "ObjectBShell"

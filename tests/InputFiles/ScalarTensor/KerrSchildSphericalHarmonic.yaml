@@ -11,7 +11,7 @@ ExpectedOutput:
   - KerrSchildSphericalHarmonicSurfaces.h5
 OutputFileChecks:
   - Label: "check_horizon_find"
-    Subfile: "/Ah.dat"
+    Subfile: "/ApparentHorizon.dat"
     FileGlob: "KerrSchildSphericalHarmonicReductions.h5"
     AbsoluteTolerance: 1e2
 
@@ -193,7 +193,7 @@ EventsAndTriggersAtSlabs:
           Interval: 2
           Offset: 2
     Events:
-      - Ah
+      - ApparentHorizon
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -227,11 +227,10 @@ Observers:
   SurfaceFileName: "KerrSchildSphericalHarmonicSurfaces"
 
 Interpolator:
-  DumpVolumeDataOnFailure: false
   Verbosity: Silent
 
 ApparentHorizons:
-  Ah: &Ah
+  ApparentHorizon: &Ah
     InitialGuess:
       LMax: &LMax 4
       Radius: 2.2
@@ -246,8 +245,8 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Quiet
-    MaxInterpolationRetries: 3
-    BlocksForInterpolation: ["Shell0"]
+    MaxComputeCoordsRetries: 3
+    BlocksForHorizonFind: ["Shell0"]
   ControlSystemSingleAh: *Ah
   ControlSystemCharSpeedAh: *Ah
 

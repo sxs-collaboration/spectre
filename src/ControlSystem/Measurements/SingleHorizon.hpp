@@ -17,6 +17,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
@@ -115,13 +116,13 @@ struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
 
    public:
     template <typename ControlSystems>
-    using interpolation_target_tag = InterpolationTarget<ControlSystems>;
+    using interpolation_target_tag = void;
     template <typename ControlSystems>
     using horizon_metavars = HorizonMetavars<ControlSystems>;
 
     template <typename ControlSystems>
-    using event = NonFactoryCreatableWrapper<intrp::Events::Interpolate<
-        3, InterpolationTarget<ControlSystems>, ::ah::source_vars<3>>>;
+    using event = NonFactoryCreatableWrapper<
+        ah::Events::FindApparentHorizon<HorizonMetavars<ControlSystems>>>;
   };
 
   using submeasurements = tmpl::list<Submeasurement>;

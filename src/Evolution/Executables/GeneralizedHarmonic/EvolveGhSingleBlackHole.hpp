@@ -17,6 +17,7 @@
 #include "ControlSystem/Systems/Size.hpp"
 #include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Trigger.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
@@ -36,14 +37,20 @@
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/IgnoreFailedApparentHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveFieldsOnHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveTimeSeriesOnHorizon.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
@@ -70,6 +77,7 @@
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
+#include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -88,28 +96,25 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
       "formulation,\n"
       "on a domain with a single horizon and corresponding excised region"};
 
-  struct ApparentHorizon
-      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-    using temporal_id = ::Tags::Time;
-    using tags_to_observe = ::ah::tags_for_observing<Frame::Inertial>;
-    using surface_tags_to_observe = ::ah::surface_tags_for_observing;
-    using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using vars_to_interpolate_to_target =
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>;
-    using compute_items_on_target =
-        ::ah::compute_items_on_target<volume_dim, Frame::Inertial>;
-    using compute_target_points =
-        ah::TargetPoints::ApparentHorizon<ApparentHorizon, ::Frame::Inertial>;
-    using post_interpolation_callbacks =
-        tmpl::list<intrp::callbacks::FindApparentHorizon<ApparentHorizon,
-                                                         ::Frame::Inertial>>;
+  struct ApparentHorizon : tt::ConformsTo<ah::protocols::HorizonMetavars> {
+    using time_tag = ah::Tags::ObservationTime<0>;
+
+    using frame = ::Frame::Inertial;
+
+    using horizon_find_callbacks = tmpl::list<
+        ah::callbacks::ObserveTimeSeriesOnHorizon<
+            ::ah::tags_for_observing<Frame::Inertial>, ApparentHorizon>,
+        ah::callbacks::ObserveFieldsOnHorizon<::ah::surface_tags_for_observing,
+                                              ApparentHorizon>>;
     using horizon_find_failure_callbacks =
-        tmpl::list<intrp::callbacks::IgnoreFailedApparentHorizon>;
-    using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
-                                                     ApparentHorizon>,
-        intrp::callbacks::ObserveSurfaceData<
-            surface_tags_to_observe, ApparentHorizon, ::Frame::Inertial>>;
+        tmpl::list<ah::callbacks::FailedHorizonFind<ApparentHorizon, false>>;
+
+    using compute_tags_on_element =
+        tmpl::list<ah::Tags::ObservationTimeCompute<0>>;
+
+    static constexpr ah::Destination destination = ah::Destination::Observation;
+
+    static std::string name() { return "ApparentHorizon"; }
   };
 
   struct ExcisionBoundary
@@ -148,7 +153,11 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
   static constexpr bool use_control_systems =
       tmpl::size<control_systems>::value > 0;
 
-  using interpolator_source_vars = ::ah::source_vars<volume_dim>;
+  struct BondiSachs;
+
+  using interpolation_target_tags = tmpl::push_back<
+      control_system::metafunctions::interpolation_target_tags<control_systems>,
+      ExcisionBoundary, BondiSachs>;
   using source_vars_no_deriv =
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, volume_dim>,
                  gh::Tags::Pi<DataVector, volume_dim>,
@@ -167,10 +176,6 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
     using interpolating_component = typename Metavariables::gh_dg_element_array;
   };
 
-  using interpolation_target_tags = tmpl::push_back<
-      control_system::metafunctions::interpolation_target_tags<control_systems>,
-      ApparentHorizon, ExcisionBoundary, BondiSachs>;
-
   // The interpolator_source_vars need to be the same in both the Interpolate
   // event and the InterpolateWithoutInterpComponent event.  The Interpolate
   // event interpolates to the horizon, and the
@@ -187,16 +192,16 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
                         LtsTimeStepper>,
             tmpl::pair<LtsTimeStepper,
                        TimeSteppers::monotonic_lts_time_steppers>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       intrp::Events::Interpolate<3, ApparentHorizon,
-                                                  interpolator_source_vars>,
-                       control_system::metafunctions::control_system_events<
-                           control_systems>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, BondiSachs, source_vars_no_deriv>,
-                       intrp::Events::InterpolateWithoutInterpComponent<
-                           3, ExcisionBoundary, interpolator_source_vars>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                ah::Events::FindApparentHorizon<ApparentHorizon>,
+                control_system::metafunctions::control_system_events<
+                    control_systems>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, BondiSachs, source_vars_no_deriv>,
+                intrp::Events::InterpolateWithoutInterpComponent<
+                    3, ExcisionBoundary, ::ah::source_vars<volume_dim>>>>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>,
         tmpl::pair<control_system::size::State,
@@ -208,12 +213,9 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename ApparentHorizon::post_horizon_find_callbacks,
           typename ExcisionBoundary::post_interpolation_callbacks>>;
 
-  using dg_registration_list =
-      tmpl::push_back<typename gh_base::dg_registration_list,
-                      intrp::Actions::RegisterElementWithInterpolator>;
+  using dg_registration_list = typename gh_base::dg_registration_list;
 
   using step_actions = typename gh_base::template step_actions<control_systems>;
 
@@ -308,6 +310,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
         tmpl::map<tmpl::pair<gh_dg_element_array, dg_registration_list>>;
   };
 
+  using control_system_horizon_metavars =
+      control_system::metafunctions::horizon_metavars<control_systems>;
   using control_components =
       control_system::control_components<EvolutionMetavars, control_systems>;
 
@@ -315,8 +319,8 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
       Parallel::GlobalCache<EvolutionMetavars>& cache,
       const std::vector<std::string>& deadlocked_components) {
     gh::deadlock::run_deadlock_analysis_simple_actions<
-        gh_dg_element_array, control_components, interpolation_target_tags>(
-        cache, deadlocked_components);
+        gh_dg_element_array, control_components, interpolation_target_tags,
+        false>(cache, deadlocked_components);
   }
 
   using component_list = tmpl::flatten<tmpl::list<
@@ -325,7 +329,10 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
       observers::ObserverWriter<EvolutionMetavars>,
       mem_monitor::MemoryMonitor<EvolutionMetavars>,
       importers::ElementDataReader<EvolutionMetavars>, gh_dg_element_array,
-      intrp::Interpolator<EvolutionMetavars>, control_components,
+      ah::Component<EvolutionMetavars, ApparentHorizon>, control_components,
+      tmpl::transform<
+          control_system_horizon_metavars,
+          tmpl::bind<ah::Component, tmpl::pin<EvolutionMetavars>, tmpl::_1>>,
       tmpl::transform<interpolation_target_tags,
                       tmpl::bind<intrp::InterpolationTarget,
                                  tmpl::pin<EvolutionMetavars>, tmpl::_1>>>>;

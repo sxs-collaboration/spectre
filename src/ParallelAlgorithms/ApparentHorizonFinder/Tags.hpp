@@ -18,6 +18,8 @@
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Storage.hpp"
+#include "Utilities/GetOutput.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
@@ -34,6 +36,9 @@ namespace ah {
 template <class Metavariables, typename HorizonMetavars>
 struct Component;
 }  // namespace ah
+namespace Tags {
+struct Time;
+}  // namespace Tags
 /// \endcond
 
 /*!
@@ -206,6 +211,37 @@ struct BlocksForHorizonFind : db::SimpleTag {
     return result;
   }
 };
+
+/// @{
+/*!
+ * \brief Tag to be used for the `time_tag` alias of a `HorizonMetavars` for an
+ * observation horizon find.
+ *
+ * \details We need separate time tags for all horizon finders because of the
+ * current design of the horizon finder. So we just make a simple compute tag
+ * that takes the actual time out of the box since we still want the actual time
+ * to be the same, just a different tag.
+ *
+ */
+template <size_t Index>
+struct ObservationTime : db::SimpleTag {
+  static std::string name() { return "AhObservationTime" + get_output(Index); }
+  using type = LinkedMessageId<double>;
+};
+
+template <size_t Index>
+struct ObservationTimeCompute : ObservationTime<Index>, db::ComputeTag {
+  using argument_tags = tmpl::list<::Tags::Time>;
+  using base = ObservationTime<Index>;
+  using return_type = LinkedMessageId<double>;
+
+  static void function(const gsl::not_null<LinkedMessageId<double>*> ah_time,
+                       const double time) {
+    // The horizon finder knows how to handle the nullopt
+    *ah_time = LinkedMessageId<double>{time, std::nullopt};
+  }
+};
+/// @}
 
 /*!
  * \brief Tag that holds the strahlkorper of the previous FastFlow iteration
