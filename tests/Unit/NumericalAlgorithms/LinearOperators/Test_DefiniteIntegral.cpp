@@ -138,6 +138,56 @@ void test_definite_integral_spherical_shell(const size_t n_r, const size_t L) {
   }
 }
 
+void test_definite_integral_cartoon_spherical(const size_t n_x) {
+  const Mesh mesh =
+      Mesh<3>{{{n_x, 1, 1}},
+              {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+                Spectral::Basis::Cartoon}},
+              {{Spectral::Quadrature::GaussLobatto,
+                Spectral::Quadrature::SphericalSymmetry,
+                Spectral::Quadrature::SphericalSymmetry}}};
+  const DataVector& x = Spectral::collocation_points(mesh.slice_through(0));
+  DataVector integrand(mesh.number_of_grid_points());
+  for (size_t a = 0; a < mesh.extents(0); ++a) {
+    for (size_t s = 0; s < integrand.size(); ++s) {
+      integrand[s] = pow(x[s], static_cast<double>(a));
+    }
+    if (0 == a % 2) {
+      CHECK(8.0 * M_PI / (a + 1.0) ==
+            approx(definite_integral(integrand, mesh)));
+    } else {
+      CHECK(0.0 == approx(definite_integral(integrand, mesh)));
+    }
+  }
+}
+void test_definite_inegral_cartoon_axial(const size_t n_x, const size_t n_y) {
+  const Mesh mesh = Mesh<3>{
+      {{n_x, n_y, 1}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+        Spectral::Basis::Cartoon}},
+      {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+        Spectral::Quadrature::AxialSymmetry}}};
+  const DataVector& x = Spectral::collocation_points(mesh.slice_through(0));
+  const DataVector& y = Spectral::collocation_points(mesh.slice_through(1));
+  DataVector integrand(mesh.number_of_grid_points());
+  for (size_t a = 0; a < mesh.extents(0); ++a) {
+    for (size_t b = 0; b < mesh.extents(1); ++b) {
+      for (IndexIterator<2> index_it(mesh.slice_through(0, 1).extents());
+           index_it; ++index_it) {
+        integrand[index_it.collapsed_index()] =
+            pow(x[index_it()[0]], static_cast<double>(a)) *
+            pow(y[index_it()[1]], static_cast<double>(b));
+      }
+      if (0 == a % 2 and 0 == b % 2) {
+        CHECK(8.0 * M_PI / ((a + 1.0) * (b + 1.0)) ==
+              approx(definite_integral(integrand, mesh)));
+      } else {
+        CHECK(0.0 == approx(definite_integral(integrand, mesh)));
+      }
+    }
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
@@ -173,6 +223,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
   for (size_t n_r = 2; n_r < 5; ++n_r) {
     for (size_t L = 2; L < 9; ++L) {
       test_definite_integral_spherical_shell(n_r, L);
+    }
+  }
+
+  for (size_t n_x = min_extents; n_x <= max_extents; ++n_x) {
+    test_definite_integral_cartoon_spherical(n_x);
+    for (size_t n_y = min_extents; n_y <= max_extents - 1; ++n_y) {
+      test_definite_inegral_cartoon_axial(n_x, n_y);
     }
   }
 

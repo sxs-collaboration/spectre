@@ -33,6 +33,12 @@ class Mesh;
  * The integral is computed by quadrature, using the quadrature rule for the
  * basis associated with the collocation points.
  *
+ * If the mesh uses a Cartoon basis, the passed integrand must already be
+ * multiplied by the appropriate Jacobian determinants (i.e. both the
+ * \f$\boldsymbol{x}(\boldsymbol{\xi})\f$ and the cartesian to spherical/polar
+ * coordinates mappings, the latter being either
+ * \f$x^2\f$ or \f$x\f$, respectively).
+ *
  * \param integrand the function to integrate.
  * \param mesh the Mesh defining the grid points on the manifold.
  */

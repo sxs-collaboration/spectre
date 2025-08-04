@@ -27,6 +27,15 @@ Matrix interpolation_matrix(const size_t num_points, const T& target_points) {
         "Cannot do barycentric interpolation with Basis::FiniteDifference.  "
         "Use an IrregularInterpolant");
   }
+  if constexpr (BasisType == Spectral::Basis::Cartoon) {
+    ASSERT(num_points == 1, "A Cartoon basis can only have one point.");
+    const size_t num_target_points = get_size(target_points);
+    Matrix interp_matrix(num_target_points, num_points);
+    for (size_t k = 0; k < num_target_points; ++k) {
+      interp_matrix(k, 0) = 1.0;
+    }
+    return interp_matrix;
+  }
   constexpr size_t max_num_points =
       Spectral::maximum_number_of_points<BasisType>;
   constexpr size_t min_num_points =

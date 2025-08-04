@@ -545,6 +545,66 @@ void test_3d_spherical(const gsl::not_null<std::mt19937*> generator) {
     }
   }
 }
+
+void test_cartoon_spherical(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+
+  const size_t number_of_points = 6;
+  tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{number_of_points};
+  get<0>(xi_target) = make_with_random_values<DataVector>(
+      generator, make_not_null(&xi_distribution), xi_target);
+  get<1>(xi_target) = DataVector(number_of_points, 0.0);
+  get<2>(xi_target) = DataVector(number_of_points, 0.0);
+  for (size_t n_x = 4; n_x < 6; ++n_x) {
+    const Mesh<3> source_mesh{
+        {{n_x, 1, 1}},
+        {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+          Spectral::Basis::Cartoon}},
+        {{Spectral::Quadrature::GaussLobatto,
+          Spectral::Quadrature::SphericalSymmetry,
+          Spectral::Quadrature::SphericalSymmetry}}};
+    const Polynomial f_r{n_x - 1, 1.5, 2.0};
+    const auto xi_source = logical_coordinates(source_mesh);
+    const DataVector f_source = f_r(get<0>(xi_source));
+    const DataVector f_expected = f_r(get<0>(xi_target));
+    const intrp::Irregular<3> interpolator(source_mesh, xi_target);
+    const DataVector f_interpolated = interpolator.interpolate(f_source);
+    CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+  }
+}
+
+void test_cartoon_axial(const gsl::not_null<std::mt19937*> generator) {
+  std::uniform_real_distribution<> xi_distribution(-1.0, 1.0);
+
+  const size_t number_of_points = 6;
+  tnsr::I<DataVector, 3, Frame::ElementLogical> xi_target{number_of_points};
+  get<0>(xi_target) = make_with_random_values<DataVector>(
+      generator, make_not_null(&xi_distribution), xi_target);
+  get<1>(xi_target) = make_with_random_values<DataVector>(
+      generator, make_not_null(&xi_distribution), xi_target);
+  get<2>(xi_target) = DataVector(number_of_points, 0.0);
+  for (size_t n_x = 4; n_x < 6; ++n_x) {
+    for (size_t n_y = 4; n_y < 6; ++n_y) {
+      const Mesh<3> source_mesh{
+          {{n_x, n_y, 1}},
+          {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+            Spectral::Basis::Cartoon}},
+          {{Spectral::Quadrature::GaussLobatto,
+            Spectral::Quadrature::GaussLobatto,
+            Spectral::Quadrature::AxialSymmetry}}};
+      const Polynomial f_x{n_x - 1, 1.5, 2.0};
+      const Polynomial f_y{n_y - 1, 2.5, 1.5};
+      const auto xi_source = logical_coordinates(source_mesh);
+      const DataVector f_source =
+          f_x(get<0>(xi_source)) * f_y(get<1>(xi_source));
+      const DataVector f_expected =
+          f_x(get<0>(xi_target)) * f_y(get<1>(xi_target));
+      const intrp::Irregular<3> interpolator(source_mesh, xi_target);
+      const DataVector f_interpolated = interpolator.interpolate(f_source);
+      CHECK_ITERABLE_APPROX(f_interpolated, f_expected);
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
@@ -566,4 +626,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.IrregularInterpolant",
   MAKE_GENERATOR(generator);
   test_2d_spherical(make_not_null(&generator));
   test_3d_spherical(make_not_null(&generator));
+  test_cartoon_spherical(make_not_null(&generator));
+  test_cartoon_axial(make_not_null(&generator));
 }
