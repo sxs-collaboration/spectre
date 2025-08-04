@@ -31,7 +31,7 @@ class GlobalCache;
 namespace Tags {
 template <typename Tag>
 struct HistoryEvolvedVariables;
-struct IsUsingTimeSteppingErrorControl;
+struct StepperErrorEstimatesEnabled;
 template <typename Tag>
 struct StepperErrorTolerances;
 struct TimeStep;
@@ -46,10 +46,9 @@ template <typename System, typename VariablesTag, typename DbTags>
 void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
   using history_tag = Tags::HistoryEvolvedVariables<VariablesTag>;
   bool is_using_error_control = false;
-  if constexpr (db::tag_is_retrievable_v<Tags::IsUsingTimeSteppingErrorControl,
+  if constexpr (db::tag_is_retrievable_v<Tags::StepperErrorEstimatesEnabled,
                                          db::DataBox<DbTags>>) {
-    is_using_error_control =
-        db::get<Tags::IsUsingTimeSteppingErrorControl>(*box);
+    is_using_error_control = db::get<Tags::StepperErrorEstimatesEnabled>(*box);
   }
   if (is_using_error_control) {
     using error_tag = ::Tags::StepperErrors<VariablesTag>;
@@ -148,7 +147,7 @@ namespace Actions {
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepper<TimeStepper>
-///   - Tags::IsUsingTimeSteppingErrorControl
+///   - Tags::StepperErrorEstimatesEnabled
 ///
 /// DataBox changes:
 /// - Adds: nothing

@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -18,33 +19,14 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
-#include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/Slab.hpp"
-#include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
-#include "Time/StepChoosers/LimitIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
-#include "Time/Tags/StepChoosers.hpp"
-#include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
-#include "Time/Tags/TimeStepper.hpp"
-#include "Time/Tags/VariableOrderAlgorithm.hpp"
 #include "Time/TimeStepRequest.hpp"
-#include "Time/TimeSteppers/AdamsBashforth.hpp"
-#include "Time/TimeSteppers/LtsTimeStepper.hpp"
-#include "Time/VariableOrderAlgorithm.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -61,51 +43,24 @@ struct EvolvedVar2 : db::SimpleTag {
   using type = tnsr::i<DataVector, 2>;
 };
 
-struct EvolvedVar3 : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-
 using EvolvedVariablesTag =
     Tags::Variables<tmpl::list<EvolvedVar1, EvolvedVar2>>;
 
-using AltEvolvedVariablesTag = Tags::Variables<tmpl::list<EvolvedVar3>>;
-
 struct ErrorControlSelecter {
-  static std::string name() {
-    return "SelectorLabel";
-  }
+  static std::string name() { return "SelectorLabel"; }
 };
 
-template <bool WithErrorControl, bool WithAltErrorControl = false>
 struct Metavariables {
-  using step_choosers_without_error_control =
-      tmpl::list<StepChoosers::LimitIncrease, StepChoosers::Constant>;
-  template <typename Use>
-  using step_choosers = tmpl::append<
-      step_choosers_without_error_control,
-      tmpl::conditional_t<
-          WithErrorControl,
-          tmpl::list<StepChoosers::ErrorControl<Use, EvolvedVariablesTag>>,
-          tmpl::list<>>,
-      tmpl::conditional_t<
-          WithAltErrorControl,
-          tmpl::list<StepChoosers::ErrorControl<Use, AltEvolvedVariablesTag,
-                                                ErrorControlSelecter>>,
-          tmpl::list<>>>;
-
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<Event, tmpl::list<Events::ChangeSlabSize,
-                                               Events::Completion>>,
-                  tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             step_choosers<StepChooserUse::LtsStep>>,
-                  tmpl::pair<StepChooser<StepChooserUse::Slab>,
-                             step_choosers<StepChooserUse::Slab>>,
-                  tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::list<StepChoosers::ErrorControl<
+                       StepChooserUse::LtsStep, EvolvedVariablesTag>>>,
+        tmpl::pair<StepChooser<StepChooserUse::Slab>,
+                   tmpl::list<StepChoosers::ErrorControl<
+                       StepChooserUse::Slab, EvolvedVariablesTag>>>>;
   };
-
-  using component_list = tmpl::list<>;
 };
 
 template <typename StepChooserUse>
@@ -116,9 +71,9 @@ std::optional<double> get_suggestion(
     const std::optional<StepperErrorEstimate>& previous_error,
     const double previous_step) {
   auto box = db::create<
-      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                         Tags::StepperErrors<EvolvedVariablesTag>>>(
-      Metavariables<true>{}, std::array{previous_error, error});
+      Metavariables{}, std::array{previous_error, error});
 
   const std::unique_ptr<StepChooser<StepChooserUse>> error_control_base =
       std::make_unique<
@@ -258,315 +213,10 @@ void test_chooser() {
             .uses_local_data());
 }
 
-void test_tags() {
-  // Test compute tags
-  TestHelpers::db::test_compute_tag<
-      Tags::IsUsingTimeSteppingErrorControlCompute<true>>(
-      "IsUsingTimeSteppingErrorControl");
-  TestHelpers::db::test_compute_tag<
-      Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, true>>(
-      "StepperErrorTolerances(Variables(EvolvedVar1,EvolvedVar2))");
-
-  {
-    INFO("Compute tag LTS test");
-    const auto test_lts_tags = [](const auto box, const bool all_orders) {
-      const auto expected_estimates =
-          all_orders ? StepperErrorTolerances::Estimates::AllOrders
-                     : StepperErrorTolerances::Estimates::StepperOrder;
-
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers =
-                TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                           Metavariables<true, true>>(
-                    "- ErrorControl:\n"
-                    "    SafetyFactor: 0.95\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-4\n"
-                    "    MaxFactor: 2.1\n"
-                    "    MinFactor: 0.5\n"
-                    "- LimitIncrease:\n"
-                    "    Factor: 2\n"
-                    "- Constant: 0.5");
-          },
-          box);
-      CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(*box));
-      CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box) ==
-            StepperErrorTolerances{.estimates = expected_estimates,
-                                   .absolute = 1.0e-5,
-                                   .relative = 1.0e-4});
-      CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers =
-                TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                           Metavariables<true, true>>(
-                    "- LimitIncrease:\n"
-                    "    Factor: 2\n"
-                    "- Constant: 0.5");
-          },
-          box);
-      CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(*box));
-      CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-      CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers =
-                TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                           Metavariables<true, true>>("");
-          },
-          box);
-      CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(*box));
-      CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-      CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers =
-                TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                           Metavariables<true, true>>(
-                    "- ErrorControl:\n"
-                    "    SafetyFactor: 0.95\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-4\n"
-                    "    MaxFactor: 2.1\n"
-                    "    MinFactor: 0.5\n"
-                    "- ErrorControl:\n"
-                    "    SafetyFactor: 0.8\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-4\n"
-                    "    MaxFactor: 1.1\n"
-                    "    MinFactor: 0.1\n"
-                    "- LimitIncrease:\n"
-                    "    Factor: 2\n"
-                    "- Constant: 0.5");
-          },
-          box);
-      CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(*box));
-      CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box) ==
-            StepperErrorTolerances{.estimates = expected_estimates,
-                                   .absolute = 1.0e-5,
-                                   .relative = 1.0e-4});
-      CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(*box)
-                .estimates == StepperErrorTolerances::Estimates::None);
-
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers =
-                TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                           Metavariables<true, true>>(
-                    "- ErrorControl:\n"
-                    "    SafetyFactor: 0.95\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-4\n"
-                    "    MaxFactor: 2.1\n"
-                    "    MinFactor: 0.5\n"
-                    "- ErrorControl(SelectorLabel):\n"
-                    "    SafetyFactor: 0.8\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-8\n"
-                    "    MaxFactor: 1.1\n"
-                    "    MinFactor: 0.1\n"
-                    "- LimitIncrease:\n"
-                    "    Factor: 2\n"
-                    "- Constant: 0.5");
-          },
-          box);
-      CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(*box));
-      CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box) ==
-            StepperErrorTolerances{.estimates = expected_estimates,
-                                   .absolute = 1.0e-5,
-                                   .relative = 1.0e-4});
-      CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(
-                *box) == StepperErrorTolerances{.estimates = expected_estimates,
-                                                .absolute = 1.0e-5,
-                                                .relative = 1.0e-8});
-
-      db::mutate<Tags::StepChoosers>(
-          [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
-            *choosers =
-                TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                           Metavariables<true, true>>(
-                    "- ErrorControl:\n"
-                    "    SafetyFactor: 0.95\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-4\n"
-                    "    MaxFactor: 2.1\n"
-                    "    MinFactor: 0.5\n"
-                    "- ErrorControl:\n"
-                    "    SafetyFactor: 0.8\n"
-                    "    AbsoluteTolerance: 1.0e-5\n"
-                    "    RelativeTolerance: 1.0e-8\n"
-                    "    MaxFactor: 1.1\n"
-                    "    MinFactor: 0.1\n"
-                    "- LimitIncrease:\n"
-                    "    Factor: 2\n"
-                    "- Constant: 0.5");
-          },
-          box);
-      CHECK_THROWS_WITH(
-          db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(*box),
-          Catch::Matchers::ContainsSubstring("All ErrorControl events for ") and
-              Catch::Matchers::ContainsSubstring("EvolvedVar1") and
-              Catch::Matchers::ContainsSubstring(
-                  " must use the same tolerances."));
-    };
-
-    auto box = db::create<
-        db::AddSimpleTags<Tags::StepChoosers,
-                          Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                          Tags::VariableOrderAlgorithm>,
-        tmpl::push_back<
-            time_stepper_ref_tags<LtsTimeStepper>,
-            Tags::IsUsingTimeSteppingErrorControlCompute<true>,
-            Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, true>,
-            Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag,
-                                                true>>>();
-
-    db::mutate<Tags::ConcreteTimeStepper<LtsTimeStepper>,
-               Tags::VariableOrderAlgorithm>(
-        [](const gsl::not_null<std::unique_ptr<LtsTimeStepper>*> time_stepper,
-           const gsl::not_null<VariableOrderAlgorithm*> vo_algorithm) {
-          *time_stepper = std::make_unique<TimeSteppers::AdamsBashforth>(4);
-          *vo_algorithm = VariableOrderAlgorithm(0.1);
-        },
-        make_not_null(&box));
-    test_lts_tags(make_not_null(&box), false);
-
-    db::mutate<Tags::VariableOrderAlgorithm>(
-        [](const gsl::not_null<VariableOrderAlgorithm*> vo_algorithm) {
-          *vo_algorithm = VariableOrderAlgorithm(4_st);
-        },
-        make_not_null(&box));
-    test_lts_tags(make_not_null(&box), false);
-
-    db::mutate<Tags::ConcreteTimeStepper<LtsTimeStepper>>(
-        [](const gsl::not_null<std::unique_ptr<LtsTimeStepper>*> time_stepper) {
-          *time_stepper =
-              std::make_unique<TimeSteppers::AdamsBashforth>(std::nullopt);
-        },
-        make_not_null(&box));
-    test_lts_tags(make_not_null(&box), false);
-
-    db::mutate<Tags::VariableOrderAlgorithm>(
-        [](const gsl::not_null<VariableOrderAlgorithm*> vo_algorithm) {
-          *vo_algorithm = VariableOrderAlgorithm(0.1);
-        },
-        make_not_null(&box));
-    test_lts_tags(make_not_null(&box), true);
-  }
-
-  {
-    INFO("Compute tag GTS test");
-    auto box = db::create<
-        db::AddSimpleTags<
-            Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>,
-        db::AddComputeTags<
-            Tags::IsUsingTimeSteppingErrorControlCompute<false>,
-            Tags::StepperErrorTolerancesCompute<EvolvedVariablesTag, false>,
-            Tags::StepperErrorTolerancesCompute<AltEvolvedVariablesTag,
-                                                false>>>();
-    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-        [](const gsl::not_null<EventsAndTriggers*> events) {
-          *events = TestHelpers::test_creation<EventsAndTriggers,
-                                               Metavariables<true, true>>(
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - Completion\n"
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - Completion\n"
-              "    - ChangeSlabSize:\n"
-              "        DelayChange: 0\n"
-              "        StepChoosers:\n"
-              "          - LimitIncrease:\n"
-              "              Factor: 2\n"
-              "          - ErrorControl:\n"
-              "              SafetyFactor: 0.95\n"
-              "              AbsoluteTolerance: 1.0e-5\n"
-              "              RelativeTolerance: 1.0e-4\n"
-              "              MaxFactor: 2.1\n"
-              "              MinFactor: 0.5\n"
-              "          - Constant: 0.5");
-        },
-        make_not_null(&box));
-    CHECK(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box) ==
-          StepperErrorTolerances{
-              .estimates = StepperErrorTolerances::Estimates::StepperOrder,
-              .absolute = 1.0e-5,
-              .relative = 1.0e-4});
-    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-
-    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-        [](const gsl::not_null<EventsAndTriggers*> events) {
-          *events = TestHelpers::test_creation<EventsAndTriggers,
-                                               Metavariables<true, true>>(
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - Completion\n"
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - Completion\n"
-              "    - ChangeSlabSize:\n"
-              "        DelayChange: 0\n"
-              "        StepChoosers:\n"
-              "          - LimitIncrease:\n"
-              "              Factor: 2\n"
-              "          - Constant: 0.5");
-        },
-        make_not_null(&box));
-    CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-
-    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-        [](const gsl::not_null<EventsAndTriggers*> events) {
-          *events = TestHelpers::test_creation<EventsAndTriggers,
-                                               Metavariables<true, true>>(
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - Completion\n"
-              "- Trigger: Always\n"
-              "  Events:\n"
-              "    - Completion");
-        },
-        make_not_null(&box));
-    CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-
-    db::mutate<Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(
-        [](const gsl::not_null<EventsAndTriggers*> events) {
-          *events = TestHelpers::test_creation<EventsAndTriggers,
-                                               Metavariables<true, true>>("");
-        },
-        make_not_null(&box));
-    CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControl>(box));
-    CHECK(db::get<Tags::StepperErrorTolerances<EvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-    CHECK(db::get<Tags::StepperErrorTolerances<AltEvolvedVariablesTag>>(box)
-              .estimates == StepperErrorTolerances::Estimates::None);
-  }
-}
-
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
-  register_factory_classes_with_charm<Metavariables<true>>();
+  register_factory_classes_with_charm<Metavariables>();
 
   test_chooser<StepChooserUse::Slab>();
   test_chooser<StepChooserUse::LtsStep>();
-  test_tags();
 }
 }  // namespace

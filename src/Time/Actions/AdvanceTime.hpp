@@ -27,9 +27,9 @@ template <typename Metavariables>
 class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
-struct IsUsingTimeSteppingErrorControl;
 template <typename Tag>
 struct Next;
+struct StepperErrorEstimatesEnabled;
 struct Time;
 struct TimeStep;
 struct TimeStepId;
@@ -68,11 +68,9 @@ struct AdvanceTime {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {  // NOLINT const
     bool is_using_error_control = false;
-    if constexpr (db::tag_is_retrievable_v<
-                      Tags::IsUsingTimeSteppingErrorControl,
-                      db::DataBox<DbTags>>) {
-      is_using_error_control =
-          db::get<Tags::IsUsingTimeSteppingErrorControl>(box);
+    if constexpr (db::tag_is_retrievable_v<Tags::StepperErrorEstimatesEnabled,
+                                           db::DataBox<DbTags>>) {
+      is_using_error_control = db::get<Tags::StepperErrorEstimatesEnabled>(box);
     }
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,

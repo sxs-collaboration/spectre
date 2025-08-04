@@ -26,9 +26,9 @@
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -109,7 +109,7 @@ void test_gts() {
                      Tags::TimeStep, EvolvedVariable, Tags::dt<EvolvedVariable>,
                      Tags::HistoryEvolvedVariables<EvolvedVariable>,
                      Tags::ConcreteTimeStepper<TimeStepper>,
-                     ::Tags::IsUsingTimeSteppingErrorControl,
+                     ::Tags::StepperErrorEstimatesEnabled,
                      ::Tags::StepperErrorTolerances<EvolvedVariable>,
                      ::Tags::MinimumTimeStep>,
                  time_stepper_ref_tags<TimeStepper>>(
@@ -174,7 +174,7 @@ void test_lts() {
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
           Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers,
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
-          ::Tags::IsUsingTimeSteppingErrorControl,
+          ::Tags::StepperErrorEstimatesEnabled,
           ::Tags::StepperErrorTolerances<EvolvedVariable>,
           Tags::AdaptiveSteppingDiagnostics, ::Tags::MinimumTimeStep>,
       tmpl::push_back<time_stepper_ref_tags<LtsTimeStepper>,

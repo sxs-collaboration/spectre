@@ -75,8 +75,8 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -929,7 +929,7 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
-      ::Tags::IsUsingTimeSteppingErrorControl,
+      ::Tags::StepperErrorEstimatesEnabled,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
           tmpl::list<::Tags::StepChoosers,

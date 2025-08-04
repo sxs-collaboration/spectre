@@ -32,8 +32,8 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -149,8 +149,7 @@ struct Component {
                           additional_history_tag, tmpl::list<>>,
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
       Tags::Time, Tags::StepNumberWithinSlab,
-      Tags::IsUsingTimeSteppingErrorControl,
-      Tags::AdaptiveSteppingDiagnostics>>;
+      Tags::StepperErrorEstimatesEnabled, Tags::AdaptiveSteppingDiagnostics>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;

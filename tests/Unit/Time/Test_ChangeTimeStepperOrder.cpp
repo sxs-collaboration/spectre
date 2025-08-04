@@ -37,6 +37,7 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -361,7 +362,7 @@ double run(std::unique_ptr<LtsTimeStepper> time_stepper, const double tolerance,
                         ::Tags::StepperErrors<System::variables_tag>>,
       tmpl::push_back<
           time_stepper_ref_tags<LtsTimeStepper>,
-          ::Tags::IsUsingTimeSteppingErrorControlCompute<true>,
+          ::Tags::StepperErrorEstimatesEnabledCompute<true>,
           ::Tags::StepperErrorTolerancesCompute<System::variables_tag, true>>>(
       Metavariables{}, std::move(time_stepper), VariableOrderAlgorithm(0.1),
       initial_time_step_id,
