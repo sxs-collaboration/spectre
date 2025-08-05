@@ -46,7 +46,6 @@ spectre_target_headers(
   SlabRoundingError.hpp
   StepperErrorEstimate.hpp
   StepperErrorTolerances.hpp
-  TakeStep.hpp
   Time.hpp
   TimeSequence.hpp
   TimeStepId.hpp

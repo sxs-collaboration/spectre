@@ -55,8 +55,9 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/BoundaryHistory.hpp"
+#include "Time/ChangeStepSize.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
-#include "Time/TakeStep.hpp"
 #include "Time/UpdateU.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
@@ -647,7 +648,10 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
       });
 
   if constexpr (LocalTimeStepping) {
-    take_step<EvolutionSystem, LocalTimeStepping, DgStepChoosers>(
+    db::mutate_apply<ChangeStepSize<DgStepChoosers>>(make_not_null(&box));
+    db::mutate_apply<RecordTimeStepperData<EvolutionSystem>>(
+        make_not_null(&box));
+    db::mutate_apply<UpdateU<EvolutionSystem, LocalTimeStepping>>(
         make_not_null(&box));
   }
 
