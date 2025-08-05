@@ -6,5 +6,4 @@ set(LIBRARY_SOURCES
   Actions/Test_AdvanceTime.cpp
   Actions/Test_CleanHistory.cpp
   Actions/Test_SelfStartActions.cpp
-  Actions/Test_TakeLtsStep.cpp
   PARENT_SCOPE)

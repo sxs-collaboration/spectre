@@ -8,5 +8,4 @@ spectre_target_headers(
   AdvanceTime.hpp
   CleanHistory.hpp
   SelfStartActions.hpp
-  TakeLtsStep.hpp
   )
