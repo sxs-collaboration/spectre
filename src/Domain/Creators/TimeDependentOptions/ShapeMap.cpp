@@ -254,7 +254,9 @@ FunctionsOfTimeMap get_shape_and_size(
             deformed_radius * 2.0 * sqrt(M_PI);
         // Set l=0 for shape map to 0 because size control will adjust l=0
         gsl::at(shape_funcs, i)[0] = 0.0;
-        if (set_l1_coefs_to_zero) {
+        // Always set l=1 derivatives to zero because shape control does not
+        // adjust these components
+        if (i >= (set_l1_coefs_to_zero ? 0 : 1)){
           for (int m = -1; m <= 1; m++) {
             gsl::at(shape_funcs, i)[iter.set(1_st, m)()] = 0.0;
           }
