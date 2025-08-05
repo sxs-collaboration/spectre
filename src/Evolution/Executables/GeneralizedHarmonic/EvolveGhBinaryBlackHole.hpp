@@ -565,7 +565,9 @@ struct EvolutionMetavars {
           use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
+                     Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+                     evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<

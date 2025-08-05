@@ -414,6 +414,8 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
+              Actions::MutateApply<RecordTimeStepperData<system>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   evolution::dg::ApplyBoundaryCorrections<
                       local_time_stepping, EvolutionMetavars, volume_dim, true>,
@@ -451,13 +453,10 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, false, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
-              evolution::Actions::RunEventsAndDenseTriggers<
-                  events_and_dense_triggers_subcell_postprocessors>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          events_and_dense_triggers_subcell_postprocessors>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::ValenciaDivClean::subcell::TciOnDgGrid<

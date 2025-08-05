@@ -56,8 +56,6 @@
 #include "Parallel/Invoke.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/ChangeStepSize.hpp"
-#include "Time/RecordTimeStepperData.hpp"
-#include "Time/UpdateU.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -359,10 +357,6 @@ struct ComputeTimeDerivative {
           LocalTimeStepping,
           typename ChangeStepSize<DgStepChoosers>::const_global_cache_tags,
           tmpl::list<>>>;
-  using simple_tags =
-      typename UpdateU<EvolutionSystem, LocalTimeStepping>::simple_tags;
-  using compute_tags =
-      typename UpdateU<EvolutionSystem, LocalTimeStepping>::compute_tags;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
@@ -650,10 +644,6 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
 
   if constexpr (LocalTimeStepping) {
     db::mutate_apply<ChangeStepSize<DgStepChoosers>>(make_not_null(&box));
-    db::mutate_apply<RecordTimeStepperData<EvolutionSystem>>(
-        make_not_null(&box));
-    db::mutate_apply<UpdateU<EvolutionSystem, LocalTimeStepping>>(
-        make_not_null(&box));
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),

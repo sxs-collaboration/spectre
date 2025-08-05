@@ -757,7 +757,9 @@ struct GhValenciaDivCleanTemplateBase<
           use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
+                     Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
@@ -790,14 +792,11 @@ struct GhValenciaDivCleanTemplateBase<
           Actions::MutateApply<grmhd::GhValenciaDivClean::subcell::
                                    ZeroMhdTimeDerivatives<system>>,
           tmpl::list<>>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
-              evolution::Actions::RunEventsAndDenseTriggers<
-                  events_and_dense_triggers_subcell_postprocessors>,
-              control_system::Actions::LimitTimeStep<control_systems>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          events_and_dense_triggers_subcell_postprocessors>,
+      control_system::Actions::LimitTimeStep<control_systems>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<

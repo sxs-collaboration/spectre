@@ -391,6 +391,8 @@ struct GeneralizedHarmonicTemplateBase {
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
+              Actions::MutateApply<RecordTimeStepperData<system>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                       volume_dim>,

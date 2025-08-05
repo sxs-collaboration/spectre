@@ -291,7 +291,9 @@ struct EvolutionMetavars {
           use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
+                     Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+                     evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                          evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>,
                          typename system::primitive_from_conservative>>,
@@ -343,11 +345,8 @@ struct EvolutionMetavars {
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, false, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::MutateApply<typename system::primitive_from_conservative>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<

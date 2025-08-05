@@ -253,12 +253,9 @@ struct EvolutionMetavars {
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, false, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
-              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
@@ -272,12 +269,9 @@ struct EvolutionMetavars {
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           volume_dim, false, use_dg_element_collection>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<
-              Actions::MutateApply<RecordTimeStepperData<system>>,
-              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
       Actions::CleanHistory<system, local_time_stepping>,
