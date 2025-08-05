@@ -582,7 +582,7 @@ struct EvolutionMetavars {
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                       volume_dim>>>,
               control_system::Actions::LimitTimeStep<control_systems>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       dg::Actions::Filter<
           Filters::Exponential<0>,

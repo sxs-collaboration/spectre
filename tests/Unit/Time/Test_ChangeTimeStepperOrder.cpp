@@ -28,6 +28,7 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/ChooseLtsStepSize.hpp"

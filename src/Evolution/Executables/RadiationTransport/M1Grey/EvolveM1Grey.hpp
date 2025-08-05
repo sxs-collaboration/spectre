@@ -212,7 +212,7 @@ struct EvolutionMetavars {
               imex::Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<imex::ImplicitDenseOutput<system>>>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       imex::Actions::DoImplicitStep<system>,
       Actions::CleanHistory<system, local_time_stepping>,
       Actions::MutateApply<imex::CleanHistory<system>>,

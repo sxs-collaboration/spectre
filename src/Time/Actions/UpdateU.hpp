@@ -15,6 +15,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/StepperErrorTolerances.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -45,56 +46,46 @@ namespace update_u_detail {
 template <typename System, typename VariablesTag, typename DbTags>
 void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
   using history_tag = Tags::HistoryEvolvedVariables<VariablesTag>;
-  bool is_using_error_control = false;
-  if constexpr (db::tag_is_retrievable_v<Tags::StepperErrorEstimatesEnabled,
-                                         db::DataBox<DbTags>>) {
-    is_using_error_control = db::get<Tags::StepperErrorEstimatesEnabled>(*box);
-  }
+  const bool is_using_error_control =
+      db::get<Tags::StepperErrorEstimatesEnabled>(*box);
   if (is_using_error_control) {
     using error_tag = ::Tags::StepperErrors<VariablesTag>;
-    if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
-      db::mutate<VariablesTag, error_tag>(
-          [&](const gsl::not_null<typename VariablesTag::type*> vars,
-              const gsl::not_null<typename error_tag::type*> errors,
-              const typename history_tag::type& history,
-              const ::TimeDelta& time_step, const TimeStepper& time_stepper,
-              StepperErrorTolerances tolerances) {
-            // If we are doing variable-order h-refinement we need
-            // low-order error estimates to restart elements.
-            // Figuring out whether we are actually doing that is
-            // hard, but since it can only happen at LTS slab
-            // boundaries it's not a big deal if we do a little extra
-            // work.  As of this writing, we do not use variable-order
-            // steppers in GTS.
-            if (tolerances.estimates !=
-                    StepperErrorTolerances::Estimates::None and
-                variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
-                    time_stepper.order()) and
-                (history.back().time_step_id.step_time() + time_step)
-                    .is_at_slab_boundary()) {
-              tolerances.estimates =
-                  StepperErrorTolerances::Estimates::AllOrders;
+    db::mutate<VariablesTag, error_tag>(
+        [&](const gsl::not_null<typename VariablesTag::type*> vars,
+            const gsl::not_null<typename error_tag::type*> errors,
+            const typename history_tag::type& history,
+            const ::TimeDelta& time_step, const TimeStepper& time_stepper,
+            StepperErrorTolerances tolerances) {
+          // If we are doing variable-order h-refinement we need
+          // low-order error estimates to restart elements.
+          // Figuring out whether we are actually doing that is
+          // hard, but since it can only happen at LTS slab
+          // boundaries it's not a big deal if we do a little extra
+          // work.  As of this writing, we do not use variable-order
+          // steppers in GTS.
+          if (tolerances.estimates !=
+                  StepperErrorTolerances::Estimates::None and
+              variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
+                  time_stepper.order()) and
+              (history.back().time_step_id.step_time() + time_step)
+                  .is_at_slab_boundary()) {
+            tolerances.estimates = StepperErrorTolerances::Estimates::AllOrders;
+          }
+          const auto error =
+              time_stepper.update_u(vars, history, time_step, tolerances);
+          if (error.has_value()) {
+            // Save the previous error if there was one, but not if this is a
+            // retry of the same step.
+            if ((*errors)[1].has_value() and
+                (*errors)[1]->step_time != error->step_time) {
+              (*errors)[0] = (*errors)[1];
             }
-            const auto error =
-                time_stepper.update_u(vars, history, time_step, tolerances);
-            if (error.has_value()) {
-              // Save the previous error if there was one, but not if this is a
-              // retry of the same step.
-              if ((*errors)[1].has_value() and
-                  (*errors)[1]->step_time != error->step_time) {
-                (*errors)[0] = (*errors)[1];
-              }
-              (*errors)[1].emplace(*error);
-            }
-          },
-          box, db::get<history_tag>(*box), db::get<Tags::TimeStep>(*box),
-          db::get<Tags::TimeStepper<TimeStepper>>(*box),
-          db::get<Tags::StepperErrorTolerances<VariablesTag>>(*box));
-    } else {
-      ERROR(
-          "Cannot update the stepper error measure -- "
-          "`::Tags::StepperErrors<VariablesTag>` is not present in the box.");
-    }
+            (*errors)[1].emplace(*error);
+          }
+        },
+        box, db::get<history_tag>(*box), db::get<Tags::TimeStep>(*box),
+        db::get<Tags::TimeStepper<TimeStepper>>(*box),
+        db::get<Tags::StepperErrorTolerances<VariablesTag>>(*box));
   } else {
     db::mutate<VariablesTag>(
         [](const gsl::not_null<typename VariablesTag::type*> vars,
@@ -154,8 +145,21 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   - variables_tag
-template <typename System>
-struct UpdateU {
+/// @{
+template <typename System, bool LocalTimeStepping,
+          typename = tmpl::conditional_t<
+              tt::is_a_v<tmpl::list, typename System::variables_tag>,
+              typename System::variables_tag,
+              tmpl::list<typename System::variables_tag>>>
+struct UpdateU;
+
+template <typename System, bool LocalTimeStepping, typename... VariablesTags>
+struct UpdateU<System, LocalTimeStepping, tmpl::list<VariablesTags...>> {
+  using simple_tags = tmpl::list<::Tags::StepperErrors<VariablesTags>...>;
+  using compute_tags = tmpl::list<
+      Tags::StepperErrorEstimatesEnabledCompute<LocalTimeStepping>,
+      Tags::StepperErrorTolerancesCompute<VariablesTags, LocalTimeStepping>...>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -168,4 +172,5 @@ struct UpdateU {
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
+/// @}
 }  // namespace Actions

@@ -456,7 +456,7 @@ struct ScalarTensorTemplateBase {
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       // We allow for separate filtering of the system variables
       dg::Actions::Filter<Filters::Exponential<0>,

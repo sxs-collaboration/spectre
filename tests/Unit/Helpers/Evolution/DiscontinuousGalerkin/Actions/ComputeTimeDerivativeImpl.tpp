@@ -69,6 +69,9 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -82,11 +85,13 @@
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
+#include "Time/Tags/VariableOrderAlgorithm.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/VariableOrderAlgorithm.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -913,10 +918,10 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
-      ::Tags::StepperErrorEstimatesEnabled,
+      ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepChoosers,
+          tmpl::list<::Tags::StepChoosers, ::Tags::VariableOrderAlgorithm,
                      ::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
           tmpl::list<::Tags::ConcreteTimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
@@ -1352,8 +1357,9 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
-         false,
+         EventsAndTriggers{},
          std::move(step_choosers),
+         VariableOrderAlgorithm{5_st},
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforth>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -1385,8 +1391,9 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::make_coordinate_map_base<Frame::BlockLogical,
                                                   Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
-             false,
+             EventsAndTriggers{},
              std::move(step_choosers),
+             VariableOrderAlgorithm{5_st},
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforth>(5))});
       }
@@ -1417,7 +1424,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
-         false,
+         EventsAndTriggers{},
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforth>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -1449,7 +1456,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::make_coordinate_map_base<Frame::BlockLogical,
                                                   Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
-             false,
+             EventsAndTriggers{},
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforth>(5))});
       }

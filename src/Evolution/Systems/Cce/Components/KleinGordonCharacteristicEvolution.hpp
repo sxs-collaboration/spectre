@@ -17,6 +17,7 @@
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/TakeLtsStep.hpp"
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -117,7 +118,7 @@ struct KleinGordonCharacteristicEvolution
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
       ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>>;
+      ::Actions::UpdateU<cce_system, Metavariables::local_time_stepping>>;
 
   using extract_action_list = tmpl::list<
       Actions::RequestBoundaryData<

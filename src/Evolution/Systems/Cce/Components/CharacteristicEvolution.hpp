@@ -197,7 +197,7 @@ struct CharacteristicEvolution {
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
       ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>,
+      ::Actions::UpdateU<cce_system, Metavariables::local_time_stepping>,
       ::Actions::CleanHistory<cce_system, false>>;
 
   using extract_action_list = tmpl::list<

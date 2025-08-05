@@ -54,7 +54,7 @@
 #include "Parallel/ArrayCollection/SendDataToElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/TakeStep.hpp"
@@ -357,6 +357,12 @@ struct ComputeTimeDerivative {
                  domain::Tags::ExternalBoundaryConditions<Dim>>,
       tmpl::conditional_t<LocalTimeStepping,
                           tmpl::list<::Tags::MinimumTimeStep>, tmpl::list<>>>;
+  using simple_tags =
+      typename ::Actions::UpdateU<EvolutionSystem,
+                                  LocalTimeStepping>::simple_tags;
+  using compute_tags =
+      typename ::Actions::UpdateU<EvolutionSystem,
+                                  LocalTimeStepping>::compute_tags;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,

@@ -764,7 +764,7 @@ struct GhValenciaDivCleanTemplateBase<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<derived_metavars>,
       Limiters::Actions::Limit<derived_metavars>,
@@ -796,7 +796,7 @@ struct GhValenciaDivCleanTemplateBase<
                      evolution::Actions::RunEventsAndDenseTriggers<
                          events_and_dense_triggers_subcell_postprocessors>,
                      control_system::Actions::LimitTimeStep<control_systems>,
-                     Actions::UpdateU<system>>>,
+                     Actions::UpdateU<system, local_time_stepping>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<
@@ -830,7 +830,7 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
       control_system::Actions::LimitTimeStep<control_systems>,
-      Actions::UpdateU<system>,
+      Actions::UpdateU<system, local_time_stepping>,
       Actions::CleanHistory<system, local_time_stepping>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<

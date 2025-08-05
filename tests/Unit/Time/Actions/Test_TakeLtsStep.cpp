@@ -15,6 +15,9 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Actions/TakeLtsStep.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -23,11 +26,16 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
+#include "Time/Tags/StepperErrorTolerances.hpp"
+#include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
+#include "Time/Tags/VariableOrderAlgorithm.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
+#include "Time/VariableOrderAlgorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -48,7 +56,9 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tags =
-      tmpl::list<Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers>;
+      tmpl::list<Tags::ConcreteTimeStepper<LtsTimeStepper>,
+                 Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+                 Tags::StepChoosers, Tags::VariableOrderAlgorithm>;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                         Tags::TimeStep, Tags::AdaptiveSteppingDiagnostics, Var,
@@ -89,7 +99,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.TakeLtsStep", "[Unit][Time][Actions]") {
   using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{serialize_and_deserialize(time_stepper),
-                            Tags::StepChoosers::type{}, minimum_step}};
+                            EventsAndTriggers{}, Tags::StepChoosers::type{},
+                            VariableOrderAlgorithm{2_st}, minimum_step}};
 
   const double initial_value = 4.0;
   const double derivative = -7.0;
@@ -99,13 +110,17 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.TakeLtsStep", "[Unit][Time][Actions]") {
         ActionTesting::emplace_component_and_initialize<component>(
             &runner, 0, {box_data...});
         return db::create<
-            tmpl::push_back<component::simple_tags,
-                            Parallel::Tags::MetavariablesImpl<Metavariables>,
-                            Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                            Tags::StepChoosers, Tags::MinimumTimeStep>,
-            component::compute_tags>(box_data..., Metavariables{},
-                                     std::move(time_stepper),
-                                     Tags::StepChoosers::type{}, minimum_step);
+            tmpl::push_back<
+                component::simple_tags,
+                Parallel::Tags::MetavariablesImpl<Metavariables>,
+                Tags::ConcreteTimeStepper<LtsTimeStepper>, Tags::StepChoosers,
+                Tags::MinimumTimeStep, Tags::StepperErrorEstimatesEnabled,
+                Tags::StepperErrorTolerances<Var>, Tags::StepperErrors<Var>>,
+            component::compute_tags>(
+            box_data..., Metavariables{}, std::move(time_stepper),
+            Tags::StepChoosers::type{}, minimum_step, false,
+            Tags::StepperErrorTolerances<Var>::type{},
+            Tags::StepperErrors<Var>::type{});
       }(time_step_id, next_time_step_id, time_step,
         Tags::AdaptiveSteppingDiagnostics::type{}, initial_value, derivative,
         history);

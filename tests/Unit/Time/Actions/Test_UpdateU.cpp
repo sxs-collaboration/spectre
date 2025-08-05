@@ -17,6 +17,9 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepperErrorEstimate.hpp"
@@ -68,19 +71,20 @@ struct Component {
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags =
       tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
-                 Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                 ::Tags::StepperErrorEstimatesEnabled, Var,
+                 Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Var,
                  Tags::HistoryEvolvedVariables<Var>, AlternativeVar,
-                 Tags::HistoryEvolvedVariables<AlternativeVar>>;
+                 Tags::HistoryEvolvedVariables<AlternativeVar>,
+                 Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::UpdateU<
-                                 typename metavariables::system_for_test>>>>;
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<Actions::UpdateU<typename metavariables::system_for_test,
+                                      false>>>>;
 };
 
 template <typename System>
@@ -106,17 +110,24 @@ void test_integration() {
     return 2. * t - 2. * (y - t * t);
   };
 
-  auto box =
-      db::create<db::AddSimpleTags<
-                     Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
-                     Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                     ::Tags::StepperErrorEstimatesEnabled, Var, history_tag,
-                     AlternativeVar, alternative_history_tag>,
-                 time_stepper_ref_tags<TimeStepper>>(
-          std::move(time_stepper), initial_id,
-          time_stepper->next_time_id(initial_id, time_step), time_step, false,
-          1., typename history_tag::type{3}, 1.,
-          typename alternative_history_tag::type{3});
+  auto box = db::create<
+      db::AddSimpleTags<
+          Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
+          Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+          ::Tags::StepperErrorEstimatesEnabled, Var, history_tag,
+          AlternativeVar, alternative_history_tag,
+          Tags::StepperErrorTolerances<Var>, Tags::StepperErrors<Var>,
+          Tags::StepperErrorTolerances<AlternativeVar>,
+          Tags::StepperErrors<AlternativeVar>>,
+      time_stepper_ref_tags<TimeStepper>>(
+      std::move(time_stepper), initial_id,
+      time_stepper->next_time_id(initial_id, time_step), time_step, false, 1.,
+      typename history_tag::type{3}, 1.,
+      typename alternative_history_tag::type{3},
+      Tags::StepperErrorTolerances<Var>::type{},
+      Tags::StepperErrors<Var>::type{},
+      Tags::StepperErrorTolerances<AlternativeVar>::type{},
+      Tags::StepperErrors<AlternativeVar>::type{});
 
   // The exact answer is y = x^2, but the integrator would need a
   // smaller step size to get that accurately.
@@ -175,9 +186,10 @@ void test_action() {
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
       {std::move(time_stepper), initial_id,
-       time_stepper->next_time_id(initial_id, time_step), time_step, false,
-       vars, std::move(history), AlternativeVar::type{},
-       Tags::HistoryEvolvedVariables<AlternativeVar>::type{}});
+       time_stepper->next_time_id(initial_id, time_step), time_step, vars,
+       std::move(history), AlternativeVar::type{},
+       Tags::HistoryEvolvedVariables<AlternativeVar>::type{},
+       EventsAndTriggers{}});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 

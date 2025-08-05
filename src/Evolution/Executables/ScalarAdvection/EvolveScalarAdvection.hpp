@@ -258,7 +258,7 @@ struct EvolutionMetavars {
           tmpl::list<
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
@@ -277,7 +277,7 @@ struct EvolutionMetavars {
           tmpl::list<
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
       Actions::CleanHistory<system, local_time_stepping>,
@@ -291,7 +291,8 @@ struct EvolutionMetavars {
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           ScalarAdvection::subcell::TimeDerivative<volume_dim>>,
-      Actions::RecordTimeStepperData<system>, Actions::UpdateU<system>,
+      Actions::RecordTimeStepperData<system>,
+      Actions::UpdateU<system, local_time_stepping>,
       Actions::CleanHistory<system, local_time_stepping>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           ScalarAdvection::subcell::TciOnFdGrid<volume_dim>>,

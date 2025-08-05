@@ -102,23 +102,24 @@ void test_gts() {
       },
       [](const auto y, const auto /*t*/) { return 1.0e-2 * y; }, time_step, 4);
 
-  auto box =
-      db::create<db::AddSimpleTags<
-                     Parallel::Tags::MetavariablesImpl<Metavariables>,
-                     Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                     Tags::TimeStep, EvolvedVariable, Tags::dt<EvolvedVariable>,
-                     Tags::HistoryEvolvedVariables<EvolvedVariable>,
-                     Tags::ConcreteTimeStepper<TimeStepper>,
-                     ::Tags::StepperErrorEstimatesEnabled,
-                     ::Tags::StepperErrorTolerances<EvolvedVariable>,
-                     ::Tags::MinimumTimeStep>,
-                 time_stepper_ref_tags<TimeStepper>>(
-          Metavariables{}, TimeStepId{true, 0_st, slab.start()},
-          TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, initial_values,
-          DataVector{5, 0.0}, std::move(history),
-          static_cast<std::unique_ptr<TimeStepper>>(
-              std::make_unique<TimeSteppers::AdamsBashforth>(5)),
-          false, StepperErrorTolerances{}, 1e-8);
+  auto box = db::create<
+      db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
+          Tags::Next<Tags::TimeStepId>, Tags::TimeStep, EvolvedVariable,
+          Tags::dt<EvolvedVariable>,
+          Tags::HistoryEvolvedVariables<EvolvedVariable>,
+          Tags::ConcreteTimeStepper<TimeStepper>,
+          ::Tags::StepperErrorEstimatesEnabled,
+          ::Tags::StepperErrorTolerances<EvolvedVariable>,
+          ::Tags::StepperErrors<EvolvedVariable>, ::Tags::MinimumTimeStep>,
+      time_stepper_ref_tags<TimeStepper>>(
+      Metavariables{}, TimeStepId{true, 0_st, slab.start()},
+      TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, initial_values,
+      DataVector{5, 0.0}, std::move(history),
+      static_cast<std::unique_ptr<TimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforth>(5)),
+      false, StepperErrorTolerances{},
+      ::Tags::StepperErrors<EvolvedVariable>::type{}, 1e-8);
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(update_rhs, make_not_null(&box),
                                         db::get<EvolvedVariable>(box));

@@ -429,7 +429,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<system::primitive_from_conservative<
                       ordered_list_of_primitive_recovery_schemes>>>,
-              Actions::UpdateU<system>>>,
+              Actions::UpdateU<system, local_time_stepping>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
@@ -456,7 +456,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           tmpl::list<Actions::RecordTimeStepperData<system>,
                      evolution::Actions::RunEventsAndDenseTriggers<
                          events_and_dense_triggers_subcell_postprocessors>,
-                     Actions::UpdateU<system>>>,
+                     Actions::UpdateU<system, local_time_stepping>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
@@ -494,7 +494,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
       Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
-      Actions::UpdateU<system>,
+      Actions::UpdateU<system, local_time_stepping>,
       Actions::CleanHistory<system, local_time_stepping>,
       Actions::MutateApply<
           grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
