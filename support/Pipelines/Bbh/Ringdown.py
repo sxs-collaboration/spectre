@@ -68,6 +68,8 @@ def start_ringdown(
     number_of_ahc_finds_for_fit: int,
     match_time: float,
     settling_timescale: float,
+    excision_factor: float,
+    outward_velocity: float,
     zero_coefs_eps: float,
     refinement_level: int,
     polynomial_order: int,
@@ -201,6 +203,15 @@ def start_ringdown(
         [0.0, 0.0, 0.0],
     ]
 
+    # Rescale the coefficients of the apparent horizon to initialize the Shape
+    # map. This is done to ensure that the excision sphere has the same shape as
+    # the apparent horizon.
+    # Here we rescale by the excision factor on the assumption that we will set
+    # l00 to zero for the initial values of the Size map. This choice will
+    # defines the horizon radius in the grid frame to match the one measured
+    # from the common horizon used to initialize the Shape/Size maps.
+    # If l00 is not set to zero, the scale factor required has additional term
+    # proportional to on l00 has not been added
     ringdown_ylm_coefs, ringdown_ylm_legend = (
         compute_ahc_coefs_in_ringdown_distorted_frame(
             str(ahc_reductions_path),
@@ -210,8 +221,40 @@ def start_ringdown(
             match_time,
             settling_timescale,
             zero_coefs_eps,
+            excision_factor,
         )
     )
+
+    # Get size map quanties.
+    # Convert SPHEREPACK to spherical harmonic coefficients.
+    # Minus sign due to convention of Shape map.
+    size_initial_values = -np.sqrt(np.pi / 2) * np.array(
+        [
+            ringdown_ylm_coefs[0][5],
+            ringdown_ylm_coefs[1][5],
+            ringdown_ylm_coefs[2][5],
+        ]
+    )
+
+    # Compute horizon averaged size: r_ah = S00 * Y00.
+    # Here Y00 = 1 / sqrt(4 * pi). Minus sign due to convention of the Shape
+    # map coefficients. Here we also need to undo the rescaling of the
+    # 00-coefficient to get the coefficent of the horizon strahlkorper.
+    S00 = -size_initial_values[0] / excision_factor
+    r_ah = S00 / np.sqrt(4 * np.pi)
+
+    # Set excision radius
+    r_excision = excision_factor * r_ah
+
+    # Set l00 to zero, thus defining the size of the horizon in the grid frame
+    # to match r_ah
+    size_initial_values[0] = 0.0
+
+    # Correct the Size map velocity with additional outward velocity.
+    # (useful to avoid incoming characteristic speeds).
+    # Minus sign due to convention of Shape map coefficients.
+    # Outward_velocity is normalized by Y00.
+    size_initial_values[1] -= outward_velocity * np.sqrt(4 * np.pi)
 
     # Setting up and writing the distorted coefficients output file.
     output_subfile_ahc = output_subfile_prefix + "AhC_Ylm"
@@ -250,8 +293,12 @@ def start_ringdown(
     logger.debug("Match time: " + str(match_time))
     logger.debug("Settling timescale: " + str(settling_timescale))
     logger.debug("Lmax: " + str(int(ringdown_ylm_coefs[0][4])))
+    logger.debug("Averaged horizon radius: " + str(r_ah))
+    logger.debug("Excision radius: " + str(r_excision))
+    logger.debug("Scale Factor: " + str(excision_factor))
 
     ringdown_params["MatchTime"] = match_time
+    ringdown_params["SettlingTimescale"] = settling_timescale
     ringdown_params["ShapeMapLMax"] = int(ringdown_ylm_coefs[0][4])
     ringdown_params["PathToAhCCoefsH5File"] = path_to_output_h5
     ringdown_params["AhCCoefsSubfilePrefix"] = output_subfile_prefix
@@ -271,6 +318,15 @@ def start_ringdown(
         width=float("inf"),
     ).strip()
 
+    ringdown_params["SizeInitialValues"] = yaml.safe_dump(
+        size_initial_values.tolist(),
+        default_flow_style=True,
+        width=float("inf"),
+        line_break=None,
+    ).strip()
+
+    # Place the excision sphere at a fraction of the averaged horizon radius
+    ringdown_params["InnerBdryRadius"] = r_excision
     # To avoid interpolation errors, put outer boundary of ringdown domain
     # slightly inside the outer boundary of the inspiral domain
     ringdown_params["OuterBdryRadius"] = (
@@ -407,6 +463,21 @@ def start_ringdown(
     required=True,
     type=float,
     help="Damping timescale for settle to const",
+)
+@click.option(
+    "--outward-velocity",
+    required=True,
+    type=float,
+    help="Initial outward speed for the size map.",
+)
+@click.option(
+    "--excision-factor",
+    required=True,
+    type=float,
+    help=(
+        "Fraction of the apparent horizon average radius used to place the"
+        " inner boundary."
+    ),
 )
 @click.option(
     "--zero-coefs-eps",

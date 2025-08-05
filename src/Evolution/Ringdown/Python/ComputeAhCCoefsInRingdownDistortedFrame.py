@@ -75,6 +75,7 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
     match_time,
     settling_timescale,
     zero_coefs_eps,
+    scale_factor,
 ):
     """Computes the AhC Ylm Coefficients in the Ringdown distorted frame
     using the functions of time and the AhC coefficients in the Inspiral
@@ -178,13 +179,26 @@ def compute_ahc_coefs_in_ringdown_distorted_frame(
         zero_coefs_eps,
     )
 
+    # Rescale the coefficients according to the specified scale factor
+    # This could be e.g. to ensure the excision sphere has the same shape as the
+    # apparent horizon
+    (
+        rescaled_fit_ahc_coefs,
+        rescaled_fit_ahc_dt_coefs,
+        rescaled_fit_ahc_dt2_coefs,
+    ) = (
+        scale_factor * np.array(fit_ahc_coefs),
+        scale_factor * np.array(fit_ahc_dt_coefs),
+        scale_factor * np.array(fit_ahc_dt2_coefs),
+    )
+
     # Note: assumes no translation, so inertial and distorted centers are the
     # same, i.e. both are at the origin. A future update will incorporate
     # translation.
 
-    fit_ahc_coef_mv = ModalVector(fit_ahc_coefs)
-    fit_ahc_dt_coef_mv = ModalVector(fit_ahc_dt_coefs)
-    fit_ahc_dt2_coef_mv = ModalVector(fit_ahc_dt2_coefs)
+    fit_ahc_coef_mv = ModalVector(rescaled_fit_ahc_coefs)
+    fit_ahc_dt_coef_mv = ModalVector(rescaled_fit_ahc_dt_coefs)
+    fit_ahc_dt2_coef_mv = ModalVector(rescaled_fit_ahc_dt2_coefs)
     fit_ahc_strahlkorper = Strahlkorper[Frame.Inertial](
         ahc_lmax, ahc_lmax, fit_ahc_coef_mv, ahc_center
     )

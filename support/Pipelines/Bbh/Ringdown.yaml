@@ -29,7 +29,7 @@ DomainCreator:
   Sphere:
     # InnerRadius is not yet set automatically. The value of 1.45 works
     # for equal-mass, zero spin, quasicircular.
-    InnerRadius: &InnerRadius 1.45
+    InnerRadius: &InnerRadius {{ InnerBdryRadius }}
     OuterRadius: "{{ OuterBdryRadius }}"
     Interior:
       ExciseWithBoundaryCondition:
@@ -64,17 +64,17 @@ DomainCreator:
         # excision surface before it collides with the apparent horizon.
         # This value works for equal-mass, nonspinning, quasicircular,
         # and has not been tested for other configurations.
-        SizeInitialValues: [0.0, -1.0, 0.0]
+        SizeInitialValues: {{ SizeInitialValues }}
       RotationMap:
         InitialQuaternions: {{ Rotation }}
-        DecayTimescale: 1.0
+        DecayTimescale: {{ SettlingTimescale }}
       ExpansionMap:
         # During the ringdown, only the outer boundary's expansion map is
         # applied.
         InitialValues: [1.0, 0.0, 0.0]
         InitialValuesOuterBoundary: {{ ExpansionOuterBdry }}
-        DecayTimescale: 1.0
-        DecayTimescaleOuterBoundary: 1.0
+        DecayTimescale: {{ SettlingTimescale }}
+        DecayTimescaleOuterBoundary: {{ SettlingTimescale }}
       TranslationMap:
         InitialValues: {{ Translation }}
       TransitionRotScaleTrans: True

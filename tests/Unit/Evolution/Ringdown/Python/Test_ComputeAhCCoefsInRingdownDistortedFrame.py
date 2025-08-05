@@ -26,7 +26,9 @@ class TestComputeAhCCoefs(unittest.TestCase):
         shutil.rmtree(self.test_dir, ignore_errors=True)
         self.test_dir.mkdir(parents=True, exist_ok=True)
         self.inspiral_reduction_data = self.test_dir / "BbhReductions.h5"
+        scale_factor = 0.933
         shape_coefs = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        shape_coefs = map(lambda x: x * scale_factor, shape_coefs)
         times = [4990.0, 4992.0, 4994.0, 4996.0, 4998.0, 5000.0]
         time_to_match = 5000.0
         ahc_center = [0.0, 0.0, 0.0]
@@ -93,6 +95,7 @@ class TestComputeAhCCoefs(unittest.TestCase):
                 match_time=time_to_match,
                 settling_timescale=10.0,
                 zero_coefs_eps=None,
+                scale_factor=scale_factor,
             )
         )
         # Expected fit should be a line
@@ -117,7 +120,7 @@ class TestComputeAhCCoefs(unittest.TestCase):
             0.0,
         ]
         expected_fit_dt_ahc_coefs = [
-            0.5,
+            0.5 * scale_factor,
             0.0,
             0.0,
             0.0,
