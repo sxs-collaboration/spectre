@@ -128,8 +128,6 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ObserveTimeSeriesOnHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/SendDependencyToObserverWriter.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Criterion.hpp"
@@ -162,6 +160,8 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.tpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
@@ -308,7 +308,7 @@ struct EvolutionMetavars {
         tmpl::list<gr::Tags::Lapse<DataVector>,
                    gr::Tags::Shift<DataVector, 3, Frame::Grid>>;
     using compute_vars_to_interpolate =
-        ah::ComputeExcisionBoundaryVolumeQuantities;
+        intrp::ComputeExcisionBoundaryVolumeQuantities;
     using vars_to_interpolate_to_target = tags_to_observe;
     using compute_items_on_source = tmpl::list<>;
     using compute_items_on_target = tmpl::list<>;

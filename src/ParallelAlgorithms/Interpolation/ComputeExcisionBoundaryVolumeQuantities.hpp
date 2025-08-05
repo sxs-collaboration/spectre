@@ -27,7 +27,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace ah {
+namespace intrp {
 
 /// Given the generalized harmonic variables in the volume, computes
 /// the quantities that will be interpolated onto an excision boundary.
@@ -60,12 +60,12 @@ struct ComputeExcisionBoundaryVolumeQuantities
     : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
   /// Single-frame case
   template <typename SrcTagList, typename DestTagList>
-  static void apply(const gsl::not_null<Variables<DestTagList>*> target_vars,
+  static void apply(gsl::not_null<Variables<DestTagList>*> target_vars,
                     const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh);
   /// Dual-frame case
   template <typename SrcTagList, typename DestTagList, typename TargetFrame>
   static void apply(
-      const gsl::not_null<Variables<DestTagList>*> target_vars,
+      gsl::not_null<Variables<DestTagList>*> target_vars,
       const Variables<SrcTagList>& src_vars, const Mesh<3>& mesh,
       const Jacobian<DataVector, 3, TargetFrame, Frame::Inertial>&
           jac_target_to_inertial,
@@ -112,4 +112,4 @@ struct ComputeExcisionBoundaryVolumeQuantities
   using required_dest_tags = tmpl::list<>;
 };
 
-}  // namespace ah
+}  // namespace intrp

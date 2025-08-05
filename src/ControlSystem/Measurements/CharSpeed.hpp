@@ -17,13 +17,13 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -96,7 +96,7 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
           gr::Tags::SpatialChristoffelSecondKind<DataVector, 3,
                                                  Frame::Distorted>>;
       using compute_vars_to_interpolate =
-          ah::ComputeExcisionBoundaryVolumeQuantities;
+          intrp::ComputeExcisionBoundaryVolumeQuantities;
       using compute_items_on_source =
           tmpl::list<::Tags::TimeAndPreviousCompute<index>>;
       using compute_items_on_target =

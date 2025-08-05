@@ -28,8 +28,6 @@ spectre_target_headers(
   CleanUp.hpp
   Component.hpp
   ComputeCoords.hpp
-  ComputeExcisionBoundaryVolumeQuantities.hpp
-  ComputeExcisionBoundaryVolumeQuantities.tpp
   ComputeHorizonVolumeQuantities.hpp
   ComputeHorizonVolumeQuantities.tpp
   ComputeVarsToInterpolateToTarget.hpp
