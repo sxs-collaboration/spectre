@@ -28,7 +28,6 @@ class TestComputeAhCCoefs(unittest.TestCase):
         self.inspiral_reduction_data = self.test_dir / "BbhReductions.h5"
         scale_factor = 0.933
         shape_coefs = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
-        shape_coefs = map(lambda x: x * scale_factor, shape_coefs)
         times = [4990.0, 4992.0, 4994.0, 4996.0, 4998.0, 5000.0]
         time_to_match = 5000.0
         ahc_center = [0.0, 0.0, 0.0]
@@ -100,7 +99,7 @@ class TestComputeAhCCoefs(unittest.TestCase):
         )
         # Expected fit should be a line
         expected_fit_ahc_coefs = [
-            10,
+            10 * scale_factor,
             0.0,
             0.0,
             0.0,
