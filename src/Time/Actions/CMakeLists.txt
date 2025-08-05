@@ -9,5 +9,4 @@ spectre_target_headers(
   CleanHistory.hpp
   SelfStartActions.hpp
   TakeLtsStep.hpp
-  UpdateU.hpp
   )

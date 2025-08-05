@@ -4,9 +4,9 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeStepSize.hpp"
 #include "Time/RecordTimeStepperData.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// Bundled method for recording the current system state in the history, and
@@ -18,5 +18,5 @@ void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
     db::mutate_apply<ChangeStepSize<StepChoosersToUse>>(box);
   }
   db::mutate_apply<RecordTimeStepperData<System>>(box);
-  update_u<System>(box);
+  db::mutate_apply<UpdateU<System, LocalTimeStepping>>(box);
 }

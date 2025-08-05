@@ -31,7 +31,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
@@ -44,6 +43,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -158,14 +158,14 @@ struct Component {
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
-  using step_actions =
-      tmpl::list<ComputeTimeDerivative,
-                 Actions::MutateApply<
-                     RecordTimeStepperData<typename metavariables::system>>,
-                 Actions::UpdateU<typename metavariables::system, false>,
-                 Actions::CleanHistory<typename metavariables::system, false>,
-                 tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
-                                     tmpl::list<>>>;
+  using step_actions = tmpl::list<
+      ComputeTimeDerivative,
+      Actions::MutateApply<
+          RecordTimeStepperData<typename metavariables::system>>,
+      Actions::MutateApply<UpdateU<typename metavariables::system, false>>,
+      Actions::CleanHistory<typename metavariables::system, false>,
+      tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
+                          tmpl::list<>>>;
   using action_list = tmpl::flatten<
       tmpl::list<SelfStart::self_start_procedure<
                      step_actions, typename metavariables::system>,
@@ -428,10 +428,10 @@ double error_in_step(const size_t order, const double step) {
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
-  run_past<
-      std::is_same<tmpl::pin<Actions::UpdateU<System<TestPrimitives>, false>>,
-                   tmpl::_1>,
-      tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
+  run_past<std::is_same<tmpl::pin<Actions::MutateApply<
+                            UpdateU<System<TestPrimitives>, false>>>,
+                        tmpl::_1>,
+           tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
 
   const double exact = -log(exp(-initial_value) - step);
   return ActionTesting::get_databox_tag<component, Var>(runner, 0) - exact;

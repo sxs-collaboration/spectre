@@ -6,10 +6,10 @@
 #include <optional>
 
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepChoosers.hpp"
 #include "Time/TakeStep.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -40,8 +40,8 @@ namespace Actions {
 template <typename System, typename StepChoosersToUse = AllStepChoosers>
 struct TakeLtsStep {
   using const_global_cache_tags = tmpl::list<::Tags::MinimumTimeStep>;
-  using simple_tags = typename ::Actions::UpdateU<System, true>::simple_tags;
-  using compute_tags = typename ::Actions::UpdateU<System, true>::compute_tags;
+  using simple_tags = typename UpdateU<System, true>::simple_tags;
+  using compute_tags = typename UpdateU<System, true>::compute_tags;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

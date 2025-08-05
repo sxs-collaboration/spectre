@@ -6,23 +6,13 @@
 #include <array>
 #include <cstddef>
 #include <memory>
-#include <string>
+#include <optional>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Framework/ActionTesting.hpp"
-#include "Parallel/Phase.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/Slab.hpp"
-#include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
@@ -36,15 +26,10 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Rational.hpp"
-#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
-
-namespace PUP {
-struct er;
-}  // namespace PUP
 
 namespace {
 struct Var : db::SimpleTag {
@@ -63,39 +48,7 @@ struct TwoVariableSystem {
   using variables_tag = tmpl::list<Var, AlternativeVar>;
 };
 
-template <typename Metavariables>
-struct Component {
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = int;
-  using const_global_cache_tags = tmpl::list<>;
-  using simple_tags =
-      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
-                 Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Var,
-                 Tags::HistoryEvolvedVariables<Var>, AlternativeVar,
-                 Tags::HistoryEvolvedVariables<AlternativeVar>,
-                 Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>;
-  using compute_tags = time_stepper_ref_tags<TimeStepper>;
-
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<ActionTesting::InitializeDataBox<
-                                 simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::Testing,
-          tmpl::list<Actions::UpdateU<typename metavariables::system_for_test,
-                                      false>>>>;
-};
-
-template <typename System>
-struct Metavariables {
-  using system_for_test = System;
-  using component_list = tmpl::list<Component<Metavariables>>;
-
-  void pup(PUP::er& /*p*/) {}
-};
-
-template <typename System, bool AlternativeUpdates>
+template <typename System, bool LocalTimeStepping, bool AlternativeUpdates>
 void test_integration() {
   using history_tag = Tags::HistoryEvolvedVariables<Var>;
   using alternative_history_tag = Tags::HistoryEvolvedVariables<AlternativeVar>;
@@ -145,7 +98,7 @@ void test_integration() {
         },
         make_not_null(&box), db::get<Tags::TimeStepId>(box), db::get<Var>(box));
 
-    update_u<System>(make_not_null(&box));
+    db::mutate_apply<UpdateU<System, LocalTimeStepping>>(make_not_null(&box));
     CHECK(db::get<Var>(box) == approx(gsl::at(expected_values, substep)));
     if (AlternativeUpdates) {
       CHECK(db::get<AlternativeVar>(box) ==
@@ -167,42 +120,7 @@ void test_integration() {
   }
 }
 
-void test_action() {
-  using system = SingleVariableSystem;
-  using metavariables = Metavariables<system>;
-  using component = Component<metavariables>;
-
-  const Slab slab(1., 3.);
-  const TimeStepId initial_id(true, 0, slab.start());
-  const TimeDelta time_step = slab.duration() / 2;
-  auto time_stepper = std::make_unique<TimeSteppers::Rk3HesthavenSsp>();
-
-  Var::type vars = 1.0;
-  Tags::HistoryEvolvedVariables<Var>::type history{3};
-  history.insert(initial_id, vars, 3.0);
-
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  MockRuntimeSystem runner{{}};
-  ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0,
-      {std::move(time_stepper), initial_id,
-       time_stepper->next_time_id(initial_id, time_step), time_step, vars,
-       std::move(history), AlternativeVar::type{},
-       Tags::HistoryEvolvedVariables<AlternativeVar>::type{},
-       EventsAndTriggers{}});
-
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-
-  auto box_for_function = serialize_and_deserialize(
-      ActionTesting::get_databox<component>(make_not_null(&runner), 0));
-
-  runner.next_action<component>(0);
-  update_u<system>(make_not_null(&box_for_function));
-
-  const auto& action_box = ActionTesting::get_databox<component>(runner, 0);
-  CHECK(db::get<Var>(box_for_function) == db::get<Var>(action_box));
-}
-
+template <bool LocalTimeStepping>
 void test_stepper_error() {
   using variables_tag = Var;
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
@@ -239,10 +157,12 @@ void test_stepper_error() {
         db::get<variables_tag>(box));
 
     if (repeat_substep) {
-      update_u<SingleVariableSystem>(make_not_null(&box));
+      db::mutate_apply<UpdateU<SingleVariableSystem, LocalTimeStepping>>(
+          make_not_null(&box));
     }
 
-    update_u<SingleVariableSystem>(make_not_null(&box));
+    db::mutate_apply<UpdateU<SingleVariableSystem, LocalTimeStepping>>(
+        make_not_null(&box));
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                history_tag>(
@@ -290,6 +210,7 @@ void test_stepper_error() {
   CHECK(db::get<error_tag>(box)[1]->errors != first_step_errors);
 }
 
+template <bool LocalTimeStepping>
 void test_errors_for_restart() {
   // We should get low-order errors if we have all of
   //
@@ -333,7 +254,8 @@ void test_errors_for_restart() {
         time_stepper->next_time_id(initial_id, time_step), time_step, true,
         tolerances, 1., std::move(history),
         Tags::StepperErrors<variables_tag>::type{});
-    update_u<SingleVariableSystem>(make_not_null(&box));
+    db::mutate_apply<UpdateU<SingleVariableSystem, LocalTimeStepping>>(
+        make_not_null(&box));
     const auto& errors = db::get<Tags::StepperErrors<variables_tag>>(box)[1];
     if (not errors.has_value()) {
       return Estimates::None;
@@ -362,14 +284,19 @@ void test_errors_for_restart() {
   CHECK(which_errors(std::nullopt, order, {1, 2}) == Estimates::AllOrders);
   CHECK(which_errors(std::nullopt, all, {1, 2}) == Estimates::AllOrders);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
-  register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
+SPECTRE_TEST_CASE("Unit.Time.UpdateU", "[Unit][Time]") {
+  test_integration<SingleVariableSystem, false, false>();
+  test_integration<TwoVariableSystem, false, true>();
+  test_stepper_error<false>();
+  test_errors_for_restart<false>();
 
-  test_integration<SingleVariableSystem, false>();
-  test_integration<TwoVariableSystem, true>();
-  test_action();
-  test_stepper_error();
-  test_errors_for_restart();
+  // The mutator's behavior is the same for LTS and GTS.  The flag
+  // only affects the compute tags put into the box.  But the test is
+  // quick, so run it both ways.
+  test_integration<SingleVariableSystem, true, false>();
+  test_integration<TwoVariableSystem, true, true>();
+  test_stepper_error<true>();
+  test_errors_for_restart<true>();
 }
+}  // namespace

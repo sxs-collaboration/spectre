@@ -52,6 +52,7 @@ spectre_target_headers(
   TimeStepId.hpp
   TimeStepRequest.hpp
   TimeStepRequestProcessor.hpp
+  UpdateU.hpp
   VariableOrderAlgorithm.hpp
   )
 

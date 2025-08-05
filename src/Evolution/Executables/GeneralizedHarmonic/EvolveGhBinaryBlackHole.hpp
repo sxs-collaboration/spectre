@@ -179,7 +179,6 @@
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeSlabSize/Tags.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
@@ -194,6 +193,7 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
@@ -582,7 +582,7 @@ struct EvolutionMetavars {
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                       volume_dim>>>,
               control_system::Actions::LimitTimeStep<control_systems>,
-              Actions::UpdateU<system, local_time_stepping>>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       dg::Actions::Filter<
           Filters::Exponential<0>,

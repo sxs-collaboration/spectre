@@ -34,9 +34,9 @@
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -97,7 +97,7 @@ struct WorldtubeSingleton {
       Actions::SendAccelerationTerms<Metavariables>,
       ::Actions::MutateApply<UpdateAcceleration>,
       ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
-      ::Actions::UpdateU<worldtube_system, local_time_stepping>,
+      ::Actions::MutateApply<UpdateU<worldtube_system, local_time_stepping>>,
       ::Actions::CleanHistory<worldtube_system, false>,
       Actions::SendToElements<Metavariables>,
       domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;
