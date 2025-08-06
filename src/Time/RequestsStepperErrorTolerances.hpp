@@ -3,22 +3,19 @@
 
 #pragma once
 
+#include <typeindex>
+#include <unordered_map>
+
 #include "Time/StepperErrorTolerances.hpp"
 
 /// \ingroup TimeGroup
-/// Marker base class for things requiring time stepper error estimates
-class RequestsAnyStepperErrorTolerances {
- protected:
-  RequestsAnyStepperErrorTolerances() = default;
-  ~RequestsAnyStepperErrorTolerances() = default;
-};
-
-/// \ingroup TimeGroup
 /// Base class for requesting time stepper error tolerances.
-template <typename EvolvedVariableTag>
-struct RequestsStepperErrorTolerances : RequestsAnyStepperErrorTolerances {
+struct RequestsStepperErrorTolerances {
  public:
-  virtual StepperErrorTolerances tolerances() const = 0;
+  /// A map from the type of a variables tag to the tolerances for
+  /// that variable.
+  virtual std::unordered_map<std::type_index, StepperErrorTolerances>
+  tolerances() const = 0;
 
  protected:
   RequestsStepperErrorTolerances() = default;

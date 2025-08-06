@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -121,7 +122,7 @@ void test_chooser() {
       {
         INFO("Test successful step");
         const ErrorControl error_control{5.0e-4, 1.0e-3, 2.0, 0.5, 0.95};
-        CHECK(error_control.tolerances() ==
+        CHECK(error_control.tolerances().at(typeid(EvolvedVariablesTag)) ==
               StepperErrorTolerances{
                   .estimates = StepperErrorTolerances::Estimates::StepperOrder,
                   .absolute = 5.0e-4,

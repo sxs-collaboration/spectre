@@ -9,6 +9,9 @@
 #include <pup.h>
 #include <string>
 #include <type_traits>
+#include <typeindex>
+#include <typeinfo>
+#include <unordered_map>
 
 #include "Options/String.hpp"
 #include "Time/RequestsStepperErrorTolerances.hpp"
@@ -96,7 +99,7 @@ namespace StepChoosers {
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
 class ErrorControl : public StepChooser<StepChooserUse>,
-                     public RequestsStepperErrorTolerances<EvolvedVariableTag> {
+                     public RequestsStepperErrorTolerances {
  public:
   /// \cond
   ErrorControl() = default;
@@ -210,10 +213,12 @@ class ErrorControl : public StepChooser<StepChooserUse>,
   bool uses_local_data() const override { return true; }
   bool can_be_delayed() const override { return true; }
 
-  StepperErrorTolerances tolerances() const override {
-    return {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
-            .absolute = absolute_tolerance_,
-            .relative = relative_tolerance_};
+  std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
+      const override {
+    return {{typeid(EvolvedVariableTag),
+             {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = absolute_tolerance_,
+              .relative = relative_tolerance_}}};
   }
 
   void pup(PUP::er& p) override {  // NOLINT
