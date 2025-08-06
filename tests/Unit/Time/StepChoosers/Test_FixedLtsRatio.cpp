@@ -23,6 +23,7 @@
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -138,4 +139,17 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.FixedLtsRatio", "[Unit][Time]") {
 
   CHECK(StepChoosers::FixedLtsRatio{}.uses_local_data());
   CHECK(StepChoosers::FixedLtsRatio{}.can_be_delayed());
+
+  StepChoosers::FixedLtsRatio{}.for_each_step_chooser(
+      [](const auto& /*unused*/) { ERROR("Should not be called"); });
+  {
+    const StepChoosers::FixedLtsRatio two_choosers{
+        make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(
+            std::make_unique<StepChoosers::Constant>(1.0),
+            std::make_unique<StepChoosers::Constant>(2.0))};
+    int count = 0;
+    two_choosers.for_each_step_chooser(
+        [&](const auto& /*unused*/) { ++count; });
+    CHECK(count == 2);
+  }
 }

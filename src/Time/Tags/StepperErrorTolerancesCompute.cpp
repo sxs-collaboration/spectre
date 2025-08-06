@@ -14,6 +14,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Time/ChangeSlabSize/Event.hpp"
 #include "Time/RequestsStepperErrorTolerances.hpp"
+#include "Time/StepChoosers/FixedLtsRatio.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -35,9 +36,41 @@ bool requests_any_tolerances(const StepChooser<StepChooserUse>& step_chooser) {
 template <>
 void StepperErrorEstimatesEnabledCompute<true>::function(
     const gsl::not_null<bool*> error_estimates_enabled,
+    const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
         step_choosers) {
   *error_estimates_enabled = false;
+
+  events_and_triggers.for_each_event([&](const auto& event) {
+    if (*error_estimates_enabled) {
+      return;
+    }
+    if (const auto* const change_slab_size =
+            dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
+      change_slab_size->for_each_step_chooser(
+          [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
+            if (*error_estimates_enabled) {
+              return;
+            }
+            if (const auto* const fixed_ratio =
+                    dynamic_cast<const ::StepChoosers::FixedLtsRatio*>(
+                        &step_chooser);
+                fixed_ratio != nullptr) {
+              fixed_ratio->for_each_step_chooser(
+                  [&](const StepChooser<StepChooserUse::LtsStep>&
+                          sub_step_chooser) {
+                    if (*error_estimates_enabled) {
+                      return;
+                    }
+                    if (requests_any_tolerances(sub_step_chooser)) {
+                      *error_estimates_enabled = true;
+                    }
+                  });
+            }
+          });
+    }
+  });
+
   for (const auto& step_chooser : step_choosers) {
     if (requests_any_tolerances(*step_chooser)) {
       *error_estimates_enabled = true;
@@ -100,15 +133,38 @@ void set_tolerances_if_requested(
 
 void lts_impl(
     const gsl::not_null<::StepperErrorTolerances*> tolerances,
+    const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
         step_choosers,
     const ::TimeStepper& time_stepper,
     const ::VariableOrderAlgorithm& variable_order_algorithm,
     const std::type_index& tag_type, const std::string& tag_name) {
   *tolerances = ::StepperErrorTolerances{};
+
+  events_and_triggers.for_each_event([&](const auto& event) {
+    if (const auto* const change_slab_size =
+            dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
+      change_slab_size->for_each_step_chooser(
+          [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
+            if (const auto* const fixed_ratio =
+                    dynamic_cast<const ::StepChoosers::FixedLtsRatio*>(
+                        &step_chooser);
+                fixed_ratio != nullptr) {
+              fixed_ratio->for_each_step_chooser(
+                  [&](const StepChooser<StepChooserUse::LtsStep>&
+                          sub_step_chooser) {
+                    set_tolerances_if_requested(tolerances, sub_step_chooser,
+                                                tag_type, tag_name);
+                  });
+            }
+          });
+    }
+  });
+
   for (const auto& step_chooser : step_choosers) {
     set_tolerances_if_requested(tolerances, *step_chooser, tag_type, tag_name);
   }
+
   // Error-based variable-order requires some variable to be
   // controlled using error control, but in a split-variable system
   // a different variable might be controlled, so no control on this

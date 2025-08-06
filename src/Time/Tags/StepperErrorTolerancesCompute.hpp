@@ -45,12 +45,15 @@ struct StepperErrorEstimatesEnabledCompute : db::ComputeTag,
   using base = StepperErrorEstimatesEnabled;
   using return_type = type;
   using argument_tags = tmpl::conditional_t<
-      LocalTimeStepping, tmpl::list<::Tags::StepChoosers>,
+      LocalTimeStepping,
+      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+                 ::Tags::StepChoosers>,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
 
   // local time stepping
   static void function(
       gsl::not_null<bool*> error_estimates_enabled,
+      const ::EventsAndTriggers& events_and_triggers,
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
           step_choosers);
@@ -63,6 +66,7 @@ struct StepperErrorEstimatesEnabledCompute : db::ComputeTag,
 namespace StepperErrorTolerancesCompute_detail {
 void lts_impl(
     gsl::not_null<::StepperErrorTolerances*> tolerances,
+    const ::EventsAndTriggers& events_and_triggers,
     const std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
         step_choosers,
     const ::TimeStepper& time_stepper,
@@ -85,21 +89,24 @@ struct StepperErrorTolerancesCompute
   using return_type = typename base::type;
   using argument_tags = tmpl::conditional_t<
       LocalTimeStepping,
-      tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<::TimeStepper>,
+      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+                 ::Tags::StepChoosers, ::Tags::TimeStepper<::TimeStepper>,
                  ::Tags::VariableOrderAlgorithm>,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
 
   // local time stepping
   static void function(
       const gsl::not_null<::StepperErrorTolerances*> tolerances,
+      const ::EventsAndTriggers& events_and_triggers,
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
           step_choosers,
       const ::TimeStepper& time_stepper,
       const ::VariableOrderAlgorithm& variable_order_algorithm) {
     StepperErrorTolerancesCompute_detail::lts_impl(
-        tolerances, step_choosers, time_stepper, variable_order_algorithm,
-        typeid(EvolvedVariableTag), db::tag_name<EvolvedVariableTag>());
+        tolerances, events_and_triggers, step_choosers, time_stepper,
+        variable_order_algorithm, typeid(EvolvedVariableTag),
+        db::tag_name<EvolvedVariableTag>());
   }
 
   // global time stepping
