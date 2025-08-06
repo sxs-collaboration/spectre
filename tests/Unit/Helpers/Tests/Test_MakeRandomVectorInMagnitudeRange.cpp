@@ -61,7 +61,7 @@ void test_range(const gsl::not_null<std::mt19937*> generator,
 
   std::uniform_real_distribution<> distribution1(0.0, 100.0);
   double r1 = distribution1(*generator);
-  std::uniform_real_distribution<> distribution2(0.0, 100.0);
+  std::uniform_real_distribution<> distribution2(r1, 100.0);
   double r2 = distribution2(*generator);
   INFO("Interval is [" << r1 << "," << r2 << "]");
 

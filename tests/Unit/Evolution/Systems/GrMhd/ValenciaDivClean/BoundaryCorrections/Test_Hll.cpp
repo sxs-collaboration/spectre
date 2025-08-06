@@ -81,7 +81,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
       helpers::Tags::Range<gr::Tags::Shift<DataVector, 3>>,
       helpers::Tags::Range<grmhd::ValenciaDivClean::Tags::TildeB<>>>
       ranges_hydro{std::array{0.3, 1.0}, std::array{0.01, 0.02},
-                   std::array{1.0e-20, 1.0e-25}};
+                   std::array{1.0e-25, 1.0e-20}};
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       system, tmpl::list<ConvertPolytropic>>(
       make_not_null(&gen), "Hll", "dg_package_data", "dg_boundary_terms",
