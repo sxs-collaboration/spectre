@@ -82,7 +82,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveLineSegment.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
@@ -370,8 +369,8 @@ struct EvolutionMetavars {
       Parallel::GlobalCache<EvolutionMetavars>& cache,
       const std::vector<std::string>& deadlocked_components) {
     gh::deadlock::run_deadlock_analysis_simple_actions<
-        dg_element_array, tmpl::list<>, interpolation_target_tags, tmpl::list<>,
-        false>(cache, deadlocked_components);
+        dg_element_array, tmpl::list<>, interpolation_target_tags,
+        tmpl::list<>>(cache, deadlocked_components);
   }
 
   using component_list = tmpl::flatten<tmpl::list<

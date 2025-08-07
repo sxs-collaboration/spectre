@@ -12,16 +12,11 @@
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/Structure/ObjectLabel.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
-#include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/TimeAndPrevious.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -63,35 +58,6 @@ struct SingleHorizon : tt::ConformsTo<protocols::Measurement> {
     static std::string name() { return SingleHorizon::name(); }
 
    private:
-    template <typename ControlSystems>
-    struct InterpolationTarget
-        : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-      static std::string name() {
-        return "ControlSystemSingleAh" + ::domain::name(Horizon);
-      }
-
-      using temporal_id = ::Tags::TimeAndPrevious<0>;
-
-      using vars_to_interpolate_to_target =
-          ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
-      using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
-      using tags_to_observe = ::ah::tags_for_observing<Frame::Distorted>;
-      using compute_items_on_target =
-          ::ah::compute_items_on_target<3, Frame::Distorted>;
-      using compute_items_on_source =
-          tmpl::list<::Tags::TimeAndPreviousCompute<0>>;
-      using compute_target_points =
-          ah::TargetPoints::ApparentHorizon<InterpolationTarget,
-                                            ::Frame::Distorted>;
-      using post_interpolation_callbacks =
-          tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
-                                                           ::Frame::Distorted>>;
-      using horizon_find_failure_callbacks =
-          tmpl::list<intrp::callbacks::ErrorOnFailedApparentHorizon>;
-      using post_horizon_find_callbacks = tmpl::list<
-          control_system::RunCallbacks<Submeasurement, ControlSystems>>;
-    };
-
     template <typename ControlSystems>
     struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
       static std::string name() {

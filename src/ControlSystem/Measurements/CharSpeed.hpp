@@ -14,17 +14,12 @@
 #include "Domain/Structure/ObjectLabel.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Events/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
-#include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
@@ -133,41 +128,6 @@ struct CharSpeed : tt::ConformsTo<protocols::Measurement> {
     static std::string name() { return CharSpeed::name() + "::Horizon"; }
 
    private:
-    template <typename ControlSystems>
-    struct InterpolationTarget
-        : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
-     private:
-      static constexpr size_t index =
-          Object == ::domain::ObjectLabel::A ? 1_st : 2_st;
-
-     public:
-      static std::string name() {
-        return "ControlSystemCharSpeedAh" + ::domain::name(Object);
-      }
-
-      // Separate temporal IDs for each object
-      using temporal_id = ::Tags::TimeAndPrevious<index>;
-
-      using vars_to_interpolate_to_target =
-          ::ah::vars_to_interpolate_to_target<3, ::Frame::Distorted>;
-      using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
-      using compute_items_on_source =
-          tmpl::list<::Tags::TimeAndPreviousCompute<index>>;
-      using compute_items_on_target = tmpl::push_back<
-          ::ah::compute_items_on_target<3, Frame::Distorted>,
-          ylm::Tags::TimeDerivStrahlkorperCompute<Frame::Distorted>>;
-      using compute_target_points =
-          ah::TargetPoints::ApparentHorizon<InterpolationTarget,
-                                            ::Frame::Distorted>;
-      using post_interpolation_callbacks =
-          tmpl::list<intrp::callbacks::FindApparentHorizon<InterpolationTarget,
-                                                           ::Frame::Distorted>>;
-      using horizon_find_failure_callbacks =
-          tmpl::list<intrp::callbacks::ErrorOnFailedApparentHorizon>;
-      using post_horizon_find_callbacks =
-          tmpl::list<control_system::RunCallbacks<Horizon, ControlSystems>>;
-    };
-
     template <typename ControlSystems>
     struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
      private:

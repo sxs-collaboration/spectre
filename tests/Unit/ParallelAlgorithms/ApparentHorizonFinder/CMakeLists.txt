@@ -4,10 +4,8 @@
 set(LIBRARY "Test_ApparentHorizonFinder")
 
 set(LIBRARY_SOURCES
-  Test_ApparentHorizonFinder.cpp
   Test_CleanUp.cpp
   Test_ComputeCoords.cpp
-  Test_ComputeHorizonVolumeQuantities.cpp
   Test_ComputeVarsToInterpolateToTarget.cpp
   Test_CurrentTime.cpp
   Test_Destination.cpp
@@ -15,8 +13,6 @@ set(LIBRARY_SOURCES
   Test_FindApparentHorizon.cpp
   Test_Initialization.cpp
   Test_InterpolateVolumeVars.cpp
-  Test_InterpolationTargetApparentHorizon.cpp
-  Test_ObserveCenters.cpp
   Test_OptionTags.cpp
   Test_Storage.cpp
   Test_Tags.cpp
@@ -43,7 +39,6 @@ target_link_libraries(
   Logging
   ObserverHelpers
   Options
-  ParallelInterpolation
   RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers

@@ -4,6 +4,7 @@
 set(LIBS_TO_LINK
   Actions
   ApparentHorizonFinder
+  ApparentHorizonFinderCriteria
   Charmxx::main
   Cce
   CoordinateMaps

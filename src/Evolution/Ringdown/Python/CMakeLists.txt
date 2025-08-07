@@ -31,7 +31,6 @@ spectre_python_link_libraries(
     DomainStructure
     ErrorHandling
     Options
-    ParallelInterpolation
     Ringdown
     Serialization
     Spectral

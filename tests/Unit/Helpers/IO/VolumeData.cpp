@@ -131,8 +131,12 @@ void check_volume_data(
     const auto& component = expected_components[i];
     const bool component_is_invalid =
         (alg::find(invalid_components, component) != invalid_components.end());
+    CAPTURE(component);
+    CAPTURE(component_is_invalid);
     // for each grid
     for (size_t j = 0; j < grid_names.size(); j++) {
+      CAPTURE(grid_names[j]);
+      CAPTURE(grid_positions[j]);
       const auto& data = get_grid_data(
           volume_file.get_tensor_component(observation_id, component),
           grid_positions[j]);

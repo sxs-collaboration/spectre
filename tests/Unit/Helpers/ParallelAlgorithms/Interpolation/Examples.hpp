@@ -12,7 +12,7 @@
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
+#include "ParallelAlgorithms/Interpolation/ComputeExcisionBoundaryVolumeQuantities.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
@@ -173,7 +173,8 @@ struct ExampleInterpolationTargetTag
       gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, ::Frame::Grid>>;
 
   // This is not necessary to conform to the protocol, but is often used
-  using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
+  using compute_vars_to_interpolate =
+      intrp::ComputeExcisionBoundaryVolumeQuantities;
 
   // This list will be a lot longer for apparent horizon finding
   using compute_items_on_target =

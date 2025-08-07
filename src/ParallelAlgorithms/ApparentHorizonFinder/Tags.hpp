@@ -277,23 +277,6 @@ struct ObservationTimeCompute : ObservationTime<Index>, db::ComputeTag {
 };
 /// @}
 
-/*!
- * \brief Tag that holds the strahlkorper of the previous FastFlow iteration
- * (not the strahlkorper of the entire previous horizon find.)
- */
-template <typename Frame>
-struct PreviousIterationStrahlkorper : db::SimpleTag {
-  using type = ylm::Strahlkorper<Frame>;
-};
-
-/*!
- * \brief Tag to hold the number of failed interpolations to a surface during
- * iterations of the FastFlow algorithm.
- */
-struct FailedInterpolationIterations : db::SimpleTag {
-  using type = size_t;
-};
-
 /// Simple tag for whether to write the centers of the horizons to disk.
 struct ObserveCenters : db::SimpleTag {
   using type = bool;

@@ -11,11 +11,8 @@ spectre_target_headers(
   HEADERS
   ComputeExcisionBoundaryVolumeQuantities.hpp
   ComputeExcisionBoundaryVolumeQuantities.tpp
-  Interpolate.hpp
-  InterpolatedVars.hpp
   InterpolationTarget.hpp
   InterpolationTargetDetail.hpp
-  Interpolator.hpp
   Intrp.hpp
   IntrpOptionHolders.hpp
   PointInfoTag.hpp

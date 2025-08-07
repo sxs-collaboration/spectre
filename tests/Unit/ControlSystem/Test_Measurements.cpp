@@ -31,7 +31,6 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Protocols/HorizonMetavars.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -99,10 +98,6 @@ static_assert(
     tt::assert_conforms_to_v<control_system::measurements::CharSpeed<
                                  domain::ObjectLabel::A>::Horizon,
                              control_system::protocols::Submeasurement>);
-static_assert(tt::assert_conforms_to_v<
-              control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
-                  Excision::interpolation_target_tag<example_list>,
-              intrp::protocols::InterpolationTargetTag>);
 static_assert(tt::assert_conforms_to_v<
               control_system::measurements::CharSpeed<domain::ObjectLabel::A>::
                   Horizon::horizon_metavars<example_list>,

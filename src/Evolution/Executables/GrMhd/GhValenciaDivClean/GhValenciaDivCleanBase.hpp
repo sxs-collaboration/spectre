@@ -149,8 +149,6 @@
 #include "ParallelAlgorithms/Actions/LimiterActions.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FindApparentHorizon.hpp"
-#include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Events/Completion.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveAtExtremum.hpp"
@@ -163,19 +161,11 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceivePoints.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
-#include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
-#include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
@@ -344,19 +334,18 @@ struct GhValenciaDivCleanDefaults {
 };
 
 template <typename EvolutionMetavarsDerived, bool UseDgSubcell,
-          bool UseControlSystems, bool UseParametrizedDeleptonization,
-          bool WithHorizon>
+          bool UseControlSystems, bool UseParametrizedDeleptonization>
 struct GhValenciaDivCleanTemplateBase;
 
 template <bool UseDgSubcell, bool UseControlSystems,
-          bool UseParametrizedDeleptonization, bool WithHorizon,
+          bool UseParametrizedDeleptonization,
           template <bool, bool, typename...> class EvolutionMetavarsDerived,
           typename... InterpolationTargetTags>
 struct GhValenciaDivCleanTemplateBase<
     EvolutionMetavarsDerived<UseControlSystems, UseParametrizedDeleptonization,
                              InterpolationTargetTags...>,
-    UseDgSubcell, UseControlSystems, UseParametrizedDeleptonization,
-    WithHorizon> : public virtual GhValenciaDivCleanDefaults<UseDgSubcell> {
+    UseDgSubcell, UseControlSystems, UseParametrizedDeleptonization>
+    : public virtual GhValenciaDivCleanDefaults<UseDgSubcell> {
   using derived_metavars =
       EvolutionMetavarsDerived<UseControlSystems,
                                UseParametrizedDeleptonization,
@@ -716,11 +705,8 @@ struct GhValenciaDivCleanTemplateBase<
       gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
       gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>>;
 
-  using dg_registration_list = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<WithHorizon,
-                          intrp::Actions::RegisterElementWithInterpolator,
-                          tmpl::list<>>,
-      observers::Actions::RegisterEventsWithObservers>>;
+  using dg_registration_list =
+      tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
   static constexpr auto default_phase_order = std::array<Parallel::Phase, 8>{
       {Parallel::Phase::Initialization,
@@ -1008,8 +994,6 @@ struct GhValenciaDivCleanTemplateBase<
       observers::ObserverWriter<derived_metavars>,
       importers::ElementDataReader<derived_metavars>,
       control_system::control_components<derived_metavars, control_systems>,
-      tmpl::conditional_t<WithHorizon, intrp::Interpolator<derived_metavars>,
-                          tmpl::list<>>,
       intrp::InterpolationTarget<derived_metavars, InterpolationTargetTags>...,
       dg_element_array_component>>;
 };

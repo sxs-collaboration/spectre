@@ -50,7 +50,7 @@ namespace intrp::protocols {
  * - an `apply` function with at least one of the signatures in the example.
  *   This apply function fills the `vars_to_interpolate_to_target` type alias
  *   from the InterpolationTargetTag. Here `Dim` is `Metavariables::volume_dim`,
- *   SrcFrame is the frame of `Metavariables::interpolator_source_vars` and
+ *   SrcFrame is typically `Frame::Inertial` and
  *   TargetFrame is the frame of `vars_to_interpolate_to_target` from the
  *   InterpolationTargetTag. The overload without Jacobians treats the case in
  *   which TargetFrame is the same as SrcFrame.

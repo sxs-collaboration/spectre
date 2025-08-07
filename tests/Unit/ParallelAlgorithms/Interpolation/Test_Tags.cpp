@@ -94,8 +94,6 @@ void test_tags_metafunctions() {
 
 SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
   test_tags_metafunctions();
-  TestHelpers::db::test_simple_tag<intrp::Tags::DumpVolumeDataOnFailure>(
-      "DumpVolumeDataOnFailure");
   TestHelpers::db::test_simple_tag<
       intrp::Tags::IndicesOfFilledInterpPoints<Metavars>>(
       "IndicesOfFilledInterpPoints");
@@ -105,27 +103,11 @@ SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
   TestHelpers::db::test_simple_tag<
       intrp::Tags::InterpolatedVars<InterpolationTargetTag, Metavars>>(
       "InterpolatedVars");
-  TestHelpers::db::test_simple_tag<intrp::Tags::CurrentTemporalId<Metavars>>(
-      "CurrentTemporalId");
   TestHelpers::db::test_simple_tag<intrp::Tags::TemporalIds<Metavars>>(
       "TemporalIds");
   TestHelpers::db::test_simple_tag<intrp::Tags::CompletedTemporalIds<Metavars>>(
       "CompletedTemporalIds");
-  TestHelpers::db::test_simple_tag<
-      intrp::Tags::VolumeVarsInfo<Metavars, SomeTag>>("VolumeVarsInfo");
-  TestHelpers::db::test_simple_tag<
-      intrp::Tags::InterpolatedVarsHolders<Metavars>>(
-      "InterpolatedVarsHolders");
-  TestHelpers::db::test_simple_tag<intrp::Tags::NumberOfElements<3>>(
-      "NumberOfElements");
   TestHelpers::db::test_simple_tag<intrp::Tags::PointInfo<
       InterpolationTargetTag, tmpl::size_t<Metavars::volume_dim>>>("PointInfo");
   TestHelpers::db::test_simple_tag<intrp::Tags::Verbosity>("Verbosity");
-
-  CHECK(
-      TestHelpers::test_option_tag<intrp::OptionTags::DumpVolumeDataOnFailure>(
-          "true"));
-  CHECK_FALSE(
-      TestHelpers::test_option_tag<intrp::OptionTags::DumpVolumeDataOnFailure>(
-          "false"));
 }

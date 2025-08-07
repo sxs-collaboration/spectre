@@ -47,10 +47,9 @@ namespace intrp {
 /// For the dual-frame case, numerical derivatives of Jacobians are
 /// taken in order to avoid Hessians.
 ///
-/// SrcTagList is usually `interpolator_source_vars` in the
-/// Metavariables, and the allowed and required tags in SrcTagList are
-/// given by the type aliases `allowed_src_tags` and `required_src_tags`
-/// below.
+/// SrcTagList is usually `ah::source_vars`, and the allowed and required tags
+/// in SrcTagList are given by the type aliases `allowed_src_tags` and
+/// `required_src_tags` below.
 ///
 /// DestTagList is usually `vars_to_interpolate_to_target` in the
 /// `InterpolationTarget` that uses `ComputeExcisionBoundaryVolumeQuantities`.

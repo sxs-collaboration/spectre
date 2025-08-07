@@ -12,10 +12,10 @@
 
 namespace ah::protocols {
 /*!
- * \brief A protocol for `InterpolationTargetTag`s that are used in the
- * intrp::InterpolationTarget parallel component.
+ * \brief A protocol for `HorizonMetavars`s that are used in the
+ * `ah::Component` parallel component.
  *
- * \details A struct conforming to the `InterpolationTargetTag` protocol must
+ * \details A struct conforming to the `HorizonMetavars` protocol must
  * have
  *
  * - a type alias `time_tag` to a tag that tells the horizon finder

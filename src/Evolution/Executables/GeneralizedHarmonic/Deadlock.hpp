@@ -16,15 +16,12 @@
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/PrintDeadlockAnalysis.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/PrintInterpolationTargetForDeadlock.hpp"
-#include "ParallelAlgorithms/Interpolation/Actions/PrintInterpolatorForDeadlock.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace intrp {
-template <class Metavariables>
-struct Interpolator;
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget;
 }  // namespace intrp
@@ -37,7 +34,7 @@ struct ObserverWriter;
 namespace gh::deadlock {
 template <typename DgElementArray, typename ControlComponents,
           typename InterpolationTargetTags, typename AhFinders,
-          bool HasInterpolator = true, typename Metavariables>
+          typename Metavariables>
 void run_deadlock_analysis_simple_actions(
     Parallel::GlobalCache<Metavariables>& cache,
     const std::vector<std::string>& deadlocked_components) {
@@ -58,13 +55,6 @@ void run_deadlock_analysis_simple_actions(
 
     cache_proxy.print_mutable_cache_callbacks(deadlock_dir +
                                               "/mutable_cache_callbacks.out");
-  }
-
-  if constexpr (HasInterpolator) {
-    Parallel::simple_action<::deadlock::PrintInterpolator>(
-        Parallel::get_parallel_component<intrp::Interpolator<Metavariables>>(
-            cache),
-        deadlock_dir);
   }
 
   if constexpr (tmpl::size<InterpolationTargetTags>::value > 0) {
