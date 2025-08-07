@@ -5,18 +5,24 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Time/History.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
+class TimeStepId;
 namespace Tags {
 template <typename Tag>
 struct HistoryEvolvedVariables;
 struct TimeStepId;
 }  // namespace Tags
+namespace TimeSteppers {
+template <typename Vars>
+class History;
+}  // namespace TimeSteppers
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
 /// \endcond
 
 /// \ingroup TimeGroup
@@ -44,8 +50,6 @@ struct RecordTimeStepperData<System, tmpl::list<VariablesTags...>> {
       const TimeStepId& time_step_id,
       const typename VariablesTags::type&... vars,
       const typename db::add_tag_prefix<Tags::dt,
-                                        VariablesTags>::type&... dt_vars) {
-    expand_pack((histories->insert(time_step_id, vars, dt_vars), 0)...);
-  }
+                                        VariablesTags>::type&... dt_vars);
 };
 /// @}

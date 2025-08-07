@@ -40,6 +40,7 @@ spectre_target_headers(
   History.hpp
   LargestStepperError.hpp
   RecordTimeStepperData.hpp
+  RecordTimeStepperData.tpp
   RequestsStepperErrorTolerances.hpp
   SelfStart.hpp
   Slab.hpp
@@ -52,6 +53,7 @@ spectre_target_headers(
   TimeStepRequest.hpp
   TimeStepRequestProcessor.hpp
   UpdateU.hpp
+  UpdateU.tpp
   VariableOrderAlgorithm.hpp
   )
 

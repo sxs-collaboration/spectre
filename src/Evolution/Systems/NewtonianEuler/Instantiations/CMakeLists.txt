@@ -5,4 +5,5 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Events.cpp
+  TimeStepping.cpp
   )
