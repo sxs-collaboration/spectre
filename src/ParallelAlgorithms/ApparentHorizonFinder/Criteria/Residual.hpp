@@ -91,6 +91,8 @@ class Residual : public Criterion {
 
   void pup(PUP::er& p) override;
 
+  bool is_equal(const Criterion& other) const override;
+
  private:
   double min_residual_{std::numeric_limits<double>::signaling_NaN()};
   double max_residual_{std::numeric_limits<double>::signaling_NaN()};

@@ -9,12 +9,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/IncreaseResolution.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Residual.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "Utilities/Gsl.hpp"
@@ -52,5 +54,22 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Criteria.IncreaseResolution",
   const size_t new_l_max =
       criterion->evaluate(box, empty_cache, strahlkorper, iter_info);
   CHECK(new_l_max == strahlkorper.l_max() + 2);
+
+  // Test equality and inequality operators
+  const IncreaseResolution criterion_one{};
+  const IncreaseResolution criterion_two{};
+  CHECK(criterion_one.is_equal(criterion_two));
+  const auto criterion_one_serialized =
+      serialize_and_deserialize(criterion_one);
+  CHECK(criterion_one.is_equal(criterion_one_serialized));
+
+  const std::unique_ptr<ah::Criterion> criterion_four =
+      std::make_unique<ah::Criteria::IncreaseResolution>();
+  const std::unique_ptr<ah::Criterion> criterion_five =
+      std::make_unique<ah::Criteria::IncreaseResolution>();
+  const std::unique_ptr<ah::Criterion> criterion_six =
+      std::make_unique<ah::Criteria::Residual>(1.0e-6, 1.0e-4, 4, 12);
+  CHECK(criterion_four->is_equal(*criterion_five));
+  CHECK(not(criterion_four->is_equal(*criterion_six)));
 }
 }  // namespace ah::Criteria

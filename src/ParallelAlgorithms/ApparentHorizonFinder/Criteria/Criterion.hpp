@@ -52,6 +52,8 @@ class Criterion : public PUP::able {
 
   virtual std::string observation_name() = 0;
 
+  virtual bool is_equal(const Criterion& other) const = 0;
+
   /// Evaluates the apparent horizon criteria by selecting the appropriate
   /// derived class and forwarding its `argument_tags` from the ObservationBox
   /// (along with the GlobalCache) to the call operator of the

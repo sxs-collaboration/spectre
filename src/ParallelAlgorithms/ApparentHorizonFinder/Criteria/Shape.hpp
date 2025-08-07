@@ -104,6 +104,8 @@ class Shape : public Criterion {
 
   void pup(PUP::er& p) override;
 
+  bool is_equal(const Criterion& other) const override;
+
  private:
   double min_truncation_error_{std::numeric_limits<double>::signaling_NaN()};
   double max_truncation_error_{std::numeric_limits<double>::signaling_NaN()};
