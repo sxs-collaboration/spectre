@@ -17,6 +17,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/SendToElements.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateAcceleration.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/UpdateFunctionsOfTime.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/System.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Options/String.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -84,12 +85,7 @@ struct WorldtubeSingleton {
                      Tags::BackgroundQuantitiesCompute<Dim>>>,
       Parallel::Actions::TerminatePhase>;
 
-  struct worldtube_system {
-    static constexpr size_t volume_dim = Dim;
-    static constexpr bool has_primitive_and_conservative_vars = false;
-    using variables_tag = ::Tags::Variables<
-        tmpl::list<Tags::EvolvedPosition<Dim>, Tags::EvolvedVelocity<Dim>>>;
-  };
+  using worldtube_system = System<Dim>;
   using step_actions = tmpl::list<
       Actions::UpdateFunctionsOfTime, Actions::ChangeSlabSize,
       Actions::ReceiveElementData,

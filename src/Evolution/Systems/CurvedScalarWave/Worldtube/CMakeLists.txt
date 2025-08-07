@@ -30,6 +30,7 @@ spectre_target_headers(
   PunctureField.hpp
   RadiusFunctions.hpp
   SelfForce.hpp
+  System.hpp
   Worldtube.hpp
   )
 
