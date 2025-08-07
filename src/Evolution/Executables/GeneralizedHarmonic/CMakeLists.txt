@@ -66,6 +66,7 @@ target_link_libraries(
   PRIVATE
   ${LIBS_TO_LINK}
   ApparentHorizonFinder
+  ApparentHorizonFinderCriteria
   Cce
   ControlSystem
   Deadlock
@@ -89,6 +90,7 @@ target_link_libraries(
   PRIVATE
   ${LIBS_TO_LINK}
   ApparentHorizonFinder
+  ApparentHorizonFinderCriteria
   Cce
   ControlSystem
   Deadlock

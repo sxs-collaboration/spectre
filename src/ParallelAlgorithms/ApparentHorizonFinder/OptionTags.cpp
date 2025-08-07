@@ -17,10 +17,12 @@
 namespace ah {
 template <typename Fr>
 HorizonOptions<Fr>::HorizonOptions(
+    std::vector<std::unique_ptr<ah::Criterion>> criteria_in,
     ylm::Strahlkorper<Fr> initial_guess_in, ::FastFlow fast_flow_in,
     ::Verbosity verbosity_in, const size_t max_compute_coords_retries_in,
     std::optional<std::vector<std::string>> blocks_for_horizon_find_in)
-    : initial_guess(std::move(initial_guess_in)),
+    : criteria(std::move(criteria_in)),
+      initial_guess(std::move(initial_guess_in)),
       fast_flow(std::move(fast_flow_in)),  // NOLINT
       verbosity(std::move(verbosity_in)),  // NOLINT
       max_compute_coords_retries(max_compute_coords_retries_in),
@@ -28,6 +30,7 @@ HorizonOptions<Fr>::HorizonOptions(
 
 template <typename Fr>
 void HorizonOptions<Fr>::pup(PUP::er& p) {
+  p | criteria;
   p | initial_guess;
   p | fast_flow;
   p | verbosity;
@@ -37,6 +40,14 @@ void HorizonOptions<Fr>::pup(PUP::er& p) {
 
 template <typename Fr>
 bool operator==(const HorizonOptions<Fr>& lhs, const HorizonOptions<Fr>& rhs) {
+  if (lhs.criteria.size() != rhs.criteria.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < lhs.criteria.size(); ++i) {
+    if (not(lhs.criteria[i]->is_equal(*(rhs.criteria[i])))) {
+      return false;
+    }
+  }
   return lhs.initial_guess == rhs.initial_guess and
          lhs.fast_flow == rhs.fast_flow and lhs.verbosity == rhs.verbosity and
          lhs.max_compute_coords_retries == rhs.max_compute_coords_retries and

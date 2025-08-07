@@ -8,6 +8,7 @@
 #include <optional>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -37,8 +38,16 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace ah {
+namespace detail {
+template <typename Criterion>
+struct get_tags {
+  using type = typename Criterion::compute_tags_for_observation_box;
+};
+}  // namespace detail
+
 /*!
  * \brief Simple action run on the horizon finder by the Elements which receives
  * volume data, finds the apparent horizon, and calls the callbacks after the
@@ -190,31 +199,154 @@ struct FindApparentHorizon {
           db::get_mutable_reference<ah::Tags::PreviousSurfaces<frame>>(
               make_not_null(&box));
 
-      // Keep doing fast flow iterations for as long as we can until we find a
-      // horizon
+      auto& current_resolution_l =
+          db::get_mutable_reference<ah::Tags::CurrentResolutionL>(
+              make_not_null(&box));
+      // Set current resolution to the initial guess resolution if it is not
+      // yet specified.
+      if (UNLIKELY(not current_resolution_l.has_value())) {
+        ASSERT(fast_flow.current_iteration() == 0,
+               "Current resolution L is not set, but fast flow iteration > 0. "
+               "Iteration 0 should set the current resolution L.");
+        ASSERT(previous_surfaces.empty(),
+               "Current resolution L is not set, but previous horizons have "
+               "been found. Iteration 0 of each horizon find should set the "
+               "current resolution L.");
+        current_resolution_l = options.initial_guess.l_max();
+      }
+
+      // Keep finding the horizon until it's found with sufficient resolution
+      bool rerunning_with_higher_resolution = false;
       while (true) {
-        auto& current_iteration_storage =
-            current_time_storage.current_iteration;
-        auto& previous_iteration_surface =
-            current_time_storage.previous_iteration_surface;
+        std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 
-        // Points haven't been set for this iteration so need to do so now
-        if (not current_iteration_storage.block_coord_holders.has_value()) {
-          const bool coords_set_successfully = set_current_iteration_coords(
-              make_not_null(&current_iteration_storage), current_time,
-              fast_flow, options.initial_guess, previous_iteration_surface,
-              previous_surfaces, options.max_compute_coords_retries, domain,
-              functions_of_time);
+        // Keep doing fast flow iterations for as long as we can until we find a
+        // horizon
+        while (true) {
+          auto& current_iteration_storage =
+              current_time_storage.current_iteration;
+          auto& previous_iteration_surface =
+              current_time_storage.previous_iteration_surface;
 
-          // Some points are outside the domain and we cannot recover
-          if (not coords_set_successfully) {
+          // Points haven't been set for this iteration so need to do so now
+          if (not current_iteration_storage.block_coord_holders.has_value() or
+              rerunning_with_higher_resolution) {
+            const bool coords_set_successfully = set_current_iteration_coords(
+                make_not_null(&current_iteration_storage), current_time,
+                fast_flow, options.initial_guess, previous_iteration_surface,
+                previous_surfaces, options.max_compute_coords_retries, domain,
+                functions_of_time, current_resolution_l,
+                rerunning_with_higher_resolution);
+
+            // Some points are outside the domain and we cannot recover
+            if (not coords_set_successfully) {
+              // This will possibly throw an error, depending on which
+              // callback is used in
+              // HorizonMetavars::horizon_find_failure_callbacks
+              // (ErrorOnFailedApparentHorizon or IgnoreFailedApparentHorizon)
+              tmpl::for_each<
+                  typename HorizonMetavars::horizon_find_failure_callbacks>(
+                  [&]<typename Callback>(tmpl::type_<Callback> /*meta*/) {
+                    Callback::apply(box, cache,
+                                    FastFlow::Status::InterpolationFailure);
+                  });
+
+              // Still clean up in case we didn't error so we don't keep
+              // accepting volume data for this time
+              clean_up_horizon_finder(make_not_null(&current_time_optional),
+                                      make_not_null(&all_storage),
+                                      make_not_null(&completed_times),
+                                      make_not_null(&fast_flow));
+
+              // If we didn't error, move on to the next horizon find
+              break;
+            }
+
+            if (debug_print) {
+              Parallel::printf(
+                  "%s: For current time %s, at iteration %zu, coords have been "
+                  "set.\n",
+                  name, current_time, fast_flow.current_iteration());
+            }
+          }
+
+          // Interpolate new elements to points
+          interpolate_volume_data(make_not_null(&current_iteration_storage),
+                                  make_not_null(&all_volume_variables),
+                                  current_time, domain, functions_of_time);
+
+          // Sanity check
+          ASSERT(
+              current_iteration_storage.indicies_interpolated_to_thus_far
+                      .size() <=
+                  current_iteration_storage.block_coord_holders.value().size(),
+              "The number indices interpolated to is larger than the number of "
+              "coordinates. This is an internal error. Please file an issue.");
+
+          if (current_iteration_storage.indicies_interpolated_to_thus_far
+                  .size() !=
+              current_iteration_storage.block_coord_holders.value().size()) {
+            if (debug_print) {
+              Parallel::printf(
+                  "%s: For current time %s, at iteration %zu, need more volume "
+                  "data. Missing %zu points.\n",
+                  name, current_time, fast_flow.current_iteration(),
+                  current_iteration_storage.block_coord_holders.value().size() -
+                      current_iteration_storage
+                          .indicies_interpolated_to_thus_far.size());
+            }
+            return;
+          }
+
+          // Set this before we iterate the fast flow.
+          previous_iteration_surface = current_iteration_storage.strahlkorper;
+
+          // Do a single fast flow iteration.
+          {
+            using InverseSpatialMetric =
+                gr::Tags::InverseSpatialMetric<DataVector, 3, frame>;
+            using ExtrinsicCurvature =
+                gr::Tags::ExtrinsicCurvature<DataVector, 3, frame>;
+            using SpatialChristoffel =
+                gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, frame>;
+
+            auto& interpolated_vars =
+                current_iteration_storage.interpolated_vars;
+            status_and_info = fast_flow.iterate_horizon_finder(
+                make_not_null(&current_iteration_storage.strahlkorper),
+                get<InverseSpatialMetric>(interpolated_vars),
+                get<ExtrinsicCurvature>(interpolated_vars),
+                get<SpatialChristoffel>(interpolated_vars));
+          }
+
+          const auto& status = status_and_info.first;
+          const auto& info = status_and_info.second;
+          const auto has_converged = converged(status);
+
+          if (verbose_print or (quiet_print and has_converged)) {
+            Parallel::printf(
+                "%s: t=%.6g: L=%zu: its=%zu: %.1e<R<%.0e, |R|=%.1g, "
+                "|R_grid|=%.1g, %.4g<r<%.4g\n",
+                pretty_type::name<HorizonMetavars>(), current_time.id,
+                all_storage.at(current_time)
+                    .current_iteration.strahlkorper.l_max(),
+                info.iteration, info.min_residual, info.max_residual,
+                info.residual_ylm, info.residual_mesh, info.r_min, info.r_max);
+          }
+
+          if (status == FastFlow::Status::SuccessfulIteration) {
+            // Reset so we compute and interpolate to new points
+            current_iteration_storage.reset_for_next_iteration();
+
+            // Continue in the iteration while loop
+            continue;
+          } else if (not has_converged) {
             // This will possibly throw an error
             tmpl::for_each<
                 typename HorizonMetavars::horizon_find_failure_callbacks>(
                 [&](auto callback_v) {
                   using callback = tmpl::type_from<decltype(callback_v)>;
-                  callback::apply(box, cache,
-                                  FastFlow::Status::InterpolationFailure);
+                  callback::apply(box, cache, status);
                 });
 
             // Still clean up in case we didn't error so we don't keep accepting
@@ -228,124 +360,83 @@ struct FindApparentHorizon {
             break;
           }
 
+          // Break out of the iteration while loop. Go back into the
+          // while loop for sufficient resolution
+          break;
+        }  // while (true) [iterations]
+        if (converged(status_and_info.first)) {
+          std::vector<size_t> recommended_resolutions{};
+          const auto& criteria = options.criteria;
+
+          // Create an ObservationBox with the union of all compute tags needed
+          // by criteria
+          using compute_tags_for_obs_box =
+              tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+                  tmpl::at<
+                      typename Metavariables::factory_creation::factory_classes,
+                      ah::Criterion>,
+                  detail::get_tags<tmpl::_1>>>>;
+          const auto observation_box =
+              make_observation_box<compute_tags_for_obs_box>(
+                  make_not_null(&box));
+
+          for (const auto& criterion : criteria) {
+            recommended_resolutions.push_back(criterion->evaluate(
+                observation_box, cache,
+                current_time_storage.current_iteration.strahlkorper,
+                status_and_info.second));
+          }
+          const size_t next_resolution_l =
+              recommended_resolutions.empty()
+                  ? all_storage.at(current_time)
+                        .current_iteration.strahlkorper.l_max()
+                  : *std::max_element(recommended_resolutions.begin(),
+                                      recommended_resolutions.end());
+          if (next_resolution_l > *current_resolution_l) {
+            current_resolution_l = next_resolution_l;
+            rerunning_with_higher_resolution = true;
+
+            // Prepare for trying the find again with higher resolution:
+            // Reset fast flow, but don't "clean up," which also erases the
+            // storage for the current time, resets the current time, and
+            // updates the completed times. None of those things happen yet,
+            // because the current time horizon finding is not yet finished.
+            // Also reset the current iteration storage, since the next find
+            // is effectively a new iteration.
+            fast_flow.reset_for_next_find();
+            current_time_storage.current_iteration.reset_for_next_iteration();
+
+            continue;
+          } else {
+            rerunning_with_higher_resolution = false;
+          }
+
+          // We have converged to the apparent horizon. Invoke the callbacks and
+          // clean up for the next horizon find
+          invoke_callbacks<HorizonMetavars>(make_not_null(&box), cache,
+                                            dependency, status_and_info.first);
+
           if (debug_print) {
             Parallel::printf(
-                "%s: For current time %s, at iteration %zu, coords have been "
-                "set.\n",
-                name, current_time, fast_flow.current_iteration());
+                "%s: Horizon find finished at current time %s. Cleaning up and "
+                "moving to next time\n",
+                name, current_time);
           }
-        }
 
-        // Interpolate new elements to points
-        interpolate_volume_data(make_not_null(&current_iteration_storage),
-                                make_not_null(&all_volume_variables),
-                                current_time, domain, functions_of_time);
-
-        // Sanity check
-        ASSERT(
-            current_iteration_storage.indicies_interpolated_to_thus_far
-                    .size() <=
-                current_iteration_storage.block_coord_holders.value().size(),
-            "The number indices interpolated to is larger than the number of "
-            "coordinates. This is an internal error. Please file an issue.");
-
-        if (current_iteration_storage.indicies_interpolated_to_thus_far
-                .size() !=
-            current_iteration_storage.block_coord_holders.value().size()) {
-          if (debug_print) {
-            Parallel::printf(
-                "%s: For current time %s, at iteration %zu, need more volume "
-                "data. Missing %zu points.\n",
-                name, current_time, fast_flow.current_iteration(),
-                current_iteration_storage.block_coord_holders.value().size() -
-                    current_iteration_storage.indicies_interpolated_to_thus_far
-                        .size());
-          }
-          return;
-        }
-
-        // Set this before we iterate the fast flow. Note that this will have to
-        // be updated once we have adaptive horizon finding
-        previous_iteration_surface = current_iteration_storage.strahlkorper;
-
-        // Do a single fast flow iteration.
-        std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
-        {
-          using InverseSpatialMetric =
-              gr::Tags::InverseSpatialMetric<DataVector, 3, frame>;
-          using ExtrinsicCurvature =
-              gr::Tags::ExtrinsicCurvature<DataVector, 3, frame>;
-          using SpatialChristoffel =
-              gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, frame>;
-
-          auto& interpolated_vars = current_iteration_storage.interpolated_vars;
-          status_and_info = fast_flow.iterate_horizon_finder(
-              make_not_null(&current_iteration_storage.strahlkorper),
-              get<InverseSpatialMetric>(interpolated_vars),
-              get<ExtrinsicCurvature>(interpolated_vars),
-              get<SpatialChristoffel>(interpolated_vars));
-        }
-
-        const auto& status = status_and_info.first;
-        const auto& info = status_and_info.second;
-        const auto has_converged = converged(status);
-
-        if (verbose_print or (quiet_print and has_converged)) {
-          Parallel::printf(
-              "%s: t=%.6g: its=%zu: %.1e<R<%.0e, |R|=%.1g, "
-              "|R_grid|=%.1g, %.4g<r<%.4g\n",
-              pretty_type::name<HorizonMetavars>(), current_time.id,
-              info.iteration, info.min_residual, info.max_residual,
-              info.residual_ylm, info.residual_mesh, info.r_min, info.r_max);
-        }
-
-        if (status == FastFlow::Status::SuccessfulIteration) {
-          // Reset so we compute and interpolate to new points
-          current_iteration_storage.reset_for_next_iteration();
-
-          // Continue in the iteration while loop
-          continue;
-        } else if (not has_converged) {
-          // This will possibly throw an error
-          tmpl::for_each<
-              typename HorizonMetavars::horizon_find_failure_callbacks>(
-              [&](auto callback_v) {
-                using callback = tmpl::type_from<decltype(callback_v)>;
-                callback::apply(box, cache, status);
-              });
-
-          // Still clean up in case we didn't error so we don't keep accepting
-          // volume data for this time
+          current_resolution_l = next_resolution_l;
           clean_up_horizon_finder(make_not_null(&current_time_optional),
                                   make_not_null(&all_storage),
                                   make_not_null(&completed_times),
                                   make_not_null(&fast_flow));
-
-          // If we didn't error, move on to the next horizon find
-          break;
         }
 
-        // We have converged to the apparent horizon. Invoke the callbacks and
-        // clean up for the next horizon find
-        invoke_callbacks<HorizonMetavars>(make_not_null(&box), cache,
-                                          dependency, status);
-
-        if (debug_print) {
-          Parallel::printf(
-              "%s: Horizon find finished at current time %s. Cleaning up and "
-              "moving to next time\n",
-              name, current_time);
-        }
-
-        clean_up_horizon_finder(
-            make_not_null(&current_time_optional), make_not_null(&all_storage),
-            make_not_null(&completed_times), make_not_null(&fast_flow));
-
-        // Break out of the iteration while loop. Go back into the overall while
-        // loop for time
+        // We have either i) converged with sufficient resolution, or
+        // ii) failed to converge but not thrown an error. In both cases,
+        // continue to the next time by breaking out of the resolution
+        // while loop, going back into the overall while loop for time.
         break;
-      }  // while (true)
-    }    // while (true)
+      }  // while (true) [sufficient resolution]
+    }  // while (true) [time]
   }
 };
 }  // namespace ah

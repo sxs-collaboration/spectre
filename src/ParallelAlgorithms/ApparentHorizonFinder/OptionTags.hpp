@@ -13,6 +13,7 @@
 #include "Options/Auto.hpp"
 #include "Options/Context.hpp"
 #include "Options/String.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
@@ -25,6 +26,11 @@ struct HorizonOptions {
   struct All {};
 
  public:
+  struct Criteria {
+    static constexpr Options::String help = {
+        "List of criteria for adapting the horizon resolution"};
+    using type = std::vector<std::unique_ptr<ah::Criterion>>;
+  };
   /// See Strahlkorper for suboptions.
   struct InitialGuess {
     static constexpr Options::String help = {"Initial guess"};
@@ -53,7 +59,7 @@ struct HorizonOptions {
         "names. Set to 'All' to send volume data from the entire domain."};
     using type = Options::Auto<std::vector<std::string>, All>;
   };
-  using options = tmpl::list<InitialGuess, FastFlow, Verbosity,
+  using options = tmpl::list<Criteria, InitialGuess, FastFlow, Verbosity,
                              MaxComputeCoordsRetries, BlocksForHorizonFind>;
   static constexpr Options::String help = {
       "Provide an initial guess for the apparent horizon surface\n"
@@ -61,12 +67,13 @@ struct HorizonOptions {
       "options."};
 
   HorizonOptions(
+      std::vector<std::unique_ptr<ah::Criterion>> criteria_in,
       ylm::Strahlkorper<Fr> initial_guess_in, ::FastFlow fast_flow_in,
       ::Verbosity verbosity_in, size_t max_compute_coords_retries_in,
       std::optional<std::vector<std::string>> blocks_for_horizon_find_in);
 
   HorizonOptions() = default;
-  HorizonOptions(const HorizonOptions& /*rhs*/) = default;
+  HorizonOptions(const HorizonOptions& /*rhs*/) = delete;
   HorizonOptions& operator=(const HorizonOptions& /*rhs*/) = delete;
   HorizonOptions(HorizonOptions&& /*rhs*/) = default;
   HorizonOptions& operator=(HorizonOptions&& /*rhs*/) = default;
@@ -75,6 +82,7 @@ struct HorizonOptions {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
+  std::vector<std::unique_ptr<ah::Criterion>> criteria;
   ylm::Strahlkorper<Fr> initial_guess{};
   ::FastFlow fast_flow;
   ::Verbosity verbosity{::Verbosity::Quiet};

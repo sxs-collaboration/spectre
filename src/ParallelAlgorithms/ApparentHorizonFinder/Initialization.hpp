@@ -37,6 +37,7 @@ namespace ah {
  *   - `ah::Tags::TimeDerivStrahlkorper`
  *   - `ah::Tags::Dependency`
  *   - `::Tags::Variables<ah::vars_to_interpolate_to_target>`
+ *   - `ah::Tags::CurrentResolutionL`
  * - Modifies:
  *   - `ah::Tags::Verbosity`
  *   - `ah::Tags::FastFlow`
@@ -49,9 +50,10 @@ struct Initialize {
   using simple_tags_from_options = tmpl::list<>;
 
   using simple_tags = tmpl::append<
-      tmpl::list<Tags::Verbosity, Tags::FastFlow, Tags::CurrentTime,
-                 Tags::PendingTimes, Tags::CompletedTimes, Tags::Storage<Fr>,
-                 Tags::PreviousSurfaces<Fr>, ylm::Tags::Strahlkorper<Fr>,
+      tmpl::list<Tags::CurrentResolutionL, Tags::Verbosity, Tags::FastFlow,
+                 Tags::CurrentTime, Tags::PendingTimes, Tags::CompletedTimes,
+                 Tags::Storage<Fr>, Tags::PreviousSurfaces<Fr>,
+                 ylm::Tags::Strahlkorper<Fr>,
                  ylm::Tags::TimeDerivStrahlkorper<Fr>, ah::Tags::Dependency,
                  ::Tags::Variables<ah::vars_to_interpolate_to_target<3, Fr>>>,
       tmpl::conditional_t<
@@ -71,13 +73,14 @@ struct Initialize {
 
   using compute_tags = ah::compute_items_on_target<3, Fr>;
 
-  using return_tags =
-      tmpl::list<Tags::Verbosity, Tags::FastFlow, Tags::CurrentTime>;
+  using return_tags = tmpl::list<Tags::CurrentResolutionL, Tags::Verbosity,
+                                 Tags::FastFlow, Tags::CurrentTime>;
 
   using argument_tags =
       tmpl::list<Tags::ApparentHorizonOptions<HorizonMetavars>>;
 
   static void apply(
+      const gsl::not_null<std::optional<size_t>*> current_resolution_l,
       const gsl::not_null<::Verbosity*> verbosity,
       const gsl::not_null<::FastFlow*> fast_flow,
       const gsl::not_null<std::optional<LinkedMessageId<double>>*> current_time,
@@ -85,6 +88,7 @@ struct Initialize {
     (*verbosity) = options.verbosity;
     (*fast_flow) = options.fast_flow;
     current_time->reset();
+    current_resolution_l->reset();
   }
 };
 }  // namespace ah
