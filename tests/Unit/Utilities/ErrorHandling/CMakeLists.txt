@@ -8,7 +8,6 @@ set(LIBRARY_SOURCES
   Test_AssertAndError.cpp
   Test_CaptureForError.cpp
   Test_Error.cpp
-  Test_Exceptions.cpp
   Test_FloatingPointExceptions.cpp
   Test_SegfaultHandler.cpp
   Test_Strerror.cpp

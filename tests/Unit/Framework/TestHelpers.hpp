@@ -10,20 +10,20 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/algorithm/string/predicate.hpp>
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <ostream>
 #include <random>
 #include <string>
-#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/ContainerHelpers.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -34,8 +34,6 @@
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/Tuple.hpp"
-#include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/HasEquivalence.hpp"
 
 /*!
@@ -348,32 +346,6 @@ inline bool operator!=(const NonCopyable& a, const NonCopyable& b) {
 }
 inline std::ostream& operator<<(std::ostream& os, const NonCopyable& /*v*/) {
   return os << "NC";
-}
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief Execute `func` and check that it throws an exception `expected`.
- *
- * \note The `.what()` strings of the thrown and `expected` exceptions are
- * compared for a partial match only: the `expected.what()` string must be
- * contained in (or equal to) the `.what()` string of the thrown exception.
- */
-template <typename Exception, typename ThrowingFunctor>
-void test_throw_exception(const ThrowingFunctor& func,
-                          const Exception& expected) {
-  try {
-    func();
-    INFO("Failed to throw any exception");
-    CHECK(false);
-  } catch (Exception& e) {
-    CAPTURE(e.what());
-    CAPTURE(expected.what());
-    CHECK(boost::contains(std::string(e.what()), std::string(expected.what())));
-  } catch (...) {
-    INFO("Failed to throw exception of type " +
-         pretty_type::get_name<Exception>());
-    CHECK(false);
-  }
 }
 
 /// \cond

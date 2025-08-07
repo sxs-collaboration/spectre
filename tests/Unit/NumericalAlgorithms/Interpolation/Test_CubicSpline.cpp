@@ -5,11 +5,14 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
+#include "Utilities/Math.hpp"
 
 namespace {
 template <class F>
