@@ -43,6 +43,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -134,6 +135,8 @@ struct mock_characteristic_evolution {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -271,7 +274,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
       l_max, extraction_radius, analytic_solution.get_clone()};
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {start_time, extraction_radius, filename, l_max, l_max,
+      {start_time, extraction_radius, false, filename, l_max, l_max,
        number_of_radial_points, scri_output_density, false}};
 
   runner.set_phase(Parallel::Phase::Initialization);

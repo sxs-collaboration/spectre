@@ -73,6 +73,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/SlabCompares.hpp"
@@ -346,7 +347,8 @@ struct Metavariables {
                   Initialization::Actions::AddComputeTags<tmpl::list<
                       ::domain::Tags::MinimumGridSpacingCompute<
                           Dim, Frame::Inertial>,
-                      ::domain::Tags::FlatLogicalMetricCompute<Dim>>>,
+                      ::domain::Tags::FlatLogicalMetricCompute<Dim>,
+                      ::Tags::StepperErrorEstimatesEnabledCompute<false>>>,
                   Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Register,

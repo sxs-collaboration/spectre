@@ -31,6 +31,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -143,6 +144,8 @@ struct MockCharacteristicEvolution {
   using component_being_mocked = CharacteristicEvolution<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
@@ -274,8 +277,8 @@ SPECTRE_TEST_CASE(
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius, analytic_solution.get_clone()};
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {start_time, l_max, l_max, number_of_radial_points, scri_output_density,
-       true}};
+      {start_time, false, l_max, l_max, number_of_radial_points,
+       scri_output_density, true}};
   runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.

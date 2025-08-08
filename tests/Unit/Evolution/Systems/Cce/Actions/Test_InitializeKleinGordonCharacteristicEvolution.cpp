@@ -11,6 +11,7 @@
 #include "Helpers/Evolution/Systems/Cce/Actions/CharacteristicInitialization.hpp"
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -22,6 +23,8 @@ template <typename Metavariables>
 struct mock_klein_gordon_characteristic_evolution {
   using component_being_mocked =
       KleinGordonCharacteristicEvolution<Metavariables>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeKleinGordonVariables<Metavariables>,
@@ -46,9 +49,6 @@ struct mock_klein_gordon_characteristic_evolution {
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         initialize_action_list>,
                  Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-          phase_dependent_action_list>;
 };
 
 struct metavariables : CharacteristicExtractDefaults<false> {
@@ -171,7 +171,7 @@ void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
 
   // tests start here
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {start_time, l_max, number_of_radial_points}};
+      {start_time, false, l_max, number_of_radial_points}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

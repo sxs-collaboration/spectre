@@ -67,11 +67,8 @@ struct AdvanceTime {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {  // NOLINT const
-    bool is_using_error_control = false;
-    if constexpr (db::tag_is_retrievable_v<Tags::StepperErrorEstimatesEnabled,
-                                           db::DataBox<DbTags>>) {
-      is_using_error_control = db::get<Tags::StepperErrorEstimatesEnabled>(box);
-    }
+    const bool is_using_error_control =
+        db::get<Tags::StepperErrorEstimatesEnabled>(box);
 
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time, Tags::StepNumberWithinSlab,

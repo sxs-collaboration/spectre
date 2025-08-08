@@ -34,6 +34,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -56,6 +57,8 @@ struct mock_characteristic_evolution {
   using component_being_mocked = CharacteristicEvolution<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
@@ -80,9 +83,6 @@ struct mock_characteristic_evolution {
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         initialize_action_list>,
                  Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-          phase_dependent_action_list>;
 };
 
 struct metavariables {
@@ -185,7 +185,7 @@ SPECTRE_TEST_CASE(
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t scri_plus_interpolation_order = 3;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {start_time, l_max, number_of_radial_points}};
+      {start_time, false, l_max, number_of_radial_points}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

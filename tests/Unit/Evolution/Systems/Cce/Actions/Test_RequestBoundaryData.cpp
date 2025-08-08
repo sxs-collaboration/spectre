@@ -29,6 +29,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -67,6 +68,8 @@ struct mock_characteristic_evolution {
   using component_being_mocked = CharacteristicEvolution<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::StepperErrorEstimatesEnabled>;
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
@@ -95,9 +98,6 @@ struct mock_characteristic_evolution {
                      Actions::RequestNextBoundaryData<
                          H5WorldtubeBoundary<Metavariables>,
                          mock_characteristic_evolution<Metavariables>>>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-          phase_dependent_action_list>;
 };
 
 struct test_metavariables {
@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   const double end_time = start_time + 10 * target_step_size;
   const size_t buffer_size = 5;
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max, extraction_radius,
+      {false, l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points}};
 
