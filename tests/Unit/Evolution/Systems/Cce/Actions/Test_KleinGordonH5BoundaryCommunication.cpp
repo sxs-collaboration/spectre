@@ -14,7 +14,9 @@
 #include "Helpers/Evolution/Systems/Cce/KleinGordonBoundaryTestHelpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -87,7 +89,7 @@ struct mock_klein_gordon_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::AdvanceTime, Parallel::Actions::TerminatePhase>;
+      ::Actions::MutateApply<AdvanceTime>, Parallel::Actions::TerminatePhase>;
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;
 

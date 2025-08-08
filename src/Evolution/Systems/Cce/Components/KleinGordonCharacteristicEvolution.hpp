@@ -17,6 +17,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/RecordTimeStepperData.hpp"
@@ -177,7 +178,7 @@ struct KleinGordonCharacteristicEvolution
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           KleinGordonCharacteristicEvolution<Metavariables>>,
-      ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
+      ::Actions::MutateApply<AdvanceTime>, Actions::ExitIfEndTimeReached,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<

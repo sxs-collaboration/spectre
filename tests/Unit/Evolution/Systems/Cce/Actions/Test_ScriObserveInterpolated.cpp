@@ -40,8 +40,9 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -152,7 +153,7 @@ struct mock_characteristic_evolution {
               Actions::ScriObserveInterpolated<
                   mock_observer<Metavariables>,
                   typename Metavariables::cce_boundary_component, false>,
-              ::Actions::AdvanceTime>>>;
+              ::Actions::MutateApply<AdvanceTime>>>>;
 };
 
 struct test_metavariables {

@@ -32,9 +32,9 @@
 #include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/AdvanceTime.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/UpdateU.hpp"
@@ -116,7 +116,7 @@ struct WorldtubeSingleton {
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
           tmpl::list<step_actions, Actions::ObserveWorldtubeSolution,
-                     ::Actions::AdvanceTime,
+                     ::Actions::MutateApply<AdvanceTime>,
                      PhaseControl::Actions::ExecutePhaseChange>>>;
 
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
