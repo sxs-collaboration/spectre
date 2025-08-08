@@ -9,8 +9,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include "Time/SlabRoundingError.hpp"
 #include "Time/Time.hpp"
-#include "Time/Utilities.hpp"
 #include "Utilities/Algorithm.hpp"
 
 /// \cond

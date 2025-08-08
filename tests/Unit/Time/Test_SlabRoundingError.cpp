@@ -7,7 +7,7 @@
 #include <initializer_list>
 
 #include "Time/Slab.hpp"
-#include "Time/Utilities.hpp"
+#include "Time/SlabRoundingError.hpp"
 
 namespace {
 void check_slab(const double start, const double end) {
