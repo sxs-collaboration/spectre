@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "Framework/TestHelpers.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/RootFinding/GslMultiRoot.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
@@ -124,14 +123,15 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
   CHECK(get_output(RootFinder::StoppingConditions::Residual(1.5)) ==
         "Residual(abs=1.5)");
 
-  test_throw_exception(
-      []() {
+  CHECK_THROWS_MATCHES(
+      ([]() {
         const std::array<double, 2> bad_initial_guess{{9.0e3, 2.0e5}};
         test_gsl_multiroot(
             RootFinder::StoppingConditions::Convergence(1.0e-14, 1.0e-13),
             BadFunction{1.0, 1.0, 1.0}, bad_initial_guess);
-      },
-      convergence_error(
+      }()),
+      convergence_error,
+      Catch::Matchers::MessageMatches(Catch::Matchers::ContainsSubstring(
           "The root find failed and was not forgiven. An exception has been "
           "thrown.\n"
           "The gsl error returned is: the iteration has not converged yet\n"
@@ -142,5 +142,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
           "Maximum number of iterations: 20\n"
           "Number of iterations reached: 20\n"
           "The last value of f in the root solver is:\n"
-          "1.74"));
+          "1.74")));
 }
