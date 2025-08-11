@@ -16,6 +16,7 @@
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/Events/ObserveFields.hpp"
+#include "Evolution/Systems/Cce/Events/ObserveNorms.hpp"
 #include "Evolution/Systems/Cce/Events/ObserveTimeStep.hpp"
 #include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
@@ -73,6 +74,7 @@ struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
         tmpl::pair<TimeSequence<std::uint64_t>,
                    TimeSequences::all_time_sequences<std::uint64_t>>,
         tmpl::pair<Event, tmpl::list<Cce::Events::ObserveFields,
+                                     Cce::Events::ObserveNorms,
                                      Cce::Events::ObserveTimeStep>>,
         tmpl::pair<Trigger, tmpl::append<Triggers::logical_triggers,
                                          Triggers::time_triggers>>>;

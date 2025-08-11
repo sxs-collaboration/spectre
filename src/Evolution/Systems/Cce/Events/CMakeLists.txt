@@ -7,5 +7,7 @@ spectre_target_headers(
   HEADERS
   Events.hpp
   ObserveFields.hpp
+  ObserveNorms.hpp
+  ObserveTagsList.hpp
   ObserveTimeStep.hpp
   )
