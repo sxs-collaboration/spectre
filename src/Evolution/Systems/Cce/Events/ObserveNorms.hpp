@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/Cce/Events/ObserveTagsList.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
@@ -53,16 +54,6 @@ struct Inertial;
 /// \endcond
 
 namespace Cce::Events {
-namespace detail {
-template <typename Tag>
-std::string name() {
-  if constexpr (std::is_same_v<Tag, Tags::ComplexInertialRetardedTime>) {
-    return db::tag_name<Tags::InertialRetardedTime>();
-  } else {
-    return db::tag_name<Tag>();
-  }
-}
-}  // namespace detail
 
 /*!
  * \brief Event to observe fields/variables in a characteristic evolution.
@@ -216,13 +207,6 @@ class ObserveNorms : public Event {
     const bool write_synchronously =
         Parallel::number_of_procs<size_t>(cache) == 1;
 
-    // Number of points
-    const size_t l_max = get<Tags::LMax>(box);
-    const size_t number_of_angular_points =
-        Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-    const size_t number_of_radial_grid_points =
-        get<Tags::NumberOfRadialPoints>(box);
-
     // Time
     const double time = get<::Tags::Time>(box);
 
@@ -241,7 +225,7 @@ class ObserveNorms : public Event {
     tmpl::for_each<spin_weighted_tags_to_observe>([&](auto tag_v) {
       using tag = tmpl::type_from<decltype(tag_v)>;
       constexpr int spin = tag::type::type::spin;
-      const std::string name = detail::name<tag>();
+      const std::string name = db::tag_name<tag>();
 
       // If we aren't observing this tag, then skip it
       if (not variables_to_observe_.contains(name)) {
@@ -252,25 +236,21 @@ class ObserveNorms : public Event {
 
       const SpinWeighted<ComplexDataVector, spin>& field = get(get<tag>(box));
 
-      const double norm =
-          sqrt(sum(conj(field) * field) /
-               (number_of_angular_points * number_of_radial_grid_points));
+      const double norm = sqrt((conj(field) * field).data()[0].real());
       norms.push_back(norm);
     });
 
     if (write_synchronously) {
       Parallel::local_synchronous_action<
           observers::ThreadedActions::WriteReductionDataRow>(
-          observer_proxy, cache,
-          Parallel::get<observers::Tags::ReductionFileName>(cache),
-          subgroup_path_, std::move(legend), std::make_tuple(std::move(norms)));
+          observer_proxy, cache, subgroup_path_, std::move(legend),
+          std::make_tuple(std::move(norms)));
     } else {
       // Send to observer writer
       Parallel::threaded_action<
           observers::ThreadedActions::WriteReductionDataRow>(
-          observer_proxy, cache,
-          Parallel::get<observers::Tags::ReductionFileName>(cache),
-          subgroup_path_, std::move(legend), std::make_tuple(std::move(norms)));
+          observer_proxy, subgroup_path_, std::move(legend),
+          std::make_tuple(std::move(norms)));
     }
   }
 
@@ -318,7 +298,7 @@ ObserveNorms::ObserveNorms(const std::string& subgroup_name,
   std::unordered_set<std::string> valid_tensors{};
   tmpl::for_each<available_tags_to_observe>([&valid_tensors](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
-    valid_tensors.insert(detail::name<tag>());
+    valid_tensors.insert(db::tag_name<tag>());
   });
 
   for (const auto& name : variables_to_observe_) {
