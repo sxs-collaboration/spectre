@@ -727,13 +727,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
             slice_extents, direction.dimension(), orientation);
       }
 
-      const TimeStepId& next_time_step_id = [&box]() {
-        if (LocalTimeStepping) {
-          return db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
-        } else {
-          return db::get<::Tags::TimeStepId>(*box);
-        }
-      }();
+      const TimeStepId& next_time_step_id =
+          db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
 
       using SendData = evolution::dg::BoundaryData<Dim>;
       SendData data{};

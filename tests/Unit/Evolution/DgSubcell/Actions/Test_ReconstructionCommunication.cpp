@@ -146,7 +146,7 @@ struct component {
                      evolution::dg::subcell::Actions::
                          ReceiveAndSendDataForReconstruction<
                              Dim, typename Metavariables::GhostDataMutator,
-                             false, UseNodegroupDgElements>,
+                             UseNodegroupDgElements>,
                      evolution::dg::subcell::Actions::
                          ReceiveDataForReconstruction<Dim>>>>>>;
 };

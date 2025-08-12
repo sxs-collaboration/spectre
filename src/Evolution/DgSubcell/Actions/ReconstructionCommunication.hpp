@@ -210,13 +210,8 @@ struct SendDataForReconstruction {
         Parallel::get_parallel_component<ParallelComponent>(cache);
     const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
-    const TimeStepId& next_time_step_id = [&box]() {
-      if (LocalTimeStepping) {
-        return db::get<::Tags::Next<::Tags::TimeStepId>>(box);
-      } else {
-        return db::get<::Tags::TimeStepId>(box);
-      }
-    }();
+    const TimeStepId& next_time_step_id =
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box);
 
     const int tci_decision =
         db::get<evolution::dg::subcell::Tags::TciDecision>(box);
@@ -365,8 +360,7 @@ struct SendDataForReconstruction {
  * 3. Interpolates to the requested ghost points, and then sends the completed
  *    ghost data to the original neighbor.
  */
-template <size_t Dim, typename GhostDataMutator, bool LocalTimeStepping,
-          bool UseNodegroupDgElements>
+template <size_t Dim, typename GhostDataMutator, bool UseNodegroupDgElements>
 struct ReceiveAndSendDataForReconstruction {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -481,8 +475,7 @@ struct ReceiveAndSendDataForReconstruction {
     const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
     const TimeStepId& next_time_step_id =
-        LocalTimeStepping ? db::get<::Tags::Next<::Tags::TimeStepId>>(box)
-                          : db::get<::Tags::TimeStepId>(box);
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box);
 
     const int tci_decision =
         db::get<evolution::dg::subcell::Tags::TciDecision>(box);
