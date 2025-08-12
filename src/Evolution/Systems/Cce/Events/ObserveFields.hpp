@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"  // Added for tnsr::I
 #include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
 #include "Evolution/Systems/Cce/NewmanPenrose.hpp"
@@ -94,6 +95,8 @@ std::string name() {
  * - `Cce::Tags::BondiR`
  * - `Cce::Tags::EthRDividedByR`
  * - `Cce::Tags::DuRDividedByR`
+ * - `Cce::Tags::CauchyCartesianCoords` // New tag to observe: added to
+ * description
  *
  * The main reason that this event is separate from the DG one is because this
  * event writes modal data over the sphere for every radial grid point, while
@@ -112,12 +115,14 @@ std::string name() {
  * `/CceVolumeData/VolumeData.vol` for most fields; it would contain
  * `/CceVolumeData/InertialRetardedTime.vol` for the inertial retarded time; and
  * it would contain `/CceVolumeData/OneMinusY.vol` for the compactified radial
- * coordinate. The structure of the .vol subfiles is the same as that for DG
- * volume data. However, the extents of the three different volume files are all
- * different, and for modal directions, they take the values l_max in both of
- * the two extent slots corresponding to angular modes. This  also means that
- * complex modal data (which has real/imag parts interleaved, as described
- * below) has twice as much data as the products of the extents suggests.
+ * coordinate; and it would contain `/CceVolumeData/CauchyCartesianCoords.vol`
+ * for the Cauchy Cartesian coordinates. The structure of the .vol subfiles is
+ * the same as that for DG volume data. However, the extents of the three
+ * different volume files are all different, and for modal directions, they take
+ * the values l_max in both of the two extent slots corresponding to angular
+ * modes. This  also means that complex modal data (which has real/imag parts
+ * interleaved, as described below) has twice as much data as the products of
+ * the extents suggests.
  *
  * The formats for `Cce::Tags::ComplexInertialRetardedTime` and
  * `Cce::Tags::OneMinusY` are special and are described below. Every other field
@@ -155,6 +160,16 @@ std::string name() {
  * this value once for each radial grid point. We do this in a volume subfile
  * `/<SubgroupName>/OneMinusY.vol` with the elements in the same order as the
  * radial index order for the spin weighted quantities above.
+ *
+ * The third notable exception is `Cce::Tags::CauchyCartesianCoords`. This
+ * quantity is a `tnsr::I<DataVector, 3, Frame::Inertial>` representing the
+ * x, y, and z Cartesian coordinates at each grid point. Unlike the
+ * spin-weighted quantities, it is not transformed to modal data. Instead, its
+ * components are written directly as nodal `DataVector`s to a volume subfile
+ * named
+ * `/<SubgroupName>/CauchyCartesianCoords.vol`. Each component (x, y, or z)
+ * is written as a `DataVector` whose elements are ordered first by radial
+ * index, then by the angular collocation points.
  */
 class ObserveFields : public Event {
   template <typename Tag, bool IncludeSecondDeriv = true>
@@ -199,9 +214,12 @@ class ObserveFields : public Event {
   // clang-format on
 
  public:
+  // Add Tags::CauchyCartesianCoords to the list of available tags to observe.
+  // It is not spin-weighted, so it is added separately.
   using available_tags_to_observe =
       tmpl::push_back<spin_weighted_tags_to_observe,
-                      Tags::ComplexInertialRetardedTime, Tags::OneMinusY>;
+                      Tags::ComplexInertialRetardedTime, Tags::OneMinusY,
+                      Tags::CauchyCartesianCoords>;  // <--- Added this tag!
 
   /// \cond
   explicit ObserveFields(CkMigrateMessage* /*unused*/) {}
@@ -244,7 +262,7 @@ class ObserveFields : public Event {
       Tags::SwshDerivativeCompute<Tags::BondiW, Spectral::Swsh::Tags::Eth>,
       Tags::NewmanPenroseAlphaCompute, Tags::NewmanPenroseBetaCompute,
       Tags::NewmanPenroseGammaCompute, Tags::NewmanPenroseEpsilonCompute,
-      // Tags::NewmanPenroseKappaCompute,
+      // Tags::NewmanPenroseKappa,
       // in our choice of tetrad, \kappa=0
       Tags::NewmanPenroseTauCompute, Tags::NewmanPenroseSigmaCompute,
       Tags::NewmanPenroseRhoCompute, Tags::NewmanPenrosePiCompute,
@@ -312,6 +330,7 @@ class ObserveFields : public Event {
           subgroup_path_ + "/" + inertial_retarded_time_name;
       const observers::ObservationId observation_id{time,
                                                     subfile_name + ".vol"};
+      // Extents for modal data: (l_max, l_max)
       const std::vector<size_t> extents_vector{{l_max, l_max}};
       const std::vector<Spectral::Basis> bases_vector{
           {Spectral::Basis::SphericalHarmonic,
@@ -336,6 +355,7 @@ class ObserveFields : public Event {
               goldberg_modes_interleaved_dv.data()),
           l_max_plus_one_squared);
 
+      // Transform from nodal to Goldberg (modal) basis
       Spectral::Swsh::libsharp_to_goldberg_modes(
           make_not_null(&goldberg_mode_view),
           Spectral::Swsh::swsh_transform(l_max, 1,
@@ -376,6 +396,7 @@ class ObserveFields : public Event {
       const std::string subfile_name = subgroup_path_ + "/" + one_minus_y_name;
       const observers::ObservationId observation_id{time,
                                                     subfile_name + ".vol"};
+      // Extents for radial-only data
       const std::vector<size_t> extents_vector{number_of_radial_grid_points};
       const std::vector<Spectral::Basis> bases_vector{
           Spectral::Basis::Legendre};
@@ -418,12 +439,73 @@ class ObserveFields : public Event {
     }
 
     ////////////////////////////////////////////////////////////
+    // CauchyCartesianCoords is special because it's a tnsr::I<DataVector, 3,
+    // Frame::Inertial> and is not spin-weighted or complex. Its components (x,
+    // y, z) are written directly as nodal DataVectors.
+    const std::string cauchy_cartesian_coords_name =
+        detail::name<Tags::CauchyCartesianCoords>();
+    if (variables_to_observe_.count(cauchy_cartesian_coords_name) == 1) {
+      const std::string subfile_name =
+          subgroup_path_ + "/" + cauchy_cartesian_coords_name;
+      const observers::ObservationId observation_id{time,
+                                                    subfile_name + ".vol"};
+      // The extents for nodal data: radial points, then angular points (theta x
+      // phi) The `number_of_angular_points` typically represents the total
+      // number of angular collocation points.
+      const std::vector<size_t> extents_vector{
+          {number_of_radial_grid_points, number_of_angular_points}};
+      const std::vector<Spectral::Basis> bases_vector{
+          {Spectral::Basis::Legendre,
+           Spectral::Basis::SphericalHarmonic}};  // Radial and angular
+      const std::vector<Spectral::Quadrature> quadratures_vector{
+          {Spectral::Quadrature::GaussLobatto,
+           Spectral::Quadrature::Gauss}};  // Radial and angular (assuming Gauss
+                                           // for spherical harmonics)
+
+      const auto cauchy_coords = get<Tags::CauchyCartesianCoords>(box);
+
+      std::vector<TensorComponent> tensor_components{};
+      tensor_components.reserve(3);  // Reserve space for x, y, z components
+
+      // Extract and add x-component (index 0)
+      tensor_components.emplace_back(cauchy_cartesian_coords_name + "_x",
+                                     get<0>(cauchy_coords));
+      // Extract and add y-component (index 1)
+      tensor_components.emplace_back(cauchy_cartesian_coords_name + "_y",
+                                     get<1>(cauchy_coords));
+      // Extract and add z-component (index 2)
+      tensor_components.emplace_back(cauchy_cartesian_coords_name + "_z",
+                                     get<2>(cauchy_coords));
+
+      if (write_synchronously) {
+        Parallel::local_synchronous_action<
+            observers::ThreadedActions::WriteVolumeData>(
+            observer_proxy, cache,
+            Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+            observation_id,
+            std::vector<ElementVolumeData>{{cauchy_cartesian_coords_name,
+                                            tensor_components, extents_vector,
+                                            bases_vector, quadratures_vector}});
+      } else {
+        // Send to observer writer
+        Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
+            observer_proxy,
+            Parallel::get<observers::Tags::VolumeFileName>(cache), subfile_name,
+            observation_id,
+            std::vector<ElementVolumeData>{{cauchy_cartesian_coords_name,
+                                            tensor_components, extents_vector,
+                                            bases_vector, quadratures_vector}});
+      }
+    }
+
+    ////////////////////////////////////////////////////////////
     // Everything else gets written together into the volume subfile named
     // /<SubgroupName>/VolumeData.vol
 
     // Field-independent info for writing into volume data file
     const std::string subfile_name = subgroup_path_ + "/VolumeData";
     const observers::ObservationId observation_id{time, subfile_name + ".vol"};
+    // Extents for modal data: (radial_points, l_max, l_max)
     const std::vector<size_t> extents_vector{
         {number_of_radial_grid_points, l_max, l_max}};
     const std::vector<Spectral::Basis> bases_vector{
