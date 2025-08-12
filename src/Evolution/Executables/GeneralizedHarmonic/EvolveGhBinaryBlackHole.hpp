@@ -59,6 +59,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Tags/Filter.hpp"
+#include "Evolution/Triggers/FractionOfOrbit.hpp"
 #include "Evolution/Triggers/SeparationLessThan.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
@@ -476,6 +477,7 @@ struct EvolutionMetavars {
         tmpl::pair<DenseTrigger,
                    tmpl::flatten<tmpl::list<
                        control_system::control_system_triggers<control_systems>,
+                       DenseTriggers::FractionOfOrbit,
                        DenseTriggers::standard_dense_triggers>>>,
         tmpl::pair<
             DomainCreator<volume_dim>,
@@ -528,7 +530,8 @@ struct EvolutionMetavars {
         tmpl::pair<
             Trigger,
             tmpl::append<Triggers::logical_triggers, Triggers::time_triggers,
-                         tmpl::list<Triggers::SeparationLessThan<false>>>>>;
+                         tmpl::list<Triggers::SeparationLessThan<false>>,
+                         tmpl::list<Triggers::FractionOfOrbit>>>>;
   };
 
   // A tmpl::list of tags to be added to the GlobalCache by the
