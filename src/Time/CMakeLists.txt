@@ -15,6 +15,7 @@ spectre_target_sources(
   LargestStepperError.cpp
   SelfStart.cpp
   Slab.cpp
+  SlabRoundingError.cpp
   StepperErrorEstimate.cpp
   StepperErrorTolerances.cpp
   Time.cpp
@@ -22,7 +23,6 @@ spectre_target_sources(
   TimeStepId.cpp
   TimeStepRequest.cpp
   TimeStepRequestProcessor.cpp
-  Utilities.cpp
   VariableOrderAlgorithm.cpp
   )
 
@@ -41,6 +41,7 @@ spectre_target_headers(
   LargestStepperError.hpp
   SelfStart.hpp
   Slab.hpp
+  SlabRoundingError.hpp
   StepperErrorEstimate.hpp
   StepperErrorTolerances.hpp
   TakeStep.hpp
@@ -49,7 +50,6 @@ spectre_target_headers(
   TimeStepId.hpp
   TimeStepRequest.hpp
   TimeStepRequestProcessor.hpp
-  Utilities.hpp
   VariableOrderAlgorithm.hpp
   )
 

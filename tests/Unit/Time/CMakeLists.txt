@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_LargestStepperError.cpp
   Test_SelfStart.cpp
   Test_Slab.cpp
+  Test_SlabRoundingError.cpp
   Test_StepperErrorTolerances.cpp
   Test_TakeStep.cpp
   Test_Time.cpp
@@ -22,7 +23,6 @@ set(LIBRARY_SOURCES
   Test_TimeStepId.cpp
   Test_TimeStepRequest.cpp
   Test_TimeStepRequestProcessor.cpp
-  Test_Utilities.cpp
   )
 
 add_subdirectory(Actions)
