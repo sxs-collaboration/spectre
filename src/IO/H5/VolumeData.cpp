@@ -56,12 +56,35 @@ void append_element_extents_and_connectivity(
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
     const ElementVolumeData& element) {
   // Process the element extents
-  const auto& extents = element.extents;
-  ASSERT(alg::none_of(extents, [](const size_t extent) { return extent == 1; }),
-         "We cannot generate connectivity for any single grid point elements.");
+  // `dim` is the dimension of the computation except when we are doing Cartoon
+  // method with a 2D computational domain. In such a case, the true dimension
+  // is 3 but we are writing as 2D for ParaView visualization
+  const auto& extents = [&element, &dim]() {
+    if (dim == 2 and element.extents.size() == 3) {
+      ASSERT(gsl::at(element.basis, 2) == Spectral::Basis::Cartoon and
+                 gsl::at(element.basis, 1) != Spectral::Basis::Cartoon,
+             "Trying to write data with mismatched dimensions (dim = 2, "
+                 << "extents = [" << element.extents[0] << ", "
+                 << element.extents[1] << ", " << element.extents[2]
+                 << "]) without a valid Cartoon basis (the computational "
+                    "dimension must be 2).");
+      return std::vector<size_t>(element.extents.begin(),
+                                 element.extents.end() - 1);
+    } else {
+      return element.extents;
+    }
+  }();
+#ifdef SPECTRE_DEBUG
+  for (size_t i = 0; i < extents.size(); ++i) {
+    // The Cartoon check is for the 1D Cartoon case
+    ASSERT(extents[i] != 1 or element.basis[i] == Spectral::Basis::Cartoon,
+           "Cannot generate connectivity for any single grid point elements "
+           "that don't use a Cartoon basis.");
+  }
+#endif  // SPECTRE_DEBUG
   if (extents.size() != dim) {
-    ERROR("Trying to write data of dimensionality"
-          << extents.size() << "but the VolumeData file has dimensionality"
+    ERROR("Trying to write data of dimensionality "
+          << extents.size() << " but the VolumeData file has dimensionality "
           << dim << ".");
   }
   total_extents->insert(total_extents->end(), extents.begin(), extents.end());
@@ -222,8 +245,19 @@ void VolumeData::write_volume_data(
   // Only written once per VolumeData file (All volume data in a single file
   // should have the same dimensionality)
   if (not contains_attribute(volume_data_group_.id(), "", "dimension")) {
-    h5::write_to_attribute(volume_data_group_.id(), "dimension",
-                           elements.front().extents.size());
+    h5::write_to_attribute(
+        volume_data_group_.id(), "dimension",
+        // Need to manually reduce dimensions with a Cartoon evolution
+        // using a 2d computational domain
+        [&elements]() -> size_t {
+          const auto& basis = elements.front().basis;
+          if (basis.size() == 3 and
+              (gsl::at(basis, 2) == Spectral::Basis::Cartoon and
+               gsl::at(basis, 1) != Spectral::Basis::Cartoon)) {
+            return 2;
+          }
+          return elements.front().extents.size();
+        }());
   }
   const auto dim =
       h5::read_value_attribute<size_t>(volume_data_group_.id(), "dimension");
@@ -260,19 +294,30 @@ void VolumeData::write_volume_data(
               grid_names += element.element_name + h5::VolumeData::separator();
               // append element basis
               alg::transform(
-                  element.basis, std::back_inserter(bases),
-                  [](const Spectral::Basis t) {
+                  // Need to ensure size == dim (Cartoon method with 2d
+                  // computational domain needs to drop last dimension)
+                  std::vector<Spectral::Basis>(
+                      element.basis.begin(),
+                      element.basis.end() -
+                          static_cast<int>(element.basis.size() - dim)),
+                  std::back_inserter(bases), [](const Spectral::Basis t) {
                     // Shift the basis to keep compatibility with old file
                     // formats.
                     return static_cast<int>(static_cast<uint8_t>(t) >>
                                             Spectral::basis_shift);
                   });
               // append element quadrature
-              alg::transform(element.quadrature,
-                             std::back_inserter(quadratures),
-                             [](const Spectral::Quadrature t) {
-                               return static_cast<int>(t);
-                             });
+              alg::transform(
+                  // Need to ensure size == dim (Cartoon method with 2d
+                  // computational domain needs to drop last dimension)
+                  std::vector<Spectral::Quadrature>(
+                      element.quadrature.begin(),
+                      element.quadrature.end() -
+                          static_cast<int>(element.basis.size() - dim)),
+                  std::back_inserter(quadratures),
+                  [](const Spectral::Quadrature t) {
+                    return static_cast<int>(t);
+                  });
 
               append_element_extents_and_connectivity(
                   &total_extents, &total_connectivity, &pole_connectivity,
@@ -340,9 +385,13 @@ void VolumeData::write_volume_data(
   h5_detail::write_dictionary("Basis dictionary", basis_dict,
                               observation_group);
   h5::write_data(observation_group.id(), bases, {bases.size()}, "bases");
-  // Write the Connectivity
-  h5::write_data(observation_group.id(), total_connectivity,
-                 {total_connectivity.size()}, "connectivity");
+  // Write the Connectivity, which will only be empty when a CartoonSphere
+  // domain is used, which has 1 computational dimension and should not be
+  // visualized with ParaView
+  if (not total_connectivity.empty()) {
+    h5::write_data(observation_group.id(), total_connectivity,
+                   {total_connectivity.size()}, "connectivity");
+  }
   // Note: pole_connectivity stores extra connections that define triangles to
   // fill in the poles on a Strahlkorper and is empty if not outputting
   // Strahlkorper surface data. Because these connections define triangles

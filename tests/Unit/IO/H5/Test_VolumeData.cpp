@@ -11,12 +11,15 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/CoordinateMaps/Distribution.hpp"
+#include "Domain/Creators/CartoonCylinder.hpp"
 #include "Domain/Creators/Rectilinear.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/IO/VolumeData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -567,12 +570,182 @@ void test_extend_connectivity_data() {
     file_system::rm(h5_file_name, true);
   }
 }
+
+void test_cartoon() {
+  // For a 2D computational domain Cartoon-basis evolution, we only want to
+  // write 2D data despite the simulation being 3D. This tests the appropriate
+  // dimension reduction
+  const std::string h5_file_name("Unit.IO.H5.VolumeData.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+
+  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  const std::vector<DataVector> tensor_components_and_coords{
+      {8.9, 7.6, 3.9, 2.1},     {0.0, 1.0, 0.0, 1.0},
+      {0.0, 0.0, 1.0, 1.0},     {0.0, 0.0, 0.0, 0.0},
+      {-78.9, -7.6, -1.9, 8.1}, {-7.9, 7.6, 1.9, -8.1},
+      {17.9, 27.6, 21.9, -28.1}};
+  const std::vector<size_t> observation_ids{8435087234, size_t(-1)};
+  const std::vector<double> observation_values{8.0, -2.3};
+  const std::vector<std::string> grid_names{"[[2,3,4]]"};
+  const std::vector<std::vector<Spectral::Basis>> bases{
+      {Spectral::Basis::Legendre, Spectral::Basis::Legendre,
+       Spectral::Basis::Cartoon}};
+  const std::vector<std::vector<Spectral::Quadrature>> quadratures{
+      {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto,
+       Spectral::Quadrature::SphericalSymmetry}};
+
+  const std::vector<std::vector<Spectral::Basis>> written_bases{
+      {Spectral::Basis::Legendre, Spectral::Basis::Legendre}};
+  const std::vector<std::vector<Spectral::Quadrature>> written_quadratures{
+      {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::GaussLobatto}};
+
+  const TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>
+      test_bc{Direction<3>::lower_xi(), 0};
+  const domain::creators::CartoonCylinder domain_creator{
+      {0.0, 1.0},
+      {1.5, 2.0},
+      {0, 1},
+      {5, 4},
+      {domain::CoordinateMaps::Distribution::Linear,
+       domain::CoordinateMaps::Distribution::Linear},
+      std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3, 0>>(
+              1., std::array<double, 3>{{2., 3., 4.}}),
+      {{{{test_bc.get_clone(), test_bc.get_clone()}},
+        {{test_bc.get_clone(), test_bc.get_clone()}}}}};
+
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+  {
+    auto& volume_file =
+        my_file.insert<h5::VolumeData>("/element_data", version_number);
+    const auto write_to_file = [&volume_file, &tensor_components_and_coords,
+                                &grid_names, &bases, &quadratures,
+                                &domain_creator](
+                                   const size_t observation_id,
+                                   const double observation_value) {
+      const std::string& first_grid = grid_names.front();
+      volume_file.write_volume_data(
+          observation_id, observation_value,
+          std::vector<ElementVolumeData>{
+              {first_grid,
+               {TensorComponent{"S", TestHelpers::io::VolumeData::multiply(
+                                         observation_value,
+                                         tensor_components_and_coords[0])},
+                TensorComponent{
+                    "x-coord",
+                    TestHelpers::io::VolumeData::multiply(
+                        observation_value, tensor_components_and_coords[1])},
+                TensorComponent{
+                    "y-coord",
+                    TestHelpers::io::VolumeData::multiply(
+                        observation_value, tensor_components_and_coords[2])},
+                TensorComponent{
+                    "z-coord",
+                    TestHelpers::io::VolumeData::multiply(
+                        observation_value, tensor_components_and_coords[3])},
+                TensorComponent{"T_x", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[4])},
+                TensorComponent{"T_y", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[5])},
+                TensorComponent{"T_z", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[6])}},
+               {2, 2, 1},
+               bases.front(),
+               quadratures.front()}},
+          serialize(domain_creator.create_domain()),
+          serialize(domain_creator.functions_of_time()));
+    };
+    for (size_t i = 0; i < observation_ids.size(); ++i) {
+      write_to_file(observation_ids[i], observation_values[i]);
+    }
+    my_file.close_current_object();
+  }
+  // Open the read volume file and check that the observation id and values are
+  // correct. No leading slash should also find the subfile, and a ".vol"
+  // extension as well.
+  const auto& volume_file =
+      my_file.get<h5::VolumeData>("element_data.vol", version_number);
+  CHECK(volume_file.subfile_path() == "/element_data");
+  const auto read_observation_ids = volume_file.list_observation_ids();
+  // The observation IDs should be sorted by their observation value
+  CHECK(read_observation_ids == std::vector<size_t>{size_t(-1), 8435087234});
+  {
+    INFO("Test find_observation_id");
+    std::vector<size_t> found_observation_ids(observation_values.size());
+    std::transform(observation_values.begin(), observation_values.end(),
+                   found_observation_ids.begin(),
+                   [&volume_file](const double observation_value) {
+                     return volume_file.find_observation_id(observation_value);
+                   });
+    CHECK(found_observation_ids == observation_ids);
+  }
+
+  for (size_t i = 0; i < observation_ids.size(); ++i) {
+    TestHelpers::io::VolumeData::check_volume_data(
+        h5_file_name, version_number, "element_data"s, observation_ids[i],
+        observation_values[i], std::nullopt, tensor_components_and_coords,
+        grid_names, written_bases, written_quadratures, {{2, 2}},
+        {"S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z"},
+        {{0, 1, 2, 3, 4, 5, 6}}, {}, observation_values[i]);
+    CHECK(volume_file.get_domain(observation_ids[i]) ==
+          serialize(domain_creator.create_domain()));
+    CHECK(volume_file.get_functions_of_time(observation_ids[i]) ==
+          serialize(domain_creator.functions_of_time()));
+  }
+
+  {
+    INFO("Cartoon dimension reduction");
+    const auto dimension = volume_file.get_dimension();
+    CHECK(dimension == 2);
+  }
+
+  {
+    INFO("Cartoon offset_and_length_for_grid");
+    const size_t observation_id = observation_ids.front();
+    const auto all_grid_names = volume_file.get_grid_names(observation_id);
+    const auto all_extents = volume_file.get_extents(observation_id);
+    const auto first_grid_offset_and_length = h5::offset_and_length_for_grid(
+        grid_names.front(), all_grid_names, all_extents);
+    CHECK(first_grid_offset_and_length.first == 0);
+    CHECK(first_grid_offset_and_length.second == 4);
+  }
+
+  {
+    INFO("Cartoon mesh_for_grid");
+    const size_t observation_id = observation_ids.front();
+    const auto all_grid_names = volume_file.get_grid_names(observation_id);
+    const auto all_extents = volume_file.get_extents(observation_id);
+    const auto all_bases = volume_file.get_bases(observation_id);
+    const auto all_quadratures = volume_file.get_quadratures(observation_id);
+    const auto first_mesh =
+        h5::mesh_for_grid<2>(grid_names.front(), all_grid_names, all_extents,
+                             all_bases, all_quadratures);
+    CHECK(first_mesh ==
+          Mesh<2>({2, 2},
+                  {Spectral::Basis::Legendre, Spectral::Basis::Legendre},
+                  {Spectral::Quadrature::GaussLobatto,
+                   Spectral::Quadrature::GaussLobatto}));
+  }
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
 }  // namespace
 
 // [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test<DataVector>();
   test<std::vector<float>>();
+  test_cartoon();
   test_strahlkorper();
   test_extend_connectivity_data<1>();
   test_extend_connectivity_data<2>();
