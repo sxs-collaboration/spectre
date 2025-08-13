@@ -76,7 +76,8 @@ void SetPiAndPhiFromConstraints<AllSolutionsForChristoffelAnalytic, Dim>::impl(
     }
   }
 
-  partial_derivative(phi, spacetime_metric, mesh, inverse_jacobian);
+  partial_derivative(phi, spacetime_metric, mesh, inverse_jacobian,
+                     inertial_coords);
 
   Variables<
       tmpl::list<gr::Tags::SpatialMetric<DataVector, Dim>,

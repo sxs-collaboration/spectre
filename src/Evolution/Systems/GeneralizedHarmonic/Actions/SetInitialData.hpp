@@ -64,7 +64,8 @@ void initial_gh_variables_from_adm(
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
     const tnsr::ii<DataVector, Dim>& extrinsic_curvature, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          Frame::Inertial>& inv_jacobian);
+                          Frame::Inertial>& inv_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
 
 /*!
  * \brief Numeric initial data loaded from volume data files
@@ -224,7 +225,8 @@ class NumericInitialData : public evolution::initial_data::InitialData {
       const gsl::not_null<tuples::TaggedTuple<AllTags...>*> numeric_data,
       const Mesh<3>& mesh,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
-                            Frame::Inertial>& inv_jacobian) const {
+                            Frame::Inertial>& inv_jacobian,
+      const tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords) const {
     if (std::holds_alternative<NumericInitialData::GhVars>(
             selected_variables_)) {
       // We have loaded the GH system variables from the file, so just move the
@@ -247,7 +249,7 @@ class NumericInitialData : public evolution::initial_data::InitialData {
 
       initial_gh_variables_from_adm(spacetime_metric, pi, phi, spatial_metric,
                                     lapse, shift, extrinsic_curvature, mesh,
-                                    inv_jacobian);
+                                    inv_jacobian, inertial_coords);
     } else {
       ERROR(
           "These initial data variables are not implemented yet. Please add "
@@ -375,10 +377,12 @@ struct SetInitialData {
     const auto& inv_jacobian =
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(*box);
+    const auto& inertial_coords =
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box);
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, Dim>,
                Tags::Pi<DataVector, Dim>, Tags::Phi<DataVector, Dim>>(
         &gh::initial_gh_variables_from_adm<Dim>, box, spatial_metric, lapse,
-        shift, extrinsic_curvature, mesh, inv_jacobian);
+        shift, extrinsic_curvature, mesh, inv_jacobian, inertial_coords);
 
     // No need to import numeric initial data, so we terminate the phase by
     // pausing the algorithm on this element
@@ -426,16 +430,18 @@ struct ReceiveNumericInitialData {
     const auto& inv_jacobian =
         db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
                                               Frame::Inertial>>(box);
+    const auto& inertial_coords =
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
     db::mutate<gr::Tags::SpacetimeMetric<DataVector, 3>,
                Tags::Pi<DataVector, 3>, Tags::Phi<DataVector, 3>>(
-        [&initial_data, &numeric_data, &mesh, &inv_jacobian](
+        [&initial_data, &numeric_data, &mesh, &inv_jacobian, &inertial_coords](
             const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
             const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
             const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi) {
           initial_data.set_initial_data(spacetime_metric, pi, phi,
                                         make_not_null(&numeric_data), mesh,
-                                        inv_jacobian);
+                                        inv_jacobian, inertial_coords);
         },
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

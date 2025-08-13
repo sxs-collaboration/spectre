@@ -169,7 +169,8 @@ struct ObserverTags {
       variables_tag, domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
-      typename system::gradient_variables>;
+      typename system::gradient_variables,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
 
@@ -425,7 +426,8 @@ struct GeneralizedHarmonicTemplateBase {
           typename system::variables_tag, domain::Tags::Mesh<volume_dim>,
           domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                         Frame::Inertial>,
-          typename system::gradient_variables>>,
+          typename system::gradient_variables,
+          domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>,
       gh::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           tmpl::push_back<StepChoosers::step_chooser_compute_tags<
