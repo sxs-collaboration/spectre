@@ -17,6 +17,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -80,7 +81,8 @@ template <size_t Dim>
 ::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos(
     const Domain<Dim>& domain, const Element<Dim>& element,
     const Mesh<Dim>& volume_mesh,
-    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh) {
+    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
+    const bool local_time_stepping) {
   ::dg::MortarMap<Dim, MortarInfo<Dim>> result{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     const domain::FaceType face_type = element.face_types().at(direction);
@@ -112,7 +114,10 @@ template <size_t Dim>
                    .interface_data_policy =
                        neighbor_orientation.is_aligned()
                            ? InterfaceDataPolicy::CopyProject
-                           : InterfaceDataPolicy::OrientCopyProject}});
+                           : InterfaceDataPolicy::OrientCopyProject,
+                   .time_stepping_policy =
+                       local_time_stepping ? TimeSteppingPolicy::Conservative
+                                           : TimeSteppingPolicy::EqualRate}});
         }
         break;
       case (domain::FaceType::SingleNonconforming):
@@ -130,7 +135,10 @@ template <size_t Dim>
                              neighbor_mesh.at(mortar_id).slice_away(
                                  neighbor_orientation(direction.dimension()))},
                      .interface_data_policy =
-                         InterfaceDataPolicy::NonconformingSelfInterpolates}});
+                         InterfaceDataPolicy::NonconformingSelfInterpolates,
+                     .time_stepping_policy =
+                         local_time_stepping ? TimeSteppingPolicy::Conservative
+                                             : TimeSteppingPolicy::EqualRate}});
           }
         }
         break;
@@ -145,7 +153,10 @@ template <size_t Dim>
             mortar_id,
             MortarInfo<Dim>{
                 {.interface_data_policy =
-                     InterfaceDataPolicy::NonconformingNeighborInterpolates}});
+                     InterfaceDataPolicy::NonconformingNeighborInterpolates,
+                 .time_stepping_policy = local_time_stepping
+                                             ? TimeSteppingPolicy::Conservative
+                                             : TimeSteppingPolicy::EqualRate}});
         break;
       }
       default:
@@ -258,10 +269,10 @@ void h_refine_structure(
     const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
     const Element<Dim>& new_element,
     const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-    const TimeStepId& current_temporal_id) {
+    const TimeStepId& current_temporal_id, const bool local_time_stepping) {
   *mortar_data = detail::empty_mortar_data(new_element);
-  *mortar_infos =
-      detail::mortar_infos(domain, new_element, new_mesh, neighbor_mesh);
+  *mortar_infos = detail::mortar_infos(domain, new_element, new_mesh,
+                                       neighbor_mesh, local_time_stepping);
   for (const auto& direction : Direction<Dim>::all_directions()) {
     (*normal_covector_and_magnitude)[direction] = std::nullopt;
   }
@@ -291,7 +302,8 @@ void h_refine_structure(
   template ::dg::MortarMap<DIM(data), MortarInfo<DIM(data)>> mortar_infos(   \
       const Domain<DIM(data)>& domain, const Element<DIM(data)>& element,    \
       const Mesh<DIM(data)>& volume_mesh,                                    \
-      const ::dg::MortarMap<DIM(data), Mesh<DIM(data)>>& neighbor_mesh);     \
+      const ::dg::MortarMap<DIM(data), Mesh<DIM(data)>>& neighbor_mesh,      \
+      bool local_time_stepping);                                             \
   template std::tuple<                                                       \
       ::dg::MortarMap<DIM(data), Mesh<DIM(data) - 1>>,                       \
       ::dg::MortarMap<DIM(data), TimeStepId>,                                \
@@ -322,7 +334,7 @@ void h_refine_structure(
       const Domain<DIM(data)>& domain, const Mesh<DIM(data)>& new_mesh,      \
       const Element<DIM(data)>& new_element,                                 \
       const ::dg::MortarMap<DIM(data), Mesh<DIM(data)>>& neighbor_mesh,      \
-      const TimeStepId& current_temporal_id);
+      const TimeStepId& current_temporal_id, bool local_time_stepping);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

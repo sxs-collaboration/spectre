@@ -75,7 +75,8 @@ template <size_t Dim>
 ::dg::MortarMap<Dim, MortarInfo<Dim>> mortar_infos(
     const Domain<Dim>& domain, const Element<Dim>& element,
     const Mesh<Dim>& volume_mesh,
-    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh);
+    const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
+    bool local_time_stepping);
 
 template <size_t Dim>
 std::tuple<::dg::MortarMap<Dim, Mesh<Dim - 1>>,
@@ -103,7 +104,7 @@ void h_refine_structure(
     const Domain<Dim>& domain, const Mesh<Dim>& new_mesh,
     const Element<Dim>& new_element,
     const ::dg::MortarMap<Dim, Mesh<Dim>>& neighbor_mesh,
-    const TimeStepId& current_temporal_id);
+    const TimeStepId& current_temporal_id, bool local_time_stepping);
 }  // namespace detail
 
 /*!
@@ -156,7 +157,8 @@ struct Mortars {
     const auto& neighbor_mesh = db::get<domain::Tags::NeighborMesh<Dim>>(box);
     auto mortar_data = detail::empty_mortar_data(element);
     auto mortar_infos =
-        detail::mortar_infos(domain, element, volume_mesh, neighbor_mesh);
+        detail::mortar_infos(domain, element, volume_mesh, neighbor_mesh,
+                             Metavariables::local_time_stepping);
     auto [mortar_meshes, mortar_next_temporal_ids, normal_covector_quantities] =
         detail::mortars_apply_impl(
             element, db::get<::Tags::Next<::Tags::TimeStepId>>(box),
@@ -260,7 +262,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
     const bool mesh_changed = old_mesh != new_mesh;
 
     auto new_mortar_infos =
-        detail::mortar_infos(domain, new_element, new_mesh, neighbor_mesh);
+        detail::mortar_infos(domain, new_element, new_mesh, neighbor_mesh,
+                             Metavariables::local_time_stepping);
 
     // The old mortars must be removed from the MortarMaps before the
     // new ones can be added to avoid potentially exceeding the
@@ -437,7 +440,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
     detail::h_refine_structure(
         mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_id,
         normal_covector_and_magnitude, domain, new_mesh, new_element,
-        neighbor_mesh, get<::Tags::TimeStepId>(parent_items));
+        neighbor_mesh, get<::Tags::TimeStepId>(parent_items),
+        Metavariables::local_time_stepping);
 
     if (Metavariables::local_time_stepping) {
       const auto& old_element = get<domain::Tags::Element<dim>>(parent_items);
@@ -512,7 +516,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
     detail::h_refine_structure(
         mortar_data, mortar_mesh, mortar_infos, mortar_next_temporal_id,
         normal_covector_and_magnitude, domain, new_mesh, new_element,
-        neighbor_mesh, get<::Tags::TimeStepId>(children_items.begin()->second));
+        neighbor_mesh, get<::Tags::TimeStepId>(children_items.begin()->second),
+        Metavariables::local_time_stepping);
 
     if (Metavariables::local_time_stepping) {
       for (const auto& [direction, neighbors] : new_element.neighbors()) {
