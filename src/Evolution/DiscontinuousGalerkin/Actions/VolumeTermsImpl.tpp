@@ -119,7 +119,8 @@ void volume_terms(
   // Compute d_i u_\alpha for nonconservative products
   if constexpr (has_partial_derivs) {
     partial_derivatives(partial_derivs, evolved_vars, mesh,
-                        logical_to_inertial_inverse_jacobian);
+                        logical_to_inertial_inverse_jacobian,
+                        inertial_coordinates);
   }
 
   // For now just zero dt_vars. If this is a performance bottle neck we

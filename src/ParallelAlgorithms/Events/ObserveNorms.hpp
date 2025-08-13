@@ -26,6 +26,7 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Options/String.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -426,9 +427,40 @@ operator()(const ObservationBox<ComputeTagsList, DataBoxType>& box,
   }
 
   const auto& mesh = get<::Events::Tags::ObserverMesh<VolumeDim>>(box);
-  const DataVector det_jacobian =
-    1. / get(get<::Events::Tags::ObserverDetInvJacobian
-                   <Frame::ElementLogical, Frame::Inertial>>(box));
+  const auto det_jacobian = [&box, &mesh]() -> DataVector {
+    if constexpr (VolumeDim == 3 and
+                  db::tag_is_retrievable_v<
+                      domain::Tags::Coordinates<VolumeDim, Frame::Inertial>,
+                      std::decay_t<decltype(box)>>) {
+      if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+        if (mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry) {
+          // Spherical Symmetry, needs x^2 cartesian to spherical jacobian
+          return square(get<0>(
+                     get<domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>(
+                         box))) /
+                 get(get<::Events::Tags::ObserverDetInvJacobian<
+                         Frame::ElementLogical, Frame::Inertial>>(box));
+        } else {
+          // Axial Symmetry, needs x cartesian to cylindrical jacobian
+          ASSERT(mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry,
+                 "Unexpected quadrature " << mesh.quadrature(2)
+                                          << " (expected AxialSymmetry)");
+          return get<0>(
+                     get<domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>(
+                         box)) /
+                 get(get<::Events::Tags::ObserverDetInvJacobian<
+                         Frame::ElementLogical, Frame::Inertial>>(box));
+        }
+      } else {
+        return 1. / get(get<::Events::Tags::ObserverDetInvJacobian<
+                            Frame::ElementLogical, Frame::Inertial>>(box));
+      }
+    } else {
+      (void)mesh;
+      return 1. / get(get<::Events::Tags::ObserverDetInvJacobian<
+                          Frame::ElementLogical, Frame::Inertial>>(box));
+    }
+  }();
   const size_t number_of_points = mesh.number_of_grid_points();
   const double local_volume = definite_integral(det_jacobian, mesh);
 
