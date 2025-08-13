@@ -309,7 +309,8 @@ struct Metavariables {
                                                     amr::Criteria::Type::h>,
                        amr::Criteria::DriveToTarget<volume_dim,
                                                     amr::Criteria::Type::p>,
-                       amr::Criteria::Random,
+                       amr::Criteria::Random<amr::Criteria::Type::h>,
+                       amr::Criteria::Random<amr::Criteria::Type::p>,
                        amr::Criteria::TruncationError<
                            volume_dim, tmpl::list<::domain::Tags::Coordinates<
                                            volume_dim, Frame::Inertial>>>>>,

@@ -45,14 +45,14 @@ namespace {
 // when called on the specified refinement level, this criteria
 // always will choose to join
 auto create_always_join() {
-  return std::make_unique<amr::Criteria::Random>(
+  return std::make_unique<amr::Criteria::Random<amr::Criteria::Type::h>>(
       std::unordered_map<amr::Flag, size_t>{{amr::Flag::Join, 1}});
 }
 
 // when called on any refinement level, this criteria always will choose to do
 // nothing
 auto create_always_do_nothing() {
-  return std::make_unique<amr::Criteria::Random>(
+  return std::make_unique<amr::Criteria::Random<amr::Criteria::Type::h>>(
       std::unordered_map<amr::Flag, size_t>{{amr::Flag::DoNothing, 1}});
 }
 
@@ -80,10 +80,11 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        amr::Criterion, tmpl::list<amr::Criteria::Random,
-                                   amr::Criteria::DriveToTarget<
-                                       volume_dim, amr::Criteria::Type::h>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<amr::Criterion,
+                   tmpl::list<amr::Criteria::Random<amr::Criteria::Type::h>,
+                              amr::Criteria::DriveToTarget<
+                                  volume_dim, amr::Criteria::Type::h>>>>;
   };
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {

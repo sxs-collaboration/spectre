@@ -16,7 +16,7 @@ Parallelization:
 
 Amr:
   Criteria:
-    - Random:
+    - RandomH:
         ProbabilityWeights:
           Split: 2
           Join: 1

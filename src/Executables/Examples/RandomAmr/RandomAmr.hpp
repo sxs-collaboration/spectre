@@ -71,7 +71,8 @@ struct RandomAmrMetavars {
                                   volume_dim, amr::Criteria::Type::h>,
                               amr::Criteria::DriveToTarget<
                                   volume_dim, amr::Criteria::Type::p>,
-                              amr::Criteria::Random>>,
+                              amr::Criteria::Random<amr::Criteria::Type::h>,
+                              amr::Criteria::Random<amr::Criteria::Type::p>>>,
         tmpl::pair<
             PhaseChange,
             tmpl::list<

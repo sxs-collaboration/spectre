@@ -13,6 +13,7 @@
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,6 +35,7 @@ amr::Flag random_flag(
  * - Flags with weight zero do not need to be specified.
  * - If all weights are zero, `amr::Flag::DoNothing` is always chosen.
  */
+template <Type CriteriaType>
 class Random : public Criterion {
  public:
   struct ProbabilityWeights {
@@ -61,6 +63,10 @@ class Random : public Criterion {
   WRAPPED_PUPable_decl_template(Random);  // NOLINT
   /// \endcond
 
+  static std::string name() {
+    return CriteriaType == Type::p ? "RandomP" : "RandomH";
+  }
+
   std::string observation_name() override { return "Random"; }
 
   using compute_tags_for_observation_box = tmpl::list<>;
@@ -77,9 +83,11 @@ class Random : public Criterion {
   std::unordered_map<amr::Flag, size_t> probability_weights_{};
 };
 
+template <Type CriteriaType>
 template <size_t Dim, typename Metavariables>
-auto Random::operator()(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                        const ElementId<Dim>& /*element_id*/) const {
+auto Random<CriteriaType>::operator()(
+    Parallel::GlobalCache<Metavariables>& /*cache*/,
+    const ElementId<Dim>& /*element_id*/) const {
   auto result = make_array<Dim>(amr::Flag::Undefined);
   for (size_t d = 0; d < Dim; ++d) {
     result[d] = detail::random_flag(probability_weights_);

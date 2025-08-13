@@ -12,13 +12,31 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace amr::Criteria {
-Random::Random(std::unordered_map<amr::Flag, size_t> probability_weights)
-    : probability_weights_(std::move(probability_weights)) {}
+template <Type CriteriaType>
+Random<CriteriaType>::Random(
+    std::unordered_map<amr::Flag, size_t> probability_weights)
+    : probability_weights_(std::move(probability_weights)) {
+  if constexpr (CriteriaType == Type::h) {
+    if (probability_weights_.contains(amr::Flag::IncreaseResolution) or
+        probability_weights_.contains(amr::Flag::DecreaseResolution)) {
+      ERROR("Cannot use p-refinement flag in ProbabilityWeights "
+            << probability_weights_);
+    }
+  } else {
+    if (probability_weights_.contains(amr::Flag::Split) or
+        probability_weights_.contains(amr::Flag::Join)) {
+      ERROR("Cannot use h-refinement flag in ProbabilityWeights "
+            << probability_weights_);
+    }
+  }
+}
 
-Random::Random(CkMigrateMessage* msg) : Criterion(msg) {}
+template <Type CriteriaType>
+Random<CriteriaType>::Random(CkMigrateMessage* msg) : Criterion(msg) {}
 
 // NOLINTNEXTLINE(google-runtime-references)
-void Random::pup(PUP::er& p) {
+template <Type CriteriaType>
+void Random<CriteriaType>::pup(PUP::er& p) {
   Criterion::pup(p);
   p | probability_weights_;
 }
@@ -55,5 +73,9 @@ amr::Flag random_flag(
 }
 }  // namespace detail
 
-PUP::able::PUP_ID Random::my_PUP_ID = 0;  // NOLINT
+template <Type CriteriaType>
+PUP::able::PUP_ID Random<CriteriaType>::my_PUP_ID = 0;  // NOLINT
+
+template class Random<Type::h>;
+template class Random<Type::p>;
 }  // namespace amr::Criteria
