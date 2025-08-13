@@ -109,9 +109,10 @@ template <size_t Dim>
                   {.mortar_size = ::dg::mortar_size(element.id(), neighbor,
                                                     direction.dimension(),
                                                     neighbor_orientation),
-                   .policy = neighbor_orientation.is_aligned()
-                                 ? InterfaceDataPolicy::CopyProject
-                                 : InterfaceDataPolicy::OrientCopyProject}});
+                   .interface_data_policy =
+                       neighbor_orientation.is_aligned()
+                           ? InterfaceDataPolicy::CopyProject
+                           : InterfaceDataPolicy::OrientCopyProject}});
         }
         break;
       case (domain::FaceType::SingleNonconforming):
@@ -128,7 +129,7 @@ template <size_t Dim>
                              volume_mesh.slice_away(direction.dimension()),
                              neighbor_mesh.at(mortar_id).slice_away(
                                  neighbor_orientation(direction.dimension()))},
-                     .policy =
+                     .interface_data_policy =
                          InterfaceDataPolicy::NonconformingSelfInterpolates}});
           }
         }
@@ -143,7 +144,7 @@ template <size_t Dim>
         result.emplace(
             mortar_id,
             MortarInfo<Dim>{
-                {.policy =
+                {.interface_data_policy =
                      InterfaceDataPolicy::NonconformingNeighborInterpolates}});
         break;
       }

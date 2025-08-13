@@ -22,7 +22,8 @@ template <size_t VolumeDim>
 void MortarInfo<VolumeDim>::MortarInfoData::pup(PUP::er& p) {
   p | interpolator;
   p | mortar_size;
-  p | policy;
+  p | interface_data_policy;
+  p | time_stepping_policy;
 }
 
 template <size_t VolumeDim>
@@ -34,8 +35,9 @@ template <size_t VolumeDim>
 bool operator==(const MortarInfo<VolumeDim>& lhs,
                 const MortarInfo<VolumeDim>& rhs) {
   return lhs.interpolator() == rhs.interpolator() and
-         lhs.policy() == rhs.policy() and
-         lhs.mortar_size() == rhs.mortar_size();
+         lhs.mortar_size() == rhs.mortar_size() and
+         lhs.interface_data_policy() == rhs.interface_data_policy() and
+         lhs.time_stepping_policy() == rhs.time_stepping_policy();
 }
 
 template <size_t VolumeDim>
@@ -48,7 +50,8 @@ template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
                          const MortarInfo<VolumeDim>& mortar_info) {
   using ::operator<<;
-  os << mortar_info.mortar_size() << ", " << mortar_info.policy();
+  os << mortar_info.mortar_size() << ", " << mortar_info.interface_data_policy()
+     << ", " << mortar_info.time_stepping_policy();
   return os;
 }
 

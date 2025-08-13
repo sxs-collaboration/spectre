@@ -231,8 +231,8 @@ struct Test<1, LocalTimeStepping> {
         {interface_mortar_id, {}}};
     const ::dg::MortarMap<1, MortarInfo<1>> expected_mortar_infos{
         {interface_mortar_id,
-         MortarInfo<1>{
-             {.policy = evolution::dg::InterfaceDataPolicy::CopyProject}}}};
+         MortarInfo<1>{{.interface_data_policy =
+                            evolution::dg::InterfaceDataPolicy::CopyProject}}}};
 
     const DirectionMap<
         1, std::optional<
@@ -298,9 +298,9 @@ struct Test<2, LocalTimeStepping> {
     for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
       expected_mortar_infos.emplace(
           mortar_id_and_mesh.first,
-          MortarInfo<2>{
-              {.mortar_size = {{Spectral::SegmentSize::Full}},
-               .policy = evolution::dg::InterfaceDataPolicy::CopyProject}});
+          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
+                         .interface_data_policy =
+                             evolution::dg::InterfaceDataPolicy::CopyProject}});
     }
 
     const DirectionMap<
@@ -383,19 +383,20 @@ struct Test<3, LocalTimeStepping> {
         MortarInfo<3>{
             {.mortar_size = {{Spectral::SegmentSize::Full,
                               Spectral::SegmentSize::UpperHalf}},
-             .policy = evolution::dg::InterfaceDataPolicy::OrientCopyProject}});
+             .interface_data_policy =
+                 evolution::dg::InterfaceDataPolicy::OrientCopyProject}});
     expected_mortar_infos.emplace(
         interface_mortar_id_front,
-        MortarInfo<3>{
-            {.mortar_size = {{Spectral::SegmentSize::Full,
-                              Spectral::SegmentSize::Full}},
-             .policy = evolution::dg::InterfaceDataPolicy::CopyProject}});
+        MortarInfo<3>{{.mortar_size = {{Spectral::SegmentSize::Full,
+                                        Spectral::SegmentSize::Full}},
+                       .interface_data_policy =
+                           evolution::dg::InterfaceDataPolicy::CopyProject}});
     expected_mortar_infos.emplace(
         interface_mortar_id_top,
-        MortarInfo<3>{
-            {.mortar_size = {{Spectral::SegmentSize::Full,
-                              Spectral::SegmentSize::Full}},
-             .policy = evolution::dg::InterfaceDataPolicy::CopyProject}});
+        MortarInfo<3>{{.mortar_size = {{Spectral::SegmentSize::Full,
+                                        Spectral::SegmentSize::Full}},
+                       .interface_data_policy =
+                           evolution::dg::InterfaceDataPolicy::CopyProject}});
 
     const DirectionMap<
         3, std::optional<
@@ -452,8 +453,9 @@ void test_nonconforming_blocks() {
     ::dg::MortarMap<3, MortarInfo<3>> shell_expected_mortar_infos{};
     shell_expected_mortar_infos.emplace(
         shell_mortar_id,
-        MortarInfo<3>{{.policy = evolution::dg::InterfaceDataPolicy::
-                           NonconformingNeighborInterpolates}});
+        MortarInfo<3>{{.interface_data_policy =
+                           evolution::dg::InterfaceDataPolicy::
+                               NonconformingNeighborInterpolates}});
     const DirectionMap<
         3, std::optional<
                Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
@@ -506,21 +508,23 @@ void test_nonconforming_blocks() {
         if (direction == Direction<3>::upper_zeta()) {
           expected_mortar_infos.emplace(
               mortar_id,
-              MortarInfo<3>{{.interpolator =
-                                 ::dg::MortarInterpolator<3>{
-                                     element_id, mortar_id, domain, face_mesh,
-                                     shell_mortar_mesh},
-                             .policy = evolution::dg::InterfaceDataPolicy::
-                                 NonconformingSelfInterpolates}});
+              MortarInfo<3>{
+                  {.interpolator =
+                       ::dg::MortarInterpolator<3>{element_id, mortar_id,
+                                                   domain, face_mesh,
+                                                   shell_mortar_mesh},
+                   .interface_data_policy = evolution::dg::InterfaceDataPolicy::
+                       NonconformingSelfInterpolates}});
         } else {
           expected_mortar_infos.emplace(
               mortar_id,
               MortarInfo<3>{
                   {.mortar_size = {{Spectral::SegmentSize::Full,
                                     Spectral::SegmentSize::Full}},
-                   .policy = neighbor_orientation.is_aligned()
-                                 ? InterfaceDataPolicy::CopyProject
-                                 : InterfaceDataPolicy::OrientCopyProject}});
+                   .interface_data_policy =
+                       neighbor_orientation.is_aligned()
+                           ? InterfaceDataPolicy::CopyProject
+                           : InterfaceDataPolicy::OrientCopyProject}});
         }
       }
     }
@@ -748,13 +752,13 @@ void test_p_refine_gts() {
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       mortar_infos.emplace(
           mortar_id,
-          MortarInfo<Dim>{
-              {.mortar_size = ::dg::mortar_size(old_element.id(), neighbor,
-                                                direction.dimension(),
-                                                neighbor_orientation),
-               .policy = neighbor_orientation.is_aligned()
-                             ? InterfaceDataPolicy::CopyProject
-                             : InterfaceDataPolicy::OrientCopyProject}});
+          MortarInfo<Dim>{{.mortar_size = ::dg::mortar_size(
+                               old_element.id(), neighbor,
+                               direction.dimension(), neighbor_orientation),
+                           .interface_data_policy =
+                               neighbor_orientation.is_aligned()
+                                   ? InterfaceDataPolicy::CopyProject
+                                   : InterfaceDataPolicy::OrientCopyProject}});
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       neighbor_meshes.emplace(mortar_id, neighbor_mesh);
     }
@@ -786,10 +790,11 @@ void test_p_refine_gts() {
               {.mortar_size = ::dg::mortar_size(new_element.id(), neighbor,
                                                 direction.dimension(),
                                                 neighbor_orientation),
-               .policy = neighbor_orientation.is_aligned()
-                             ? evolution::dg::InterfaceDataPolicy::CopyProject
-                             : evolution::dg::InterfaceDataPolicy::
-                                   OrientCopyProject}});
+               .interface_data_policy =
+                   neighbor_orientation.is_aligned()
+                       ? evolution::dg::InterfaceDataPolicy::CopyProject
+                       : evolution::dg::InterfaceDataPolicy::
+                             OrientCopyProject}});
       expected_mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
     }
   }
@@ -933,13 +938,13 @@ void test_p_refine_lts() {
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       mortar_infos.emplace(
           mortar_id,
-          MortarInfo<Dim>{
-              {.mortar_size = ::dg::mortar_size(old_element.id(), neighbor,
-                                                direction.dimension(),
-                                                neighbor_orientation),
-               .policy = neighbor_orientation.is_aligned()
-                             ? InterfaceDataPolicy::CopyProject
-                             : InterfaceDataPolicy::OrientCopyProject}});
+          MortarInfo<Dim>{{.mortar_size = ::dg::mortar_size(
+                               old_element.id(), neighbor,
+                               direction.dimension(), neighbor_orientation),
+                           .interface_data_policy =
+                               neighbor_orientation.is_aligned()
+                                   ? InterfaceDataPolicy::CopyProject
+                                   : InterfaceDataPolicy::OrientCopyProject}});
       mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       neighbor_meshes.emplace(mortar_id, neighbor_mesh);
       mortar_data_history.emplace(mortar_id, boundary_history_type<Dim>{});
@@ -983,13 +988,13 @@ void test_p_refine_lts() {
       const auto& neighbor_orientation = neighbors.orientation(neighbor);
       expected_mortar_infos.emplace(
           mortar_id,
-          MortarInfo<Dim>{
-              {.mortar_size = ::dg::mortar_size(new_element.id(), neighbor,
-                                                direction.dimension(),
-                                                neighbor_orientation),
-               .policy = neighbor_orientation.is_aligned()
-                             ? InterfaceDataPolicy::CopyProject
-                             : InterfaceDataPolicy::OrientCopyProject}});
+          MortarInfo<Dim>{{.mortar_size = ::dg::mortar_size(
+                               new_element.id(), neighbor,
+                               direction.dimension(), neighbor_orientation),
+                           .interface_data_policy =
+                               neighbor_orientation.is_aligned()
+                                   ? InterfaceDataPolicy::CopyProject
+                                   : InterfaceDataPolicy::OrientCopyProject}});
       expected_mortar_next_temporal_ids.emplace(mortar_id, next_temporal_id);
       expected_mortar_data_history.emplace(mortar_id,
                                            boundary_history_type<Dim>{});
@@ -1211,19 +1216,24 @@ void test_h_refinement() {
     get<Tags::MortarInfo<2>>(orig_single_items) = {
         {mortar_id_a,
          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+                        .interface_data_policy =
+                            InterfaceDataPolicy::OrientCopyProject}}},
         {mortar_id_b,
          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+                        .interface_data_policy =
+                            InterfaceDataPolicy::OrientCopyProject}}},
         {mortar_id_c,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_d,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::LowerHalf}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::LowerHalf}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_e,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::UpperHalf}},
-                        .policy = InterfaceDataPolicy::CopyProject}}}};
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::UpperHalf}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}}};
 
     get<Tags::MortarNextTemporalId<2>>(orig_single_items) =
         constant_next_temporal_ids(orig_mortar_ids, temporal_id);
@@ -1265,20 +1275,25 @@ void test_h_refinement() {
 
   const ::dg::MortarMap<2, MortarInfo<2>> expected_single_mortar_infos{
       {mortar_id_a,
-       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                      .policy = InterfaceDataPolicy::OrientCopyProject}}},
+       MortarInfo<2>{
+           {.mortar_size = {{Spectral::SegmentSize::Full}},
+            .interface_data_policy = InterfaceDataPolicy::OrientCopyProject}}},
       {mortar_id_f,
-       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                      .policy = InterfaceDataPolicy::OrientCopyProject}}},
+       MortarInfo<2>{
+           {.mortar_size = {{Spectral::SegmentSize::Full}},
+            .interface_data_policy = InterfaceDataPolicy::OrientCopyProject}}},
       {mortar_id_g,
-       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::UpperHalf}},
-                      .policy = InterfaceDataPolicy::CopyProject}}},
+       MortarInfo<2>{
+           {.mortar_size = {{Spectral::SegmentSize::UpperHalf}},
+            .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
       {mortar_id_h,
-       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::LowerHalf}},
-                      .policy = InterfaceDataPolicy::CopyProject}}},
+       MortarInfo<2>{
+           {.mortar_size = {{Spectral::SegmentSize::LowerHalf}},
+            .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
       {mortar_id_i,
-       MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                      .policy = InterfaceDataPolicy::CopyProject}}}};
+       MortarInfo<2>{
+           {.mortar_size = {{Spectral::SegmentSize::Full}},
+            .interface_data_policy = InterfaceDataPolicy::CopyProject}}}};
 
   const DirectionMap<2, std::optional<NormalVars>>
       empty_normal_covector_and_magnitude{
@@ -1585,16 +1600,20 @@ void test_h_refinement() {
     const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
         {mortar_id_a,
          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+                        .interface_data_policy =
+                            InterfaceDataPolicy::OrientCopyProject}}},
         {mortar_id_f,
          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+                        .interface_data_policy =
+                            InterfaceDataPolicy::OrientCopyProject}}},
         {mortar_id_nw_ne,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_nw_sw,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}}};
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
     if (LocalTimeStepping) {
@@ -1662,16 +1681,20 @@ void test_h_refinement() {
     const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
         {mortar_id_a,
          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+                        .interface_data_policy =
+                            InterfaceDataPolicy::OrientCopyProject}}},
         {mortar_id_ne_nw,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_g,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_ne_se,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}}};
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
     if (LocalTimeStepping) {
@@ -1738,17 +1761,21 @@ void test_h_refinement() {
 
     const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
         {mortar_id_sw_nw,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_f,
          MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::OrientCopyProject}}},
+                        .interface_data_policy =
+                            InterfaceDataPolicy::OrientCopyProject}}},
         {mortar_id_sw_se,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_i,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}}};
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
     if (LocalTimeStepping) {
@@ -1812,17 +1839,21 @@ void test_h_refinement() {
 
     const ::dg::MortarMap<2, MortarInfo<2>> expected_mortar_infos{
         {mortar_id_se_ne,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_se_sw,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_h,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}},
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}},
         {mortar_id_i,
-         MortarInfo<2>{{.mortar_size = {{Spectral::SegmentSize::Full}},
-                        .policy = InterfaceDataPolicy::CopyProject}}}};
+         MortarInfo<2>{
+             {.mortar_size = {{Spectral::SegmentSize::Full}},
+              .interface_data_policy = InterfaceDataPolicy::CopyProject}}}};
 
     mortar_data_history_tag::type expected_mortar_data_history{};
     if (LocalTimeStepping) {
@@ -1883,11 +1914,11 @@ void test_h_refinement_mortar_sizes_local_impl(
       mortar_meshes.emplace(mortar_id, mortar_mesh);
       mortar_infos.emplace(
           mortar_id,
-          MortarInfo<3>{
-              {.mortar_size = mortar_size,
-               .policy = orientation.is_aligned()
-                             ? InterfaceDataPolicy::CopyProject
-                             : InterfaceDataPolicy::OrientCopyProject}});
+          MortarInfo<3>{{.mortar_size = mortar_size,
+                         .interface_data_policy =
+                             orientation.is_aligned()
+                                 ? InterfaceDataPolicy::CopyProject
+                                 : InterfaceDataPolicy::OrientCopyProject}});
       mortar_next_temporal_ids.emplace(mortar_id, time_step_id);
       mortar_data_history.emplace(
           mortar_id,

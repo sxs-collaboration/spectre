@@ -11,6 +11,7 @@
 #include "Domain/Domain.hpp"
 #include "Evolution/DiscontinuousGalerkin/InterfaceDataPolicy.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
@@ -24,9 +25,13 @@ void test(
     const std::optional<::dg::MortarInterpolator<Dim>>& mortar_interpolator) {
   const MortarInfo<Dim> nonconforming_mortar_info{
       {.interpolator = mortar_interpolator,
-       .policy = InterfaceDataPolicy::NonconformingSelfInterpolates}};
-  CHECK(nonconforming_mortar_info.policy() ==
+       .interface_data_policy =
+           InterfaceDataPolicy::NonconformingSelfInterpolates,
+       .time_stepping_policy = TimeSteppingPolicy::EqualRate}};
+  CHECK(nonconforming_mortar_info.interface_data_policy() ==
         InterfaceDataPolicy::NonconformingSelfInterpolates);
+  CHECK(nonconforming_mortar_info.time_stepping_policy() ==
+        TimeSteppingPolicy::EqualRate);
   CHECK(nonconforming_mortar_info.mortar_size() ==
         make_array<Dim - 1>(Spectral::SegmentSize::Uninitialized));
   CHECK(nonconforming_mortar_info.interpolator() == mortar_interpolator);
@@ -34,8 +39,13 @@ void test(
       serialize_and_deserialize(nonconforming_mortar_info);
   CHECK(nonconforming_mortar_info == deserialized_nonconforming_mortar_info);
   const MortarInfo<Dim> conforming_mortar_info{
-      {.mortar_size = mortar_size, .policy = InterfaceDataPolicy::CopyProject}};
-  CHECK(conforming_mortar_info.policy() == InterfaceDataPolicy::CopyProject);
+      {.mortar_size = mortar_size,
+       .interface_data_policy = InterfaceDataPolicy::CopyProject,
+       .time_stepping_policy = TimeSteppingPolicy::Conservative}};
+  CHECK(conforming_mortar_info.interface_data_policy() ==
+        InterfaceDataPolicy::CopyProject);
+  CHECK(conforming_mortar_info.time_stepping_policy() ==
+        TimeSteppingPolicy::Conservative);
   CHECK(conforming_mortar_info.mortar_size() == mortar_size);
   CHECK(conforming_mortar_info.interpolator() == std::nullopt);
   const auto deserialized_conforming_mortar_info =

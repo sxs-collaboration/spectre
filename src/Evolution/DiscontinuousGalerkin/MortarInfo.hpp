@@ -10,6 +10,7 @@
 #include <pup_stl.h>
 
 #include "Evolution/DiscontinuousGalerkin/InterfaceDataPolicy.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Utilities/Serialization/PupStlCpp17.hpp"
@@ -25,13 +26,16 @@ namespace evolution::dg {
 ///   the mortar) the SegmentSize of the mortar with respect to the face of the
 ///   host Element
 /// - the InterfaceDataPolicy
+/// - the TimeSteppingPolicy
 template <size_t VolumeDim>
 class MortarInfo {
   struct MortarInfoData {
     std::optional<::dg::MortarInterpolator<VolumeDim>> interpolator{
         std::nullopt};
     std::array<Spectral::SegmentSize, VolumeDim - 1> mortar_size{};
-    InterfaceDataPolicy policy{InterfaceDataPolicy::Uninitialized};
+    InterfaceDataPolicy interface_data_policy{
+        InterfaceDataPolicy::Uninitialized};
+    TimeSteppingPolicy time_stepping_policy{TimeSteppingPolicy::Uninitialized};
     // NOLINTNEXTLINE(google-runtime-references)
     void pup(PUP::er& p);
   };
@@ -65,7 +69,19 @@ class MortarInfo {
   }
 
   /// The InterfaceDataPolicy of the host Element for the mortar
-  const InterfaceDataPolicy& policy() const { return data_.policy; }
+  const InterfaceDataPolicy& interface_data_policy() const {
+    return data_.interface_data_policy;
+  }
+
+  /// @{
+  /// The TimeSteppingPolicy of the mortar
+  const TimeSteppingPolicy& time_stepping_policy() const {
+    return data_.time_stepping_policy;
+  }
+  TimeSteppingPolicy& time_stepping_policy() {
+    return data_.time_stepping_policy;
+  }
+  /// @}
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
