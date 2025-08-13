@@ -33,6 +33,8 @@ tnsr::I<DataType, Dim, Fr> make_random_vector_in_magnitude_range(
   if (max_magnitude < 0) {
     ERROR("max_magnitude < 0. Magnitude must be non-negative");
   }
+  ASSERT(min_magnitude <= max_magnitude,
+         "min = " << min_magnitude << ", max = " << max_magnitude);
 
   // generate distribution
   std::uniform_real_distribution<> dist_magnitude(min_magnitude, max_magnitude);

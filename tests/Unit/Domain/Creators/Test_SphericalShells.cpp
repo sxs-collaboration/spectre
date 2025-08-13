@@ -277,7 +277,6 @@ void test_spherical_shells_construction(
   for (size_t block_id = 0; block_id < num_blocks; ++block_id) {
     CAPTURE(block_id);
     const auto& block = blocks[block_id];
-    const auto& boundary_conditions = all_boundary_conditions[block_id];
     const ElementMap<3, Frame::Grid> grid_element_map{ElementId<3>{block_id},
                                                       block};
     const ElementMap<3, Frame::Inertial> inertial_element_map{
@@ -342,6 +341,7 @@ void test_spherical_shells_construction(
     }
     if (expect_boundary_conditions) {
       INFO("Boundary conditions");
+      const auto& boundary_conditions = all_boundary_conditions[block_id];
       for (const auto& direction : block.external_boundaries()) {
         CAPTURE(direction);
         const auto& boundary_condition =
