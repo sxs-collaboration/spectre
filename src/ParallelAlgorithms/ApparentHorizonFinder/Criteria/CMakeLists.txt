@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   IncreaseResolution.cpp
   Residual.cpp
+  Shape.cpp
   )
 
 spectre_target_headers(
@@ -21,6 +22,7 @@ spectre_target_headers(
   Factory.hpp
   IncreaseResolution.hpp
   Residual.hpp
+  Shape.hpp
   )
 
 add_dependencies(
