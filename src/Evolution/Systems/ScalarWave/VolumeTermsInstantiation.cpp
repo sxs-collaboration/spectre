@@ -54,7 +54,9 @@
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,             \
       const Scalar<DataVector>& gamma2);                                      \
   INSTANTIATE_PARTIAL_DERIVATIVES_WITH_SYSTEM(ScalarWave::System<DIM(data)>,  \
-                                              DIM(data), Frame::Inertial)
+                                              DIM(data), Frame::Inertial)     \
+  INSTANTIATE_CARTOON_PARTIAL_DERIVATIVES_WITH_SYSTEM(                        \
+      ScalarWave::System<DIM(data)>, DIM(data), Frame::Inertial)
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
