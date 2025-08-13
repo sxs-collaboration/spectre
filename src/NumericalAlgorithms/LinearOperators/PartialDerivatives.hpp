@@ -270,6 +270,89 @@ auto partial_derivative(
         Tensor<DataType, SymmList, IndexList>, Dim, UpLo::Lo, DerivativeFrame>;
 /// @}
 
+/// @{
+/// \ingroup NumericalAlgorithmsGroup
+/// \brief Compute the partial derivative of a `Tensor` with respect to
+/// the coordinates of `DerivativeFrame` when a Cartoon basis is being used.
+///
+/// Returns a `Tensor` with a spatial tensor index appended to the front
+/// of the input `Tensor`.
+///
+/// If you have a `Variables` with several tensors with Cartoon bases you need
+/// to differentiate, you should use the `cartoon_partial_derivatives` function
+/// that operates on `Variables` since that'll be more efficient.
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3> = nullptr>
+void cartoon_partial_derivative(
+    gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>*>
+        du,
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3> = nullptr>
+auto cartoon_partial_derivative(
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords)
+    -> TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>;
+/// @}
+
+/// @{
+/// \ingroup NumericalAlgorithmsGroup
+/// \brief Calls the correct partial derivatives function, either normal
+/// partials or cartoon partials, as determined by mesh basis.
+///
+/// To be used in executables that allow a Cartoon basis, a choice that is
+/// only known at runtime.
+template <typename ResultTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivatives(
+    gsl::not_null<Variables<ResultTags>*> du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+/// @}
+
+/// @{
+/// \ingroup NumericalAlgorithmsGroup
+/// \brief Calls the correct partial derivative function, either normal
+/// partial or cartoon partial, as determined by mesh basis.
+///
+/// To be used in executables that allow a Cartoon basis, a choice that is
+/// only known at runtime.
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivative(
+    gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>*>
+        du,
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+auto partial_derivative(
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords)
+    -> TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>;
+/// @}
+
 namespace Tags {
 
 /*!
@@ -282,11 +365,15 @@ namespace Tags {
  * `DerivTags` template parameter. It takes a `tmpl::list` of the desired
  * tags and defaults to the full `tags_list` of the Variables.
  *
+ * For an executable that does not allow a Cartoon basis, the last parameter,
+ * `InertialCoordsTag`, should not be passed.
+ *
  * This tag may be retrieved via `::Tags::Variables<db::wrap_tags_in<deriv,
  * DerivTags, Dim, deriv_frame>`.
  */
 template <typename VariablesTag, typename MeshTag, typename InverseJacobianTag,
-          typename DerivTags = typename VariablesTag::type::tags_list>
+          typename DerivTags = typename VariablesTag::type::tags_list,
+          typename InertialCoordsTag = void>
 struct DerivCompute
     : db::add_tag_prefix<
           deriv, ::Tags::Variables<DerivTags>,
@@ -308,15 +395,25 @@ struct DerivCompute
       typename tmpl::back<
           typename InverseJacobianTag::type::index_list>::Frame>;
   using return_type = typename base::type;
-  static constexpr void (*function)(
-      gsl::not_null<return_type*>, const typename VariablesTag::type&,
-      const Mesh<Dim>&,
+  static constexpr void function(
+      gsl::not_null<return_type*> du, const typename VariablesTag::type& u,
+      const Mesh<Dim>& mesh,
       const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                            deriv_frame>&) =
-      partial_derivatives<typename return_type::tags_list,
-                          typename VariablesTag::type::tags_list, Dim,
-                          deriv_frame>;
-  using argument_tags = tmpl::list<VariablesTag, MeshTag, InverseJacobianTag>;
+                            deriv_frame>& inverse_jacobian) {
+    partial_derivatives(du, u, mesh, inverse_jacobian);
+  }
+  static constexpr void function(
+      gsl::not_null<return_type*> du, const typename VariablesTag::type& u,
+      const Mesh<Dim>& mesh,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            deriv_frame>& inverse_jacobian,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+    partial_derivatives(du, u, mesh, inverse_jacobian, inertial_coords);
+  }
+  using argument_tags = tmpl::conditional_t<
+      std::is_same_v<void, InertialCoordsTag>,
+      tmpl::list<VariablesTag, MeshTag, InverseJacobianTag>,
+      tmpl::list<VariablesTag, MeshTag, InverseJacobianTag, InertialCoordsTag>>;
 };
 
 /*!
