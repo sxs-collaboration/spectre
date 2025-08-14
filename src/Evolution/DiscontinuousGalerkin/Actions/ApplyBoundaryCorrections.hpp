@@ -499,7 +499,7 @@ bool receive_boundary_data_local_time_stepping(
                     const TimeStepId& /*id*/,
                     const gsl::not_null<::evolution::dg::MortarData<Dim>*>
                         mortar_data) {
-                  p_project_mortar_data(mortar_data, mortar_mesh);
+                  return p_project_mortar_data(mortar_data, mortar_mesh);
                 };
 
             if (mortar_mesh != mortar_meshes->at(mortar_id)) {
@@ -508,7 +508,6 @@ bool receive_boundary_data_local_time_stepping(
                   project_boundary_mortar_data);
               boundary_data_history->at(mortar_id).remote().for_each(
                   project_boundary_mortar_data);
-              boundary_data_history->at(mortar_id).clear_coupling_cache();
             }
 
             MortarData<Dim> neighbor_mortar_data{};
@@ -536,7 +535,6 @@ bool receive_boundary_data_local_time_stepping(
                 received_mortar_data->second.boundary_correction_mesh) {
               boundary_data_history->at(mortar_id).remote().for_each(
                   project_boundary_mortar_data);
-              boundary_data_history->at(mortar_id).clear_coupling_cache();
             }
             mortar_next_time_step_id =
                 received_mortar_data->second.validity_range;

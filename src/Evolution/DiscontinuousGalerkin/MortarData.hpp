@@ -80,8 +80,10 @@ struct MortarData {
 /// \note The DG-subcell code stores the face mesh in the MortarData even when
 /// the geometric data are not used.  Currently projection of MortarData is only
 ///  needed for local time-stepping which is not yet supported for DG-subcell.
+///
+/// \returns If the data was modified
 template <size_t Dim>
-void p_project_geometric_data(
+bool p_project_geometric_data(
     gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
     const Mesh<Dim - 1>& new_face_mesh, const Mesh<Dim>& new_volume_mesh);
 
@@ -91,8 +93,10 @@ void p_project_geometric_data(
 /// reactively after the neighbor face mesh is received.  In this case, the
 /// geometric data does not need to be updated as it already used the correct
 /// face/volume mesh.
+///
+/// \returns If the data was modified
 template <size_t Dim>
-void p_project_mortar_data(
+bool p_project_mortar_data(
     gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
     const Mesh<Dim - 1>& new_mortar_mesh);
 

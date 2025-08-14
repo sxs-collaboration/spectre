@@ -156,10 +156,11 @@ class BoundaryHistory {
     ///
     /// The function \p func must accept two arguments, one of type
     /// `const TimeStepId&` and a second of either type `const Data&`
-    /// or `gsl::not_null<Data*>`.  (Note that `Data` may be a
-    /// const-qualified type.)  If entries are modified, the coupling
-    /// cache must be cleared by calling `clear_coupling_cache()` on
-    /// the parent `BoundaryHistory` object.
+    /// or `gsl::not_null<Data*>`, with the `not_null` version only
+    /// available if this is a `MutableSideAccess`.  If \p func takes
+    /// a `not_null`, it must return a `bool` indicating if it
+    /// modified the entry.  If any entries are modified, the coupling
+    /// cache of parent `BoundaryHistory` will be cleared.
     template <typename Func>
     void for_each(Func&& func) const;
 
@@ -359,14 +360,27 @@ template <bool Local, bool Mutable>
 template <typename Func>
 void BoundaryHistory<LocalData, RemoteData, CouplingResult>::SideAccessCommon<
     Local, Mutable>::for_each(Func&& func) const {
+  bool entries_changed = false;
   for (auto& step : parent_data()) {
     for (auto& substep : step.substeps) {
       if constexpr (std::is_invocable_v<Func&, const TimeStepId&,
                                         const Data&>) {
         func(std::as_const(substep.id), std::as_const(substep.data));
       } else {
-        func(std::as_const(substep.id), make_not_null(&substep.data));
+        static_assert(Mutable,
+                      "Cannot perform mutating for_each on a ConstSideAccess");
+        if (func(std::as_const(substep.id), make_not_null(&substep.data))) {
+          entries_changed = true;
+        }
       }
+    }
+  }
+  if constexpr (Mutable) {
+    if (entries_changed) {
+      // A minor optimization would be to only clear the cache entries
+      // that have actually been invalidated, but most things that
+      // modify the history modify all the entries.
+      parent_->clear_coupling_cache();
     }
   }
 }
