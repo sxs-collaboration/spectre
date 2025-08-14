@@ -29,10 +29,13 @@ InitialData:
 
 Amr:
   Criteria:
+    - DriveToTargetRefinementLevels:
+        Target: [2]
+        OscillationAtTarget: [Split]
     - TruncationError:
         VariablesToMonitor: [Psi]
         AbsoluteTarget: 1.e-6
-        RelativeTarget: 1.0
+        RelativeTarget: 1.e-6
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic

@@ -30,10 +30,13 @@ InitialData:
 
 Amr:
   Criteria:
+    - DriveToTargetRefinementLevels:
+        Target: [2]
+        OscillationAtTarget: [Split]
     - TruncationError:
         VariablesToMonitor: [Psi]
         AbsoluteTarget: 1.e-6
-        RelativeTarget: 1.0
+        RelativeTarget: 1.e-6
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
@@ -113,6 +116,13 @@ EventsAndDenseTriggers:
               Components: Sum
 
 EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    Events:
+      - RefineMesh
   - Trigger:
       Slabs:
         Specified:
