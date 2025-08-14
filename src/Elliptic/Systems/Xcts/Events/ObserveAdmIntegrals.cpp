@@ -23,6 +23,7 @@ void local_adm_integrals(
     gsl::not_null<Scalar<double>*> adm_angular_momentum_z,
     gsl::not_null<tnsr::I<double, 3>*> center_of_mass,
     const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const tnsr::i<DataVector, 3>& deriv_conformal_factor,
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
@@ -84,8 +85,8 @@ void local_adm_integrals(
     }
 
     // Project fields to the boundary
-    const auto face_conformal_factor = dg::project_tensor_to_boundary(
-        conformal_factor, mesh, boundary_direction);
+    const auto face_conformal_factor_minus_one = dg::project_tensor_to_boundary(
+        conformal_factor_minus_one, mesh, boundary_direction);
     const auto face_deriv_conformal_factor = dg::project_tensor_to_boundary(
         deriv_conformal_factor, mesh, boundary_direction);
     const auto face_conformal_metric = dg::project_tensor_to_boundary(
@@ -174,8 +175,8 @@ void local_adm_integrals(
           face_conformal_christoffel_second_kind,
           face_conformal_christoffel_contracted);
       const auto center_of_mass_surface_integrand =
-          Xcts::center_of_mass_surface_integrand(face_conformal_factor,
-                                                 face_inertial_coords);
+          Xcts::center_of_mass_surface_integrand(
+              face_conformal_factor_minus_one, face_inertial_coords);
 
       // Contract surface integrands with face normal
       const auto contracted_mass_integrand = tenex::evaluate(
