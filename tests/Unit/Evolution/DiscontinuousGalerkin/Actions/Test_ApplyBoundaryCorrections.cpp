@@ -223,8 +223,17 @@ struct SetLocalMortarData {
         const Mesh<Metavariables::volume_dim - 1>& mortar_mesh =
             mortar_meshes.at(mortar_id);
 
+        // Provide data of the wrong size to make sure it is projected
+        // properly.
+        auto unprojected_mortar_extents = mortar_mesh.extents().indices();
+        if constexpr (not unprojected_mortar_extents.empty()) {
+          ++unprojected_mortar_extents[0];
+        }
+        const Mesh<Metavariables::volume_dim - 1> unprojected_mortar_mesh(
+            unprojected_mortar_extents, mortar_mesh.basis(),
+            mortar_mesh.quadrature());
         DataVector type_erased_boundary_data_on_mortar{
-            mortar_mesh.number_of_grid_points() *
+            unprojected_mortar_mesh.number_of_grid_points() *
                 number_of_dg_package_tags_components,
             0.0};
         alg::iota(type_erased_boundary_data_on_mortar,
@@ -233,14 +242,15 @@ struct SetLocalMortarData {
                       100 * count + 1000);
 
         db::mutate<evolution::dg::Tags::MortarData<Metavariables::volume_dim>>(
-            [&face_mesh, &mortar_id, &mortar_mesh,
+            [&face_mesh, &mortar_id, &unprojected_mortar_mesh,
              &type_erased_boundary_data_on_mortar](const auto mortar_data_ptr) {
               // when using local time stepping, we reset the local mortar data
               // at the end of the SetLocalMortarData action since the
               // ComputeTimeDerivative action would've moved the data into the
               // boundary history.
               mortar_data_ptr->at(mortar_id).local().face_mesh = face_mesh;
-              mortar_data_ptr->at(mortar_id).local().mortar_mesh = mortar_mesh;
+              mortar_data_ptr->at(mortar_id).local().mortar_mesh =
+                  unprojected_mortar_mesh;
               mortar_data_ptr->at(mortar_id).local().mortar_data =
                   std::move(type_erased_boundary_data_on_mortar);
             },
@@ -942,6 +952,17 @@ void test_impl(const Spectral::Quadrature quadrature,
       const auto& mortar_id = mortar_id_and_data.first;
       const auto& direction = mortar_id.direction();
       auto& mortar_data_hist = mortar_id_and_data.second;
+      const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+      mortar_data_hist.local().for_each(
+          [&](const TimeStepId& /*id*/,
+              const gsl::not_null<evolution::dg::MortarData<Dim>*> data) {
+            return p_project_mortar_data(data, mortar_mesh);
+          });
+      mortar_data_hist.remote().for_each(
+          [&](const TimeStepId& /*id*/,
+              const gsl::not_null<evolution::dg::MortarData<Dim>*> data) {
+            return p_project_mortar_data(data, mortar_mesh);
+          });
       mortar_id_ptr = &mortar_id;
       Variables<variables_tags> lifted_volume_data{
           quadrature == Spectral::Quadrature::GaussLobatto
@@ -975,6 +996,10 @@ void test_impl(const Spectral::Quadrature quadrature,
       if (mortar_id.id() == ElementId<Dim>::external_boundary_id()) {
         continue;
       }
+      const auto& mortar_mesh = mortar_meshes.at(mortar_id);
+      p_project_mortar_data(make_not_null(&mortar_data.local()), mortar_mesh);
+      p_project_mortar_data(make_not_null(&mortar_data.neighbor()),
+                            mortar_mesh);
       mortar_id_ptr = &mortar_id;
       compute_correction_coupling(mortar_data.local(), mortar_data.neighbor());
     }
