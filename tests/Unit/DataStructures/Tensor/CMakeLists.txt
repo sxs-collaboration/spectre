@@ -12,6 +12,10 @@ set(LIBRARY_SOURCES
   Test_Tensor.cpp
   )
 
+if(SPECTRE_KOKKOS)
+  list(APPEND LIBRARY_SOURCES Test_TensorKokkos.cpp)
+endif()
+
 add_subdirectory(EagerMath)
 add_subdirectory(Expressions)
 add_subdirectory(Python)
@@ -28,4 +32,5 @@ target_link_libraries(
   ErrorHandling
   Utilities
   Spectral
+  SpectreKokkos
   )
