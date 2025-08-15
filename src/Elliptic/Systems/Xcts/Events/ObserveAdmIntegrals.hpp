@@ -45,6 +45,7 @@ void local_adm_integrals(
     gsl::not_null<Scalar<double>*> adm_angular_momentum_z,
     gsl::not_null<tnsr::I<double, 3>*> center_of_mass,
     const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const tnsr::i<DataVector, 3>& deriv_conformal_factor,
     const tnsr::ii<DataVector, 3>& conformal_metric,
     const tnsr::II<DataVector, 3>& inv_conformal_metric,
@@ -130,6 +131,7 @@ class ObserveAdmIntegrals : public Event {
 
   using argument_tags = tmpl::list<
       Xcts::Tags::ConformalFactor<DataVector>,
+      Xcts::Tags::ConformalFactorMinusOne<DataVector>,
       ::Tags::deriv<Xcts::Tags::ConformalFactor<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
       Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
@@ -153,6 +155,7 @@ class ObserveAdmIntegrals : public Event {
             typename ParallelComponent>
   void operator()(
       const Scalar<DataVector>& conformal_factor,
+      const Scalar<DataVector>& conformal_factor_minus_one,
       const tnsr::i<DataVector, 3>& deriv_conformal_factor,
       const tnsr::ii<DataVector, 3>& conformal_metric,
       const tnsr::II<DataVector, 3>& inv_conformal_metric,
@@ -186,11 +189,12 @@ class ObserveAdmIntegrals : public Event {
     local_adm_integrals(
         make_not_null(&adm_mass), make_not_null(&adm_linear_momentum),
         make_not_null(&adm_angular_momentum_z), make_not_null(&center_of_mass),
-        conformal_factor, deriv_conformal_factor, conformal_metric,
-        inv_conformal_metric, conformal_christoffel_second_kind,
-        conformal_christoffel_contracted, spatial_metric, inv_spatial_metric,
-        extrinsic_curvature, trace_extrinsic_curvature, inertial_coords,
-        inv_jacobian, mesh, element, conformal_face_normals);
+        conformal_factor, conformal_factor_minus_one, deriv_conformal_factor,
+        conformal_metric, inv_conformal_metric,
+        conformal_christoffel_second_kind, conformal_christoffel_contracted,
+        spatial_metric, inv_spatial_metric, extrinsic_curvature,
+        trace_extrinsic_curvature, inertial_coords, inv_jacobian, mesh, element,
+        conformal_face_normals);
 
     // Save components of linear momentum as reduction data
     ReductionData reduction_data{

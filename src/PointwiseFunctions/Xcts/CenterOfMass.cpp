@@ -9,20 +9,24 @@ namespace Xcts {
 
 void center_of_mass_surface_integrand(
     gsl::not_null<tnsr::I<DataVector, 3>*> result,
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& coords) {
   const auto euclidean_radius = magnitude(coords);
-  tenex::evaluate<ti::I>(result, 3. / (8. * M_PI) *
-                                     (pow<4>(conformal_factor()) - 1.) *
-                                     coords(ti::I) / euclidean_radius());
+  tenex::evaluate<ti::I>(result,
+                         3. / (8. * M_PI) *
+                             (pow<4>(conformal_factor_minus_one()) +
+                              4. * pow<3>(conformal_factor_minus_one()) +
+                              6. * pow<2>(conformal_factor_minus_one()) +
+                              4. * conformal_factor_minus_one()) *
+                             coords(ti::I) / euclidean_radius());
 }
 
 tnsr::I<DataVector, 3> center_of_mass_surface_integrand(
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& coords) {
   tnsr::I<DataVector, 3> result;
-  center_of_mass_surface_integrand(make_not_null(&result), conformal_factor,
-                                   coords);
+  center_of_mass_surface_integrand(make_not_null(&result),
+                                   conformal_factor_minus_one, coords);
   return result;
 }
 

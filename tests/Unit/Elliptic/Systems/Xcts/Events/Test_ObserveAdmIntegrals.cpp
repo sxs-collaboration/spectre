@@ -174,8 +174,12 @@ void test_local_adm_integrals(const double& distance,
     // Schwarzschild solution in isotropic coordinates. Other conformal factors
     // could also work.
     const auto solution_conformal_factor = solution.variables(
-        barred_coords, tmpl::list<Xcts::Tags::ConformalFactor<DataVector>>{});
+        barred_coords,
+        tmpl::list<Xcts::Tags::ConformalFactor<DataVector>,
+                   Xcts::Tags::ConformalFactorMinusOne<DataVector>>{});
     const auto& conformal_factor =
+        get<Xcts::Tags::ConformalFactor<DataVector>>(solution_conformal_factor);
+    const auto& conformal_factor_minus_one =
         get<Xcts::Tags::ConformalFactor<DataVector>>(solution_conformal_factor);
     const auto conformal_metric = tenex::evaluate<ti::i, ti::j>(
         spatial_metric(ti::i, ti::j) / pow<4>(conformal_factor()));
@@ -264,11 +268,11 @@ void test_local_adm_integrals(const double& distance,
         make_not_null(&local_adm_linear_momentum),
         make_not_null(&local_adm_angular_momentum_z),
         make_not_null(&local_center_of_mass), conformal_factor,
-        deriv_conformal_factor, conformal_metric, inv_conformal_metric,
-        conformal_christoffel_second_kind, conformal_christoffel_contracted,
-        spatial_metric, inv_spatial_metric, extrinsic_curvature,
-        trace_extrinsic_curvature, inertial_coords, inv_jacobian, mesh,
-        current_element, conformal_face_normals);
+        conformal_factor_minus_one, deriv_conformal_factor, conformal_metric,
+        inv_conformal_metric, conformal_christoffel_second_kind,
+        conformal_christoffel_contracted, spatial_metric, inv_spatial_metric,
+        extrinsic_curvature, trace_extrinsic_curvature, inertial_coords,
+        inv_jacobian, mesh, current_element, conformal_face_normals);
     total_adm_mass.get() += get(local_adm_mass);
     total_adm_angular_momentum_z.get() += get(local_adm_angular_momentum_z);
     for (int I = 0; I < 3; I++) {

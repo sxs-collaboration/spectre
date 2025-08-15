@@ -16,13 +16,22 @@ namespace Xcts {
  * We define the center of mass integral as
  *
  * \begin{equation}
+ *   C_\text{CoM}^i = \frac{3}{8 \pi M_\text{ADM}} \oint_{S_\infty} \Big[
+ *                      (\psi - 1)^4 + 4 (\psi - 1)^3
+ *                      + 6 (\psi - 1)^2 + 4 (\psi - 1)
+ *                    \Big] n^i \, dA,
+ * \end{equation}
+ *
+ * where $n^i = x^i / r$ and $r = \sqrt{x^2 + y^2 + z^2}$. We use $\psi-1$
+ * instead of $\psi$ because it is the variable solved for in the XCTS system.
+ * Expanding the integrand, we see that this is identical to
+ *
+ * \begin{equation}
  *   C_\text{CoM}^i = \frac{3}{8 \pi M_\text{ADM}}
  *               \oint_{S_\infty} (\psi^4 - 1) n^i \, dA,
  * \end{equation}
  *
- * where $n^i = x^i / r$ and $r = \sqrt{x^2 + y^2 + z^2}$.
- *
- * Analytically, this is identical to the definition in Eq. (25) of
+ * Analytically, this is equivalent to the definition in Eq. (25) of
  * \cite Ossokine2015yla because
  * \begin{equation}
  *   \oint_{S_\infty} n^i \, dA = 0.
@@ -39,10 +48,7 @@ namespace Xcts {
  * increasing radius of $S_\infty$), we loose numerical accuracy. In other
  * words, we are seeking the subdominant terms. Since $\psi^4 \to 1$ in
  * conformal flatness, subtracting $1$ from it in the integrand makes the
- * numbers involved in this cancellation smaller, reducing this issue. We have
- * also tried different variations of this integrand with the same motivation,
- * but $(\psi^4 - 1)$ is the best one when taking simplicity and accuracy gain
- * into consideration.
+ * numbers involved in this cancellation smaller, reducing this issue.
  *
  * \note We don't include the ADM mass $M_{ADM}$ in this integrand. After
  * integrating the result of this function, you have to divide by $M_{ADM}$.
@@ -59,17 +65,17 @@ namespace Xcts {
  * fall-off terms.
  *
  * \param result output pointer
- * \param conformal_factor the conformal factor $\psi$
+ * \param conformal_factor_minus_one the conformal factor $\psi - 1$
  * \param coords the inertial coordinates $x^i$
  */
 void center_of_mass_surface_integrand(
     gsl::not_null<tnsr::I<DataVector, 3>*> result,
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& coords);
 
 /// Return-by-value overload
 tnsr::I<DataVector, 3> center_of_mass_surface_integrand(
-    const Scalar<DataVector>& conformal_factor,
+    const Scalar<DataVector>& conformal_factor_minus_one,
     const tnsr::I<DataVector, 3>& coords);
 /// @}
 
@@ -99,6 +105,9 @@ tnsr::I<DataVector, 3> center_of_mass_surface_integrand(
  * integrand needs to be integrated with the Euclidean volume element.
  *
  * \see `center_of_mass_surface_integrand`
+ *
+ * \warning This integral currently suffers from significant round-off errors.
+ * It is recommended to use only the surface integral if possible.
  *
  * \param result output pointer
  * \param conformal_factor the conformal factor $\psi$
