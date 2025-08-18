@@ -23,6 +23,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
@@ -50,7 +51,11 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<amr::Criterion, tmpl::list<amr::Criteria::DriveToTarget<1>>>,
+        tmpl::pair<
+            amr::Criterion,
+            tmpl::list<
+                amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>,
+                amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>>>,
         tmpl::pair<Event,
                    tmpl::list<amr::Events::ObserveAmrCriteria<Metavariables>>>>;
   };
@@ -58,16 +63,21 @@ struct Metavariables {
 
 void test() {
   std::vector<std::unique_ptr<amr::Criterion>> criteria;
-  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-      std::array{4_st}, std::array{1_st}, std::array{amr::Flag::DoNothing}));
-  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-      std::array{3_st}, std::array{1_st}, std::array{amr::Flag::DoNothing}));
-  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-      std::array{5_st}, std::array{1_st}, std::array{amr::Flag::DoNothing}));
-  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-      std::array{4_st}, std::array{0_st}, std::array{amr::Flag::DoNothing}));
-  criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-      std::array{4_st}, std::array{2_st}, std::array{amr::Flag::DoNothing}));
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+          std::array{1_st}, std::array{amr::Flag::DoNothing}));
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>>(
+          std::array{3_st}, std::array{amr::Flag::DoNothing}));
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>>(
+          std::array{5_st}, std::array{amr::Flag::DoNothing}));
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+          std::array{0_st}, std::array{amr::Flag::DoNothing}));
+  criteria.emplace_back(
+      std::make_unique<amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+          std::array{2_st}, std::array{amr::Flag::DoNothing}));
   const size_t number_of_criteria = criteria.size();
   const std::vector<double> expected_values{0.0, -1.0, 1.0, -2.0, 2.0};
   register_factory_classes_with_charm<Metavariables>();

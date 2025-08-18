@@ -27,10 +27,13 @@ InitialData: &InitialData
 
 Amr:
   Criteria:
+    - DriveToTargetRefinementLevels:
+        Target: [4]
+        OscillationAtTarget: [Split]
     - TruncationError:
         VariablesToMonitor: [Psi]
         AbsoluteTarget: 1.e-6
-        RelativeTarget: 1.0
+        RelativeTarget: 1.e-6
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
@@ -45,7 +48,7 @@ PhaseChangeAndTriggers:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 1
+          Interval: 2
           Offset: 0
     PhaseChanges:
       - VisitAndReturn(EvaluateAmrCriteria)
@@ -92,6 +95,13 @@ SpatialDiscretization:
 #     BlocksToFilter: All
 
 EventsAndTriggersAtSlabs:
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    Events:
+      - RefineMesh
   - Trigger:
       Slabs:
         Specified:

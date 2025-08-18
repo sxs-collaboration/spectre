@@ -26,6 +26,11 @@ namespace amr::protocols {
 ///   (e.g. `domain::Tags::Element`, `domain::Tags::Mesh`, and
 ///   `domain::Tags::NeighborMesh` are handled by AMR). See
 ///   `amr::protocols::Projector` for details.
+/// - `p_refine_only_in_event`: A boolean indicating that only h-refinement
+///   criteria should be evaluated in
+///   `::amr::Actions::EvaluateRefinementCriteria`.  Only h-refinement will be
+///   done in `Phase::AdjustDomain`; p-refinement will only be done via
+///   `::amr::Events::RefineMesh`.
 /// - `keep_coarse_grids`: A boolean indicating that AMR should create a
 ///   completely new grid at each AMR step with an incremented grid index, and
 ///   keep the old grid around. This is useful for multigrid solvers.
@@ -52,6 +57,8 @@ struct AmrMetavariables {
         tmpl::all<projectors,
                   tt::assert_conforms_to<tmpl::_1, Projector>>::value);
     static constexpr bool keep_coarse_grids = ConformingType::keep_coarse_grids;
+    static constexpr bool p_refine_only_in_event =
+        ConformingType::p_refine_only_in_event;
   };
 };
 }  // namespace amr::protocols

@@ -16,6 +16,7 @@
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
@@ -42,6 +43,8 @@ class RefineAtPunctures : public amr::Criterion {
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(RefineAtPunctures);  // NOLINT
   /// \endcond
+
+  amr::Criteria::Type type() override { return amr::Criteria::Type::h; }
 
   std::string observation_name() override { return "RefineAtPunctures"; }
 

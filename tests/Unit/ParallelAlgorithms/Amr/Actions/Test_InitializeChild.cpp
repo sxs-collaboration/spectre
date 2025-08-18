@@ -70,6 +70,7 @@ struct Metavariables {
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using projectors = tmpl::list<>;
     static constexpr bool keep_coarse_grids = false;
+    [[maybe_unused]] static constexpr bool p_refine_only_in_event = false;
   };
 };
 

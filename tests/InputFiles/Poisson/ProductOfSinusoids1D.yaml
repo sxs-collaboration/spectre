@@ -81,11 +81,13 @@ DomainCreator:
 Amr:
   Verbosity: Debug
   Criteria:
-    - DriveToTarget:
+    - DriveToTargetRefinementLevels:
         # First AMR iteration will split the 2 elements in 4
-        TargetRefinementLevels: [2]
+        Target: [2]
+        OscillationAtTarget: [DoNothing]
+    - DriveToTargetNumberOfGridPoints:
         # Second AMR iteration will increase num points from 4 to 5
-        TargetNumberOfGridPoints: [5]
+        Target: [5]
         OscillationAtTarget: [DoNothing]
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true

@@ -21,6 +21,7 @@
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -105,6 +106,8 @@ class TruncationError : public Criterion {
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(TruncationError);  // NOLINT
   /// \endcond
+
+  Type type() override { return Type::p; }
 
   std::string observation_name() override { return "TruncationError"; }
 

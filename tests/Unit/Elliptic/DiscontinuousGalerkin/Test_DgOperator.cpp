@@ -53,6 +53,7 @@
 #include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
@@ -227,7 +228,8 @@ struct Metavariables {
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
                    tmpl::list<AnalyticSolution>>,
         tmpl::pair<AnalyticSolution, tmpl::list<AnalyticSolution>>,
-        tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random>>>;
+        tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random<
+                                         amr::Criteria::Type::p>>>>;
   };
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = ElementArray<System, Linearized, Metavariables>;
@@ -249,6 +251,7 @@ struct Metavariables {
             System, typename element_array::analytic_solution_tag>,
         typename element_array::dg_operator::amr_projectors>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -395,12 +398,13 @@ void test_dg_operator(
 
   // Configure AMR criteria so we _increase_ (never decrease) resolution
   std::vector<std::unique_ptr<::amr::Criterion>> amr_criteria{};
-  amr_criteria.push_back(std::make_unique<::amr::Criteria::Random>(
-      std::unordered_map<::amr::Flag, size_t>{
-          // h-refinement is not supported yet in the action testing framework
-          {::amr::Flag::Split, 0},
-          {::amr::Flag::IncreaseResolution, 1},
-          {::amr::Flag::DoNothing, 1}}));
+  amr_criteria.push_back(
+      std::make_unique<::amr::Criteria::Random<amr::Criteria::Type::p>>(
+          std::unordered_map<::amr::Flag, size_t>{
+              // h-refinement is not supported yet in the
+              // action testing framework
+              {::amr::Flag::IncreaseResolution, 1},
+              {::amr::Flag::DoNothing, 1}}));
 
   ActionTesting::MockRuntimeSystem<Metavars> runner{tuples::TaggedTuple<
       domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,

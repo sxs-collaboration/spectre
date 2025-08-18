@@ -184,6 +184,7 @@ struct Metavariables {
         typename solver::amr_projectors,
         Elasticity::Actions::InitializeConstitutiveRelation<Dim>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   struct registration

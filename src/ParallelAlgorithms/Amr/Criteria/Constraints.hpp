@@ -23,6 +23,7 @@
 #include "Options/ParseError.hpp"
 #include "Options/String.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -158,6 +159,8 @@ class Constraints : public Criterion {
                                  Dim, Frame::ElementLogical, Frame::Inertial>,
                              Events::Tags::ObserverJacobianCompute<
                                  Dim, Frame::ElementLogical, Frame::Inertial>>>;
+
+  Type type() override { return Type::p; }
 
   std::string observation_name() override { return "Constraints"; }
 

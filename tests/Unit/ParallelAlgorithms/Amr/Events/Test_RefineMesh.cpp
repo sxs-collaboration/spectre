@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <memory>
+#include <pup.h>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -19,6 +20,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/IncreaseResolution.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
@@ -30,9 +32,41 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/CharmPupable.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+class BadCriterion : public amr::Criterion {
+ public:
+  using options = tmpl::list<>;
+
+  BadCriterion() = default;
+  explicit BadCriterion(CkMigrateMessage* msg) : Criterion(msg) {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BadCriterion);  // NOLINT
+
+  amr::Criteria::Type type() override { return amr::Criteria::Type::p; }
+
+  std::string observation_name() override { return "BadCriterion"; }
+
+  using compute_tags_for_observation_box = tmpl::list<>;
+  using argument_tags = tmpl::list<>;
+
+  template <typename Metavariables>
+  auto operator()(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Metavariables::volume_dim>& /*element_id*/) const {
+    return std::array{amr::Flag::Split};
+  }
+
+  void pup(PUP::er& p) override { Criterion::pup(p); }
+};
+
+PUP::able::PUP_ID BadCriterion::my_PUP_ID = 0;  // NOLINT
+#pragma GCC diagnostic pop
 
 template <typename Metavariables>
 struct ElementComponent {
@@ -54,11 +88,14 @@ struct Metavariables {
   using component_list = tmpl::list<ElementComponent<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh>>,
-                  tmpl::pair<amr::Criterion,
-                             tmpl::list<amr::Criteria::IncreaseResolution<1>,
-                                        amr::Criteria::DriveToTarget<1>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh>>,
+        tmpl::pair<
+            amr::Criterion,
+            tmpl::list<
+                BadCriterion, amr::Criteria::IncreaseResolution<1>,
+                amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>,
+                amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>>>;
   };
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
@@ -87,6 +124,11 @@ void test(const Event& event) {
     std::vector<std::unique_ptr<amr::Criterion>> criteria{};
     criteria.emplace_back(
         std::make_unique<amr::Criteria::IncreaseResolution<1>>());
+    // this should be ignored...
+    criteria.emplace_back(
+        std::make_unique<
+            amr::Criteria::DriveToTarget<1, amr::Criteria::Type::h>>(
+            std::array{1_st}, std::array{amr::Flag::DoNothing}));
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
 
@@ -115,8 +157,10 @@ void test(const Event& event) {
     INFO("Obey policies");
     // Try to drive to smaller number of grid points than we allow
     std::vector<std::unique_ptr<amr::Criterion>> criteria{};
-    criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-        std::array{1_st}, std::array{0_st}, std::array{amr::Flag::DoNothing}));
+    criteria.emplace_back(
+        std::make_unique<
+            amr::Criteria::DriveToTarget<1, amr::Criteria::Type::p>>(
+            std::array{1_st}, std::array{amr::Flag::DoNothing}));
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
 
@@ -157,12 +201,12 @@ void test(const Event& event) {
             "Tried refining beyond the AMR limits in element"));
   }
 
+#ifdef SPECTRE_DEBUG
   {
     INFO("Test h-refinement error");
-    // Try to drive to larger refinement which isn't allowed for this event
+    // Try to use a bad criterion
     std::vector<std::unique_ptr<amr::Criterion>> criteria{};
-    criteria.emplace_back(std::make_unique<amr::Criteria::DriveToTarget<1>>(
-        std::array{3_st}, std::array{1_st}, std::array{amr::Flag::DoNothing}));
+    criteria.emplace_back(std::make_unique<BadCriterion>());
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
 
@@ -178,9 +222,9 @@ void test(const Event& event) {
                    element_id, std::add_pointer_t<element_component>{},
                    {"Unused", -1.0})),
         Catch::Matchers::ContainsSubstring(
-            "requested h-refinement, but RefineMesh only works for "
-            "p-refinement"));
+            "requested h-refinement, but claims to be for p-refinement"));
   }
+#endif
 }
 }  // namespace
 

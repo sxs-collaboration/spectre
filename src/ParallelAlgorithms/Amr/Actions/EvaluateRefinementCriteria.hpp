@@ -33,6 +33,7 @@
 #include "ParallelAlgorithms/Amr/Policies/Tags.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Mesh.hpp"
 #include "ParallelAlgorithms/Amr/Tags.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -74,7 +75,9 @@ namespace amr::Actions {
 /// \details
 /// - Evaluates each refinement criteria held by amr::Criteria::Tags::Criteria,
 ///   and in each dimension selects the amr::Flag with the highest
-///   priority (i.e the highest integral value).
+///   priority (i.e the highest integral value).  If
+///   Metavariables::amr::p_refine_only_in_event is true, only h-refinement
+///   criteria will be evaluated
 /// - If necessary, changes the refinement decision in order to satisfy the
 ///   amr::Policies
 /// - An Element that is splitting in one dimension is not allowed to join
@@ -113,9 +116,31 @@ struct EvaluateRefinementCriteria {
     const auto& refinement_criteria =
         db::get<amr::Criteria::Tags::Criteria>(box);
     for (const auto& criterion : refinement_criteria) {
+      if (Metavariables::amr::p_refine_only_in_event and
+          criterion->type() == amr::Criteria::Type::p) {
+        continue;
+      }
       auto decision = criterion->evaluate(observation_box, cache, element_id);
+      if constexpr (Metavariables::amr::p_refine_only_in_event) {
+        ASSERT(alg::none_of(decision,
+                            [](amr::Flag flag) {
+                              return flag == amr::Flag::IncreaseResolution or
+                                     flag == amr::Flag::DecreaseResolution;
+                            }),
+               "The criterion '"
+                   << typeid(*criterion).name()
+                   << "' requested p-refinement, but claims to be "
+                      "for h-refinement.");
+      }
       for (size_t d = 0; d < volume_dim; ++d) {
         overall_decision[d] = std::max(overall_decision[d], decision[d]);
+      }
+    }
+
+    // If no refinement criteria were called, then set flag to do nothing
+    for (size_t d = 0; d < volume_dim; ++d) {
+      if (overall_decision[d] == amr::Flag::Undefined) {
+        overall_decision[d] = amr::Flag::DoNothing;
       }
     }
 

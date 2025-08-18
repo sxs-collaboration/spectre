@@ -147,6 +147,7 @@ struct Metavariables {
     using element_array = dg_element_array;
     using projectors = typename solver::amr_projectors;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   struct registration

@@ -68,6 +68,7 @@
 #include "ParallelAlgorithms/Amr/Actions/EvaluateRefinementCriteria.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Random.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Policies.hpp"
@@ -512,7 +513,8 @@ struct Metavariables {
             tmpl::list<elliptic::BoundaryConditions::AnalyticSolution<System>>>,
         tmpl::pair<elliptic::analytic_data::Background,
                    tmpl::list<RandomBackground<volume_dim>>>,
-        tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random>>>;
+        tmpl::pair<::amr::Criterion, tmpl::list<::amr::Criteria::Random<
+                                         amr::Criteria::Type::p>>>>;
   };
   template <typename Tag>
   using overlaps_tag =
@@ -547,6 +549,7 @@ struct Metavariables {
             System, typename element_array::background_tag>,
         typename element_array::dg_operator::amr_projectors, ExtraInitActions>>;
     static constexpr bool keep_coarse_grids = false;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -607,11 +610,13 @@ void test_subdomain_operator(
 
     // Configure AMR criteria
     std::vector<std::unique_ptr<::amr::Criterion>> amr_criteria{};
-    amr_criteria.push_back(std::make_unique<::amr::Criteria::Random>(
-        std::unordered_map<::amr::Flag, size_t>{
-            // h-refinement is not supported yet in the action testing framework
-            {::amr::Flag::IncreaseResolution, 1},
-            {::amr::Flag::DoNothing, 1}}));
+    amr_criteria.push_back(
+        std::make_unique<::amr::Criteria::Random<amr::Criteria::Type::p>>(
+            std::unordered_map<::amr::Flag, size_t>{
+                // h-refinement is not supported yet in the action testing
+                // framework
+                {::amr::Flag::IncreaseResolution, 1},
+                {::amr::Flag::DoNothing, 1}}));
 
     ActionTesting::MockRuntimeSystem<metavariables> runner{tuples::TaggedTuple<
         domain::Tags::Domain<Dim>, domain::Tags::FunctionsOfTimeInitialize,

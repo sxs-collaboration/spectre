@@ -9,6 +9,7 @@
 
 #include "Domain/Amr/Flag.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -34,6 +35,8 @@ class IncreaseResolution : public Criterion {
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(IncreaseResolution);  // NOLINT
   /// \endcond
+
+  Type type() override { return Type::p; }
 
   std::string observation_name() override { return "IncreaseResolution"; }
 
