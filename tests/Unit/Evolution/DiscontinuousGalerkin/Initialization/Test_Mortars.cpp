@@ -16,6 +16,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/NonconformingSphericalShells.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/Tags/Domain.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/Structure/ChildSize.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -30,8 +35,10 @@
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarInfo.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -41,6 +48,7 @@
 #include "NumericalAlgorithms/Spectral/SegmentSize.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Time.hpp"
@@ -93,7 +101,7 @@ template <size_t Dim, bool LocalTimeStepping>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = LocalTimeStepping;
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   struct system {
     using variables_tag = ::Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
   };
@@ -121,10 +129,22 @@ void test_impl(
     const DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                 evolution::dg::Tags::MagnitudeOfNormal,
                                 evolution::dg::Tags::NormalCovector<Dim>>>>>&
-        expected_normal_covector_quantities) {
+        expected_normal_covector_quantities,
+    std::optional<Domain<Dim>> domain = std::nullopt) {
   using metavars = Metavariables<Dim, LocalTimeStepping>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{}};
+  if (domain == std::nullopt) {
+    std::vector<Block<Dim>> blocks{};
+    blocks.reserve(initial_extents.size());
+    for (size_t block_id = 0; block_id < initial_extents.size(); ++block_id) {
+      blocks.emplace_back(nullptr, block_id,
+                          DirectionMap<Dim, BlockNeighbors<Dim>>{});
+    }
+    domain = Domain<Dim>{std::move(blocks)};
+  }
+  tuples::TaggedTuple<domain::Tags::Domain<Dim>> opts{
+      std::move(domain.value())};
+  MockRuntimeSystem runner{std::move(opts)};
   ActionTesting::emplace_component_and_initialize<component<metavars>>(
       &runner, element.id(),
       {time_step_id, next_time_step_id, element,
@@ -172,11 +192,8 @@ void test_impl(
     }
   }
 
-  // Cast result of `operator==` to a bool to trick Catch into not trying to
-  // stream a nested STL container.
-  CHECK(static_cast<bool>(
-      get_tag(evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{}) ==
-      expected_normal_covector_quantities));
+  CHECK(get_tag(evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{}) ==
+        expected_normal_covector_quantities);
 
   CHECK(get_tag(evolution::dg::Tags::BoundaryData<Dim>{}) ==
         typename evolution::dg::Tags::BoundaryData<Dim>::type{});
@@ -399,6 +416,134 @@ struct Test<3, LocalTimeStepping> {
   }
 };
 
+template <bool LocalTimeStepping>
+void test_nonconforming_blocks() {
+  INFO("NonconformingSphericalShells");
+  const auto creator = domain::creators::NonconformingSphericalShells(
+      2.0, 3.0, 4.0, 0, 0, 5, 7, 11, nullptr, nullptr);
+  auto domain = creator.create_domain();
+  const auto initial_refinement = creator.initial_refinement_levels();
+  const auto initial_extents = creator.initial_extents();
+  const ElementId<3> shell_id{6};
+  const Element<3> shell = domain::create_initial_element(
+      shell_id, domain.blocks(), initial_refinement);
+  const Mesh<3> shell_mesh = domain::create_initial_mesh(
+      initial_extents, shell, Spectral::Basis::Legendre,
+      Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> shell_mortar_mesh = shell_mesh.slice_away(0_st);
+  const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
+  const TimeStepId next_time_step_id{true, 3, Time{Slab{0.2, 3.4}, {6, 100}}};
+  {
+    INFO("Test S2 shell");
+    const auto& shell_neighbor_ids =
+        shell.neighbors().at(Direction<3>::lower_xi());
+    DirectionalIdMap<3, Mesh<3>> shell_neighbor_meshes{};
+    for (const auto id : shell_neighbor_ids) {
+      const DirectionalId<3> shell_neighbor_directional_id{
+          Direction<3>::lower_xi(), id};
+      const Element<3> neighbor_element = domain::create_initial_element(
+          id, domain.blocks(), initial_refinement);
+      const Mesh<3> neighbor_mesh = domain::create_initial_mesh(
+          initial_extents, neighbor_element, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto);
+      shell_neighbor_meshes[shell_neighbor_directional_id] = neighbor_mesh;
+    }
+    const DirectionalId<3> shell_mortar_id{Direction<3>::lower_xi(), shell_id};
+
+    ::dg::MortarMap<3, Mesh<2>> shell_expected_mortar_meshes{};
+    shell_expected_mortar_meshes[shell_mortar_id] = shell_mortar_mesh;
+    ::dg::MortarMap<3, MortarInfo<3>> shell_expected_mortar_infos{};
+    shell_expected_mortar_infos.emplace(
+        shell_mortar_id,
+        MortarInfo<3>{{.policy = evolution::dg::InterfaceDataPolicy::
+                           NonconformingNeighborInterpolates}});
+    const DirectionMap<
+        3, std::optional<
+               Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                    evolution::dg::Tags::NormalCovector<3>>>>>
+        shell_expected_normal_covector_quantities{
+            {Direction<3>::lower_xi(), {}}, {Direction<3>::upper_xi(), {}}};
+    test_impl<LocalTimeStepping>(
+        initial_extents, shell, time_step_id, next_time_step_id,
+        Spectral::Quadrature::GaussLobatto, shell_neighbor_meshes,
+        shell_expected_mortar_meshes, shell_expected_mortar_infos,
+        shell_expected_normal_covector_quantities,
+        std::make_optional<Domain<3>>(std::move(domain)));
+  }
+  {
+    INFO("Test cubed sphere");
+    domain = creator.create_domain();
+    const ElementId<3> element_id{2};
+    const Element<3> element = domain::create_initial_element(
+        element_id, domain.blocks(), initial_refinement);
+    const Mesh<3> volume_mesh = domain::create_initial_mesh(
+        initial_extents, element, Spectral::Basis::Legendre,
+        Spectral::Quadrature::GaussLobatto);
+    DirectionalIdMap<3, Mesh<3>> neighbor_meshes{};
+    ::dg::MortarMap<3, Mesh<2>> expected_mortar_meshes{};
+    ::dg::MortarMap<3, MortarInfo<3>> expected_mortar_infos{};
+    for (const auto& [direction, neighbors] : element.neighbors()) {
+      for (const auto& neighbor : neighbors) {
+        const DirectionalId<3> mortar_id{direction, neighbor};
+        const auto& neighbor_block = domain.blocks()[neighbor.block_id()];
+        const Element<3> neighbor_element = domain::create_initial_element(
+            neighbor, domain.blocks(), initial_refinement);
+        if (neighbors.are_conforming()) {
+          const auto& neighbor_orientation = neighbors.orientation(neighbor);
+          neighbor_meshes.emplace(
+              mortar_id,
+              neighbor_orientation.inverse_map()(::domain::create_initial_mesh(
+                  initial_extents, neighbor_block, neighbor,
+                  Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto)));
+        } else {
+          neighbor_meshes.emplace(mortar_id,
+                                  ::domain::create_initial_mesh(
+                                      initial_extents, neighbor_block, neighbor,
+                                      Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto));
+        }
+        const Mesh<2> face_mesh = volume_mesh.slice_away(direction.dimension());
+        expected_mortar_meshes[mortar_id] = face_mesh;
+        const auto& neighbor_orientation = neighbors.orientation(neighbor);
+        if (direction == Direction<3>::upper_zeta()) {
+          expected_mortar_infos.emplace(
+              mortar_id,
+              MortarInfo<3>{{.interpolator =
+                                 ::dg::MortarInterpolator<3>{
+                                     element_id, mortar_id, domain, face_mesh,
+                                     shell_mortar_mesh},
+                             .policy = evolution::dg::InterfaceDataPolicy::
+                                 NonconformingSelfInterpolates}});
+        } else {
+          expected_mortar_infos.emplace(
+              mortar_id,
+              MortarInfo<3>{
+                  {.mortar_size = {{Spectral::SegmentSize::Full,
+                                    Spectral::SegmentSize::Full}},
+                   .policy = neighbor_orientation.is_aligned()
+                                 ? InterfaceDataPolicy::CopyProject
+                                 : InterfaceDataPolicy::OrientCopyProject}});
+        }
+      }
+    }
+    const DirectionMap<
+        3, std::optional<
+               Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                    evolution::dg::Tags::NormalCovector<3>>>>>
+        expected_normal_covector_quantities{
+            {Direction<3>::lower_xi(), {}},   {Direction<3>::upper_xi(), {}},
+            {Direction<3>::lower_eta(), {}},  {Direction<3>::upper_eta(), {}},
+            {Direction<3>::lower_zeta(), {}}, {Direction<3>::upper_zeta(), {}}};
+    test_impl<LocalTimeStepping>(
+        initial_extents, element, time_step_id, next_time_step_id,
+        Spectral::Quadrature::GaussLobatto, neighbor_meshes,
+        expected_mortar_meshes, expected_mortar_infos,
+        expected_normal_covector_quantities,
+        std::make_optional<Domain<3>>(std::move(domain)));
+  }
+}
+
 template <size_t Dim>
 void check_mortar_data(const MortarData<Dim>& projected,
                        const MortarData<Dim>& expected) {
@@ -494,15 +639,16 @@ void test_p_refine(
         expected_normal_covector_and_magnitude,
     const mortar_data_history_type<Dim>& expected_mortar_data_history) {
   auto box = db::create<db::AddSimpleTags<
-      domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-      domain::Tags::NeighborMesh<Dim>, ::Tags::TimeStepId,
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarInfo<Dim>,
-      Tags::MortarNextTemporalId<Dim>,
+      domain::Tags::Domain<Dim>, domain::Tags::Mesh<Dim>,
+      domain::Tags::Element<Dim>, domain::Tags::NeighborMesh<Dim>,
+      ::Tags::TimeStepId, Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
+      Tags::MortarInfo<Dim>, Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
       Tags::MortarDataHistory<Dim, typename dt_variables_tag<Dim>::type>>>(
-      std::move(new_mesh), std::move(new_element), std::move(neighbor_meshes),
-      temporal_id, std::move(mortar_data), std::move(mortar_mesh),
-      std::move(mortar_infos), std::move(mortar_next_temporal_id),
+      Domain<Dim>{}, std::move(new_mesh), std::move(new_element),
+      std::move(neighbor_meshes), temporal_id, std::move(mortar_data),
+      std::move(mortar_mesh), std::move(mortar_infos),
+      std::move(mortar_next_temporal_id),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history));
 
   db::mutate_apply<evolution::dg::Initialization::ProjectMortars<
@@ -1148,8 +1294,9 @@ void test_h_refinement() {
     INFO("No local refinement");
     auto box = tmpl::as_pack<decltype(orig_single_items)>(
         [&]<typename... Tags>(tmpl::type_<Tags>... /*meta*/) {
-          return db::create<db::AddSimpleTags<Tags...>>(
-              get<Tags>(orig_single_items)...);
+          return db::create<
+              db::AddSimpleTags<domain::Tags::Domain<2>, Tags...>>(
+              Domain<2>{}, get<Tags>(orig_single_items)...);
         });
 
     const auto& mortar_ids = refined_mortar_ids;
@@ -1201,8 +1348,9 @@ void test_h_refinement() {
     INFO("Local p-refinement");
     auto box = tmpl::as_pack<decltype(orig_single_items)>(
         [&]<typename... Tags>(tmpl::type_<Tags>... /*meta*/) {
-          return db::create<db::AddSimpleTags<Tags...>>(
-              get<Tags>(orig_single_items)...);
+          return db::create<
+              db::AddSimpleTags<domain::Tags::Domain<2>, Tags...>>(
+              Domain<2>{}, get<Tags>(orig_single_items)...);
         });
 
     const auto& mortar_ids = refined_mortar_ids;
@@ -1282,7 +1430,9 @@ void test_h_refinement() {
 
   {
     INFO("Join");
-    auto box = db::create<decltype(orig_single_items)::tags_list>();
+    auto box =
+        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
+                                    domain::Tags::Domain<2>>>();
 
     const auto& mortar_ids = refined_mortar_ids;
     db::mutate<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
@@ -1396,7 +1546,9 @@ void test_h_refinement() {
 
   {
     INFO("Split - nw");
-    auto box = db::create<decltype(orig_single_items)::tags_list>();
+    auto box =
+        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
+                                    domain::Tags::Domain<2>>>();
 
     const std::array mortar_ids{mortar_id_a, mortar_id_f, mortar_id_nw_ne,
                                 mortar_id_nw_sw};
@@ -1471,7 +1623,9 @@ void test_h_refinement() {
 
   {
     INFO("Split - ne");
-    auto box = db::create<decltype(orig_single_items)::tags_list>();
+    auto box =
+        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
+                                    domain::Tags::Domain<2>>>();
 
     const std::array mortar_ids{mortar_id_a, mortar_id_ne_nw, mortar_id_g,
                                 mortar_id_ne_se};
@@ -1546,7 +1700,9 @@ void test_h_refinement() {
 
   {
     INFO("Split - sw");
-    auto box = db::create<decltype(orig_single_items)::tags_list>();
+    auto box =
+        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
+                                    domain::Tags::Domain<2>>>();
 
     const std::array mortar_ids{mortar_id_sw_nw, mortar_id_f, mortar_id_sw_se,
                                 mortar_id_i};
@@ -1618,7 +1774,9 @@ void test_h_refinement() {
 
   {
     INFO("Split - se");
-    auto box = db::create<decltype(orig_single_items)::tags_list>();
+    auto box =
+        db::create<tmpl::push_front<decltype(orig_single_items)::tags_list,
+                                    domain::Tags::Domain<2>>>();
 
     const std::array mortar_ids{mortar_id_se_ne, mortar_id_se_sw, mortar_id_h,
                                 mortar_id_i};
@@ -1771,13 +1929,13 @@ void test_h_refinement_mortar_sizes_local_impl(
       self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
 
   auto box = db::create<db::AddSimpleTags<
-      Tags::MortarData<3>, Tags::MortarMesh<3>, Tags::MortarInfo<3>,
-      Tags::MortarNextTemporalId<3>,
+      domain::Tags::Domain<3>, Tags::MortarData<3>, Tags::MortarMesh<3>,
+      Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
       mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
-      std::move(mortar_data), std::move(mortar_meshes), std::move(mortar_infos),
-      std::move(mortar_next_temporal_ids),
+      Domain<3>{}, std::move(mortar_data), std::move(mortar_meshes),
+      std::move(mortar_infos), std::move(mortar_next_temporal_ids),
       std::move(normal_covector_and_magnitude), std::move(mortar_data_history),
       mesh, std::move(element), std::move(neighbor_meshes), time_step_id);
 
@@ -1908,12 +2066,12 @@ void test_h_refinement_mortar_sizes_remote_impl_split(
       self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
 
   auto box = db::create<db::AddSimpleTags<
-      Tags::MortarData<3>, Tags::MortarMesh<3>, Tags::MortarInfo<3>,
-      Tags::MortarNextTemporalId<3>,
+      domain::Tags::Domain<3>, Tags::MortarData<3>, Tags::MortarMesh<3>,
+      Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
       mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
-      Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
+      Domain<3>{}, Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
       Tags::MortarInfo<3>::type{}, Tags::MortarNextTemporalId<3>::type{},
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type{},
       mortar_data_history_tag::type{}, mesh, std::move(element),
@@ -2009,12 +2167,12 @@ void test_h_refinement_mortar_sizes_remote_impl_join(
       self_id, {{direction, Neighbors<3>(std::move(neighbors), orientation)}});
 
   auto box = db::create<db::AddSimpleTags<
-      Tags::MortarData<3>, Tags::MortarMesh<3>, Tags::MortarInfo<3>,
-      Tags::MortarNextTemporalId<3>,
+      domain::Tags::Domain<3>, Tags::MortarData<3>, Tags::MortarMesh<3>,
+      Tags::MortarInfo<3>, Tags::MortarNextTemporalId<3>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
       mortar_data_history_tag, domain::Tags::Mesh<3>, domain::Tags::Element<3>,
       domain::Tags::NeighborMesh<3>, ::Tags::TimeStepId>>(
-      Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
+      Domain<3>{}, Tags::MortarData<3>::type{}, Tags::MortarMesh<3>::type{},
       Tags::MortarInfo<3>::type{}, Tags::MortarNextTemporalId<3>::type{},
       evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type{},
       mortar_data_history_tag::type{}, mesh, std::move(element),
@@ -2081,6 +2239,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
     Test<2, false>::apply(quadrature);
     Test<3, false>::apply(quadrature);
   }
+
+  domain::creators::register_derived_with_charm();
+  test_nonconforming_blocks<false>();
+
   static_assert(
       tt::assert_conforms_to_v<evolution::dg::Initialization::ProjectMortars<
                                    Metavariables<1, false>>,
