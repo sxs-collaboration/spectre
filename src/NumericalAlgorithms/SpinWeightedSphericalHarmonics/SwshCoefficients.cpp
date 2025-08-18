@@ -368,7 +368,8 @@ SpinWeighted<ComplexModalVector, Spin> nodal_to_goldberg(
       const SpinWeighted<ComplexDataVector, GET_SPIN(data)>& nodal_values,     \
       const size_t l_max);
 
-GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION, (-2, -1, 0, 1, 2))
+GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION,
+                        (-3, -2, -1, 0, 1, 2))
 
 #undef LIBSHARP_TO_GOLDBERG_INSTANTIATION
 #undef GET_SPIN

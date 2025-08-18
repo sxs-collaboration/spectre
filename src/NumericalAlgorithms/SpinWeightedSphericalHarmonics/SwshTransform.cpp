@@ -229,7 +229,7 @@ GENERATE_INSTANTIATIONS(SWSH_TRANSFORM_UTILITIES_INSTANTIATION,
 GENERATE_INSTANTIATIONS(SWSH_TRANSFORM_INSTANTIATION,
                         (ComplexRepresentation::Interleaved,
                          ComplexRepresentation::RealsThenImags),
-                        (-2, -1, 0, 1, 2))
+                        (-3, -2, -1, 0, 1, 2))
 
 #undef GET_REPRESENTATION
 #undef GET_SPIN
