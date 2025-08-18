@@ -10,8 +10,10 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Amr/Actions/CollectDataFromChildren.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 namespace db {
@@ -42,6 +44,12 @@ struct CreateParent {
       const ElementId<Metavariables::volume_dim>& child_id,
       std::deque<ElementId<Metavariables::volume_dim>> sibling_ids_to_collect,
       const std::unordered_map<Parallel::Phase, size_t> child_phase_bookmarks) {
+    if (CHARM_VERSION_MAJOR < 8 and
+        Parallel::number_of_procs<size_t>(cache) > 1) {
+      ERROR_NO_TRACE(
+          "Dynamically creating elements in parallel executables is broken "
+          "until charm 8.");
+    }
     auto child_proxy = element_proxy[child_id];
     element_proxy[parent_id].insert(
         cache.get_this_proxy(), Parallel::Phase::AdjustDomain,

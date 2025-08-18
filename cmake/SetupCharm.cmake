@@ -38,9 +38,9 @@ find_package(Charm ${SPECTRE_REQUIRED_CHARM_VERSION} REQUIRED
   EveryLB
   ${SCOTCHLB_COMPONENT}
   )
-if(CHARM_VERSION VERSION_GREATER 7.0.1)
-  message(WARNING "Builds with Charm++ versions greater than 7.0.1 are \
-considered experimental. Please file any issues you encounter.")
+if(CHARM_VERSION VERSION_LESS 8.0.0)
+  message(NOTICE "Charm++ versions less than 8.0.0 have known bugs with \
+element creation.  Dynamic h-refinement is disabled.")
 endif()
 
 if (USE_SCOTCH_LB)
