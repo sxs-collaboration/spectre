@@ -32,7 +32,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
-template <typename Tag, typename Dim, typename Frame, typename>
+template <typename Tag, typename Dim, typename Frame>
 struct deriv;
 }  // namespace Tags
 template <typename X, typename Symm, typename IndexList>

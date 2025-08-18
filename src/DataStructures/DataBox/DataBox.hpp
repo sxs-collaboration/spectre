@@ -36,7 +36,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrintHelpers.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -115,15 +114,14 @@ struct make_subitem_tag {
   using type = ::Tags::Subitem<Tag, ParentTag>;
 };
 
-template <typename Tag, typename = std::nullptr_t>
+template <typename Tag>
 struct append_subitem_tags {
   using type = tmpl::push_front<typename db::Subitems<Tag>::type, Tag>;
 };
 
 template <typename ParentTag>
-struct append_subitem_tags<ParentTag,
-                           Requires<has_subitems_v<ParentTag> and
-                                    is_immutable_item_tag_v<ParentTag>>> {
+  requires(has_subitems_v<ParentTag> and is_immutable_item_tag_v<ParentTag>)
+struct append_subitem_tags<ParentTag> {
   using type = tmpl::push_front<
       tmpl::transform<typename Subitems<ParentTag>::type,
                       make_subitem_tag<tmpl::_1, tmpl::pin<ParentTag>>>,
@@ -131,7 +129,8 @@ struct append_subitem_tags<ParentTag,
 };
 
 template <typename Tag>
-struct append_subitem_tags<Tag, Requires<not has_subitems_v<Tag>>> {
+  requires(not has_subitems_v<Tag>)
+struct append_subitem_tags<Tag> {
   using type = tmpl::list<Tag>;
 };
 

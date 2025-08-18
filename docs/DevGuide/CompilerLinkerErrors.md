@@ -17,7 +17,7 @@ problems where there is an `undefined reference`. These include:
   file
 - not including a `tpp` file inside a `cpp` file
 - the template specialization or function overload has been explicitly disabled
-  via SFINAE (usually through the use of a `Requires`)
+  via SFINAE (usually through the use of a `requires` clause)
 - not linking a library (explained below)
 
 Possibly the most difficult part of fixing linking errors is understanding what
@@ -131,4 +131,5 @@ In summary:
 - If the undefined reference's definition is in a `tpp` file, make sure the
   `tpp` file is included in the target file.
 - If the undefined reference's source definition is in an `hpp` file, make sure
-  the specific instantiation is possible (e.g. not forbidden by a `Requires`)
+  the specific instantiation is possible (e.g. not forbidden by a `requires`
+  clause)

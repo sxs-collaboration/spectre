@@ -12,7 +12,6 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
@@ -43,13 +42,13 @@ struct dt : db::PrefixTag, db::SimpleTag {
  *
  * \see Tags::DerivCompute
  */
-template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+template <typename Tag, typename Dim, typename Frame>
 struct deriv;
 
 /// \cond
 template <typename Tag, typename Dim, typename Frame>
-struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
+  requires(tt::is_a_v<Tensor, typename Tag::type>)
+struct deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
   using type =
       TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
                                                  UpLo::Lo, Frame>;
@@ -69,14 +68,13 @@ struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
  *
  * \see Tags::DerivCompute
  */
-template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+template <typename Tag, typename Dim, typename Frame>
 struct second_deriv;
 
 /// \cond
 template <typename Tag, typename Dim, typename Frame>
-struct second_deriv<Tag, Dim, Frame,
-                    Requires<tt::is_a_v<Tensor, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
+  requires(tt::is_a_v<Tensor, typename Tag::type>)
+struct second_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_two_symmetric_spatial_indices<
       typename Tag::type, Dim::value, UpLo::Lo, Frame>;
   using tag = Tag;
@@ -94,14 +92,13 @@ struct second_deriv<Tag, Dim, Frame,
  * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
  * \tparam Frame The frame of the derivative index
  */
-template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+template <typename Tag, typename Dim, typename Frame>
 struct spacetime_deriv;
 
 /// \cond
 template <typename Tag, typename Dim, typename Frame>
-struct spacetime_deriv<Tag, Dim, Frame,
-                       Requires<tt::is_a_v<Tensor, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
+  requires(tt::is_a_v<Tensor, typename Tag::type>)
+struct spacetime_deriv<Tag, Dim, Frame> : db::PrefixTag, db::SimpleTag {
   using type =
       TensorMetafunctions::prepend_spacetime_index<typename Tag::type,
                                                    Dim::value, UpLo::Lo, Frame>;
@@ -113,24 +110,21 @@ struct spacetime_deriv<Tag, Dim, Frame,
 /// \brief Prefix indicating a flux
 ///
 /// \snippet Test_DataBoxPrefixes.cpp flux_name
-template <typename Tag, typename VolumeDim, typename Fr,
-          typename = std::nullptr_t>
+template <typename Tag, typename VolumeDim, typename Fr>
 struct Flux;
 
 /// \cond
 template <typename Tag, typename VolumeDim, typename Fr>
-struct Flux<Tag, VolumeDim, Fr,
-            Requires<tt::is_a_v<Tensor, typename Tag::type>>> : db::PrefixTag,
-                                                                db::SimpleTag {
+  requires(tt::is_a_v<Tensor, typename Tag::type>)
+struct Flux<Tag, VolumeDim, Fr> : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
       typename Tag::type, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
-struct Flux<Tag, VolumeDim, Fr,
-            Requires<tt::is_a_v<::Variables, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
+  requires(tt::is_a_v<::Variables, typename Tag::type>)
+struct Flux<Tag, VolumeDim, Fr> : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
 };

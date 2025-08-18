@@ -251,8 +251,10 @@ void cartesian_high_order_fluxes_using_nodes(
                   upper_n = Index<Dim>{j + 1, k, i};
                 }
               } else if constexpr (dim == 2) {
-                lower_n = Index<Dim>{k, i, j};
-                upper_n = Index<Dim>{k + 1, i, j};
+                if constexpr (Dim == 3) {
+                  lower_n = Index<Dim>{k, i, j};
+                  upper_n = Index<Dim>{k + 1, i, j};
+                }
               }
               lower_neighbor_index =
                   collapsed_index(lower_n, reconstruction_extents);

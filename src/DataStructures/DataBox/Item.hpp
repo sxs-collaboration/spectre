@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Requires.hpp"
 
 /// \cond
 namespace db::detail {

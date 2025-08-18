@@ -28,6 +28,15 @@ using is_map_time_dependent_t = tt::is_callable_t<
 template <typename T>
 constexpr bool is_map_time_dependent_v = is_map_time_dependent_t<T>::value;
 
+/// @{
+/// Check if the calls to the coordinate map and its inverse map are
+/// time-dependent
+template <typename T>
+concept TimeDependentMap = is_map_time_dependent_v<T>;
+template <typename T>
+concept TimeIndependentMap = not is_map_time_dependent_v<T>;
+/// @}
+
 namespace detail {
 CREATE_IS_CALLABLE(jacobian)
 }  // namespace detail

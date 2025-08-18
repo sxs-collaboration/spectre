@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <memory>
 
 #include "DataStructures/Index.hpp"
@@ -13,7 +14,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace intrp {
@@ -86,9 +86,7 @@ class MultiLinearSpanInterpolation {
         interpolate(weights, variables_to_interpolate)...};
   }
 
-  template <size_t NumberOfVariablesToInterpolate, typename... T,
-            Requires<(std::is_floating_point_v<typename std::remove_cv_t<T>> and
-                      ...)> = nullptr>
+  template <size_t NumberOfVariablesToInterpolate, std::floating_point... T>
   std::array<double, NumberOfVariablesToInterpolate> interpolate(
       std::array<size_t, NumberOfVariablesToInterpolate>&
           variables_to_interpolate,

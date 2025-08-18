@@ -99,7 +99,7 @@ struct Strahlkorper;
 namespace Tags {
 template <class TagList>
 struct Variables;
-template <typename Tag, typename Dim, typename Frame, typename>
+template <typename Tag, typename Dim, typename Frame>
 struct deriv;
 }  // namespace Tags
 namespace db {

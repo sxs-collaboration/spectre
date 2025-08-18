@@ -506,7 +506,7 @@ must return void but can use `db::mutate` to change values of items in
 the `db::DataBox` if the `db::DataBox` is taken as a non-const
 reference. In some cases you will need specific items to be in the
 `db::DataBox` otherwise the action won't compile. To restrict which
-`db::DataBox`es can be passed you should use `Requires` in the
+`db::DataBox`es can be passed you should use `requires` in the
 action's `apply` function template parameter list. For example,
 \snippet Test_AlgorithmCore.cpp requires_action
 checks that `CountActionsCalled` is available in the box.

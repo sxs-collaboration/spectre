@@ -363,16 +363,14 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
 }
 
 namespace detail {
-template <typename T, typename Map, size_t Dim,
-          Requires<not domain::is_map_time_dependent_v<Map>> = nullptr>
+template <typename T, TimeIndependentMap Map, size_t Dim>
 std::array<T, Dim> get_frame_velocity(
     const Map& /*the_map*/, const std::array<T, Dim>& /*point*/,
     const double /*t*/, const FunctionsOfTimeMap& /*funcs_of_time*/) {
   return std::array<T, Dim>{};
 }
 
-template <typename T, typename Map, size_t Dim,
-          Requires<domain::is_map_time_dependent_v<Map>> = nullptr>
+template <typename T, TimeDependentMap Map, size_t Dim>
 std::array<T, Dim> get_frame_velocity(const Map& the_map,
                                       const std::array<T, Dim>& point,
                                       const double t,

@@ -59,7 +59,7 @@ The following build jobs are launched:
     * includes any non-header `*.cpp` file
     * contains a `namespace` ending in `_details` (use `_detail`)
     * contains a `struct TD` or `class TD` (used only for debugging)
-    * contains `std::enable_if` (use `Requires` instead)
+    * contains `std::enable_if` (use `requires` instead)
     * contains `Ls` (use `List` instead)
     * contains additional text after `/*!` (does not render correctly in
       Doxygen)
