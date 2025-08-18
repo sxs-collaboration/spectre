@@ -21,6 +21,7 @@ spectre_target_headers(
   BoundaryConditionGhostData.hpp
   Derivatives.hpp
   Factory.hpp
+  FillNeighborSpacetimeVariables.hpp
   FilterOptions.hpp
   Filters.hpp
   FiniteDifference.hpp

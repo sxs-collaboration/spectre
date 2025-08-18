@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_ProductOfCorrections.cpp
   FiniteDifference/Test_BoundaryConditionGhostData.cpp
   FiniteDifference/Test_Derivatives.cpp
+  FiniteDifference/Test_FillNeighborSpacetimeVariables.cpp
   FiniteDifference/Test_FilterOptions.cpp
   FiniteDifference/Test_Filters.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
