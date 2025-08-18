@@ -75,6 +75,23 @@ static_assert(factorial(3) == 6, "Failed testing factorial");
 static_assert(factorial(8) == 40320, "Failed testing factorial");
 static_assert(factorial(20) == 2432902008176640000, "Failed testing factorial");
 
+// Test binomial coefficient
+static_assert(binomial(0, 0) == 1);
+static_assert(binomial(1, 0) == 1);
+static_assert(binomial(1, 1) == 1);
+static_assert(binomial(2, 0) == 1);
+static_assert(binomial(2, 1) == 2);
+static_assert(binomial(2, 2) == 1);
+static_assert(binomial(3, 0) == 1);
+static_assert(binomial(3, 1) == 3);
+static_assert(binomial(3, 2) == 3);
+static_assert(binomial(3, 3) == 1);
+static_assert(binomial(4, 0) == 1);
+static_assert(binomial(4, 1) == 4);
+static_assert(binomial(4, 2) == 6);
+static_assert(binomial(4, 3) == 4);
+static_assert(binomial(4, 4) == 1);
+
 // Test pow<>
 static_assert(pow<4>(2.0) == 16.0, "Failed testing pow");
 static_assert(pow<0>(2.0) == 1.0, "Failed testing pow");

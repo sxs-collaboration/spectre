@@ -92,6 +92,25 @@ KOKKOS_FUNCTION constexpr uint64_t factorial(const uint64_t n) {
   return falling_factorial(n, n);
 }
 
+/*!
+ * \ingroup ConstantExpressionsGroup
+ * \brief Compute the binomial coefficient $\binom{n}{k}$
+ *
+ * \details The binomial coefficient is defined as
+ * $\binom{n}{k} = \frac{n!}{k!(n-k)!}$
+ */
+KOKKOS_FUNCTION constexpr uint64_t binomial(const uint64_t n,
+                                            const uint64_t k) {
+  assert(n < 63);  // NOLINT
+  assert(k <= n);  // NOLINT
+  uint64_t result = 1;
+  for (uint64_t j = 1; j <= std::min(k, n - k); ++j) {
+    result *= n + 1 - j;
+    result /= j;
+  }
+  return result;
+}
+
 /// \ingroup ConstantExpressionsGroup
 namespace ConstantExpressions_detail {
 
