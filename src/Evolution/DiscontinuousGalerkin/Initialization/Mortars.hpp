@@ -293,10 +293,10 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                     const TimeStepId& /* id */,
                     const gsl::not_null<::evolution::dg::MortarData<dim>*>
                         data) {
-                  p_project_geometric_data(data, new_face_mesh, new_mesh);
+                  return p_project_geometric_data(data, new_face_mesh,
+                                                  new_mesh);
                 };
             local_history.for_each(project_local_boundary_data);
-            boundary_history.clear_coupling_cache();
           }
         } else {
           const auto& new_mortar_size =
@@ -322,7 +322,8 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                         const TimeStepId& /* id */,
                         const gsl::not_null<::evolution::dg::MortarData<dim>*>
                             data) {
-                      p_project_geometric_data(data, new_face_mesh, new_mesh);
+                      return p_project_geometric_data(data, new_face_mesh,
+                                                      new_mesh);
                     };
                 local_history.for_each(project_face_data);
               }
@@ -340,6 +341,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                     vars = apply_matrices(mortar_projection_matrices, vars,
                                           old_mortar_mesh.extents());
                     data->mortar_mesh = new_mortar_mesh;
+                    return true;
                   };
               local_history.for_each(project_mortar_data);
             } else {
@@ -361,6 +363,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                         apply_matrices(mortar_projection_matrices,
                                        old_data.mortar_data.value(),
                                        old_mortar_mesh.extents());
+                    return true;
                   };
               local_history.for_each(project_local_mortar_data);
             }
@@ -460,6 +463,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                   vars = apply_matrices(mortar_projection_matrices, vars,
                                         old_mortar_mesh.extents());
                   data->mortar_mesh = new_mortar_mesh;
+                  return true;
                 };
             remote_history.for_each(project_mortar_data);
           } else {
@@ -534,6 +538,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                       vars = apply_matrices(mortar_projection_matrices, vars,
                                             old_mortar_mesh.extents());
                       data->mortar_mesh = new_mortar_mesh;
+                      return true;
                     };
                 remote_history.for_each(project_mortar_data);
               } else {
@@ -555,6 +560,7 @@ struct ProjectMortars : tt::ConformsTo<amr::protocols::Projector> {
                           apply_matrices(mortar_projection_matrices,
                                          old_data.mortar_data.value(),
                                          old_mortar_mesh.extents());
+                      return true;
                     };
                 remote_history.for_each(project_mortar_data);
               }

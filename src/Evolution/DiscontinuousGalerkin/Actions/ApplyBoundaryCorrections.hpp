@@ -342,12 +342,9 @@ bool receive_boundary_data_global_time_stepping(
                   sliced_away_dim);
           const Mesh<volume_dim - 1> mortar_mesh =
               ::dg::mortar_mesh(face_mesh, neighbor_face_mesh);
-          if (mortar_mesh != mortar_meshes->at(mortar_id)) {
-            mortar_meshes->at(mortar_id) = mortar_mesh;
-            p_project_mortar_data(
-                make_not_null(&mortar_data->at(mortar_id).local()),
-                mortar_mesh);
-          }
+          mortar_meshes->at(mortar_id) = mortar_mesh;
+          p_project_mortar_data(
+              make_not_null(&mortar_data->at(mortar_id).local()), mortar_mesh);
           neighbor_mesh->insert_or_assign(
               mortar_id, received_mortar_data.second.volume_mesh);
           mortar_next_time_step_id->at(mortar_id) =
@@ -369,12 +366,9 @@ bool receive_boundary_data_global_time_stepping(
                 received_mortar_data.second.boundary_correction_mesh.value();
             mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
                 received_mortar_data.second.boundary_correction_data.value());
-            if (mortar_mesh !=
-                received_mortar_data.second.boundary_correction_mesh) {
-              p_project_mortar_data(
-                  make_not_null(&mortar_data->at(mortar_id).neighbor()),
-                  mortar_mesh);
-            }
+            p_project_mortar_data(
+                make_not_null(&mortar_data->at(mortar_id).neighbor()),
+                mortar_mesh);
           }
         }
       },
@@ -499,17 +493,14 @@ bool receive_boundary_data_local_time_stepping(
                     const TimeStepId& /*id*/,
                     const gsl::not_null<::evolution::dg::MortarData<Dim>*>
                         mortar_data) {
-                  p_project_mortar_data(mortar_data, mortar_mesh);
+                  return p_project_mortar_data(mortar_data, mortar_mesh);
                 };
 
-            if (mortar_mesh != mortar_meshes->at(mortar_id)) {
-              mortar_meshes->at(mortar_id) = mortar_mesh;
-              boundary_data_history->at(mortar_id).local().for_each(
-                  project_boundary_mortar_data);
-              boundary_data_history->at(mortar_id).remote().for_each(
-                  project_boundary_mortar_data);
-              boundary_data_history->at(mortar_id).clear_coupling_cache();
-            }
+            mortar_meshes->at(mortar_id) = mortar_mesh;
+            boundary_data_history->at(mortar_id).local().for_each(
+                project_boundary_mortar_data);
+            boundary_data_history->at(mortar_id).remote().for_each(
+                project_boundary_mortar_data);
 
             MortarData<Dim> neighbor_mortar_data{};
             // Insert:
@@ -532,12 +523,8 @@ bool receive_boundary_data_local_time_stepping(
                 time_entry->first,
                 received_mortar_data->second.integration_order,
                 std::move(neighbor_mortar_data));
-            if (mortar_mesh !=
-                received_mortar_data->second.boundary_correction_mesh) {
-              boundary_data_history->at(mortar_id).remote().for_each(
-                  project_boundary_mortar_data);
-              boundary_data_history->at(mortar_id).clear_coupling_cache();
-            }
+            boundary_data_history->at(mortar_id).remote().for_each(
+                project_boundary_mortar_data);
             mortar_next_time_step_id =
                 received_mortar_data->second.validity_range;
             time_entry->second.erase(received_mortar_data);

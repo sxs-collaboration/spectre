@@ -34,9 +34,10 @@ void MortarData<Dim>::pup(PUP::er& p) {
 }
 
 template <size_t Dim>
-void p_project_geometric_data(
+bool p_project_geometric_data(
     const gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
     const Mesh<Dim - 1>& new_face_mesh, const Mesh<Dim>& new_volume_mesh) {
+  bool changed = false;
   // nothing needs to be done in 1D as mortars/faces are a single point...
   if constexpr (Dim > 1) {
     if (mortar_data->face_normal_magnitude.has_value()) {
@@ -53,6 +54,7 @@ void p_project_geometric_data(
                                  old_face_mesh.extents());
         }
         mortar_data->face_mesh = new_face_mesh;
+        changed = true;
       }
     }
   }
@@ -65,26 +67,33 @@ void p_project_geometric_data(
       det_inv_j = apply_matrices(volume_projection_matrices, det_inv_j,
                                  old_volume_mesh.extents());
       mortar_data->volume_mesh = new_volume_mesh;
+      changed = true;
     }
   }
+  return changed;
 }
 
 template <size_t Dim>
-void p_project_mortar_data(
+bool p_project_mortar_data(
     const gsl::not_null<::evolution::dg::MortarData<Dim>*> mortar_data,
     const Mesh<Dim - 1>& new_mortar_mesh) {
   // nothing needs to be done in 1D as mortars are a single point...
   if constexpr (Dim > 1) {
     const auto& old_mortar_mesh = mortar_data->mortar_mesh.value();
+    if (old_mortar_mesh == new_mortar_mesh) {
+      return false;
+    }
     const auto mortar_projection_matrices =
         Spectral::p_projection_matrices(old_mortar_mesh, new_mortar_mesh);
     DataVector& vars = mortar_data->mortar_data.value();
     vars = apply_matrices(mortar_projection_matrices, vars,
                           old_mortar_mesh.extents());
     mortar_data->mortar_mesh = new_mortar_mesh;
+    return true;
   } else {
     (void)mortar_data;
     (void)new_mortar_mesh;
+    return false;
   }
 }
 
@@ -119,12 +128,12 @@ std::ostream& operator<<(std::ostream& os, const MortarData<Dim>& mortar_data) {
 
 #define INSTANTIATION(r, data)                                     \
   template class MortarData<DIM(data)>;                            \
-  template void p_project_geometric_data(                          \
+  template bool p_project_geometric_data(                          \
       const gsl::not_null<::evolution::dg::MortarData<DIM(data)>*> \
           mortar_data,                                             \
       const Mesh<DIM(data) - 1>& new_face_mesh,                    \
       const Mesh<DIM(data)>& volume_mesh);                         \
-  template void p_project_mortar_data(                             \
+  template bool p_project_mortar_data(                             \
       const gsl::not_null<::evolution::dg::MortarData<DIM(data)>*> \
           mortar_data,                                             \
       const Mesh<DIM(data) - 1>& new_mortar_mesh);                 \

@@ -622,7 +622,7 @@ struct ReferenceFunctor {
   }
 };
 
-template <bool Local, bool Modified, bool Const>
+template <bool Local, bool Modified, bool Modify>
 struct NotNullFunctor {
   using ExpectedData =
       tmpl::conditional_t<Local, std::string, std::vector<int>>;
@@ -631,25 +631,25 @@ struct NotNullFunctor {
 
   // Templated to test that the correct types are passed.
   template <typename Id, typename Data>
-  void operator()(Id& id, const gsl::not_null<Data*> data) {
+  bool operator()(Id& id, const gsl::not_null<Data*> data) {
     static_assert(std::is_same_v<Id, const TimeStepId>);
-    static_assert(std::is_same_v<std::remove_const_t<Data>, ExpectedData>);
-    static_assert(std::is_const_v<Data> == Const);
+    static_assert(std::is_same_v<Data, ExpectedData>);
 
     CHECK(ids.insert(id).second);
     CHECK(entries.insert(*data).second);
     if constexpr (Local) {
       CHECK(static_cast<bool>(std::islower((*data)[0])) == Modified);
-      if constexpr (not Const) {
+      if constexpr (Modify) {
         (*data)[0] =
             Modified ? std::toupper((*data)[0]) : std::tolower((*data)[0]);
       }
     } else {
       CHECK(((*data)[0] < 0) == Modified);
-      if constexpr (not Const) {
+      if constexpr (Modify) {
         (*data)[0] *= -1;
       }
     }
+    return Modify;
   }
 };
 
@@ -660,11 +660,24 @@ void check_reference(const Times& times, const size_t expected_size) {
   CHECK(func.ids.size() == expected_size);
 }
 
-template <bool Local, bool Modified, bool Const, typename Times>
+template <bool Local, bool Modified, bool Modify, typename Times>
 void check_not_null(const Times& times, const size_t expected_size) {
-  NotNullFunctor<Local, Modified, Const> func{};
+  NotNullFunctor<Local, Modified, Modify> func{};
   times.for_each(func);
   CHECK(func.ids.size() == expected_size);
+}
+
+template <typename LocalData, typename RemoteData, typename CouplingResult>
+bool cache_filled(
+    const TimeSteppers::BoundaryHistory<LocalData, RemoteData, CouplingResult>&
+        history) {
+  bool called = false;
+  history.evaluator(
+      [&called](const LocalData& /*unused*/, const RemoteData& /*unused*/) {
+        called = true;
+        return CouplingResult{};
+      })(history.local().front(), history.remote().front());
+  return not called;
 }
 
 void test_for_each() {
@@ -689,27 +702,46 @@ void test_for_each() {
   // The second template parameter indicates whether the data is
   // expected to have been modified from its original state at that
   // point.  Modification happens with each call to
-  // `check_not_null<..., ..., false>`.  Modifying twice gives the
+  // `check_not_null<..., ..., true>`.  Modifying twice gives the
   // original data.
+  CHECK(not cache_filled(history));
   check_reference<true, false>(const_history.local(), local_size);
+  CHECK(cache_filled(history));
   check_reference<true, false>(history.local(), local_size);
-  check_not_null<true, false, true>(const_history.local(), local_size);
+  CHECK(cache_filled(history));
   check_not_null<true, false, false>(history.local(), local_size);
+  CHECK(cache_filled(history));
+  check_not_null<true, false, true>(history.local(), local_size);
+  CHECK(not cache_filled(history));
   check_reference<true, true>(const_history.local(), local_size);
+  CHECK(cache_filled(history));
   check_reference<true, true>(history.local(), local_size);
-  check_not_null<true, true, true>(const_history.local(), local_size);
+  CHECK(cache_filled(history));
   check_not_null<true, true, false>(history.local(), local_size);
+  CHECK(cache_filled(history));
+  check_not_null<true, true, true>(history.local(), local_size);
+  CHECK(not cache_filled(history));
   check_reference<true, false>(const_history.local(), local_size);
+  CHECK(cache_filled(history));
 
   check_reference<false, false>(const_history.remote(), remote_size);
+  CHECK(cache_filled(history));
   check_reference<false, false>(history.remote(), remote_size);
-  check_not_null<false, false, true>(const_history.remote(), remote_size);
+  CHECK(cache_filled(history));
   check_not_null<false, false, false>(history.remote(), remote_size);
+  CHECK(cache_filled(history));
+  check_not_null<false, false, true>(history.remote(), remote_size);
+  CHECK(not cache_filled(history));
   check_reference<false, true>(const_history.remote(), remote_size);
+  CHECK(cache_filled(history));
   check_reference<false, true>(history.remote(), remote_size);
-  check_not_null<false, true, true>(const_history.remote(), remote_size);
+  CHECK(cache_filled(history));
   check_not_null<false, true, false>(history.remote(), remote_size);
+  CHECK(cache_filled(history));
+  check_not_null<false, true, true>(history.remote(), remote_size);
+  CHECK(not cache_filled(history));
   check_reference<false, false>(const_history.remote(), remote_size);
+  CHECK(cache_filled(history));
 }
 }  // namespace
 
