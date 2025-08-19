@@ -31,8 +31,8 @@ class TestInitialData(unittest.TestCase):
         params = id_parameters(
             conformal_mass_a=0.6,
             conformal_mass_b=0.4,
-            conformal_spin_a=[0.1, 0.2, 0.3],
-            conformal_spin_b=[0.4, 0.5, 0.6],
+            horizon_rotation_a=[-0.04, -0.08, -0.1],
+            horizon_rotation_b=[-0.3, -0.4, -0.4],
             center_of_mass_offset=[0.1, 0.2, 0.3],
             linear_velocity=[0.1, 0.2, 0.3],
             separation=20.0,
@@ -41,6 +41,12 @@ class TestInitialData(unittest.TestCase):
             refinement_level=1,
             polynomial_order=5,
             negative_expansion_bc=True,
+            target_params={
+                "MassA": 0.6,
+                "MassB": 0.4,
+                "DimensionlessSpinA": [0.1, 0.2, 0.3],
+                "DimensionlessSpinB": [0.4, 0.5, 0.6],
+            },
         )
         self.assertEqual(params["ConformalMassRight"], 0.6)
         self.assertEqual(params["ConformalMassLeft"], 0.4)
@@ -68,11 +74,11 @@ class TestInitialData(unittest.TestCase):
         )
         npt.assert_allclose(
             [params[f"HorizonRotationRight_{xyz}"] for xyz in "xyz"],
-            [-0.043236994315732, -0.086473988631464, -0.119710982947196],
+            [-0.04, -0.08, -0.1 + 0.01],
         )
         npt.assert_allclose(
             [params[f"HorizonRotationLeft_{xyz}"] for xyz in "xyz"],
-            [-0.337933017966707, -0.422416272458383, -0.49689952695006],
+            [-0.3, -0.4, -0.4 + 0.01],
         )
         self.assertAlmostEqual(params["FalloffWidthRight"], 6.479672589667676)
         self.assertAlmostEqual(params["FalloffWidthLeft"], 5.520327410332324)
