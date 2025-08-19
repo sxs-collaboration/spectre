@@ -6,11 +6,12 @@ set(LIBRARY_SOURCES
   Tags/Test_AdaptiveSteppingDiagnostics.cpp
   Tags/Test_FixedLtsRatio.cpp
   Tags/Test_HistoryEvolvedVariables.cpp
-  Tags/Test_IsUsingTimeSteppingErrorControl.cpp
   Tags/Test_MinimumTimeStep.cpp
   Tags/Test_StepChoosers.cpp
   Tags/Test_StepNumberWithinSlab.cpp
+  Tags/Test_StepperErrorEstimatesEnabled.cpp
   Tags/Test_StepperErrorTolerances.cpp
+  Tags/Test_StepperErrorTolerancesCompute.cpp
   Tags/Test_StepperErrors.cpp
   Tags/Test_Time.cpp
   Tags/Test_TimeAndPrevious.cpp

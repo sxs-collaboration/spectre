@@ -17,8 +17,8 @@
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -42,10 +42,11 @@ struct Component {
   using const_global_cache_tags =
       tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
 
-  using simple_tags = db::AddSimpleTags<
-      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-      Tags::Time, Tags::StepNumberWithinSlab,
-      Tags::IsUsingTimeSteppingErrorControl, Tags::AdaptiveSteppingDiagnostics>;
+  using simple_tags =
+      db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                        Tags::TimeStep, Tags::Time, Tags::StepNumberWithinSlab,
+                        Tags::StepperErrorEstimatesEnabled,
+                        Tags::AdaptiveSteppingDiagnostics>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   using phase_dependent_action_list = tmpl::list<

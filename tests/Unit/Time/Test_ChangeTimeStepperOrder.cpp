@@ -26,6 +26,8 @@
 #include "Helpers/DataStructures/TestTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
@@ -37,6 +39,7 @@
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/Tags/StepChoosers.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -351,20 +354,21 @@ double run(std::unique_ptr<LtsTimeStepper> time_stepper, const double tolerance,
   using history_tag = ::Tags::HistoryEvolvedVariables<System::variables_tag>;
 
   auto box = db::create<
-      db::AddSimpleTags<::Parallel::Tags::MetavariablesImpl<Metavariables>,
-                        ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
-                        Tags::VariableOrderAlgorithm, ::Tags::TimeStepId,
-                        ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-                        ::Tags::Time, ::Tags::AdaptiveSteppingDiagnostics,
-                        ::Tags::StepChoosers, ::Tags::MinimumTimeStep,
-                        System::variables_tag, dt_variables_tag, history_tag,
-                        ::Tags::StepperErrors<System::variables_tag>>,
+      db::AddSimpleTags<
+          ::Parallel::Tags::MetavariablesImpl<Metavariables>,
+          ::Tags::ConcreteTimeStepper<LtsTimeStepper>,
+          ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
+          Tags::VariableOrderAlgorithm, ::Tags::TimeStepId,
+          ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep, ::Tags::Time,
+          ::Tags::AdaptiveSteppingDiagnostics, ::Tags::StepChoosers,
+          ::Tags::MinimumTimeStep, System::variables_tag, dt_variables_tag,
+          history_tag, ::Tags::StepperErrors<System::variables_tag>>,
       tmpl::push_back<
           time_stepper_ref_tags<LtsTimeStepper>,
-          ::Tags::IsUsingTimeSteppingErrorControlCompute<true>,
+          ::Tags::StepperErrorEstimatesEnabledCompute<true>,
           ::Tags::StepperErrorTolerancesCompute<System::variables_tag, true>>>(
-      Metavariables{}, std::move(time_stepper), VariableOrderAlgorithm(0.1),
-      initial_time_step_id,
+      Metavariables{}, std::move(time_stepper), EventsAndTriggers{},
+      VariableOrderAlgorithm(0.1), initial_time_step_id,
       time_stepper->next_time_id(initial_time_step_id, initial_time_step),
       initial_time_step, slab.start().value(), ::AdaptiveSteppingDiagnostics{},
       std::move(step_choosers), minimum_time_step, std::move(initial_vars),

@@ -5,64 +5,29 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <limits>
-#include <memory>
-#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
-#include <vector>
+#include <typeindex>
+#include <typeinfo>
+#include <unordered_map>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/TaggedVariant.hpp"
 #include "Options/String.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
-#include "Time/ChangeSlabSize/Event.hpp"
+#include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
-#include "Time/Tags/StepperErrorTolerances.hpp"
+#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/TimeStepRequest.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
-#include "Time/VariableOrderAlgorithm.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Tags {
-template <Triggers::WhenToCheck WhenToCheck>
-struct EventsAndTriggers;
-template <bool LocalTimeStepping>
-struct IsUsingTimeSteppingErrorControlCompute;
-struct StepChoosers;
-template <typename EvolvedVariableTag, bool LocalTimeStepping>
-struct StepperErrorTolerancesCompute;
-template <typename StepperInterface>
-struct TimeStepper;
-struct VariableOrderAlgorithm;
-}  // namespace Tags
+struct NoSuchType;
 /// \endcond
 
 namespace StepChoosers {
-namespace ErrorControl_detail {
-struct IsAnErrorControl {};
-template <typename EvolvedVariableTag>
-struct ErrorControlBase : IsAnErrorControl {
- public:
-  virtual StepperErrorTolerances tolerances() const = 0;
-
- protected:
-  ErrorControlBase() = default;
-  ~ErrorControlBase() = default;
-};
-}  // namespace ErrorControl_detail
-
 /*!
  * \brief Sets a goal based on time-stepper truncation error.
  *
@@ -133,9 +98,8 @@ struct ErrorControlBase : IsAnErrorControl {
  */
 template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
-class ErrorControl
-    : public StepChooser<StepChooserUse>,
-      public ErrorControl_detail::ErrorControlBase<EvolvedVariableTag> {
+class ErrorControl : public StepChooser<StepChooserUse>,
+                     public RequestsStepperErrorTolerances {
  public:
   /// \cond
   ErrorControl() = default;
@@ -204,7 +168,7 @@ class ErrorControl
   using simple_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
   using compute_tags = tmpl::list<
-      Tags::IsUsingTimeSteppingErrorControlCompute<
+      Tags::StepperErrorEstimatesEnabledCompute<
           std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>,
       Tags::StepperErrorTolerancesCompute<
           EvolvedVariableTag,
@@ -249,10 +213,12 @@ class ErrorControl
   bool uses_local_data() const override { return true; }
   bool can_be_delayed() const override { return true; }
 
-  StepperErrorTolerances tolerances() const override {
-    return {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
-            .absolute = absolute_tolerance_,
-            .relative = relative_tolerance_};
+  std::unordered_map<std::type_index, StepperErrorTolerances> tolerances()
+      const override {
+    return {{typeid(EvolvedVariableTag),
+             {.estimates = StepperErrorTolerances::Estimates::StepperOrder,
+              .absolute = absolute_tolerance_,
+              .relative = relative_tolerance_}}};
   }
 
   void pup(PUP::er& p) override {  // NOLINT
@@ -278,146 +244,3 @@ PUP::able::PUP_ID ErrorControl<StepChooserUse, EvolvedVariableTag,
                                ErrorControlSelector>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers
-
-namespace Tags {
-/// \ingroup TimeGroup
-/// \brief A tag that is true if the `ErrorControl` step chooser is one of the
-/// option-created `Event`s.
-template <bool LocalTimeStepping>
-struct IsUsingTimeSteppingErrorControlCompute
-    : db::ComputeTag,
-    IsUsingTimeSteppingErrorControl {
-  using base = IsUsingTimeSteppingErrorControl;
-  using return_type = type;
-  using argument_tags = tmpl::conditional_t<
-      LocalTimeStepping, tmpl::list<::Tags::StepChoosers>,
-      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
-
-  // local time stepping
-  static void function(
-      const gsl::not_null<bool*> is_using_error_control,
-      const std::vector<
-          std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
-          step_choosers) {
-    *is_using_error_control = false;
-    for (const auto& step_chooser : step_choosers) {
-      if (dynamic_cast<
-              const ::StepChoosers::ErrorControl_detail::IsAnErrorControl*>(
-              &*step_chooser) != nullptr) {
-        *is_using_error_control = true;
-        return;
-      }
-    }
-  }
-
-  // global time stepping
-  static void function(const gsl::not_null<bool*> is_using_error_control,
-                       const ::EventsAndTriggers& events_and_triggers) {
-    // In principle the slab size could be changed based on a dense
-    // trigger, but it's not clear that there is ever a good reason to
-    // do so, and it wouldn't make sense to use error control in that
-    // context in any case.
-    *is_using_error_control = false;
-    events_and_triggers.for_each_event([&](const auto& event) {
-      if (*is_using_error_control) {
-        return;
-      }
-      if (const auto* const change_slab_size =
-              dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
-        change_slab_size->for_each_step_chooser(
-            [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
-              if (*is_using_error_control) {
-                return;
-              }
-              if (dynamic_cast<const ::StepChoosers::ErrorControl_detail::
-                                   IsAnErrorControl*>(&step_chooser) !=
-                  nullptr) {
-                *is_using_error_control = true;
-              }
-            });
-      }
-    });
-  }
-};
-
-/// \ingroup TimeGroup
-/// \brief A tag that contains the error tolerances if the
-/// `ErrorControl` step chooser is one of the option-created `Event`s.
-template <typename EvolvedVariableTag, bool LocalTimeStepping>
-struct StepperErrorTolerancesCompute
-    : db::ComputeTag,
-      StepperErrorTolerances<EvolvedVariableTag> {
-  using base = StepperErrorTolerances<EvolvedVariableTag>;
-  using return_type = typename base::type;
-  using argument_tags = tmpl::conditional_t<
-      LocalTimeStepping,
-      tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<::TimeStepper>,
-                 ::Tags::VariableOrderAlgorithm>,
-      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
-
-  // local time stepping
-  static void function(
-      const gsl::not_null<::StepperErrorTolerances*> tolerances,
-      const std::vector<
-          std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
-          step_choosers,
-      const ::TimeStepper& time_stepper,
-      const ::VariableOrderAlgorithm& variable_order_algorithm) {
-    *tolerances = ::StepperErrorTolerances{};
-    for (const auto& step_chooser : step_choosers) {
-      set_tolerances_if_error_control(tolerances, *step_chooser);
-    }
-    // Error-based variable-order requires some variable to be
-    // controlled using error control, but in a split-variable system
-    // a different variable might be controlled, so no control on this
-    // variable is not an error.
-    if (tolerances->estimates != ::StepperErrorTolerances::Estimates::None and
-        variants::holds_alternative<TimeSteppers::Tags::VariableOrder>(
-            time_stepper.order())) {
-      tolerances->estimates = std::max(
-          tolerances->estimates, variable_order_algorithm.required_estimates());
-    }
-  }
-
-  // global time stepping
-  static void function(
-      const gsl::not_null<::StepperErrorTolerances*> tolerances,
-      const ::EventsAndTriggers& events_and_triggers) {
-    *tolerances = ::StepperErrorTolerances{};
-    // In principle the slab size could be changed based on a dense
-    // trigger, but it's not clear that there is ever a good reason to
-    // do so, and it wouldn't make sense to use error control in that
-    // context in any case.
-    events_and_triggers.for_each_event([&](const auto& event) {
-      if (const auto* const change_slab_size =
-              dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
-        change_slab_size->for_each_step_chooser(
-            [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
-              set_tolerances_if_error_control(tolerances, step_chooser);
-            });
-      }
-    });
-  }
-
- private:
-  template <typename StepChooserUse>
-  static void set_tolerances_if_error_control(
-      const gsl::not_null<::StepperErrorTolerances*> tolerances,
-      const StepChooser<StepChooserUse>& step_chooser) {
-    if (const auto* const error_control =
-            dynamic_cast<const ::StepChoosers::ErrorControl_detail::
-                             ErrorControlBase<EvolvedVariableTag>*>(
-                &step_chooser);
-        error_control != nullptr) {
-      const auto this_tolerances = error_control->tolerances();
-      if (tolerances->estimates != ::StepperErrorTolerances::Estimates::None and
-          *tolerances != this_tolerances) {
-        ERROR_NO_TRACE("All ErrorControl events for "
-                       << db::tag_name<EvolvedVariableTag>()
-                       << " must use the same tolerances.");
-      }
-      *tolerances = this_tolerances;
-    }
-  }
-};
-}  // namespace Tags

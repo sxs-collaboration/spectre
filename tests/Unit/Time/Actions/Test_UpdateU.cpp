@@ -22,7 +22,7 @@
 #include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
-#include "Time/Tags/IsUsingTimeSteppingErrorControl.hpp"
+#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/Tags/TimeStep.hpp"
@@ -69,7 +69,7 @@ struct Component {
   using simple_tags =
       tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
                  Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                 ::Tags::IsUsingTimeSteppingErrorControl, Var,
+                 ::Tags::StepperErrorEstimatesEnabled, Var,
                  Tags::HistoryEvolvedVariables<Var>, AlternativeVar,
                  Tags::HistoryEvolvedVariables<AlternativeVar>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
@@ -110,7 +110,7 @@ void test_integration() {
       db::create<db::AddSimpleTags<
                      Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
                      Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                     ::Tags::IsUsingTimeSteppingErrorControl, Var, history_tag,
+                     ::Tags::StepperErrorEstimatesEnabled, Var, history_tag,
                      AlternativeVar, alternative_history_tag>,
                  time_stepper_ref_tags<TimeStepper>>(
           std::move(time_stepper), initial_id,
@@ -204,7 +204,7 @@ void test_stepper_error() {
   auto box = db::create<
       db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>,
                         Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                        Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl,
+                        Tags::TimeStep, ::Tags::StepperErrorEstimatesEnabled,
                         ::Tags::StepperErrorTolerances<variables_tag>,
                         variables_tag, history_tag,
                         Tags::StepperErrors<variables_tag>>,
@@ -310,12 +310,12 @@ void test_errors_for_restart() {
     const auto time_step = slab.duration() * step_fraction;
 
     auto box = db::create<
-        db::AddSimpleTags<
-            Tags::ConcreteTimeStepper<TimeStepper>, Tags::TimeStepId,
-            Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-            ::Tags::IsUsingTimeSteppingErrorControl,
-            ::Tags::StepperErrorTolerances<variables_tag>, variables_tag,
-            history_tag, Tags::StepperErrors<variables_tag>>,
+        db::AddSimpleTags<Tags::ConcreteTimeStepper<TimeStepper>,
+                          Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+                          Tags::TimeStep, ::Tags::StepperErrorEstimatesEnabled,
+                          ::Tags::StepperErrorTolerances<variables_tag>,
+                          variables_tag, history_tag,
+                          Tags::StepperErrors<variables_tag>>,
         time_stepper_ref_tags<TimeStepper>>(
         std::move(time_stepper), initial_id,
         time_stepper->next_time_id(initial_id, time_step), time_step, true,
