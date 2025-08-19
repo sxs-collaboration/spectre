@@ -48,6 +48,8 @@
 namespace LinearSolver {
 namespace OptionTags {
 
+/// Options for building the explicit matrix representation of the linear
+/// operator.
 struct BuildMatrixOptionsGroup {
   static std::string name() { return "BuildMatrix"; }
   static constexpr Options::String help = {
@@ -57,6 +59,7 @@ struct BuildMatrixOptionsGroup {
       "solve the elliptic problem (that should happen iteratively)."};
 };
 
+/// Subfile name in the volume data H5 files where the matrix will be stored.
 struct MatrixSubfileName {
   using type = Options::Auto<std::string, Options::AutoLabel::None>;
   using group = BuildMatrixOptionsGroup;
@@ -69,6 +72,7 @@ struct MatrixSubfileName {
       "component."};
 };
 
+/// Option for enabling direct solve of the linear problem.
 struct EnableDirectSolve {
   using type = bool;
   using group = BuildMatrixOptionsGroup;
@@ -77,6 +81,7 @@ struct EnableDirectSolve {
       "This can be unfeasible if the linear problem is too big."};
 };
 
+/// Option for skipping resets of the built matrix.
 struct SkipResets {
   using type = bool;
   using group = BuildMatrixOptionsGroup;
@@ -120,6 +125,7 @@ struct Matrix : db::SimpleTag {
   using type = blaze::CompressedMatrix<ValueType>;
 };
 
+/// Option for enabling direct solve of the linear problem.
 struct EnableDirectSolve : db::SimpleTag {
   using type = bool;
   using option_tags = tmpl::list<OptionTags::EnableDirectSolve>;
@@ -127,6 +133,7 @@ struct EnableDirectSolve : db::SimpleTag {
   static type create_from_options(const type& value) { return value; }
 };
 
+/// Option for skipping resets of the built matrix.
 struct SkipResets : db::SimpleTag {
   using type = bool;
   using option_tags = tmpl::list<OptionTags::SkipResets>;
