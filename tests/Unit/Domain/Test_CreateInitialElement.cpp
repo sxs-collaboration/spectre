@@ -40,8 +40,8 @@ void test_create_initial_element(
     const DirectionMap<2, Neighbors<2>>& expected_neighbors,
     const std::array<domain::Topology, 2>& topologies =
         domain::topologies::hypercube<2>) {
-  const auto created_element = domain::Initialization::create_initial_element(
-      element_id, blocks, refinement_levels);
+  const auto created_element =
+      domain::create_initial_element(element_id, blocks, refinement_levels);
   const Element<2> expected_element{element_id, expected_neighbors, topologies};
   CHECK(created_element == expected_element);
 }
@@ -72,8 +72,7 @@ void test_h_refinement() {
           {{1, 1, 1}}, neighbor_refinement};
 
       const auto refined_neighbors =
-          domain::Initialization::create_initial_element(self_id, blocks,
-                                                         refinement_levels)
+          domain::create_initial_element(self_id, blocks, refinement_levels)
               .neighbors()
               .at(neighbor_direction)
               .ids();

@@ -138,16 +138,16 @@ void test_compute_face_coordinates_grid() {
         initial_refinements, quadrature, domain, excision_sphere);
 
     for (const auto& element_id : element_ids) {
-      const auto element = domain::Initialization::create_initial_element(
-          element_id, blocks, initial_refinements);
+      const auto element = domain::create_initial_element(element_id, blocks,
+                                                          initial_refinements);
       const auto& my_block = blocks.at(element_id.block_id());
       const ElementMap element_map(
           element_id, my_block.stationary_map().get_to_grid_frame());
-      const auto mesh_1 = domain::Initialization::create_initial_mesh(
-          initial_extents_1, element, quadrature);
+      const auto mesh_1 =
+          domain::create_initial_mesh(initial_extents_1, element, quadrature);
       const auto grid_coords_1 = element_map(logical_coordinates(mesh_1));
-      const auto mesh_2 = domain::Initialization::create_initial_mesh(
-          initial_extents_2, element, quadrature);
+      const auto mesh_2 =
+          domain::create_initial_mesh(initial_extents_2, element, quadrature);
       const auto grid_coords_2 = element_map(logical_coordinates(mesh_2));
 
       auto box =
@@ -212,10 +212,10 @@ void test_compute_face_coordinates() {
       make_not_null(&all_faces_grid_coords), initial_extents,
       initial_refinements, quadrature, domain, excision_sphere);
   for (const auto& element_id : element_ids) {
-    const auto element = domain::Initialization::create_initial_element(
-        element_id, blocks, initial_refinements);
-    const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element, quadrature);
+    const auto element =
+        domain::create_initial_element(element_id, blocks, initial_refinements);
+    const auto mesh =
+        domain::create_initial_mesh(initial_extents, element, quadrature);
     const auto& my_block = blocks.at(element_id.block_id());
     const ElementMap element_map(
         element_id,
@@ -552,10 +552,10 @@ void test_face_quantities_compute() {
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
 
   for (const auto& element_id : element_ids) {
-    const auto element = domain::Initialization::create_initial_element(
-        element_id, blocks, initial_refinements);
-    const auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element, quadrature);
+    const auto element =
+        domain::create_initial_element(element_id, blocks, initial_refinements);
+    const auto mesh =
+        domain::create_initial_mesh(initial_extents, element, quadrature);
     const auto& my_block = blocks.at(element_id.block_id());
     const ElementMap element_map(element_id,
                                  my_block.stationary_map().get_clone());

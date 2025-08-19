@@ -52,11 +52,11 @@ namespace LinearSolver::multigrid {
  * Array elements are created for all element IDs on all grids, meaning they all
  * share the same parallel component, action list etc. Elements are connected to
  * their neighbors _on the same grid_ by the
- * `domain::Initialization::create_initial_element` function (this is
- * independent of the multigrid code, the function is typically called in an
- * initialization action). Elements are connected to their parent and children
- * _across grids_ by the multigrid-tags set here and in the multigrid
- * initialization actions (see `LinearSolver::multigrid::parent_id` and
+ * `domain::create_initial_element` function (this is independent of the
+ * multigrid code, the function is typically called in an initialization
+ * action). Elements are connected to their parent and children _across grids_
+ * by the multigrid-tags set here and in the multigrid initialization actions
+ * (see `LinearSolver::multigrid::parent_id` and
  * `LinearSolver::multigrid::child_ids`).
  *
  * This allocator also creates two sets of sections (see `Parallel::Section`):

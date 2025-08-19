@@ -54,8 +54,7 @@ using MortarMap = DirectionalIdMap<VolumeDim, ValueType>;
 ///
 /// \warning Make sure the two face meshes are oriented the same, i.e.
 /// their dimensions align. This is facilitated by the `orientation`
-/// passed to `domain::Initialization::create_initial_mesh`, for
-/// example.
+/// passed to `domain::create_initial_mesh`, for example.
 template <size_t Dim>
 Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1, const Mesh<Dim>& face_mesh2);
 

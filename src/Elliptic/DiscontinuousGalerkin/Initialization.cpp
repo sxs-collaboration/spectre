@@ -104,10 +104,9 @@ void InitializeGeometry<Dim>::apply(
          "grids, but the chosen quadrature is: "
              << quadrature);
   // Element
-  *element = domain::Initialization::create_initial_element(
-      element_id, domain.blocks(), initial_refinement);
-  *mesh = domain::Initialization::create_initial_mesh(initial_extents, *element,
-                                                      quadrature);
+  *element = domain::create_initial_element(element_id, domain.blocks(),
+                                            initial_refinement);
+  *mesh = domain::create_initial_mesh(initial_extents, *element, quadrature);
   // Neighbor meshes
   for (const auto& [direction, neighbors] : element->neighbors()) {
     for (const auto& neighbor_id : neighbors) {
@@ -115,7 +114,7 @@ void InitializeGeometry<Dim>::apply(
       const auto& orientation = neighbors.orientation(neighbor_id);
       neighbor_meshes->emplace(
           DirectionalId<Dim>{direction, neighbor_id},
-          orientation.inverse_map()(domain::Initialization::create_initial_mesh(
+          orientation.inverse_map()(domain::create_initial_mesh(
               initial_extents, neighbor_block, neighbor_id, quadrature)));
     }
   }

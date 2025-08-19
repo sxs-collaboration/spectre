@@ -22,7 +22,7 @@ enum class Quadrature : uint8_t;
 }  // namespace Spectral
 /// \endcond
 
-namespace domain::Initialization {
+namespace domain {
 /// \ingroup InitializationGroup
 /// \brief Construct the initial Mesh of an Element.
 ///
@@ -51,4 +51,4 @@ Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const Block<Dim>& block, const ElementId<Dim>& element_id,
     Spectral::Quadrature legendre_quadrature);
-}  // namespace domain::Initialization
+}  // namespace domain

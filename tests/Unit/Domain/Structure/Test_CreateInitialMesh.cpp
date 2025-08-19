@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain::Initialization {
+namespace domain {
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
   const ElementId<1> element_id_1d{0};
@@ -142,4 +142,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
           "Splitting Topology::B2Radial is not yet supported"));
 #endif  // SPECTRE_DEBUG
 }
-}  // namespace domain::Initialization
+}  // namespace domain

@@ -107,7 +107,7 @@ struct InitializeElement {
         db::get<::domain::Tags::InitialExtents<1>>(box);
     const auto& domain = db::get<::domain::Tags::Domain<1>>(box);
     const auto& block = domain.blocks()[element_id.block_id()];
-    auto mesh = ::domain::Initialization::create_initial_mesh(
+    auto mesh = ::domain::create_initial_mesh(
         initial_extents, block, element_id,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     const auto logical_coords = logical_coordinates(mesh);

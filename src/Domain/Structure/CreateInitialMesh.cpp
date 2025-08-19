@@ -81,7 +81,7 @@ bool is_radially_refined_b2(const std::array<domain::Topology, Dim>& topologies,
 }
 }  // namespace
 
-namespace domain::Initialization {
+namespace domain {
 template <size_t Dim>
 Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
@@ -102,18 +102,16 @@ Mesh<Dim> create_initial_mesh(
   return {initial_extents[block.id()], make_basis(block.topologies()),
           make_quadrature(block.topologies(), legendre_quadrature)};
 }
-}  // namespace domain::Initialization
+}  // namespace domain
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
-  template Mesh<DIM(data)>                                                   \
-  domain::Initialization::create_initial_mesh<DIM(data)>(                    \
+  template Mesh<DIM(data)> domain::create_initial_mesh<DIM(data)>(           \
       const std::vector<std::array<size_t, DIM(data)>>& initial_extents,     \
       const Element<DIM(data)>& element,                                     \
       const Spectral::Quadrature legendre_quadrature);                       \
-  template Mesh<DIM(data)>                                                   \
-  domain::Initialization::create_initial_mesh<DIM(data)>(                    \
+  template Mesh<DIM(data)> domain::create_initial_mesh<DIM(data)>(           \
       const std::vector<std::array<size_t, DIM(data)>>& initial_extents,     \
       const Block<DIM(data)>& block, const ElementId<DIM(data)>& element_id, \
       const Spectral::Quadrature legendre_quadrature);

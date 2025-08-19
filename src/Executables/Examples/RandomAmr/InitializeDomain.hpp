@@ -63,10 +63,10 @@ struct Domain {
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
       const Spectral::Quadrature& quadrature,
       const ElementId<Dim>& element_id) {
-    *element = ::domain::Initialization::create_initial_element(
-        element_id, domain.blocks(), initial_refinement);
-    *mesh = ::domain::Initialization::create_initial_mesh(initial_extents,
-                                                          *element, quadrature);
+    *element = ::domain::create_initial_element(element_id, domain.blocks(),
+                                                initial_refinement);
+    *mesh =
+        ::domain::create_initial_mesh(initial_extents, *element, quadrature);
   }
 };
 }  // namespace amr::Initialization

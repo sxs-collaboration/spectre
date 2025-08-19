@@ -112,9 +112,8 @@ DataVector vars_cubed_sphere(
     const Domain<3>& domain, const ElementId<3>& neighbor_id,
     const std::vector<std::array<size_t, 3>>& refinement_levels,
     const Mesh<2>& cubed_sphere_mortar_mesh) {
-  const Element<3> cubed_sphere =
-      domain::Initialization::create_initial_element(
-          neighbor_id, domain.blocks(), refinement_levels);
+  const Element<3> cubed_sphere = domain::create_initial_element(
+      neighbor_id, domain.blocks(), refinement_levels);
   const auto xi = interface_logical_coordinates(cubed_sphere_mortar_mesh,
                                                 Direction<3>::upper_zeta());
   const ElementMap<3, Frame::Inertial> cubed_sphere_map{
@@ -158,7 +157,7 @@ void test_non_conforming_spheres() {
       7, std::array{2_st, 2_st, 2_st}};
   refinement_levels[6] = std::array{0_st, 0_st, 0_st};
   const ElementId<3> shell_id{6};
-  const Element<3> shell = domain::Initialization::create_initial_element(
+  const Element<3> shell = domain::create_initial_element(
       shell_id, domain.blocks(), refinement_levels);
   const auto& shell_neighbor_ids =
       shell.neighbors().at(Direction<3>::lower_xi());

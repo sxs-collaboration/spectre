@@ -143,7 +143,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
       domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine3D{affine_map, affine_map, affine_map}),
       0, {}));
-  const auto element = domain::Initialization::create_initial_element(
+  const auto element = domain::create_initial_element(
       ElementId<3>{0, {SegmentId{2, 2}, SegmentId{2, 2}, SegmentId{2, 2}}},
       blocks,
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
