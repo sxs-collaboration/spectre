@@ -70,7 +70,7 @@ class CriterionOne : public amr::Criterion {
 
   std::string observation_name() override { return "CriterionOne"; }
 
-  using compute_tags_for_observartion_box = tmpl::list<>;
+  using compute_tags_for_observation_box = tmpl::list<>;
   using argument_tags = tmpl::list<FieldOne>;
 
   template <typename Metavariables>
@@ -116,7 +116,7 @@ class CriterionTwo : public amr::Criterion {
 
   std::string observation_name() override { return "CriterionTwo"; }
 
-  using compute_tags_for_observartion_box = tmpl::list<ConstraintCompute>;
+  using compute_tags_for_observation_box = tmpl::list<ConstraintCompute>;
   using argument_tags = tmpl::list<Constraint>;
 
   template <typename Metavariables>
