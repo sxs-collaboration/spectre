@@ -128,7 +128,8 @@ void test_impl(
   ActionTesting::emplace_component_and_initialize<component<metavars>>(
       &runner, element.id(),
       {time_step_id, next_time_step_id, element,
-       domain::create_initial_mesh(initial_extents, element, quadrature),
+       domain::create_initial_mesh(initial_extents, element,
+                                   Spectral::Basis::Legendre, quadrature),
        neighbor_mesh});
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

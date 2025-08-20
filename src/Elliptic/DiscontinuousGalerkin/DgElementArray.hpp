@@ -24,6 +24,8 @@
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/DomainDiagnosticInfo.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -77,6 +79,7 @@ struct DefaultElementsAllocator
         Parallel::get_parallel_component<ParallelComponent>(local_cache);
     const auto& initial_extents =
         get<domain::Tags::InitialExtents<Dim>>(initialization_items);
+    const auto basis = Spectral::Basis::Legendre;
     const auto& quadrature =
         Parallel::get<elliptic::dg::Tags::Quadrature>(local_cache);
 
@@ -100,7 +103,7 @@ struct DefaultElementsAllocator
       const std::unordered_map<ElementId<Dim>, double> element_costs =
           domain::get_element_costs(blocks, initial_refinement_levels,
                                     initial_extents, element_weight.value(),
-                                    quadrature);
+                                    basis, quadrature);
       element_distribution = domain::BlockZCurveProcDistribution<Dim>{
           element_costs,   num_of_procs_to_use,
           blocks,          initial_refinement_levels,

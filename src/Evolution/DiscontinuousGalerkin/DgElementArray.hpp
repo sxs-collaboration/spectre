@@ -21,6 +21,8 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/ArrayCollection/CreateElementsUsingDistribution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -119,7 +121,8 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
           initialization_items);
   const auto& initial_extents =
       get<domain::Tags::InitialExtents<volume_dim>>(initialization_items);
-  const auto& quadrature =
+  const auto i1_basis = Spectral::Basis::Legendre;
+  const auto& i1_quadrature =
       get<evolution::dg::Tags::Quadrature>(initialization_items);
   const std::optional<domain::ElementWeight>& element_weight =
       Parallel::get<domain::Tags::ElementDistribution>(local_cache);
@@ -138,7 +141,7 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
             .insert(global_cache, initialization_items, target_proc);
       },
       element_weight, blocks, initial_extents, initial_refinement_levels,
-      quadrature,
+      i1_basis, i1_quadrature,
 
       procs_to_ignore, number_of_procs, number_of_nodes, num_of_procs_to_use,
       local_cache, true);

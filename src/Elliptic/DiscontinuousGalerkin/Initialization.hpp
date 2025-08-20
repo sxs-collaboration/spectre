@@ -126,7 +126,7 @@ struct InitializeGeometry {
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
       const Domain<Dim>& domain,
       const domain::FunctionsOfTimeMap& functions_of_time,
-      Spectral::Quadrature quadrature, const ElementId<Dim>& element_id);
+      Spectral::Quadrature i1_quadrature, const ElementId<Dim>& element_id);
 };
 
 template <size_t Dim>

@@ -24,6 +24,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Structure/ZCurve.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -60,11 +61,11 @@ double get_num_points_and_grid_spacing_cost(
     const ElementId<Dim>& element_id, const std::vector<Block<Dim>>& blocks,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
-    const Spectral::Quadrature quadrature) {
+    const Spectral::Basis i1_basis, const Spectral::Quadrature i1_quadrature) {
   const Element<Dim> element = ::domain::create_initial_element(
       element_id, blocks, initial_refinement_levels);
-  const Mesh<Dim> mesh =
-      ::domain::create_initial_mesh(initial_extents, element, quadrature);
+  const Mesh<Dim> mesh = ::domain::create_initial_mesh(initial_extents, element,
+                                                       i1_basis, i1_quadrature);
   const ElementMap<Dim, Frame::Grid> element_map{element_id,
                                                  blocks[element_id.block_id()]};
   const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords =
@@ -97,7 +98,8 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementWeight element_weight,
-    const std::optional<Spectral::Quadrature>& quadrature) {
+    const std::optional<Spectral::Basis>& i1_basis,
+    const std::optional<Spectral::Quadrature>& i1_quadrature) {
   std::unordered_map<ElementId<Dim>, double> element_costs{};
 
   for (size_t block_number = 0; block_number < blocks.size(); block_number++) {
@@ -116,15 +118,16 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
       } else {
         ASSERT(element_weight == ElementWeight::NumGridPointsAndGridSpacing,
                "Unknown element_weight");
-        ASSERT(quadrature.has_value(),
+        ASSERT(i1_basis.has_value() and i1_quadrature.has_value(),
                "Since element_weight is "
-               "ElementWeight::NumGridPointsAndGridSpacing, quadrature must "
-               "have a value");
+               "ElementWeight::NumGridPointsAndGridSpacing, i1_basis and "
+               "i1_quadrature must have values");
 
         element_costs.insert(
-            {element_id, get_num_points_and_grid_spacing_cost(
-                             element_id, blocks, initial_refinement_levels,
-                             initial_extents, quadrature.value())});
+            {element_id,
+             get_num_points_and_grid_spacing_cost(
+                 element_id, blocks, initial_refinement_levels, initial_extents,
+                 i1_basis.value(), i1_quadrature.value())});
       }
     }
   }
@@ -328,7 +331,7 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
       const std::vector<std::array<size_t, GET_DIM(data)>>&                  \
           initial_refinement_levels,                                         \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
-      Spectral::Quadrature quadrature);                                      \
+      Spectral::Basis i1_basis, Spectral::Quadrature i1_quadrature);         \
   template std::unordered_map<ElementId<GET_DIM(data)>, double>              \
   get_element_costs(                                                         \
       const std::vector<Block<GET_DIM(data)>>& blocks,                       \
@@ -336,7 +339,8 @@ size_t BlockZCurveProcDistribution<Dim>::get_proc_for_element(
           initial_refinement_levels,                                         \
       const std::vector<std::array<size_t, GET_DIM(data)>>& initial_extents, \
       ElementWeight element_weight,                                          \
-      const std::optional<Spectral::Quadrature>& quadrature);
+      const std::optional<Spectral::Basis>& i1_basis,                        \
+      const std::optional<Spectral::Quadrature>& i1_quadrature);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

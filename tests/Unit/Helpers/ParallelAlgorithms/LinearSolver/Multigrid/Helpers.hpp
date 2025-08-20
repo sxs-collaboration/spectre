@@ -23,6 +23,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/String.hpp"
@@ -108,7 +109,7 @@ struct InitializeElement {
     const auto& domain = db::get<::domain::Tags::Domain<1>>(box);
     const auto& block = domain.blocks()[element_id.block_id()];
     auto mesh = ::domain::create_initial_mesh(
-        initial_extents, block, element_id,
+        initial_extents, block, element_id, Spectral::Basis::Legendre,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     const auto logical_coords = logical_coordinates(mesh);
     const ElementMap<1, Frame::Inertial> element_map{

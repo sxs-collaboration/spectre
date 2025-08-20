@@ -19,6 +19,7 @@
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -110,6 +111,7 @@ struct ElementsAllocator
         get<Tags::ChildrenRefinementLevels<Dim>>(initialization_items);
     auto& parent_refinement_levels =
         get<Tags::ParentRefinementLevels<Dim>>(initialization_items);
+    const auto basis = Spectral::Basis::Legendre;
     const auto& quadrature =
         Parallel::get<elliptic::dg::Tags::Quadrature>(local_cache);
     const std::optional<domain::ElementWeight>& element_weight =
@@ -186,7 +188,7 @@ struct ElementsAllocator
         const std::unordered_map<ElementId<Dim>, double> element_costs =
             domain::get_element_costs(blocks, initial_refinement_levels,
                                       initial_extents, element_weight.value(),
-                                      quadrature);
+                                      basis, quadrature);
         const domain::BlockZCurveProcDistribution<Dim> element_distribution{
             element_costs,   num_of_procs_to_use,
             blocks,          initial_refinement_levels,
