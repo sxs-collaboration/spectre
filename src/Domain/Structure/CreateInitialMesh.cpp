@@ -41,6 +41,13 @@ std::array<Spectral::Basis, Dim> make_basis(
         [[fallthrough]];
       case (domain::Topology::B2Angular):
         return Spectral::Basis::ZernikeB2;
+      // NOLINTNEXTLINE(bugprone-branch-clone)
+      case (domain::Topology::B3Radial):
+        [[fallthrough]];
+      case (domain::Topology::B3Colatitude):
+        [[fallthrough]];
+      case (domain::Topology::B3Longitude):
+        return Spectral::Basis::ZernikeB3;
       default:
         ERROR("Invalid topology");
     }
@@ -66,11 +73,17 @@ std::array<Spectral::Quadrature, Dim> make_quadrature(
             [[fallthrough]];
           case (domain::Topology::S2Longitude):
             [[fallthrough]];
+          case (domain::Topology::B3Longitude):
+            [[fallthrough]];
           case (domain::Topology::B2Angular):
             return Spectral::Quadrature::Equiangular;
           case (domain::Topology::S2Colatitude):
+            [[fallthrough]];
+          case (domain::Topology::B3Colatitude):
             return Spectral::Quadrature::Gauss;
           case (domain::Topology::B2Radial):
+            [[fallthrough]];
+          case (domain::Topology::B3Radial):
             return Spectral::Quadrature::GaussRadauUpper;
           default:
             ERROR("Invalid topology");

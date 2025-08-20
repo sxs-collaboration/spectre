@@ -114,7 +114,8 @@ block_logical_coordinates_single_point(
   for (size_t d = 0; d < Dim; ++d) {
     const auto topology = gsl::at(block.topologies(), d);
     if (topology == domain::Topology::I1 or
-        topology == domain::Topology::B2Radial) {
+        topology == domain::Topology::B2Radial or
+        topology == domain::Topology::B3Radial) {
       // Map inverses may report logical coordinates outside [-1, 1] due to
       // numerical roundoff error. In that case we clamp them to -1 or 1 so
       // that a consistent block is chosen here independent of roundoff error.

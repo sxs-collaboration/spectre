@@ -31,6 +31,16 @@ std::array<domain::Topology, VolumeDim - 1> boundary_topologies(
       }
     }
   }
+  if (gsl::at(topologies, dim) == domain::Topology::B3Radial) {
+    for (size_t d = 0; d < VolumeDim - 1; ++d) {
+      if (gsl::at(result, d) == domain::Topology::B3Colatitude) {
+        gsl::at(result, d) = domain::Topology::S2Colatitude;
+      }
+      if (gsl::at(result, d) == domain::Topology::B3Longitude) {
+        gsl::at(result, d) = domain::Topology::S2Longitude;
+      }
+    }
+  }
   return result;
 }
 }  // namespace

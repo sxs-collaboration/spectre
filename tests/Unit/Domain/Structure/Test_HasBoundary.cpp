@@ -15,9 +15,13 @@ void test() {
     CHECK_FALSE(domain::has_boundary(domain::Topology::S2Colatitude, side));
     CHECK_FALSE(domain::has_boundary(domain::Topology::S2Longitude, side));
     CHECK_FALSE(domain::has_boundary(domain::Topology::B2Angular, side));
+    CHECK_FALSE(domain::has_boundary(domain::Topology::B3Colatitude, side));
+    CHECK_FALSE(domain::has_boundary(domain::Topology::B3Longitude, side));
   }
   CHECK_FALSE(domain::has_boundary(domain::Topology::B2Radial, Side::Lower));
   CHECK(domain::has_boundary(domain::Topology::B2Radial, Side::Upper));
+  CHECK_FALSE(domain::has_boundary(domain::Topology::B3Radial, Side::Lower));
+  CHECK(domain::has_boundary(domain::Topology::B3Radial, Side::Upper));
 }
 }  // namespace
 

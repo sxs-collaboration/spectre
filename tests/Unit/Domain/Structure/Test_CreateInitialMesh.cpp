@@ -165,6 +165,44 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
       }
     }
   }
+  {
+    INFO("spheriical_shell");
+    const Element<3> spherical_shell(element_id_3d, {},
+                                     domain::topologies::spherical_shell);
+    for (const auto& i1_basis :
+         {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+      for (const auto& i1_quadrature :
+           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+        CHECK(create_initial_mesh({{{3, 2, 4}}}, spherical_shell, i1_basis,
+                                  i1_quadrature) ==
+              Mesh<3>{{{3, 2, 4}},
+                      std::array{i1_basis, Spectral::Basis::SphericalHarmonic,
+                                 Spectral::Basis::SphericalHarmonic},
+                      std::array{i1_quadrature, Spectral::Quadrature::Gauss,
+                                 Spectral::Quadrature::Equiangular}});
+      }
+    }
+  }
+  {
+    INFO("full_sphere");
+    const Block<3> full_sphere(nullptr, 0, {}, "",
+                               domain::topologies::full_sphere);
+    for (const auto& i1_basis :
+         {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+      for (const auto& i1_quadrature :
+           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+        CHECK(create_initial_mesh({{{3, 2, 4}}}, full_sphere, element_id_3d,
+                                  i1_basis, i1_quadrature) ==
+              Mesh<3>{{{3, 2, 4}},
+                      std::array{Spectral::Basis::ZernikeB3,
+                                 Spectral::Basis::ZernikeB3,
+                                 Spectral::Basis::ZernikeB3},
+                      std::array{Spectral::Quadrature::GaussRadauUpper,
+                                 Spectral::Quadrature::Gauss,
+                                 Spectral::Quadrature::Equiangular}});
+      }
+    }
+  }
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       create_initial_mesh(
