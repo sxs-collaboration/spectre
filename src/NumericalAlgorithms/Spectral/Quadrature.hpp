@@ -52,7 +52,7 @@ namespace Spectral {
  *
  * \note When using Basis::ZernikeB3 in consecutive dimensions, choose
  * `GaussRadauUpper` for the first dimension, `Gauss` for the second dimension,
- * and `Equiangular` in the second dimension.
+ * and `Equiangular` in the third dimension.
  *
  * \remark We store these effectively as a 4-bit integer using the lowest 4
  * bits of a uint8_t. Unlike Basis, this does not need a bitshift. We cannot
