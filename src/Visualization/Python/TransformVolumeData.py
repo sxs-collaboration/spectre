@@ -222,30 +222,31 @@ def parse_kernel_arg(
         return ElementArg("mesh")
     elif arg.annotation in ElementId.values():
         return ElementArg("id")
-    elif arg.name in ["logical_coords", "logical_coordinates"]:
+    elif (
+        arg.name.endswith("_coords")
+        or arg.name.endswith("_coordinates")
+        or arg.name == "x"
+    ):
+        if arg.name == "x":
+            coords_name = "inertial_coordinates"
+        else:
+            coords_name = arg.name.replace("_coords", "_coordinates")
+        expected_frame = {
+            "logical": Frame.ElementLogical,
+            "grid": Frame.Grid,
+            "distorted": Frame.Distorted,
+            "inertial": Frame.Inertial,
+        }[coords_name.split("_")[0]]
         assert arg.annotation in [
-            tnsr.I[DataVector, 1, Frame.ElementLogical],
-            tnsr.I[DataVector, 2, Frame.ElementLogical],
-            tnsr.I[DataVector, 3, Frame.ElementLogical],
+            tnsr.I[DataVector, 1, expected_frame],
+            tnsr.I[DataVector, 2, expected_frame],
+            tnsr.I[DataVector, 3, expected_frame],
         ], (
             f"Argument '{arg.name}' has unexpected type "
             f"'{arg.annotation}'. Expected a "
-            "'tnsr.I[DataVector, Dim, Frame.ElementLogical]' "
-            "for logical coordinates."
+            f"'tnsr.I[DataVector, Dim, Frame.{expected_frame}]'."
         )
-        return ElementArg("logical_coordinates")
-    elif arg.name in ["inertial_coords", "inertial_coordinates", "x"]:
-        assert arg.annotation in [
-            tnsr.I[DataVector, 1, Frame.Inertial],
-            tnsr.I[DataVector, 2, Frame.Inertial],
-            tnsr.I[DataVector, 3, Frame.Inertial],
-        ], (
-            f"Argument '{arg.name}' has unexpected type "
-            f"'{arg.annotation}'. Expected a "
-            "'tnsr.I[DataVector, Dim, Frame.Inertial]' "
-            "for inertial coordinates."
-        )
-        return ElementArg("inertial_coordinates")
+        return ElementArg(coords_name)
     elif arg.annotation in [
         Jacobian[DataVector, 1],
         Jacobian[DataVector, 2],
@@ -377,7 +378,8 @@ class Kernel:
     def __init__(
         self,
         callable,
-        output_name: Optional[str],
+        args: Optional[Sequence[KernelArg]] = None,
+        output_name: Optional[str] = None,
         map_input_names: Dict[str, str] = {},
         elementwise: Optional[bool] = None,
         interactive: bool = False,
@@ -392,6 +394,8 @@ class Kernel:
             types. The function should return a single tensor, a dictionary that
             maps dataset names to tensors, or one of the other supported types
             listed in the 'parse_kernel_output' function.
+          args: Optional list of kernel arguments (KernelArg objects). If
+            unspecified, the arguments will be parsed from the 'callable'.
           output_name: Name of the output dataset. Output names for multiple
             datasets can be specified by returning a 'Dict[str, Tensor]' from
             the 'callable' and setting the 'output_name' to None.
@@ -404,46 +408,51 @@ class Kernel:
             binding.
         """
         self.callable = callable
-        # Parse function arguments
-        try:
-            # Try to parse as native Python function
-            signature = inspect.signature(callable)
-        except ValueError:
-            # Try to parse as pybind11 binding
-            overloads = list(parse_pybind11_signatures(callable))
-            # The function may have multiple overloads. Prompt the user to
-            # select one.
-            if len(overloads) == 1:
-                signature = overloads[0]
-            elif interactive:
-                rich.print(
-                    "Available overloads:\n"
-                    + "\n".join(
-                        [
-                            re.sub(
-                                r"spectre\.\S*\._Pybindings\.",
-                                "",
-                                f"{i + 1}. {callable.__name__}{overload}",
-                            )
-                            for i, overload in enumerate(overloads)
-                        ]
+        if args is None:
+            # Parse function arguments
+            try:
+                # Try to parse as native Python function
+                signature = inspect.signature(callable)
+            except ValueError:
+                # Try to parse as pybind11 binding
+                overloads = list(parse_pybind11_signatures(callable))
+                # The function may have multiple overloads. Prompt the user to
+                # select one.
+                if len(overloads) == 1:
+                    signature = overloads[0]
+                elif interactive:
+                    rich.print(
+                        "Available overloads:\n"
+                        + "\n".join(
+                            [
+                                re.sub(
+                                    r"spectre\.\S*\._Pybindings\.",
+                                    "",
+                                    f"{i + 1}. {callable.__name__}{overload}",
+                                )
+                                for i, overload in enumerate(overloads)
+                            ]
+                        )
                     )
-                )
-                signature = overloads[
-                    click.prompt(
-                        f"Select an overload (1 - {len(overloads)})", type=int
+                    signature = overloads[
+                        click.prompt(
+                            f"Select an overload (1 - {len(overloads)})",
+                            type=int,
+                        )
+                        - 1
+                    ]
+                else:
+                    raise ValueError(
+                        f"Function '{callable.__name__}' has multiple"
+                        " overloads. Wrap it in a Python function to select an"
+                        " overload."
                     )
-                    - 1
-                ]
-            else:
-                raise ValueError(
-                    f"Function '{callable.__name__}' has multiple overloads. "
-                    "Wrap it in a Python function to select an overload."
-                )
-        self.args = [
-            parse_kernel_arg(arg, map_input_names, interactive=interactive)
-            for arg in signature.parameters.values()
-        ]
+            self.args = [
+                parse_kernel_arg(arg, map_input_names, interactive=interactive)
+                for arg in signature.parameters.values()
+            ]
+        else:
+            self.args = args
         # If any argument is not a Tensor then we have to call the kernel
         # elementwise
         if elementwise:
@@ -717,6 +726,14 @@ def parse_kernels(kernels, exec_files, map_input_names, interactive=False):
                 map_input_names=map_input_names,
                 interactive=interactive,
             )
+        elif kernel.startswith("Element:"):
+            attr_name = kernel[len("Element:") :]
+            yield Kernel(
+                lambda x: x,
+                args=[ElementArg(attr_name)],
+                output_name=snake_case_to_camel_case(attr_name),
+                interactive=interactive,
+            )
         else:
             # Only a function name was specified. Look up in 'globals()'.
             yield Kernel(
@@ -872,6 +889,8 @@ def transform_volume_data_command(
     - 'spectre.Spectral.Mesh3D:extents'
     - 'spectre.NumericalAlgorithms.LinearOperators:relative_truncation_error'
       and 'absolute_truncation_error'
+    - Coordinates in different frames like 'Element:grid_coordinates' or
+      'Element:distorted_coordinates'
 
     ## Input and output dataset names
 
