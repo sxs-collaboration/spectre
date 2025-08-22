@@ -34,6 +34,7 @@ set(LIBRARY_SOURCES
   Test_SliceIterator.cpp
   Test_SliceTensorToVariables.cpp
   Test_SliceVariables.cpp
+  Test_SparseMatrixFiller.cpp
   Test_SpinWeighted.cpp
   Test_StaticDeque.cpp
   Test_StripeIterator.cpp
