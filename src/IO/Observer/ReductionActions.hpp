@@ -632,7 +632,7 @@ struct WriteReductionData {
       if constexpr (not std::is_same_v<Formatter, NoFormatter>) {
         if (formatter.has_value()) {
           Parallel::printf(
-              std::apply(*formatter, received_reduction_data.data()) + "\n");
+              std::apply(*formatter, received_reduction_data.data()));
         }
       }
       ReductionActions_detail::write_data(

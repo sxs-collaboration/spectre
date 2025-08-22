@@ -103,7 +103,7 @@ struct MinGridSpacingFormatter
   std::string operator()(const double time, const double min_grid_spacing) {
     return "Time: " + get_output(time) +
            ", Global inertial minimum grid spacing: " +
-           get_output(min_grid_spacing);
+           get_output(min_grid_spacing) + "\n";
   }
   void pup(PUP::er& /*p*/) {}
 };
