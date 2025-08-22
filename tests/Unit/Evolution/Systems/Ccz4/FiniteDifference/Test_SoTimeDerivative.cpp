@@ -27,6 +27,7 @@
 #include "Evolution/Systems/Ccz4/DerivChristoffel.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/Derivatives.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/SoTimeDerivative.hpp"
+#include "Evolution/Systems/Ccz4/FiniteDifference/System.hpp"
 #include "Evolution/Systems/Ccz4/System.hpp"
 #include "Evolution/Systems/Ccz4/Tags.hpp"
 #include "Framework/TestCreation.hpp"
@@ -101,7 +102,7 @@ void test_minkowski() {
       compute_prim_solution_for_Minkowski(x);
 
   // get other parameters
-  const double f = 0.1;
+  const double f = Ccz4::fd::System::f;
   const double kappa_1 = 0.1;
   const double kappa_2 = 0.3;
   const double kappa_3 = 0.4;
@@ -195,7 +196,7 @@ void test_kerrschild() {
   const std::array<double, SpatialDim> center{{0.2, 0.5, 0.1}};
   const gr::Solutions::KerrSchild solution(mass, spin, center);
 
-  const double f = 0.75;
+  const double f = Ccz4::fd::System::f;
   const double kappa_1 = 0.1;
   const double kappa_2 = 0.3;
   const double kappa_3 = 0.4;
@@ -364,7 +365,7 @@ void test_gauge_plane_wave(
                                                intermediate_sol);
 
   // get other parameters
-  const double f = 0.75;
+  const double f = Ccz4::fd::System::f;
   const double kappa_1 = 0.1;
   const double kappa_2 = 0.3;
   const double kappa_3 = 0.4;

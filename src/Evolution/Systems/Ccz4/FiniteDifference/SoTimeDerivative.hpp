@@ -172,7 +172,7 @@ static void apply(
     const tnsr::i<DataVector, Dim>& d_trace_extrinsic_curvature,
     const tnsr::i<DataVector, Dim>& d_theta,
     const tnsr::iJ<DataVector, Dim>& d_gamma_hat,
-    const tnsr::iJ<DataVector, Dim>& d_b) {
+    const tnsr::iJ<DataVector, Dim>& d_b, const bool shifting_shift) {
   constexpr double one_third = 1.0 / 3.0;
 
   // quantities we need for computing eq 4, 13 - 27
@@ -401,8 +401,12 @@ static void apply(
                                     lapse());
 
   // time derivative of the shift
-  ::tenex::evaluate<ti::I>(dt_shift,
-                           f * b(ti::I) + shift(ti::K) * field_b(ti::k, ti::I));
+  ::tenex::evaluate<ti::I>(dt_shift, f * b(ti::I));
+
+  if (shifting_shift) {
+    ::tenex::update<ti::I>(
+        dt_shift, (*dt_shift)(ti::I) + shift(ti::K) * field_b(ti::k, ti::I));
+  }
 
   // time derivative of the the conformal factor
   ::tenex::evaluate(dt_conformal_factor,
@@ -499,9 +503,13 @@ static void apply(
                                  (*contracted_symmetrized_d_field_b)(ti::k));
 
   // time derivative b^i
-  ::tenex::evaluate<ti::I>(
-      dt_b, (*dt_gamma_hat)(ti::I)-eta() * b(ti::I) +
-                shift(ti::K) * (d_b(ti::k, ti::I) - d_gamma_hat(ti::k, ti::I)));
+  ::tenex::evaluate<ti::I>(dt_b, (*dt_gamma_hat)(ti::I)-eta() * b(ti::I));
+
+  if (shifting_shift) {
+    ::tenex::update<ti::I>(
+        dt_b, (*dt_b)(ti::I) + shift(ti::K) * (d_b(ti::k, ti::I) -
+                                               d_gamma_hat(ti::k, ti::I)));
+  }
 
   // Note that, we do not need to evolve the auxiliary variables in SO-CCZ4.
 }
@@ -680,12 +688,13 @@ void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   const double c = 1.0;               // c = 1.0 in SO-CCZ4
   const double cleaning_speed = 1.0;  // e in the paper; e = 1.0 for SO-CCZ4
   const Scalar<DataVector>& eta = get<Tags::Eta<DataVector>>(*box);
-  const double f = get<Tags::GammaDriverParam>(*box);
+  const double f = Ccz4::fd::System::f;
   const Scalar<DataVector>& k_0 = get<Tags::K0<DataVector>>(*box);
   const double kappa_1 = get<Tags::Kappa1>(*box);
   const double kappa_2 = get<Tags::Kappa2>(*box);
   const double kappa_3 = get<Tags::Kappa3>(*box);
   const double one_over_relaxation_time = 0.0;  // \tau^{-1} = 0 in SO-CCZ4
+  const bool shifting_shift = Ccz4::fd::System::shifting_shift;
 
   // we assume the databox already has tags corresponding to dt of the evolved
   // variables
@@ -855,7 +864,8 @@ void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
                 cell_centered_Ccz4_derivs),
             get<::Tags::deriv<Tags::AuxiliaryShiftB<DataVector, Dim>,
                               tmpl::size_t<Dim>, Frame::Inertial>>(
-                cell_centered_Ccz4_derivs));
+                cell_centered_Ccz4_derivs),
+            shifting_shift);
       },
       box);
 }

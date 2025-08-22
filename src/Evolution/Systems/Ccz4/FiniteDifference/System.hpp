@@ -11,6 +11,12 @@
 
 namespace Ccz4::fd {
 struct System {
+  // The free parameter f in the Gamma-driver condition.
+  static constexpr double f = 0.75;
+  // Whether to add the advective terms in the Gamma-driver condition,
+  // i.e. in time derivatives of the shift and the auxiliary field b.
+  static constexpr bool shifting_shift = false;
+
   using variables_tag = ::Tags::Variables<tmpl::list<
       Tags::ConformalMetric<DataVector, 3>, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<DataVector, 3>, Tags::ConformalFactor<DataVector>,
