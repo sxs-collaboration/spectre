@@ -16,6 +16,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace ylm {
+
 /*!
  * \ingroup SpectralGroup
  * \brief
@@ -53,13 +54,27 @@ class SpherepackIterator {
   /// coefficients.
   enum class CoefficientArray { a, b };
 
-  SpherepackIterator(size_t l_max_input, size_t m_max_input, size_t stride = 1);
+  /// Construct a SpherepackIterator.
+  ///
+  /// For all uses of SpherepackIterator by the SPHEREPACK routines,
+  /// zero_m_is_real should be true, indicating that the m=0 values of
+  /// the coefficients are real (or in other words, the 'b' array has
+  /// no m=0 values).
+  ///
+  /// However, we sometimes use the same storage scheme (and hence
+  /// SpherepackIterator) to hold spin-weighted-spherical-harmonic
+  /// coefficients of complex quantities, in which case the m=0 values
+  /// of the coefficients can be complex; in that case, zero_m_is_real
+  /// should be false.
+  SpherepackIterator(size_t l_max_input, size_t m_max_input, size_t stride = 1,
+                     bool zero_m_is_real = true);
 
   size_t l_max() const { return l_max_; }
   size_t m_max() const { return m_max_; }
   size_t n_th() const { return n_th_; }
   size_t n_ph() const { return n_ph_; }
   size_t stride() const { return stride_; }
+  bool zero_m_is_real() const { return zero_m_is_real_; }
 
   /// Size of a SPHEREPACK coefficient array (a and b combined), not
   /// counting stride.  For non-unit stride, the size of the array
@@ -135,6 +150,7 @@ class SpherepackIterator {
 
  private:
   size_t l_max_, m_max_, n_th_, n_ph_, stride_;
+  bool zero_m_is_real_;
   size_t number_of_valid_entries_in_a_;
   size_t current_compact_index_;
   std::vector<size_t> offset_into_spherepack_array;
@@ -145,7 +161,8 @@ class SpherepackIterator {
 inline bool operator==(const SpherepackIterator& lhs,
                        const SpherepackIterator& rhs) {
   return lhs.l_max() == rhs.l_max() and lhs.m_max() == rhs.m_max() and
-         lhs.stride() == rhs.stride() and lhs() == rhs();
+         lhs.stride() == rhs.stride() and lhs() == rhs() and
+         lhs.zero_m_is_real() == rhs.zero_m_is_real();
 }
 
 inline bool operator!=(const SpherepackIterator& lhs,

@@ -51,7 +51,12 @@
 // * Each "x" stands for an entry that is not referenced by SPHEREPACK
 //   (so SPHEREPACK wastes some storage space).  There is also one
 //   complete unreferenced row in the middle: the first row of the "b"
-//   array.
+//   array (unless zero_m_is_real is false).
+//
+// * Note that the first column of the "b" array is unreferenced. However,
+//   if zero_m_is_real is false, then this first column
+//   contains the imaginary parts of the m=0 modes, in the same format as
+//   the first row of the "a" array.
 //
 // Note that SPHEREPACK accepts arbitrary values of n_th and n_ph as
 // input, and then computes the corresponding l_max, m_max.  However,
@@ -76,20 +81,27 @@
 namespace ylm {
 SpherepackIterator::SpherepackIterator(const size_t l_max_input,
                                        const size_t m_max_input,
-                                       const size_t stride /*=1*/)
+                                       const size_t stride /*=1*/,
+                                       const bool zero_m_is_real)
     : l_max_(l_max_input),
       m_max_(m_max_input),
       n_th_(l_max_ + 1),
       n_ph_(2 * m_max_ + 1),
       stride_(stride),
+      zero_m_is_real_(zero_m_is_real),
       number_of_valid_entries_in_a_((m_max_ + 1) * (m_max_ + 2) / 2 +
                                     (m_max_ + 1) * (l_max_ - m_max_)),
       current_compact_index_(0) {
   // fill offset_into_spherepack_array, compact_l_ and compact_m_ with the
   // indices, l-values and m-values of all valid points
-  const size_t packed_size =
-      (m_max_ + 1) * (m_max_ + 2) / 2 + m_max_ * (m_max_ + 1) / 2 +
-      (m_max_ + 1) * (l_max_ - m_max_) + m_max_ * (l_max_ - m_max_);
+  const size_t packed_size = [this]() {
+    if (zero_m_is_real_) {
+      return (m_max_ + 1) * (m_max_ + 2) / 2 + m_max_ * (m_max_ + 1) / 2 +
+             (m_max_ + 1) * (l_max_ - m_max_) + m_max_ * (l_max_ - m_max_);
+    } else {
+      return 2 * number_of_valid_entries_in_a_;
+    }
+  }();
 
   offset_into_spherepack_array.assign(packed_size, 0);
   compact_l_.assign(packed_size, 0);
@@ -102,7 +114,8 @@ SpherepackIterator::SpherepackIterator(const size_t l_max_input,
   // index corresponding to strided coefficient array
   size_t idx = 0;
   size_t idx_no_stride = 0;
-  // index for compact offset_into_spherepack_array, compact_l_, compact_m_
+  // index for compact offset_into_spherepack_array, compact_l_,
+  // compact_m_
   size_t k = 0;
   for (size_t l = 0; l <= l_max_; ++l) {
     for (size_t m = 0; m <= m_max_; ++m) {
@@ -121,12 +134,22 @@ SpherepackIterator::SpherepackIterator(const size_t l_max_input,
   for (size_t l = 0; l <= l_max_; ++l) {
     for (size_t m = 0; m <= m_max_; ++m) {
       // note: index m varies fastest in fortran array
-      if (m >= 1 && l >= m) {  // valid entry in b
-        offset_into_spherepack_array[k] = idx;
-        offset_to_compact_index_[idx_no_stride] = k;
-        compact_l_[k] = l;
-        compact_m_[k] = m;
-        ++k;
+      if (zero_m_is_real_) {
+        if (m >= 1 and l >= m) {  // valid entry in b
+          offset_into_spherepack_array[k] = idx;
+          offset_to_compact_index_[idx_no_stride] = k;
+          compact_l_[k] = l;
+          compact_m_[k] = m;
+          ++k;
+        }
+      } else {
+        if (l >= m) {  // valid entry in b
+          offset_into_spherepack_array[k] = idx;
+          offset_to_compact_index_[idx_no_stride] = k;
+          compact_l_[k] = l;
+          compact_m_[k] = m;
+          ++k;
+        }
       }
       idx += stride;
       ++idx_no_stride;
@@ -160,14 +183,24 @@ SpherepackIterator& SpherepackIterator::set(
     }
     current_compact_index_ += m_input;
   } else {
-    ASSERT(m_input != 0, "Array b does not contain m_input=0");
-    if (l_input <= m_max_ + 1) {
-      current_compact_index_ = (l_input * (l_input - 1)) / 2;
+    if (zero_m_is_real_) {
+      ASSERT(m_input != 0, "Array b does not contain m_input=0");
+      if (l_input <= m_max_ + 1) {
+        current_compact_index_ = (l_input * (l_input - 1)) / 2;
+      } else {
+        current_compact_index_ =
+            m_max_ * (m_max_ + 1) / 2 + (l_input - m_max_ - 1) * m_max_;
+      }
+      current_compact_index_ += number_of_valid_entries_in_a_ + m_input - 1;
     } else {
-      current_compact_index_ =
-          m_max_ * (m_max_ + 1) / 2 + (l_input - m_max_ - 1) * m_max_;
+      if (l_input <= m_max_ + 1) {
+        current_compact_index_ = (l_input * (l_input + 1)) / 2;
+      } else {
+        current_compact_index_ = (m_max_ + 1) * (m_max_ + 2) / 2 +
+                                 (l_input - m_max_ - 1) * (m_max_ + 1);
+      }
+      current_compact_index_ += number_of_valid_entries_in_a_ + m_input;
     }
-    current_compact_index_ += number_of_valid_entries_in_a_ + m_input - 1;
   }
 
   ASSERT(current_compact_index_ < offset_into_spherepack_array.size(),
@@ -193,4 +226,5 @@ SpherepackIterator& SpherepackIterator::set(const size_t compact_index) {
   current_compact_index_ = compact_index;
   return *this;
 }
+
 }  // namespace ylm

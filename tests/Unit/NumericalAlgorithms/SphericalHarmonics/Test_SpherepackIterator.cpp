@@ -13,29 +13,24 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Literals.hpp"
 
-namespace ylm {
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
-                  "[NumericalAlgorithms][Unit]") {
-  const std::vector<size_t> test_l = {0, 1, 1, 2, 2, 2, 3, 3, 3, 4,
-                                      4, 4, 1, 2, 2, 3, 3, 4, 4};
-  const std::vector<size_t> test_m = {0, 0, 1, 0, 1, 2, 0, 1, 2, 0,
-                                      1, 2, 1, 1, 2, 1, 2, 1, 2};
-  const std::vector<size_t> test_index = {0,   15,  20,  30,  35, 40, 45,
-                                          50,  55,  60,  65,  70, 95, 110,
-                                          115, 125, 130, 140, 145};
-
+namespace {
+void test_spherepack_iterator(const std::vector<size_t>& test_l,
+                              const std::vector<size_t>& test_m,
+                              const std::vector<size_t>& test_index,
+                              const bool zero_m_is_real) {
   // [spherepack_iterator_example]
   const size_t l_max = 4;
   const size_t m_max = 2;
   const size_t stride = 5;
-  SpherepackIterator iter(l_max, m_max, stride);
+  ylm::SpherepackIterator iter(l_max, m_max, stride, zero_m_is_real);
   // Allocate space for a SPHEREPACK array
   std::vector<double> array(iter.spherepack_array_size() * stride);
   // Set each array element equal to l+m for real part
   // and l-m for imaginary part.
   size_t i = 0;
   for (iter.reset(); iter; ++iter, ++i) {
-    if (iter.coefficient_array() == SpherepackIterator::CoefficientArray::a) {
+    if (iter.coefficient_array() ==
+        ylm::SpherepackIterator::CoefficientArray::a) {
       array[iter()] = iter.l() + iter.m();
     } else {
       array[iter()] = iter.l() - iter.m();
@@ -72,13 +67,17 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
   }
 
   // Test set functions
-  CHECK(iter.set(2, 1, SpherepackIterator::CoefficientArray::b)() == 110);
+  CHECK(iter.set(2, 1, ylm::SpherepackIterator::CoefficientArray::b)() ==
+        (zero_m_is_real ? test_index[13] : test_index[16]));
   // Test the set function for the case l>m_max+1
-  CHECK(iter.set(4, 1, SpherepackIterator::CoefficientArray::a)() == 65);
-  CHECK(iter.set(4, 1, SpherepackIterator::CoefficientArray::b)() == 140);
+  CHECK(iter.set(4, 1, ylm::SpherepackIterator::CoefficientArray::a)() ==
+        test_index[10]);
+  CHECK(iter.set(4, 1, ylm::SpherepackIterator::CoefficientArray::b)() ==
+        (zero_m_is_real ? test_index[17] : test_index[22]));
   CHECK(iter.reset()() == 0);
-  CHECK(iter.set(2, 1)() == 35);
-  CHECK(iter.set(2, -1)() == 110);
+  CHECK(iter.set(2, 1)() == test_index[4]);
+  CHECK(iter.set(2, -1)() ==
+        (zero_m_is_real ? test_index[13] : test_index[16]));
   // Test setting the current compact index
   CHECK(iter.set(0)() == test_index[0]);
   CHECK(iter.set(3)() == test_index[3]);
@@ -88,16 +87,20 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
       ([&iter]() { iter.set(100); })(),
       Catch::Matchers::ContainsSubstring(
           "Trying to set the current compact index to 100 which is "
-          "beyond the size of the offset array 19"));
+          "beyond the size of the offset array"));
 #endif  // SPECTRE_DEBUG
 
-  // Test coefficient_arrya stream operator (assumes output of last 'set').
+  // Test coefficient_array stream operator (assumes output of last 'set').
   CHECK(get_output(iter.coefficient_array()) == "b");
 
   // Test inequality
-  const SpherepackIterator iter2(3, 2, 5);  // Different lmax,mmax
-  const SpherepackIterator iter3(4, 2, 4);  // Different stride
-  const SpherepackIterator iter4(4, 2, 5);  // Different current state
+  const ylm::SpherepackIterator iter2(3, 2, 5,
+                                      zero_m_is_real);  // Different lmax,mmax
+  const ylm::SpherepackIterator iter3(4, 2, 4,
+                                      zero_m_is_real);  // Different stride
+  const ylm::SpherepackIterator iter4(
+      4, 2, 5,
+      zero_m_is_real);  // Different current state
   CHECK(iter2 != iter);
   CHECK(iter != iter2);
   CHECK(iter != iter3);
@@ -108,5 +111,26 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
   const auto iter_copy = iter;
   CHECK(iter_copy == iter);
   test_move_semantics(std::move(iter), iter_copy, 3_st, 2_st, 3_st);
+}
+}  // namespace
+
+namespace ylm {
+
+SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
+                  "[NumericalAlgorithms][Unit]") {
+  test_spherepack_iterator(
+      {{0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 1, 2, 2, 3, 3, 4, 4}},
+      {{0, 0, 1, 0, 1, 2, 0, 1, 2, 0, 1, 2, 1, 1, 2, 1, 2, 1, 2}},
+      {{0, 15, 20, 30, 35, 40, 45, 50, 55, 60, 65, 70, 95, 110, 115, 125, 130,
+        140, 145}},
+      true);
+  test_spherepack_iterator(
+      {{0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4,
+        0, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4}},
+      {{0, 0, 1, 0, 1, 2, 0, 1, 2, 0, 1, 2,
+        0, 0, 1, 0, 1, 2, 0, 1, 2, 0, 1, 2}},
+      {{0,  15, 20, 30,  35,  40,  45,  50,  55,  60,  65,  70,
+        75, 90, 95, 105, 110, 115, 120, 125, 130, 135, 140, 145}},
+      false);
 }
 }  // namespace ylm
