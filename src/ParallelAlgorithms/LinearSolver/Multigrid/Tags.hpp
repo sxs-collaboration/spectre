@@ -59,6 +59,20 @@ struct EnablePreSmoothing {
 };
 
 template <typename OptionsGroup>
+struct UseBottomSolver {
+  using type = bool;
+  static constexpr Options::String help =
+      "Set to 'True' to use a separate bottom solver on the coarsest level "
+      "instead of pre-smoothing. The bottom solver typically builds the matrix "
+      "explicitly and inverts it directly. Use the bottom solver if "
+      "pre-smoothing is not sufficiently effective on the bottom grid. "
+      "The bottom solver can significantly cut down the number of iterations "
+      "needed to converge to the solution at the cost of building the matrix "
+      "explicitly and inverting it directly on the coarsest level.";
+  using group = OptionsGroup;
+};
+
+template <typename OptionsGroup>
 struct EnablePostSmoothingAtBottom {
   static std::string name() { return "PostSmoothingAtBottom"; }
   using type = bool;
@@ -140,6 +154,18 @@ struct EnablePreSmoothing : db::SimpleTag {
   static type create_from_options(const type value) { return value; };
   static std::string name() {
     return "EnablePreSmoothing(" + pretty_type::name<OptionsGroup>() + ")";
+  }
+};
+
+/// Enable the bottom solver
+template <typename OptionsGroup>
+struct UseBottomSolver : db::SimpleTag {
+  using type = bool;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::UseBottomSolver<OptionsGroup>>;
+  static type create_from_options(const type value) { return value; };
+  static std::string name() {
+    return "UseBottomSolver(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 

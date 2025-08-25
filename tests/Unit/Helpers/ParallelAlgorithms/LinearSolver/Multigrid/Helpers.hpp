@@ -224,6 +224,94 @@ struct CollectOperatorAction {
   }
 };
 
+// The next two actions solve the linear problem Ax = b directly by collecting
+// the source b from all elements and applying the inverse of the operator A to
+// it.
+
+template <typename FieldsTag, typename SourceTag>
+struct SolveDirectly;
+
+template <typename FieldsTag, typename SourceTag>
+struct PrepareDirectSolve {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<1>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    auto& section = *db::get_mutable_reference<Parallel::Tags::Section<
+        ParallelComponent, ::LinearSolver::multigrid::Tags::MultigridLevel>>(
+        make_not_null(&box));
+    Parallel::contribute_to_reduction<SolveDirectly<FieldsTag, SourceTag>>(
+        Parallel::ReductionData<
+            Parallel::ReductionDatum<
+                std::map<ElementId<1>, typename SourceTag::type>,
+                funcl::Merge<>>,
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>>{
+            std::map<ElementId<1>, typename SourceTag::type>{
+                std::make_pair(element_id, get<SourceTag>(box))},
+            element_id.grid_index()},
+        section.proxy()[element_id], section.proxy(), make_not_null(&section));
+    // Pause algorithm for now. The reduction will be broadcast to the next
+    // action which is responsible for restarting the algorithm.
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
+  }
+};
+
+template <typename FieldsTag, typename SourceTag>
+struct SolveDirectly {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables>
+  static void apply(
+      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<1>& element_id,
+      const std::map<ElementId<1>, typename SourceTag::type>& source_slices,
+      const size_t broadcasting_multigrid_level) {
+    // We're receiving broadcasts also from reductions over other sections.
+    // See issue: https://github.com/sxs-collaboration/spectre/issues/3220
+    const size_t multigrid_level = element_id.grid_index();
+    if (multigrid_level != broadcasting_multigrid_level) {
+      return;
+    }
+    // Assemble full source vector and matrix
+    const auto& operator_matrices = get<LinearOperator>(box)[multigrid_level];
+    const auto full_matrix =
+        helpers_distributed::combine_matrix_slices(operator_matrices);
+    const size_t num_points = operator_matrices[0].columns();
+    const size_t total_num_points = full_matrix.rows();
+    blaze::DynamicVector<double> source(total_num_points);
+    for (const auto& [local_element_id, source_slice] : source_slices) {
+      const size_t element_index =
+          helpers_distributed::get_index(local_element_id);
+      std::copy_n(source_slice.data(), source_slice.size(),
+                  source.data() + element_index * num_points);
+    }
+    // Solve the linear system
+    const blaze::DynamicVector<double> solution =
+        blaze::solve(full_matrix, source);
+    // Store solution in the DataBox
+    db::mutate<
+        FieldsTag,
+        db::add_tag_prefix<::LinearSolver::Tags::OperatorAppliedTo, FieldsTag>>(
+        [&solution, &element_id, &num_points](
+            auto solution_slice, auto operator_applied_to_operand_slice,
+            const auto& source_slice) {
+          const size_t element_index =
+              helpers_distributed::get_index(element_id);
+          std::copy_n(solution.data() + element_index * num_points, num_points,
+                      solution_slice->data());
+          // The linear problem is solved, so Ax = b
+          *operator_applied_to_operand_slice = source_slice;
+        },
+        make_not_null(&box), db::get<SourceTag>(box));
+    // Proceed with algorithm
+    Parallel::get_parallel_component<ParallelComponent>(cache)[element_id]
+        .perform_algorithm(true);
+  }
+};
+
 template <typename OptionsGroup>
 struct TestResult {
   using const_global_cache_tags =

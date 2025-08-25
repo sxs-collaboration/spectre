@@ -46,6 +46,8 @@ namespace LinearSolver::multigrid::detail {
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
 struct SendCorrectionToFinerGrid;
 template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
+struct SkipBottomSolver;
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
 struct SkipPostSmoothingAtBottom;
 /// \endcond
 
@@ -188,7 +190,8 @@ using ReceiveResidualFromFinerGrid = Actions::ReceiveFieldsFromFinerGrid<
 // `SourceTag`, this action prepares the pre-smoothing that will determine
 // an approximate solution on this grid. The pre-smoother is a separate
 // linear solver that runs independently after this action.
-template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
+          bool EnableBottomSolver>
 struct PreparePreSmoothing {
  private:
   using fields_tag = FieldsTag;
@@ -197,8 +200,13 @@ struct PreparePreSmoothing {
   using source_tag = SourceTag;
 
  public:
-  using const_global_cache_tags = tmpl::list<
-      LinearSolver::multigrid::Tags::EnablePreSmoothing<OptionsGroup>>;
+  using const_global_cache_tags = tmpl::append<
+      tmpl::list<
+          LinearSolver::multigrid::Tags::EnablePreSmoothing<OptionsGroup>>,
+      tmpl::conditional_t<EnableBottomSolver,
+                          tmpl::list<LinearSolver::multigrid::Tags::
+                                         UseBottomSolver<OptionsGroup>>,
+                          tmpl::list<>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
@@ -210,10 +218,15 @@ struct PreparePreSmoothing {
       const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
+    const bool is_coarsest_grid =
+        not db::get<Tags::ParentId<Dim>>(box).has_value();
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s %s(%zu): Prepare pre-smoothing\n", element_id,
-                       pretty_type::name<OptionsGroup>(), iteration_id);
+      Parallel::printf("%s %s(%zu): Prepare %s\n", element_id,
+                       pretty_type::name<OptionsGroup>(), iteration_id,
+                       (EnableBottomSolver and is_coarsest_grid)
+                           ? "bottom-solver"
+                           : "pre-smoothing");
     }
 
     // On coarser grids the smoother solves for a correction to the finer-grid
@@ -251,7 +264,18 @@ struct PreparePreSmoothing {
           db::get<source_tag>(box));
     }
 
-    // Skip pre-smoothing, if requested
+    // Skip pre-smoothing, if requested, or use bottom solver
+    if constexpr (EnableBottomSolver) {
+      if (db::get<LinearSolver::multigrid::Tags::UseBottomSolver<OptionsGroup>>(
+              box) and
+          is_coarsest_grid) {
+        const size_t bottom_solver_index =
+            tmpl::index_of<ActionList, SkipBottomSolver<FieldsTag, OptionsGroup,
+                                                        SourceTag>>::value +
+            1;
+        return {Parallel::AlgorithmExecution::Continue, bottom_solver_index};
+      }
+    }
     const size_t first_action_after_pre_smoothing_index = tmpl::index_of<
         ActionList,
         SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>>::value;
@@ -264,6 +288,26 @@ struct PreparePreSmoothing {
             box)
             ? (this_action_index + 1)
             : first_action_after_pre_smoothing_index};
+  }
+};
+
+// Once pre-smoothing is done, skip the bottom solver that comes next in the
+// action list. On the coarsest grid we directly jump to the bottom solver.
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
+struct SkipBottomSolver {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    const size_t first_action_after_bottom_solver_index = tmpl::index_of<
+        ActionList,
+        SkipPostSmoothingAtBottom<FieldsTag, OptionsGroup, SourceTag>>::value;
+    return {Parallel::AlgorithmExecution::Continue,
+            first_action_after_bottom_solver_index};
   }
 };
 

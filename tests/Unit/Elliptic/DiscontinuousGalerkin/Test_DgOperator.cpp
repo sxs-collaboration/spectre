@@ -82,26 +82,6 @@ struct Var : db::SimpleTag, db::PrefixTag {
   using tag = Tag;
 };
 
-struct TemporalIdTag : db::SimpleTag {
-  using type = size_t;
-};
-
-struct IncrementTemporalId {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    db::mutate<TemporalIdTag>([](const auto temporal_id) { (*temporal_id)++; },
-                              make_not_null(&box));
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-  }
-};
-
 // Label to indicate the start of the apply-operator actions
 struct ApplyOperatorStart {};
 
@@ -122,8 +102,8 @@ struct ElementArray {
   using operator_applied_to_vars_tag =
       ::Tags::Variables<db::wrap_tags_in<DgOperatorAppliedTo, primal_vars>>;
   using dg_operator =
-      ::elliptic::dg::Actions::DgOperator<System, Linearized, TemporalIdTag,
-                                          vars_tag, primal_fluxes_vars_tag,
+      ::elliptic::dg::Actions::DgOperator<System, Linearized, vars_tag,
+                                          primal_fluxes_vars_tag,
                                           operator_applied_to_vars_tag>;
   // Don't wrap the fixed sources in the `Var` prefix because typically we want
   // to impose inhomogeneous boundary conditions on the un-prefixed vars, i.e.
@@ -158,7 +138,7 @@ struct ElementArray {
                              ImposeInhomogeneousBoundaryConditionsOnSource<
                                  System, fixed_sources_tag>>,
                      ::Actions::Label<ApplyOperatorStart>,
-                     typename dg_operator::apply_actions, IncrementTemporalId,
+                     typename dg_operator::apply_actions,
                      Parallel::Actions::TerminatePhase>>>;
 };
 
@@ -178,36 +158,16 @@ struct AmrComponent {
 };
 
 template <typename Metavariables>
-struct ProjectTemporalId : tt::ConformsTo<::amr::protocols::Projector> {
-  using return_tags =
-      tmpl::list<TemporalIdTag,
-                 // Work around a segfault because this tag isn't handled
-                 // correctly by the testing framework
-                 Parallel::Tags::GlobalCache<Metavariables>>;
+struct ProjectMetavars : tt::ConformsTo<::amr::protocols::Projector> {
+  using return_tags = tmpl::list<
+      // Work around a segfault because this tag isn't handled
+      // correctly by the testing framework
+      Parallel::Tags::GlobalCache<Metavariables>>;
   using argument_tags = tmpl::list<>;
-  // p-refinement
-  template <size_t Dim>
+  template <typename... AmrData>
   static void apply(
-      const gsl::not_null<size_t*> /*temporal_id*/,
       const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
-      const std::pair<Mesh<Dim>, Element<Dim>>& /*old_mesh_and_element*/) {}
-  // h-refinement
-  template <typename... ParentTags>
-  static void apply(
-      const gsl::not_null<size_t*> temporal_id,
-      const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
-      const tuples::TaggedTuple<ParentTags...>& parent_items) {
-    *temporal_id = get<TemporalIdTag>(parent_items);
-  }
-  // h-coarsening
-  template <size_t Dim, typename... ChildTags>
-  static void apply(
-      const gsl::not_null<size_t*> temporal_id,
-      const gsl::not_null<Parallel::GlobalCache<Metavariables>**> /*cache*/,
-      const std::unordered_map<
-          ElementId<Dim>, tuples::TaggedTuple<ChildTags...>>& children_items) {
-    *temporal_id = get<TemporalIdTag>(children_items.begin()->second);
-  }
+      const AmrData&... /*amr_data*/) {}
 };
 
 template <typename System, bool Linearized, typename AnalyticSolution>
@@ -234,7 +194,7 @@ struct Metavariables {
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = ElementArray<System, Linearized, Metavariables>;
     using projectors = tmpl::flatten<tmpl::list<
-        ProjectTemporalId<Metavariables>,
+        ProjectMetavars<Metavariables>,
         ::amr::projectors::DefaultInitialize<
             tmpl::list<domain::Tags::InitialExtents<volume_dim>,
                        domain::Tags::InitialRefinementLevels<volume_dim>,
@@ -447,7 +407,6 @@ void test_dg_operator(
       ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                 element_id);
     }
-    set_tag(TemporalIdTag{}, 0_st, element_id);
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 

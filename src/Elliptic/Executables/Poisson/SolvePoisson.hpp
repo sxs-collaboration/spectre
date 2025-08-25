@@ -116,8 +116,6 @@ struct Metavariables {
         tmpl::pair<
             PhaseChange,
             tmpl::list<
-                // Phase for building a matrix representation of the operator
-                PhaseControl::VisitAndReturn<Parallel::Phase::BuildMatrix>,
                 // Phases for AMR
                 PhaseControl::VisitAndReturn<
                     Parallel::Phase::EvaluateAmrCriteria>,
@@ -143,25 +141,21 @@ struct Metavariables {
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<
-          Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                 initialization_actions>,
-          Parallel::PhaseActions<
-              Parallel::Phase::Register,
-              tmpl::push_back<register_actions,
-                              Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::Restart,
-              tmpl::push_back<register_actions,
-                              Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
-          Parallel::PhaseActions<Parallel::Phase::CheckDomain,
-                                 tmpl::list<::amr::Actions::SendAmrDiagnostics,
-                                            Parallel::Actions::TerminatePhase>>,
-          Parallel::PhaseActions<
-              Parallel::Phase::BuildMatrix,
-              tmpl::push_back<typename solver::build_matrix_actions,
-                              Parallel::Actions::TerminatePhase>>>,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialization_actions>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::push_back<register_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Restart,
+                     tmpl::push_back<register_actions,
+                                     Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::CheckDomain,
+                     tmpl::list<::amr::Actions::SendAmrDiagnostics,
+                                Parallel::Actions::TerminatePhase>>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename solver::multigrid::options_group>>;
 

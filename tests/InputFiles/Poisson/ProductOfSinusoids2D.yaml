@@ -8,6 +8,7 @@ Testing:
 ExpectedOutput:
   - PoissonProductOfSinusoids2DReductions.h5
   - PoissonProductOfSinusoids2DVolume0.h5
+  - SubdomainMatrix*.txt
 OutputFileChecks:
   - Label: Discretization error
     Subfile: ErrorNorms.dat
@@ -81,6 +82,7 @@ LinearSolver:
     Iterations: 1
     MaxLevels: Auto
     PreSmoothing: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: False
     Verbosity: Verbose
     OutputVolumeData: False
@@ -91,7 +93,7 @@ LinearSolver:
     Verbosity: Quiet
     SubdomainSolver:
       ExplicitInverse:
-        WriteMatrixToFile: None
+        WriteMatrixToFile: "SubdomainMatrix"
     ObservePerCoreReductions: False
 
 RadiallyCompressedCoordinates: None
@@ -129,6 +131,6 @@ Amr:
 PhaseChangeAndTriggers: []
 
 BuildMatrix:
-  MatrixSubfileName: Matrix
+  MatrixSubfileName: "FullMatrix"
   Verbosity: Verbose
   EnableDirectSolve: True

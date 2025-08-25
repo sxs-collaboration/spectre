@@ -27,6 +27,7 @@
 #include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GetSection.hpp"
 #include "Parallel/Phase.hpp"
@@ -34,7 +35,9 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -45,6 +48,8 @@
 namespace LinearSolver {
 namespace OptionTags {
 
+/// Options for building the explicit matrix representation of the linear
+/// operator.
 struct BuildMatrixOptionsGroup {
   static std::string name() { return "BuildMatrix"; }
   static constexpr Options::String help = {
@@ -54,8 +59,9 @@ struct BuildMatrixOptionsGroup {
       "solve the elliptic problem (that should happen iteratively)."};
 };
 
+/// Subfile name in the volume data H5 files where the matrix will be stored.
 struct MatrixSubfileName {
-  using type = std::string;
+  using type = Options::Auto<std::string, Options::AutoLabel::None>;
   using group = BuildMatrixOptionsGroup;
   static constexpr Options::String help = {
       "Subfile name in the volume data H5 files where the matrix will be "
@@ -66,6 +72,7 @@ struct MatrixSubfileName {
       "component."};
 };
 
+/// Option for enabling direct solve of the linear problem.
 struct EnableDirectSolve {
   using type = bool;
   using group = BuildMatrixOptionsGroup;
@@ -74,13 +81,26 @@ struct EnableDirectSolve {
       "This can be unfeasible if the linear problem is too big."};
 };
 
+/// Option for skipping resets of the built matrix.
+struct SkipResets {
+  using type = bool;
+  using group = BuildMatrixOptionsGroup;
+  static constexpr Options::String help = {
+      "Skip resets of the built matrix. This only has an effect in cases "
+      "where the operator changes, e.g. between nonlinear-solver iterations. "
+      "Skipping resets avoids expensive re-building of the matrix, but comes "
+      "at the cost of less accurate preconditioning and thus potentially more "
+      "preconditioned iterations. Whether or not this helps convergence "
+      "overall is highly problem-dependent."};
+};
+
 }  // namespace OptionTags
 
 namespace Tags {
 
 /// Subfile name in the volume data H5 files where the matrix will be stored.
 struct MatrixSubfileName : db::SimpleTag {
-  using type = std::string;
+  using type = std::optional<std::string>;
   using option_tags = tmpl::list<OptionTags::MatrixSubfileName>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& value) { return value; }
@@ -105,9 +125,18 @@ struct Matrix : db::SimpleTag {
   using type = blaze::CompressedMatrix<ValueType>;
 };
 
+/// Option for enabling direct solve of the linear problem.
 struct EnableDirectSolve : db::SimpleTag {
   using type = bool;
   using option_tags = tmpl::list<OptionTags::EnableDirectSolve>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& value) { return value; }
+};
+
+/// Option for skipping resets of the built matrix.
+struct SkipResets : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::SkipResets>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& value) { return value; }
 };
@@ -118,11 +147,12 @@ namespace Actions {
 
 namespace detail {
 
-template <typename IterationIdTag, typename FieldsTag, typename FixedSourcesTag,
-          typename OperandTag, typename OperatorAppliedToOperandTag,
-          typename CoordsTag, typename ArraySectionIdTag>
+template <typename FieldsTag, typename FixedSourcesTag, typename OperandTag,
+          typename OperatorAppliedToOperandTag, typename CoordsTag,
+          typename ArraySectionIdTag>
 struct BuildMatrixMetavars {
-  using iteration_id_tag = IterationIdTag;
+  using iteration_id_tag = Convergence::Tags::IterationId<
+      LinearSolver::OptionTags::BuildMatrixOptionsGroup>;
   using fields_tag = FieldsTag;
   using fixed_sources_tag = FixedSourcesTag;
   using operand_tag = OperandTag;
@@ -131,16 +161,19 @@ struct BuildMatrixMetavars {
   using array_section_id_tag = ArraySectionIdTag;
 
   using value_type = typename OperatorAppliedToOperandTag::type::value_type;
+
+  struct end_label {};
 };
 
 /// \brief The total number of grid points (size of the matrix) and the index of
 /// the first grid point in this element (the offset into the matrix
-/// corresponding to this element).
+/// corresponding to this element). The `num_points_per_element` should hold
+/// the total number of degrees of freedom for each element, so the number of
+/// variables times the number of grid points.
 template <size_t Dim>
 std::pair<size_t, size_t> total_num_points_and_local_first_index(
     const ElementId<Dim>& element_id,
-    const std::map<ElementId<Dim>, size_t>& num_points_per_element,
-    size_t num_vars);
+    const std::map<ElementId<Dim>, size_t>& num_points_per_element);
 
 /// \brief The index of the '1' of the unit vector in this element, or
 /// std::nullopt if the '1' is in another element.
@@ -237,9 +270,10 @@ struct RegisterWithVolumeObserver {
            "The identifier 'Unused' is reserved to indicate that no "
            "observations with this key will be contributed. Use a different "
            "key, or change the identifier 'Unused' to something else.");
+    const auto& subfile_name = get<Tags::MatrixSubfileName>(box);
     return {
         observers::TypeOfObservation::Volume,
-        observers::ObservationKey(get<Tags::MatrixSubfileName>(box) +
+        observers::ObservationKey(subfile_name.value_or("Unused") +
                                   section_observation_key.value_or("Unused"))};
   }
 };
@@ -276,18 +310,25 @@ struct CollectTotalNumPoints {
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<Dim>& array_index, const ActionList /*meta*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // Skip everything on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
-        constexpr size_t last_action_index =
-            tmpl::index_of<ActionList,
-                           AssembleFullMatrix<BuildMatrixMetavars>>::value;
+        constexpr size_t last_action_index = tmpl::index_of<
+            ActionList,
+            ::Actions::Label<typename BuildMatrixMetavars::end_label>>::value;
         return {Parallel::AlgorithmExecution::Continue, last_action_index + 1};
       }
+    }
+    if (db::get<Tags::TotalNumPoints>(box) != 0) {
+      // We have built the matrix already, so we can skip ahead
+      constexpr size_t assemble_matrix_index =
+          tmpl::index_of<ActionList,
+                         AssembleFullMatrix<BuildMatrixMetavars>>::value;
+      return {Parallel::AlgorithmExecution::Continue, assemble_matrix_index};
     }
     db::mutate<Tags::TotalNumPoints, OperandTag>(
         [](const auto total_num_points, const auto operand,
@@ -303,11 +344,14 @@ struct CollectTotalNumPoints {
     auto& section = Parallel::get_section<ParallelComponent, ArraySectionIdTag>(
         make_not_null(&box));
     Parallel::contribute_to_reduction<PrepareBuildMatrix<BuildMatrixMetavars>>(
-        Parallel::ReductionData<Parallel::ReductionDatum<
-            std::map<ElementId<Dim>, size_t>, funcl::Merge<>>>{
+        Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<std::map<ElementId<Dim>, size_t>,
+                                     funcl::Merge<>>>{
+            element_id.grid_index(),
             std::map<ElementId<Dim>, size_t>{
-                std::make_pair(array_index, get<OperandTag>(box).size())}},
-        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
+                std::make_pair(element_id, get<OperandTag>(box).size())}},
+        Parallel::get_parallel_component<ParallelComponent>(cache)[element_id],
         Parallel::get_parallel_component<ParallelComponent>(cache),
         make_not_null(&section));
     // Pause the algorithm for now. The reduction will be broadcast to the next
@@ -329,12 +373,14 @@ struct PrepareBuildMatrix {
             typename Metavariables, size_t Dim>
   static void apply(
       db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<Dim>& element_id,
+      const ElementId<Dim>& element_id, const size_t grid_index,
       const std::map<ElementId<Dim>, size_t>& num_points_per_element) {
+    if (grid_index != element_id.grid_index()) {
+      return;
+    }
     const auto [total_num_points, local_first_index] =
-        detail::total_num_points_and_local_first_index(
-            element_id, num_points_per_element,
-            OperandTag::type::number_of_independent_components);
+        detail::total_num_points_and_local_first_index(element_id,
+                                                       num_points_per_element);
     if (get<logging::Tags::Verbosity<OptionTags::BuildMatrixOptionsGroup>>(
             box) >= Verbosity::Quiet and
         local_first_index == 0) {
@@ -447,11 +493,14 @@ struct StoreMatrixColumn {
         },
         make_not_null(&box));
     // Write it out to disk
-    detail::observe_matrix_column<ParallelComponent>(
-        iteration_id, operator_applied_to_operand, element_id,
-        get<domain::Tags::Mesh<Dim>>(box), get<CoordsTag>(box),
-        get<Tags::MatrixSubfileName>(box),
-        *observers::get_section_observation_key<ArraySectionIdTag>(box), cache);
+    if (const auto& subfile_name = get<Tags::MatrixSubfileName>(box);
+        subfile_name.has_value()) {
+      detail::observe_matrix_column<ParallelComponent>(
+          iteration_id, operator_applied_to_operand, element_id,
+          get<domain::Tags::Mesh<Dim>>(box), get<CoordsTag>(box), *subfile_name,
+          *observers::get_section_observation_key<ArraySectionIdTag>(box),
+          cache);
+    }
     // Reset operand to zero
     const std::optional<size_t> local_unit_vector_index =
         detail::local_unit_vector_index(iteration_id, local_first_index,
@@ -526,8 +575,11 @@ struct AssembleFullMatrix {
         make_not_null(&box));
     Parallel::contribute_to_reduction<
         InvertMatrix<ParallelComponent, BuildMatrixMetavars>>(
-        Parallel::ReductionData<Parallel::ReductionDatum<
-            std::map<ElementId<Dim>, ReductionType>, funcl::Merge<>>>{
+        Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<std::map<ElementId<Dim>, ReductionType>,
+                                     funcl::Merge<>>>{
+            element_id.grid_index(),
             std::map<ElementId<Dim>, ReductionType>{std::make_pair(
                 element_id, ReductionType{get<Tags::Matrix<value_type>>(box),
                                           get<FixedSourcesTag>(box)})}},
@@ -557,7 +609,7 @@ struct InvertMatrix {
             typename Metavariables, typename ArrayIndex, size_t Dim>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
+                    const ArrayIndex& /*array_index*/, const size_t grid_index,
                     const std::map<ElementId<Dim>, ReductionType>&
                         matrix_and_sources_slices) {
     const size_t total_num_points =
@@ -593,7 +645,7 @@ struct InvertMatrix {
     // Broadcast the solution to the elements
     Parallel::simple_action<StoreSolution<BuildMatrixMetavars>>(
         Parallel::get_parallel_component<ElementArrayComponent>(cache),
-        solution);
+        grid_index, solution);
   }
 };
 
@@ -602,22 +654,32 @@ struct StoreSolution {
  private:
   using value_type = typename BuildMatrixMetavars::value_type;
   using FieldsTag = typename BuildMatrixMetavars::fields_tag;
+  using FixedSourcesTag = typename BuildMatrixMetavars::fixed_sources_tag;
 
  public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, size_t Dim>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const ElementId<Dim>& element_id,
+                    const ElementId<Dim>& element_id, const size_t grid_index,
                     const blaze::DynamicVector<value_type>& solution) {
+    if (grid_index != element_id.grid_index()) {
+      return;
+    }
     const size_t local_first_index = db::get<Tags::LocalFirstIndex>(box);
-    db::mutate<FieldsTag>(
-        [&solution, &local_first_index](const auto fields) {
+    db::mutate<
+        FieldsTag,
+        db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, FieldsTag>>(
+        [&solution, &local_first_index](const auto fields,
+                                        const auto operator_applied_to_fields,
+                                        const auto& fixed_sources) {
           std::copy_n(
               solution.begin() + static_cast<ptrdiff_t>(local_first_index),
               fields->size(), fields->data());
+          // The linear problem is solved now, so Ax = b
+          *operator_applied_to_fields = fixed_sources;
         },
-        make_not_null(&box));
+        make_not_null(&box), db::get<FixedSourcesTag>(box));
     // Proceed with algorithm
     Parallel::get_parallel_component<ParallelComponent>(cache)[element_id]
         .perform_algorithm(true);
@@ -633,14 +695,62 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
 
  public:
   using return_tags =
-      tmpl::list<Tags::TotalNumPoints, Tags::LocalFirstIndex, IterationIdTag,
-                 OperandTag, Tags::Matrix<value_type>>;
+      tmpl::list<Tags::TotalNumPoints, Tags::Matrix<value_type>,
+                 Tags::LocalFirstIndex, IterationIdTag, OperandTag>;
   using argument_tags = tmpl::list<>;
 
   template <typename... AmrData>
-  static void apply(const gsl::not_null<size_t*> /*unused*/,
-                    const AmrData&... /*amr_data*/) {
-    // Nothing to do. Everything gets initialized at the start of the algorithm.
+  static void apply(
+      const gsl::not_null<size_t*> total_num_points,
+      const gsl::not_null<blaze::CompressedMatrix<value_type>*> matrix,
+      const AmrData&... /*amr_data*/) {
+    // Reset the built matrix when AMR changes the grid.
+    // In case AMR is configured to keep coarse grids then the coarse-grid
+    // elements don't run projectors during AMR, so they are not reset and just
+    // keep the built matrix. This is good because the coarse grids are
+    // unchanged and so the matrix is still valid (and can be used as bottom
+    // solver in multigrid).
+    *total_num_points = 0;
+    matrix->clear();
+  }
+};
+
+/// Dispatch global reduction to get the size of the matrix
+template <typename BuildMatrixMetavars>
+struct ResetBuiltMatrix {
+ private:
+  using value_type = typename BuildMatrixMetavars::value_type;
+  using ArraySectionIdTag = typename BuildMatrixMetavars::array_section_id_tag;
+
+ public:
+  using const_global_cache_tags = tmpl::list<Tags::SkipResets>;
+
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    // Skip on elements that are not part of the section
+    if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
+      if (not db::get<Parallel::Tags::Section<ParallelComponent,
+                                              ArraySectionIdTag>>(box)
+                  .has_value()) {
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+      }
+    }
+    if (db::get<Tags::SkipResets>(box)) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
+    db::mutate<Tags::TotalNumPoints, Tags::Matrix<value_type>>(
+        [](const auto total_num_points, const auto matrix) {
+          *total_num_points = 0;
+          matrix->clear();
+        },
+        make_not_null(&box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -656,9 +766,6 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
  * linear operator to the `OperandTag`. Also add the `amr_projectors` to the
  * list of AMR projectors and the `register_actions`
  *
- * \tparam IterationIdTag Used to keep track of the iteration over all matrix
- * columns. Should be the same that's used to identify iterations in the
- * `ApplyOperatorActions`.
  * \tparam FieldsTag The solution will be stored here (if direct solve is
  * enabled).
  * \tparam FixedSourcesTag The source `b` in the problem `Ax = b`. Only used
@@ -672,15 +779,21 @@ struct ProjectBuildMatrix : tt::ConformsTo<::amr::protocols::Projector> {
  * \tparam ArraySectionIdTag Can identify a subset of elements that this
  * algorithm should run over, e.g. in a multigrid setting.
  */
-template <typename IterationIdTag, typename FieldsTag, typename FixedSourcesTag,
-          typename OperandTag, typename OperatorAppliedToOperandTag,
-          typename CoordsTag, typename ArraySectionIdTag = void>
+template <typename FieldsTag, typename FixedSourcesTag, typename OperandTag,
+          typename OperatorAppliedToOperandTag, typename CoordsTag,
+          typename ArraySectionIdTag = void>
 struct BuildMatrix {
  private:
   using BuildMatrixMetavars =
-      detail::BuildMatrixMetavars<IterationIdTag, FieldsTag, FixedSourcesTag,
-                                  OperandTag, OperatorAppliedToOperandTag,
-                                  CoordsTag, ArraySectionIdTag>;
+      detail::BuildMatrixMetavars<FieldsTag, FixedSourcesTag, OperandTag,
+                                  OperatorAppliedToOperandTag, CoordsTag,
+                                  ArraySectionIdTag>;
+  static_assert(
+      std::is_same_v<FieldsTag, OperandTag>,
+      "The operand and the fields tags must be the same. This is just so that "
+      "at the end of the algorithm the operator is applied to the solution "
+      "fields. This restriction can be lifted if needed by copying the fields "
+      "into the operand and back.");
 
  public:
   template <typename Metavariables>
@@ -695,13 +808,28 @@ struct BuildMatrix {
                  StoreMatrixColumn<BuildMatrixMetavars>,
                  // Algorithm iterates until matrix is complete, then proceeds
                  // below
-                 AssembleFullMatrix<BuildMatrixMetavars>>;
+                 AssembleFullMatrix<BuildMatrixMetavars>,
+                 // Apply operator to the solution. Note that FieldsTag and
+                 // OperandTag must be the same for this (see assert above).
+                 // Note also that this operator application is not needed in
+                 // most cases, as the linear problem is solved exactly and
+                 // therefore Ax = b is set in 'StoreSolution'. However, this
+                 // operator application is needed if the operator changes
+                 // between nonlinear solver iterations but we skip the reset,
+                 // so the matrix represents the old operator. It's just one
+                 // more operator application, so we keep it always enabled for
+                 // now.
+                 ApplyOperatorActions,
+                 ::Actions::Label<typename BuildMatrixMetavars::end_label>>;
 
   using amr_projectors = tmpl::list<ProjectBuildMatrix<BuildMatrixMetavars>>;
 
   /// Add to the register phase to enable observations
   using register_actions = tmpl::list<observers::Actions::RegisterWithObservers<
       detail::RegisterWithVolumeObserver<ArraySectionIdTag>>>;
+
+  /// Add to the action list to reset the matrix
+  using reset_actions = tmpl::list<ResetBuiltMatrix<BuildMatrixMetavars>>;
 };
 
 }  // namespace Actions

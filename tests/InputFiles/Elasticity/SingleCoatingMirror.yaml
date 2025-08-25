@@ -108,6 +108,7 @@ LinearSolver:
     Iterations: 1
     MaxLevels: Auto
     PreSmoothing: True
+    UseBottomSolver: False
     PostSmoothingAtBottom: True
     Verbosity: Silent
     OutputVolumeData: False
@@ -184,6 +185,6 @@ ResourceInfo:
   Singletons: Auto
 
 BuildMatrix:
-  MatrixSubfileName: Matrix
+  MatrixSubfileName: None
   Verbosity: Verbose
   EnableDirectSolve: True

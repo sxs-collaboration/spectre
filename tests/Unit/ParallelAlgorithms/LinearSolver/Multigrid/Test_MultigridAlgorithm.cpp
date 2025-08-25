@@ -65,6 +65,10 @@ struct Metavariables {
       LinearSolver::multigrid::Tags::MultigridLevel>;
   // [setup_smoother]
 
+  using bottom_solver_actions = tmpl::list<
+      helpers_mg::PrepareDirectSolve<typename multigrid::smooth_fields_tag,
+                                     typename multigrid::smooth_source_tag>>;
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -96,7 +100,8 @@ struct Metavariables {
                  typename multigrid::template solve<
                      compute_operator_action<typename smoother::fields_tag>,
                      smooth_actions<LinearSolver::multigrid::VcycleDownLabel>,
-                     smooth_actions<LinearSolver::multigrid::VcycleUpLabel>>,
+                     smooth_actions<LinearSolver::multigrid::VcycleUpLabel>,
+                     bottom_solver_actions>,
                  Parallel::Actions::TerminatePhase>;
   // [action_list]
 

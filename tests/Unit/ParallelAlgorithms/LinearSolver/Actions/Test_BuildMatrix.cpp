@@ -35,8 +35,6 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
 
-struct IterationIdLabel {};
-
 struct TestResult {
   using const_global_cache_tags =
       tmpl::list<helpers_distributed::ExpectedResult>;
@@ -116,7 +114,6 @@ struct Metavariables {
   };
 
   using build_matrix = LinearSolver::Actions::BuildMatrix<
-      Convergence::Tags::IterationId<IterationIdLabel>,
       helpers_distributed::fields_tag,
       db::add_tag_prefix<::Tags::FixedSource, helpers_distributed::fields_tag>,
       helpers_distributed::fields_tag,

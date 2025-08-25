@@ -46,19 +46,6 @@ struct SchwarzSmoother {
       "Options for the iterative Schwarz smoother";
 };
 
-blaze::DynamicMatrix<double> combine_matrix_slices(
-    const std::vector<blaze::DynamicMatrix<double>>& matrix_slices) {
-  const size_t num_slices = matrix_slices.size();
-  const size_t num_cols_per_slice = matrix_slices.begin()->columns();
-  const size_t total_num_points = num_slices * num_cols_per_slice;
-  blaze::DynamicMatrix<double> full_matrix(total_num_points, total_num_points);
-  for (size_t i = 0; i < num_slices; ++i) {
-    blaze::submatrix(full_matrix, 0, i * num_cols_per_slice, total_num_points,
-                     num_cols_per_slice) = gsl::at(matrix_slices, i);
-  }
-  return full_matrix;
-}
-
 template <typename Tag>
 blaze::DynamicVector<double> extend_subdomain_data(
     const LinearSolver::Schwarz::ElementCenteredSubdomainData<
@@ -156,7 +143,8 @@ struct SubdomainOperator : LinearSolver::Schwarz::SubdomainOperator<1> {
     result->destructive_resize(operand);
 
     // Assemble full operator matrix
-    const auto operator_matrix = combine_matrix_slices(matrix_slices);
+    const auto operator_matrix =
+        helpers_distributed::combine_matrix_slices(matrix_slices);
 
     // Extend subdomain data with zeros outside the subdomain
     const auto extended_operand =
