@@ -588,8 +588,8 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
   std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>> elements;
   for (const auto& element_id : element_ids) {
     elements.emplace(element_id,
-                     domain::Initialization::create_initial_element(
-                         element_id, blocks, initial_refinement_levels));
+                     domain::create_initial_element(element_id, blocks,
+                                                    initial_refinement_levels));
   }
   domain::test_domain_connectivity(domain, elements);
   domain::test_refinement_levels_of_neighbors<1>(elements);

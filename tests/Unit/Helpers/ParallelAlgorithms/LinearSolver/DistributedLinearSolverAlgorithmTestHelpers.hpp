@@ -37,6 +37,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -291,10 +292,10 @@ struct InitializeElement {
     const auto& initial_extents = db::get<domain::Tags::InitialExtents<1>>(box);
     const auto& initial_refinement =
         db::get<domain::Tags::InitialRefinementLevels<1>>(box);
-    auto element = domain::Initialization::create_initial_element(
-        element_id, domain.blocks(), initial_refinement);
-    auto mesh = domain::Initialization::create_initial_mesh(
-        initial_extents, element,
+    auto element = domain::create_initial_element(element_id, domain.blocks(),
+                                                  initial_refinement);
+    auto mesh = domain::create_initial_mesh(
+        initial_extents, element, Spectral::Basis::Legendre,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     auto logical_coords = logical_coordinates(mesh);
     const ElementMap<1, Frame::Inertial> element_map{

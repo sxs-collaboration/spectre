@@ -23,6 +23,7 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Gsl.hpp"
@@ -71,8 +72,9 @@ struct InitializeElementFacesGridCoordinates {
           element_faces_grid_coords,
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const std::vector<std::array<size_t, Dim>>& initial_refinement,
-      const Spectral::Quadrature& quadrature, const Domain<Dim>& domain,
+      const Spectral::Quadrature& i1_quadrature, const Domain<Dim>& domain,
       const ::ExcisionSphere<Dim>& excision_sphere) {
+    const Spectral::Basis i1_basis{Spectral::Basis::Legendre};
     const auto& blocks = domain.blocks();
     const auto& worldtube_grid_coords = excision_sphere.center();
     const auto& neighboring_blocks = excision_sphere.abutting_directions();
@@ -83,8 +85,9 @@ struct InitializeElementFacesGridCoordinates {
         const auto direction = excision_sphere.abutting_direction(element_id);
         if (direction.has_value()) {
           const auto& current_block = blocks.at(block_id);
-          const auto mesh = ::domain::Initialization::create_initial_mesh(
-              initial_extents, current_block, element_id, quadrature);
+          const auto mesh = ::domain::create_initial_mesh(
+              initial_extents, current_block, element_id, i1_basis,
+              i1_quadrature);
           const auto face_mesh = mesh.slice_away(direction.value().dimension());
           const ElementMap<Dim, Frame::Grid> element_map{
               element_id,

@@ -19,6 +19,7 @@
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Printf/Printf.hpp"
@@ -52,11 +53,11 @@ namespace LinearSolver::multigrid {
  * Array elements are created for all element IDs on all grids, meaning they all
  * share the same parallel component, action list etc. Elements are connected to
  * their neighbors _on the same grid_ by the
- * `domain::Initialization::create_initial_element` function (this is
- * independent of the multigrid code, the function is typically called in an
- * initialization action). Elements are connected to their parent and children
- * _across grids_ by the multigrid-tags set here and in the multigrid
- * initialization actions (see `LinearSolver::multigrid::parent_id` and
+ * `domain::create_initial_element` function (this is independent of the
+ * multigrid code, the function is typically called in an initialization
+ * action). Elements are connected to their parent and children _across grids_
+ * by the multigrid-tags set here and in the multigrid initialization actions
+ * (see `LinearSolver::multigrid::parent_id` and
  * `LinearSolver::multigrid::child_ids`).
  *
  * This allocator also creates two sets of sections (see `Parallel::Section`):
@@ -110,6 +111,7 @@ struct ElementsAllocator
         get<Tags::ChildrenRefinementLevels<Dim>>(initialization_items);
     auto& parent_refinement_levels =
         get<Tags::ParentRefinementLevels<Dim>>(initialization_items);
+    const auto basis = Spectral::Basis::Legendre;
     const auto& quadrature =
         Parallel::get<elliptic::dg::Tags::Quadrature>(local_cache);
     const std::optional<domain::ElementWeight>& element_weight =
@@ -186,7 +188,7 @@ struct ElementsAllocator
         const std::unordered_map<ElementId<Dim>, double> element_costs =
             domain::get_element_costs(blocks, initial_refinement_levels,
                                       initial_extents, element_weight.value(),
-                                      quadrature);
+                                      basis, quadrature);
         const domain::BlockZCurveProcDistribution<Dim> element_distribution{
             element_costs,   num_of_procs_to_use,
             blocks,          initial_refinement_levels,

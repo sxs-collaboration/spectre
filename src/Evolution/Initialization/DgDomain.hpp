@@ -34,6 +34,7 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/TagsDomain.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -146,12 +147,13 @@ struct Domain {
       const ::Domain<dim>& domain,
       const std::vector<std::array<size_t, dim>>& initial_extents,
       const std::vector<std::array<size_t, dim>>& initial_refinement,
-      const Spectral::Quadrature& quadrature,
+      const Spectral::Quadrature& i1_quadrature,
       const ElementId<dim>& element_id) {
-    *element = ::domain::Initialization::create_initial_element(
-        element_id, domain.blocks(), initial_refinement);
-    *mesh = ::domain::Initialization::create_initial_mesh(initial_extents,
-                                                          *element, quadrature);
+    *element = ::domain::create_initial_element(element_id, domain.blocks(),
+                                                initial_refinement);
+    const Spectral::Basis i1_basis{Spectral::Basis::Legendre};
+    *mesh = ::domain::create_initial_mesh(initial_extents, *element, i1_basis,
+                                          i1_quadrature);
     const auto& my_block = domain.blocks()[element_id.block_id()];
     *element_map = ElementMap<dim, Frame::Grid>{element_id, my_block};
 
@@ -170,9 +172,9 @@ struct Domain {
         const auto& neighbor_orientation = neighbors.orientation(neighbor);
         neighbor_mesh->emplace(
             DirectionalId{direction, neighbor},
-            neighbor_orientation.inverse_map()(
-                ::domain::Initialization::create_initial_mesh(
-                    initial_extents, neighbor_block, neighbor, quadrature)));
+            neighbor_orientation.inverse_map()(::domain::create_initial_mesh(
+                initial_extents, neighbor_block, neighbor, i1_basis,
+                i1_quadrature)));
       }
     }
   }

@@ -72,6 +72,12 @@ void test_3d() {
                                domain::topologies::spherical_shell,
                                Direction<3>::lower_xi(), aligned));
   CHECK(neighbor_is_conforming(domain::topologies::spherical_shell,
+                               domain::topologies::full_sphere,
+                               Direction<3>::lower_xi(), aligned));
+  CHECK(neighbor_is_conforming(domain::topologies::spherical_shell,
+                               domain::topologies::spherical_shell,
+                               Direction<3>::upper_xi(), aligned));
+  CHECK(neighbor_is_conforming(domain::topologies::full_sphere,
                                domain::topologies::spherical_shell,
                                Direction<3>::upper_xi(), aligned));
   CHECK(neighbor_is_conforming(domain::topologies::full_cylinder,
@@ -101,12 +107,18 @@ void test_3d() {
   CHECK_FALSE(neighbor_is_conforming(
       domain::topologies::spherical_shell, domain::topologies::hypercube<3>,
       Direction<3>::upper_xi(), radial_xi_to_zeta));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::full_sphere, domain::topologies::hypercube<3>,
+      Direction<3>::upper_xi(), radial_xi_to_zeta));
 
   CHECK_FALSE(neighbor_is_conforming(
       domain::topologies::spherical_shell, domain::topologies::full_cylinder,
       Direction<3>::lower_xi(), radial_xi_to_zeta));
   CHECK_FALSE(neighbor_is_conforming(
       domain::topologies::spherical_shell, domain::topologies::full_cylinder,
+      Direction<3>::upper_xi(), radial_xi_to_zeta));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::full_sphere, domain::topologies::full_cylinder,
       Direction<3>::upper_xi(), radial_xi_to_zeta));
 
   const OrientationMap<3> radial_aligned(std::array<Direction<3>, 3>{
@@ -117,6 +129,9 @@ void test_3d() {
   CHECK_FALSE(neighbor_is_conforming(domain::topologies::spherical_shell,
                                      domain::topologies::cylindrical_shell,
                                      Direction<3>::upper_xi(), radial_aligned));
+  CHECK_FALSE(neighbor_is_conforming(domain::topologies::full_sphere,
+                                     domain::topologies::cylindrical_shell,
+                                     Direction<3>::upper_xi(), radial_aligned));
   CHECK_FALSE(neighbor_is_conforming(domain::topologies::spherical_shell,
                                      domain::topologies::cylindrical_shell,
                                      Direction<3>::lower_xi(),
@@ -125,6 +140,9 @@ void test_3d() {
                                      domain::topologies::cylindrical_shell,
                                      Direction<3>::upper_xi(),
                                      radial_xi_to_zeta));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::full_sphere, domain::topologies::cylindrical_shell,
+      Direction<3>::upper_xi(), radial_xi_to_zeta));
 
   CHECK_FALSE(neighbor_is_conforming(domain::topologies::full_cylinder,
                                      domain::topologies::hypercube<3>,
@@ -142,6 +160,12 @@ void test_3d() {
       Direction<3>::lower_zeta(), radial_zeta_to_xi));
   CHECK_FALSE(neighbor_is_conforming(
       domain::topologies::full_cylinder, domain::topologies::spherical_shell,
+      Direction<3>::upper_zeta(), radial_zeta_to_xi));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::full_cylinder, domain::topologies::full_sphere,
+      Direction<3>::lower_zeta(), radial_zeta_to_xi));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::full_cylinder, domain::topologies::full_sphere,
       Direction<3>::upper_zeta(), radial_zeta_to_xi));
   CHECK(neighbor_is_conforming(domain::topologies::full_cylinder,
                                domain::topologies::cylindrical_shell,
@@ -179,6 +203,18 @@ void test_3d() {
                                      domain::topologies::spherical_shell,
                                      Direction<3>::upper_zeta(),
                                      radial_zeta_to_xi));
+  CHECK_FALSE(neighbor_is_conforming(domain::topologies::cylindrical_shell,
+                                     domain::topologies::full_sphere,
+                                     Direction<3>::lower_xi(), radial_aligned));
+  CHECK_FALSE(neighbor_is_conforming(domain::topologies::cylindrical_shell,
+                                     domain::topologies::full_sphere,
+                                     Direction<3>::upper_xi(), radial_aligned));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::cylindrical_shell, domain::topologies::full_sphere,
+      Direction<3>::lower_zeta(), radial_zeta_to_xi));
+  CHECK_FALSE(neighbor_is_conforming(
+      domain::topologies::cylindrical_shell, domain::topologies::full_sphere,
+      Direction<3>::upper_zeta(), radial_zeta_to_xi));
   CHECK(neighbor_is_conforming(domain::topologies::cylindrical_shell,
                                domain::topologies::full_cylinder,
                                Direction<3>::lower_xi(), aligned));

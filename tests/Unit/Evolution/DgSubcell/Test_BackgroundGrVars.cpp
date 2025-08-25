@@ -162,7 +162,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const bool did_rollback) {
 
   const auto domain = brick.create_domain();
   const auto element_id = ElementId<3>{0};
-  Element<3> element = domain::Initialization::create_initial_element(
+  Element<3> element = domain::create_initial_element(
       element_id, domain.blocks(),
       std::vector<std::array<size_t, 3>>{{0, 0, 0}});
 

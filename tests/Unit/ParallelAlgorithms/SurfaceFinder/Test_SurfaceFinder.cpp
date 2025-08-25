@@ -151,10 +151,11 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.SurfaceFinder.SurfaceFinder",
   const auto refinement_levels = sphere.initial_refinement_levels();
   const auto extents = sphere.initial_extents();
   const ElementId<dim> id{0};
-  const auto quadrature = Spectral::Quadrature::GaussLobatto;
+  const auto i1_basis = Spectral::Basis::Legendre;
+  const auto i1_quadrature = Spectral::Quadrature::GaussLobatto;
   const auto& block = domain.blocks()[id.block_id()];
-  const auto mesh = domain::Initialization::create_initial_mesh(extents, block,
-                                                                id, quadrature);
+  const auto mesh =
+      domain::create_initial_mesh(extents, block, id, i1_basis, i1_quadrature);
   const ElementMap<dim, Frame::Inertial> element_map{
       id, block.stationary_map().get_clone()};
   const auto logical_coords = logical_coordinates(mesh);

@@ -24,6 +24,12 @@ std::ostream& operator<<(std::ostream& os, const Topology topology) {
       return os << "B2Radial";
     case Topology::B2Angular:
       return os << "B2Angular";
+    case Topology::B3Radial:
+      return os << "B3Radial";
+    case Topology::B3Colatitude:
+      return os << "B3Colatitude";
+    case Topology::B3Longitude:
+      return os << "B3Longitude";
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START
       ERROR("An unknown value of Topology was passed to the stream operator.");

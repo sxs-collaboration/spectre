@@ -17,7 +17,6 @@ class ElementId;
 /// \endcond
 
 namespace domain {
-namespace Initialization {
 /*!
  * \ingroup InitializationGroup
  * \brief Creates an initial element of a Block.
@@ -33,5 +32,4 @@ Element<VolumeDim> create_initial_element(
     const std::vector<Block<VolumeDim>>& blocks,
     const std::vector<std::array<size_t, VolumeDim>>&
         initial_refinement_levels);
-}  // namespace Initialization
 }  // namespace domain

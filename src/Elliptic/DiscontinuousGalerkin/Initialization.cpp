@@ -25,6 +25,7 @@
 #include "Domain/Structure/IndexToSliceAt.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -96,18 +97,20 @@ void InitializeGeometry<Dim>::apply(
     const std::vector<std::array<size_t, Dim>>& initial_refinement,
     const Domain<Dim>& domain,
     const domain::FunctionsOfTimeMap& functions_of_time,
-    const Spectral::Quadrature quadrature, const ElementId<Dim>& element_id) {
+    const Spectral::Quadrature i1_quadrature,
+    const ElementId<Dim>& element_id) {
+  // Element
+  *element = domain::create_initial_element(element_id, domain.blocks(),
+                                            initial_refinement);
   // Mesh
-  ASSERT(quadrature == Spectral::Quadrature::GaussLobatto or
-             quadrature == Spectral::Quadrature::Gauss,
+  const Spectral::Basis i1_basis{Spectral::Basis::Legendre};
+  ASSERT(i1_quadrature == Spectral::Quadrature::GaussLobatto or
+             i1_quadrature == Spectral::Quadrature::Gauss,
          "The elliptic DG scheme supports Gauss and Gauss-Lobatto "
          "grids, but the chosen quadrature is: "
-             << quadrature);
-  // Element
-  *element = domain::Initialization::create_initial_element(
-      element_id, domain.blocks(), initial_refinement);
-  *mesh = domain::Initialization::create_initial_mesh(initial_extents, *element,
-                                                      quadrature);
+             << i1_quadrature);
+  *mesh = domain::create_initial_mesh(initial_extents, *element, i1_basis,
+                                      i1_quadrature);
   // Neighbor meshes
   for (const auto& [direction, neighbors] : element->neighbors()) {
     for (const auto& neighbor_id : neighbors) {
@@ -115,8 +118,9 @@ void InitializeGeometry<Dim>::apply(
       const auto& orientation = neighbors.orientation(neighbor_id);
       neighbor_meshes->emplace(
           DirectionalId<Dim>{direction, neighbor_id},
-          orientation.inverse_map()(domain::Initialization::create_initial_mesh(
-              initial_extents, neighbor_block, neighbor_id, quadrature)));
+          orientation.inverse_map()(domain::create_initial_mesh(
+              initial_extents, neighbor_block, neighbor_id, i1_basis,
+              i1_quadrature)));
     }
   }
   // Element map

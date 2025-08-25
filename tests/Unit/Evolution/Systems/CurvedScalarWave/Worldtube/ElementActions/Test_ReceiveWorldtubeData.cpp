@@ -32,6 +32,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -119,6 +120,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
   using worldtube_chare = MockWorldtubeSingleton<metavars>;
   const size_t initial_extent = 5;
   const size_t face_size = initial_extent * initial_extent;
+  const auto basis = Spectral::Basis::Legendre;
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   // we create several differently refined shells so a different number of
   // elements sends data
@@ -169,10 +171,10 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.ReceiveWorldtubeData",
         make_not_null(&element_faces_grid_coords), initial_extents,
         initial_refinements, quadrature, shell_domain, excision_sphere);
     for (const auto& element_id : element_ids) {
-      auto element = domain::Initialization::create_initial_element(
-          element_id, blocks, initial_refinements);
-      auto mesh = domain::Initialization::create_initial_mesh(
-          initial_extents, element, quadrature);
+      auto element = domain::create_initial_element(element_id, blocks,
+                                                    initial_refinements);
+      auto mesh = domain::create_initial_mesh(initial_extents, element, basis,
+                                              quadrature);
       const size_t grid_size = mesh.number_of_grid_points();
 
       // we set lapse and shift to Minkowski so dt Psi = - Pi

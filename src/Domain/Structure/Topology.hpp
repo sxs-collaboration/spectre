@@ -33,6 +33,9 @@ namespace domain {
 /// \note In consecutive dimensions, choose B2Radial and B2Angular to represent
 /// a disk (including the center) or cross-section of a cylinder
 ///
+/// \note In consecutive dimensions, choose B3Radial, B3Colatitude and
+/// B3Longitude to represent a sphere
+///
 /// \note Currently h-refinement can only be done in dimensions with
 /// Topology::I1
 ///
@@ -45,7 +48,10 @@ enum class Topology : uint8_t {
   S2Colatitude = 3,
   S2Longitude = 4,
   B2Radial = 5,
-  B2Angular = 6
+  B2Angular = 6,
+  B3Radial = 7,
+  B3Colatitude = 8,
+  B3Longitude = 9
 };
 
 /// Output operator for a Topology.
@@ -68,6 +74,9 @@ static constexpr auto cylindrical_shell =
 
 static constexpr auto full_cylinder =
     std::array{Topology::B2Radial, Topology::B2Angular, Topology::I1};
+
+static constexpr auto full_sphere = std::array{
+    Topology::B3Radial, Topology::B3Colatitude, Topology::B3Longitude};
 }  // namespace topologies
 
 }  // namespace domain

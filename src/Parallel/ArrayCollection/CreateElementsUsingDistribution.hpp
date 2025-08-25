@@ -18,6 +18,13 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Numeric.hpp"
 
+/// \cond
+namespace Spectral {
+enum class Basis : uint8_t;
+enum class Quadrature : uint8_t;
+}  // namespace Spectral
+/// \endcond
+
 namespace Parallel {
 /*!
  * \brief Creates elements using a chosen distribution.
@@ -32,7 +39,7 @@ void create_elements_using_distribution(
     const std::vector<Block<Dim>>& blocks,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
-    const Spectral::Quadrature quadrature,
+    const Spectral::Basis i1_basis, const Spectral::Quadrature i1_quadrature,
 
     const std::unordered_set<size_t>& procs_to_ignore,
     const size_t number_of_procs, const size_t number_of_nodes,
@@ -47,7 +54,7 @@ void create_elements_using_distribution(
     const std::unordered_map<ElementId<Dim>, double> element_costs =
         domain::get_element_costs(blocks, initial_refinement_levels,
                                   initial_extents, element_weight.value(),
-                                  quadrature);
+                                  i1_basis, i1_quadrature);
     element_distribution = domain::BlockZCurveProcDistribution<Dim>{
         element_costs,   num_of_procs_to_use, blocks, initial_refinement_levels,
         initial_extents, procs_to_ignore};

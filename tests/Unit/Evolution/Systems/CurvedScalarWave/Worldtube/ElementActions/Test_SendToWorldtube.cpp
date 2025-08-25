@@ -37,6 +37,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
@@ -143,6 +144,7 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
   using worldtube_chare = MockWorldtubeSingleton<metavars>;
   const size_t initial_extent = 10;
   const size_t face_size = initial_extent * initial_extent;
+  const auto basis = Spectral::Basis::Legendre;
   const auto quadrature = Spectral::Quadrature::GaussLobatto;
   // unused but the tag is needed to compile
   const double time = std::numeric_limits<double>::signaling_NaN();
@@ -214,10 +216,10 @@ SPECTRE_TEST_CASE("Unit.CurvedScalarWave.Worldtube.SendToWorldtube", "[Unit]") {
     const std::array<tnsr::I<double, Dim>, 2> particle_pos_vel{
         {std::move(particle_position), std::move(particle_velocity)}};
     for (const auto& element_id : element_ids) {
-      auto element = domain::Initialization::create_initial_element(
-          element_id, blocks, initial_refinements);
-      auto mesh = domain::Initialization::create_initial_mesh(
-          initial_extents, element, quadrature);
+      auto element = domain::create_initial_element(element_id, blocks,
+                                                    initial_refinements);
+      auto mesh = domain::create_initial_mesh(initial_extents, element, basis,
+                                              quadrature);
       const auto& my_block = blocks.at(element_id.block_id());
       const ElementMap element_map(element_id,
                                    my_block.stationary_map().get_clone());

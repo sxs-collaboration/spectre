@@ -24,6 +24,7 @@ template <size_t Dim>
 class ElementId;
 
 namespace Spectral {
+enum class Basis : uint8_t;
 enum class Quadrature : uint8_t;
 }  // namespace Spectral
 /// \endcond
@@ -51,8 +52,8 @@ std::ostream& operator<<(std::ostream& os, ElementWeight weight);
 /// \brief Get the cost of each `Element` in a list of `Block`s where
 /// `element_weight` specifies which weight distribution scheme to use
 ///
-/// \details It is only necessary to pass in a value for `quadrature` if
-/// the value for `element_weight` is
+/// \details It is only necessary to pass in a value for `i1_basis` and
+/// `i1_quadrature` if the value for `element_weight` is
 /// `ElementWeight::NumGridPointsAndGridSpacing`. Otherwise, the argument isn't
 /// needed and will have no effect if it does have a value.
 template <size_t Dim>
@@ -61,7 +62,8 @@ std::unordered_map<ElementId<Dim>, double> get_element_costs(
     const std::vector<std::array<size_t, Dim>>& initial_refinement_levels,
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     ElementWeight element_weight,
-    const std::optional<Spectral::Quadrature>& quadrature);
+    const std::optional<Spectral::Basis>& i1_basis,
+    const std::optional<Spectral::Quadrature>& i1_quadrature);
 
 /*!
  * \brief Distribution strategy for assigning elements to CPUs using a

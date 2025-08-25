@@ -104,7 +104,7 @@ void test(const BoundaryConditionType& boundary_condition,
         {{boundary_condition.get_clone(), boundary_condition.get_clone()}}}});
   auto domain = brick.create_domain();
   auto boundary_conditions = brick.external_boundary_conditions();
-  const auto element = domain::Initialization::create_initial_element(
+  const auto element = domain::create_initial_element(
       ElementId<3>{0, {SegmentId{0, 0}, SegmentId{0, 0}, SegmentId{0, 0}}},
       domain.blocks(), std::vector<std::array<size_t, 3>>{{refinement_levels}});
 

@@ -236,11 +236,12 @@ auto make_databox_with_boundary_conditions() {
   const ElementId<Dim> central_element_id{0, {{{2, 0}, {0, 0}}}};
   const ElementId<Dim> right_element_id{0, {{{2, 1}, {0, 0}}}};
   const ElementId<Dim> bottom_element_id{1, {{{1, 0}, {1, 1}}}};
-  Element<Dim> central_element = domain::Initialization::create_initial_element(
+  // NOLINTNEXTLINE(misc-const-correctness)
+  Element<Dim> central_element = domain::create_initial_element(
       central_element_id, domain.blocks(), refinement);
-  Element<Dim> right_element = domain::Initialization::create_initial_element(
+  Element<Dim> right_element = domain::create_initial_element(
       right_element_id, domain.blocks(), refinement);
-  Element<Dim> bottom_element = domain::Initialization::create_initial_element(
+  Element<Dim> bottom_element = domain::create_initial_element(
       bottom_element_id, domain.blocks(), refinement);
   // Subdomain
   LinearSolver::Schwarz::OverlapMap<Dim, Element<Dim>> overlap_elements{
@@ -268,9 +269,10 @@ auto make_databox_without_boundary_conditions() {
   const std::vector<std::array<size_t, Dim>> refinement{{{2, 2}}};
   const ElementId<Dim> central_element_id{0, {{{2, 1}, {2, 1}}}};
   const ElementId<Dim> right_element_id{0, {{{2, 2}, {2, 1}}}};
-  Element<Dim> central_element = domain::Initialization::create_initial_element(
+  // NOLINTNEXTLINE(misc-const-correctness)
+  Element<Dim> central_element = domain::create_initial_element(
       central_element_id, domain.blocks(), refinement);
-  Element<Dim> right_element = domain::Initialization::create_initial_element(
+  Element<Dim> right_element = domain::create_initial_element(
       right_element_id, domain.blocks(), refinement);
   LinearSolver::Schwarz::OverlapMap<Dim, Element<Dim>> overlap_elements{
       {{Direction<Dim>::upper_xi(), right_element_id},

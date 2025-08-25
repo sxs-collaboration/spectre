@@ -107,7 +107,7 @@ double test(const size_t num_dg_pts) {
       element_id, block.is_time_dependent()
                       ? block.moving_mesh_logical_to_grid_map().get_clone()
                       : block.stationary_map().get_to_grid_frame()};
-  const auto element = domain::Initialization::create_initial_element(
+  const auto element = domain::create_initial_element(
       element_id, blocks,
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 

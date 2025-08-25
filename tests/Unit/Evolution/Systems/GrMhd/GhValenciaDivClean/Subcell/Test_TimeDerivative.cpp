@@ -159,7 +159,7 @@ double test(const size_t num_dg_pts, std::optional<double> expansion_velocity,
   const auto grid_to_inertial_map =
       ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           ::domain::CoordinateMaps::Identity<3>{});
-  const auto element = domain::Initialization::create_initial_element(
+  const auto element = domain::create_initial_element(
       element_id, blocks,
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 

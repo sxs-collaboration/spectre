@@ -19,6 +19,8 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags/ElementDistribution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayCollection/CreateElementsUsingDistribution.hpp"
 #include "Parallel/ArrayCollection/SpawnInitializeElementsInCollection.hpp"
@@ -94,7 +96,8 @@ struct CreateElementCollection {
     const auto& initial_refinement_levels =
         get<domain::Tags::InitialRefinementLevels<Dim>>(box);
     const auto& initial_extents = get<domain::Tags::InitialExtents<Dim>>(box);
-    const auto& quadrature = get<evolution::dg::Tags::Quadrature>(box);
+    const auto i1_basis = Spectral::Basis::Legendre;
+    const auto& i1_quadrature = get<evolution::dg::Tags::Quadrature>(box);
     const std::optional<domain::ElementWeight>& element_weight =
         Parallel::get<domain::Tags::ElementDistribution>(local_cache);
 
@@ -131,7 +134,7 @@ struct CreateElementCollection {
           }
         },
         element_weight, blocks, initial_extents, initial_refinement_levels,
-        quadrature,
+        i1_basis, i1_quadrature,
         // The below arguments control how the elements are mapped to the
         // hardware.
         procs_to_ignore, number_of_procs, number_of_nodes, num_of_procs_to_use,

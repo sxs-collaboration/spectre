@@ -100,7 +100,7 @@ std::unordered_set<ElementId<3>> neighbor_ids(
 }
 }  // namespace
 
-namespace domain::Initialization {
+namespace domain {
 template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id,
@@ -232,13 +232,12 @@ Element<VolumeDim> create_initial_element(
                             std::move(neighbors_of_element),
                             block.topologies());
 }
-}  // namespace domain::Initialization
+}  // namespace domain
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                             \
-  template Element<DIM(data)>                                            \
-  domain::Initialization::create_initial_element<DIM(data)>(             \
+  template Element<DIM(data)> domain::create_initial_element<DIM(data)>( \
       const ElementId<DIM(data)>&, const std::vector<Block<DIM(data)>>&, \
       const std::vector<std::array<size_t, DIM(data)>>&);
 
