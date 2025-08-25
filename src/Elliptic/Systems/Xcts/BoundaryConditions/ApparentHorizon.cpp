@@ -17,6 +17,7 @@
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Systems/Xcts/Geometry.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
+#include "PointwiseFunctions/AnalyticData/Xcts/Binary.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
@@ -325,14 +326,25 @@ void apparent_horizon_impl(
 
   // Lapse
   if (solution_for_lapse.has_value()) {
+    using Binary =
+        Xcts::AnalyticData::Binary<elliptic::analytic_data::AnalyticSolution,
+                                   Xcts::Solutions::all_analytic_solutions>;
+    // Evaluate isolated solutions at coordinates centered on the excision, but
+    // evaluate the superposed binary data at the original coordinates
+    const bool evaluate_centered =
+        dynamic_cast<const Binary*>(solution_for_lapse.value().get()) ==
+        nullptr;
     *lapse_times_conformal_factor_minus_one = call_with_dynamic_type<
-        Scalar<DataVector>, Xcts::Solutions::all_analytic_solutions>(
+        Scalar<DataVector>,
+        tmpl::push_back<Xcts::Solutions::all_analytic_solutions, Binary>>(
         solution_for_lapse.value().get(),
-        [&x](const auto* const local_solution) {
+        [&evaluate_centered, &x,
+         &x_offcenter](const auto* const local_solution) {
           return get<Xcts::Tags::LapseTimesConformalFactorMinusOne<DataVector>>(
               local_solution->variables(
-                  x, tmpl::list<Xcts::Tags::LapseTimesConformalFactorMinusOne<
-                         DataVector>>{}));
+                  evaluate_centered ? x : x_offcenter,
+                  tmpl::list<Xcts::Tags::LapseTimesConformalFactorMinusOne<
+                      DataVector>>{}));
         });
   } else {
     get(*n_dot_lapse_times_conformal_factor_gradient) = 0.;
