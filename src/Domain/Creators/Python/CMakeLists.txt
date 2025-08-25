@@ -8,6 +8,7 @@ spectre_python_add_module(
   LIBRARY_NAME ${LIBRARY}
   MODULE_PATH "Domain"
   SOURCES
+  BinaryCompactObject.cpp
   Bindings.cpp
   Cylinder.cpp
   DomainCreator.cpp
@@ -21,6 +22,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  BinaryCompactObject.hpp
   Cylinder.hpp
   DomainCreator.hpp
   Rectilinear.hpp
