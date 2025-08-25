@@ -6,6 +6,7 @@
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementActions.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/ObserveVolumeData.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -174,11 +175,13 @@ struct Schwarz {
 
   using amr_projectors = initialize_element;
 
-  using register_element =
-      tmpl::list<async_solvers::RegisterElement<FieldsTag, OptionsGroup,
-                                                SourceTag, ArraySectionIdTag>,
-                 detail::RegisterElement<FieldsTag, OptionsGroup, SourceTag,
-                                         ArraySectionIdTag>>;
+  using register_element = tmpl::list<
+      async_solvers::RegisterElement<FieldsTag, OptionsGroup, SourceTag,
+                                     ArraySectionIdTag>,
+      detail::RegisterElement<FieldsTag, OptionsGroup, SourceTag,
+                              ArraySectionIdTag>,
+      observers::Actions::RegisterWithObservers<
+          detail::RegisterWithVolumeObserver<OptionsGroup, ArraySectionIdTag>>>;
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
@@ -189,6 +192,8 @@ struct Schwarz {
                              SubdomainPreconditioners, ArraySectionIdTag>,
       detail::ReceiveOverlapSolution<FieldsTag, OptionsGroup,
                                      SubdomainOperator>,
+      detail::ObserveVolumeData<FieldsTag, OptionsGroup, SubdomainOperator,
+                                ArraySectionIdTag>,
       ApplyOperatorActions,
       async_solvers::CompleteStep<FieldsTag, OptionsGroup, SourceTag, Label,
                                   ArraySectionIdTag>>;

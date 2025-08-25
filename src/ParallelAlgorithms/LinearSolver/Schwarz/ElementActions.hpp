@@ -206,17 +206,21 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       subdomain_solver<FieldsTag, SubdomainOperator, SubdomainPreconditioners>;
   using subdomain_solver_tag =
       Tags::SubdomainSolver<SubdomainSolver, OptionsGroup>;
+  using volume_data_tag =
+      Tags::VolumeDataForOutput<SubdomainData, OptionsGroup>;
 
  public:  // Iterable action
   using simple_tags_from_options = tmpl::list<subdomain_solver_tag>;
 
-  using const_global_cache_tags = tmpl::list<Tags::MaxOverlap<OptionsGroup>>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::MaxOverlap<OptionsGroup>,
+                 LinearSolver::Tags::OutputVolumeData<OptionsGroup>>;
 
-  using simple_tags =
-      tmpl::list<Tags::IntrudingExtents<Dim, OptionsGroup>,
-                 Tags::Weight<OptionsGroup>,
-                 domain::Tags::Faces<Dim, Tags::Weight<OptionsGroup>>,
-                 SubdomainDataBufferTag<SubdomainData, OptionsGroup>>;
+  using simple_tags = tmpl::list<
+      Tags::IntrudingExtents<Dim, OptionsGroup>, Tags::Weight<OptionsGroup>,
+      domain::Tags::Faces<Dim, Tags::Weight<OptionsGroup>>,
+      SubdomainDataBufferTag<SubdomainData, OptionsGroup>,
+      LinearSolver::Tags::ObservationId<OptionsGroup>, volume_data_tag>;
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -244,7 +248,9 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<DirectionMap<Dim, Scalar<DataVector>>*>
           intruding_overlap_weights,
       const gsl::not_null<SubdomainData*> subdomain_data,
-      [[maybe_unused]] const gsl::not_null<std::unique_ptr<SubdomainSolver>*>
+      const gsl::not_null<size_t*> observation_id,
+      const gsl::not_null<SubdomainData*> /*volume_data_for_output*/,
+      const gsl::not_null<std::unique_ptr<SubdomainSolver>*>
           subdomain_solver,
       const Element<Dim>& element, const Mesh<Dim>& mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
@@ -299,14 +305,23 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
     // Subdomain solver
     // The subdomain solver initially gets created from options on each element.
     // Then we have to copy it around during AMR.
-    if constexpr (sizeof...(AmrData) == 1) {
+    if constexpr (sizeof...(AmrData) == 0) {
+      *observation_id = 0;
+      (void)subdomain_solver;
+    } else {
       if constexpr (tt::is_a_v<tuples::TaggedTuple, AmrData...>) {
         // h-refinement: copy from the parent
+        *observation_id =
+            get<LinearSolver::Tags::ObservationId<OptionsGroup>>(amr_data...);
         *subdomain_solver = get<subdomain_solver_tag>(amr_data...)->get_clone();
       } else if constexpr (tt::is_a_v<std::unordered_map, AmrData...>) {
         // h-coarsening, copy from one of the children (doesn't matter which)
+        *observation_id = get<LinearSolver::Tags::ObservationId<OptionsGroup>>(
+            amr_data.begin()->second...);
         *subdomain_solver =
             get<subdomain_solver_tag>(amr_data.begin()->second...)->get_clone();
+      } else {
+        (void)observation_id;
       }
       (*subdomain_solver)->reset();
     }
@@ -456,6 +471,15 @@ struct SolveSubdomain {
           db::get<Tags::ObservePerCoreReductions<OptionsGroup>>(box));
     }
 
+    // Record subdomain solution for volume data output
+    if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
+      db::mutate<Tags::VolumeDataForOutput<SubdomainData, OptionsGroup>>(
+          [&subdomain_solution](const auto volume_data) {
+            volume_data->element_data = subdomain_solution.element_data;
+          },
+          make_not_null(&box));
+    }
+
     // Apply weighting
     if (LIKELY(max_overlap > 0)) {
       subdomain_solution.element_data *=
@@ -540,11 +564,22 @@ struct ReceiveOverlapSolution {
                        pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
-    // Add solutions on overlaps to this element's solution in a weighted sum
+    // Extract overlap solutions from inbox
     auto received_overlap_solutions =
         std::move(tuples::get<overlap_solution_inbox_tag>(inboxes)
                       .extract(iteration_id)
                       .mapped());
+
+    // Record overlap solutions for volume data output
+    if (db::get<LinearSolver::Tags::OutputVolumeData<OptionsGroup>>(box)) {
+      db::mutate<Tags::VolumeDataForOutput<SubdomainData, OptionsGroup>>(
+          [&received_overlap_solutions](const auto volume_data) {
+            volume_data->overlap_data = received_overlap_solutions;
+          },
+          make_not_null(&box));
+    }
+
+    // Add overlap solutions to this element's solution in a weighted sum
     db::mutate<fields_tag>(
         [&received_overlap_solutions](
             const auto fields, const Index<Dim>& full_extents,

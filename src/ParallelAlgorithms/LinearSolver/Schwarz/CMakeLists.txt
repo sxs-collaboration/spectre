@@ -19,6 +19,7 @@ spectre_target_headers(
   ComputeTags.hpp
   ElementActions.hpp
   ElementCenteredSubdomainData.hpp
+  ObserveVolumeData.hpp
   OverlapHelpers.hpp
   Schwarz.hpp
   SubdomainOperator.hpp

@@ -19,6 +19,7 @@ struct Tag : db::SimpleTag {
 struct TestOptionsGroup {
   static std::string name() { return "TestLinearSolver"; }
 };
+struct TestSolver {};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
@@ -42,6 +43,12 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       LinearSolver::Tags::KrylovSubspaceBasis<Tag>>("KrylovSubspaceBasis(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Preconditioned<Tag>>(
       "Preconditioned(Tag)");
+  TestHelpers::db::test_simple_tag<
+      LinearSolver::Tags::OutputVolumeData<TestSolver>>(
+      "OutputVolumeData(TestSolver)");
+  TestHelpers::db::test_simple_tag<
+      LinearSolver::Tags::ObservationId<TestSolver>>(
+      "ObservationId(TestSolver)");
 
   {
     INFO("ResidualCompute");

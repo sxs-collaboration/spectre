@@ -16,7 +16,9 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DynamicMatrix.hpp"
+#include "Options/String.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 /*!
@@ -24,6 +26,19 @@
  * \brief Functionality for solving linear systems of equations
  */
 namespace LinearSolver {
+
+namespace OptionTags {
+
+template <typename OptionsGroup>
+struct OutputVolumeData {
+  using type = bool;
+  static constexpr Options::String help =
+      "Record volume data for debugging purposes.";
+  using group = OptionsGroup;
+  static bool suggested_value() { return false; }
+};
+
+}  // namespace OptionTags
 
 /*!
  * \ingroup LinearSolverGroup
@@ -172,6 +187,27 @@ template <typename Tag>
 struct Preconditioned : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
+};
+
+/// Whether or not volume data should be recorded for debugging purposes
+template <typename OptionsGroup>
+struct OutputVolumeData : db::SimpleTag {
+  using type = bool;
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<OptionTags::OutputVolumeData<OptionsGroup>>;
+  static type create_from_options(const type value) { return value; };
+  static std::string name() {
+    return "OutputVolumeData(" + pretty_type::name<OptionsGroup>() + ")";
+  }
+};
+
+/// Continuously incrementing ID for volume observations
+template <typename OptionsGroup>
+struct ObservationId : db::SimpleTag {
+  using type = size_t;
+  static std::string name() {
+    return "ObservationId(" + pretty_type::name<OptionsGroup>() + ")";
+  }
 };
 
 }  // namespace Tags

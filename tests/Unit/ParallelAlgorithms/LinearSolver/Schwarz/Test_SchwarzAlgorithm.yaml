@@ -73,6 +73,7 @@ SchwarzSmoother:
         ExplicitInverse:
           WriteMatrixToFile: None
   ObservePerCoreReductions: False
+  OutputVolumeData: True
 
 ConvergenceReason: NumIterations
 

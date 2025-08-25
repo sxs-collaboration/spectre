@@ -132,6 +132,7 @@ LinearSolver:
                 WriteMatrixToFile: None
             BoundaryConditions: Auto
     ObservePerCoreReductions: False
+    OutputVolumeData: False
 
 EventsAndTriggersAtIterations:
   - Trigger: HasConverged

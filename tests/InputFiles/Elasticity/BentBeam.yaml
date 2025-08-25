@@ -92,6 +92,7 @@ LinearSolver:
       ExplicitInverse:
         WriteMatrixToFile: None
     ObservePerCoreReductions: False
+    OutputVolumeData: False
 
 EventsAndTriggersAtIterations:
   - Trigger: HasConverged

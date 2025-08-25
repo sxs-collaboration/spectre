@@ -236,6 +236,7 @@ LinearSolver:
             BoundaryConditions: Auto
     SkipResets: True
     ObservePerCoreReductions: False
+    OutputVolumeData: False
 
 RadiallyCompressedCoordinates:
   InnerRadius: *outer_shell_inner_radius

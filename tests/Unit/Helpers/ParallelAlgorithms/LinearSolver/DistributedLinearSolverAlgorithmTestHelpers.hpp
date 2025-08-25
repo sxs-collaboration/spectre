@@ -27,6 +27,7 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
+#include "Domain/ElementMap.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -274,7 +275,8 @@ struct InitializeElement {
   using simple_tags =
       tmpl::list<domain::Tags::Mesh<1>, domain::Tags::Element<1>,
                  domain::Tags::Coordinates<1, Frame::ElementLogical>,
-                 fields_tag, sources_tag>;
+                 domain::Tags::Coordinates<1, Frame::Inertial>, fields_tag,
+                 sources_tag>;
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -295,13 +297,17 @@ struct InitializeElement {
         initial_extents, element,
         Parallel::get<elliptic::dg::Tags::Quadrature>(cache));
     auto logical_coords = logical_coordinates(mesh);
+    const ElementMap<1, Frame::Inertial> element_map{
+        element_id, domain.blocks()[element_id.block_id()]};
+    auto inertial_coords = element_map(logical_coords);
     // Element data
     const size_t element_index = get_index(element_id);
     const auto& source = gsl::at(get<Source>(box), element_index);
     const size_t num_points = source.size();
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mesh), std::move(element),
-        std::move(logical_coords), typename fields_tag::type{num_points, 0.},
+        std::move(logical_coords), std::move(inertial_coords),
+        typename fields_tag::type{num_points, 0.},
         typename sources_tag::type{source});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
