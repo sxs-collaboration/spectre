@@ -61,21 +61,27 @@ void test() {
       "  AbsoluteTarget: 1.e-3\n"
       "  RelativeTarget: 0.0\n");
 
-  const auto evaluate_criterion = [&](const size_t num_points) {
+  const auto evaluate_criterion = [&](const size_t num_points,
+                                      const bool zero_data = false) {
     const Mesh<Dim> mesh{num_points, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
     const auto logical_coords = logical_coordinates(mesh);
     // Manufacture some test data
     tnsr::I<DataType, Dim> test_data{};
-    // X-component is linear in x and y, so it is exactly represented on the
-    // mesh
-    get<0>(test_data) = get<0>(logical_coords) + 2. * get<1>(logical_coords);
-    // Y-component is nonlinear in one dimension and linear in the other
-    get<1>(test_data) =
-        exp(sin(M_PI * get<0>(logical_coords))) + 2. * get<1>(logical_coords);
-    if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
-      get<0>(test_data) += 1.0i * get<0>(logical_coords);
-      get<1>(test_data) += 2.0i * get<1>(logical_coords);
+    if (zero_data) {
+      get<0>(test_data) = DataType{mesh.number_of_grid_points(), 0.0};
+      get<1>(test_data) = DataType{mesh.number_of_grid_points(), 0.0};
+    } else {
+      // X-component is linear in x and y, so it is exactly represented on the
+      // mesh
+      get<0>(test_data) = get<0>(logical_coords) + 2. * get<1>(logical_coords);
+      // Y-component is nonlinear in one dimension and linear in the other
+      get<1>(test_data) =
+          exp(sin(M_PI * get<0>(logical_coords))) + 2. * get<1>(logical_coords);
+      if constexpr (std::is_same_v<DataType, ComplexDataVector>) {
+        get<0>(test_data) += 1.0i * get<0>(logical_coords);
+        get<1>(test_data) += 2.0i * get<1>(logical_coords);
+      }
     }
 
     Parallel::GlobalCache<Metavariables<DataType, Dim>> empty_cache{};
@@ -118,6 +124,12 @@ void test() {
     const auto flags = evaluate_criterion(5);
     CHECK(flags[0] == amr::Flag::IncreaseResolution);
     CHECK(flags[1] == amr::Flag::DecreaseResolution);
+  }
+  {
+    INFO("Zero data");
+    const auto flags = evaluate_criterion(4, true);
+    CHECK(flags[0] == amr::Flag::DoNothing);
+    CHECK(flags[1] == amr::Flag::DoNothing);
   }
 }
 
