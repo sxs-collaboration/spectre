@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   Actions
+  AmrEvents
   Charmxx::main
   CoordinateMaps
   DiscontinuousGalerkin

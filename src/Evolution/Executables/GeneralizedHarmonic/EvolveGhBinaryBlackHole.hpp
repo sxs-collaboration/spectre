@@ -103,9 +103,8 @@
 #include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Constraints.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
-#include "ParallelAlgorithms/Amr/Criteria/DriveToTarget.hpp"
-#include "ParallelAlgorithms/Amr/Criteria/TruncationError.hpp"
-#include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Factory.hpp"
+#include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Tensors.hpp"
@@ -459,17 +458,13 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<
             amr::Criterion,
-            tmpl::list<
-                amr::Criteria::DriveToTarget<volume_dim,
-                                             amr::Criteria::Type::h>,
-                amr::Criteria::DriveToTarget<volume_dim,
-                                             amr::Criteria::Type::p>,
+            tmpl::push_back<
+                amr::Criteria::standard_criteria<
+                    volume_dim, typename system::variables_tag::tags_list>,
                 amr::Criteria::Constraints<
                     volume_dim,
                     tmpl::list<gh::Tags::ThreeIndexConstraintCompute<
-                        volume_dim, Frame::Inertial>>>,
-                amr::Criteria::TruncationError<
-                    volume_dim, typename system::variables_tag::tags_list>>>,
+                        volume_dim, Frame::Inertial>>>>>,
         tmpl::pair<
             evolution::initial_data::InitialData,
             tmpl::flatten<tmpl::list<
@@ -502,7 +497,8 @@ struct EvolutionMetavars {
                        control_system::metafunctions::control_system_events<
                            control_systems>,
                        Events::time_events<system>,
-                       dg::Events::ObserveTimeStepVolume<system>>>>,
+                       dg::Events::ObserveTimeStepVolume<system>,
+                       amr::Events::RefineMesh>>>,
         tmpl::pair<control_system::size::State,
                    control_system::size::States::factory_creatable_states>,
         tmpl::pair<

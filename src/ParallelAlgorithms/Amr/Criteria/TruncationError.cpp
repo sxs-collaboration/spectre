@@ -36,6 +36,12 @@ void max_over_components(
       continue;
     }
     const auto& modes = gsl::at(*power_monitors_buffer, d);
+    // Avoid division by zero when calling on relative truncation error
+    const double max_mode = blaze::max(modes);
+    if (max_mode == 0) {
+      gsl::at(*result, d) = Flag::DoNothing;
+      continue;
+    }
     // Increase p refinement if the truncation error exceeds the target
     const double truncation_error =
         umax * PowerMonitors::relative_truncation_error(modes, modes.size());
