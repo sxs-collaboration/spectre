@@ -2,6 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
+  "Unit.Domain.Creators.Python.BinaryCompactObject"
+  Test_BinaryCompactObject.py
+  "Unit;Domain"
+  PyDomainCreators
+)
+
+spectre_add_python_bindings_test(
   "Unit.Domain.Creators.Python.Brick"
   Test_Brick.py
   "Unit;Domain"

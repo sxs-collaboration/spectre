@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "Domain/Creators/Python/BinaryCompactObject.hpp"
 #include "Domain/Creators/Python/Cylinder.hpp"
 #include "Domain/Creators/Python/DomainCreator.hpp"
 #include "Domain/Creators/Python/Rectilinear.hpp"
@@ -27,6 +28,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   py_bindings::bind_rectilinear(m);
   py_bindings::bind_cylinder(m);
   py_bindings::bind_sphere(m);
+  py_bindings::bind_binary_compact_object(m);
 }
 
 }  // namespace domain::creators
