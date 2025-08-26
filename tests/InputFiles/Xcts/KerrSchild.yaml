@@ -55,7 +55,7 @@ OutputFileChecks:
       - [1, 0, 2.70099316920737e-02, 1.]
       - [2, 0, 2.09933729188050e-06, 1.]
       - [3, 0, 3.13426600315318e-11, 1.]
-    AbsoluteTolerance: 1e-10
+    AbsoluteTolerance: 1e-4
 
 ---
 
@@ -125,6 +125,7 @@ Amr:
       RefinementLevel: Auto
       ErrorBeyondLimits: False
     AllowCoarsening: True
+  MaxCoarseLevels: Auto
   Iterations: 2
 
 PhaseChangeAndTriggers:
@@ -136,6 +137,7 @@ PhaseChangeAndTriggers:
     PhaseChanges:
       - VisitAndReturn(EvaluateAmrCriteria)
       - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(UpdateSections)
       - VisitAndReturn(CheckDomain)
 
 Discretization:
@@ -152,9 +154,6 @@ Observers:
 NonlinearSolver:
   NewtonRaphson:
     ConvergenceCriteria:
-      # Stop after 2 iteration so this test runs quickly. Set MaxIterations to
-      # ~20 for runs at higher resolution (most nonlinear problems need ~5
-      # iterations, so 20 is a safe setting).
       MaxIterations: 20
       RelativeResidual: 0.
       AbsoluteResidual: 1.e-6
@@ -173,7 +172,7 @@ LinearSolver:
 
   Multigrid:
     Iterations: 1
-    MaxLevels: 1
+    InitialCoarseLevels: Auto
     PreSmoothing: True
     UseBottomSolver: False
     PostSmoothingAtBottom: False

@@ -27,6 +27,7 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf/Printf.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -97,7 +98,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // Skip restriction on coarsest level
-    const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
+    const auto& parent_id = db::get<amr::Tags::ParentId<Dim>>(box);
     if (not parent_id.has_value()) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
@@ -106,15 +107,16 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
-      Parallel::printf("%s %s(%zu): Send fields to coarser grid\n", element_id,
-                       pretty_type::name<OptionsGroup>(), iteration_id);
+      Parallel::printf("%s %s(%zu): Send fields to coarser grid %s\n",
+                       element_id, pretty_type::name<OptionsGroup>(),
+                       iteration_id, parent_id);
     }
 
     // Restrict the fields to the coarser (parent) grid.
     // We restrict before sending the data so the restriction operation is
     // parellelized. The parent only needs to sum up all child contributions.
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
-    const auto& parent_mesh = db::get<Tags::ParentMesh<Dim>>(box);
+    const auto& parent_mesh = db::get<amr::Tags::ParentMesh<Dim>>(box);
     ASSERT(
         parent_mesh.has_value(),
         "Should have a parent mesh, because a parent ID is set. This element: "
@@ -183,8 +185,9 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // Skip on finest grid
-    const auto& child_ids = db::get<Tags::ChildIds<Dim>>(box);
-    if (child_ids.empty()) {
+    const auto& child_ids = db::get<amr::Tags::ChildIds<Dim>>(box);
+    const bool is_finest_grid = child_ids.empty();
+    if (is_finest_grid) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
@@ -196,12 +199,25 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
             inboxes);
     const auto received_this_iteration = inbox.find(iteration_id);
     if (received_this_iteration == inbox.end()) {
+      if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
+                   ::Verbosity::Debug)) {
+        Parallel::printf(
+            "%s %s(%zu): Waiting for fine-grid data (still empty)\n",
+            element_id, pretty_type::name<OptionsGroup>(), iteration_id);
+      }
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     const auto& received_children_data = received_this_iteration->second;
     for (const auto& child_id : child_ids) {
       if (received_children_data.find(child_id) ==
           received_children_data.end()) {
+        if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
+                     ::Verbosity::Debug)) {
+          Parallel::printf(
+              "%s %s(%zu): Waiting for fine-grid data from child %s\n",
+              element_id, pretty_type::name<OptionsGroup>(), iteration_id,
+              child_id);
+        }
         return {Parallel::AlgorithmExecution::Retry, std::nullopt};
       }
     }

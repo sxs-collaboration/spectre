@@ -26,13 +26,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Multigrid.Tags",
       "ChildrenRefinementLevels");
   TestHelpers::db::test_simple_tag<Tags::ParentRefinementLevels<1>>(
       "ParentRefinementLevels");
-  TestHelpers::db::test_simple_tag<Tags::MaxLevels<TestSolver>>(
-      "MaxLevels(TestSolver)");
-  TestHelpers::db::test_simple_tag<Tags::MultigridLevel>("MultigridLevel");
-  TestHelpers::db::test_simple_tag<Tags::IsFinestGrid>("IsFinestGrid");
-  TestHelpers::db::test_simple_tag<Tags::ParentId<1>>("ParentId");
-  TestHelpers::db::test_simple_tag<Tags::ChildIds<1>>("ChildIds");
-  TestHelpers::db::test_simple_tag<Tags::ParentMesh<1>>("ParentMesh");
+  TestHelpers::db::test_simple_tag<Tags::InitialCoarseLevels<TestSolver>>(
+      "InitialCoarseLevels(TestSolver)");
   TestHelpers::db::test_prefix_tag<Tags::PreSmoothingInitial<Tag>>(
       "PreSmoothingInitial(Tag)");
   TestHelpers::db::test_prefix_tag<Tags::PreSmoothingSource<Tag>>(

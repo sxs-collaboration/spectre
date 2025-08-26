@@ -40,25 +40,13 @@ ElementId<Dim> parent_id(const ElementId<Dim>& child_id) {
       segment_id = segment_id.id_of_parent();
     }
   }
+  ASSERT(child_id.grid_index() > 0,
+         "Grid index must be positive to get a parent ID.");
   return {child_id.block_id(), std::move(parent_segment_ids),
-          child_id.grid_index() + 1};
+          child_id.grid_index() - 1};
 }
 
 namespace {
-template <size_t Dim>
-void assert_finest_grid(
-    const std::array<SegmentId, Dim>& parent_segment_ids,
-    const std::array<size_t, Dim>& children_refinement_levels) {
-  for (size_t d = 0; d < Dim; ++d) {
-    ASSERT(gsl::at(children_refinement_levels, d) ==
-               gsl::at(parent_segment_ids, d).refinement_level(),
-           "On the finest grid, expected the children refinement levels "
-               << children_refinement_levels
-               << " to equal the refinement levels of the parent segment IDs "
-               << parent_segment_ids << " in dimension " << d << ".");
-  }
-}
-
 std::unordered_set<SegmentId> child_segment_ids_impl(
     const SegmentId& parent_segment_id,
     const size_t children_refinement_level) {
@@ -83,12 +71,6 @@ template <>
 std::unordered_set<ElementId<1>> child_ids<1>(
     const ElementId<1>& parent_id,
     const std::array<size_t, 1>& children_refinement_levels) {
-  if (parent_id.grid_index() == 0) {
-#ifdef SPECTRE_DEBUG
-    assert_finest_grid(parent_id.segment_ids(), children_refinement_levels);
-#endif  // SPECTRE_DEBUG
-    return {};
-  }
   const std::unordered_set<SegmentId> child_segment_ids =
       child_segment_ids_impl(parent_id.segment_id(0),
                              children_refinement_levels[0]);
@@ -96,7 +78,7 @@ std::unordered_set<ElementId<1>> child_ids<1>(
   for (const auto& child_segment_id : child_segment_ids) {
     child_ids.emplace(parent_id.block_id(),
                       std::array<SegmentId, 1>{child_segment_id},
-                      parent_id.grid_index() - 1);
+                      parent_id.grid_index() + 1);
   }
   return child_ids;
 }
@@ -105,12 +87,6 @@ template <>
 std::unordered_set<ElementId<2>> child_ids<2>(
     const ElementId<2>& parent_id,
     const std::array<size_t, 2>& children_refinement_levels) {
-  if (parent_id.grid_index() == 0) {
-#ifdef SPECTRE_DEBUG
-    assert_finest_grid(parent_id.segment_ids(), children_refinement_levels);
-#endif  // SPECTRE_DEBUG
-    return {};
-  }
   std::array<std::unordered_set<SegmentId>, 2> child_segment_ids{};
   for (size_t d = 0; d < 2; ++d) {
     gsl::at(child_segment_ids, d) = child_segment_ids_impl(
@@ -122,7 +98,7 @@ std::unordered_set<ElementId<2>> child_ids<2>(
       child_ids.emplace(
           parent_id.block_id(),
           std::array<SegmentId, 2>{{child_segment_id_x, child_segment_id_y}},
-          parent_id.grid_index() - 1);
+          parent_id.grid_index() + 1);
     }
   }
   return child_ids;
@@ -132,12 +108,6 @@ template <>
 std::unordered_set<ElementId<3>> child_ids<3>(
     const ElementId<3>& parent_id,
     const std::array<size_t, 3>& children_refinement_levels) {
-  if (parent_id.grid_index() == 0) {
-#ifdef SPECTRE_DEBUG
-    assert_finest_grid(parent_id.segment_ids(), children_refinement_levels);
-#endif  // SPECTRE_DEBUG
-    return {};
-  }
   std::array<std::unordered_set<SegmentId>, 3> child_segment_ids{};
   for (size_t d = 0; d < 3; ++d) {
     gsl::at(child_segment_ids, d) = child_segment_ids_impl(
@@ -151,7 +121,7 @@ std::unordered_set<ElementId<3>> child_ids<3>(
             parent_id.block_id(),
             std::array<SegmentId, 3>{
                 {child_segment_id_x, child_segment_id_y, child_segment_id_z}},
-            parent_id.grid_index() - 1);
+            parent_id.grid_index() + 1);
       }
     }
   }

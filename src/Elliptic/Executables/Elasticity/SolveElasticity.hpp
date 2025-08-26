@@ -112,17 +112,17 @@ struct Metavariables {
                    ::amr::Criteria::standard_criteria<
                        volume_dim,
                        tmpl::list<Elasticity::Tags::Displacement<volume_dim>>>>,
-        tmpl::pair<Event,
-                   tmpl::flatten<tmpl::list<
-                       Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, observe_fields, observer_compute_tags,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>,
-                       // Observation per material layer
-                       ::Events::ObserveNorms<
-                           observe_fields, observer_compute_tags,
-                           Elasticity::Tags::MaterialLayerName,
-                           ObserveNormsPerLayer>>>>,
+        tmpl::pair<
+            Event,
+            tmpl::flatten<tmpl::list<
+                Events::Completion,
+                dg::Events::field_observations<volume_dim, observe_fields,
+                                               observer_compute_tags,
+                                               ::amr::Tags::IsFinestGrid>,
+                // Observation per material layer
+                ::Events::ObserveNorms<observe_fields, observer_compute_tags,
+                                       Elasticity::Tags::MaterialLayerName,
+                                       ObserveNormsPerLayer>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 ::amr::OptionTags::AmrGroup>>,
         tmpl::pair<
@@ -132,6 +132,7 @@ struct Metavariables {
                 PhaseControl::VisitAndReturn<
                     Parallel::Phase::EvaluateAmrCriteria>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::AdjustDomain>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::UpdateSections>,
                 PhaseControl::VisitAndReturn<Parallel::Phase::CheckDomain>>>>;
   };
 
@@ -177,7 +178,7 @@ struct Metavariables {
     using projectors = tmpl::push_back<
         typename solver::amr_projectors,
         Elasticity::Actions::InitializeConstitutiveRelation<Dim>>;
-    static constexpr bool keep_coarse_grids = false;
+    static constexpr bool keep_coarse_grids = true;
     static constexpr bool p_refine_only_in_event = false;
   };
 
@@ -193,8 +194,9 @@ struct Metavariables {
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
 
-  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+  static constexpr std::array<Parallel::Phase, 6> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Register,
+       Parallel::Phase::UpdateSections, Parallel::Phase::CheckDomain,
        Parallel::Phase::Solve, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)

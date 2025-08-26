@@ -35,6 +35,9 @@ DomainCreator:
     TimeDependence: None
 
 LinearOperator:
+  - [[[7.148074522300963, 0.8105694691387022, -1.0132118364233778],
+      [0.20264236728467566, 0.8105694691387024, 0.20264236728467566],
+      [-1.0132118364233778, 0.8105694691387022, 7.148074522300963]]]
   - [[[17.133142186587385, 3.242277876554809, -2.8369931419854577],
       [0.8105694691387026, 3.2422778765548097, -0.405284734569351],
       [-2.8369931419854577, -1.6211389382774053, 11.403564235279148],
@@ -47,9 +50,6 @@ LinearOperator:
       [11.403564235279148, -1.6211389382774053, -2.8369931419854577],
       [-0.405284734569351, 3.2422778765548097, 0.8105694691387026],
       [-2.836993141985458, 3.242277876554809, 17.133142186587385]]]
-  - [[[7.148074522300963, 0.8105694691387022, -1.0132118364233778],
-      [0.20264236728467566, 0.8105694691387024, 0.20264236728467566],
-      [-1.0132118364233778, 0.8105694691387022, 7.148074522300963]]]
 
 Source:
   - [0.0, 0.7071067811865475, 1.0]
@@ -72,7 +72,7 @@ Observers:
 MultigridSolver:
   Iterations: 7
   Verbosity: Verbose
-  MaxLevels: Auto
+  InitialCoarseLevels: Auto
   PreSmoothing: True
   UseBottomSolver: True
   PostSmoothingAtBottom: False
@@ -82,3 +82,16 @@ RichardsonSmoother:
   Iterations: 20
   RelaxationParameter: 0.09020991440370969  # 2. / (max_eigval + min_eigval)
   Verbosity: Silent
+
+Amr:
+  Verbosity: Verbose
+  Criteria: []
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      NumGridPoints: Auto
+      RefinementLevel: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: False
+  MaxCoarseLevels: Auto

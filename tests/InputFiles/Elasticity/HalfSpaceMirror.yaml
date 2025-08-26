@@ -91,7 +91,7 @@ LinearSolver:
 
   Multigrid:
     Iterations: 1
-    MaxLevels: Auto
+    InitialCoarseLevels: Auto
     PreSmoothing: True
     UseBottomSolver: False
     PostSmoothingAtBottom: True
@@ -157,6 +157,7 @@ Amr:
       RefinementLevel: Auto
       ErrorBeyondLimits: False
     AllowCoarsening: True
+  MaxCoarseLevels: Auto
   Iterations: 1
 
 PhaseChangeAndTriggers: []

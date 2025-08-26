@@ -15,7 +15,15 @@
 #include "Parallel/CharmMain.tpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/ElementsRegistration.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
+#include "ParallelAlgorithms/Amr/Actions/SendAmrDiagnostics.hpp"
+#include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
+#include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
@@ -61,8 +69,7 @@ struct Metavariables {
 
   using smoother = LinearSolver::Richardson::Richardson<
       typename multigrid::smooth_fields_tag, RichardsonSmoother,
-      typename multigrid::smooth_source_tag,
-      LinearSolver::multigrid::Tags::MultigridLevel>;
+      typename multigrid::smooth_source_tag, ::amr::Tags::GridIndex>;
   // [setup_smoother]
 
   using bottom_solver_actions = tmpl::list<
@@ -72,18 +79,22 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>>;
+        tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>,
+        tmpl::pair<::amr::Criterion, tmpl::list<>>>;
   };
 
   static constexpr auto default_phase_order = helpers::default_phase_order;
 
   using initialization_actions = tmpl::list<
       helpers_mg::InitializeElement, typename multigrid::initialize_element,
-      typename smoother::initialize_element, Parallel::Actions::TerminatePhase>;
+      typename smoother::initialize_element,
+      Initialization::Actions::InitializeItems<
+          ::amr::Initialization::Initialize<volume_dim, Metavariables>>,
+      Parallel::Actions::TerminatePhase>;
 
-  using register_actions = tmpl::list<typename multigrid::register_element,
-                                      typename smoother::register_element,
-                                      Parallel::Actions::TerminatePhase>;
+  using register_actions = tmpl::list<
+      typename multigrid::register_element, typename smoother::register_element,
+      ::amr::Actions::RegisterElement, Parallel::Actions::TerminatePhase>;
 
   template <typename OperandTag>
   using compute_operator_action = helpers_mg::ComputeOperatorAction<
@@ -114,19 +125,31 @@ struct Metavariables {
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
+          Parallel::PhaseActions<Parallel::Phase::CheckDomain,
+                                 tmpl::list<::amr::Actions::SendAmrDiagnostics,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
           Parallel::PhaseActions<Parallel::Phase::Testing, test_actions>>,
       LinearSolver::multigrid::ElementsAllocator<1, MultigridSolver>>;
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
     using element_array = dg_element_array;
-    [[maybe_unused]] static constexpr bool keep_coarse_grids = false;
-    [[maybe_unused]] static constexpr bool p_refine_only_in_event = false;
+    using projectors = tmpl::flatten<tmpl::list<
+        helpers_mg::InitializeElement, typename multigrid::amr_projectors,
+        typename smoother::amr_projectors,
+        ::amr::projectors::DefaultInitialize<
+            tmpl::list<domain::Tags::InitialExtents<volume_dim>,
+                       domain::Tags::InitialRefinementLevels<volume_dim>>>,
+        ::amr::projectors::ProjectVariables<volume_dim, helpers_mg::fields_tag,
+                                            helpers_mg::sources_tag>>>;
+    static constexpr bool keep_coarse_grids = true;
+    static constexpr bool p_refine_only_in_event = false;
   };
 
   using component_list = tmpl::flatten<tmpl::list<
       typename multigrid::component_list, typename smoother::component_list,
-      dg_element_array, observers::Observer<Metavariables>,
+      ::amr::Component<Metavariables>, dg_element_array,
+      observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>,
       helpers::OutputCleaner<Metavariables>>>;
   using observed_reduction_data_tags =

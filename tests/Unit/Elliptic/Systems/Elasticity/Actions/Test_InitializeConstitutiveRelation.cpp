@@ -20,6 +20,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Factory.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -37,9 +38,10 @@ struct ElementArray {
   using array_index = ElementId<Dim>;
   using const_global_cache_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<ActionTesting::InitializeDataBox<
-                                 tmpl::list<domain::Tags::Element<Dim>>>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
+              domain::Tags::Element<Dim>, amr::Tags::ChildIds<Dim>>>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<Actions::InitializeConstitutiveRelation<Dim>>>>;
@@ -105,7 +107,8 @@ SPECTRE_TEST_CASE("Unit.Elasticity.Actions.InitializeConstitutiveRelation",
           std::move(material_block_groups)}};
   for (const auto& element_id : {element_id_layer1, element_id_layer2}) {
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {Element<Dim>{element_id, {}}});
+        &runner, element_id,
+        {Element<Dim>{element_id, {}}, std::unordered_set<ElementId<Dim>>{}});
   }
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   for (const auto& element_id : {element_id_layer1, element_id_layer2}) {

@@ -19,8 +19,10 @@
 #include "Domain/Creators/Tags/InitialRefinementLevels.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/NeighborMesh.hpp"
 #include "Elliptic/DiscontinuousGalerkin/Tags.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
@@ -32,6 +34,8 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Amr/Protocols/Projector.hpp"
+#include "ParallelAlgorithms/Amr/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -82,7 +86,8 @@ struct OperatorIsMassive : db::SimpleTag {
 using fields_tag = helpers_distributed::fields_tag;
 using sources_tag = helpers_distributed::sources_tag;
 
-struct InitializeElement {
+struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
+ public:  // Iterable action
   using simple_tags_from_options =
       tmpl::list<::domain::Tags::InitialExtents<1>,
                  ::domain::Tags::InitialRefinementLevels<1>>;
@@ -90,7 +95,8 @@ struct InitializeElement {
       tmpl::list<helpers_distributed::Source, OperatorIsMassive,
                  elliptic::dg::Tags::Quadrature>;
   using simple_tags =
-      tmpl::list<::domain::Tags::Mesh<1>,
+      tmpl::list<::domain::Tags::Element<1>, ::domain::Tags::Mesh<1>,
+                 ::domain::Tags::NeighborMesh<1>,
                  ::domain::Tags::Coordinates<1, Frame::Inertial>,
                  ::domain::Tags::Element<1>, fields_tag, sources_tag>;
   using compute_tags = tmpl::list<>;
@@ -117,20 +123,42 @@ struct InitializeElement {
     auto inertial_coords = element_map(logical_coords);
     // Only needed for element ID, so don't initialize neighbors
     Element<1> element{element_id, {}};
+    DirectionalIdMap<1, Mesh<1>> neighbor_meshes{};
     // Initialize data
     const size_t element_index = helpers_distributed::get_index(element_id);
-    const size_t multigrid_level = element_id.grid_index();
+    const bool is_finest_grid = db::get<::amr::Tags::ChildIds<1>>(box).empty();
     auto source =
-        multigrid_level == 0
+        is_finest_grid
             ? typename sources_tag::type(
                   gsl::at(get<helpers_distributed::Source>(box), element_index))
             : typename sources_tag::type{};
     const size_t num_points = mesh.number_of_grid_points();
     auto initial_fields = typename fields_tag::type{num_points, 0.};
     Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), std::move(mesh), std::move(inertial_coords),
+        make_not_null(&box), std::move(element), std::move(mesh),
+        std::move(neighbor_meshes), std::move(inertial_coords),
         std::move(element), std::move(initial_fields), std::move(source));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+
+ public:  // amr::protocols::Projector
+  using argument_tags =
+      tmpl::list<::domain::Tags::Mesh<1>, ::domain::Tags::Element<1>,
+                 ::domain::Tags::Domain<1>>;
+  using return_tags =
+      tmpl::list<::domain::Tags::Coordinates<1, Frame::Inertial>>;
+
+  template <typename... AmrData>
+  static void apply(
+      const gsl::not_null<tnsr::I<DataVector, 1>*> inertial_coords,
+      const Mesh<1>& mesh, const Element<1>& element, const Domain<1>& domain,
+      const AmrData&... /*amr_data*/) {
+    const auto logical_coords = logical_coordinates(mesh);
+    const auto& element_id = element.id();
+    const auto& block = domain.blocks()[element_id.block_id()];
+    const ElementMap<1, Frame::Inertial> element_map{
+        element_id, block.stationary_map().get_clone()};
+    *inertial_coords = element_map(logical_coords);
   }
 };
 
@@ -169,8 +197,8 @@ struct ComputeOperatorAction {
            linear_operator.data(), linear_operator.spacing(), operand.data(), 1,
            0, operator_applied_to_operand.data(), 1);
 
-    auto& section = *db::get_mutable_reference<Parallel::Tags::Section<
-        ParallelComponent, ::LinearSolver::multigrid::Tags::MultigridLevel>>(
+    auto& section = *db::get_mutable_reference<
+        Parallel::Tags::Section<ParallelComponent, ::amr::Tags::GridIndex>>(
         make_not_null(&box));
     Parallel::contribute_to_reduction<
         CollectOperatorAction<OperandTag, OperatorAppliedToOperandTag>>(
@@ -242,8 +270,8 @@ struct PrepareDirectSolve {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto& section = *db::get_mutable_reference<Parallel::Tags::Section<
-        ParallelComponent, ::LinearSolver::multigrid::Tags::MultigridLevel>>(
+    auto& section = *db::get_mutable_reference<
+        Parallel::Tags::Section<ParallelComponent, ::amr::Tags::GridIndex>>(
         make_not_null(&box));
     Parallel::contribute_to_reduction<SolveDirectly<FieldsTag, SourceTag>>(
         Parallel::ReductionData<
@@ -326,7 +354,8 @@ struct TestResult {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if (element_id.grid_index() > 0) {
+    const bool is_finest_grid = db::get<::amr::Tags::ChildIds<1>>(box).empty();
+    if (not is_finest_grid) {
       return {Parallel::AlgorithmExecution::Pause, std::nullopt};
     }
     const size_t element_index = helpers_distributed::get_index(element_id);

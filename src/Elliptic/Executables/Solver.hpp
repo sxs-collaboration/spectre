@@ -34,6 +34,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Component.hpp"
+#include "ParallelAlgorithms/Amr/Actions/ElementsRegistration.hpp"
 #include "ParallelAlgorithms/Amr/Actions/Initialize.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/Variables.hpp"
@@ -140,7 +141,7 @@ struct Solver {
   /// The nonlinear solver algorithm
   using nonlinear_solver = NonlinearSolver::newton_raphson::NewtonRaphson<
       Metavariables, fields_tag, OptionTags::NewtonRaphsonGroup,
-      fixed_sources_tag, LinearSolver::multigrid::Tags::IsFinestGrid>;
+      fixed_sources_tag, ::amr::Tags::IsFinestGrid>;
   using nonlinear_solver_iteration_id =
       Convergence::Tags::IterationId<typename nonlinear_solver::options_group>;
 
@@ -154,7 +155,7 @@ struct Solver {
       OptionTags::GmresGroup, true,
       tmpl::conditional_t<is_linear, fixed_sources_tag,
                           typename nonlinear_solver::linear_solver_source_tag>,
-      LinearSolver::multigrid::Tags::IsFinestGrid>;
+      ::amr::Tags::IsFinestGrid>;
   using linear_solver_iteration_id =
       Convergence::Tags::IterationId<typename linear_solver::options_group>;
 
@@ -174,8 +175,7 @@ struct Solver {
   using schwarz_smoother = LinearSolver::Schwarz::Schwarz<
       typename multigrid::smooth_fields_tag, OptionTags::SchwarzSmootherGroup,
       subdomain_operator, subdomain_preconditioners,
-      typename multigrid::smooth_source_tag,
-      LinearSolver::multigrid::Tags::MultigridLevel>;
+      typename multigrid::smooth_source_tag, ::amr::Tags::GridIndex>;
 
   /// For the GMRES linear solver we need to apply the DG operator to its
   /// internal "operand" in every iteration of the algorithm.
@@ -220,7 +220,7 @@ struct Solver {
       typename multigrid::smooth_source_tag, vars_tag,
       operator_applied_to_vars_tag,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
-      LinearSolver::multigrid::Tags::MultigridLevel>;
+      ::amr::Tags::GridIndex>;
 
   using build_matrix_actions = typename build_matrix::template actions<
       typename dg_operator<true>::apply_actions>;
@@ -266,6 +266,7 @@ struct Solver {
                                                     fluxes_tag>>>>>;
 
   using register_actions = tmpl::flatten<tmpl::list<
+      ::amr::Actions::RegisterElement,
       tmpl::conditional_t<is_linear, tmpl::list<>,
                           typename nonlinear_solver::register_element>,
       typename multigrid::register_element,
