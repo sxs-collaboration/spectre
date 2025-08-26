@@ -146,6 +146,16 @@ EvolutionSystem:
 
 Amr:
   Criteria:
+    - TruncationError:
+        VariablesToMonitor: [SpacetimeMetric]
+        AbsoluteTarget: 1.e-6
+        RelativeTarget: 1.e-6
+    - Persson:
+        VariablesToMonitor: [SpacetimeMetric]
+        NumHighestModes: 2
+        Exponent: 4
+        AbsoluteTolerance: 0
+        CoarseningFactor: 0.1
   Policies:
     EnforceTwoToOneBalanceInNormalDirection: true
     Isotropy: Anisotropic
@@ -166,6 +176,15 @@ PhaseChangeAndTriggers:
     PhaseChanges:
       - CheckpointAndExitAfterWallclock:
           WallclockHours: 23.5
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 200
+          Offset: 40
+    PhaseChanges:
+      - VisitAndReturn(EvaluateAmrCriteria)
+      - VisitAndReturn(AdjustDomain)
+      - VisitAndReturn(CheckDomain)
 
 SpatialDiscretization:
   BoundaryCorrection:
@@ -259,6 +278,13 @@ EventsAndTriggersAtSlabs:
         Value: 0.02
     Events:
       - Completion
+  - Trigger:
+      Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 30
+    Events:
+      - RefineMesh
 
 EventsAndTriggersAtSteps:
 
