@@ -211,15 +211,31 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
          {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
       for (const auto& i1_quadrature :
            {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-      CHECK(create_initial_mesh({{{3, 1, 1}}}, cartoon_sphere,
-                                i1_basis, i1_quadrature) ==
-            Mesh<3>{
-                {{3, 1, 1}},
-                std::array{i1_basis, Spectral::Basis::Cartoon,
-                           Spectral::Basis::Cartoon},
-                std::array{i1_quadrature,
-                           Spectral::Quadrature::SphericalSymmetry,
-                           Spectral::Quadrature::SphericalSymmetry}});
+        CHECK(create_initial_mesh({{{3, 1, 1}}}, cartoon_sphere, i1_basis,
+                                  i1_quadrature) ==
+              Mesh<3>{{{3, 1, 1}},
+                      std::array{i1_basis, Spectral::Basis::Cartoon,
+                                 Spectral::Basis::Cartoon},
+                      std::array{i1_quadrature,
+                                 Spectral::Quadrature::SphericalSymmetry,
+                                 Spectral::Quadrature::SphericalSymmetry}});
+      }
+    }
+  }
+  {
+    INFO("cartoon_cylinder");
+    const Element<3> cartoon_cylinder(element_id_3d, {},
+                                      domain::topologies::cartoon_cylinder);
+    for (const auto& i1_basis :
+         {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+      for (const auto& i1_quadrature :
+           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+        CHECK(create_initial_mesh({{{3, 2, 1}}}, cartoon_cylinder, i1_basis,
+                                  i1_quadrature) ==
+              Mesh<3>{{{3, 2, 1}},
+                      std::array{i1_basis, i1_basis, Spectral::Basis::Cartoon},
+                      std::array{i1_quadrature, i1_quadrature,
+                                 Spectral::Quadrature::AxialSymmetry}});
       }
     }
   }

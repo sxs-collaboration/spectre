@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AlignedLattice.cpp
   Test_BinaryCompactObject.cpp
   Test_Brick.cpp
+  Test_CartoonCylinder.cpp
   Test_CartoonSphere1D.cpp
   Test_Cylinder.cpp
   Test_CylindricalBinaryCompactObject.cpp

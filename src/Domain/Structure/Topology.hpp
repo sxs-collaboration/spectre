@@ -52,7 +52,8 @@ enum class Topology : uint8_t {
   B3Radial = 7,
   B3Colatitude = 8,
   B3Longitude = 9,
-  CartoonSphere = 10
+  CartoonSphere = 10,
+  CartoonCylinder = 11
 };
 
 /// Output operator for a Topology.
@@ -81,6 +82,9 @@ static constexpr auto full_sphere = std::array{
 
 static constexpr auto cartoon_sphere =
     std::array{Topology::I1, Topology::CartoonSphere, Topology::CartoonSphere};
+
+static constexpr auto cartoon_cylinder =
+    std::array{Topology::I1, Topology::I1, Topology::CartoonCylinder};
 }  // namespace topologies
 
 }  // namespace domain
