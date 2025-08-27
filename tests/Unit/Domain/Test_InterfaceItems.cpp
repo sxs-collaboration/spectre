@@ -152,11 +152,12 @@ void test_interface_items() {
   using internal_directions = Tags::InternalDirections<dim>;
   using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
-
+  const Neighbors<3> neighbors{ElementId<3>{1},
+                               OrientationMap<3>::create_aligned()};
   Element<dim> element{ElementId<3>(0),
-                       {{Direction<dim>::lower_xi(), {}},
-                        {Direction<dim>::upper_xi(), {}},
-                        {Direction<dim>::upper_zeta(), {}}}};
+                       {{Direction<dim>::lower_xi(), neighbors},
+                        {Direction<dim>::upper_xi(), neighbors},
+                        {Direction<dim>::upper_zeta(), neighbors}}};
 
   std::unordered_map<Direction<dim>, NoCopy<2>> internal_nocopy_map_item;
   internal_nocopy_map_item.emplace(Direction<dim>::lower_xi(), NoCopy<2>{});

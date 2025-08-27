@@ -21,7 +21,7 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace evolution::dg {
+namespace dg {
 /// \brief Interpolator to be used for interpolating boundary data from (to) a
 /// Neighbor onto a mortar between nonconforming Blocks.
 ///
@@ -93,6 +93,12 @@ class MortarInterpolator {
     return interpolated_neighbor_data_offsets_;
   }
 
+  /// \brief The neighbor mortar mesh that is used to compute the target points
+  /// and offsets when interpolating to the neighbor
+  const Mesh<Dim - 1>& neighbor_mortar_mesh() const {
+    return neighbor_mortar_mesh_;
+  }
+
   /// \brief Updates the interpolator if either of the mortar Mesh change
   void reset_if_necessary(const Domain<Dim>& domain,
                           const Mesh<Dim - 1>& host_mortar_mesh,
@@ -115,7 +121,19 @@ class MortarInterpolator {
   std::vector<size_t> interpolated_neighbor_data_offsets_{};
 };
 
+template <>
+class MortarInterpolator<1> {
+ public:  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*unused*/) {}
+};
+
 template <size_t Dim>
 bool operator==(const MortarInterpolator<Dim>& lhs,
                 const MortarInterpolator<Dim>& rhs);
-}  // namespace evolution::dg
+
+template <>
+inline bool operator==(const MortarInterpolator<1>& /*unused*/,
+                       const MortarInterpolator<1>& /*unused*/) {
+  return true;
+}
+}  // namespace dg

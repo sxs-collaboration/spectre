@@ -24,6 +24,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/Creators/NonconformingSphericalShells.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
@@ -560,6 +562,63 @@ void test(const Spectral::Quadrature quadrature) {
   }
 }
 
+void test_nonconforming_blocks() {
+  using metavars = Metavariables<3>;
+  using component = Component<metavars>;
+
+  const auto creator = domain::creators::NonconformingSphericalShells(
+      2.0, 3.0, 4.0, 0, 0, 5, 7, 11, nullptr, nullptr);
+  auto domain = creator.create_domain();
+  const auto initial_refinement = creator.initial_refinement_levels();
+  const auto initial_extents = creator.initial_extents();
+  const ElementId<3> shell_id{6};
+  const Mesh<3> shell_mesh{
+      std::array{5_st, 8_st, 15_st},
+      std::array{Spectral::Basis::Legendre, Spectral::Basis::SphericalHarmonic,
+                 Spectral::Basis::SphericalHarmonic},
+      std::array{Spectral::Quadrature::GaussLobatto,
+                 Spectral::Quadrature::Gauss,
+                 Spectral::Quadrature::Equiangular}};
+  const Mesh<3> cubed_sphere_mesh{std::array{11_st, 11_st, 5_st},
+                                  Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::GaussLobatto};
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{{std::move(domain)}};
+  for (size_t block_id = 0; block_id < 7; ++block_id) {
+    ActionTesting::emplace_component_and_initialize<component>(
+        &runner, ElementId<3>{block_id},
+        {initial_extents, initial_refinement,
+         Spectral::Quadrature::GaussLobatto, 0.0});
+  }
+  runner.set_phase(Parallel::Phase::Testing);
+  for (size_t block_id = 0; block_id < 7; ++block_id) {
+    const ElementId<3> element_id{block_id};
+    CHECK(ActionTesting::get_next_action_index<component>(runner, element_id) ==
+          0);
+    ActionTesting::next_action<component>(make_not_null(&runner), element_id);
+  }
+  for (size_t block_id = 0; block_id < 6; ++block_id) {
+    const ElementId<3> element_id{block_id};
+    const auto& cubed_sphere_neighbor_mesh =
+        ActionTesting::get_databox_tag<component,
+                                       domain::Tags::NeighborMesh<3>>(
+            runner, element_id);
+    CHECK(cubed_sphere_neighbor_mesh.size() == 5);
+    CHECK(cubed_sphere_neighbor_mesh.at(
+              {Direction<3>::upper_zeta(), shell_id}) == shell_mesh);
+  }
+
+  const auto& shell_neighbor_mesh =
+      ActionTesting::get_databox_tag<component, domain::Tags::NeighborMesh<3>>(
+          runner, shell_id);
+  CHECK(shell_neighbor_mesh.size() == 6);
+  for (size_t block_id = 0; block_id < 6; ++block_id) {
+    CHECK(shell_neighbor_mesh.at(
+              {Direction<3>::lower_xi(), ElementId<3>(block_id)}) ==
+          cubed_sphere_mesh);
+  }
+}
+
 namespace test_projectors {
 struct TestMetavariables {
   using component_list = tmpl::list<>;
@@ -832,6 +891,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Initialization.DgDomain",
     test<2, false>(quadrature);
     test<3, false>(quadrature);
   }
+
+  domain::creators::register_derived_with_charm();
+  test_nonconforming_blocks();
+
   static_assert(
       tt::assert_conforms_to_v<evolution::dg::Initialization::ProjectDomain<1>,
                                amr::protocols::Projector>);

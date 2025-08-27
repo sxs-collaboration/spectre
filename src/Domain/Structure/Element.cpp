@@ -30,21 +30,49 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id, Neighbors_t neighbors,
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
     const bool has_boundary_in_this_direction = has_boundary(
         gsl::at(topologies_, direction.dimension()), direction.side());
-    if (neighbors_.find(direction) == neighbors_.end()) {
+    const auto& it_to_neighbors_in_this_direction = neighbors_.find(direction);
+    if (it_to_neighbors_in_this_direction == neighbors_.end()) {
       if (has_boundary_in_this_direction) {
         external_boundaries_.emplace(direction);
+        face_types_.emplace(direction, domain::FaceType::External);
+      } else {
+        face_types_.emplace(direction, domain::FaceType::Topological);
       }
     } else {
+      const Neighbors<VolumeDim>& neighbors_in_this_direction =
+          it_to_neighbors_in_this_direction->second;
+      ASSERT(not neighbors_in_this_direction.ids().empty(),
+             "Do not specify an empty set of neighbors");
       ASSERT(has_boundary_in_this_direction,
              "Cannot specify a neighbor in a direction with no boundary.  "
              "Topologies: "
                  << topologies_ << "; Direction: " << direction);
       internal_boundaries_.emplace(direction);
+      if (neighbors_in_this_direction.are_conforming()) {
+        const auto& orientation =
+            neighbors_in_this_direction.orientations().begin()->second;
+        if (orientation.is_aligned()) {
+          face_types_.emplace(direction, domain::FaceType::ConformingAligned);
+        } else {
+          face_types_.emplace(direction, domain::FaceType::ConformingUnaligned);
+        }
+      } else {
+        if (neighbors_in_this_direction.size() == 1) {
+          face_types_.emplace(direction, domain::FaceType::SingleNonconforming);
+        } else {
+          face_types_.emplace(direction,
+                              domain::FaceType::MultipleNonconforming);
+        }
+      }
     }
   }
   // Assuming a maximum 2-to-1 refinement between neighboring elements:
   ASSERT(number_of_neighbors_ <= maximum_number_of_neighbors(VolumeDim) or
-             topologies_ != domain::topologies::hypercube<VolumeDim>,
+             alg::any_of(face_types_,
+                         [](const auto& key_value) {
+                           return key_value.second ==
+                                  domain::FaceType::MultipleNonconforming;
+                         }),
          "Can't have " << number_of_neighbors_ << " neighbors in " << VolumeDim
                        << " dimensions");
 }
@@ -57,6 +85,7 @@ void Element<VolumeDim>::pup(PUP::er& p) {
   p | external_boundaries_;
   p | internal_boundaries_;
   p | topologies_;
+  p | face_types_;
 }
 
 template <size_t VolumeDim>
@@ -65,7 +94,8 @@ bool operator==(const Element<VolumeDim>& lhs, const Element<VolumeDim>& rhs) {
          lhs.number_of_neighbors() == rhs.number_of_neighbors() and
          lhs.external_boundaries() == rhs.external_boundaries() and
          lhs.internal_boundaries() == rhs.internal_boundaries() and
-         lhs.topologies() == rhs.topologies();
+         lhs.topologies() == rhs.topologies() and
+         lhs.face_types() == rhs.face_types();
 }
 
 template <size_t VolumeDim>
@@ -79,6 +109,7 @@ std::ostream& operator<<(std::ostream& os, const Element<VolumeDim>& element) {
   os << "  Topology: " << element.topologies() << '\n';
   os << "  Neighbors: " << element.neighbors() << "\n";
   os << "  External boundaries: " << element.external_boundaries() << "\n";
+  os << "  Face types: " << element.face_types() << "\n";
   return os;
 }
 

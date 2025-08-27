@@ -47,7 +47,7 @@ compute_neighbor_target_points(
 }
 }  // namespace
 
-namespace evolution::dg {
+namespace dg {
 template <size_t Dim>
 MortarInterpolator<Dim>::MortarInterpolator(
     const ElementId<Dim>& host_id, const DirectionalId<Dim>& neighbor_id,
@@ -239,4 +239,4 @@ template bool operator!=(const MortarInterpolator<2>&,
                          const MortarInterpolator<2>&);
 template bool operator!=(const MortarInterpolator<3>&,
                          const MortarInterpolator<3>&);
-}  // namespace evolution::dg
+}  // namespace dg

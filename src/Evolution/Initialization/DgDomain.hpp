@@ -169,12 +169,19 @@ struct Domain {
     for (const auto& [direction, neighbors] : element->neighbors()) {
       for (const auto& neighbor : neighbors) {
         const auto& neighbor_block = domain.blocks()[neighbor.block_id()];
-        const auto& neighbor_orientation = neighbors.orientation(neighbor);
-        neighbor_mesh->emplace(
-            DirectionalId{direction, neighbor},
-            neighbor_orientation.inverse_map()(::domain::create_initial_mesh(
-                initial_extents, neighbor_block, neighbor, i1_basis,
-                i1_quadrature)));
+        if (neighbors.are_conforming()) {
+          const auto& neighbor_orientation = neighbors.orientation(neighbor);
+          neighbor_mesh->emplace(
+              DirectionalId{direction, neighbor},
+              neighbor_orientation.inverse_map()(::domain::create_initial_mesh(
+                  initial_extents, neighbor_block, neighbor, i1_basis,
+                  i1_quadrature)));
+        } else {
+          neighbor_mesh->emplace(
+              DirectionalId{direction, neighbor},
+              ::domain::create_initial_mesh(initial_extents, neighbor_block,
+                                            neighbor, i1_basis, i1_quadrature));
+        }
       }
     }
   }
