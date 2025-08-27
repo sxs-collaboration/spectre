@@ -221,6 +221,8 @@ find . \
      ! -name '*.pyc' \
      ! -path '*/__pycache__/*' \
      ! -path './tools/charm_module_patchs/*' \
+     ! -name 'CircularOrbitCoeffs.cpp' \
+     ! -name 'CircularOrbitConvertEffsource.cpp' \
      ! -name '*~' \
      ! -name deploy_key.enc \
      -print0 \
