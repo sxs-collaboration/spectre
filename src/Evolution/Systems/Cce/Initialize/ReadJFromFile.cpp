@@ -125,7 +125,6 @@ void ReadJFromFile::operator()(
 
     get(*j) = Spectral::Swsh::inverse_swsh_transform(
         l_max, number_of_radial_points, modal_j_libsharp);
-    Parallel::printf("%s\n", get(*j).data()[8]);
   }
 
   if (input_subfile_name_coord_ != "None") {

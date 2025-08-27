@@ -42,6 +42,7 @@
 #include "Time/Tags/Time.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
@@ -236,7 +237,7 @@ class ObserveNorms : public Event {
 
       const SpinWeighted<ComplexDataVector, spin>& field = get(get<tag>(box));
 
-      const double norm = sqrt((conj(field) * field).data()[0].real());
+      const double norm = sqrt(dot(conj(field).data(), field.data()).real());
       norms.push_back(norm);
     });
 

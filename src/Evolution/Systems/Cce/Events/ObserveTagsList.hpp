@@ -45,7 +45,11 @@ template <typename Tag, bool IncludeSecondDeriv = true>
                  Tags::NewmanPenroseMu,
                  Tags::NewmanPenroseLambda,
                  Tags::EthRDividedByR,
-                 Tags::DuRDividedByR>>;
+                 Tags::DuRDividedByR,
+                 Tags::BianchiConstraintDPsi1,
+                 Tags::BianchiConstraintDPsi2,
+                 Tags::NewmanPenroseD<Tags::Psi1>,
+                 Tags::NewmanPenroseD<Tags::Psi2>>>;
 // clang-format on
 
 using available_volume_tags_to_observe =
@@ -69,5 +73,8 @@ using compute_tags_for_observation_box = tmpl::list<
     Tags::SwshDerivativeCompute<Tags::NewmanPenrosePi,
                                 Spectral::Swsh::Tags::Ethbar>,
     Tags::DyCompute<Tags::NewmanPenrosePi>,
-    Tags::DyCompute<Tags::NewmanPenroseMu>>;
+    Tags::DyCompute<Tags::NewmanPenroseMu>, Tags::BianchiConstraintDPsi1Compute,
+    Tags::BianchiConstraintDPsi2Compute,
+    Tags::NewmanPenroseDCompute<Tags::Psi1>,
+    Tags::NewmanPenroseDCompute<Tags::Psi2>>;
 }  // namespace Cce::Events
