@@ -43,6 +43,7 @@
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComputeFluxesFromPrimitives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
@@ -54,9 +55,11 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -172,32 +175,31 @@ void test(const BoundaryConditionType& boundary_condition,
   // be satisfied at the first place. Later we will change shift vector to its
   // original value (0.0) and check that the DemandOutgoingCharSpeeds condition
   // is violated as expected.
-  Variables<typename System::spacetime_variables_tag::tags_list>
-      volume_spacetime_vars{subcell_mesh.number_of_grid_points()};
-  volume_spacetime_vars.assign_subset(solution.variables(
+  Variables<tmpl::append<typename System::spacetime_variables_tag::tags_list,
+                         typename System::primitive_variables_tag::tags_list>>
+      volume_vars{subcell_mesh.number_of_grid_points()};
+  volume_vars.assign_subset(solution.variables(
       subcell_inertial_coords, time,
       typename System::spacetime_variables_tag::tags_list{}));
   for (size_t i = 0; i < 3; ++i) {
-    get<gr::Tags::Shift<DataVector, 3>>(volume_spacetime_vars).get(i) = -2.0;
+    get<gr::Tags::Shift<DataVector, 3>>(volume_vars).get(i) = -2.0;
   }
 
-  Variables<typename System::primitive_variables_tag::tags_list>
-      volume_prim_vars{subcell_mesh.number_of_grid_points()};
-  get(get<RestMassDensity>(volume_prim_vars)) = 1.0;
-  get(get<ElectronFraction>(volume_prim_vars)) = 0.1;
-  get(get<Pressure>(volume_prim_vars)) = 1.0;
-  get(get<LorentzFactor>(volume_prim_vars)) = 2.0;
+  get(get<RestMassDensity>(volume_vars)) = 1.0;
+  get(get<ElectronFraction>(volume_vars)) = 0.1;
+  get(get<Pressure>(volume_vars)) = 1.0;
+  get(get<LorentzFactor>(volume_vars)) = 2.0;
   // This quantity is fixed by the equation of state given P and rho
-  get(get<SpecificInternalEnergy>(volume_prim_vars)) = 1.0 / (1.4 - 1.0);
-  get<Temperature>(volume_prim_vars) =
+  get(get<SpecificInternalEnergy>(volume_vars)) = 1.0 / (1.4 - 1.0);
+  get<Temperature>(volume_vars) =
       solution.equation_of_state().temperature_from_density_and_energy(
-          get<RestMassDensity>(volume_prim_vars),
-          get<SpecificInternalEnergy>(volume_prim_vars));
+          get<RestMassDensity>(volume_vars),
+          get<SpecificInternalEnergy>(volume_vars));
   for (size_t i = 0; i < 3; ++i) {
-    get<SpatialVelocity>(volume_prim_vars).get(i) = 0.1;
-    get<MagneticField>(volume_prim_vars).get(i) = 0.5;
+    get<SpatialVelocity>(volume_vars).get(i) = 0.1;
+    get<MagneticField>(volume_vars).get(i) = 0.5;
   }
-  get(get<DivergenceCleaningField>(volume_prim_vars)) = 1e-2;
+  get(get<DivergenceCleaningField>(volume_vars)) = 1e-2;
 
   std::optional<tnsr::I<DataVector, 3>> volume_mesh_velocity{};
 
@@ -249,56 +251,8 @@ void test(const BoundaryConditionType& boundary_condition,
   if (set_fluxes) {
     cell_centered_fluxes = typename decltype(cell_centered_fluxes)::value_type{
         subcell_mesh.number_of_grid_points()};
-    ConservativeFromPrimitive::apply(
-        get<tmpl::at_c<cons_tags, 0>>(make_not_null(&volume_cons_vars)),
-        get<tmpl::at_c<cons_tags, 1>>(make_not_null(&volume_cons_vars)),
-        get<tmpl::at_c<cons_tags, 2>>(make_not_null(&volume_cons_vars)),
-        get<tmpl::at_c<cons_tags, 3>>(make_not_null(&volume_cons_vars)),
-        get<tmpl::at_c<cons_tags, 4>>(make_not_null(&volume_cons_vars)),
-        get<tmpl::at_c<cons_tags, 5>>(make_not_null(&volume_cons_vars)),
-        get<hydro::Tags::RestMassDensity<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::ElectronFraction<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::SpecificInternalEnergy<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::Pressure<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(volume_prim_vars),
-        get<hydro::Tags::LorentzFactor<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::MagneticField<DataVector, 3>>(volume_prim_vars),
-        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(volume_spacetime_vars),
-        get<gr::Tags::SpatialMetric<DataVector, 3>>(volume_spacetime_vars),
-        get<hydro::Tags::DivergenceCleaningField<DataVector>>(
-            volume_prim_vars));
-
-    ComputeFluxes::apply(
-        get<Flux<tmpl::at_c<cons_tags, 0>>>(
-            make_not_null(&cell_centered_fluxes.value())),
-        get<Flux<tmpl::at_c<cons_tags, 1>>>(
-            make_not_null(&cell_centered_fluxes.value())),
-        get<Flux<tmpl::at_c<cons_tags, 2>>>(
-            make_not_null(&cell_centered_fluxes.value())),
-        get<Flux<tmpl::at_c<cons_tags, 3>>>(
-            make_not_null(&cell_centered_fluxes.value())),
-        get<Flux<tmpl::at_c<cons_tags, 4>>>(
-            make_not_null(&cell_centered_fluxes.value())),
-        get<Flux<tmpl::at_c<cons_tags, 5>>>(
-            make_not_null(&cell_centered_fluxes.value())),
-
-        get<tmpl::at_c<cons_tags, 0>>(volume_cons_vars),
-        get<tmpl::at_c<cons_tags, 1>>(volume_cons_vars),
-        get<tmpl::at_c<cons_tags, 2>>(volume_cons_vars),
-        get<tmpl::at_c<cons_tags, 3>>(volume_cons_vars),
-        get<tmpl::at_c<cons_tags, 4>>(volume_cons_vars),
-        get<tmpl::at_c<cons_tags, 5>>(volume_cons_vars),
-
-        get<gr::Tags::Lapse<DataVector>>(volume_spacetime_vars),
-        get<gr::Tags::Shift<DataVector, 3>>(volume_spacetime_vars),
-        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(volume_spacetime_vars),
-        get<gr::Tags::SpatialMetric<DataVector, 3>>(volume_spacetime_vars),
-        get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(
-            volume_spacetime_vars),
-        get<hydro::Tags::Pressure<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(volume_prim_vars),
-        get<hydro::Tags::LorentzFactor<DataVector>>(volume_prim_vars),
-        get<hydro::Tags::MagneticField<DataVector, 3>>(volume_prim_vars));
+    compute_fluxes_from_primitives(make_not_null(&cell_centered_fluxes.value()),
+                                   volume_vars);
   }
 
   using Vlo =
@@ -319,8 +273,9 @@ void test(const BoundaryConditionType& boundary_condition,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,
-      typename System::spacetime_variables_tag,
-      typename System::primitive_variables_tag,
+      ::Tags::Variables<
+          tmpl::append<typename System::spacetime_variables_tag::tags_list,
+                       typename System::primitive_variables_tag::tags_list>>,
       evolution::dg::subcell::Tags::CellCenteredFlux<
           typename System::flux_variables, 3>,
       ::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>,
@@ -337,8 +292,8 @@ void test(const BoundaryConditionType& boundary_condition,
               domain::CoordinateMaps::Identity<3>{})},
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}),
-      volume_spacetime_vars, volume_prim_vars, cell_centered_fluxes,
-      variable_fixer, solution.equation_of_state().promote_to_3d_eos());
+      volume_vars, cell_centered_fluxes, variable_fixer,
+      solution.equation_of_state().promote_to_3d_eos());
 
   {
     // compute FD ghost data and retrieve the result
@@ -390,8 +345,30 @@ void test(const BoundaryConditionType& boundary_condition,
             const auto& spatial_velocity, const auto& lorentz_factor,
             const auto& magnetic_field, const auto& div_cleaning_field,
             const double shift_value) {
-          typename System::variables_tag::type expected_cons_vars{
-              get(rest_mass_density).size()};
+          using fluxes_tags = tmpl::push_back<
+              typename System::primitive_variables_tag::tags_list,
+              gr::Tags::SpatialMetric<DataVector, 3>,
+              gr::Tags::Lapse<DataVector>, gr::Tags::Shift<DataVector, 3>,
+              gr::Tags::SqrtDetSpatialMetric<DataVector>,
+              gr::Tags::InverseSpatialMetric<DataVector, 3>>;
+          Variables<fluxes_tags> boundary_data{get(rest_mass_density).size()};
+
+          get<RestMassDensity>(boundary_data) = rest_mass_density;
+          get<ElectronFraction>(boundary_data) = electron_fraction;
+          get<SpecificInternalEnergy>(boundary_data) = specific_internal_energy;
+          get<Temperature>(boundary_data) = local_temperature;
+          get<SpatialVelocity>(boundary_data) = spatial_velocity;
+          get<LorentzFactor>(boundary_data) = lorentz_factor;
+          get<MagneticField>(boundary_data) = magnetic_field;
+          get<DivergenceCleaningField>(boundary_data) = div_cleaning_field;
+
+          get<Pressure>(boundary_data) =
+              solution.equation_of_state().pressure_from_density_and_energy(
+                  rest_mass_density,
+                  solution.equation_of_state()
+                      .specific_internal_energy_from_density_and_temperature(
+                          rest_mass_density, local_temperature));
+
           tnsr::ii<DataVector, 3> spatial_metric(get(rest_mass_density).size(),
                                                  0.0);
           tnsr::II<DataVector, 3> inverse_spatial_metric(
@@ -400,55 +377,22 @@ void test(const BoundaryConditionType& boundary_condition,
             spatial_metric.get(i, i) = 1.0;
             inverse_spatial_metric.get(i, i) = 1.0;
           }
-          const auto local_pressure =
-              solution.equation_of_state().pressure_from_density_and_energy(
-                  rest_mass_density,
-                  solution.equation_of_state()
-                      .specific_internal_energy_from_density_and_temperature(
-                          rest_mass_density, local_temperature));
-          const Scalar<DataVector> sqrt_det_spatial_metric(
-              get(rest_mass_density).size(), 1.0);
-          const Scalar<DataVector> lapse(get(rest_mass_density).size(), 1.0);
-          const tnsr::I<DataVector, 3> shift(get(rest_mass_density).size(),
-                                             shift_value);
+          get<gr::Tags::SpatialMetric<DataVector, 3>>(boundary_data) =
+              spatial_metric;
+          get<gr::Tags::InverseSpatialMetric<DataVector, 3>>(boundary_data) =
+              inverse_spatial_metric;
+          get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(boundary_data) =
+              Scalar<DataVector>(get(rest_mass_density).size(), 1.0);
+          get<gr::Tags::Lapse<DataVector>>(boundary_data) =
+              Scalar<DataVector>(get(rest_mass_density).size(), 1.0);
+          get<gr::Tags::Shift<DataVector, 3>>(boundary_data) =
+              tnsr::I<DataVector, 3>(get(rest_mass_density).size(),
+                                     shift_value);
           typename evolution::dg::subcell::Tags::CellCenteredFlux<
               typename System::flux_variables, 3>::type::value_type
               expected_neighbor_fluxes{get(rest_mass_density).size()};
-          ConservativeFromPrimitive::apply(
-              get<tmpl::at_c<cons_tags, 0>>(make_not_null(&expected_cons_vars)),
-              get<tmpl::at_c<cons_tags, 1>>(make_not_null(&expected_cons_vars)),
-              get<tmpl::at_c<cons_tags, 2>>(make_not_null(&expected_cons_vars)),
-              get<tmpl::at_c<cons_tags, 3>>(make_not_null(&expected_cons_vars)),
-              get<tmpl::at_c<cons_tags, 4>>(make_not_null(&expected_cons_vars)),
-              get<tmpl::at_c<cons_tags, 5>>(make_not_null(&expected_cons_vars)),
-              rest_mass_density, electron_fraction, specific_internal_energy,
-              local_pressure, spatial_velocity, lorentz_factor, magnetic_field,
-              sqrt_det_spatial_metric, spatial_metric, div_cleaning_field);
-
-          ComputeFluxes::apply(
-              get<Flux<tmpl::at_c<cons_tags, 0>>>(
-                  make_not_null(&expected_neighbor_fluxes)),
-              get<Flux<tmpl::at_c<cons_tags, 1>>>(
-                  make_not_null(&expected_neighbor_fluxes)),
-              get<Flux<tmpl::at_c<cons_tags, 2>>>(
-                  make_not_null(&expected_neighbor_fluxes)),
-              get<Flux<tmpl::at_c<cons_tags, 3>>>(
-                  make_not_null(&expected_neighbor_fluxes)),
-              get<Flux<tmpl::at_c<cons_tags, 4>>>(
-                  make_not_null(&expected_neighbor_fluxes)),
-              get<Flux<tmpl::at_c<cons_tags, 5>>>(
-                  make_not_null(&expected_neighbor_fluxes)),
-
-              get<tmpl::at_c<cons_tags, 0>>(expected_cons_vars),
-              get<tmpl::at_c<cons_tags, 1>>(expected_cons_vars),
-              get<tmpl::at_c<cons_tags, 2>>(expected_cons_vars),
-              get<tmpl::at_c<cons_tags, 3>>(expected_cons_vars),
-              get<tmpl::at_c<cons_tags, 4>>(expected_cons_vars),
-              get<tmpl::at_c<cons_tags, 5>>(expected_cons_vars),
-
-              lapse, shift, sqrt_det_spatial_metric, spatial_metric,
-              inverse_spatial_metric, local_pressure, spatial_velocity,
-              lorentz_factor, magnetic_field);
+          compute_fluxes_from_primitives(
+              make_not_null(&expected_neighbor_fluxes), boundary_data);
           tmpl::for_each<tmpl::list<tmpl::at_c<cons_tags, 0>>>(
               [&fd_ghost_fluxes, &expected_neighbor_fluxes](auto cons_tag_v) {
                 using tag =

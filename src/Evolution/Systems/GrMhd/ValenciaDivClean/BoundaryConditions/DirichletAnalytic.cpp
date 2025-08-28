@@ -31,6 +31,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComputeFluxesFromPrimitives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
@@ -43,6 +44,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Temperature.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -316,13 +318,18 @@ void DirichletAnalytic::fd_ghost(
     auto metric_boundary_values = call_with_dynamic_type<
         tuples::TaggedTuple<gr::Tags::Lapse<DataVector>,
                             gr::Tags::Shift<DataVector, 3>,
-                            gr::Tags::SpatialMetric<DataVector, 3>>,
+                            gr::Tags::SpatialMetric<DataVector, 3>,
+                            gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                            gr::Tags::InverseSpatialMetric<DataVector, 3>>,
         grmhd::ValenciaDivClean::InitialData::initial_data_list>(
         analytic_prescription_.get(),
         [&ghost_inertial_coords, &time](const auto* const initial_data) {
-          using gr_tags = tmpl::list<gr::Tags::Lapse<DataVector>,
-                                     gr::Tags::Shift<DataVector, 3>,
-                                     gr::Tags::SpatialMetric<DataVector, 3>>;
+          using gr_tags =
+              tmpl::list<gr::Tags::Lapse<DataVector>,
+                         gr::Tags::Shift<DataVector, 3>,
+                         gr::Tags::SpatialMetric<DataVector, 3>,
+                         gr::Tags::SqrtDetSpatialMetric<DataVector>,
+                         gr::Tags::InverseSpatialMetric<DataVector, 3>>;
           if constexpr (is_analytic_solution_v<
                             std::decay_t<decltype(*initial_data)>>) {
             return initial_data->variables(ghost_inertial_coords, time,
@@ -332,61 +339,11 @@ void DirichletAnalytic::fd_ghost(
             return initial_data->variables(ghost_inertial_coords, gr_tags{});
           }
         });
-    auto [sqrt_det_spatial_metric, inverse_spatial_metric] =
-        determinant_and_inverse(get<gr::Tags::SpatialMetric<DataVector, 3>>(
-            metric_boundary_values));
-    get(sqrt_det_spatial_metric) = sqrt(get(sqrt_det_spatial_metric));
 
-    Variables<typename System::variables_tag::tags_list> conserved_vars{
-        get(*rest_mass_density).size()};
-    ConservativeFromPrimitive::apply(
-        make_not_null(&get<Tags::TildeD>(conserved_vars)),
-        make_not_null(&get<Tags::TildeYe>(conserved_vars)),
-        make_not_null(&get<Tags::TildeTau>(conserved_vars)),
-        make_not_null(&get<Tags::TildeS<>>(conserved_vars)),
-        make_not_null(&get<Tags::TildeB<>>(conserved_vars)),
-        make_not_null(&get<Tags::TildePhi>(conserved_vars)),
-
-        get<hydro::Tags::RestMassDensity<DataVector>>(boundary_values),
-        get<hydro::Tags::ElectronFraction<DataVector>>(boundary_values),
-        get<hydro::Tags::SpecificInternalEnergy<DataVector>>(boundary_values),
-        get<hydro::Tags::Pressure<DataVector>>(boundary_values),
-        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values),
-        get<hydro::Tags::LorentzFactor<DataVector>>(boundary_values),
-        get<hydro::Tags::MagneticField<DataVector, 3>>(boundary_values),
-        sqrt_det_spatial_metric,
-        get<gr::Tags::SpatialMetric<DataVector, 3>>(metric_boundary_values),
-        get<hydro::Tags::DivergenceCleaningField<DataVector>>(boundary_values));
-
-    ComputeFluxes::apply(
-        make_not_null(
-            &get<Flux<Tags::TildeD>>(cell_centered_ghost_fluxes->value())),
-        make_not_null(
-            &get<Flux<Tags::TildeYe>>(cell_centered_ghost_fluxes->value())),
-        make_not_null(
-            &get<Flux<Tags::TildeTau>>(cell_centered_ghost_fluxes->value())),
-        make_not_null(
-            &get<Flux<Tags::TildeS<>>>(cell_centered_ghost_fluxes->value())),
-        make_not_null(
-            &get<Flux<Tags::TildeB<>>>(cell_centered_ghost_fluxes->value())),
-        make_not_null(
-            &get<Flux<Tags::TildePhi>>(cell_centered_ghost_fluxes->value())),
-
-        get<Tags::TildeD>(conserved_vars), get<Tags::TildeYe>(conserved_vars),
-        get<Tags::TildeTau>(conserved_vars),
-        get<Tags::TildeS<>>(conserved_vars),
-        get<Tags::TildeB<>>(conserved_vars),
-        get<Tags::TildePhi>(conserved_vars),
-
-        get<gr::Tags::Lapse<DataVector>>(metric_boundary_values),
-        get<gr::Tags::Shift<DataVector, 3>>(metric_boundary_values),
-        sqrt_det_spatial_metric,
-        get<gr::Tags::SpatialMetric<DataVector, 3>>(metric_boundary_values),
-        inverse_spatial_metric,
-        get<hydro::Tags::Pressure<DataVector>>(boundary_values),
-        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(boundary_values),
-        get<hydro::Tags::LorentzFactor<DataVector>>(boundary_values),
-        get<hydro::Tags::MagneticField<DataVector, 3>>(boundary_values));
+    compute_fluxes_from_primitives(
+        make_not_null(&cell_centered_ghost_fluxes->value()),
+        tagged_tuple_cat(std::move(boundary_values),
+                         std::move(metric_boundary_values)));
   }
 }
 
