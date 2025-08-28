@@ -14,10 +14,6 @@ DataVector Controller<DerivOrder>::operator()(
     const double q_time_offset, const double deriv_time_offset) {
   last_update_time_ = time;
   assign_time_between_updates(min(timescales));
-  // helper lambda for computing the binomial coefficients
-  const auto binomial = [](size_t N, size_t k) {
-    return falling_factorial(N, k) / factorial(k);
-  };
 
   // The coefficients a0_{k} are chosen such that the system is critically
   // damped, so they are given by: a0_{k} = (N choose k) timescales^{k-N}

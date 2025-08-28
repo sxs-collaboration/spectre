@@ -76,29 +76,39 @@ constexpr T step_function(const T& arg) {
 /*!
  * \ingroup UtilitiesGroup
  * \brief Smoothly interpolates from 0 to 1 between `lower_edge` and
- * `upper_edge` with a Hermite polynomial of degree `2 * N + 1`.
+ * `upper_edge` with Hermite interpolation of polynomial degree `2 * N + 1`.
  *
  * The smoothstep function is
  *
- * \f{align*}
+ * \begin{align*}
  * S_N(x) = \begin{cases}
  * 0 &\quad \text{for} \quad x\leq x_0 \\
  * \tilde{S}_N((x - x_0) / (x_1 - x_0))
  * &\quad \text{for} \quad x_0 \leq x\leq x_1 \\
  * 1 &\quad \text{for} \quad x_1\leq x \\
  * \end{cases}
- * \f}
+ * \end{align*}
  *
- * where \f$x_0\f$ is `lower_edge`, \f$x_1\f$ is `upper_edge`, and, up to
- * \f$N=3\f$,
+ * where \f$x_0\f$ is `lower_edge` and \f$x_1\f$ is `upper_edge`. The general
+ * form of the polynomial \f$\tilde{S}_N(x)\f$ is:
  *
- * \f{align*}
+ * \begin{equation}
+ * \tilde{S}_N(x) = x^{N+1} \sum_{k=0}^{N} \binom{N+k}{k}
+ *   \binom{2N+1}{N-k} (-x)^k
+ * \end{equation}
+ *
+ * The first few polynomials are:
+ *
+ * \begin{align*}
  * \tilde{S}_0(x) &= x \\
  * \tilde{S}_1(x) &= 3x^2 - 2x^3 \\
  * \tilde{S}_2(x) &= 10x^3 - 15x^4 + 6x^5 \\
  * \tilde{S}_3(x) &= 35x^4 - 84x^5 + 70x^6 - 20x^7
  * \text{.}
- * \f}
+ * \end{align*}
+ *
+ * This function is $C^N$ continuous at the edges, i.e. the first $N$
+ * derivatives are continuous at the edges.
  */
 template <size_t N, typename DataType>
 DataType smoothstep(const double lower_edge, const double upper_edge,
@@ -106,25 +116,46 @@ DataType smoothstep(const double lower_edge, const double upper_edge,
   ASSERT(lower_edge < upper_edge,
          "Requires lower_edge < upper_edge, but lower_edge="
              << lower_edge << " and upper_edge=" << upper_edge);
+  constexpr auto coeffs = []() {
+    std::array<double, 2 * N + 2> result{};
+    for (size_t k = 0; k <= N; ++k) {
+      result[N + 1 + k] = (k % 2 == 0 ? 1. : -1.) * binomial(2 * N + 1, N - k) *
+                          binomial(N + k, k);
+    }
+    return result;
+  }();
   using std::clamp;
-  return evaluate_polynomial(
-      []() -> std::array<double, 2 * N + 2> {
-        static_assert(N <= 3,
-                      "The smoothstep function is currently only implemented "
-                      "for N <= 3.");
-        if constexpr (N == 0) {
-          return {0., 1};
-        } else if constexpr (N == 1) {
-          return {0., 0., 3., -2};
-        } else if constexpr (N == 2) {
-          return {0., 0., 0., 10., -15., 6.};
-        } else if constexpr (N == 3) {
-          return {0., 0., 0., 0., 35., -84., 70., -20.};
-        }
-      }(),
-      static_cast<DataType>(clamp(
-          static_cast<DataType>((arg - lower_edge) / (upper_edge - lower_edge)),
-          0., 1.)));
+  const DataType x = clamp(
+      static_cast<DataType>((arg - lower_edge) / (upper_edge - lower_edge)), 0.,
+      1.);
+  return evaluate_polynomial(coeffs, x);
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Derivative of the $N$-th order smoothstep function
+ *
+ * The general form of the derivative of the smoothstep function is:
+ *
+ * \begin{equation}
+ * \tilde{S}_N'(x) = (2N + 1) \binom{2N}{N} (x - x^2)^N
+ * \end{equation}
+ *
+ * Since the smoothstep function is $C^N$ continuous at the edges, this
+ * function is $C^{N-1}$ continuous at the edges.
+ */
+template <size_t N, typename DataType>
+DataType smoothstep_deriv(const double lower_edge, const double upper_edge,
+                          const DataType& arg) {
+  ASSERT(lower_edge < upper_edge,
+         "Requires lower_edge < upper_edge, but lower_edge="
+             << lower_edge << " and upper_edge=" << upper_edge);
+  using std::clamp;
+  const DataType x = clamp(
+      static_cast<DataType>((arg - lower_edge) / (upper_edge - lower_edge)), 0.,
+      1.);
+  constexpr auto coeff = (2 * N + 1) * binomial(2 * N, N);
+  return coeff * pow<N>(x - square(x));
 }
 
 /// \ingroup UtilitiesGroup

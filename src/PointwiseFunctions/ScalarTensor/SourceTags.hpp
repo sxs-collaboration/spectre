@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "Options/String.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 namespace ScalarTensor::OptionTags {
@@ -35,6 +36,7 @@ struct RampUpDuration {
   using type = double;
   static constexpr Options::String help{"Duration time for ramp up function"};
   using group = ::ScalarTensor::OptionTags::Group;
+  static double lower_bound() { return 0.0; }
 };
 
 }  // namespace OptionTags
@@ -50,7 +52,11 @@ struct RampUpParameters : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static std::pair<double, double> create_from_options(
       const double start_time, const double duration_time) {
-    return std::pair<double, double> {start_time, duration_time};
+    if (duration_time <= 0.0) {
+      ERROR("Ramp up duration time must be greater than zero, but is "
+            << duration_time);
+    }
+    return std::pair<double, double>{start_time, duration_time};
   }
 };
 

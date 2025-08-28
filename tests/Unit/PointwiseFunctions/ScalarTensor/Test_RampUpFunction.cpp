@@ -21,8 +21,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarTensor.RampUpFunction",
       "PointwiseFunctions/ScalarTensor"};
 
   // Specify explicitly the template parameters to avoid ambiguous calls
-  pypp::check_with_random_values<1, double (*)(double, double, double),
+  pypp::check_with_random_values<3, double (*)(double, double, double),
                                  DataVector, nullptr>(
       &ScalarTensor::nonic_ramp_function, "RampUpFunction",
-      {"nonic_ramp_function"}, {{{-1.0, 1.0}}}, DataVector{5});
+      {"nonic_ramp_function"}, {{{-1.0, 1.0}, {-1.0, 1.0}, {0.1, 1.0}}},
+      DataVector{5});
 }
