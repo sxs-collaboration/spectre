@@ -48,6 +48,8 @@ std::array<Spectral::Basis, Dim> make_basis(
         [[fallthrough]];
       case (domain::Topology::B3Longitude):
         return Spectral::Basis::ZernikeB3;
+      case (domain::Topology::CartoonSphere):
+        return Spectral::Basis::Cartoon;
       default:
         ERROR("Invalid topology");
     }
@@ -85,6 +87,8 @@ std::array<Spectral::Quadrature, Dim> make_quadrature(
             [[fallthrough]];
           case (domain::Topology::B3Radial):
             return Spectral::Quadrature::GaussRadauUpper;
+          case (domain::Topology::CartoonSphere):
+            return Spectral::Quadrature::SphericalSymmetry;
           default:
             ERROR("Invalid topology");
         }

@@ -203,6 +203,26 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
       }
     }
   }
+  {
+    INFO("cartoon_sphere");
+    const Element<3> cartoon_sphere(element_id_3d, {},
+                                    domain::topologies::cartoon_sphere);
+    for (const auto& i1_basis :
+         {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}) {
+      for (const auto& i1_quadrature :
+           {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+      CHECK(create_initial_mesh({{{3, 1, 1}}}, cartoon_sphere,
+                                i1_basis, i1_quadrature) ==
+            Mesh<3>{
+                {{3, 1, 1}},
+                std::array{i1_basis, Spectral::Basis::Cartoon,
+                           Spectral::Basis::Cartoon},
+                std::array{i1_quadrature,
+                           Spectral::Quadrature::SphericalSymmetry,
+                           Spectral::Quadrature::SphericalSymmetry}});
+      }
+    }
+  }
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       create_initial_mesh(
