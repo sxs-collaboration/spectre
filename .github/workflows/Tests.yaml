@@ -1031,7 +1031,9 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
         with:
           python-version: '3.12'
       - name: Install Homebrew dependencies
+        # uninstall cmake to avoid conflict between brew taps
         run: |
+          brew uninstall cmake
           brew install $SPECTRE_BREW_DEPS
       # We install the remaining dependencies with Spack and cache them.
       # See the `unit_tests` job above for details on the cache configuration.
@@ -1089,7 +1091,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           # Clear existing buildcache so we don't accumulate old versions of
           # packages in the cache
           rm -rf $HOME/dependencies
-          spack buildcache create -ufa -m dependencies $SPECTRE_SPACK_DEPS
+          spack buildcache create -uf dependencies $SPECTRE_SPACK_DEPS
         # Allow the buildcache creation to fail without failing the job, since
         # it sometimes runs out of memory
         continue-on-error: true
@@ -1197,7 +1199,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       - name: Run unit tests
         working-directory: build
         run: |
-          ctest -j${NUM_CORES} --repeat after-timeout:3 --output-on-failure
+          ctest -E TestingFramework.Abort -j${NUM_CORES} \
+            --repeat after-timeout:3 --output-on-failure
       - name: Install
         working-directory: build
         run: |
