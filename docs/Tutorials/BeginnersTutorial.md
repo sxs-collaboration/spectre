@@ -144,11 +144,11 @@ Copy over the input file
 into your `/work/runs` directory. To run the executable, do
 
 ```
-spectre run InputTimeDependent3D.yaml
+spectre run --no-schedule -j 4 InputTimeDependent3D.yaml
 ```
 
-This will run it on one core. If you'd like to use more cores, add the `-j N`
-option where `N` is the number of cores. After this finishes you should
+This will run it on 4 cores (the `--no-schedule` means it will run on the
+login/head node if you are using an HPC system). After this finishes you should
 see two `H5` files in your run directory:
 
 1. ExportCoordinates3DVolume0
@@ -494,7 +494,7 @@ of smaller elements, we distribute these over the available resources via a
 things up.
 
 ```
-spectre run Kuzmin2D.yaml -j4
+spectre run --no-schedule -j 4 Kuzmin2D.yaml
 ```
 
 ### Visualizing the Kuzmin Problem
