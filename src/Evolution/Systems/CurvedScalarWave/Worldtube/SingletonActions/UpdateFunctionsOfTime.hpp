@@ -11,6 +11,10 @@
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/EagerMath/CrossProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magntitude.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/RadiusFunctions.hpp"
@@ -58,10 +62,12 @@ struct UpdateQuaternionFunctionsOfTime {
         db::get<Tags::ParticlePositionVelocity<3>>(box);
     const double& x = get<0>(particle_pos_vel[0]);
     const double& y = get<1>(particle_pos_vel[0]);
+    const double& z = get<2>(particle_pos_vel[0]);
     const double& xdot = get<0>(particle_pos_vel[1]);
     const double& ydot = get<1>(particle_pos_vel[1]);
-    const double r = hypot(x, y);
-    const double radial_vel = (xdot * x + ydot * y) / r;
+    const double& zdot = get<2>(particle_pos_vel[1]);
+    const double r = hypot(x, y, z);
+    const double radial_vel = (xdot * x + ydot * y + zdot * z) / r;
     const auto& excision_sphere = db::get<Tags::ExcisionSphere<3>>(box);
     const double grid_radius_particle =
         get(magnitude(excision_sphere.center()));
