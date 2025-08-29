@@ -9,6 +9,7 @@ spectre_python_add_module(
   MODULE_PATH "Domain"
   SOURCES
   Bindings.cpp
+  Composition.cpp
   CoordinateMap.cpp
   PYTHON_FILES
   __init__.py
@@ -18,6 +19,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Composition.hpp
   CoordinateMap.hpp
   )
 

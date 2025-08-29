@@ -54,4 +54,5 @@ target_link_libraries(
   Utilities
 )
 
+add_subdirectory(Python)
 add_subdirectory(TimeDependent)
