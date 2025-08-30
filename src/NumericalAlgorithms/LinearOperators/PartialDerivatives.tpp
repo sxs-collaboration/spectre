@@ -332,7 +332,7 @@ void cartoon_derivative(
   }
 }
 
-template <size_t Comp_dim, typename ResultTags, typename VariableTags,
+template <size_t CompDim, typename ResultTags, typename VariableTags,
           size_t Dim, typename DerivativeFrame>
 void cartoon_partial_derivatives_apply(
     const gsl::not_null<Variables<ResultTags>*> du,
@@ -349,9 +349,9 @@ void cartoon_partial_derivatives_apply(
           tmpl::transform<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                            tmpl::size_t<Dim>, DerivativeFrame>,
                           tmpl::bind<tmpl::type_from, tmpl::_1>>>);
-  ASSERT((Comp_dim == 2 and
+  ASSERT((CompDim == 2 and
           mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry) or
-             (Comp_dim == 1 and
+             (CompDim == 1 and
               (mesh.quadrature(1) == Spectral::Quadrature::SphericalSymmetry and
                mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry)),
          "Invalid Quadrature combinations: axial symmetry requires 2 "
@@ -372,48 +372,48 @@ void cartoon_partial_derivatives_apply(
       Variables<DerivativeTags>::number_of_independent_components;
   const auto logical_derivs_data =
       cpp20::make_unique_for_overwrite<ValueType[]>(
-          (Comp_dim > 1 ? (Comp_dim + 1) : Comp_dim) * vars_size);
+          (CompDim > 1 ? (CompDim + 1) : CompDim) * vars_size);
 
-  std::array<ValueType*, Comp_dim> logical_derivs{};
-  for (size_t i = 0; i < Comp_dim; ++i) {
+  std::array<ValueType*, CompDim> logical_derivs{};
+  for (size_t i = 0; i < CompDim; ++i) {
     gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);
   }
   Variables<DerivativeTags> temp{};
-  if constexpr (Comp_dim > 1) {
-    temp.set_data_ref(&logical_derivs_data[Comp_dim * vars_size], vars_size);
+  if constexpr (CompDim > 1) {
+    temp.set_data_ref(&logical_derivs_data[CompDim * vars_size], vars_size);
   }
 
-  if constexpr (Comp_dim == 1) {
+  if constexpr (CompDim == 1) {
     partial_derivatives_detail::
-        LogicalImpl<Comp_dim, VariableTags, DerivativeTags>::apply(
+        LogicalImpl<CompDim, VariableTags, DerivativeTags>::apply(
             make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
             mesh.slice_through(0));
   } else {
     partial_derivatives_detail::
-        LogicalImpl<Comp_dim, VariableTags, DerivativeTags>::apply(
+        LogicalImpl<CompDim, VariableTags, DerivativeTags>::apply(
             make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
             mesh.slice_through(0, 1));
   }
 
-  std::array<const ValueType*, Comp_dim> const_logical_derivs{};
-  for (size_t i = 0; i < Comp_dim; ++i) {
+  std::array<const ValueType*, CompDim> const_logical_derivs{};
+  for (size_t i = 0; i < CompDim; ++i) {
     gsl::at(const_logical_derivs, i) = gsl::at(logical_derivs, i);
   }
 
   const Spectral::Quadrature quad_type = mesh.quadrature(2);
   const auto numerical_deriv_in_this_direction = [](const size_t deriv_num) {
-    if constexpr (Comp_dim == 2) {
+    if constexpr (CompDim == 2) {
       return deriv_num == 0 or deriv_num == 1;
     } else {
       return deriv_num == 0;
     }
   };
   // only the 1st (possibly 2nd) dimensions of the Jacobian are relevant here
-  const InverseJacobian<DataVector, Comp_dim, Frame::ElementLogical,
+  const InverseJacobian<DataVector, CompDim, Frame::ElementLogical,
                         DerivativeFrame>
       inverse_jacobian{inverse_jacobian_3d.begin()->size()};
-  for (size_t i = 0; i < Comp_dim; ++i) {
-    for (size_t j = 0; j < Comp_dim; ++j) {
+  for (size_t i = 0; i < CompDim; ++i) {
+    for (size_t j = 0; j < CompDim; ++j) {
       make_const_view(make_not_null(&inverse_jacobian.get(i, j)),
                       inverse_jacobian_3d.get(i, j), 0,
                       inverse_jacobian_3d.begin()->size());
@@ -432,7 +432,7 @@ void cartoon_partial_derivatives_apply(
   // arbitrary non-zero value) and remembering to then do L'Hopital
   if (element_contains_zero_of_symmetry_axis) {
     safe_x_coords[0] = 1.0;
-    if constexpr (Comp_dim == 2) {
+    if constexpr (CompDim == 2) {
       const size_t x_extents = mesh.extents(0);
       const size_t y_extents = mesh.extents(1);
       for (size_t i = 1; i < y_extents; ++i) {
@@ -453,7 +453,7 @@ void cartoon_partial_derivatives_apply(
   // in two different tensors (hence the 0 & 1 labels) for each tensor type
   // They only have to hold the x=0 positions, so of size y_extents
   using VariableTypes = tmpl::remove_duplicates<
-      tmpl::transform<VariableTags, tmpl::bind<tmpl::type_from, tmpl::_1>>>;
+      tmpl::transform<DerivativeTags, tmpl::bind<tmpl::type_from, tmpl::_1>>>;
 
   using TempTags0 = ::Tags::convert_to_temp_tensors<VariableTypes, 0>;
   using TempTags1 = ::Tags::convert_to_temp_tensors<VariableTypes, 1>;
@@ -465,11 +465,11 @@ void cartoon_partial_derivatives_apply(
     temp_vars.initialize(y_extents);
   }
 
-  std::array<std::array<size_t, Comp_dim>, Comp_dim> indices{};
-  for (size_t deriv_index = 0; deriv_index < Comp_dim; ++deriv_index) {
-    for (size_t d = 0; d < Comp_dim; ++d) {
+  std::array<std::array<size_t, CompDim>, CompDim> indices{};
+  for (size_t deriv_index = 0; deriv_index < CompDim; ++deriv_index) {
+    for (size_t d = 0; d < CompDim; ++d) {
       gsl::at(gsl::at(indices, d), deriv_index) =
-          InverseJacobian<DataVector, Comp_dim, Frame::ElementLogical,
+          InverseJacobian<DataVector, CompDim, Frame::ElementLogical,
                           DerivativeFrame>::get_storage_index(d, deriv_index);
     }
   }
@@ -477,7 +477,7 @@ void cartoon_partial_derivatives_apply(
   // the non-cartoon derivatives need to know where they are within `u` to
   // contract with the inverse Jacobian to compute the inertial derivatives
   size_t global_component_index = 0;
-  tmpl::for_each<VariableTags>(
+  tmpl::for_each<DerivativeTags>(
       [&u, &du, &lhs, &pdu, &num_grid_points, &logical_du,
        &const_logical_derivs, &inverse_jacobian, &indices, &temp_vars,
        &global_component_index, &safe_x_coords,
@@ -511,7 +511,7 @@ void cartoon_partial_derivatives_apply(
               lhs = (*(inverse_jacobian.begin() +
                        gsl::at(indices[0], deriv_index))) *
                     logical_du;
-              if constexpr (Comp_dim == 2) {
+              if constexpr (CompDim == 2) {
                 // clang-tidy: const cast is fine since we won't modify the data
                 // and we need it to easily hook into the expression templates.
                 logical_du.set_data_ref(
@@ -538,7 +538,7 @@ void cartoon_partial_derivatives_apply(
         if (element_contains_zero_of_symmetry_axis) {
           // need to use L'Hopital
           using dtensor_type =
-              tmpl::at<ResultTags, tmpl::index_of<VariableTags, TensorTag>>;
+              tmpl::at<ResultTags, tmpl::index_of<DerivativeTags, TensorTag>>;
           auto& dtensor = get<dtensor_type>(*du);
 
           // if spherical symmetry,the zero is only at the first index
@@ -598,6 +598,7 @@ void cartoon_partial_derivatives(
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian_3d,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  static_assert(Dim == 3);
   if (mesh.basis(0) != Spectral::Basis::Cartoon and
       mesh.basis(2) == Spectral::Basis::Cartoon) {
     // computational dimension needs to be a constexpr
@@ -681,6 +682,124 @@ partial_derivatives(
   partial_derivatives(make_not_null(&partial_derivatives_of_u), u, mesh,
                       inverse_jacobian);
   return partial_derivatives_of_u;
+}
+
+template <typename ResultTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivatives(
+    const gsl::not_null<Variables<ResultTags>*> du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  if constexpr (Dim == 3) {
+    if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+      cartoon_partial_derivatives(du, u, mesh, inverse_jacobian,
+                                  inertial_coords);
+    } else {
+      partial_derivatives(du, u, mesh, inverse_jacobian);
+    }
+  } else {
+    (void)inertial_coords;
+    partial_derivatives(du, u, mesh, inverse_jacobian);
+  }
+}
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3>>
+void cartoon_partial_derivative(
+    const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>*>
+        du,
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  auto& du_tnsr = *du;
+  using u_type = Tensor<DataVector, SymmList, IndexList>;
+  using du_type =
+      TensorMetafunctions::prepend_spatial_index<u_type, Dim, UpLo::Lo,
+                                                 DerivativeFrame>;
+  using vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<u_type>, 0>;
+  using d_vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<du_type>, 0>;
+  Variables<vars_list> u_vars{mesh.number_of_grid_points()};
+  get<tmpl::front<vars_list>>(u_vars) = u;
+  Variables<d_vars_list> du_vars{mesh.number_of_grid_points()};
+  cartoon_partial_derivatives(make_not_null(&du_vars), u_vars, mesh,
+                              inverse_jacobian, inertial_coords);
+  du_tnsr = get<tmpl::front<d_vars_list>>(du_vars);
+}
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3>>
+auto cartoon_partial_derivative(
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords)
+    -> TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame> {
+  using u_type = Tensor<DataVector, SymmList, IndexList>;
+  using du_type =
+      TensorMetafunctions::prepend_spatial_index<u_type, Dim, UpLo::Lo,
+                                                 DerivativeFrame>;
+  using vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<u_type>, 0>;
+  using d_vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<du_type>, 0>;
+  Variables<vars_list> u_vars{mesh.number_of_grid_points()};
+  get<tmpl::front<vars_list>>(u_vars) = u;
+  Variables<d_vars_list> du_vars{mesh.number_of_grid_points()};
+  cartoon_partial_derivatives(make_not_null(&du_vars), u_vars, mesh,
+                              inverse_jacobian, inertial_coords);
+  return get<tmpl::front<d_vars_list>>(du_vars);
+}
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivative(
+    const gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame>*>
+        du,
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  if constexpr (Dim == 3) {
+    if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+      cartoon_partial_derivative(du, u, mesh, inverse_jacobian,
+                                 inertial_coords);
+    } else {
+      partial_derivative(du, u, mesh, inverse_jacobian);
+    }
+  } else {
+    (void)inertial_coords;
+    partial_derivative(du, u, mesh, inverse_jacobian);
+  }
+}
+
+template <typename SymmList, typename IndexList, size_t Dim,
+          typename DerivativeFrame>
+auto partial_derivative(
+    const Tensor<DataVector, SymmList, IndexList>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords)
+    -> TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        DerivativeFrame> {
+  if constexpr (Dim == 3) {
+    if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+      return cartoon_partial_derivative(u, mesh, inverse_jacobian,
+                                        inertial_coords);
+    } else {
+      return partial_derivative(u, mesh, inverse_jacobian);
+    }
+  } else {
+    (void)inertial_coords;
+    return partial_derivative(u, mesh, inverse_jacobian);
+  }
 }
 
 namespace partial_derivatives_detail {
@@ -852,3 +971,40 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
       const Mesh<DIM>& mesh,                                                 \
       const InverseJacobian<DataVector, DIM, Frame::ElementLogical,          \
                             DERIVATIVE_FRAME>& inverse_jacobian);
+
+// Macro to explicitly instantiate cartoon_partial_derivatives()
+// for a given system of equations (distinct from non-cartoon call)
+#define INSTANTIATE_CARTOON_PARTIAL_DERIVATIVES_WITH_SYSTEM(SYSTEM, DIM,      \
+                                                            DERIVATIVE_FRAME) \
+  template void partial_derivatives(                                          \
+      gsl::not_null<Variables<                                                \
+          db::wrap_tags_in<Tags::deriv, typename SYSTEM::gradient_variables,  \
+                           tmpl::size_t<DIM>, DERIVATIVE_FRAME>>*>            \
+          du,                                                                 \
+      const Variables<typename SYSTEM::gradient_variables>& u,                \
+      const Mesh<DIM>& mesh,                                                  \
+      const InverseJacobian<DataVector, DIM, Frame::ElementLogical,           \
+                            DERIVATIVE_FRAME>& inverse_jacobian_3d,           \
+      const tnsr::I<DataVector, DIM, Frame::Inertial>& inertial_coords);
+
+// This instantiates the chooser and underlying cartoon_partial_derivative()
+#define INSTANTIATE_CARTOON_PARTIAL_DERIVATIVE(DIM, DERIVATIVE_FRAME, TENSOR) \
+  template void partial_derivative(                                           \
+      const gsl::not_null<TensorMetafunctions::prepend_spatial_index<         \
+          TENSOR<DataVector, DIM, DERIVATIVE_FRAME>, DIM, UpLo::Lo,           \
+          DERIVATIVE_FRAME>*>                                                 \
+          du,                                                                 \
+      const TENSOR<DataVector, DIM, DERIVATIVE_FRAME>& u,                     \
+      const Mesh<DIM>& mesh,                                                  \
+      const InverseJacobian<DataVector, DIM, Frame::ElementLogical,           \
+                            DERIVATIVE_FRAME>& inverse_jacobian,              \
+      const tnsr::I<DataVector, DIM, Frame::Inertial>& inertial_coords);      \
+  template TensorMetafunctions::prepend_spatial_index<                        \
+      TENSOR<DataVector, DIM, DERIVATIVE_FRAME>, DIM, UpLo::Lo,               \
+      DERIVATIVE_FRAME>                                                       \
+  partial_derivative(                                                         \
+      const TENSOR<DataVector, DIM, DERIVATIVE_FRAME>& u,                     \
+      const Mesh<DIM>& mesh,                                                  \
+      const InverseJacobian<DataVector, DIM, Frame::ElementLogical,           \
+                            DERIVATIVE_FRAME>& inverse_jacobian,              \
+      const tnsr::I<DataVector, DIM, Frame::Inertial>& inertial_coords);

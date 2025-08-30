@@ -688,7 +688,7 @@ DataVector cartoon_dfunc(size_t deriv_index,
 }
 
 template <bool Spherical>
-void test_cartoon(const double x_start) {
+void test_cartoon_partial_derivatives(const double x_start) {
   Mesh<3> mesh;
   tnsr::I<DataVector, 3, Frame::Grid> coords;
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
@@ -791,7 +791,7 @@ void test_cartoon(const double x_start) {
 
   const size_t dv_size = get<0>(coords).size();
 
-  // in the following, the time component of the indices is arbirarily taken
+  // in the following, the time component of the indices is arbitrarily taken
   // to be 1
   auto& scalar = get<::Tags::TempScalar<0>>(prefactor_vars);
   auto& d_scalar = get<::Tags::Tempi<0, 3>>(d_prefactor_vars);
@@ -1004,6 +1004,140 @@ void test_cartoon(const double x_start) {
   const Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   CHECK_VARIABLES_CUSTOM_APPROX(d_vars, expected_d_vars, local_approx);
 }
+
+void test_cartoon_partial_derivative_and_choosers() {
+  // here, "chooser" means the partial_derivative()/parital_derivatives()
+  // functions that take inertial_coords and then pick the appropriate
+  // cartoon/non-cartoon implementation
+  // Testing partial_derivatives chooser, i.e. verifying it calls the correct
+  // underlying implemenation (unfortunately a lot of set up code)
+  // With cartoon basis
+  using Identity1D = domain::CoordinateMaps::Identity<1>;
+  const Identity1D identity_cartoon_map;
+
+  const Mesh<3> mesh_cartoon{
+      {{8, 1, 1}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+        Spectral::Basis::Cartoon}},
+      {{Spectral::Quadrature::GaussLobatto,
+        Spectral::Quadrature::SphericalSymmetry,
+        Spectral::Quadrature::SphericalSymmetry}}};
+
+  const Affine affine_x_map(-1.0, 1.0, 1.0, 4.0);
+
+  using Cartoon_map_combination =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>;
+  const domain::CoordinateMap<Frame::ElementLogical, Frame::Grid,
+                              Cartoon_map_combination>
+      map{{affine_x_map, identity_cartoon_map, identity_cartoon_map}};
+  const auto inv_jacobian = map.inv_jacobian(logical_coordinates(mesh_cartoon));
+  const auto coords = map(logical_coordinates(mesh_cartoon));
+
+  Scalar<DataVector> tnsr_cartoon{};
+  get<>(tnsr_cartoon) = cartoon_func<true>(coords);
+  TensorMetafunctions::prepend_spatial_index<Scalar<DataVector>, 3, UpLo::Lo,
+                                             Frame::Grid>
+      expected_d_tnsr_cartoon{};
+  for (size_t i = 0; i < index_dim<0>(expected_d_tnsr_cartoon); ++i) {
+    expected_d_tnsr_cartoon.get(i) = cartoon_dfunc<true>(i, coords);
+  }
+
+  const auto to_inertial =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<3>>{};
+  TensorMetafunctions::prepend_spatial_index<Scalar<DataVector>, 3, UpLo::Lo,
+                                             Frame::Grid>
+      d_tnsr_cartoon{};
+  using u_type = Scalar<DataVector>;
+  using du_type =
+      TensorMetafunctions::prepend_spatial_index<u_type, 3, UpLo::Lo,
+                                                 Frame::Grid>;
+  using CartoonTags = ::Tags::convert_to_temp_tensors<tmpl::list<u_type>, 0>;
+  using d_CartoonTags = ::Tags::convert_to_temp_tensors<tmpl::list<du_type>, 0>;
+  Variables<CartoonTags> u_cartoon{mesh_cartoon.number_of_grid_points()};
+  get<tmpl::front<CartoonTags>>(u_cartoon) = tnsr_cartoon;
+  Variables<d_CartoonTags> d_u_cartoon{mesh_cartoon.number_of_grid_points()};
+  partial_derivatives(make_not_null(&d_u_cartoon), u_cartoon, mesh_cartoon,
+                      inv_jacobian, to_inertial(coords));
+  Variables<d_CartoonTags> expected_d_u_cartoon{
+      mesh_cartoon.number_of_grid_points()};
+  get<tmpl::front<d_CartoonTags>>(expected_d_u_cartoon) =
+      expected_d_tnsr_cartoon;
+  const Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(d_u_cartoon, expected_d_u_cartoon,
+                                local_approx);
+
+  // With non-cartoon basis
+  const Mesh<3> mesh_lgl{{{3, 4, 5}},
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+  using VariableTags = two_vars<DataVector, 3>;
+  using GradientTags = two_vars<DataVector, 3>;
+  const size_t number_of_grid_points_lgl = mesh_lgl.number_of_grid_points();
+  const auto prod_map_lgl =
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+          Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+                   Affine{-1.0, 1.0, 2.3, 2.8}});
+  const auto x = prod_map_lgl(logical_coordinates(mesh_lgl));
+  InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
+      inv_jacobian_lgl(number_of_grid_points_lgl, 0.0);
+  inv_jacobian_lgl.get(0, 0) = 2.0;
+  inv_jacobian_lgl.get(1, 1) = 8.0;
+  inv_jacobian_lgl.get(2, 2) = 4.0;
+
+  Variables<VariableTags> u_lgl(number_of_grid_points_lgl);
+  Variables<
+      db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>, Frame::Grid>>
+      expected_d_u_lgl(number_of_grid_points_lgl);
+  for (size_t a = 0; a < mesh_lgl.extents(0) / 2; ++a) {
+    for (size_t b = 0; b < mesh_lgl.extents(1) / 2; ++b) {
+      for (size_t c = 0; c < mesh_lgl.extents(2) / 2; ++c) {
+        tmpl::for_each<VariableTags>([&a, &b, &c, &x, &u_lgl](auto tag) {
+          using Tag = typename decltype(tag)::type;
+          get<Tag>(u_lgl) = Tag::f({{a, b, c}}, x);
+        });
+        tmpl::for_each<GradientTags>([&a, &b, &c, &x,
+                                      &expected_d_u_lgl](auto tag) {
+          using Tag = typename decltype(tag)::type;
+          using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
+          get<DerivativeTag>(expected_d_u_lgl) = Tag::df({{a, b, c}}, x);
+        });
+
+        using vars_type = decltype(partial_derivatives<GradientTags>(
+            u_lgl, mesh_lgl, inv_jacobian_lgl));
+        vars_type d_u_lgl{};
+        partial_derivatives(make_not_null(&d_u_lgl), u_lgl, mesh_lgl,
+                            inv_jacobian_lgl, to_inertial(x));
+        CHECK_VARIABLES_CUSTOM_APPROX(d_u_lgl, expected_d_u_lgl, local_approx);
+      }
+    }
+  }
+  // Testing cartoon_partial_derivative() through associated choosers
+  // With Cartoon basis
+  partial_derivative(make_not_null(&d_tnsr_cartoon), tnsr_cartoon, mesh_cartoon,
+                     inv_jacobian, to_inertial(coords));
+  CHECK_ITERABLE_CUSTOM_APPROX(d_tnsr_cartoon, expected_d_tnsr_cartoon,
+                               local_approx);
+
+  d_tnsr_cartoon = partial_derivative(tnsr_cartoon, mesh_cartoon, inv_jacobian,
+                                      to_inertial(coords));
+  CHECK_ITERABLE_CUSTOM_APPROX(d_tnsr_cartoon, expected_d_tnsr_cartoon,
+                               local_approx);
+
+  // With non-cartoon basis
+  auto& tnsr_lgl = get<tmpl::front<VariableTags>>(u_lgl);
+  using d_tnsr_lgl_tag =
+      Tags::deriv<tmpl::front<GradientTags>, tmpl::size_t<3>, Frame::Grid>;
+  d_tnsr_lgl_tag::type d_tnsr_lgl{};
+  auto& expected_d_tnsr_lgl = get<d_tnsr_lgl_tag>(expected_d_u_lgl);
+  partial_derivative(make_not_null(&d_tnsr_lgl), tnsr_lgl, mesh_lgl,
+                     inv_jacobian_lgl, to_inertial(x));
+  CHECK_ITERABLE_CUSTOM_APPROX(d_tnsr_lgl, expected_d_tnsr_lgl, local_approx);
+
+  d_tnsr_lgl = partial_derivative(tnsr_lgl, mesh_lgl, inv_jacobian_lgl,
+                                  to_inertial(coords));
+  CHECK_ITERABLE_CUSTOM_APPROX(d_tnsr_lgl, expected_d_tnsr_lgl, local_approx);
+}
 }  // namespace
 
 // [[Timeout, 60]]
@@ -1128,12 +1262,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   test_partial_derivatives_3d<two_vars<ComplexDataVector, 3>,
                               one_var<ComplexDataVector, 3>>(mesh_3d);
 
-  // testing with L'Hopital
-  test_cartoon<true>(0.0);
-  test_cartoon<false>(0.0);
+  test_cartoon_partial_derivatives<true>(0.0);
+  test_cartoon_partial_derivatives<false>(0.0);
   // testing without L'Hopital
-  test_cartoon<true>(1.0);
-  test_cartoon<false>(1.0);
+  test_cartoon_partial_derivatives<true>(1.0);
+  test_cartoon_partial_derivatives<false>(1.0);
+
+  test_cartoon_partial_derivative_and_choosers();
 
   TestHelpers::db::test_prefix_tag<
       Tags::deriv<Var1<DataVector, 3>, tmpl::size_t<3>, Frame::Grid>>(
@@ -1307,6 +1442,120 @@ void test_partial_derivatives_tensor_compute_item(
     CHECK_ITERABLE_APPROX(du[n], expected_du[n]);
   }
 }
+
+template <size_t CompDim, size_t Dim, typename T, Requires<Dim == 3> = nullptr>
+void test_cartoon_partial_derivatives_compute_item(
+    const std::array<size_t, Dim> extents_array, const T& map) {
+  using vars_tags =
+      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempA<0, Dim, Frame::Inertial>>;
+  using map_tag = MapTag<std::decay_t<decltype(map)>>;
+  using inv_jac_tag = domain::Tags::InverseJacobianCompute<
+      map_tag, domain::Tags::LogicalCoordinates<Dim>>;
+  using deriv_tag =
+      Tags::DerivCompute<Tags::Variables<vars_tags>, domain::Tags::Mesh<Dim>,
+                         inv_jac_tag,
+                         typename Tags::Variables<vars_tags>::type::tags_list,
+                         domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+  using prefixed_variables_tag =
+      db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
+  using deriv_prefixed_tag = Tags::DerivCompute<
+      prefixed_variables_tag, domain::Tags::Mesh<Dim>, inv_jac_tag,
+      tmpl::list<SomePrefix<::Tags::TempScalar<0>>>,
+      domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+
+  TestHelpers::db::test_compute_tag<deriv_tag>(
+      "Variables(deriv(TempTensor0),deriv(TempTensor0))");
+
+  const auto pad_at_end = []<typename ElemType>(const ElemType default_val,
+                                                const ElemType padding_val) {
+    std::array<ElemType, Dim> arr{};
+    for (size_t i = 0; i < Dim; ++i) {
+      gsl::at(arr, i) = i < CompDim ? default_val : padding_val;
+    }
+    return arr;
+  };
+  const Mesh<Dim> mesh{
+      extents_array,
+      pad_at_end(Spectral::Basis::Legendre, Spectral::Basis::Cartoon),
+      pad_at_end(Spectral::Quadrature::GaussLobatto,
+                 CompDim == 1 ? Spectral::Quadrature::SphericalSymmetry
+                              : Spectral::Quadrature::AxialSymmetry)};
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  Variables<vars_tags> u(num_grid_points);
+  Variables<
+      db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>, Frame::Grid>>
+      expected_du(num_grid_points);
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = map(logical_coordinates(mesh));
+
+  // setting Tensors to allowed symmetry values (easiest to just set to our
+  // coordinates)
+  auto& scalar = get<::Tags::TempScalar<0>>(u);
+  get<>(scalar) = cartoon_func<CompDim == 1>(x);
+
+  auto& vector = get<::Tags::TempA<0, 3>>(u);
+  get<0>(vector) = 1.0 * cartoon_func<CompDim == 1>(x);
+  get<1>(vector) = get<0>(x) * cartoon_func<CompDim == 1>(x);
+  get<2>(vector) = get<1>(x) * cartoon_func<CompDim == 1>(x);
+  get<3>(vector) = get<2>(x) * cartoon_func<CompDim == 1>(x);
+
+  typename prefixed_variables_tag::type prefixed_vars(u);
+
+  auto& d_scalar =
+      get<Tags::deriv<::Tags::TempScalar<0>, tmpl::size_t<Dim>, Frame::Grid>>(
+          expected_du);
+  for (size_t i = 0; i < index_dim<0>(d_scalar); ++i) {
+    d_scalar.get(i) = cartoon_dfunc<CompDim == 1>(i, x);
+  }
+
+  auto& d_vector =
+      get<Tags::deriv<::Tags::TempA<0, Dim>, tmpl::size_t<Dim>, Frame::Grid>>(
+          expected_du);
+  for (size_t i = 0; i < index_dim<0>(d_vector); ++i) {
+    for (size_t a = 0; a < index_dim<1>(d_vector); ++a) {
+      if ((i + 1) == a) {
+        d_vector.get(i, a) = cartoon_func<CompDim == 1>(x);
+      } else {
+        d_vector.get(i, a) = DataVector(num_grid_points, 0.0);
+      }
+      d_vector.get(i, a) +=
+          (a == 0 ? DataVector(num_grid_points, 1.0) : x.get(a - 1)) *
+          cartoon_dfunc<CompDim == 1>(i, x);
+    }
+  }
+
+  const auto to_inertial =
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            domain::CoordinateMaps::Identity<3>>{};
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, Tags::Variables<vars_tags>,
+                        prefixed_variables_tag, map_tag,
+                        domain::Tags::Coordinates<Dim, Frame::Inertial>>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                         deriv_tag, deriv_prefixed_tag>>(mesh, u, prefixed_vars,
+                                                         map, to_inertial(x));
+
+  const auto& du = db::get<deriv_tag>(box);
+
+  for (size_t n = 0; n < du.size(); ++n) {
+    // clang-tidy: pointer arithmetic
+    CHECK(du.data()[n] == approx(expected_du.data()[n]));  // NOLINT
+  }
+
+  // Test prefixes are handled correctly
+  const auto& du_prefixed_vars = get<db::add_tag_prefix<
+      Tags::deriv,
+      db::add_tag_prefix<SomePrefix,
+                         Tags::Variables<tmpl::list<::Tags::TempScalar<0>>>>,
+      tmpl::size_t<Dim>, Frame::Grid>>(box);
+  const auto& du_prefixed =
+      get<Tags::deriv<SomePrefix<::Tags::TempScalar<0>>, tmpl::size_t<Dim>,
+                      Frame::Grid>>(du_prefixed_vars);
+  const auto& expected_du_prefixed =
+      get<Tags::deriv<::Tags::TempScalar<0>, tmpl::size_t<Dim>, Frame::Grid>>(
+          expected_du);
+  CHECK_ITERABLE_APPROX(du_prefixed, expected_du_prefixed);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
@@ -1336,6 +1585,19 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
       }
     }
   }
+  using Identity1D = domain::CoordinateMaps::Identity<1>;
+  test_cartoon_partial_derivatives_compute_item<1>(
+      std::array<size_t, 3>{{8, 1, 1}},
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D,
+                                                 Identity1D>{
+              Affine{-1.0, 1.0, 0.0, 0.7}, Identity1D{}, Identity1D{}}));
+  test_cartoon_partial_derivatives_compute_item<2>(
+      std::array<size_t, 3>{{6, 7, 1}},
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>{
+              Affine{-1.0, 1.0, 0.0, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+              Identity1D{}}));
   for (size_t a = 1; a < max_extents[0]; ++a) {
     test_partial_derivatives_tensor_compute_item(
         std::array<size_t, 1>{{a + 1}},
