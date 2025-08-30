@@ -47,6 +47,8 @@ bool operator!=(const StarSurface& lhs, const StarSurface& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID StarSurface::my_PUP_ID = 0;  // NOLINT
+#endif                                         // __CUDA_ARCH__
 
 }  // namespace BnsInitialData::BoundaryConditions

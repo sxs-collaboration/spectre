@@ -92,8 +92,10 @@ void ZerothOrderPuncture::pup(PUP::er& p) {
   p | kerr_schild_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ZerothOrderPuncture::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const ZerothOrderPuncture& lhs,
                 const ZerothOrderPuncture& rhs) {

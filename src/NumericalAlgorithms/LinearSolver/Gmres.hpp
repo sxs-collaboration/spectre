@@ -484,11 +484,13 @@ Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename VarsType, typename Preconditioner,
           typename LinearSolverRegistrars>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID
     Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Serial

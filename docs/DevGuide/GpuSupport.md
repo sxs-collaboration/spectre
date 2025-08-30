@@ -17,6 +17,11 @@ library.
 
 ## Build configuration
 
+You can use either NVIDIA's NVCC compiler (which comes with the CUDA toolkit) or
+Clang (which supports CUDA compilation and also requires the CUDA toolkit to be
+installed) to compile for GPUs. We haven't tested backends other than CUDA very
+much so far.
+
 To enable GPU support, set the CMake option `-D SPECTRE_KOKKOS=ON` when
 configuring the build. Either point CMake to a Kokkos installation with
 `-D Kokkos_ROOT=path/to/kokkos` or set `-D SPECTRE_FETCH_MISSING_DEPS=ON` to
@@ -39,7 +44,7 @@ Here's an example for using an existing Kokkos installation:
 ```sh
 cmake -D SPECTRE_KOKKOS=ON \
       -D Kokkos_ROOT=path/to/kokkos/build \
-      -D CMAKE_CXX_COMPILER=path/to/kokkos/bin/nvcc_wrapper \
+      -D CMAKE_CXX_COMPILER={path/to/kokkos/bin/nvcc_wrapper or clang++} \
       ...
 ```
 
@@ -47,4 +52,4 @@ When building Kokkos separately with the CUDA backend, you have to set the
 following configuration options:
 
 - `Kokkos_ENABLE_CUDA_CONSTEXPR=ON`
-- `Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE`
+- `Kokkos_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE=ON`

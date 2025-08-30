@@ -227,6 +227,8 @@ bool operator!=(const Rusanov& lhs, const Rusanov& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

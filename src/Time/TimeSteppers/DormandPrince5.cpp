@@ -63,4 +63,6 @@ const RungeKutta::ButcherTableau& DormandPrince5::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::DormandPrince5::my_PUP_ID = 0;  // NOLINT
+#endif                                                          // __CUDA_ARCH__

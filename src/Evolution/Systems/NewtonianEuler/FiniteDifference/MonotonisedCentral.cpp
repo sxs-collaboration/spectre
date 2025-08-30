@@ -40,9 +40,11 @@ void MonotonisedCentralPrim<Dim>::pup(PUP::er& p) {
   Reconstructor<Dim>::pup(p);
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonisedCentralPrim<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 template <typename TagsList>

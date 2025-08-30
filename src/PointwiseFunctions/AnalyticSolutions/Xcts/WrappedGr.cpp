@@ -441,8 +441,10 @@ template class WrappedGrVariables<DataVector, true>;
 
 }  // namespace detail
 
+#ifndef __CUDA_ARCH__
 template <typename GrSolution, bool HasMhd>
 PUP::able::PUP_ID WrappedGr<GrSolution, HasMhd>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 
 }  // namespace Xcts::Solutions
 

@@ -66,5 +66,7 @@ void Rusanov::dg_boundary_terms(
 }
 }  // namespace Burgers::BoundaryCorrections
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Burgers::BoundaryCorrections::Rusanov::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__

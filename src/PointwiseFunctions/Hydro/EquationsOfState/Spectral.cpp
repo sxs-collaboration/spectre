@@ -311,6 +311,8 @@ double Spectral::rest_mass_density_from_enthalpy(
   }
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID EquationsOfState::Spectral::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 }  // namespace EquationsOfState

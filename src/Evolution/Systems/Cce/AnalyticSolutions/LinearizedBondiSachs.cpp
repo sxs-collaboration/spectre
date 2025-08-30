@@ -111,7 +111,9 @@ LinearizedBondiSachs::get_clone() const {
   return std::make_unique<LinearizedBondiSachs>(*this);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace InitializeJ
 
 namespace {
@@ -609,5 +611,7 @@ void LinearizedBondiSachs::pup(PUP::er& p) {
   p | frequency_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Cce::Solutions

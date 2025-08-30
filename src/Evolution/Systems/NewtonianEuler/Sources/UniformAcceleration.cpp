@@ -55,9 +55,11 @@ void UniformAcceleration<Dim>::operator()(
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID UniformAcceleration<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 bool operator==(const UniformAcceleration<Dim>& lhs,

@@ -46,8 +46,10 @@ void Reflective::pup(PUP::er& p) {
   p | reflect_both_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Reflective::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 std::optional<std::string> Reflective::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,

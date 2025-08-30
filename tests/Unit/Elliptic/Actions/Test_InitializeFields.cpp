@@ -68,7 +68,9 @@ struct InitialGuess : elliptic::analytic_data::InitialGuess {
   // NOLINTEND(readability-convert-member-functions-to-static)
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID InitialGuess::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 
 template <typename Metavariables>
 struct ElementArray {

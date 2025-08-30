@@ -828,6 +828,8 @@ void Wedge::pup(PUP::er& p) {
 
 Wedge::Wedge(CkMigrateMessage* const msg) : ShapeMapTransitionFunction(msg) {}
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID Wedge::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

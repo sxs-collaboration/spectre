@@ -139,12 +139,12 @@ UniformTranslation<MeshDim, Index>::functions_of_time(
   // If we have control systems, overwrite the expiration time with the one
   // supplied by the control system
   if (initial_expiration_times.count(
-          function_of_time_name_grid_to_distorted_) == 1) {
+          function_of_time_name_grid_to_distorted()) == 1) {
     expiration_time_grid_to_distorted =
-        initial_expiration_times.at(function_of_time_name_grid_to_distorted_);
+        initial_expiration_times.at(function_of_time_name_grid_to_distorted());
   }
 
-  result[function_of_time_name_grid_to_distorted_] =
+  result[function_of_time_name_grid_to_distorted()] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
           std::array<DataVector, 3>{
@@ -160,12 +160,12 @@ UniformTranslation<MeshDim, Index>::functions_of_time(
     double expiration_time_distorted_to_inertial =
         std::numeric_limits<double>::infinity();
     if (initial_expiration_times.count(
-            function_of_time_name_distorted_to_inertial_) == 1) {
+            function_of_time_name_distorted_to_inertial()) == 1) {
       expiration_time_distorted_to_inertial = initial_expiration_times.at(
-          function_of_time_name_distorted_to_inertial_);
+          function_of_time_name_distorted_to_inertial());
     }
 
-    result[function_of_time_name_distorted_to_inertial_] =
+    result[function_of_time_name_distorted_to_inertial()] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
             initial_time_,
             std::array<DataVector, 3>{{{MeshDim, 0.0},
@@ -181,7 +181,7 @@ auto UniformTranslation<MeshDim, Index>::grid_to_inertial_map_simple() const
     -> GridToInertialMapSimple {
   return GridToInertialMapSimple{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
-          function_of_time_name_grid_to_distorted_}};
+          function_of_time_name_grid_to_distorted()}};
 }
 
 template <size_t MeshDim, size_t Index>
@@ -189,7 +189,7 @@ auto UniformTranslation<MeshDim, Index>::grid_to_distorted_map() const
     -> GridToDistortedMap {
   return GridToDistortedMap{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
-          function_of_time_name_grid_to_distorted_}};
+          function_of_time_name_grid_to_distorted()}};
 }
 
 template <size_t MeshDim, size_t Index>
@@ -197,7 +197,7 @@ auto UniformTranslation<MeshDim, Index>::distorted_to_inertial_map() const
     -> DistortedToInertialMap {
   return DistortedToInertialMap{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
-          function_of_time_name_distorted_to_inertial_}};
+          function_of_time_name_distorted_to_inertial()}};
 }
 
 template <size_t MeshDim, size_t Index>
@@ -205,9 +205,9 @@ auto UniformTranslation<MeshDim, Index>::grid_to_inertial_map_combined() const
     -> GridToInertialMapCombined {
   return GridToInertialMapCombined{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
-          function_of_time_name_grid_to_distorted_},
+          function_of_time_name_grid_to_distorted()},
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
-          function_of_time_name_distorted_to_inertial_}};
+          function_of_time_name_distorted_to_inertial()}};
 }
 
 template <size_t Dim, size_t Index>

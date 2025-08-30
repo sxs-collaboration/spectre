@@ -534,9 +534,11 @@ CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
     CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map, NewMap new_map);
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 PUP::able::PUP_ID
     CoordinateMap<SourceFrame, TargetFrame, Maps...>::my_PUP_ID =  // NOLINT
     0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace domain

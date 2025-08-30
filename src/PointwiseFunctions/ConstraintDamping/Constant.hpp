@@ -102,8 +102,10 @@ bool operator!=(const Constant<VolumeDim, Fr>& lhs,
 }  // namespace ConstraintDamping
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t VolumeDim, typename Fr>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID ConstraintDamping::Constant<VolumeDim, Fr>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond

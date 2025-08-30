@@ -46,7 +46,9 @@ struct NoAnalyticSolution : elliptic::analytic_data::Background {
   // Does _not_ provide variables for all system fields
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID NoAnalyticSolution::my_PUP_ID = 0;  // NOLINT
+#endif                                                // __CUDA_ARCH__
 
 struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   AnalyticSolution() = default;
@@ -65,7 +67,9 @@ struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   }
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID AnalyticSolution::my_PUP_ID = 0;  // NOLINT
+#endif                                              // __CUDA_ARCH__
 #pragma GCC diagnostic pop
 
 template <typename Metavariables>

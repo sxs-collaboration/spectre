@@ -76,7 +76,9 @@ struct RotatingSchwarzschildWithNoninertialNews
   }
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID RotatingSchwarzschildWithNoninertialNews::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 struct SetRandomBoundaryValues {
   template <typename DbTags, typename... InboxTags, typename Metavariables,

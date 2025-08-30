@@ -658,8 +658,10 @@ void ApparentHorizon<ConformalGeometry>::pup(PUP::er& p) {
   p | solution_for_negative_expansion_;
 }
 
+#ifndef __CUDA_ARCH__
 template <Xcts::Geometry ConformalGeometry>
 PUP::able::PUP_ID ApparentHorizon<ConformalGeometry>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 
 template class ApparentHorizon<Xcts::Geometry::FlatCartesian>;
 template class ApparentHorizon<Xcts::Geometry::Curved>;

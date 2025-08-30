@@ -194,13 +194,13 @@ struct TimeDependentMapOptions {
    */
   bool using_distorted_frame() const;
 
-  inline static const std::string size_name{"Size"};
-  inline static const std::string shape_name{"Shape"};
-  inline static const std::string rotation_name{"Rotation"};
-  inline static const std::string expansion_name{"Expansion"};
-  inline static const std::string expansion_outer_boundary_name{
+  static constexpr const char* size_name{"Size"};
+  static constexpr const char* shape_name{"Shape"};
+  static constexpr const char* rotation_name{"Rotation"};
+  static constexpr const char* expansion_name{"Expansion"};
+  static constexpr const char* expansion_outer_boundary_name{
       "ExpansionOuterBoundary"};
-  inline static const std::string translation_name{"Translation"};
+  static constexpr const char* translation_name{"Translation"};
 
  private:
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};

@@ -92,5 +92,7 @@ double DeltaRDriftOutward::control_error(
       std::numeric_limits<double>::signaling_NaN());
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID DeltaRDriftOutward::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace control_system::size::States

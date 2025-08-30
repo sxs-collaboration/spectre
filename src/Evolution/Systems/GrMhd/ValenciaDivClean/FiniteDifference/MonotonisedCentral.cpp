@@ -45,8 +45,10 @@ void MonotonisedCentralPrim::pup(PUP::er& p) {
   p | reconstruct_rho_times_temperature_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t ThermodynamicDim>
 void MonotonisedCentralPrim::reconstruct(

@@ -80,8 +80,10 @@ struct TestCreatable : public PhaseChange {
   int option_value_ = 0;
 };
 
+#ifndef __CUDA_ARCH__
 template <size_t Val>
 PUP::able::PUP_ID TestCreatable<Val>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 struct Metavariables {
   struct factory_creation

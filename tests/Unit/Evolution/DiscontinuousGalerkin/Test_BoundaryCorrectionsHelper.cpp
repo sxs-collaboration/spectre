@@ -273,8 +273,10 @@ struct Correction final : public CorrectionBase {
   }
 };
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename VolumeDoubleType>
 PUP::able::PUP_ID Correction<Dim, VolumeDoubleType>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim, bool CurvedBackground, typename VolumeDoubleType>
 void test_impl(const gsl::not_null<std::mt19937*> gen) {

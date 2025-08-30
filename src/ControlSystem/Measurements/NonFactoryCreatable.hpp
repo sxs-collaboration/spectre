@@ -32,8 +32,10 @@ struct NonFactoryCreatableWrapper : public FactoryCreatableClass {
 
 /// \cond
 // NOLINTBEGIN
+#ifndef __CUDA_ARCH__
 template <typename FactoryCreatableClass>
 PUP::able::PUP_ID NonFactoryCreatableWrapper<FactoryCreatableClass>::my_PUP_ID =
     0;
+#endif  // __CUDA_ARCH__
 // NOLINTEND
 /// \endcond

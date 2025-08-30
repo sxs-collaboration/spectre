@@ -94,8 +94,10 @@ void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID PositivityPreservingAdaptiveOrderPrim::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t ThermodynamicDim>
 void PositivityPreservingAdaptiveOrderPrim::reconstruct(

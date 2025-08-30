@@ -179,7 +179,7 @@ class SphericalCompression final : public TimeDependence<3> {
   double initial_value_{std::numeric_limits<double>::signaling_NaN()};
   double initial_velocity_{std::numeric_limits<double>::signaling_NaN()};
   double initial_acceleration_{std::numeric_limits<double>::signaling_NaN()};
-  inline static const std::string function_of_time_name_{"Size"};
+  static constexpr const char* function_of_time_name_{"Size"};
 };
 
 bool operator!=(const SphericalCompression& lhs,

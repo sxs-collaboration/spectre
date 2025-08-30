@@ -254,8 +254,10 @@ void Constraints<Dim, TensorTags>::pup(PUP::er& p) {
   p | coarsening_factor_;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename TensorTags>
 PUP::able::PUP_ID Constraints<Dim, TensorTags>::my_PUP_ID = 0;  // NOLINT
+#endif                                                          // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace amr::Criteria

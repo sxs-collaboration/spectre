@@ -47,7 +47,9 @@ SmoothFlow::variables(
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID SmoothFlow::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs) {
   using smooth_flow = RelativisticEuler::Solutions::SmoothFlow<3>;

@@ -140,8 +140,10 @@ void HomogeneousSphere::pup(PUP::er& p) {
   p | outer_opacity_;
   p | boundary_roundness_;
 }
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID HomogeneousSphere::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator!=(const HomogeneousSphere& lhs, const HomogeneousSphere& rhs) {
   return not(lhs == rhs);

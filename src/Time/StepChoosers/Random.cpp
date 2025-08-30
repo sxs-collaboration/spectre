@@ -71,8 +71,10 @@ void Random<VolumeDim>::pup(PUP::er& p) {
   p | seed_;
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t VolumeDim>
 PUP::able::PUP_ID Random<VolumeDim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

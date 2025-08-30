@@ -54,8 +54,10 @@ void Wcns5z::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Wcns5z::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 void Wcns5z::reconstruct(
     const gsl::not_null<std::array<Variables<recons_tags>, dim>*>

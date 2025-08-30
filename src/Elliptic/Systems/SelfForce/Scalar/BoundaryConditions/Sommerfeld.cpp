@@ -68,6 +68,8 @@ bool operator!=(const Sommerfeld& lhs, const Sommerfeld& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Sommerfeld::my_PUP_ID = 0;  // NOLINT
+#endif                                        // __CUDA_ARCH__
 
 }  // namespace ScalarSelfForce::BoundaryConditions

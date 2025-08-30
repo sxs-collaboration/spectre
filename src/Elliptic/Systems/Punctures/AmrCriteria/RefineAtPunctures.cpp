@@ -43,5 +43,7 @@ std::array<amr::Flag, 3> RefineAtPunctures::impl(
   return make_array<3>(amr::Flag::DoNothing);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID RefineAtPunctures::my_PUP_ID = 0;  // NOLINT
+#endif                                               // __CUDA_ARCH__
 }  // namespace Punctures::AmrCriteria

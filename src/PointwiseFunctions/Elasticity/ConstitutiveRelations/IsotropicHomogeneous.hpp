@@ -168,8 +168,10 @@ bool operator!=(const IsotropicHomogeneous<Dim>& lhs,
                 const IsotropicHomogeneous<Dim>& rhs);
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID IsotropicHomogeneous<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace ConstitutiveRelations

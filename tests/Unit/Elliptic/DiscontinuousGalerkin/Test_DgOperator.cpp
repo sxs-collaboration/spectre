@@ -300,8 +300,10 @@ struct ModifiedPoissonSolution : Poisson::Solutions::ProductOfSinusoids<Dim> {
   }
 };
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID ModifiedPoissonSolution<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                                          // __CUDA_ARCH__
 
 template <
     typename System, bool Linearized, typename AnalyticSolution,

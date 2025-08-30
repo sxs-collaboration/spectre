@@ -41,5 +41,7 @@ std::optional<double> Times::next_check_time_impl(
   return next_time;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Times::my_PUP_ID = 0;  // NOLINT
+#endif                                   // __CUDA_ARCH__
 }  // namespace DenseTriggers

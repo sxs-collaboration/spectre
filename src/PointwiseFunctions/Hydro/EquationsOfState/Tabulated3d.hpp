@@ -253,8 +253,10 @@ class Tabulated3D : public EquationOfState<IsRelativistic, 3> {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <bool IsRelativistic>
 PUP::able::PUP_ID EquationsOfState::Tabulated3D<IsRelativistic>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace EquationsOfState

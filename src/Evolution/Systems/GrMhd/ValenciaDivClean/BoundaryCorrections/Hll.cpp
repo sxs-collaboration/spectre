@@ -355,6 +355,8 @@ bool operator==(const Hll& lhs, const Hll& rhs) {
 }
 bool operator!=(const Hll& lhs, const Hll& rhs) { return not(lhs == rhs); }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Hll::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

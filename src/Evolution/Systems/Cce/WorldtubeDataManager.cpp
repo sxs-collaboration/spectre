@@ -528,7 +528,9 @@ void KleinGordonWorldtubeDataManager::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID MetricWorldtubeDataManager::my_PUP_ID = 0;       // NOLINT
 PUP::able::PUP_ID BondiWorldtubeDataManager::my_PUP_ID = 0;        // NOLINT
 PUP::able::PUP_ID KleinGordonWorldtubeDataManager::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 }  // namespace Cce

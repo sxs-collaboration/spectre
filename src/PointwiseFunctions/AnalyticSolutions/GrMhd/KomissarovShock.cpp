@@ -181,7 +181,9 @@ KomissarovShock::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID KomissarovShock::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const KomissarovShock& lhs, const KomissarovShock& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and

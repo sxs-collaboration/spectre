@@ -230,11 +230,13 @@ void AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename System, size_t Dim, typename... FieldTags,
           typename... FluxTags>
 PUP::able::PUP_ID AnalyticSolution<System, Dim, tmpl::list<FieldTags...>,
                                    tmpl::list<FluxTags...>>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace elliptic::BoundaryConditions

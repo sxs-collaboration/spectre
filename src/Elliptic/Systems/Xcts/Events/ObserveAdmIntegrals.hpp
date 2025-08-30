@@ -277,9 +277,11 @@ class ObserveAdmIntegrals : public Event {
 /// @}
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename ArraySectionIdTag>
 PUP::able::PUP_ID ObserveAdmIntegrals<ArraySectionIdTag>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Events

@@ -119,9 +119,11 @@ void PositivityPreservingAdaptiveOrderPrim<System>::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID PositivityPreservingAdaptiveOrderPrim<System>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename System>
 template <size_t ThermodynamicDim, typename TagsList>

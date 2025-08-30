@@ -160,7 +160,7 @@ class RotationAboutZAxis final : public TimeDependence<MeshDim> {
       std::numeric_limits<double>::signaling_NaN()};
   double initial_angular_acceleration_{
       std::numeric_limits<double>::signaling_NaN()};
-  inline static const std::string function_of_time_name_{"Rotation"};
+  static constexpr const char* function_of_time_name_{"Rotation"};
 };
 
 template <size_t Dim>

@@ -153,12 +153,14 @@ class Interpolate<VolumeDim, InterpolationTargetTag,
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags>
 PUP::able::PUP_ID
     Interpolate<VolumeDim, InterpolationTargetTag,
                 tmpl::list<InterpolatorSourceVarTags...>>::my_PUP_ID =
         0;  // NOLINT
+#endif      // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace Events

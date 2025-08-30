@@ -166,8 +166,10 @@ class Barotropic2D : public EquationOfState<ColdEos::is_relativistic, 2> {
   ColdEos underlying_eos_;
 };
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename ColdEos>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID EquationsOfState::Barotropic2D<ColdEos>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace EquationsOfState

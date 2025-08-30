@@ -35,6 +35,8 @@ bool operator!=(const Flatness& lhs, const Flatness& rhs) {
   return not(lhs == rhs);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Flatness::my_PUP_ID = 0;  // NOLINT
+#endif                                      // __CUDA_ARCH__
 
 }  // namespace Punctures::BoundaryConditions

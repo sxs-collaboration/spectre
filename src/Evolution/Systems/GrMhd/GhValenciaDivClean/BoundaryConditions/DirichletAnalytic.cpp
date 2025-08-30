@@ -90,9 +90,11 @@ void DirichletAnalytic<System>::pup(PUP::er& p) {
   BoundaryCondition::pup(p);
   p | analytic_prescription_;
 }
+#ifndef __CUDA_ARCH__
 template <typename System>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DirichletAnalytic<System>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename System>
 std::optional<std::string> DirichletAnalytic<System>::dg_ghost(

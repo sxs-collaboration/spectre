@@ -55,5 +55,7 @@ void StepToTimes::pup(PUP::er& p) {
   p | times_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID StepToTimes::my_PUP_ID = 0;  // NOLINT
+#endif                                         // __CUDA_ARCH__
 }  // namespace StepChoosers

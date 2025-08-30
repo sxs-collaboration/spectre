@@ -25,5 +25,7 @@ void FixedLtsRatio::pup(PUP::er& p) {
   p | step_choosers_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID FixedLtsRatio::my_PUP_ID = 0;  // NOLINT
+#endif                                           // __CUDA_ARCH__
 }  // namespace StepChoosers

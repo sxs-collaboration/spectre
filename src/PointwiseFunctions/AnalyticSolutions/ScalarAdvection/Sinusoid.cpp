@@ -31,7 +31,9 @@ void Sinusoid::pup(PUP::er& p) { InitialData::pup(p); }
 
 Sinusoid::Sinusoid(CkMigrateMessage* msg) : InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Sinusoid::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) {
   return true;

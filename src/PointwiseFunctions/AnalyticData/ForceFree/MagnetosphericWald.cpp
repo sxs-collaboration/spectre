@@ -40,8 +40,10 @@ void MagnetosphericWald::pup(PUP::er& p) {
   p | background_spacetime_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MagnetosphericWald::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 tuples::TaggedTuple<Tags::TildeE> MagnetosphericWald::variables(
     const tnsr::I<DataVector, 3>& x, tmpl::list<Tags::TildeE> /*meta*/) {

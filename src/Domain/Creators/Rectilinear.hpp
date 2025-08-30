@@ -246,7 +246,7 @@ class Rectilinear : public DomainCreator<Dim> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
-  std::vector<std::string> block_names() const override { return block_names_; }
+  std::vector<std::string> block_names() const override { return {name()}; }
 
   std::unordered_map<std::string, std::unordered_set<std::string>>
   block_groups() const override {
@@ -283,7 +283,6 @@ class Rectilinear : public DomainCreator<Dim> {
                  2>,
       Dim>
       boundary_conditions_{};
-  inline static const std::vector<std::string> block_names_{name()};
 };
 
 template <size_t Dim>

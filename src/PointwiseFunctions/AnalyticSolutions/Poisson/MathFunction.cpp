@@ -64,8 +64,10 @@ void MathFunctionVariables<DataType, Dim>::operator()(
 
 }  // namespace detail
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID MathFunction<Dim>::my_PUP_ID = 0;  // NOLINT
+#endif                                               // __CUDA_ARCH__
 
 template <size_t Dim>
 std::unique_ptr<elliptic::analytic_data::AnalyticSolution>

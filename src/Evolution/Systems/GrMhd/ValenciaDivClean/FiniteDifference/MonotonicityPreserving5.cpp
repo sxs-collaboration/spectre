@@ -52,8 +52,10 @@ void MonotonicityPreserving5Prim::pup(PUP::er& p) {
   p | reconstruct_rho_times_temperature_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MonotonicityPreserving5Prim::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t ThermodynamicDim>
 void MonotonicityPreserving5Prim::reconstruct(

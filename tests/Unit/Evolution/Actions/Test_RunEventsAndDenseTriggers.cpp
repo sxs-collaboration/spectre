@@ -165,7 +165,9 @@ class TestTrigger : public DenseTrigger {
   std::optional<double> next_trigger_{};
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestTrigger::my_PUP_ID = 0;  // NOLINT
+#endif                                         // __CUDA_ARCH__
 
 struct TestEvent : public Event {
   TestEvent() = default;
@@ -258,7 +260,9 @@ struct TestEvent : public Event {
 
 std::vector<DataTuple> TestEvent::calls{};
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // __CUDA_ARCH__
 
 struct System {
   using variables_tag = Tags::Variables<tmpl::list<EvolvedVar>>;

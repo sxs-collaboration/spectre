@@ -172,6 +172,8 @@ struct VisitAndReturn : public PhaseChange {
 }  // namespace PhaseControl
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <Parallel::Phase TargetPhase>
 PUP::able::PUP_ID PhaseControl::VisitAndReturn<TargetPhase>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond

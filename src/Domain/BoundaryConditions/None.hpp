@@ -87,9 +87,11 @@ void None<SystemBoundaryConditionBaseClass>::pup(PUP::er& p) {
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename SystemBoundaryConditionBaseClass>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID None<SystemBoundaryConditionBaseClass>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 /// Check if a boundary condition inherits from `MarkAsNone`, which

@@ -197,7 +197,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
-
-// Some compilers (clang 3.9.1) don't instantiate the default argument
-// to the second Domain constructor.
-template class std::vector<PairOfFaces>;

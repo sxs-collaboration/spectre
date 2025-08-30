@@ -135,5 +135,7 @@ void RegularSphericalWave::pup(PUP::er& p) {
   p | profile_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID RegularSphericalWave::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace ScalarWave::Solutions

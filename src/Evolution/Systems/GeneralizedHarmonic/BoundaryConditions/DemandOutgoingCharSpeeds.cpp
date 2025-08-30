@@ -79,9 +79,11 @@ DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
   return std::nullopt;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 template <size_t Dim>
 PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

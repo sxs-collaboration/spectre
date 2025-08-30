@@ -311,6 +311,8 @@ void SphereTransition::pup(PUP::er& p) {
 SphereTransition::SphereTransition(CkMigrateMessage* const msg)
     : ShapeMapTransitionFunction(msg) {}
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID SphereTransition::my_PUP_ID = 0;  // NOLINT
+#endif                                              // __CUDA_ARCH__
 
 }  // namespace domain::CoordinateMaps::ShapeMapTransitionFunctions

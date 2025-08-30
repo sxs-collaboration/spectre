@@ -25,8 +25,10 @@ std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const {
 
 void Rusanov::pup(PUP::er& p) { BoundaryCorrection::pup(p); }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Rusanov::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 double Rusanov::dg_package_data(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>

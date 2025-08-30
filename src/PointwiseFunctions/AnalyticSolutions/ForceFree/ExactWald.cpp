@@ -36,8 +36,10 @@ void ExactWald::pup(PUP::er& p) {
   p | magnetic_field_amplitude_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ExactWald::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 tuples::TaggedTuple<Tags::TildeE> ExactWald::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,

@@ -78,7 +78,9 @@ struct TestEvent : public Event {
 };
 
 std::optional<double> TestEvent::last_value{};
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // __CUDA_ARCH__
 
 template <typename Metavariables>
 struct Component {

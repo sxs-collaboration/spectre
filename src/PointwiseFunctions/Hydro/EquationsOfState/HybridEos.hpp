@@ -169,8 +169,10 @@ class HybridEos
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename ColdEquationOfState>
 PUP::able::PUP_ID EquationsOfState::HybridEos<ColdEquationOfState>::my_PUP_ID =
     0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace EquationsOfState

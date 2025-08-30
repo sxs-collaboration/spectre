@@ -267,7 +267,9 @@ MagnetizedFmDisk::variables(
   return result;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID MagnetizedFmDisk::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const MagnetizedFmDisk& lhs, const MagnetizedFmDisk& rhs) {
   return lhs.fm_disk_ == rhs.fm_disk_ and

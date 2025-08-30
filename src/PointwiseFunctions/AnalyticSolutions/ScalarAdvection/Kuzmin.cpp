@@ -84,7 +84,9 @@ void Kuzmin::pup(PUP::er& p) { InitialData::pup(p); }
 
 Kuzmin::Kuzmin(CkMigrateMessage* msg) : InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Kuzmin::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const Kuzmin& /*lhs*/, const Kuzmin& /*rhs*/) { return true; }
 

@@ -261,9 +261,11 @@ class ProductOfCorrections final : public BoundaryCorrection {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
 PUP::able::PUP_ID ProductOfCorrections<DerivedGhCorrection,
                                        DerivedValenciaCorrection>::my_PUP_ID =
     0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace grmhd::GhValenciaDivClean::BoundaryCorrections

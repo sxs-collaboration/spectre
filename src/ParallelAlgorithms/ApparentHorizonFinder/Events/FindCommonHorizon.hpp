@@ -164,12 +164,14 @@ class FindCommonHorizon<
 
 /// \cond
 // NOLINTBEGIN
+#ifndef __CUDA_ARCH__
 template <size_t VolumeDim, typename InterpolationTargetTag,
           typename... InterpolatorSourceVarTags, typename... Tensors,
           typename... NonTensorComputeTags>
 PUP::able::PUP_ID FindCommonHorizon<
     VolumeDim, InterpolationTargetTag, tmpl::list<InterpolatorSourceVarTags...>,
     tmpl::list<Tensors...>, tmpl::list<NonTensorComputeTags...>>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 // NOLINTEND
 /// \endcond
 }  // namespace intrp::Events

@@ -143,7 +143,9 @@ class ObserveAmrCriteria
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename Metavariables>
 PUP::able::PUP_ID ObserveAmrCriteria<Metavariables>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace amr::Events

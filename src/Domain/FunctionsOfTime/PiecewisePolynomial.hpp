@@ -126,8 +126,10 @@ bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
                 const PiecewisePolynomial<MaxDeriv>& rhs);
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t MaxDeriv>
 PUP::able::PUP_ID PiecewisePolynomial<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace FunctionsOfTime
 }  // namespace domain

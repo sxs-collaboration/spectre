@@ -180,10 +180,14 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   std::array<double, MeshDim> velocity_grid_to_distorted_{};
   std::array<double, MeshDim> velocity_distorted_to_inertial_{};
   bool distorted_and_inertial_frames_are_equal_{true};
-  inline static const std::string function_of_time_name_grid_to_distorted_{
-      "Translation" + (Index == 0 ? "" : get_output(Index))};
-  inline static const std::string function_of_time_name_distorted_to_inertial_{
-      "TranslationDistortedToInertial" + (Index == 0 ? "" : get_output(Index))};
+
+  static std::string function_of_time_name_grid_to_distorted() {
+    return "Translation" + (Index == 0 ? "" : get_output(Index));
+  }
+  static std::string function_of_time_name_distorted_to_inertial() {
+    return "TranslationDistortedToInertial" +
+           (Index == 0 ? "" : get_output(Index));
+  }
 };
 
 template <size_t Dim, size_t Index>

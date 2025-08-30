@@ -132,8 +132,10 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
 };
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <bool IsRelativistic>
 PUP::able::PUP_ID EquationsOfState::DarkEnergyFluid<IsRelativistic>::my_PUP_ID =
     0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace EquationsOfState

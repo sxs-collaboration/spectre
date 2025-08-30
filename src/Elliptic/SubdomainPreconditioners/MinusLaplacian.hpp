@@ -485,11 +485,13 @@ MinusLaplacian<Dim, OptionsGroup, Solver, LinearSolverRegistrars>::solve(
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename OptionsGroup, typename Solver,
           typename LinearSolverRegistrars>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID MinusLaplacian<Dim, OptionsGroup, Solver,
                                  LinearSolverRegistrars>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 
 }  // namespace elliptic::subdomain_preconditioners

@@ -202,6 +202,8 @@ std::optional<std::string> ConstraintPreservingFreeOutflow::dg_time_derivative(
       logical_dt_phi, d_spacetime_metric, d_pi, d_phi);
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreservingFreeOutflow::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions

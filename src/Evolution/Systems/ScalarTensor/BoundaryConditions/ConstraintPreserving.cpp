@@ -204,6 +204,8 @@ std::optional<std::string> ConstraintPreserving::dg_time_derivative(
   return gh_string.value() + ";" + scalar_string.value();
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID ConstraintPreserving::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace ScalarTensor::BoundaryConditions

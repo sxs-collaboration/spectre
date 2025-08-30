@@ -66,7 +66,9 @@ class TestFoT : public domain::FunctionsOfTime::FunctionOfTime {
   double upper_bound_{};
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestFoT::my_PUP_ID = 0;  // NOLINT
+#endif                                     // __CUDA_ARCH__
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.OutputTimeBounds",
                   "[Unit][Domain]") {

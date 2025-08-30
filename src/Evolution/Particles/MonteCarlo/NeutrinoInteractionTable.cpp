@@ -258,9 +258,13 @@ void NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::pup(PUP::er& p) {
   }
 }
 
+// NOLINTBEGIN
+#ifndef __CUDA_ARCH__
 template <size_t EnergyBins, size_t NeutrinoSpecies>
-PUP::able::PUP_ID NeutrinoInteractionTable<EnergyBins,
-  NeutrinoSpecies>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID
+    NeutrinoInteractionTable<EnergyBins, NeutrinoSpecies>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
+// NOLINTEND
 
 template <size_t EnergyBins, size_t NeutrinoSpecies>
 void NeutrinoInteractionTable<EnergyBins,

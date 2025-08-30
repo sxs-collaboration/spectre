@@ -173,7 +173,9 @@ class Barotropic3D : public EquationOfState<ColdEquilEos::is_relativistic, 3> {
   ColdEquilEos underlying_eos_;
 };
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename ColdEquilEos>
 PUP::able::PUP_ID EquationsOfState::Barotropic3D<ColdEquilEos>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace EquationsOfState

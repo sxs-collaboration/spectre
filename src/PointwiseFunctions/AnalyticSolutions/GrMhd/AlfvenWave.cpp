@@ -205,7 +205,9 @@ AlfvenWave::variables(
   return {std::move(specific_internal_energy)};
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID AlfvenWave::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

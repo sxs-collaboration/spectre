@@ -509,11 +509,13 @@ void ObserveNorms<tmpl::list<ObservableTensorTags...>,
 }
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+#ifndef __CUDA_ARCH__
 template <typename... ObservableTensorTags, typename... NonTensorComputeTags,
           typename ArraySectionIdTag, typename OptionName>
 PUP::able::PUP_ID ObserveNorms<tmpl::list<ObservableTensorTags...>,
                                tmpl::list<NonTensorComputeTags...>,
                                ArraySectionIdTag, OptionName>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 /// \endcond
 }  // namespace Events

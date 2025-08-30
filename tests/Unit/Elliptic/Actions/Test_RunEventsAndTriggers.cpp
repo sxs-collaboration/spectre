@@ -65,7 +65,9 @@ struct TestEvent : public Event {
   bool needs_evolved_variables() const override { return false; }
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TestEvent::my_PUP_ID = 0;  // NOLINT
+#endif                                       // __CUDA_ARCH__
 
 struct Label {};
 

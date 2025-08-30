@@ -92,7 +92,9 @@ void BentBeamVariables<DataType>::operator()(
 
 }  // namespace detail
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID BentBeam::my_PUP_ID = 0;  // NOLINT
+#endif                                      // __CUDA_ARCH__
 
 bool operator==(const BentBeam& lhs, const BentBeam& rhs) {
   return lhs.length() == rhs.length() and lhs.height() == rhs.height() and

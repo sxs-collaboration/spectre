@@ -41,5 +41,7 @@ double BarycentricRationalSpanInterpolator::interpolate(
   return interpolant(target_point);
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID intrp::BarycentricRationalSpanInterpolator::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace intrp

@@ -207,7 +207,9 @@ tuples::TaggedTuple<gr::Tags::Shift<DataType, 3>> RiemannProblem::variables(
   return {std::move(shift)};
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID RiemannProblem::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const RiemannProblem& lhs, const RiemannProblem& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and

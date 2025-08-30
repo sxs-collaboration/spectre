@@ -157,4 +157,6 @@ bool Rk3HesthavenSsp::can_change_step_size_impl(
 TIME_STEPPER_DEFINE_OVERLOADS(Rk3HesthavenSsp)
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::Rk3HesthavenSsp::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__

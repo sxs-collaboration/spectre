@@ -90,7 +90,9 @@ class CriterionOne : public amr::Criterion {
   double critical_value_{0.0};
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID CriterionOne::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 
 class CriterionTwo : public amr::Criterion {
  public:
@@ -139,7 +141,9 @@ class CriterionTwo : public amr::Criterion {
   double target_value_{0.0};
 };
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID CriterionTwo::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 #pragma GCC diagnostic pop
 
 struct Metavariables {

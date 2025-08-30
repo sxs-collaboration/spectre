@@ -62,9 +62,11 @@ template <size_t Dim>
 KhInstability<Dim>::KhInstability(CkMigrateMessage* msg)
     : evolution::initial_data::InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID KhInstability<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 void KhInstability<Dim>::pup(PUP::er& p) {

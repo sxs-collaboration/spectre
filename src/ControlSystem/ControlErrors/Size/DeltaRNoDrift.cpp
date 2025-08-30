@@ -120,6 +120,8 @@ double DeltaRNoDrift::control_error(
   return control_error_args.control_error_delta_r;
 }
 
+#ifndef __CUDA_ARCH__
 // cppcoreguidelines-avoid-non-const-global-variables
 PUP::able::PUP_ID DeltaRNoDrift::my_PUP_ID = 0; // NOLINT
+#endif                                          // __CUDA_ARCH__
 }  // namespace control_system::size::States

@@ -64,9 +64,11 @@ void AoWeno53Prim<Dim>::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE
 PUP::able::PUP_ID AoWeno53Prim<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 template <typename TagsList>

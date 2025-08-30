@@ -30,8 +30,10 @@ const importers::ImporterOptions& NumericInitialData::importer_options() const {
   return importer_options_;
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID NumericInitialData::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 size_t NumericInitialData::volume_data_id() const {
   size_t hash = 0;

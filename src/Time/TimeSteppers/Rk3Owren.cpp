@@ -39,4 +39,6 @@ const RungeKutta::ButcherTableau& Rk3Owren::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TimeSteppers::Rk3Owren::my_PUP_ID = 0;  // NOLINT
+#endif                                                    // __CUDA_ARCH__

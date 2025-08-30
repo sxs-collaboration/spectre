@@ -125,8 +125,10 @@ void WrappedGr<SolutionType>::pup(PUP::er& p) {
   SolutionType::pup(p);
 }
 
+#ifndef __CUDA_ARCH__
 template <typename SolutionType>
 PUP::able::PUP_ID WrappedGr<SolutionType>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <typename SolutionType>
 bool operator==(const WrappedGr<SolutionType>& lhs,

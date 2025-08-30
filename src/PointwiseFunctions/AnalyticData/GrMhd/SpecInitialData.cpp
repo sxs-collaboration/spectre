@@ -88,8 +88,10 @@ void SpecInitialData<ThermodynamicDim>::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t ThermodynamicDim>
 PUP::able::PUP_ID SpecInitialData<ThermodynamicDim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t ThermodynamicDim>
 template <typename DataType>

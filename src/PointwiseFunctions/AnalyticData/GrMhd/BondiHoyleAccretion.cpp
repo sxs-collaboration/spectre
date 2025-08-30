@@ -215,7 +215,9 @@ BondiHoyleAccretion::variables(
       get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID BondiHoyleAccretion::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const BondiHoyleAccretion& lhs,
                 const BondiHoyleAccretion& rhs) {

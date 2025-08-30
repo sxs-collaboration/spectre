@@ -15,5 +15,7 @@ void Or::pup(PUP::er& p) {
   p | triggers_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Or::my_PUP_ID = 0;  // NOLINT
+#endif                                // __CUDA_ARCH__
 }  // namespace DenseTriggers

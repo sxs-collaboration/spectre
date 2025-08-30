@@ -51,8 +51,10 @@ void EvenlySpaced<T>::pup(PUP::er& p) {
   p | offset_;
 }
 
+#ifndef __CUDA_ARCH__
 template <typename T>
 PUP::able::PUP_ID EvenlySpaced<T>::my_PUP_ID = 0;  // NOLINT
+#endif                                             // __CUDA_ARCH__
 
 template <typename T>
 Specified<T>::Specified(std::vector<T> values) : values_(std::move(values)) {
@@ -87,8 +89,10 @@ void Specified<T>::pup(PUP::er& p) {
   p | values_;
 }
 
+#ifndef __CUDA_ARCH__
 template <typename T>
 PUP::able::PUP_ID Specified<T>::my_PUP_ID = 0;  // NOLINT
+#endif                                          // __CUDA_ARCH__
 
 // For time values
 template class EvenlySpaced<double>;

@@ -309,5 +309,7 @@ void TeukolskyWave::pup(PUP::er& p) {
   p | duration_;
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID TeukolskyWave::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 }  // namespace Cce::Solutions

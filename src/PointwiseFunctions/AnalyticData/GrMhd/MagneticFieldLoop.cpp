@@ -184,7 +184,9 @@ MagneticFieldLoop::variables(
           variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID MagneticFieldLoop::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const MagneticFieldLoop& lhs, const MagneticFieldLoop& rhs) {
   // there is no comparison operator for the EoS, but should be okay as

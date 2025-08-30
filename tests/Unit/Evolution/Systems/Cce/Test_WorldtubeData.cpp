@@ -410,10 +410,12 @@ class BondiBufferUpdater
   size_t l_max_ = 0;
 };
 
+#ifndef __CUDA_ARCH__
 template <typename T>
 PUP::able::PUP_ID Cce::DummyBufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
 template <typename T>
 PUP::able::PUP_ID Cce::BondiBufferUpdater<T>::my_PUP_ID = 0;  // NOLINT
+#endif                                                        // __CUDA_ARCH__
 
 template class Cce::DummyBufferUpdater<ComplexModalVector>;
 template class Cce::DummyBufferUpdater<DataVector>;

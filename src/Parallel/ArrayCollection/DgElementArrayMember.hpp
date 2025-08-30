@@ -566,11 +566,13 @@ void DgElementArrayMember<Dim, Metavariables,
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim, typename Metavariables,
           typename... PhaseDepActionListsPack, typename SimpleTagsFromOptions>
 PUP::able::PUP_ID DgElementArrayMember<
     Dim, Metavariables, tmpl::list<PhaseDepActionListsPack...>,
     SimpleTagsFromOptions>::my_PUP_ID =  // NOLINT
     0;
+#endif  // __CUDA_ARCH__
 /// \endcond
 }  // namespace Parallel

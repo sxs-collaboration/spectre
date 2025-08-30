@@ -73,8 +73,10 @@ amr::Flag random_flag(
 }
 }  // namespace detail
 
+#ifndef __CUDA_ARCH__
 template <Type CriteriaType>
 PUP::able::PUP_ID Random<CriteriaType>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 
 template class Random<Type::h>;
 template class Random<Type::p>;

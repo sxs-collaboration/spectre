@@ -87,7 +87,9 @@ void Krivodonova::pup(PUP::er& p) { InitialData::pup(p); }
 
 Krivodonova::Krivodonova(CkMigrateMessage* msg) : InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 PUP::able::PUP_ID Krivodonova::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 bool operator==(const Krivodonova& /*lhs*/, const Krivodonova& /*rhs*/) {
   return true;

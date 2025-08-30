@@ -541,8 +541,10 @@ void DampedHarmonic::gauge_and_spacetime_derivative(
                   spatial_decay_width_);
 }
 
+#ifndef __CUDA_ARCH__
 // NOLINTNEXTLINE
 PUP::able::PUP_ID DampedHarmonic::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

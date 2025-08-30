@@ -102,7 +102,9 @@ auto ObserveTimeStep<System>::assemble_data(
 }
 
 /// \cond
+#ifndef __CUDA_ARCH__
 template <typename System>
 PUP::able::PUP_ID ObserveTimeStep<System>::my_PUP_ID = 0;  // NOLINT
+#endif                                                     // __CUDA_ARCH__
 /// \endcond
 }  // namespace Events

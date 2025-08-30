@@ -144,8 +144,8 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
 
   // If we have control systems, overwrite the expiration time with the one
   // supplied by the control system
-  if (initial_expiration_times.count(function_of_time_name_) == 1) {
-    expiration_time = initial_expiration_times.at(function_of_time_name_);
+  if (initial_expiration_times.count(function_of_time_name()) == 1) {
+    expiration_time = initial_expiration_times.at(function_of_time_name());
   }
 
   const ylm::Spherepack ylm{l_max_, l_max_};
@@ -157,7 +157,7 @@ Shape<Label>::functions_of_time(const std::unordered_map<std::string, double>&
   const auto radial_distortion_coefs = ylm.phys_to_spec(radial_distortion);
   const DataVector zeros =
       make_with_value<DataVector>(radial_distortion_coefs, 0.0);
-  result[function_of_time_name_] =
+  result[function_of_time_name()] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
           initial_time_,
           std::array<DataVector, 4>{
@@ -191,14 +191,14 @@ template <domain::ObjectLabel Label>
 auto Shape<Label>::grid_to_inertial_map() const -> GridToInertialMap {
   return GridToInertialMap{ShapeMap{center_, l_max_, l_max_,
                                     transition_func_->get_clone(),
-                                    function_of_time_name_}};
+                                    function_of_time_name()}};
 }
 
 template <domain::ObjectLabel Label>
 auto Shape<Label>::grid_to_distorted_map() const -> GridToDistortedMap {
   return GridToDistortedMap{ShapeMap{center_, l_max_, l_max_,
                                      transition_func_->get_clone(),
-                                     function_of_time_name_}};
+                                     function_of_time_name()}};
 }
 
 template <domain::ObjectLabel Label>

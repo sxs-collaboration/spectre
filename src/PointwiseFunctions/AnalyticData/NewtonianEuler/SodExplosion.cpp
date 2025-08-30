@@ -69,9 +69,11 @@ template <size_t Dim>
 SodExplosion<Dim>::SodExplosion(CkMigrateMessage* msg)
     : evolution::initial_data::InitialData(msg) {}
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 PUP::able::PUP_ID SodExplosion<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 void SodExplosion<Dim>::pup(PUP::er& p) {

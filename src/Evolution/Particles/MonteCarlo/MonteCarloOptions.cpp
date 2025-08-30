@@ -9,8 +9,10 @@
 
 namespace Particles::MonteCarlo {
 
+#ifndef __CUDA_ARCH__
 template <size_t NeutrinoSpecies>
 PUP::able::PUP_ID MonteCarloOptions<NeutrinoSpecies>::my_PUP_ID = 0;  // NOLINT
+#endif  // __CUDA_ARCH__
 
 template <size_t NeutrinoSpecies>
 void MonteCarloOptions<NeutrinoSpecies>::pup(PUP::er& p) {

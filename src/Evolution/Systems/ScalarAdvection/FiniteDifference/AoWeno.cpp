@@ -68,8 +68,10 @@ void AoWeno53<Dim>::pup(PUP::er& p) {
   }
 }
 
+#ifndef __CUDA_ARCH__
 template <size_t Dim>
 PUP::able::PUP_ID AoWeno53<Dim>::my_PUP_ID = 0;
+#endif  // __CUDA_ARCH__
 
 template <size_t Dim>
 template <typename TagsList>
