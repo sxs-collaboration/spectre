@@ -17,6 +17,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Criterion.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/IncreaseResolution.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Residual.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
@@ -208,6 +209,24 @@ void test_residual() {
         serialized.operator()(empty_cache, strahlkorper, iter_info)};
     CHECK(recommended_l_original == recommended_l_serialized);
   }
+
+  const Residual criterion_one{1.0e-6, 1.0e-4, 4, 12};
+  const Residual criterion_two{1.0e-6, 1.0e-4, 4, 8};
+  const Residual criterion_one_same{1.0e-6, 1.0e-4, 4, 12};
+  CHECK(criterion_one.is_equal(criterion_one_same));
+  CHECK(not(criterion_one.is_equal(criterion_two)));
+  const auto criterion_one_serialized =
+      serialize_and_deserialize(criterion_one);
+  CHECK(criterion_one.is_equal(criterion_one_serialized));
+
+  const std::unique_ptr<ah::Criterion> criterion_four =
+      std::make_unique<ah::Criteria::Residual>(1.0e-6, 1.0e-4, 4, 12);
+  const std::unique_ptr<ah::Criterion> criterion_five =
+      std::make_unique<ah::Criteria::Residual>(1.0e-6, 1.0e-4, 4, 12);
+  const std::unique_ptr<ah::Criterion> criterion_six =
+      std::make_unique<ah::Criteria::IncreaseResolution>();
+  CHECK(criterion_four->is_equal(*criterion_five));
+  CHECK(not(criterion_four->is_equal(*criterion_six)));
 }
 
 void test_residual_constructor_validation() {

@@ -11,6 +11,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 
 namespace ah {
@@ -51,6 +52,8 @@ class Criterion : public PUP::able {
   WRAPPED_PUPable_abstract(Criterion);
 
   virtual std::string observation_name() = 0;
+
+  virtual bool is_equal(const Criterion& other) const = 0;
 
   /// Evaluates the apparent horizon criteria by selecting the appropriate
   /// derived class and forwarding its `argument_tags` from the ObservationBox

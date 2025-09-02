@@ -245,6 +245,16 @@ void test_shape() {
       Catch::Matchers::ContainsSubstring(
           "If MinResolutionL == MaxResolutionL"));
 #endif
+
+  // Test equality and serialization
+  const Shape criterion_one{1.0e-6, 1.0e-4, 5, 4, 12};
+  const Shape criterion_two{1.0e-6, 1.0e-4, 5, 4, 12};
+  const Shape criterion_three{1.0e-6, 1.0e-3, 5, 4, 12};
+  CHECK(criterion_one.is_equal(criterion_two));
+  CHECK(not(criterion_one.is_equal(criterion_three)));
+  const auto criterion_one_serialized =
+      serialize_and_deserialize(criterion_one);
+  CHECK(criterion_one.is_equal(criterion_one_serialized));
 }
 
 void test_shape_constructor_validation() {

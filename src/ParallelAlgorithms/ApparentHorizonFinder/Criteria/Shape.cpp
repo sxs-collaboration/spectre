@@ -43,6 +43,18 @@ void Shape::pup(PUP::er& p) {
   p | max_resolution_l_;
 }
 
+bool Shape::is_equal(const Criterion& other) const {
+  const auto* other_shape = dynamic_cast<const Shape*>(&other);
+  if (other_shape == nullptr) {
+    return false;
+  }
+  return min_truncation_error_ == other_shape->min_truncation_error_ and
+         max_truncation_error_ == other_shape->max_truncation_error_ and
+         max_pile_up_modes_ == other_shape->max_pile_up_modes_ and
+         min_resolution_l_ == other_shape->min_resolution_l_ and
+         max_resolution_l_ == other_shape->max_resolution_l_;
+}
+
 Shape::Shape(CkMigrateMessage* msg) : Criterion(msg) {}
 
 PUP::able::PUP_ID ah::Criteria::Shape::my_PUP_ID = 0;  // NOLINT

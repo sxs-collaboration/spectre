@@ -41,6 +41,18 @@ void Residual::pup(PUP::er& p) {
   p | min_resolution_l_;
   p | max_resolution_l_;
 }
+
+bool Residual::is_equal(const Criterion& other) const {
+  const auto* other_residual = dynamic_cast<const Residual*>(&other);
+  if (other_residual == nullptr) {
+    return false;
+  }
+  return min_residual_ == other_residual->min_residual_ and
+         max_residual_ == other_residual->max_residual_ and
+         min_resolution_l_ == other_residual->min_resolution_l_ and
+         max_resolution_l_ == other_residual->max_resolution_l_;
+}
+
 Residual::Residual(CkMigrateMessage* msg) : Criterion(msg) {}
 
 PUP::able::PUP_ID ah::Criteria::Residual::my_PUP_ID = 0;  // NOLINT

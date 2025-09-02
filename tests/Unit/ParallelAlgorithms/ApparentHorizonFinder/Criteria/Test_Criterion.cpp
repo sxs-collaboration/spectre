@@ -68,7 +68,7 @@ class CriterionOne : public ah::Criterion {
 
   std::string observation_name() override { return "CriterionOne"; }
 
-  using compute_tags_for_observartion_box = tmpl::list<>;
+  using compute_tags_for_observation_box = tmpl::list<>;
   using argument_tags = tmpl::list<FactorOne>;
 
   template <typename Metavariables, typename Fr>
@@ -83,6 +83,14 @@ class CriterionOne : public ah::Criterion {
   void pup(PUP::er& p) override {
     Criterion::pup(p);
     p | target_value_;
+  }
+
+  bool is_equal(const Criterion& other) const override {
+    const auto* other_criterion = dynamic_cast<const CriterionOne*>(&other);
+    if (other_criterion == nullptr) {
+      return false;
+    }
+    return target_value_ == other_criterion->target_value_;
   }
 
  private:
@@ -113,7 +121,7 @@ class CriterionTwo : public ah::Criterion {
 
   std::string observation_name() override { return "CriterionTwo"; }
 
-  using compute_tags_for_observartion_box = tmpl::list<ProductCompute>;
+  using compute_tags_for_observation_box = tmpl::list<ProductCompute>;
   using argument_tags = tmpl::list<Product>;
 
   template <typename Metavariables, typename Fr>
@@ -129,6 +137,14 @@ class CriterionTwo : public ah::Criterion {
   void pup(PUP::er& p) override {
     Criterion::pup(p);
     p | target_value_;
+  }
+
+  bool is_equal(const Criterion& other) const override {
+    const auto* other_criterion = dynamic_cast<const CriterionTwo*>(&other);
+    if (other_criterion == nullptr) {
+      return false;
+    }
+    return target_value_ == other_criterion->target_value_;
   }
 
  private:
@@ -197,6 +213,22 @@ void test() {
                  strahlkorper, info);
   test_criterion(*serialize_and_deserialize(criterion_two_option), 2.0, 1.5,
                  strahlkorper.l_max() - 1, strahlkorper, info);
+
+  const CriterionOne criterion_one_same{2.3};
+  CHECK(criterion_one.is_equal(criterion_one_same));
+  CHECK(not(criterion_one.is_equal(criterion_two)));
+  const auto criterion_one_serialized =
+      serialize_and_deserialize(criterion_one);
+  CHECK(criterion_one.is_equal(criterion_one_serialized));
+
+  const std::unique_ptr<ah::Criterion> criterion_four =
+      std::make_unique<CriterionOne>(1.2e-3);
+  const std::unique_ptr<CriterionOne> criterion_five =
+      std::make_unique<CriterionOne>(1.2e-3);
+  const std::unique_ptr<CriterionTwo> criterion_six =
+      std::make_unique<CriterionTwo>(1.2e-3);
+  CHECK(criterion_four->is_equal(*criterion_five));
+  CHECK(not(criterion_four->is_equal(*criterion_six)));
 }
 }  // namespace
 
