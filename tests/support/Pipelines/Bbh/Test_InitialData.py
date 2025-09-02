@@ -168,6 +168,7 @@ class TestInitialData(unittest.TestCase):
                 "MeanAnomalyFraction": None,
                 "NumOrbits": None,
                 "TimeToMerger": None,
+                "EvolutionLev": 1,
             },
         )
         self.assertEqual(

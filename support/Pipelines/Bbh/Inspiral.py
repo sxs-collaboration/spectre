@@ -113,8 +113,6 @@ def inspiral_parameters(
     id_metadata: dict,
     id_run_dir: Union[str, Path],
     id_horizons_path: Optional[Union[str, Path]],
-    refinement_level: int,
-    polynomial_order: int,
 ) -> dict:
     """Determine inspiral parameters from SpECTRE initial data.
 
@@ -129,8 +127,6 @@ def inspiral_parameters(
         horizons in the ID (e.g. mass, spin, spherical harmonic coefficients).
         If this is 'None', the default is the 'Horizons.h5' file inside
         'id_run_dir'.
-      refinement_level: h-refinement level.
-      polynomial_order: p-refinement level.
     """
     # For constraints and control system params we just use the target masses
     # and spins, not the values measured on the horizons, because these numbers
@@ -160,14 +156,6 @@ def inspiral_parameters(
         id_domain_creator["ObjectA"]["XCoord"]
         - id_domain_creator["ObjectB"]["XCoord"]
     )
-    # This extra refinement was found through trial and error and allowed mass
-    # ratio 6 to evolve through inspiral stably.
-    extra_radial_refinement_l = (
-        round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0
-    )
-    extra_radial_refinement_p = (
-        round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
-    )
     params = {
         # Initial data files
         "IdFileGlob": str(
@@ -195,11 +183,11 @@ def inspiral_parameters(
         # may need to be ported over eventually. The CCE extraction radii may
         # also need to be adjusted to account for different outer shell radii.
         "OuterShellRadius": 600.0 / 15.0 * initial_separation,
-        # Resolution
-        "L": refinement_level,
-        "P": polynomial_order,
-        "ExtraRadRef": extra_radial_refinement_l,
-        "ExtraRadPoints": extra_radial_refinement_p,
+        # Extra resolution for unequal masses (to be replaced with AMR)
+        # This extra refinement was found through trial and error and allowed
+        # mass ratio 6 to evolve through inspiral stably.
+        "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
+        "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
     }
 
     # Initial functions of time (set from ID or load from evolution data)
@@ -293,8 +281,6 @@ def _load_spec_id_params(id_params_file: Path) -> dict:
 def inspiral_parameters_spec(
     id_params: dict,
     id_run_dir: Union[str, Path],
-    refinement_level: int,
-    polynomial_order: int,
 ) -> dict:
     """Determine inspiral parameters from SpEC initial data.
 
@@ -304,21 +290,14 @@ def inspiral_parameters_spec(
       id_params: Initial data parameters loaded from 'ID_Params.perl'.
       id_run_dir: Directory of the initial data, which contains
         'ID_Params.perl' and 'GrDomain.input'.
-      refinement_level: h-refinement level.
-      polynomial_order: p-refinement level.
     """
 
     mass_left = id_params["ID_MB"]
     mass_right = id_params["ID_MA"]
+    mass_ratio = mass_right / mass_left
     spin_magnitude_left = id_params["ID_chiBMagnitude"]
     spin_magnitude_right = id_params["ID_chiAMagnitude"]
     initial_separation = id_params["ID_d"]
-    extra_radial_refinement_l = (
-        round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0
-    )
-    extra_radial_refinement_p = (
-        round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0
-    )
 
     params = {
         # Initial data files
@@ -344,10 +323,11 @@ def inspiral_parameters_spec(
         # may need to be ported over eventually. The CCE extraction radii may
         # also need to be adjusted to account for different outer shell radii.
         "OuterShellRadius": 600.0 / 15.0 * initial_separation,
-        # Resolution
-        "L": refinement_level,
-        "ExtraRadRef": extra_radial_refinement_l,
-        "ExtraRadPoints": extra_radial_refinement_p,
+        # Extra resolution for unequal masses (to be replaced with AMR)
+        # This extra refinement was found through trial and error and allowed
+        # mass ratio 6 to evolve through inspiral stably.
+        "ExtraRadRef": round(mass_ratio / 2.0) - 1 if (mass_ratio > 2.0) else 0,
+        "ExtraRadPoints": round(mass_ratio / 5.0) if (mass_ratio > 5.0) else 0,
     }
 
     # Constraint damping parameters
@@ -413,6 +393,27 @@ def start_inspiral(
         " 'eccentricity_control'. Choose which of the two to perform next."
     )
 
+    # Determine inspiral parameters from initial data
+    if id_run_dir is None:
+        id_run_dir = Path(id_input_file_path).resolve().parent
+    if Path(id_input_file_path).name == "ID_Params.perl":
+        # Load SpEC initial data (ID_Params.perl)
+        inspiral_params = inspiral_parameters_spec(
+            _load_spec_id_params(Path(id_input_file_path)),
+            id_run_dir,
+        )
+    else:
+        # Load SpECTRE initial data
+        with open(id_input_file_path, "r") as open_input_file:
+            id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
+        inspiral_params = inspiral_parameters(
+            id_input_file,
+            id_metadata,
+            id_run_dir,
+            id_horizons_path=id_horizons_path,
+        )
+
+    # Determine resolution
     if lev is not None:
         assert (refinement_level is None) and (polynomial_order is None), (
             "The option 'lev' is mutaully exclusive with 'refinement_level' and"
@@ -428,30 +429,13 @@ def start_inspiral(
             "Resolution not specified. Provide either 'lev' or both"
             " 'refinement_level' and 'polynomial_order'."
         )
-
-    # Determine inspiral parameters from initial data
-    if id_run_dir is None:
-        id_run_dir = Path(id_input_file_path).resolve().parent
-    if Path(id_input_file_path).name == "ID_Params.perl":
-        # Load SpEC initial data (ID_Params.perl)
-        inspiral_params = inspiral_parameters_spec(
-            _load_spec_id_params(Path(id_input_file_path)),
-            id_run_dir,
-            refinement_level=refinement_level,
-            polynomial_order=polynomial_order,
-        )
-    else:
-        # Load SpECTRE initial data
-        with open(id_input_file_path, "r") as open_input_file:
-            id_metadata, id_input_file = yaml.safe_load_all(open_input_file)
-        inspiral_params = inspiral_parameters(
-            id_input_file,
-            id_metadata,
-            id_run_dir,
-            id_horizons_path=id_horizons_path,
-            refinement_level=refinement_level,
-            polynomial_order=polynomial_order,
-        )
+    inspiral_params.update(
+        {
+            "Lev": lev,
+            "L": refinement_level,
+            "P": polynomial_order,
+        }
+    )
 
     # Set final time for eccentricity control to 2-3 orbits. This can be set
     # more dynamically in the future.

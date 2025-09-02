@@ -35,6 +35,7 @@ TargetParams = Literal[
     "MeanAnomalyFraction",
     "NumOrbits",
     "TimeToMerger",
+    "EvolutionLev",
 ]
 
 DEFAULT_TARGET_PARAMS: Dict[TargetParams, float] = {
@@ -477,10 +478,20 @@ def generate_id(
 )
 # Resolution
 @click.option(
+    "--evolution-lev",
+    "--lev",
+    type=int,
+    help=(
+        "Resolution level for the evolution. See 'start-inspiral' for details."
+    ),
+    default=1,
+    show_default=True,
+)
+@click.option(
     "--refinement-level",
     "-L",
     type=click.IntRange(0, None),
-    help="h-refinement level.",
+    help="h-refinement level for the initial data.",
     default=1,
     show_default=True,
 )
@@ -488,7 +499,7 @@ def generate_id(
     "--polynomial-order",
     "-P",
     type=click.IntRange(1, None),
-    help="p-refinement level.",
+    help="p-refinement level for the initial data.",
     default=9,
     show_default=True,
 )
@@ -562,6 +573,7 @@ def generate_id_command(
     mean_anomaly_fraction,
     num_orbits,
     time_to_merger,
+    evolution_lev,
     **kwargs,
 ):
     _rich_traceback_guard = True  # Hide traceback until here
@@ -578,6 +590,7 @@ def generate_id_command(
         "TimeToMerger": time_to_merger,
         "CenterOfMass": [0.0, 0.0, 0.0],
         "AdmLinearMomentum": [0.0, 0.0, 0.0],
+        "EvolutionLev": evolution_lev,
     }
     if kwargs["eccentricity_control"]:
         # Only circular orbits are currently supported for eccentricity control,

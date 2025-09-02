@@ -10,10 +10,15 @@ import pandas as pd
 import yaml
 
 from spectre.Pipelines.Bbh.InitialData import generate_id
+from spectre.Pipelines.Bbh.Inspiral import (
+    INSPIRAL_INPUT_FILE_TEMPLATE,
+    start_inspiral,
+)
 from spectre.Pipelines.EccentricityControl.EccentricityControlParams import (
     eccentricity_control_params,
     eccentricity_control_params_options,
 )
+from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
 from spectre.support.Schedule import scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -28,8 +33,15 @@ def eccentricity_control(
     tmax: Optional[float] = None,
     plot_output_dir: Optional[Union[str, Path]] = None,
     ecc_params_output_file: Optional[Union[str, Path]] = None,
-    # Scheduler options
+    # Options for continuing the evolution
     evolve: bool = True,
+    branch_levs_when_complete: Optional[Sequence[int]] = None,
+    inspiral_input_file_path: Optional[Union[str, Path]] = None,
+    inspiral_run_dir: Optional[Union[str, Path]] = None,
+    inspiral_input_file_template: Union[
+        str, Path
+    ] = INSPIRAL_INPUT_FILE_TEMPLATE,
+    # Scheduler options
     **scheduler_kwargs,
 ):
     """Adjust orbital parameters for eccentricity control.
@@ -55,10 +67,23 @@ def eccentricity_control(
     Arguments:
       h5_files: files that contain the trajectory data
       id_input_file_path: path to the input file of the initial data run
-      pipeline_dir : directory where the pipeline outputs are stored.
+      pipeline_dir: directory where the pipeline outputs are stored.
       evolve: Evolve the initial data after generation to continue eccentricity
         control. You can disable this to generate only the new initial data if
         you want to manually start the next inspiral.
+      branch_levs_when_complete: Optional list of levs to start when
+        eccentricity control is complete. Each lev will run in a separate
+        subdirectory. If no levs are specified, the simulation will just stop
+        after eccentricity control. See `Inspiral.INSPIRAL_LEVS` for the
+        definition of the levs.
+      inspiral_input_file_path: Path to the input file for the inspiral run.
+        Required only if `branch_levs_when_complete` is specified, as the
+        simulation will continue from this data.
+      inspiral_run_dir: Directory where the inspiral run was executed.
+        Defaults to the directory of the `inspiral_input_file_path`.
+      inspiral_input_file_template: Input file template to start the
+        `branch_levs_when_complete`. Defaults to the
+        `INSPIRAL_INPUT_FILE_TEMPLATE`.
 
     See the 'eccentricity_control_params' function for details on the other
     arguments, as well as the 'schedule' function for the scheduling options.
@@ -86,14 +111,32 @@ def eccentricity_control(
         ecc_params_output_file=ecc_params_output_file,
     )
 
-    # Stop eccentricity control if eccentricity is below threshold
+    # Continue the evolution if eccentricity is below threshold
     if (
         abs(ecc_params["Eccentricity"] - target_params["Eccentricity"])
         <= target_params["EccentricityAbsoluteTolerance"]
     ):
-        print("Success")
-        # Should continue the simulation either by restarting from a
-        # checkpoint, or from the volume data - will do later
+        logger.info("Eccentricity control complete.")
+        if branch_levs_when_complete:
+            # Continue inspiral in a subdirectory for each lev
+            for lev in branch_levs_when_complete:
+                lev_label = f"Lev{lev}"
+                pipeline_steps = list_pipeline_steps(pipeline_dir)
+                lev_dir = (
+                    pipeline_steps[-1].next(label=lev_label)
+                    if pipeline_steps
+                    else PipelineStep.first(pipeline_dir, label=lev_label)
+                )
+                start_inspiral(
+                    # Start from inspiral data
+                    id_input_file_path=inspiral_input_file_path,
+                    id_run_dir=inspiral_run_dir,
+                    lev=lev,
+                    inspiral_input_file_template=inspiral_input_file_template,
+                    continue_with_ringdown=True,
+                    pipeline_dir=lev_dir,
+                    **scheduler_kwargs,
+                )
         return
 
     # Generate new initial data based on updated orbital parameters
