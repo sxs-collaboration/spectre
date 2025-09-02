@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <limits>
 
 /// \cond
 namespace ylm {
@@ -35,5 +36,6 @@ void change_expansion_center_of_strahlkorper(
 /// `change_expansion_center_of_strahlkorper`.
 template <typename Frame>
 void change_expansion_center_of_strahlkorper_to_physical(
-    gsl::not_null<Strahlkorper<Frame>*> strahlkorper);
+    gsl::not_null<Strahlkorper<Frame>*> strahlkorper,
+    double relative_tolerance = 2.0 * std::numeric_limits<double>::epsilon());
 }  // namespace ylm

@@ -18,6 +18,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordsToDifferentFrame.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "NumericalAlgorithms/RootFinding/RootBracketing.hpp"
@@ -30,96 +31,6 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
-
-namespace {
-// Transforms cartesian coordinates of a strahlkorper
-// from one frame to another, by calling block_logical_coordinates and
-// calling the correct map functions.
-template <typename SrcFrame, typename DestFrame>
-void coords_to_different_frame(
-    const gsl::not_null<tnsr::I<DataVector, 3, DestFrame>*>
-        dest_cartesian_coords,
-    const tnsr::I<DataVector, 3, SrcFrame>& src_cartesian_coords,
-    const Domain<3>& domain,
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time,
-    const double time) {
-  // If ever additional cases besides Grid->Inertial, Grid->Distorted,
-  // and Inertial->Distorted are needed, add if constexprs below
-  static_assert(std::is_same_v<SrcFrame, ::Frame::Grid> or
-                    std::is_same_v<SrcFrame, ::Frame::Inertial>,
-                "Source frame must currently be Grid frame or Inertial frame");
-  const auto block_logical_coords = block_logical_coordinates(
-      domain, src_cartesian_coords, time, functions_of_time);
-
-  tnsr::I<double, 3, DestFrame> x_dest{};
-  tnsr::I<double, 3, SrcFrame> x_src{};
-  for (size_t s = 0; s < get<0>(src_cartesian_coords).size(); ++s) {
-    get<0>(x_src) = get<0>(src_cartesian_coords)[s];
-    get<1>(x_src) = get<1>(src_cartesian_coords)[s];
-    get<2>(x_src) = get<2>(src_cartesian_coords)[s];
-
-    // If this doesn't have a value, then the point isn't in the domain which is
-    // really bad.
-    if (UNLIKELY(not block_logical_coords[s].has_value())) {
-      ERROR("A point on the Strahlkorper in the "
-            << SrcFrame{} << " could not be mapped to a block: " << x_src);
-    }
-
-    const auto& block_id_and_coords = block_logical_coords[s].value();
-    const auto& block = domain.blocks()[block_id_and_coords.id.get_index()];
-
-    if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted> and
-                  std::is_same_v<SrcFrame, ::Frame::Grid>) {
-      if (not block.has_distorted_frame()) {
-        ERROR("Strahlkorper lies outside of distorted-frame region");
-      }
-      const auto& grid_to_distorted_map =
-          block.moving_mesh_grid_to_distorted_map();
-      x_dest = grid_to_distorted_map(x_src, time, functions_of_time);
-    } else if constexpr (std::is_same_v<DestFrame, ::Frame::Distorted> and
-                         std::is_same_v<SrcFrame, ::Frame::Inertial>) {
-      if (not block.has_distorted_frame()) {
-        ERROR("Strahlkorper lies outside of distorted-frame region");
-      }
-      const auto& distorted_to_inertial_map =
-          block.moving_mesh_distorted_to_inertial_map();
-      const auto& inv_point =
-          distorted_to_inertial_map.inverse(x_src, time, functions_of_time);
-      if (inv_point.has_value()) {
-        x_dest = *inv_point;
-      } else {
-        ERROR("Map from Frame::Distorted to Frame::Inertial is not invertible");
-      }
-    } else if constexpr (std::is_same_v<DestFrame, ::Frame::Inertial> and
-                         std::is_same_v<SrcFrame, ::Frame::Grid>) {
-      const auto& grid_to_inertial_map =
-          block.moving_mesh_grid_to_inertial_map();
-      x_dest = grid_to_inertial_map(x_src, time, functions_of_time);
-    } else {
-      static_assert(std::is_same_v<DestFrame, ::Frame::Grid> and
-                        std::is_same_v<SrcFrame, ::Frame::Inertial>,
-                    "Source frame -> destination frame must be Grid -> "
-                    "Distorted, Grid -> Inertial, Inertial -> Distorted, or "
-                    "Inertial -> Grid");
-      const auto& grid_to_inertial_map =
-          block.moving_mesh_grid_to_inertial_map();
-      const auto inv_point =
-          grid_to_inertial_map.inverse(x_src, time, functions_of_time);
-      if (inv_point.has_value()) {
-        x_dest = inv_point.value();
-      } else {
-        ERROR("Map from Frame::Inertial to Frame::Grid is not invertible");
-      }
-    }
-
-    get<0>(*dest_cartesian_coords)[s] = get<0>(x_dest);
-    get<1>(*dest_cartesian_coords)[s] = get<1>(x_dest);
-    get<2>(*dest_cartesian_coords)[s] = get<2>(x_dest);
-  }
-}
-}  // namespace
 
 template <typename SrcFrame, typename DestFrame>
 void strahlkorper_in_different_frame(
@@ -158,9 +69,9 @@ void strahlkorper_in_different_frame(
   ylm::cartesian_coords(make_not_null(&src_cartesian_coords), src_strahlkorper,
                         src_radius, r_hat);
 
-  coords_to_different_frame(make_not_null(&dest_cartesian_coords),
-                            src_cartesian_coords, domain, functions_of_time,
-                            time);
+  coords_to_different_frame<SrcFrame, DestFrame>(
+      make_not_null(&dest_cartesian_coords), src_cartesian_coords, domain,
+      functions_of_time, time);
 
   // To find the expansion center of the destination surface, take a
   // simple average of the Cartesian coordinates of the surface in the
@@ -331,9 +242,9 @@ void strahlkorper_in_different_frame_aligned(
   ylm::cartesian_coords(make_not_null(&src_cartesian_coords), src_strahlkorper,
                         radius, r_hat);
 
-  coords_to_different_frame(make_not_null(&dest_cartesian_coords),
-                            src_cartesian_coords, domain, functions_of_time,
-                            time);
+  coords_to_different_frame<SrcFrame, DestFrame>(
+      make_not_null(&dest_cartesian_coords), src_cartesian_coords, domain,
+      functions_of_time, time);
 
   // Fill radius with the radius in the destination frame.
   const auto center = src_strahlkorper.expansion_center();

@@ -91,10 +91,24 @@ void test_change_center_of_strahlkorper_to_physical() {
   change_expansion_center_of_strahlkorper_to_physical(
       make_not_null(&strahlkorper));
 
-  const auto new_physical_center = strahlkorper.physical_center();
-  const auto new_center = strahlkorper.expansion_center();
+  auto new_physical_center = strahlkorper.physical_center();
+  auto new_center = strahlkorper.expansion_center();
   for (size_t i = 0; i < 3; ++i) {
     CHECK(approx(gsl::at(new_physical_center, i)) == gsl::at(new_center, i));
+  }
+
+  // Checking relative tolerance
+  auto strahlkorper_with_higher_tolerance = make_strahlkorper();
+  const double relative_tolerance = 1e-8;
+  const Approx custom_approx =
+      Approx::custom().epsilon(relative_tolerance).scale(10.0);
+  change_expansion_center_of_strahlkorper_to_physical(
+      make_not_null(&strahlkorper_with_higher_tolerance), relative_tolerance);
+  new_physical_center = strahlkorper_with_higher_tolerance.physical_center();
+  new_center = strahlkorper_with_higher_tolerance.expansion_center();
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK_ITERABLE_CUSTOM_APPROX(gsl::at(new_physical_center, i),
+                                 gsl::at(new_center, i), custom_approx);
   }
 }
 

@@ -11,6 +11,7 @@ spectre_target_sources(
   AreaElement.cpp
   Block.cpp
   BlockLogicalCoordinates.cpp
+  CoordsToDifferentFrame.cpp
   CreateInitialElement.cpp
   Domain.cpp
   DomainHelpers.cpp
@@ -37,6 +38,7 @@ spectre_target_headers(
   AreaElement.hpp
   Block.hpp
   BlockLogicalCoordinates.hpp
+  CoordsToDifferentFrame.hpp
   CreateInitialElement.hpp
   Domain.hpp
   DomainHelpers.hpp
