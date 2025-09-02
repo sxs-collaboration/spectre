@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -467,17 +468,55 @@ void time_deriv_of_strahlkorper(
         previous_strahlkorpers) {
   std::deque<double> times{};
   std::deque<const DataVector*> coefficients{};
+  std::deque<DataVector> prolonged_or_restricted_coefficients{};
 
-  // Can't take time deriv of 1 strahlkorper
+  // Can't take time deriv of 1 strahlkorper, so just zero the time derivative's
+  // coefficients
   if (previous_strahlkorpers.size() == 1) {
-    time_deriv->coefficients() = DataVector{
-        previous_strahlkorpers.front().second.coefficients().size(), 0.0};
+    time_deriv->coefficients() = 0.0;
     return;
   }
 
-  for (const auto& [time, strahlkorper] : previous_strahlkorpers) {
-    times.emplace_back(time);
-    coefficients.emplace_back(&strahlkorper.coefficients());
+  // Find the min and max l_max of each previous Strahlkorper, along with the
+  // index of max(l_max). Getting both min(l_max) and max(l_max) enables
+  // skipping the prolong/restrict call when min(l_max) == max(l_max), and
+  // getting the index of max(l_max) enables skipping the prolong/restrict
+  // call on whichever previous Strahlkorper has the highest l_max.
+  const auto max_l_it = std::max_element(
+      previous_strahlkorpers.begin(), previous_strahlkorpers.end(),
+      [](const auto& a, const auto& b) {
+        return a.second.l_max() < b.second.l_max();
+      });
+  const size_t max_prev_l = max_l_it->second.l_max();
+
+  // OK to static_cast to size_t from long here because
+  // max_l_it is inside the std::deque container, so distance
+  // from previous_strahlkorpers.begin() to max_l_it must be nonnegative.
+  const auto max_prev_l_index = static_cast<size_t>(
+      std::distance(previous_strahlkorpers.begin(), max_l_it));
+
+  // If needed, prolong the coefficients of the previous
+  // strahlkorpers to the highest resolution of the previous.
+  // Note: only need to restrict if min(l_max) and max(l_max) differ, and even
+  // then, no need to call prolong_or_restrict() on whichever previous
+  // Strahlkorper has the highest l_max.
+  for (size_t i = 0; i < previous_strahlkorpers.size(); ++i) {
+    ASSERT(previous_strahlkorpers[i].second.l_max() <= max_prev_l,
+           "Calculated incorrect max(l_max) = "
+               << max_prev_l << " but got a surface with l_max ="
+               << previous_strahlkorpers[i].second.l_max());
+    times.emplace_back(previous_strahlkorpers[i].first);
+    if (previous_strahlkorpers[i].second.l_max() != max_prev_l) {
+      prolonged_or_restricted_coefficients.emplace_back(
+          previous_strahlkorpers[i].second.ylm_spherepack().prolong_or_restrict(
+              previous_strahlkorpers[i].second.coefficients(),
+              previous_strahlkorpers[max_prev_l_index]
+                  .second.ylm_spherepack()));
+      coefficients.emplace_back(&(prolonged_or_restricted_coefficients.back()));
+    } else {
+      coefficients.emplace_back(
+          &(previous_strahlkorpers[i].second.coefficients()));
+    }
   }
 
   DataVector new_coefficients{};
@@ -498,6 +537,14 @@ void time_deriv_of_strahlkorper(
             << previous_strahlkorpers.size());
   }
 
+  // If needed, prolong or restrict the new coefficients to match the
+  // resolution of the Strahlkorper whose time derivative is being taken here
+  if (new_coefficients.size() != time_deriv->coefficients().size()) {
+    new_coefficients = previous_strahlkorpers[max_prev_l_index]
+                           .second.ylm_spherepack()
+                           .prolong_or_restrict(new_coefficients,
+                                                time_deriv->ylm_spherepack());
+  }
   time_deriv->coefficients() = std::move(new_coefficients);
 }
 

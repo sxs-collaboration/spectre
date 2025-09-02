@@ -510,6 +510,68 @@ void test_time_deriv_strahlkorper() {
       CHECK_ITERABLE_APPROX(coefs, expected_coefs);
     }
   }
+
+  // Check that time derivative works when previous strahlkorpers have a
+  // different resolution than the output Strahlkorper. First, repeat the
+  // test that the time derivative should vanish, but this time, have
+  // use different l
+  constexpr size_t l_max_mid = 6;
+  constexpr size_t l_max_min = l_max_mid - 2;
+  constexpr size_t l_max_max = l_max_mid + 2;
+
+  Strahlkorper<Frame::Inertial> strahlkorper_mid{l_max_mid, l_max_mid, 1.0,
+                                                 std::array{0.0, 0.0, 0.0}};
+  Strahlkorper<Frame::Inertial> strahlkorper_min{l_max_min, l_max_min, 1.0,
+                                                 std::array{0.0, 0.0, 0.0}};
+  Strahlkorper<Frame::Inertial> strahlkorper_max{l_max_max, l_max_max, 1.0,
+                                                 std::array{0.0, 0.0, 0.0}};
+
+  // Set a random coefficient of each Strahlorper to be 1.3
+  SpherepackIterator iter_mid{l_max_mid, l_max_mid};
+  SpherepackIterator iter_min{l_max_min, l_max_min};
+  SpherepackIterator iter_max{l_max_max, l_max_max};
+
+  strahlkorper_mid.coefficients()[iter_mid.set(2, 1)()] = 1.3;
+  strahlkorper_min.coefficients()[iter_min.set(2, 1)()] = 1.3;
+  strahlkorper_max.coefficients()[iter_max.set(2, 1)()] = 1.3;
+
+  // Set all Strahlkorpers to have the same coefficients, and make sure
+  // that the time derivative is zero
+  std::deque<std::pair<double, Strahlkorper<Frame::Inertial>>>
+      previous_strahlkorpers_different_resolutions{};
+  previous_strahlkorpers_different_resolutions.emplace_front(0.0,
+                                                             strahlkorper_mid);
+  previous_strahlkorpers_different_resolutions.emplace_front(1.0,
+                                                             strahlkorper_min);
+  previous_strahlkorpers_different_resolutions.emplace_front(2.0,
+                                                             strahlkorper_max);
+  auto time_deriv_different_resolutions = strahlkorper_mid;
+  ylm::time_deriv_of_strahlkorper(
+      make_not_null(&time_deriv_different_resolutions),
+      previous_strahlkorpers_different_resolutions);
+  CHECK_ITERABLE_APPROX(
+      time_deriv_different_resolutions.coefficients(),
+      (DataVector{time_deriv_different_resolutions.coefficients().size(),
+                  0.0}));
+
+  // Now, test that a time derivative with two horizons with different
+  // resolutions returns the expected value
+  previous_strahlkorpers_different_resolutions.pop_front();
+  previous_strahlkorpers_different_resolutions.front()
+      .second.coefficients()[iter_min.set(2, 1)()] = 4.0;
+  previous_strahlkorpers_different_resolutions.back()
+      .second.coefficients()[iter_mid.set(2, 1)()] = 4.5;
+  auto time_deriv_2_resolutions = strahlkorper_max;
+  ylm::time_deriv_of_strahlkorper(make_not_null(&time_deriv_2_resolutions),
+                                  previous_strahlkorpers_different_resolutions);
+  const DataVector& coefs_different_resolutions =
+      time_deriv_2_resolutions.coefficients();
+  DataVector expected_coefs_different_resolutions{
+      coefs_different_resolutions.size(), 0.0};
+  expected_coefs_different_resolutions[iter_max.set(2, 1)()] = -0.5;
+
+  CHECK_ITERABLE_APPROX(coefs_different_resolutions,
+                        expected_coefs_different_resolutions);
 }
 
 void test_power_monitor() {
