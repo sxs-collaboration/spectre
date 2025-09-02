@@ -32,7 +32,7 @@ def eccentricity_control(
     evolve: bool = True,
     **scheduler_kwargs,
 ):
-    """Eccentricity reduction post inspiral.
+    """Adjust orbital parameters for eccentricity control.
 
     This function can be called after the inspiral has run (see the 'Next'
     section of the Inspiral.yaml file).
@@ -46,8 +46,8 @@ def eccentricity_control(
       'spectre.Pipelines.EccentricityControl.EccentricityControl'.
       See this function for default values and more details on the arguments.
 
-    - If the eccentricity is below a threshold, it prints "Success" and
-      indicates that the simulation can continue.
+    - If the eccentricity is below an absolute tolerance, continue the
+      evolution.
 
     - Generates new initial data based on updated orbital parameters using the
       'generate_id' function.
@@ -69,7 +69,11 @@ def eccentricity_control(
     target_params = id_metadata["TargetParams"]
     assert (
         target_params["Eccentricity"] is not None
-    ), "For eccentricity control the target eccentricity must be set."
+        and target_params["EccentricityAbsoluteTolerance"] is not None
+    ), (
+        "For eccentricity control the target eccentricity and its tolerance"
+        " must be set."
+    )
 
     # Find the current eccentricity and determine new parameters to put into
     # generate-id
@@ -83,7 +87,10 @@ def eccentricity_control(
     )
 
     # Stop eccentricity control if eccentricity is below threshold
-    if ecc_params["Eccentricity"] < 0.001:
+    if (
+        abs(ecc_params["Eccentricity"] - target_params["Eccentricity"])
+        <= target_params["EccentricityAbsoluteTolerance"]
+    ):
         print("Success")
         # Should continue the simulation either by restarting from a
         # checkpoint, or from the volume data - will do later

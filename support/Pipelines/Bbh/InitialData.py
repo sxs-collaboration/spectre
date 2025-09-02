@@ -31,10 +31,15 @@ TargetParams = Literal[
     "AdmMass",
     "AdmAngularMomentumZ",
     "Eccentricity",
+    "EccentricityAbsoluteTolerance",
     "MeanAnomalyFraction",
     "NumOrbits",
     "TimeToMerger",
 ]
+
+DEFAULT_TARGET_PARAMS: Dict[TargetParams, float] = {
+    "EccentricityAbsoluteTolerance": 1e-3,
+}
 
 
 def L1_distance(m1, m2, separation):
@@ -436,6 +441,13 @@ def generate_id(
     ),
 )
 @click.option(
+    "--eccentricity-abs-tol",
+    type=click.FloatRange(0.0, 1.0),
+    default=DEFAULT_TARGET_PARAMS["EccentricityAbsoluteTolerance"],
+    show_default=True,
+    help="Absolute tolerance for eccentricity control.",
+)
+@click.option(
     "--mean-anomaly-fraction",
     "-l",
     type=click.FloatRange(0.0, 1.0, max_open=True),
@@ -546,6 +558,7 @@ def generate_id_command(
     orbital_angular_velocity,
     radial_expansion_velocity,
     eccentricity,
+    eccentricity_abs_tol,
     mean_anomaly_fraction,
     num_orbits,
     time_to_merger,
@@ -559,6 +572,7 @@ def generate_id_command(
         "DimensionlessSpinA": dimensionless_spin_a,
         "DimensionlessSpinB": dimensionless_spin_b,
         "Eccentricity": eccentricity,
+        "EccentricityAbsoluteTolerance": eccentricity_abs_tol,
         "MeanAnomalyFraction": mean_anomaly_fraction,
         "NumOrbits": num_orbits,
         "TimeToMerger": time_to_merger,
