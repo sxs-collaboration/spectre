@@ -36,9 +36,9 @@ DomainCreator:
         DemandOutgoingCharSpeeds:
     InitialRefinement:
       Shell0: [{{ L }}, {{ L }}, {{ L + 2 }}]
-      Shell1: [{{ L - 1 }}, {{ L - 1 }}, {{ L + 3 }}]
+      Shell1: [{{ L }}, {{ L }}, {{ L + 4 }}]
     InitialGridPoints: {{ P + 1 }}
-    UseEquiangularMap: False
+    UseEquiangularMap: True
     EquatorialCompression: None
     # The radial partitioning split has been tested for
     # equal-mass, zero spin, quasi-circular, but not
@@ -121,13 +121,13 @@ EvolutionSystem:
       # The Gaussian amplitudes, widths, and centers are set according to what
       # SpEC does ringdown for an equal-mass, zero-spin, circular inspiral.
       TimeDependentTripleGaussian:
-        Constant: 0.001
+        Constant: 0.01
         Gaussian1:
           Amplitude: 7.0
           Width: 2.5
           Center: [0.0, 0.0, 0.0]
         Gaussian2:
-          Amplitude: 0.1
+          Amplitude: 1.0
           Width: 100.
           Center: [0.0, 0.0, 0.0]
         Gaussian3:
