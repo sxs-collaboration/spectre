@@ -14,6 +14,9 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Spectral/Basis.hpp"
+#include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
@@ -147,8 +150,8 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
     CHECK(overlap_extent(3, 0) == 0);
     CHECK(overlap_extent(3, 1) == 1);
     CHECK(overlap_extent(3, 2) == 2);
-    CHECK(overlap_extent(3, 3) == 2);
-    CHECK(overlap_extent(3, 4) == 2);
+    CHECK(overlap_extent(3, 3) == 3);
+    CHECK(overlap_extent(3, 4) == 3);
     CHECK(overlap_extent(0, 0) == 0);
   }
   {
@@ -179,12 +182,33 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.OverlapHelpers",
   }
   {
     INFO("Overlap width");
-    DataVector coords{-1., -0.8, 0., 0.8, 1.};
-    CHECK(overlap_width(0, coords) == approx(0.));
-    CHECK(overlap_width(1, coords) == approx(0.2));
-    CHECK(overlap_width(2, coords) == approx(1.));
-    CHECK(overlap_width(3, coords) == approx(1.8));
-    CHECK(overlap_width(4, coords) == approx(2.));
+    {
+      const DataVector coords{-1., -0.8, 0., 0.8, 1.};
+      CHECK(overlap_width(0, coords) == approx(0.));
+      CHECK(overlap_width(1, coords) == approx(0.2));
+      CHECK(overlap_width(2, coords) == approx(1.));
+      CHECK(overlap_width(3, coords) == approx(1.8));
+      CHECK(overlap_width(4, coords) == approx(2.));
+      CHECK(overlap_width(5, coords) == approx(2.));
+    }
+    {
+      const auto& coords =
+          Spectral::collocation_points<Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto>(5);
+      CHECK(overlap_width(0, coords) == approx(0.));
+      CHECK(overlap_width(2, coords) == approx(1.));
+      CHECK(overlap_width(4, coords) == approx(2.));
+      CHECK(overlap_width(5, coords) == approx(2.));
+    }
+    {
+      const auto& coords =
+          Spectral::collocation_points<Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::Gauss>(5);
+      CHECK(overlap_width(0, coords) > 0.);
+      CHECK(overlap_width(2, coords) == approx(1.));
+      CHECK(overlap_width(4, coords) < 2.);
+      CHECK(overlap_width(5, coords) == approx(2.));
+    }
   }
   {
     INFO("Overlap iterator");

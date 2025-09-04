@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Weighting.hpp"
+#include "Utilities/CartesianProduct.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -68,7 +69,7 @@ void test_element_weight() {
 template <size_t Dim>
 void test_weights_conservation(const Element<Dim>& element,
                                const Mesh<Dim>& mesh,
-                               const size_t max_overlap) {
+                               const std::optional<size_t> max_overlap) {
   INFO("Weight conservation");
   CAPTURE(Dim);
   CAPTURE(element);
@@ -105,7 +106,8 @@ void test_weights_conservation(const Element<Dim>& element,
 }
 
 template <size_t Dim>
-void test_weights(const Mesh<Dim>& mesh, const size_t max_overlap) {
+void test_weights(const Mesh<Dim>& mesh,
+                  const std::optional<size_t> max_overlap) {
   typename Element<Dim>::Neighbors_t neighbors{};
   std::unordered_map<size_t, OrientationMap<Dim>> orientations{};
   for (size_t i = 0; i < two_to_the(Dim - 1); ++i) {
@@ -125,9 +127,13 @@ void test_weights(const Mesh<Dim>& mesh, const size_t max_overlap) {
       for (size_t i = 0; i < two_to_the(Dim - 1); ++i) {
         direction_neighbors.add_ids({ElementId<Dim>{i + 1}});
         const Element<Dim> element{ElementId<Dim>{0}, neighbors};
-        for (size_t max_overlap_i = 1; max_overlap_i <= max_overlap;
-             ++max_overlap_i) {
-          test_weights_conservation(element, mesh, max_overlap_i);
+        if (max_overlap.has_value()) {
+          for (size_t max_overlap_i = 1; max_overlap_i <= max_overlap;
+               ++max_overlap_i) {
+            test_weights_conservation(element, mesh, max_overlap_i);
+          }
+        } else {
+          test_weights_conservation(element, mesh, std::nullopt);
         }
       }
     }
@@ -194,17 +200,17 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.Weighting",
   }
   // Test weights conservation on all possible element-neighbor configurations
   {
-    test_weights(Mesh<1>{3, Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto},
-                 4);
-    test_weights(Mesh<2>{{3, 4},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto},
-                 4);
-    test_weights(Mesh<3>{{2, 3, 4},
-                         Spectral::Basis::Legendre,
-                         Spectral::Quadrature::GaussLobatto},
-                 4);
+    for (const auto& [quadrature, max_overlap] : cartesian_product(
+             make_array(Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::Gauss),
+             std::array<std::optional<size_t>, 2>{{4, std::nullopt}})) {
+      test_weights(Mesh<1>{3, Spectral::Basis::Legendre, quadrature},
+                   max_overlap);
+      test_weights(Mesh<2>{{3, 4}, Spectral::Basis::Legendre, quadrature},
+                   max_overlap);
+      test_weights(Mesh<3>{{2, 3, 4}, Spectral::Basis::Legendre, quadrature},
+                   max_overlap);
+    }
   }
 }
 

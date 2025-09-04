@@ -563,7 +563,8 @@ void test_subdomain_operator(
     const Spectral::Quadrature quadrature = Spectral::Quadrature::GaussLobatto,
     const bool override_boundary_conditions = false,
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-    const size_t max_overlap = 3, const double penalty_parameter = 1.2) {
+    const std::optional<size_t> max_overlap = 3,
+    const double penalty_parameter = 1.2) {
   CAPTURE(Dim);
   CAPTURE(penalty_parameter);
   CAPTURE(use_massive_dg_operator);
@@ -587,12 +588,16 @@ void test_subdomain_operator(
   register_factory_classes_with_charm<metavariables>();
 
   // Select randomly which iteration of the loops below perform expensive tests.
+  // If max_overlap=nullopt then a full-element overlap is tested and the random
+  // selection is disabled.
   MAKE_GENERATOR(gen);
-  std::uniform_int_distribution<size_t> dist_select_overlap(0, max_overlap);
-  const size_t rnd_overlap = dist_select_overlap(gen);
+  std::uniform_int_distribution<size_t> dist_select_overlap(
+      0, max_overlap.value_or(0));
+  const size_t rnd_overlap =
+      max_overlap.has_value() ? dist_select_overlap(gen) : 0;
 
   // The test should hold for any number of overlap points
-  for (size_t overlap = 0; overlap <= max_overlap; overlap++) {
+  for (size_t overlap = 0; overlap <= max_overlap.value_or(0); overlap++) {
     CAPTURE(overlap);
 
     // Re-create the domain in every iteration of this loop because it's not
@@ -626,7 +631,8 @@ void test_subdomain_operator(
         logging::Tags::Verbosity<::amr::OptionTags::AmrGroup>>{
         std::move(domain), domain_creator.functions_of_time(),
         std::move(boundary_conditions),
-        std::make_unique<RandomBackground<Dim>>(), overlap,
+        std::make_unique<RandomBackground<Dim>>(),
+        max_overlap.has_value() ? std::optional<size_t>(overlap) : std::nullopt,
         ::Verbosity::Verbose, penalty_parameter, use_massive_dg_operator,
         quadrature, ::dg::Formulation::StrongInertial, std::move(amr_criteria),
         ::amr::Policies{::amr::Isotropy::Anisotropic, ::amr::Limits{}, true,
@@ -898,12 +904,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
                   elliptic::BoundaryConditionType::Dirichlet),
               make_boundary_condition<system>(
                   elliptic::BoundaryConditionType::Neumann)}}}}};
-      for (const auto& [use_massive_dg_operator, quadrature] :
-           cartesian_product(make_array(false, true),
-                             make_array(Spectral::Quadrature::GaussLobatto,
-                                        Spectral::Quadrature::Gauss))) {
+      for (const auto& [use_massive_dg_operator, quadrature, max_overlap] :
+           cartesian_product(
+               make_array(false, true),
+               make_array(Spectral::Quadrature::GaussLobatto,
+                          Spectral::Quadrature::Gauss),
+               std::array<std::optional<size_t>, 2>{{3, std::nullopt}})) {
         test_subdomain_operator<system>(domain_creator, use_massive_dg_operator,
-                                        quadrature);
+                                        quadrature, false, max_overlap);
       }
     }
     {
@@ -1141,5 +1149,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.SubdomainOperator", "[Unit][Elliptic]") {
         {{{{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}},
           {{dirichlet_bc->get_clone(), dirichlet_bc->get_clone()}}}}};
     test_subdomain_operator<system>(domain_creator);
+    for (const auto& [quadrature, max_overlap] : cartesian_product(
+             make_array(Spectral::Quadrature::GaussLobatto,
+                        Spectral::Quadrature::Gauss),
+             std::array<std::optional<size_t>, 2>{{3, std::nullopt}})) {
+      test_subdomain_operator<system>(domain_creator, true, quadrature, false,
+                                      std::nullopt);
+    }
   }
 }

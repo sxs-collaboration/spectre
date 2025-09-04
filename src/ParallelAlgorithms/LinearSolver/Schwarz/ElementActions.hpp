@@ -250,11 +250,10 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
       const gsl::not_null<SubdomainData*> subdomain_data,
       const gsl::not_null<size_t*> observation_id,
       const gsl::not_null<SubdomainData*> /*volume_data_for_output*/,
-      const gsl::not_null<std::unique_ptr<SubdomainSolver>*>
-          subdomain_solver,
+      const gsl::not_null<std::unique_ptr<SubdomainSolver>*> subdomain_solver,
       const Element<Dim>& element, const Mesh<Dim>& mesh,
       const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
-      const size_t max_overlap, const AmrData&... amr_data) {
+      const std::optional<size_t> max_overlap, const AmrData&... amr_data) {
     const size_t num_points = mesh.number_of_grid_points();
 
     // Intruding overlaps
@@ -273,7 +272,7 @@ struct InitializeElement : tt::ConformsTo<amr::protocols::Projector> {
     // For max_overlap > 0 all overlaps will have non-zero extents on an LGL
     // mesh (because it has at least 2 points per dimension), so we don't need
     // to check their extents are non-zero individually
-    if (LIKELY(max_overlap > 0)) {
+    if (LIKELY(max_overlap != 0)) {
       LinearSolver::Schwarz::element_weight(element_weight, logical_coords,
                                             intruding_overlap_widths,
                                             element.external_boundaries());
@@ -386,11 +385,11 @@ struct SolveSubdomain {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
-    const size_t max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
+    const auto& max_overlap = db::get<Tags::MaxOverlap<OptionsGroup>>(box);
 
     // Wait for communicated overlap data
     const bool has_overlap_data =
-        max_overlap > 0 and element.number_of_neighbors() > 0;
+        max_overlap != 0 and element.number_of_neighbors() > 0;
     if (LIKELY(has_overlap_data) and
         not dg::has_received_from_all_mortars<overlap_residuals_inbox_tag>(
             iteration_id, element, inboxes)) {
@@ -481,7 +480,7 @@ struct SolveSubdomain {
     }
 
     // Apply weighting
-    if (LIKELY(max_overlap > 0)) {
+    if (LIKELY(max_overlap != 0)) {
       subdomain_solution.element_data *=
           get(db::get<Tags::Weight<OptionsGroup>>(box));
     }
@@ -494,7 +493,7 @@ struct SolveSubdomain {
         make_not_null(&box));
 
     // Send overlap solutions back to the neighbors that they are on
-    if (LIKELY(max_overlap > 0)) {
+    if (LIKELY(max_overlap != 0)) {
       auto& receiver_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
       for (auto& [overlap_id, overlap_solution] :

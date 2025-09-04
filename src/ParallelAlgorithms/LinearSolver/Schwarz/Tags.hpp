@@ -27,10 +27,11 @@ namespace OptionTags {
 
 template <typename OptionsGroup>
 struct MaxOverlap {
-  using type = size_t;
+  using type = Options::Auto<size_t>;
   using group = OptionsGroup;
   static constexpr Options::String help =
-      "Number of points that subdomains can extend into neighbors";
+      "Number of points that subdomains can extend into neighbors. "
+      "'Auto' means no restriction, so the overlap covers the full neighbor.";
 };
 
 template <typename SolverType, typename OptionsGroup>
@@ -74,7 +75,7 @@ struct MaxOverlap : db::SimpleTag {
   static std::string name() {
     return "MaxOverlap(" + pretty_type::name<OptionsGroup>() + ")";
   }
-  using type = size_t;
+  using type = std::optional<size_t>;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<OptionTags::MaxOverlap<OptionsGroup>>;
   static type create_from_options(const type& value) { return value; }

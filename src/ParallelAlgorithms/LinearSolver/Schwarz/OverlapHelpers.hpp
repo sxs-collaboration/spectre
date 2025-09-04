@@ -34,24 +34,31 @@ using OverlapMap = DirectionalIdMap<Dim, ValueType>;
  * \brief The number of points that an overlap extends into the `volume_extent`
  *
  * In a dimension where an element has `volume_extent` points, the overlap
- * extent is the largest number under these constraints:
+ * extent is `min(volume_extent, max_overlap)`.
  *
- * - It is at most `max_overlap`.
- * - It is smaller than the `volume_extent`.
+ * We then define the _width_ of the overlap as the element-logical coordinate
+ * distance from the face of the element to the first collocation point
+ * _outside_ the overlap extent, or to the other element face if the overlap
+ * extent covers the full element.
  *
- * This means the overlap extent is always smaller than the `volume_extent`. The
- * reason for this constraint is that we define the _width_ of the overlap as
- * the element-logical coordinate distance from the face of the element to the
- * first collocation point _outside_ the overlap extent. Therefore, even an
- * overlap region that covers the full element in width does not include the
- * collocation point on the opposite side of the element.
  *
  * Here's a few notes on the definition of the overlap extent and width:
  *
  * - A typical smooth weighting function goes to zero at the overlap width, so
- *   if the grid points located at the overlap width were included in the
- *   subdomain, their solutions would not contribute to the weighted sum of
- *   subdomain solutions.
+ *   the grid points located at the overlap width do not contribute to the
+ *   weighted sum of subdomain solutions. However, all overlap grid points take
+ *   part in computing the subdomain solutions.
+ * - On a Gauss-Lobatto grid (with grid points on element faces): When the
+ *   overlap covers the full element then the outermost grid points (on the
+ *   element face) don't contribute to the weighted sum but take part in
+ *   computing the subdomain solutions. When the overlap extent is smaller than
+ *   the element by 1 grid point then the grid points on the element face also
+ *   don't contribute to the weighted sum _and_ they don't even take part in
+ *   computing the subdomain solutions.
+ * - On a Gauss grid (with no grid points on element faces): The outermost grid
+ *   points of the overlap always contribute to the weighted sum, as the
+ *   overlap width either extends to the next grid point or to the element face,
+ *   which is always a nonzero distance away from the outermost overlap point.
  * - Defining the overlap width as the distance to the first point _outside_ the
  *   overlap extent makes it non-zero even for a single point of overlap into a
  *   Gauss-Lobatto grid (which has points located at the element face).
@@ -63,7 +70,7 @@ using OverlapMap = DirectionalIdMap<Dim, ValueType>;
  *   the subdomain in the overlap allows to ignore that face altogether in the
  *   subdomain operator.
  */
-size_t overlap_extent(size_t volume_extent, size_t max_overlap);
+size_t overlap_extent(size_t volume_extent, std::optional<size_t> max_overlap);
 
 /*!
  * \brief Total number of grid points in an overlap region that extends

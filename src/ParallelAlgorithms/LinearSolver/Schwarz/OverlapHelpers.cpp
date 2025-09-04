@@ -18,8 +18,9 @@
 
 namespace LinearSolver::Schwarz {
 
-size_t overlap_extent(const size_t volume_extent, const size_t max_overlap) {
-  return std::min(max_overlap, volume_extent - 1);
+size_t overlap_extent(const size_t volume_extent,
+                      const std::optional<size_t> max_overlap) {
+  return std::min(volume_extent, max_overlap.value_or(volume_extent));
 }
 
 namespace {
@@ -47,10 +48,10 @@ size_t overlap_num_points(const Index<Dim>& volume_extents,
 
 double overlap_width(const size_t overlap_extent,
                      const DataVector& collocation_points) {
-  ASSERT(overlap_extent < collocation_points.size(),
+  ASSERT(overlap_extent <= collocation_points.size(),
          "Overlap extent is "
              << overlap_extent
-             << " but must be strictly smaller than the number of grid points ("
+             << " but must be at most the number of grid points ("
              << collocation_points.size() << ") to compute an overlap width.");
   for (size_t i = 0; i < collocation_points.size() / 2; ++i) {
     ASSERT(equal_within_roundoff(
@@ -59,9 +60,17 @@ double overlap_width(const size_t overlap_extent,
            "Assuming the 'collocation_points' are symmetric, but they are not: "
                << collocation_points);
   }
-  // The overlap boundary index lies one point outside the region covered by the
-  // overlap coordinates (see `LinearSolver::Schwarz::overlap_extent`).
-  return collocation_points[overlap_extent] - collocation_points[0];
+  if (overlap_extent == collocation_points.size()) {
+    // Full element width. Weight function is zero at element boundary, so
+    // outermost LGL grid point does not contribute but outermost GL grid point
+    // does contribute.
+    return 2.0;
+  } else {
+    // Partial element width. Weight function is zero at first grid point
+    // outside the `overlap_extent`, so all `overlap_extent` grid points
+    // contribute on LGL and GL meshes.
+    return collocation_points[overlap_extent] + 1.0;
+  }
 }
 
 template <size_t Dim>
