@@ -36,14 +36,6 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
-
-namespace detail {
-CREATE_HAS_STATIC_MEMBER_VARIABLE(use_z_order_distribution)
-CREATE_HAS_STATIC_MEMBER_VARIABLE_V(use_z_order_distribution)
-CREATE_HAS_STATIC_MEMBER_VARIABLE(local_time_stepping)
-CREATE_HAS_STATIC_MEMBER_VARIABLE_V(local_time_stepping)
-}  // namespace detail
 
 /*!
  * \brief The parallel component responsible for managing the DG elements that
@@ -52,19 +44,9 @@ CREATE_HAS_STATIC_MEMBER_VARIABLE_V(local_time_stepping)
  * This parallel component will perform the actions specified by the
  * `PhaseDepActionList`.
  *
- * The element assignment to processors is performed by
- * `domain::BlockZCurveProcDistribution` (using a Morton space-filling curve),
- * unless `static constexpr bool use_z_order_distribution = false;` is specified
- * in the `Metavariables`, in which case elements are assigned to processors via
- * round-robin assignment. In both cases, an unordered set of `size_t`s can be
- * passed to the `allocate_array` function which represents physical processors
- * to avoid placing elements on. If the space-filling curve is used, then if
- * `static constexpr bool local_time_stepping = true;` is specified
- * in the `Metavariables`, `Element`s will be distributed according to their
- * computational costs determined by the number of grid points and minimum grid
- * spacing of that `Element` (see
- * `domain::get_num_points_and_grid_spacing_cost()`), else the computational
- * cost is determined only by the number of grid points in the `Element`.
+ * An unordered set of `size_t`s can be passed to the `allocate_array`
+ * function which represents physical processors to avoid placing
+ * elements on.
  */
 template <class Metavariables, class PhaseDepActionList>
 struct DgElementArray {
