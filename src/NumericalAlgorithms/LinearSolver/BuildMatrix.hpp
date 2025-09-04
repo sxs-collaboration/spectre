@@ -91,6 +91,10 @@ void build_matrix(const gsl::not_null<MatrixType*> matrix,
     }
     ++i;
   }
+  ASSERT(i == matrix->columns(), "Incomplete matrix. Expected "
+                                     << matrix->columns()
+                                     << " columns, but only filled " << i
+                                     << " columns.");
 }
 
 }  // namespace LinearSolver::Serial
