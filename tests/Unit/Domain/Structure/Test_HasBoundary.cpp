@@ -18,6 +18,7 @@ void test() {
     CHECK_FALSE(domain::has_boundary(domain::Topology::B3Colatitude, side));
     CHECK_FALSE(domain::has_boundary(domain::Topology::B3Longitude, side));
     CHECK_FALSE(domain::has_boundary(domain::Topology::CartoonSphere, side));
+    CHECK_FALSE(domain::has_boundary(domain::Topology::CartoonCylinder, side));
   }
   CHECK_FALSE(domain::has_boundary(domain::Topology::B2Radial, Side::Lower));
   CHECK(domain::has_boundary(domain::Topology::B2Radial, Side::Upper));
