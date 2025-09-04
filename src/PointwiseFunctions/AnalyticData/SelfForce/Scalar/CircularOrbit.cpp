@@ -17,17 +17,35 @@
 #include "Elliptic/Systems/SelfForce/Scalar/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TortoiseCoordinates.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Math.hpp"
+#include "Utilities/Serialization/PupStlCpp17.hpp"
 
 namespace ScalarSelfForce::AnalyticData {
+
+namespace {
+std::pair<DataVector, DataVector> boost_function_and_deriv(
+    const DataVector& r_star, const std::array<double, 4>& transition_points) {
+  return {
+      smoothstep<1>(transition_points[0], transition_points[1], r_star) +
+          smoothstep<1>(transition_points[2], transition_points[3], r_star) -
+          1.0,
+      smoothstep_deriv<1>(transition_points[0], transition_points[1], r_star) +
+          smoothstep_deriv<1>(transition_points[2], transition_points[3],
+                              r_star)};
+}
+}  // namespace
 
 CircularOrbit::CircularOrbit(const double black_hole_mass,
                              const double black_hole_spin,
                              const double orbital_radius,
-                             const int m_mode_number)
+                             const int m_mode_number,
+                             const std::optional<std::array<double, 4>>
+                                 hyperboloidal_slicing_transitions)
     : black_hole_mass_(black_hole_mass),
       black_hole_spin_(black_hole_spin),
       orbital_radius_(orbital_radius),
-      m_mode_number_(m_mode_number) {}
+      m_mode_number_(m_mode_number),
+      hyperboloidal_slicing_transitions_(hyperboloidal_slicing_transitions) {}
 
 CircularOrbit::CircularOrbit(CkMigrateMessage* m)
     : elliptic::analytic_data::Background(m),
@@ -82,6 +100,15 @@ CircularOrbit::variables(
       2. * square(a) * get(alpha) / r;
   get<1>(gamma) = ComplexDataVector{cos_theta.size(), 0.};
   get(alpha) *= sin_theta_squared;
+  // Hyperboloidal slicing
+  if (hyperboloidal_slicing_transitions_.has_value()) {
+    const auto [H, dH] = boost_function_and_deriv(
+        r_star, hyperboloidal_slicing_transitions_.value());
+    const double k = m_mode_number_ * omega;
+    get(beta) += std::complex<double>(0., -k) * dH + square(k) * square(H) +
+                 std::complex<double>(0., k) * get<0>(gamma) * H;
+    get<0>(gamma) += std::complex<double>(0., -2. * k) * H;
+  }
   return result;
 }
 
@@ -128,6 +155,17 @@ CircularOrbit::variables(
     effsource_set_particle(&xp, e, l, 0.);
   }
   const auto& r_star = get<0>(x);
+  if (hyperboloidal_slicing_transitions_.has_value() and
+      (min(r_star) < (*hyperboloidal_slicing_transitions_)[1] or
+       max(r_star) > (*hyperboloidal_slicing_transitions_)[2])) {
+    ERROR(
+        "The effective source is only valid where no hyperboloidal slicing is "
+        "applied, which is in the r_* range ["
+        << (*hyperboloidal_slicing_transitions_)[1] << ", "
+        << (*hyperboloidal_slicing_transitions_)[2]
+        << "], but was requested in the range [" << min(r_star) << ", "
+        << max(r_star) << "]");
+  }
   const auto& cos_theta = get<1>(x);
   const DataVector r_minus_r_plus =
       gr::boyer_lindquist_radius_minus_r_plus_from_tortoise(r_star, M,
@@ -203,13 +241,16 @@ void CircularOrbit::pup(PUP::er& p) {
   p | black_hole_spin_;
   p | orbital_radius_;
   p | m_mode_number_;
+  p | hyperboloidal_slicing_transitions_;
 }
 
 bool operator==(const CircularOrbit& lhs, const CircularOrbit& rhs) {
   return lhs.black_hole_mass_ == rhs.black_hole_mass_ and
          lhs.black_hole_spin_ == rhs.black_hole_spin_ and
          lhs.orbital_radius_ == rhs.orbital_radius_ and
-         lhs.m_mode_number_ == rhs.m_mode_number_;
+         lhs.m_mode_number_ == rhs.m_mode_number_ and
+         lhs.hyperboloidal_slicing_transitions_ ==
+             rhs.hyperboloidal_slicing_transitions_;
 }
 
 bool operator!=(const CircularOrbit& lhs, const CircularOrbit& rhs) {

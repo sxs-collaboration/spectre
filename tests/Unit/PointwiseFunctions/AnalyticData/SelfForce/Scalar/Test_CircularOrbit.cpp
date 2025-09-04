@@ -60,7 +60,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.ScalarSelfForce.CircularOrbit",
   // Get the analytic fields
   for (int m_mode_number = 0; m_mode_number < 3; ++m_mode_number) {
     CAPTURE(m_mode_number);
-    const auto circular_orbit = CircularOrbit{1., 0.9, 6., m_mode_number};
+    const auto circular_orbit =
+        CircularOrbit{1., 0.9, 6., m_mode_number, {{-25., -5., 20., 40.}}};
     CAPTURE(circular_orbit.puncture_position());
     const auto background =
         circular_orbit.variables(x, CircularOrbit::background_tags{});
