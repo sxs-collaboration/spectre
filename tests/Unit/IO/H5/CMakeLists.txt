@@ -26,6 +26,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   Domain
+  DomainBoundaryConditionsHelpers
   DomainCreators
   H5
   Informer
