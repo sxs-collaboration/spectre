@@ -20,6 +20,17 @@ logger = logging.getLogger(__name__)
 
 INSPIRAL_INPUT_FILE_TEMPLATE = Path(__file__).parent / "Inspiral.yaml"
 
+# Resolution levels defined in terms of p-refinement
+# To be replaced once AMR is used.
+INSPIRAL_LEVS = {
+    lev_number: {
+        "label": f"Lev{lev_number}",
+        "refinement_level": 1,
+        "polynomial_order": 7 + lev_number,
+    }
+    for lev_number in range(-2, 11)
+}
+
 
 # These parameters come from empirically tested values in SpEC and SpECTRE
 def _control_system_params(
@@ -363,8 +374,9 @@ def inspiral_parameters_spec(
 
 def start_inspiral(
     id_input_file_path: Union[str, Path],
-    refinement_level: int = 1,
-    polynomial_order: int = 8,
+    lev: Optional[int] = None,
+    refinement_level: Optional[int] = None,
+    polynomial_order: Optional[int] = None,
     id_run_dir: Optional[Union[str, Path]] = None,
     inspiral_input_file_template: Union[
         str, Path
@@ -400,6 +412,22 @@ def start_inspiral(
         "Cannot enable both 'continue_with_ringdown' and"
         " 'eccentricity_control'. Choose which of the two to perform next."
     )
+
+    if lev is not None:
+        assert (refinement_level is None) and (polynomial_order is None), (
+            "The option 'lev' is mutaully exclusive with 'refinement_level' and"
+            " 'polynomial_order'."
+        )
+        selected_lev = INSPIRAL_LEVS[lev]
+        refinement_level = selected_lev["refinement_level"]
+        polynomial_order = selected_lev["polynomial_order"]
+    else:
+        assert (refinement_level is not None) and (
+            polynomial_order is not None
+        ), (
+            "Resolution not specified. Provide either 'lev' or both"
+            " 'refinement_level' and 'polynomial_order'."
+        )
 
     # Determine inspiral parameters from initial data
     if id_run_dir is None:
@@ -542,20 +570,26 @@ def start_inspiral(
     ),
 )
 @click.option(
+    "--lev",
+    type=int,
+    help=(
+        "Resolution levels defined in terms of h and p refinement. Can be"
+        " specified multiple times. For integer N, LevN corresponds to"
+        " refinement level L = 1 and polynomial order P = 7 + N. Mutually"
+        " exclusive with options '-L' and '-P'"
+    ),
+)
+@click.option(
     "--refinement-level",
     "-L",
     type=int,
     help="h-refinement level.",
-    default=1,
-    show_default=True,
 )
 @click.option(
     "--polynomial-order",
     "-P",
     type=int,
     help="p-refinement level.",
-    default=8,
-    show_default=True,
 )
 @click.option(
     "--continue-with-ringdown",

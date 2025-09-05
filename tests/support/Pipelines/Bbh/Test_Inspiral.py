@@ -121,10 +121,6 @@ class TestInspiral(unittest.TestCase):
     def test_cli(self):
         common_args = [
             str(self.id_dir / "InitialData.yaml"),
-            "--refinement-level",
-            "1",
-            "--polynomial-order",
-            "5",
             "--id-horizons-path",
             str(self.horizons_filename),
             "-E",
@@ -139,6 +135,10 @@ class TestInspiral(unittest.TestCase):
             start_inspiral_command(
                 common_args
                 + [
+                    "--refinement-level",
+                    "1",
+                    "--polynomial-order",
+                    "5",
                     "-O",
                     str(self.test_dir / "Inspiral"),
                     "--no-submit",
@@ -149,11 +149,13 @@ class TestInspiral(unittest.TestCase):
         self.assertTrue(
             (self.test_dir / "Inspiral/Segment_0000/Inspiral.yaml").exists()
         )
-        # Test with pipeline directory
+        # Test with pipeline directory and lev specified
         try:
             start_inspiral_command(
                 common_args
                 + [
+                    "--lev",
+                    "-2",
                     "-d",
                     str(self.test_dir / "Pipeline"),
                     "--continue-with-ringdown",
@@ -189,6 +191,8 @@ class TestInspiral(unittest.TestCase):
             start_inspiral_command(
                 common_args
                 + [
+                    "--lev",
+                    "-2",
                     "-d",
                     str(self.test_dir / "Pipeline"),
                     "--eccentricity-control",
