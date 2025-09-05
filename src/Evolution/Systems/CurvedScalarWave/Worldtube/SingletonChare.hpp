@@ -94,7 +94,7 @@ struct WorldtubeSingleton {
       ::Actions::MutateApply<UpdateAcceleration>,
       ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
       ::Actions::MutateApply<UpdateU<worldtube_system, local_time_stepping>>,
-      ::Actions::CleanHistory<worldtube_system, false>,
+      ::Actions::CleanHistory<worldtube_system>,
       Actions::SendToElements<Metavariables>,
       domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;
   using phase_dependent_action_list = tmpl::list<

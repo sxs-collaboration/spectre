@@ -199,7 +199,7 @@ struct CharacteristicEvolution {
       ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
       ::Actions::MutateApply<
           UpdateU<cce_system, Metavariables::local_time_stepping>>,
-      ::Actions::CleanHistory<cce_system, false>>;
+      ::Actions::CleanHistory<cce_system>>;
 
   using extract_action_list = tmpl::list<
       Actions::RequestBoundaryData<
@@ -238,7 +238,7 @@ struct CharacteristicEvolution {
       ::Actions::MutateApply<
           UpdateU<cce_system, Metavariables::local_time_stepping>>,
       ::Actions::MutateApply<ChangeTimeStepperOrder<cce_system>>,
-      ::Actions::CleanHistory<cce_system, false>,
+      ::Actions::CleanHistory<cce_system>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
       Actions::RequestNextBoundaryData<

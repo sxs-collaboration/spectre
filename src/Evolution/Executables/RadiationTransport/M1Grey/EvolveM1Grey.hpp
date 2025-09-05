@@ -16,6 +16,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
 #include "Evolution/DiscontinuousGalerkin/BackgroundGrVars.hpp"
+#include "Evolution/DiscontinuousGalerkin/CleanMortarHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -216,8 +217,12 @@ struct EvolutionMetavars {
                   tmpl::list<imex::ImplicitDenseOutput<system>>>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
       imex::Actions::DoImplicitStep<system>,
-      Actions::CleanHistory<system, local_time_stepping>,
+      Actions::CleanHistory<system>,
       Actions::MutateApply<imex::CleanHistory<system>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,
+          tmpl::list<>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::

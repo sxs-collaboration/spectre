@@ -165,7 +165,7 @@ struct Component {
       Actions::MutateApply<
           RecordTimeStepperData<typename metavariables::system>>,
       Actions::MutateApply<UpdateU<typename metavariables::system, false>>,
-      Actions::CleanHistory<typename metavariables::system, false>,
+      Actions::CleanHistory<typename metavariables::system>,
       tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
                           tmpl::list<>>>;
   using action_list = tmpl::flatten<

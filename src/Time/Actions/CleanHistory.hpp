@@ -4,7 +4,6 @@
 #pragma once
 
 #include <optional>
-#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -13,7 +12,6 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
-class LtsTimeStepper;
 class TimeStepper;
 namespace Parallel {
 template <typename Metavariables>
@@ -25,10 +23,6 @@ struct TimeStepper;
 template <typename Tag>
 struct HistoryEvolvedVariables;
 }  // namespace Tags
-namespace evolution::dg::Tags {
-template <size_t Dim, typename CouplingResult>
-struct MortarDataHistory;
-}  // namespace evolution::dg::Tags
 namespace tuples {
 template <class... Tags>
 class TaggedTuple;
@@ -49,19 +43,8 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
-///   - evolution::dg::Tags::MortarDataHistory<...> if CleanBoundaryHistory
-template <typename System, bool CleanBoundaryHistory>
+template <typename System>
 struct CleanHistory {
- private:
-  template <typename T>
-  struct is_mortar_data_history : std::false_type {};
-
-  template <size_t Dim, typename CouplingResult>
-  struct is_mortar_data_history<
-      evolution::dg::Tags::MortarDataHistory<Dim, CouplingResult>>
-      : std::true_type {};
-
- public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -84,29 +67,6 @@ struct CleanHistory {
           expand_pack((time_stepper.clean_history(histories), 0)...);
         },
         make_not_null(&box));
-
-    // This action can't depend on Evolution, but most of the time
-    // stepping structures are in Evolution, so everything past here
-    // has to only depend on Evolution classes through the DataBox
-    // type.
-
-    if constexpr (CleanBoundaryHistory) {
-      using boundary_history_tags =
-          tmpl::filter<DbTags, is_mortar_data_history<tmpl::_1>>;
-      // First type is expanded by some compilers in the error
-      // message.
-      static_assert(((void)boundary_history_tags{},
-                     tmpl::size<boundary_history_tags>::value == 1));
-      db::mutate_apply<boundary_history_tags,
-                       tmpl::list<Tags::TimeStepper<LtsTimeStepper>>>(
-          [](const auto history, const auto& lts_time_stepper) {
-            for (auto& mortar : *history) {
-              lts_time_stepper.clean_boundary_history(
-                  make_not_null(&mortar.second));
-            }
-          },
-          make_not_null(&box));
-    }
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
