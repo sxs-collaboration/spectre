@@ -8,10 +8,12 @@
 #include "Utilities/Gsl.hpp"
 
 SparseMatrixFiller::SparseMatrixFiller(const size_t num_cols,
-                                       const bool use_map_method)
+                                       const bool use_map_method,
+                                       const double scale)
     : num_rows_(num_cols),
       num_cols_(num_cols),
-      use_map_method_(use_map_method) {
+      use_map_method_(use_map_method),
+      scale_(scale) {
   if (not use_map_method) {
     matrix_elements_.assign(square(num_cols), 0.0);
   }
@@ -69,6 +71,16 @@ void SparseMatrixFiller::fill_sparse_matrix_elements(
                          matrix_elements_[i]);
     }
   }
+
+  // Remove all the zero or nearly-zero elements.
+  // Removes elements that are <10*epsilon*scale_.
+  data->erase(std::remove_if(
+                  data->begin(), data->end(),
+                  [this](const SparseMatrixElement& x) {
+                    return std::abs(x.value) <
+                           10 * scale_ * std::numeric_limits<double>::epsilon();
+                  }),
+              data->end());
 
   // Now sort the data by row and column, so we can fill in required order.
   std::sort(data->begin(), data->end(),
