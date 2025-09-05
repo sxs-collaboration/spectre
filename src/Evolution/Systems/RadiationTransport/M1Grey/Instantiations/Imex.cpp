@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/Imex/CleanHistory.hpp"
+#include "Evolution/Imex/CleanHistory.tpp"
 #include "Evolution/Imex/SolveImplicitSector.hpp"
 #include "Evolution/Imex/SolveImplicitSector.tpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
@@ -10,6 +12,7 @@
 using m1system = RadiationTransport::M1Grey::System<
     tmpl::list<neutrinos::ElectronNeutrinos<1>>>;
 
+template struct imex::CleanHistory<m1system>;
 template struct imex::SolveImplicitSector<
     m1system::variables_tag,
     m1system::ImplicitSector<neutrinos::ElectronNeutrinos<1>>>;

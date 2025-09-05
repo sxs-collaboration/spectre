@@ -226,10 +226,9 @@ imex::protocols::ImexSystem \endlink and \link imex::protocols::ImplicitSector
 portion of the derivative, and the implicit portion is defined by the contents
 of the `implicit_sectors` typelist.  See those protocols for details.
 
-In order to use an IMEX system, the implicit solver must be explicitly
-instantiated for each sector.  This is done in a separate source file in the
-system directory.  As an example, the instantiation file for the sectors in one
-of the tests is
+In order to use an IMEX system, various classes must be explicitly
+instantiated.  This is done in a separate source file in the system directory.
+As an example, the instantiation file for the sectors in one of the tests is
 
 \include tests/Unit/Helpers/Evolution/Imex/DoImplicitStepInstantiate.cpp
 
@@ -257,15 +256,15 @@ actions:
 ```
 imex::Actions::RecordTimeStepperData<system>
 ```
-  must be added after each occurrence of
-  `Actions::RecordTimeStepperData<system>`.  (There may be only one.)
-
-* Again in the step actions,
+  must be added after each occurrence of `RecordTimeStepperData<system>`,
 ```
 imex::Actions::DoImplicitStep<system>
 ```
-  must be added after each occurrence of `Actions::UpdateU<system>`.  (Again,
-  there may be only one.)
+  must be added after each occurrence of `UpdateU<system>`, and
+```
+Actions::MutateApply<imex::CleanHistory<system>>
+```
+  must be added after each occurrence of `CleanHistory<system>`.
 
 Third, the `imex::ImplicitDenseOutput<system>` dense output postprocessor must
 be added to the argument of the `evolution::Actions::RunEventsAndDenseTriggers`
@@ -277,7 +276,9 @@ headers are
 ```
 #include "Evolution/Imex/Actions/DoImplicitStep.hpp"
 #include "Evolution/Imex/Actions/RecordTimeStepperData.hpp"
+#include "Evolution/Imex/CleanHistory.hpp"
 #include "Evolution/Imex/ImplicitDenseOutput.hpp"
 #include "Evolution/Imex/Initialize.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/TimeSteppers/ImexTimeStepper.hpp"
 ```

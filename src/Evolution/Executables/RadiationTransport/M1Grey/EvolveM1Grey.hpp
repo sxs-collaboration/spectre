@@ -22,6 +22,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Imex/Actions/DoImplicitStep.hpp"
 #include "Evolution/Imex/Actions/RecordTimeStepperData.hpp"
+#include "Evolution/Imex/CleanHistory.hpp"
 #include "Evolution/Imex/ImplicitDenseOutput.hpp"
 #include "Evolution/Imex/Initialize.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
@@ -209,6 +210,7 @@ struct EvolutionMetavars {
               Actions::UpdateU<system>>>,
       imex::Actions::DoImplicitStep<system>,
       Actions::CleanHistory<system, local_time_stepping>,
+      Actions::MutateApply<imex::CleanHistory<system>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
