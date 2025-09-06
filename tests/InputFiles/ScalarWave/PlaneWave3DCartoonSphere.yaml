@@ -1,0 +1,99 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Executable: EvolveScalarWave3D
+Testing:
+  Check: parse;execute
+
+---
+
+Parallelization:
+  ElementDistribution: NumGridPoints
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+InitialData: &InitialData
+  RegularSphericalWave:
+    Profile:
+      Gaussian:
+        Amplitude: 2.0
+        Width: 1.0
+        Center: 0.0
+
+Amr:
+  Criteria:
+  Policies:
+    EnforceTwoToOneBalanceInNormalDirection: true
+    Isotropy: Anisotropic
+    Limits:
+      RefinementLevel: Auto
+      NumGridPoints: Auto
+      ErrorBeyondLimits: False
+    AllowCoarsening: True
+  Verbosity: Verbose
+
+PhaseChangeAndTriggers:
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  MinimumTimeStep: 1e-7
+  TimeStepper:
+    AdamsBashforth:
+      Order: 3
+
+DomainCreator:
+  CartoonSphere1D:
+    InnerRadius: 0.0
+    OuterRadius: 20.0
+    InitialRadialRefinement: [3, 2]
+    InitialNumberOfRadialGridPoints: 5
+    RadialPartitioning: [10.0]
+    RadialDistributions: [Linear, Logarithmic]
+    TimeDependence: None
+    InnerBoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
+    OuterBoundaryCondition:
+      DirichletAnalytic:
+        AnalyticPrescription: *InitialData
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+# If filtering is enabled in the executable the filter can be controlled using:
+# Filtering:
+#   ExpFilter0:
+#     Alpha: 12
+#     HalfPower: 32
+#     Enable: false
+#     BlocksToFilter: All
+
+EventsAndTriggersAtSlabs:
+  - Trigger:
+      Times:
+        Specified:
+          Values: [&final_time 0.05]
+    Events:
+      - Completion
+  - Trigger: Always
+    Events:
+      - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - StepToTimes:
+                Times:
+                  Specified:
+                    Values: [*final_time]
+
+EventsAndDenseTriggers:
+
+Observers:
+  VolumeFileName: "CartoonSphereGaussianWave3DVolume"
+  ReductionFileName: "CartoonSphereGaussianWave3DReductions"
