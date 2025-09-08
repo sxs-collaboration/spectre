@@ -13,9 +13,6 @@ spectre_target_sources(
   DerivChristoffel.cpp
   DerivLapse.cpp
   DerivZ4Constraint.cpp
-  Ricci1.cpp
-  Ricci2.cpp
-  Ricci3.cpp
   RicciScalarPlusDivergenceZ4Constraint.cpp
   TimeDerivative.cpp
   Z4Constraint.cpp
@@ -57,3 +54,4 @@ target_link_libraries(
   )
 
 add_subdirectory(FiniteDifference)
+add_subdirectory(Instantiations)

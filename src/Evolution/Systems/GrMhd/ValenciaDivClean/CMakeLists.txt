@@ -11,7 +11,6 @@ spectre_target_sources(
   Characteristics.cpp
   ComovingMagneticFieldMagnitude.cpp
   ConservativeFromPrimitive.cpp
-  EventInstantiation.cpp
   FixConservatives.cpp
   Flattener.cpp
   Fluxes.cpp
@@ -20,7 +19,6 @@ spectre_target_sources(
   SetVariablesNeededFixingToFalse.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -86,4 +84,5 @@ add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)
+add_subdirectory(Instantiations)
 add_subdirectory(Subcell)

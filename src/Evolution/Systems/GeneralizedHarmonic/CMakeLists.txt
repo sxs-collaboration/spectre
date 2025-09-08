@@ -10,10 +10,8 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Constraints.cpp
-  EventInstantiation.cpp
   Equations.cpp
   TimeDerivative.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -65,3 +63,4 @@ add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(GaugeSourceFunctions)
+add_subdirectory(Instantiations)

@@ -10,7 +10,6 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
-  EventInstantiation.cpp
   Fluxes.cpp
   InternalEnergyDensity.cpp
   KineticEnergyDensity.cpp
@@ -63,6 +62,7 @@ target_link_libraries(
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)
+add_subdirectory(Instantiations)
 add_subdirectory(Limiters)
 add_subdirectory(Sources)
 add_subdirectory(Subcell)

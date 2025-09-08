@@ -10,9 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Constraints.cpp
-  EventInstantiation.cpp
   TimeDerivative.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -51,4 +49,5 @@ target_link_libraries(
 add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
+add_subdirectory(Instantiations)
 add_subdirectory(Worldtube)

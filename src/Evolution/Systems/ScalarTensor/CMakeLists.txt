@@ -8,9 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  EventInstantiation.cpp
   TimeDerivative.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -47,3 +45,4 @@ target_link_libraries(
 add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
+add_subdirectory(Instantiations)
