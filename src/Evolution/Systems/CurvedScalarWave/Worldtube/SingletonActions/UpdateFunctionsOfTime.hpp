@@ -66,10 +66,18 @@ struct UpdateFunctionsOfTime {
     const double grid_radius_particle =
         get(magnitude(excision_sphere.center()));
 
-    const DataVector angular_update{atan2(y, x),
-                                    (x * ydot - y * xdot) / square(r)};
     const DataVector expansion_update{r / grid_radius_particle,
                                       radial_vel / grid_radius_particle};
+
+    // Adding code to compute the quaternions and its derivative instead of just
+    // the azimuthal angle for the generic case.
+
+    const tnsr::I<double, 3, Frame::Inertial> r_vec{x, y, z};
+    const tnsr::I<double, 3, Frame::Inertial> rdot_vec{xdot, ydot, zdot};
+    const auto omega = cross_product(r_vec, rdot_vec) /
+                       magnitude(cross_product(r_vec, rdot_vec));
+    const std::array<DataVector, 2> angular_update{
+        {0.0, 0.0, 0.0}, {get<0>(omega), get<1>(omega), get<2>(omega)}};
 
     const auto& wt_radius_params =
         db::get<Tags::WorldtubeRadiusParameters>(box);
@@ -136,8 +144,11 @@ struct UpdateFunctionsOfTime {
         make_not_null(&box));
     std::unordered_map<std::string, std::pair<DataVector, double>>
         all_updates{};
-    all_updates["Rotation"] =
-        std::make_pair(angular_update, new_expiration_time);
+    all_updates["Rotation"] = std::make_pair(
+        angular_update,
+        new_expiration_time);  // angle and omega updates as a DataVector of
+                               // size 2 (To be used for
+                               // QuaternionFunctionOfTime)
     all_updates["Expansion"] =
         std::make_pair(expansion_update, new_expiration_time);
     all_updates["SizeA"] = std::make_pair(size_a_update, new_expiration_time);
