@@ -39,6 +39,31 @@ namespace ah {
  *
  * This function will try recomputing the coords using the above two rules
  * \p max_compute_coords_retries times before returning false.
+ *
+ * \param current_iteration The returned pointer to the current Iteration object
+ * \param time The current time
+ * \param fast_flow The FastFlow object for the current horizon find
+ * \param initial_guess If the current iteration number is zero and
+ * rerunning_with_higher_resolution == false, current_iteration is set to
+ * this Strahlkorper
+ * \param previous_iteration_surface If empty, current_iteration is set to
+ * initial_guess; if one previous iteration, current_iteration is set to
+ * that previous iteration; if two previous iterations, current_iteration
+ * is set by linearly extrapolating in time the two pervious iterations;
+ * if three or more previous iterations, current_iteration is set by
+ * quadratic extrpolation of the three most recent iterations
+ * \param previous_surfaces Previously successful iteratios used to attempt to
+ * recover when some points are outside the domain.
+ * \param max_compute_coords_retries Retry up to this many times before
+ * returning false
+ * \param domain The spatial domain in which the horizon is being found
+ * \param functions_of_time The functions of time for the current domain
+ * \param current_resolution_l Optional; if specified, current_iteration is
+ * prolonged or restricted to this resolution
+ * \param rerunning_with_higher_resolution Must be false unless
+ * current_resolution_l is set; if true, then on iteration zero, set
+ * the initial guess to the previous iteration surface
+ * \returns Whether or not set_current_iteration_coords succeeded
  */
 template <typename Fr>
 bool set_current_iteration_coords(
@@ -48,5 +73,7 @@ bool set_current_iteration_coords(
     const ylm::Strahlkorper<Fr>& previous_iteration_surface,
     const std::deque<ah::Storage::PreviousSurface<Fr>>& previous_surfaces,
     size_t max_compute_coords_retries, const Domain<3>& domain,
-    const domain::FunctionsOfTimeMap& functions_of_time);
+    const domain::FunctionsOfTimeMap& functions_of_time,
+    const std::optional<size_t>& current_resolution_l = std::nullopt,
+    bool rerunning_with_higher_resolution = false);
 }  // namespace ah
