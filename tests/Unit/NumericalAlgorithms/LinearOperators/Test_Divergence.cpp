@@ -622,6 +622,225 @@ void test_cartoon(const double x_start) {
   const Approx local_approx = Approx::custom().epsilon(1.0e-10).scale(1.0);
   CHECK_VARIABLES_CUSTOM_APPROX(div_vars, expected_div_vars, local_approx);
 }
+
+void test_cartoon_chooser() {
+  // Here, "chooser" means the divergence function that take inertial_coords and
+  // then pick the appropriate cartoon/non-cartoon implementation
+  // Testing divergence (with Variables) chooser, i.e. verifying it calls the
+  // correct underlying implemenation (unfortunately a lot of set up code)
+  // With cartoon basis
+  const Identity1D identity_cartoon_map;
+  const Mesh<3> mesh_cartoon{
+      {{8, 1, 1}},
+      {{Spectral::Basis::Legendre, Spectral::Basis::Cartoon,
+        Spectral::Basis::Cartoon}},
+      {{Spectral::Quadrature::GaussLobatto,
+        Spectral::Quadrature::SphericalSymmetry,
+        Spectral::Quadrature::SphericalSymmetry}}};
+
+  const Affine affine_x_map(-1.0, 1.0, 1.0, 4.0);
+  using Cartoon_map_combination =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>;
+  const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+                              Cartoon_map_combination>
+      map_cartoon{{affine_x_map, identity_cartoon_map, identity_cartoon_map}};
+  const auto inv_jacobian_cartoon =
+      map_cartoon.inv_jacobian(logical_coordinates(mesh_cartoon));
+  const auto inertial_coords_cartoon =
+      map_cartoon(logical_coordinates(mesh_cartoon));
+
+  using f_type = tnsr::I<DataVector, 3, Frame::Inertial>;
+  using div_f_type = Scalar<DataVector>;
+  f_type tnsr_cartoon{};
+  get<0>(tnsr_cartoon) = get<0>(inertial_coords_cartoon) *
+                         cartoon_func<true>(inertial_coords_cartoon);
+  get<1>(tnsr_cartoon) = get<2>(tnsr_cartoon) =
+      DataVector(mesh_cartoon.number_of_grid_points(), 0.0);
+  div_f_type div_tnsr_cartoon{};
+  div_f_type expected_div_tnsr_cartoon{};
+  get<>(expected_div_tnsr_cartoon) =
+      3.0 * cartoon_func<true>(inertial_coords_cartoon) +
+      get<0>(inertial_coords_cartoon) *
+          cartoon_dfunc<true>(0, inertial_coords_cartoon);
+
+  using CartoonTags = ::Tags::convert_to_temp_tensors<tmpl::list<f_type>, 0>;
+  using div_CartoonTags =
+      ::Tags::convert_to_temp_tensors<tmpl::list<div_f_type>, 0>;
+  Variables<CartoonTags> f_cartoon{mesh_cartoon.number_of_grid_points()};
+  get<tmpl::front<CartoonTags>>(f_cartoon) = tnsr_cartoon;
+  Variables<div_CartoonTags> div_f_cartoon{
+      mesh_cartoon.number_of_grid_points()};
+  Variables<div_CartoonTags> expected_div_f_cartoon{
+      mesh_cartoon.number_of_grid_points()};
+  get<tmpl::front<div_CartoonTags>>(expected_div_f_cartoon) =
+      expected_div_tnsr_cartoon;
+  cartoon_divergence(make_not_null(&div_f_cartoon), f_cartoon, mesh_cartoon,
+                     inv_jacobian_cartoon, inertial_coords_cartoon);
+  const Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.0);
+  CHECK_VARIABLES_CUSTOM_APPROX(div_f_cartoon, expected_div_f_cartoon,
+                                local_approx);
+
+  // With non-cartoon
+  const size_t n0 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
+  const size_t n1 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 + 1;
+  const size_t n2 =
+      Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2 - 1;
+
+  const Mesh<3> mesh_lgl{{{n0, n1, n2}},
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto};
+  const size_t num_grid_points_lgl = mesh_lgl.number_of_grid_points();
+  const auto coordinate_map_lgl = make_affine_map<3>();
+  const auto xi_lgl = logical_coordinates(mesh_lgl);
+  const auto inertial_coords_lgl = coordinate_map_lgl(xi_lgl);
+  const auto inv_jacobian_lgl = coordinate_map_lgl.inv_jacobian(xi_lgl);
+
+  using flux_tags_lgl = two_fluxes<DataVector, 3, Frame::Inertial>;
+  Variables<flux_tags_lgl> f_lgl(num_grid_points_lgl);
+  Variables<db::wrap_tags_in<Tags::div, flux_tags_lgl>> expected_div_f_lgl(
+      num_grid_points_lgl);
+  for (size_t a = 0; a < 5; ++a) {
+    for (size_t b = 0; b < 4; ++b) {
+      for (size_t c = 0; c < 3; ++c) {
+        std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3>
+            functions{
+                {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(c)}};
+
+        MathFunctions::TensorProduct<3> func_lgl(1.0, std::move(functions));
+        tmpl::for_each<flux_tags_lgl>([&inertial_coords_lgl, &func_lgl, &f_lgl,
+                                       &expected_div_f_lgl](auto tag) {
+          using FluxTag = tmpl::type_from<decltype(tag)>;
+          get<FluxTag>(f_lgl) = FluxTag::flux(func_lgl, inertial_coords_lgl);
+          using DivFluxTag = Tags::div<FluxTag>;
+          get<DivFluxTag>(expected_div_f_lgl) =
+              FluxTag::divergence_of_flux(func_lgl, inertial_coords_lgl);
+        });
+        Variables<db::wrap_tags_in<Tags::div, flux_tags_lgl>> div_f_lgl{
+            num_grid_points_lgl};
+        divergence(make_not_null(&div_f_lgl), f_lgl, mesh_lgl, inv_jacobian_lgl,
+                   inertial_coords_lgl);
+        CHECK_VARIABLES_CUSTOM_APPROX(div_f_lgl, expected_div_f_lgl,
+                                      local_approx);
+      }
+    }
+  }
+  // Testing divergence (without Variables) through associated choosers
+  // With Cartoon basis
+  divergence(make_not_null(&div_tnsr_cartoon), tnsr_cartoon, mesh_cartoon,
+             inv_jacobian_cartoon, inertial_coords_cartoon);
+  CHECK_ITERABLE_CUSTOM_APPROX(div_tnsr_cartoon, expected_div_tnsr_cartoon,
+                               local_approx);
+
+  div_tnsr_cartoon = divergence(tnsr_cartoon, mesh_cartoon,
+                                inv_jacobian_cartoon, inertial_coords_cartoon);
+  CHECK_ITERABLE_CUSTOM_APPROX(div_tnsr_cartoon, expected_div_tnsr_cartoon,
+                               local_approx);
+
+  // With non-cartoon basis
+  auto& tnsr_lgl = get<tmpl::front<flux_tags_lgl>>(f_lgl);
+  using div_tnsr_lgl_tag =
+      tmpl::front<db::wrap_tags_in<Tags::div, flux_tags_lgl>>;
+  div_tnsr_lgl_tag::type div_tnsr_lgl{};
+  auto& expected_div_tnsr_lgl = get<div_tnsr_lgl_tag>(expected_div_f_lgl);
+  divergence(make_not_null(&div_tnsr_lgl), tnsr_lgl, mesh_lgl, inv_jacobian_lgl,
+             inertial_coords_lgl);
+  CHECK_ITERABLE_CUSTOM_APPROX(div_tnsr_lgl, expected_div_tnsr_lgl,
+                               local_approx);
+
+  div_tnsr_lgl =
+      divergence(tnsr_lgl, mesh_lgl, inv_jacobian_lgl, inertial_coords_lgl);
+  CHECK_ITERABLE_CUSTOM_APPROX(div_tnsr_lgl, expected_div_tnsr_lgl,
+                               local_approx);
+}
+
+template <size_t CompDim, size_t Dim, typename T, Requires<Dim == 3> = nullptr>
+void test_cartoon_divergence_compute_item_impl(const T& coordinate_map) {
+  INFO("Cartoon Divergence Compute Item");
+  CAPTURE(CompDim);
+  const bool Spherical = CompDim == 1;
+  using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
+  using mesh_tag = domain::Tags::Mesh<Dim>;
+  using inv_jac_tag = domain::Tags::InverseJacobianCompute<
+      map_tag, typename domain::Tags::LogicalCoordinates<Dim>::base>;
+  using coords_tag = domain::Tags::Coordinates<3, typename Frame::Inertial>;
+  using Frame = Frame::Inertial;
+  using flux_tags = tmpl::list<Flux1<DataVector, Dim, Frame>>;
+  using flux_tag = Tags::Variables<flux_tags>;
+  using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
+  TestHelpers::db::test_compute_tag<Tags::DivVectorCompute<
+      Flux1<DataVector, Dim, Frame>, mesh_tag, typename inv_jac_tag::base>>(
+      "div(Flux1)");
+
+  const std::array<size_t, 3> extents_array{{6, CompDim == 2 ? 5 : 1, 1}};
+  const auto pad_at_end = []<typename ElemType>(const ElemType default_val,
+                                                const ElemType padding_val) {
+    std::array<ElemType, Dim> arr{};
+    for (size_t i = 0; i < Dim; ++i) {
+      gsl::at(arr, i) = i < CompDim ? default_val : padding_val;
+    }
+    return arr;
+  };
+  const Mesh<Dim> mesh{
+      extents_array,
+      pad_at_end(Spectral::Basis::Legendre, Spectral::Basis::Cartoon),
+      pad_at_end(Spectral::Quadrature::GaussLobatto,
+                 CompDim == 1 ? Spectral::Quadrature::SphericalSymmetry
+                              : Spectral::Quadrature::AxialSymmetry)};
+  const size_t num_grid_points = mesh.number_of_grid_points();
+  const auto xi = logical_coordinates(mesh);
+  const auto inertial_coords = coordinate_map(xi);
+  const auto inv_jacobian = coordinate_map.inv_jacobian(xi);
+  Variables<flux_tags> fluxes(num_grid_points);
+  Variables<div_tags> expected_div_fluxes(num_grid_points);
+
+  auto& flux = get<tmpl::front<flux_tags>>(fluxes);
+  auto& expected_div_flux =
+      get<Tags::div<tmpl::front<flux_tags>>>(expected_div_fluxes);
+  for (size_t i = 0; i < Dim; ++i) {
+    flux.get(i) = inertial_coords.get(i) *
+                  cartoon_func<Spherical>(inertial_coords);
+  }
+  get<>(expected_div_flux) =
+      3.0 * cartoon_func<Spherical>(inertial_coords) +
+      get<0>(inertial_coords) *
+          cartoon_dfunc<Spherical>(0, inertial_coords) +
+      get<1>(inertial_coords) *
+          cartoon_dfunc<Spherical>(1, inertial_coords);
+
+
+  auto box = db::create<
+      db::AddSimpleTags<mesh_tag, flux_tag, map_tag, coords_tag>,
+      db::AddComputeTags<
+          domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+          Tags::DivVectorCompute<Flux1<DataVector, Dim, Frame>, mesh_tag,
+                                 typename inv_jac_tag::base, coords_tag>>>(
+      mesh, fluxes, coordinate_map, inertial_coords);
+
+  const auto& div_flux1 =
+      db::get<Tags::div<Flux1<DataVector, Dim, Frame>>>(box);
+  const auto& expected =
+      get<Tags::div<Flux1<DataVector, Dim, Frame>>>(expected_div_fluxes);
+  const Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected, div_flux1, local_approx);
+}
+
+void test_cartoon_divergence_compute() {
+  const auto map1 = domain::make_coordinate_map<Frame::ElementLogical,
+                                                Frame::Inertial>(
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Identity1D, Identity1D>{
+          Affine{-1.0, 1.0, 0.0, 1.7}, Identity1D{}, Identity1D{}});
+  const auto map2 =
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Identity1D>{
+              Affine{-1.0, 1.0, 0.0, 1.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+              Identity1D{}});
+  test_cartoon_divergence_compute_item_impl<1, 3>(map1);
+  test_cartoon_divergence_compute_item_impl<2, 3>(map2);
+}
 }  // namespace
 
 // [[Timeout, 20]]
@@ -635,6 +854,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
   test_cartoon<true>(1.0);
   test_cartoon<false>(0.0);
   test_cartoon<false>(1.0);
+
+  test_cartoon_chooser();
+  test_cartoon_divergence_compute();
 
   BENCHMARK_ADVANCED("Divergence of vector")
   (Catch::Benchmark::Chronometer meter) {

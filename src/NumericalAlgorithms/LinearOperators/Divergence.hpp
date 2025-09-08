@@ -57,10 +57,9 @@ struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the (Euclidean) divergence of fluxes
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
-auto divergence(
-    const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                          DerivativeFrame>& inverse_jacobian)
+auto divergence(const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
+                const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                                      DerivativeFrame>& inverse_jacobian)
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
 template <typename... DivTags, typename... FluxTags, size_t Dim,
@@ -112,6 +111,39 @@ void cartoon_divergence(
     const Variables<tmpl::list<FluxTags...>>& F, const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+/// @}
+
+/// @{
+/*!
+ * \ingroup NumericalAlgorithmsGroup
+ * \brief Calls the correct divergence function, either normal divergence or
+ * cartoon divergence, as determined by mesh basis.
+ *
+ * If you have a `Variables` with several tensors with Cartoon bases you need
+ * to find the divergence of, you should use the `divergence` function
+ * that operates on `Variables` since that'll be more efficient.
+ */
+template <typename... DivTags, typename... FluxTags, size_t Dim,
+          typename DerivativeFrame>
+void divergence(
+    gsl::not_null<Variables<tmpl::list<DivTags...>>*> div_fluxes,
+    const Variables<tmpl::list<FluxTags...>>& fluxes, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+void divergence(
+    gsl::not_null<Scalar<DataType>*> div_input,
+    const tnsr::I<DataType, Dim, DerivativeFrame>& input, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+Scalar<DataType> divergence(
+    const tnsr::I<DataType, Dim, DerivativeFrame>& input, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
 /// @}
 
@@ -185,7 +217,11 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
 /// \brief Compute the divergence of a `tnsr::I` (vector)
 ///
 /// This tag inherits from `db::add_tag_prefix<Tags::div, Tag>`.
-template <typename Tag, typename MeshTag, typename InverseJacobianTag>
+///
+/// For an executable that does not allow a Cartoon basis, the last parameter,
+/// `InertialCoordsTag`, should not be passed.
+template <typename Tag, typename MeshTag, typename InverseJacobianTag,
+          typename InertialCoordsTag = void>
 struct DivVectorCompute : div<Tag>, db::ComputeTag {
  private:
   using inv_jac_indices = typename InverseJacobianTag::type::index_list;
@@ -197,10 +233,22 @@ struct DivVectorCompute : div<Tag>, db::ComputeTag {
  public:
   using base = div<Tag>;
   using return_type = typename base::type;
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-  static constexpr void (*function)(
-      const gsl::not_null<return_type*>, const typename Tag::type&,
-      const Mesh<dim>&, const typename InverseJacobianTag::type&) = &divergence;
-  using argument_tags = tmpl::list<Tag, MeshTag, InverseJacobianTag>;
+  static constexpr void function(
+      const gsl::not_null<return_type*> div_input,
+      const typename Tag::type& input, const Mesh<dim>& mesh,
+      const typename InverseJacobianTag::type& inverse_jacobian) {
+    divergence(div_input, input, mesh, inverse_jacobian);
+  }
+  static constexpr void function(
+      const gsl::not_null<return_type*> div_input,
+      const typename Tag::type& input, const Mesh<dim>& mesh,
+      const typename InverseJacobianTag::type& inverse_jacobian,
+      const tnsr::I<DataVector, dim, Frame::Inertial>& inertial_coords) {
+    divergence(div_input, input, mesh, inverse_jacobian, inertial_coords);
+  }
+  using argument_tags = tmpl::conditional_t<
+      std::is_same_v<void, InertialCoordsTag>,
+      tmpl::list<Tag, MeshTag, InverseJacobianTag>,
+      tmpl::list<Tag, MeshTag, InverseJacobianTag, InertialCoordsTag>>;
 };
 }  // namespace Tags
