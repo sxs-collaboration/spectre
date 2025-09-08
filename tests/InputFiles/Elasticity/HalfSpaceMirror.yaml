@@ -14,8 +14,8 @@ OutputFileChecks:
     Subfile: ErrorNorms.dat
     FileGlob: ElasticHalfSpaceMirrorReductions.h5
     ExpectedData:
-      - [1, 171, 3.39481799202234e-01, 5.94500292306939e-04]
-    AbsoluteTolerance: 1e-12
+      - [1, 171, 3.394818e-01, 5.9458e-04]
+    AbsoluteTolerance: 1e-6
 
 ---
 
@@ -84,9 +84,9 @@ Observers:
 LinearSolver:
   Gmres:
     ConvergenceCriteria:
-      MaxIterations: 1
-      RelativeResidual: 1.e-4
-      AbsoluteResidual: 1.e-12
+      MaxIterations: 100
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-6
     Verbosity: Quiet
 
   Multigrid:

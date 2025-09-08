@@ -465,6 +465,8 @@ struct SubdomainOperator
         // overlap data to the full neighbor mesh by padding it with zeros. This
         // is necessary because spectral operators such as derivatives require
         // data on the full mesh.
+        // Possible performance optimization: this copy can be avoided if the
+        // overlap covers the full neighbor, so no padding with zeros is needed.
         if (not neighbor_data_is_zero) {
           LinearSolver::Schwarz::extended_overlap_data(
               make_not_null(&extended_operand_vars_[overlap_id]),
@@ -669,6 +671,8 @@ struct SubdomainOperator
         // inverse mass-matrix ("massless" scheme with no "mass-lumping"
         // approximation) means that lifted boundary corrections bleed into the
         // volume.
+        // Possible performance optimization: this copy can be avoided if the
+        // overlap covers the full neighbor, so no restriction is needed.
         if (UNLIKELY(
                 result->overlap_data[overlap_id].number_of_grid_points() !=
                 operand.overlap_data.at(overlap_id).number_of_grid_points())) {

@@ -93,7 +93,7 @@ struct InitializeOverlapGeometry {
       const Element<Dim>& element, const Mesh<Dim>& mesh,
       const DirectionalIdMap<Dim, Mesh<Dim>>& neighbor_meshes,
       const ElementId<Dim>& element_id, const Direction<Dim>& overlap_direction,
-      const size_t max_overlap) const;
+      std::optional<size_t> max_overlap) const;
 };
 }  // namespace detail
 
