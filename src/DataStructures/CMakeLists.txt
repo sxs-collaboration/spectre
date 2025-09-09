@@ -18,6 +18,7 @@ spectre_target_sources(
   Index.cpp
   IndexIterator.cpp
   LeviCivitaIterator.cpp
+  SimpleSparseMatrix.cpp
   SliceIterator.cpp
   SparseMatrixFiller.cpp
   StripeIterator.cpp
@@ -54,6 +55,7 @@ spectre_target_headers(
   MathWrapper.hpp
   Matrix.hpp
   ModalVector.hpp
+  SimpleSparseMatrix.hpp
   SliceIterator.hpp
   SliceTensorToVariables.hpp
   SliceVariables.hpp

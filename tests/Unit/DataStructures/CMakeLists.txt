@@ -31,6 +31,7 @@ set(LIBRARY_SOURCES
   Test_MoreComplexDiagonalModalOperatorMath.cpp
   Test_MoreDiagonalModalOperatorMath.cpp
   Test_NonZeroStaticSizeVector.cpp
+  Test_SimpleSparseMatrix.cpp
   Test_SliceIterator.cpp
   Test_SliceTensorToVariables.cpp
   Test_SliceVariables.cpp

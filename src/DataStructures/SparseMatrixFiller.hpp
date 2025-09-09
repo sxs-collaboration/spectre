@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/SimpleSparseMatrix.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -106,7 +107,12 @@ class SparseMatrixFiller {
   void fill(gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>
                 matrix) const;
 
+  /// Fills a SimpleSparseMatrix.
+  void fill(gsl::not_null<SimpleSparseMatrix*> matrix) const;
+
  private:
+  void fill_sparse_matrix_elements(
+      gsl::not_null<std::vector<SparseMatrixElement>*> data) const;
   size_t num_rows_{0}, num_cols_{0};
   bool use_map_method_{true};
   std::vector<double> matrix_elements_{};
