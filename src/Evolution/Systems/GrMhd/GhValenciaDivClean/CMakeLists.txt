@@ -8,10 +8,8 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  EventInstantiation.cpp
   StressEnergy.cpp
   TimeDerivativeTerms.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -57,4 +55,5 @@ add_subdirectory(Actions)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)
+add_subdirectory(Instantiations)
 add_subdirectory(Subcell)

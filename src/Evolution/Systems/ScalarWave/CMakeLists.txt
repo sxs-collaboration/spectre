@@ -12,10 +12,8 @@ spectre_target_sources(
   Constraints.cpp
   EnergyDensity.cpp
   Equations.cpp
-  EventInstantiation.cpp
   MomentumDensity.cpp
   TimeDerivative.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -56,3 +54,4 @@ target_link_libraries(
 
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
+add_subdirectory(Instantiations)

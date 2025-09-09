@@ -9,11 +9,9 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
-  EventInstantiation.cpp
   Fluxes.cpp
   TimeDerivativeTerms.cpp
   VelocityField.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -52,4 +50,5 @@ target_link_libraries(
 add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)
+add_subdirectory(Instantiations)
 add_subdirectory(Subcell)

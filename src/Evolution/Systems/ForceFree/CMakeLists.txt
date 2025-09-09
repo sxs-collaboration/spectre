@@ -11,11 +11,9 @@ spectre_target_sources(
   Characteristics.cpp
   ElectricCurrentDensity.cpp
   ElectromagneticVariables.cpp
-  EventInstantiation.cpp
   Fluxes.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
-  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
@@ -61,4 +59,5 @@ add_subdirectory(BoundaryConditions)
 add_subdirectory(BoundaryCorrections)
 add_subdirectory(FiniteDifference)
 add_subdirectory(Imex)
+add_subdirectory(Instantiations)
 add_subdirectory(Subcell)
