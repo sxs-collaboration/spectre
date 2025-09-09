@@ -50,7 +50,7 @@ void run_deadlock_analysis_simple_actions(
   Parallel::simple_action<::deadlock::PrintFunctionsOfTime>(
       Parallel::get_parallel_component<
           observers::ObserverWriter<Metavariables>>(cache),
-      deadlock_dir + "functions_of_time.out");
+      deadlock_dir + "/functions_of_time.out");
 
   {
     auto cache_proxy = cache.get_this_proxy();
