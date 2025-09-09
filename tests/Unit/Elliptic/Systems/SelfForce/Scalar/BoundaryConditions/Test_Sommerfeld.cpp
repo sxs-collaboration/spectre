@@ -38,7 +38,8 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.BoundaryConditions.Sommerfeld",
       "  BlackHoleMass: 1.0\n"
       "  BlackHoleSpin: 0.5\n"
       "  OrbitalRadius: 10.0\n"
-      "  MModeNumber: 2\n");
+      "  MModeNumber: 2\n"
+      "  HyperboloidalSlicing: False\n");
   REQUIRE(dynamic_cast<const Sommerfeld*>(created.get()) != nullptr);
   const auto& boundary_condition = dynamic_cast<const Sommerfeld&>(*created);
   {
@@ -54,6 +55,7 @@ SPECTRE_TEST_CASE("Unit.ScalarSelfForce.BoundaryConditions.Sommerfeld",
     CHECK(boundary_condition.black_hole_spin() == 0.5);
     CHECK(boundary_condition.orbital_radius() == 10.0);
     CHECK(boundary_condition.m_mode_number() == 2);
+    CHECK(boundary_condition.hyperboloidal_slicing() == false);
     CHECK(boundary_condition.boundary_condition_types() ==
           std::vector<elliptic::BoundaryConditionType>{
               elliptic::BoundaryConditionType::Neumann});
