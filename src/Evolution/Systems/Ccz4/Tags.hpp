@@ -15,6 +15,46 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 
 namespace Ccz4 {
+namespace OptionTags {
+/*!
+ * \ingroup OptionGroupsGroup
+ * Groups option tags related to the CCZ4 evolution system.
+ */
+struct Ccz4Group {
+  static std::string name() { return "Ccz4"; }
+  static constexpr Options::String help{
+      "Options for the CCZ4 evolution system"};
+  using group = evolution::OptionTags::SystemGroup;
+};
+
+/// \copydoc Tags::Kappa1
+struct Kappa1 {
+  using type = double;
+
+  static constexpr Options::String help = {
+      "The constraint damping parameter kappa_1."};
+  using group = Ccz4Group;
+};
+
+/// \copydoc Tags::Kappa2
+struct Kappa2 {
+  using type = double;
+
+  static constexpr Options::String help = {
+      "The constraint damping parameter kappa_2."};
+  using group = Ccz4Group;
+};
+
+/// \copydoc Tags::Kappa3
+struct Kappa3 {
+  using type = double;
+
+  static constexpr Options::String help = {
+      "The constraint damping parameter kappa_3."};
+  using group = Ccz4Group;
+};
+}  // namespace OptionTags
+
 /*!
  * \brief Tags for the CCZ4 formulation of Einstein equations.
  * \details The naming convention follows \cite Dumbser2017okk
@@ -407,6 +447,10 @@ struct GammaDriverParam
  */
 struct Kappa1 : db::SimpleTag {
   using type = double;
+  using option_tags = tmpl::list<OptionTags::Kappa1>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double kappa_1) { return kappa_1; }
 };
 
 /*!
@@ -416,6 +460,10 @@ struct Kappa1 : db::SimpleTag {
  */
 struct Kappa2 : db::SimpleTag {
   using type = double;
+  using option_tags = tmpl::list<OptionTags::Kappa2>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double kappa_2) { return kappa_2; }
 };
 
 /*!
@@ -425,6 +473,10 @@ struct Kappa2 : db::SimpleTag {
  */
 struct Kappa3 : db::SimpleTag {
   using type = double;
+  using option_tags = tmpl::list<OptionTags::Kappa3>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const double kappa_3) { return kappa_3; }
 };
 
 /*!
@@ -446,17 +498,4 @@ struct Eta : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 }  // namespace Tags
-
-namespace OptionTags {
-/*!
- * \ingroup OptionGroupsGroup
- * Groups option tags related to the CCZ4 evolution system.
- */
-struct Group {
-  static std::string name() { return "Ccz4"; }
-  static constexpr Options::String help{
-      "Options for the CCZ4 evolution system"};
-  using group = evolution::OptionTags::SystemGroup;
-};
-}  // namespace OptionTags
 }  // namespace Ccz4

@@ -206,8 +206,6 @@ compute_prim_solution_for_second_deriv(
 }
 
 inline Element<3> set_element(const bool skip_last = false) {
-  /* I don't know what this is doing; it seems to set up */
-  /* some element adjacency relations */
   DirectionMap<3, Neighbors<3>> neighbors{};
   for (size_t i = 0; i < 6; ++i) {
     if (skip_last and i == 5) {
@@ -221,11 +219,9 @@ inline Element<3> set_element(const bool skip_last = false) {
 
 inline tnsr::I<DataVector, 3, Frame::ElementLogical> set_logical_coordinates(
     const Mesh<3>& subcell_mesh) {
-  /* this computes the positions of the grid points in [-1,1]^3 */
   auto logical_coords = logical_coordinates(subcell_mesh);
   // Make the logical coordinates different in each direction
   for (size_t i = 1; i < 3; ++i) {
-    /* this seems to shift all grid points in [-1,1]^3 by some number */
     logical_coords.get(i) += static_cast<double>(4 * i);
   }
   return logical_coords;
@@ -373,12 +369,13 @@ tnsr::ijj<DataVector, SpatialDim, FrameType> get_field_d(
 //   0 = s f b + s \beta^k \partial_k \beta^i
 template <size_t SpatialDim, typename FrameType>
 tnsr::I<DataVector, SpatialDim, FrameType> get_b_kerr(
-    const ::Ccz4::EvolveShift evolve_shift,
+    const bool evolve_shift,
     const tnsr::I<DataVector, SpatialDim, FrameType>& shift,
     const tnsr::iJ<DataVector, SpatialDim, FrameType>& d_shift,
     const double f) {
   tnsr::I<DataVector, SpatialDim, FrameType> b(get<0>(shift));
-  if (not static_cast<bool>(evolve_shift)) {
+  if (not evolve_shift or
+      not ::Ccz4::fd::System::shifting_shift) {
     // s == 0
     // pick b = 0
     for (auto& component : b) {
@@ -479,21 +476,22 @@ Scalar<DataVector> get_k_0_kerr(
 // \partial_t b will not be 0 for KerrSchild if evolve_shift == true
 template <size_t SpatialDim, typename FrameType>
 tnsr::I<DataVector, SpatialDim, FrameType> get_dt_b_kerr_expected(
-    const ::Ccz4::EvolveShift evolve_shift, const Scalar<DataVector>& eta,
+    const bool evolve_shift, const Scalar<DataVector>& eta,
     const tnsr::I<DataVector, SpatialDim, FrameType>& shift,
     const tnsr::iJ<DataVector, SpatialDim, FrameType>& d_gamma_hat,
     const tnsr::I<DataVector, SpatialDim, FrameType>& b,
     const tnsr::iJ<DataVector, SpatialDim, FrameType>& d_b) {
   tnsr::I<DataVector, SpatialDim, FrameType> dt_b_kerr_expected(get(eta));
-  if (static_cast<bool>(evolve_shift)) {
+  if (evolve_shift) {
     // s == 1
     for (size_t i = 0; i < SpatialDim; i++) {
-      dt_b_kerr_expected.get(i) = -get(eta) * b.get(i) +
-                                  shift.get(0) * d_b.get(0, i) -
-                                  shift.get(0) * d_gamma_hat.get(0, i);
-      for (size_t k = 1; k < SpatialDim; k++) {
-        dt_b_kerr_expected.get(i) +=
-            shift.get(k) * d_b.get(k, i) - shift.get(k) * d_gamma_hat.get(k, i);
+      dt_b_kerr_expected.get(i) = -get(eta) * b.get(i);
+
+      if (::Ccz4::fd::System::shifting_shift) {
+        for (size_t k = 0; k < SpatialDim; k++) {
+          dt_b_kerr_expected.get(i) += shift.get(k) * d_b.get(k, i) -
+                                       shift.get(k) * d_gamma_hat.get(k, i);
+        }
       }
     }
   } else {
@@ -509,7 +507,7 @@ inline Variables<
     ::Ccz4::fd::Tags::spacetime_reconstruction_tags>
 compute_prim_solution_for_KerrSchild(
     const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double t,
-    const double f, const ::Ccz4::EvolveShift& evolve_shift,
+    const double f, const bool evolve_shift,
     const gr::Solutions::KerrSchild& solution) {
   // Evaluate solution
   const auto kerrschild_vars = solution.variables(
@@ -877,9 +875,12 @@ template <size_t SpatialDim, typename FrameType>
 tnsr::I<DataVector, SpatialDim, FrameType> get_dt_shift_gauge_plane_wave(
     const tnsr::I<DataVector, SpatialDim, FrameType>& shift,
     const tnsr::iJ<DataVector, SpatialDim, FrameType>& d_shift) {
-  tnsr::I<DataVector, SpatialDim, FrameType> dt_shift;
-  ::tenex::evaluate<ti::I>(make_not_null(&dt_shift),
-                           shift(ti::K) * d_shift(ti::k, ti::I));
+  auto dt_shift = make_with_value<tnsr::I<DataVector, SpatialDim, FrameType>>(
+      get<0>(shift), 0.0);
+  if (::Ccz4::fd::System::shifting_shift) {
+    ::tenex::evaluate<ti::I>(make_not_null(&dt_shift),
+                             shift(ti::K) * d_shift(ti::k, ti::I));
+  }
   return dt_shift;
 }
 
@@ -891,9 +892,12 @@ tnsr::I<DataVector, SpatialDim, FrameType> get_dt_b_gauge_plane_wave_expected(
     const tnsr::iJ<DataVector, SpatialDim, FrameType>& d_gamma_hat,
     const tnsr::I<DataVector, SpatialDim, FrameType>& shift) {
   tnsr::I<DataVector, SpatialDim, FrameType> dt_b;
-  ::tenex::evaluate<ti::I>(
-      make_not_null(&dt_b),
-      dt_gamma_hat(ti::I) - shift(ti::K) * d_gamma_hat(ti::k, ti::I));
+  ::tenex::evaluate<ti::I>(make_not_null(&dt_b), dt_gamma_hat(ti::I));
+  if (::Ccz4::fd::System::shifting_shift) {
+    ::tenex::update<ti::I>(
+        make_not_null(&dt_b),
+        dt_b(ti::I) - shift(ti::K) * d_gamma_hat(ti::k, ti::I));
+  }
   return dt_b;
 }
 

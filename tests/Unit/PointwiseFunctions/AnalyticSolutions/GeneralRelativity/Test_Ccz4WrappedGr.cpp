@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Ccz4/ATilde.hpp"
 #include "Evolution/Systems/Ccz4/Christoffel.hpp"
+#include "Evolution/Systems/Ccz4/FiniteDifference/System.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -76,7 +77,8 @@ void test_ccz4_solution(
           Ccz4::Tags::ATilde<DataVector, SolutionType::volume_dim>,
           gr::Tags::TraceExtrinsicCurvature<DataVector>,
           Ccz4::Tags::Theta<DataVector>,
-          Ccz4::Tags::GammaHat<DataVector, SolutionType::volume_dim>>{});
+          Ccz4::Tags::GammaHat<DataVector, SolutionType::volume_dim>,
+          Ccz4::Tags::AuxiliaryShiftB<DataVector, SolutionType::volume_dim>>{});
 
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<DataVector, SolutionType::volume_dim>>(vars);
@@ -155,6 +157,32 @@ void test_ccz4_solution(
       contracted_conformal_christoffel_second_kind,
       (get<Ccz4::Tags::GammaHat<DataVector, SolutionType::volume_dim>>(
           wrapped_Ccz4_vars)));
+
+  const double one_over_f = 1. / ::Ccz4::fd::System::f;
+  const bool shifting_shift = ::Ccz4::fd::System::shifting_shift;
+  tnsr::I<DataVector, Ccz4::Solutions::Ccz4WrappedGr<SolutionType>::volume_dim>
+      auxiliary_shift_b;
+  const auto& shift =
+      get<gr::Tags::Shift<DataVector, SolutionType::volume_dim>>(vars);
+  using DerivShift =
+      ::Tags::deriv<gr::Tags::Shift<DataVector, SolutionType::volume_dim>,
+                    tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>;
+  const auto& d_shift = get<DerivShift>(vars);
+  const auto& dt_shift =
+      get<::Tags::dt<gr::Tags::Shift<DataVector, SolutionType::volume_dim>>>(
+          vars);
+  if (shifting_shift) {
+    ::tenex::evaluate<ti::I>(
+        make_not_null(&auxiliary_shift_b),
+        one_over_f * dt_shift(ti::I) -
+            one_over_f * shift(ti::K) * d_shift(ti::k, ti::I));
+  } else {
+    ::tenex::evaluate<ti::I>(make_not_null(&auxiliary_shift_b),
+                             one_over_f * dt_shift(ti::I));
+  }
+  CHECK(auxiliary_shift_b ==
+        get<Ccz4::Tags::AuxiliaryShiftB<DataVector, SolutionType::volume_dim>>(
+            wrapped_Ccz4_vars));
 
   // Weak test of operators == and !=
   CHECK(wrapped_solution == wrapped_solution);
