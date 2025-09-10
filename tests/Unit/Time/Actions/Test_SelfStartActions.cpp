@@ -29,8 +29,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/CleanHistory.hpp"
+#include "Time/CleanHistory.tpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/Slab.hpp"
@@ -165,7 +166,7 @@ struct Component {
       Actions::MutateApply<
           RecordTimeStepperData<typename metavariables::system>>,
       Actions::MutateApply<UpdateU<typename metavariables::system, false>>,
-      Actions::CleanHistory<typename metavariables::system>,
+      Actions::MutateApply<CleanHistory<typename metavariables::system>>,
       tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
                           tmpl::list<>>>;
   using action_list = tmpl::flatten<

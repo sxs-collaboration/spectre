@@ -130,9 +130,9 @@
 #include "PointwiseFunctions/ScalarTensor/SourceTags.hpp"
 #include "PointwiseFunctions/ScalarTensor/ScalarSource.hpp"
 #include "PointwiseFunctions/ScalarTensor/StressEnergy.hpp"
-#include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/CleanHistory.hpp"
 #include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -459,7 +459,7 @@ struct ScalarTensorTemplateBase {
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,
               Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
-      Actions::CleanHistory<system>,
+      Actions::MutateApply<CleanHistory<system>>,
       tmpl::conditional_t<
           local_time_stepping,
           Actions::MutateApply<evolution::dg::CleanMortarHistory<system>>,

@@ -2,9 +2,11 @@
 // See LICENSE.txt for details.
 
 #include "Evolution/Systems/Burgers/System.hpp"
+#include "Time/CleanHistory.tpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/UpdateU.tpp"
 
+template class CleanHistory<Burgers::System>;
 template class RecordTimeStepperData<Burgers::System>;
 template class UpdateU<Burgers::System, false>;
 template class UpdateU<Burgers::System, true>;
