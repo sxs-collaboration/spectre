@@ -132,28 +132,11 @@ void test_chooser() {
         REQUIRE(first_result.has_value());
         CHECK(approx(*first_result) ==
               0.95 * unit_step / pow(0.3, 1.0 / stepper_order));
-        if constexpr (std::is_same_v<StepChooserUse, ::StepChooserUse::Slab>) {
-          const auto second_result = get_suggestion(
-              error_control, {step_errors(0.0, 0.31, abs(*first_result))},
-              {step_errors(-1.0, 0.3)}, *first_result);
-          REQUIRE(second_result.has_value());
-          CHECK(approx(*second_result) == 0.95 * *first_result /
-                                              (pow(0.3, -0.4 / stepper_order) *
-                                               pow(0.31, 0.7 / stepper_order)));
-          // Check that the suggested step size is smaller if the error in
-          // increasing faster.
-          const auto adjusted_second_result = get_suggestion(
-              error_control, {step_errors(0.0, 0.31, abs(*first_result))},
-              {step_errors(-1.0, 0.1)}, *first_result);
-          REQUIRE(adjusted_second_result.has_value());
-          CHECK(abs(*adjusted_second_result) < abs(*second_result));
-        } else {
-          // Check that the result is independent of the old error
-          const auto second_result =
-              get_suggestion(error_control, {step_errors(0.0, 0.3)},
-                             {step_errors(-1.0, 0.7)}, unit_step);
-          CHECK(first_result == second_result);
-        }
+        // Check that the result is independent of the old error
+        const auto second_result =
+            get_suggestion(error_control, {step_errors(0.0, 0.3)},
+                           {step_errors(-1.0, 0.7)}, unit_step);
+        CHECK(first_result == second_result);
       }
       {
         INFO("Test error control step failure");
