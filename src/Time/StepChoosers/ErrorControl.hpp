@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
@@ -16,6 +17,7 @@
 #include "Options/String.hpp"
 #include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepperErrorEstimate.hpp"
 #include "Time/StepperErrorTolerances.hpp"
 #include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
@@ -157,20 +159,19 @@ class ErrorControl : public StepChooser<StepChooserUse>,
 
   using argument_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
-  TimeStepRequest operator()(
-      const typename ::Tags::StepperErrors<EvolvedVariableTag>::type& errors,
-      const double /*previous_step*/) const {
+  TimeStepRequest operator()(const std::optional<StepperErrorEstimate>& errors,
+                             const double /*previous_step*/) const {
     // Do not request that the step size be changed if there isn't a new error
     // estimate
-    if (not errors[1].has_value()) {
+    if (not errors.has_value()) {
       return {};
     }
     const double new_step =
-        errors[1]->step_size.value() *
-        std::clamp(safety_factor_ *
-                       pow(1.0 / std::max(errors[1]->step_error(), 1e-14),
-                           1.0 / static_cast<double>(errors[1]->order + 1)),
-                   min_factor_, max_factor_);
+        errors->step_size.value() *
+        std::clamp(
+            safety_factor_ * pow(1.0 / std::max(errors->step_error(), 1e-14),
+                                 1.0 / static_cast<double>(errors->order + 1)),
+            min_factor_, max_factor_);
     return ::TimeStepRequest{.size_goal = new_step};
   }
 

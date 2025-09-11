@@ -3,7 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <array>
 #include <cmath>
 #include <cstddef>
 #include <memory>
@@ -69,24 +68,22 @@ std::optional<double> get_suggestion(
     const StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>&
         error_control,
     const std::optional<StepperErrorEstimate>& error,
-    const std::optional<StepperErrorEstimate>& previous_error,
     const double previous_step) {
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>,
                         Tags::StepperErrors<EvolvedVariablesTag>>>(
-      Metavariables{}, std::array{previous_error, error});
+      Metavariables{}, error);
 
   const std::unique_ptr<StepChooser<StepChooserUse>> error_control_base =
       std::make_unique<
           StepChoosers::ErrorControl<StepChooserUse, EvolvedVariablesTag>>(
           error_control);
 
-  const auto result =
-      error_control(std::array{previous_error, error}, previous_step);
+  const auto result = error_control(error, previous_step);
   CHECK(result == TimeStepRequest{.size_goal = result.size_goal});
   CHECK(error_control_base->desired_step(previous_step, box) == result);
-  CHECK(serialize_and_deserialize(error_control)(
-            std::array{previous_error, error}, previous_step) == result);
+  CHECK(serialize_and_deserialize(error_control)(error, previous_step) ==
+        result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(previous_step, box) == result);
   return result.size_goal;
@@ -116,7 +113,7 @@ void test_chooser() {
       {
         INFO("No data available");
         const ErrorControl error_control{5.0e-4, 0.0, 2.0, 0.5, 0.95};
-        const auto result = get_suggestion(error_control, {}, {}, unit_step);
+        const auto result = get_suggestion(error_control, {}, unit_step);
         CHECK(not result.has_value());
       }
       {
@@ -127,28 +124,23 @@ void test_chooser() {
                   .estimates = StepperErrorTolerances::Estimates::StepperOrder,
                   .absolute = 5.0e-4,
                   .relative = 1.0e-3});
-        const auto first_result = get_suggestion(
-            error_control, {step_errors(0.0, 0.3)}, {}, unit_step);
-        REQUIRE(first_result.has_value());
-        CHECK(approx(*first_result) ==
+        const auto result =
+            get_suggestion(error_control, {step_errors(0.0, 0.3)}, unit_step);
+        REQUIRE(result.has_value());
+        CHECK(approx(*result) ==
               0.95 * unit_step / pow(0.3, 1.0 / stepper_order));
-        // Check that the result is independent of the old error
-        const auto second_result =
-            get_suggestion(error_control, {step_errors(0.0, 0.3)},
-                           {step_errors(-1.0, 0.7)}, unit_step);
-        CHECK(first_result == second_result);
       }
       {
         INFO("Test error control step failure");
         const ErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
-        const auto result_start = get_suggestion(
-            error_control, {step_errors(0.0, 1.2)}, {}, unit_step);
+        const auto result_start =
+            get_suggestion(error_control, {step_errors(0.0, 1.2)}, unit_step);
         REQUIRE(result_start.has_value());
-        const auto result_end = get_suggestion(
-            error_control, {step_errors(-1.0, 1.2)}, {}, unit_step);
+        const auto result_end =
+            get_suggestion(error_control, {step_errors(-1.0, 1.2)}, unit_step);
         REQUIRE(result_end.has_value());
         const auto result_end2 = get_suggestion(
-            error_control, {step_errors(-1.0, 1.2)}, {}, *result_end);
+            error_control, {step_errors(-1.0, 1.2)}, *result_end);
         REQUIRE(result_end2.has_value());
         CHECK(approx(*result_start) ==
               0.95 * unit_step / pow(1.2, 1.0 / stepper_order));
@@ -158,16 +150,16 @@ void test_chooser() {
       {
         INFO("Test error control clamped minimum");
         const ErrorControl error_control{4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
-        const auto first_result = get_suggestion(
-            error_control, {step_errors(0.0, 10.0)}, {}, unit_step);
-        CHECK(first_result == std::optional(0.9 * unit_step));
+        const auto result =
+            get_suggestion(error_control, {step_errors(0.0, 10.0)}, unit_step);
+        CHECK(result == std::optional(0.9 * unit_step));
       }
       {
         INFO("Test error control clamped maximum");
         const ErrorControl error_control{1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
-        const auto first_result = get_suggestion(
-            error_control, {step_errors(0.0, 0.01)}, {}, unit_step);
-        CHECK(first_result == std::optional(2.0 * unit_step));
+        const auto result =
+            get_suggestion(error_control, {step_errors(0.0, 0.01)}, unit_step);
+        CHECK(result == std::optional(2.0 * unit_step));
       }
     }
   }
