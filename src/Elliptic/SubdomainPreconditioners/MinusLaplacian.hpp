@@ -85,6 +85,10 @@ struct MinusLaplacian {
  * combination of element face and boundary-condition type among the tensor
  * components.
  *
+ * \par Complex variables
+ * This preconditioner can also be applied to complex variables, in which case
+ * the Laplacian just applies to the real and imaginary part separately.
+ *
  * \tparam Dim Spatial dimension
  * \tparam OptionsGroup The options group identifying the
  * `LinearSolver::Schwarz::Schwarz` solver that defines the subdomain geometry.
@@ -421,13 +425,31 @@ void assign_component(
         lhs,
     const ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
         Dim, RhsTagsList>& rhs,
-    const size_t lhs_component, const size_t rhs_component) {
+    const size_t lhs_component, const size_t rhs_component,
+    // Use real or imaginary part of the lhs or rhs complex value. This is used
+    // to apply the Laplacian to the real or imaginary part separately.
+    const bool lhs_imag = false, const bool rhs_imag = false) {
+  using LhsValueType =
+      typename ::LinearSolver::Schwarz::ElementCenteredSubdomainData<
+          Dim, LhsTagsList>::value_type;
   // Possible optimization: Once we have non-owning Variables we can use a view
   // into the rhs here instead of copying.
   const size_t num_points_element = rhs.element_data.number_of_grid_points();
   for (size_t i = 0; i < num_points_element; ++i) {
-    lhs->element_data.data()[lhs_component * num_points_element + i] =
+    auto& lhs_i =
+        lhs->element_data.data()[lhs_component * num_points_element + i];
+    const auto& rhs_i =
         rhs.element_data.data()[rhs_component * num_points_element + i];
+    const double rhs_i_fundamental = rhs_imag ? imag(rhs_i) : real(rhs_i);
+    if constexpr (std::is_same_v<LhsValueType, std::complex<double>>) {
+      if (lhs_imag) {
+        lhs_i.imag(rhs_i_fundamental);
+      } else {
+        lhs_i.real(rhs_i_fundamental);
+      }
+    } else {
+      lhs_i = rhs_i_fundamental;
+    }
   }
   for (const auto& [overlap_id, rhs_data] : rhs.overlap_data) {
     const size_t num_points_overlap = rhs_data.number_of_grid_points();
@@ -436,8 +458,19 @@ void assign_component(
     // iteration of the loop below.
     auto& lhs_vars = lhs->overlap_data[overlap_id];
     for (size_t i = 0; i < num_points_overlap; ++i) {
-      lhs_vars.data()[lhs_component * num_points_overlap + i] =
+      auto& lhs_i = lhs_vars.data()[lhs_component * num_points_overlap + i];
+      const auto& rhs_i =
           rhs_data.data()[rhs_component * num_points_overlap + i];
+      const double rhs_i_fundamental = rhs_imag ? imag(rhs_i) : real(rhs_i);
+      if constexpr (std::is_same_v<LhsValueType, std::complex<double>>) {
+        if (lhs_imag) {
+          lhs_i.imag(rhs_i_fundamental);
+        } else {
+          lhs_i.real(rhs_i_fundamental);
+        }
+      } else {
+        lhs_i = rhs_i_fundamental;
+      }
     }
   }
 }
@@ -469,17 +502,31 @@ MinusLaplacian<Dim, OptionsGroup, Solver, LinearSolverRegistrars>::solve(
                         "component), but got "
                      << bc_signatures.size() << ".");
   // Possible optimization: elide when num_components is 1
+  using ValueType = typename VarsType::value_type;
+  constexpr auto complex_components = []() {
+    if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+      return std::array<bool, 2>{{false, true}};
+    } else {
+      return std::array<bool, 1>{{false}};
+    }
+  }();
   for (size_t component = 0; component < num_components; ++component) {
-    detail::assign_component(make_not_null(&source_), source, 0, component);
-    detail::assign_component(make_not_null(&initial_guess_in_solution_out_),
-                             *initial_guess_in_solution_out, 0, component);
     const auto& [solver, boundary_conditions] =
         get_cached_solver_and_boundary_conditions(bc_signatures, component);
-    solver.solve(make_not_null(&initial_guess_in_solution_out_),
-                 subdomain_operator_, source_,
-                 std::forward_as_tuple(box, boundary_conditions));
-    detail::assign_component(initial_guess_in_solution_out,
-                             initial_guess_in_solution_out_, component, 0);
+    // Solve real and imaginary parts separately, if applicable
+    for (const bool imag_component : complex_components) {
+      detail::assign_component(make_not_null(&source_), source, 0, component,
+                               false, imag_component);
+      detail::assign_component(make_not_null(&initial_guess_in_solution_out_),
+                               *initial_guess_in_solution_out, 0, component,
+                               false, imag_component);
+      solver.solve(make_not_null(&initial_guess_in_solution_out_),
+                   subdomain_operator_, source_,
+                   std::forward_as_tuple(box, boundary_conditions));
+      detail::assign_component(initial_guess_in_solution_out,
+                               initial_guess_in_solution_out_, component, 0,
+                               imag_component, false);
+    }
   }
   return {0, 0};
 }

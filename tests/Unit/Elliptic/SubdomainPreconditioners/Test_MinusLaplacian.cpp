@@ -36,12 +36,13 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+template <typename DataType>
 struct ScalarFieldTag : db::SimpleTag {
-  using type = Scalar<DataVector>;
+  using type = Scalar<DataType>;
 };
-template <size_t Dim>
+template <typename DataType, size_t Dim>
 struct VectorFieldTag : db::SimpleTag {
-  using type = tnsr::I<DataVector, Dim>;
+  using type = tnsr::I<DataType, Dim>;
 };
 template <size_t Dim>
 using PoissonSubdomainData =
@@ -146,13 +147,18 @@ struct TestSolver {
 template <size_t Dim, typename FullData, typename Tag>
 void check_component(const PoissonSubdomainData<Dim>& poisson_data,
                      const FullData& expected_data, Tag /*meta*/,
-                     const size_t component) {
+                     const size_t component, const bool check_imag = false) {
+  const auto& expected_element_data =
+      get<std::decay_t<Tag>>(expected_data.element_data)[component];
   CHECK(get(get<Poisson::Tags::Field<DataVector>>(poisson_data.element_data)) ==
-        get<std::decay_t<Tag>>(expected_data.element_data)[component]);
+        (check_imag ? DataVector(imag(expected_element_data))
+                    : DataVector(real(expected_element_data))));
   for (const auto& [overlap_id, data] : expected_data.overlap_data) {
+    const auto& expected_overlap_data = get<std::decay_t<Tag>>(data)[component];
     CHECK(get(get<Poisson::Tags::Field<DataVector>>(
               poisson_data.overlap_data.at(overlap_id))) ==
-          get<std::decay_t<Tag>>(data)[component]);
+          (check_imag ? DataVector(imag(expected_overlap_data))
+                      : DataVector(real(expected_overlap_data))));
   }
 }
 
@@ -313,7 +319,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
     const NoSuchType linear_operator{};
     // Manufacture a source with multiple tensors
     using SubdomainData = LinearSolver::Schwarz::ElementCenteredSubdomainData<
-        Dim, tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>>;
+        Dim, tmpl::list<ScalarFieldTag<DataVector>,
+                        VectorFieldTag<DataVector, Dim>>>;
     SubdomainData source{};
     source.element_data.initialize(5);
     source
@@ -334,12 +341,58 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
       // Test the solver was applied to every tensor component in turn
       const auto& solver = minus_laplacian.solver();
       REQUIRE(solver.sources.size() == 3);
-      check_component(solver.sources[0], source, ScalarFieldTag{}, 0);
-      check_component(solver.sources[1], source, VectorFieldTag<Dim>{}, 0);
-      check_component(solver.sources[2], source, VectorFieldTag<Dim>{}, 1);
+      check_component(solver.sources[0], source, ScalarFieldTag<DataVector>{},
+                      0);
+      check_component(solver.sources[1], source,
+                      VectorFieldTag<DataVector, Dim>{}, 0);
+      check_component(solver.sources[2], source,
+                      VectorFieldTag<DataVector, Dim>{}, 1);
       CHECK(solver.bc_types[0].empty());
       CHECK(solver.bc_types[1].empty());
       CHECK(solver.bc_types[2].empty());
+      CHECK(minus_laplacian.cached_solvers().empty());
+    }
+    minus_laplacian.reset();
+    {
+      INFO("Complex variables");
+      using SubdomainDataComplex =
+          LinearSolver::Schwarz::ElementCenteredSubdomainData<
+              Dim, tmpl::list<ScalarFieldTag<ComplexDataVector>,
+                              VectorFieldTag<ComplexDataVector, Dim>>>;
+      SubdomainDataComplex source_complex{};
+      source_complex.element_data.initialize(5);
+      source_complex
+          .overlap_data[DirectionalId<Dim>{Direction<Dim>::lower_xi(),
+                                           ElementId<Dim>{0}}]
+          .initialize(3);
+      std::iota(source_complex.begin(), source_complex.end(), 1.);
+      // Apply the solver
+      auto initial_guess_in_solution_out_complex =
+          make_with_value<SubdomainDataComplex>(source_complex, 0.);
+      minus_laplacian.solve(
+          make_not_null(&initial_guess_in_solution_out_complex),
+          linear_operator, source,
+          std::make_tuple(make_databox_without_boundary_conditions()));
+      // Test the solver was applied to every tensor component in turn, for both
+      // the real and imaginary part
+      const auto& solver = minus_laplacian.solver();
+      REQUIRE(solver.sources.size() == 6);  // 3 components, real and imaginary
+      check_component(solver.sources[0], source_complex,
+                      ScalarFieldTag<ComplexDataVector>{}, 0, false);
+      check_component(solver.sources[1], source_complex,
+                      ScalarFieldTag<ComplexDataVector>{}, 0, true);
+      check_component(solver.sources[2], source_complex,
+                      VectorFieldTag<ComplexDataVector, Dim>{}, 0, false);
+      check_component(solver.sources[3], source_complex,
+                      VectorFieldTag<ComplexDataVector, Dim>{}, 0, true);
+      check_component(solver.sources[4], source_complex,
+                      VectorFieldTag<ComplexDataVector, Dim>{}, 1, false);
+      check_component(solver.sources[5], source_complex,
+                      VectorFieldTag<ComplexDataVector, Dim>{}, 1, true);
+      CHECK(solver.bc_types.size() == 6);
+      for (const auto& bc_types : solver.bc_types) {
+        CHECK(bc_types.empty());
+      }
       CHECK(minus_laplacian.cached_solvers().empty());
     }
     minus_laplacian.reset();
@@ -363,7 +416,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
            elliptic::BoundaryConditionType::Dirichlet}};
       REQUIRE(cached_solvers.at(signature_dnd).sources.size() == 1);
       check_component(cached_solvers.at(signature_dnd).sources[0], source,
-                      ScalarFieldTag{}, 0);
+                      ScalarFieldTag<DataVector>{}, 0);
       CHECK(cached_solvers.at(signature_dnd).bc_types[0] == signature_dnd);
       // - The solver for (D, D, N) should be used for both vector components
       const BcSignature signature_ddn{
@@ -375,9 +428,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
            elliptic::BoundaryConditionType::Neumann}};
       REQUIRE(cached_solvers.at(signature_ddn).sources.size() == 2);
       check_component(cached_solvers.at(signature_ddn).sources[0], source,
-                      VectorFieldTag<Dim>{}, 0);
+                      VectorFieldTag<DataVector, Dim>{}, 0);
       check_component(cached_solvers.at(signature_ddn).sources[1], source,
-                      VectorFieldTag<Dim>{}, 1);
+                      VectorFieldTag<DataVector, Dim>{}, 1);
       CHECK(cached_solvers.at(signature_ddn).bc_types[0] == signature_ddn);
       CHECK(cached_solvers.at(signature_ddn).bc_types[1] == signature_ddn);
       // - The factory-constructed solver is not invoked, because it is only
@@ -407,11 +460,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.SubdomainPreconditioners.MinusLaplacian",
            elliptic::BoundaryConditionType::Dirichlet}};
       const auto& cached_solver = cached_solvers.at(signature_ddd);
       REQUIRE(cached_solver.sources.size() == 3);
-      check_component(cached_solver.sources[0], source, ScalarFieldTag{}, 0);
-      check_component(cached_solver.sources[1], source, VectorFieldTag<Dim>{},
-                      0);
-      check_component(cached_solver.sources[2], source, VectorFieldTag<Dim>{},
-                      1);
+      check_component(cached_solver.sources[0], source,
+                      ScalarFieldTag<DataVector>{}, 0);
+      check_component(cached_solver.sources[1], source,
+                      VectorFieldTag<DataVector, Dim>{}, 0);
+      check_component(cached_solver.sources[2], source,
+                      VectorFieldTag<DataVector, Dim>{}, 1);
       CHECK(cached_solver.bc_types[0] == signature_ddd);
       CHECK(cached_solver.bc_types[1] == signature_ddd);
       CHECK(cached_solver.bc_types[2] == signature_ddd);
