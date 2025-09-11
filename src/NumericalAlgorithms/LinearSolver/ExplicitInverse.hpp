@@ -98,8 +98,18 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
         "solver runs on an array element, so one file per element will be "
         "written.";
   };
+  struct ComplexShift {
+    using type = double;
+    static constexpr Options::String help =
+        "Subtracts i*ComplexShift from the operator. "
+        "This can help dampen high-frequency modes when preconditioning "
+        "complex-valued problems.";
+  };
 
-  using options = tmpl::list<WriteMatrixToFile>;
+  using options = tmpl::flatten<tmpl::list<
+      WriteMatrixToFile,
+      tmpl::conditional_t<std::is_same_v<ValueType, std::complex<double>>,
+                          ComplexShift, tmpl::list<>>>>;
   static constexpr Options::String help =
       "Build a matrix representation of the linear operator and invert it "
       "directly. This means that the first solve has a large initialization "
@@ -112,8 +122,10 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   ~ExplicitInverse() = default;
 
   explicit ExplicitInverse(
-      std::optional<std::string> matrix_filename = std::nullopt)
-      : matrix_filename_(std::move(matrix_filename)) {}
+      std::optional<std::string> matrix_filename = std::nullopt,
+      const double complex_shift = 0.0)
+      : matrix_filename_(std::move(matrix_filename)),
+        complex_shift_(complex_shift) {}
 
   /// \cond
   explicit ExplicitInverse(CkMigrateMessage* m) : Base(m) {}
@@ -160,6 +172,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     p | matrix_filename_;
+    p | complex_shift_;
     p | size_;
     p | inverse_;
     if (p.isUnpacking() and size_ != std::numeric_limits<size_t>::max()) {
@@ -174,6 +187,7 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
 
  private:
   std::optional<std::string> matrix_filename_{};
+  double complex_shift_ = std::numeric_limits<double>::signaling_NaN();
   // Caches for successive solves of the same operator
   // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t size_ = std::numeric_limits<size_t>::max();
@@ -232,10 +246,16 @@ ExplicitInverse<ValueType, LinearSolverRegistrars>::solve(
                                 ".txt");
       write_csv(matrix_file, inverse_, " ");
     }
+    // Apply complex shift
+    if constexpr (std::is_same_v<ValueType, std::complex<double>>) {
+      for (size_t i = 0; i < size_; ++i) {
+        inverse_(i, i) -= std::complex<double>(0.0, complex_shift_);
+      }
+    }
     // Directly invert the matrix
     try {
       blaze::invert(inverse_);
-    } catch (const std::invalid_argument& e) {
+    } catch (const std::exception& e) {
       ERROR("Could not invert subdomain matrix (size " << size_
                                                        << "): " << e.what());
     }
