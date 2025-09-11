@@ -5,6 +5,7 @@
 #include <pybind11/stl.h>
 
 #include "Domain/CoordinateMaps/Distribution.hpp"
+#include "Domain/CoordinateMaps/Python/Composition.hpp"
 #include "Domain/CoordinateMaps/Python/CoordinateMap.hpp"
 #include "Utilities/ErrorHandling/SegfaultHandler.hpp"
 
@@ -30,6 +31,7 @@ PYBIND11_MODULE(_Pybindings, m) {  // NOLINT
   // Order is important: The base class `CoordinateMap` needs to have its
   // bindings set up before the derived classes
   py_bindings::bind_coordinate_map(m);
+  py_bindings::bind_composition(m);
 }
 
 }  // namespace domain

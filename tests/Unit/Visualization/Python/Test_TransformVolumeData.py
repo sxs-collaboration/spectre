@@ -266,6 +266,8 @@ class TestTransformVolumeData(unittest.TestCase):
                 "psi_squared",
                 "-k",
                 "coordinate_radius",
+                "-k",
+                "Element:grid_coordinates",
                 "-i",
                 "psi=Psi",
             ],
@@ -294,6 +296,10 @@ class TestTransformVolumeData(unittest.TestCase):
                 obs_id, "CoordinateRadius"
             ).data
             npt.assert_allclose(np.array(result_radius), radius)
+            result_grid_coords = volfile.get_tensor_component(
+                obs_id, "GridCoordinates_x"
+            ).data
+            npt.assert_allclose(np.array(result_grid_coords), x)
 
         # Test integrals
         result = runner.invoke(

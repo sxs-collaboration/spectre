@@ -50,6 +50,34 @@ class Element:
         return logical_coordinates(self.mesh)
 
     @cached_property
+    def grid_coordinates(self):
+        assert self.map, (
+            "No element map available. Ensure the domain is written in the H5"
+            " file."
+        )
+        try:
+            return self.map.block_logical_to_grid(
+                self.map.element_logical_to_block_logical(
+                    self.logical_coordinates
+                )
+            )
+        except AttributeError:
+            return self.inertial_coordinates
+
+    @cached_property
+    def distorted_coordinates(self):
+        assert self.map, (
+            "No element map available. Ensure the domain is written in the H5"
+            " file."
+        )
+        try:
+            return self.map.grid_to_distorted(
+                self.grid_coordinates, self.time, self.functions_of_time
+            )
+        except AttributeError:
+            return self.grid_coordinates
+
+    @cached_property
     def inertial_coordinates(self):
         assert self.map, (
             "No element map available. Ensure the domain is written in the H5"

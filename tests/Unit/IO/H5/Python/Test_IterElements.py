@@ -107,7 +107,10 @@ class TestIterElements(unittest.TestCase):
                 self.assertEqual(element.id, elements[i].id)
                 self.assertEqual(element.mesh, elements[i].mesh)
                 self.assertEqual(data.shape, (len(tensor_components), 4**3))
-                # Test coordinates
+                # Test coordinates (they're all the same because the domain
+                # has no time dependence)
+                npt.assert_allclose(element.grid_coordinates, data[:3])
+                npt.assert_allclose(element.distorted_coordinates, data[:3])
                 npt.assert_allclose(element.inertial_coordinates, data[:3])
                 # Test Jacobians. Domain is [0, 2 pi]^3 split in half along
                 # first dimension, so elements have size (pi, 2 pi, 2 pi).
