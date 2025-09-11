@@ -1,10 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_GrSelfForce")
+set(LIBRARY "Test_GrSelfForceBoundaryConditions")
 
 set(LIBRARY_SOURCES
-  Test_Tags.cpp
+  Test_Angular.cpp
+  Test_Sommerfeld.cpp
   )
 
 add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
@@ -12,9 +13,12 @@ add_test_library(${LIBRARY} "${LIBRARY_SOURCES}")
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  CoordinateMaps
   DataStructures
-  DataStructuresHelpers
-  GrSelfForce
+  Domain
+  DomainStructure
+  Elliptic
+  LinearOperators
+  GrSelfForceBoundaryConditions
+  Utilities
   )
-
-add_subdirectory(BoundaryConditions)
