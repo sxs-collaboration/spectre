@@ -52,7 +52,7 @@ window.onload = function(){
 
     // Hide metafunctions that use only the template metaprogramming libraries
     $("body").children().find("td.memItemRight, td.memTemplItemRight").each(function () {
-        $(this).html( $(this).html().replace(/( =[ ]+)tmpl::.*/g,
+        $(this).html( $(this).html().replace(/( =[ ]+).*tmpl::(?!list\b).*/g,
             "$1implementation defined") );
     });
 
