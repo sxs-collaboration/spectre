@@ -16,6 +16,8 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  CleanHistory.hpp
+  CleanHistory.tpp
   GuessResult.hpp
   ImplicitDenseOutput.hpp
   Initialize.hpp

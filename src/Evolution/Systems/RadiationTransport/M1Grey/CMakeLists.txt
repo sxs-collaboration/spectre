@@ -37,6 +37,7 @@ target_link_libraries(
   Events
   GeneralRelativity
   Hydro
+  Imex
   LinearOperators
   M1GreyAnalyticData
   M1GreySolutions

@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Imex")
 
 set(LIBRARY_SOURCES
+  Test_CleanHistory.cpp
   Test_GuessResult.cpp
   Test_ImplicitDenseOutput.cpp
   Test_Initialize.cpp
