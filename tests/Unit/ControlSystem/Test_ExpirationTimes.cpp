@@ -94,63 +94,68 @@ void test_expiration_time_construction() {
           {FakeControlSystem<2>::name(), 2},
           {FakeControlSystem<3>::name(), 1}});
 
-  {
-    INFO("No control systems");
-    const auto initial_expiration_times =
-        control_system::initial_expiration_times(
-            initial_time, measurements_per_update, creator1);
+  for (const bool delay_update : {true, false}) {
+    CAPTURE(delay_update);
+    {
+      INFO("No control systems");
+      const auto initial_expiration_times =
+          control_system::initial_expiration_times(
+              initial_time, measurements_per_update, delay_update, creator1);
 
-    const std::unordered_map<std::string, double>
-        expected_initial_expiration_times{};
+      const std::unordered_map<std::string, double>
+          expected_initial_expiration_times{};
 
-    check_expiration_times(initial_expiration_times,
-                           expected_initial_expiration_times);
-  }
-  {
-    INFO("One control system");
-    const auto initial_expiration_times =
-        control_system::initial_expiration_times(
-            initial_time, measurements_per_update, creator2, option_holder1);
+      check_expiration_times(initial_expiration_times,
+                             expected_initial_expiration_times);
+    }
+    {
+      INFO("One control system");
+      const auto initial_expiration_times =
+          control_system::initial_expiration_times(
+              initial_time, measurements_per_update, delay_update, creator2,
+              option_holder1);
 
-    const std::unordered_map<std::string, double>
-        expected_initial_expiration_times{
-            {FakeControlSystem<1>::name(),
-             // This is ok to use here because we test it below
-             control_system::function_of_time_expiration_time(
-                 initial_time, DataVector{0.0},
-                 control_system::calculate_measurement_timescales(
-                     controller, tuner1, measurements_per_update),
-                 measurements_per_update)}};
+      const std::unordered_map<std::string, double>
+          expected_initial_expiration_times{
+              {FakeControlSystem<1>::name(),
+               // This is ok to use here because we test it below
+               control_system::function_of_time_expiration_time(
+                   initial_time, DataVector{0.0},
+                   control_system::calculate_measurement_timescales(
+                       controller, tuner1, measurements_per_update),
+                   measurements_per_update, delay_update)}};
 
-    check_expiration_times(initial_expiration_times,
-                           expected_initial_expiration_times);
-  }
-  {
-    INFO("Three control system");
-    const auto initial_expiration_times =
-        control_system::initial_expiration_times(
-            initial_time, measurements_per_update, creator3, option_holder1,
-            option_holder2, option_holder3);
+      check_expiration_times(initial_expiration_times,
+                             expected_initial_expiration_times);
+    }
+    {
+      INFO("Three control system");
+      const auto initial_expiration_times =
+          control_system::initial_expiration_times(
+              initial_time, measurements_per_update, delay_update, creator3,
+              option_holder1, option_holder2, option_holder3);
 
-    const double min_measurement_timescale =
-        std::min(min(control_system::calculate_measurement_timescales(
-                     controller, tuner1, measurements_per_update)),
-                 min(control_system::calculate_measurement_timescales(
-                     controller, tuner2, measurements_per_update)));
-    const double min_expiration_time =
-        control_system::function_of_time_expiration_time(
-            initial_time, DataVector{0.0},
-            DataVector{min_measurement_timescale}, measurements_per_update);
+      const double min_measurement_timescale =
+          std::min(min(control_system::calculate_measurement_timescales(
+                       controller, tuner1, measurements_per_update)),
+                   min(control_system::calculate_measurement_timescales(
+                       controller, tuner2, measurements_per_update)));
+      const double min_expiration_time =
+          control_system::function_of_time_expiration_time(
+              initial_time, DataVector{0.0},
+              DataVector{min_measurement_timescale}, measurements_per_update,
+              delay_update);
 
-    const std::unordered_map<std::string, double>
-        expected_initial_expiration_times{
-            {FakeControlSystem<1>::name(), min_expiration_time},
-            {FakeControlSystem<2>::name(), min_expiration_time},
-            {FakeControlSystem<3>::name(),
-             std::numeric_limits<double>::infinity()}};
+      const std::unordered_map<std::string, double>
+          expected_initial_expiration_times{
+              {FakeControlSystem<1>::name(), min_expiration_time},
+              {FakeControlSystem<2>::name(), min_expiration_time},
+              {FakeControlSystem<3>::name(),
+               std::numeric_limits<double>::infinity()}};
 
-    check_expiration_times(initial_expiration_times,
-                           expected_initial_expiration_times);
+      check_expiration_times(initial_expiration_times,
+                             expected_initial_expiration_times);
+    }
   }
 }
 
@@ -161,14 +166,21 @@ void test_fot_measurement_expr_time() {
   const double time = 0.6;
   const int measurements_per_update = 3;
 
-  const double fot_expr_time = control_system::function_of_time_expiration_time(
-      time, old_measurement_timescales, new_measurement_timescales,
-      measurements_per_update);
-  const double expected_fot_expr_time =
-      time + min(old_measurement_timescales) +
-      measurements_per_update * min(new_measurement_timescales);
+  const double fot_expr_time_nondelayed =
+      control_system::function_of_time_expiration_time(
+          time, old_measurement_timescales, new_measurement_timescales,
+          measurements_per_update, false);
+  const double fot_expr_time_delayed =
+      control_system::function_of_time_expiration_time(
+          time, old_measurement_timescales, new_measurement_timescales,
+          measurements_per_update, true);
+  CHECK(fot_expr_time_delayed ==
+        fot_expr_time_nondelayed + min(new_measurement_timescales));
+  const double expected_fot_expr_time = time + min(old_measurement_timescales) +
+                                        min(new_measurement_timescales) +
+                                        min(new_measurement_timescales);
 
-  CHECK(fot_expr_time == expected_fot_expr_time);
+  CHECK(fot_expr_time_nondelayed == expected_fot_expr_time);
 
   const double measurement_expr_time =
       control_system::measurement_expiration_time(

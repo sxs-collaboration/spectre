@@ -45,6 +45,9 @@
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
+#include "Time/Tags/TimeStepper.hpp"
+#include "Time/TimeSteppers/AdamsMoultonPc.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/CartesianProduct.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -143,9 +146,13 @@ struct Component {
   using simple_tags_from_options = tmpl::list<::Tags::EventsAndDenseTriggers>;
 
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time, Tags::TimeStep>;
-  using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
-      ::domain::Tags::FunctionsOfTimeInitialize, Metavariables>>;
-  using const_global_cache_tags = tmpl::list<control_system::Tags::Verbosity>;
+  using compute_tags = tmpl::push_back<
+      time_stepper_ref_tags<TimeStepper>,
+      Parallel::Tags::FromGlobalCache<::domain::Tags::FunctionsOfTimeInitialize,
+                                      Metavariables>>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::ConcreteTimeStepper<TimeStepper>,
+                 control_system::Tags::Verbosity>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 
@@ -172,15 +179,20 @@ struct Metavariables {
   };
 };
 
-template <bool LocalTimeStepping>
-void test_initialize_measurements(const bool ab_active, const bool c_active) {
+template <bool LocalTimeStepping, bool MonotonicTimeStepper>
+void test_initialize_measurements(const bool ab_active, const bool c_active,
+                                  const bool delay_update) {
   CAPTURE(LocalTimeStepping);
+  CAPTURE(MonotonicTimeStepper);
   CAPTURE(ab_active);
   CAPTURE(c_active);
+  CAPTURE(delay_update);
+
+  using TimeStepperType = TimeSteppers::AdamsMoultonPc<MonotonicTimeStepper>;
 
   register_factory_classes_with_charm<Metavariables<LocalTimeStepping>>();
-  register_classes_with_charm<
-      domain::FunctionsOfTime::PiecewisePolynomial<0>>();
+  register_classes_with_charm<domain::FunctionsOfTime::PiecewisePolynomial<0>,
+                              TimeStepperType>();
 
   using MockRuntimeSystem =
       ActionTesting::MockRuntimeSystem<Metavariables<LocalTimeStepping>>;
@@ -196,6 +208,8 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   const double fot_expiration = 4.0;
 
   const double step_to_expiration_ratio = c_active ? 3.0 : 0.2;
+
+  auto time_stepper = std::make_unique<TimeStepperType>(4);
 
   const auto initial_slab = Slab::with_duration_from_start(
       initial_time, step_to_expiration_ratio * (fot_expiration - initial_time));
@@ -227,7 +241,8 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
   functions.emplace("B", fot->get_clone());
   functions.emplace("C", fot->get_clone());
 
-  MockRuntimeSystem runner{{::Verbosity::Silent, measurements_per_update},
+  MockRuntimeSystem runner{{std::move(time_stepper), ::Verbosity::Silent,
+                            measurements_per_update, delay_update},
                            {std::move(functions), std::move(timescales)}};
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
@@ -237,6 +252,13 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
 
   // InitializeRunEventsAndDenseTriggers
   ActionTesting::next_action<component>(make_not_null(&runner), element_id);
+  if (not delay_update and not MonotonicTimeStepper) {
+    CHECK_THROWS_WITH(ActionTesting::next_action<component>(
+                          make_not_null(&runner), element_id),
+                      Catch::Matchers::ContainsSubstring(
+                          "Chosen TimeStepper requires DelayUpdate: true"));
+    return;
+  }
   // InitializeMeasurements
   ActionTesting::next_action<component>(make_not_null(&runner), element_id);
 
@@ -301,10 +323,14 @@ void test_initialize_measurements(const bool ab_active, const bool c_active) {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
                   "[ControlSystem][Unit]") {
-  for (const auto& [ab_active, c_active] :
-       cartesian_product(std::array{true, false}, std::array{true, false})) {
-    test_initialize_measurements<false>(ab_active, c_active);
-    test_initialize_measurements<true>(ab_active, c_active);
+  for (const auto& [ab_active, c_active, delay_update] :
+       cartesian_product(std::array{true, false}, std::array{true, false},
+                         std::array{true, false})) {
+    test_initialize_measurements<false, true>(ab_active, c_active,
+                                              delay_update);
+    test_initialize_measurements<false, false>(ab_active, c_active,
+                                               delay_update);
+    test_initialize_measurements<true, true>(ab_active, c_active, delay_update);
   }
 }
 }  // namespace

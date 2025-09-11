@@ -27,14 +27,18 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class TimeStepper;
 namespace Tags {
-struct TimeStep;
 struct EventsAndDenseTriggers;
+struct TimeStep;
+template <typename StepperInterface>
+struct TimeStepper;
 }  // namespace Tags
 namespace domain::Tags {
 struct FunctionsOfTime;
@@ -58,7 +62,8 @@ struct InitializeMeasurements {
   using simple_tags =
       tmpl::transform<control_system_groups,
                       tmpl::bind<Tags::FutureMeasurements, tmpl::_1>>;
-  using const_global_cache_tags = tmpl::list<Tags::MeasurementsPerUpdate>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::MeasurementsPerUpdate, Tags::DelayUpdate>;
   using mutable_global_cache_tags =
       tmpl::list<control_system::Tags::MeasurementTimescales>;
 
@@ -71,6 +76,12 @@ struct InitializeMeasurements {
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    if (not db::get<Tags::DelayUpdate>(box) and
+        not db::get<::Tags::TimeStepper<TimeStepper>>(box).monotonic()) {
+      ERROR_NO_TRACE(
+          "Chosen TimeStepper requires DelayUpdate: true to avoid deadlocks");
+    }
+
     const double initial_time = db::get<::Tags::Time>(box);
     const int measurements_per_update =
         db::get<Tags::MeasurementsPerUpdate>(box);

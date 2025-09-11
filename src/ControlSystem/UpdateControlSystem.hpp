@@ -122,6 +122,7 @@ struct UpdateControlSystem {
     // Begin step 2
     const int measurements_per_update =
         get<control_system::Tags::MeasurementsPerUpdate>(cache);
+    const bool delay_update = get<control_system::Tags::DelayUpdate>(cache);
     int& current_measurement = db::get_mutable_reference<
         control_system::Tags::CurrentNumberOfMeasurements>(box);
 
@@ -257,7 +258,7 @@ struct UpdateControlSystem {
     // update the functions of time and measurement timescales
     const double new_fot_expiration_time = function_of_time_expiration_time(
         time, old_measurement_timescale, new_measurement_timescale,
-        measurements_per_update);
+        measurements_per_update, delay_update);
 
     const double new_measurement_expiration_time = measurement_expiration_time(
         time, old_measurement_timescale, new_measurement_timescale,

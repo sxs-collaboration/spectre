@@ -155,6 +155,18 @@ struct MeasurementsPerUpdate {
 
 /// \ingroup OptionTagsGroup
 /// \ingroup ControlSystemGroup
+/// Option tag on whether to delay FunctionOfTime updates by one
+/// measurement to improve parallelization.
+struct DelayUpdate {
+  using type = bool;
+  static constexpr Options::String help = {
+      "Whether FunctionOfTime updates are delayed by one measurement to "
+      "improve parallelization."};
+  using group = ControlSystemGroup;
+};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup ControlSystemGroup
 /// Verbosity tag for printing diagnostics about the control system algorithm.
 /// This does not control when data is written to disk.
 struct Verbosity {

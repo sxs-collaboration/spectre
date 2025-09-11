@@ -69,6 +69,7 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime {
           metavars_has_control_systems<Metavariables>,
           tmpl::flatten<tmpl::list<
               control_system::OptionTags::MeasurementsPerUpdate,
+              control_system::OptionTags::DelayUpdate,
               ::OptionTags::InitialTime, option_holders<Metavariables>>>,
           tmpl::list<>>,
       domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
@@ -80,11 +81,12 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime {
   static type create_from_options(
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
-      const int measurements_per_update, const double initial_time,
+      const int measurements_per_update, const bool delay_update,
+      const double initial_time,
       const Options::Auto<OptionHolders,
                           Options::AutoLabel::None>&... option_holders) {
     return create_from_options<Metavariables>(
-        domain_creator, measurements_per_update, initial_time,
+        domain_creator, measurements_per_update, delay_update, initial_time,
         static_cast<const std::optional<OptionHolders>&>(option_holders)...);
   }
 
@@ -92,11 +94,12 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime {
   static type create_from_options(
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
-      const int measurements_per_update, const double initial_time,
+      const int measurements_per_update, const bool delay_update,
+      const double initial_time,
       const std::optional<OptionHolders>&... option_holders) {
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, measurements_per_update, domain_creator,
+            initial_time, measurements_per_update, delay_update, domain_creator,
             option_holders...);
 
     // We need to check the expiration times so we can ensure a proper domain

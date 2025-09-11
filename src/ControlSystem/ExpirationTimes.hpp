@@ -31,9 +31,10 @@ namespace control_system {
  * where \f$T_\mathrm{expr}^\mathrm{FoT}\f$ is the expiration time for the
  * FunctionsOfTime, \f$t\f$ is the update time,
  * \f$\tau_\mathrm{m}^\mathrm{old/new}\f$ is the measurement timescale, and
- * \f$N\f$ is the number of measurements per update.
+ * \f$N\f$ is the number of measurements per update if \p delay_update is true,
+ * or one less if it is false.
  *
- * The expiration is calculated this way because we update the functions of time
+ * If \p delay_update is true, we update the functions of time
  * one (old) measurement before they actually expire.
  *
  * The choice of having the functions of time expire exactly one old measurement
@@ -49,11 +50,16 @@ namespace control_system {
  * meantime). If the expiration time was earlier than the next measurement, we'd
  * have to pause the Algorithm on the DG elements and wait until all the
  * functions of time have been updated.
+ *
+ * If \p delay_update is false, we update the functions of time
+ * immediately, which allows for less parallelization but potentially
+ * makes the control system more responsive.  For simplicity, we still
+ * delay the change in the measurement interval by one measurement.
  */
 double function_of_time_expiration_time(
-    const double time, const DataVector& old_measurement_timescales,
-    const DataVector& new_measurement_timescales,
-    const int measurements_per_update);
+    double time, const DataVector& old_measurement_timescales,
+    const DataVector& new_measurement_timescales, int measurements_per_update,
+    bool delay_update);
 
 /*!
  * \ingroup ControlSystemGroup
@@ -124,6 +130,7 @@ double measurement_expiration_time(const double time,
 template <size_t Dim, typename... OptionHolders>
 std::unordered_map<std::string, double> initial_expiration_times(
     const double initial_time, const int measurements_per_update,
+    const bool delay_update,
     const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
     const std::optional<OptionHolders>&... option_holders) {
   std::unordered_map<std::string, double> initial_expiration_times{};
@@ -146,8 +153,8 @@ std::unordered_map<std::string, double> initial_expiration_times(
   }
 
   [[maybe_unused]] const auto combine_expiration_times =
-      [&initial_time, &measurements_per_update, &domain_creator, &map_of_names,
-       &combined_expiration_times,
+      [&initial_time, &measurements_per_update, &delay_update, &domain_creator,
+       &map_of_names, &combined_expiration_times,
        &infinite_expiration_times](const auto& option_holder) {
         const std::string& control_system_name = std::decay_t<
             decltype(option_holder)>::value_type::control_system::name();
@@ -171,7 +178,8 @@ std::unordered_map<std::string, double> initial_expiration_times(
 
         const double initial_expiration_time = function_of_time_expiration_time(
             initial_time, DataVector{1, 0.0},
-            DataVector{1, min_measurement_timescale}, measurements_per_update);
+            DataVector{1, min_measurement_timescale}, measurements_per_update,
+            delay_update);
 
         combined_expiration_times[combined_name] = std::min(
             combined_expiration_times[combined_name], initial_expiration_time);

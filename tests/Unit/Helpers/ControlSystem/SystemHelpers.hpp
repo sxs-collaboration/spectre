@@ -199,6 +199,7 @@ struct MockControlComponent {
 
   using const_global_cache_tags =
       tmpl::list<::control_system::Tags::MeasurementsPerUpdate,
+                 ::control_system::Tags::DelayUpdate,
                  ::control_system::Tags::WriteDataToDisk,
                  ::control_system::Tags::Verbosity,
                  ::control_system::Tags::IsActiveMap,
@@ -605,7 +606,7 @@ struct SystemHelper {
           ::control_system::function_of_time_expiration_time(
               initial_time_, DataVector{0.0},
               DataVector{overall_min_measurement_timescale},
-              measurements_per_update_);
+              measurements_per_update_, delay_update_);
     }
 
     const double excision_radius =
@@ -784,7 +785,8 @@ struct SystemHelper {
           control_components, tmpl::bind<option_tag, tmpl::_1>>>,
       ::control_system::OptionTags::WriteDataToDisk, ::OptionTags::InitialTime,
       domain::OptionTags::DomainCreator<3>,
-      ::control_system::OptionTags::MeasurementsPerUpdate>;
+      ::control_system::OptionTags::MeasurementsPerUpdate,
+      ::control_system::OptionTags::DelayUpdate>;
   template <typename System>
   using creatable_tags = tmpl::list_difference<
       init_simple_tags<System>,
@@ -810,6 +812,12 @@ struct SystemHelper {
     measurements_per_update_ =
         get<::control_system::Tags::MeasurementsPerUpdate>(
             created_measurements_per_update);
+
+    const auto created_delay_update = Parallel::create_from_options<Metavars>(
+        options, tmpl::list<::control_system::Tags::DelayUpdate>{});
+
+    delay_update_ =
+        get<::control_system::Tags::DelayUpdate>(created_delay_update);
 
     std::unordered_map<std::string, ::control_system::UpdateAggregator>
         update_aggregators{};
@@ -881,6 +889,7 @@ struct SystemHelper {
   ylm::Strahlkorper<Frame::Distorted> horizon_a_{};
   ylm::Strahlkorper<Frame::Distorted> horizon_b_{};
   int measurements_per_update_{};
+  bool delay_update_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
   std::unordered_map<std::string, std::string> system_to_combined_names_{
       ::control_system::system_to_combined_names<control_systems>()};

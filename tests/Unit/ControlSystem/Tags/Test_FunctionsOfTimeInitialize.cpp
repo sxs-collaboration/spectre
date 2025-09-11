@@ -195,8 +195,9 @@ using ControlSysInputs =
 
 constexpr int measurements_per_update = 4;
 
-void test_functions_of_time_tag() {
+void test_functions_of_time_tag(const bool delay_update) {
   INFO("Test FunctionsOfTimeInitialize tag");
+  CAPTURE(delay_update);
   using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
   using Creator = std::unique_ptr<::DomainCreator<1>>;
 
@@ -225,15 +226,20 @@ void test_functions_of_time_tag() {
 
   // First test construction with only control systems
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      creator, measurements_per_update, initial_time, option_holder1,
-      option_holder2, option_holder3);
+      creator, measurements_per_update, delay_update, initial_time,
+      option_holder1, option_holder2, option_holder3);
 
-  const double expiration_controlled_2 =
-      initial_time + update_fraction * timescale;
-  const double expiration_controlled_3 =
-      initial_time + update_fraction * timescale2;
-  const double min_expiration_time =
-      std::min(expiration_controlled_2, expiration_controlled_3);
+  const double min_measurement_timescale = update_fraction *
+                                           std::min(timescale, timescale2) /
+                                           measurements_per_update;
+  double min_expiration_time = initial_time;
+  // First measurement is initial_time, so start counter at 1
+  for (int measure = 1; measure < measurements_per_update; ++measure) {
+    min_expiration_time += min_measurement_timescale;
+  }
+  if (delay_update) {
+    min_expiration_time += min_measurement_timescale;
+  }
 
   // 1 isn't active
   CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
@@ -251,6 +257,7 @@ void test_functions_of_time_tag() {
           tmpl::list<
               domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
               control_system::OptionTags::MeasurementsPerUpdate,
+              control_system::OptionTags::DelayUpdate,
               ::OptionTags::InitialTime, ControlSysInputs<FakeControlSystem<1>>,
               ControlSysInputs<FakeControlSystem<2>>,
               ControlSysInputs<FakeControlSystem<3>>>>);
@@ -286,6 +293,7 @@ void not_controlling(const bool is_active) {
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
+  constexpr bool delay_update = true;
 
   const std::optional<OptionHolder<1>> option_holder1 =
       is_active ? std::optional{OptionHolder<1>{averager, controller, tuner,
@@ -306,8 +314,8 @@ void not_controlling(const bool is_active) {
 
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
-          creator, measurements_per_update, initial_time, option_holder1,
-          option_holder2, option_holder3, option_holder4);
+          creator, measurements_per_update, delay_update, initial_time,
+          option_holder1, option_holder2, option_holder3, option_holder4);
 }
 
 void incompatible(const bool is_active) {
@@ -319,6 +327,7 @@ void incompatible(const bool is_active) {
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
+  constexpr bool delay_update = true;
 
   const std::optional<OptionHolder<1>> option_holder1 =
       is_active ? std::optional{OptionHolder<1>{averager, controller, tuner,
@@ -335,8 +344,8 @@ void incompatible(const bool is_active) {
 
   [[maybe_unused]] fot_tag::type functions_of_time =
       fot_tag::create_from_options<Metavariables>(
-          creator, measurements_per_update, initial_time, option_holder1,
-          option_holder2, option_holder3);
+          creator, measurements_per_update, delay_update, initial_time,
+          option_holder1, option_holder2, option_holder3);
 }
 
 void test_errors(const bool is_active) {
@@ -359,7 +368,8 @@ void test_errors(const bool is_active) {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
                   "[ControlSystem][Unit]") {
-  test_functions_of_time_tag();
+  test_functions_of_time_tag(true);
+  test_functions_of_time_tag(false);
   test_errors(true);
   test_errors(false);
 }
