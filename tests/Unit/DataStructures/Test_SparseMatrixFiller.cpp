@@ -10,6 +10,8 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
+
+template <typename SparseMatrixType>
 void test_sparse_matrix_filler(const bool use_map_method) {
   const size_t num_cols = 6;
 
@@ -28,13 +30,16 @@ void test_sparse_matrix_filler(const bool use_map_method) {
   filler.add(3.0, 4, 3);
   filler.add(7.0, 0, 3);  // This element is repeated! Important for test.
 
-  blaze::CompressedMatrix<double, blaze::rowMajor> matrix;
+  SparseMatrixType matrix;
   filler.fill(make_not_null(&matrix));
 
-  // Matrix is square so number of rows and columns is the same.
-  CHECK(matrix.rows() == num_cols);
-  CHECK(matrix.columns() == num_cols);
-  CHECK(size(matrix) == num_cols * num_cols);
+  if constexpr (not std::is_same_v<SparseMatrixType, SimpleSparseMatrix>) {
+    // Matrix is square so number of rows and columns is the same.
+    // SimpleSparseMatrix doesn't have rows, columns, or size member fns.
+    CHECK(matrix.rows() == num_cols);
+    CHECK(matrix.columns() == num_cols);
+    CHECK(size(matrix) == num_cols * num_cols);
+  }
 
   CHECK(matrix(0, 0) == 4.0);
   CHECK(matrix(1, 3) == 8.0);
@@ -76,7 +81,8 @@ void test_sparse_matrix_filler(const bool use_map_method) {
   CHECK(matrix(5, 5) == 0.0);
 }
 
-// This test touches some edge cases the other tests do not.
+// This test touches some edge cases for Blaze matrices
+// that the other tests do not.
 void test_sparse_matrix_filler_last_row_filled(const bool use_map_method) {
   const size_t num_cols = 3;
 
@@ -110,7 +116,8 @@ void test_sparse_matrix_filler_last_row_filled(const bool use_map_method) {
   CHECK(matrix(0, 2) == 0.0);
 }
 
-// This test touches some edge cases the other tests do not.
+// This test touches some edge cases for Blaze matrices
+// that the other tests do not.
 void test_sparse_matrix_filler_first_row_empty(const bool use_map_method) {
   const size_t num_cols = 3;
 
@@ -147,8 +154,12 @@ void test_sparse_matrix_filler_first_row_empty(const bool use_map_method) {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.SparseMatrixFiller",
                   "[DataStructures][Unit]") {
-  test_sparse_matrix_filler(true);
-  test_sparse_matrix_filler(false);
+  test_sparse_matrix_filler<SimpleSparseMatrix>(true);
+  test_sparse_matrix_filler<SimpleSparseMatrix>(false);
+  test_sparse_matrix_filler<blaze::CompressedMatrix<double, blaze::rowMajor>>(
+      true);
+  test_sparse_matrix_filler<blaze::CompressedMatrix<double, blaze::rowMajor>>(
+      false);
   test_sparse_matrix_filler_last_row_filled(true);
   test_sparse_matrix_filler_last_row_filled(false);
   test_sparse_matrix_filler_first_row_empty(true);

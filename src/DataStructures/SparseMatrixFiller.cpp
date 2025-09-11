@@ -3,17 +3,9 @@
 
 #include "DataStructures/SparseMatrixFiller.hpp"
 
+#include "DataStructures/SimpleSparseMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-
-namespace {
-// Struct for sorting elements.
-struct SparseMatrixElement {
-  SparseMatrixElement(const size_t row, const size_t column, const double val)
-      : row_dest(row), column_src(column), value(val) {}
-  size_t row_dest, column_src;
-  double value;
-};
-}  // namespace
+#include "Utilities/Gsl.hpp"
 
 SparseMatrixFiller::SparseMatrixFiller(const size_t num_cols,
                                        const bool use_map_method)
@@ -43,11 +35,9 @@ void SparseMatrixFiller::add(const double element, const size_t dest_index,
   }
 }
 
-void SparseMatrixFiller::fill(
-    const gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>
-        matrix) const {
+void SparseMatrixFiller::fill_sparse_matrix_elements(
+    const gsl::not_null<std::vector<SparseMatrixElement>*> data) const {
   // First fill data for sorting.
-  std::vector<SparseMatrixElement> data;
   if (not use_map_method_) {
     const auto num_rows =
         static_cast<size_t>(sqrt(double(matrix_elements_.size())));
@@ -56,13 +46,13 @@ void SparseMatrixFiller::fill(
     // For this method, many elements are zero so filter them out here.
     const auto num_zeros =
         std::count(matrix_elements_.begin(), matrix_elements_.end(), 0.0);
-    data.reserve(matrix_elements_.size() - static_cast<size_t>(num_zeros));
+    data->reserve(matrix_elements_.size() - static_cast<size_t>(num_zeros));
     size_t indx = 0;
     for (size_t i_dest = 0; i_dest < num_rows; ++i_dest) {
       for (size_t j_src = 0; j_src < num_rows; ++j_src, ++indx) {
         const double element = matrix_elements_[indx];
         if (element != 0.0) {
-          data.emplace_back(i_dest, j_src, element);
+          data->emplace_back(i_dest, j_src, element);
         }
       }
     }
@@ -73,18 +63,27 @@ void SparseMatrixFiller::fill(
     ASSERT(matrix_elements_.size() == src_indices_.size(),
            "Size mismatch value " << matrix_elements_.size() << " vs src "
                                   << src_indices_.size());
-    data.reserve(matrix_elements_.size());
+    data->reserve(matrix_elements_.size());
     for (size_t i = 0; i < dest_indices_.size(); ++i) {
-      data.emplace_back(dest_indices_[i], src_indices_[i], matrix_elements_[i]);
+      data->emplace_back(dest_indices_[i], src_indices_[i],
+                         matrix_elements_[i]);
     }
   }
 
   // Now sort the data by row and column, so we can fill in required order.
-  std::sort(data.begin(), data.end(),
+  std::sort(data->begin(), data->end(),
             [](const SparseMatrixElement& a, const SparseMatrixElement& b) {
               return a.row_dest == b.row_dest ? a.column_src < b.column_src
                                               : a.row_dest < b.row_dest;
             });
+}
+
+void SparseMatrixFiller::fill(
+    const gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>
+        matrix) const {
+  // fill the elements and sort them.
+  std::vector<SparseMatrixElement> data;
+  fill_sparse_matrix_elements(make_not_null(&data));
 
   // Fill the matrix.
   // Do this by reserving a size, and appending elements row by row
@@ -106,4 +105,13 @@ void SparseMatrixFiller::fill(
   while (current_row < num_rows_) {
     matrix->finalize(current_row++);
   }
+}
+
+void SparseMatrixFiller::fill(
+    const gsl::not_null<SimpleSparseMatrix*> matrix) const {
+  // fill the elements and sort them.
+  std::vector<SparseMatrixElement> data;
+  fill_sparse_matrix_elements(make_not_null(&data));
+  // Now fill.
+  matrix->fill(data);
 }
