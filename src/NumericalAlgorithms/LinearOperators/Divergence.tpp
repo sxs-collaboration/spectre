@@ -372,6 +372,85 @@ void cartoon_divergence(
   }
 }
 
+template <typename... DivTags, typename... FluxTags, size_t Dim,
+          typename DerivativeFrame>
+void divergence(
+    const gsl::not_null<Variables<tmpl::list<DivTags...>>*> div_fluxes,
+    const Variables<tmpl::list<FluxTags...>>& fluxes, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  if constexpr (Dim == 3) {
+    if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+      cartoon_divergence(div_fluxes, fluxes, mesh, inverse_jacobian_3d,
+                         inertial_coords);
+    } else {
+      divergence(div_fluxes, fluxes, mesh, inverse_jacobian_3d);
+    }
+  } else {
+    (void)inertial_coords;
+    divergence(div_fluxes, fluxes, mesh, inverse_jacobian_3d);
+  }
+}
+
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+void divergence(
+    const gsl::not_null<Scalar<DataType>*> div_input,
+    const tnsr::I<DataType, Dim, DerivativeFrame>& input, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  if constexpr (Dim == 3) {
+    if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+      auto& div_f_tnsr = *div_input;
+      using f_type = tnsr::I<DataType, Dim, DerivativeFrame>;
+      using div_f_type = Scalar<DataType>;
+      using vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<f_type>, 0>;
+      using div_vars_list =
+          ::Tags::convert_to_temp_tensors<tmpl::list<div_f_type>, 0>;
+      Variables<vars_list> f_vars{mesh.number_of_grid_points()};
+      get<tmpl::front<vars_list>>(f_vars) = input;
+      Variables<div_vars_list> div_f_vars{mesh.number_of_grid_points()};
+      cartoon_divergence(make_not_null(&div_f_vars), f_vars, mesh,
+                         inverse_jacobian, inertial_coords);
+      div_f_tnsr = get<tmpl::front<div_vars_list>>(div_f_vars);
+    } else {
+      divergence(div_input, input, mesh, inverse_jacobian);
+    }
+  } else {
+    (void)inertial_coords;
+    divergence(div_input, input, mesh, inverse_jacobian);
+  }
+}
+
+template <typename DataType, size_t Dim, typename DerivativeFrame>
+Scalar<DataType> divergence(
+    const tnsr::I<DataType, Dim, DerivativeFrame>& input, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  if constexpr (Dim == 3) {
+    if (mesh.basis(2) == Spectral::Basis::Cartoon) {
+      using f_type = tnsr::I<DataType, Dim, DerivativeFrame>;
+      using div_f_type = Scalar<DataType>;
+      using vars_list = ::Tags::convert_to_temp_tensors<tmpl::list<f_type>, 0>;
+      using div_vars_list =
+          ::Tags::convert_to_temp_tensors<tmpl::list<div_f_type>, 0>;
+      Variables<vars_list> f_vars{mesh.number_of_grid_points()};
+      get<tmpl::front<vars_list>>(f_vars) = input;
+      Variables<div_vars_list> div_f_vars{mesh.number_of_grid_points()};
+      cartoon_divergence(make_not_null(&div_f_vars), f_vars, mesh,
+                         inverse_jacobian, inertial_coords);
+      return get<tmpl::front<div_vars_list>>(div_f_vars);
+    } else {
+      return divergence(input, mesh, inverse_jacobian);
+    }
+  } else {
+    (void)inertial_coords;
+    return divergence(input, mesh, inverse_jacobian);
+  }
+}
+
 template <typename FluxTags, size_t Dim>
 Variables<db::wrap_tags_in<Tags::div, FluxTags>> logical_divergence(
     const Variables<FluxTags>& flux, const Mesh<Dim>& mesh) {
