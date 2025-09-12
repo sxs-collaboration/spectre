@@ -98,6 +98,19 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     std::string matrix_csv((std::istreambuf_iterator<char>(matrix_file)),
                            std::istreambuf_iterator<char>());
     CHECK(matrix_csv == "(1,2) (2,-1)\n(3,4) (4,1)\n");
+    {
+      INFO("With complex shift");
+      const ExplicitInverse<std::complex<double>> solver_shifted{
+          std::nullopt, /* complex_shift */ 0.01};
+      const auto has_converged_shifted = solver_shifted.solve(
+          make_not_null(&solution), linear_operator, source);
+      REQUIRE(has_converged_shifted);
+      CHECK_ITERABLE_APPROX(
+          solver_shifted.matrix_representation(),
+          blaze::inv(matrix -
+                     std::complex<double>(0., 0.01) *
+                         blaze::IdentityMatrix<std::complex<double>>(2)));
+    }
   }
   {
     INFO("Solve a heterogeneous data structure");
