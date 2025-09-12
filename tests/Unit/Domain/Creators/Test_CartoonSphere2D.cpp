@@ -61,7 +61,7 @@ void test_sphere_construction(
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
   const auto domain = TestHelpers::domain::creators::test_domain_creator(
-      sphere, expect_boundary_conditions);
+      sphere, expect_boundary_conditions, false, std::vector<double>{5.0});
   const bool fill_interior =
       std::holds_alternative<domain::creators::detail::InnerSquare>(interior);
   const size_t num_shells = expected_radial_partitioning.size() + 1;
@@ -313,7 +313,8 @@ void test_sphere_construction(
           make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
               CoordinateMaps::ProductOf2Maps<Equiangular2D, Identity1D>{
                   Equiangular2D{
-                      Equiangular(-1.0, 1.0, 0.0, inner_radius / sqrt(2.0)),
+                      Equiangular(-3.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
+                                  inner_radius / sqrt(2.0)),
                       Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
                                   inner_radius / sqrt(2.0))},
                   Identity1D{}}));
