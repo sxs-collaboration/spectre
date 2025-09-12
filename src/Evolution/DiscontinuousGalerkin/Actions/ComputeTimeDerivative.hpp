@@ -57,7 +57,6 @@
 #include "Time/BoundaryHistory.hpp"
 #include "Time/ChangeStepSize.hpp"
 #include "Time/RecordTimeStepperData.hpp"
-#include "Time/Tags/MinimumTimeStep.hpp"
 #include "Time/UpdateU.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
@@ -356,8 +355,10 @@ struct ComputeTimeDerivative {
   using const_global_cache_tags = tmpl::append<
       tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection,
                  domain::Tags::ExternalBoundaryConditions<Dim>>,
-      tmpl::conditional_t<LocalTimeStepping,
-                          tmpl::list<::Tags::MinimumTimeStep>, tmpl::list<>>>;
+      tmpl::conditional_t<
+          LocalTimeStepping,
+          typename ChangeStepSize<DgStepChoosers>::const_global_cache_tags,
+          tmpl::list<>>>;
   using simple_tags =
       typename UpdateU<EvolutionSystem, LocalTimeStepping>::simple_tags;
   using compute_tags =
