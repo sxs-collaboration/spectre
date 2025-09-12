@@ -53,6 +53,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -60,6 +61,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -70,6 +72,10 @@
 namespace Tags {
 struct TimeStepId;
 }  // namespace Tags
+namespace evolution::dg::Tags {
+template <size_t Dim>
+struct MortarInfo;
+}  // namespace evolution::dg::Tags
 /// \endcond
 
 namespace evolution::dg::subcell::Actions {
@@ -112,8 +118,7 @@ namespace evolution::dg::subcell::Actions {
  * - Modifies:
  *   - `subcell::Tags::GhostDataForReconstruction<Dim>`
  */
-template <size_t Dim, typename GhostDataMutator, bool LocalTimeStepping,
-          bool UseNodegroupDgElements>
+template <size_t Dim, typename GhostDataMutator, bool UseNodegroupDgElements>
 struct SendDataForReconstruction {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -127,12 +132,6 @@ struct SendDataForReconstruction {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    static_assert(
-        not LocalTimeStepping,
-        "DG-subcell does not yet support local time stepping. The "
-        "reconstruction data must be sent using dense output sometimes, and "
-        "not at all other times. However, the data for the RDMP TCI should be "
-        "sent along with the data for reconstruction each time.");
     static_assert(UseNodegroupDgElements ==
                       Parallel::is_dg_element_collection_v<ParallelComponent>,
                   "The action SendDataForReconstruction is told by the "
@@ -145,6 +144,17 @@ struct SendDataForReconstruction {
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "The SendDataForReconstruction action can only be called when "
            "Subcell is the active scheme.");
+
+    const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
+    ASSERT(alg::all_of(db::get<evolution::dg::Tags::MortarInfo<Dim>>(box),
+                       [](const auto& mortar) {
+                         return mortar.second.time_stepping_policy() ==
+                                TimeSteppingPolicy::EqualRate;
+                       }),
+           "Cannot send subcell data from "
+               << element.id() << " across an LTS mortar: "
+               << db::get<evolution::dg::Tags::MortarInfo<Dim>>(box));
+
     using flux_variables = typename Metavariables::system::flux_variables;
 
     db::mutate<Tags::GhostDataForReconstruction<Dim>>(
@@ -156,7 +166,6 @@ struct SendDataForReconstruction {
 
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
-    const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const size_t ghost_zone_size =
         Metavariables::SubcellOptions::ghost_zone_size(box);
 

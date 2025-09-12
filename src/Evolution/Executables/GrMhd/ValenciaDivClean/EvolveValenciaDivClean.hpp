@@ -484,7 +484,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, false>>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim, grmhd::ValenciaDivClean::subcell::PrimitiveGhostVariables,
-          local_time_stepping, use_dg_element_collection>,
+          use_dg_element_collection>,
       evolution::dg::subcell::Actions::ReceiveAndSendDataForReconstruction<
           volume_dim, grmhd::ValenciaDivClean::subcell::PrimitiveGhostVariables,
           use_dg_element_collection>,
