@@ -21,6 +21,7 @@
 #include "Domain/Creators/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -38,6 +39,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -66,6 +68,10 @@ template <typename Tag>
 struct HistoryEvolvedVariables;
 struct TimeStepId;
 }  // namespace Tags
+namespace evolution::dg::Tags {
+template <size_t Dim>
+struct MortarInfo;
+}  // namespace evolution::dg::Tags
 
 namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
@@ -776,7 +782,17 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     }
   }
 
-  if constexpr (LocalTimeStepping) {
+  const auto& mortar_info = db::get<Tags::MortarInfo<Dim>>(*box);
+  // We treat this as a set, but use a map because we don't have a
+  // non-allocating set type.
+  DirectionMap<Dim, bool> mortar_history_directions{};
+  for (const auto& [mortar, info] : mortar_info) {
+    if (info.time_stepping_policy() == TimeSteppingPolicy::Conservative) {
+      mortar_history_directions.emplace(mortar.direction(), true);
+    }
+  }
+
+  if (not mortar_history_directions.empty()) {
     using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
     // We assume isotropic quadrature, i.e. the quadrature is the same in
     // all directions.
@@ -805,8 +821,9 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     db::mutate<evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarDataHistory<
                    Dim, typename dt_variables_tag::type>>(
-        [&element, integration_order, &time_step_id, using_gauss_points,
-         &volume_det_inv_jacobian, &volume_mesh](
+        [&element, integration_order, &mortar_history_directions, &mortar_info,
+         &time_step_id, using_gauss_points, &volume_det_inv_jacobian,
+         &volume_mesh](
             const gsl::not_null<
                 DirectionalIdMap<Dim, evolution::dg::MortarDataHolder<Dim>>*>
                 mortar_data,
@@ -828,6 +845,9 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
           }
           for (const auto& [direction, neighbors_in_direction] :
                element.neighbors()) {
+            if (not mortar_history_directions.contains(direction)) {
+              continue;
+            }
             // We can perform projections once for all neighbors in the
             // direction because we care about the _face_ mesh, not the mortar
             // mesh.
@@ -858,6 +878,10 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
 
             for (const auto& neighbor : neighbors_in_direction) {
               const DirectionalId<Dim> mortar_id{direction, neighbor};
+              if (mortar_info.at(mortar_id).time_stepping_policy() !=
+                  TimeSteppingPolicy::Conservative) {
+                continue;
+              }
               auto& local_mortar_data = mortar_data->at(mortar_id).local();
               local_mortar_data.face_normal_magnitude = face_normal_magnitude;
               if (using_gauss_points) {
