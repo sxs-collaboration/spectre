@@ -182,7 +182,7 @@ def postprocess_id(
             continue_with_ringdown=not eccentricity_control,
             eccentricity_control=eccentricity_control,
             pipeline_dir=pipeline_dir,
-            lev=1,
+            lev=target_params["EvolutionLev"],
             **scheduler_kwargs,
         )
 

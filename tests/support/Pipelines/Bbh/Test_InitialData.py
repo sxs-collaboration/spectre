@@ -164,9 +164,11 @@ class TestInitialData(unittest.TestCase):
                 "CenterOfMass": [0.0, 0.0, 0.0],
                 "AdmLinearMomentum": [0.0, 0.0, 0.0],
                 "Eccentricity": 0.0,
+                "EccentricityAbsoluteTolerance": 1e-3,
                 "MeanAnomalyFraction": None,
                 "NumOrbits": None,
                 "TimeToMerger": None,
+                "EvolutionLev": 1,
             },
         )
         self.assertEqual(

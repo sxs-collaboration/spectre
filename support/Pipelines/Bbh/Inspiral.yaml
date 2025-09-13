@@ -3,6 +3,7 @@
 
 Executable: EvolveGhBinaryBlackHole
 {{ TargetParams }}
+Lev: {{ Lev | default("None") }}
 {% if continue_with_ringdown %}
 Next:
   Run: spectre.Pipelines.Bbh.Ringdown:start_ringdown
@@ -21,10 +22,16 @@ Next:
   Run: spectre.Pipelines.Bbh.EccentricityControl:eccentricity_control
   With:
     h5_files: "../Segment_*/BbhReductions.h5"
-    id_input_file_path: {{id_input_file_path }}
+    id_input_file_path: {{ id_input_file_path }}
     plot_output_dir: ./
     ecc_params_output_file: "../EccentricityParams.yaml"
     pipeline_dir: {{ pipeline_dir }}
+    # Options for continuing the evolution
+    branch_levs_when_complete: [ {{ Lev }} ]
+    inspiral_input_file_path: __file__
+    inspiral_run_dir: ./
+    inspiral_input_file_template: {{ input_file_template | default("None") }}
+    # Scheduler options
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
     submit_script_template: {{ submit_script_template | default("None") }}
@@ -428,6 +435,17 @@ EventsAndTriggersAtSlabs:
         Comparison: GreaterThan
         Value: {{ FinalTime }}
     Events:
+      # Save volume data for continuation
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
       - Completion
 {% endif %}
 

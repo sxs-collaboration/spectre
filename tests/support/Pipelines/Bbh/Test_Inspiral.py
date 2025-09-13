@@ -13,6 +13,7 @@ import spectre.IO.H5 as spectre_h5
 from spectre.Informer import unit_test_build_path
 from spectre.Pipelines.Bbh.InitialData import generate_id
 from spectre.Pipelines.Bbh.Inspiral import (
+    INSPIRAL_INPUT_FILE_TEMPLATE,
     inspiral_parameters,
     start_inspiral_command,
 )
@@ -68,8 +69,6 @@ class TestInspiral(unittest.TestCase):
             id_metadata=id_metadata,
             id_run_dir=self.id_dir,
             id_horizons_path=self.horizons_filename,
-            refinement_level=1,
-            polynomial_order=5,
         )
         self.assertEqual(
             params["IdFileGlob"],
@@ -94,8 +93,6 @@ class TestInspiral(unittest.TestCase):
         self.assertEqual(params["ExcisionBShapeSpin_x"], 0.0)
         self.assertEqual(params["ExcisionBShapeSpin_y"], 0.0)
         self.assertEqual(params["ExcisionBShapeSpin_z"], 0.0)
-        self.assertEqual(params["L"], 1)
-        self.assertEqual(params["P"], 5)
         # Control system
         self.assertEqual(params["MaxDampingTimescale"], 20.0)
         self.assertEqual(params["KinematicTimescale"], 0.2)
@@ -220,6 +217,12 @@ class TestInspiral(unittest.TestCase):
                     "plot_output_dir": "./",
                     "ecc_params_output_file": "../EccentricityParams.yaml",
                     "pipeline_dir": str(self.test_dir.resolve() / "Pipeline"),
+                    "branch_levs_when_complete": [-2],
+                    "inspiral_input_file_path": "__file__",
+                    "inspiral_run_dir": "./",
+                    "inspiral_input_file_template": str(
+                        INSPIRAL_INPUT_FILE_TEMPLATE
+                    ),
                     "scheduler": "None",
                     "copy_executable": "None",
                     "submit_script_template": "None",
