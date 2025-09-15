@@ -38,6 +38,7 @@
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -278,8 +279,21 @@ void check_block_face_grid_points_align(
       find_neighbor_orientation(host_block, neighbor_block);
   // Set up a Mesh on the shared face. Corner points are already checked by
   // physical_separation, so check on Gauss points
-  const Mesh<VolumeDim - 1> face_mesh{3_st, Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss};
+  Mesh<VolumeDim - 1> face_mesh;
+  if (host_block.topologies()[VolumeDim - 1] ==
+      domain::Topology::CartoonCylinder) {
+    if constexpr (VolumeDim == 3) {
+      face_mesh = Mesh<VolumeDim - 1>{
+          {3, 1},
+          {Spectral::Basis::Legendre, Spectral::Basis::Cartoon},
+          {Spectral::Quadrature::Gauss, Spectral::Quadrature::AxialSymmetry}};
+    } else {
+      ERROR("Cartoon basis used with non 3D mesh, got dim = " << VolumeDim);
+    }
+  } else {
+    face_mesh = Mesh<VolumeDim - 1>{3_st, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::Gauss};
+  }
   // We want block logical coordinates on face_mesh on the host side and the
   // neighbor. The following returns element logical coordinates in the host
   // frame, which we then copy into tensors holding block logical coordinates,
@@ -317,9 +331,13 @@ void check_block_face_grid_points_align(
   }
   CAPTURE(xi_host);
   CAPTURE(xi_neighbor);
-  // Check that each grid point on the face Mesh has the same grid and inertial
-  // coordinates when mapped from the logical coordinates of each Block.
+  // Check that each grid point on the face Mesh has the same grid and
+  // inertial coordinates when mapped from the logical coordinates of each
+  // Block.
   if (host_block.is_time_dependent()) {
+    ASSERT(not std::isnan(time),
+           "Blocks have time dependent maps but a time to evaluate at was "
+           "not passed");
     const auto& host_map_logical_to_grid =
         host_block.moving_mesh_logical_to_grid_map();
     const auto& host_map_grid_to_inertial =
@@ -379,6 +397,9 @@ double physical_separation(
         << " and block2 has: " << block2.is_time_dependent());
   }
   if (block1.is_time_dependent()) {
+    ASSERT(not std::isnan(time),
+           "Blocks have time dependent maps but a time to evaluate at was "
+           "not passed");
     const auto& map1_logical_to_grid = block1.moving_mesh_logical_to_grid_map();
     const auto& map1_grid_to_inertial =
         block1.moving_mesh_grid_to_inertial_map();
@@ -510,10 +531,12 @@ void test_physical_separation(
       if (domain::blocks_are_neighbors(blocks[i], blocks[j])) {
         CAPTURE(i);
         CAPTURE(j);
-        if (blocks[i].topologies() ==
+        if ((blocks[i].topologies() ==
                 domain::topologies::hypercube<VolumeDim> and
             blocks[j].topologies() ==
-                domain::topologies::hypercube<VolumeDim>) {
+             domain::topologies::hypercube<VolumeDim>) or
+            blocks[i].topologies()[VolumeDim - 1] ==
+            domain::Topology::CartoonCylinder) {
           CHECK(domain::physical_separation(blocks[i], blocks[j], time,
                                             functions_of_time) < tolerance);
           if constexpr (VolumeDim > 1) {

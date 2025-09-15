@@ -257,7 +257,11 @@ Domain<3> CartoonSphere2D::create_domain() const {
             make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
                 CoordinateMaps::ProductOf2Maps<Equiangular2D, Identity1D>{
                     Equiangular2D{
-                        Equiangular(-1.0, 1.0, 0.0, inner_radius_ / sqrt(2.0)),
+                        // note the non-standard logical coordinate bounds, such
+                        // that the eta-neighbor collocation points match the
+                        // half-wedges'
+                        Equiangular(-3.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
+                                    inner_radius_ / sqrt(2.0)),
                         Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                                     inner_radius_ / sqrt(2.0))},
                     Identity1D{}}));
