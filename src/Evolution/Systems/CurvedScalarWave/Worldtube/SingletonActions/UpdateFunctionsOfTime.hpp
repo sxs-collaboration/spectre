@@ -42,7 +42,7 @@ namespace CurvedScalarWave::Worldtube::Actions {
  * In addition, the worldtube and black hole excision sphere radii are adjusted
  * according to smooth_broken_power_law.
  */
-struct UpdateFunctionsOfTime {
+struct UpdateQuaternionFunctionsOfTime {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -148,7 +148,7 @@ struct UpdateFunctionsOfTime {
         angular_update,
         new_expiration_time);  // angle and omega updates as a DataVector of
                                // size 2 (To be used for
-                               // QuaternionFunctionOfTime)
+                               // QuaternionWorldtubeFunctionOfTime)
     all_updates["Expansion"] =
         std::make_pair(expansion_update, new_expiration_time);
     all_updates["SizeA"] = std::make_pair(size_a_update, new_expiration_time);
