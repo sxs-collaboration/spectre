@@ -457,7 +457,7 @@ std::ostream& operator<<(
   template std::ostream& operator<<(                                    \
       std::ostream& os, const QuaternionWorldtubeFunctionOfTime<DIM(data)>&);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE

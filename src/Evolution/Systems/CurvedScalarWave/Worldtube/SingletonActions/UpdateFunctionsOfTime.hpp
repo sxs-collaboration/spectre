@@ -71,13 +71,9 @@ struct UpdateQuaternionFunctionsOfTime {
 
     // Adding code to compute the quaternions and its derivative instead of just
     // the azimuthal angle for the generic case.
-
-    const tnsr::I<double, 3, Frame::Inertial> r_vec{x, y, z};
-    const tnsr::I<double, 3, Frame::Inertial> rdot_vec{xdot, ydot, zdot};
-    const auto omega = cross_product(r_vec, rdot_vec) /
-                       magnitude(cross_product(r_vec, rdot_vec));
-    const DataVector angular_update{get<0>(omega), get<1>(omega),
-                                    get<2>(omega)};
+    const DataVector angular_update{(y * zdot - z * ydot) / square(r),
+                                    (xdot * z - x * zdot) / square(r),
+                                    (x * ydot - y * xdot) / square(r)};
 
     const auto& wt_radius_params =
         db::get<Tags::WorldtubeRadiusParameters>(box);
