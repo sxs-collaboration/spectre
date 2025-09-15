@@ -76,8 +76,8 @@ struct UpdateQuaternionFunctionsOfTime {
     const tnsr::I<double, 3, Frame::Inertial> rdot_vec{xdot, ydot, zdot};
     const auto omega = cross_product(r_vec, rdot_vec) /
                        magnitude(cross_product(r_vec, rdot_vec));
-    const std::array<DataVector, 2> angular_update{
-        {0.0, 0.0, 0.0}, {get<0>(omega), get<1>(omega), get<2>(omega)}};
+    const DataVector angular_update{get<0>(omega), get<1>(omega),
+                                    get<2>(omega)};
 
     const auto& wt_radius_params =
         db::get<Tags::WorldtubeRadiusParameters>(box);
