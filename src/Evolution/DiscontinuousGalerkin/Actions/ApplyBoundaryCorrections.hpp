@@ -35,6 +35,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/TimeSteppingPolicy.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -546,6 +547,30 @@ struct ApplyBoundaryCorrections {
       const TimeDelta& time_step, const double dense_output_time,
       const Scalar<DataVector>& gts_det_inv_jacobian,
       const VolumeArgs&... volume_args) {
+    // We treat this as a set, but use a map because we don't have a
+    // non-allocating set type.
+    DirectionalIdMap<volume_dim, bool> mortars_to_act_on{};
+    for (const auto& [mortar, info] : mortar_infos) {
+      const auto& time_stepping_policy = info.time_stepping_policy();
+      switch (time_stepping_policy) {
+        case TimeSteppingPolicy::EqualRate:
+          if (not local_time_stepping) {
+            mortars_to_act_on.emplace(mortar, true);
+          }
+          break;
+        case TimeSteppingPolicy::Conservative:
+          if (local_time_stepping) {
+            mortars_to_act_on.emplace(mortar, true);
+          }
+          break;
+        default:
+          ERROR("Unhandled TimeSteppingPolicy: " << time_stepping_policy);
+      }
+    }
+    if (mortars_to_act_on.empty()) {
+      return;
+    }
+
     tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
         detail::TemporaryReference, volume_tags_for_dg_boundary_terms>>
         volume_args_tuple{volume_args...};
@@ -579,9 +604,9 @@ struct ApplyBoundaryCorrections {
         &boundary_correction,
         [&dense_output_time, &dg_formulation,
          &face_normal_covector_and_magnitude, &mortar_data, &mortar_meshes,
-         &mortar_infos, &time_step, &time_stepper, using_gauss_lobatto_points,
-         &vars_to_update, &volume_args_tuple, &volume_det_jacobian,
-         &volume_det_inv_jacobian,
+         &mortar_infos, &mortars_to_act_on, &time_step, &time_stepper,
+         using_gauss_lobatto_points, &vars_to_update, &volume_args_tuple,
+         &volume_det_jacobian, &volume_det_inv_jacobian,
          &volume_mesh](auto* typed_boundary_correction) {
           using BcType = std::decay_t<decltype(*typed_boundary_correction)>;
           // Compute internal boundary quantities on the mortar for sides of
@@ -603,6 +628,9 @@ struct ApplyBoundaryCorrections {
 
           for (auto& mortar_id_and_data : *mortar_data) {
             const auto& mortar_id = mortar_id_and_data.first;
+            if (not mortars_to_act_on.contains(mortar_id)) {
+              continue;
+            }
             const auto& direction = mortar_id.direction();
             if (UNLIKELY(mortar_id.id() ==
                          ElementId<volume_dim>::external_boundary_id())) {
