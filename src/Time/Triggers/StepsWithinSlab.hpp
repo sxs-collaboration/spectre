@@ -25,7 +25,7 @@ struct StepNumberWithinSlab;
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
-/// Trigger at specified numbers of slabs after the simulation start.
+/// Trigger at specified steps within each slab.
 class StepsWithinSlab : public Trigger {
  public:
   /// \cond
@@ -36,7 +36,7 @@ class StepsWithinSlab : public Trigger {
   /// \endcond
 
   static constexpr Options::String help{
-    "Trigger at specified numbers of steps within each slab."};
+      "Trigger at specified steps within each slab."};
 
   explicit StepsWithinSlab(
       std::unique_ptr<TimeSequence<uint64_t>> steps_within_slab)
