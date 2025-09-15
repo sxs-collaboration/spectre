@@ -9,8 +9,15 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Amr/Flag.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/DirectionalId.hpp"
+#include "Domain/Structure/DirectionalIdMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
@@ -30,6 +37,9 @@
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
 #include "ParallelAlgorithms/Amr/Protocols/AmrMetavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "Time/Slab.hpp"
+#include "Time/Tags/TimeStepId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -76,8 +86,10 @@ struct ElementComponent {
   using const_global_cache_tags =
       tmpl::list<amr::Criteria::Tags::Criteria,
                  logging::Tags::Verbosity<amr::OptionTags::AmrGroup>>;
-  using simple_tags = tmpl::list<domain::Tags::Element<1>,
-                                 domain::Tags::Mesh<1>, amr::Tags::Policies>;
+  using simple_tags =
+      tmpl::list<domain::Tags::Element<1>, domain::Tags::Mesh<1>,
+                 amr::Tags::Policies, ::Tags::TimeStepId,
+                 evolution::dg::Tags::MortarNextTemporalId<1>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
@@ -113,11 +125,29 @@ void test(const Event& event) {
   CHECK(event.needs_evolved_variables());
 
   const ElementId<1> element_id{0};
-  const Element<1> element{element_id, DirectionMap<1, Neighbors<1>>{}};
+  DirectionMap<1, Neighbors<1>> neighbors{};
+  neighbors.emplace(
+      Direction<1>::upper_xi(),
+      Neighbors({ElementId<1>{1}}, OrientationMap<1>::create_aligned()));
+  neighbors.emplace(
+      Direction<1>::lower_xi(),
+      Neighbors({ElementId<1>{2}}, OrientationMap<1>::create_aligned()));
+  const Element<1> element{element_id, neighbors};
   const Mesh<1> mesh{std::array{3_st}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const amr::Policies policies{amr::Isotropy::Anisotropic,
                                amr::Limits{0, 0, 3, 5}, true, true};
+  const Slab slab(3.4, 6.7);
+  const TimeStepId time_step_id(true, 5, slab.start());
+  const auto later_time_step_id =
+      time_step_id.next_substep(slab.duration() / 2, 0.5);
+  DirectionalIdMap<1, TimeStepId> aligned_neighbor_times{};
+  for (const auto& [direction, neighbors_in_direction] : neighbors) {
+    for (const auto& neighbor : neighbors_in_direction) {
+      aligned_neighbor_times.emplace(DirectionalId(direction, neighbor),
+                                     time_step_id);
+    }
+  }
 
   {
     INFO("Basic function");
@@ -133,7 +163,8 @@ void test(const Event& event) {
         {std::move(criteria), ::Verbosity::Debug}};
 
     ActionTesting::emplace_component_and_initialize<element_component>(
-        &runner, element_id, {element, mesh, policies});
+        &runner, element_id,
+        {element, mesh, policies, time_step_id, aligned_neighbor_times});
     auto& box = ActionTesting::get_databox<element_component>(
         make_not_null(&runner), element_id);
     auto obs_box = make_observation_box<tmpl::list<>>(make_not_null(&box));
@@ -165,7 +196,8 @@ void test(const Event& event) {
         {std::move(criteria), ::Verbosity::Debug}};
 
     ActionTesting::emplace_component_and_initialize<element_component>(
-        &runner, element_id, {element, mesh, policies});
+        &runner, element_id,
+        {element, mesh, policies, time_step_id, aligned_neighbor_times});
     auto& box = ActionTesting::get_databox<element_component>(
         make_not_null(&runner), element_id);
     auto obs_box = make_observation_box<tmpl::list<>>(make_not_null(&box));
@@ -201,6 +233,32 @@ void test(const Event& event) {
             "Tried refining beyond the AMR limits in element"));
   }
 
+  {
+    INFO("Test unaligned error");
+    std::vector<std::unique_ptr<amr::Criterion>> criteria{};
+    criteria.emplace_back(
+        std::make_unique<amr::Criteria::IncreaseResolution<1>>());
+    ActionTesting::MockRuntimeSystem<Metavariables> runner{
+        {std::move(criteria), ::Verbosity::Debug}};
+
+    auto neighbor_times = aligned_neighbor_times;
+    neighbor_times.begin()->second = later_time_step_id;
+    ActionTesting::emplace_component_and_initialize<element_component>(
+        &runner, element_id,
+        {element, mesh, policies, time_step_id, neighbor_times});
+    auto& box = ActionTesting::get_databox<element_component>(
+        make_not_null(&runner), element_id);
+    auto obs_box = make_observation_box<tmpl::list<>>(make_not_null(&box));
+
+    CHECK_THROWS_WITH(
+        event.run(make_not_null(&obs_box),
+                  ActionTesting::cache<element_component>(runner, element_id),
+                  element_id, std::add_pointer_t<element_component>{},
+                  {"Unused", -1.0}),
+        Catch::Matchers::ContainsSubstring(
+            "Cannot refine mesh when not temporally aligned with neighbors."));
+  }
+
 #ifdef SPECTRE_DEBUG
   {
     INFO("Test h-refinement error");
@@ -211,7 +269,8 @@ void test(const Event& event) {
         {std::move(criteria), ::Verbosity::Debug}};
 
     ActionTesting::emplace_component_and_initialize<element_component>(
-        &runner, element_id, {element, mesh, policies});
+        &runner, element_id,
+        {element, mesh, policies, time_step_id, aligned_neighbor_times});
     auto& box = ActionTesting::get_databox<element_component>(
         make_not_null(&runner), element_id);
     auto obs_box = make_observation_box<tmpl::list<>>(make_not_null(&box));
