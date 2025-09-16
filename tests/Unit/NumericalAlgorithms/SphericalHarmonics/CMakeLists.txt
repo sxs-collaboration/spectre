@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   Test_TensorYlmCartToSphere.cpp
   Test_TensorYlmFilter.cpp
+  Test_TensorYlmSphereToCart.cpp
   Test_WignerThreeJ.cpp
   Test_YlmToStf.cpp
   )
