@@ -865,8 +865,7 @@ old_h_refinement_items(const TimeStepId& time_step_id, const size_t order,
     error_estimate->errors[0] = first_order_error;
   }
   return {std::move(old_history), time_step_id, time_step,
-          std::array<std::optional<StepperErrorEstimate>, 2>{
-              {std::nullopt, std::move(error_estimate)}}};
+          std::move(error_estimate)};
 }
 
 TimeDelta test_h_refine_lts_split(
