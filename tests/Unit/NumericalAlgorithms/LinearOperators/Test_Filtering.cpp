@@ -429,6 +429,16 @@ void test_exponential_filter_creation() {
             "The domain chosen doesn't use block names"));
   }
 }
+
+void test_cartoon_exponential_filter() {
+  const auto filter = Filters::Exponential<8>{0, 0, true, {}};
+  CHECK(filter.filter_matrix(
+            {1, Spectral::Basis::Cartoon,
+             Spectral::Quadrature::AxialSymmetry}) == Matrix(1, 1, 1.0));
+  CHECK(filter.filter_matrix(
+            {1, Spectral::Basis::Cartoon,
+             Spectral::Quadrature::SphericalSymmetry}) == Matrix(1, 1, 1.0));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter",
@@ -451,4 +461,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter",
   test_exponential_filter_creation<1>();
   test_exponential_filter_creation<2>();
   test_exponential_filter_creation<3>();
+
+  test_cartoon_exponential_filter();
 }
