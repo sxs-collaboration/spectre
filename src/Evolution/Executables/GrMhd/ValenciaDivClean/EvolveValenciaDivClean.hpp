@@ -474,7 +474,7 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           local_time_stepping, use_dg_element_collection>,
       evolution::dg::subcell::Actions::ReceiveAndSendDataForReconstruction<
           volume_dim, grmhd::ValenciaDivClean::subcell::PrimitiveGhostVariables,
-          local_time_stepping, use_dg_element_collection>,
+          use_dg_element_collection>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,

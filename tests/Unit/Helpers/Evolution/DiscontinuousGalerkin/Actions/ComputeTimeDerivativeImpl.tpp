@@ -1925,7 +1925,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                          mortar_id_east.direction().opposite()),
                  element.id()})
              .validity_range) ==
-        (LocalTimeStepping ? next_time_step_id : time_step_id));
+        next_time_step_id);
 
   if constexpr (Dim > 1) {
     const DirectionalId<Dim> mortar_id_south{Direction<Dim>::lower_eta(),
@@ -1942,7 +1942,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                            mortar_id_south.direction().opposite()),
                    element.id()})
                .validity_range) ==
-          (LocalTimeStepping ? next_time_step_id : time_step_id));
+          next_time_step_id);
 
     if (LocalTimeStepping) {
       const auto& south_mortar_data =
