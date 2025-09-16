@@ -1,16 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
+#include "Evolution/Systems/Cce/Initialize/AngularGauge.hpp"
 
 #include <cstddef>
 #include <memory>
-#include <mutex>
-#include <type_traits>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Matrix.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -18,21 +15,16 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
-#include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
+#include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshCollocation.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshDerivatives.hpp"
-#include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshFiltering.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/SpinWeightedSphericalHarmonics/SwshTags.hpp"
-#include "Options/ParseOptions.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Serialization/PupStlCpp17.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace Cce::InitializeJ {
 
@@ -58,9 +50,9 @@ void AngularGauge::operator()(
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, const size_t l_max,
-    const size_t number_of_radial_points,
-    const gsl::not_null<Parallel::NodeLock*> hdf5_lock) const {
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& /*beta*/,
+    const size_t l_max, const size_t number_of_radial_points,
+    const gsl::not_null<Parallel::NodeLock*> /*hdf5_lock*/) const {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -69,7 +61,9 @@ void AngularGauge::operator()(
                        ::Tags::TempSpinWeightedScalar<2, 0>,
                        ::Tags::TempSpinWeightedScalar<3, 2>,
                        ::Tags::TempSpinWeightedScalar<4, 2>,
-                       ::Tags::TempSpinWeightedScalar<5, 2>>>
+                       ::Tags::TempSpinWeightedScalar<5, 2>,
+                       ::Tags::TempSpinWeightedScalar<6, 0>,
+                       ::Tags::TempSpinWeightedScalar<7, 0>>>
       buffers{number_of_angular_points};
   auto& surface_j_buffer = get<::Tags::TempSpinWeightedScalar<0, 2>>(buffers);
   auto& surface_dr_j_buffer =
@@ -80,103 +74,79 @@ void AngularGauge::operator()(
       get(get<::Tags::TempSpinWeightedScalar<3, 2>>(buffers));
   auto& one_minus_y_cubed_coefficient =
       get(get<::Tags::TempSpinWeightedScalar<4, 2>>(buffers));
-  auto& one_minus_y_fourth_coefficient =
-      get(get<::Tags::TempSpinWeightedScalar<5, 2>>(buffers));
 
-  void (*iteration_heuristic_function)(
-      const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*>,
-      const gsl::not_null<SpinWeighted<ComplexDataVector, 0>*>,
-      const SpinWeighted<ComplexDataVector, 0>&,
-      const SpinWeighted<ComplexDataVector, 0>&,
-      const SpinWeighted<ComplexDataVector, 0>&,
-      const SpinWeighted<ComplexDataVector, 2>&,
-      const SpinWeighted<ComplexDataVector, 0>&, size_t) = nullptr;
-  if (iteration_heuristic_ ==
-      ::Cce::InitializeJ::ConformalFactorIterationHeuristic::
-          SpinWeight1CoordPerturbation) {
-    iteration_heuristic_function = &spin_weight_1_coord_perturbation_heuristic;
-  } else if (iteration_heuristic_ ==
-             ::Cce::InitializeJ::ConformalFactorIterationHeuristic::
-                 OnlyVaryGaugeD) {
-    iteration_heuristic_function = &only_vary_gauge_d_heuristic;
-  } else {  // LCOV_EXCL_LINE
-    // LCOV_EXCL_START
-    ERROR("Unknown ConformalFactorIterationHeuristic");
-    // LCOV_EXCL_STOP
+  auto& gauge_c = get<::Tags::TempSpinWeightedScalar<5, 2>>(buffers);
+  auto& gauge_d = get<::Tags::TempSpinWeightedScalar<6, 0>>(buffers);
+
+  auto& gauge_omega = get<::Tags::TempSpinWeightedScalar<7, 0>>(buffers);
+
+  // Read angular coordinates from Cce Volume file (Tag::CauchyCartesianCoords)
+  h5::H5File<h5::AccessType::ReadOnly> cce_data_file{input_filename_};
+  auto& data_coord =
+      cce_data_file.get<h5::VolumeData>(input_subfile_name_coord_);
+  if (data_coord.list_observation_ids().size() == 0) {
+    ERROR("The observation IDs list is empty");
+  }
+  size_t target_obs_id_coord = data_coord.find_observation_id(start_time_);
+
+  const auto& coord_tensor_component_x = data_coord.get_tensor_component(
+      target_obs_id_coord, "CauchyCartesianCoords_x");
+
+  const auto& coord_tensor_component_y = data_coord.get_tensor_component(
+      target_obs_id_coord, "CauchyCartesianCoords_y");
+
+  const auto& coord_tensor_component_z = data_coord.get_tensor_component(
+      target_obs_id_coord, "CauchyCartesianCoords_z");
+
+  if ((not std::holds_alternative<DataVector>(coord_tensor_component_x.data)) or
+      (not std::holds_alternative<DataVector>(coord_tensor_component_y.data)) or
+      (not std::holds_alternative<DataVector>(coord_tensor_component_z.data))) {
+    ERROR("CCE initial coord must be a DataVector");
   }
 
-  auto iteration_function =
-      [&iteration_heuristic_function, &filtered_gauge_omega, &gauge_omega,
-       &target_omega, &interpolated_target_gauge_omega,
-       &gauge_omega_transform_buffer, &l_max, &surface_r_buffer,
-       &input_j_buffer, &r,
-       this](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
-                 gauge_c_step,
-             const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-                 gauge_d_step,
-             const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
-             const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
-             const Spectral::Swsh::SwshInterpolator& iteration_interpolator) {
-        get(gauge_omega).data() =
-            0.5 * sqrt(get(gauge_d).data() * conj(get(gauge_d).data()) -
-                       get(gauge_c).data() * conj(get(gauge_c).data()));
-        iteration_interpolator.interpolate(
-            make_not_null(&interpolated_target_gauge_omega), target_omega);
-        if (use_input_modes_ and use_beta_integral_estimate_) {
-          // when using input modes, the `input_j_buffer` stores the
-          // 1/r part of J in the evolution gauge
-          iteration_interpolator.interpolate(
-              make_not_null(&get(surface_r_buffer)), get(r));
-          get(surface_r_buffer).data() *= get(gauge_omega).data();
-          interpolated_target_gauge_omega.data() /= pow(
-              1.0 + real(input_j_buffer.data() * conj(input_j_buffer.data()) /
-                         (square(get(surface_r_buffer).data()))),
-              0.125);
-        }
-        filtered_gauge_omega = get(gauge_omega);
-        if (not optimize_l_0_mode_) {
-          Spectral::Swsh::filter_swsh_boundary_quantity(
-              make_not_null(&filtered_gauge_omega), l_max, 1_st, l_max,
-              make_not_null(&gauge_omega_transform_buffer));
-          Spectral::Swsh::filter_swsh_boundary_quantity(
-              make_not_null(&interpolated_target_gauge_omega), l_max, 1_st,
-              l_max, make_not_null(&gauge_omega_transform_buffer));
-        }
-        double max_error = max(abs(filtered_gauge_omega.data() -
-                                   interpolated_target_gauge_omega.data()));
-        iteration_heuristic_function(make_not_null(&get(*gauge_c_step)),
-                                     make_not_null(&get(*gauge_d_step)),
-                                     get(gauge_omega), filtered_gauge_omega,
-                                     interpolated_target_gauge_omega,
-                                     get(gauge_c), get(gauge_d), l_max);
-        return max_error;
-      };
+  get<0>(*cartesian_cauchy_coordinates) =
+      std::get<DataVector>(coord_tensor_component_x.data);
+  get<1>(*cartesian_cauchy_coordinates) =
+      std::get<DataVector>(coord_tensor_component_y.data);
+  get<2>(*cartesian_cauchy_coordinates) =
+      std::get<DataVector>(coord_tensor_component_z.data);
 
-  auto finalize_function =
-      [&gauge_omega, &l_max, &surface_dr_j_buffer, &boundary_dr_j, &boundary_j,
-       &surface_j_buffer, &surface_r_buffer,
-       &r](const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
-           const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
-           const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
-           /*angular_cauchy_coordinates*/,
-           const Spectral::Swsh::SwshInterpolator& interpolator) {
-        get(gauge_omega).data() =
-            0.5 * sqrt(get(gauge_d).data() * conj(get(gauge_d).data()) -
-                       get(gauge_c).data() * conj(get(gauge_c).data()));
-        GaugeAdjustedBoundaryValue<Tags::Dr<Tags::BondiJ>>::apply(
-            make_not_null(&surface_dr_j_buffer), boundary_dr_j, boundary_j,
-            gauge_c, gauge_d, gauge_omega, interpolator, l_max);
-        GaugeAdjustedBoundaryValue<Tags::BondiJ>::apply(
-            make_not_null(&surface_j_buffer), boundary_j, gauge_c, gauge_d,
-            gauge_omega, interpolator);
-        GaugeAdjustedBoundaryValue<Tags::BondiR>::apply(
-            make_not_null(&surface_r_buffer), r, gauge_omega, interpolator);
-      };
+  // This function transforms the unit vector in cartesian coordinates to
+  // spherical coordinates
+  GaugeUpdateAngularFromCartesian<
+      Tags::CauchyAngularCoords,
+      Tags::CauchyCartesianCoords>::apply(angular_cauchy_coordinates,
+                                          cartesian_cauchy_coordinates);
 
-  detail::iteratively_adapt_angular_coordinates(
-      cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max,
-      angular_coordinate_tolerance_, max_iterations_, 1.0e-2,
-      iteration_function, require_convergence_, finalize_function);
+  Spectral::Swsh::SwshInterpolator interpolator;
+  // This function creates the interpolator for the worldtube quantities in the
+  // new coordinates from the input cauchy cartesian coordinates
+  interpolator = Spectral::Swsh::SwshInterpolator{
+      get<0>(*angular_cauchy_coordinates), get<1>(*angular_cauchy_coordinates),
+      l_max};
+
+  // This function computes the jacobian factors from the angular coordinate
+  // transformation provided
+  GaugeUpdateJacobianFromCoordinates<
+      Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
+      Tags::CauchyAngularCoords,
+      Tags::CauchyCartesianCoords>::apply(make_not_null(&gauge_c),
+                                          make_not_null(&gauge_d),
+                                          angular_cauchy_coordinates,
+                                          *cartesian_cauchy_coordinates, l_max);
+
+  // This code generates J, dr_J and R in the new angular gauge
+  get(gauge_omega).data() =
+      0.5 * sqrt(get(gauge_d).data() * conj(get(gauge_d).data()) -
+                 get(gauge_c).data() * conj(get(gauge_c).data()));
+  GaugeAdjustedBoundaryValue<Tags::Dr<Tags::BondiJ>>::apply(
+      make_not_null(&surface_dr_j_buffer), boundary_dr_j, boundary_j, gauge_c,
+      gauge_d, gauge_omega, interpolator, l_max);
+  GaugeAdjustedBoundaryValue<Tags::BondiJ>::apply(
+      make_not_null(&surface_j_buffer), boundary_j, gauge_c, gauge_d,
+      gauge_omega, interpolator);
+  GaugeAdjustedBoundaryValue<Tags::BondiR>::apply(
+      make_not_null(&surface_r_buffer), r, gauge_omega, interpolator);
 
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
@@ -200,53 +170,12 @@ void AngularGauge::operator()(
   }
 }
 
-void ConformalFactor::pup(PUP::er& p) {
-  p | angular_coordinate_tolerance_;
-  p | max_iterations_;
-  p | require_convergence_;
-  p | optimize_l_0_mode_;
-  p | use_beta_integral_estimate_;
-  p | iteration_heuristic_;
-  p | use_input_modes_;
-  p | input_modes_;
-  p | input_mode_filename_;
+void AngularGauge::pup(PUP::er& p) {
+  p | input_filename_;
+  p | input_subfile_name_coord_;
+  p | start_time_;
 }
 
-PUP::able::PUP_ID ConformalFactor::my_PUP_ID = 0;
-std::ostream& operator<<(
-    std::ostream& os,
-    const Cce::InitializeJ::ConformalFactorIterationHeuristic& heuristic_type) {
-  switch (heuristic_type) {
-    case Cce::InitializeJ::ConformalFactorIterationHeuristic::
-        SpinWeight1CoordPerturbation:
-      return os << "SpinWeight1CoordPerturbation";
-    case Cce::InitializeJ::ConformalFactorIterationHeuristic::OnlyVaryGaugeD:
-      return os << "OnlyVaryGaugeD";
-    default:  // LCOV_EXCL_LINE
-      // LCOV_EXCL_START
-      ERROR("Unknown ConformalFactorIterationHeuristic");
-      // LCOV_EXCL_STOP
-  }
-}
+PUP::able::PUP_ID AngularGauge::my_PUP_ID = 0;
+
 }  // namespace Cce::InitializeJ
-
-template <>
-Cce::InitializeJ::ConformalFactorIterationHeuristic
-Options::create_from_yaml<Cce::InitializeJ::ConformalFactorIterationHeuristic>::
-    create<void>(const Options::Option& options) {
-  const auto heuristic_read = options.parse_as<std::string>();
-  if ("SpinWeight1CoordPerturbation" == heuristic_read) {
-    return Cce::InitializeJ::ConformalFactorIterationHeuristic::
-        SpinWeight1CoordPerturbation;
-  } else if ("OnlyVaryGaugeD" == heuristic_read) {
-    return Cce::InitializeJ::ConformalFactorIterationHeuristic::OnlyVaryGaugeD;
-  }
-  // LCOV_EXCL_START
-  PARSE_ERROR(
-      options.context(),
-      "Failed to convert \""
-          << heuristic_read
-          << "\" to Cce::InitializeJ::ConformalFactorIterationHeuristic. "
-             "Must be one of SpinWeight1CoordPerturbation, OnlyVaryGaugeD.");
-  // LCOV_EXCL_STOP
-}

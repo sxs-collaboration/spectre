@@ -10,6 +10,7 @@ spectre_target_sources(
   NoIncomingRadiation.cpp
   ZeroNonSmooth.cpp
   ReadJFromFile.cpp
+  AngularGauge.cpp
   )
 
 spectre_target_headers(
@@ -23,4 +24,5 @@ spectre_target_headers(
   RegisterInitializeJWithCharm.hpp
   ZeroNonSmooth.hpp
   ReadJFromFile.hpp
+  AngularGauge.hpp
   )
