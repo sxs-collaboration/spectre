@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <optional>
 
@@ -48,8 +49,8 @@ struct apply_impl<tmpl::list<VariablesTags...>> {
       const VariableOrderAlgorithm& order_algorithm,
       const TimeStepId& next_time_step_id,
       const typename tmpl::has_type<
-          VariablesTags,
-          std::optional<StepperErrorEstimate>>::type&... errors) {
+          VariablesTags, std::array<std::optional<StepperErrorEstimate>,
+                                    2>>::type&... errors) {
     if (next_time_step_id.substep() != 0) {
       return;
     }

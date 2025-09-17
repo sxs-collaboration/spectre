@@ -78,7 +78,13 @@ void update_one_variables(const gsl::not_null<db::DataBox<DbTags>*> box) {
             const auto error =
                 time_stepper.update_u(vars, history, time_step, tolerances);
             if (error.has_value()) {
-              errors->emplace(*error);
+              // Save the previous error if there was one, but not if this is a
+              // retry of the same step.
+              if ((*errors)[1].has_value() and
+                  (*errors)[1]->step_time != error->step_time) {
+                (*errors)[0] = (*errors)[1];
+              }
+              (*errors)[1].emplace(*error);
             }
           },
           box, db::get<history_tag>(*box), db::get<Tags::TimeStep>(*box),

@@ -249,25 +249,33 @@ void test_stepper_error() {
 
   using error_tag = Tags::StepperErrors<variables_tag>;
   do_substep();
-  CHECK(not db::get<error_tag>(box).has_value());
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  CHECK(not db::get<error_tag>(box)[1].has_value());
   do_substep();
-  CHECK(not db::get<error_tag>(box).has_value());
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  CHECK(not db::get<error_tag>(box)[1].has_value());
   do_substep();
-  REQUIRE(db::get<error_tag>(box).has_value());
-  CHECK(db::get<error_tag>(box)->step_time == slab.start());
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
 
-  const auto first_step_errors = db::get<error_tag>(box)->errors;
+  const auto first_step_errors = db::get<error_tag>(box)[1]->errors;
   const auto second_step = slab.start() + initial_time_step;
   do_substep();
-  REQUIRE(db::get<error_tag>(box).has_value());
-  CHECK(db::get<error_tag>(box)->step_time == slab.start());
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
   do_substep();
-  REQUIRE(db::get<error_tag>(box).has_value());
-  CHECK(db::get<error_tag>(box)->step_time == slab.start());
+  CHECK(not db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[1]->step_time == slab.start());
   do_substep(true);
-  REQUIRE(db::get<error_tag>(box).has_value());
-  CHECK(db::get<error_tag>(box)->step_time == second_step);
-  CHECK(db::get<error_tag>(box)->errors != first_step_errors);
+  REQUIRE(db::get<error_tag>(box)[0].has_value());
+  REQUIRE(db::get<error_tag>(box)[1].has_value());
+  CHECK(db::get<error_tag>(box)[0]->step_time == slab.start());
+  CHECK(db::get<error_tag>(box)[1]->step_time == second_step);
+  CHECK(db::get<error_tag>(box)[0]->errors == first_step_errors);
+  CHECK(db::get<error_tag>(box)[1]->errors != first_step_errors);
 }
 
 void test_errors_for_restart() {
@@ -314,7 +322,7 @@ void test_errors_for_restart() {
         tolerances, 1., std::move(history),
         Tags::StepperErrors<variables_tag>::type{});
     update_u<SingleVariableSystem>(make_not_null(&box));
-    const auto& errors = db::get<Tags::StepperErrors<variables_tag>>(box);
+    const auto& errors = db::get<Tags::StepperErrors<variables_tag>>(box)[1];
     if (not errors.has_value()) {
       return Estimates::None;
     }

@@ -522,12 +522,12 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
 
     const auto& time_step_id = get<::Tags::TimeStepId>(old_items);
     const auto& errors = get<::Tags::StepperErrors<variables_tag>>(old_items);
-    if (not errors.has_value()) {
+    if (not errors[1].has_value()) {
       ERROR_NO_TRACE(
           "Evolutions performing h-refinement with variable-order local "
           "time-stepping must use ErrorControl for step size choosing.");
     }
-    ASSERT(errors->errors[start_order - 1].has_value(),
+    ASSERT(errors[1]->errors[start_order - 1].has_value(),
            "Start-order estimate not available.");
 
     // At this low an order, we are almost certainly step-size-limited
@@ -535,8 +535,8 @@ struct ProjectTimeStepperHistory : tt::ConformsTo<amr::protocols::Projector> {
     // change to the grid spacing.
     return choose_lts_step_size(
         time_step_id.step_time(),
-        errors->step_size.value() *
-            pow(1.0 / std::max(*errors->errors[start_order - 1], 1e-14),
+        errors[1]->step_size.value() *
+            pow(1.0 / std::max(*errors[1]->errors[start_order - 1], 1e-14),
                 1.0 / static_cast<double>(start_order)));
   }
 };
