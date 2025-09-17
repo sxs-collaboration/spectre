@@ -42,9 +42,9 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  DgSubcell
   DomainStructure
   ErrorHandling
-  DgSubcell
   FiniteDifference
   GeneralRelativity
   Options
@@ -53,5 +53,6 @@ target_link_libraries(
   INTERFACE
   )
 
+add_subdirectory(BoundaryConditions)
 add_subdirectory(FiniteDifference)
 add_subdirectory(Instantiations)
