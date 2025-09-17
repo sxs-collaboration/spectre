@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <iomanip>
 #include <memory>
@@ -81,6 +82,13 @@ size_t test_system(VariableOrderAlgorithm algorithm, const size_t initial_order,
                    std::optional<StepperErrorEstimate> errors2) {
   const Slab slab(0.0, 1.0);
 
+  // First entry is for the previous step, which is only used for step
+  // size control, not order.
+  std::array<std::optional<StepperErrorEstimate>, 2> stepper_errors1{};
+  std::array<std::optional<StepperErrorEstimate>, 2> stepper_errors2{};
+  stepper_errors1[1] = std::move(errors1);
+  stepper_errors2[1] = std::move(errors2);
+
   using history_tag1 = Tags::HistoryEvolvedVariables<Vars1>;
   using history_tag2 = Tags::HistoryEvolvedVariables<Vars2>;
 
@@ -95,7 +103,8 @@ size_t test_system(VariableOrderAlgorithm algorithm, const size_t initial_order,
       static_cast<std::unique_ptr<TimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(initial_order)),
       std::move(algorithm), history_tag1::type{initial_order},
-      history_tag2::type{initial_order}, errors1, errors2, next_time_step_id);
+      history_tag2::type{initial_order}, stepper_errors1, stepper_errors2,
+      next_time_step_id);
 
   // Does nothing for fixed-order
   db::mutate_apply<ChangeTimeStepperOrder<System>>(make_not_null(&box));
@@ -205,7 +214,7 @@ void test_falloff_without_errors() {
   const size_t initial_order = 4;
   const Slab slab(0.0, 1.0);
 
-  std::optional<StepperErrorEstimate> stepper_errors{};
+  std::array<std::optional<StepperErrorEstimate>, 2> stepper_errors{};
 
   using history_tag = Tags::HistoryEvolvedVariables<Vars1>;
 

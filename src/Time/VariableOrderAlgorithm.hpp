@@ -88,7 +88,8 @@ class VariableOrderAlgorithm {
   size_t choose_order(
       const TimeSteppers::History<typename VariablesTags::type>&... histories,
       const typename tmpl::has_type<
-          VariablesTags, std::optional<StepperErrorEstimate>>::type&... errors)
+          VariablesTags,
+          std::array<std::optional<StepperErrorEstimate>, 2>>::type&... errors)
       const {
     const auto history_order =
         get_first_argument(histories...).integration_order();
@@ -102,7 +103,7 @@ class VariableOrderAlgorithm {
     } else {
       ASSERT(order_falloff_.has_value(),
              "VariableOrderAlgorithm not initialized");
-      return choose_order_falloff(history_order, std::array{&errors...});
+      return choose_order_falloff(history_order, std::array{&errors[1]...});
     }
   }
 

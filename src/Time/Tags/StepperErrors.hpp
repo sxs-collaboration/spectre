@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <optional>
 #include <string>
 
@@ -19,7 +20,7 @@ struct StepperErrors : db::PrefixTag, db::SimpleTag {
   static std::string name() {
     return "StepperErrors(" + db::tag_name<Tag>() + ")";
   }
-  using type = std::optional<StepperErrorEstimate>;
+  using type = std::array<std::optional<StepperErrorEstimate>, 2>;
   using tag = Tag;
 };
 }  // namespace Tags
