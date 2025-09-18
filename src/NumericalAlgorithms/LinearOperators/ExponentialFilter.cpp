@@ -63,9 +63,11 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(
                  Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
                      1>,
       CacheEnumeration<Spectral::Basis, Spectral::Basis::Legendre,
-                       Spectral::Basis::Chebyshev>,
+                       Spectral::Basis::Chebyshev, Spectral::Basis::Cartoon>,
       CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,
-                       Spectral::Quadrature::GaussLobatto>>(
+                       Spectral::Quadrature::GaussLobatto,
+                       Spectral::Quadrature::AxialSymmetry,
+                       Spectral::Quadrature::SphericalSymmetry>>(
       [alpha = alpha_, half_power = half_power_](
           const size_t extents, const Spectral::Basis basis,
           const Spectral::Quadrature quadrature) {
