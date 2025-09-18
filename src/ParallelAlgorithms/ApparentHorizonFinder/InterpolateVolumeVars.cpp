@@ -65,9 +65,13 @@ void interpolate_volume_data(
 
     // Take the ah::source_vars and convert to
     // ah::vars_to_interpolate_to_target
-    ah::compute_vars_to_interpolate_to_target(
-        make_not_null(&volume_vars_storage), time, domain, element_id,
-        functions_of_time);
+    // But only do this once.
+    if (not volume_vars_storage.done_computing_vars_to_interpolate_to_target) {
+      ah::compute_vars_to_interpolate_to_target(
+          make_not_null(&volume_vars_storage), time, domain, element_id,
+          functions_of_time);
+      volume_vars_storage.done_computing_vars_to_interpolate_to_target = true;
+    }
 
     const intrp::Irregular<3> interpolator(
         volume_vars_storage.mesh, element_coord_holder.element_logical_coords);
