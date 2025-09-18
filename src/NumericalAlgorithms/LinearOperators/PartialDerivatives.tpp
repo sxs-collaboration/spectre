@@ -200,27 +200,15 @@ constexpr tnsr::iab<double, 3> Killing_vector_derivatives() {
   // holds derivative of both (0,-y,x,0) for \partial_y and (0,-z,0,x) for
   // \partial_z
   tnsr::iab<double, 3> da_killing_vectors{};
-  for (size_t i = 0; i < 3; ++i) {
-    for (size_t KV_deriv_index = 0; KV_deriv_index < 4; ++KV_deriv_index) {
-      for (size_t Killing_index = 0; Killing_index < 4; ++Killing_index) {
-        if (i == 1 and KV_deriv_index == 2 and Killing_index == 1) {
-          // y derivative
-          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = -1.0;
-        } else if (i == 1 and KV_deriv_index == 1 and Killing_index == 2) {
-          // y derivative
-          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = 1.0;
-        } else if (i == 2 and KV_deriv_index == 3 and Killing_index == 1) {
-          // z derivative
-          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = -1.0;
-        } else if (i == 2 and KV_deriv_index == 1 and Killing_index == 3) {
-          // z derivative
-          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = 1.0;
-        } else {
-          da_killing_vectors.get(i, KV_deriv_index, Killing_index) = 0.0;
-        }
-      }
-    }
+  for (size_t i = 0; i < da_killing_vectors.size(); ++i) {
+    da_killing_vectors[i] = 0.0;
   }
+  // y derivatives
+  da_killing_vectors.get(1, 2, 1) = -1.0;
+  da_killing_vectors.get(1, 1, 2) = 1.0;
+  // z derivatives
+  da_killing_vectors.get(2, 3, 1) = -1.0;
+  da_killing_vectors.get(2, 1, 3) = 1.0;
   return da_killing_vectors;
 }
 
