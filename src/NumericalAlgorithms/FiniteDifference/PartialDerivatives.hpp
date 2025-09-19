@@ -58,10 +58,47 @@ template <typename DerivativeTags, size_t Dim, typename DerivativeFrame>
 void partial_derivatives(
     gsl::not_null<Variables<db::wrap_tags_in<
         Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
-        partial_derivatives,
+        d_volume_vars,
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
     const Mesh<Dim>& volume_mesh, size_t number_of_variables, size_t fd_order,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian);
+/*!
+ * \brief Compute the partial derivative using the `inverse_jacobian` for
+ * `Basis::FiniteDifference` dimensions and the Cartoon method for
+ * `Basis::Cartoon` dimensions.
+ *
+ * See DG `cartoon_partial_derivatives()` for information on the Cartoon method.
+ */
+template <typename DerivativeTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame, Requires<Dim == 3> = nullptr>
+void cartoon_partial_derivatives(
+    gsl::not_null<Variables<db::wrap_tags_in<
+        Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
+        d_volume_vars,
+    const Variables<VariableTags>& volume_vars,
+    const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
+    const Mesh<Dim>& volume_mesh, size_t number_of_variables, size_t fd_order,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+
+/*!
+ * \brief Compute the partial derivative, either normal FD or FD/cartoon,
+ * based on the mesh (only known at runtime).
+ */
+template <typename DerivativeTags, typename VariableTags, size_t Dim,
+          typename DerivativeFrame>
+void partial_derivatives(
+    gsl::not_null<Variables<db::wrap_tags_in<
+        Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
+        d_volume_vars,
+    const Variables<VariableTags>& volume_vars,
+    const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
+    const Mesh<Dim>& volume_mesh, size_t number_of_variables, size_t fd_order,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords);
+
 }  // namespace fd
