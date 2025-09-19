@@ -326,72 +326,24 @@ void cartoon_derivative(
 }
 
 template <size_t CompDim, typename ResultTags, typename VariableTags,
-          size_t Dim, typename DerivativeFrame>
-void cartoon_partial_derivatives_apply(
+          size_t Dim, typename DerivativeFrame, Requires<Dim == 3> = nullptr,
+          typename ValueType = typename Variables<ResultTags>::value_type>
+void partial_derivatives_with_cartoon_impl(
     const gsl::not_null<Variables<ResultTags>*> du,
-    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const Variables<VariableTags>& u,
+    const std::array<const ValueType*, CompDim>& const_logical_derivs,
+    const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>& inverse_jacobian_3d,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
   using DerivativeTags =
       tmpl::front<tmpl::split_at<VariableTags, tmpl::size<ResultTags>>>;
-  static_assert(Dim == 3);
   static_assert(
       std::is_same_v<
           tmpl::transform<ResultTags, tmpl::bind<tmpl::type_from, tmpl::_1>>,
           tmpl::transform<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                            tmpl::size_t<Dim>, DerivativeFrame>,
                           tmpl::bind<tmpl::type_from, tmpl::_1>>>);
-  ASSERT((CompDim == 2 and
-          mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry) or
-             (CompDim == 1 and
-              (mesh.quadrature(1) == Spectral::Quadrature::SphericalSymmetry and
-               mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry)),
-         "Invalid Quadrature combinations: axial symmetry requires 2 "
-         "non-Cartoon dimensions, spherical symmetry requires 1 non-Cartoon "
-         "dimension. Got: "
-             << mesh.quadrature());
-
-  using ValueType = typename Variables<VariableTags>::value_type;
-  auto& partial_derivatives_of_u = *du;
-
-  if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
-               mesh.number_of_grid_points())) {
-    partial_derivatives_of_u.initialize(mesh.number_of_grid_points());
-  }
-
-  const size_t vars_size =
-      u.number_of_grid_points() *
-      Variables<DerivativeTags>::number_of_independent_components;
-  const auto logical_derivs_data =
-      cpp20::make_unique_for_overwrite<ValueType[]>(
-          (CompDim > 1 ? (CompDim + 1) : CompDim) * vars_size);
-
-  std::array<ValueType*, CompDim> logical_derivs{};
-  for (size_t i = 0; i < CompDim; ++i) {
-    gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);
-  }
-  Variables<DerivativeTags> temp{};
-  if constexpr (CompDim > 1) {
-    temp.set_data_ref(&logical_derivs_data[CompDim * vars_size], vars_size);
-  }
-
-  if constexpr (CompDim == 1) {
-    partial_derivatives_detail::
-        LogicalImpl<CompDim, VariableTags, DerivativeTags>::apply(
-            make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
-            mesh.slice_through(0));
-  } else {
-    partial_derivatives_detail::
-        LogicalImpl<CompDim, VariableTags, DerivativeTags>::apply(
-            make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
-            mesh.slice_through(0, 1));
-  }
-
-  std::array<const ValueType*, CompDim> const_logical_derivs{};
-  for (size_t i = 0; i < CompDim; ++i) {
-    gsl::at(const_logical_derivs, i) = gsl::at(logical_derivs, i);
-  }
 
   const Spectral::Quadrature quad_type = mesh.quadrature(2);
   const auto numerical_deriv_in_this_direction = [](const size_t deriv_num) {
@@ -413,7 +365,7 @@ void cartoon_partial_derivatives_apply(
     }
   }
   // pdu points to du
-  double* pdu = du->data();
+  ValueType* pdu = du->data();
   const size_t num_grid_points = du->number_of_grid_points();
   DataVector lhs{};
   DataVector logical_du{};
@@ -581,6 +533,76 @@ void cartoon_partial_derivatives_apply(
           }
         }
       });
+}
+
+template <size_t CompDim, typename ResultTags, typename VariableTags,
+          size_t Dim, typename DerivativeFrame>
+void cartoon_partial_derivatives_apply(
+    const gsl::not_null<Variables<ResultTags>*> du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian_3d,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+  using DerivativeTags =
+      tmpl::front<tmpl::split_at<VariableTags, tmpl::size<ResultTags>>>;
+  static_assert(Dim == 3);
+  static_assert(
+      std::is_same_v<
+          tmpl::transform<ResultTags, tmpl::bind<tmpl::type_from, tmpl::_1>>,
+          tmpl::transform<db::wrap_tags_in<Tags::deriv, DerivativeTags,
+                                           tmpl::size_t<Dim>, DerivativeFrame>,
+                          tmpl::bind<tmpl::type_from, tmpl::_1>>>);
+  ASSERT((CompDim == 2 and
+          mesh.quadrature(2) == Spectral::Quadrature::AxialSymmetry) or
+             (CompDim == 1 and
+              (mesh.quadrature(1) == Spectral::Quadrature::SphericalSymmetry and
+               mesh.quadrature(2) == Spectral::Quadrature::SphericalSymmetry)),
+         "Invalid Quadrature combinations: axial symmetry requires 2 "
+         "non-Cartoon dimensions, spherical symmetry requires 1 non-Cartoon "
+         "dimension. Got: "
+             << mesh.quadrature());
+
+  using ValueType = typename Variables<VariableTags>::value_type;
+  auto& partial_derivatives_of_u = *du;
+
+  if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
+               mesh.number_of_grid_points())) {
+    partial_derivatives_of_u.initialize(mesh.number_of_grid_points());
+  }
+
+  const size_t vars_size =
+      u.number_of_grid_points() *
+      Variables<DerivativeTags>::number_of_independent_components;
+  const auto logical_derivs_data =
+      cpp20::make_unique_for_overwrite<ValueType[]>(
+          (CompDim > 1 ? (CompDim + 1) : CompDim) * vars_size);
+
+  std::array<ValueType*, CompDim> logical_derivs{};
+  for (size_t i = 0; i < CompDim; ++i) {
+    gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);
+  }
+  Variables<DerivativeTags> temp{};
+
+  if constexpr (CompDim == 1) {
+    partial_derivatives_detail::
+        LogicalImpl<CompDim, VariableTags, DerivativeTags>::apply(
+            make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
+            mesh.slice_through(0));
+  } else {
+    temp.set_data_ref(&logical_derivs_data[CompDim * vars_size], vars_size);
+    partial_derivatives_detail::
+        LogicalImpl<CompDim, VariableTags, DerivativeTags>::apply(
+            make_not_null(&logical_derivs), &partial_derivatives_of_u, &temp, u,
+            mesh.slice_through(0, 1));
+  }
+
+  std::array<const ValueType*, CompDim> const_logical_derivs{};
+  for (size_t i = 0; i < CompDim; ++i) {
+    gsl::at(const_logical_derivs, i) = gsl::at(logical_derivs, i);
+  }
+
+  partial_derivatives_with_cartoon_impl(du, u, const_logical_derivs, mesh,
+                                        inverse_jacobian_3d, inertial_coords);
 }
 
 template <typename ResultTags, typename VariableTags, size_t Dim,
