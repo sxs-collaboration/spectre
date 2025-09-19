@@ -47,6 +47,12 @@ struct VolumeVariables {
   Variables<ah::vars_to_interpolate_to_target<3, Fr>>
       vars_to_interpolate_to_target{};
 
+  /*!
+   * \brief A flag that ensures that the variables to interpolate onto the
+   * horizon are only computed once.
+   */
+  bool done_computing_vars_to_interpolate_to_target = false;
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 };
