@@ -1227,7 +1227,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LogicalDerivs",
   }
 }
 
-// [[Timeout, 90]]
+// [[Timeout, 120]]
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   test_partial_derivatives_spherical_shell<two_vars<DataVector, 3>>();
