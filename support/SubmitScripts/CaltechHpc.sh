@@ -13,7 +13,7 @@
 {% block head %}
 {{ super() -}}
 #SBATCH --nodes {{ num_nodes | default(1) }}
-#SBATCH --ntasks-per-node 2
+#SBATCH --ntasks-per-node {{ num_slurm_tasks | default(2) }}
 #SBATCH --cpus-per-task 28
 #SBATCH --constraint=cascadelake
 #SBATCH -p {{ queue | default("expansion") }}

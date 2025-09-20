@@ -11,7 +11,7 @@
 {{ super() -}}
 #SBATCH --nodes {{ num_nodes | default(1) }}
 #SBATCH --constraint cpu
-#SBATCH --ntasks-per-node 8
+#SBATCH --ntasks-per-node {{ num_slurm_tasks | default(8) }}
 #SBATCH --cpus-per-task 32
 #SBATCH -q {{ queue | default("regular") }}
 #SBATCH -t {{ time_limit | default("1-00:00:00") }}
