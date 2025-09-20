@@ -93,7 +93,9 @@ class SparseMatrixFiller {
  public:
   /// Assume num_rows and num_cols are equal.
   /// If use_map_method is true, uses algorithm 2.
-  SparseMatrixFiller(size_t num_cols, bool use_map_method);
+  /// Scale is the overall scale of the matrix; scale is used to remove
+  /// elements that are smaller than roundoff.
+  SparseMatrixFiller(size_t num_cols, bool use_map_method, double scale);
 
   /// Add (or increment) an element such that for v = M x, where M is
   /// the matrix and v and x are vectors, we compute the contribution
@@ -115,6 +117,7 @@ class SparseMatrixFiller {
       gsl::not_null<std::vector<SparseMatrixElement>*> data) const;
   size_t num_rows_{0}, num_cols_{0};
   bool use_map_method_{true};
+  double scale_{1.0};
   std::vector<double> matrix_elements_{};
   std::unordered_map<std::pair<size_t, size_t>, size_t,
                      sparse_matrix_filler_detail::PairHasher>

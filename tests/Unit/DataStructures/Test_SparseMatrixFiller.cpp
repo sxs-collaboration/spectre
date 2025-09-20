@@ -15,7 +15,7 @@ template <typename SparseMatrixType>
 void test_sparse_matrix_filler(const bool use_map_method) {
   const size_t num_cols = 6;
 
-  SparseMatrixFiller filler(num_cols, use_map_method);
+  SparseMatrixFiller filler(num_cols, use_map_method, 1.0);
   // Add in random order.
   // Note that empty rows must be explicitly added in the blaze
   // routines, so here we have rows with zero elements, rows with 1
@@ -86,7 +86,7 @@ void test_sparse_matrix_filler(const bool use_map_method) {
 void test_sparse_matrix_filler_last_row_filled(const bool use_map_method) {
   const size_t num_cols = 3;
 
-  SparseMatrixFiller filler(num_cols, use_map_method);
+  SparseMatrixFiller filler(num_cols, use_map_method, 1.0);
   // Add in random order.
   // First row has only one element (unlike the other tests)
   // Last row is nonempty with one nonzero column (unlike the other tests)
@@ -121,7 +121,7 @@ void test_sparse_matrix_filler_last_row_filled(const bool use_map_method) {
 void test_sparse_matrix_filler_first_row_empty(const bool use_map_method) {
   const size_t num_cols = 3;
 
-  SparseMatrixFiller filler(num_cols, use_map_method);
+  SparseMatrixFiller filler(num_cols, use_map_method, 1.0);
   // Add in random order.
   // First row is empty (unlike the other tests)
   // Last row is nonempty with multiple nonzero columns (unlike the other tests)

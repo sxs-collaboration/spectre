@@ -356,6 +356,7 @@ struct Structure {
       "All Indices passed to Structure must be of type TensorIndexType.");
 
   using index_list = tmpl::list<Indices...>;
+  using symmetry = Symm;
 
   SPECTRE_ALWAYS_INLINE static constexpr size_t rank() {
     return sizeof...(Indices);
