@@ -363,6 +363,7 @@ def schedule(
     machine = this_machine(raise_exception=False)
     num_procs = kwargs.get("num_procs")
     num_nodes = kwargs.get("num_nodes")
+    num_slurm_tasks = None
     if num_procs:
         assert (
             num_nodes is None or num_nodes == 1
@@ -374,6 +375,9 @@ def schedule(
             )
             if num_procs <= cores_per_node:
                 num_nodes = 1
+                num_slurm_tasks = int(
+                    np.ceil(num_procs / machine.DefaultProcsPerTask)
+                )
             else:
                 num_nodes = int(np.ceil(num_procs / cores_per_node))
                 logger.info(f"Rounded up to run on {num_nodes} full node(s).")
@@ -382,7 +386,11 @@ def schedule(
             num_nodes = 1
     # Update kwargs with resolved num_procs and num_nodes (used to build
     # `context` below)
-    kwargs.update(num_procs=num_procs, num_nodes=num_nodes)
+    kwargs.update(
+        num_procs=num_procs,
+        num_nodes=num_nodes,
+        num_slurm_tasks=num_slurm_tasks,
+    )
 
     # Set up template environment with basic configuration
     template_env = jinja2.Environment(
@@ -907,7 +915,8 @@ def scheduler_options(f):
         "-c",
         type=_parse_param,
         help=(
-            "Number of worker threads. "
+            "Number of worker threads. Less than a full node will only set as "
+            "many Slurm ntasks-per-node as required by machine configuration. "
             "Mutually exclusive with '--num-nodes' / '-N'."
         ),
     )

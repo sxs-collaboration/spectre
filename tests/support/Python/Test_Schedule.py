@@ -59,6 +59,7 @@ SPECTRE_CLI={{ spectre_cli }}
 {% extends "SubmitTemplateBase.sh" %}
 {% block derived %}
 NUM_NODES={{ num_nodes | default(1) }}
+NUM_TASKS_PER_NODE={{ num_slurm_tasks | default (5) }}
 {% endblock %}
 """)
 
@@ -256,6 +257,7 @@ NUM_NODES={{ num_nodes | default(1) }}
 SPECTRE_EXECUTABLE={executable}
 SPECTRE_CLI={spectre_cli}
 NUM_NODES=1
+NUM_TASKS_PER_NODE=5
 """.format(
                 executable=self.test_dir / "Segments/TestExec",
                 spectre_cli=self.spectre_cli,
