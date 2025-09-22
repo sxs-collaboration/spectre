@@ -72,6 +72,47 @@ std::complex<double> bv_to_k(const BasisVector basis_vector, const int i) {
   return result;
 }
 
+template <size_t Rank>
+std::array<BasisVector, Rank> to_sphere_basis_vector(
+    const cpp20::array<size_t, Rank>& indices) {
+  static_assert(Rank <= 3, "Implemented only for rank up to 3");
+  std::array<BasisVector, Rank> result{};
+  for (size_t i = 0; i < Rank; ++i) {
+    switch (indices[i]) {
+      case 0:
+        gsl::at(result, i) = BasisVector::l;
+        break;
+      case 1:
+        gsl::at(result, i) = BasisVector::m;
+        break;
+      case 2:
+        gsl::at(result, i) = BasisVector::mbar;
+        break;
+      default:
+        ASSERT(false, "Cannot get here");
+    }
+  }
+  return result;
+}
+
+int bv_to_s(const BasisVector basis_vector) {
+  int result = std::numeric_limits<int>::min();
+  switch (basis_vector) {
+    case BasisVector::l:
+      result = 0;
+      break;
+    case BasisVector::m:
+      result = -1;
+      break;
+    case BasisVector::mbar:
+      result = 1;
+      break;
+    default:
+      ASSERT(false, "Unknown basisvector " << static_cast<int>(basis_vector));
+  }
+  return result;
+}
+
 template <typename Symm>
 double get_symm_factor(const size_t src_multiplicity, const size_t lbar) {
   static_assert(std::is_same_v<Symmetry<3, 2, 1>, Symm> or
@@ -101,6 +142,12 @@ template std::array<BasisVector, 1> to_cart_basis_vector(
 template std::array<BasisVector, 2> to_cart_basis_vector(
     const cpp20::array<size_t, 2>& indices);
 template std::array<BasisVector, 3> to_cart_basis_vector(
+    const cpp20::array<size_t, 3>& indices);
+template std::array<BasisVector, 1> to_sphere_basis_vector(
+    const cpp20::array<size_t, 1>& indices);
+template std::array<BasisVector, 2> to_sphere_basis_vector(
+    const cpp20::array<size_t, 2>& indices);
+template std::array<BasisVector, 3> to_sphere_basis_vector(
     const cpp20::array<size_t, 3>& indices);
 template double get_symm_factor<Symmetry<3, 2, 1>>(size_t src_multiplicity,
                                                    size_t lbar);

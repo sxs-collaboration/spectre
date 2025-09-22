@@ -27,6 +27,14 @@ int bv_to_m(BasisVector basis_vector, int i);
 /// Returns the prefactor k associated with a Cartesian basis vector.
 std::complex<double> bv_to_k(BasisVector basis_vector, int i);
 
+/// Returns a spherical BasisVector for every index.
+template <size_t Rank>
+std::array<BasisVector, Rank> to_sphere_basis_vector(
+    const cpp20::array<size_t, Rank>& indices);
+
+/// Returns minus the spinweight of a tetrad basis vector
+int bv_to_s(BasisVector basis_vector);
+
 /// Computes the symmetry factor S that appears in various equations.
 template <typename Symm>
 double get_symm_factor(size_t src_multiplicity, size_t lbar);

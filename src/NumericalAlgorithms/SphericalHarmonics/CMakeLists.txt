@@ -18,6 +18,7 @@ spectre_target_sources(
   SpherepackCache.cpp
   SpherepackHelper.cpp
   Tags.cpp
+  TensorYlmCartToSphere.cpp
   TensorYlmFilter.cpp
   TensorYlmHelpers.cpp
   WignerThreeJ.cpp
@@ -41,6 +42,7 @@ spectre_target_headers(
   TagsDeclarations.hpp
   TagsTypeAliases.hpp
   TensorYlm.hpp
+  TensorYlmCartToSphere.hpp
   TensorYlmFilter.hpp
   TensorYlmHelpers.hpp
   WignerThreeJ.hpp
