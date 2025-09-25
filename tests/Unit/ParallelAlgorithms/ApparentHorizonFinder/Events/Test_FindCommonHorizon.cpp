@@ -317,7 +317,8 @@ struct MockFindApparentHorizon {
       const LinkedMessageId<double>& /*incoming_time*/,
       const ElementId<3>& /*incoming_element_id*/,
       const ::Mesh<3>& /*incoming_mesh*/,
-      Variables<ah::source_vars<3>>&& /*incoming_source_vars*/,
+      Variables<ah::vars_to_interpolate_to_target<3, ::Frame::Grid>>&&
+      /*incoming_vars_to_interpolate*/,
       const std::optional<std::string>& /*dependency*/,
       const bool /*source_vars_have_already_been_received*/ = false) {}
 };
@@ -418,8 +419,24 @@ void common_horizon_event() {
   const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto);
   const double observation_time = 2.0;
-  const Variables<ah::source_vars<metavars::volume_dim>> vars(
-      mesh.number_of_grid_points(), 1.0);
+
+  // Formerly, every point for every component of every tensor in vars were set
+  // to a constant value of 1.0. But this leads to a metric that is not
+  // invertible, causing a floating-point exception. The following
+  // guarantees an invertible metric by supplying a flat spacetime instead.
+  // Since pi and phi are zero for Minkowski, it's actually less code to just
+  // manually set spacetime metric here than to get the analytic solution and
+  // call all the functions to assemble spacetime_metric, pi, phi.
+  Variables<ah::source_vars<metavars::volume_dim>> vars(
+      mesh.number_of_grid_points(), 0.0);
+  auto& spacetime_metric =
+      get<gr::Tags::SpacetimeMetric<DataVector, metavars::volume_dim>>(vars);
+  get<0, 0>(spacetime_metric) = DataVector(mesh.number_of_grid_points(), -1.0);
+  for (size_t spatial_index = 0; spatial_index < metavars::volume_dim;
+       ++spatial_index) {
+    spacetime_metric.get(spatial_index + 1, spatial_index + 1) =
+        DataVector(mesh.number_of_grid_points(), 1.0);
+  }
   auto& cache = ActionTesting::cache<elem_component>(runner, array_index);
 
   const LinkedMessageId<double> temporal_id{observation_time, std::nullopt};

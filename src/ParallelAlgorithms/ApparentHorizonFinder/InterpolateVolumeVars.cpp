@@ -29,9 +29,7 @@ void interpolate_volume_data(
     const gsl::not_null<ah::Storage::Iteration<Fr>*> current_iteration_storage,
     const gsl::not_null<
         std::unordered_map<ElementId<3>, ah::Storage::VolumeVariables<Fr>>*>
-        all_volume_variables,
-    const LinkedMessageId<double>& time, const Domain<3>& domain,
-    const domain::FunctionsOfTimeMap& functions_of_time) {
+        all_volume_variables) {
   std::vector<ElementId<3>> element_ids;
   element_ids.reserve(all_volume_variables->size());
   for (const auto& [element_id, volume_vars] : *all_volume_variables) {
@@ -61,16 +59,6 @@ void interpolate_volume_data(
     const size_t expected_num_points = block_coord_holders.size();
     if (interpolated_vars.number_of_grid_points() != expected_num_points) {
       interpolated_vars.initialize(expected_num_points);
-    }
-
-    // Take the ah::source_vars and convert to
-    // ah::vars_to_interpolate_to_target
-    // But only do this once.
-    if (not volume_vars_storage.done_computing_vars_to_interpolate_to_target) {
-      ah::compute_vars_to_interpolate_to_target(
-          make_not_null(&volume_vars_storage), time, domain, element_id,
-          functions_of_time);
-      volume_vars_storage.done_computing_vars_to_interpolate_to_target = true;
     }
 
     const intrp::Irregular<3> interpolator(
@@ -114,9 +102,7 @@ void interpolate_volume_data(
           current_iteration_storage,                                 \
       const gsl::not_null<std::unordered_map<                        \
           ElementId<3>, ah::Storage::VolumeVariables<FRAME(data)>>*> \
-          all_volume_variables,                                      \
-      const LinkedMessageId<double>& time, const Domain<3>& domain,  \
-      const domain::FunctionsOfTimeMap& functions_of_time);
+          all_volume_variables);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Inertial, Frame::Distorted, Frame::Grid))

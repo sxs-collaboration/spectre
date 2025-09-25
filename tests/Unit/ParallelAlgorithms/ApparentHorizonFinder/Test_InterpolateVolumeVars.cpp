@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 #include "DataStructures/LinkedMessageId.hpp"
@@ -25,6 +26,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/StrahlkorperFunctions.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeVarsToInterpolateToTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolateVolumeVars.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Storage.hpp"
@@ -144,8 +146,7 @@ void test_interpolate_volume_vars() {
 
   // Check that if there aren't any volume variables, that nothing happens
   ah::interpolate_volume_data(make_not_null(&current_iteration),
-                              make_not_null(&all_volume_variables), time,
-                              domain, functions_of_time);
+                              make_not_null(&all_volume_variables));
   CHECK(current_iteration.interpolation_is_done_for_these_elements.empty());
   CHECK(current_iteration.indicies_interpolated_to_thus_far.empty());
   CHECK(current_iteration.interpolated_vars.number_of_grid_points() == 0_st);
@@ -156,13 +157,22 @@ void test_interpolate_volume_vars() {
                     Spectral::Basis::Legendre,
                     Spectral::Quadrature::GaussLobatto};
 
-    all_volume_variables[element_id].source_vars = compute_source_vars(
+    const auto source_vars = compute_source_vars(
         solution, time, element_id, blocks[element_id.block_id()], mesh);
+
     all_volume_variables[element_id].mesh = mesh;
+    ah::compute_vars_to_interpolate_to_target(
+        make_not_null(
+            &all_volume_variables[element_id].vars_to_interpolate_to_target),
+        get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(source_vars),
+        get<::gh::Tags::Pi<DataVector, 3>>(source_vars),
+        get<::gh::Tags::Phi<DataVector, 3>>(source_vars),
+        get<Tags::deriv<::gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
+                        Frame::Inertial>>(source_vars),
+        time, domain, mesh, element_id, functions_of_time);
 
     ah::interpolate_volume_data(make_not_null(&current_iteration),
-                                make_not_null(&all_volume_variables), time,
-                                domain, functions_of_time);
+                                make_not_null(&all_volume_variables));
 
     // Check that we finished interpolation and that the points we interpolated
     // to aren't the default fill value
@@ -212,8 +222,7 @@ void test_interpolate_volume_vars() {
                   Spectral::Quadrature::GaussLobatto};
 
   ah::interpolate_volume_data(make_not_null(&current_iteration),
-                              make_not_null(&all_volume_variables), time,
-                              domain, functions_of_time);
+                              make_not_null(&all_volume_variables));
 
   // Check interpolation is still done
   CHECK(current_iteration.interpolation_is_done_for_these_elements.contains(

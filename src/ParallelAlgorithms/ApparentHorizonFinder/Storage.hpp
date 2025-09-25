@@ -36,22 +36,11 @@ struct VolumeVariables {
   Mesh<3> mesh;
 
   /*!
-   * \brief A `Variables` of the  `ah::source_vars` in the volume.
-   */
-  Variables<ah::source_vars<3>> source_vars;
-
-  /*!
    * \brief A `Variables` of the tensors in the volume that we need to
    * interpolate onto the horizon.
    */
   Variables<ah::vars_to_interpolate_to_target<3, Fr>>
       vars_to_interpolate_to_target{};
-
-  /*!
-   * \brief A flag that ensures that the variables to interpolate onto the
-   * horizon are only computed once.
-   */
-  bool done_computing_vars_to_interpolate_to_target = false;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
