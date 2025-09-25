@@ -277,13 +277,13 @@ struct FindApparentHorizon {
 
           // Sanity check
           ASSERT(
-              current_iteration_storage.indicies_interpolated_to_thus_far
+              current_iteration_storage.indices_interpolated_to_thus_far
                       .size() <=
                   current_iteration_storage.block_coord_holders.value().size(),
               "The number indices interpolated to is larger than the number of "
               "coordinates. This is an internal error. Please file an issue.");
 
-          if (current_iteration_storage.indicies_interpolated_to_thus_far
+          if (current_iteration_storage.indices_interpolated_to_thus_far
                   .size() !=
               current_iteration_storage.block_coord_holders.value().size()) {
             if (debug_print) {
@@ -293,7 +293,7 @@ struct FindApparentHorizon {
                   name, current_time, fast_flow.current_iteration(),
                   current_iteration_storage.block_coord_holders.value().size() -
                       current_iteration_storage
-                          .indicies_interpolated_to_thus_far.size());
+                          .indices_interpolated_to_thus_far.size());
             }
             return;
           }

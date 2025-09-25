@@ -148,7 +148,7 @@ void test_interpolate_volume_vars() {
   ah::interpolate_volume_data(make_not_null(&current_iteration),
                               make_not_null(&all_volume_variables));
   CHECK(current_iteration.interpolation_is_done_for_these_elements.empty());
-  CHECK(current_iteration.indicies_interpolated_to_thus_far.empty());
+  CHECK(current_iteration.indices_interpolated_to_thus_far.empty());
   CHECK(current_iteration.interpolated_vars.number_of_grid_points() == 0_st);
 
   size_t num_previous_indices_interpolated_to = 0;
@@ -181,17 +181,17 @@ void test_interpolate_volume_vars() {
     // We could in theory figure out which points are in which element for a
     // given l_max, but that's quite tedious and we don't need such a stringent
     // test
-    CHECK_FALSE(current_iteration.indicies_interpolated_to_thus_far.size() ==
+    CHECK_FALSE(current_iteration.indices_interpolated_to_thus_far.size() ==
                 num_previous_indices_interpolated_to);
     num_previous_indices_interpolated_to =
-        current_iteration.indicies_interpolated_to_thus_far.size();
+        current_iteration.indices_interpolated_to_thus_far.size();
     tmpl::for_each<ah::vars_to_interpolate_to_target<3, Frame::Inertial>>(
         [&]<typename Tag>(tmpl::type_<Tag>) {
           auto& interpolated_var =
               get<Tag>(current_iteration.interpolated_vars);
           for (size_t j = 0; j < interpolated_var.size(); j++) {
             for (const size_t index :
-                 current_iteration.indicies_interpolated_to_thus_far) {
+                 current_iteration.indices_interpolated_to_thus_far) {
               CHECK(interpolated_var[j][index] !=
                     std::numeric_limits<double>::max());
             }
@@ -228,7 +228,7 @@ void test_interpolate_volume_vars() {
   CHECK(current_iteration.interpolation_is_done_for_these_elements.contains(
       element_id));
   // This shouldn't have changed
-  CHECK(current_iteration.indicies_interpolated_to_thus_far.size() ==
+  CHECK(current_iteration.indices_interpolated_to_thus_far.size() ==
         num_previous_indices_interpolated_to);
   // Again check that all points are interpolated to
   check_no_max();

@@ -79,9 +79,9 @@ struct Iteration {
   Variables<ah::vars_to_interpolate_to_target<3, Fr>> interpolated_vars{};
   /*!
    * \brief Keeps track of the indices in `interpolated_vars` that have
-   * already beed interpolated to.
+   * already been interpolated to.
    */
-  std::set<size_t> indicies_interpolated_to_thus_far;
+  std::set<size_t> indices_interpolated_to_thus_far{};
   /*!
    * \brief Holds the `ElementId`s of `Element`s for which interpolation has
    * already been done.

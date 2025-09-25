@@ -88,7 +88,7 @@ void interpolate_volume_data(
         });
 
     for (const size_t offset : offsets) {
-      current_iteration_storage->indicies_interpolated_to_thus_far.insert(
+      current_iteration_storage->indices_interpolated_to_thus_far.insert(
           offset);
     }
   }
