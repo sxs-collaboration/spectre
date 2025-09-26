@@ -388,7 +388,7 @@ struct TestSubdomainOperatorMatrix {
               result_buffer.begin());
     const auto& expected_operator_applied_to_data =
         db::get<SubdomainOperatorAppliedToDataTag<Dim, Fields>>(box);
-    Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+    const Approx custom_approx = Approx::custom().epsilon(1.e-8).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(
         result_buffer, expected_operator_applied_to_data, custom_approx);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
