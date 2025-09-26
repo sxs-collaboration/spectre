@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_StrahlkorperDataBox.cpp
   Test_StrahlkorperFunctions.cpp
   Test_Tags.cpp
+  Test_TensorYlmCartToSphere.cpp
   Test_TensorYlmFilter.cpp
   Test_WignerThreeJ.cpp
   Test_YlmToStf.cpp

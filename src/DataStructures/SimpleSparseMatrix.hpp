@@ -68,6 +68,9 @@ class SimpleSparseMatrix {
   void increment_multiply_on_right(gsl::not_null<T*> a, size_t a_offset,
                                    const T& b, size_t b_offset) const;
 
+  /// Number of nonzero elements.
+  size_t size() const { return matrix_elements_.size(); }
+
   /// Obtains element at (destindex,srcindex).
   /// Slow, should not use very often in critical situations.
   double operator()(size_t row_dest_index, size_t column_src_index) const;

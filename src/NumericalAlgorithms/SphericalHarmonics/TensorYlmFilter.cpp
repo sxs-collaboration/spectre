@@ -23,30 +23,6 @@ namespace ylm::TensorYlm {
 
 namespace {
 
-// computes the factor S in Eq. (23) or (25).
-template <typename Symm>
-double get_symm_factor(const size_t src_multiplicity, const size_t lbar) {
-  static_assert(std::is_same_v<Symmetry<3, 2, 1>, Symm> or
-                    std::is_same_v<Symmetry<2, 1, 1>, Symm> or
-                    std::is_same_v<Symmetry<2, 1>, Symm> or
-                    std::is_same_v<Symmetry<1, 1>, Symm>,
-                "Unimplemented symmetry");
-  if constexpr (std::is_same_v<Symmetry<3, 2, 1>, Symm> or
-                std::is_same_v<Symmetry<2, 1>, Symm>) {
-    // Not symmetric on the 2 indices.
-    (void)src_multiplicity;
-    (void)lbar;
-  } else {
-    // symmetric on the 2 indices.
-    //
-    // Note that src_multiplicity is 1 if the indices are the same,
-    // 2 if they are different.  For more complicated symmetries, if
-    // we ever wanted to implement them, this formula would be different.
-    return (lbar % 2 == 0 ? static_cast<double>(src_multiplicity) : 0.0);
-  }
-  return 1.0;
-}
-
 // Inner loops of the rank-1 calculation.  The purpose of this
 // function is so that there are not so many nested loops inside of
 // the main function, making the main function and this function more
@@ -298,7 +274,7 @@ void inner_loops_three(
                std::max(abs(mbars[mbar_indx]), abs(mtildes[mtilde_indx])));
            lbar <= 2; ++lbar) {
         const double symm_factor =
-            get_symm_factor<Symm>(src_multiplicity, lbar);
+            helpers::get_symm_factor<Symm>(src_multiplicity, lbar);
         if (symm_factor != 0.0) {
           for (int w = -1; w <= 1; w += 2) {
             const int mw = helpers::bv_to_m(src_bvs[0], w);
@@ -621,7 +597,7 @@ void FillFilter(const gsl::not_null<SparseMatrixType*> matrix,
           } else if constexpr (rank == 2) {
             for (size_t lbar = 0; lbar <= 2; ++lbar) {
               const double symm_factor =
-                  get_symm_factor<typename TensorStructure::symmetry>(
+                  helpers::get_symm_factor<typename TensorStructure::symmetry>(
                       src_multiplicity, lbar);
               if (symm_factor != 0.0) {
                 const double coeflbar = 0.5 * static_cast<double>(2 * lbar + 1);
