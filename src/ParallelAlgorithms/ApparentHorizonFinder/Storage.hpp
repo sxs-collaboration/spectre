@@ -81,7 +81,7 @@ struct Iteration {
    * \brief Keeps track of the indices in `interpolated_vars` that have
    * already been interpolated to.
    */
-  std::set<size_t> indices_interpolated_to_thus_far{};
+  std::vector<bool> indices_interpolated_to_thus_far{};
   /*!
    * \brief Holds the `ElementId`s of `Element`s for which interpolation has
    * already been done.
@@ -93,6 +93,11 @@ struct Iteration {
    * iteration.
    */
   size_t compute_coords_retries = 0;
+
+  /*!
+   * \brief Whether all points in `interpolated_vars` have been filled.
+   */
+  bool interpolation_is_complete() const;
 
   void reset_for_next_iteration();
 

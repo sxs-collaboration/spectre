@@ -278,22 +278,18 @@ struct FindApparentHorizon {
           // Sanity check
           ASSERT(
               current_iteration_storage.indices_interpolated_to_thus_far
-                      .size() <=
+                      .size() ==
                   current_iteration_storage.block_coord_holders.value().size(),
-              "The number indices interpolated to is larger than the number of "
-              "coordinates. This is an internal error. Please file an issue.");
+              "The number of indices being interpolated to is not the number "
+              "of coordinates. This is an internal error. Please file an "
+              "issue.");
 
-          if (current_iteration_storage.indices_interpolated_to_thus_far
-                  .size() !=
-              current_iteration_storage.block_coord_holders.value().size()) {
+          if (not current_iteration_storage.interpolation_is_complete()) {
             if (debug_print) {
               Parallel::printf(
                   "%s: For current time %s, at iteration %zu, need more volume "
-                  "data. Missing %zu points.\n",
-                  name, current_time, fast_flow.current_iteration(),
-                  current_iteration_storage.block_coord_holders.value().size() -
-                      current_iteration_storage
-                          .indices_interpolated_to_thus_far.size());
+                  "data.\n",
+                  name, current_time, fast_flow.current_iteration());
             }
             return;
           }

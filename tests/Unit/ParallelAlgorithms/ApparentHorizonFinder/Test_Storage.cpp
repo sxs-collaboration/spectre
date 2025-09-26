@@ -37,14 +37,20 @@ void test_storage() {
       Variables<ah::vars_to_interpolate_to_target<3, Fr>>{4, 4.321}};
   test_serialization(volume_variables);
 
-  const ah::Storage::Iteration<Fr> iteration{
+  ah::Storage::Iteration<Fr> iteration{
       ylm::Strahlkorper<Fr>{4_st, 3.0, std::array{0.0, 0.1, 0.2}},
       std::optional<std::vector<BlockLogicalCoords<3>>>{{std::nullopt}},
       Variables<ah::vars_to_interpolate_to_target<3, Fr>>{6, 9.876},
-      std::set<size_t>{1_st, 4_st, 5_st},
+      std::vector<bool>{false, true, false, false, true, true},
       std::unordered_set<ElementId<3>>{ElementId<3>{0}, ElementId<3>{1}},
       {2}};
   test_serialization(iteration);
+  CHECK_FALSE(iteration.interpolation_is_complete());
+  for (size_t i = 0; i < iteration.indices_interpolated_to_thus_far.size();
+       ++i) {
+    iteration.indices_interpolated_to_thus_far[i] = true;
+  }
+  CHECK(iteration.interpolation_is_complete());
 
   const ah::Storage::SingleTimeStorage<Fr> single_time_storage{
       std::unordered_map<ElementId<3>, ah::Storage::VolumeVariables<Fr>>{

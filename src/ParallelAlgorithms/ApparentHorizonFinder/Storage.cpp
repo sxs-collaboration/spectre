@@ -30,6 +30,12 @@ bool operator!=(const VolumeVariables<Fr>& lhs,
 }
 
 template <typename Fr>
+bool Iteration<Fr>::interpolation_is_complete() const {
+  return alg::all_of(indices_interpolated_to_thus_far,
+                     [](const bool filled) { return filled; });
+}
+
+template <typename Fr>
 void Iteration<Fr>::reset_for_next_iteration() {
   // Leave the strahlkorper because this was set by FastFlow and is already
   // the next surface

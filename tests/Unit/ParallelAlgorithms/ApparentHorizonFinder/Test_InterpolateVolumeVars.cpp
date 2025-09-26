@@ -134,6 +134,8 @@ void test_interpolate_volume_vars() {
       ylm::cartesian_coords(current_iteration.strahlkorper);
   current_iteration.block_coord_holders = ::block_logical_coordinates(
       domain, surface_coords, time.id, functions_of_time);
+  const size_t expected_num_points =
+      current_iteration.block_coord_holders->size();
 
   const gr::Solutions::KerrSchild solution(mass, spin, {0.0, 0.0, 0.0});
   const auto solution_vars = solution.variables(
@@ -181,19 +183,21 @@ void test_interpolate_volume_vars() {
     // We could in theory figure out which points are in which element for a
     // given l_max, but that's quite tedious and we don't need such a stringent
     // test
-    CHECK_FALSE(current_iteration.indices_interpolated_to_thus_far.size() ==
-                num_previous_indices_interpolated_to);
-    num_previous_indices_interpolated_to =
-        current_iteration.indices_interpolated_to_thus_far.size();
+    const auto num_indices_interpolated_to = static_cast<size_t>(
+        alg::count_if(current_iteration.indices_interpolated_to_thus_far,
+                      [](const bool filled) { return filled; }));
+    CHECK(num_indices_interpolated_to > num_previous_indices_interpolated_to);
+    num_previous_indices_interpolated_to = num_indices_interpolated_to;
     tmpl::for_each<ah::vars_to_interpolate_to_target<3, Frame::Inertial>>(
         [&]<typename Tag>(tmpl::type_<Tag>) {
           auto& interpolated_var =
               get<Tag>(current_iteration.interpolated_vars);
           for (size_t j = 0; j < interpolated_var.size(); j++) {
-            for (const size_t index :
-                 current_iteration.indices_interpolated_to_thus_far) {
-              CHECK(interpolated_var[j][index] !=
-                    std::numeric_limits<double>::max());
+            for (size_t index = 0; index < expected_num_points; index++) {
+              if (current_iteration.indices_interpolated_to_thus_far[index]) {
+                CHECK(interpolated_var[j][index] !=
+                      std::numeric_limits<double>::max());
+              }
             }
           }
         });

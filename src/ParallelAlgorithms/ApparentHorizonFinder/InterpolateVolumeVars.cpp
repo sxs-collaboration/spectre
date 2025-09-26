@@ -50,16 +50,21 @@ void interpolate_volume_data(
   const auto element_coord_holders =
       element_logical_coordinates(element_ids, block_coord_holders);
 
+  // Initialize interpolated_vars to correct size
+  auto& interpolated_vars = current_iteration_storage->interpolated_vars;
+  auto& indices_interpolated_to_thus_far =
+      current_iteration_storage->indices_interpolated_to_thus_far;
+  const size_t expected_num_points = block_coord_holders.size();
+  if (interpolated_vars.number_of_grid_points() != expected_num_points) {
+    interpolated_vars.initialize(expected_num_points);
+  }
+  if (indices_interpolated_to_thus_far.size() != expected_num_points) {
+    indices_interpolated_to_thus_far.resize(expected_num_points, false);
+  }
+
   for (const auto& [element_id, element_coord_holder] : element_coord_holders) {
     const auto& offsets = element_coord_holder.offsets;
     auto& volume_vars_storage = all_volume_variables->at(element_id);
-    auto& interpolated_vars = current_iteration_storage->interpolated_vars;
-
-    // Only fill once
-    const size_t expected_num_points = block_coord_holders.size();
-    if (interpolated_vars.number_of_grid_points() != expected_num_points) {
-      interpolated_vars.initialize(expected_num_points);
-    }
 
     const intrp::Irregular<3> interpolator(
         volume_vars_storage.mesh, element_coord_holder.element_logical_coords);
@@ -83,14 +88,10 @@ void interpolate_volume_data(
               // position in the overall tensor
               individual_interpolated_var[i][offsets[j]] =
                   local_individual_interpolated_var[i][j];
+              indices_interpolated_to_thus_far[offsets[j]] = true;
             }
           }
         });
-
-    for (const size_t offset : offsets) {
-      current_iteration_storage->indices_interpolated_to_thus_far.insert(
-          offset);
-    }
   }
 }
 
