@@ -38,30 +38,44 @@ evolution::dg::TimeDerivativeDecisions<Dim> TimeDerivative<Dim>::apply(
     const tnsr::I<DataVector, Dim>& trace_spatial_christoffel,
     const Scalar<DataVector>& trace_extrinsic_curvature,
     const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2) {
+  const auto& pi_times_lapse = result_lapse;
+  tenex::evaluate(pi_times_lapse, pi() * lapse());
+  const auto& d_psi_dot_shift = result_gamma1;
+  get(*d_psi_dot_shift) = get<0>(d_psi) * get<0>(shift);
+  for (size_t i = 1; i < Dim; ++i) {
+    get(*d_psi_dot_shift) += d_psi.get(i) * shift.get(i);
+  }
+  get(*dt_psi) = -get(*result_lapse) + get(*d_psi_dot_shift);
+  tenex::evaluate(
+      dt_pi,
+      (*result_lapse)() * trace_extrinsic_curvature() +
+          shift(ti::I) * d_pi(ti::i) +
+          lapse() * trace_spatial_christoffel(ti::I) * phi(ti::i) -
+          lapse() * upper_spatial_metric(ti::I, ti::J) * d_phi(ti::i, ti::j) -
+          upper_spatial_metric(ti::I, ti::J) * phi(ti::i) * deriv_lapse(ti::j));
+
+  const auto& lapse_times_gamma2 = result_gamma2;
+  get(*lapse_times_gamma2) = get(lapse) * get(gamma2);
+  tenex::evaluate<ti::i>(
+      dt_phi, -lapse() * d_pi(ti::i) + shift(ti::J) * d_phi(ti::j, ti::i) +
+                  (*lapse_times_gamma2)() * (d_psi(ti::i) - phi(ti::i)) -
+                  pi() * deriv_lapse(ti::i) +
+                  phi(ti::j) * deriv_shift(ti::i, ti::J));
+
+  // gamma1 is usually set to zero
+  if (get(gamma1) != 0.) {
+    for (size_t i = 0; i < Dim; ++i) {
+      get(*d_psi_dot_shift) -= phi.get(i) * shift.get(i);
+    }
+    get(*d_psi_dot_shift) *= get(gamma1);
+    get(*dt_psi) += get(*d_psi_dot_shift);
+    get(*dt_pi) += get(gamma2) * get(*d_psi_dot_shift);
+  }
   *result_lapse = lapse;
   *result_shift = shift;
   *result_inverse_spatial_metric = upper_spatial_metric;
   *result_gamma1 = gamma1;
   *result_gamma2 = gamma2;
-
-  tenex::evaluate(dt_psi,
-                  -lapse() * pi() + shift(ti::I) * d_psi(ti::i) +
-                      gamma1() * shift(ti::J) * (d_psi(ti::j) - phi(ti::j)));
-
-  tenex::evaluate(
-      dt_pi,
-      lapse() * pi() * trace_extrinsic_curvature() +
-          shift(ti::I) * d_pi(ti::i) +
-          lapse() * trace_spatial_christoffel(ti::I) * phi(ti::i) +
-          gamma1() * gamma2() * shift(ti::I) * (d_psi(ti::i) - phi(ti::i)) -
-          lapse() * upper_spatial_metric(ti::I, ti::J) * d_phi(ti::i, ti::j) -
-          upper_spatial_metric(ti::I, ti::J) * phi(ti::i) * deriv_lapse(ti::j));
-
-  tenex::evaluate<ti::i>(
-      dt_phi, -lapse() * d_pi(ti::i) + shift(ti::J) * d_phi(ti::j, ti::i) +
-                  gamma2() * lapse() * (d_psi(ti::i) - phi(ti::i)) -
-                  pi() * deriv_lapse(ti::i) +
-                  phi(ti::j) * deriv_shift(ti::i, ti::J));
   return {true};
 }
 }  // namespace CurvedScalarWave
