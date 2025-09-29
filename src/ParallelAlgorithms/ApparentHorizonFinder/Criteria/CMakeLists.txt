@@ -21,7 +21,6 @@ spectre_target_headers(
   Criterion.hpp
   Factory.hpp
   IncreaseResolution.hpp
-  RegisterDerivedWithCharm.hpp
   Residual.hpp
   Shape.hpp
   )

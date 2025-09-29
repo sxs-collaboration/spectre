@@ -298,6 +298,7 @@ Interpolator:
 
 ApparentHorizons:
   ObservationAhA: &AhA
+    Criteria:
     InitialGuess:
       LMax: *LMax
       Radius: 2.2
@@ -315,6 +316,7 @@ ApparentHorizons:
     MaxComputeCoordsRetries: 3
     BlocksForHorizonFind: All
   ObservationAhB: &AhB
+    Criteria:
     InitialGuess:
       LMax: *LMax
       Radius: 2.2
@@ -324,6 +326,7 @@ ApparentHorizons:
     MaxComputeCoordsRetries: 3
     BlocksForHorizonFind: All
   ObservationAhC:
+    Criteria:
     InitialGuess:
       LMax: 20
       Radius: 10.0

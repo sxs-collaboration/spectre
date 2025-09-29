@@ -33,6 +33,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   ApparentHorizonFinder
+  ApparentHorizonFinderCriteria
   FiniteDifference
   GeneralRelativity
   GeneralRelativitySolutions

@@ -237,6 +237,7 @@ Interpolator:
 
 ApparentHorizons:
   ApparentHorizon: &Ah
+    Criteria:
     InitialGuess:
       LMax: &LMax 4
       Radius: 2.2

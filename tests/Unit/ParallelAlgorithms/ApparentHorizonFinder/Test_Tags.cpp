@@ -44,6 +44,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
                   "[ApparentHorizonFinder][Unit]") {
   (void)MockHorizonMetavars::destination;
 
+  TestHelpers::db::test_simple_tag<ah::Tags::CurrentResolutionL>(
+      "CurrentResolutionL");
   TestHelpers::db::test_simple_tag<ah::Tags::Verbosity>("Verbosity");
   TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
   TestHelpers::db::test_simple_tag<ah::Tags::CurrentTime>("CurrentTime");

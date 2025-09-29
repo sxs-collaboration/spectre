@@ -19,7 +19,11 @@
 #include "Framework/TestCreation.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Factory.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/IncreaseResolution.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Residual.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
@@ -52,6 +56,14 @@ struct MockMetavariables {
   using component_list =
       tmpl::list<ah::Component<MockMetavariables, MockHorizonMetavars>>;
 };
+
+struct TestCreationMetavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>>;
+  };
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
@@ -65,13 +77,24 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
   const std::array<double, 3> center = {{0.05, 0.06, 0.07}};
 
   // Options for ApparentHorizon
+  std::vector<std::unique_ptr<ah::Criterion>> criteria;
+  criteria.emplace_back(
+      std::make_unique<ah::Criteria::Residual>(1.e-12, 1.e-2, 2, 12));
   ah::HorizonOptions<::Frame::Grid> apparent_horizon_opts(
+      std::move(criteria),
       ylm::Strahlkorper<Frame::Grid>{l_max, radius, center}, FastFlow{},
       Verbosity::Verbose, 3_st, std::nullopt);
 
   // Test creation of options
   const auto created_opts =
-      TestHelpers::test_creation<ah::HorizonOptions<Frame::Grid>>(
+      TestHelpers::test_creation<ah::HorizonOptions<Frame::Grid>,
+                                 TestCreationMetavariables>(
+          "Criteria:\n"
+          "  - Residual:\n"
+          "      MinResidual: 1.e-12\n"
+          "      MaxResidual: 1.e-2\n"
+          "      MinResolutionL: 2\n"
+          "      MaxResolutionL: 12\n"
           "FastFlow:\n"
           "  Flow: Fast\n"
           "  Alpha: 1.0\n"
@@ -108,7 +131,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
   }
   {
     const auto new_created_opts =
-        TestHelpers::test_creation<ah::HorizonOptions<Frame::Grid>>(
+        TestHelpers::test_creation<ah::HorizonOptions<Frame::Grid>,
+                                   TestCreationMetavariables>(
+            "Criteria:\n"
             "FastFlow:\n"
             "  Flow: Fast\n"
             "  Alpha: 1.0\n"

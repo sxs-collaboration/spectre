@@ -475,6 +475,7 @@ Interpolator:
 
 ApparentHorizons:
   ObservationAhA: &AhA
+    Criteria:
     InitialGuess:
       LMax: &ObsLMax 10
       Radius: {{ ExcisionRadiusA * 1.5 }}
@@ -492,6 +493,7 @@ ApparentHorizons:
     MaxComputeCoordsRetries: 3
     BlocksForHorizonFind: ["ObjectAShell", "ObjectACube"]
   ObservationAhB: &AhB
+    Criteria:
     InitialGuess:
       LMax: *ObsLMax
       Radius: {{ ExcisionRadiusB * 1.5 }}
@@ -501,6 +503,7 @@ ApparentHorizons:
     MaxComputeCoordsRetries: 3
     BlocksForHorizonFind: ["ObjectBShell", "ObjectBCube"]
   ObservationAhC:
+    Criteria:
     InitialGuess:
       LMax: 33
       Radius: 10.0
