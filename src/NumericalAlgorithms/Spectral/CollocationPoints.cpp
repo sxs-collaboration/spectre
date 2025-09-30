@@ -45,4 +45,6 @@ template const DataVector& collocation_points<Basis::FiniteDifference,
                                               Quadrature::CellCentered>(size_t);
 template const DataVector& collocation_points<Basis::FiniteDifference,
                                               Quadrature::FaceCentered>(size_t);
+template const DataVector&
+collocation_points<Basis::Fourier, Quadrature::Equiangular>(size_t);
 }  // namespace Spectral

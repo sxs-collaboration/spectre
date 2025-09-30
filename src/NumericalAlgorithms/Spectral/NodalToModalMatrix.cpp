@@ -75,6 +75,8 @@ template const Matrix&
 template const Matrix&
     nodal_to_modal_matrix<Basis::Chebyshev, Quadrature::GaussLobatto>(size_t);
 template const Matrix&
+nodal_to_modal_matrix<Basis::Fourier, Quadrature::Equiangular>(size_t);
+template const Matrix&
     nodal_to_modal_matrix<Basis::Legendre, Quadrature::Gauss>(size_t);
 template const Matrix&
     nodal_to_modal_matrix<Basis::Legendre, Quadrature::GaussLobatto>(size_t);

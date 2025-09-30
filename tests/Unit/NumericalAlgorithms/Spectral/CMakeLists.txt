@@ -6,6 +6,7 @@ add_subdirectory("Python")
 set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES
+  BasisFunctions/Test_Fourier.cpp
   Test_Basis.cpp
   Test_Cartoon.cpp
   Test_ChebyshevGauss.cpp
@@ -36,6 +37,7 @@ target_link_libraries(
   ErrorHandling
   LinearOperators
   Spectral
+  SpectralHelpers
   SphericalHarmonics
   Utilities
   )

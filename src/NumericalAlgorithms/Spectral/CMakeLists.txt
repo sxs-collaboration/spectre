@@ -83,4 +83,5 @@ target_link_libraries(
   SPHEREPACK
   )
 
+add_subdirectory(BasisFunctions)
 add_subdirectory(Python)
