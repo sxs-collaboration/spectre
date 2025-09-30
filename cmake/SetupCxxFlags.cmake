@@ -143,16 +143,36 @@ set_property(TARGET SpectreFlags
 #     floating point exceptions are ignored.
 # -fnon-call-exceptions - By default, GCC does not allow signal handlers to
 #     throw exceptions.
-create_c_flags_target(
-  "-ffp-exception-behavior=maytrap;-fnon-call-exceptions"
-  SpectreFpExceptions
+# Note: -ffp-exception-behavior is not supported on ARM64 architectures
+if((NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+  AND NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64"
   )
-create_cxx_flags_target(
-  "-ffp-exception-behavior=maytrap;-fnon-call-exceptions"
-  SpectreFpExceptions
-  )
-target_link_libraries(
-  SpectreFlags
-  INTERFACE
-  SpectreFpExceptions
-  )
+  create_c_flags_target(
+    "-ffp-exception-behavior=maytrap;-fnon-call-exceptions"
+    SpectreFpExceptions
+    )
+  create_cxx_flags_target(
+    "-ffp-exception-behavior=maytrap;-fnon-call-exceptions"
+    SpectreFpExceptions
+    )
+  target_link_libraries(
+    SpectreFlags
+    INTERFACE
+    SpectreFpExceptions
+    )
+else()
+  # On ARM64, we can't trap FP exceptions, so just enable non-call exceptions
+  create_c_flags_target(
+    "-fnon-call-exceptions"
+    SpectreFpExceptions
+    )
+  create_cxx_flags_target(
+    "-fnon-call-exceptions"
+    SpectreFpExceptions
+    )
+  target_link_libraries(
+    SpectreFlags
+    INTERFACE
+    SpectreFpExceptions
+    )
+endif()

@@ -18,10 +18,10 @@
 #endif
 
 // Trapping floating-point exceptions is apparently unsupported on
-// the arm64 architecture, so when building on Apple Silicon,
+// the arm64 architecture, so when building on Apple Silicon or Linux aarch64,
 // directly call the fpe_signal_handler in these tests so that they pass.
 
-#if not (defined(__APPLE__) and defined(__arm64__))
+#if not((defined(__APPLE__) and defined(__arm64__)) or defined(__aarch64__))
 namespace {
 // Compilers (both gcc and clang) seem prone to deciding that these
 // can't actually throw exceptions and then optimizing away the
@@ -58,7 +58,7 @@ namespace {
 
 SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions",
                   "[ErrorHandling][Unit]") {
-#if defined(__APPLE__) and defined(__arm64__)
+#if (defined(__APPLE__) and defined(__arm64__)) or defined(__aarch64__)
   CHECK(true);
 #else
   enable_floating_point_exceptions();
@@ -112,14 +112,12 @@ SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.ScopedFpeState",
       Catch::Matchers::ContainsSubstring("FPE state already saved"));
 #endif  // SPECTRE_DEBUG
 
-#ifdef __APPLE__
-#ifdef __arm64__
+#if (defined(__APPLE__) and defined(__arm64__)) or defined(__aarch64__)
   CHECK(true);
   return;
   // Don't stick the rest of the function in an #else or something
   // because it should still compile.
 #pragma GCC diagnostic ignored "-Wunreachable-code"
-#endif
 #endif
 
   // Stack unwinding from a signal handler doesn't work on all

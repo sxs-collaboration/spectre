@@ -13,7 +13,7 @@
 #ifndef __arm64__
 #define SPECTRE_FPE_CSR 1
 #endif
-#else
+#elif not defined(__aarch64__)
 #define SPECTRE_FPE_FENV 1
 #endif
 /// \endcond
