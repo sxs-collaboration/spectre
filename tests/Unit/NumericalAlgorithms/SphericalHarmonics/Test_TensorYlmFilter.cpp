@@ -6,14 +6,21 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmCartToSphere.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlmFilter.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmSphereToCart.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Math.hpp"
+#include "Utilities/Numeric.hpp"
 
 namespace {
 
@@ -36,6 +43,116 @@ std::string symm_to_string() {
     return "abb";
   }
   return "";
+}
+
+template<typename TensorType>
+struct MyTag : db::SimpleTag {
+  using type = TensorType;
+  static std::string name() {
+    return "MyTag" + symm_to_string<typename TensorType::structure>();
+  }
+};
+
+// Tests that applying the filter matrix is equivalent to doing a
+// cart-to-sphere, then a truncation filter, then a sphere-to-cart.
+template <typename TensorType>
+void test_filter_vs_transforms(const size_t ell_max,
+                               const size_t number_of_ell_modes_to_kill,
+                               const std::optional<size_t> half_power) {
+  ylm::SpherepackIterator it(ell_max, ell_max, 1, false);
+  const size_t spectral_size = it.spherepack_array_size();
+
+  Variables<tmpl::list<MyTag<TensorType>>> A(spectral_size, 0.0);
+  Variables<tmpl::list<MyTag<TensorType>>> B(spectral_size, 0.0);
+  Variables<tmpl::list<MyTag<TensorType>>> C(spectral_size, 0.0);
+  Variables<tmpl::list<MyTag<TensorType>>> D(spectral_size, 0.0);
+
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> unit_dis(0.0, 1.0);
+
+  // Fill A with random numbers
+  for (auto& a : get<MyTag<TensorType>>(A)) {
+    for (it.reset(); it; ++it) {
+      if (it.coefficient_array() !=
+              ylm::SpherepackIterator::CoefficientArray::b or
+          it.m() != 0) {
+        a[it()] = unit_dis(gen);
+      }
+    }
+  }
+
+  // Convert A to B.
+  const gsl::span<double> a_span(A.data(), A.size());
+  gsl::span<double> b_span(B.data(), B.size());
+  SimpleSparseMatrix cart_to_sphere;
+  ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
+      make_not_null(&cart_to_sphere), ell_max);
+  cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, a_span,
+                                             0);
+  // Apply the filter to B.
+  static constexpr double alpha = 36.0;
+  const auto lcutplus =
+      static_cast<size_t>(ell_max - number_of_ell_modes_to_kill);
+  const size_t lcutminus =
+      half_power.has_value()
+          ? static_cast<size_t>(std::ceil(
+                static_cast<double>(lcutplus + 1) *
+                pow(std::numeric_limits<double>::epsilon() / alpha,
+                    1.0 / (2.0 * static_cast<double>(half_power.value())))))
+          : lcutplus + 1;
+
+  for (auto& b : get<MyTag<TensorType>>(B)) {
+    for (it.reset(); it; ++it) {
+      if (it.l() < lcutminus) {
+        continue;
+      }
+      if (it.l() <= lcutplus) {
+        b[it()] *=
+            exp(-alpha * integer_pow(static_cast<double>(it.l()) /
+                                         static_cast<double>(lcutplus + 1),
+                                     2 * static_cast<int>(half_power.value())));
+      } else {
+        b[it()] = 0.0;
+      }
+    }
+  }
+
+  // Convert B to C
+  gsl::span<double> c_span(C.data(), C.size());
+  SimpleSparseMatrix sphere_to_cart;
+  ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
+      make_not_null(&sphere_to_cart), ell_max);
+  sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, b_span,
+                                             0);
+
+  // Apply the filter to A directly, output into D.
+  // First set D equal to A (thus computing the delta term),
+  // since the matrix encodes only the non-delta part.
+  get<MyTag<TensorType>>(D) = get<MyTag<TensorType>>(A);
+  gsl::span<double> d_span(D.data(), D.size());
+  SimpleSparseMatrix filter_matrix;
+  ylm::TensorYlm::fill_filter<typename TensorType::structure>(
+      make_not_null(&filter_matrix), ell_max, number_of_ell_modes_to_kill,
+      half_power);
+  filter_matrix.increment_multiply_on_right(make_not_null(&d_span), 0, a_span,
+                                            0);
+
+  // C should equal D.
+  const auto& d_vector = get<MyTag<TensorType>>(D);
+  const auto& c_vector = get<MyTag<TensorType>>(C);
+  CAPTURE(symm_to_string<typename TensorType::structure>());
+  CAPTURE(number_of_ell_modes_to_kill);
+  CAPTURE(half_power);
+  for (size_t i = 0; i < d_vector.size(); ++i) {
+    CAPTURE(i);
+    for (it.reset(); it; ++it) {
+      CAPTURE(it.l());
+      CAPTURE(it.m());
+      CAPTURE(it.coefficient_array());
+      CHECK(d_vector[i][it()] == approx(c_vector[i][it()]));
+    }
+  }
 }
 
 template <typename TensorStructure, typename SparseMatrixType>
@@ -1041,10 +1158,12 @@ void test_tensorylm_filter_vs_spec(const size_t ell_max,
 }
 }  // namespace
 
-// For debug builds, it is slow even for testing ell_max = 8 for all ranks,
-// so we need to increase the timeout.
-// Release builds are still under 10 seconds (barely).
-// [[TimeOut, 120]]
+// For debug builds, test_tensorylm_filter_vs_spec is slow even for
+// testing ell_max = 8 for all ranks, so we need to increase the
+// timeout to 120.  Release builds are still under 10 seconds (barely).  The
+// function test_filter_vs_transforms is much slower than
+// test_tensorylm_filter_vs_spec, so we increase the timeout to 360.
+// [[TimeOut, 360]]
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter",
                   "[NumericalAlgorithms][Unit]") {
   const size_t ell_max = 8;
@@ -1066,5 +1185,15 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmFilter",
     test_tensorylm_filter_vs_spec<typename tnsr::ijk<DataVector, 3>::structure,
                                   SimpleSparseMatrix>(ell_max, num_to_kill,
                                                       half_power);
+    test_filter_vs_transforms<typename tnsr::i<DataVector, 3>>(
+        ell_max, num_to_kill, half_power);
+    test_filter_vs_transforms<typename tnsr::ii<DataVector, 3>>(
+        ell_max, num_to_kill, half_power);
+    test_filter_vs_transforms<typename tnsr::ij<DataVector, 3>>(
+        ell_max, num_to_kill, half_power);
+    test_filter_vs_transforms<typename tnsr::ijj<DataVector, 3>>(
+        ell_max, num_to_kill, half_power);
+    test_filter_vs_transforms<typename tnsr::ijk<DataVector, 3>>(
+        ell_max, num_to_kill, half_power);
   }
 }
