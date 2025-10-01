@@ -127,11 +127,12 @@ struct FindApparentHorizon {
     // Add volume variables and destination to the box if they haven't already
     // been received
     if (not vars_have_already_been_received) {
-      all_storage[incoming_time].all_volume_variables.emplace(
+      auto& current_time_storage = all_storage[incoming_time];
+      current_time_storage.all_volume_variables.emplace(
           incoming_element_id,
           ah::Storage::VolumeVariables<frame>{
               incoming_mesh, std::move(incoming_vars_to_interpolate)});
-      all_storage.at(incoming_time).destination = HorizonMetavars::destination;
+      current_time_storage.destination = HorizonMetavars::destination;
     }
 
     // ========================================================================
