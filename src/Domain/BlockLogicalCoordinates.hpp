@@ -66,8 +66,9 @@ template <size_t Dim, typename Fr>
 auto block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Fr>& x,
     double time = std::numeric_limits<double>::signaling_NaN(),
-    const domain::FunctionsOfTimeMap& functions_of_time = {})
-    -> std::vector<BlockLogicalCoords<Dim>>;
+    const domain::FunctionsOfTimeMap& functions_of_time = {},
+    std::optional<gsl::not_null<std::vector<size_t>*>> block_order =
+        std::nullopt) -> std::vector<BlockLogicalCoords<Dim>>;
 
 template <size_t Dim, typename Fr>
 std::optional<tnsr::I<double, Dim, ::Frame::BlockLogical>>

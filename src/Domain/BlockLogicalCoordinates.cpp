@@ -190,7 +190,8 @@ BlockLogicalCoords<Dim> block_logical_coordinates_single_point(
 template <size_t Dim, typename Fr>
 std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Fr>& x,
-    const double time, const domain::FunctionsOfTimeMap& functions_of_time) {
+    const double time, const domain::FunctionsOfTimeMap& functions_of_time,
+    const std::optional<gsl::not_null<std::vector<size_t>*>> block_order) {
   const size_t num_pts = get<0>(x).size();
   std::vector<BlockLogicalCoords<Dim>> block_coord_holders(num_pts);
   for (size_t s = 0; s < num_pts; ++s) {
@@ -198,10 +199,8 @@ std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
     for (size_t d = 0; d < Dim; ++d) {
       x_frame.get(d) = x.get(d)[s];
     }
-    // Not using block_order here to guarantee that the block with the
-    // smallest block_id is chosen. This could be made an option.
     block_coord_holders[s] = block_logical_coordinates_single_point(
-        x_frame, domain, time, functions_of_time);
+        x_frame, domain, time, functions_of_time, block_order);
   }
   return block_coord_holders;
 }
@@ -226,7 +225,8 @@ std::vector<BlockLogicalCoords<Dim>> block_logical_coordinates(
   block_logical_coordinates(                                                   \
       const Domain<DIM(data)>& domain,                                         \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& x, const double time, \
-      const domain::FunctionsOfTimeMap& functions_of_time);
+      const domain::FunctionsOfTimeMap& functions_of_time,                     \
+      std::optional<gsl::not_null<std::vector<size_t>*>> block_order);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (::Frame::Grid, ::Frame::Distorted, ::Frame::Inertial))
