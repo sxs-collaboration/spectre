@@ -42,7 +42,9 @@ void test_storage() {
       std::optional<std::vector<BlockLogicalCoords<3>>>{{std::nullopt}},
       Variables<ah::vars_to_interpolate_to_target<3, Fr>>{6, 9.876},
       std::vector<bool>{false, true, false, false, true, true},
-      std::unordered_set<ElementId<3>>{ElementId<3>{0}, ElementId<3>{1}},
+      {},
+      {},
+      {},
       {2}};
   test_serialization(iteration);
   CHECK_FALSE(iteration.interpolation_is_complete());
@@ -55,7 +57,10 @@ void test_storage() {
   const ah::Storage::SingleTimeStorage<Fr> single_time_storage{
       std::unordered_map<ElementId<3>, ah::Storage::VolumeVariables<Fr>>{
           {ElementId<3>{0}, volume_variables}},
-      iteration, iteration.strahlkorper, Destination::ControlSystem};
+      {},
+      iteration,
+      iteration.strahlkorper,
+      Destination::ControlSystem};
   test_serialization(single_time_storage);
 
   const ah::Storage::PreviousSurface<Fr> previous_surface{

@@ -57,8 +57,11 @@ void test_set_current_time() {
   const auto add_to_all_storage = [&](const LinkedMessageId<double>& time,
                                       const Destination destination) {
     all_storage.emplace(time, ah::Storage::SingleTimeStorage<Frame::Grid>{
-                                  unused_volume_vars, unused_interation,
-                                  unused_prev_strahlkorper, destination});
+                                  unused_volume_vars,
+                                  {},
+                                  unused_interation,
+                                  unused_prev_strahlkorper,
+                                  destination});
   };
 
   // Current time has value, so do nothing

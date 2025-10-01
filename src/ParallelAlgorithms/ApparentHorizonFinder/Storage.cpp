@@ -41,7 +41,6 @@ void Iteration<Fr>::reset_for_next_iteration() {
   // the next surface
   this->block_coord_holders.reset();
   this->indices_interpolated_to_thus_far.clear();
-  this->interpolation_is_done_for_these_elements.clear();
   this->compute_coords_retries = 0;
 }
 
@@ -51,8 +50,8 @@ void Iteration<Fr>::pup(PUP::er& p) {
   p | block_coord_holders;
   p | interpolated_vars;
   p | indices_interpolated_to_thus_far;
-  p | interpolation_is_done_for_these_elements;
   p | compute_coords_retries;
+  // No need to serialize the memory buffers because they are resized as needed
 }
 
 template <typename Fr>
@@ -62,9 +61,8 @@ bool operator==(const Iteration<Fr>& lhs, const Iteration<Fr>& rhs) {
          lhs.interpolated_vars == rhs.interpolated_vars and
          lhs.indices_interpolated_to_thus_far ==
              rhs.indices_interpolated_to_thus_far and
-         lhs.interpolation_is_done_for_these_elements ==
-             rhs.interpolation_is_done_for_these_elements and
          lhs.compute_coords_retries == rhs.compute_coords_retries;
+  // No need to compare the memory buffers
 }
 template <typename Fr>
 bool operator!=(const Iteration<Fr>& lhs, const Iteration<Fr>& rhs) {
