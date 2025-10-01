@@ -114,6 +114,14 @@ struct Storage : db::SimpleTag {
 };
 
 /*!
+ * \brief Order in which blocks are searched for horizon finding. See
+ * `::block_logical_coordinates` for details.
+ */
+struct BlockSearchOrder : db::SimpleTag {
+  using type = std::vector<size_t>;
+};
+
+/*!
  * \brief Deque of `ah::Storage::PreviousSurface`s.
  */
 template <typename Fr>

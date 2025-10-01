@@ -52,8 +52,8 @@ struct Initialize {
   using simple_tags = tmpl::append<
       tmpl::list<Tags::CurrentResolutionL, Tags::Verbosity, Tags::FastFlow,
                  Tags::CurrentTime, Tags::PendingTimes, Tags::CompletedTimes,
-                 Tags::Storage<Fr>, Tags::PreviousSurfaces<Fr>,
-                 ylm::Tags::Strahlkorper<Fr>,
+                 Tags::Storage<Fr>, Tags::BlockSearchOrder,
+                 Tags::PreviousSurfaces<Fr>, ylm::Tags::Strahlkorper<Fr>,
                  ylm::Tags::TimeDerivStrahlkorper<Fr>, ah::Tags::Dependency,
                  ::Tags::Variables<ah::vars_to_interpolate_to_target<3, Fr>>>,
       tmpl::conditional_t<

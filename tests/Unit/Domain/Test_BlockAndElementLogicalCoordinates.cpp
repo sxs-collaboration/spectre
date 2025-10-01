@@ -608,7 +608,7 @@ void test_block_and_element_logical_coordinates(
                           expected_logical_coords[s]);
     // Check the version with block order. It is no longer guaranteed that the
     // smallest block ID is chosen, so the logical coordinates at the boundary
-    // my differ by a sign.
+    // may differ by a sign.
     for (size_t d=0; d < Dim; ++d) {
       CHECK_ITERABLE_APPROX(
           abs(block_logical_result_with_order[s].value().data.get(d)),
