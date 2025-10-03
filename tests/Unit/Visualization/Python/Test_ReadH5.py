@@ -11,6 +11,7 @@ import pandas.testing as pdt
 
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
+from spectre.Visualization.OpenVolfiles import open_volfiles
 from spectre.Visualization.ReadH5 import (
     available_subfiles,
     select_observation,
@@ -23,6 +24,8 @@ class TestReadH5(unittest.TestCase):
         self.data_dir = Path(
             spectre_informer.unit_test_src_path(), "Visualization/Python"
         )
+        self.vol_file = str(self.data_dir / "VolTestData0.h5")
+        self.dat_file = str(self.data_dir / "DatTestData.h5")
 
     def test_available_subfiles(self):
         # Test with open file
@@ -107,6 +110,15 @@ class TestReadH5(unittest.TestCase):
                 select_observation(open_volfile, time=0.05),
                 (expected_obs_id, expected_time),
             )
+
+    def test_open_volfiles_missing_subfile(self):
+        volfiles = list(
+            open_volfiles([self.vol_file, self.dat_file], "/element_data")
+        )
+        self.assertEqual(len(volfiles), 1)
+
+        with self.assertRaises(ValueError):
+            list(open_volfiles([self.dat_file], "/element_data"))
 
 
 if __name__ == "__main__":

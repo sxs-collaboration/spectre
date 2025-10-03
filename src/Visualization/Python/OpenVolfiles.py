@@ -30,11 +30,26 @@ def open_volfiles(
     """
     import spectre.IO.H5 as spectre_h5
 
+    subfile_found = False
+    files_exist = False
+
     for h5_file in h5_files:
         with spectre_h5.H5File(h5_file, "r") as open_h5_file:
-            volfile = open_h5_file.get_vol(subfile_name)
+            files_exist = True
+            try:
+                volfile = open_h5_file.get_vol(subfile_name)
+            except RuntimeError:
+                continue
+
+            subfile_found = True
             if obs_id is None or obs_id in volfile.list_observation_ids():
                 yield volfile
+
+    if files_exist and not subfile_found:
+        raise ValueError(
+            f"Subfile '{subfile_name}' was not found in any of the provided"
+            " H5 files."
+        )
 
 
 def parse_step(ctx, param, value):
