@@ -154,6 +154,14 @@ inline void dgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
              'C' == TRANSB or 'c' == TRANSB,
          "TRANSB must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
+
+  // On some BLAS implementations (e.g. Accelerate.framework on macOS) a call
+  // with a zero-sized dimension aborts instead of acting as a no-op.  Treat
+  // these cases explicitly so we behave consistently across platforms.
+  if (M == 0 or N == 0 or K == 0) {
+    return;
+  }
+
   blas_detail::dgemm_(
       TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
       gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
@@ -175,6 +183,14 @@ inline void zgemm_(const char& TRANSA, const char& TRANSB, const size_t& M,
              'C' == TRANSB or 'c' == TRANSB,
          "TRANSB must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
+
+  // On some BLAS implementations (e.g. Accelerate.framework on macOS) a call
+  // with a zero-sized dimension aborts instead of acting as a no-op.  Treat
+  // these cases explicitly so we behave consistently across platforms.
+  if (M == 0 or N == 0 or K == 0) {
+    return;
+  }
+
   blas_detail::zgemm_(
       TRANSA, TRANSB, gsl::narrow_cast<int>(M), gsl::narrow_cast<int>(N),
       gsl::narrow_cast<int>(K), ALPHA, A, gsl::narrow_cast<int>(LDA), B,
@@ -198,6 +214,14 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
              'C' == TRANSB or 'c' == TRANSB,
          "TRANSB must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
+
+  // On some BLAS implementations (e.g. Accelerate.framework on macOS) a call
+  // with a zero-sized dimension aborts instead of acting as a no-op.  Treat
+  // these cases explicitly so we behave consistently across platforms.
+  if (M == 0 or N == 0 or K == 0) {
+    return;
+  }
+
   const auto m = gsl::narrow_cast<int>(M);
   const auto n = gsl::narrow_cast<int>(N);
   const auto k = gsl::narrow_cast<int>(K);
@@ -242,6 +266,14 @@ inline void dgemv_(const char& TRANS, const size_t& M, const size_t& N,
              'C' == TRANS or 'c' == TRANS,
          "TRANS must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
+
+  // On some BLAS implementations (e.g. Accelerate.framework on macOS) a call
+  // with a zero-sized dimension aborts instead of acting as a no-op.  Treat
+  // these cases explicitly so we behave consistently across platforms.
+  if (M == 0 or N == 0) {
+    return;
+  }
+
   // INCX and INCY are allowed to be negative by BLAS, but we never
   // use them that way.  If needed, they can be changed here, but then
   // code providing values will also have to be changed to int to
