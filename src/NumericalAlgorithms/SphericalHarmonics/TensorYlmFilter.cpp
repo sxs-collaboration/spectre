@@ -41,12 +41,15 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
         iter_src() + src_comp_index * iter_src.spherepack_array_size();
     filler.add(element, indx_dest, indx_src);
   };
-  for (size_t ell = threej_j.l1_min(); ell <= threej_j.l1_max(); ++ell) {
-    if (ell <= ell_max and static_cast<int>(ell) >= mdest) {
-      const std::complex<double> correction =
-          coefjp * threej_j(ell) * threej_p(ell);
-      if (msrc > 0) {
-        // Main term, i.e. first term in Eq. (18).
+  for (size_t ell = std::max(
+           {static_cast<size_t>(mdest), threej_j.l1_min(), threej_p.l1_min()});
+       ell <= std::min({ell_max, threej_j.l1_max(), threej_p.l1_max()});
+       ++ell) {
+    const std::complex<double> correction =
+        threej_j(ell) * threej_p(ell) * coefjp;
+    if (msrc > 0) {
+      // Main term, i.e. first term in Eq. (18).
+      if (correction.imag() == 0.0) {
         // ReRe
         iter_src.set(ell, static_cast<size_t>(msrc),
                      SpherepackIterator::CoefficientArray::a);
@@ -54,6 +57,13 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                       SpherepackIterator::CoefficientArray::a);
         add_element(correction.real());
 
+        // ImIm
+        iter_src.set(ell, static_cast<size_t>(msrc),
+                     SpherepackIterator::CoefficientArray::b);
+        iter_dest.set(ell, static_cast<size_t>(mdest),
+                      SpherepackIterator::CoefficientArray::b);
+        add_element(correction.real());
+      } else {
         // ReIm
         iter_src.set(ell, static_cast<size_t>(msrc),
                      SpherepackIterator::CoefficientArray::b);
@@ -61,22 +71,17 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                       SpherepackIterator::CoefficientArray::a);
         add_element(-correction.imag());
 
-        // ImIm
-        iter_src.set(ell, static_cast<size_t>(msrc),
-                     SpherepackIterator::CoefficientArray::b);
-        iter_dest.set(ell, static_cast<size_t>(mdest),
-                      SpherepackIterator::CoefficientArray::b);
-        add_element(correction.real());
-
         // ImRe
         iter_src.set(ell, static_cast<size_t>(msrc),
                      SpherepackIterator::CoefficientArray::a);
         iter_dest.set(ell, static_cast<size_t>(mdest),
                       SpherepackIterator::CoefficientArray::b);
         add_element(correction.imag());
-      } else {
-        // Second term in Eq. (18).
-        const double sign = (msrc % 2 == 0 ? 1.0 : -1.0);
+      }
+    } else {
+      // Second term in Eq. (18).
+      const double sign = (msrc % 2 == 0 ? 1.0 : -1.0);
+      if (correction.imag() == 0.0) {
         // ReRe
         iter_src.set(ell, static_cast<size_t>(-msrc),
                      SpherepackIterator::CoefficientArray::a);
@@ -84,6 +89,13 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
                       SpherepackIterator::CoefficientArray::a);
         add_element(sign * correction.real());
 
+        // ImIm
+        iter_src.set(ell, static_cast<size_t>(-msrc),
+                     SpherepackIterator::CoefficientArray::b);
+        iter_dest.set(ell, static_cast<size_t>(mdest),
+                      SpherepackIterator::CoefficientArray::b);
+        add_element(-sign * correction.real());
+      } else {
         // ReIm
         iter_src.set(ell, static_cast<size_t>(-msrc),
                      SpherepackIterator::CoefficientArray::b);
@@ -97,13 +109,6 @@ void inner_loops_one(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
         iter_dest.set(ell, static_cast<size_t>(mdest),
                       SpherepackIterator::CoefficientArray::b);
         add_element(sign * correction.imag());
-
-        // ImIm
-        iter_src.set(ell, static_cast<size_t>(-msrc),
-                     SpherepackIterator::CoefficientArray::b);
-        iter_dest.set(ell, static_cast<size_t>(mdest),
-                      SpherepackIterator::CoefficientArray::b);
-        add_element(-sign * correction.real());
       }
     }
   }
@@ -135,99 +140,119 @@ void inner_loops_two(SparseMatrixFiller& filler, SpherepackIterator& iter_src,
     filler.add(element, indx_dest, indx_src);
   };
   size_t mbar_indx = 0;
+  const int m_dest = mprime + mbar;
   for (int p = -1; p <= 1; p += 2) {
     for (int q = -1; q <= 1; q += 2, ++mbar_indx) {
-      if (mbar == mbars[mbar_indx] and mprime + mbar >= 0) {
-        // The 2nd clause in the above if-statement:
-        // Fill only nonnegative m_dest, since that is all we store.
-        const int m_dest = mprime + mbar;
-        size_t mtilde_indx = 0;
-        for (int u = -1; u <= 1; u += 2) {
-          for (int v = -1; v <= 1; v += 2, ++mtilde_indx) {
-            if (mtilde == mtildes[mtilde_indx]) {
-              const std::complex<double> k_coefs =
-                  helpers::bv_to_k(src_bvs[0], u) *
-                  helpers::bv_to_k(dest_bvs[0], p) *
-                  helpers::bv_to_k(src_bvs[1], v) *
-                  helpers::bv_to_k(dest_bvs[1], q);
-              const int m_src = mprime - mtilde;
-              const std::complex<double> coef3j =
-                  -coeflprime * coeflbar * k_coefs * sign_y;
-              for (size_t l_dest = std::max(
-                       std::max(
-                           static_cast<size_t>(abs(static_cast<int>(lprime) -
-                                                   static_cast<int>(lbar))),
-                           static_cast<size_t>(abs(mprime + mbar))),
-                       static_cast<size_t>(
-                           std::max(abs(mtilde - mprime), m_dest)));
-                   l_dest <= std::min(lprime + lbar, ell_max); ++l_dest) {
-                const double sign_lbar =
-                    ((lprime + l_dest + lbar) % 2 == 0 ? 1.0 : -1.0);
-                // Corrects for permutation of columns in
-                // threej_lba
-                const std::complex<double> correction =
-                    coef3j * sign_lbar * threej_pqs[mbar_indx](lbar) *
-                    threej_uvs[mtilde_indx](lbar) * threej_lbar(l_dest) *
-                    threej_ltilde(l_dest) * symm_factor;
-                if (m_src > 0) {
-                  // Main term, first term in Eq. (18)
-                  // ReRe
-                  iter_src.set(l_dest, static_cast<size_t>(m_src),
-                               SpherepackIterator::CoefficientArray::a);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::a);
-                  add_element(correction.real());
+      if (mbar == mbars[mbar_indx]) {
+        const double threej_pq_val = threej_pqs[mbar_indx](lbar);
+        if (threej_pq_val != 0.0) {
+          size_t mtilde_indx = 0;
+          for (int u = -1; u <= 1; u += 2) {
+            for (int v = -1; v <= 1; v += 2, ++mtilde_indx) {
+              if (mtilde == mtildes[mtilde_indx]) {
+                const double threej_uv_val = threej_uvs[mtilde_indx](lbar);
+                if (threej_uv_val != 0.0) {
+                  const std::complex<double> k_coefs =
+                      helpers::bv_to_k(src_bvs[0], u) *
+                      helpers::bv_to_k(dest_bvs[0], p) *
+                      helpers::bv_to_k(src_bvs[1], v) *
+                      helpers::bv_to_k(dest_bvs[1], q);
+                  const int m_src = mprime - mtilde;
+                  const std::complex<double> coef3j =
+                      -coeflprime * coeflbar * sign_y * k_coefs;
+                  for (size_t l_dest = std::max(
+                           std::max(static_cast<size_t>(
+                                        abs(static_cast<int>(lprime) -
+                                            static_cast<int>(lbar))),
+                                    static_cast<size_t>(abs(mprime + mbar))),
+                           static_cast<size_t>(
+                               std::max(abs(mtilde - mprime), m_dest)));
+                       l_dest <= std::min(lprime + lbar, ell_max); ++l_dest) {
+                    const double threej_lbar_val = threej_lbar(l_dest);
+                    const double threej_ltilde_val = threej_ltilde(l_dest);
+                    if (threej_lbar_val != 0.0 and threej_ltilde_val != 0.0) {
+                      const double sign_lbar =
+                          ((lprime + l_dest + lbar) % 2 == 0 ? 1.0 : -1.0);
+                      // Corrects for permutation of columns in
+                      // threej_lba
+                      const std::complex<double> correction =
+                          sign_lbar * threej_pq_val * threej_uv_val *
+                          threej_lbar_val * threej_ltilde_val * symm_factor *
+                          coef3j;
+                      if (m_src > 0) {
+                        // Main term, first term in Eq. (18)
+                        if (correction.imag() == 0.0) {
+                          // ReRe
+                          iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                       SpherepackIterator::CoefficientArray::a);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::a);
+                          add_element(correction.real());
 
-                  // ReIm
-                  iter_src.set(l_dest, static_cast<size_t>(m_src),
-                               SpherepackIterator::CoefficientArray::b);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::a);
-                  add_element(-correction.imag());
+                          // ImIm
+                          iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                       SpherepackIterator::CoefficientArray::b);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::b);
+                          add_element(correction.real());
+                        } else {
+                          // ReIm
+                          iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                       SpherepackIterator::CoefficientArray::b);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::a);
+                          add_element(-correction.imag());
 
-                  // ImIm
-                  iter_src.set(l_dest, static_cast<size_t>(m_src),
-                               SpherepackIterator::CoefficientArray::b);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::b);
-                  add_element(correction.real());
+                          // ImRe
+                          iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                       SpherepackIterator::CoefficientArray::a);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::b);
+                          add_element(correction.imag());
+                        }
+                      } else {
+                        // Second term in Eq. (18)
+                        const double sign = (m_src % 2 == 0 ? 1.0 : -1.0);
+                        if (correction.imag() == 0.0) {
+                          // ReRe
+                          iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                       SpherepackIterator::CoefficientArray::a);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::a);
+                          add_element(sign * correction.real());
 
-                  // ImRe
-                  iter_src.set(l_dest, static_cast<size_t>(m_src),
-                               SpherepackIterator::CoefficientArray::a);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::b);
-                  add_element(correction.imag());
-                } else {
-                  // Second term in Eq. (18)
-                  const double sign = (m_src % 2 == 0 ? 1.0 : -1.0);
-                  // ReRe
-                  iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                               SpherepackIterator::CoefficientArray::a);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::a);
-                  add_element(sign * correction.real());
+                          // ImIm
+                          iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                       SpherepackIterator::CoefficientArray::b);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::b);
+                          add_element(-sign * correction.real());
+                        } else {
+                          // ReIm
+                          iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                       SpherepackIterator::CoefficientArray::b);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::a);
+                          add_element(sign * correction.imag());
 
-                  // ReIm
-                  iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                               SpherepackIterator::CoefficientArray::b);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::a);
-                  add_element(sign * correction.imag());
-
-                  // ImRe
-                  iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                               SpherepackIterator::CoefficientArray::a);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::b);
-                  add_element(sign * correction.imag());
-
-                  // ImIm
-                  iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                               SpherepackIterator::CoefficientArray::b);
-                  iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                SpherepackIterator::CoefficientArray::b);
-                  add_element(-sign * correction.real());
+                          // ImRe
+                          iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                       SpherepackIterator::CoefficientArray::a);
+                          iter_dest.set(
+                              l_dest, static_cast<size_t>(m_dest),
+                              SpherepackIterator::CoefficientArray::b);
+                          add_element(sign * correction.imag());
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -276,110 +301,130 @@ void inner_loops_three(
         const double symm_factor =
             helpers::get_symm_factor<Symm>(src_multiplicity, lbar);
         if (symm_factor != 0.0) {
-          for (int w = -1; w <= 1; w += 2) {
-            const int mw = helpers::bv_to_m(src_bvs[0], w);
-            if (mtildes[mtilde_indx] - mw == mhat and
-                lhat >= static_cast<size_t>(std::max(
-                            abs(static_cast<int>(lbar) - 1),
-                            std::max(abs(mr + mbars[mbar_indx]),
-                                     abs(mw - mtildes[mtilde_indx])))) and
-                lhat <= lbar + 1) {
-              const int m_src = mprime - mhat;
-              const double sign_mtilde =
-                  ((mtildes[mtilde_indx] - mbars[mbar_indx]) % 2 == 0 ? 1.0
-                                                                      : -1.0);
-              const double coeflhat = 0.5 * static_cast<double>(2 * lhat + 1);
-              const double coeflbar = 0.5 * static_cast<double>(2 * lbar + 1);
-              const std::complex<double> k_coefs =
-                  helpers::bv_to_k(src_bvs[1], u) *
-                  helpers::bv_to_k(dest_bvs[1], p) *
-                  helpers::bv_to_k(src_bvs[2], v) *
-                  helpers::bv_to_k(dest_bvs[2], q) *
-                  helpers::bv_to_k(dest_bvs[0], r) *
-                  helpers::bv_to_k(src_bvs[0], w);
-              const std::complex<double> coef3j =
-                  -coeflprime * coeflbar * coeflhat * k_coefs * sign_y;
-              for (size_t l_dest = static_cast<size_t>(std::max(
-                       abs(static_cast<int>(lprime) - static_cast<int>(lhat)),
-                       std::max(abs(mhat - mprime), abs(mcheck + mprime))));
-                   l_dest <= lprime + lhat; ++l_dest) {
-                if (l_dest <= ell_max and static_cast<int>(l_dest) >= m_dest) {
-                  const double sign_lhat =
-                      ((lprime + l_dest + lhat) % 2 == 0 ? 1.0 : -1.0);
-                  // The division inside the index of the following
-                  // quantities is integer division.  Note that
-                  // q,v,r,w,v are always odd.
-                  const double threej_pq =
-                      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
-                      threej_pqs[static_cast<size_t>((q + 1) / 2 + p + 1)](
-                          lbar);
-                  const double threej_uv =
-                      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
-                      threej_uvs[static_cast<size_t>((v + 1) / 2 + u + 1)](
-                          lbar);
-                  const double threej_r =
-                      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
-                      threej_rs[static_cast<size_t>(static_cast<int>(lbar) +
-                                                    (r + 1) * 3 / 2 +
-                                                    6 * ((q + 1) / 2 + p + 1))]
-                          .value()(lhat);
+          // The division inside the index of the following
+          // quantities is integer division.  Note that
+          // q,v,r,w,v are always odd.
+          const double threej_pq =
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
+              threej_pqs[static_cast<size_t>((q + 1) / 2 + p + 1)](lbar);
+          const double threej_r =
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
+              threej_rs[static_cast<size_t>(static_cast<int>(lbar) +
+                                            (r + 1) * 3 / 2 +
+                                            6 * ((q + 1) / 2 + p + 1))]
+                  .value()(lhat);
+          const double threej_uv =
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
+              threej_uvs[static_cast<size_t>((v + 1) / 2 + u + 1)](lbar);
+          if (threej_r != 0.0 and threej_uv != 0.0 and threej_pq != 0.0) {
+            for (int w = -1; w <= 1; w += 2) {
+              const int mw = helpers::bv_to_m(src_bvs[0], w);
+              if (mtildes[mtilde_indx] - mw == mhat and
+                  lhat >= static_cast<size_t>(std::max(
+                              abs(static_cast<int>(lbar) - 1),
+                              std::max(abs(mr + mbars[mbar_indx]),
+                                       abs(mw - mtildes[mtilde_indx])))) and
+                  lhat <= lbar + 1) {
+                const int m_src = mprime - mhat;
+                const double sign_mtilde =
+                    ((mtildes[mtilde_indx] - mbars[mbar_indx]) % 2 == 0 ? 1.0
+                                                                        : -1.0);
+                const double coeflhat = 0.5 * static_cast<double>(2 * lhat + 1);
+                const double coeflbar = 0.5 * static_cast<double>(2 * lbar + 1);
+                const std::complex<double> k_coefs =
+                    helpers::bv_to_k(src_bvs[1], u) *
+                    helpers::bv_to_k(dest_bvs[1], p) *
+                    helpers::bv_to_k(src_bvs[2], v) *
+                    helpers::bv_to_k(dest_bvs[2], q) *
+                    helpers::bv_to_k(dest_bvs[0], r) *
+                    helpers::bv_to_k(src_bvs[0], w);
+                const std::complex<double> coef3j =
+                    -coeflprime * coeflbar * coeflhat * sign_y * k_coefs;
+                for (size_t l_dest = static_cast<size_t>(std::max(
+                         {abs(static_cast<int>(lprime) -
+                              static_cast<int>(lhat)),
+                          abs(mhat - mprime), abs(m_dest), mcheck + mprime}));
+                     l_dest <= std::min(lprime + lhat, ell_max); ++l_dest) {
+                  const double threej_mhat_val = threej_mhat(l_dest);
+                  const double threej_mcheck_val = threej_mcheck(l_dest);
                   const double threej_w =
                       // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
                       threej_ws[static_cast<size_t>(static_cast<int>(lbar) +
                                                     (w + 1) * 3 / 2 +
                                                     6 * ((v + 1) / 2 + u + 1))]
                           .value()(lhat);
-                  const std::complex<double> correction =
-                      coef3j * threej_pq * threej_uv * threej_r * threej_w *
-                      threej_mhat(l_dest) * threej_mcheck(l_dest) * sign_lhat *
-                      sign_mtilde * symm_factor;
-                  if (m_src > 0) {
-                    // Main term, first term in Eq. (18)
-                    // ReRe
-                    iter_src.set(l_dest, static_cast<size_t>(m_src),
-                                 SpherepackIterator::CoefficientArray::a);
-                    iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                  SpherepackIterator::CoefficientArray::a);
-                    add_element(correction.real());
+                  if (threej_mhat_val != 0.0 and threej_mcheck_val != 0.0 and
+                      threej_w != 0.0) {
+                    const double sign_lhat =
+                        ((lprime + l_dest + lhat) % 2 == 0 ? 1.0 : -1.0);
+                    const std::complex<double> correction =
+                        coef3j * threej_pq * threej_uv * threej_r * threej_w *
+                        threej_mhat_val * threej_mcheck_val * sign_lhat *
+                        sign_mtilde * symm_factor;
+                    if (m_src > 0) {
+                      // Main term, first term in Eq. (18)
+                      // ReRe
+                      if (correction.imag() == 0) {
+                        iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                     SpherepackIterator::CoefficientArray::a);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::a);
+                        add_element(correction.real());
 
-                    // ReIm
-                    iter_src.set(l_dest, static_cast<size_t>(m_src),
-                                 SpherepackIterator::CoefficientArray::b);
-                    add_element(-correction.imag());
+                        // ImIm
+                        iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                     SpherepackIterator::CoefficientArray::b);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::b);
+                        add_element(correction.real());
+                      } else {
+                        // ReIm
+                        iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                     SpherepackIterator::CoefficientArray::b);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::a);
+                        add_element(-correction.imag());
 
-                    // ImIm
-                    iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                  SpherepackIterator::CoefficientArray::b);
-                    add_element(correction.real());
+                        // ImRe
+                        iter_src.set(l_dest, static_cast<size_t>(m_src),
+                                     SpherepackIterator::CoefficientArray::a);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::b);
+                        add_element(correction.imag());
+                      }
+                    } else {
+                      // Second term in Eq. (18)
+                      const double sign = (m_src % 2 == 0 ? 1.0 : -1.0);
+                      if (correction.imag() == 0) {
+                        // ReRe
+                        iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                     SpherepackIterator::CoefficientArray::a);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::a);
+                        add_element(sign * correction.real());
 
-                    // ImRe
-                    iter_src.set(l_dest, static_cast<size_t>(m_src),
-                                 SpherepackIterator::CoefficientArray::a);
-                    add_element(correction.imag());
-                  } else {
-                    // Second term in Eq. (18)
-                    const double sign = (m_src % 2 == 0 ? 1.0 : -1.0);
-                    // ReRe
-                    iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                                 SpherepackIterator::CoefficientArray::a);
-                    iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                  SpherepackIterator::CoefficientArray::a);
-                    add_element(sign * correction.real());
+                        // ImIm
+                        iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                     SpherepackIterator::CoefficientArray::b);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::b);
+                        add_element(-sign * correction.real());
+                      } else {
+                        // ReIm
+                        iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                     SpherepackIterator::CoefficientArray::b);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::a);
+                        add_element(sign * correction.imag());
 
-                    // ReIm
-                    iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                                 SpherepackIterator::CoefficientArray::b);
-                    add_element(sign * correction.imag());
-
-                    // ImIm
-                    iter_dest.set(l_dest, static_cast<size_t>(m_dest),
-                                  SpherepackIterator::CoefficientArray::b);
-                    add_element(-sign * correction.real());
-
-                    // ImRe
-                    iter_src.set(l_dest, static_cast<size_t>(-m_src),
-                                 SpherepackIterator::CoefficientArray::a);
-                    add_element(sign * correction.imag());
+                        // ImRe
+                        iter_src.set(l_dest, static_cast<size_t>(-m_src),
+                                     SpherepackIterator::CoefficientArray::a);
+                        iter_dest.set(l_dest, static_cast<size_t>(m_dest),
+                                      SpherepackIterator::CoefficientArray::b);
+                        add_element(sign * correction.imag());
+                      }
+                    }
                   }
                 }
               }
@@ -601,7 +646,7 @@ void FillFilter(const gsl::not_null<SparseMatrixType*> matrix,
                       src_multiplicity, lbar);
               if (symm_factor != 0.0) {
                 const double coeflbar = 0.5 * static_cast<double>(2 * lbar + 1);
-                for (int mbar = -static_cast<int>(lbar);
+                for (int mbar = std::max(-static_cast<int>(lbar), -mprime);
                      mbar <= static_cast<int>(lbar); ++mbar) {
                   // The first 3J term in Eq. (22)
                   WignerThreeJ threej_lbar(lprime, mprime, lbar, mbar);
