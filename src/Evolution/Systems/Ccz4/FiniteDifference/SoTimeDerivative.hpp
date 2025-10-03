@@ -22,7 +22,9 @@
 #include "Evolution/Systems/Ccz4/DerivChristoffel.hpp"
 #include "Evolution/Systems/Ccz4/DerivLapse.hpp"
 #include "Evolution/Systems/Ccz4/DerivZ4Constraint.hpp"
+#include "Evolution/Systems/Ccz4/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/Ccz4/FiniteDifference/Derivatives.hpp"
+#include "Evolution/Systems/Ccz4/FiniteDifference/Tags.hpp"
 #include "Evolution/Systems/Ccz4/Ricci.hpp"
 #include "Evolution/Systems/Ccz4/RicciScalarPlusDivergenceZ4Constraint.hpp"
 #include "Evolution/Systems/Ccz4/Tags.hpp"
@@ -172,9 +174,9 @@ static void apply(
     const tnsr::i<DataVector, Dim>& d_trace_extrinsic_curvature,
     const tnsr::i<DataVector, Dim>& d_theta,
     const tnsr::iJ<DataVector, Dim>& d_gamma_hat,
-    const tnsr::iJ<DataVector, Dim>& d_b) {
+    const tnsr::iJ<DataVector, Dim>& d_b, const bool shifting_shift,
+    const bool evolve_lapse_and_shift) {
   constexpr double one_third = 1.0 / 3.0;
-
   // quantities we need for computing eq 4, 13 - 27
 
   determinant_and_inverse(det_conformal_spatial_metric,
@@ -192,8 +194,9 @@ static void apply(
                        (*inv_conformal_spatial_metric)(ti::I, ti::K) *
                        (*inv_conformal_spatial_metric)(ti::J, ti::L));
 
-  ASSERT(min(get(lapse)) > 0.0,
-         "The lapse must be positive when using 1+log slicing.");
+  if (min(get(lapse)) <= 0.0) {
+    ERROR("The lapse must be positive when using 1+log slicing.");
+  }
 
   // slicing_condition and d_slicing_condition is not used in SO-CCZ4
   // \alpha g(\alpha)  == 2
@@ -394,15 +397,22 @@ static void apply(
           (*inv_tau_times_conformal_metric)(ti::i, ti::j) *
               ((*det_conformal_spatial_metric)() - 1.0));
 
-  // time derivative of the lapse
-  ::tenex::evaluate<>(dt_lapse, (shift(ti::K) * field_a(ti::k) -
-                                 (*lapse_times_slicing_condition)() *
-                                     (*k_minus_k0_minus_2_theta_c)()) *
-                                    lapse());
-
-  // time derivative of the shift
-  ::tenex::evaluate<ti::I>(dt_shift,
-                           f * b(ti::I) + shift(ti::K) * field_b(ti::k, ti::I));
+  if (evolve_lapse_and_shift) {
+    // time derivative of the lapse
+    ::tenex::evaluate<>(dt_lapse, (shift(ti::K) * field_a(ti::k) -
+                                   (*lapse_times_slicing_condition)() *
+                                       (*k_minus_k0_minus_2_theta_c)()) *
+                                      lapse());
+    // time derivative of the shift
+    ::tenex::evaluate<ti::I>(dt_shift, f * b(ti::I));
+    if (shifting_shift) {
+      ::tenex::update<ti::I>(
+          dt_shift, (*dt_shift)(ti::I) + shift(ti::K) * field_b(ti::k, ti::I));
+    }
+  } else {
+    *dt_lapse = make_with_value<Scalar<DataVector>>(lapse, 0.0);
+    *dt_shift = make_with_value<tnsr::I<DataVector, Dim>>(shift, 0.0);
+  }
 
   // time derivative of the the conformal factor
   ::tenex::evaluate(dt_conformal_factor,
@@ -499,9 +509,18 @@ static void apply(
                                  (*contracted_symmetrized_d_field_b)(ti::k));
 
   // time derivative b^i
-  ::tenex::evaluate<ti::I>(
-      dt_b, (*dt_gamma_hat)(ti::I)-eta() * b(ti::I) +
-                shift(ti::K) * (d_b(ti::k, ti::I) - d_gamma_hat(ti::k, ti::I)));
+  if (evolve_lapse_and_shift) {
+    ::tenex::evaluate<ti::I>(dt_b, (*dt_gamma_hat)(ti::I)-eta() * b(ti::I));
+    if (shifting_shift) {
+      ::tenex::update<ti::I>(
+          dt_b, (*dt_b)(ti::I) + shift(ti::K) * (d_b(ti::k, ti::I) -
+                                                 d_gamma_hat(ti::k, ti::I)));
+    }
+  } else {
+    (*dt_b).get(0) = 0.0;
+    (*dt_b).get(1) = 0.0;
+    (*dt_b).get(2) = 0.0;
+  }
 
   // Note that, we do not need to evolve the auxiliary variables in SO-CCZ4.
 }
@@ -520,343 +539,369 @@ static void apply(
  * The four auxiliary varialbels \f$A_i\f$, \f$B_k{}^{i}\f$,
  * \f$D_{kij}\f$, and \f$P_i\f$ are NOT evolved.
  */
-template <size_t Dim, class DbTagsList>
-void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
-  // compute the first spatial derivatives of the evolved variables
-  using evolved_vars_tag = typename System::variables_tag;
-  using gradients_tags = typename System::gradients_tags;
+struct SoTimeDerivative {
+  template <typename DbTagsList>
+  static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+    // compute the first spatial derivatives of the evolved variables
+    using evolved_vars_tag = typename System::variables_tag;
+    using gradients_tags = typename System::gradients_tags;
 
-  // only 4-th order accurate second derivatives have been implemented
-  // To keep the same order of accuracy we use the same order for
-  // both first and second derivatives
-  const size_t fd_order = 4;
-  const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
-  const Mesh<Dim>& subcell_mesh =
-      db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
-  const size_t num_pts = subcell_mesh.number_of_grid_points();
-  Variables<db::wrap_tags_in<::Tags::deriv, gradients_tags, tmpl::size_t<Dim>,
-                             Frame::Inertial>>
-      cell_centered_Ccz4_derivs{num_pts};
-  const auto& cell_centered_logical_to_inertial_inv_jacobian = db::get<
-      evolution::dg::subcell::fd::Tags::InverseJacobianLogicalToInertial<Dim>>(
-      *box);
+    // only 4-th order accurate second derivatives have been implemented
+    // To keep the same order of accuracy we use the same order for
+    // both first and second derivatives
+    constexpr size_t fd_order = 4;
+    const auto& evolved_vars = db::get<evolved_vars_tag>(*box);
+    const Mesh<Dim>& subcell_mesh =
+        db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
+    const size_t num_pts = subcell_mesh.number_of_grid_points();
+    Variables<db::wrap_tags_in<::Tags::deriv, gradients_tags, tmpl::size_t<Dim>,
+                               Frame::Inertial>>
+        cell_centered_Ccz4_derivs{num_pts};
+    const auto& cell_centered_logical_to_inertial_inv_jacobian =
+        db::get<evolution::dg::subcell::fd::Tags::
+                    InverseJacobianLogicalToInertial<Dim>>(*box);
 
-  ::Ccz4::fd::spacetime_derivatives(
-      make_not_null(&cell_centered_Ccz4_derivs), evolved_vars,
-      db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
-          *box),
-      fd_order, subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
+    constexpr bool subcell_enabled_at_external_boundary =
+        std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
 
-  // calculate the four auxiliary fields in eq. 6
-  // auxiliary variables NOT evolved in SO-CCZ4
-  const auto& d_lapse =
-      get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                        Frame::Inertial>>(cell_centered_Ccz4_derivs);
-  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(evolved_vars);
-  const auto field_a = ::tenex::evaluate<ti::i>(d_lapse(ti::i) / lapse());
+    const Element<3>& element = db::get<domain::Tags::Element<3>>(*box);
 
-  const auto& field_b =
-      get<::Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
-                        Frame::Inertial>>(cell_centered_Ccz4_derivs);
+    const Ccz4::fd::Reconstructor& recons =
+        db::get<Ccz4::fd::Tags::Reconstructor>(*box);
 
-  const auto& d_spatial_conformal_metric =
-      get<::Tags::deriv<Tags::ConformalMetric<DataVector, Dim>,
-                        tmpl::size_t<Dim>, Frame::Inertial>>(
-          cell_centered_Ccz4_derivs);
-  tnsr::ijj<DataVector, Dim> field_d;
-  ::tenex::evaluate<ti::i, ti::j, ti::k>(
-      make_not_null(&field_d),
-      0.5 * d_spatial_conformal_metric(ti::i, ti::j, ti::k));
+    // If the element has external boundaries and subcell is enabled for
+    // boundary elements, compute FD ghost data with a given boundary condition.
+    if constexpr (subcell_enabled_at_external_boundary) {
+      if (not element.external_boundaries().empty()) {
+        fd::BoundaryConditionGhostData::apply(box, element, recons);
+      }
+    }
 
-  const auto& conformal_factor =
-      get<Tags::ConformalFactor<DataVector>>(evolved_vars);
-  const auto& d_conformal_factor =
-      get<::Tags::deriv<Tags::ConformalFactor<DataVector>, tmpl::size_t<Dim>,
-                        Frame::Inertial>>(cell_centered_Ccz4_derivs);
-  const auto field_p =
-      ::tenex::evaluate<ti::i>(d_conformal_factor(ti::i) / conformal_factor());
+    const bool evolve_lapse_and_shift =
+        get<::Ccz4::fd::Tags::EvolveLapseAndShift>(*box);
 
-  // compute second derivatives of the evolved variables
-  Variables<db::wrap_tags_in<::Tags::second_deriv, gradients_tags,
-                             tmpl::size_t<Dim>, Frame::Inertial>>
-      cell_centered_Ccz4_second_derivs{num_pts};
+    ::Ccz4::fd::spacetime_derivatives(
+        make_not_null(&cell_centered_Ccz4_derivs), evolved_vars,
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+            *box),
+        fd_order, subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
 
-  Ccz4::fd::second_spacetime_derivatives(
-      make_not_null(&cell_centered_Ccz4_second_derivs), evolved_vars,
-      db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
-          *box),
-      fd_order, subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
+    // calculate the four auxiliary fields in eq. 6
+    // auxiliary variables NOT evolved in SO-CCZ4
+    const auto& d_lapse =
+        get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                          Frame::Inertial>>(cell_centered_Ccz4_derivs);
+    const auto& lapse = get<gr::Tags::Lapse<DataVector>>(evolved_vars);
+    const auto field_a = ::tenex::evaluate<ti::i>(d_lapse(ti::i) / lapse());
 
-  // compute spatial derivative of the four auxiliary fields
-  const auto& d_d_lapse =
-      get<::Tags::second_deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                               Frame::Inertial>>(
-          cell_centered_Ccz4_second_derivs);
-  tnsr::ii<DataVector, Dim> d_field_a;
-  ::tenex::evaluate<ti::i, ti::j>(
-      make_not_null(&d_field_a),
-      (d_d_lapse(ti::i, ti::j) - d_lapse(ti::i) * d_lapse(ti::j) / lapse()) /
-          lapse());
+    const auto& field_b =
+        get<::Tags::deriv<gr::Tags::Shift<DataVector, Dim>, tmpl::size_t<Dim>,
+                          Frame::Inertial>>(cell_centered_Ccz4_derivs);
 
-  const auto& d_field_b =
-      get<::Tags::second_deriv<gr::Tags::Shift<DataVector, Dim>,
-                               tmpl::size_t<Dim>, Frame::Inertial>>(
-          cell_centered_Ccz4_second_derivs);
+    const auto& d_spatial_conformal_metric =
+        get<::Tags::deriv<::Ccz4::Tags::ConformalMetric<DataVector, Dim>,
+                          tmpl::size_t<Dim>, Frame::Inertial>>(
+            cell_centered_Ccz4_derivs);
+    tnsr::ijj<DataVector, Dim> field_d;
+    ::tenex::evaluate<ti::i, ti::j, ti::k>(
+        make_not_null(&field_d),
+        0.5 * d_spatial_conformal_metric(ti::i, ti::j, ti::k));
 
-  const auto& d_d_conformal_metric =
-      get<::Tags::second_deriv<Tags::ConformalMetric<DataVector, Dim>,
-                               tmpl::size_t<Dim>, Frame::Inertial>>(
-          cell_centered_Ccz4_second_derivs);
+    const auto& conformal_factor =
+        get<::Ccz4::Tags::ConformalFactor<DataVector>>(evolved_vars);
+    const auto& d_conformal_factor =
+        get<::Tags::deriv<::Ccz4::Tags::ConformalFactor<DataVector>,
+                          tmpl::size_t<Dim>, Frame::Inertial>>(
+            cell_centered_Ccz4_derivs);
+    const auto field_p = ::tenex::evaluate<ti::i>(d_conformal_factor(ti::i) /
+                                                  conformal_factor());
 
-  tnsr::iijj<DataVector, Dim> d_field_d;
-  ::tenex::evaluate<ti::i, ti::j, ti::k, ti::l>(
-      make_not_null(&d_field_d),
-      0.5 * d_d_conformal_metric(ti::i, ti::j, ti::k, ti::l));
+    // compute second derivatives of the evolved variables
+    Variables<db::wrap_tags_in<::Tags::second_deriv, gradients_tags,
+                               tmpl::size_t<Dim>, Frame::Inertial>>
+        cell_centered_Ccz4_second_derivs{num_pts};
 
-  const auto& d_d_conformal_factor =
-      get<::Tags::second_deriv<Tags::ConformalFactor<DataVector>,
-                               tmpl::size_t<Dim>, Frame::Inertial>>(
-          cell_centered_Ccz4_second_derivs);
+    Ccz4::fd::second_spacetime_derivatives(
+        make_not_null(&cell_centered_Ccz4_second_derivs), evolved_vars,
+        db::get<evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>>(
+            *box),
+        fd_order, subcell_mesh, cell_centered_logical_to_inertial_inv_jacobian);
 
-  tnsr::ii<DataVector, Dim> d_field_p;
-  ::tenex::evaluate<ti::i, ti::j>(
-      make_not_null(&d_field_p),
-      (d_d_conformal_factor(ti::i, ti::j) - d_conformal_factor(ti::i) *
-                                                d_conformal_factor(ti::j) /
-                                                conformal_factor()) /
-          conformal_factor());
+    // compute spatial derivative of the four auxiliary fields
+    const auto& d_d_lapse =
+        get<::Tags::second_deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                                 Frame::Inertial>>(
+            cell_centered_Ccz4_second_derivs);
+    tnsr::ii<DataVector, Dim> d_field_a;
+    ::tenex::evaluate<ti::i, ti::j>(
+        make_not_null(&d_field_a),
+        (d_d_lapse(ti::i, ti::j) - d_lapse(ti::i) * d_lapse(ti::j) / lapse()) /
+            lapse());
 
-  // intialize containers to be supplied in the SO-CCZ4 TimeDerivative.cpp
-  // apply() function quantities we need for computing eq 4, 13 - 27
-  using TempVars = Variables<tmpl::list<
-    Tags::ConformalFactorSquared<DataVector>,
-    Tags::DetConformalSpatialMetric<DataVector>,
-    Tags::InverseConformalMetric<DataVector, Dim>,
-    gr::Tags::InverseSpatialMetric<DataVector, Dim>,
-    Tags::InvATilde<DataVector, Dim>,
-    Tags::ATildeTimesFieldB<DataVector, Dim>,
-    Tags::ATildeMinusOneThirdConformalMetricTimesTraceATilde<DataVector, Dim>,
-    Tags::ContractedFieldB<DataVector>,
-    Tags::SymmetrizedDerivFieldB<DataVector, Dim>,
-    Tags::ContractedSymmetrizedDerivFieldB<DataVector, Dim>,
-    Tags::FieldDUpTimesATilde<DataVector, Dim>,
-    Tags::ContractedFieldDUp<DataVector, Dim>,
-    Tags::HalfConformalFactorSquared<DataVector>,
-    Tags::ConformalMetricTimesFieldB<DataVector, Dim>,
-    Tags::ConformalMetricTimesTraceATilde<DataVector, Dim>,
-    Tags::InverseConformalMetricTimesDerivATilde<DataVector, Dim>,
-    Tags::GammaHatMinusContractedConformalChristoffel<DataVector, Dim>,
-    Tags::DerivGammaHatMinusContractedConformalChristoffel<DataVector, Dim>,
-    Tags::ContractedChristoffelSecondKind<DataVector, Dim>,
-    Tags::ContractedDerivConformalChristoffelDifference<DataVector, Dim>,
-    Tags::KMinus2ThetaC<DataVector>,
-    Tags::KMinusK0Minus2ThetaC<DataVector>,
-    Tags::LapseTimesATilde<DataVector, Dim>,
-    Tags::LapseTimesDerivATilde<DataVector, Dim>,
-    Tags::LapseTimesFieldA<DataVector, Dim>,
-    Tags::LapseTimesConformalMetric<DataVector, Dim>,
-    Tags::LapseTimesSlicingCondition<DataVector>,
-    Tags::LapseTimesRicciScalarPlus2DivergenceZ4Constraint<DataVector>,
-    Tags::ShiftTimesDerivGammaHat<DataVector, Dim>,
-    Tags::InverseTauTimesConformalMetric<DataVector, Dim>,
-    Tags::TraceATilde<DataVector>,
-    Tags::FieldDUp<DataVector, Dim>,
-    Tags::ConformalChristoffelSecondKind<DataVector, Dim>,
-    Tags::DerivConformalChristoffelSecondKind<DataVector, Dim>,
-    Tags::ChristoffelSecondKind<DataVector, Dim>,
-    Tags::SpatialRicciTensor<DataVector, Dim>,
-    Tags::GradGradLapse<DataVector, Dim>,
-    Tags::DivergenceLapse<DataVector>,
-    Tags::ContractedConformalChristoffelSecondKind<DataVector, Dim>,
-    Tags::DerivContractedConformalChristoffelSecondKind<DataVector, Dim>,
-    Tags::SpatialZ4Constraint<DataVector, Dim>,
-    Tags::UpperSpatialZ4Contraint<DataVector, Dim>,
-    Tags::GradSpatialZ4Constraint<DataVector, Dim>,
-    Tags::RicciScalarPlusDivergenceZ4Constraint<DataVector>>>;
+    const auto& d_field_b =
+        get<::Tags::second_deriv<gr::Tags::Shift<DataVector, Dim>,
+                                 tmpl::size_t<Dim>, Frame::Inertial>>(
+            cell_centered_Ccz4_second_derivs);
 
-  TempVars temp_vars(num_pts);
+    const auto& d_d_conformal_metric =
+        get<::Tags::second_deriv<::Ccz4::Tags::ConformalMetric<DataVector, Dim>,
+                                 tmpl::size_t<Dim>, Frame::Inertial>>(
+            cell_centered_Ccz4_second_derivs);
 
-  // free params
-  const double c = 1.0;               // c = 1.0 in SO-CCZ4
-  const double cleaning_speed = 1.0;  // e in the paper; e = 1.0 for SO-CCZ4
-  const Scalar<DataVector>& eta = get<Tags::Eta<DataVector>>(*box);
-  const double f = get<Tags::GammaDriverParam>(*box);
-  const Scalar<DataVector>& k_0 = get<Tags::K0<DataVector>>(*box);
-  const double kappa_1 = get<Tags::Kappa1>(*box);
-  const double kappa_2 = get<Tags::Kappa2>(*box);
-  const double kappa_3 = get<Tags::Kappa3>(*box);
-  const double one_over_relaxation_time = 0.0;  // \tau^{-1} = 0 in SO-CCZ4
+    tnsr::iijj<DataVector, Dim> d_field_d;
+    ::tenex::evaluate<ti::i, ti::j, ti::k, ti::l>(
+        make_not_null(&d_field_d),
+        0.5 * d_d_conformal_metric(ti::i, ti::j, ti::k, ti::l));
 
-  // we assume the databox already has tags corresponding to dt of the evolved
-  // variables
-  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, evolved_vars_tag>;
-  db::mutate<dt_variables_tag>(
-      [&](const auto dt_vars_ptr) {
-        auto& [
-            conformal_factor_squared,
-            det_conformal_spatial_metric,
-            inv_conformal_spatial_metric,
-            inv_spatial_metric,
-            inv_a_tilde,
-            a_tilde_times_field_b,
-            a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde,
-            contracted_field_b,
-            symmetrized_d_field_b,
-            contracted_symmetrized_d_field_b,
-            field_d_up_times_a_tilde,
-            contracted_field_d_up,
-            half_conformal_factor_squared,
-            conformal_metric_times_field_b,
-            conformal_metric_times_trace_a_tilde,
-            inv_conformal_metric_times_d_a_tilde,
-            gamma_hat_minus_contracted_conformal_christoffel,
-            d_gamma_hat_minus_contracted_conformal_christoffel,
-            contracted_christoffel_second_kind,
-            contracted_d_conformal_christoffel_difference,
-            k_minus_2_theta_c,
-            k_minus_k0_minus_2_theta_c,
-            lapse_times_a_tilde,
-            lapse_times_d_a_tilde,
-            lapse_times_field_a,
-            lapse_times_conformal_spatial_metric,
-            lapse_times_slicing_condition,
-            lapse_times_ricci_scalar_plus_divergence_z4_constraint,
-            shift_times_deriv_gamma_hat,
-            inv_tau_times_conformal_metric,
-            trace_a_tilde,
-            field_d_up,
-            conformal_christoffel_second_kind,
-            d_conformal_christoffel_second_kind,
-            christoffel_second_kind,
-            spatial_ricci_tensor,
-            grad_grad_lapse,
-            divergence_lapse,
-            contracted_conformal_christoffel_second_kind,
-            d_contracted_conformal_christoffel_second_kind,
-            spatial_z4_constraint,
-            upper_spatial_z4_constraint,
-            grad_spatial_z4_constraint,
-            ricci_scalar_plus_divergence_z4_constraint] = temp_vars;
-        detail::apply(
-            // LHS time derivatives of evolved variables: eq 4a - 4i
-            make_not_null(
-                &get<
-                    ::Tags::dt<::Ccz4::Tags::ConformalMetric<DataVector, Dim>>>(
-                    *dt_vars_ptr)),  // eq 4a
-            make_not_null(&get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(
-                *dt_vars_ptr)),  // eq 4g
-            make_not_null(&get<::Tags::dt<gr::Tags::Shift<DataVector, Dim>>>(
-                *dt_vars_ptr)),  // eq 4h
-            make_not_null(
-                &get<::Tags::dt<::Ccz4::Tags::ConformalFactor<DataVector>>>(
-                    *dt_vars_ptr)),  // eq 4c
-            make_not_null(
-                &get<::Tags::dt<::Ccz4::Tags::ATilde<DataVector, Dim>>>(
-                    *dt_vars_ptr)),  // eq 4b
-            make_not_null(
-                &get<::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataVector>>>(
-                    *dt_vars_ptr)),  // eq 4d
-            make_not_null(&get<::Tags::dt<::Ccz4::Tags::Theta<DataVector>>>(
-                *dt_vars_ptr)),  // eq 4e
-            make_not_null(
-                &get<::Tags::dt<::Ccz4::Tags::GammaHat<DataVector, Dim>>>(
-                    *dt_vars_ptr)),  // eq 4f
-            make_not_null(
-                &get<
-                    ::Tags::dt<::Ccz4::Tags::AuxiliaryShiftB<DataVector, Dim>>>(
-                    *dt_vars_ptr)),  // eq 4i
+    const auto& d_d_conformal_factor =
+        get<::Tags::second_deriv<::Ccz4::Tags::ConformalFactor<DataVector>,
+                                 tmpl::size_t<Dim>, Frame::Inertial>>(
+            cell_centered_Ccz4_second_derivs);
 
-            // quantities we need for computing eq 4, 13 - 27
-            make_not_null(&conformal_factor_squared),
-            make_not_null(&det_conformal_spatial_metric),
-            make_not_null(&inv_conformal_spatial_metric),
-            make_not_null(&inv_spatial_metric), make_not_null(&inv_a_tilde),
-            // temporary expressions
-            make_not_null(&a_tilde_times_field_b),
-            make_not_null(
+    tnsr::ii<DataVector, Dim> d_field_p;
+    ::tenex::evaluate<ti::i, ti::j>(
+        make_not_null(&d_field_p),
+        (d_d_conformal_factor(ti::i, ti::j) - d_conformal_factor(ti::i) *
+                                                  d_conformal_factor(ti::j) /
+                                                  conformal_factor()) /
+            conformal_factor());
+
+    // intialize containers to be supplied in the SO-CCZ4 TimeDerivative.cpp
+    // apply() function quantities we need for computing eq 4, 13 - 27
+    using TempVars = Variables<tmpl::list<
+        ::Ccz4::Tags::ConformalFactorSquared<DataVector>,
+        ::Ccz4::Tags::DetConformalSpatialMetric<DataVector>,
+        ::Ccz4::Tags::InverseConformalMetric<DataVector, Dim>,
+        gr::Tags::InverseSpatialMetric<DataVector, Dim>,
+        ::Ccz4::Tags::InvATilde<DataVector, Dim>,
+        ::Ccz4::Tags::ATildeTimesFieldB<DataVector, Dim>,
+        ::Ccz4::Tags::ATildeMinusOneThirdConformalMetricTimesTraceATilde<
+            DataVector, Dim>,
+        ::Ccz4::Tags::ContractedFieldB<DataVector>,
+        ::Ccz4::Tags::SymmetrizedDerivFieldB<DataVector, Dim>,
+        ::Ccz4::Tags::ContractedSymmetrizedDerivFieldB<DataVector, Dim>,
+        ::Ccz4::Tags::FieldDUpTimesATilde<DataVector, Dim>,
+        ::Ccz4::Tags::ContractedFieldDUp<DataVector, Dim>,
+        ::Ccz4::Tags::HalfConformalFactorSquared<DataVector>,
+        ::Ccz4::Tags::ConformalMetricTimesFieldB<DataVector, Dim>,
+        ::Ccz4::Tags::ConformalMetricTimesTraceATilde<DataVector, Dim>,
+        ::Ccz4::Tags::InverseConformalMetricTimesDerivATilde<DataVector, Dim>,
+        ::Ccz4::Tags::GammaHatMinusContractedConformalChristoffel<DataVector,
+                                                                  Dim>,
+        ::Ccz4::Tags::DerivGammaHatMinusContractedConformalChristoffel<
+            DataVector, Dim>,
+        ::Ccz4::Tags::ContractedChristoffelSecondKind<DataVector, Dim>,
+        ::Ccz4::Tags::ContractedDerivConformalChristoffelDifference<DataVector,
+                                                                    Dim>,
+        ::Ccz4::Tags::KMinus2ThetaC<DataVector>,
+        ::Ccz4::Tags::KMinusK0Minus2ThetaC<DataVector>,
+        ::Ccz4::Tags::LapseTimesATilde<DataVector, Dim>,
+        ::Ccz4::Tags::LapseTimesDerivATilde<DataVector, Dim>,
+        ::Ccz4::Tags::LapseTimesFieldA<DataVector, Dim>,
+        ::Ccz4::Tags::LapseTimesConformalMetric<DataVector, Dim>,
+        ::Ccz4::Tags::LapseTimesSlicingCondition<DataVector>,
+        ::Ccz4::Tags::LapseTimesRicciScalarPlus2DivergenceZ4Constraint<
+            DataVector>,
+        ::Ccz4::Tags::ShiftTimesDerivGammaHat<DataVector, Dim>,
+        ::Ccz4::Tags::InverseTauTimesConformalMetric<DataVector, Dim>,
+        ::Ccz4::Tags::TraceATilde<DataVector>,
+        ::Ccz4::Tags::FieldDUp<DataVector, Dim>,
+        ::Ccz4::Tags::ConformalChristoffelSecondKind<DataVector, Dim>,
+        ::Ccz4::Tags::DerivConformalChristoffelSecondKind<DataVector, Dim>,
+        ::Ccz4::Tags::ChristoffelSecondKind<DataVector, Dim>,
+        ::Ccz4::Tags::SpatialRicciTensor<DataVector, Dim>,
+        ::Ccz4::Tags::GradGradLapse<DataVector, Dim>,
+        ::Ccz4::Tags::DivergenceLapse<DataVector>,
+        ::Ccz4::Tags::ContractedConformalChristoffelSecondKind<DataVector, Dim>,
+        ::Ccz4::Tags::DerivContractedConformalChristoffelSecondKind<DataVector,
+                                                                    Dim>,
+        ::Ccz4::Tags::SpatialZ4Constraint<DataVector, Dim>,
+        ::Ccz4::Tags::GradSpatialZ4Constraint<DataVector, Dim>,
+        ::Ccz4::Tags::RicciScalarPlusDivergenceZ4Constraint<DataVector>>>;
+
+    TempVars temp_vars(num_pts);
+    tnsr::I<DataVector, Dim> upper_spatial_z4_constraint(num_pts);
+
+    // free params
+    const double c = 1.0;               // c = 1.0 in SO-CCZ4
+    const double cleaning_speed = 1.0;  // e in the paper; e = 1.0 for SO-CCZ4
+    const Scalar<DataVector>& eta = get<::Ccz4::Tags::Eta<DataVector>>(*box);
+    const double f = Ccz4::fd::System::f;
+    const Scalar<DataVector>& k_0 = get<::Ccz4::Tags::K0<DataVector>>(*box);
+    const double kappa_1 = get<::Ccz4::Tags::Kappa1>(*box);
+    const double kappa_2 = get<::Ccz4::Tags::Kappa2>(*box);
+    const double kappa_3 = get<::Ccz4::Tags::Kappa3>(*box);
+    const double one_over_relaxation_time = 0.0;  // \tau^{-1} = 0 in SO-CCZ4
+    const bool shifting_shift = Ccz4::fd::System::shifting_shift;
+
+    // we assume the databox already has tags corresponding to dt of the evolved
+    // variables
+    using dt_variables_tag = db::add_tag_prefix<::Tags::dt, evolved_vars_tag>;
+
+    // resize here
+
+    db::mutate<dt_variables_tag,
+               ::Ccz4::Tags::SpatialZ4ConstraintUp<DataVector, Dim>>(
+        [&](const auto dt_vars_ptr,
+            const auto upper_spatial_z4_constraint_ptr) {
+          dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points());
+          auto& [conformal_factor_squared, det_conformal_spatial_metric,
+                 inv_conformal_spatial_metric, inv_spatial_metric, inv_a_tilde,
+                 a_tilde_times_field_b,
+                 a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde,
+                 contracted_field_b, symmetrized_d_field_b,
+                 contracted_symmetrized_d_field_b, field_d_up_times_a_tilde,
+                 contracted_field_d_up, half_conformal_factor_squared,
+                 conformal_metric_times_field_b,
+                 conformal_metric_times_trace_a_tilde,
+                 inv_conformal_metric_times_d_a_tilde,
+                 gamma_hat_minus_contracted_conformal_christoffel,
+                 d_gamma_hat_minus_contracted_conformal_christoffel,
+                 contracted_christoffel_second_kind,
+                 contracted_d_conformal_christoffel_difference,
+                 k_minus_2_theta_c, k_minus_k0_minus_2_theta_c,
+                 lapse_times_a_tilde, lapse_times_d_a_tilde,
+                 lapse_times_field_a, lapse_times_conformal_spatial_metric,
+                 lapse_times_slicing_condition,
+                 lapse_times_ricci_scalar_plus_divergence_z4_constraint,
+                 shift_times_deriv_gamma_hat, inv_tau_times_conformal_metric,
+                 trace_a_tilde, field_d_up, conformal_christoffel_second_kind,
+                 d_conformal_christoffel_second_kind, christoffel_second_kind,
+                 spatial_ricci_tensor, grad_grad_lapse, divergence_lapse,
+                 contracted_conformal_christoffel_second_kind,
+                 d_contracted_conformal_christoffel_second_kind,
+                 spatial_z4_constraint, grad_spatial_z4_constraint,
+                 ricci_scalar_plus_divergence_z4_constraint] = temp_vars;
+          detail::apply(
+              // LHS time derivatives of evolved variables: eq 4a - 4i
+              make_not_null(
+                  &get<::Tags::dt<
+                      ::Ccz4::Tags::ConformalMetric<DataVector, Dim>>>(
+                      *dt_vars_ptr)),  // eq 4a
+              make_not_null(&get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(
+                  *dt_vars_ptr)),  // eq 4g
+              make_not_null(&get<::Tags::dt<gr::Tags::Shift<DataVector, Dim>>>(
+                  *dt_vars_ptr)),  // eq 4h
+              make_not_null(
+                  &get<::Tags::dt<::Ccz4::Tags::ConformalFactor<DataVector>>>(
+                      *dt_vars_ptr)),  // eq 4c
+              make_not_null(
+                  &get<::Tags::dt<::Ccz4::Tags::ATilde<DataVector, Dim>>>(
+                      *dt_vars_ptr)),  // eq 4b
+              make_not_null(&get<::Tags::dt<
+                                gr::Tags::TraceExtrinsicCurvature<DataVector>>>(
+                  *dt_vars_ptr)),  // eq 4d
+              make_not_null(&get<::Tags::dt<::Ccz4::Tags::Theta<DataVector>>>(
+                  *dt_vars_ptr)),  // eq 4e
+              make_not_null(
+                  &get<::Tags::dt<::Ccz4::Tags::GammaHat<DataVector, Dim>>>(
+                      *dt_vars_ptr)),  // eq 4f
+              make_not_null(
+                  &get<::Tags::dt<
+                      ::Ccz4::Tags::AuxiliaryShiftB<DataVector, Dim>>>(
+                      *dt_vars_ptr)),  // eq 4i
+
+              // quantities we need for computing eq 4, 13 - 27
+              make_not_null(&conformal_factor_squared),
+              make_not_null(&det_conformal_spatial_metric),
+              make_not_null(&inv_conformal_spatial_metric),
+              make_not_null(&inv_spatial_metric), make_not_null(&inv_a_tilde),
+              // temporary expressions
+              make_not_null(&a_tilde_times_field_b),
+              make_not_null(
                 &a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde),
-            make_not_null(&contracted_field_b),
-            make_not_null(&symmetrized_d_field_b),
-            make_not_null(&contracted_symmetrized_d_field_b),
-            make_not_null(&field_d_up_times_a_tilde),
-            make_not_null(&contracted_field_d_up),  // temp for eq 18 -20
-            make_not_null(&half_conformal_factor_squared),  // temp for eq 25
-            make_not_null(&conformal_metric_times_field_b),
-            make_not_null(&conformal_metric_times_trace_a_tilde),
-            make_not_null(&inv_conformal_metric_times_d_a_tilde),
-            make_not_null(&gamma_hat_minus_contracted_conformal_christoffel),
-            make_not_null(&d_gamma_hat_minus_contracted_conformal_christoffel),
-            make_not_null(
-                &contracted_christoffel_second_kind),  // temp for eq 18 -20
-            make_not_null(
-                &contracted_d_conformal_christoffel_difference),  // temp for eq
-                                                                  // 18 -20
-            make_not_null(&k_minus_2_theta_c),
-            make_not_null(&k_minus_k0_minus_2_theta_c),
-            make_not_null(&lapse_times_a_tilde),
-            make_not_null(&lapse_times_d_a_tilde),
-            make_not_null(&lapse_times_field_a),
-            make_not_null(&lapse_times_conformal_spatial_metric),
-            make_not_null(&lapse_times_slicing_condition),
-            make_not_null(
-                &lapse_times_ricci_scalar_plus_divergence_z4_constraint),
-            make_not_null(&shift_times_deriv_gamma_hat),
-            make_not_null(&inv_tau_times_conformal_metric),
-            // expressions and identities needed for evolution equations: eq 13
-            // - 27
-            make_not_null(&trace_a_tilde),                        // eq 13
-            make_not_null(&field_d_up),                           // eq 14
-            make_not_null(&conformal_christoffel_second_kind),    // eq 15
-            make_not_null(&d_conformal_christoffel_second_kind),  // eq 16
-            make_not_null(&christoffel_second_kind),              // eq 17
-            make_not_null(&spatial_ricci_tensor),                 // eq 18 - 20
-            make_not_null(&grad_grad_lapse),                      // eq 21
-            make_not_null(&divergence_lapse),                     // eq 22
-            make_not_null(
-                &contracted_conformal_christoffel_second_kind),  // eq 23
-            make_not_null(
-                &d_contracted_conformal_christoffel_second_kind),  // eq 24
-            make_not_null(&spatial_z4_constraint),                 // eq 25
-            make_not_null(&upper_spatial_z4_constraint),           // eq 25
-            make_not_null(&grad_spatial_z4_constraint),            // eq 26
-            make_not_null(
-                &ricci_scalar_plus_divergence_z4_constraint),  // eq 27
-            // fixed params
-            c, cleaning_speed,         // e in the paper
-            one_over_relaxation_time,  // \tau^{-1}
-            // free params
-            eta, f, kappa_1, kappa_2, kappa_3, k_0,
-            // evolved variables
-            get<Tags::ConformalMetric<DataVector, Dim>>(evolved_vars),
-            get<gr::Tags::Lapse<DataVector>>(evolved_vars),
-            get<gr::Tags::Shift<DataVector, Dim>>(evolved_vars),
-            get<Tags::ConformalFactor<DataVector>>(evolved_vars),
-            get<Tags::ATilde<DataVector, Dim>>(evolved_vars),
-            get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(evolved_vars),
-            get<Tags::Theta<DataVector>>(evolved_vars),
-            get<Tags::GammaHat<DataVector, Dim>>(evolved_vars),
-            get<Tags::AuxiliaryShiftB<DataVector, Dim>>(evolved_vars),
+              make_not_null(&contracted_field_b),
+              make_not_null(&symmetrized_d_field_b),
+              make_not_null(&contracted_symmetrized_d_field_b),
+              make_not_null(&field_d_up_times_a_tilde),
+              make_not_null(&contracted_field_d_up),  // temp for eq 18 -20
+              make_not_null(&half_conformal_factor_squared),  // temp for eq 25
+              make_not_null(&conformal_metric_times_field_b),
+              make_not_null(&conformal_metric_times_trace_a_tilde),
+              make_not_null(&inv_conformal_metric_times_d_a_tilde),
+              make_not_null(&gamma_hat_minus_contracted_conformal_christoffel),
+              make_not_null(
+                  &d_gamma_hat_minus_contracted_conformal_christoffel),
+              make_not_null(
+                  &contracted_christoffel_second_kind),  // temp for eq 18 -20
+              make_not_null(
+                  &contracted_d_conformal_christoffel_difference),  // temp for
+                                                                    // eq 18 -20
+              make_not_null(&k_minus_2_theta_c),
+              make_not_null(&k_minus_k0_minus_2_theta_c),
+              make_not_null(&lapse_times_a_tilde),
+              make_not_null(&lapse_times_d_a_tilde),
+              make_not_null(&lapse_times_field_a),
+              make_not_null(&lapse_times_conformal_spatial_metric),
+              make_not_null(&lapse_times_slicing_condition),
+              make_not_null(
+                  &lapse_times_ricci_scalar_plus_divergence_z4_constraint),
+              make_not_null(&shift_times_deriv_gamma_hat),
+              make_not_null(&inv_tau_times_conformal_metric),
+              // expressions and identities needed for evolution equations: eq
+              // 13
+              // - 27
+              make_not_null(&trace_a_tilde),                        // eq 13
+              make_not_null(&field_d_up),                           // eq 14
+              make_not_null(&conformal_christoffel_second_kind),    // eq 15
+              make_not_null(&d_conformal_christoffel_second_kind),  // eq 16
+              make_not_null(&christoffel_second_kind),              // eq 17
+              make_not_null(&spatial_ricci_tensor),  // eq 18 - 20
+              make_not_null(&grad_grad_lapse),       // eq 21
+              make_not_null(&divergence_lapse),      // eq 22
+              make_not_null(
+                  &contracted_conformal_christoffel_second_kind),  // eq 23
+              make_not_null(
+                  &d_contracted_conformal_christoffel_second_kind),  // eq 24
+              make_not_null(&spatial_z4_constraint),                 // eq 25
+              make_not_null(&upper_spatial_z4_constraint),           // eq 25
+              make_not_null(&grad_spatial_z4_constraint),            // eq 26
+              make_not_null(
+                  &ricci_scalar_plus_divergence_z4_constraint),  // eq 27
+              // fixed params
+              c, cleaning_speed,         // e in the paper
+              one_over_relaxation_time,  // \tau^{-1}
+              // free params
+              eta, f, kappa_1, kappa_2, kappa_3, k_0,
+              // evolved variables
+              get<::Ccz4::Tags::ConformalMetric<DataVector, Dim>>(evolved_vars),
+              get<gr::Tags::Lapse<DataVector>>(evolved_vars),
+              get<gr::Tags::Shift<DataVector, Dim>>(evolved_vars),
+              get<::Ccz4::Tags::ConformalFactor<DataVector>>(evolved_vars),
+              get<::Ccz4::Tags::ATilde<DataVector, Dim>>(evolved_vars),
+              get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(evolved_vars),
+              get<::Ccz4::Tags::Theta<DataVector>>(evolved_vars),
+              get<::Ccz4::Tags::GammaHat<DataVector, Dim>>(evolved_vars),
+              get<::Ccz4::Tags::AuxiliaryShiftB<DataVector, Dim>>(evolved_vars),
 
-            field_a,  // auxiliary variables NOT evolved in SO-CCZ4
-            field_b, field_d, field_p,
-            d_field_a,  // spatial derivative of auxiliary variables
-            d_field_b, d_field_d, d_field_p,
+              field_a,  // auxiliary variables NOT evolved in SO-CCZ4
+              field_b, field_d, field_p,
+              d_field_a,  // spatial derivative of auxiliary variables
+              d_field_b, d_field_d, d_field_p,
 
-            // spatial derivatives of other evolved variables
-            get<::Tags::deriv<Tags::ATilde<DataVector, Dim>, tmpl::size_t<Dim>,
-                              Frame::Inertial>>(cell_centered_Ccz4_derivs),
-            get<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>(
-                cell_centered_Ccz4_derivs),
-            get<::Tags::deriv<Tags::Theta<DataVector>, tmpl::size_t<Dim>,
-                              Frame::Inertial>>(cell_centered_Ccz4_derivs),
-            get<::Tags::deriv<Tags::GammaHat<DataVector, Dim>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>(
-                cell_centered_Ccz4_derivs),
-            get<::Tags::deriv<Tags::AuxiliaryShiftB<DataVector, Dim>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>(
-                cell_centered_Ccz4_derivs));
-      },
-      box);
-}
+              // spatial derivatives of other evolved variables
+              get<::Tags::deriv<::Ccz4::Tags::ATilde<DataVector, Dim>,
+                                tmpl::size_t<Dim>, Frame::Inertial>>(
+                  cell_centered_Ccz4_derivs),
+              get<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                                tmpl::size_t<Dim>, Frame::Inertial>>(
+                  cell_centered_Ccz4_derivs),
+              get<::Tags::deriv<::Ccz4::Tags::Theta<DataVector>,
+                                tmpl::size_t<Dim>, Frame::Inertial>>(
+                  cell_centered_Ccz4_derivs),
+              get<::Tags::deriv<::Ccz4::Tags::GammaHat<DataVector, Dim>,
+                                tmpl::size_t<Dim>, Frame::Inertial>>(
+                  cell_centered_Ccz4_derivs),
+              get<::Tags::deriv<::Ccz4::Tags::AuxiliaryShiftB<DataVector, Dim>,
+                                tmpl::size_t<Dim>, Frame::Inertial>>(
+                  cell_centered_Ccz4_derivs),
+              shifting_shift, evolve_lapse_and_shift);
+
+          *upper_spatial_z4_constraint_ptr =
+              std::move(upper_spatial_z4_constraint);
+        },
+        box);
+  }
+};
 }  // namespace Ccz4::fd

@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Ccz4/ATilde.hpp"
 #include "Evolution/Systems/Ccz4/Christoffel.hpp"
+#include "Evolution/Systems/Ccz4/FiniteDifference/System.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Ccz4::Solutions {
@@ -202,6 +203,42 @@ Ccz4WrappedGr<SolutionType>::variables(
   // Similar to Theta, we assume the spatial Z4 constraints are zero,
   // so \hat{Gamma}^i = \tilde{Gamma}^i
   return {std::move(contracted_conformal_christoffel_second_kind)};
+}
+
+template <typename SolutionType>
+tuples::TaggedTuple<Ccz4::Tags::AuxiliaryShiftB<
+    DataVector, Ccz4::Solutions::Ccz4WrappedGr<SolutionType>::volume_dim>>
+Ccz4WrappedGr<SolutionType>::variables(
+    const tnsr::I<DataVector, Ccz4::Solutions::Ccz4WrappedGr<
+                                  SolutionType>::volume_dim>& /*x*/,
+    tmpl::list<Ccz4::Tags::AuxiliaryShiftB<
+        DataVector,
+        Ccz4::Solutions::Ccz4WrappedGr<SolutionType>::volume_dim>> /*meta*/,
+    const IntermediateVars& intermediate_vars) const {
+  const double one_over_f = 1. / ::Ccz4::fd::System::f;
+  const bool shifting_shift = ::Ccz4::fd::System::shifting_shift;
+
+  tnsr::I<DataVector, Ccz4::Solutions::Ccz4WrappedGr<SolutionType>::volume_dim>
+      auxiliary_shift_b;
+  const auto& shift = get<gr::Tags::Shift<
+      DataVector, Ccz4::Solutions::Ccz4WrappedGr<SolutionType>::volume_dim>>(
+      intermediate_vars);
+  const auto& d_shift = get<DerivShift>(intermediate_vars);
+  const auto& dt_shift = get<::Tags::dt<gr::Tags::Shift<
+      DataVector, Ccz4::Solutions::Ccz4WrappedGr<SolutionType>::volume_dim>>>(
+      intermediate_vars);
+
+  if (shifting_shift) {
+    ::tenex::evaluate<ti::I>(
+        make_not_null(&auxiliary_shift_b),
+        one_over_f * dt_shift(ti::I) -
+            one_over_f * shift(ti::K) * d_shift(ti::k, ti::I));
+  } else {
+    ::tenex::evaluate<ti::I>(make_not_null(&auxiliary_shift_b),
+                             one_over_f * dt_shift(ti::I));
+  }
+
+  return {std::move(auxiliary_shift_b)};
 }
 
 template <typename SolutionType>
