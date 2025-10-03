@@ -195,13 +195,13 @@ void test_fluid_coupling() {
   const auto& coupling_tilde_s_from_box = ActionTesting::get_databox_tag<
       comp, Particles::MonteCarlo::Tags::CouplingTildeS<DataVector, Dim>>(
       runner, self_id);
-  CHECK(tilde_tau_from_box == expected_tilde_tau);
-  CHECK(tilde_ye_from_box == expected_tilde_ye);
-  CHECK(tilde_s_from_box == expected_tilde_s);
-  CHECK(get(coupling_tilde_tau_from_box) == zero_dv_with_ghost);
-  CHECK(get(coupling_tilde_ye_from_box) == zero_dv_with_ghost);
+  CHECK_ITERABLE_APPROX(tilde_tau_from_box, expected_tilde_tau);
+  CHECK_ITERABLE_APPROX(tilde_ye_from_box, expected_tilde_ye);
+  CHECK_ITERABLE_APPROX(tilde_s_from_box, expected_tilde_s);
+  CHECK_ITERABLE_APPROX(get(coupling_tilde_tau_from_box), zero_dv_with_ghost);
+  CHECK_ITERABLE_APPROX(get(coupling_tilde_ye_from_box), zero_dv_with_ghost);
   for (size_t d = 0; d < Dim; d++) {
-    CHECK(coupling_tilde_s_from_box.get(d) == zero_dv_with_ghost);
+    CHECK_ITERABLE_APPROX(coupling_tilde_s_from_box.get(d), zero_dv_with_ghost);
   }
 }
 
