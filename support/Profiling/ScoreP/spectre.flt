@@ -1,0 +1,7 @@
+SCOREP_FILE_NAMES_BEGIN
+  EXCLUDE
+        *parse_as*
+        *Option*
+        *CoordinateMaps*
+        *reset_compute_items_after_mutate*
+SCOREP_FILE_NAMES_END
