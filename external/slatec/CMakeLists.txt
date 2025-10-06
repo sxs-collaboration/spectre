@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})
+target_compile_options(${LIBRARY} PRIVATE -std=legacy)
 
 if(SPECTRE_Fortran_STATIC_LIBS)
   if (NOT $gfortran)
