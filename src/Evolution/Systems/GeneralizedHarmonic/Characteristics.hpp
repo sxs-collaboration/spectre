@@ -46,7 +46,8 @@ namespace gh {
  * \f}
  *
  * The corresponding characteristic speeds \f$v\f$ are given in the text between
- * Eq.(34) and Eq.(35) of \cite Lindblom2005qh :
+ * Eq.(34) and Eq.(35) of \cite Lindblom2005qh, except for a constraint damping
+ * term used in SpEC and SpECTRE but not published anywhere:
  *
  * \f{align*}
  * v_{\psi} =& -(1 + \gamma_1) n_k \beta^k - \gamma_1 n_k v^k_g \\
@@ -57,6 +58,11 @@ namespace gh {
  * where \f$\alpha, \beta^k\f$ are the lapse and shift respectively,
  * \f$\gamma_1\f$ is a constraint damping parameter, \f$n_k\f$ is the unit
  * normal to the surface, and $v^k_g$ is the (optional) mesh velocity.
+ *
+ * \note The results of this function depend on the mesh velocity, but
+ * do not include the system-independent grid advection terms.  The
+ * included terms arise from explicit dependence on the mesh velocity
+ * in the GH time derivative.
  */
 template <size_t Dim, typename Frame>
 std::array<DataVector, 4> characteristic_speeds(
