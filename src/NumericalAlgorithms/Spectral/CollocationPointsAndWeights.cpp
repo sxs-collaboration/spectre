@@ -35,4 +35,6 @@ template struct CollocationPointsAndWeightsGenerator<Basis::FiniteDifference,
                                                      Quadrature::CellCentered>;
 template struct CollocationPointsAndWeightsGenerator<Basis::FiniteDifference,
                                                      Quadrature::FaceCentered>;
+template struct CollocationPointsAndWeightsGenerator<Basis::Fourier,
+                                                     Quadrature::Equiangular>;
 }  // namespace Spectral::detail

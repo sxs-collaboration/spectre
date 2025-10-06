@@ -22,5 +22,7 @@ namespace Spectral {
  */
 template <Basis basis>
 constexpr size_t maximum_number_of_points =
-    basis == Basis::FiniteDifference ? 40 : 20;
+    basis == Basis::Fourier            ? 81
+    : basis == Basis::FiniteDifference ? 40
+                                       : 20;
 }  // namespace Spectral

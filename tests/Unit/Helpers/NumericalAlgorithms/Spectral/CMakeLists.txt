@@ -1,12 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "DataStructuresHelpers")
+set(LIBRARY "SpectralHelpers")
 
 set(LIBRARY_SOURCES
-  ApplyMatrix.cpp
-  MathWrapperDetail.cpp
-  RandomUnitNormal.cpp
+  FourierTestFunctions.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
@@ -15,7 +13,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Spectral
+  SphericalHarmonics
   Utilities
   )
-
-add_subdirectory(DataBox)
