@@ -13,3 +13,5 @@ set(LIBRARY_SOURCES
   TimeDependentOptions/Test_Sphere.cpp
   TimeDependentOptions/Test_TranslationMap.cpp
   PARENT_SCOPE)
+
+add_subdirectory(Python)

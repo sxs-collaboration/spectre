@@ -33,7 +33,9 @@ void bind_binary_compact_object(py::module& m) {
                   const size_t initial_num_points,
                   const bool use_equiangular_map,
                   const std::vector<double>& radial_partitioning_outer_shell,
-                  const double opening_angle_in_degrees) {
+                  const double opening_angle_in_degrees,
+                  std::optional<bco::TimeDependentMapOptions<false>>
+                      time_dependent_options) {
                  return domain::creators::BinaryCompactObject<false>{
                      domain::creators::BinaryCompactObject<false>::Object{
                          inner_radius_object_a, outer_radius_object_a,
@@ -51,7 +53,8 @@ void bind_binary_compact_object(py::module& m) {
                      domain::CoordinateMaps::Distribution::Logarithmic,
                      radial_partitioning_outer_shell,
                      domain::CoordinateMaps::Distribution::Linear,
-                     opening_angle_in_degrees};
+                     opening_angle_in_degrees,
+                     std::move(time_dependent_options)};
                }),
            py::arg("inner_radius_a"), py::arg("outer_radius_a"),
            py::arg("x_coord_a"), py::arg("excise_a"),
@@ -63,6 +66,7 @@ void bind_binary_compact_object(py::module& m) {
            py::arg("initial_number_of_grid_points"),
            py::arg("use_equiangular_map"),
            py::arg("radial_partitioning_outer_shell") = std::vector<double>{},
-           py::arg("opening_angle_in_degrees") = 120);
+           py::arg("opening_angle_in_degrees") = 120,
+           py::arg("time_dependent_options"));
 }
 }  // namespace domain::creators::py_bindings
