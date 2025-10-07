@@ -5,8 +5,8 @@
 
 #include <pybind11/pybind11.h>
 
-namespace domain::creators::py_bindings {
+namespace domain::creators::time_dependent_options::py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-// For now this does not support an outer-boundary condition or context.
+// For now this does not support SettleToConst maps.
 void bind_binary_compact_object(pybind11::module& m);
-}  // namespace domain::creators::py_bindings
+}  // namespace domain::creators::time_dependent_options::py_bindings

@@ -29,3 +29,5 @@ spectre_target_headers(
   Sphere.hpp
   TranslationMap.hpp
   )
+
+add_subdirectory(Python)
