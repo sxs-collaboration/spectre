@@ -11,9 +11,7 @@
 #include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Tensor/EagerMath/CrossProduct.hpp"
-#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
-#include "DataStructures/Tensor/EagerMath/Magntitude.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
@@ -22,6 +20,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Worldtube.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -130,9 +129,23 @@ struct UpdateQuaternionFunctionsOfTime {
     // current time. This is small enough that it can handle rapid time step
     // decreases but large enough to avoid floating point precision issues.
     const double new_expiration_time =
-        time +
-        0.01 * (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time() -
-                time);
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time();
+
+    if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Quiet) {
+      // Time step and orbital velocity updates
+      Parallel::printf(
+          "Time: %.16f, TimeStep: %.16f\n", time,
+          (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time() -
+           time));
+      // Orbital velocity update
+      Parallel::printf(
+          "orbital_vel_x: %.16f, orbital_vel_y: "
+          "%.16f, orbital_vel_z: %.16f\n",
+          angular_update[0], angular_update[1], angular_update[2]);
+      // Particle position
+      Parallel::printf(
+          "Position_x: %.16f, Position_y: %.16f, Position_z: %.16f\n", x, y, z);
+    }
 
     db::mutate<Tags::ExpirationTime>(
         [&new_expiration_time](const auto expiration_time) {
