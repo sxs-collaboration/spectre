@@ -4,7 +4,9 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Chebyshev.cpp
   Fourier.cpp
+  Legendre.cpp
   )
 
 spectre_target_headers(
