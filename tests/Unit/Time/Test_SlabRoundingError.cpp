@@ -14,14 +14,17 @@ void check_slab(const double start, const double end) {
   const double duration = end - start;
   {
     const Slab slab = Slab::with_duration_from_start(start, duration);
-    CHECK(abs(slab.end().value() - end) < slab_rounding_error(slab.start()));
-    CHECK(abs(slab.end().value() - end) < slab_rounding_error(slab.end()));
+    CHECK(std::abs(slab.end().value() - end) <
+          slab_rounding_error(slab.start()));
+    CHECK(std::abs(slab.end().value() - end) <
+          slab_rounding_error(slab.end()));
   }
   {
     const Slab slab = Slab::with_duration_to_end(end, duration);
-    CHECK(abs(slab.start().value() - start) <
+    CHECK(std::abs(slab.start().value() - start) <
           slab_rounding_error(slab.start()));
-    CHECK(abs(slab.start().value() - start) < slab_rounding_error(slab.end()));
+    CHECK(std::abs(slab.start().value() - start) <
+          slab_rounding_error(slab.end()));
   }
 }
 }  // namespace
