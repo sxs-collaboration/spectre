@@ -27,16 +27,13 @@ namespace ah {
  * finder to the target points.
  *
  * \details For each new element, the `vars_to_interpolate_to_target` in
- * \p all_volume_variables are computed using the
- * `ah::compute_vars_to_interpolate_to_target()` function, and the results are
- * interpolated to the target points and stored in \p current_iteration_storage.
+ * \p all_volume_variables are interpolated to the target points and stored
+ * in \p current_iteration_storage.
  */
 template <typename Fr>
 void interpolate_volume_data(
     gsl::not_null<ah::Storage::Iteration<Fr>*> current_iteration_storage,
     gsl::not_null<
         std::unordered_map<ElementId<3>, ah::Storage::VolumeVariables<Fr>>*>
-        all_volume_variables,
-    const LinkedMessageId<double>& time, const Domain<3>& domain,
-    const domain::FunctionsOfTimeMap& functions_of_time);
+        all_volume_variables);
 }  // namespace ah

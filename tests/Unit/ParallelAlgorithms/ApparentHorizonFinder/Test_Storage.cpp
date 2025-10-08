@@ -34,9 +34,7 @@ template <typename Fr>
 void test_storage() {
   const ah::Storage::VolumeVariables<Fr> volume_variables{
       Mesh<3>{3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
-      Variables<ah::source_vars<3>>{4, 1.234},
       Variables<ah::vars_to_interpolate_to_target<3, Fr>>{4, 4.321}};
-  CHECK(not volume_variables.done_computing_vars_to_interpolate_to_target);
   test_serialization(volume_variables);
 
   const ah::Storage::Iteration<Fr> iteration{

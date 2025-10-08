@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <type_traits>
 
 #include "DataStructures/LinkedMessageId.hpp"
@@ -164,10 +165,8 @@ void test_compute_horizon_volume_quantities(const bool is_time_dependent) {
       inertial_coords, time.id,
       typename gr::Solutions::KerrSchild::tags<DataVector, Frame::Inertial>{});
 
-  // Fill src vars with analytic solution.
-  ah::Storage::VolumeVariables<Fr> all_volume_vars{};
-  all_volume_vars.mesh = mesh;
-
+  Variables<ah::source_vars<3>> source_vars{};
+  Variables<ah::vars_to_interpolate_to_target<3, Fr>> target_vars{};
   // Set g, pi, and phi in the inertial frame
   {
     const auto& lapse =
@@ -193,7 +192,6 @@ void test_compute_horizon_volume_quantities(const bool is_time_dependent) {
         get<typename gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
             solution_vars_inertial_frame);
 
-    auto& source_vars = all_volume_vars.source_vars;
     source_vars.initialize(get(lapse).size(), 0.0);
     get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(source_vars) =
         gr::spacetime_metric(lapse, shift, spatial_metric);
@@ -211,9 +209,14 @@ void test_compute_horizon_volume_quantities(const bool is_time_dependent) {
   }
 
   // Compute other vars
-  ah::compute_vars_to_interpolate_to_target(make_not_null(&all_volume_vars),
-                                            time, domain, element_ids[0],
-                                            functions_of_time);
+  ah::compute_vars_to_interpolate_to_target(
+      make_not_null(&target_vars),
+      get<::gr::Tags::SpacetimeMetric<DataVector, 3>>(source_vars),
+      get<::gh::Tags::Pi<DataVector, 3>>(source_vars),
+      get<::gh::Tags::Phi<DataVector, 3>>(source_vars),
+      get<Tags::deriv<::gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
+                      Frame::Inertial>>(source_vars),
+      time, domain, mesh, element_ids[0], functions_of_time);
 
   // Now make sure those computed vars are correct.
   const auto solution_vars_target_frame = solution.variables(
@@ -238,19 +241,17 @@ void test_compute_horizon_volume_quantities(const bool is_time_dependent) {
       gr::ricci_tensor(expected_christoffel, deriv_christoffel);
 
   // Computed vars
-  const auto& spatial_metric = get<gr::Tags::SpatialMetric<DataVector, 3, Fr>>(
-      all_volume_vars.vars_to_interpolate_to_target);
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<DataVector, 3, Fr>>(target_vars);
   const auto& inverse_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<DataVector, 3, Fr>>(
-          all_volume_vars.vars_to_interpolate_to_target);
+      get<gr::Tags::InverseSpatialMetric<DataVector, 3, Fr>>(target_vars);
   const auto& extrinsic_curvature =
-      get<gr::Tags::ExtrinsicCurvature<DataVector, 3, Fr>>(
-          all_volume_vars.vars_to_interpolate_to_target);
+      get<gr::Tags::ExtrinsicCurvature<DataVector, 3, Fr>>(target_vars);
   const auto& christoffel =
       get<gr::Tags::SpatialChristoffelSecondKind<DataVector, 3, Fr>>(
-          all_volume_vars.vars_to_interpolate_to_target);
-  const auto& ricci = get<gr::Tags::SpatialRicci<DataVector, 3, Fr>>(
-      all_volume_vars.vars_to_interpolate_to_target);
+          target_vars);
+  const auto& ricci =
+      get<gr::Tags::SpatialRicci<DataVector, 3, Fr>>(target_vars);
 
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
   CHECK_ITERABLE_APPROX(expected_inverse_spatial_metric,

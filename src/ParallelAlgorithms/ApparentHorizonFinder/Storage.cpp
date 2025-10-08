@@ -14,19 +14,14 @@ namespace ah::Storage {
 template <typename Fr>
 void VolumeVariables<Fr>::pup(PUP::er& p) {
   p | mesh;
-  p | source_vars;
   p | vars_to_interpolate_to_target;
-  p | done_computing_vars_to_interpolate_to_target;
 }
 
 template <typename Fr>
 bool operator==(const VolumeVariables<Fr>& lhs,
                 const VolumeVariables<Fr>& rhs) {
-  return lhs.mesh == rhs.mesh and lhs.source_vars == rhs.source_vars and
-         lhs.vars_to_interpolate_to_target ==
-             rhs.vars_to_interpolate_to_target and
-         lhs.done_computing_vars_to_interpolate_to_target ==
-             rhs.done_computing_vars_to_interpolate_to_target;
+  return lhs.mesh == rhs.mesh and
+         lhs.vars_to_interpolate_to_target == rhs.vars_to_interpolate_to_target;
 }
 template <typename Fr>
 bool operator!=(const VolumeVariables<Fr>& lhs,

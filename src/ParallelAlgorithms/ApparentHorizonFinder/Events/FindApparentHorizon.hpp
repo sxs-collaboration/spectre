@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
@@ -17,8 +18,10 @@
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "ParallelAlgorithms/Actions/GetItemFromDistributedObject.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/ComputeVarsToInterpolateToTarget.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
@@ -84,29 +87,47 @@ class FindApparentHorizon : public Event {
            "Blocks to interpolate doesn't contain target " << name());
     const auto& blocks_to_interpolate_for_this_target =
         blocks_to_interpolate.at(name());
-    const auto& blocks = Parallel::get<domain::Tags::Domain<3>>(cache).blocks();
-    const auto& block_name = blocks[array_index.block_id()].name();
+    const auto& domain = Parallel::get<domain::Tags::Domain<3>>(cache);
+    const auto& blocks = domain.blocks();
+    const auto& block = blocks[array_index.block_id()];
+    const auto& block_name = block.name();
 
     // Only send data if this target needs this blocks data
     if (not blocks_to_interpolate_for_this_target.contains(block_name)) {
       return;
     }
 
-    // Put everything into a single variables
-    Variables<ah::source_vars<3>> source_vars{mesh.number_of_grid_points()};
-    get<gr::Tags::SpacetimeMetric<DataVector, 3>>(source_vars) =
-        spacetime_metric;
-    get<gh::Tags::Pi<DataVector, 3>>(source_vars) = pi;
-    get<gh::Tags::Phi<DataVector, 3>>(source_vars) = phi;
-    get<::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
-                      Frame::Inertial>>(source_vars) = deriv_phi;
+    // Make Variables<ah::vars_to_interpolate_to_target> and
+    // fill it by calling compute_vars_to_interpolate_to_target().
+    // Then pass this variables to the FindApparentHorizon simple action.
+    using horizon_frame = typename HorizonMetavars::frame;
+    Variables<ah::vars_to_interpolate_to_target<3, horizon_frame>>
+        vars_to_interpolate_to_target{mesh.number_of_grid_points()};
+    if (block.is_time_dependent()) {
+      if constexpr (Parallel::is_in_global_cache<
+                        Metavariables, domain::Tags::FunctionsOfTime>) {
+        const auto& functions_of_time =
+            Parallel::get<domain::Tags::FunctionsOfTime>(cache);
+        ah::compute_vars_to_interpolate_to_target(
+            make_not_null(&vars_to_interpolate_to_target), spacetime_metric, pi,
+            phi, deriv_phi, time, domain, mesh, array_index, functions_of_time);
+      } else {
+        ERROR(
+            "Block is time-dependent but FunctionsOfTime are not available "
+            "in the global cache.");
+      }
+    } else {
+      ah::compute_vars_to_interpolate_to_target(
+          make_not_null(&vars_to_interpolate_to_target), spacetime_metric, pi,
+          phi, deriv_phi, time, domain, mesh, array_index, {});
+    }
 
     auto& horizon_finder_proxy = Parallel::get_parallel_component<
         ah::Component<Metavariables, HorizonMetavars>>(cache);
 
     Parallel::simple_action<ah::FindApparentHorizon<HorizonMetavars>>(
-        horizon_finder_proxy, time, array_index, mesh, std::move(source_vars),
-        dependency_);
+        horizon_finder_proxy, time, array_index, mesh,
+        std::move(vars_to_interpolate_to_target), dependency_);
   }
 
   using is_ready_argument_tags = tmpl::list<>;
