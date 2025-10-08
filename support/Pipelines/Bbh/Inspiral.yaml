@@ -309,6 +309,7 @@ Amr:
   Verbosity: Quiet
 
 PhaseChangeAndTriggers:
+{% if segments_dir is defined %}
   - Trigger:
       Slabs:
         EvenlySpaced:
@@ -319,6 +320,7 @@ PhaseChangeAndTriggers:
     PhaseChanges:
       - CheckpointAndExitAfterWallclock:
           WallclockHours: 23.5
+{% endif %}
 
 EventsAndTriggersAtSlabs:
   # Observe time step and cheap constraints every slab
@@ -433,7 +435,7 @@ EventsAndTriggersAtSlabs:
   # If running eccentricity control, only run short inspiral
   - Trigger:
       TimeCompares:
-        Comparison: GreaterThan
+        Comparison: GreaterThanOrEqualTo
         Value: {{ FinalTime }}
     Events:
       # Save volume data for continuation
@@ -447,6 +449,14 @@ EventsAndTriggersAtSlabs:
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
           BlocksToObserve: All
+      - Completion
+{% elif FinalTime is defined %}
+  # Support running only to a specified final time
+  - Trigger:
+      TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: {{ FinalTime }}
+    Events:
       - Completion
 {% endif %}
 
