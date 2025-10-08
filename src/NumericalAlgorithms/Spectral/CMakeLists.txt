@@ -60,6 +60,7 @@ spectre_target_headers(
   Mesh.hpp
   MinimumNumberOfPoints.hpp
   ModalToNodalMatrix.hpp
+  Namespace.hpp
   NodalToModalMatrix.hpp
   PrecomputedSpectralQuantity.hpp
   Projection.hpp
