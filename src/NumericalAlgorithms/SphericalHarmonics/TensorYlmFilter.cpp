@@ -438,7 +438,7 @@ void inner_loops_three(
 }  // namespace
 
 template <typename TensorStructure, typename SparseMatrixType>
-void FillFilter(const gsl::not_null<SparseMatrixType*> matrix,
+void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
                 const size_t ell_max, const size_t number_of_ell_modes_to_kill,
                 const std::optional<size_t> half_power) {
   static constexpr size_t num_independent_components = TensorStructure::size();
@@ -709,11 +709,11 @@ void FillFilter(const gsl::not_null<SparseMatrixType*> matrix,
 
 #define INSTANTIATE(_, data)                                                  \
   template void                                                               \
-          FillFilter<typename TSTRUCT(data) < DataVector, 3>::structure >     \
+          fill_filter<typename TSTRUCT(data) < DataVector, 3>::structure >    \
       (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max,             \
        size_t number_of_ell_modes_to_kill, std::optional<size_t> half_power); \
   template void                                                               \
-          FillFilter<typename TSTRUCT(data) < DataVector, 3>::structure >     \
+          fill_filter<typename TSTRUCT(data) < DataVector, 3>::structure >    \
       (gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>       \
            matrix,                                                            \
        size_t ell_max, size_t number_of_ell_modes_to_kill,                    \

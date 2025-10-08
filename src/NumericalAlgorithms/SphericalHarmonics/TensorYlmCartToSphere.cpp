@@ -388,7 +388,7 @@ void inner_loops_three(
 }  // namespace
 
 template <typename TensorStructure, typename SparseMatrixType>
-void FillCartToSphere(const gsl::not_null<SparseMatrixType*> matrix,
+void fill_cart_to_sphere(const gsl::not_null<SparseMatrixType*> matrix,
                       const size_t ell_max) {
   static constexpr size_t num_independent_components = TensorStructure::size();
   static constexpr size_t rank = TensorStructure::rank();
@@ -627,14 +627,14 @@ void FillCartToSphere(const gsl::not_null<SparseMatrixType*> matrix,
 // Explicit instantiations
 #define TSTRUCT(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template void FillCartToSphere<typename TSTRUCT(data) < DataVector,   \
-                                 3>::structure >                        \
-      (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max);      \
-  template void FillCartToSphere<typename TSTRUCT(data) < DataVector,   \
-                                 3>::structure >                        \
-      (gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*> \
-           matrix,                                                      \
+#define INSTANTIATE(_, data)                                             \
+  template void fill_cart_to_sphere<typename TSTRUCT(data) < DataVector, \
+                                    3>::structure >                      \
+      (gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max);       \
+  template void fill_cart_to_sphere<typename TSTRUCT(data) < DataVector, \
+                                    3>::structure >                      \
+      (gsl::not_null<blaze::CompressedMatrix<double, blaze::rowMajor>*>  \
+           matrix,                                                       \
        size_t ell_max);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,

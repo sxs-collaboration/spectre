@@ -1028,7 +1028,7 @@ void test_tensorylm_filter_vs_spec(const size_t ell_max,
   }
 
   SparseMatrixType matrix;
-  ylm::TensorYlm::FillFilter<TensorStructure>(
+  ylm::TensorYlm::fill_filter<TensorStructure>(
       make_not_null(&matrix), ell_max, number_of_ell_modes_to_kill, half_power);
 
   // Loop over spec_matrix_elements and make sure all the cases agree.

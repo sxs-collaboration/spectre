@@ -29,7 +29,7 @@ namespace ylm::TensorYlm {
  *
  * The memory layout here is different than in SpEC.  In SpEC, each
  * tensor component is stored in separately-allocated memory, so the
- * SpEC equivalent of the FillCartToSphere function fills $N^2$ sparse
+ * SpEC equivalent of the fill_cart_to_sphere function fills $N^2$ sparse
  * matrices, where $N$ is the number of independent components of the
  * Tensor. The advantage of the SpEC method is that each sparse matrix
  * is smaller, so sorting elements into the correct order while
@@ -178,6 +178,7 @@ namespace ylm::TensorYlm {
  *
  */
 template <typename TensorStructure, typename SparseMatrixType>
-void FillCartToSphere(gsl::not_null<SparseMatrixType*> matrix, size_t ell_max);
+void fill_cart_to_sphere(gsl::not_null<SparseMatrixType*> matrix,
+                         size_t ell_max);
 
 }  // namespace ylm::TensorYlm
