@@ -12,7 +12,7 @@
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 // Parameters chosen in CMakeLists.txt
-using metavariables = EvolutionMetavars<DIM, BACKGROUND, INITIAL_DATA>;
+using metavariables = EvolutionMetavars<DIM, BACKGROUND>;
 
 extern "C" void CkRegisterMainModule() {
   Parallel::charmxx::register_main_module<metavariables>();
