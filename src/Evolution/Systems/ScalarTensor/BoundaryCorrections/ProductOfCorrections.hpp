@@ -32,27 +32,56 @@ namespace ScalarTensor::BoundaryCorrections {
  * defined separately.
  * \see gh::BoundaryCorrections and CurvedScalarWave::BoundaryCorrections.
  */
-template <typename DerivedGhCorrection, typename DerivedScalarCorrection>
-class ProductOfCorrections final : public evolution::BoundaryCorrection {
+/// @{
+template <
+    typename DerivedGhCorrection, typename DerivedScalarCorrection,
+    typename = typename DerivedGhCorrection::dg_package_field_tags,
+    typename = typename DerivedScalarCorrection::dg_package_field_tags,
+    typename = typename DerivedGhCorrection::dg_package_data_temporary_tags,
+    typename = typename DerivedScalarCorrection::dg_package_data_temporary_tags,
+    typename = typename DerivedGhCorrection::dg_package_data_volume_tags,
+    typename = typename DerivedScalarCorrection::dg_package_data_volume_tags,
+    typename = typename DerivedGhCorrection::dg_boundary_terms_volume_tags,
+    typename = typename DerivedScalarCorrection::dg_boundary_terms_volume_tags>
+class ProductOfCorrections;
+
+template <typename DerivedGhCorrection, typename DerivedScalarCorrection,
+          typename... GhDgPackagedFieldTags,
+          typename... ScalarDgPackagedFieldTags,
+          typename... GhDgPackageDataTemporaryTags,
+          typename... ScalarDgPackageDataTemporaryTags,
+          typename... GhDgPackageDataVolumeTags,
+          typename... ScalarDgPackageDataVolumeTags,
+          typename... GhDgBoundaryTermsVolumeTags,
+          typename... ScalarDgBoundaryTermsVolumeTags>
+class ProductOfCorrections<DerivedGhCorrection, DerivedScalarCorrection,
+                           tmpl::list<GhDgPackagedFieldTags...>,
+                           tmpl::list<ScalarDgPackagedFieldTags...>,
+                           tmpl::list<GhDgPackageDataTemporaryTags...>,
+                           tmpl::list<ScalarDgPackageDataTemporaryTags...>,
+                           tmpl::list<GhDgPackageDataVolumeTags...>,
+                           tmpl::list<ScalarDgPackageDataVolumeTags...>,
+                           tmpl::list<GhDgBoundaryTermsVolumeTags...>,
+                           tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>
+    final : public evolution::BoundaryCorrection {
  public:
   static constexpr size_t dim = 3;
   using dg_package_field_tags =
-      tmpl::append<typename DerivedGhCorrection::dg_package_field_tags,
-                   typename DerivedScalarCorrection::dg_package_field_tags>;
+      tmpl::list<GhDgPackagedFieldTags..., ScalarDgPackagedFieldTags...>;
 
-  using dg_package_data_temporary_tags = tmpl::remove_duplicates<tmpl::append<
-      typename DerivedGhCorrection::dg_package_data_temporary_tags,
-      typename DerivedScalarCorrection::dg_package_data_temporary_tags>>;
+  using dg_package_data_temporary_tags =
+      tmpl::list<GhDgPackageDataTemporaryTags...,
+                 ScalarDgPackageDataTemporaryTags...>;
 
   using dg_package_data_primitive_tags = tmpl::list<>;
 
-  using dg_package_data_volume_tags = tmpl::append<
-      typename DerivedGhCorrection::dg_package_data_volume_tags,
-      typename DerivedScalarCorrection::dg_package_data_volume_tags>;
+  using dg_package_data_volume_tags =
+      tmpl::list<GhDgPackageDataVolumeTags...,
+                 ScalarDgPackageDataVolumeTags...>;
 
-  using dg_boundary_terms_volume_tags = tmpl::append<
-      typename DerivedGhCorrection::dg_boundary_terms_volume_tags,
-      typename DerivedScalarCorrection::dg_boundary_terms_volume_tags>;
+  using dg_boundary_terms_volume_tags =
+      tmpl::list<GhDgBoundaryTermsVolumeTags...,
+                 ScalarDgBoundaryTermsVolumeTags...>;
 
   static std::string name() {
     return "Product" + pretty_type::name<DerivedGhCorrection>() + "GH" + "And" +
@@ -78,7 +107,7 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
     }
     static constexpr Options::String help{
         "The scalar part of the product boundary condition"};
-    };
+  };
 
   using options = tmpl::list<GhCorrection, ScalarCorrection>;
 
@@ -115,34 +144,10 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
   }
 
   double dg_package_data(
-      // GH packaged fields
-      const gsl::not_null<tnsr::aa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_v_spacetime_metric,
-      const gsl::not_null<tnsr::iaa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_v_zero,
-      const gsl::not_null<tnsr::aa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_v_plus,
-      const gsl::not_null<tnsr::aa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_v_minus,
-      const gsl::not_null<tnsr::iaa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_n_times_v_plus,
-      const gsl::not_null<tnsr::iaa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_n_times_v_minus,
-      const gsl::not_null<tnsr::aa<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speed_gamma2_v_spacetime_metric,
-      const gsl::not_null<tnsr::a<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speeds,
-      // Scalar packaged fields
-      const gsl::not_null<Scalar<DataVector>*> packaged_v_psi_scalar,
-      const gsl::not_null<tnsr::i<DataVector, dim, Frame::Inertial>*>
-          packaged_v_zero_scalar,
-      const gsl::not_null<Scalar<DataVector>*> packaged_v_plus_scalar,
-      const gsl::not_null<Scalar<DataVector>*> packaged_v_minus_scalar,
-      const gsl::not_null<Scalar<DataVector>*> packaged_gamma2_scalar,
-      const gsl::not_null<tnsr::i<DataVector, dim, Frame::Inertial>*>
-          packaged_interface_unit_normal_scalar,
-      const gsl::not_null<tnsr::a<DataVector, dim, Frame::Inertial>*>
-          packaged_char_speeds_scalar,
+      const gsl::not_null<
+          typename GhDgPackagedFieldTags::type*>... gh_packaged_fields,
+      const gsl::not_null<
+          typename ScalarDgPackagedFieldTags::type*>... scalar_packaged_fields,
       // GH variables
       const tnsr::aa<DataVector, dim, Frame::Inertial>& spacetime_metric,
       const tnsr::aa<DataVector, dim, Frame::Inertial>& pi,
@@ -150,54 +155,31 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
       // Scalar variables
       const Scalar<DataVector>& psi_scalar, const Scalar<DataVector>& pi_scalar,
       const tnsr::i<DataVector, dim, Frame::Inertial>& phi_scalar,
-      // GH fluxes
-      // Scalar fluxes
-      // GH temporaries
-      const Scalar<DataVector>& constraint_gamma1,
-      const Scalar<DataVector>& constraint_gamma2,
-      const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, dim, Frame::Inertial>& shift,
-      // Scalar temporaries
-
-      const Scalar<DataVector>& constraint_gamma1_scalar,
-      const Scalar<DataVector>& constraint_gamma2_scalar,
+      // Temporaries
+      const typename GhDgPackageDataTemporaryTags::type&... gh_temporaries,
+      const typename ScalarDgPackageDataTemporaryTags::
+          type&... scalar_temporaries,
       // Mesh variables
       const tnsr::i<DataVector, dim, Frame::Inertial>& normal_covector,
       const tnsr::I<DataVector, dim, Frame::Inertial>& normal_vector,
       const std::optional<tnsr::I<DataVector, dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity
-      // GH volume quantities
-      // Scalar volume quantities
-  ) const {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      // Volume quantities
+      const typename GhDgPackageDataVolumeTags::type&... gh_volume_quantities,
+      const typename ScalarDgPackageDataVolumeTags::
+          type&... scalar_volume_quantities) const {
     const double gh_correction_result = derived_gh_correction_.dg_package_data(
-        // GH packaged variables
-        packaged_char_speed_v_spacetime_metric, packaged_char_speed_v_zero,
-        packaged_char_speed_v_plus, packaged_char_speed_v_minus,
-        packaged_char_speed_n_times_v_plus, packaged_char_speed_n_times_v_minus,
-        packaged_char_speed_gamma2_v_spacetime_metric, packaged_char_speeds,
-        // GH variables
-        spacetime_metric, pi, phi,
-        // GH temporaries
-        constraint_gamma1, constraint_gamma2, lapse, shift,
-        // GH mesh variables
-        normal_covector, normal_vector, mesh_velocity,
-        normal_dot_mesh_velocity);
+        gh_packaged_fields..., spacetime_metric, pi, phi, gh_temporaries...,
+        normal_covector, normal_vector, mesh_velocity, normal_dot_mesh_velocity,
+        gh_volume_quantities...);
 
     const double scalar_correction_result =
         derived_scalar_correction_.dg_package_data(
-            // Scalar packaged variables
-            packaged_v_psi_scalar, packaged_v_zero_scalar,
-            packaged_v_plus_scalar, packaged_v_minus_scalar,
-            packaged_gamma2_scalar, packaged_interface_unit_normal_scalar,
-            packaged_char_speeds_scalar,
-            // Scalar variables
-            psi_scalar, pi_scalar, phi_scalar,
-            // Scalar temporaries
-            lapse, shift, constraint_gamma1_scalar, constraint_gamma2_scalar,
-            // Scalar mesh variables
-            normal_covector, normal_vector, mesh_velocity,
-            normal_dot_mesh_velocity);
+            scalar_packaged_fields..., psi_scalar, pi_scalar, phi_scalar,
+            scalar_temporaries..., normal_covector, normal_vector,
+            mesh_velocity, normal_dot_mesh_velocity,
+            scalar_volume_quantities...);
     return std::max(gh_correction_result, scalar_correction_result);
   }
 
@@ -214,80 +196,24 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
       const gsl::not_null<Scalar<DataVector>*> pi_boundary_correction_scalar,
       const gsl::not_null<tnsr::i<DataVector, dim, Frame::Inertial>*>
           phi_boundary_correction_scalar,
-      // GH internal packages field tags
-      const tnsr::aa<DataVector, dim, Frame::Inertial>&
-          char_speed_v_spacetime_metric_int,
-      const tnsr::iaa<DataVector, dim, Frame::Inertial>& char_speed_v_zero_int,
-      const tnsr::aa<DataVector, dim, Frame::Inertial>& char_speed_v_plus_int,
-      const tnsr::aa<DataVector, dim, Frame::Inertial>& char_speed_v_minus_int,
-      const tnsr::iaa<DataVector, dim, Frame::Inertial>&
-          char_speed_normal_times_v_plus_int,
-      const tnsr::iaa<DataVector, dim, Frame::Inertial>&
-          char_speed_normal_times_v_minus_int,
-      const tnsr::aa<DataVector, dim, Frame::Inertial>&
-          char_speed_constraint_gamma2_v_spacetime_metric_int,
-      const tnsr::a<DataVector, dim, Frame::Inertial>& char_speeds_int,
-      // Scalar internal packaged field tags
-      const Scalar<DataVector>& v_psi_int_scalar,
-      const tnsr::i<DataVector, dim, Frame::Inertial>& v_zero_int_scalar,
-      const Scalar<DataVector>& v_plus_int_scalar,
-      const Scalar<DataVector>& v_minus_int_scalar,
-      const Scalar<DataVector>& gamma2_int_scalar,
-      const tnsr::i<DataVector, dim, Frame::Inertial>&
-          interface_unit_normal_int_scalar,
-      const tnsr::a<DataVector, dim, Frame::Inertial>& char_speeds_int_scalar,
-      // GH external packaged fields
-      const tnsr::aa<DataVector, dim, Frame::Inertial>&
-          char_speed_v_spacetime_metric_ext,
-      const tnsr::iaa<DataVector, dim, Frame::Inertial>& char_speed_v_zero_ext,
-      const tnsr::aa<DataVector, dim, Frame::Inertial>& char_speed_v_plus_ext,
-      const tnsr::aa<DataVector, dim, Frame::Inertial>& char_speed_v_minus_ext,
-      const tnsr::iaa<DataVector, dim, Frame::Inertial>&
-          char_speed_normal_times_v_plus_ext,
-      const tnsr::iaa<DataVector, dim, Frame::Inertial>&
-          char_speed_normal_times_v_minus_ext,
-      const tnsr::aa<DataVector, dim, Frame::Inertial>&
-          char_speed_constraint_gamma2_v_spacetime_metric_ext,
-      const tnsr::a<DataVector, dim, Frame::Inertial>& char_speeds_ext,
-      // Scalar external packaged fields
-      const Scalar<DataVector>& v_psi_ext_scalar,
-      const tnsr::i<DataVector, dim, Frame::Inertial>& v_zero_ext_scalar,
-      const Scalar<DataVector>& v_plus_ext_scalar,
-      const Scalar<DataVector>& v_minus_ext_scalar,
-      const Scalar<DataVector>& gamma2_ext_scalar,
-      const tnsr::i<DataVector, dim, Frame::Inertial>&
-          interface_unit_normal_ext_scalar,
-      const tnsr::a<DataVector, dim, Frame::Inertial>& char_speeds_ext_scalar,
+      // Packaged fields
+      const typename GhDgPackagedFieldTags::type&... gh_packaged_fields_int,
+      const typename ScalarDgPackagedFieldTags::
+          type&... scalar_packaged_fields_int,
+      const typename GhDgPackagedFieldTags::type&... gh_packaged_fields_ext,
+      const typename ScalarDgPackagedFieldTags::
+          type&... scalar_packaged_fields_ext,
       // DG formulation
       const dg::Formulation dg_formulation) const {
     derived_gh_correction_.dg_boundary_terms(
-        // GH boundary corrections
         boundary_correction_spacetime_metric, boundary_correction_pi,
-        boundary_correction_phi,
-        // GH internal packaged fields
-        char_speed_v_spacetime_metric_int, char_speed_v_zero_int,
-        char_speed_v_plus_int, char_speed_v_minus_int,
-        char_speed_normal_times_v_plus_int, char_speed_normal_times_v_minus_int,
-        char_speed_constraint_gamma2_v_spacetime_metric_int, char_speeds_int,
-        // GH external packaged fields
-        char_speed_v_spacetime_metric_ext, char_speed_v_zero_ext,
-        char_speed_v_plus_ext, char_speed_v_minus_ext,
-        char_speed_normal_times_v_plus_ext, char_speed_normal_times_v_minus_ext,
-        char_speed_constraint_gamma2_v_spacetime_metric_ext, char_speeds_ext,
-        dg_formulation);
+        boundary_correction_phi, gh_packaged_fields_int...,
+        gh_packaged_fields_ext..., dg_formulation);
 
     derived_scalar_correction_.dg_boundary_terms(
-        // Scalar boundary corrections
         psi_boundary_correction_scalar, pi_boundary_correction_scalar,
-        phi_boundary_correction_scalar,
-        // Scalar internal packaged fields
-        v_psi_int_scalar, v_zero_int_scalar, v_plus_int_scalar,
-        v_minus_int_scalar, gamma2_int_scalar, interface_unit_normal_int_scalar,
-        char_speeds_int_scalar,
-        // Scalar external packaged fields
-        v_psi_ext_scalar, v_zero_ext_scalar, v_plus_ext_scalar,
-        v_minus_ext_scalar, gamma2_ext_scalar, interface_unit_normal_ext_scalar,
-        char_speeds_ext_scalar, dg_formulation);
+        phi_boundary_correction_scalar, scalar_packaged_fields_int...,
+        scalar_packaged_fields_ext..., dg_formulation);
   }
 
   const DerivedGhCorrection& gh_correction() const {
@@ -302,11 +228,27 @@ class ProductOfCorrections final : public evolution::BoundaryCorrection {
   DerivedGhCorrection derived_gh_correction_;
   DerivedScalarCorrection derived_scalar_correction_;
 };
+/// @}
 
 /// \cond
-template <typename DerivedGhCorrection, typename DerivedScalarCorrection>
-PUP::able::PUP_ID ProductOfCorrections<DerivedGhCorrection,
-                                       DerivedScalarCorrection>::my_PUP_ID =
-    0;  // NOLINT
+template <typename DerivedGhCorrection, typename DerivedScalarCorrection,
+          typename... GhDgPackagedFieldTags,
+          typename... ScalarDgPackagedFieldTags,
+          typename... GhDgPackageDataTemporaryTags,
+          typename... ScalarDgPackageDataTemporaryTags,
+          typename... GhDgPackageDataVolumeTags,
+          typename... ScalarDgPackageDataVolumeTags,
+          typename... GhDgBoundaryTermsVolumeTags,
+          typename... ScalarDgBoundaryTermsVolumeTags>
+PUP::able::PUP_ID ProductOfCorrections<
+    DerivedGhCorrection, DerivedScalarCorrection,
+    tmpl::list<GhDgPackagedFieldTags...>,
+    tmpl::list<ScalarDgPackagedFieldTags...>,
+    tmpl::list<GhDgPackageDataTemporaryTags...>,
+    tmpl::list<ScalarDgPackageDataTemporaryTags...>,
+    tmpl::list<GhDgPackageDataVolumeTags...>,
+    tmpl::list<ScalarDgPackageDataVolumeTags...>,
+    tmpl::list<GhDgBoundaryTermsVolumeTags...>,
+    tmpl::list<ScalarDgBoundaryTermsVolumeTags...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace ScalarTensor::BoundaryCorrections

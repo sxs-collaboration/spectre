@@ -746,12 +746,12 @@ void apply_boundary_conditions_on_all_external_faces(
                 typename BoundaryCorrection::dg_package_data_volume_tags{},
                 typename BoundaryCorrection::dg_package_field_tags{},
                 typename BoundaryCorrection::dg_boundary_terms_volume_tags{},
-                tmpl::append<
+                tmpl::remove_duplicates<tmpl::append<
                     typename variables_tag::tags_list, fluxes_tags,
                     typename BoundaryCorrection::dg_package_data_temporary_tags,
                     typename detail::get_primitive_vars<
                         System::has_primitive_and_conservative_vars>::
-                        template f<BoundaryCorrection>>{},
+                        template f<BoundaryCorrection>>>{},
                 typename DerivedBoundaryCondition::dg_gridless_tags{});
             --number_of_boundaries_left;
           }

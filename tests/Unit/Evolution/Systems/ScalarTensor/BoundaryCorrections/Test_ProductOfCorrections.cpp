@@ -104,7 +104,8 @@ void test_boundary_correction_combination(
       typename derived_product_correction_type::dg_package_field_tags>;
 
   using temporary_variables_type = Variables<
-      typename derived_product_correction_type::dg_package_data_temporary_tags>;
+      tmpl::remove_duplicates<typename derived_product_correction_type::
+                                  dg_package_data_temporary_tags>>;
 
   using volume_variables_type = Variables<
       typename derived_product_correction_type::dg_package_data_volume_tags>;
