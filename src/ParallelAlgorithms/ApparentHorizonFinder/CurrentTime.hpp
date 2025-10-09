@@ -116,7 +116,8 @@ bool check_if_current_time_is_ready(
                                  incoming_mesh,
                                  Variables<ah::vars_to_interpolate_to_target<
                                      3, horizon_frame>>{},
-                                 dependency, true));
+                                 dependency,
+                                 /* vars_have_already_been_received */ true));
           });
     }  // if (domain.is_time_dependent())
   } else {

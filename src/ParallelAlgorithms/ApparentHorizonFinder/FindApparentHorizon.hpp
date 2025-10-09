@@ -57,7 +57,9 @@ struct get_tags {
  * put into the `ah::Tags::Storage`. Then, we try to set the
  * `ah::Tags::CurrentTime` with the `ah::set_current_time` function. Once we
  * have a current time, we ensure the functions of time are up-to-date at this
- * current time with `ah::check_if_current_time_is_ready`.
+ * current time with `ah::check_if_current_time_is_ready`. If they are not,
+ * we re-trigger this action with `vars_have_already_been_received` set to
+ * true and not sending any new volume data.
  *
  * Once we ensure the functions of time are ready, we compute the cartesian
  * coordinates for the current fast-flow iteration surface with
