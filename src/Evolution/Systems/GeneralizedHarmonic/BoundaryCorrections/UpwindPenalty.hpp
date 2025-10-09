@@ -106,7 +106,7 @@ namespace gh::BoundaryCorrections {
  * and characteristic speeds
  *
  * \f{align*}{
- *   \lambda_{v^g} =& -(1+\gamma_1)\beta^i n_i -v^i_g n_i, \\
+ *   \lambda_{v^g} =& -(1+\gamma_1) (\beta^i n_i + v^i_g n_i), \\
  *   \lambda_{v^0} =& -\beta^i n_i -v^i_g n_i, \\
  *   \lambda_{v^\pm} =& \pm \alpha - \beta^i n_i - v^i_g n_i,
  * \f}
