@@ -6,7 +6,7 @@ add_subdirectory(Worldtube)
 set(LIBRARY "Test_CurvedScalarWave")
 
 set(LIBRARY_SOURCES
-  Actions/Test_NumericInitialData.cpp
+  Actions/Test_SetInitialData.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
   BoundaryConditions/Test_AnalyticConstant.cpp
   BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp

@@ -17,7 +17,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Evolution/NumericInitialData.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"

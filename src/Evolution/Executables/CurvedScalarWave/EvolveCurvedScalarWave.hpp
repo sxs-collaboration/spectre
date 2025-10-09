@@ -189,6 +189,13 @@ struct EvolutionMetavars {
     using interpolating_component = typename metavariables::dg_element_array;
   };
 
+  using initial_data_list = tmpl::flatten<tmpl::list<
+      ScalarWave::Solutions::all_solutions<Dim>,
+      tmpl::conditional_t<
+          Dim == 3,
+          tmpl::list<CurvedScalarWave::AnalyticData::PureSphericalHarmonic,
+                     CurvedScalarWave::NumericInitialData>,
+          tmpl::list<>>>>;
   using interpolation_target_tags = tmpl::list<SphericalSurface>;
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpatialMetric<DataVector, volume_dim>,
