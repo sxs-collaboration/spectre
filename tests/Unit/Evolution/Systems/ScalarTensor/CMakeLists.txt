@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Actions/Test_SetInitialData.cpp
   BoundaryConditions/Test_ConstraintPreserving.cpp
   BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
+  BoundaryCorrections/Test_ProductOfCorrections.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_Tags.cpp
