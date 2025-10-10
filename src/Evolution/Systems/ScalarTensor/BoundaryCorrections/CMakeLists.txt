@@ -4,7 +4,6 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  RegisterDerived.cpp
   )
 
 spectre_target_headers(
@@ -14,5 +13,4 @@ spectre_target_headers(
   BoundaryCorrection.hpp
   ProductOfCorrections.hpp
   Factory.hpp
-  RegisterDerived.hpp
   )

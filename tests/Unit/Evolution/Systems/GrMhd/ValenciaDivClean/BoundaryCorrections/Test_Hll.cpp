@@ -103,8 +103,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       volume_data, ranges_atmo);
 
-  const auto hll = TestHelpers::test_creation<std::unique_ptr<
-      grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
+  const auto hll = TestHelpers::test_factory_creation<
+      grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
+      grmhd::ValenciaDivClean::BoundaryCorrections::Hll>(
       "Hll:\n"
       "  MagneticFieldMagnitudeForHydro: 1.0e-30\n"
       "  LightSpeedDensityCutoff: 1.0e-8\n");

@@ -11,11 +11,6 @@
 
 /// Boundary corrections/numerical fluxes
 namespace ScalarAdvection::BoundaryCorrections {
-/// \cond
-template <size_t Dim>
-class Rusanov;
-/// \endcond
-
 /*!
  * \brief The base class used to create boundary corrections from input files
  * and store them in the global cache.
@@ -34,8 +29,6 @@ class BoundaryCorrection : public PUP::able {
   explicit BoundaryCorrection(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(BoundaryCorrection<Dim>);  // NOLINT
   /// \endcond
-
-  using creatable_classes = tmpl::list<Rusanov<Dim>>;
 
   virtual std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const = 0;
 };

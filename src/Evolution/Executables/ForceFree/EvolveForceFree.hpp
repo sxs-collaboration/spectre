@@ -30,6 +30,7 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/ForceFree/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ForceFree/ElectricCurrentDensity.hpp"
 #include "Evolution/Systems/ForceFree/ElectromagneticVariables.hpp"
@@ -148,6 +149,9 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<ForceFree::BoundaryConditions::BoundaryCondition,
                    ForceFree::BoundaryConditions::standard_boundary_conditions>,
+        tmpl::pair<
+            ForceFree::BoundaryCorrections::BoundaryCorrection,
+            ForceFree::BoundaryCorrections::standard_boundary_corrections>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event,

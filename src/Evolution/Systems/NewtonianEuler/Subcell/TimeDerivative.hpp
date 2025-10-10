@@ -110,7 +110,8 @@ struct TimeDerivative {
     const auto& boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<system>>(*box);
     using derived_boundary_corrections =
-        typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+        tmpl::at<typename metavariables::factory_creation::factory_classes,
+                 NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>;
     std::array<Variables<evolved_vars_tags>, Dim> boundary_corrections{};
     tmpl::for_each<derived_boundary_corrections>([&boundary_correction,
                                                   &reconstructed_num_pts,

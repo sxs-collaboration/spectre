@@ -26,6 +26,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarWave/EnergyDensity.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
@@ -199,6 +200,10 @@ struct EvolutionMetavars {
             ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
             ScalarWave::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
+        tmpl::pair<
+            ScalarWave::BoundaryCorrections::BoundaryCorrection<volume_dim>,
+            ScalarWave::BoundaryCorrections::standard_boundary_corrections<
+                volume_dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    tmpl::push_back<StepChoosers::standard_step_choosers<system>,
                                    StepChoosers::ByBlock<volume_dim>>>,
@@ -233,7 +238,8 @@ struct EvolutionMetavars {
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, EvolutionMetavars, volume_dim,
+                             true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,

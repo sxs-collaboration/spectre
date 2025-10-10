@@ -38,9 +38,9 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
                     Spectral::Quadrature::Gauss},
       {}, {});
 
-  const auto rusanov = TestHelpers::test_creation<std::unique_ptr<
-      ScalarAdvection::BoundaryCorrections::BoundaryCorrection<Dim>>>(
-      "Rusanov:");
+  const auto rusanov = TestHelpers::test_factory_creation<
+      ScalarAdvection::BoundaryCorrections::BoundaryCorrection<Dim>,
+      ScalarAdvection::BoundaryCorrections::Rusanov<Dim>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<ScalarAdvection::System<Dim>>(
       gen, "Rusanov", "dg_package_data", "dg_boundary_terms",

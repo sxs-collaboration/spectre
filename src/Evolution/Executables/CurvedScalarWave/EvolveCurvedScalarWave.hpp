@@ -26,6 +26,7 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/CalculateGrVars.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
@@ -199,6 +200,10 @@ struct EvolutionMetavars {
             CurvedScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
             CurvedScalarWave::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
+        tmpl::pair<CurvedScalarWave::BoundaryCorrections::BoundaryCorrection<
+                       volume_dim>,
+                   CurvedScalarWave::BoundaryCorrections::
+                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<
@@ -249,7 +254,8 @@ struct EvolutionMetavars {
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, EvolutionMetavars, volume_dim,
+                             true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,

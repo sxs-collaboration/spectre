@@ -503,9 +503,6 @@ struct NonconservativeNormalDotFlux {
 };
 
 template <size_t Dim, bool HasPrims>
-struct BoundaryTerms;
-
-template <size_t Dim, bool HasPrims>
 class BoundaryCorrection : public PUP::able {
  public:
   BoundaryCorrection() = default;
@@ -517,8 +514,6 @@ class BoundaryCorrection : public PUP::able {
   ~BoundaryCorrection() override = default;
 
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
-
-  using creatable_classes = tmpl::list<BoundaryTerms<Dim, HasPrims>>;
 };
 
 template <size_t Dim, bool HasPrims>
@@ -1007,11 +1002,13 @@ struct Metavariables {
                  domain::Tags::Domain<Dim>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<BoundaryCondition<Dim>,
-                             tmpl::list<DemandOutgoingCharSpeeds<Dim>>>,
-                  tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
-                             tmpl::list<StepChoosers::Constant>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCondition<Dim>,
+                   tmpl::list<DemandOutgoingCharSpeeds<Dim>>>,
+        tmpl::pair<BoundaryCorrection<Dim, HasPrimitiveVariables>,
+                   tmpl::list<BoundaryTerms<Dim, HasPrimitiveVariables>>>,
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
+                   tmpl::list<StepChoosers::Constant>>>;
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
@@ -2052,11 +2049,6 @@ void test() {
   //   the fluxes, and lifting the boundary contributions to the volume, even
   //   though the mesh velocity and boundary contributions are not the correct
   //   DG values
-
-  register_derived_classes_with_charm<
-      BoundaryCorrection<Dim, true>>();
-  register_derived_classes_with_charm<
-      BoundaryCorrection<Dim, false>>();
 
   constexpr bool use_nodegroup_dg_elements = false;
 

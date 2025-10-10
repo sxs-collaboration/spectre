@@ -31,6 +31,7 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Initialize.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
@@ -166,6 +167,10 @@ struct EvolutionMetavars {
                        BoundaryCondition<neutrino_species>,
                    RadiationTransport::M1Grey::BoundaryConditions::
                        standard_boundary_conditions<neutrino_species>>,
+        tmpl::pair<RadiationTransport::M1Grey::BoundaryCorrections::
+                       BoundaryCorrection<neutrino_species>,
+                   RadiationTransport::M1Grey::BoundaryCorrections::
+                       standard_boundary_corrections<neutrino_species>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system, false>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
@@ -196,7 +201,8 @@ struct EvolutionMetavars {
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, EvolutionMetavars, volume_dim,
+                             true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,

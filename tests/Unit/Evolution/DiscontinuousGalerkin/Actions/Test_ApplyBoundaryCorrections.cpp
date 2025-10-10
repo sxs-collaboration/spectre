@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFromBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
@@ -49,6 +50,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -70,9 +72,6 @@ struct VolumeTag : db::SimpleTag {
 };
 
 template <size_t Dim>
-struct BoundaryTerms;
-
-template <size_t Dim>
 class BoundaryCorrection : public PUP::able {
  public:
   BoundaryCorrection() = default;
@@ -84,8 +83,6 @@ class BoundaryCorrection : public PUP::able {
   ~BoundaryCorrection() override = default;
 
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
-
-  using creatable_classes = tmpl::list<BoundaryTerms<Dim>>;
 };
 
 template <size_t Dim>
@@ -475,6 +472,11 @@ struct Metavariables {
   using system = System<Dim, SystemType>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCorrection<Dim>, tmpl::list<BoundaryTerms<Dim>>>>;
+  };
 
   using component_list = tmpl::list<component<Metavariables>>;
 };
@@ -495,9 +497,9 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(SystemType);
   CAPTURE(quadrature);
   CAPTURE(UseLocalTimeStepping);
-  register_derived_classes_with_charm<BoundaryCorrection<Dim>>();
   using metavars = Metavariables<Dim, SystemType, UseLocalTimeStepping,
                                  UseNodegroupDgElements>;
+  register_factory_classes_with_charm<metavars>();
   using comp = component<metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using variables_tag = typename metavars::system::variables_tag;

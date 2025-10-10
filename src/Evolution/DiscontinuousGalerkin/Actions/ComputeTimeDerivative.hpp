@@ -435,7 +435,8 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
   const auto& boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<EvolutionSystem>>(box);
   using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+      tmpl::at<typename Metavariables::factory_creation::factory_classes,
+               typename EvolutionSystem::boundary_correction_base>;
 
   // To avoid a second allocation in internal_mortar_data, we allocate the
   // variables needed to construct the fields on the faces here along with

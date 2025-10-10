@@ -104,6 +104,8 @@ struct DummyEvolutionMetaVars {
                    tmpl::push_back<
                        BoundaryConditions::standard_boundary_conditions<System>,
                        BoundaryConditions::DirichletAnalytic<System>>>,
+        tmpl::pair<BoundaryCorrections::BoundaryCorrection,
+                   BoundaryCorrections::standard_boundary_corrections>,
         tmpl::pair<evolution::initial_data::InitialData,
                    ghmhd::GhValenciaDivClean::InitialData::
                        analytic_solutions_and_data_list>>;

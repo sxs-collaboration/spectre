@@ -36,9 +36,9 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
       Mesh<0>{1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
 
-  const auto Hll = TestHelpers::test_creation<
-      std::unique_ptr<Burgers::BoundaryCorrections::BoundaryCorrection>>(
-      "Hll:");
+  const auto Hll = TestHelpers::test_factory_creation<
+      Burgers::BoundaryCorrections::BoundaryCorrection,
+      Burgers::BoundaryCorrections::Hll>("Hll:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(

@@ -26,6 +26,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Initialize.hpp"
 #include "Evolution/Systems/CurvedScalarWave/PsiSquared.hpp"
@@ -364,6 +365,9 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,
+      tmpl::pair<
+          ScalarTensor::BoundaryCorrections::BoundaryCorrection,
+          ScalarTensor::BoundaryCorrections::standard_boundary_corrections>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
       tmpl::pair<
           evolution::initial_data::InitialData,
@@ -443,7 +447,8 @@ struct ScalarTensorTemplateBase {
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, derived_metavars, volume_dim,
+                             true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,

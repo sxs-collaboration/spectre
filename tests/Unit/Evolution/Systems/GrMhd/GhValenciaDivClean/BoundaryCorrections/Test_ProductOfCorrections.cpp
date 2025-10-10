@@ -273,17 +273,20 @@ SPECTRE_TEST_CASE(
   using NeutrinoTransportSystem = RadiationTransport::NoNeutrinos::System;
   {
     INFO("Product correction UpwindPenalty and Rusanov");
+    using ProductUpwindPenaltyAndRusanov =
+        grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
+            gh::BoundaryCorrections::UpwindPenalty<3_st>,
+            grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>;
     grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov valencia_correction{};
     gh::BoundaryCorrections::UpwindPenalty<3_st> gh_correction{};
-    TestHelpers::test_creation<std::unique_ptr<
-        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
+    TestHelpers::test_factory_creation<
+        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
+        ProductUpwindPenaltyAndRusanov>(
         "ProductUpwindPenaltyAndRusanov:\n"
         "  UpwindPenalty:\n"
         "  Rusanov:");
-    grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
-        gh::BoundaryCorrections::UpwindPenalty<3_st>,
-        grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>
-        product_boundary_correction{gh_correction, valencia_correction};
+    const ProductUpwindPenaltyAndRusanov product_boundary_correction{
+        gh_correction, valencia_correction};
     for (const auto formulation :
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {
       test_boundary_correction_combination<
@@ -295,20 +298,23 @@ SPECTRE_TEST_CASE(
   }
   {
     INFO("Product correction UpwindPenalty and Hll");
+    using ProductUpwindPenaltyAndHll =
+        grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
+            gh::BoundaryCorrections::UpwindPenalty<3_st>,
+            grmhd::ValenciaDivClean::BoundaryCorrections::Hll>;
     const grmhd::ValenciaDivClean::BoundaryCorrections::Hll valencia_correction{
         1.0e-30, 1.0e-8};
     const gh::BoundaryCorrections::UpwindPenalty<3_st> gh_correction{};
-    TestHelpers::test_creation<std::unique_ptr<
-        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
+    TestHelpers::test_factory_creation<
+        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
+        ProductUpwindPenaltyAndHll>(
         "ProductUpwindPenaltyAndHll:\n"
         "  UpwindPenalty:\n"
         "  Hll:\n"
         "    MagneticFieldMagnitudeForHydro: 1.0e-30\n"
         "    LightSpeedDensityCutoff: 1.0e-8\n");
-    const grmhd::GhValenciaDivClean::BoundaryCorrections::ProductOfCorrections<
-        gh::BoundaryCorrections::UpwindPenalty<3_st>,
-        grmhd::ValenciaDivClean::BoundaryCorrections::Hll>
-        product_boundary_correction{gh_correction, valencia_correction};
+    const ProductUpwindPenaltyAndHll product_boundary_correction{
+        gh_correction, valencia_correction};
     for (const auto formulation :
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {
       test_boundary_correction_combination<

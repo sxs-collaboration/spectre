@@ -3,5 +3,12 @@
 
 #pragma once
 
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
+#include <cstddef>
+
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace gh::BoundaryCorrections {
+template <size_t Dim>
+using standard_boundary_corrections = tmpl::list<UpwindPenalty<Dim>>;
+}  // namespace gh::BoundaryCorrections

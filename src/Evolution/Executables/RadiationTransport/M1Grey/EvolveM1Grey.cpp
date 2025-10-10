@@ -17,9 +17,6 @@ extern "C" void CkRegisterMainModule() {
       {&domain::creators::register_derived_with_charm,
        &domain::creators::time_dependence::register_derived_with_charm,
        &domain::FunctionsOfTime::register_derived_with_charm,
-       &register_derived_classes_with_charm<
-           RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection<
-               EvolutionMetavars::neutrino_species>>,
        &register_factory_classes_with_charm<EvolutionMetavars>},
       {});
 }

@@ -40,6 +40,7 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Tags.hpp"
@@ -204,6 +205,10 @@ struct EvolutionMetavars {
         tmpl::pair<ScalarAdvection::BoundaryConditions::BoundaryCondition<Dim>,
                    ScalarAdvection::BoundaryConditions::
                        standard_boundary_conditions<Dim>>,
+        tmpl::pair<
+            ScalarAdvection::BoundaryCorrections::BoundaryCorrection<Dim>,
+            ScalarAdvection::BoundaryCorrections::standard_boundary_corrections<
+                Dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

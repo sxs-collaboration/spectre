@@ -30,8 +30,8 @@
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Worldtube.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/CurvedScalarWave/CalculateGrVars.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Initialize.hpp"
@@ -208,6 +208,10 @@ struct EvolutionMetavars {
                 CurvedScalarWave::BoundaryConditions::
                     standard_boundary_conditions<volume_dim>,
                 CurvedScalarWave::BoundaryConditions::Worldtube<volume_dim>>>>,
+        tmpl::pair<CurvedScalarWave::BoundaryCorrections::BoundaryCorrection<
+                       volume_dim>,
+                   CurvedScalarWave::BoundaryCorrections::
+                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>,
                    tmpl::list<domain::creators::BinaryCompactObject<true>>>,

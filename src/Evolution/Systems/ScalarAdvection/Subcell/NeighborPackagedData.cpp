@@ -89,7 +89,7 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
   const auto& boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<System<Dim>>>(box);
   using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+      ScalarAdvection::BoundaryCorrections::standard_boundary_corrections<Dim>;
 
   // perform reconstruction
   tmpl::for_each<derived_boundary_corrections>([&](auto derived_correction_v) {

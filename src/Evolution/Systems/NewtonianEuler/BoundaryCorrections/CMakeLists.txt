@@ -6,7 +6,6 @@ spectre_target_sources(
   PRIVATE
   Hll.cpp
   Hllc.cpp
-  RegisterDerived.cpp
   Rusanov.cpp
   )
 
@@ -18,6 +17,5 @@ spectre_target_headers(
   Factory.hpp
   Hll.hpp
   Hllc.hpp
-  RegisterDerived.hpp
   Rusanov.hpp
   )

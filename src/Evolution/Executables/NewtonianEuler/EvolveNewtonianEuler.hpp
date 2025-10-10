@@ -42,6 +42,7 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
@@ -220,6 +221,10 @@ struct EvolutionMetavars {
         tmpl::pair<
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
+                volume_dim>>,
+        tmpl::pair<
+            NewtonianEuler::BoundaryCorrections::BoundaryCorrection<volume_dim>,
+            NewtonianEuler::BoundaryCorrections::standard_boundary_corrections<
                 volume_dim>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,

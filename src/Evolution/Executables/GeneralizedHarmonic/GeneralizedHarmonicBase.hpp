@@ -26,6 +26,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
@@ -302,6 +303,9 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
       tmpl::pair<
           gh::BoundaryConditions::BoundaryCondition<volume_dim>,
           gh::BoundaryConditions::standard_boundary_conditions<volume_dim>>,
+      tmpl::pair<
+          gh::BoundaryCorrections::BoundaryCorrection<volume_dim>,
+          gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
       tmpl::pair<
           evolution::initial_data::InitialData,
@@ -379,21 +383,22 @@ struct GeneralizedHarmonicTemplateBase {
                  Parallel::Phase::Evolve,
                  Parallel::Phase::Exit};
 
-  template <typename ControlSystems>
+  template <typename DerivedMetavars, typename ControlSystems>
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                         ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
-                             volume_dim>,
-                         evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
-                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
-                     Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
+          tmpl::list<
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+                  ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
+                      volume_dim>,
+                  evolution::dg::ApplyBoundaryCorrections<
+                      local_time_stepping, DerivedMetavars, volume_dim, true>>>,
+              evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+                  system, volume_dim, false, use_dg_element_collection>,
+              Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   system, volume_dim, false, use_dg_element_collection>,

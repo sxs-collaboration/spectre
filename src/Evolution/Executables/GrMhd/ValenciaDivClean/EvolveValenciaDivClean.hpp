@@ -53,8 +53,8 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ComovingMagneticFieldMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/RegisterDerivedWithCharm.hpp"
@@ -344,6 +344,10 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
             grmhd::ValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
         tmpl::pair<
+            grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
+            grmhd::ValenciaDivClean::BoundaryCorrections::
+                standard_boundary_corrections>,
+        tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
             grmhd::AnalyticData::InitialMagneticFields::
                 initial_magnetic_fields>,
@@ -410,14 +414,15 @@ struct EvolutionMetavars<tmpl::list<InterpolationTargetTags...>,
           use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                         evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>,
-                         system::primitive_from_conservative<
-                             ordered_list_of_primitive_recovery_schemes>>>,
-                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
-                     Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
+          tmpl::list<
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+                  evolution::dg::ApplyBoundaryCorrections<
+                      local_time_stepping, EvolutionMetavars, volume_dim, true>,
+                  system::primitive_from_conservative<
+                      ordered_list_of_primitive_recovery_schemes>>>,
+              evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+                  system, volume_dim, false, use_dg_element_collection>,
+              Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   system, volume_dim, false, use_dg_element_collection>,

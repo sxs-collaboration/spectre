@@ -91,8 +91,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
       db::get<grmhd::ValenciaDivClean::fd::Tags::Reconstructor>(box);
   const auto& boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<System>>(box);
-  using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+  using derived_boundary_corrections = grmhd::ValenciaDivClean::
+      BoundaryCorrections::standard_boundary_corrections;
   tmpl::for_each<derived_boundary_corrections>([&box, &boundary_correction,
                                                 &dg_mesh,
                                                 &mortars_to_reconstruct_to,

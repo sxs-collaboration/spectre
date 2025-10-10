@@ -114,8 +114,8 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
       db::get<evolution::Tags::BoundaryCorrection<System>>(box);
   const auto& fix_to_atmosphere =
       db::get<::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>(box);
-  using derived_boundary_corrections = typename std::decay_t<
-      decltype(base_boundary_correction)>::creatable_classes;
+  using derived_boundary_corrections = grmhd::GhValenciaDivClean::
+      BoundaryCorrections::standard_boundary_corrections;
   call_with_dynamic_type<void, derived_boundary_corrections>(
       &base_boundary_correction,
       [&box, &dg_mesh, &fix_to_atmosphere, &mortars_to_reconstruct_to,

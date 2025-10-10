@@ -73,7 +73,10 @@ struct DummyEvolutionMetaVars {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<Burgers::BoundaryConditions::BoundaryCondition,
-                   Burgers::BoundaryConditions::standard_boundary_conditions>>;
+                   Burgers::BoundaryConditions::standard_boundary_conditions>,
+        tmpl::pair<
+            Burgers::BoundaryCorrections::BoundaryCorrection,
+            Burgers::BoundaryCorrections::standard_boundary_corrections>>;
   };
 };
 }  // namespace

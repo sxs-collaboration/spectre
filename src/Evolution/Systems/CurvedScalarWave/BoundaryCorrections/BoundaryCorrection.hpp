@@ -11,11 +11,6 @@
 
 /// Boundary corrections/numerical fluxes
 namespace CurvedScalarWave::BoundaryCorrections {
-/// \cond
-template <size_t Dim>
-class UpwindPenalty;
-/// \endcond
-
 /*!
  * \brief The base class used to make boundary corrections factory createable so
  * they can be specified in the input file.
@@ -34,8 +29,6 @@ class BoundaryCorrection : public PUP::able {
   explicit BoundaryCorrection(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(BoundaryCorrection<Dim>);  // NOLINT
   /// \endcond
-
-  using creatable_classes = tmpl::list<UpwindPenalty<Dim>>;
 
   virtual std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const = 0;
 };

@@ -77,8 +77,7 @@ DirectionalIdMap<1, DataVector> NeighborPackagedData::apply(
   const auto& boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<System>>(box);
   using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
-
+      Burgers::BoundaryCorrections::standard_boundary_corrections;
   // perform reconstruction
   tmpl::for_each<derived_boundary_corrections>([&](auto derived_correction_v) {
     using derived_correction = tmpl::type_from<decltype(derived_correction_v)>;

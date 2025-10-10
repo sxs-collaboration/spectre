@@ -568,22 +568,24 @@ bool receive_boundary_data_local_time_stepping(
 /// Setting \p DenseOutput to true receives data required for output
 /// at ::Tags::Time instead of performing a full step.  This is only
 /// used for local time-stepping.
-template <bool LocalTimeStepping, typename System, size_t VolumeDim,
+template <bool LocalTimeStepping, typename Metavariables, size_t VolumeDim,
           bool DenseOutput>
 struct ApplyBoundaryCorrections {
   static constexpr bool local_time_stepping = LocalTimeStepping;
   static_assert(local_time_stepping or not DenseOutput,
                 "GTS does not use ApplyBoundaryCorrections for dense output.");
 
-  using system = System;
+  using system = typename Metavariables::system;
   static constexpr size_t volume_dim = VolumeDim;
   using variables_tag = typename system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
-  using volume_tags_for_dg_boundary_terms =
-      tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-          typename system::boundary_correction_base::creatable_classes,
-          detail::get_dg_boundary_terms<tmpl::_1>>>>;
+  using derived_boundary_corrections =
+      tmpl::at<typename Metavariables::factory_creation::factory_classes,
+               typename system::boundary_correction_base>;
+  using volume_tags_for_dg_boundary_terms = tmpl::remove_duplicates<
+      tmpl::flatten<tmpl::transform<derived_boundary_corrections,
+                                    detail::get_dg_boundary_terms<tmpl::_1>>>>;
 
   using TimeStepperType =
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>;
@@ -689,8 +691,8 @@ struct ApplyBoundaryCorrections {
                volume_args...);
   }
 
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ParallelComponent>
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ParallelComponent>
   static bool is_ready(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
       const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes,
@@ -699,7 +701,7 @@ struct ApplyBoundaryCorrections {
       const ParallelComponent* const /*component*/) {
     if constexpr (local_time_stepping) {
       return receive_boundary_data_local_time_stepping<
-          Parallel::is_dg_element_collection_v<ParallelComponent>, System,
+          Parallel::is_dg_element_collection_v<ParallelComponent>, system,
           VolumeDim, DenseOutput>(box, inboxes);
     } else {
       return receive_boundary_data_global_time_stepping<
@@ -751,9 +753,6 @@ struct ApplyBoundaryCorrections {
         get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
       }
     }
-
-    using derived_boundary_corrections =
-        typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
 
     static_assert(
         tmpl::all<derived_boundary_corrections, std::is_final<tmpl::_1>>::value,
@@ -1111,7 +1110,7 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
     }
 
     db::mutate_apply<
-        ApplyBoundaryCorrections<false, System, VolumeDim, DenseOutput>>(
+        ApplyBoundaryCorrections<false, Metavariables, VolumeDim, DenseOutput>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -1177,7 +1176,7 @@ struct ApplyLtsBoundaryCorrections {
     }
 
     db::mutate_apply<
-        ApplyBoundaryCorrections<true, System, VolumeDim, DenseOutput>>(
+        ApplyBoundaryCorrections<true, Metavariables, VolumeDim, DenseOutput>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

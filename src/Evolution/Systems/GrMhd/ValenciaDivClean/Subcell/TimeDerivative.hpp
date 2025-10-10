@@ -61,6 +61,9 @@ namespace grmhd::ValenciaDivClean::subcell {
 struct TimeDerivative {
   template <typename DbTagsList>
   static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+    using metavariables =
+        typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            *box))>;
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename System::primitive_variables_tag::tags_list;
@@ -143,8 +146,7 @@ struct TimeDerivative {
 
     const bool element_is_interior = element.external_boundaries().empty();
     constexpr bool subcell_enabled_at_external_boundary =
-        std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
+        metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
 
     ASSERT(element_is_interior or subcell_enabled_at_external_boundary,
            "Subcell time derivative is called at a boundary element while "
@@ -155,8 +157,9 @@ struct TimeDerivative {
     // Now package the data and compute the correction
     const auto& boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
-    using derived_boundary_corrections =
-        typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+    using derived_boundary_corrections = tmpl::at<
+        typename metavariables::factory_creation::factory_classes,
+        grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>;
     std::array<Variables<evolved_vars_tags>, 3> boundary_corrections{};
 
     // If the element has external boundaries and subcell is enabled for

@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
@@ -42,14 +43,26 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/ScalarAdvection/FiniteDifference/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarAdvection {
 namespace {
+template <size_t Dim>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCorrections::BoundaryCorrection<Dim>,
+                   BoundaryCorrections::standard_boundary_corrections<Dim>>>;
+  };
+};
+
 template <size_t Dim>
 void test_subcell_timederivative() {
   using evolved_vars_tag = typename System<Dim>::variables_tag;
@@ -109,6 +122,7 @@ void test_subcell_timederivative() {
 
   auto box = db::create<
       db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,
           domain::Tags::Element<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
           evolved_vars_tag, dt_variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
@@ -144,7 +158,7 @@ void test_subcell_timederivative() {
                   ::domain::CoordinateMaps::Tags::CoordinateMap<
                       Dim, Frame::Grid, Frame::Inertial>,
                   Dim>>>(
-      element, subcell_mesh, volume_vars_subcell,
+      Metavariables<Dim>{}, element, subcell_mesh, volume_vars_subcell,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       ghost_data,

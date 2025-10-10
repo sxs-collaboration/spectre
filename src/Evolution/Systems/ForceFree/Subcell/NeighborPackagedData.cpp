@@ -101,7 +101,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
   const auto& boundary_correction =
       db::get<evolution::Tags::BoundaryCorrection<System>>(box);
   using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+      ForceFree::BoundaryCorrections::standard_boundary_corrections;
 
   const auto& subcell_options =
       db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(box);

@@ -47,6 +47,7 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/LaneEmdenStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -56,6 +57,7 @@
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace NewtonianEuler {
 namespace {
@@ -138,6 +140,12 @@ struct SmoothFlowMetaVars {
   using initial_data = NewtonianEuler::Solutions::SmoothFlow<Dim>;
   using system = NewtonianEuler::System<Dim>;
   using source_term_tag = NewtonianEuler::Tags::SourceTerm<Dim>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCorrections::BoundaryCorrection<Dim>,
+                   BoundaryCorrections::standard_boundary_corrections<Dim>>>;
+  };
   static auto solution() {
     return initial_data{make_array<Dim>(0.0), make_array<Dim>(-0.2), 0.5, 1.5,
                         0.01};
@@ -149,6 +157,12 @@ struct LaneEmdenStarMetaVars {
   using initial_data = NewtonianEuler::Solutions::LaneEmdenStar;
   using system = NewtonianEuler::System<3>;
   using source_term_tag = NewtonianEuler::Tags::SourceTerm<3>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryCorrections::BoundaryCorrection<3>,
+                   BoundaryCorrections::standard_boundary_corrections<3>>>;
+  };
   static auto solution() { return initial_data{0.7, 250.0}; }
 };
 

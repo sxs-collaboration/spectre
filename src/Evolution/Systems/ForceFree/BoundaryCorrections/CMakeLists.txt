@@ -5,7 +5,6 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  RegisterDerived.cpp
   Rusanov.cpp
   )
 
@@ -15,6 +14,5 @@ spectre_target_headers(
   HEADERS
   BoundaryCorrection.hpp
   Factory.hpp
-  RegisterDerived.hpp
   Rusanov.hpp
   )

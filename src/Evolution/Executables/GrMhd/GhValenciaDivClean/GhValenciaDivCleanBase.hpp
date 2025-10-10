@@ -68,7 +68,6 @@
 #include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/Cce/Callbacks/DumpBondiSachsOnWorldtube.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
@@ -80,7 +79,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/FixConservativesAndComputePrims.hpp"
@@ -96,7 +96,6 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
@@ -647,6 +646,10 @@ struct GhValenciaDivCleanTemplateBase<
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
+        tmpl::pair<
+            grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
+            grmhd::GhValenciaDivClean::BoundaryCorrections::
+                standard_boundary_corrections>,
         tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
             grmhd::AnalyticData::InitialMagneticFields::

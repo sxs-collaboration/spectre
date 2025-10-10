@@ -236,16 +236,19 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   {
     INFO("Product correction UpwindPenalty and UpwindPenalty");
+    using ProductUpwindPenaltyGhAndUpwindPenaltyScalar =
+        ScalarTensor::BoundaryCorrections::ProductOfCorrections<
+            gh::BoundaryCorrections::UpwindPenalty<3>,
+            CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3>>;
     CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3> scalar_correction{};
     gh::BoundaryCorrections::UpwindPenalty<3> gh_correction{};
-    TestHelpers::test_creation<
-        std::unique_ptr<ScalarTensor::BoundaryCorrections::BoundaryCorrection>>(
+    TestHelpers::test_factory_creation<
+        ScalarTensor::BoundaryCorrections::BoundaryCorrection,
+        ProductUpwindPenaltyGhAndUpwindPenaltyScalar>(
         "ProductUpwindPenaltyGHAndUpwindPenaltyScalar:\n"
         "  UpwindPenaltyGH:\n"
         "  UpwindPenaltyScalar:");
-    ScalarTensor::BoundaryCorrections::ProductOfCorrections<
-        gh::BoundaryCorrections::UpwindPenalty<3>,
-        CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3>>
+    const ProductUpwindPenaltyGhAndUpwindPenaltyScalar
         product_boundary_correction{gh_correction, scalar_correction};
     for (const auto formulation :
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {

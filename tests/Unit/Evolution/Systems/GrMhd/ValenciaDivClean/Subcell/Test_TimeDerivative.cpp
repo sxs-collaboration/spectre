@@ -90,9 +90,11 @@ struct DummyEvolutionMetaVars {
   };
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<BoundaryConditions::BoundaryCondition,
-                             BoundaryConditions::standard_boundary_conditions>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<BoundaryConditions::BoundaryCondition,
+                   BoundaryConditions::standard_boundary_conditions>,
+        tmpl::pair<BoundaryCorrections::BoundaryCorrection,
+                   BoundaryCorrections::standard_boundary_corrections>>;
   };
 };
 

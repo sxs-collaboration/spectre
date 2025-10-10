@@ -48,6 +48,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -511,6 +512,9 @@ struct EvolutionMetavars {
                 gh::BoundaryConditions::DirichletMinkowski<volume_dim>,
                 gh::BoundaryConditions::DemandOutgoingCharSpeeds<volume_dim>>>,
         tmpl::pair<
+            gh::BoundaryCorrections::BoundaryCorrection<volume_dim>,
+            gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
+        tmpl::pair<
             gh::gauges::GaugeCondition,
             tmpl::list<gh::gauges::DampedHarmonic, gh::gauges::Harmonic>>,
         // Restrict to monotonic time steppers in LTS to avoid control
@@ -565,7 +569,8 @@ struct EvolutionMetavars {
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, EvolutionMetavars, volume_dim,
+                             true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          system, volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
