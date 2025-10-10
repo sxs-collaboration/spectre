@@ -8,12 +8,10 @@
 #include <optional>
 #include <pup.h>
 
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
-#include "Evolution/Systems/ScalarTensor/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarTensor/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -35,7 +33,7 @@ namespace ScalarTensor::BoundaryCorrections {
  * \see gh::BoundaryCorrections and CurvedScalarWave::BoundaryCorrections.
  */
 template <typename DerivedGhCorrection, typename DerivedScalarCorrection>
-class ProductOfCorrections final : public BoundaryCorrection {
+class ProductOfCorrections final : public evolution::BoundaryCorrection {
  public:
   static constexpr size_t dim = 3;
   using dg_package_field_tags =

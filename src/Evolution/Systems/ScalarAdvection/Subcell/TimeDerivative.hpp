@@ -19,6 +19,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -89,10 +90,10 @@ struct TimeDerivative {
         db::get<ScalarAdvection::fd::Tags::Reconstructor<Dim>>(*box);
 
     const auto& boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<System<Dim>>>(*box);
+        db::get<evolution::Tags::BoundaryCorrection>(*box);
     using derived_boundary_corrections =
         tmpl::at<typename metavariables::factory_creation::factory_classes,
-                 ScalarAdvection::BoundaryCorrections::BoundaryCorrection<Dim>>;
+                 evolution::BoundaryCorrection>;
 
     // Variables to store the boundary correction terms on FD subinterfaces
     std::array<Variables<evolved_vars_tags>, Dim> fd_boundary_corrections{};

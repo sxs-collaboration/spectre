@@ -11,7 +11,7 @@
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
@@ -41,7 +41,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       {}, {});
 
   const auto upwind_penalty = TestHelpers::test_factory_creation<
-      CurvedScalarWave::BoundaryCorrections::BoundaryCorrection<Dim>,
+      evolution::BoundaryCorrection,
       CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>>(
       "UpwindPenalty:");
 

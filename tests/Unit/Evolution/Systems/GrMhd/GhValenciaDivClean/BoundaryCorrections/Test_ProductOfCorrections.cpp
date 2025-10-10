@@ -10,10 +10,13 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Hll.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
@@ -279,9 +282,8 @@ SPECTRE_TEST_CASE(
             grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>;
     grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov valencia_correction{};
     gh::BoundaryCorrections::UpwindPenalty<3_st> gh_correction{};
-    TestHelpers::test_factory_creation<
-        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
-        ProductUpwindPenaltyAndRusanov>(
+    TestHelpers::test_factory_creation<evolution::BoundaryCorrection,
+                                       ProductUpwindPenaltyAndRusanov>(
         "ProductUpwindPenaltyAndRusanov:\n"
         "  UpwindPenalty:\n"
         "  Rusanov:");
@@ -305,9 +307,8 @@ SPECTRE_TEST_CASE(
     const grmhd::ValenciaDivClean::BoundaryCorrections::Hll valencia_correction{
         1.0e-30, 1.0e-8};
     const gh::BoundaryCorrections::UpwindPenalty<3_st> gh_correction{};
-    TestHelpers::test_factory_creation<
-        grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
-        ProductUpwindPenaltyAndHll>(
+    TestHelpers::test_factory_creation<evolution::BoundaryCorrection,
+                                       ProductUpwindPenaltyAndHll>(
         "ProductUpwindPenaltyAndHll:\n"
         "  UpwindPenalty:\n"
         "  Hll:\n"

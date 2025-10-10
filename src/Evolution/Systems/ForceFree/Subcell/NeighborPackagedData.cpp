@@ -99,7 +99,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
       db::get<ForceFree::fd::Tags::Reconstructor>(box);
 
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<System>>(box);
+      db::get<evolution::Tags::BoundaryCorrection>(box);
   using derived_boundary_corrections =
       ForceFree::BoundaryCorrections::standard_boundary_corrections;
 

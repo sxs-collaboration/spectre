@@ -16,6 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsCharacteristicSpeeds.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -26,15 +27,12 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Initialize.hpp"
 #include "Evolution/Systems/CurvedScalarWave/PsiSquared.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
@@ -363,11 +361,11 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
                      Events::time_events<system>,
                      dg::Events::ObserveTimeStepVolume<system>>>>,
       tmpl::pair<
+          evolution::BoundaryCorrection,
+          ScalarTensor::BoundaryCorrections::standard_boundary_corrections>,
+      tmpl::pair<
           ScalarTensor::BoundaryConditions::BoundaryCondition,
           ScalarTensor::BoundaryConditions::standard_boundary_conditions>,
-      tmpl::pair<
-          ScalarTensor::BoundaryCorrections::BoundaryCorrection,
-          ScalarTensor::BoundaryCorrections::standard_boundary_corrections>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
       tmpl::pair<
           evolution::initial_data::InitialData,
@@ -450,11 +448,11 @@ struct ScalarTensorTemplateBase {
                              local_time_stepping, derived_metavars, volume_dim,
                              true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,

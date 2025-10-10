@@ -10,7 +10,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BoundaryCorrection.hpp
-  ProductOfCorrections.hpp
   Factory.hpp
+  NamespaceDocs.hpp
+  ProductOfCorrections.hpp
   )

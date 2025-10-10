@@ -27,6 +27,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -40,7 +41,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
@@ -248,7 +248,7 @@ double test(const size_t num_dg_pts) {
       db::AddSimpleTags<
           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
           evolution::dg::subcell::Tags::Mesh<3>, fd::Tags::Reconstructor,
-          evolution::Tags::BoundaryCorrection<grmhd::ValenciaDivClean::System>,
+          evolution::Tags::BoundaryCorrection,
           hydro::Tags::GrmhdEquationOfState,
           typename System::spacetime_variables_tag,
           typename System::primitive_variables_tag, variables_tag,
@@ -265,8 +265,7 @@ double test(const size_t num_dg_pts) {
       std::unique_ptr<grmhd::ValenciaDivClean::fd::Reconstructor>{
           std::make_unique<
               grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim>()},
-      std::unique_ptr<
-          grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<grmhd::ValenciaDivClean::BoundaryCorrections::Hll>(
               1.0e-30, 1.0e-8)},
       soln.equation_of_state().promote_to_3d_eos(), dg_spacetime_vars,

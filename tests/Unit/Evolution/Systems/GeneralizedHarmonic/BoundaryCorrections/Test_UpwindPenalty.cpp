@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -37,7 +37,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
                        {}, {});
 
   const auto upwind_penalty = TestHelpers::test_factory_creation<
-      gh::BoundaryCorrections::BoundaryCorrection<Dim>,
+      evolution::BoundaryCorrection,
       gh::BoundaryCorrections::UpwindPenalty<Dim>>("UpwindPenalty:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<

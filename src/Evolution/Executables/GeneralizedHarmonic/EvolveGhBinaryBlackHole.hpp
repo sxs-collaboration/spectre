@@ -32,6 +32,7 @@
 #include "Domain/TagsCharacteristicSpeeds.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -48,7 +49,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
@@ -503,6 +503,9 @@ struct EvolutionMetavars {
                        Events::time_events<system>,
                        dg::Events::ObserveTimeStepVolume<system>,
                        amr::Events::RefineMesh>>>,
+        tmpl::pair<
+            evolution::BoundaryCorrection,
+            gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
         tmpl::pair<control_system::size::State,
                    control_system::size::States::factory_creatable_states>,
         tmpl::pair<
@@ -511,9 +514,6 @@ struct EvolutionMetavars {
                 gh::BoundaryConditions::ConstraintPreservingBjorhus<volume_dim>,
                 gh::BoundaryConditions::DirichletMinkowski<volume_dim>,
                 gh::BoundaryConditions::DemandOutgoingCharSpeeds<volume_dim>>>,
-        tmpl::pair<
-            gh::BoundaryCorrections::BoundaryCorrection<volume_dim>,
-            gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
         tmpl::pair<
             gh::gauges::GaugeCondition,
             tmpl::list<gh::gauges::DampedHarmonic, gh::gauges::Harmonic>>,
@@ -572,11 +572,11 @@ struct EvolutionMetavars {
                              local_time_stepping, EvolutionMetavars, volume_dim,
                              true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<

@@ -22,6 +22,7 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Creators/Tags/InitialExtents.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
@@ -72,21 +73,7 @@ struct VolumeTag : db::SimpleTag {
 };
 
 template <size_t Dim>
-class BoundaryCorrection : public PUP::able {
- public:
-  BoundaryCorrection() = default;
-  BoundaryCorrection(const BoundaryCorrection&) = default;
-  BoundaryCorrection& operator=(const BoundaryCorrection&) = default;
-  BoundaryCorrection(BoundaryCorrection&&) = default;
-  BoundaryCorrection& operator=(BoundaryCorrection&&) = default;
-
-  ~BoundaryCorrection() override = default;
-
-  WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
-};
-
-template <size_t Dim>
-struct BoundaryTerms final : public BoundaryCorrection<Dim> {
+struct BoundaryTerms final : public evolution::BoundaryCorrection {
   struct MaxAbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
@@ -104,8 +91,12 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
   using variables_tags = tmpl::list<Var1, Var2<Dim>>;
   using variables_tag = Tags::Variables<variables_tags>;
 
+  std::unique_ptr<BoundaryCorrection> get_clone() const override {
+    return std::make_unique<BoundaryTerms>(*this);
+  }
+
   void pup(PUP::er& p) override {  // NOLINT
-    BoundaryCorrection<Dim>::pup(p);
+    BoundaryCorrection::pup(p);
   }
 
   static constexpr bool need_normal_vector = false;
@@ -392,7 +383,6 @@ struct SetLocalMortarData {
 template <size_t Dim, TestHelpers::SystemType SystemType>
 struct System {
   static constexpr size_t volume_dim = Dim;
-  using boundary_correction_base = BoundaryCorrection<Dim>;
 
   using variables_tag = Tags::Variables<tmpl::list<Var1, Var2<Dim>>>;
   using flux_variables = tmpl::conditional_t<
@@ -454,12 +444,12 @@ struct component {
           tmpl::list<tmpl::conditional_t<
               local_time_stepping,
               ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  typename Metavariables::system, Metavariables::volume_dim,
-                  false, Metavariables::use_nodegroup_dg_elements>,
+                  Metavariables::volume_dim, false,
+                  Metavariables::use_nodegroup_dg_elements>,
               ::evolution::dg::Actions::
                   ApplyBoundaryCorrectionsToTimeDerivative<
-                      typename Metavariables::system, Metavariables::volume_dim,
-                      false, Metavariables::use_nodegroup_dg_elements>>>>>;
+                      Metavariables::volume_dim, false,
+                      Metavariables::use_nodegroup_dg_elements>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
@@ -474,8 +464,9 @@ struct Metavariables {
       tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<
-        tmpl::pair<BoundaryCorrection<Dim>, tmpl::list<BoundaryTerms<Dim>>>>;
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::BoundaryCorrection,
+                             tmpl::list<BoundaryTerms<Dim>>>>;
   };
 
   using component_list = tmpl::list<component<Metavariables>>;

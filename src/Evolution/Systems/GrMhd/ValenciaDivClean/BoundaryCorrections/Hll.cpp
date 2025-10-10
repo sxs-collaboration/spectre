@@ -30,7 +30,7 @@ Hll::Hll(const double magnetic_field_magnitude_for_hydro,
 
 Hll::Hll(CkMigrateMessage* /*unused*/) {}
 
-std::unique_ptr<BoundaryCorrection> Hll::get_clone() const {
+std::unique_ptr<evolution::BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
 

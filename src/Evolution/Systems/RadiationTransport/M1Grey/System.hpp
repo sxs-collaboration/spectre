@@ -9,7 +9,6 @@
 #include "Evolution/Imex/GuessResult.hpp"
 #include "Evolution/Imex/Protocols/ImexSystem.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1HydroCoupling.hpp"
@@ -46,8 +45,6 @@ struct System<tmpl::list<NeutrinoSpecies...>>
 
   using boundary_conditions_base =
       BoundaryConditions::BoundaryCondition<tmpl::list<NeutrinoSpecies...>>;
-  using boundary_correction_base =
-      BoundaryCorrections::BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>;
 
   using variables_tag = ::Tags::Variables<
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,

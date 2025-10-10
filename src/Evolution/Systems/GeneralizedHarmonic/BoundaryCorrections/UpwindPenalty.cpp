@@ -20,16 +20,17 @@
 namespace gh::BoundaryCorrections {
 template <size_t Dim>
 UpwindPenalty<Dim>::UpwindPenalty(CkMigrateMessage* msg)
-    : BoundaryCorrection<Dim>(msg) {}
+    : BoundaryCorrection(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> UpwindPenalty<Dim>::get_clone() const {
+std::unique_ptr<evolution::BoundaryCorrection> UpwindPenalty<Dim>::get_clone()
+    const {
   return std::make_unique<UpwindPenalty>(*this);
 }
 
 template <size_t Dim>
 void UpwindPenalty<Dim>::pup(PUP::er& p) {
-  BoundaryCorrection<Dim>::pup(p);
+  BoundaryCorrection::pup(p);
 }
 
 template <size_t Dim>

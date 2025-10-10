@@ -36,7 +36,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
@@ -111,7 +110,7 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData<System>::apply(
   const auto& recons =
       db::get<grmhd::GhValenciaDivClean::fd::Tags::Reconstructor<System>>(box);
   const auto& base_boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<System>>(box);
+      db::get<evolution::Tags::BoundaryCorrection>(box);
   const auto& fix_to_atmosphere =
       db::get<::Tags::VariableFixer<::VariableFixing::FixToAtmosphere<3>>>(box);
   using derived_boundary_corrections = grmhd::GhValenciaDivClean::

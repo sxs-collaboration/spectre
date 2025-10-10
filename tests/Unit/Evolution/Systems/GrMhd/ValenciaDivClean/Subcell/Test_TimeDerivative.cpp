@@ -33,6 +33,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CellCenteredFlux.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -47,7 +48,6 @@
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
@@ -93,7 +93,7 @@ struct DummyEvolutionMetaVars {
     using factory_classes = tmpl::map<
         tmpl::pair<BoundaryConditions::BoundaryCondition,
                    BoundaryConditions::standard_boundary_conditions>,
-        tmpl::pair<BoundaryCorrections::BoundaryCorrection,
+        tmpl::pair<evolution::BoundaryCorrection,
                    BoundaryCorrections::standard_boundary_corrections>>;
   };
 };
@@ -383,7 +383,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
       db::AddSimpleTags<
           domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
           domain::Tags::Mesh<3>, fd::Tags::Reconstructor,
-          evolution::Tags::BoundaryCorrection<grmhd::ValenciaDivClean::System>,
+          evolution::Tags::BoundaryCorrection,
           hydro::Tags::GrmhdEquationOfState,
           typename System::spacetime_variables_tag,
           typename System::primitive_variables_tag, dt_variables_tag,
@@ -448,8 +448,7 @@ std::array<double, 5> test(const size_t num_dg_pts,
       element, subcell_mesh, dg_mesh,
       std::unique_ptr<grmhd::ValenciaDivClean::fd::Reconstructor>{
           std::make_unique<std::decay_t<decltype(recons)>>(recons)},
-      std::unique_ptr<
-          grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<grmhd::ValenciaDivClean::BoundaryCorrections::Hll>(
               1.0e-30, 1.0e-8)},
       soln.equation_of_state().promote_to_3d_eos(),

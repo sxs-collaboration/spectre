@@ -20,6 +20,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -36,7 +37,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
@@ -156,10 +156,10 @@ struct TimeDerivative {
 
     // Now package the data and compute the correction
     const auto& boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
-    using derived_boundary_corrections = tmpl::at<
-        typename metavariables::factory_creation::factory_classes,
-        grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>;
+        db::get<evolution::Tags::BoundaryCorrection>(*box);
+    using derived_boundary_corrections =
+        tmpl::at<typename metavariables::factory_creation::factory_classes,
+                 evolution::BoundaryCorrection>;
     std::array<Variables<evolved_vars_tags>, 3> boundary_corrections{};
 
     // If the element has external boundaries and subcell is enabled for

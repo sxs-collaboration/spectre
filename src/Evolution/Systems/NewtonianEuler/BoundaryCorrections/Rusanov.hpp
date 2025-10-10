@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -62,7 +62,7 @@ namespace NewtonianEuler::BoundaryCorrections {
  * \f$G - F_\text{int}\f$
  */
 template <size_t Dim>
-class Rusanov final : public BoundaryCorrection<Dim> {
+class Rusanov final : public evolution::BoundaryCorrection {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -88,7 +88,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
+  std::unique_ptr<BoundaryCorrection> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,

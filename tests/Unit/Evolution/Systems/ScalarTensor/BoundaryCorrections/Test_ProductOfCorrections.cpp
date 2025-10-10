@@ -10,7 +10,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/ScalarTensor/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/ScalarTensor/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -243,7 +245,7 @@ SPECTRE_TEST_CASE(
     CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3> scalar_correction{};
     gh::BoundaryCorrections::UpwindPenalty<3> gh_correction{};
     TestHelpers::test_factory_creation<
-        ScalarTensor::BoundaryCorrections::BoundaryCorrection,
+        evolution::BoundaryCorrection,
         ProductUpwindPenaltyGhAndUpwindPenaltyScalar>(
         "ProductUpwindPenaltyGHAndUpwindPenaltyScalar:\n"
         "  UpwindPenaltyGH:\n"

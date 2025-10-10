@@ -15,6 +15,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -30,7 +31,6 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/ForceFree/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ForceFree/ElectricCurrentDensity.hpp"
 #include "Evolution/Systems/ForceFree/ElectromagneticVariables.hpp"
@@ -149,9 +149,6 @@ struct EvolutionMetavars {
     using factory_classes = tmpl::map<
         tmpl::pair<ForceFree::BoundaryConditions::BoundaryCondition,
                    ForceFree::BoundaryConditions::standard_boundary_conditions>,
-        tmpl::pair<
-            ForceFree::BoundaryCorrections::BoundaryCorrection,
-            ForceFree::BoundaryCorrections::standard_boundary_corrections>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event,
@@ -160,6 +157,9 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
+        tmpl::pair<
+            evolution::BoundaryCorrection,
+            ForceFree::BoundaryCorrections::standard_boundary_corrections>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange,
@@ -196,11 +196,11 @@ struct EvolutionMetavars {
                          tmpl::list<evolution::dg::ApplyBoundaryCorrections<
                              local_time_stepping, system, volume_dim, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,

@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -18,9 +19,8 @@ namespace OptionTags {
 /// is often referred to as the "numerical flux". We avoid that nomenclature
 /// because in the discontinuous Galerkin and finite volume case it is not the
 /// flux that is modified, but the integrand of the boundary integral.
-template <typename System>
 struct BoundaryCorrection {
-  using type = std::unique_ptr<typename System::boundary_correction_base>;
+  using type = std::unique_ptr<evolution::BoundaryCorrection>;
   using group = SpatialDiscretization::OptionTags::SpatialDiscretizationGroup;
   static constexpr Options::String help = "The boundary correction to use.";
 };
@@ -34,11 +34,10 @@ namespace Tags {
 /// is ofter referred to as the "numerical flux". We avoid that nomenclature
 /// because in the discontinuous Galerkin and finite volume case it is not the
 /// flux that is modified, but the integrand of the boundary integral.
-template <typename System>
 struct BoundaryCorrection : db::SimpleTag {
-  using type = std::unique_ptr<typename System::boundary_correction_base>;
+  using type = std::unique_ptr<evolution::BoundaryCorrection>;
 
-  using option_tags = tmpl::list<OptionTags::BoundaryCorrection<System>>;
+  using option_tags = tmpl::list<OptionTags::BoundaryCorrection>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& boundary_correction) {
     return boundary_correction->get_clone();

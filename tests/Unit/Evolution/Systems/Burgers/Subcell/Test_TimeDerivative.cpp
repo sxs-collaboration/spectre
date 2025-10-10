@@ -27,6 +27,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -36,7 +37,6 @@
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
@@ -75,7 +75,7 @@ struct DummyEvolutionMetaVars {
         tmpl::pair<Burgers::BoundaryConditions::BoundaryCondition,
                    Burgers::BoundaryConditions::standard_boundary_conditions>,
         tmpl::pair<
-            Burgers::BoundaryCorrections::BoundaryCorrection,
+            evolution::BoundaryCorrection,
             Burgers::BoundaryCorrections::standard_boundary_corrections>>;
   };
 };
@@ -143,7 +143,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
           domain::Tags::Element<1>, evolution::dg::subcell::Tags::Mesh<1>,
           evolved_vars_tag, dt_variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
-          fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
+          fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection,
           domain::Tags::ElementMap<1, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                       Frame::Inertial>,
@@ -162,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
       ghost_data,
       std::unique_ptr<fd::Reconstructor>{
           std::make_unique<ReconstructionForTest>()},
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrectionForTest>()},
       ElementMap<1, Frame::Grid>{
           ElementId<1>{0},

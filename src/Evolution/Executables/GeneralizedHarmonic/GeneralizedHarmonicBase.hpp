@@ -16,6 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsCharacteristicSpeeds.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -26,7 +27,6 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
@@ -301,11 +301,11 @@ struct FactoryCreation : tt::ConformsTo<Options::protocols::FactoryCreation> {
               Events::time_events<system>,
               dg::Events::ObserveTimeStepVolume<system>>>>,
       tmpl::pair<
+          evolution::BoundaryCorrection,
+          gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
+      tmpl::pair<
           gh::BoundaryConditions::BoundaryCondition<volume_dim>,
           gh::BoundaryConditions::standard_boundary_conditions<volume_dim>>,
-      tmpl::pair<
-          gh::BoundaryCorrections::BoundaryCorrection<volume_dim>,
-          gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
       tmpl::pair<gh::gauges::GaugeCondition, gh::gauges::all_gauges>,
       tmpl::pair<
           evolution::initial_data::InitialData,
@@ -397,11 +397,11 @@ struct GeneralizedHarmonicTemplateBase {
                   evolution::dg::ApplyBoundaryCorrections<
                       local_time_stepping, DerivedMetavars, volume_dim, true>>>,
               evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,

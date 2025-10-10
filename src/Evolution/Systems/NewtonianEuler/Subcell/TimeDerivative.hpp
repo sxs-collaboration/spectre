@@ -19,6 +19,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -30,7 +31,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
@@ -108,10 +108,10 @@ struct TimeDerivative {
 
     // Now package the data and compute the correction
     const auto& boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<system>>(*box);
+        db::get<evolution::Tags::BoundaryCorrection>(*box);
     using derived_boundary_corrections =
         tmpl::at<typename metavariables::factory_creation::factory_classes,
-                 NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>;
+                 evolution::BoundaryCorrection>;
     std::array<Variables<evolved_vars_tags>, Dim> boundary_corrections{};
     tmpl::for_each<derived_boundary_corrections>([&boundary_correction,
                                                   &reconstructed_num_pts,

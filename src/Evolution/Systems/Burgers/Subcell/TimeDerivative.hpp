@@ -18,6 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -85,10 +86,10 @@ struct TimeDerivative {
         db::get<Burgers::fd::Tags::Reconstructor>(*box);
 
     const auto& boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
+        db::get<evolution::Tags::BoundaryCorrection>(*box);
     using derived_boundary_corrections =
         tmpl::at<typename metavariables::factory_creation::factory_classes,
-                 Burgers::BoundaryCorrections::BoundaryCorrection>;
+                 evolution::BoundaryCorrection>;
     // Variables to store the boundary correction terms on FD subinterfaces
     std::array<Variables<evolved_vars_tags>, 1> fd_boundary_corrections{};
 

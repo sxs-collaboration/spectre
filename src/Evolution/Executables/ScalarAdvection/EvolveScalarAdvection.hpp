@@ -12,6 +12,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DgSubcell/Actions/Initialize.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
@@ -40,7 +41,6 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Tags.hpp"
@@ -199,16 +199,15 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
+        tmpl::pair<evolution::BoundaryCorrection,
+                   ScalarAdvection::BoundaryCorrections::
+                       standard_boundary_corrections<Dim>>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<ScalarAdvection::BoundaryConditions::BoundaryCondition<Dim>,
                    ScalarAdvection::BoundaryConditions::
                        standard_boundary_conditions<Dim>>,
-        tmpl::pair<
-            ScalarAdvection::BoundaryCorrections::BoundaryCorrection<Dim>,
-            ScalarAdvection::BoundaryCorrections::standard_boundary_corrections<
-                Dim>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -253,7 +252,7 @@ struct EvolutionMetavars {
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false, use_dg_element_collection>,
+          volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<
@@ -272,7 +271,7 @@ struct EvolutionMetavars {
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false, use_dg_element_collection>,
+          volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<

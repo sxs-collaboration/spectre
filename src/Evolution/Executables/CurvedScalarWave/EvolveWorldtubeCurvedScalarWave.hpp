@@ -16,6 +16,7 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -30,7 +31,6 @@
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Worldtube.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/CalculateGrVars.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
@@ -208,10 +208,6 @@ struct EvolutionMetavars {
                 CurvedScalarWave::BoundaryConditions::
                     standard_boundary_conditions<volume_dim>,
                 CurvedScalarWave::BoundaryConditions::Worldtube<volume_dim>>>>,
-        tmpl::pair<CurvedScalarWave::BoundaryCorrections::BoundaryCorrection<
-                       volume_dim>,
-                   CurvedScalarWave::BoundaryCorrections::
-                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>,
                    tmpl::list<domain::creators::BinaryCompactObject<true>>>,
@@ -223,6 +219,9 @@ struct EvolutionMetavars {
                     volume_dim, Spheres, interpolator_source_vars>,
                 dg::Events::field_observations<volume_dim, observe_fields,
                                                non_tensor_compute_tags>>>>,
+        tmpl::pair<evolution::BoundaryCorrection,
+                   CurvedScalarWave::BoundaryCorrections::
+                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<evolution::initial_data::InitialData, solutions_and_data>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
@@ -257,7 +256,7 @@ struct EvolutionMetavars {
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false, use_dg_element_collection>,
+          volume_dim, false, use_dg_element_collection>,
       Actions::RecordTimeStepperData<system>,
       evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
       Actions::UpdateU<system>,

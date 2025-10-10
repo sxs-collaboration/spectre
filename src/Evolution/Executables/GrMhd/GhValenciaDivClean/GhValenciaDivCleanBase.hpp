@@ -26,6 +26,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
@@ -79,7 +80,6 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/SetPiAndPhiFromConstraints.hpp"
@@ -643,13 +643,12 @@ struct GhValenciaDivCleanTemplateBase<
                        intrp::Events::InterpolateWithoutInterpComponent<
                            volume_dim, InterpolationTargetTags,
                            interpolator_source_vars>...>>>,
+        tmpl::pair<evolution::BoundaryCorrection,
+                   grmhd::GhValenciaDivClean::BoundaryCorrections::
+                       standard_boundary_corrections>,
         tmpl::pair<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             boundary_conditions>,
-        tmpl::pair<
-            grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection,
-            grmhd::GhValenciaDivClean::BoundaryCorrections::
-                standard_boundary_corrections>,
         tmpl::pair<
             grmhd::AnalyticData::InitialMagneticFields::InitialMagneticField,
             grmhd::AnalyticData::InitialMagneticFields::
@@ -759,11 +758,11 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               Actions::UpdateU<system>>>,
       Actions::CleanHistory<system, local_time_stepping>,
@@ -785,7 +784,7 @@ struct GhValenciaDivCleanTemplateBase<
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false, use_dg_element_collection>,
+          volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<
           UseControlSystems,
           Actions::MutateApply<grmhd::GhValenciaDivClean::subcell::

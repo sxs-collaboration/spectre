@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
@@ -42,10 +42,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       Mesh<2>{num_pts, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       {}, {});
 
-  const auto rusanov_from_factory = TestHelpers::test_factory_creation<
-      RadiationTransport::M1Grey::BoundaryCorrections::BoundaryCorrection<
-          neutrino_species>,
-      rusanov>("Rusanov:");
+  const auto rusanov_from_factory =
+      TestHelpers::test_factory_creation<evolution::BoundaryCorrection,
+                                         rusanov>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<system>(
       gen, "Rusanov", "dg_package_data", "dg_boundary_terms",

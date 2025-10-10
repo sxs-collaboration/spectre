@@ -14,6 +14,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -26,7 +27,6 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/CalculateGrVars.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
@@ -200,10 +200,6 @@ struct EvolutionMetavars {
             CurvedScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
             CurvedScalarWave::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
-        tmpl::pair<CurvedScalarWave::BoundaryCorrections::BoundaryCorrection<
-                       volume_dim>,
-                   CurvedScalarWave::BoundaryCorrections::
-                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<
@@ -219,6 +215,9 @@ struct EvolutionMetavars {
                     tmpl::list<>>,
                 Events::time_events<system>,
                 dg::Events::ObserveTimeStepVolume<system>>>>,
+        tmpl::pair<evolution::BoundaryCorrection,
+                   CurvedScalarWave::BoundaryCorrections::
+                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<evolution::initial_data::InitialData, solutions_and_data>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
@@ -257,11 +256,11 @@ struct EvolutionMetavars {
                              local_time_stepping, EvolutionMetavars, volume_dim,
                              true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<system>>>,

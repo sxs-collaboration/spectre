@@ -7,11 +7,9 @@
 #include <memory>
 #include <pup.h>
 
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -138,7 +136,7 @@ struct ProductOfCorrectionsImpl<
  * application is inconsequential.
  */
 template <typename DerivedGhCorrection, typename DerivedValenciaCorrection>
-class ProductOfCorrections final : public BoundaryCorrection {
+class ProductOfCorrections final : public evolution::BoundaryCorrection {
  public:
   using dg_package_field_tags =
       tmpl::append<typename DerivedGhCorrection::dg_package_field_tags,

@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -51,7 +51,7 @@ namespace BoundaryCorrections {
  * \f$G - F_\text{int}\f$
  */
 template <size_t Dim>
-class Rusanov final : public BoundaryCorrection<Dim> {
+class Rusanov final : public evolution::BoundaryCorrection {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -77,7 +77,7 @@ class Rusanov final : public BoundaryCorrection<Dim> {
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
+  std::unique_ptr<BoundaryCorrection> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::U, ::Tags::NormalDotFlux<Tags::U>, AbsCharSpeed>;

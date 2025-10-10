@@ -18,7 +18,7 @@
 namespace Burgers::BoundaryCorrections {
 Hll::Hll(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
 
-std::unique_ptr<BoundaryCorrection> Hll::get_clone() const {
+std::unique_ptr<evolution::BoundaryCorrection> Hll::get_clone() const {
   return std::make_unique<Hll>(*this);
 }
 

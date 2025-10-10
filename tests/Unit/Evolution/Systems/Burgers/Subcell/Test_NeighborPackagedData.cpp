@@ -27,6 +27,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -37,7 +38,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
@@ -152,7 +152,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
       domain::Tags::Element<1>, domain::Tags::Mesh<1>,
       evolution::dg::subcell::Tags::Mesh<1>, typename System::variables_tag,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<1>,
-      fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
+      fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection,
       domain::Tags::ElementMap<1, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                   Frame::Inertial>,
@@ -162,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
       element, dg_mesh, subcell_mesh, volume_vars_dg, ghost_data,
       std::unique_ptr<fd::Reconstructor>{
           std::make_unique<ReconstructorUsedForTest>()},
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrectionUsedForTest>()},
       ElementMap<1, Frame::Grid>{
           ElementId<1>{0},

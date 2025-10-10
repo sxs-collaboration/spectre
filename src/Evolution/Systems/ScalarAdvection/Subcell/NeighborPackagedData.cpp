@@ -33,7 +33,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
@@ -87,7 +86,7 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
       db::get<ScalarAdvection::fd::Tags::Reconstructor<Dim>>(box);
 
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<System<Dim>>>(box);
+      db::get<evolution::Tags::BoundaryCorrection>(box);
   using derived_boundary_corrections =
       ScalarAdvection::BoundaryCorrections::standard_boundary_corrections<Dim>;
 

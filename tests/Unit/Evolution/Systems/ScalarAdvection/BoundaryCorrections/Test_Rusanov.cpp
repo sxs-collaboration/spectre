@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -39,7 +39,7 @@ void test_rusanov(const gsl::not_null<std::mt19937*> gen,
       {}, {});
 
   const auto rusanov = TestHelpers::test_factory_creation<
-      ScalarAdvection::BoundaryCorrections::BoundaryCorrection<Dim>,
+      evolution::BoundaryCorrection,
       ScalarAdvection::BoundaryCorrections::Rusanov<Dim>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<ScalarAdvection::System<Dim>>(

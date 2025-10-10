@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
@@ -82,7 +82,7 @@ namespace CurvedScalarWave::BoundaryCorrections {
  * indicates an element-wise product.
  */
 template <size_t Dim>
-class UpwindPenalty final : public BoundaryCorrection<Dim> {
+class UpwindPenalty final : public evolution::BoundaryCorrection {
  private:
   struct CharSpeedsTensor : db::SimpleTag {
     using type = tnsr::a<DataVector, 3, Frame::Inertial>;
@@ -108,7 +108,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
+  std::unique_ptr<BoundaryCorrection> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus,

@@ -27,6 +27,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -35,7 +36,6 @@
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/AoWeno.hpp"
@@ -143,7 +143,7 @@ struct SmoothFlowMetaVars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<BoundaryCorrections::BoundaryCorrection<Dim>,
+        tmpl::pair<evolution::BoundaryCorrection,
                    BoundaryCorrections::standard_boundary_corrections<Dim>>>;
   };
   static auto solution() {
@@ -160,7 +160,7 @@ struct LaneEmdenStarMetaVars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<BoundaryCorrections::BoundaryCorrection<3>,
+        tmpl::pair<evolution::BoundaryCorrection,
                    BoundaryCorrections::standard_boundary_corrections<3>>>;
   };
   static auto solution() { return initial_data{0.7, 250.0}; }
@@ -249,7 +249,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           ::Tags::AnalyticSolution<solution>, domain::Tags::Element<dim>,
           domain::Tags::ElementMap<dim, Frame::Grid>,
           evolution::dg::subcell::Tags::Mesh<dim>, fd::Tags::Reconstructor<dim>,
-          evolution::Tags::BoundaryCorrection<system>,
+          evolution::Tags::BoundaryCorrection,
           hydro::Tags::EquationOfState<false, 2>,
           typename system::primitive_variables_tag, dt_variables_tag,
           variables_tag,
@@ -302,8 +302,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
       subcell_mesh,
       std::unique_ptr<NewtonianEuler::fd::Reconstructor<dim>>{
           std::make_unique<NewtonianEuler::fd::MonotonisedCentralPrim<dim>>()},
-      std::unique_ptr<
-          NewtonianEuler::BoundaryCorrections::BoundaryCorrection<dim>>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<NewtonianEuler::BoundaryCorrections::Hll<dim>>()},
       soln.equation_of_state().promote_to_2d_eos(), cell_centered_prim_vars,
       Variables<typename dt_variables_tag::tags_list>{

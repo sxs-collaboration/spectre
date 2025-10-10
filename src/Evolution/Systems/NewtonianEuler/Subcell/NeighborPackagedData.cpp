@@ -36,7 +36,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
@@ -94,7 +93,7 @@ DirectionalIdMap<Dim, DataVector> NeighborPackagedData::apply(
   const auto& recons =
       db::get<NewtonianEuler::fd::Tags::Reconstructor<Dim>>(box);
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<system>>(box);
+      db::get<evolution::Tags::BoundaryCorrection>(box);
   using derived_boundary_corrections =
       NewtonianEuler::BoundaryCorrections::standard_boundary_corrections<Dim>;
   tmpl::for_each<derived_boundary_corrections>([&box, &boundary_correction,

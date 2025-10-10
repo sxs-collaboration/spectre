@@ -10,6 +10,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -31,7 +32,6 @@
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Initialize.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
@@ -161,16 +161,15 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
+        tmpl::pair<evolution::BoundaryCorrection,
+                   RadiationTransport::M1Grey::BoundaryCorrections::
+                       standard_boundary_corrections<neutrino_species>>,
         tmpl::pair<ImexTimeStepper, TimeSteppers::imex_time_steppers>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<RadiationTransport::M1Grey::BoundaryConditions::
                        BoundaryCondition<neutrino_species>,
                    RadiationTransport::M1Grey::BoundaryConditions::
                        standard_boundary_conditions<neutrino_species>>,
-        tmpl::pair<RadiationTransport::M1Grey::BoundaryCorrections::
-                       BoundaryCorrection<neutrino_species>,
-                   RadiationTransport::M1Grey::BoundaryCorrections::
-                       standard_boundary_corrections<neutrino_species>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system, false>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>,
@@ -204,11 +203,11 @@ struct EvolutionMetavars {
                              local_time_stepping, EvolutionMetavars, volume_dim,
                              true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               imex::Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<

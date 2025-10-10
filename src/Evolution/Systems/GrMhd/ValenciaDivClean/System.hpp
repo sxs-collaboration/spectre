@@ -7,7 +7,6 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
@@ -177,7 +176,6 @@ struct System {
   static constexpr size_t volume_dim = 3;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
 
   using variables_tag = ::Tags::Variables<
       tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau, Tags::TildeS<>,

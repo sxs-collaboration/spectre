@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -37,8 +37,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryCorrections.Hll", "[Unit][Burgers]") {
       {});
 
   const auto Hll = TestHelpers::test_factory_creation<
-      Burgers::BoundaryCorrections::BoundaryCorrection,
-      Burgers::BoundaryCorrections::Hll>("Hll:");
+      evolution::BoundaryCorrection, Burgers::BoundaryCorrections::Hll>("Hll:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       Burgers::System>(

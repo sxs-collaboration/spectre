@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Hllc.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -82,7 +82,7 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
       volume_data, ranges);
 
   const auto hllc = TestHelpers::test_factory_creation<
-      NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>,
+      evolution::BoundaryCorrection,
       NewtonianEuler::BoundaryCorrections::Hllc<Dim>>("Hllc:");
 
   helpers::test_boundary_correction_with_python<NewtonianEuler::System<Dim>,

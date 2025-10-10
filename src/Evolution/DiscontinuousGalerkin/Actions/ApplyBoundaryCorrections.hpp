@@ -27,6 +27,7 @@
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/Tags/NeighborMesh.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
@@ -582,7 +583,7 @@ struct ApplyBoundaryCorrections {
   using DtVariables = typename dt_variables_tag::type;
   using derived_boundary_corrections =
       tmpl::at<typename Metavariables::factory_creation::factory_classes,
-               typename system::boundary_correction_base>;
+               evolution::BoundaryCorrection>;
   using volume_tags_for_dg_boundary_terms = tmpl::remove_duplicates<
       tmpl::flatten<tmpl::transform<derived_boundary_corrections,
                                     detail::get_dg_boundary_terms<tmpl::_1>>>>;
@@ -611,7 +612,7 @@ struct ApplyBoundaryCorrections {
           ::dg::Tags::Formulation,
           evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
           ::Tags::TimeStepper<TimeStepperType>,
-          evolution::Tags::BoundaryCorrection<system>,
+          evolution::Tags::BoundaryCorrection,
           tmpl::conditional_t<DenseOutput, ::Tags::Time, ::Tags::TimeStep>,
           tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                               domain::Tags::DetInvJacobian<
@@ -633,7 +634,7 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const TimeStepperType& time_stepper,
-      const typename system::boundary_correction_base& boundary_correction,
+      const evolution::BoundaryCorrection& boundary_correction,
       const TimeDelta& time_step,
       const Scalar<DataVector>& gts_det_inv_jacobian,
       const VolumeArgs&... volume_args) {
@@ -658,7 +659,7 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const TimeStepperType& time_stepper,
-      const typename system::boundary_correction_base& boundary_correction,
+      const evolution::BoundaryCorrection& boundary_correction,
       const TimeDelta& time_step, const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, element, mortar_meshes,
                mortar_infos, dg_formulation, face_normal_covector_and_magnitude,
@@ -682,7 +683,7 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const LtsTimeStepper& time_stepper,
-      const typename system::boundary_correction_base& boundary_correction,
+      const evolution::BoundaryCorrection& boundary_correction,
       const double dense_output_time, const VolumeArgs&... volume_args) {
     apply_impl(vars_to_update, &mortar_data, volume_mesh, element,
                mortar_meshes, mortar_infos, dg_formulation,
@@ -725,7 +726,7 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const TimeStepperType& time_stepper,
-      const typename system::boundary_correction_base& boundary_correction,
+      const evolution::BoundaryCorrection& boundary_correction,
       const TimeDelta& time_step, const double dense_output_time,
       const Scalar<DataVector>& gts_det_inv_jacobian,
       const VolumeArgs&... volume_args) {
@@ -1067,15 +1068,13 @@ namespace Actions {
  * \brief Computes the boundary corrections for global time-stepping
  * and adds them to the time derivative.
  */
-template <typename System, size_t VolumeDim, bool DenseOutput,
-          bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool DenseOutput, bool UseNodegroupDgElements>
 struct ApplyBoundaryCorrectionsToTimeDerivative {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           VolumeDim, UseNodegroupDgElements>>;
   using const_global_cache_tags =
-      tmpl::list<evolution::Tags::BoundaryCorrection<System>,
-                 ::dg::Tags::Formulation>;
+      tmpl::list<evolution::Tags::BoundaryCorrection, ::dg::Tags::Formulation>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -1127,15 +1126,13 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
  * data history, we insert the received temporal id, that is, the current time
  * of the neighbor, along with the boundary correction data.
  */
-template <typename System, size_t VolumeDim, bool DenseOutput,
-          bool UseNodegroupDgElements>
+template <size_t VolumeDim, bool DenseOutput, bool UseNodegroupDgElements>
 struct ApplyLtsBoundaryCorrections {
   using inbox_tags =
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           VolumeDim, UseNodegroupDgElements>>;
   using const_global_cache_tags =
-      tmpl::list<evolution::Tags::BoundaryCorrection<System>,
-                 ::dg::Tags::Formulation>;
+      tmpl::list<evolution::Tags::BoundaryCorrection, ::dg::Tags::Formulation>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -1164,8 +1161,9 @@ struct ApplyLtsBoundaryCorrections {
     }
 
     if (not receive_boundary_data_local_time_stepping<
-            Parallel::is_dg_element_collection_v<ParallelComponent>, System,
-            VolumeDim, false>(make_not_null(&box), make_not_null(&inboxes))) {
+            Parallel::is_dg_element_collection_v<ParallelComponent>,
+            typename Metavariables::system, VolumeDim, false>(
+            make_not_null(&box), make_not_null(&inboxes))) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 

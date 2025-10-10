@@ -21,16 +21,16 @@
 
 namespace NewtonianEuler::BoundaryCorrections {
 template <size_t Dim>
-Hllc<Dim>::Hllc(CkMigrateMessage* msg) : BoundaryCorrection<Dim>(msg) {}
+Hllc<Dim>::Hllc(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
 
 template <size_t Dim>
-std::unique_ptr<BoundaryCorrection<Dim>> Hllc<Dim>::get_clone() const {
+std::unique_ptr<evolution::BoundaryCorrection> Hllc<Dim>::get_clone() const {
   return std::make_unique<Hllc>(*this);
 }
 
 template <size_t Dim>
 void Hllc<Dim>::pup(PUP::er& p) {
-  BoundaryCorrection<Dim>::pup(p);
+  BoundaryCorrection::pup(p);
 }
 
 template <size_t Dim>

@@ -23,6 +23,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -31,7 +32,6 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
@@ -58,7 +58,7 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<BoundaryCorrections::BoundaryCorrection<Dim>,
+        tmpl::pair<evolution::BoundaryCorrection,
                    BoundaryCorrections::standard_boundary_corrections<Dim>>>;
   };
 };
@@ -126,9 +126,8 @@ void test_subcell_timederivative() {
           domain::Tags::Element<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
           evolved_vars_tag, dt_variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-          fd::Tags::Reconstructor<Dim>,
-          evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
-          domain::Tags::FunctionsOfTimeInitialize,
+          fd::Tags::Reconstructor<Dim>, evolution::Tags::BoundaryCorrection,
+          ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize,
           domain::Tags::ElementMap<Dim, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
@@ -164,7 +163,7 @@ void test_subcell_timederivative() {
       ghost_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection<Dim>>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrectionForTest>()},
       time, clone_unique_ptrs(functions_of_time),
       ElementMap<Dim, Frame::Grid>{

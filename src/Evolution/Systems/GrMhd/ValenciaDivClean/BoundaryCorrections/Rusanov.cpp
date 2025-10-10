@@ -19,7 +19,7 @@
 namespace grmhd::ValenciaDivClean::BoundaryCorrections {
 Rusanov::Rusanov(CkMigrateMessage* /*unused*/) {}
 
-std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const {
+std::unique_ptr<evolution::BoundaryCorrection> Rusanov::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 

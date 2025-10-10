@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -87,7 +87,7 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  *   fluid part of the system in order to make the flux less dissipative for
  *   those variables.
  */
-class Hll final : public BoundaryCorrection {
+class Hll final : public evolution::BoundaryCorrection {
  public:
   struct LargestOutgoingCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

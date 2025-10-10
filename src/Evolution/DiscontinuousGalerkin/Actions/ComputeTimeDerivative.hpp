@@ -24,6 +24,7 @@
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/BoundaryConditionsImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
@@ -248,10 +249,9 @@ struct get_primitive_tags_for_face {
  *
  * ### Internal Boundary Terms
  *
- * Internal boundary terms are computed from the
- * `System::boundary_correction_base` type alias. This type alias must point to
- * a base class with `creatable_classes`. Each concrete boundary correction must
- * specify:
+ * Internal boundary terms must be derived from
+ * `evolution::BoundaryCorrection`.  Each concrete boundary correction
+ * must specify:
  *
  * - type alias template `dg_package_field_tags`. These are what will be
  *   returned by `gsl::not_null` from the `dg_package_data` member function.
@@ -338,7 +338,7 @@ struct get_primitive_tags_for_face {
  *   - `Metavariables::system::variables_tag`
  *   - `Metavariables::system::flux_variables`
  *   - `Metavariables::system::primitive_tags` if exists
- *   - `system::boundary_correction_base::dg_package_data_volume_tags`
+ *   - boundary correction `dg_package_data_volume_tags`
  *
  * DataBox changes:
  * - Adds: nothing
@@ -353,8 +353,7 @@ struct ComputeTimeDerivative {
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           Dim, UseNodegroupDgElements>>;
   using const_global_cache_tags = tmpl::append<
-      tmpl::list<::dg::Tags::Formulation,
-                 evolution::Tags::BoundaryCorrection<EvolutionSystem>,
+      tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection,
                  domain::Tags::ExternalBoundaryConditions<Dim>>,
       tmpl::conditional_t<LocalTimeStepping,
                           tmpl::list<::Tags::MinimumTimeStep>, tmpl::list<>>>;
@@ -433,10 +432,10 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping,
          "to require quite a bit of careful code refactoring and debugging.");
 
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<EvolutionSystem>>(box);
+      db::get<evolution::Tags::BoundaryCorrection>(box);
   using derived_boundary_corrections =
       tmpl::at<typename Metavariables::factory_creation::factory_classes,
-               typename EvolutionSystem::boundary_correction_base>;
+               evolution::BoundaryCorrection>;
 
   // To avoid a second allocation in internal_mortar_data, we allocate the
   // variables needed to construct the fields on the faces here along with

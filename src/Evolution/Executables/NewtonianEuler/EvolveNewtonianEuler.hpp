@@ -13,6 +13,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/DgSubcell/Actions/Initialize.hpp"
@@ -42,7 +43,6 @@
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/NewtonianEuler/AllSolutions.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
@@ -217,14 +217,13 @@ struct EvolutionMetavars {
                        dg::Events::field_observations<
                            volume_dim, observe_fields, non_tensor_compute_tags>,
                        Events::time_events<system>>>>,
+        tmpl::pair<evolution::BoundaryCorrection,
+                   NewtonianEuler::BoundaryCorrections::
+                       standard_boundary_corrections<volume_dim>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
-                volume_dim>>,
-        tmpl::pair<
-            NewtonianEuler::BoundaryCorrections::BoundaryCorrection<volume_dim>,
-            NewtonianEuler::BoundaryCorrections::standard_boundary_corrections<
                 volume_dim>>,
         tmpl::pair<PhaseChange, PhaseControl::factory_creatable_classes>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
@@ -297,11 +296,11 @@ struct EvolutionMetavars {
                              local_time_stepping, system, volume_dim, true>,
                          typename system::primitive_from_conservative>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<
                   tmpl::list<typename system::primitive_from_conservative>>,
@@ -343,7 +342,7 @@ struct EvolutionMetavars {
           volume_dim, system, AllStepChoosers, local_time_stepping,
           use_dg_element_collection>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          system, volume_dim, false, use_dg_element_collection>,
+          volume_dim, false, use_dg_element_collection>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           tmpl::list<Actions::RecordTimeStepperData<system>,
                                      Actions::UpdateU<system>>>,

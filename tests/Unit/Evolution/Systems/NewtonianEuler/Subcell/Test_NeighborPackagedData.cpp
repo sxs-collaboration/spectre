@@ -34,6 +34,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/GhostData.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -47,7 +48,6 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
@@ -242,7 +242,7 @@ double test(const size_t num_dg_pts) {
           domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
           evolution::dg::subcell::Tags::Mesh<Dim>,
           NewtonianEuler::fd::Tags::Reconstructor<Dim>,
-          evolution::Tags::BoundaryCorrection<system>,
+          evolution::Tags::BoundaryCorrection,
           hydro::Tags::EquationOfState<false, eos::thermodynamic_dim>,
           typename system::primitive_variables_tag, variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
@@ -254,8 +254,7 @@ double test(const size_t num_dg_pts) {
       MetaVars<Dim>{}, element, dg_mesh, subcell_mesh,
       std::unique_ptr<NewtonianEuler::fd::Reconstructor<Dim>>{
           std::make_unique<NewtonianEuler::fd::MonotonisedCentralPrim<Dim>>()},
-      std::unique_ptr<
-          NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<NewtonianEuler::BoundaryCorrections::Hll<Dim>>()},
       soln.equation_of_state().get_clone(), dg_prim_vars,
       typename variables_tag::type{dg_mesh.number_of_grid_points()},

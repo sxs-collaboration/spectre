@@ -28,6 +28,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -44,7 +45,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
@@ -177,9 +177,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       typename System<Dim>::variables_tag,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-      fd::Tags::Reconstructor<Dim>,
-      evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
-      domain::Tags::FunctionsOfTimeInitialize,
+      fd::Tags::Reconstructor<Dim>, evolution::Tags::BoundaryCorrection,
+      ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                   Frame::Inertial>,
@@ -191,7 +190,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       element, dg_mesh, subcell_mesh, volume_vars_dg, ghost_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection<Dim>>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrectionForTest>()},
       time, clone_unique_ptrs(functions_of_time),
       ElementMap<Dim, Frame::Grid>{
