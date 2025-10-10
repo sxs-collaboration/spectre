@@ -5,18 +5,26 @@
 
 #include <array>
 #include <cstddef>
+#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
+#include "Options/Context.hpp"
 #include "Options/String.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+
+namespace Options {
+template <typename... AlternativeLists>
+struct Alternatives;
+}  // namespace Options
 /// \endcond
 
 namespace ylm {
@@ -40,13 +48,50 @@ class Strahlkorper {
     static constexpr Options::String help = {
         "Center of spherical Strahlkorper"};
   };
-  using options = tmpl::list<LMax, Radius, Center>;
+  struct H5Filename {
+    using type = std::string;
+    static constexpr Options::String help = {
+        "H5 file containing the Strahlkorper coefficients"};
+  };
+  struct SubfileName {
+    using type = std::string;
+    static constexpr Options::String help = {
+        "Subfile (without leading slash or .dat extension) within "
+        "the H5 file that contains the Strahlkorper coefficients"};
+  };
+  struct Time {
+    using type = double;
+    static constexpr Options::String help = {
+        "Time at which to read the Strahlkorper coefficients"};
+  };
+  struct TimeEpsilon {
+    using type = double;
+    static constexpr Options::String help = {
+        "Tolerance for matching the requested time to read the Strahlkorper "
+        "coefficients"};
+  };
+  struct CheckFrame {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether to check that the frame in the file matches the requested "
+        "frame"};
+  };
+  using options =
+      tmpl::list<LMax,
+                 Options::Alternatives<tmpl::list<Radius, Center>,
+                                       tmpl::list<H5Filename, SubfileName, Time,
+                                                  TimeEpsilon, CheckFrame>>>;
 
   static constexpr Options::String help{
       "A star-shaped surface expressed as an expansion in spherical "
       "harmonics.\n"
-      "Currently only a spherical Strahlkorper can be constructed from\n"
-      "Options.  To do this, specify parameters Center, Radius, and LMax."};
+      "A Strahlkorper can be constructed from Options in two ways:\n"
+      "1. Specify LMax, Center, and Radius to construct a spherical "
+      "Strahlkorper.\n"
+      "2. Specify LMax, H5Filename, SubfileName, Time, TimeEpsilon, and "
+      "CheckFrame to construct a Strahlkorper from coefficients read from an "
+      "H5 file. The Strahlkorper will be prolonged or restricted to the "
+      "specified LMax."};
 
   // Pup needs default constructor
   Strahlkorper() = default;
@@ -62,6 +107,13 @@ class Strahlkorper {
   /// Construct a sphere of radius `radius`, setting `m_max`=`l_max`.
   Strahlkorper(size_t l_max, double radius, std::array<double, 3> center)
       : Strahlkorper(l_max, l_max, radius, center) {}
+
+  /// Construct from options: either from radius and center, or from file.
+  /// These constructors handle both alternatives specified in the options.
+  Strahlkorper(size_t l_max, const std::string& h5_filename,
+               const std::string& subfile_name, double time,
+               double time_epsilon, bool check_frame,
+               const Options::Context& context);
 
   /// Construct a Strahlkorper from a DataVector containing the radius
   /// at the collocation points.

@@ -11,6 +11,7 @@ spectre_target_sources(
   FillYlmLegendAndData.cpp
   ReadSurfaceYlm.cpp
   StrahlkorperCoordsToTextFile.cpp
+  StrahlkorperFromFile.cpp
   )
 
 spectre_target_headers(

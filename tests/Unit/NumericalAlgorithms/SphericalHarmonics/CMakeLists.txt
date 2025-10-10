@@ -27,9 +27,11 @@ target_link_libraries(
   PRIVATE
   DataStructures
   GrSurfaces
+  H5
   RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers
+  SphericalHarmonicsIO
   SpinWeightedSphericalHarmonics
   Utilities
   )
