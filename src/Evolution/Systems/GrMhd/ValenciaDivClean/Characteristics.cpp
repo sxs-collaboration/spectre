@@ -3,9 +3,18 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/RaiseOrLowerIndex.hpp"
@@ -99,6 +108,7 @@ void compute_characteristic_speeds_approximate_mhd(
 }  // namespace
 
 namespace grmhd::ValenciaDivClean {
+
 template <size_t ThermodynamicDim>
 void characteristic_speeds_approximate_mhd(
     const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
@@ -231,26 +241,29 @@ std::array<DataVector, 9> characteristic_speeds_approximate_mhd(
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds_hydro(
-    const gsl::not_null<std::array<DataVector, 3>*> char_speeds,
+    const gsl::not_null<tnsr::i<DataVector, 3>*> characteristic_speeds,
+    /* primitive variables */
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
+    /* other helpful quantities */
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
   const size_t num_grid_points = get(lorentz_factor).size();
-  if ((*char_speeds)[0].size() != num_grid_points) {
-    for (auto& cs : (*char_speeds)) {
-      cs = DataVector(num_grid_points, 0.0);
+  if (characteristic_speeds->get(0).size() != num_grid_points) {
+    for (size_t i = 0; i < 3; ++i) {
+      characteristic_speeds->get(i) = DataVector(num_grid_points, 0.0);
     }
   }
 
   Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
                        hydro::Tags::SpatialVelocitySquared<DataVector>,
+                       hydro::Tags::Temperature<DataVector>,
                        hydro::Tags::SoundSpeedSquared<DataVector>,
                        ::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                        ::Tags::TempScalar<2>, ::Tags::TempScalar<3>>>
@@ -291,9 +304,11 @@ void characteristic_speeds_hydro(
                     rest_mass_density, specific_internal_energy));
     get(sound_speed_squared) /= get(specific_enthalpy);
   } else if constexpr (ThermodynamicDim == 3) {
-    const auto temperature =
-        equation_of_state.temperature_from_density_and_energy(
-            rest_mass_density, specific_internal_energy, electron_fraction);
+    Scalar<DataVector>& temperature =
+        get<hydro::Tags::Temperature<DataVector>>(temp_tensors);
+    get(temperature) =
+        get(equation_of_state.temperature_from_density_and_energy(
+            rest_mass_density, specific_internal_energy, electron_fraction));
     get(sound_speed_squared) =
         get(equation_of_state.sound_speed_squared_from_density_and_temperature(
             rest_mass_density, temperature, electron_fraction));
@@ -314,36 +329,516 @@ void characteristic_speeds_hydro(
                             (1 - get(sound_speed_squared))) /
       (get(lorentz_factor) * get(denom));
 
-  enum HydroSpeed : uint32_t {
-    NormalDotVelocity = 0,
-    LambdaPlus = 1,
-    LambdaMinus = 2
-  };
-  // Degenerate eigenvalue (normal dot velocity)
-  (*char_speeds)[HydroSpeed::NormalDotVelocity] = get(normal_velocity);
-  (*char_speeds)[HydroSpeed::LambdaPlus] = get(first_term) + get(second_term);
-  (*char_speeds)[HydroSpeed::LambdaMinus] = get(first_term) - get(second_term);
+  // Degenerate characteristic speed (normal dot velocity)
+  characteristic_speeds->get(HydroSpeed::NormalDotVelocity) =
+      get(normal_velocity);
+  characteristic_speeds->get(HydroSpeed::LambdaPlus) =
+      get(first_term) + get(second_term);
+  characteristic_speeds->get(HydroSpeed::LambdaMinus) =
+      get(first_term) - get(second_term);
 }
 
 
 template <size_t ThermodynamicDim>
-std::array<DataVector, 3> characteristic_speeds_hydro(
+tnsr::i<DataVector, 3> characteristic_speeds_hydro(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::i<DataVector, 3>& unit_normal,
+    const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
-  std::array<DataVector, 3> char_speeds{};
-  characteristic_speeds_hydro(
-      make_not_null(&char_speeds), spatial_velocity, rest_mass_density,
-      specific_internal_energy, specific_enthalpy, electron_fraction,
-      lorentz_factor, unit_normal, spatial_metric, equation_of_state);
-  return char_speeds;
+  tnsr::i<DataVector, 3> characteristic_speeds{};
+  characteristic_speeds_hydro(make_not_null(&characteristic_speeds),
+                              spatial_velocity, rest_mass_density,
+                              specific_internal_energy, electron_fraction,
+                              lorentz_factor, specific_enthalpy, spatial_metric,
+                              unit_normal, equation_of_state);
+  return characteristic_speeds;
+}
+
+template <size_t ThermodynamicDim>
+void flux_jacobian_hydro(
+    const gsl::not_null<tnsr::iJ<DataVector, 6>*> characteristic_matrix,
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) {
+  Variables<tmpl::list<hydro::Tags::SoundSpeedSquared<DataVector>,
+                       hydro::Tags::Pressure<DataVector>,
+                       ::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                       ::Tags::TempScalar<4>, ::Tags::TempScalar<5>,
+                       ::Tags::TempScalar<6>, ::Tags::TempScalar<7>,
+                       ::Tags::TempScalar<8>, ::Tags::TempI<0, 3>,
+                       ::Tags::Tempi<0, 3>, ::Tags::TempIj<0, 3>,
+                       ::Tags::TempI<1, 3>>>
+      temp_tensors{get<0, 0>(spatial_metric).size()};
+
+  Scalar<DataVector>& sound_speed_squared =
+      get<hydro::Tags::SoundSpeedSquared<DataVector>>(temp_tensors);
+  // We define kappa as the partial derivative of pressure with respect to
+  // specific internal energy
+  Scalar<DataVector>& kappa = get<::Tags::TempScalar<0>>(temp_tensors);
+  // We define zeta as the partial derivative of pressure with respect to
+  // electron fraction
+  Scalar<DataVector>& zeta = get<::Tags::TempScalar<1>>(temp_tensors);
+  Scalar<DataVector>& kappa_times_p_over_rho_squared =
+      get<::Tags::TempScalar<2>>(temp_tensors);
+  Scalar<DataVector>& pressure =
+      get<hydro::Tags::Pressure<DataVector>>(temp_tensors);
+  if constexpr (ThermodynamicDim == 1) {
+    get(sound_speed_squared) =
+        get(equation_of_state.chi_from_density(rest_mass_density)) +
+        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+            rest_mass_density));
+    get(sound_speed_squared) /= get(specific_enthalpy);
+    get(kappa) = 0.0;
+    get(zeta) = 0.0;
+  } else if constexpr (ThermodynamicDim == 2) {
+    get(kappa_times_p_over_rho_squared) =
+        get(equation_of_state
+                .kappa_times_p_over_rho_squared_from_density_and_energy(
+                    rest_mass_density, specific_internal_energy));
+    get(sound_speed_squared) =
+        (get(equation_of_state.chi_from_density_and_energy(
+             rest_mass_density, specific_internal_energy)) +
+         get(kappa_times_p_over_rho_squared)) /
+        get(specific_enthalpy);
+    get(pressure) = get(equation_of_state.pressure_from_density_and_energy(
+        rest_mass_density, specific_internal_energy));
+    get(kappa) = get(kappa_times_p_over_rho_squared) / get(pressure) *
+                 square(get(rest_mass_density));
+    get(zeta) = 0.0;
+  } else if constexpr (ThermodynamicDim == 3) {
+    const Scalar<DataVector> temperature =
+        equation_of_state.temperature_from_density_and_energy(
+            rest_mass_density, specific_internal_energy, electron_fraction);
+    get(sound_speed_squared) =
+        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
+            rest_mass_density, temperature, electron_fraction));
+    get(pressure) = get(equation_of_state.pressure_from_density_and_temperature(
+        rest_mass_density, temperature, electron_fraction));
+    get(kappa) = get(equation_of_state.kappa_from_density_and_temperature(
+        rest_mass_density, temperature, electron_fraction));
+    get(zeta) = get(equation_of_state.zeta_from_density_and_temperature(
+        rest_mass_density, temperature, electron_fraction));
+  }
+
+  // Intermediate variables
+  Scalar<DataVector>& Z = get<::Tags::TempScalar<3>>(temp_tensors);
+  tenex::evaluate(make_not_null(&Z),
+                  rest_mass_density() * specific_enthalpy() *
+                      square(lorentz_factor()));
+  Scalar<DataVector>& D = get<::Tags::TempScalar<4>>(temp_tensors);
+  tenex::evaluate(make_not_null(&D), rest_mass_density() * lorentz_factor());
+  Scalar<DataVector>& normal_velocity = get<::Tags::TempScalar<5>>(temp_tensors);
+  tenex::evaluate(make_not_null(&normal_velocity),
+                  spatial_velocity(ti::I) * unit_normal(ti::i));
+  tnsr::I<DataVector, 3>& unit_vector = get<::Tags::TempI<0, 3>>(temp_tensors);
+  tenex::evaluate<ti::I>(make_not_null(&unit_vector),
+                         inv_spatial_metric(ti::I, ti::J) * unit_normal(ti::j));
+  tnsr::i<DataVector, 3>& spatial_velocity_one_form =
+      get<::Tags::Tempi<0, 3>>(temp_tensors);
+  tenex::evaluate<ti::i>(make_not_null(&spatial_velocity_one_form),
+                         spatial_metric(ti::i, ti::j) *
+                             spatial_velocity(ti::J));
+  tnsr::Ij<DataVector, 3>& mixed_spatial_metric =
+      get<::Tags::TempIj<0, 3>>(temp_tensors);
+  tenex::evaluate<ti::I, ti::j>(make_not_null(&mixed_spatial_metric),
+                                inv_spatial_metric(ti::I, ti::K) *
+                                    spatial_metric(ti::k, ti::j));
+
+  // Derivatives of Z
+  Scalar<DataVector>& dzdD = get<::Tags::TempScalar<6>>(temp_tensors);
+  tenex::evaluate(
+      make_not_null(&dzdD),
+      -((lorentz_factor() *
+         (kappa() * (-specific_enthalpy() + lorentz_factor()) -
+          zeta() * electron_fraction() +
+          (sound_speed_squared() * specific_enthalpy() + lorentz_factor()) *
+              rest_mass_density())) /
+        ((-square(lorentz_factor()) +
+          sound_speed_squared() * (-1. + square(lorentz_factor()))) *
+         rest_mass_density())));
+  tnsr::I<DataVector, 3>& dzds = get<::Tags::TempI<1, 3>>(temp_tensors);
+  tenex::evaluate<ti::I>(
+      make_not_null(&dzds),
+      (spatial_velocity(ti::I) * square(lorentz_factor()) *
+       (kappa() + sound_speed_squared() * rest_mass_density())) /
+      ((-square(lorentz_factor()) +
+        sound_speed_squared() * (-1. + square(lorentz_factor()))) *
+       rest_mass_density()));
+  Scalar<DataVector>& dzdtau = get<::Tags::TempScalar<7>>(temp_tensors);
+  tenex::evaluate(
+      make_not_null(&dzdtau),
+      -((square(lorentz_factor()) * (kappa() + rest_mass_density())) /
+        ((-square(lorentz_factor()) +
+          sound_speed_squared() * (-1. + square(lorentz_factor()))) *
+         rest_mass_density())));
+  Scalar<DataVector>& dzdye = get<::Tags::TempScalar<8>>(temp_tensors);
+  tenex::evaluate(
+      make_not_null(&dzdye),
+      (zeta() * lorentz_factor()) /
+      ((square(lorentz_factor()) -
+        sound_speed_squared() * (-1. + square(lorentz_factor()))) *
+       rest_mass_density()));
+
+  // Put analytic expressions into characteristic matrix
+  characteristic_matrix->get(0, 0) =
+      ((get(Z) - get(D) * get(dzdD)) * get(normal_velocity)) / get(Z);
+  for (size_t B = 0; B < 3; ++B) {
+    characteristic_matrix->get(0, B + 1) =
+        (get(D) * (unit_vector.get(B) - dzds.get(B) * get(normal_velocity))) /
+        get(Z);
+  }
+  characteristic_matrix->get(0, 4) =
+      -((get(D) * get(dzdtau) * get(normal_velocity)) / get(Z));
+  characteristic_matrix->get(0, 5) =
+      -((get(D) * get(dzdye) * get(normal_velocity)) / get(Z));
+  for (size_t c = 0; c < 3; ++c) {
+    characteristic_matrix->get(c + 1, 0) =
+        (-1.0 + get(dzdD)) * unit_normal.get(c) -
+        get(dzdD) * get(normal_velocity) * spatial_velocity_one_form.get(c);
+    for (size_t B = 0; B < 3; ++B) {
+      characteristic_matrix->get(c + 1, B + 1) =
+          mixed_spatial_metric.get(B, c) * get(normal_velocity) +
+          unit_vector.get(B) * spatial_velocity_one_form.get(c) +
+          dzds.get(B) *
+              (unit_normal.get(c) -
+               get(normal_velocity) * spatial_velocity_one_form.get(c));
+    }
+    characteristic_matrix->get(c + 1, 4) =
+        (-1.0 + get(dzdtau)) * unit_normal.get(c) -
+        get(dzdtau) * get(normal_velocity) * spatial_velocity_one_form.get(c);
+    characteristic_matrix->get(c + 1, 5) =
+        get(dzdye) * (unit_normal.get(c) -
+                      get(normal_velocity) * spatial_velocity_one_form.get(c));
+  }
+  characteristic_matrix->get(4, 0) =
+      -(((get(Z) - get(D) * get(dzdD)) * get(normal_velocity)) / get(Z));
+  for (size_t B = 0; B < 3; ++B) {
+    characteristic_matrix->get(4, B + 1) =
+        ((get(Z) - get(D)) * unit_vector.get(B) +
+         get(D) * dzds.get(B) * get(normal_velocity)) /
+        get(Z);
+  }
+  characteristic_matrix->get(4, 4) =
+      (get(D) * get(dzdtau) * get(normal_velocity)) / get(Z);
+  characteristic_matrix->get(4, 5) =
+      (get(D) * get(dzdye) * get(normal_velocity)) / get(Z);
+  characteristic_matrix->get(5, 0) =
+      -((get(D) * get(electron_fraction) * get(dzdD) * get(normal_velocity)) /
+        get(Z));
+  for (size_t B = 0; B < 3; ++B) {
+    characteristic_matrix->get(5, B + 1) =
+        (get(D) * get(electron_fraction) *
+         (unit_vector.get(B) - dzds.get(B) * get(normal_velocity))) /
+        get(Z);
+  }
+  characteristic_matrix->get(5, 4) =
+      -((get(D) * get(electron_fraction) * get(dzdtau) * get(normal_velocity)) /
+        get(Z));
+  characteristic_matrix->get(5, 5) =
+      ((get(Z) - get(D) * get(electron_fraction) * get(dzdye)) *
+       get(normal_velocity)) /
+      get(Z);
+}
+
+template <size_t ThermodynamicDim>
+void numerical_characteristics(
+    const gsl::not_null<tnsr::i<DataVector, 6>*> characteristic_speeds,
+    const gsl::not_null<tnsr::ij<DataVector, 6>*> characteristic_modes,
+    const gsl::not_null<tnsr::IJ<DataVector, 6>*> characteristic_projectors,
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) {
+  // Build characteristic matrix
+  Variables<tmpl::list<::Tags::TempiJ<0, 6>>> temp_tensors{
+      get<0, 0>(spatial_metric).size()};
+  tnsr::iJ<DataVector, 6>& characteristic_matrix =
+      get<::Tags::TempiJ<0, 6>>(temp_tensors);
+  flux_jacobian_hydro(make_not_null(&characteristic_matrix), spatial_velocity,
+                      rest_mass_density, specific_internal_energy,
+                      electron_fraction,
+                      /* other helpful quantities */
+                      lorentz_factor, specific_enthalpy, spatial_metric,
+                      inv_spatial_metric, unit_normal, equation_of_state);
+
+  // Allocate memory to work with blaze::geev (outside of loop to save
+  // time/memory)
+  constexpr size_t matrix_size = 6;
+  blaze::StaticMatrix<double, matrix_size, matrix_size> blaze_point_matrix{};
+  blaze::StaticVector<blaze::complex<double>, matrix_size>
+      blaze_complex_eigenvalues{};
+  blaze::StaticMatrix<blaze::complex<double>, matrix_size, matrix_size>
+      blaze_complex_L{};
+  blaze::StaticMatrix<blaze::complex<double>, matrix_size, matrix_size>
+      blaze_complex_R{};
+  std::array<double, matrix_size> blaze_real_eigenvalues{};
+
+  // Loop over each grid point
+  const size_t num_points = get<0, 0>(spatial_metric).size();
+  for (size_t point = 0; point < num_points; ++point) {
+    // Build matrix at this grid point
+    for (size_t row = 0; row < matrix_size; ++row) {
+      for (size_t col = 0; col < matrix_size; ++col) {
+        blaze_point_matrix(row, col) =
+            characteristic_matrix.get(row, col)[point];
+      }
+    }
+
+    // Solve eigensystem using blaze:geev
+    blaze::geev(blaze_point_matrix, blaze_complex_L, blaze_complex_eigenvalues,
+                blaze_complex_R);
+    const double tolerance = 1.0e-12;
+    for (size_t i = 0; i < matrix_size; ++i) {
+      ASSERT(std::abs(blaze_complex_eigenvalues[i].imag()) < tolerance,
+             "Complex eigenvalue: "
+                 << blaze_complex_eigenvalues[i].real() << " + "
+                 << blaze_complex_eigenvalues[i].imag() << " i.");
+      blaze_real_eigenvalues[i] = blaze_complex_eigenvalues[i].real();
+    }
+
+// We found cases in which blaze::geev returns a wrong eigenvalue. As a sanity
+// check, we use GSL to compute the eigenvalues for the same matrix and check
+// that they are the same.
+#ifdef SPECTRE_DEBUG
+    // Allocate memory to work with GSL:
+    // Workspace for computing eigenvalues and eigenvectors
+    gsl_eigen_nonsymm_workspace* gsl_workspace =
+        gsl_eigen_nonsymm_alloc(matrix_size);
+    // Containers for the right eigensystem (A * R = lambda * R)
+    gsl_matrix* gsl_point_matrix = gsl_matrix_alloc(matrix_size, matrix_size);
+    gsl_vector_complex* gsl_complex_eigenvalues =
+        gsl_vector_complex_alloc(matrix_size);
+    gsl_matrix_complex* gsl_complex_right_eigenvectors =
+        gsl_matrix_complex_alloc(matrix_size, matrix_size);
+    std::array<double, matrix_size> gsl_real_eigenvalues{};
+
+    // Build matrix at this grid point
+    for (size_t row = 0; row < matrix_size; ++row) {
+      for (size_t col = 0; col < matrix_size; ++col) {
+        const double entry = characteristic_matrix.get(row, col)[point];
+        gsl_matrix_set(gsl_point_matrix, row, col, entry);
+      }
+    }
+
+    // Solve for eigenvalues using GSL
+    gsl_eigen_nonsymm(gsl_point_matrix, gsl_complex_eigenvalues, gsl_workspace);
+    for (size_t i = 0; i < matrix_size; ++i) {
+      gsl_real_eigenvalues[i] =
+          GSL_REAL(gsl_vector_complex_get(gsl_complex_eigenvalues, i));
+    }
+
+    // Sort both blaze's and GSL's eigenvalues to facilitate comparison
+    std::array<double, matrix_size> sorted_blaze_real_eigenvalues =
+        blaze_real_eigenvalues;
+    std::sort(sorted_blaze_real_eigenvalues.begin(),
+              sorted_blaze_real_eigenvalues.end());
+    std::sort(gsl_real_eigenvalues.begin(), gsl_real_eigenvalues.end());
+
+    // Compare eigenvalues
+    for (size_t i = 0; i < matrix_size; ++i) {
+      if (UNLIKELY(std::abs(sorted_blaze_real_eigenvalues[i] -
+                            gsl_real_eigenvalues[i]) > 1.e-6)) {
+        std::ostringstream matrix_stream;
+        matrix_stream << "Point matrix:\n";
+        for (size_t row = 0; row < matrix_size; ++row) {
+          for (size_t col = 0; col < matrix_size; ++col) {
+            matrix_stream << blaze_point_matrix(row, col) << " ";
+          }
+          matrix_stream << "\n";
+        }
+        matrix_stream << "Blaze eigenvalue: "
+                      << sorted_blaze_real_eigenvalues[i]
+                      << ", GSL eigenvalue: " << gsl_real_eigenvalues[i]
+                      << "\n";
+
+        ERROR(
+            "The eigensolvers from blaze and GSL found different eigenvalues "
+            "for the same matrix.\n"
+            << matrix_stream.str());
+      }
+    }
+
+    // Free GSL allocations
+    gsl_eigen_nonsymm_free(gsl_workspace);
+    gsl_matrix_free(gsl_point_matrix);
+    gsl_vector_complex_free(gsl_complex_eigenvalues);
+    gsl_matrix_complex_free(gsl_complex_right_eigenvectors);
+#endif
+
+    // Check and save results
+    // Track which indices have been processed to avoid double-counting partners
+    std::array<bool, matrix_size> processed_right_eigenvectors{};
+    std::array<bool, matrix_size> processed_left_eigenvectors{};
+    // Note: we're looping through the ith eigenvalue/vectors, not the ith row!
+    for (size_t i = 0; i < matrix_size; ++i) {
+      // Store eigenvalue
+      characteristic_speeds->get(i)[point] = blaze_real_eigenvalues[i];
+
+      // For each PAIR of degenerate eigenvalues, it is possible that GSL
+      // returns a PAIR of complex eigenvectors that are complex conjugates of
+      // each other. Here, we check if the ith right/left eigenvector is
+      // complex.
+      bool right_eigenvector_is_complex = false;
+      bool left_eigenvector_is_complex = false;
+      for (size_t k = 0; k < matrix_size; ++k) {
+        if (std::abs(blaze_complex_R(k, i).imag()) > tolerance) {
+          right_eigenvector_is_complex = true;
+        }
+
+        if (std::abs(blaze_complex_L(k, i).imag()) > tolerance) {
+          left_eigenvector_is_complex = true;
+        }
+      }
+
+      // If either eigenvector is complex, then we know that the vectors formed
+      // by their real and imaginary parts are also linearly-independent
+      // eigenvectors. Here, we use this fact to build real-valued left and
+      // right eigenvectors.
+      if (not processed_right_eigenvectors[i]) {
+        // If needed, find index of complex conjugate eigenvector
+        // Note: most time this will be i+1, but not always.
+        size_t conjugate_i = 0;
+        if (right_eigenvector_is_complex) {
+          for (conjugate_i = i + 1; conjugate_i < matrix_size; ++conjugate_i) {
+            // Assume that this eigenvector is the conjugate until we find
+            // otherwise by checking each component
+            bool is_conjugate = true;
+            for (size_t k = 0; k < matrix_size; ++k) {
+              const auto component = blaze_complex_R(k, i);
+              const auto conjugate_component = blaze_complex_R(k, conjugate_i);
+              if (std::abs(component.real() - conjugate_component.real()) >
+                      tolerance or
+                  std::abs(component.imag() + conjugate_component.imag()) >
+                      tolerance) {
+                is_conjugate = false;
+                break;
+              }
+            }
+            // If we made it through all components, then we've found the
+            // conjugate eigenvector
+            if (is_conjugate) {
+              break;
+            }
+          }
+        }
+        ASSERT(not right_eigenvector_is_complex or
+                   (conjugate_i > i and conjugate_i < matrix_size),
+               "Found complex right eigenvector without identifying its "
+               "conjugate partner.");
+        // If the eigenvector is complex, then its respective eigenvalue must
+        // be degenerate
+        if (right_eigenvector_is_complex) {
+          ASSERT(
+              blaze_real_eigenvalues[i] - blaze_real_eigenvalues[conjugate_i] <
+                  1.e-8,
+              "Expected degenerate eigenvalues for complex eigenvectors, but "
+              "eigenvalues differ by "
+                  << blaze_real_eigenvalues[i] -
+                         blaze_real_eigenvalues[conjugate_i]
+                  << ".");
+        }
+        // Process the ith right eigenvector (and its complex conjugate if
+        // needed)
+        for (size_t k = 0; k < matrix_size; ++k) {
+          characteristic_modes->get(i, k)[point] = blaze_complex_R(k, i).real();
+          if (right_eigenvector_is_complex) {
+            characteristic_modes->get(conjugate_i, k)[point] =
+                blaze_complex_R(k, i).imag();
+          }
+        }
+        processed_right_eigenvectors[i] = true;
+        if (right_eigenvector_is_complex) {
+          processed_right_eigenvectors[conjugate_i] = true;
+        }
+      }
+
+      // Same as above, but for left eigenvectors
+      if (not processed_left_eigenvectors[i]) {
+        // If needed, find index of complex conjugate eigenvector
+        // Note: most time this will be i+1, but not always.
+        size_t conjugate_i = 0;
+        if (left_eigenvector_is_complex) {
+          for (conjugate_i = i + 1; conjugate_i < matrix_size; ++conjugate_i) {
+            // Assume that this eigenvector is the conjugate until we find
+            // otherwise by checking each component
+            bool is_conjugate = true;
+            for (size_t k = 0; k < matrix_size; ++k) {
+              const auto component = blaze_complex_L(k, i);
+              const auto conjugate_component = blaze_complex_L(k, conjugate_i);
+              if (std::abs(component.real() - conjugate_component.real()) >
+                      tolerance or
+                  std::abs(component.imag() + conjugate_component.imag()) >
+                      tolerance) {
+                is_conjugate = false;
+                break;
+              }
+            }
+            // If we made it through all components, then we've found the
+            // conjugate eigenvector
+            if (is_conjugate) {
+              break;
+            }
+          }
+        }
+        ASSERT(not left_eigenvector_is_complex or
+                   (conjugate_i > i and conjugate_i < matrix_size),
+               "Found complex left eigenvector without identifying its "
+               "conjugate partner.");
+        // If the eigenvector is complex, then its respective eigenvalue must
+        // be degenerate
+        if (left_eigenvector_is_complex) {
+          ASSERT(
+              blaze_real_eigenvalues[i] - blaze_real_eigenvalues[conjugate_i] <
+                  1.e-8,
+              "Expected degenerate eigenvalues for complex eigenvectors, but "
+              "eigenvalues differ by "
+                  << blaze_real_eigenvalues[i] -
+                         blaze_real_eigenvalues[conjugate_i]
+                  << ".");
+        }
+        // Process the ith left eigenvector (and its complex conjugate if
+        // needed)
+        for (size_t k = 0; k < matrix_size; ++k) {
+          characteristic_projectors->get(i, k)[point] =
+              blaze_complex_L(k, i).real();
+          if (left_eigenvector_is_complex) {
+            characteristic_projectors->get(conjugate_i, k)[point] =
+                blaze_complex_L(k, i).imag();
+          }
+        }
+        processed_left_eigenvectors[i] = true;
+        if (left_eigenvector_is_complex) {
+          processed_left_eigenvectors[conjugate_i] = true;
+        }
+      }
+    }
+  }
 }
 
 namespace Tags {
@@ -395,58 +890,85 @@ GENERATE_INSTANTIATIONS(FUNCTION_INSTANTIATION, (1, 2, 3))
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                              \
-  template std::array<DataVector, 9>                                        \
-  characteristic_speeds_approximate_mhd<GET_DIM(data)>(                     \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
-      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state);                                               \
-  template void characteristic_speeds_approximate_mhd<GET_DIM(data)>(       \
-      const gsl::not_null<std::array<DataVector, 9>*> char_speeds,          \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
-      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state);                                               \
-  template std::array<DataVector, 3>                                        \
-  characteristic_speeds_hydro<GET_DIM(data)>(                               \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
-          equation_of_state);                                               \
-  template void characteristic_speeds_hydro<GET_DIM(data)>(                 \
-      const gsl::not_null<std::array<DataVector, 3>*> char_speeds,          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
-      const Scalar<DataVector>& rest_mass_density,                          \
-      const Scalar<DataVector>& specific_internal_energy,                   \
-      const Scalar<DataVector>& specific_enthalpy,                          \
-      const Scalar<DataVector>& electron_fraction,                          \
-      const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::i<DataVector, 3>& unit_normal,                            \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
-      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
+#define INSTANTIATION(r, data)                                                 \
+  template std::array<DataVector, 9>                                           \
+  characteristic_speeds_approximate_mhd<GET_DIM(data)>(                        \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,           \
+      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,    \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
+          equation_of_state);                                                  \
+  template void characteristic_speeds_approximate_mhd<GET_DIM(data)>(          \
+      const gsl::not_null<std::array<DataVector, 9>*> char_speeds,             \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,           \
+      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,    \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
+          equation_of_state);                                                  \
+  template tnsr::i<DataVector, 3> characteristic_speeds_hydro<GET_DIM(data)>(  \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
+          equation_of_state);                                                  \
+  template void characteristic_speeds_hydro<GET_DIM(data)>(                    \
+      const gsl::not_null<tnsr::i<DataVector, 3>*> characteristic_speeds,      \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
+          equation_of_state);                                                  \
+  template void flux_jacobian_hydro<GET_DIM(data)>(                            \
+      const gsl::not_null<tnsr::iJ<DataVector, 6>*> characteristic_matrix,     \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,      \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
+          equation_of_state);                                                  \
+  template void numerical_characteristics<GET_DIM(data)>(                      \
+      const gsl::not_null<tnsr::i<DataVector, 6>*> characteristic_speeds,      \
+      const gsl::not_null<tnsr::ij<DataVector, 6>*> characteristic_modes,      \
+      const gsl::not_null<tnsr::IJ<DataVector, 6>*> characteristic_projectors, \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,         \
+      const Scalar<DataVector>& rest_mass_density,                             \
+      const Scalar<DataVector>& specific_internal_energy,                      \
+      const Scalar<DataVector>& electron_fraction,                             \
+      const Scalar<DataVector>& lorentz_factor,                                \
+      const Scalar<DataVector>& specific_enthalpy,                             \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,          \
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,      \
+      const tnsr::i<DataVector, 3>& unit_normal,                               \
+      const EquationsOfState::EquationOfState<true, GET_DIM(data)>&            \
           equation_of_state);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
