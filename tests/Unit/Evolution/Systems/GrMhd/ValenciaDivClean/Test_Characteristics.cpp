@@ -15,6 +15,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/Hydro/TestHelpers.hpp"
@@ -163,6 +164,167 @@ void test_hydro_characteristic_speed(const DataVector& used_for_size) {
         custom_approx);
   }
 }
+
+void test_hydro_numerical_eigensystem(const DataVector& used_for_size) {
+  // Initialize number generator
+  MAKE_GENERATOR(generator);
+  const auto nn_gen = make_not_null(&generator);
+
+  // Generate random quantities
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<3>(nn_gen, used_for_size);
+  const auto lorentz_factor =
+      TestHelpers::hydro::random_lorentz_factor(nn_gen, used_for_size);
+  const auto spatial_velocity = TestHelpers::hydro::random_velocity(
+      nn_gen, lorentz_factor, spatial_metric);
+  const auto rest_mass_density =
+      TestHelpers::hydro::random_density(nn_gen, used_for_size);
+  const auto specific_internal_energy =
+      TestHelpers::hydro::random_specific_internal_energy(nn_gen,
+                                                          used_for_size);
+  const auto electron_fraction =
+      TestHelpers::hydro::random_electron_fraction(nn_gen, used_for_size);
+
+  // Define equation of state
+  const auto equation_of_state_2d =
+      EquationsOfState::IdealFluid<true>(1.5, 0.0);
+  const auto equation_of_state_3d = equation_of_state_2d.promote_to_3d_eos();
+
+  // Compute derived quantities
+  const auto pressure = equation_of_state_3d->pressure_from_density_and_energy(
+      rest_mass_density, specific_internal_energy, electron_fraction);
+  const auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      rest_mass_density, specific_internal_energy, pressure);
+  const auto& inv_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+
+  // Loop over directions
+  for (const auto& direction : Direction<3>::all_directions()) {
+    // Get unit normal and normal velocity in this direction
+    const auto unit_normal = unit_basis_form(direction, inv_spatial_metric);
+    const auto normal_velocity =
+        tenex::evaluate(spatial_velocity(ti::I) * unit_normal(ti::i));
+
+    // Initialize containers for all eigenvalues and eigenvectors
+    constexpr size_t matrix_size = 6;
+    std::array<Scalar<DataVector>, matrix_size> all_eigenvalues;
+    std::array<tnsr::i<DataVector, matrix_size>, matrix_size>
+        all_right_eigenvectors;
+    std::array<tnsr::I<DataVector, matrix_size>, matrix_size>
+        all_left_eigenvectors;
+    const size_t num_points = used_for_size.size();
+    for (size_t i = 0; i < matrix_size; ++i) {
+      get(gsl::at(all_eigenvalues, i)).destructive_resize(num_points);
+      for (size_t k = 0; k < matrix_size; ++k) {
+        gsl::at(all_right_eigenvectors, i)
+            .get(k)
+            .destructive_resize(num_points);
+        gsl::at(all_left_eigenvectors, i).get(k).destructive_resize(num_points);
+      }
+    }
+
+    // Solve numerical eigensystem
+    grmhd::ValenciaDivClean::numerical_eigensystem(
+        make_not_null(&all_eigenvalues), make_not_null(&all_right_eigenvectors),
+        make_not_null(&all_left_eigenvectors), spatial_velocity,
+        rest_mass_density, specific_internal_energy, electron_fraction,
+        lorentz_factor, specific_enthalpy, spatial_metric, inv_spatial_metric,
+        unit_normal, *equation_of_state_3d);
+
+    // Get analytic characteristic speeds to check the numeric eigenvalues
+    const std::array<DataVector, 3> analytic_speeds =
+        grmhd::ValenciaDivClean::characteristic_speeds_hydro<3>(
+            spatial_velocity, rest_mass_density, specific_internal_energy,
+            specific_enthalpy, electron_fraction, lorentz_factor, unit_normal,
+            spatial_metric, *equation_of_state_3d);
+
+    // Count degenerate eigenvalues and check the other speeds
+    // Note 1: We expect 4 degenerate eigenvalues equal to the normal velocity.
+    // Note 2: The characteristic matrix becomes more defective for larger
+    //         Lorentz boosts. With the default random Lorentz factor generator,
+    //         the largest Lorentz factor is ~20, which leads to an eigenvalue
+    //         error of ~1e-10.
+    constexpr double eigenvalue_tolerance = 1e-9;
+    for (size_t point = 0; point < num_points; ++point) {
+      int number_of_degenerate_eigenvalues = 0;
+      bool found_lambda_plus = false;
+      bool found_lambda_minus = false;
+      for (size_t i = 0; i < 6; ++i) {
+        const Scalar<DataVector>& eigenvalue = gsl::at(all_eigenvalues, i);
+        const double diff_with_normal_velocity =
+            std::abs(get(eigenvalue)[point] - get(normal_velocity)[point]);
+        const double diff_with_lambda_plus = std::abs(
+            get(eigenvalue)[point] -
+            analytic_speeds[grmhd::ValenciaDivClean::HydroSpeed::LambdaPlus]
+                           [point]);
+        const double diff_with_lambda_minus = std::abs(
+            get(eigenvalue)[point] -
+            analytic_speeds[grmhd::ValenciaDivClean::HydroSpeed::LambdaMinus]
+                           [point]);
+        if (diff_with_normal_velocity < eigenvalue_tolerance) {
+          number_of_degenerate_eigenvalues += 1;
+        } else if (diff_with_lambda_plus < eigenvalue_tolerance) {
+          CHECK_FALSE(found_lambda_plus);
+          found_lambda_plus = true;
+        } else if (diff_with_lambda_minus < eigenvalue_tolerance) {
+          CHECK_FALSE(found_lambda_minus);
+          found_lambda_minus = true;
+        } else {
+          FAIL(
+              "Found an eigenvalue that does not match any expected "
+              "characteristic speed.\n"
+              "Lorentz factor: "
+              << get(lorentz_factor)[point]
+              << "\n"
+                 "Differences with analytic eigenvalues: "
+              << diff_with_normal_velocity << ", " << diff_with_lambda_plus
+              << ", " << diff_with_lambda_minus);
+        }
+      }
+      CHECK(number_of_degenerate_eigenvalues == 4);
+      CHECK(found_lambda_plus);
+      CHECK(found_lambda_minus);
+    }
+
+    // Get characteristic matrix to check eigensystem relations
+    tnsr::iJ<DataVector, 6> characteristic_matrix =
+        make_with_value<tnsr::iJ<DataVector, 6>>(spatial_metric, 0.0);
+    grmhd::ValenciaDivClean::detail::flux_jacobian_hydro(
+        make_not_null(&characteristic_matrix), spatial_velocity,
+        rest_mass_density, specific_internal_energy, electron_fraction,
+        lorentz_factor, specific_enthalpy, spatial_metric, inv_spatial_metric,
+        unit_normal, *equation_of_state_3d);
+
+    // Check eigensystem relation for each eigenvalue/eigenvector
+    constexpr double numeric_tolerance = 1e-12;
+    for (size_t i = 0; i < 6; ++i) {
+      const Scalar<DataVector>& eigenvalue = gsl::at(all_eigenvalues, i);
+
+      const tnsr::i<DataVector, 6>& right_eigenvector =
+          gsl::at(all_right_eigenvectors, i);
+      const Scalar<DataVector> right_eigensystem_error =
+          magnitude(tenex::evaluate<ti::i>(
+              characteristic_matrix(ti::i, ti::J) * right_eigenvector(ti::j) -
+              eigenvalue() * right_eigenvector(ti::i)));
+
+      const tnsr::I<DataVector, 6>& left_eigenvector =
+          gsl::at(all_left_eigenvectors, i);
+      const Scalar<DataVector> left_eigensystem_error =
+          magnitude(tenex::evaluate<ti::I>(
+              left_eigenvector(ti::J) * characteristic_matrix(ti::j, ti::I) -
+              eigenvalue() * left_eigenvector(ti::I)));
+
+      double eigensystem_error = 0.0;
+      for (size_t point = 0; point < used_for_size.size(); ++point) {
+        eigensystem_error = std::max(
+            eigensystem_error, std::abs(get(right_eigensystem_error)[point]));
+        eigensystem_error = std::max(
+            eigensystem_error, std::abs(get(left_eigensystem_error)[point]));
+      }
+      CHECK(eigensystem_error < numeric_tolerance);
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
@@ -176,6 +338,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
   // with vector components being 0.
   test_with_normal_along_coordinate_axes(dv);
   test_hydro_characteristic_speed(dv);
+  test_hydro_numerical_eigensystem(dv);
 
   TestHelpers::db::test_compute_tag<
       grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute>(

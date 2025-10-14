@@ -118,6 +118,18 @@ void characteristic_speeds_approximate_mhd(
         equation_of_state);
 /// @}
 
+/*!
+ * \brief Labels for the characteristic speeds of the relativistic hydrodynamics
+ * system.
+ *
+ * \see `grmhd::ValenciaDivClean::characteristic_speeds_hydro`
+ */
+enum HydroSpeed : uint32_t {
+  NormalDotVelocity = 0,
+  LambdaPlus = 1,
+  LambdaMinus = 2
+};
+
 /// @{
 /*!
  * \brief Compute the characteristic speeds for the relativistic hydrodynamics
@@ -185,6 +197,83 @@ std::array<DataVector, 3> characteristic_speeds_hydro(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 /// @}
+
+namespace detail {
+
+/**
+ * \brief Compute the flux Jacobian matrix (aka, characteristic matrix) for
+ * relativistic hydrodynamics with composition dependence (electron fraction).
+ *
+ * We label the characteristic matrix in a given direction, $A_c^{\ b}$, such
+ * that the index $b$ labels columns and the index $c$ labels rows.
+ * With this choice of indices, the right eigenvectors $R_b$ satisfy
+ *
+ * \begin{equation}
+ *   A_c^{\ b} R_b = \lambda R_c,
+ * \end{equation}
+ *
+ * while the left eigenvectors $L^c$ satisfy $L^c A_c^{\ b} = \lambda L^b$.
+ *
+ * \begin{equation}
+ *   L^c A_c^{\ b} = \lambda L^b,
+ * \end{equation}
+ *
+ * where $\lambda$ is the corresponding eigenvalue (characteristic speed).
+ *
+ * \note The indices $b$ and $c$ are not tensorial. They simply label the rows
+ * and columns of the characteristic matrix. We make the conventions presented
+ * above to clearly distinguish which indices (first or second) get contracted
+ * with which eigenvectors (left or right).
+ */
+template <size_t ThermodynamicDim>
+void flux_jacobian_hydro(
+    gsl::not_null<tnsr::iJ<DataVector, 6>*> characteristic_matrix,
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+
+}  // namespace detail
+
+/**
+ * \brief Compute a numerical eigensystem (eigenvalues and left/right
+ * eigenvectors) for a given characteristic matrix.
+ *
+ * \note Currently, this function only supports building the eigensystem for
+ * relativistic hydrodynamics (no magnetic field) with composition dependence
+ * (electron fraction).
+ *
+ * \see `grmhd::ValenciaDivClean::detail::flux_jacobian_hydro` for details on
+ * how we choose our indices for the left/right eigenvectors.
+ */
+template <size_t ThermodynamicDim>
+void numerical_eigensystem(
+    gsl::not_null<std::array<Scalar<DataVector>, 6>*> all_eigenvalues,
+    gsl::not_null<std::array<tnsr::i<DataVector, 6>, 6>*>
+        all_right_eigenvectors,
+    gsl::not_null<std::array<tnsr::I<DataVector, 6>, 6>*> all_left_eigenvectors,
+    /* primitive variables */
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& electron_fraction,
+    /* other helpful quantities */
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
 
 namespace Tags {
 /// \brief Compute the characteristic speeds for the Valencia formulation of
