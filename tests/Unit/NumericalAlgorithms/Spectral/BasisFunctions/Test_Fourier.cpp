@@ -10,6 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/ApplyMatrix.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/FourierTestFunctions.hpp"
 #include "NumericalAlgorithms/Spectral/Basis.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionNormalizationSquare.hpp"
@@ -17,11 +18,13 @@
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
+#include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 
 namespace Spectral {
 namespace {
@@ -108,14 +111,15 @@ void test_derivative(const DataVector& u, const Matrix& m,
   CHECK_ITERABLE_CUSTOM_APPROX(du, expected_du, custom_approx);
 }
 
-void test_interpolation(const DataVector& u, const double phi_target,
-                        const DataVector& interp_weights,
+template <typename T>
+void test_interpolation(const DataVector& u, const T& target_points,
+                        const Matrix& m,
                         const FourierTestFunctions::ProductOfPolynomials& f) {
   const auto custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
-  for (size_t i = 0; i < 5; ++i) {
-    const double u_target =
-        ddot_(u.size(), interp_weights.data(), 1, u.data(), 1);
-    CHECK(u_target == custom_approx(f(phi_target)));
+  const DataVector u_target = apply_matrix(m, u);
+  for (size_t i = 0; i < get_size(target_points); ++i) {
+    CHECK(get_element(u_target, i) ==
+          custom_approx(f(get_element(target_points, i))));
   }
 }
 
@@ -137,6 +141,8 @@ void test() {
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> phi_distribution(0.0, 2.0 * M_PI);
   const double phi_target = phi_distribution(generator);
+  const auto target_points = make_with_random_values<DataVector>(
+      make_not_null(&generator), make_not_null(&phi_distribution), 5_st);
   CAPTURE(phi_target);
   for (size_t num_points = 1; num_points < 65; ++num_points) {
     CAPTURE(num_points);
@@ -144,8 +150,10 @@ void test() {
     const Matrix dm = Fourier::differentiation_matrix(num_points);
     const DataVector integration_weights =
         Fourier::quadrature_weights(num_points);
-    const DataVector interp_weights =
-        Fourier::interpolation_weights(num_points, phi_target);
+    const Matrix interp_matrix =
+        interpolation_matrix<basis, quadrature>(num_points, phi_target);
+    const Matrix interp_matrix_dv =
+        interpolation_matrix<basis, quadrature>(num_points, target_points);
     const Matrix& m_to_n = modal_to_nodal_matrix<basis, quadrature>(num_points);
     const Matrix& n_to_m = nodal_to_modal_matrix<basis, quadrature>(num_points);
     const size_t k_max = num_points / 2;
@@ -158,7 +166,8 @@ void test() {
         const DataVector u = f(phi);
         CAPTURE(u);
         test_definite_integral(u, integration_weights, f);
-        test_interpolation(u, phi_target, interp_weights, f);
+        test_interpolation(u, phi_target, interp_matrix, f);
+        test_interpolation(u, target_points, interp_matrix_dv, f);
         test_derivative(u, dm, f, phi);
         test_transforms(u, m_to_n, n_to_m, f);
       }
