@@ -99,7 +99,7 @@ struct Dependency : db::SimpleTag {
  * \details The value of this tag is `std::nullopt` if the current resolution L
  * isn't set.
  */
- struct CurrentResolutionL : db::SimpleTag {
+struct CurrentResolutionL : db::SimpleTag {
   using type = std::optional<size_t>;
 };
 
