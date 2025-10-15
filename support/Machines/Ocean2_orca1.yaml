@@ -1,0 +1,15 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Machine:
+  Name: Ocean2_orca1
+  Description: |
+    Orca-1 Partition on the Ocean2 Supercomputer at Cal State Fullerton hosted
+    by Geoffrey Lovelace
+    More information:
+    Contact Geoffrey Lovelace for more information.
+  DefaultTasksPerNode: 1
+  DefaultProcsPerTasks: 20
+  DefaultQueue: "orca-1"
+  DefaultTimeLimit: "01-00:00:00"
+  LaunchCommandSingleNode: []
