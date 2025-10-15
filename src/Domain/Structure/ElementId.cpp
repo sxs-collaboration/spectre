@@ -450,6 +450,9 @@ bool operator<(const ElementId<VolumeDim>& lhs,
 
 template <size_t VolumeDim>
 bool overlapping(const ElementId<VolumeDim>& a, const ElementId<VolumeDim>& b) {
+  if (a == b) {
+    return true;
+  }
   if (a.block_id() != b.block_id()) {
     return false;
   }
