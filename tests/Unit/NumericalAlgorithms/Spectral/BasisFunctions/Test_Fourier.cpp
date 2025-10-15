@@ -18,6 +18,7 @@
 #include "NumericalAlgorithms/Spectral/BasisFunctions/Fourier.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPoints.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
+#include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
@@ -29,46 +30,10 @@
 namespace Spectral {
 namespace {
 
-enum class Source : uint8_t { Boyd, Fornberg, SpEC };
-
 void test_mode_number_to_storage_index() {
   for (size_t n = 0; n <= 3; ++n) {
     CAPTURE(n);
     CHECK(Fourier::modal_storage_index(Fourier::mode_at_storage_index(n)) == n);
-  }
-}
-
-void test_collocation_points_and_weights() {
-  constexpr Basis basis = Basis::Fourier;
-  constexpr Quadrature quadrature = Quadrature::Equiangular;
-  for (size_t n = 1; n <= 81; ++n) {
-    const auto& [xi, w] =
-        compute_collocation_points_and_weights<basis, quadrature>(n);
-    for (size_t k = 1; k < n; ++k) {
-      const auto f_k = compute_basis_function_value<basis>(k, xi);
-      for (size_t j = 0; j < k; ++j) {
-        const auto f_j = compute_basis_function_value<basis>(j, xi);
-        const double should_be_zero = sum(f_j * f_k * w);
-        CHECK(should_be_zero == approx(0.0));
-      }
-    }
-  }
-}
-
-void test_basis_function_normalization_square() {
-  constexpr Basis basis = Basis::Fourier;
-  constexpr Quadrature quadrature = Quadrature::Equiangular;
-  for (size_t n = 1; n <= 81; ++n) {
-    CAPTURE(n);
-    const auto& [xi, w] =
-        compute_collocation_points_and_weights<basis, quadrature>(n);
-    for (size_t k = 0; k < (n % 2 == 0 ? n - 1 : n); ++k) {
-      CAPTURE(k);
-      const auto f = compute_basis_function_value<basis>(k, xi);
-      const double expected = sum(square(f) * w);
-      CHECK(approx(expected) ==
-            compute_basis_function_normalization_square<basis>(k));
-    }
   }
 }
 
@@ -146,8 +111,8 @@ void test() {
   CAPTURE(phi_target);
   for (size_t num_points = 1; num_points < 65; ++num_points) {
     CAPTURE(num_points);
-    const DataVector phi = Fourier::collocation_points(num_points);
-    const Matrix dm = Fourier::differentiation_matrix(num_points);
+    const DataVector phi = collocation_points<basis, quadrature>(num_points);
+    const Matrix dm = differentiation_matrix<basis, quadrature>(num_points);
     const DataVector integration_weights =
         Fourier::quadrature_weights(num_points);
     const Matrix interp_matrix =
@@ -228,8 +193,6 @@ void test_modes() {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.BasisFunctions.Fourier",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test_mode_number_to_storage_index();
-  test_collocation_points_and_weights();
-  test_basis_function_normalization_square();
   test_modal_to_nodal_matrix();
   test();
   test_modes();

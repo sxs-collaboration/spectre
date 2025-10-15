@@ -12,7 +12,9 @@
 #include "NumericalAlgorithms/Spectral/BasisFunctionNormalizationSquare.hpp"
 #include "NumericalAlgorithms/Spectral/BasisFunctionValue.hpp"
 #include "NumericalAlgorithms/Spectral/CollocationPointsAndWeights.hpp"
+#include "NumericalAlgorithms/Spectral/DifferentiationMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/InterpolationMatrix.hpp"
+#include "NumericalAlgorithms/Spectral/PrecomputedSpectralQuantity.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -138,6 +140,8 @@ Matrix Fourier::interpolation_matrix(const size_t num_points,
   return result;
 }
 
+// Specializations of function templates defined in the Spectral directory
+
 template <>
 DataVector compute_basis_function_value<Basis::Fourier>(const size_t k,
                                                         const DataVector& x) {
@@ -163,6 +167,31 @@ compute_collocation_points_and_weights<Basis::Fourier, Quadrature::Equiangular>(
     const size_t num_points) {
   return std::make_pair(Fourier::collocation_points(num_points),
                         Fourier::quadrature_weights(num_points));
+}
+
+namespace {
+template <Basis BasisType, Quadrature QuadratureType>
+struct DifferentiationMatrixGenerator {
+  Matrix operator()(size_t num_points) const;
+};
+
+template <>
+Matrix DifferentiationMatrixGenerator<Basis::Fourier, Quadrature::Equiangular>::
+operator()(const size_t num_points) const {
+  return Fourier::differentiation_matrix(num_points);
+}
+}  // namespace
+
+PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
+                              DifferentiationMatrixGenerator)
+
+template const Matrix& differentiation_matrix<
+    Basis::Fourier, Quadrature::Equiangular>(const size_t num_points);
+
+template <>
+Matrix interpolation_matrix<Basis::Fourier, Quadrature::Equiangular>(
+    const size_t num_points, const DataVector& target_points) {
+  return Fourier::interpolation_matrix(num_points, target_points);
 }
 
 template <>
