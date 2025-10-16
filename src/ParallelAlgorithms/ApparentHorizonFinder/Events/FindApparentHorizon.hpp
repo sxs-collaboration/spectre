@@ -78,7 +78,7 @@ class FindApparentHorizon : public Event {
                   const tnsr::iaa<DataVector, 3>& phi,
                   const tnsr::ijaa<DataVector, 3>& deriv_phi,
                   Parallel::GlobalCache<Metavariables>& cache,
-                  const ElementId<3>& array_index,
+                  const ElementId<3>& element_id,
                   const ParallelComponent* const /*meta*/,
                   const ObservationValue& /*observation_value*/) const {
     const auto& blocks_to_interpolate =
@@ -89,7 +89,7 @@ class FindApparentHorizon : public Event {
         blocks_to_interpolate.at(name_);
     const auto& domain = Parallel::get<domain::Tags::Domain<3>>(cache);
     const auto& blocks = domain.blocks();
-    const auto& block = blocks[array_index.block_id()];
+    const auto& block = blocks[element_id.block_id()];
     const auto& block_name = block.name();
 
     // Only send data if this target needs this blocks data
@@ -110,7 +110,7 @@ class FindApparentHorizon : public Event {
             Parallel::get<domain::Tags::FunctionsOfTime>(cache);
         ah::compute_vars_to_interpolate_to_target(
             make_not_null(&vars_to_interpolate_to_target), spacetime_metric, pi,
-            phi, deriv_phi, time, domain, mesh, array_index, functions_of_time);
+            phi, deriv_phi, time, domain, mesh, element_id, functions_of_time);
       } else {
         ERROR(
             "Block is time-dependent but FunctionsOfTime are not available "
@@ -119,14 +119,14 @@ class FindApparentHorizon : public Event {
     } else {
       ah::compute_vars_to_interpolate_to_target(
           make_not_null(&vars_to_interpolate_to_target), spacetime_metric, pi,
-          phi, deriv_phi, time, domain, mesh, array_index, {});
+          phi, deriv_phi, time, domain, mesh, element_id, {});
     }
 
     auto& horizon_finder_proxy = Parallel::get_parallel_component<
         ah::Component<Metavariables, HorizonMetavars>>(cache);
 
     Parallel::simple_action<ah::FindApparentHorizon<HorizonMetavars>>(
-        horizon_finder_proxy, time, array_index, mesh,
+        horizon_finder_proxy, time, element_id, mesh,
         std::move(vars_to_interpolate_to_target), dependency_);
   }
 

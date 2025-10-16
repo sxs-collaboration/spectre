@@ -206,7 +206,6 @@ void common_horizon_event() {
   ::domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
   const ElementId<metavars::volume_dim> element_id(0);
-  const ElementId<metavars::volume_dim> array_index(element_id);
 
   using obs_component = MockObserver<metavars>;
   using interp_component = MockInterpolator<metavars>;
@@ -231,7 +230,7 @@ void common_horizon_event() {
   ActionTesting::emplace_component<interp_target_component>(
       make_not_null(&runner), 0);
   ActionTesting::emplace_component<elem_component>(make_not_null(&runner),
-                                                   array_index);
+                                                   element_id);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const auto check_results = [&runner,
@@ -255,7 +254,7 @@ void common_horizon_event() {
   const double observation_time = 2.0;
   const Variables<metavars::interpolator_source_vars> vars(
       mesh.number_of_grid_points(), 1.0);
-  auto& cache = ActionTesting::cache<elem_component>(runner, array_index);
+  auto& cache = ActionTesting::cache<elem_component>(runner, element_id);
 
   const LinkedMessageId<double> temporal_id{observation_time, std::nullopt};
   const ::Event::ObservationValue observation_value{"FindCommonHorizon",
@@ -287,7 +286,7 @@ void common_horizon_event() {
                                               {"Pi"}};
 
   CHECK(find_common_horizon.needs_evolved_variables());
-  CHECK(find_common_horizon.is_ready(cache, 0,
+  CHECK(find_common_horizon.is_ready(cache, element_id,
                                      std::add_pointer_t<elem_component>{}));
 
   // Only compute tags for cache items necessary for observation box since this
@@ -296,7 +295,7 @@ void common_horizon_event() {
       make_observation_box<tmpl::list<Parallel::Tags::FromGlobalCache<
           ::domain::Tags::Domain<metavars::volume_dim>, metavars>>>(
           make_not_null(&box));
-  find_common_horizon(obs_box, mesh, cache, array_index,
+  find_common_horizon(obs_box, mesh, cache, element_id,
                       std::add_pointer_t<elem_component>{}, observation_value);
 
   // Since this event is a combination of two events, and those two events are
@@ -380,7 +379,6 @@ void common_horizon_event() {
   ::domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
   const ElementId<metavars::volume_dim> element_id(0);
-  const ElementId<metavars::volume_dim> array_index(element_id);
 
   using obs_component = MockObserver<metavars>;
   using horizon_component = MockHorizonComponent<metavars>;
@@ -400,7 +398,7 @@ void common_horizon_event() {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);
   ActionTesting::emplace_component<elem_component>(make_not_null(&runner),
-                                                   array_index);
+                                                   element_id);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const auto check_results = [&runner,
@@ -437,7 +435,7 @@ void common_horizon_event() {
     spacetime_metric.get(spatial_index + 1, spatial_index + 1) =
         DataVector(mesh.number_of_grid_points(), 1.0);
   }
-  auto& cache = ActionTesting::cache<elem_component>(runner, array_index);
+  auto& cache = ActionTesting::cache<elem_component>(runner, element_id);
 
   const LinkedMessageId<double> temporal_id{observation_time, std::nullopt};
   const ::Event::ObservationValue observation_value{"FindCommonHorizon",
@@ -467,7 +465,7 @@ void common_horizon_event() {
                                               {"Pi"}};
 
   CHECK(find_common_horizon.needs_evolved_variables());
-  CHECK(find_common_horizon.is_ready(cache, 0,
+  CHECK(find_common_horizon.is_ready(cache, element_id,
                                      std::add_pointer_t<elem_component>{}));
 
   // Only compute tags for cache items necessary for observation box since this
@@ -476,7 +474,7 @@ void common_horizon_event() {
       make_observation_box<tmpl::list<Parallel::Tags::FromGlobalCache<
           ::domain::Tags::Domain<metavars::volume_dim>, metavars>>>(
           make_not_null(&box));
-  find_common_horizon(obs_box, mesh, cache, array_index,
+  find_common_horizon(obs_box, mesh, cache, element_id,
                       std::add_pointer_t<elem_component>{}, observation_value);
 
   // Since this event is a combination of two events, and those two events are
