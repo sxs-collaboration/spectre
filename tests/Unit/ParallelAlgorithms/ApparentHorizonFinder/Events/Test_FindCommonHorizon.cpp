@@ -205,7 +205,8 @@ struct MockMetavariables {
 void common_horizon_event() {
   ::domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
-  const ElementId<metavars::volume_dim> element_id(0);
+  constexpr size_t Dim = metavars::volume_dim;
+  const ElementId<Dim> element_id(0);
 
   using obs_component = MockObserver<metavars>;
   using interp_component = MockInterpolator<metavars>;
@@ -249,8 +250,8 @@ void common_horizon_event() {
   // No events queued yet
   check_results(0);
 
-  const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto);
+  const Mesh<Dim> mesh(5, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto);
   const double observation_time = 2.0;
   const Variables<metavars::interpolator_source_vars> vars(
       mesh.number_of_grid_points(), 1.0);
@@ -262,20 +263,20 @@ void common_horizon_event() {
 
   // Actual coords don't matter
   const auto logical_coords = logical_coordinates(mesh);
-  auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavars>,
-      Parallel::Tags::GlobalCache<metavars>,
-      metavars::InterpolationTargetA::temporal_id, ::Tags::Time,
-      ::Events::Tags::ObserverMesh<metavars::volume_dim>,
-      ::domain::Tags::Coordinates<3, ::Frame::Inertial>,
-      ::Tags::Variables<typename decltype(vars)::tags_list>>>(
+  auto box = db::create<
+      db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
+                        Parallel::Tags::GlobalCache<metavars>,
+                        metavars::InterpolationTargetA::temporal_id,
+                        ::Tags::Time, ::Events::Tags::ObserverMesh<Dim>,
+                        ::domain::Tags::Coordinates<3, ::Frame::Inertial>,
+                        ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       metavars{}, &cache, temporal_id, observation_time, mesh,
       tnsr::I<DataVector, 3, ::Frame::Inertial>{
           std::array{logical_coords[0], logical_coords[1], logical_coords[2]}},
       vars);
 
   using FindCommonHorizon = intrp::Events::FindCommonHorizon<
-      metavars::volume_dim, typename metavars::InterpolationTargetA,
+      Dim, typename metavars::InterpolationTargetA,
       typename metavars::interpolator_source_vars,
       tmpl::push_back<typename metavars::interpolator_source_vars,
                       ::domain::Tags::Coordinates<3, ::Frame::Inertial>>>;
@@ -291,10 +292,9 @@ void common_horizon_event() {
 
   // Only compute tags for cache items necessary for observation box since this
   // test just puts the tags in the regular box
-  auto obs_box =
-      make_observation_box<tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::domain::Tags::Domain<metavars::volume_dim>, metavars>>>(
-          make_not_null(&box));
+  auto obs_box = make_observation_box<tmpl::list<
+      Parallel::Tags::FromGlobalCache<::domain::Tags::Domain<Dim>, metavars>>>(
+      make_not_null(&box));
   find_common_horizon(obs_box, mesh, cache, element_id,
                       std::add_pointer_t<elem_component>{}, observation_value);
 
@@ -378,7 +378,8 @@ void common_horizon_event() {
   (void)MockHorizonMetavars::destination;
   ::domain::creators::register_derived_with_charm();
   using metavars = MockMetavariables;
-  const ElementId<metavars::volume_dim> element_id(0);
+  constexpr size_t Dim = metavars::volume_dim;
+  const ElementId<Dim> element_id(0);
 
   using obs_component = MockObserver<metavars>;
   using horizon_component = MockHorizonComponent<metavars>;
@@ -414,8 +415,8 @@ void common_horizon_event() {
   // No events queued yet
   check_results(0);
 
-  const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto);
+  const Mesh<Dim> mesh(5, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto);
   const double observation_time = 2.0;
 
   // Formerly, every point for every component of every tensor in vars were set
@@ -425,13 +426,11 @@ void common_horizon_event() {
   // Since pi and phi are zero for Minkowski, it's actually less code to just
   // manually set spacetime metric here than to get the analytic solution and
   // call all the functions to assemble spacetime_metric, pi, phi.
-  Variables<ah::source_vars<metavars::volume_dim>> vars(
-      mesh.number_of_grid_points(), 0.0);
+  Variables<ah::source_vars<Dim>> vars(mesh.number_of_grid_points(), 0.0);
   auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<DataVector, metavars::volume_dim>>(vars);
+      get<gr::Tags::SpacetimeMetric<DataVector, Dim>>(vars);
   get<0, 0>(spacetime_metric) = DataVector(mesh.number_of_grid_points(), -1.0);
-  for (size_t spatial_index = 0; spatial_index < metavars::volume_dim;
-       ++spatial_index) {
+  for (size_t spatial_index = 0; spatial_index < Dim; ++spatial_index) {
     spacetime_metric.get(spatial_index + 1, spatial_index + 1) =
         DataVector(mesh.number_of_grid_points(), 1.0);
   }
@@ -446,7 +445,7 @@ void common_horizon_event() {
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<metavars>,
       Parallel::Tags::GlobalCache<metavars>, MockHorizonMetavars::time_tag,
-      Tags::Time, ::Events::Tags::ObserverMesh<metavars::volume_dim>,
+      Tags::Time, ::Events::Tags::ObserverMesh<Dim>,
       ::domain::Tags::Coordinates<3, ::Frame::Inertial>,
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       metavars{}, &cache, temporal_id, observation_time, mesh,
@@ -456,7 +455,7 @@ void common_horizon_event() {
 
   using FindCommonHorizon = ah::Events::FindCommonHorizon<
       MockHorizonMetavars,
-      tmpl::push_back<ah::source_vars<metavars::volume_dim>,
+      tmpl::push_back<ah::source_vars<Dim>,
                       ::domain::Tags::Coordinates<3, ::Frame::Inertial>>>;
 
   const FindCommonHorizon find_common_horizon{"SubfileName",
@@ -470,10 +469,9 @@ void common_horizon_event() {
 
   // Only compute tags for cache items necessary for observation box since this
   // test just puts the tags in the regular box
-  auto obs_box =
-      make_observation_box<tmpl::list<Parallel::Tags::FromGlobalCache<
-          ::domain::Tags::Domain<metavars::volume_dim>, metavars>>>(
-          make_not_null(&box));
+  auto obs_box = make_observation_box<tmpl::list<
+      Parallel::Tags::FromGlobalCache<::domain::Tags::Domain<Dim>, metavars>>>(
+      make_not_null(&box));
   find_common_horizon(obs_box, mesh, cache, element_id,
                       std::add_pointer_t<elem_component>{}, observation_value);
 
