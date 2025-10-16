@@ -1007,12 +1007,10 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       matrix:
         include:
           # The number of cores is given at:
-          # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-          - arch: x86
-            macos-version: 13  # Intel
-            NUM_CORES: 4
-          - arch: arm64
-            macos-version: 14  # Apple Silicon
+          # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
+          - macos-version: 14
+            NUM_CORES: 3
+          - macos-version: 26
             NUM_CORES: 3
     runs-on: macos-${{ matrix.macos-version }}
     env:
