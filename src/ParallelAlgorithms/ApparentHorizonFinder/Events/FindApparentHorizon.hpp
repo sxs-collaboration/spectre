@@ -83,10 +83,10 @@ class FindApparentHorizon : public Event {
                   const ObservationValue& /*observation_value*/) const {
     const auto& blocks_to_interpolate =
         Parallel::get<ah::Tags::BlocksForHorizonFind>(cache);
-    ASSERT(blocks_to_interpolate.contains(name()),
-           "Blocks to interpolate doesn't contain target " << name());
+    ASSERT(blocks_to_interpolate.contains(name_),
+           "Blocks to interpolate doesn't contain target " << name_);
     const auto& blocks_to_interpolate_for_this_target =
-        blocks_to_interpolate.at(name());
+        blocks_to_interpolate.at(name_);
     const auto& domain = Parallel::get<domain::Tags::Domain<3>>(cache);
     const auto& blocks = domain.blocks();
     const auto& block = blocks[array_index.block_id()];
@@ -148,6 +148,8 @@ class FindApparentHorizon : public Event {
 
  private:
   std::optional<std::string> dependency_;
+  // Evaluate the static name() function only once to avoid repeated allocations
+  std::string name_ = name();
 };
 
 /// \cond

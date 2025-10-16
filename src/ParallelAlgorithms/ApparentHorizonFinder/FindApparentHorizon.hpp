@@ -397,7 +397,7 @@ struct FindApparentHorizon {
             Parallel::printf(
                 "%s: t=%.6g: L=%zu: its=%zu: %.1e<R<%.0e, |R|=%.1g, "
                 "|R_grid|=%.1g, %.4g<r<%.4g\n",
-                pretty_type::name<HorizonMetavars>(), current_time.id,
+                name, current_time.id,
                 all_storage.at(current_time)
                     .current_iteration.strahlkorper.l_max(),
                 info.iteration, info.min_residual, info.max_residual,
