@@ -1039,6 +1039,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       matrix:
         os:
           - macos-15
+          - macos-26
     runs-on: ${{ matrix.os }}
     env:
       # We install some low-level dependencies with Homebrew. We could install
