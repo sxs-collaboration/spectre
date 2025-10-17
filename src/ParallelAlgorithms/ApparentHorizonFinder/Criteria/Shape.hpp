@@ -16,6 +16,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -32,7 +33,10 @@ namespace ah::Criteria {
  * - MaxTruncationError: a maximum truncation error $\mathcal{T}_{\rm max}$
  * - MaxPileUpModes: a maximum number of pile up modes $\mathcal{P}_{\rm max}$
  * - MinResolutionL: a minimum resolution $L_{\rm min}$
- * - MaxResolutionL: a maximum resolution $L_{\rm max}$
+ *
+ * The maximum resolution $L_{\rm max}$ is supplied by the global cache entry
+ * `ah::Tags::LMax`. The value returned for $L_{\rm new}$ is
+ * then determined as follows:
  * The value returned for $L_{\rm new}$ is then determined as follows:
  * - If $L > L_{\rm min}$ and $\mathcal{T} < \mathcal{T}_{\rm min}$, then
  * $L_{\rm new} = L - 1$
@@ -68,15 +72,8 @@ class Shape : public Criterion {
     // Power montior requires at least L=4, so don't allow L below that
     static type lower_bound() { return 4; }
   };
-  struct MaxResolutionL {
-    using type = size_t;
-    static constexpr Options::String help = {"The maximum resolution."};
-    // Power monitor requires at least L=4, so don't allow L below that
-    static type lower_bound() { return 4; }
-  };
-
   using options = tmpl::list<MinTruncationError, MaxTruncationError,
-                             MaxPileUpModes, MinResolutionL, MaxResolutionL>;
+                             MaxPileUpModes, MinResolutionL>;
   static constexpr Options::String help = {
       "Use Strahlkorper truncation error, number of pile up modes, and "
       "resolution to suggest a new resolution."};
@@ -84,7 +81,7 @@ class Shape : public Criterion {
   Shape() = default;
   Shape(double min_truncation_error, double max_truncation_error,
         size_t max_pile_up_modes, size_t min_resolution_l,
-        size_t max_resolution_l, const Options::Context& context = {});
+        const Options::Context& context = {});
 
   /// \cond
   explicit Shape(CkMigrateMessage* msg);
@@ -98,7 +95,7 @@ class Shape : public Criterion {
   using compute_tags_for_observation_box = tmpl::list<>;
 
   template <typename Metavariables, typename Frame>
-  size_t operator()(const Parallel::GlobalCache<Metavariables>& /*cache*/,
+  size_t operator()(const Parallel::GlobalCache<Metavariables>& cache,
                     const ylm::Strahlkorper<Frame>& strahlkorper,
                     const FastFlow::IterInfo& /*info*/) const;
 
@@ -111,22 +108,25 @@ class Shape : public Criterion {
   double max_truncation_error_{std::numeric_limits<double>::signaling_NaN()};
   size_t max_pile_up_modes_{};
   size_t min_resolution_l_{};
-  size_t max_resolution_l_{};
 };
 
 // Out-of-line definition
 /// \cond
 template <typename Metavariables, typename Frame>
-size_t Shape::operator()(const Parallel::GlobalCache<Metavariables>& /*cache*/,
+size_t Shape::operator()(const Parallel::GlobalCache<Metavariables>& cache,
                          const ylm::Strahlkorper<Frame>& strahlkorper,
                          const FastFlow::IterInfo& /*info*/) const {
-  if (UNLIKELY(min_resolution_l_ == max_resolution_l_)) {
+  const auto& max_resolution_l = Parallel::get<ah::Tags::LMax>(cache);
+  ASSERT(min_resolution_l_ <= max_resolution_l,
+         "MinResolutionL (" << min_resolution_l_ << ") must not exceed LMax ("
+                            << max_resolution_l << ").");
+  if (UNLIKELY(min_resolution_l_ == max_resolution_l)) {
     ASSERT(min_resolution_l_ == strahlkorper.l_max(),
-           "If MinResolutionL == MaxResolutionL, strahlkorper resolution must "
-           "also equal MinResolution L, but here MinResolutionL is "
-               << min_resolution_l_ << ", MaxResolutionL is "
-               << max_resolution_l_ << ", and the current resolution is "
-               << strahlkorper.l_max());
+           "If MinResolutionL == LMax, strahlkorper "
+           "resolution must also equal MinResolutionL, but here MinResolutionL "
+           "is "
+               << min_resolution_l_ << ", LMax is " << max_resolution_l
+               << ", and the current resolution is " << strahlkorper.l_max());
     return strahlkorper.l_max();
   }
 
@@ -140,7 +140,7 @@ size_t Shape::operator()(const Parallel::GlobalCache<Metavariables>& /*cache*/,
       truncation_error < min_truncation_error_ and strahlkorper.l_max() > 0) {
     return strahlkorper.l_max() - 1;
   }
-  if (strahlkorper.l_max() < max_resolution_l_ and
+  if (strahlkorper.l_max() < max_resolution_l and
       truncation_error > max_truncation_error_ and
       pile_up_modes <= max_pile_up_modes_) {
     return strahlkorper.l_max() + 1;

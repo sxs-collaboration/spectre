@@ -234,6 +234,7 @@ EventsAndTriggersAtSlabs:
       - Completion
 
 ApparentHorizons:
+  LMax: 4
   AhA:
     InitialGuess:
       LMax: 4

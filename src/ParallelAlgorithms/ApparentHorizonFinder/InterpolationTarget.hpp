@@ -28,6 +28,7 @@
 #include "Options/String.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/OptionTags.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
@@ -138,10 +139,6 @@ bool operator!=(const ApparentHorizon<Frame>& lhs,
 }  // namespace OptionHolders
 
 namespace OptionTags {
-struct ApparentHorizons {
-  static constexpr Options::String help{"Options for apparent horizon finders"};
-};
-
 template <typename InterpolationTargetTag, typename Frame>
 struct ApparentHorizon {
   using type = OptionHolders::ApparentHorizon<Frame>;
@@ -150,7 +147,7 @@ struct ApparentHorizon {
   static std::string name() {
     return pretty_type::name<InterpolationTargetTag>();
   }
-  using group = ApparentHorizons;
+  using group = ApparentHorizonGroup;
 };
 }  // namespace OptionTags
 

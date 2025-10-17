@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <memory>
@@ -94,7 +95,7 @@ struct TestHorizonFindFailureCallback
   }
 };
 
-size_t callback_count = 0;  // NOLINT
+size_t callback_count = 0;                   // NOLINT
 std::vector<size_t> ah_found_resolutions{};  // NOLINT
 template <typename HorizonMetavars, size_t Index>
 struct TestHorizonFindCallback : tt::ConformsTo<ah::protocols::Callback> {
@@ -161,7 +162,8 @@ struct MockMetavariables {
       tmpl::list<MockComponent<MockMetavariables, HorizonMetavars<Fr, Dest>>>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<3>,
-                 ah::Tags::ApparentHorizonOptions<HorizonMetavars<Fr, Dest>>>;
+                 ah::Tags::ApparentHorizonOptions<HorizonMetavars<Fr, Dest>>,
+                 ah::Tags::LMax, ah::Tags::BlocksForHorizonFind>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 
@@ -262,9 +264,12 @@ void test_apparent_horizon(
                                      std::move(blocks_to_use));
   }
 
+  const size_t max_resolution_and_output_l =
+      std::max(l_max, static_cast<size_t>(12));
+
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator->create_domain(), std::move(apparent_horizon_opts),
-       blocks_for_interpolation},
+       max_resolution_and_output_l, blocks_for_interpolation},
       {domain_creator->functions_of_time(),
        ah::Storage::LockedPreviousSurface<Fr>{}}};
 
@@ -478,8 +483,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizon",
   // Adaptivity tests
   // First, choose strict critera so the resolution increases
   // by one each time.
-  const ah::Criteria::Residual residual_criterion{1.e-7, 9.e-5, 4, 12};
-  const ah::Criteria::Shape shape_criterion{1.e-7, 9.e-5, 20, 4, 12};
+  const ah::Criteria::Residual residual_criterion{1.e-7, 9.e-5, 4};
+  const ah::Criteria::Shape shape_criterion{1.e-7, 9.e-5, 20, 4};
   std::vector<std::unique_ptr<ah::Criterion>> criteria{};
   criteria.emplace_back(
       std::make_unique<ah::Criteria::Residual>(residual_criterion));
@@ -497,8 +502,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizon",
 
   // Second, choose loose critera so the resolution increases
   // by one each time
-  const ah::Criteria::Residual residual_criterion_loose{1.0e8, 1.0e12, 4, 12};
-  const ah::Criteria::Shape shape_criterion_loose{1.0e8, 1.0e12, 20, 4, 12};
+  const ah::Criteria::Residual residual_criterion_loose{1.0e8, 1.0e12, 4};
+  const ah::Criteria::Shape shape_criterion_loose{1.0e8, 1.0e12, 20, 4};
   criteria.clear();
   criteria.emplace_back(
       std::make_unique<ah::Criteria::Residual>(residual_criterion_loose));

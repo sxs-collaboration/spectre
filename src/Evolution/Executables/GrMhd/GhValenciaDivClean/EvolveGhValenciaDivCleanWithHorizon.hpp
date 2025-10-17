@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/ComputeHorizonVolumeQuantities.tpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
@@ -124,7 +125,8 @@ struct EvolutionMetavars
       typename base::equation_of_state_tag,
       gh::Tags::DampingFunctionGamma0<volume_dim, Frame::Grid>,
       gh::Tags::DampingFunctionGamma1<volume_dim, Frame::Grid>,
-      gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>>>;
+      gh::Tags::DampingFunctionGamma2<volume_dim, Frame::Grid>,
+      ah::Tags::LMax>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;

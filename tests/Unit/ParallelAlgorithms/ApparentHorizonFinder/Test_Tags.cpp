@@ -71,4 +71,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Tags",
   TestHelpers::db::test_simple_tag<ah::Tags::FailedInterpolationIterations>(
       "FailedInterpolationIterations");
   TestHelpers::db::test_simple_tag<ah::Tags::ObserveCenters>("ObserveCenters");
+  TestHelpers::db::test_simple_tag<ah::Tags::LMax>("LMax");
 }
