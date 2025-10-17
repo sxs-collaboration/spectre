@@ -253,28 +253,28 @@ struct get_primitive_tags_for_face {
  * `evolution::BoundaryCorrection`.  Each concrete boundary correction
  * must specify:
  *
- * - type alias template `dg_package_field_tags`. These are what will be
- *   returned by `gsl::not_null` from the `dg_package_data` member function.
+ * - type alias `dg_package_field_tags`. These are what will be returned by
+ *   `gsl::not_null` from the `dg_package_data` member function.
  *
- * - type alias template `dg_package_temporary_tags`. These are temporary tags
+ * - type alias `dg_package_data_temporary_tags`. These are temporary tags
  *   that are projected to the face and then passed to the `dg_package_data`
  *   function.
  *
- * - type alias template `dg_package_primitive_tags`. These are the primitive
+ * - type alias `dg_package_data_primitive_tags`. These are the primitive
  *   variables (if any) that are projected to the face and then passed to
  *   `dg_package_data`.
  *
- * - type alias template `dg_package_volume_tags`. These are tags that are not
+ * - type alias `dg_package_data_volume_tags`. These are tags that are not
  *   projected to the interface and are retrieved directly from the `DataBox`.
- *   The equation of state for hydrodynamics systems is an example of what would
- *   be a "volume tag".
+ *   The equation of state for hydrodynamics systems is an example of what
+ *   would be a "volume tag".
  *
  * A `static constexpr bool need_normal_vector` must be specified. If `true`
  * then the normal vector is computed from the normal covector. This is
  * currently not implemented.
  *
  * The `dg_package_data` function takes as arguments `gsl::not_null` of the
- * `dg_package_data_field_tags`, then the projected evolved variables, the
+ * `dg_package_field_tags`, then the projected evolved variables, the
  * projected fluxes, the projected temporaries, the projected primitives, the
  * unit normal covector, mesh velocity, normal dotted into the mesh velocity,
  * the `volume_tags`, and finally the `dg::Formulation`. The `dg_package_data`
