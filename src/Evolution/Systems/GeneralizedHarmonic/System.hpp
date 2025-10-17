@@ -5,7 +5,6 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
@@ -30,7 +29,6 @@ struct System {
   static constexpr bool is_euclidean = false;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag = ::Tags::Variables<
       tmpl::list<gr::Tags::SpacetimeMetric<DataVector, Dim>,

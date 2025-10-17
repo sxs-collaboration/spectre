@@ -8,7 +8,7 @@
 #include <pup.h>
 #include <string>
 
-#include "Evolution/Systems/ScalarWave/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -37,9 +37,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
                     Spectral::Quadrature::Gauss},
       {}, {});
 
-  const auto upwind_penalty = TestHelpers::test_creation<std::unique_ptr<
-      ScalarWave::BoundaryCorrections::BoundaryCorrection<Dim>>>(
-      "UpwindPenalty:");
+  const auto upwind_penalty = TestHelpers::test_factory_creation<
+      evolution::BoundaryCorrection,
+      ScalarWave::BoundaryCorrections::UpwindPenalty<Dim>>("UpwindPenalty:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       ScalarWave::System<Dim>>(

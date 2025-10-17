@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/ForceFree/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -62,7 +62,7 @@ namespace ForceFree::BoundaryCorrections {
  * \f$G - F_\text{int}\f$
  *
  */
-class Rusanov final : public BoundaryCorrection {
+class Rusanov final : public evolution::BoundaryCorrection {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

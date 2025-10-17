@@ -18,6 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -53,6 +54,9 @@ namespace Burgers::subcell {
 struct TimeDerivative {
   template <typename DbTagsList>
   static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+    using metavariables =
+        typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            *box))>;
     ASSERT((db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
                 1, Frame::Grid, Frame::Inertial>>(*box))
                .is_identity(),
@@ -61,8 +65,7 @@ struct TimeDerivative {
 
     const bool element_is_interior = element.external_boundaries().size() == 0;
     constexpr bool subcell_enabled_at_external_boundary =
-        std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
+        metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
 
     ASSERT(element_is_interior or subcell_enabled_at_external_boundary,
            "Subcell time derivative is called at a boundary element while "
@@ -83,9 +86,10 @@ struct TimeDerivative {
         db::get<Burgers::fd::Tags::Reconstructor>(*box);
 
     const auto& boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
+        db::get<evolution::Tags::BoundaryCorrection>(*box);
     using derived_boundary_corrections =
-        typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+        tmpl::at<typename metavariables::factory_creation::factory_classes,
+                 evolution::BoundaryCorrection>;
     // Variables to store the boundary correction terms on FD subinterfaces
     std::array<Variables<evolved_vars_tags>, 1> fd_boundary_corrections{};
 

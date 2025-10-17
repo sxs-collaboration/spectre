@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -75,9 +75,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Rusanov",
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       volume_data, {});
 
-  const auto rusanov = TestHelpers::test_creation<std::unique_ptr<
-      grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
-      "Rusanov:");
+  const auto rusanov = TestHelpers::test_factory_creation<
+      evolution::BoundaryCorrection,
+      grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>("Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<
       system, tmpl::list<ConvertPolytropic>>(

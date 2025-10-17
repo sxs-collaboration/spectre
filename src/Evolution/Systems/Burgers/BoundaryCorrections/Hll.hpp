@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -63,7 +63,7 @@ namespace Burgers::BoundaryCorrections {
  * - Some references use \f$S\f$ instead of \f$\lambda\f$ for the
  * signal/characteristic speeds
  */
-class Hll final : public BoundaryCorrection {
+class Hll final : public evolution::BoundaryCorrection {
  private:
   struct CharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

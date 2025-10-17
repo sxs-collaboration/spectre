@@ -19,7 +19,7 @@ namespace ForceFree::BoundaryCorrections {
 
 Rusanov::Rusanov(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
 
-std::unique_ptr<BoundaryCorrection> Rusanov::get_clone() const {
+std::unique_ptr<evolution::BoundaryCorrection> Rusanov::get_clone() const {
   return std::make_unique<Rusanov>(*this);
 }
 

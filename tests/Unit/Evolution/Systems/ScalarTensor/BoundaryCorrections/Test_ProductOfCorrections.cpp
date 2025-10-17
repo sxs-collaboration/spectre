@@ -10,7 +10,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/ScalarTensor/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/ScalarTensor/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/ScalarTensor/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -236,16 +238,19 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   {
     INFO("Product correction UpwindPenalty and UpwindPenalty");
+    using ProductUpwindPenaltyGhAndUpwindPenaltyScalar =
+        ScalarTensor::BoundaryCorrections::ProductOfCorrections<
+            gh::BoundaryCorrections::UpwindPenalty<3>,
+            CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3>>;
     CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3> scalar_correction{};
     gh::BoundaryCorrections::UpwindPenalty<3> gh_correction{};
-    TestHelpers::test_creation<
-        std::unique_ptr<ScalarTensor::BoundaryCorrections::BoundaryCorrection>>(
+    TestHelpers::test_factory_creation<
+        evolution::BoundaryCorrection,
+        ProductUpwindPenaltyGhAndUpwindPenaltyScalar>(
         "ProductUpwindPenaltyGHAndUpwindPenaltyScalar:\n"
         "  UpwindPenaltyGH:\n"
         "  UpwindPenaltyScalar:");
-    ScalarTensor::BoundaryCorrections::ProductOfCorrections<
-        gh::BoundaryCorrections::UpwindPenalty<3>,
-        CurvedScalarWave::BoundaryCorrections::UpwindPenalty<3>>
+    const ProductUpwindPenaltyGhAndUpwindPenaltyScalar
         product_boundary_correction{gh_correction, scalar_correction};
     for (const auto formulation :
          {dg::Formulation::StrongInertial, dg::Formulation::WeakInertial}) {

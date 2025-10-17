@@ -6,7 +6,6 @@ spectre_target_sources(
   PRIVATE
   Hll.cpp
   Hllc.cpp
-  RegisterDerived.cpp
   Rusanov.cpp
   )
 
@@ -14,10 +13,9 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BoundaryCorrection.hpp
   Factory.hpp
   Hll.hpp
   Hllc.hpp
-  RegisterDerived.hpp
+  NamespaceDocs.hpp
   Rusanov.hpp
   )

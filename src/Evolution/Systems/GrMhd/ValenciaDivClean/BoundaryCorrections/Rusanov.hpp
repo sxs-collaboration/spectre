@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -67,7 +67,7 @@ namespace grmhd::ValenciaDivClean::BoundaryCorrections {
  * fluid part of the system in order to make the flux less dissipative for
  * those variables.
  */
-class Rusanov final : public BoundaryCorrection {
+class Rusanov final : public evolution::BoundaryCorrection {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

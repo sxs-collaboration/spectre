@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -82,9 +82,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts,
                     Spectral::Quadrature::Gauss},
       volume_data, ranges);
 
-  const auto rusanov = TestHelpers::test_creation<std::unique_ptr<
-      NewtonianEuler::BoundaryCorrections::BoundaryCorrection<Dim>>>(
-      "Rusanov:");
+  const auto rusanov = TestHelpers::test_factory_creation<
+      evolution::BoundaryCorrection,
+      NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>("Rusanov:");
 
   helpers::test_boundary_correction_with_python<NewtonianEuler::System<Dim>,
                                                 tmpl::list<ConvertIdeal>>(

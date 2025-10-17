@@ -41,7 +41,8 @@ struct EvolutionMetavars
   static constexpr bool use_dg_element_collection =
       gh_base::use_dg_element_collection;
 
-  using step_actions = typename gh_base::template step_actions<tmpl::list<>>;
+  using step_actions =
+      typename gh_base::template step_actions<EvolutionMetavars, tmpl::list<>>;
 
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,

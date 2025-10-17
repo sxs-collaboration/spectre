@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/ScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -171,7 +171,7 @@ namespace ScalarWave::BoundaryCorrections {
  * \f}
  */
 template <size_t Dim>
-class UpwindPenalty final : public BoundaryCorrection<Dim> {
+class UpwindPenalty final : public evolution::BoundaryCorrection {
  private:
   struct NormalTimesVPlus : db::SimpleTag {
     using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
@@ -206,7 +206,7 @@ class UpwindPenalty final : public BoundaryCorrection<Dim> {
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
+  std::unique_ptr<BoundaryCorrection> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus,

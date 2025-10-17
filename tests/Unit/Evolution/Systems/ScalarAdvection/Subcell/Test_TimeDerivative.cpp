@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/MetavariablesTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
@@ -22,6 +23,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/GhostDataForReconstruction.hpp"
@@ -30,7 +32,6 @@
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarDataHolder.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/ScalarAdvection/FiniteDifference/Reconstructor.hpp"
@@ -42,14 +43,26 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/ScalarAdvection/FiniteDifference/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarAdvection {
 namespace {
+template <size_t Dim>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<evolution::BoundaryCorrection,
+                   BoundaryCorrections::standard_boundary_corrections<Dim>>>;
+  };
+};
+
 template <size_t Dim>
 void test_subcell_timederivative() {
   using evolved_vars_tag = typename System<Dim>::variables_tag;
@@ -109,12 +122,12 @@ void test_subcell_timederivative() {
 
   auto box = db::create<
       db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,
           domain::Tags::Element<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>,
           evolved_vars_tag, dt_variables_tag,
           evolution::dg::subcell::Tags::GhostDataForReconstruction<Dim>,
-          fd::Tags::Reconstructor<Dim>,
-          evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
-          domain::Tags::FunctionsOfTimeInitialize,
+          fd::Tags::Reconstructor<Dim>, evolution::Tags::BoundaryCorrection,
+          ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize,
           domain::Tags::ElementMap<Dim, Frame::Grid>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
@@ -144,13 +157,13 @@ void test_subcell_timederivative() {
                   ::domain::CoordinateMaps::Tags::CoordinateMap<
                       Dim, Frame::Grid, Frame::Inertial>,
                   Dim>>>(
-      element, subcell_mesh, volume_vars_subcell,
+      Metavariables<Dim>{}, element, subcell_mesh, volume_vars_subcell,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       ghost_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection<Dim>>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrectionForTest>()},
       time, clone_unique_ptrs(functions_of_time),
       ElementMap<Dim, Frame::Grid>{

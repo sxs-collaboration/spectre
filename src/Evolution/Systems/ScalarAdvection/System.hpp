@@ -7,7 +7,6 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarAdvection/Characteristics.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Evolution/Systems/ScalarAdvection/TimeDerivativeTerms.hpp"
@@ -32,7 +31,6 @@ struct System {
   static constexpr size_t volume_dim = Dim;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;
   using flux_variables = tmpl::list<Tags::U>;

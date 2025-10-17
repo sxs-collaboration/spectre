@@ -26,7 +26,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
-#include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
@@ -75,10 +74,9 @@ DirectionalIdMap<1, DataVector> NeighborPackagedData::apply(
       db::get<Burgers::fd::Tags::Reconstructor>(box);
 
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<System>>(box);
+      db::get<evolution::Tags::BoundaryCorrection>(box);
   using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
-
+      Burgers::BoundaryCorrections::standard_boundary_corrections;
   // perform reconstruction
   tmpl::for_each<derived_boundary_corrections>([&](auto derived_correction_v) {
     using derived_correction = tmpl::type_from<decltype(derived_correction_v)>;

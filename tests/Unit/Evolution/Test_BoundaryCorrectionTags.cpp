@@ -6,29 +6,14 @@
 #include <memory>
 #include <string>
 
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Options/String.hpp"
 
 namespace {
-struct BoundaryCorrection;
-
-struct BoundaryCorrectionBase {
-  using creatable_classes = tmpl::list<BoundaryCorrection>;
-  BoundaryCorrectionBase() = default;
-  BoundaryCorrectionBase(const BoundaryCorrectionBase&) = default;
-  BoundaryCorrectionBase& operator=(const BoundaryCorrectionBase&) = default;
-  BoundaryCorrectionBase(BoundaryCorrectionBase&&) = default;
-  BoundaryCorrectionBase& operator=(BoundaryCorrectionBase&&) = default;
-  virtual ~BoundaryCorrectionBase() = 0;
-
-  virtual std::unique_ptr<BoundaryCorrectionBase> get_clone() const = 0;
-};
-
-BoundaryCorrectionBase::~BoundaryCorrectionBase() = default;
-
-struct BoundaryCorrection : public BoundaryCorrectionBase {
+struct BoundaryCorrection : public evolution::BoundaryCorrection {
   BoundaryCorrection() = default;
   BoundaryCorrection(const BoundaryCorrection&) = default;
   BoundaryCorrection& operator=(const BoundaryCorrection&) = default;
@@ -39,24 +24,31 @@ struct BoundaryCorrection : public BoundaryCorrectionBase {
   using options = tmpl::list<>;
   static constexpr Options::String help = {"Halp"};
 
-  std::unique_ptr<BoundaryCorrectionBase> get_clone() const override {
+  explicit BoundaryCorrection(CkMigrateMessage* /*unused*/) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(BoundaryCorrection);  // NOLINT
+#pragma GCC diagnostic pop
+
+  std::unique_ptr<evolution::BoundaryCorrection> get_clone() const override {
     return std::make_unique<BoundaryCorrection>(*this);
   }
 };
 
-struct System {
-  using boundary_correction_base = BoundaryCorrectionBase;
-};
+PUP::able::PUP_ID BoundaryCorrection::my_PUP_ID = 0;  // NOLINT
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.BoundaryCorrectionTags",
                   "[Unit][Evolution]") {
-  TestHelpers::db::test_simple_tag<evolution::Tags::BoundaryCorrection<System>>(
+  TestHelpers::db::test_simple_tag<evolution::Tags::BoundaryCorrection>(
       "BoundaryCorrection");
-  const auto boundary_correction = TestHelpers::test_option_tag<
-      evolution::OptionTags::BoundaryCorrection<System>>("BoundaryCorrection");
+  const auto boundary_correction =
+      TestHelpers::test_option_tag_factory_creation<
+          evolution::OptionTags::BoundaryCorrection, BoundaryCorrection>(
+          "BoundaryCorrection");
   CHECK(dynamic_cast<const BoundaryCorrection*>(boundary_correction.get()) !=
         nullptr);
-  CHECK(evolution::Tags::BoundaryCorrection<System>::create_from_options(
+  CHECK(evolution::Tags::BoundaryCorrection::create_from_options(
             boundary_correction) != nullptr);
 }

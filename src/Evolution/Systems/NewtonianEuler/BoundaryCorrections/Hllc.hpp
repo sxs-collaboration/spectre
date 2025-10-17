@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -167,7 +167,7 @@ namespace NewtonianEuler::BoundaryCorrections {
  *   signal/characteristic speeds.
  */
 template <size_t Dim>
-class Hllc final : public BoundaryCorrection<Dim> {
+class Hllc final : public evolution::BoundaryCorrection {
  private:
   struct InterfaceUnitNormal : db::SimpleTag {
     using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
@@ -203,7 +203,7 @@ class Hllc final : public BoundaryCorrection<Dim> {
   /// \endcond
   void pup(PUP::er& p) override;  // NOLINT
 
-  std::unique_ptr<BoundaryCorrection<Dim>> get_clone() const override;
+  std::unique_ptr<BoundaryCorrection> get_clone() const override;
 
   using dg_package_field_tags =
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,

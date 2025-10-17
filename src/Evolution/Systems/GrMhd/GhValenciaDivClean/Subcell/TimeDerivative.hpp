@@ -20,6 +20,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
@@ -35,7 +36,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/AllSolutions.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Derivatives.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/FilterOptions.hpp"
@@ -46,7 +46,6 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
@@ -443,6 +442,9 @@ template <typename System>
 struct TimeDerivative {
   template <typename DbTagsList>
   static void apply(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+    using metavariables =
+        typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            *box))>;
     using evolved_vars_tag = typename System::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using grmhd_evolved_vars_tag =
@@ -493,8 +495,7 @@ struct TimeDerivative {
     const Element<3>& element = db::get<domain::Tags::Element<3>>(*box);
     const bool element_is_interior = element.external_boundaries().empty();
     constexpr bool subcell_enabled_at_external_boundary =
-        std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
+        metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
 
     ASSERT(element_is_interior or subcell_enabled_at_external_boundary,
            "Subcell time derivative is called at a boundary element while "
@@ -571,9 +572,10 @@ struct TimeDerivative {
     // Note: Assumes a the GH and GRMHD corrections can be invoked separately.
     // This is reasonable since the systems are a tensor product system.
     const auto& base_boundary_correction =
-        db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
-    using derived_boundary_corrections = typename std::decay_t<
-        decltype(base_boundary_correction)>::creatable_classes;
+        db::get<evolution::Tags::BoundaryCorrection>(*box);
+    using derived_boundary_corrections =
+        tmpl::at<typename metavariables::factory_creation::factory_classes,
+                 evolution::BoundaryCorrection>;
     std::array<Variables<grmhd_evolved_vars_tags>, 3> boundary_corrections{};
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &base_boundary_correction, [&](const auto* gh_grmhd_correction) {

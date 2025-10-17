@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -96,7 +96,7 @@ class Rusanov;
  */
 template <typename... NeutrinoSpecies>
 class Rusanov<tmpl::list<NeutrinoSpecies...>> final
-    : public BoundaryCorrection<tmpl::list<NeutrinoSpecies...>> {
+    : public evolution::BoundaryCorrection {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -111,17 +111,15 @@ class Rusanov<tmpl::list<NeutrinoSpecies...>> final
   ~Rusanov() override = default;
 
   /// \cond
-  explicit Rusanov(CkMigrateMessage* msg)
-      : BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>(msg) {}
+  explicit Rusanov(CkMigrateMessage* msg) : BoundaryCorrection(msg) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Rusanov);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override {  // NOLINT
-    BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>::pup(p);
+    BoundaryCorrection::pup(p);
   }
 
-  std::unique_ptr<BoundaryCorrection<tmpl::list<NeutrinoSpecies...>>>
-  get_clone() const override {
+  std::unique_ptr<BoundaryCorrection> get_clone() const override {
     return std::make_unique<Rusanov>(*this);
   }
 

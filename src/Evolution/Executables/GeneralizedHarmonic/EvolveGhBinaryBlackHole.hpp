@@ -32,6 +32,7 @@
 #include "Domain/TagsCharacteristicSpeeds.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/Actions/RunEventsAndTriggers.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -502,6 +503,9 @@ struct EvolutionMetavars {
                        Events::time_events<system>,
                        dg::Events::ObserveTimeStepVolume<system>,
                        amr::Events::RefineMesh>>>,
+        tmpl::pair<
+            evolution::BoundaryCorrection,
+            gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
         tmpl::pair<control_system::size::State,
                    control_system::size::States::factory_creatable_states>,
         tmpl::pair<
@@ -565,13 +569,14 @@ struct EvolutionMetavars {
                          ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                              volume_dim>,
                          evolution::dg::ApplyBoundaryCorrections<
-                             local_time_stepping, system, volume_dim, true>>>,
+                             local_time_stepping, EvolutionMetavars, volume_dim,
+                             true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                         system, volume_dim, false, use_dg_element_collection>,
+                         volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  system, volume_dim, false, use_dg_element_collection>,
+                  volume_dim, false, use_dg_element_collection>,
               Actions::RecordTimeStepperData<system>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<

@@ -3,5 +3,9 @@
 
 #pragma once
 
-#include "Evolution/Systems/ForceFree/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Rusanov.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace ForceFree::BoundaryCorrections {
+using standard_boundary_corrections = tmpl::list<Rusanov>;
+}  // namespace ForceFree::BoundaryCorrections

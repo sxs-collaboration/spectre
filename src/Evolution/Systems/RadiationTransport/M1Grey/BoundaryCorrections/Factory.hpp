@@ -3,5 +3,10 @@
 
 #pragma once
 
-#include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/BoundaryCorrections/Rusanov.hpp"
+#include "Utilities/TMPL.hpp"
+
+namespace RadiationTransport::M1Grey::BoundaryCorrections {
+template <typename NeutrinoSpeciesList>
+using standard_boundary_corrections = tmpl::list<Rusanov<NeutrinoSpeciesList>>;
+}  // namespace RadiationTransport::M1Grey::BoundaryCorrections

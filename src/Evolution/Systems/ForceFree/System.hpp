@@ -8,7 +8,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/ForceFree/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ForceFree/Characteristics.hpp"
 #include "Evolution/Systems/ForceFree/Tags.hpp"
 #include "Evolution/Systems/ForceFree/TimeDerivativeTerms.hpp"
@@ -203,7 +202,6 @@ struct System {
   static constexpr size_t volume_dim = 3;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
 
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::TildeE, Tags::TildeB, Tags::TildePsi,

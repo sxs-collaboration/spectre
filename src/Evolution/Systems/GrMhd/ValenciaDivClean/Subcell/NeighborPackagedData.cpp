@@ -36,7 +36,6 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/BoundaryData.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.hpp"
@@ -90,9 +89,9 @@ DirectionalIdMap<3, DataVector> NeighborPackagedData::apply(
   const auto& recons =
       db::get<grmhd::ValenciaDivClean::fd::Tags::Reconstructor>(box);
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<System>>(box);
-  using derived_boundary_corrections =
-      typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
+      db::get<evolution::Tags::BoundaryCorrection>(box);
+  using derived_boundary_corrections = grmhd::ValenciaDivClean::
+      BoundaryCorrections::standard_boundary_corrections;
   tmpl::for_each<derived_boundary_corrections>([&box, &boundary_correction,
                                                 &dg_mesh,
                                                 &mortars_to_reconstruct_to,

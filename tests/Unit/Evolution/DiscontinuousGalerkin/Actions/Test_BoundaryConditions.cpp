@@ -35,6 +35,7 @@
 #include "Domain/Creators/Tags/FunctionsOfTime.hpp"
 #include "Domain/Domain.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/BoundaryConditionsImpl.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
@@ -105,31 +106,7 @@ using SystemType = TestHelpers::evolution::dg::Actions::SystemType;
 
 template <size_t Dim, bool HasPrims, SystemType SysType,
           bool HasInverseSpatialMetric>
-struct BoundaryTerms;
-
-template <size_t Dim, bool HasPrims, SystemType SysType,
-          bool HasInverseSpatialMetric>
-class BoundaryCorrection : public PUP::able {
- public:
-  BoundaryCorrection() = default;
-  BoundaryCorrection(const BoundaryCorrection&) = default;
-  BoundaryCorrection& operator=(const BoundaryCorrection&) = default;
-  BoundaryCorrection(BoundaryCorrection&&) = default;
-  BoundaryCorrection& operator=(BoundaryCorrection&&) = default;
-
-  ~BoundaryCorrection() override = default;
-
-  WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
-
-  using creatable_classes = tmpl::list<
-      BoundaryTerms<Dim, HasPrims, SysType, HasInverseSpatialMetric>>;
-};
-
-template <size_t Dim, bool HasPrims, SystemType SysType,
-          bool HasInverseSpatialMetric>
-struct BoundaryTerms final
-    : public BoundaryCorrection<Dim, HasPrims, SysType,
-                                HasInverseSpatialMetric> {
+struct BoundaryTerms final : public evolution::BoundaryCorrection {
   struct MaxAbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
@@ -149,8 +126,12 @@ struct BoundaryTerms final
   using variables_tags = tmpl::list<Tags::Var1, Tags::Var2<Dim>>;
   using variables_tag = ::Tags::Variables<variables_tags>;
 
+  std::unique_ptr<evolution::BoundaryCorrection> get_clone() const override {
+    return std::make_unique<BoundaryTerms>(*this);
+  }
+
   void pup(PUP::er& p) override {  // NOLINT
-    BoundaryCorrection<Dim, HasPrims, SysType, HasInverseSpatialMetric>::pup(p);
+    BoundaryCorrection::pup(p);
     p | mesh_is_moving_;
     p | sign_of_normal_;
   }
@@ -2083,9 +2064,6 @@ struct System
   static constexpr size_t volume_dim = Dim;
   static constexpr bool has_inverse_spatial_metric = HasInverseSpatialMetric;
 
-  using boundary_correction_base =
-      BoundaryCorrection<Dim, HasPrimitiveVariables, SysType,
-                         HasInverseSpatialMetric>;
   using boundary_conditions_base = BoundaryCondition<System>;
 
   using variables_tag =

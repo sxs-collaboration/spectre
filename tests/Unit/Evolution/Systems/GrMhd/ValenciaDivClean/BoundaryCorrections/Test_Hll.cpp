@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -103,8 +103,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss},
       volume_data, ranges_atmo);
 
-  const auto hll = TestHelpers::test_creation<std::unique_ptr<
-      grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>>(
+  const auto hll = TestHelpers::test_factory_creation<
+      evolution::BoundaryCorrection,
+      grmhd::ValenciaDivClean::BoundaryCorrections::Hll>(
       "Hll:\n"
       "  MagneticFieldMagnitudeForHydro: 1.0e-30\n"
       "  LightSpeedDensityCutoff: 1.0e-8\n");

@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "Options/String.hpp"
@@ -48,7 +48,7 @@ namespace Burgers::BoundaryCorrections {
  * \note In the strong form the `dg_boundary_terms` function returns
  * \f$G - F_\text{int}\f$
  */
-class Rusanov final : public BoundaryCorrection {
+class Rusanov final : public evolution::BoundaryCorrection {
  private:
   struct AbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;

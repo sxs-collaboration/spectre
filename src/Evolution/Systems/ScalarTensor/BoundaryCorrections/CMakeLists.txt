@@ -4,15 +4,13 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  RegisterDerived.cpp
   )
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BoundaryCorrection.hpp
-  ProductOfCorrections.hpp
   Factory.hpp
-  RegisterDerived.hpp
+  NamespaceDocs.hpp
+  ProductOfCorrections.hpp
   )

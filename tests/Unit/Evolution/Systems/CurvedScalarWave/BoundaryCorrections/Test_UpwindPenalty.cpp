@@ -11,7 +11,7 @@
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
@@ -40,8 +40,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
                     Spectral::Quadrature::Gauss},
       {}, {});
 
-  const auto upwind_penalty = TestHelpers::test_creation<std::unique_ptr<
-      CurvedScalarWave::BoundaryCorrections::BoundaryCorrection<Dim>>>(
+  const auto upwind_penalty = TestHelpers::test_factory_creation<
+      evolution::BoundaryCorrection,
+      CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>>(
       "UpwindPenalty:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<

@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ForceFree/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/ForceFree/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -39,8 +40,8 @@ SPECTRE_TEST_CASE("Unit.ForceFree.BoundaryCorrections.Rusanov",
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
 
-  const auto rusanov = TestHelpers::test_creation<
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection>>("Rusanov:");
+  const auto rusanov = TestHelpers::test_factory_creation<
+      evolution::BoundaryCorrection, BoundaryCorrections::Rusanov>("Rusanov:");
 
   TestHelpers::evolution::dg::test_boundary_correction_with_python<system>(
       make_not_null(&gen), "Rusanov", "dg_package_data", "dg_boundary_terms",

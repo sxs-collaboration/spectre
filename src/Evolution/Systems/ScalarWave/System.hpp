@@ -10,7 +10,6 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/ScalarWave/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/ScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/ScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
@@ -39,7 +38,6 @@ namespace ScalarWave {
 template <size_t Dim>
 struct System {
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars = false;

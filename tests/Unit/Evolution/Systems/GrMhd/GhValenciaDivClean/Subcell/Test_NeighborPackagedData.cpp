@@ -33,6 +33,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/BoundaryCorrection.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -50,7 +51,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/ProductOfCorrections.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Factory.hpp"
@@ -261,8 +261,7 @@ double test(const size_t num_dg_pts) {
       db::AddSimpleTags<
           domain::Tags::Element<3>, domain::Tags::Mesh<3>,
           evolution::dg::subcell::Tags::Mesh<3>,
-          fd::Tags::Reconstructor<System>,
-          evolution::Tags::BoundaryCorrection<System>,
+          fd::Tags::Reconstructor<System>, evolution::Tags::BoundaryCorrection,
           hydro::Tags::GrmhdEquationOfState,
           typename System::primitive_variables_tag, dt_variables_tag,
           variables_tag,
@@ -303,8 +302,7 @@ double test(const size_t num_dg_pts) {
       std::unique_ptr<grmhd::GhValenciaDivClean::fd::Reconstructor<System>>{
           std::make_unique<
               grmhd::GhValenciaDivClean::fd::MonotonisedCentralPrim<System>>()},
-      std::unique_ptr<
-          grmhd::GhValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrection>(
               gh::BoundaryCorrections::UpwindPenalty<3>{},
               ValenciaDivClean::BoundaryCorrections::Hll{1.0e-30, 1.0e-8})},

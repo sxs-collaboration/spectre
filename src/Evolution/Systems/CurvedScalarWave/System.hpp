@@ -8,7 +8,6 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
@@ -29,7 +28,6 @@ struct System {
   static constexpr bool is_euclidean = false;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::Psi, Tags::Pi, Tags::Phi<Dim>>>;

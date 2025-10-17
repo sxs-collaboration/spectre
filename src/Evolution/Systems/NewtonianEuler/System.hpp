@@ -7,7 +7,6 @@
 
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
@@ -27,7 +26,6 @@ struct System {
   static constexpr size_t volume_dim = Dim;
 
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition<Dim>;
-  using boundary_correction_base = BoundaryCorrections::BoundaryCorrection<Dim>;
 
   using variables_tag = ::Tags::Variables<tmpl::list<
       Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity>>;

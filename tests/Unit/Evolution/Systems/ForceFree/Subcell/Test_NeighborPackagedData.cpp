@@ -271,7 +271,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
       evolution::dg::subcell::Tags::OnSubcellFaces<
           typename System::flux_spacetime_variables_tag, 3>,
       evolution::dg::subcell::Tags::GhostDataForReconstruction<3>,
-      fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection<System>,
+      fd::Tags::Reconstructor, evolution::Tags::BoundaryCorrection,
       ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
@@ -286,7 +286,7 @@ void test_neighbor_packaged_data(const gsl::not_null<std::mt19937*> gen) {
       face_centered_gr_vars, ghost_data,
       std::unique_ptr<fd::Reconstructor>{
           std::make_unique<ReconstructionForTest>()},
-      std::unique_ptr<BoundaryCorrections::BoundaryCorrection>{
+      std::unique_ptr<evolution::BoundaryCorrection>{
           std::make_unique<BoundaryCorrectionForTest>()},
       time, clone_unique_ptrs(functions_of_time),
       ElementMap<3, Frame::Grid>{
