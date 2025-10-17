@@ -109,7 +109,7 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: Gauss
   BoundaryCorrection:
-    UpwindPenalty:
+    AveragedUpwindPenalty:
 
 EventsAndTriggersAtSlabs:
   - Trigger:

@@ -139,8 +139,8 @@ EvolutionSystem:
 
 SpatialDiscretization:
   BoundaryCorrection:
-    ProductUpwindPenaltyAndHll:
-      UpwindPenalty:
+    ProductAveragedUpwindPenaltyAndHll:
+      AveragedUpwindPenalty:
       Hll:
         MagneticFieldMagnitudeForHydro: 1.0e-16
         LightSpeedDensityCutoff: 1.0e-8

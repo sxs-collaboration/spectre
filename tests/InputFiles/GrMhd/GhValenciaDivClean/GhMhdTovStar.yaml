@@ -138,8 +138,8 @@ EvolutionSystem:
 
 SpatialDiscretization:
   BoundaryCorrection:
-    ProductUpwindPenaltyAndRusanov:
-      UpwindPenalty:
+    ProductAveragedUpwindPenaltyAndRusanov:
+      AveragedUpwindPenalty:
       Rusanov:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
