@@ -57,7 +57,9 @@ struct get_tags {
  * put into the `ah::Tags::Storage`. Then, we try to set the
  * `ah::Tags::CurrentTime` with the `ah::set_current_time` function. Once we
  * have a current time, we ensure the functions of time are up-to-date at this
- * current time with `ah::check_if_current_time_is_ready`.
+ * current time with `ah::check_if_current_time_is_ready`. If they are not,
+ * we re-trigger this action with `vars_have_already_been_received` set to
+ * true and not sending any new volume data.
  *
  * Once we ensure the functions of time are ready, we compute the cartesian
  * coordinates for the current fast-flow iteration surface with
@@ -120,15 +122,19 @@ struct FindApparentHorizon {
 
     auto& all_storage = db::get_mutable_reference<ah::Tags::Storage<frame>>(
         make_not_null(&box));
+    auto& block_search_order =
+        db::get_mutable_reference<ah::Tags::BlockSearchOrder>(
+            make_not_null(&box));
 
     // Add volume variables and destination to the box if they haven't already
     // been received
     if (not vars_have_already_been_received) {
-      all_storage[incoming_time].all_volume_variables.emplace(
+      auto& current_time_storage = all_storage[incoming_time];
+      current_time_storage.all_volume_variables.emplace(
           incoming_element_id,
           ah::Storage::VolumeVariables<frame>{
               incoming_mesh, std::move(incoming_vars_to_interpolate)});
-      all_storage.at(incoming_time).destination = HorizonMetavars::destination;
+      current_time_storage.destination = HorizonMetavars::destination;
     }
 
     // ========================================================================
@@ -138,7 +144,20 @@ struct FindApparentHorizon {
     // are ready.
     // ========================================================================
 
-    // Keep trying to find horizons for as long as we can
+    // Keep trying to find horizons for as long as we can.
+    // In the first pass, interpolate only from the incoming element because
+    // this was missing data. On subsequent passes, interpolate from all
+    // elements. Notes:
+    // - The `vars_have_already_been_received` flag is used only in
+    //   `check_if_current_time_is_ready` to re-trigger the AH find in a
+    //   callback but not sending any new data.
+    // - If the incoming time is not the current time (but later), then we have
+    //   to do the full interpolation for the current time first before moving
+    //   on to the incoming time. In this case we also need to do the full
+    //   interpolation for the incoming time once we get there.
+    bool interpolate_only_from_incoming_element =
+        current_time_optional == incoming_time and
+        not vars_have_already_been_received;
     while (true) {
       // Set current time using the pending times if it isn't already set
       set_current_time(make_not_null(&current_time_optional),
@@ -196,6 +215,10 @@ struct FindApparentHorizon {
           db::get_mutable_reference<ah::Tags::FastFlow>(make_not_null(&box));
 
       auto& all_volume_variables = current_time_storage.all_volume_variables;
+      auto& current_iteration_storage = current_time_storage.current_iteration;
+      auto& previous_iteration_surface =
+          current_time_storage.previous_iteration_surface;
+      auto& element_order = current_time_storage.element_order;
       auto& previous_surfaces =
           db::get_mutable_reference<ah::Tags::PreviousSurfaces<frame>>(
               make_not_null(&box));
@@ -224,17 +247,13 @@ struct FindApparentHorizon {
         // Keep doing fast flow iterations for as long as we can until we find a
         // horizon
         while (true) {
-          auto& current_iteration_storage =
-              current_time_storage.current_iteration;
-          auto& previous_iteration_surface =
-              current_time_storage.previous_iteration_surface;
-
           // Points haven't been set for this iteration so need to do so now
           if (not current_iteration_storage.block_coord_holders.has_value() or
               rerunning_with_higher_resolution) {
             const bool coords_set_successfully = set_current_iteration_coords(
-                make_not_null(&current_iteration_storage), current_time,
-                fast_flow, options.initial_guess, previous_iteration_surface,
+                make_not_null(&current_iteration_storage),
+                make_not_null(&block_search_order), current_time, fast_flow,
+                options.initial_guess, previous_iteration_surface,
                 previous_surfaces, options.max_compute_coords_retries, domain,
                 functions_of_time, current_resolution_l,
                 rerunning_with_higher_resolution);
@@ -271,29 +290,80 @@ struct FindApparentHorizon {
             }
           }
 
-          // Interpolate new elements to points
-          interpolate_volume_data(make_not_null(&current_iteration_storage),
-                                  make_not_null(&all_volume_variables));
+          // Interpolate to the current iteration points
+          bool interpolation_is_complete = false;
+          if (interpolate_only_from_incoming_element) {
+            // Data is coming in one element at a time, so try to interpolate
+            // only from the incoming element
+            ASSERT(all_volume_variables.contains(incoming_element_id),
+                   "Trying to interpolate incoming data from element "
+                       << incoming_element_id
+                       << " but it's not available. This is a bug.");
+            const bool interpolated_any_points = interpolate_volume_data(
+                make_not_null(&current_iteration_storage),
+                all_volume_variables.at(incoming_element_id),
+                incoming_element_id);
+            // Store which elements we found points in for next iteration
+            if (interpolated_any_points) {
+              element_order.push_back(incoming_element_id);
+            }
+            interpolation_is_complete =
+                current_iteration_storage.interpolation_is_complete();
+          } else {
+            // We already have some element data, so go through the elements in
+            // the order we found points in before
+            for (const auto& element_id : element_order) {
+              ASSERT(all_volume_variables.contains(element_id),
+                     "Trying to interpolate data from element "
+                         << element_id
+                         << " that was found in a previous FastFlow iteration, "
+                            "but it's not available. This is a bug.");
+              interpolate_volume_data(make_not_null(&current_iteration_storage),
+                                      all_volume_variables.at(element_id),
+                                      element_id);
+              interpolation_is_complete =
+                  current_iteration_storage.interpolation_is_complete();
+              if (interpolation_is_complete) {
+                break;
+              }
+            }
+            // If we still need more points, try going through all the elements
+            // that we have received data from so far
+            if (not interpolation_is_complete) {
+              for (const auto& [element_id, volume_vars_storage] :
+                   all_volume_variables) {
+                if (std::find(element_order.begin(), element_order.end(),
+                              element_id) != element_order.end()) {
+                  // Already tried this element above
+                  continue;
+                }
+                const bool interpolated_any_points = interpolate_volume_data(
+                    make_not_null(&current_iteration_storage),
+                    volume_vars_storage, element_id);
+                if (interpolated_any_points) {
+                  element_order.push_back(element_id);
+                }
+                interpolation_is_complete =
+                    current_iteration_storage.interpolation_is_complete();
+                if (interpolation_is_complete) {
+                  break;
+                }
+              }
+            }
+          }
 
-          // Sanity check
-          ASSERT(
-              current_iteration_storage.indicies_interpolated_to_thus_far
-                      .size() <=
-                  current_iteration_storage.block_coord_holders.value().size(),
-              "The number indices interpolated to is larger than the number of "
-              "coordinates. This is an internal error. Please file an issue.");
-
-          if (current_iteration_storage.indicies_interpolated_to_thus_far
-                  .size() !=
-              current_iteration_storage.block_coord_holders.value().size()) {
+          if (interpolation_is_complete) {
+            // Next iteration try to interpolate from all elements
+            interpolate_only_from_incoming_element = false;
+          } else {
+            // We need more points, return and wait for more volume data.
+            // When this action is called again, we'll try to interpolate only
+            // from the incoming element until we have enough data.
             if (debug_print) {
               Parallel::printf(
                   "%s: For current time %s, at iteration %zu, need more volume "
-                  "data. Missing %zu points.\n",
-                  name, current_time, fast_flow.current_iteration(),
-                  current_iteration_storage.block_coord_holders.value().size() -
-                      current_iteration_storage
-                          .indicies_interpolated_to_thus_far.size());
+                  "data.\n",
+                  name, current_time, fast_flow.current_iteration());
             }
             return;
           }

@@ -24,6 +24,7 @@ namespace ah {
 template <typename Fr>
 bool set_current_iteration_coords(
     const gsl::not_null<ah::Storage::Iteration<Fr>*> current_iteration,
+    const gsl::not_null<std::vector<size_t>*> block_order,
     const LinkedMessageId<double>& time, const FastFlow& fast_flow,
     const ylm::Strahlkorper<Fr>& initial_guess,
     const ylm::Strahlkorper<Fr>& previous_iteration_surface,
@@ -236,7 +237,7 @@ bool set_current_iteration_coords(
     // Frames are handled within block_logical_coordinates
     current_iteration->block_coord_holders = ::block_logical_coordinates(
         domain, ylm::cartesian_coords(prolonged_strahlkorper), time.id,
-        functions_of_time);
+        functions_of_time, block_order);
   };
 
   // Set the coordinates
@@ -283,6 +284,7 @@ bool set_current_iteration_coords(
   template bool set_current_iteration_coords(                           \
       const gsl::not_null<ah::Storage::Iteration<FRAME(data)>*>         \
           current_iteration,                                            \
+      const gsl::not_null<std::vector<size_t>*> block_order,            \
       const LinkedMessageId<double>& time, const FastFlow& fast_flow,   \
       const ylm::Strahlkorper<FRAME(data)>& initial_guess,              \
       const ylm::Strahlkorper<FRAME(data)>& previous_iteration_surface, \

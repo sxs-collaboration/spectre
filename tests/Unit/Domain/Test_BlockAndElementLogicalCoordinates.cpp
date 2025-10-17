@@ -596,6 +596,9 @@ void test_block_and_element_logical_coordinates(
 
   const auto block_logical_result =
       block_logical_coordinates(domain, inertial_coords);
+  const auto block_logical_result_with_order = block_logical_coordinates(
+      domain, inertial_coords, std::numeric_limits<double>::signaling_NaN(), {},
+      make_not_null(&block_order));
   for (size_t s = 0; s < x_inertial.size(); ++s) {
     CHECK(block_logical_result[s].value().id.get_index() ==
           expected_block_ids[s]);
@@ -603,6 +606,14 @@ void test_block_and_element_logical_coordinates(
                           expected_logical_coords[s]);
     CHECK_ITERABLE_APPROX(block_logical_single_point_result[s],
                           expected_logical_coords[s]);
+    // Check the version with block order. It is no longer guaranteed that the
+    // smallest block ID is chosen, so the logical coordinates at the boundary
+    // may differ by a sign.
+    for (size_t d=0; d < Dim; ++d) {
+      CHECK_ITERABLE_APPROX(
+          abs(block_logical_result_with_order[s].value().data.get(d)),
+          abs(expected_logical_coords[s].get(d)));
+    }
   }
 
   test_serialization(block_logical_result);

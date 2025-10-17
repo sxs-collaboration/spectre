@@ -79,20 +79,40 @@ struct Iteration {
   Variables<ah::vars_to_interpolate_to_target<3, Fr>> interpolated_vars{};
   /*!
    * \brief Keeps track of the indices in `interpolated_vars` that have
-   * already beed interpolated to.
+   * already been interpolated to.
    */
-  std::set<size_t> indicies_interpolated_to_thus_far;
+  std::vector<bool> indices_interpolated_to_thus_far{};
   /*!
-   * \brief Holds the `ElementId`s of `Element`s for which interpolation has
-   * already been done.
+   * \brief Offsets of newly interpolated points in the overall tensor (used as
+   * memory buffer)
    */
-  std::unordered_set<ElementId<3>> interpolation_is_done_for_these_elements;
+  std::vector<size_t> offsets_of_newly_interpolated_points{};
+  /*!
+   * \brief Logical coordinates of newly interpolated points (used as memory
+   * buffer)
+   *
+   * These `std::vector`s are used to reserve memory and then append points to
+   * them as we find them in an element. The memory is reused for each element.
+   * Then, a non-owning DataVector is created by pointing into this memory.
+   * That's why this is a `std::array` of `std::vector`s, not vice versa.
+   */
+  std::array<std::vector<double>, 3>
+      x_element_logical_of_newly_interpolated_points{};
+  /*!
+   * \brief Buffer for newly interpolated variables (used as memory buffer)
+   */
+  std::vector<double> newly_interpolated_vars_buffer{};
 
   /*!
    * \brief How many times we've tried to compute the coordinates for this
    * iteration.
    */
   size_t compute_coords_retries = 0;
+
+  /*!
+   * \brief Whether all points in `interpolated_vars` have been filled.
+   */
+  bool interpolation_is_complete() const;
 
   void reset_for_next_iteration();
 
@@ -117,7 +137,17 @@ struct SingleTimeStorage {
    * \brief Map between `ElementId`s and the volume variables from that element.
    */
   std::unordered_map<ElementId<3>, VolumeVariables<Fr>> all_volume_variables;
-
+  /*!
+   * \brief Elements in which we have found points to interpolate to in previous
+   * iterations, to try first before searching all elements.
+   *
+   * This is not only a performance optimization, but also important for
+   * robustness. If we try to interpolate from elements in a different order in
+   * each iteration, then points that lie directly on element boundaries can
+   * fluctuate in interpolated value, preventing convergence (see
+   * https://github.com/sxs-collaboration/spectre/issues/3899).
+   */
+  std::vector<ElementId<3>> element_order{};
   /*!
    * \brief The `Iteration` data for the current fast flow iteration.
    */

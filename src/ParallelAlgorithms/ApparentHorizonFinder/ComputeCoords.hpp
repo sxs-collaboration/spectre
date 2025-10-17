@@ -41,6 +41,8 @@ namespace ah {
  * \p max_compute_coords_retries times before returning false.
  *
  * \param current_iteration The returned pointer to the current Iteration object
+ * \param block_order Priority order to search blocks for containing points
+ * (see `::block_logical_coordinates` for details)
  * \param time The current time
  * \param fast_flow The FastFlow object for the current horizon find
  * \param initial_guess If the current iteration number is zero and
@@ -68,6 +70,7 @@ namespace ah {
 template <typename Fr>
 bool set_current_iteration_coords(
     gsl::not_null<ah::Storage::Iteration<Fr>*> current_iteration,
+    gsl::not_null<std::vector<size_t>*> block_order,
     const LinkedMessageId<double>& time, const FastFlow& fast_flow,
     const ylm::Strahlkorper<Fr>& initial_guess,
     const ylm::Strahlkorper<Fr>& previous_iteration_surface,
