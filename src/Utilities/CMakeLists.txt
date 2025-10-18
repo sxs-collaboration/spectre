@@ -1,6 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+if (SPECTRE_AUTODIFF)
+  add_subdirectory(Autodiff)
+endif()
 add_subdirectory(Kokkos)
 add_subdirectory(Simd)
 
