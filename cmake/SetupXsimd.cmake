@@ -1,7 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(USE_XSIMD "Use xsimd if it is available" OFF)
+# To turn this off, one should provide an alternative
+# SIMD backend that supports elementary functions
+# or the auto-differentiation in SpECTRE ceases to
+# work
+option(USE_XSIMD "Use xsimd if it is available" ON)
 
 if(USE_XSIMD)
   find_package(xsimd REQUIRED)

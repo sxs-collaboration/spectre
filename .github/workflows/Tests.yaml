@@ -460,7 +460,7 @@ jobs:
           - compiler: clang-13
             build_type: Release
             BUILD_SHARED_LIBS: OFF
-            use_xsimd: OFF
+            use_xsimd: ON
             MEMORY_ALLOCATOR: JEMALLOC
           # Add a test without PCH to the build matrix, which only builds core
           # libraries. Building all the tests without the PCH takes very long
@@ -1007,7 +1007,7 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake boost catch2 ccache cmake gsl hdf5 openblas yaml-cpp
+        autoconf automake boost catch2 ccache cmake gsl hdf5 openblas yaml-cpp xsimd
       # We install these packages with Spack and cache them. The full specs are
       # listed below. This list is only needed to create the cache.
       SPECTRE_SPACK_DEPS: blaze charmpp libxsmm
@@ -1165,7 +1165,6 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D SPECTRE_TEST_TIMEOUT_FACTOR=10 \
             -D CMAKE_INSTALL_PREFIX=../install \
             -D BUILD_DOCS=OFF \
-            -D USE_XSIMD=OFF \
             -D CMAKE_OSX_SYSROOT=macosx \
             $GITHUB_WORKSPACE
       - name: Build unit tests
