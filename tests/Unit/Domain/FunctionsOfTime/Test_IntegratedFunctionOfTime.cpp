@@ -86,7 +86,7 @@ void test_serialization_versioning() {
 
   TestHelpers::serialization::test_versioning<Integrated>(
       "Domain/FunctionsOfTime/IntegratedFunctionOfTime.serializations",
-      "version 0", fot);
+      "version 1", fot);
 }
 
 void test_out_of_order_update() {

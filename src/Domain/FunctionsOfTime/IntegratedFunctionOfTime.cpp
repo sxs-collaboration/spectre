@@ -130,12 +130,17 @@ double IntegratedFunctionOfTime::expiration_after(const double time) const {
 
 void IntegratedFunctionOfTime::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 0;
+  size_t version = 1;
   p | version;
   if (version >= 0) {
     p | deriv_info_at_update_times_;
     p | rotation_;
-    p | update_backlog_;
+    // Serializing the backlog is not threadsafe, and so was removed
+    // in version 1.  It should never have any entries during
+    // checkpointing, and should be safe to ignore during IO.
+    if (version == 0) {
+      p | update_backlog_;
+    }
   }
 }
 

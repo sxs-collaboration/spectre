@@ -246,7 +246,7 @@ void test_serialization_versioning() {
   poly->update(5.0, {6.0}, 7.0);
 
   TestHelpers::serialization::test_versioning<Poly>(
-      "Domain/FunctionsOfTime/PiecewisePolynomial.serializations", "version 4",
+      "Domain/FunctionsOfTime/PiecewisePolynomial.serializations", "version 5",
       poly);
 }
 

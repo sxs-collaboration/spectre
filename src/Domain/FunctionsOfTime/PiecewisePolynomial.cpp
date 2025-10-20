@@ -210,7 +210,7 @@ double PiecewisePolynomial<MaxDeriv>::expiration_after(
 template <size_t MaxDeriv>
 void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 4;
+  size_t version = 5;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -223,8 +223,10 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
 
   p | deriv_info_at_update_times_;
 
-  // Just use empty map when unpacking version 3
-  if (version >= 4) {
+  // Serializing the backlog is not threadsafe, and so was removed in
+  // version 5.  It should never have any entries during
+  // checkpointing, and should be safe to ignore during IO.
+  if (version == 4) {
     p | update_backlog_;
   }
 }
