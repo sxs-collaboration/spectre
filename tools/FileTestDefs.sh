@@ -635,6 +635,7 @@ standard_checks+=(enable_if)
 noexcept() {
     whitelist "$1" \
               "src/Utilities/StdHelpers/Bit.hpp" \
+              "src/Parallel/MultiReaderSpinlock.hpp$" \
               'src/Parallel/StaticSpscQueue.hpp' \
               "src/Parallel/NodeLock..pp$" \
               "src/Evolution/DiscontinuousGalerkin/\
