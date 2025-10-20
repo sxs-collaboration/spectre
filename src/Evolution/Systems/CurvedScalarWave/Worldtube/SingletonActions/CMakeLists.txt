@@ -23,4 +23,5 @@ spectre_target_headers(
   SendToElements.hpp
   UpdateAcceleration.hpp
   UpdateFunctionsOfTime.hpp
+  WriteData.hpp
 )

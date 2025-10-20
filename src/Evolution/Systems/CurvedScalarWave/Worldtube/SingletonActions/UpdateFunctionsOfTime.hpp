@@ -16,6 +16,7 @@
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Inboxes.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/RadiusFunctions.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Worldtube/SingletonActions/WriteData.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Tags.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Worldtube/Worldtube.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -172,6 +173,17 @@ struct UpdateQuaternionFunctionsOfTime {
     Parallel::mutate<::domain::Tags::FunctionsOfTime,
                      control_system::UpdateMultipleFunctionsOfTime>(
         cache, current_expiration_time, all_updates);
+
+    // Write data
+    if (db::get<Tags::ObserveCoefficientsTrigger>(box).is_triggered(box) and
+        db::get<::Tags::TimeStepId>(box).substep() == 0) {
+      const auto& functions_of_time =
+          Parallel::get<::domain::Tags::FunctionsOfTime>(cache);
+      const auto& function_of_time = functions_of_time.at("Rotation");
+      write_components_to_disk<Metavariables>(current_expiration_time, cache,
+                                              function_of_time);
+    }
+    //
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
