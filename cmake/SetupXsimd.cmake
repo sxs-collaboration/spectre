@@ -8,7 +8,29 @@
 option(USE_XSIMD "Use xsimd if it is available" ON)
 
 if(USE_XSIMD)
-  find_package(xsimd REQUIRED)
+  find_package(xsimd)
+
+  if (NOT xsimd_FOUND)
+    if (NOT SPECTRE_FETCH_MISSING_DEPS)
+      message(FATAL_ERROR "Could not find xsimd. If you want to fetch "
+        "missing dependencies automatically, set SPECTRE_FETCH_MISSING_DEPS=ON.")
+    endif()
+
+    message(STATUS "Fetching xsimd")
+    include(FetchContent)
+    FetchContent_Declare(xsimd
+        GIT_REPOSITORY https://github.com/xtensor-stack/xsimd
+        GIT_TAG 13.2.0
+        ${SPECTRE_FETCHCONTENT_BASE_ARGS}
+    )
+    FetchContent_Populate(xsimd)
+    add_library(xsimd INTERFACE)
+    target_include_directories(xsimd SYSTEM INTERFACE
+        ${xsimd_SOURCE_DIR}/include
+    )
+    set(xsimd_INCLUDE_DIRS ${xsimd_SOURCE_DIR}/include)
+    set(xsimd_VERSION "13.2.0")
+  endif()
 
   if(xsimd_VERSION VERSION_LESS 11.0.1)
     message(FATAL_ERROR "xsimd must be at least 11.0.1, got ${xsimd_VERSION}")
