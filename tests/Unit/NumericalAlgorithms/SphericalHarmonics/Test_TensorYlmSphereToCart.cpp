@@ -6,12 +6,16 @@
 #include <filesystem>
 #include <fstream>
 #include <optional>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SimpleSparseMatrix.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TensorYlmCartToSphere.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/TensorYlmSphereToCart.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -36,6 +40,68 @@ std::string symm_to_string() {
     return "abb";
   }
   return "";
+}
+
+template<typename TensorType>
+struct MyTag : db::SimpleTag {
+  using type = TensorType;
+  static std::string name() {
+    return "MyTag" + symm_to_string<typename TensorType::structure>();
+  }
+};
+
+template <typename TensorType>
+void test_inverse(const size_t ell_max) {
+  ylm::SpherepackIterator it(ell_max, ell_max, 1, false);
+  const size_t spectral_size = it.spherepack_array_size();
+
+  Variables<tmpl::list<MyTag<TensorType>>> A(spectral_size, 0.0);
+  Variables<tmpl::list<MyTag<TensorType>>> B(spectral_size, 0.0);
+  Variables<tmpl::list<MyTag<TensorType>>> C(spectral_size, 0.0);
+
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> unit_dis(0.0, 1.0);
+
+  // Fill A with random numbers
+  for (auto& a : get<MyTag<TensorType>>(A)) {
+    for (it.reset(); it; ++it) {
+      // Here we don't set high ell values because of truncation when
+      // we go between cartesian scalar ylm components and
+      // spin-weighted components.
+      if (it.l() < ell_max + 1 - get<MyTag<TensorType>>(A).rank() and
+          (it.coefficient_array() !=
+               ylm::SpherepackIterator::CoefficientArray::b or
+           it.m() != 0)) {
+        a[it()] = unit_dis(gen);
+      }
+    }
+  }
+
+  // Convert A to B.
+  const gsl::span<double> a_span(A.data(), A.size());
+  gsl::span<double> b_span(B.data(), B.size());
+  SimpleSparseMatrix cart_to_sphere;
+  ylm::TensorYlm::fill_cart_to_sphere<typename TensorType::structure>(
+      make_not_null(&cart_to_sphere), ell_max);
+  cart_to_sphere.increment_multiply_on_right(make_not_null(&b_span), 0, a_span,
+                                             0);
+
+  // Convert B to C
+  gsl::span<double> c_span(C.data(), C.size());
+  SimpleSparseMatrix sphere_to_cart;
+  ylm::TensorYlm::fill_sphere_to_cart<typename TensorType::structure>(
+      make_not_null(&sphere_to_cart), ell_max);
+  sphere_to_cart.increment_multiply_on_right(make_not_null(&c_span), 0, b_span,
+                                             0);
+  // C should equal A.
+  const auto& a_vector = get<MyTag<TensorType>>(A);
+  const auto& c_vector = get<MyTag<TensorType>>(C);
+  for (size_t i = 0; i < a_vector.size(); ++i) {
+    for (it.reset(); it; ++it) {
+      CHECK(a_vector[i][it()] == approx(c_vector[i][it()]));
+    }
+  }
 }
 
 template <typename TensorStructure, typename SparseMatrixType>
@@ -514,7 +580,7 @@ void test_tensorylm_sphere_to_cart_vs_spec(const size_t ell_max) {
 }
 }  // namespace
 
-// [[TimeOut, 20]]
+// [[TimeOut, 40]]
 SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmSphereToCart",
                   "[NumericalAlgorithms][Unit]") {
   const size_t ell_max = 8;
@@ -531,4 +597,10 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.TensorYlmSphereToCart",
   test_tensorylm_sphere_to_cart_vs_spec<
       typename tnsr::ijk<DataVector, 3>::structure, SimpleSparseMatrix>(
       ell_max);
+
+  test_inverse<typename tnsr::i<DataVector, 3>>(ell_max);
+  test_inverse<typename tnsr::ii<DataVector, 3>>(ell_max);
+  test_inverse<typename tnsr::ij<DataVector, 3>>(ell_max);
+  test_inverse<typename tnsr::ijj<DataVector, 3>>(ell_max);
+  test_inverse<typename tnsr::ijk<DataVector, 3>>(ell_max);
 }

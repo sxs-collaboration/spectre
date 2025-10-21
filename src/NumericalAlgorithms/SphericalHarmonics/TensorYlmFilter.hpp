@@ -30,7 +30,7 @@ namespace ylm::TensorYlm {
  *
  * The memory layout here is different than in SpEC.  In SpEC, each
  * tensor component is stored in separately-allocated memory, so the
- * SpEC equivalent of the FillFilter function fills $N^2$ sparse
+ * SpEC equivalent of the fill_filter function fills $N^2$ sparse
  * matrices, where $N$ is the number of independent components of the
  * Tensor. The advantage of the SpEC method is that each sparse matrix
  * is smaller, so sorting elements into the correct order while
@@ -214,8 +214,8 @@ namespace ylm::TensorYlm {
  *
  */
 template <typename TensorStructure, typename SparseMatrixType>
-void FillFilter(gsl::not_null<SparseMatrixType*> matrix, size_t ell_max,
-                size_t number_of_ell_modes_to_kill,
-                std::optional<size_t> half_power);
+void fill_filter(gsl::not_null<SparseMatrixType*> matrix, size_t ell_max,
+                 size_t number_of_ell_modes_to_kill,
+                 std::optional<size_t> half_power);
 
 }  // namespace ylm::TensorYlm

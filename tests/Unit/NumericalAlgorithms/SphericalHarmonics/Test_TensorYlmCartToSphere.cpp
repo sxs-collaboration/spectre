@@ -436,8 +436,8 @@ void test_tensorylm_cart_to_sphere_vs_spec(const size_t ell_max) {
   }
 
   SparseMatrixType matrix;
-  ylm::TensorYlm::FillCartToSphere<TensorStructure>(make_not_null(&matrix),
-                                                    ell_max);
+  ylm::TensorYlm::fill_cart_to_sphere<TensorStructure>(make_not_null(&matrix),
+                                                       ell_max);
   CAPTURE(matrix.size());
 
   // Loop over spec_matrix_elements and make sure all the cases agree.

@@ -141,3 +141,6 @@ void SimpleSparseMatrix::increment_multiply_on_right(
 template void SimpleSparseMatrix::increment_multiply_on_right(
     const gsl::not_null<std::vector<double>*> a, const size_t a_offset,
     const std::vector<double>& b, const size_t b_offset) const;
+template void SimpleSparseMatrix::increment_multiply_on_right(
+    const gsl::not_null<gsl::span<double>*> a, const size_t a_offset,
+    const gsl::span<double>& b, const size_t b_offset) const;
