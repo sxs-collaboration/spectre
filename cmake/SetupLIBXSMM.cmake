@@ -13,20 +13,23 @@ if (NOT LIBXSMM_FOUND)
   # This FetchContent code is adapted from the libxsmm docs:
   # https://libxsmm.readthedocs.io/en/latest/#rules-for-building-libxsmm
   include(FetchContent)
-  # Need an unreleased version for Apple Silicon chips
-  FetchContent_Declare(xsmm
-    GIT_REPOSITORY https://github.com/libxsmm/libxsmm.git
-    GIT_TAG 939f11042fc9ae4bbe975cedb2330d4f9f4bb26e
-    ${SPECTRE_FETCHCONTENT_BASE_ARGS}
-  )
+
   FetchContent_GetProperties(xsmm)
   if(NOT xsmm_POPULATED)
-    FetchContent_Populate(xsmm)
+    # Need an unreleased version to be compatible with newer glibc versions
+    FetchContent_Populate(xsmm
+      GIT_REPOSITORY https://github.com/libxsmm/libxsmm.git
+      GIT_TAG 10b7dc82b3c46157e76eb40e4e959555f895b24d
+      SUBBUILD_DIR ${CMAKE_BINARY_DIR}/_deps/xsmm-subbuild
+      SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/xsmm-src
+      BINARY_DIR ${CMAKE_BINARY_DIR}/_deps/xsmm-build
+    )
   endif()
 
   set(LIBXSMMROOT ${xsmm_SOURCE_DIR})
   file(GLOB _GLOB_XSMM_SRCS LIST_DIRECTORIES false CONFIGURE_DEPENDS ${LIBXSMMROOT}/src/*.c)
   list(REMOVE_ITEM _GLOB_XSMM_SRCS ${LIBXSMMROOT}/src/libxsmm_generator_gemm_driver.c)
+  list(REMOVE_ITEM _GLOB_XSMM_SRCS ${LIBXSMMROOT}/src/libxsmm_binaryexport_generator.c)
   set(XSMM_INCLUDE_DIRS ${LIBXSMMROOT}/include)
 
   add_library(xsmm STATIC ${_GLOB_XSMM_SRCS})
