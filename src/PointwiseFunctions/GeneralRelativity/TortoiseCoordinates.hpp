@@ -17,6 +17,12 @@ namespace gr {
  * \end{equation}
  * where $r_\pm = M \pm \sqrt{M^2 - a^2}$.
  *
+ * This transformation has the Jacobian
+ * \begin{equation}
+ *   \frac{dr_*}{dr} = \frac{r^2 + a^2}{\Delta}
+ * \end{equation}
+ * with $\Delta = r^2 - 2 M r + a^2$.
+ *
  * \param r_minus_r_plus Boyer-Lindquist radius minus $r_+$: $r - r_+$.
  * \param mass Kerr mass parameter $M$.
  * \param dimensionless_spin Kerr dimensionless spin parameter $\chi=a/M$.
