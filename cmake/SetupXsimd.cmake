@@ -8,7 +8,7 @@
 option(USE_XSIMD "Use xsimd if it is available" ON)
 
 if(USE_XSIMD)
-  find_package(xsimd)
+  find_package(xsimd QUIET)
 
   if (NOT xsimd_FOUND)
     if (NOT SPECTRE_FETCH_MISSING_DEPS)
@@ -23,13 +23,11 @@ if(USE_XSIMD)
         GIT_TAG 13.2.0
         ${SPECTRE_FETCHCONTENT_BASE_ARGS}
     )
-    FetchContent_Populate(xsimd)
-    add_library(xsimd INTERFACE)
-    target_include_directories(xsimd SYSTEM INTERFACE
-        ${xsimd_SOURCE_DIR}/include
-    )
+    FetchContent_MakeAvailable(xsimd)
     set(xsimd_INCLUDE_DIRS ${xsimd_SOURCE_DIR}/include)
     set(xsimd_VERSION "13.2.0")
+    get_target_property(XSIMD_IID xsimd INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(xsimd PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${XSIMD_IID}")
   endif()
 
   if(xsimd_VERSION VERSION_LESS 11.0.1)
