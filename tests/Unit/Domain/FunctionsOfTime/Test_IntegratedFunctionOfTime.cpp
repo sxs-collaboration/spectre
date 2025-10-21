@@ -16,6 +16,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/Utilities/Serialization/Versioning.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Serialization/Serialize.hpp"
@@ -73,6 +74,19 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
                         f_of_t_derived->func_and_deriv(check_time));
   const auto t_bounds = copy_at_time->time_bounds();
   CHECK(t_bounds == std::array{new_time, new_expiration});
+}
+
+void test_serialization_versioning() {
+  using Integrated = domain::FunctionsOfTime::IntegratedFunctionOfTime;
+  register_classes_with_charm<Integrated>();
+  const std::unique_ptr<FunctionsOfTime::FunctionOfTime> fot(
+      std::make_unique<Integrated>(2.0, std::array<double, 2>{0., 0.5}, 2.5,
+                                   false));
+  fot->update(2.5, {{2.5, 3.}}, 3.0);
+
+  TestHelpers::serialization::test_versioning<Integrated>(
+      "Domain/FunctionsOfTime/IntegratedFunctionOfTime.serializations",
+      "version 1", fot);
 }
 
 void test_out_of_order_update() {
@@ -208,6 +222,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.IntegratedFunctionOfTime",
     test(make_not_null(f_of_t3.get()), dt, random_positions, random_velocities,
          true);
   }
+  test_serialization_versioning();
   test_out_of_order_update();
 }
 }  // namespace domain

@@ -33,7 +33,7 @@ void test_serialization_versioning() {
 
   TestHelpers::serialization::test_versioning<QuatFoT>(
       "Domain/FunctionsOfTime/QuaternionFunctionOfTime.serializations",
-      "version 5", func);
+      "version 6", func);
 }
 
 void test_out_of_order_update() {

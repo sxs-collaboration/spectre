@@ -103,7 +103,7 @@ double QuaternionFunctionOfTime<MaxDeriv>::expiration_after(
 template <size_t MaxDeriv>
 void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   FunctionOfTime::pup(p);
-  size_t version = 5;
+  size_t version = 6;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -117,8 +117,10 @@ void QuaternionFunctionOfTime<MaxDeriv>::pup(PUP::er& p) {
   p | stored_quaternions_and_times_;
   p | angle_f_of_t_;
 
-  // Just use empty map when unpacking version 4
-  if (version >= 5) {
+  // Serializing the backlog is not threadsafe, and so was removed in
+  // version 6.  It should never have any entries during
+  // checkpointing, and should be safe to ignore during IO.
+  if (version == 5) {
     p | update_backlog_;
   }
 }
