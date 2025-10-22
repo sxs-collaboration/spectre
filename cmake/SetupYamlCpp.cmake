@@ -10,6 +10,8 @@ if (NOT YAML_CPP_FOUND)
   endif()
   message(STATUS "Fetching yaml-cpp")
   include(FetchContent)
+  # Allow to use newer CMake versions for yaml-cpp v0.8.0
+  set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "" FORCE)
   FetchContent_Declare(yaml-cpp
     GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
     GIT_TAG yaml-cpp-0.9.0
