@@ -129,6 +129,8 @@ bool interpolate_volume_data(
           }
         }
       });
+
+  current_iteration_storage->intersecting_element_ids.insert(element_id);
   return true;
 }
 

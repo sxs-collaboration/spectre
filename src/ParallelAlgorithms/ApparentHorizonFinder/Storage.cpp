@@ -41,6 +41,7 @@ void Iteration<Fr>::reset_for_next_iteration() {
   // the next surface
   this->block_coord_holders.reset();
   this->indices_interpolated_to_thus_far.clear();
+  this->intersecting_element_ids.clear();
   this->compute_coords_retries = 0;
 }
 
@@ -50,6 +51,7 @@ void Iteration<Fr>::pup(PUP::er& p) {
   p | block_coord_holders;
   p | interpolated_vars;
   p | indices_interpolated_to_thus_far;
+  p | intersecting_element_ids;
   p | compute_coords_retries;
   // No need to serialize the memory buffers because they are resized as needed
 }
@@ -61,6 +63,7 @@ bool operator==(const Iteration<Fr>& lhs, const Iteration<Fr>& rhs) {
          lhs.interpolated_vars == rhs.interpolated_vars and
          lhs.indices_interpolated_to_thus_far ==
              rhs.indices_interpolated_to_thus_far and
+         lhs.intersecting_element_ids == rhs.intersecting_element_ids and
          lhs.compute_coords_retries == rhs.compute_coords_retries;
   // No need to compare the memory buffers
 }
@@ -94,20 +97,25 @@ bool operator!=(const SingleTimeStorage<Fr>& lhs,
 }
 
 template <typename Fr>
-PreviousSurface<Fr>::PreviousSurface(const LinkedMessageId<double>& time_in,
-                                     ylm::Strahlkorper<Fr> surface_in)
-    : time(time_in), surface(std::move(surface_in)) {}
+PreviousSurface<Fr>::PreviousSurface(
+    const LinkedMessageId<double>& time_in, ylm::Strahlkorper<Fr> surface_in,
+    std::unordered_set<ElementId<3>> intersecting_element_ids_in)
+    : time(time_in),
+      surface(std::move(surface_in)),
+      intersecting_element_ids(std::move(intersecting_element_ids_in)) {}
 
 template <typename Fr>
 void PreviousSurface<Fr>::pup(PUP::er& p) {
   p | time;
   p | surface;
+  p | intersecting_element_ids;
 }
 
 template <typename Fr>
 bool operator==(const PreviousSurface<Fr>& lhs,
                 const PreviousSurface<Fr>& rhs) {
-  return lhs.time == rhs.time and lhs.surface == rhs.surface;
+  return lhs.time == rhs.time and lhs.surface == rhs.surface and
+         lhs.intersecting_element_ids == rhs.intersecting_element_ids;
 }
 template <typename Fr>
 bool operator!=(const PreviousSurface<Fr>& lhs,
@@ -115,29 +123,77 @@ bool operator!=(const PreviousSurface<Fr>& lhs,
   return not(lhs == rhs);
 }
 
+template <typename Fr>
+void LockedPreviousSurface<Fr>::pup(PUP::er& p) {
+  // Don't pup the lock
+  p | surface;
+}
+
+template <typename Fr>
+LockedPreviousSurface<Fr>::LockedPreviousSurface() = default;
+template <typename Fr>
+LockedPreviousSurface<Fr>::LockedPreviousSurface(const PreviousSurface<Fr>& rhs)
+    : surface(rhs) {}
+template <typename Fr>
+LockedPreviousSurface<Fr>::LockedPreviousSurface(
+    const LockedPreviousSurface<Fr>& rhs)
+    : surface(rhs.surface) {}
+template <typename Fr>
+LockedPreviousSurface<Fr>& LockedPreviousSurface<Fr>::operator=(
+    const LockedPreviousSurface<Fr>& rhs) {
+  surface = rhs.surface;
+  return *this;
+}
+template <typename Fr>
+LockedPreviousSurface<Fr>::LockedPreviousSurface(
+    LockedPreviousSurface<Fr>&& rhs)
+    : surface(std::move(rhs.surface)) {}
+template <typename Fr>
+LockedPreviousSurface<Fr>& LockedPreviousSurface<Fr>::operator=(
+    LockedPreviousSurface<Fr>&& rhs) {
+  surface = std::move(rhs.surface);
+  return *this;
+}
+
+template <typename Fr>
+bool operator==(const LockedPreviousSurface<Fr>& lhs,
+                const LockedPreviousSurface<Fr>& rhs) {
+  return lhs.surface == rhs.surface;
+}
+template <typename Fr>
+bool operator!=(const LockedPreviousSurface<Fr>& lhs,
+                const LockedPreviousSurface<Fr>& rhs) {
+  return not(lhs == rhs);
+}
+
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                       \
-  template struct VolumeVariables<FRAME(data)>;                    \
-  template struct Iteration<FRAME(data)>;                          \
-  template struct SingleTimeStorage<FRAME(data)>;                  \
-  template struct PreviousSurface<FRAME(data)>;                    \
-  template bool operator==(const VolumeVariables<FRAME(data)>&,    \
-                           const VolumeVariables<FRAME(data)>&);   \
-  template bool operator!=(const VolumeVariables<FRAME(data)>&,    \
-                           const VolumeVariables<FRAME(data)>&);   \
-  template bool operator==(const Iteration<FRAME(data)>&,          \
-                           const Iteration<FRAME(data)>&);         \
-  template bool operator!=(const Iteration<FRAME(data)>&,          \
-                           const Iteration<FRAME(data)>&);         \
-  template bool operator==(const SingleTimeStorage<FRAME(data)>&,  \
-                           const SingleTimeStorage<FRAME(data)>&); \
-  template bool operator!=(const SingleTimeStorage<FRAME(data)>&,  \
-                           const SingleTimeStorage<FRAME(data)>&); \
-  template bool operator==(const PreviousSurface<FRAME(data)>&,    \
-                           const PreviousSurface<FRAME(data)>&);   \
-  template bool operator!=(const PreviousSurface<FRAME(data)>&,    \
-                           const PreviousSurface<FRAME(data)>&);
+#define INSTANTIATE(_, data)                                           \
+  template struct VolumeVariables<FRAME(data)>;                        \
+  template struct Iteration<FRAME(data)>;                              \
+  template struct SingleTimeStorage<FRAME(data)>;                      \
+  template struct PreviousSurface<FRAME(data)>;                        \
+  template struct LockedPreviousSurface<FRAME(data)>;                  \
+  template bool operator==(const VolumeVariables<FRAME(data)>&,        \
+                           const VolumeVariables<FRAME(data)>&);       \
+  template bool operator!=(const VolumeVariables<FRAME(data)>&,        \
+                           const VolumeVariables<FRAME(data)>&);       \
+  template bool operator==(const Iteration<FRAME(data)>&,              \
+                           const Iteration<FRAME(data)>&);             \
+  template bool operator!=(const Iteration<FRAME(data)>&,              \
+                           const Iteration<FRAME(data)>&);             \
+  template bool operator==(const SingleTimeStorage<FRAME(data)>&,      \
+                           const SingleTimeStorage<FRAME(data)>&);     \
+  template bool operator!=(const SingleTimeStorage<FRAME(data)>&,      \
+                           const SingleTimeStorage<FRAME(data)>&);     \
+  template bool operator==(const PreviousSurface<FRAME(data)>&,        \
+                           const PreviousSurface<FRAME(data)>&);       \
+  template bool operator!=(const PreviousSurface<FRAME(data)>&,        \
+                           const PreviousSurface<FRAME(data)>&);       \
+  template bool operator==(const LockedPreviousSurface<FRAME(data)>&,  \
+                           const LockedPreviousSurface<FRAME(data)>&); \
+  template bool operator!=(const LockedPreviousSurface<FRAME(data)>&,  \
+                           const LockedPreviousSurface<FRAME(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Inertial, Frame::Distorted, Frame::Grid))

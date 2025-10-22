@@ -232,12 +232,13 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
 
   using return_tags = tmpl::list<>;
   using argument_tags =
-      tmpl::list<::Tags::ObservationBox, ::Events::Tags::ObserverMesh<3>>;
+      tmpl::list<::Tags::ObservationBox, ::Events::Tags::ObserverMesh<3>,
+                 domain::Tags::Element<3>>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ParallelComponent>
   void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
-                  const Mesh<3>& mesh,
+                  const Mesh<3>& mesh, const Element<3>& element,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<3>& element_id,
                   const ParallelComponent* const component,
@@ -246,7 +247,7 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
                           observation_value);
 
     horizon_find_event_(
-        get<typename HorizonMetavars::time_tag>(box), mesh,
+        get<typename HorizonMetavars::time_tag>(box), mesh, element,
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(box),
         get<gh::Tags::Pi<DataVector, 3>>(box),
         get<gh::Tags::Phi<DataVector, 3>>(box),

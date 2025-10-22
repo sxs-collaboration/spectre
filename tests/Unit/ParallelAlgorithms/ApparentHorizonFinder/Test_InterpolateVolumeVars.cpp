@@ -166,8 +166,11 @@ void test_interpolate_volume_vars() {
                         Frame::Inertial>>(source_vars),
         time, domain, mesh, element_id, functions_of_time);
 
-    ah::interpolate_volume_data(make_not_null(&current_iteration), volume_vars,
-                                element_id);
+    const bool interpolated_any_points = ah::interpolate_volume_data(
+        make_not_null(&current_iteration), volume_vars, element_id);
+
+    CHECK(current_iteration.intersecting_element_ids.contains(element_id) ==
+          interpolated_any_points);
 
     // Check that we finished interpolation and that the points we interpolated
     // to aren't the default fill value

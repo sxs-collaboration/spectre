@@ -69,7 +69,8 @@ struct Initialize {
                          typename HorizonMetavars::
                              horizon_find_failure_callbacks>>>>>>;
 
-  using mutable_global_cache_tags = tmpl::list<>;
+  using mutable_global_cache_tags =
+      tmpl::list<Tags::PreviousSurface<HorizonMetavars>>;
 
   using compute_tags = ah::compute_items_on_target<3, Fr>;
 

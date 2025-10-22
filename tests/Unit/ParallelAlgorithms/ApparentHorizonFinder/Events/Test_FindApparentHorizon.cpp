@@ -113,7 +113,8 @@ struct MockComponent {
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<3>, ah::Tags::BlocksForHorizonFind>;
   using mutable_global_cache_tags =
-      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
+                 ah::Tags::PreviousSurface<MockHorizonMetavars>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
@@ -175,7 +176,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
       {domain_creator.create_domain(),
        std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}},
-      {domain_creator.functions_of_time()}};
+      {domain_creator.functions_of_time(),
+       ah::Storage::LockedPreviousSurface<Frame::Grid>{}}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_array_component<component>(
@@ -273,12 +275,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
   std::optional<std::string> dependency{"FakeDependency"};
 
   // Test the event version
-  auto box =
-      db::create<db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
-                                   typename MockHorizonMetavars::time_tag,
-                                   ::Events::Tags::ObserverMesh<3>,
-                                   ::Tags::Variables<ah::source_vars<3>>>>(
-          metavars{}, observation_time, mesh, vars);
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavars>,
+      typename MockHorizonMetavars::time_tag, ::Events::Tags::ObserverMesh<3>,
+      domain::Tags::Element<3>, ::Tags::Variables<ah::source_vars<3>>>>(
+      metavars{}, observation_time, mesh, Element<3>{element_id, {}}, vars);
 
   const metavars::event event{dependency};
   const metavars::event serialized_event = serialize_and_deserialize(event);

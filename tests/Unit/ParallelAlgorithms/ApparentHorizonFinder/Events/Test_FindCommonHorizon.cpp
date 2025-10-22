@@ -347,6 +347,8 @@ struct MockHorizonComponent {
       ah::Component<Metavariables, MockHorizonMetavars>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<3>, ah::Tags::BlocksForHorizonFind>;
+  using mutable_global_cache_tags =
+      tmpl::list<ah::Tags::PreviousSurface<MockHorizonMetavars>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
@@ -380,6 +382,7 @@ void common_horizon_event() {
   using metavars = MockMetavariables;
   constexpr size_t Dim = metavars::volume_dim;
   const ElementId<Dim> element_id(0);
+  const Element<Dim> element{element_id, {}};
 
   using obs_component = MockObserver<metavars>;
   using horizon_component = MockHorizonComponent<metavars>;
@@ -391,7 +394,8 @@ void common_horizon_event() {
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {brick.create_domain(),
        std::unordered_map<std::string, std::unordered_set<std::string>>{
-           {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}}};
+           {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}},
+      {ah::Storage::LockedPreviousSurface<Frame::Grid>{}}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<obs_component>(make_not_null(&runner));
@@ -472,7 +476,7 @@ void common_horizon_event() {
   auto obs_box = make_observation_box<tmpl::list<
       Parallel::Tags::FromGlobalCache<::domain::Tags::Domain<Dim>, metavars>>>(
       make_not_null(&box));
-  find_common_horizon(obs_box, mesh, cache, element_id,
+  find_common_horizon(obs_box, mesh, element, cache, element_id,
                       std::add_pointer_t<elem_component>{}, observation_value);
 
   // Since this event is a combination of two events, and those two events are

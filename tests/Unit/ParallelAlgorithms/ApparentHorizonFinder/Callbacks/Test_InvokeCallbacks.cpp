@@ -100,10 +100,12 @@ struct HorizonMetavars : tt::ConformsTo<ah::protocols::HorizonMetavars> {
   static std::string name() { return "TestingHorizonMetavars"; }
 };
 
+template <typename Fr>
 struct Metavariables {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using mutable_global_cache_tags =
-      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
+                 ah::Tags::PreviousSurface<HorizonMetavars<Fr>>>;
   using component_list = tmpl::list<>;
 };
 
@@ -112,8 +114,10 @@ void run_test() {
   const domain::creators::Sphere sphere_creator{
       0.9, 2.0, domain::creators::Sphere::Excision{nullptr}, 0_st, 4_st, true};
 
-  Parallel::GlobalCache<Metavariables> cache{
-      {sphere_creator.create_domain()}, {sphere_creator.functions_of_time()}};
+  Parallel::GlobalCache<Metavariables<Fr>> cache{
+      {sphere_creator.create_domain()},
+      {sphere_creator.functions_of_time(),
+       ah::Storage::LockedPreviousSurface<Fr>{}}};
 
   const LinkedMessageId<double> time{2.0, {1.0}};
   const FastFlow fast_flow{
@@ -123,6 +127,8 @@ void run_test() {
   ah::Storage::Iteration<Fr> current_iteration{};
   current_iteration.strahlkorper =
       ylm::Strahlkorper<Fr>{l_max, radius, std::array{0.0, 0.0, 0.0}};
+  current_iteration.intersecting_element_ids = {ElementId<3>{0},
+                                                ElementId<3>{1}};
   const size_t l_mesh =
       fast_flow.current_l_mesh(current_iteration.strahlkorper);
   // The actual values don't matter for this test
@@ -162,6 +168,11 @@ void run_test() {
   CHECK(box_previous_surfaces.front().time == time);
   CHECK(box_previous_surfaces.front().surface ==
         current_iteration.strahlkorper);
+  CHECK(box_previous_surfaces.front().intersecting_element_ids ==
+        current_iteration.intersecting_element_ids);
+  const auto& cache_previous_surface =
+      get<ah::Tags::PreviousSurface<HorizonMetavars<Fr>>>(cache);
+  CHECK(cache_previous_surface.surface == box_previous_surfaces.front());
   CHECK(db::get<ylm::Tags::Strahlkorper<Fr>>(box) ==
         current_iteration.strahlkorper);
   CHECK(db::get<ylm::Tags::TimeDerivStrahlkorper<Fr>>(box).coefficients() ==

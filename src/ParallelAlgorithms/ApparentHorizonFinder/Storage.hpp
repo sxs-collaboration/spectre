@@ -19,6 +19,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "Parallel/MultiReaderSpinlock.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Destination.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/FastFlow.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/HorizonAliases.hpp"
@@ -82,6 +83,12 @@ struct Iteration {
    * already been interpolated to.
    */
   std::vector<bool> indices_interpolated_to_thus_far{};
+  /*!
+   * \brief Holds the element IDs of all elements that intersect with the
+   * current iteration surface. Used to determine which elements will send
+   * data for the next horizon find.
+   */
+  std::unordered_set<ElementId<3>> intersecting_element_ids{};
   /*!
    * \brief Offsets of newly interpolated points in the overall tensor (used as
    * memory buffer)
@@ -184,10 +191,12 @@ template <typename Fr>
 struct PreviousSurface {
   PreviousSurface() = default;
   PreviousSurface(const LinkedMessageId<double>& time_in,
-                  ylm::Strahlkorper<Fr> surface_in);
+                  ylm::Strahlkorper<Fr> surface_in,
+                  std::unordered_set<ElementId<3>> intersecting_element_ids_in);
 
   LinkedMessageId<double> time;
   ylm::Strahlkorper<Fr> surface;
+  std::unordered_set<ElementId<3>> intersecting_element_ids;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -197,4 +206,38 @@ template <typename Fr>
 bool operator==(const PreviousSurface<Fr>& lhs, const PreviousSurface<Fr>& rhs);
 template <typename Fr>
 bool operator!=(const PreviousSurface<Fr>& lhs, const PreviousSurface<Fr>& rhs);
+
+/*!
+ * \brief Holds a previous surface and a lock that protects it.
+ *
+ * \details This is used to store and update a previous surface in the global
+ * cache and allow multiple readers (elements) to access it simultaneously.
+ */
+template <typename Fr>
+struct LockedPreviousSurface {
+  std::optional<PreviousSurface<Fr>> surface;
+  // Lock is mutable so it can be retrieved from the const global cache and put
+  // in read-lock mode by elements.
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable Parallel::MultiReaderSpinlock lock;
+
+  LockedPreviousSurface();
+  explicit LockedPreviousSurface(const PreviousSurface<Fr>& rhs);
+  LockedPreviousSurface(const LockedPreviousSurface& rhs);
+  LockedPreviousSurface& operator=(const LockedPreviousSurface& rhs);
+  LockedPreviousSurface(LockedPreviousSurface&& rhs);
+  LockedPreviousSurface& operator=(LockedPreviousSurface&& rhs);
+  ~LockedPreviousSurface() = default;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
+};
+
+template <typename Fr>
+bool operator==(const LockedPreviousSurface<Fr>& lhs,
+                const LockedPreviousSurface<Fr>& rhs);
+template <typename Fr>
+bool operator!=(const LockedPreviousSurface<Fr>& lhs,
+                const LockedPreviousSurface<Fr>& rhs);
+
 }  // namespace ah::Storage

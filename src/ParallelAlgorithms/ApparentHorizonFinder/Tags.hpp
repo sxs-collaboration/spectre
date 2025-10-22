@@ -130,6 +130,19 @@ struct PreviousSurfaces : db::SimpleTag {
 };
 
 /*!
+ * \brief Holds the previous surface. Used to determine which elements will send
+ * data for the next horizon find.
+ */
+template <typename HorizonMetavars>
+struct PreviousSurface : db::SimpleTag {
+  using type =
+      ah::Storage::LockedPreviousSurface<typename HorizonMetavars::frame>;
+  using option_tags = tmpl::list<>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options() { return {}; }
+};
+
+/*!
  * \brief Global cache tag that holds horizon finder options
  */
 template <typename HorizonMetavars>
