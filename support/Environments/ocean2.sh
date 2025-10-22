@@ -31,6 +31,7 @@ spectre_unload_modules() {
     module unload petsc/3.21.3
     module unload charm/8.0.0
     module unload libbacktrace/2024.07.09
+    module unload xsimd/13.2.0
 }
 
 spectre_load_modules() {
@@ -57,6 +58,7 @@ spectre_load_modules() {
     module load petsc/3.21.3
     module load charm/8.0.0
     module load libbacktrace/2024.07.09
+    module load xsimd/13.2.0
 }
 
 spectre_run_cmake() {

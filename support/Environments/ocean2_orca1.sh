@@ -22,6 +22,7 @@ spectre_unload_modules() {
     module unload orca1/catch2/3.5.4
     module unload orca1/yaml-cpp/0.7.0
     module unload blaze/3.8
+    module unload xsimd/13.2.0
 }
 
 spectre_load_modules() {
@@ -39,6 +40,7 @@ spectre_load_modules() {
     module load orca1/catch2/3.5.4
     module load orca1/yaml-cpp/0.7.0
     module load blaze/3.8
+    module load xsimd/13.2.0
 }
 
 spectre_run_cmake() {
