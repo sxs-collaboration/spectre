@@ -5,6 +5,7 @@
 
 #include <array>
 #include <optional>
+#include <type_traits>
 
 #include "Time/Tags/VariableOrderAlgorithm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -46,20 +47,23 @@ class not_null;
  */
 /// @{
 template <typename System,
+          template <typename> typename CacheTagPrefix = std::type_identity_t,
           typename = tmpl::conditional_t<
               tt::is_a_v<tmpl::list, typename System::variables_tag>,
               typename System::variables_tag,
               tmpl::list<typename System::variables_tag>>>
 struct ChangeTimeStepperOrder;
 
-template <typename System, typename... VariablesTags>
-struct ChangeTimeStepperOrder<System, tmpl::list<VariablesTags...>> {
+template <typename System, template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+struct ChangeTimeStepperOrder<System, CacheTagPrefix,
+                              tmpl::list<VariablesTags...>> {
   using const_global_cache_tags = tmpl::list<Tags::VariableOrderAlgorithm>;
   using return_tags =
       tmpl::list<Tags::HistoryEvolvedVariables<VariablesTags>...>;
   using argument_tags =
-      tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::VariableOrderAlgorithm,
-                 Tags::Next<Tags::TimeStepId>,
+      tmpl::list<CacheTagPrefix<Tags::TimeStepper<TimeStepper>>,
+                 Tags::VariableOrderAlgorithm, Tags::Next<Tags::TimeStepId>,
                  Tags::StepperErrors<VariablesTags>...>;
 
   static void apply(

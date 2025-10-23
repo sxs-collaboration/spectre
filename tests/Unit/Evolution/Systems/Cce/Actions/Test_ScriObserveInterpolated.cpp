@@ -153,7 +153,7 @@ struct mock_characteristic_evolution {
               Actions::ScriObserveInterpolated<
                   mock_observer<Metavariables>,
                   typename Metavariables::cce_boundary_component, false>,
-              ::Actions::MutateApply<AdvanceTime>>>>;
+              ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>>>>;
 };
 
 struct test_metavariables {

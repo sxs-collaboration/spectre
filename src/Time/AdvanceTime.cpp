@@ -11,14 +11,14 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 
-void AdvanceTime::apply(const gsl::not_null<TimeStepId*> time_id,
-                        const gsl::not_null<TimeStepId*> next_time_id,
-                        const gsl::not_null<TimeDelta*> time_step,
-                        const gsl::not_null<double*> time,
-                        const gsl::not_null<uint64_t*> step_number_within_slab,
-                        const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
-                        const TimeStepper& time_stepper,
-                        const bool using_error_control) {
+namespace AdvanceTime_detail {
+void apply(const gsl::not_null<TimeStepId*> time_id,
+           const gsl::not_null<TimeStepId*> next_time_id,
+           const gsl::not_null<TimeDelta*> time_step,
+           const gsl::not_null<double*> time,
+           const gsl::not_null<uint64_t*> step_number_within_slab,
+           const gsl::not_null<AdaptiveSteppingDiagnostics*> diags,
+           const TimeStepper& time_stepper, const bool using_error_control) {
   const bool new_step = next_time_id->substep() == 0;
   if (time_id->slab_number() != next_time_id->slab_number()) {
     *step_number_within_slab = 0;
@@ -43,3 +43,4 @@ void AdvanceTime::apply(const gsl::not_null<TimeStepId*> time_id,
   }
   *time = time_id->substep_time();
 }
+}  // namespace AdvanceTime_detail

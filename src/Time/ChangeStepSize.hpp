@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <optional>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
@@ -59,7 +60,8 @@ struct TimeStepper;
 /// indicates that any constructible step chooser may be used. This option is
 /// used when multiple components need to invoke `ChangeStepSize` with step
 /// choosers that may not be compatible with all components.
-template <typename StepChoosersToUse = AllStepChoosers>
+template <typename StepChoosersToUse = AllStepChoosers,
+          template <typename> typename CacheTagPrefix = std::type_identity_t>
 struct ChangeStepSize {
   using const_global_cache_tags = tmpl::list<Tags::MinimumTimeStep>;
 
@@ -74,8 +76,9 @@ struct ChangeStepSize {
     }
 
     const LtsTimeStepper& time_stepper =
-        db::get<Tags::TimeStepper<LtsTimeStepper>>(*box);
-    const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
+        db::get<CacheTagPrefix<Tags::TimeStepper<LtsTimeStepper>>>(*box);
+    const auto& step_choosers =
+        db::get<CacheTagPrefix<Tags::StepChoosers>>(*box);
 
     using history_tags = ::Tags::get_all_history_tags<DbTags>;
     bool can_change_step_size = true;

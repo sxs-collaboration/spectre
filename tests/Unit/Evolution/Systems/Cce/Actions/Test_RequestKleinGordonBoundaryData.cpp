@@ -66,7 +66,8 @@ struct mock_kg_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::MutateApply<AdvanceTime>, Parallel::Actions::TerminatePhase>;
+      ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
+      Parallel::Actions::TerminatePhase>;
 
   using simple_tags_from_options =
       Parallel::get_simple_tags_from_options<initialize_action_list>;

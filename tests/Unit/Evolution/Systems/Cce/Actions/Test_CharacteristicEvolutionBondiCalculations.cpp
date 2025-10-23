@@ -96,7 +96,7 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_swsh_tags, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::MutateApply<AdvanceTime>,
+      ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
       Actions::ReceiveWorldtubeData<
           Metavariables,
           typename Metavariables::cce_boundary_communication_tags>,

@@ -235,7 +235,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
-                  Actions::MutateApply<AdvanceTime>,
+                  Actions::MutateApply<AdvanceTime<>>,
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   // Monte-Carlo is only triggered at the end of a full time

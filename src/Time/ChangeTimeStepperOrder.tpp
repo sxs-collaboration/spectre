@@ -19,16 +19,19 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename System, typename... VariablesTags>
-void ChangeTimeStepperOrder<System, tmpl::list<VariablesTags...>>::apply(
-    const gsl::not_null<
-        TimeSteppers::History<typename VariablesTags::type>*>... histories,
-    const TimeStepper& time_stepper,
-    const VariableOrderAlgorithm& order_algorithm,
-    const TimeStepId& next_time_step_id,
-    const typename tmpl::has_type<
-        VariablesTags,
-        std::array<std::optional<StepperErrorEstimate>, 2>>::type&... errors) {
+template <typename System, template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+void ChangeTimeStepperOrder<System, CacheTagPrefix,
+                            tmpl::list<VariablesTags...>>::
+    apply(
+        const gsl::not_null<
+            TimeSteppers::History<typename VariablesTags::type>*>... histories,
+        const TimeStepper& time_stepper,
+        const VariableOrderAlgorithm& order_algorithm,
+        const TimeStepId& next_time_step_id,
+        const typename tmpl::has_type<
+            VariablesTags, std::array<std::optional<StepperErrorEstimate>,
+                                      2>>::type&... errors) {
   if (next_time_step_id.substep() != 0) {
     return;
   }

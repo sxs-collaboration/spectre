@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 #include <tuple>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -182,7 +183,8 @@ using vars_to_save = typename vars_to_save_impl<
 ///     has primitives
 /// - Removes: nothing
 /// - Modifies: Tags::TimeStep
-template <typename System>
+template <typename System,
+          template <typename> typename CacheTagPrefix = std::type_identity_t>
 struct Initialize {
  private:
   template <typename TagsToSave>
@@ -223,7 +225,8 @@ struct Initialize {
         db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0
             ? 0
             : get<TimeSteppers::Tags::FixedOrder>(
-                  db::get<::Tags::TimeStepper<TimeStepper>>(box).order()) -
+                  db::get<CacheTagPrefix<::Tags::TimeStepper<TimeStepper>>>(box)
+                      .order()) -
                   1;
 
     // Decrease the step so that the generated history will be
@@ -450,19 +453,20 @@ struct PhaseEnd;
 /// time).
 ///
 /// \see SelfStart
-template <typename StepActions, typename System>
+template <typename StepActions, typename System,
+          template <typename> typename CacheTagPrefix = std::type_identity_t>
 using self_start_procedure = tmpl::flatten<tmpl::list<
 // clang-format off
-    SelfStart::Actions::Initialize<System>,
+    SelfStart::Actions::Initialize<System, CacheTagPrefix>,
     ::Actions::Label<detail::PhaseStart>,
     SelfStart::Actions::CheckForCompletion<detail::PhaseEnd, System>,
-    ::Actions::MutateApply<AdvanceTime>,
+    ::Actions::MutateApply<AdvanceTime<CacheTagPrefix>>,
     SelfStart::Actions::CheckForOrderIncrease,
     StepActions,
     ::Actions::Goto<detail::PhaseStart>,
     ::Actions::Label<detail::PhaseEnd>,
     SelfStart::Actions::Cleanup,
-    ::Actions::MutateApply<AdvanceTime>,
+    ::Actions::MutateApply<AdvanceTime<CacheTagPrefix>>,
     Parallel::Actions::TerminatePhase>>;
 // clang-format on
 }  // namespace SelfStart

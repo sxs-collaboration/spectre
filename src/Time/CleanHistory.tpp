@@ -10,8 +10,9 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-template <typename System, typename... VariablesTags>
-void CleanHistory<System, tmpl::list<VariablesTags...>>::apply(
+template <typename System, template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+void CleanHistory<System, CacheTagPrefix, tmpl::list<VariablesTags...>>::apply(
     const gsl::not_null<
         TimeSteppers::History<typename VariablesTags::type>*>... histories,
     const TimeStepper& time_stepper) {

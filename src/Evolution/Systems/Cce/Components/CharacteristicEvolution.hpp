@@ -198,8 +198,10 @@ struct CharacteristicEvolution {
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
       ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
       ::Actions::MutateApply<
-          UpdateU<cce_system, Metavariables::local_time_stepping>>,
-      ::Actions::MutateApply<CleanHistory<cce_system>>>;
+          UpdateU<cce_system, Metavariables::local_time_stepping,
+                  Tags::CceEvolutionPrefix>>,
+      ::Actions::MutateApply<
+          CleanHistory<cce_system, Tags::CceEvolutionPrefix>>>;
 
   using extract_action_list = tmpl::list<
       Actions::RequestBoundaryData<
@@ -232,27 +234,31 @@ struct CharacteristicEvolution {
               evolution::Actions::RunEventsAndTriggers<
                   Triggers::WhenToCheck::AtSlabs>>>>,
       compute_scri_quantities_and_observe,
-      ::Actions::MutateApply<
-          ChangeStepSize<typename Metavariables::cce_step_choosers>>,
+      ::Actions::MutateApply<ChangeStepSize<
+          typename Metavariables::cce_step_choosers, Tags::CceEvolutionPrefix>>,
       ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
       ::Actions::MutateApply<
-          UpdateU<cce_system, Metavariables::local_time_stepping>>,
-      ::Actions::MutateApply<ChangeTimeStepperOrder<cce_system>>,
-      ::Actions::MutateApply<CleanHistory<cce_system>>,
+          UpdateU<cce_system, Metavariables::local_time_stepping,
+                  Tags::CceEvolutionPrefix>>,
+      ::Actions::MutateApply<
+          ChangeTimeStepperOrder<cce_system, Tags::CceEvolutionPrefix>>,
+      ::Actions::MutateApply<
+          CleanHistory<cce_system, Tags::CceEvolutionPrefix>>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
-      ::Actions::MutateApply<AdvanceTime>, Actions::ExitIfEndTimeReached,
-      ::Actions::Goto<CceEvolutionLabelTag>>;
+      ::Actions::MutateApply<AdvanceTime<Tags::CceEvolutionPrefix>>,
+      Actions::ExitIfEndTimeReached, ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<Parallel::Phase::InitializeTimeStepperHistory,
                              SelfStart::self_start_procedure<
-                                 self_start_extract_action_list, cce_system>>,
+                                 self_start_extract_action_list, cce_system,
+                                 Tags::CceEvolutionPrefix>>,
       Parallel::PhaseActions<Parallel::Phase::Evolve, extract_action_list>>;
 
   static void initialize(

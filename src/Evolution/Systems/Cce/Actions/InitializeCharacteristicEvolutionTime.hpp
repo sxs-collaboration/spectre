@@ -85,7 +85,9 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::AdaptiveSteppingDiagnostics,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
-  using compute_tags = time_stepper_ref_tags<LtsTimeStepper>;
+  using compute_tags =
+      tmpl::transform<time_stepper_ref_tags<LtsTimeStepper>,
+                      tmpl::bind<Tags::CceEvolutionPrefix, tmpl::_1>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -115,7 +117,9 @@ struct InitializeCharacteristicEvolutionTime {
       initial_time_step = initial_time.slab().duration();
     }
 
-    const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
+    const auto& time_stepper =
+        db::get<Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
+            box);
 
     const size_t starting_order =
         visit(

@@ -69,7 +69,8 @@ struct InitializeWorldtubeBoundaryBase {
       if (dynamic_cast<const Solutions::RobinsonTrautman*>(
               &(db::get<Tags::AnalyticBoundaryDataManager>(box)
                     .get_generator())) != nullptr) {
-        if (db::get<::Tags::TimeStepper<TimeStepper>>(box)
+        if (db::get<Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
+                box)
                 .number_of_substeps() != 1) {
           ERROR(
               "Do not use RobinsonTrautman analytic solution with a "
@@ -254,7 +255,9 @@ struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
       typename Metavariables::cce_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;
-  using compute_tags = time_stepper_ref_tags<TimeStepperType>;
+  using compute_tags =
+      tmpl::transform<time_stepper_ref_tags<TimeStepperType>,
+                      tmpl::bind<Tags::CceEvolutionPrefix, tmpl::_1>>;
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::ExtractionRadiusSimple,
                  Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;

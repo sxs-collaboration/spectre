@@ -290,7 +290,7 @@ struct EvolutionMetavars {
                   evolution::Actions::RunEventsAndTriggers<
                       Triggers::WhenToCheck::AtSlabs>,
                   Actions::ChangeSlabSize, dg_step_actions,
-                  Actions::MutateApply<AdvanceTime>,
+                  Actions::MutateApply<AdvanceTime<>>,
                   PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   struct registration

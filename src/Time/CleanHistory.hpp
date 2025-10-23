@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
@@ -28,17 +30,20 @@ class not_null;
 /// \brief Clean time stepper history after a substep
 /// @{
 template <typename System,
+          template <typename> typename CacheTagPrefix = std::type_identity_t,
           typename = tmpl::conditional_t<
               tt::is_a_v<tmpl::list, typename System::variables_tag>,
               typename System::variables_tag,
               tmpl::list<typename System::variables_tag>>>
 struct CleanHistory;
 
-template <typename System, typename... VariablesTags>
-struct CleanHistory<System, tmpl::list<VariablesTags...>> {
+template <typename System, template <typename> typename CacheTagPrefix,
+          typename... VariablesTags>
+struct CleanHistory<System, CacheTagPrefix, tmpl::list<VariablesTags...>> {
   using return_tags =
       tmpl::list<Tags::HistoryEvolvedVariables<VariablesTags>...>;
-  using argument_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using argument_tags =
+      tmpl::list<CacheTagPrefix<Tags::TimeStepper<TimeStepper>>>;
 
   static void apply(
       const gsl::not_null<
