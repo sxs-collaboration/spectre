@@ -47,6 +47,7 @@ spectre_target_headers(
   Local.hpp
   Main.hpp
   MaxInlineMethodsReached.hpp
+  MultiReaderSpinlock.hpp
   NodeLock.hpp
   OutputInbox.hpp
   ParallelComponentHelpers.hpp

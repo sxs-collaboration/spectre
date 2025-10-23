@@ -167,6 +167,7 @@ set(LIBRARY_SOURCES
   Test_GlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
   Test_MemoryMonitor.cpp
+  Test_MultiReaderSpinlock.cpp
   Test_NodeLock.cpp
   Test_OutputInbox.cpp
   Test_Parallel.cpp
