@@ -218,8 +218,7 @@ void test_klein_gordon_h5_boundary_communication(
                                                   false),
        start_time, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
-           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
 
   const size_t buffer_size = 5;
   ActionTesting::set_phase(make_not_null(&runner),

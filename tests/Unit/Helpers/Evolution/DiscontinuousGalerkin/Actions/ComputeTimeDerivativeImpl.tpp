@@ -914,8 +914,7 @@ struct component {
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepChoosers,
-                     ::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
+          tmpl::list<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
           tmpl::list<::Tags::ConcreteTimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
@@ -1116,8 +1115,13 @@ void test_impl(const Spectral::Quadrature quadrature,
     }
   }
 
+  const Slab time_slab{0.2, 3.4};
+  const TimeDelta time_step{time_slab, {1, 128}};
+  const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 128}}};
+  const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
+
   MockRuntimeSystem runner = [&dg_formulation, &extents, &south_orientation,
-                              &grid_to_inertial_map]() {
+                              &grid_to_inertial_map, &time_step]() {
     std::vector<DirectionMap<
         Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
         boundary_conditions{2};
@@ -1163,13 +1167,18 @@ void test_impl(const Spectral::Quadrature quadrature,
         1, grid_to_inertial_map->get_clone());
 
     if constexpr (LocalTimeStepping) {
+      std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
+          step_choosers;
+      step_choosers.emplace_back(
+          std::make_unique<StepChoosers::Constant>(time_step.value()));
       return MockRuntimeSystem{
           {std::vector<std::array<size_t, Dim>>{extents, extents},
            typename metavars::normal_dot_numerical_flux::type{},
            std::move(domain), dg_formulation,
            std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
-           std::move(boundary_conditions), 1e-8}};
+           std::move(boundary_conditions), 1e-8, std::move(step_choosers)}};
     } else {
+      (void)time_step;
       return MockRuntimeSystem{
           {std::vector<std::array<size_t, Dim>>{extents, extents},
            typename metavars::normal_dot_numerical_flux::type{},
@@ -1306,10 +1315,6 @@ void test_impl(const Spectral::Quadrature quadrature,
     return fluxes;
   }();
 
-  const Slab time_slab{0.2, 3.4};
-  const TimeDelta time_step{time_slab, {1, 128}};
-  const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 128}}};
-  const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
   // Our moving mesh map doesn't actually move (we set a mesh velocity, etc.
   // separately), but we need the FunctionsOfTime tag for boundary conditions.
   // When checking boundary conditions we just test that the boundary condition
@@ -1320,133 +1325,62 @@ void test_impl(const Spectral::Quadrature quadrature,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
 
-  if constexpr (metavars::local_time_stepping) {
-    std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
-        step_choosers;
-    step_choosers.emplace_back(std::make_unique<StepChoosers::Constant>(
-        time_step.value()));
-    ActionTesting::emplace_component_and_initialize<component<metavars>>(
-        &runner, self_id,
-        {time_step_id,
-         next_time_step_id,
-         time_step,
-         time_step_id.step_time().value(),
-         AdaptiveSteppingDiagnostics{},
-         quadrature,
-         evolved_vars,
-         dt_evolved_vars,
-         history,
-         var3,
-         mesh,
-         clone_unique_ptrs(functions_of_time),
-         grid_to_inertial_map->get_clone(),
-         element,
-         neighbor_mesh,
-         inertial_coords,
-         inv_jac,
-         mesh_velocity,
-         div_mesh_velocity,
-         ElementMap<Dim, Frame::Grid>{
-             self_id,
-             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-                 domain::CoordinateMaps::Identity<Dim>{})},
-         std::move(step_choosers),
-         static_cast<std::unique_ptr<LtsTimeStepper>>(
-             std::make_unique<TimeSteppers::AdamsBashforth>(5))});
-    for (const auto& [direction, neighbor_ids] : neighbors) {
-      (void)direction;
-      for (const auto& neighbor_id : neighbor_ids) {
-        ActionTesting::emplace_component_and_initialize<component<metavars>>(
-            &runner, neighbor_id,
-            {time_step_id,
-             next_time_step_id,
-             time_step,
-             time_step_id.step_time().value(),
-             AdaptiveSteppingDiagnostics{},
-             quadrature,
-             evolved_vars,
-             dt_evolved_vars,
-             history,
-             var3,
-             mesh,
-             clone_unique_ptrs(functions_of_time),
-             grid_to_inertial_map->get_clone(),
-             element,
-             neighbor_mesh,
-             inertial_coords,
-             inv_jac,
-             mesh_velocity,
-             div_mesh_velocity,
-             ElementMap<Dim, Frame::Grid>{
-                 neighbor_id,
-                 domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                  Frame::Grid>(
-                     domain::CoordinateMaps::Identity<Dim>{})},
-             std::move(step_choosers),
-             static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforth>(5))});
-      }
-    }
-  } else {
-    ActionTesting::emplace_component_and_initialize<component<metavars>>(
-        &runner, self_id,
-        {time_step_id,
-         next_time_step_id,
-         time_step,
-         time_step_id.step_time().value(),
-         AdaptiveSteppingDiagnostics{},
-         quadrature,
-         evolved_vars,
-         dt_evolved_vars,
-         history,
-         var3,
-         mesh,
-         clone_unique_ptrs(functions_of_time),
-         grid_to_inertial_map->get_clone(),
-         element,
-         neighbor_mesh,
-         inertial_coords,
-         inv_jac,
-         mesh_velocity,
-         div_mesh_velocity,
-         ElementMap<Dim, Frame::Grid>{
-             self_id,
-             domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
-                 domain::CoordinateMaps::Identity<Dim>{})},
-         static_cast<std::unique_ptr<LtsTimeStepper>>(
-             std::make_unique<TimeSteppers::AdamsBashforth>(5))});
-    for (const auto& [direction, neighbor_ids] : neighbors) {
-      (void)direction;
-      for (const auto& neighbor_id : neighbor_ids) {
-        ActionTesting::emplace_component_and_initialize<component<metavars>>(
-            &runner, neighbor_id,
-            {time_step_id,
-             next_time_step_id,
-             time_step,
-             time_step_id.step_time().value(),
-             AdaptiveSteppingDiagnostics{},
-             quadrature,
-             evolved_vars,
-             dt_evolved_vars,
-             history,
-             var3,
-             mesh,
-             clone_unique_ptrs(functions_of_time),
-             grid_to_inertial_map->get_clone(),
-             element,
-             neighbor_mesh,
-             inertial_coords,
-             inv_jac,
-             mesh_velocity,
-             div_mesh_velocity,
-             ElementMap<Dim, Frame::Grid>{
-                 neighbor_id,
-                 domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                  Frame::Grid>(
-                     domain::CoordinateMaps::Identity<Dim>{})},
-             static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforth>(5))});
-      }
+  ActionTesting::emplace_component_and_initialize<component<metavars>>(
+      &runner, self_id,
+      {time_step_id,
+       next_time_step_id,
+       time_step,
+       time_step_id.step_time().value(),
+       AdaptiveSteppingDiagnostics{},
+       quadrature,
+       evolved_vars,
+       dt_evolved_vars,
+       history,
+       var3,
+       mesh,
+       clone_unique_ptrs(functions_of_time),
+       grid_to_inertial_map->get_clone(),
+       element,
+       neighbor_mesh,
+       inertial_coords,
+       inv_jac,
+       mesh_velocity,
+       div_mesh_velocity,
+       ElementMap<Dim, Frame::Grid>{
+           self_id,
+           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+               domain::CoordinateMaps::Identity<Dim>{})},
+       std::make_unique<TimeSteppers::AdamsBashforth>(5)});
+  for (const auto& [direction, neighbor_ids] : neighbors) {
+    (void)direction;
+    for (const auto& neighbor_id : neighbor_ids) {
+      ActionTesting::emplace_component_and_initialize<component<metavars>>(
+          &runner, neighbor_id,
+          {time_step_id,
+           next_time_step_id,
+           time_step,
+           time_step_id.step_time().value(),
+           AdaptiveSteppingDiagnostics{},
+           quadrature,
+           evolved_vars,
+           dt_evolved_vars,
+           history,
+           var3,
+           mesh,
+           clone_unique_ptrs(functions_of_time),
+           grid_to_inertial_map->get_clone(),
+           element,
+           neighbor_mesh,
+           inertial_coords,
+           inv_jac,
+           mesh_velocity,
+           div_mesh_velocity,
+           ElementMap<Dim, Frame::Grid>{
+               neighbor_id,
+               domain::make_coordinate_map_base<Frame::BlockLogical,
+                                                Frame::Grid>(
+                   domain::CoordinateMaps::Identity<Dim>{})},
+           std::make_unique<TimeSteppers::AdamsBashforth>(5)});
     }
   }
 

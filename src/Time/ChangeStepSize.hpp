@@ -14,6 +14,7 @@
 #include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/MinimumTimeStep.hpp"
+#include "Time/Tags/StepChoosers.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeStepRequest.hpp"
@@ -32,7 +33,6 @@ struct DataBox;
 struct FixedLtsRatio;
 template <typename Tag>
 struct Next;
-struct StepChoosers;
 struct TimeStep;
 struct TimeStepId;
 template <typename StepperInterface>
@@ -63,7 +63,8 @@ struct TimeStepper;
 template <typename StepChoosersToUse = AllStepChoosers,
           template <typename> typename CacheTagPrefix = std::type_identity_t>
 struct ChangeStepSize {
-  using const_global_cache_tags = tmpl::list<Tags::MinimumTimeStep>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::MinimumTimeStep, CacheTagPrefix<Tags::StepChoosers>>;
 
   using return_tags = tmpl::list<Tags::DataBox>;
   using argument_tags = tmpl::list<>;

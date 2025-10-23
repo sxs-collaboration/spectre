@@ -177,8 +177,7 @@ void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {start_time, false, l_max, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
-           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

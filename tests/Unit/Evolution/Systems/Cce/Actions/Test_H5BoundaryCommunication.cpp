@@ -239,8 +239,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
        Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
-           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
 
   // create the test file, because on initialization the manager will need
   // to get basic data out of the file

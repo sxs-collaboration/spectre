@@ -281,7 +281,6 @@ SPECTRE_TEST_CASE(
       {start_time, false, l_max, l_max, number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
            std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
        scri_output_density, true}};
   runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy

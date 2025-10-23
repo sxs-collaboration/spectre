@@ -191,9 +191,7 @@ SPECTRE_TEST_CASE(
           false, l_max, extraction_radius, end_time, start_time,
           number_of_radial_points,
           static_cast<std::unique_ptr<LtsTimeStepper>>(
-              std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-          make_vector<
-              std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
+              std::make_unique<::TimeSteppers::AdamsBashforth>(3))}};
 
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius,

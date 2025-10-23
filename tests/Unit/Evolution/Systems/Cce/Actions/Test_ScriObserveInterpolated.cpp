@@ -279,7 +279,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
        number_of_radial_points,
        static_cast<std::unique_ptr<LtsTimeStepper>>(
            std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
        scri_output_density, false}};
 
   runner.set_phase(Parallel::Phase::Initialization);
