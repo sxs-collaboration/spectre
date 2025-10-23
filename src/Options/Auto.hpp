@@ -48,22 +48,6 @@ class Auto {
   Auto() = default;
   explicit Auto(T value) : value_(std::move(value)) {}
 
-  // These lines are just to work around a spurious warning.
-  Auto(const Auto&) = default;
-  Auto& operator=(const Auto&) = default;
-  Auto(Auto&&) = default;
-  Auto& operator=(Auto&&) = default;
-#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and \
-    __GNUC__ < 14
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-  ~Auto() = default;
-#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ >= 12 and \
-    __GNUC__ < 14
-#pragma GCC diagnostic pop
-#endif
-
   // NOLINTNEXTLINE(google-explicit-constructor)
   template <typename U>
   operator std::optional<U>() && {
@@ -135,16 +119,7 @@ struct create_from_yaml<Auto<T, Label>> {
     if (std::holds_alternative<T>(parsed_variant)) {
       return Auto<T, Label>{std::move(std::get<T>(parsed_variant))};
     } else {
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 10
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__
-        // < 10
       return Auto<T, Label>{};
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 10
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__
-        // < 10
     }
   }
 };

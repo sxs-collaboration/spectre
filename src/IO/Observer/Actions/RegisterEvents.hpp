@@ -132,10 +132,6 @@ struct RegisterEventsWithObservers
           }
         };
 
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 10
-    (void)collect_observations;
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 10
-
     if constexpr (db::tag_is_retrievable_v<
                       ::Tags::EventsAndTriggers<
                           Triggers::WhenToCheck::AtIterations>,

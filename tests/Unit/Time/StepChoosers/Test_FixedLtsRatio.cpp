@@ -92,14 +92,7 @@ void test(const std::optional<double>& expected_goal,
       if (opt.has_value()) {
         return std::optional<double>(time_sign * *opt);
       } else {
-#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ < 10
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
         return std::optional<double>{};
-#if defined(__GNUC__) and not defined(__clang__) and __GNUC__ < 10
-#pragma GCC diagnostic pop
-#endif
       }
     };
 
