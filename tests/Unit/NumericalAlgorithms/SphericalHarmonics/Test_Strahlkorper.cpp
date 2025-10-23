@@ -16,12 +16,17 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/Dat.hpp"
+#include "IO/H5/File.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/IO/FillYlmLegendAndData.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Spherepack.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -184,16 +189,202 @@ void test_constructor_with_different_coefs(Func function) {
                         strahlkorper_test2.coefficients());
 }
 
-void test_construct_from_options() {
+// Helper function to create a random Strahlkorper and write it to an H5 file
+Strahlkorper<Frame::Inertial> create_and_write_test_strahlkorper(
+    const std::string& filename, const std::string& subfile_name,
+    const size_t l_max, const std::array<double, 3>& center,
+    const double time) {
+  MAKE_GENERATOR(gen);
+  const std::uniform_real_distribution<> dist(0.5, 2.0);
+  const auto radius = make_with_random_values<DataVector>(
+      make_not_null(&gen), dist,
+      DataVector(ylm::Spherepack::physical_size(l_max, l_max),
+                 std::numeric_limits<double>::signaling_NaN()));
+  Strahlkorper<Frame::Inertial> strahlkorper(l_max, l_max, radius, center);
+
+  h5::H5File<h5::AccessType::ReadWrite> h5_file(filename, true);
+  std::vector<std::string> legend{};
+  std::vector<double> data{};
+  ylm::fill_ylm_legend_and_data(make_not_null(&legend), make_not_null(&data),
+                                strahlkorper, time, l_max);
+  auto& dat_file = h5_file.insert<h5::Dat>("/" + subfile_name, legend);
+  dat_file.append(std::vector<std::vector<double>>{data});
+  h5_file.close_current_object();
+
+  return strahlkorper;
+}
+
+// Helper function to parse Strahlkorper options from a string
+Strahlkorper<Frame::Inertial> parse_strahlkorper_from_options(
+    const std::string& options_string) {
   Options::Parser<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts(
       "");
-  opts.parse(
-      "Strahlkorper:\n"
-      " LMax : 6\n"
-      " Center: [1.,2.,3.]\n"
-      " Radius: 4.5\n");
-  CHECK(opts.get<OptionTags::Strahlkorper<Frame::Inertial>>() ==
-        Strahlkorper<Frame::Inertial>(6, 6, 4.5, {{1., 2., 3.}}));
+  opts.parse(options_string);
+  return opts.get<OptionTags::Strahlkorper<Frame::Inertial>>();
+}
+
+void test_construct_from_options() {
+  // Test construction from Radius and Center
+  {
+    CHECK(parse_strahlkorper_from_options("Strahlkorper:\n"
+                                          " LMax : 6\n"
+                                          " Center: [1.,2.,3.]\n"
+                                          " Radius: 4.5\n") ==
+          Strahlkorper<Frame::Inertial>(6, 6, 4.5, {{1., 2., 3.}}));
+  }
+
+  // Test construction from file
+  {
+    const std::string test_filename = "TestStrahlkorperOptions.h5";
+    const std::string subfile_name = "TestSurface_Ylm";
+    const std::array<double, 3> expansion_center{{1.5, -0.5, 2.0}};
+    const size_t l_max_original = 4;
+    const double time = 1.23;
+
+    if (file_system::check_if_file_exists(test_filename)) {
+      file_system::rm(test_filename, true);
+    }
+
+    const auto original_strahlkorper = create_and_write_test_strahlkorper(
+        test_filename, subfile_name, l_max_original, expansion_center, time);
+
+    // Test reading from file with the same l_max (no prolong/restrict)
+    {
+      const auto read_strahlkorper = parse_strahlkorper_from_options(
+          "Strahlkorper:\n"
+          " LMax : 4\n"
+          " H5Filename: TestStrahlkorperOptions.h5\n"
+          " SubfileName: TestSurface_Ylm\n"
+          " Time: 1.23\n"
+          " TimeEpsilon: 1.0e-10\n"
+          " CheckFrame: true\n");
+
+      CHECK(read_strahlkorper.l_max() == l_max_original);
+      CHECK(read_strahlkorper.m_max() == l_max_original);
+      CHECK(read_strahlkorper.expansion_center() == expansion_center);
+      CHECK_ITERABLE_APPROX(read_strahlkorper.coefficients(),
+                            original_strahlkorper.coefficients());
+    }
+
+    // Test reading from file with prolong to higher l_max
+    {
+      const size_t l_max_requested = 6;
+      const auto read_strahlkorper = parse_strahlkorper_from_options(
+          "Strahlkorper:\n"
+          " LMax : 6\n"
+          " H5Filename: TestStrahlkorperOptions.h5\n"
+          " SubfileName: TestSurface_Ylm\n"
+          " Time: 1.23\n"
+          " TimeEpsilon: 1.0e-10\n"
+          " CheckFrame: true\n");
+
+      CHECK(read_strahlkorper.l_max() == l_max_requested);
+      CHECK(read_strahlkorper.m_max() == l_max_requested);
+      CHECK(read_strahlkorper.expansion_center() == expansion_center);
+
+      const Strahlkorper<Frame::Inertial> expected_prolonged(
+          l_max_requested, l_max_requested, original_strahlkorper);
+      CHECK_ITERABLE_APPROX(read_strahlkorper.coefficients(),
+                            expected_prolonged.coefficients());
+    }
+
+    // Test reading from file with restrict to lower l_max
+    {
+      const auto read_strahlkorper = parse_strahlkorper_from_options(
+          "Strahlkorper:\n"
+          " LMax : 2\n"
+          " H5Filename: TestStrahlkorperOptions.h5\n"
+          " SubfileName: TestSurface_Ylm\n"
+          " Time: 1.23\n"
+          " TimeEpsilon: 1.0e-10\n"
+          " CheckFrame: true\n");
+
+      CHECK(read_strahlkorper.l_max() == 2);
+      CHECK(read_strahlkorper.m_max() == 2);
+      CHECK(read_strahlkorper.expansion_center() == expansion_center);
+
+      const Strahlkorper<Frame::Inertial> expected_restricted(
+          2, 2, original_strahlkorper);
+      CHECK_ITERABLE_APPROX(read_strahlkorper.coefficients(),
+                            expected_restricted.coefficients());
+    }
+
+    file_system::rm(test_filename, true);
+  }
+
+  // Test failure case: missing H5 file
+  {
+    Options::Parser<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts(
+        "");
+    opts.parse(
+        "Strahlkorper:\n"
+        " LMax : 4\n"
+        " H5Filename: NonexistentFile.h5\n"
+        " SubfileName: TestSurface_Ylm\n"
+        " Time: 1.23\n"
+        " TimeEpsilon: 1.0e-10\n"
+        " CheckFrame: true\n");
+    CHECK_THROWS_WITH(opts.get<OptionTags::Strahlkorper<Frame::Inertial>>(),
+                      Catch::Matchers::ContainsSubstring(
+                          "Trying to open the file 'NonexistentFile.h5'") &&
+                          Catch::Matchers::ContainsSubstring("does not exist"));
+  }
+
+  // Test failure case: error reading from file (invalid subfile)
+  {
+    const std::string test_filename = "TestStrahlkorperOptionsFailure.h5";
+
+    if (file_system::check_if_file_exists(test_filename)) {
+      file_system::rm(test_filename, true);
+    }
+
+    create_and_write_test_strahlkorper(test_filename, "ValidSurface", 4,
+                                       {{1.5, -0.5, 2.0}}, 1.23);
+
+    Options::Parser<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts(
+        "");
+    opts.parse(
+        "Strahlkorper:\n"
+        " LMax : 4\n"
+        " H5Filename: TestStrahlkorperOptionsFailure.h5\n"
+        " SubfileName: InvalidSurface\n"
+        " Time: 1.23\n"
+        " TimeEpsilon: 1.0e-10\n"
+        " CheckFrame: true\n");
+    CHECK_THROWS_WITH(
+        opts.get<OptionTags::Strahlkorper<Frame::Inertial>>(),
+        Catch::Matchers::ContainsSubstring("Cannot open the object"));
+
+    file_system::rm(test_filename, true);
+  }
+
+  // Test failure case: time differs by more than epsilon.
+  {
+    const std::string test_filename = "TestStrahlkorperOptionsTimeEpsilon.h5";
+
+    if (file_system::check_if_file_exists(test_filename)) {
+      file_system::rm(test_filename, true);
+    }
+
+    create_and_write_test_strahlkorper(test_filename, "TestSurface_Ylm", 4,
+                                       {{1.5, -0.5, 2.0}}, 1.23);
+
+    Options::Parser<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts(
+        "");
+    opts.parse(
+        "Strahlkorper:\n"
+        " LMax : 4\n"
+        " H5Filename: TestStrahlkorperOptionsTimeEpsilon.h5\n"
+        " SubfileName: TestSurface_Ylm\n"
+        " Time: 1.2300000003\n"  // Differs by 3.0e-10 from actual time
+        " TimeEpsilon: 1.0e-10\n"
+        " CheckFrame: true\n");
+    CHECK_THROWS_WITH(
+        opts.get<OptionTags::Strahlkorper<Frame::Inertial>>(),
+        Catch::Matchers::ContainsSubstring("Could not find time"));
+
+    file_system::rm(test_filename, true);
+  }
 }
 
 void test_strahlkorper_from_other_strahlkorper() {
@@ -236,7 +427,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Strahlkorper",
       [](Strahlkorper<Frame::Inertial>& sk, double add_to_r) {
         auto coefs = sk.coefficients();  // make a copy
         coefs[0] += sqrt(8.0) * add_to_r;
-        return Strahlkorper<Frame::Inertial>(coefs, std::move(sk));
+        return Strahlkorper<Frame::Inertial>(coefs, sk);
       });
   test_constructor_with_different_coefs(
       [](const Strahlkorper<Frame::Inertial>& sk, double add_to_r) {
