@@ -166,6 +166,7 @@ set(LIBRARY_SOURCES
   Test_ExitCode.cpp
   Test_GlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
+  Test_LockfreeUnorderedSet.cpp
   Test_MemoryMonitor.cpp
   Test_MultiReaderSpinlock.cpp
   Test_NodeLock.cpp

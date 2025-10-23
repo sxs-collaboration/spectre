@@ -45,6 +45,7 @@ spectre_target_headers(
   InitializationFunctions.hpp
   Invoke.hpp
   Local.hpp
+  LockfreeUnorderedSet.hpp
   Main.hpp
   MaxInlineMethodsReached.hpp
   MultiReaderSpinlock.hpp
