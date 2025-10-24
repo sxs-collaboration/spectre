@@ -102,7 +102,7 @@ struct StepperErrorTolerancesCompute
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
                  CacheTagPrefix<::Tags::StepChoosers>,
                  CacheTagPrefix<::Tags::TimeStepper<::TimeStepper>>,
-                 ::Tags::VariableOrderAlgorithm>,
+                 CacheTagPrefix<::Tags::VariableOrderAlgorithm>>,
       tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
 
   // local time stepping
