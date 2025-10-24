@@ -43,6 +43,7 @@
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -152,6 +153,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InitializeCharacteristicEvolution",
     "[Unit][Cce]") {
   using component = mock_characteristic_evolution<metavariables>;
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
 
@@ -186,16 +188,16 @@ SPECTRE_TEST_CASE(
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t scri_plus_interpolation_order = 3;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {start_time, false, l_max, number_of_radial_points}};
+      {start_time, false, l_max, number_of_radial_points,
+       static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size * 0.75,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size, scri_plus_interpolation_order);
+      &runner, 0, target_step_size * 0.75, target_step_size,
+      scri_plus_interpolation_order);
 
   // this should run the initialization
   for (size_t i = 0; i < 6; ++i) {

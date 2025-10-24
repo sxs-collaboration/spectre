@@ -22,6 +22,7 @@
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Cce {
 
@@ -177,6 +178,7 @@ void test_klein_gordon_h5_boundary_communication(
   using worldtube_component =
       mock_klein_gordon_h5_worldtube_boundary<test_metavariables>;
   using writer_component = mock_observer_writer<test_metavariables>;
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
 
@@ -214,7 +216,10 @@ void test_klein_gordon_h5_boundary_communication(
       {false, l_max, extraction_radius,
        Tags::EndTimeFromFile::create_from_options(std::nullopt, filename,
                                                   false),
-       start_time, number_of_radial_points}};
+       start_time, number_of_radial_points,
+       static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
 
   const size_t buffer_size = 5;
   ActionTesting::set_phase(make_not_null(&runner),
@@ -222,11 +227,7 @@ void test_klein_gordon_h5_boundary_communication(
   ActionTesting::emplace_component_and_initialize<writer_component>(
       &runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size);
+      &runner, 0, target_step_size, target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(

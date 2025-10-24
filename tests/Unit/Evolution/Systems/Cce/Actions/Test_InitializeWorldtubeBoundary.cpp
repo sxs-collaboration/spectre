@@ -30,7 +30,7 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
+#include "Time/TimeSteppers/AdamsMoultonPc.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -57,9 +57,8 @@ struct mock_analytic_worldtube_boundary {
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         initialize_action_list>,
                  Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
-  using const_global_cache_tags =
-      Parallel::get_const_global_cache_tags_from_actions<
-    phase_dependent_action_list>;
+  using const_global_cache_tags = tmpl::list<
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>>;
 };
 
 struct H5Metavariables {
@@ -79,7 +78,6 @@ struct GhMetavariables {
 };
 
 struct AnalyticMetavariables {
-  static constexpr bool local_time_stepping = false;
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
@@ -198,17 +196,17 @@ void test_analytic_initialization() {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
   const double extraction_radius = 20.0;
-  register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
+  register_classes_with_charm<TimeSteppers::AdamsMoultonPc<false>>();
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
-      {l_max, extraction_radius, 100.0, 0.0}};
+      {static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsMoultonPc<false>>(3)),
+       l_max, extraction_radius, 100.0, 0.0}};
 
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       AnalyticBoundaryDataManager{12_st, extraction_radius,
-                                  std::make_unique<SolutionType>()},
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
+                                  std::make_unique<SolutionType>()});
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);

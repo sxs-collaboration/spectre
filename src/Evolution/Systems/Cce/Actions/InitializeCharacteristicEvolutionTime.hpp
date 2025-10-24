@@ -70,13 +70,13 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using simple_tags_from_options = tmpl::flatten<tmpl::list<
-      Initialization::Tags::InitialSlabSize<local_time_stepping>,
-      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
-      Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
-      ::Initialization::Tags::InitialTimeDelta>>;
+  using simple_tags_from_options =
+      tmpl::list<Initialization::Tags::InitialSlabSize<local_time_stepping>,
+                 ::Initialization::Tags::InitialTimeDelta>;
 
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<
+      Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<LtsTimeStepper>>,
+      Tags::CceEvolutionPrefix<::Tags::StepChoosers>>;
 
   using evolved_swsh_variables_tag = ::Tags::Variables<EvolvedSwshTag>;
   using simple_tags = tmpl::list<

@@ -17,6 +17,7 @@
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 
 namespace Cce {
 namespace {
@@ -139,6 +140,7 @@ struct metavariables : CharacteristicExtractDefaults<false> {
 template <typename Generator>
 void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
   using component = mock_klein_gordon_characteristic_evolution<metavariables>;
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
 
@@ -173,16 +175,16 @@ void test_klein_gordon_cce_initialization(const gsl::not_null<Generator*> gen) {
 
   // tests start here
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {start_time, false, l_max, number_of_radial_points}};
+      {start_time, false, l_max, number_of_radial_points,
+       static_cast<std::unique_ptr<LtsTimeStepper>>(
+           std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size * 0.75,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size, scri_plus_interpolation_order);
+      &runner, 0, target_step_size * 0.75, target_step_size,
+      scri_plus_interpolation_order);
 
   // go through the action list
   for (size_t i = 0; i < 7; ++i) {

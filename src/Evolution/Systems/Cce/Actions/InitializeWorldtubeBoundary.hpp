@@ -69,8 +69,8 @@ struct InitializeWorldtubeBoundaryBase {
       if (dynamic_cast<const Solutions::RobinsonTrautman*>(
               &(db::get<Tags::AnalyticBoundaryDataManager>(box)
                     .get_generator())) != nullptr) {
-        if (db::get<Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
-                box)
+        if (db::get<Tags::CceEvolutionPrefix<
+                ::Tags::ConcreteTimeStepper<LtsTimeStepper>>>(box)
                 .number_of_substeps() != 1) {
           ERROR(
               "Do not use RobinsonTrautman analytic solution with a "
@@ -239,25 +239,15 @@ template <typename Metavariables>
 struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
     : public detail::InitializeWorldtubeBoundaryBase<
           InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
-          tmpl::list<Tags::AnalyticBoundaryDataManager,
-                     Tags::CceEvolutionPrefix<::Tags::ConcreteTimeStepper<
-                         tmpl::conditional_t<Metavariables::local_time_stepping,
-                                             LtsTimeStepper, TimeStepper>>>>,
+          tmpl::list<Tags::AnalyticBoundaryDataManager>,
           typename Metavariables::cce_boundary_communication_tags> {
-  using TimeStepperType =
-      tmpl::conditional_t<Metavariables::local_time_stepping, LtsTimeStepper,
-                          TimeStepper>;
   using base_type = detail::InitializeWorldtubeBoundaryBase<
       InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
-      tmpl::list<Tags::AnalyticBoundaryDataManager,
-                 Tags::CceEvolutionPrefix<
-                     ::Tags::ConcreteTimeStepper<TimeStepperType>>>,
+      tmpl::list<Tags::AnalyticBoundaryDataManager>,
       typename Metavariables::cce_boundary_communication_tags>;
   using base_type::apply;
   using typename base_type::simple_tags;
-  using compute_tags =
-      tmpl::transform<time_stepper_ref_tags<TimeStepperType>,
-                      tmpl::bind<Tags::CceEvolutionPrefix, tmpl::_1>>;
+  using compute_tags = tmpl::list<>;
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::ExtractionRadiusSimple,
                  Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;

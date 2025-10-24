@@ -54,6 +54,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -187,6 +188,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
                   "[Unit][Cce]") {
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component = mock_gh_worldtube_boundary<test_metavariables>;
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
   const double extraction_radius = 100.0;
@@ -205,7 +207,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
           false, l_max, extraction_radius, end_time, start_time,
-          number_of_radial_points}};
+          number_of_radial_points,
+          static_cast<std::unique_ptr<LtsTimeStepper>>(
+              std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+          make_vector<
+              std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
 
   // first prepare the input for the modal version
   const double mass = value_dist(gen);
@@ -221,11 +227,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
 
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size, scri_plus_interpolation_order);
+      &runner, 0, target_step_size, target_step_size,
+      scri_plus_interpolation_order);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       InterfaceManagers::GhLocalTimeStepping{

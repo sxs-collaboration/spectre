@@ -35,7 +35,6 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
-#include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -112,7 +111,6 @@ struct mock_characteristic_evolution {
 
 struct test_metavariables {
   using evolved_swsh_tags = tmpl::list<Tags::BondiJ>;
-  static constexpr bool local_time_stepping = false;
   using evolved_swsh_dt_tags = tmpl::list<Tags::BondiH>;
   using cce_step_choosers = tmpl::list<>;
   using evolved_coordinates_variables_tag = ::Tags::Variables<
@@ -170,7 +168,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.AnalyticBoundaryCommunication",
     "[Unit][Cce]") {
   register_classes_with_charm<Cce::Solutions::RotatingSchwarzschild>();
-  register_classes_with_charm<TimeSteppers::DormandPrince5>();
+  register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component =
       mock_analytic_worldtube_boundary<test_metavariables>;
@@ -191,7 +189,11 @@ SPECTRE_TEST_CASE(
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
           false, l_max, extraction_radius, end_time, start_time,
-          number_of_radial_points}};
+          number_of_radial_points,
+          static_cast<std::unique_ptr<LtsTimeStepper>>(
+              std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
+          make_vector<
+              std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>()}};
 
   const AnalyticBoundaryDataManager analytic_manager{
       l_max, extraction_radius,
@@ -199,18 +201,13 @@ SPECTRE_TEST_CASE(
                                                               1.0, frequency)};
   runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size,
-      static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
-      make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
-      target_step_size, scri_plus_interpolation_order,
+      &runner, 0, target_step_size, target_step_size,
+      scri_plus_interpolation_order,
       serialize_and_deserialize(analytic_manager));
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<worldtube_component>(
-      &runner, 0, serialize_and_deserialize(analytic_manager),
-      static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::DormandPrince5>()));
+      &runner, 0, serialize_and_deserialize(analytic_manager));
 
   // Run the initializations
   for (size_t i = 0; i < 6; ++i) {
