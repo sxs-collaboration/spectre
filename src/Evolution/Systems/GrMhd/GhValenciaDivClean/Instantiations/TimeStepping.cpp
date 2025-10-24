@@ -3,6 +3,7 @@
 
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/RadiationTransport/NoNeutrinos/System.hpp"
+#include "Time/ChangeTimeStepperOrder.tpp"
 #include "Time/CleanHistory.tpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/UpdateU.tpp"
@@ -11,6 +12,8 @@
 #define NEUTRINO(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(_, data)                                              \
+  template class ChangeTimeStepperOrder<                                    \
+      grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;                   \
   template class CleanHistory<                                              \
       grmhd::GhValenciaDivClean::System<NEUTRINO(data)>>;                   \
   template class RecordTimeStepperData<                                     \

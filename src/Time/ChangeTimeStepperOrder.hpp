@@ -3,23 +3,18 @@
 
 #pragma once
 
-#include <algorithm>
 #include <array>
-#include <cstddef>
 #include <optional>
 
-#include "DataStructures/TaggedVariant.hpp"
-#include "Time/History.hpp"
-#include "Time/StepperErrorEstimate.hpp"
 #include "Time/Tags/VariableOrderAlgorithm.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
-#include "Time/VariableOrderAlgorithm.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
+struct StepperErrorEstimate;
+class TimeStepId;
+class TimeStepper;
+class VariableOrderAlgorithm;
 namespace Tags {
 template <typename Tag>
 struct HistoryEvolvedVariables;
@@ -31,48 +26,15 @@ struct TimeStepId;
 template <typename StepperInterface>
 struct TimeStepper;
 }  // namespace Tags
+namespace TimeSteppers {
+template <typename Vars>
+class History;
+}  // namespace TimeSteppers
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
 /// \endcond
-
-namespace ChangeTimeStepperOrder_detail {
-// Doxygen is confused by the self-inheritance, even though this is in
-// a detail namespace.
-/// \cond
-template <typename VariablesTag>
-struct apply_impl : apply_impl<tmpl::list<VariablesTag>> {};
-
-template <typename... VariablesTags>
-struct apply_impl<tmpl::list<VariablesTags...>> {
-  static void apply(
-      const gsl::not_null<
-          TimeSteppers::History<typename VariablesTags::type>*>... histories,
-      const TimeStepper& time_stepper,
-      const VariableOrderAlgorithm& order_algorithm,
-      const TimeStepId& next_time_step_id,
-      const typename tmpl::has_type<
-          VariablesTags, std::array<std::optional<StepperErrorEstimate>,
-                                    2>>::type&... errors) {
-    if (next_time_step_id.substep() != 0) {
-      return;
-    }
-
-    const auto order_variant = time_stepper.order();
-    const auto* stepper_order =
-        variants::get_if<TimeSteppers::Tags::VariableOrder>(&order_variant);
-    if (stepper_order == nullptr) {
-      // Running at fixed order.
-      return;
-    }
-
-    const size_t new_order =
-        std::clamp(order_algorithm.template choose_order<VariablesTags...>(
-                       *histories..., errors...),
-                   stepper_order->minimum, stepper_order->maximum);
-
-    expand_pack((histories->integration_order(new_order), 0)...);
-  }
-};
-/// \endcond
-}  // namespace ChangeTimeStepperOrder_detail
 
 /*!
  * \ingroup TimeGroup
@@ -82,23 +44,32 @@ struct apply_impl<tmpl::list<VariablesTags...>> {
  * algorithms.  This mutator wraps that class, checking that the order
  * is not changed out of the valid range for the time stepper.
  */
-template <typename System>
-struct ChangeTimeStepperOrder : ChangeTimeStepperOrder_detail::apply_impl<
-                                    typename System::variables_tag> {
-  using variables_tags = tmpl::conditional_t<
-      tt::is_a_v<tmpl::list, typename System::variables_tag>,
-      typename System::variables_tag,
-      tmpl::list<typename System::variables_tag>>;
+/// @{
+template <typename System,
+          typename = tmpl::conditional_t<
+              tt::is_a_v<tmpl::list, typename System::variables_tag>,
+              typename System::variables_tag,
+              tmpl::list<typename System::variables_tag>>>
+struct ChangeTimeStepperOrder;
 
+template <typename System, typename... VariablesTags>
+struct ChangeTimeStepperOrder<System, tmpl::list<VariablesTags...>> {
   using const_global_cache_tags = tmpl::list<Tags::VariableOrderAlgorithm>;
   using return_tags =
-      tmpl::transform<variables_tags,
-                      tmpl::bind<Tags::HistoryEvolvedVariables, tmpl::_1>>;
-  using argument_tags = tmpl::append<
+      tmpl::list<Tags::HistoryEvolvedVariables<VariablesTags>...>;
+  using argument_tags =
       tmpl::list<Tags::TimeStepper<TimeStepper>, Tags::VariableOrderAlgorithm,
-                 Tags::Next<Tags::TimeStepId>>,
-      tmpl::transform<variables_tags,
-                      tmpl::bind<Tags::StepperErrors, tmpl::_1>>>;
+                 Tags::Next<Tags::TimeStepId>,
+                 Tags::StepperErrors<VariablesTags>...>;
 
-  // apply defined in apply_impl above
+  static void apply(
+      const gsl::not_null<
+          TimeSteppers::History<typename VariablesTags::type>*>... histories,
+      const TimeStepper& time_stepper,
+      const VariableOrderAlgorithm& order_algorithm,
+      const TimeStepId& next_time_step_id,
+      const typename tmpl::has_type<
+          VariablesTags,
+          std::array<std::optional<StepperErrorEstimate>, 2>>::type&... errors);
 };
+/// @}

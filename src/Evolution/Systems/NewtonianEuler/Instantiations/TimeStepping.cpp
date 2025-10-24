@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
+#include "Time/ChangeTimeStepperOrder.tpp"
 #include "Time/CleanHistory.tpp"
 #include "Time/RecordTimeStepperData.tpp"
 #include "Time/UpdateU.tpp"
@@ -9,10 +10,11 @@
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                             \
-  template class CleanHistory<NewtonianEuler::System<DIM(data)>>;          \
-  template class RecordTimeStepperData<NewtonianEuler::System<DIM(data)>>; \
-  template class UpdateU<NewtonianEuler::System<DIM(data)>, false>;        \
+#define INSTANTIATION(r, data)                                              \
+  template class ChangeTimeStepperOrder<NewtonianEuler::System<DIM(data)>>; \
+  template class CleanHistory<NewtonianEuler::System<DIM(data)>>;           \
+  template class RecordTimeStepperData<NewtonianEuler::System<DIM(data)>>;  \
+  template class UpdateU<NewtonianEuler::System<DIM(data)>, false>;         \
   template class UpdateU<NewtonianEuler::System<DIM(data)>, true>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
