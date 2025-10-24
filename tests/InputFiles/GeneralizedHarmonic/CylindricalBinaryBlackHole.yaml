@@ -201,6 +201,8 @@ Filtering:
     BlocksToFilter: All
 
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

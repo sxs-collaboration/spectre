@@ -72,14 +72,10 @@ void run_events_and_triggers(db::DataBox<DbTags>& box,
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: nothing
-template <bool LocalTimeStepping>
+template <Triggers::WhenToCheck WhenToCheck>
 struct RunEventsAndTriggers {
-  static constexpr bool local_time_stepping = LocalTimeStepping;
-  using const_global_cache_tags = tmpl::conditional_t<
-      local_time_stepping,
-      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>,
-                 ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>,
-      tmpl::list<::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::EventsAndTriggers<WhenToCheck>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -94,22 +90,16 @@ struct RunEventsAndTriggers {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
-    if constexpr (local_time_stepping) {
-      const auto& events_and_triggers_at_steps = Parallel::get<
-          ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSteps>>(cache);
-      detail::run_events_and_triggers(box, cache, array_index, component,
-                                      events_and_triggers_at_steps,
-                                      time_step_id);
+    if constexpr (WhenToCheck != Triggers::WhenToCheck::AtSteps) {
+      if (not time_step_id.step_time().is_at_slab_boundary()) {
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+      }
     }
 
-    if (not time_step_id.step_time().is_at_slab_boundary()) {
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    }
-
-    const auto& events_and_triggers_at_slabs = Parallel::get<
-        ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>(cache);
+    const auto& events_and_triggers =
+        Parallel::get<::Tags::EventsAndTriggers<WhenToCheck>>(cache);
     detail::run_events_and_triggers(box, cache, array_index, component,
-                                    events_and_triggers_at_slabs, time_step_id);
+                                    events_and_triggers, time_step_id);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

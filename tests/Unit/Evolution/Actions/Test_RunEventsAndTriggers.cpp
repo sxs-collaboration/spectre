@@ -89,14 +89,19 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
   using simple_tags = tmpl::list<Tags::Time, Tags::TimeStepId>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<
-                     Parallel::Phase::Initialization,
-                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-                 Parallel::PhaseActions<
-                     Parallel::Phase::Testing,
-                     tmpl::list<evolution::Actions::RunEventsAndTriggers<
-                         local_time_stepping>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::flatten<tmpl::list<
+              std::conditional_t<local_time_stepping,
+                                 evolution::Actions::RunEventsAndTriggers<
+                                     Triggers::WhenToCheck::AtSteps>,
+                                 tmpl::list<>>,
+              evolution::Actions::RunEventsAndTriggers<
+                  Triggers::WhenToCheck::AtSlabs>>>>>;
 };
 
 template <bool LocalTimeStepping>
@@ -145,6 +150,9 @@ void test(std::array<
           make_not_null(&box));
 
       TestEvent::last_value.reset();
+      if constexpr (LocalTimeStepping) {
+        ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
+      }
       ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
       CHECK(TestEvent::last_value == expected[test_case]);
     }

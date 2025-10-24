@@ -270,6 +270,8 @@ Filtering:
     Enable: true
     BlocksToFilter: All
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   # Set time step at t=0
   - Trigger:

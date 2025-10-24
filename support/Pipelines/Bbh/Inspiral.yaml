@@ -319,6 +319,20 @@ PhaseChangeAndTriggers:
       - CheckpointAndExitAfterWallclock:
           WallclockHours: 23.5
 
+EventsAndTriggersAtCheckpoints:
+  - Trigger: Always
+    Events:
+      - ObserveFields:
+          SubfileName: Checkpoints
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          BlocksToObserve: All
+
 EventsAndTriggersAtSlabs:
   # Observe time step and cheap constraints every slab
   - Trigger:

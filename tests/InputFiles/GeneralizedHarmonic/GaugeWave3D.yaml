@@ -103,6 +103,8 @@ SpatialDiscretization:
   BoundaryCorrection:
     UpwindPenalty:
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

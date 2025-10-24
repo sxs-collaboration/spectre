@@ -84,6 +84,8 @@ EvolutionSystem:
   SourceTerm:
     NoSource:
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       TimeCompares:

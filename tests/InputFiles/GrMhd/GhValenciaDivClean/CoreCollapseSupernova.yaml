@@ -187,6 +187,8 @@ Filtering:
     Enable: true
     BlocksToFilter: All
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

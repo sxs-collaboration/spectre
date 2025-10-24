@@ -87,6 +87,8 @@ EvolutionSystem:
   SourceTerm:
     NoSource:
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

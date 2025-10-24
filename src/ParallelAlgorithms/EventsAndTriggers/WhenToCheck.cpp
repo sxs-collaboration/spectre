@@ -20,6 +20,9 @@ std::ostream& operator<<(std::ostream& os, const WhenToCheck& when_to_check) {
     case WhenToCheck::AtSteps:
       os << "AtSteps";
       break;
+    case WhenToCheck::AtCheckpoints:
+      os << "AtCheckpoints";
+      break;
     default:
       ERROR("An unknown check was passed to the stream operator. "
             << static_cast<int>(when_to_check));

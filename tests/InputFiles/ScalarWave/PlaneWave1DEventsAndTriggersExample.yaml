@@ -84,6 +84,8 @@ SpatialDiscretization:
 
 EventsAndDenseTriggers:
 
+EventsAndTriggersAtCheckpoints:
+
 # [multiple_events]
 EventsAndTriggersAtSlabs:
   - Trigger:
