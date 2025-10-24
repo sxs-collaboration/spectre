@@ -28,7 +28,6 @@ ExtraFileCheckExecs:
 
 Evolution:
   InitialTimeStep: 0.01
-  MinimumTimeStep: 1e-7
   InitialSlabSize: 0.8
   VariableOrderAlgorithm:
     GoalOrder: 3
@@ -73,6 +72,7 @@ Cce:
     TimeStepper:
       AdamsBashforth:
         Order: 3
+    MinimumTimeStep: 1e-7
     StepChoosers:
       - Constant: 0.1
       - LimitIncrease:
