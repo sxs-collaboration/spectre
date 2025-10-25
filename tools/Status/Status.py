@@ -30,10 +30,11 @@ logger = logging.getLogger(__name__)
 
 def fetch_job_data(
     fields: Sequence[str],
-    user: Optional[str],
+    user: Optional[str] = None,
     allusers: bool = False,
     state: Optional[str] = None,
     starttime: Optional[str] = None,
+    jobid: Optional[str] = None,
 ) -> pd.DataFrame:
     """Query Slurm 'sacct' to get metadata of recent jobs on the machine.
 
@@ -48,6 +49,8 @@ def fetch_job_data(
         See documentation for 'sacct -s' for details.
       starttime: Fetch only jobs after this time.
         See documentation for 'sacct -S' for details.
+      jobid: Fetch only this job ID.
+        See documentation for 'sacct -j' for details.
 
     Returns: Pandas DataFrame with the job data.
     """
@@ -56,7 +59,8 @@ def fetch_job_data(
         + (["-u", user] if user else [])
         + (["-a"] if allusers else [])
         + (["-s", state] if state else [])
-        + (["-S", starttime] if starttime else []),
+        + (["-S", starttime] if starttime else [])
+        + (["-j", jobid] if jobid else []),
         capture_output=True,
         text=True,
     )
@@ -261,6 +265,15 @@ DEFAULT_COLUMNS = [
 ]
 
 
+def fetch_job_data_from_run_dir(run_dir: str, fields: Sequence[str]) -> dict:
+    jobid_path = Path(run_dir) / "jobid.txt"
+    if jobid_path.exists():
+        jobid = jobid_path.read_text().strip()
+        return fetch_job_data(fields, jobid=jobid)
+    else:
+        return pd.DataFrame([dict(WorkDir=run_dir)])
+
+
 def input_column_callback(ctx, param, value):
     result = value.split(",") if value else []
     result = [x.strip() for x in result]
@@ -278,6 +291,7 @@ def input_column_callback(ctx, param, value):
 def fetch_status(
     show_deleted=False,
     show_all_segments=False,
+    extra_run_dirs: Sequence[str] = [],
     **kwargs,
 ):
     """Fetches job data and processes it for display.
@@ -302,7 +316,13 @@ def fetch_status(
     job_data = fetch_job_data(
         columns_to_fetch,
         **kwargs,
-    )
+    ).convert_dtypes()
+
+    # Add extra run directories
+    for run_dir in extra_run_dirs:
+        extra_job_data = fetch_job_data_from_run_dir(run_dir, columns_to_fetch)
+        job_data = pd.concat([job_data, extra_job_data], ignore_index=True)
+    job_data.fillna({"Comment": "", "State": "N/A"}, inplace=True)
 
     # Do nothing if job list is empty
     if len(job_data) == 0:
