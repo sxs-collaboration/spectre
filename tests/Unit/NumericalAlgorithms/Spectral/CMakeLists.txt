@@ -29,6 +29,7 @@ set(LIBRARY_SOURCES
   Test_NodalToModalMatrix.cpp
   Test_Projection.cpp
   Test_Quadrature.cpp
+  Test_QuadratureWeights.cpp
   Test_SegmentSize.cpp
   Test_Spectral.cpp
   )
