@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "NumericalAlgorithms/Spectral/BasisFunctions/Chebyshev.hpp"
+
 #include <cmath>
 #include <cstddef>
 #include <utility>
@@ -20,12 +22,8 @@
 
 namespace Spectral {
 
-// Algorithms to compute Chebyshev basis functions
-// These functions specialize the templates declared in `Spectral.hpp`.
-
-namespace {
 template <typename T>
-T compute_basis_function_value_impl(const size_t k, const T& x) {
+T Chebyshev::basis_function_value(const size_t k, const T& x) {
   // Algorithm 21 in Kopriva, p. 60
   switch (k) {
     case 0:
@@ -42,36 +40,15 @@ T compute_basis_function_value_impl(const size_t k, const T& x) {
       T T_k_minus_1 = x;
       T T_k = make_with_value<T>(x, 0.);
       for (size_t j = 2; j <= k; j++) {
-        T_k = 2 * x * T_k_minus_1 - T_k_minus_2;
+        T_k = 2. * x * T_k_minus_1 - T_k_minus_2;
         T_k_minus_2 = T_k_minus_1;
         T_k_minus_1 = T_k;
       }
       return T_k;
   }
 }
-}  // namespace
 
-template <>
-DataVector compute_basis_function_value<Basis::Chebyshev>(const size_t k,
-                                                          const DataVector& x) {
-  return compute_basis_function_value_impl(k, x);
-}
-
-template <>
-double compute_basis_function_value<Basis::Chebyshev>(const size_t k,
-                                                      const double& x) {
-  return compute_basis_function_value_impl(k, x);
-}
-
-template <>
-DataVector compute_inverse_weight_function_values<Basis::Chebyshev>(
-    const DataVector& x) {
-  return sqrt(1. - square(x));
-}
-
-template <>
-double compute_basis_function_normalization_square<Basis::Chebyshev>(
-    const size_t k) {
+double Chebyshev::basis_function_normalization_square(const size_t k) {
   if (k == 0) {
     return M_PI;
   } else {
@@ -79,50 +56,57 @@ double compute_basis_function_normalization_square<Basis::Chebyshev>(
   }
 }
 
-// Algorithm to compute Chebyshev-Gauss quadrature
-
 template <>
-std::pair<DataVector, DataVector>
-compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
+DataVector Chebyshev::collocation_points<Quadrature::Gauss>(
     const size_t num_points) {
   // Algorithm 26 in Kopriva, p. 67
   ASSERT(num_points >= 1,
          "Chebyshev-Gauss quadrature requires at least one collocation point.");
-  const size_t poly_degree = num_points - 1;
-  DataVector x(num_points);
-  DataVector w(num_points, M_PI / num_points);
+  DataVector result(num_points);
   for (size_t j = 0; j < num_points; j++) {
-    x[j] = -cos(M_PI_2 * (2. * j + 1.) / (poly_degree + 1.));
+    result[j] = -cos(M_PI_2 * (2. * static_cast<double>(j) + 1.) /
+                     static_cast<double>(num_points));
   }
-  return std::make_pair(std::move(x), std::move(w));
+  return result;
 }
 
-// Algorithm to compute Chebyshev-Gauss-Lobatto quadrature
-
 template <>
-std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
-    Basis::Chebyshev, Quadrature::GaussLobatto>(const size_t num_points) {
+DataVector Chebyshev::collocation_points<Quadrature::GaussLobatto>(
+    const size_t num_points) {
   // Algorithm 27 in Kopriva, p. 68
   ASSERT(num_points >= 2,
          "Chebyshev-Gauss-Lobatto quadrature requires at least two collocation "
          "points.");
   const size_t poly_degree = num_points - 1;
-  DataVector x(num_points);
-  DataVector w(num_points, M_PI / poly_degree);
+  DataVector result(num_points);
   for (size_t j = 0; j < num_points; j++) {
-    x[j] = -cos(M_PI * j / poly_degree);
+    result[j] =
+        -cos(M_PI * static_cast<double>(j) / static_cast<double>(poly_degree));
   }
-  w[0] *= 0.5;
-  w[num_points - 1] *= 0.5;
-  return std::make_pair(std::move(x), std::move(w));
+  return result;
 }
 
-template <Basis BasisType>
-Matrix spectral_indefinite_integral_matrix(size_t num_points);
+template <>
+DataVector Chebyshev::integration_weights<Quadrature::Gauss>(
+    const size_t num_points) {
+  return DataVector{num_points, M_PI / static_cast<double>(num_points)};
+}
 
 template <>
-Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
+DataVector Chebyshev::integration_weights<Quadrature::GaussLobatto>(
     const size_t num_points) {
+  // Algorithm 27 in Kopriva, p. 68
+  ASSERT(num_points >= 2,
+         "Chebyshev-Gauss-Lobatto quadrature requires at least two collocation "
+         "points.");
+  const size_t poly_degree = num_points - 1;
+  DataVector result(num_points, M_PI / static_cast<double>(poly_degree));
+  result[0] *= 0.5;
+  result[poly_degree] *= 0.5;
+  return result;
+}
+
+Matrix Chebyshev::indefinite_integral_matrix(const size_t num_points) {
   // Tridiagonal matrix that gives the indefinite integral modulo a constant
   Matrix indef_int(num_points, num_points, 0.0);
   if (LIKELY(num_points > 1)) {
@@ -149,4 +133,72 @@ Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
   return constant * indef_int;
 }
 
+Matrix Chebyshev::definite_integral_matrix(const size_t num_points) {
+  Matrix result(1, num_points, 0.0);
+  for (size_t j = 0; j < num_points; j += 2) {
+    result(0, j) = -2.0 / (square(static_cast<double>(j)) - 1.0);
+  }
+  return result;
+}
+
+// Instantiations of function templates defined in the Spectral directory
+
+template <>
+DataVector compute_basis_function_value<Basis::Chebyshev>(const size_t k,
+                                                          const DataVector& x) {
+  return Chebyshev::basis_function_value(k, x);
+}
+
+template <>
+double compute_basis_function_value<Basis::Chebyshev>(const size_t k,
+                                                      const double& x) {
+  return Chebyshev::basis_function_value(k, x);
+}
+
+template <>
+DataVector compute_inverse_weight_function_values<Basis::Chebyshev>(
+    const DataVector& x) {
+  return sqrt(1. - square(x));
+}
+
+template <>
+double compute_basis_function_normalization_square<Basis::Chebyshev>(
+    const size_t k) {
+  return Chebyshev::basis_function_normalization_square(k);
+}
+
+template <>
+std::pair<DataVector, DataVector>
+compute_collocation_points_and_weights<Basis::Chebyshev, Quadrature::Gauss>(
+    const size_t num_points) {
+  return std::make_pair(
+      Chebyshev::collocation_points<Quadrature::Gauss>(num_points),
+      Chebyshev::integration_weights<Quadrature::Gauss>(num_points));
+}
+
+template <>
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
+    Basis::Chebyshev, Quadrature::GaussLobatto>(const size_t num_points) {
+  return std::make_pair(
+      Chebyshev::collocation_points<Quadrature::GaussLobatto>(num_points),
+      Chebyshev::integration_weights<Quadrature::GaussLobatto>(num_points));
+}
+
+template <Basis BasisType>
+Matrix spectral_indefinite_integral_matrix(size_t num_points);
+
+template <>
+Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
+    const size_t num_points) {
+  return Chebyshev::indefinite_integral_matrix(num_points);
+}
+
+template <Basis BasisType>
+Matrix spectral_definite_integral_matrix(size_t num_points);
+
+template <>
+Matrix spectral_definite_integral_matrix<Basis::Chebyshev>(
+    const size_t num_points) {
+  return Chebyshev::definite_integral_matrix(num_points);
+}
 }  // namespace Spectral
