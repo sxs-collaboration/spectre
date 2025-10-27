@@ -65,7 +65,7 @@ Fortran compiler and other dependencies:
 
 ```
 brew install gcc autoconf automake ccache cmake
-brew install boost catch2 doxygen gsl hdf5 openblas yaml-cpp
+brew install boost catch2 doxygen gsl hdf5 openblas yaml-cpp xsimd
 ```
 
 \note We use OpenBLAS instead of Apple's Accelerate framework here because

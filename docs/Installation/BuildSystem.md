@@ -295,7 +295,7 @@ alphabetical order):
     vectorize addition math functions like `sin`, `cos`, and `exp`.
     Defines the macro `SPECTRE_USE_XSIMD`, which can be check to enable manual
     vectorization where necessary.
-    (default is `OFF`)
+    (default is `ON`)
 
 ## CMake targets
 
