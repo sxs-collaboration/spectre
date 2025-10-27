@@ -23,6 +23,7 @@ def render_domain(
     output: str,
     hi_res_xmf_file: Optional[str] = None,
     time_step: int = 0,
+    show_time_annotation: bool = False,
     animate: bool = False,
     zoom_factor: float = 1.0,
     camera_theta: float = 0.0,
@@ -58,6 +59,9 @@ def render_domain(
     render_view.UseColorPaletteForBackground = 0
     render_view.Background = background_color
     render_view.OrientationAxesVisibility = 0
+    if not animate:
+        render_view.ViewTime = volume_data.TimestepValues[time_step]
+        pv.UpdatePipeline(time=render_view.ViewTime, proxy=volume_data)
 
     def slice_or_clip(triangulate, **kwargs):
         if slice:
@@ -100,6 +104,15 @@ def render_domain(
     outline_display.ColorArrayName = ("POINTS", None)
     pv.ColorBy(outline_display, None)
 
+    # Show time annotation
+    if show_time_annotation:
+        annotate_time = pv.AnnotateTimeFilter(
+            registrationName="AnnotateTimeFilter", Input=volume_data
+        )
+        annotate_time_display = pv.Show(annotate_time, render_view)
+        annotate_time_display.Color = 3 * [0.0]
+        annotate_time_display.FontSize = 24
+
     # Set resolution
     layout = pv.GetLayout()
     layout.SetSize(1200, 1200)
@@ -120,7 +133,6 @@ def render_domain(
     if animate:
         pv.SaveAnimation(output, render_view)
     else:
-        render_view.ViewTime = volume_data.TimestepValues[time_step]
         pv.Render()
         pv.SaveScreenshot(output, render_view)
 
@@ -152,6 +164,9 @@ def render_domain(
         "Select a time step. Specify '-1' or 'last' to select the last time"
         " step."
     ),
+)
+@click.option(
+    "--show-time-annotation", is_flag=True, help="Show time annotation."
 )
 @click.option(
     "--animate", is_flag=True, help="Produce an animation of all time steps."
