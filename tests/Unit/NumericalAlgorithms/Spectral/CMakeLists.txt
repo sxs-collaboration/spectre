@@ -6,7 +6,9 @@ add_subdirectory("Python")
 set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES
+  BasisFunctions/Test_Chebyshev.cpp
   BasisFunctions/Test_Fourier.cpp
+  BasisFunctions/Test_Legendre.cpp
   Test_Basis.cpp
   Test_BasisFunctionNormalizationSquare.cpp
   Test_Cartoon.cpp
