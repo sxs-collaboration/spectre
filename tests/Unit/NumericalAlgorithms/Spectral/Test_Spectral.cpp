@@ -410,38 +410,6 @@ void test_exact_quadrature() {
 }
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
-void test_quadrature_weights_impl() {
-  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
-    const auto& weights =
-        Spectral::quadrature_weights<BasisType, QuadratureType>(n);
-    const auto w_k =
-        Spectral::compute_collocation_points_and_weights<BasisType,
-                                                         QuadratureType>(n)
-            .second;
-    const auto& collocation_pts =
-        Spectral::collocation_points<BasisType, QuadratureType>(n);
-    const auto inverse_weight_function_values =
-        Spectral::compute_inverse_weight_function_values<BasisType>(
-            collocation_pts);
-    CHECK_ITERABLE_APPROX(weights, w_k * inverse_weight_function_values);
-  }
-}
-
-void test_quadrature_weights() {
-  // Test that the Spectral::quadrature_weights are those used to compute
-  // definite integrals, as opposed to the weighted inner product.
-  test_quadrature_weights_impl<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::Gauss>();
-  test_quadrature_weights_impl<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto>();
-  test_quadrature_weights_impl<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::Gauss>();
-  test_quadrature_weights_impl<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::GaussLobatto>();
-}
-
-template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 void test_spectral_quantities_for_mesh_impl(const Mesh<1>& slice) {
   const auto num_points = slice.extents(0);
   const auto& expected_points =
@@ -580,7 +548,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
   test_linear_filter();
   test_exact_extrapolation();
   test_exact_quadrature();
-  test_quadrature_weights();
   test_spectral_quantities_for_mesh();
   test_gauss_points_boundary_interpolation_and_lifting();
   test_double_instantiation();

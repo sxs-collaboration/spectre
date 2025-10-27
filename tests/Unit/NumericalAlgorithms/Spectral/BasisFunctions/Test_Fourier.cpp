@@ -23,6 +23,7 @@
 #include "NumericalAlgorithms/Spectral/ModalToNodalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/NodalToModalMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Quadrature.hpp"
+#include "NumericalAlgorithms/Spectral/QuadratureWeights.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -114,7 +115,7 @@ void test() {
     const DataVector phi = collocation_points<basis, quadrature>(num_points);
     const Matrix dm = differentiation_matrix<basis, quadrature>(num_points);
     const DataVector integration_weights =
-        Fourier::quadrature_weights(num_points);
+        quadrature_weights<basis, quadrature>(num_points);
     const Matrix interp_matrix =
         interpolation_matrix<basis, quadrature>(num_points, phi_target);
     const Matrix interp_matrix_dv =

@@ -36,8 +36,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.QuadratureWeights",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test<Basis::Legendre, Quadrature::Gauss>();
   test<Basis::Legendre, Quadrature::GaussLobatto>();
-  // Chebyshev fails this test!
-  // test<Basis::Chebyshev, Quadrature::Gauss>();
-  // test<Basis::Chebyshev, Quadrature::GaussLobatto>();
+  test<Basis::Chebyshev, Quadrature::Gauss>();
+  test<Basis::Chebyshev, Quadrature::GaussLobatto>();
 }
 }  // namespace Spectral
