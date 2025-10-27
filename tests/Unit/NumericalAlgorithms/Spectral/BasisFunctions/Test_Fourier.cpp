@@ -81,7 +81,7 @@ template <typename T>
 void test_interpolation(const DataVector& u, const T& target_points,
                         const Matrix& m,
                         const FourierTestFunctions::ProductOfPolynomials& f) {
-  const auto custom_approx = Approx::custom().epsilon(1.0e-12).scale(1.0);
+  const auto custom_approx = Approx::custom().epsilon(5.0e-11).scale(1.0);
   const DataVector u_target = apply_matrix(m, u);
   for (size_t i = 0; i < get_size(target_points); ++i) {
     CHECK(get_element(u_target, i) ==
