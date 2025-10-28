@@ -68,12 +68,14 @@ class TestInspiral(unittest.TestCase):
             id_input_file=id_input_file,
             id_metadata=id_metadata,
             id_run_dir=self.id_dir,
+            id_subfile_name="VolumeData",
             id_horizons_path=self.horizons_filename,
         )
         self.assertEqual(
             params["IdFileGlob"],
             str((self.id_dir).resolve() / "BbhVolume*.h5"),
         )
+        self.assertEqual(params["IdSubfile"], "VolumeData")
         self.assertAlmostEqual(params["ExcisionRadiusA"], 1.116 * 1.0385 * 0.82)
         self.assertAlmostEqual(params["ExcisionRadiusB"], 0.744 * 1.0385 * 0.82)
         self.assertEqual(params["XCoordA"], 8.0)
@@ -118,6 +120,8 @@ class TestInspiral(unittest.TestCase):
     def test_cli(self):
         common_args = [
             str(self.id_dir / "InitialData.yaml"),
+            "--id-subfile-name",
+            "VolumeData",
             "--id-horizons-path",
             str(self.horizons_filename),
             "-E",

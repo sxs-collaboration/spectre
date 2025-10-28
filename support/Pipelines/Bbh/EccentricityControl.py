@@ -131,6 +131,7 @@ def eccentricity_control(
                     # Start from inspiral data
                     id_input_file_path=inspiral_input_file_path,
                     id_run_dir=inspiral_run_dir,
+                    id_subfile_name="PostJunkVolumeData",
                     lev=lev,
                     inspiral_input_file_template=inspiral_input_file_template,
                     continue_with_ringdown=True,

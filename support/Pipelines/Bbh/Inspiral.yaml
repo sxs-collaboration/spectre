@@ -50,7 +50,7 @@ InitialData:
 {% else %}
   NumericInitialData:
     FileGlob: "{{ IdFileGlob }}"
-    Subgroup: "VolumeData"
+    Subgroup: "{{ IdSubfile }}"
   {% if IdFromEvolution %}
     ObservationValue: {{ InitialTime }}
     ObservationValueEpsilon: Auto
@@ -138,24 +138,24 @@ DomainCreator:
       InitialTime: &InitialTime {{ InitialTime }}
       ExpansionMap:
         H5Filename: "{{ FotFilename }}"
-        SubfileName: "VolumeData"
+        SubfileName: "{{ IdSubfile }}"
       RotationMap:
         H5Filename: "{{ FotFilename }}"
-        SubfileName: "VolumeData"
+        SubfileName: "{{ IdSubfile }}"
       TranslationMap:
         H5Filename: "{{ FotFilename }}"
-        SubfileName: "VolumeData"
+        SubfileName: "{{ IdSubfile }}"
       SkewMap:
         H5Filename: "{{ FotFilename }}"
-        SubfileName: "VolumeData"
+        SubfileName: "{{ IdSubfile }}"
       ShapeMapA:
         H5Filename: "{{ FotFilename }}"
-        SubfileName: "VolumeData"
+        SubfileName: "{{ IdSubfile }}"
         LMax: Auto
         TransitionEndsAtCube: True
       ShapeMapB:
         H5Filename: "{{ FotFilename }}"
-        SubfileName: "VolumeData"
+        SubfileName: "{{ IdSubfile }}"
         LMax: Auto
         TransitionEndsAtCube: True
       GridCenters: None
@@ -438,7 +438,7 @@ EventsAndTriggersAtSlabs:
     Events:
       # Save volume data for continuation
       - ObserveFields:
-          SubfileName: VolumeData
+          SubfileName: PostJunkVolumeData
           VariablesToObserve:
             - SpacetimeMetric
             - Pi
