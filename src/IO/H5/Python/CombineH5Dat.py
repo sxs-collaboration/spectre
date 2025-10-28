@@ -8,7 +8,7 @@ import shutil
 import click
 import h5py
 
-from spectre.Visualization.ReadH5 import available_subfiles
+from spectre.IO.H5 import available_subfiles
 
 
 def combine_h5_dat(h5files, output, force):

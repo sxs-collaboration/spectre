@@ -15,10 +15,7 @@ from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import InverseJacobian, Scalar, tnsr
 from spectre.Domain import ElementId
 from spectre.Informer import unit_test_build_path, unit_test_src_path
-from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
-from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
-from spectre.Spectral import Mesh
-from spectre.Visualization.TransformVolumeData import (
+from spectre.IO.H5.TransformVolumeData import (
     Kernel,
     parse_kernels,
     parse_pybind11_signatures,
@@ -26,6 +23,9 @@ from spectre.Visualization.TransformVolumeData import (
     transform_volume_data,
     transform_volume_data_command,
 )
+from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
+from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
+from spectre.Spectral import Mesh
 
 
 def adm_mass_integrand_signature(

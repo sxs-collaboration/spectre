@@ -10,10 +10,7 @@ import rich
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures.Tensor import DataVector, Frame, tnsr
 from spectre.IO.Exporter import ObservationId, interpolate_to_points
-from spectre.Visualization.OpenVolfiles import (
-    open_volfiles_command,
-    parse_points,
-)
+from spectre.IO.H5 import open_volfiles_command, parse_points
 
 logger = logging.getLogger(__name__)
 

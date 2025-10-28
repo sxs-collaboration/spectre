@@ -18,6 +18,11 @@ from spectre.Domain import (
     strahlkorper_in_inertial_frame_aligned,
 )
 from spectre.IO.Exporter import ObservationId, interpolate_tensors_to_points
+from spectre.IO.H5 import (
+    list_observations,
+    open_volfiles,
+    open_volfiles_command,
+)
 from spectre.PointwiseFunctions.GeneralRelativity.Surfaces import (
     horizon_quantities,
 )
@@ -28,11 +33,6 @@ from spectre.SphericalHarmonics import (
     cartesian_coords,
     ylm_legend_and_data,
 )
-from spectre.Visualization.OpenVolfiles import (
-    open_volfiles,
-    open_volfiles_command,
-)
-from spectre.Visualization.ReadH5 import list_observations
 
 logger = logging.getLogger(__name__)
 

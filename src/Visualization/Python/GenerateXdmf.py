@@ -19,9 +19,9 @@ import h5py
 import numpy as np
 import rich
 
+from spectre.IO.H5.ReadH5 import available_subfiles
 from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.support.Logging import configure_logging
-from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)
 

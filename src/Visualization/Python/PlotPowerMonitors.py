@@ -14,15 +14,11 @@ from matplotlib.ticker import MaxNLocator
 import spectre.IO.H5 as spectre_h5
 from spectre.DataStructures import DataVector
 from spectre.Domain import Domain, deserialize_domain
+from spectre.IO.H5 import open_volfiles, open_volfiles_command, parse_point
 from spectre.IO.H5.IterElements import iter_elements, stripped_element_name
 from spectre.NumericalAlgorithms.LinearOperators import power_monitors
 from spectre.Spectral import Basis
 from spectre.support.CliExceptions import RequiredChoiceError
-from spectre.Visualization.OpenVolfiles import (
-    open_volfiles,
-    open_volfiles_command,
-    parse_point,
-)
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,

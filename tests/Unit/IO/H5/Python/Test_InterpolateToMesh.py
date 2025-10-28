@@ -14,11 +14,11 @@ from spectre import Spectral
 from spectre.DataStructures import DataVector
 from spectre.Informer import unit_test_build_path
 from spectre.IO.H5 import ElementVolumeData, TensorComponent
-from spectre.support.Logging import configure_logging
-from spectre.Visualization.InterpolateToMesh import (
+from spectre.IO.H5.InterpolateToMesh import (
     interpolate_to_mesh,
     interpolate_to_mesh_command,
 )
+from spectre.support.Logging import configure_logging
 
 
 class TestInterpolateToMesh(unittest.TestCase):

@@ -11,8 +11,8 @@ import numpy as np
 import rich
 
 import spectre.IO.H5 as spectre_h5
+from spectre.IO.H5.ReadH5 import list_observations, select_observation
 from spectre.support.CliExceptions import RequiredChoiceError
-from spectre.Visualization.ReadH5 import list_observations, select_observation
 
 logger = logging.getLogger(__name__)
 

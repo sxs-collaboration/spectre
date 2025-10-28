@@ -20,8 +20,7 @@ from spectre.IO.Exporter import (
 from spectre.IO.Exporter.InterpolateToPoints import (
     interpolate_to_points_command,
 )
-from spectre.Visualization.OpenVolfiles import open_volfiles
-from spectre.Visualization.ReadH5 import list_observations
+from spectre.IO.H5 import list_observations, open_volfiles
 
 
 class TestInterpolateToPoints(unittest.TestCase):

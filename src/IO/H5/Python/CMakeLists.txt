@@ -23,7 +23,11 @@ spectre_python_add_module(
   ExtractDatFromH5.py
   ExtractInputSourceYamlFromH5.py
   FunctionsOfTimeFromVolume.py
+  InterpolateToMesh.py
   IterElements.py
+  OpenVolfiles.py
+  ReadH5.py
+  TransformVolumeData.py
   MODULE_PATH "IO"
   )
 

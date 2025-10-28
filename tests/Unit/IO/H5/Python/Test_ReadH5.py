@@ -11,9 +11,9 @@ import pandas.testing as pdt
 
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
-from spectre.Visualization.OpenVolfiles import open_volfiles
-from spectre.Visualization.ReadH5 import (
+from spectre.IO.H5 import (
     available_subfiles,
+    open_volfiles,
     select_observation,
     to_dataframe,
 )

@@ -12,7 +12,7 @@ from rich.pretty import pretty_repr
 
 import spectre.IO.H5 as spectre_h5
 from spectre.Domain import deserialize_functions_of_time
-from spectre.Visualization.ReadH5 import select_observation
+from spectre.IO.H5 import select_observation
 
 logger = logging.getLogger(__name__)
 

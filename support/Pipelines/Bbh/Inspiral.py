@@ -12,11 +12,10 @@ import yaml
 from rich.pretty import pretty_repr
 
 import spectre.IO.H5 as spectre_h5
+from spectre.IO.H5 import available_subfiles, open_volfiles, select_observation
 from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
 from spectre.support.Schedule import schedule, scheduler_options
-from spectre.Visualization.OpenVolfiles import open_volfiles
-from spectre.Visualization.ReadH5 import available_subfiles, select_observation
 
 logger = logging.getLogger(__name__)
 

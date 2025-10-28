@@ -112,7 +112,7 @@ class Cli(click.Group):
 
             return interpolate_to_points_command
         elif name == "interpolate-to-mesh":
-            from spectre.Visualization.InterpolateToMesh import (
+            from spectre.IO.H5.InterpolateToMesh import (
                 interpolate_to_mesh_command,
             )
 
@@ -152,7 +152,7 @@ class Cli(click.Group):
 
             return status_command
         elif name in ["transform-volume-data", "transform-vol"]:
-            from spectre.Visualization.TransformVolumeData import (
+            from spectre.IO.H5.TransformVolumeData import (
                 transform_volume_data_command,
             )
 

@@ -17,6 +17,7 @@ from spectre.Domain import (
     deserialize_functions_of_time,
     element_logical_coordinates,
 )
+from spectre.IO.H5 import open_volfiles, open_volfiles_command
 from spectre.IO.H5.IterElements import iter_elements
 from spectre.Pipelines.Bbh.FindHorizon import _strahlkorper_vol_data
 from spectre.SphericalHarmonics import (
@@ -24,10 +25,6 @@ from spectre.SphericalHarmonics import (
     Strahlkorper,
     cartesian_coords,
     ylm_legend_and_data,
-)
-from spectre.Visualization.OpenVolfiles import (
-    open_volfiles,
-    open_volfiles_command,
 )
 
 logger = logging.getLogger(__name__)

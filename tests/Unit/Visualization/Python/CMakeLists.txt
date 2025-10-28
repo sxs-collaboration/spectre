@@ -91,12 +91,6 @@ spectre_add_python_bindings_test(
   TIMEOUT 10)
 
 spectre_add_python_bindings_test(
-  "Unit.Visualization.Python.ReadH5"
-  Test_ReadH5.py
-  "unit;visualization;python"
-  None)
-
-spectre_add_python_bindings_test(
   "Unit.Visualization.Python.ReadInputFile"
   Test_ReadInputFile.py
   "unit;visualization;python"
@@ -108,17 +102,5 @@ spectre_add_python_bindings_test(
   "unit;visualization;python"
   None
   TIMEOUT 10)
-
-spectre_add_python_bindings_test(
-  "Unit.Visualization.Python.InterpolateToMesh"
-  Test_InterpolateToMesh.py
-  "unit;visualization;python"
-  None)
-
-spectre_add_python_bindings_test(
-  "Unit.Visualization.Python.TransformVolumeData"
-  Test_TransformVolumeData.py
-  "unit;visualization;python"
-  None)
 
 add_subdirectory(Render3D)
