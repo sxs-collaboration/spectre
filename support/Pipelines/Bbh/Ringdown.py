@@ -19,6 +19,7 @@ from spectre.Evolution.Ringdown.ComputeAhCCoefsInRingdownDistortedFrame import (
 from spectre.IO.H5.FunctionsOfTimeFromVolume import (
     functions_of_time_from_volume,
 )
+from spectre.support.DirectoryStructure import PipelineStep, list_pipeline_steps
 from spectre.support.Schedule import schedule, scheduler_options
 
 logger = logging.getLogger(__name__)
@@ -157,10 +158,22 @@ def start_ringdown(
     if pipeline_dir:
         pipeline_dir = Path(pipeline_dir).resolve()
     if pipeline_dir and not segments_dir and not run_dir:
-        segments_dir = pipeline_dir / "003_Ringdown"
+        pipeline_steps = list_pipeline_steps(pipeline_dir)
+        if pipeline_steps:
+            segments_dir = pipeline_steps[-1].next(label="Ringdown").path
+        else:
+            segments_dir = PipelineStep.first(
+                directory=pipeline_dir, label="Ringdown"
+            ).path
 
-    if path_to_output_h5 is None:
-        path_to_output_h5 = pipeline_dir / "RingdownDistortedCoefs.h5"
+    if path_to_output_h5 == None:
+        ringdown_dir = Path(segments_dir or run_dir)
+        ringdown_dir.mkdir(parents=True, exist_ok=True)
+        path_to_output_h5 = (
+            Path(ringdown_dir).resolve() / "RingdownShapeCoefs.h5"
+        )
+    else:
+        path_to_output_h5 = Path(path_to_output_h5).resolve()
 
     ringdown_params = ringdown_parameters(
         inspiral_input_file,
@@ -393,20 +406,20 @@ def start_ringdown(
 @click.option(
     "--number-of-ahc-finds-for-fit",
     type=int,
-    required=True,
+    default=10,
     help="Number of AhC finds that will be used for the fit.",
 )
 @click.option(
     "--match-time",
-    required=True,
     type=float,
+    default=None,
     help="Desired match time (volume data must contain data at this time)",
 )
 @click.option(
     "--settling-timescale",
-    required=True,
     type=float,
-    help="Damping timescale for settle to const",
+    default=10.0,
+    help="Damping timescale for settle to const functions of time",
 )
 @click.option(
     "--zero-coefs-eps",

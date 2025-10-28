@@ -12,6 +12,7 @@ from rich.pretty import pretty_repr
 
 import spectre.IO.H5 as spectre_h5
 from spectre.Domain import deserialize_functions_of_time
+from spectre.Visualization.ReadH5 import select_observation
 
 logger = logging.getLogger(__name__)
 
@@ -37,21 +38,22 @@ def functions_of_time_from_volume(
         if fot_vol_subfile.split(".")[-1] == "vol":
             fot_vol_subfile = fot_vol_subfile.split(".")[0]
         volfile = h5file.get_vol("/" + fot_vol_subfile)
-        obs_ids = volfile.list_observation_ids()
-        fot_times = np.array(list(map(volfile.get_observation_value, obs_ids)))
-        which_obs_id = np.argmin(np.abs(fot_times - match_time))
-        serialized_fots = volfile.get_functions_of_time(obs_ids[which_obs_id])
+        # If match time not specified, choose the last available time in the
+        # volume data
+        if match_time is None:
+            obs_id, match_time = select_observation(volfile, step=-1)
+        else:
+            obs_id, match_time = select_observation(volfile, time=match_time)
+        serialized_fots = volfile.get_functions_of_time(obs_id)
         functions_of_time = deserialize_functions_of_time(serialized_fots)
         logger.debug("Desired match time: " + str(match_time))
-        logger.debug("Selected ObservationID: " + str(which_obs_id))
-        logger.debug("Selected match time: " + str(fot_times[which_obs_id]))
+        logger.debug("Selected ObservationID: " + str(obs_id))
+        logger.debug("Selected match time: " + str(match_time))
 
-        functions_of_time_at_match_time_dict["MatchTime"] = fot_times[
-            which_obs_id
-        ]
+        functions_of_time_at_match_time_dict["MatchTime"] = match_time
 
         for fot_name, fot in functions_of_time.items():
-            fot_at_match_time = fot.func_and_2_derivs(fot_times[which_obs_id])
+            fot_at_match_time = fot.func_and_2_derivs(match_time)
             if len(fot_at_match_time[0]) != 1:
                 functions_of_time_at_match_time_dict[fot_name] = [
                     [coef for coef in x] for x in fot_at_match_time
