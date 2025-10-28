@@ -70,6 +70,35 @@ def characteristic_speeds(
     return result
 
 
+def characteristic_speeds_hydro(
+    spatial_velocity,
+    spatial_velocity_squared,
+    sound_speed_squared,
+    lorentz_factor,
+    normal_oneform,
+):
+    normal_velocity = np.dot(spatial_velocity, normal_oneform)
+    denom = 1.0 - spatial_velocity_squared * sound_speed_squared
+    under = (
+        1.0
+        - spatial_velocity_squared * sound_speed_squared
+        - normal_velocity * normal_velocity * (1.0 - sound_speed_squared)
+    )
+
+    d = lorentz_factor * np.sqrt(under)
+    factor = (1.0 - sound_speed_squared) * normal_velocity
+    cs = np.sqrt(sound_speed_squared)
+
+    y_plus = (factor + cs * d / (lorentz_factor * lorentz_factor)) / denom
+    y_minus = (factor - cs * d / (lorentz_factor * lorentz_factor)) / denom
+
+    return [
+        normal_velocity,
+        float(y_plus),
+        float(y_minus),
+    ]
+
+
 # End functions for testing Characteristics.cpp
 
 

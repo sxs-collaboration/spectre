@@ -27,7 +27,6 @@ struct Normalized;
 
 namespace grmhd {
 namespace ValenciaDivClean {
-
 /// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation of
@@ -86,6 +85,7 @@ namespace ValenciaDivClean {
  * the pressure, and \f$B^i\f$ is the spatial magnetic field measured by an
  * Eulerian observer.
  */
+
 template <size_t ThermodynamicDim>
 std::array<DataVector, 9> characteristic_speeds_approximate_mhd(
     const Scalar<DataVector>& rest_mass_density,
@@ -114,6 +114,74 @@ void characteristic_speeds_approximate_mhd(
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+/// @}
+
+/// @{
+/*!
+ * \brief Compute the characteristic speeds for the relativistic hydrodynamics
+ * system in the Eulerian frame.
+ *
+ * These are the eigenvalues of the flux Jacobian projected along a spatial
+ * direction with unit normal \f$ s_i\f$, measured by an Eulerian observer.
+ * They consist of four degenerate modes and two non-degenerate modes:
+ *
+ * \f{align*}
+ * \lambda_\mathrm{deg} &= v_n ,\\
+ * \lambda_{\pm} &=
+ *   \frac{ (1 - c_s^2)\,v_n \pm c_s\,d / W^2 }
+ *        { 1 - v^2 c_s^2 }.
+ * \f}
+ *
+ * where
+ *
+ * \f{align*}
+ * d &\equiv
+ *   W\,\sqrt{ 1 - v^2 c_s^2 - v_n^2(1 - c_s^2) } .
+ * \f}
+ *
+ * The variables are defined as:
+ *
+ * \f{align*}
+ * v^2 &= \gamma_{mn} v^m v^n ,\\
+ * v_n &= v^a s_a ,\\
+ * W &= \frac{1}{\sqrt{1 - v^a v_a}} ,\\
+ * h &= 1 + \epsilon + \frac{p}{\rho} ,\\
+ * c_s^2 &= \frac{1}{h}\left(\chi + \kappa \frac{p}{\rho^2}\right) ,
+ * \f}
+ *
+ * The returned array has size 3 and contains the unique characteristic speeds:
+ *  - `char_speeds[0]`: \f$v_n\f$ (degenerate eigenvalue, multiplicity 4 if the
+ * electron fraction is included),
+ *  - `char_speeds[1]`: \f$\lambda_+\f$ (right-propagating acoustic mode),
+ *  - `char_speeds[2]`: \f$\lambda_-\f$ (left-propagating acoustic mode).
+ */
+
+template <size_t ThermodynamicDim>
+void characteristic_speeds_hydro(
+    gsl::not_null<std::array<DataVector, 3>*> pchar_speeds,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& electron_fraction,
+    const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state);
+
+template <size_t ThermodynamicDim>
+std::array<DataVector, 3> characteristic_speeds_hydro(
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& electron_fraction,
+    const Scalar<DataVector>& lorentz_factor,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state);
 /// @}
