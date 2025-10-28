@@ -3,8 +3,10 @@
 
 import fnmatch
 import functools
+import glob
 import logging
-from typing import Iterable, Optional
+from pathlib import Path
+from typing import Iterable, Optional, Union
 
 import click
 import numpy as np
@@ -18,17 +20,20 @@ logger = logging.getLogger(__name__)
 
 
 def open_volfiles(
-    h5_files: Iterable[str], subfile_name: str, obs_id: Optional[int] = None
+    h5_files: Union[Iterable[Union[str, Path]], str, Path],
+    subfile_name: str,
+    obs_id: Optional[int] = None,
 ):
     """Opens each volume data file in turn
 
     Arguments:
-      h5_files: List of H5 files containing volume data
+      h5_files: List of H5 files containing volume data, or a glob pattern.
       subfile_name: Name of the H5 volume data subfile
       obs_id: Optional. If specified, only yield volume data files that
         contain the specified observation ID.
     """
-    import spectre.IO.H5 as spectre_h5
+    if isinstance(h5_files, (str, Path)):
+        h5_files = sorted(glob.glob(h5_files))
 
     subfile_found = False
     files_exist = False

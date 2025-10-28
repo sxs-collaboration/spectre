@@ -360,8 +360,6 @@ def use_excision_as_horizon(
     )
 
     # Deserialize domain and get the excision in the inertial frame
-    if isinstance(h5_files, str):
-        h5_files = [h5_files]
     for volfile in open_volfiles(h5_files, subfile_name, obs_id):
         dim = volfile.get_dimension()
         domain = deserialize_domain[dim](volfile.get_domain(obs_id))

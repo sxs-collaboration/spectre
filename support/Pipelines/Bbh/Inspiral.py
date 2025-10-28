@@ -240,7 +240,7 @@ def inspiral_parameters(
     if id_from_evolution:
         first_volfile = id_file_glob.replace("*", "0")
         _, obs_time = select_observation(
-            open_volfiles([first_volfile], id_subfile_name), step=-1
+            open_volfiles(first_volfile, id_subfile_name), step=-1
         )
         params.update(
             {
