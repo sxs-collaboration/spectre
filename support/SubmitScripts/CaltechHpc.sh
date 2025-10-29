@@ -18,6 +18,7 @@
 #SBATCH --constraint=cascadelake
 #SBATCH -p {{ queue | default("expansion") }}
 #SBATCH -t {{ time_limit | default("1-00:00:00") }}
+#SBATCH --exclusive
 {% if reservation is defined %}
 #SBATCH --reservation={{ reservation }}
 {% endif %}
