@@ -91,8 +91,8 @@ namespace gh::BoundaryConditions {
  *
  * We refer to `Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_psi()`,
  * `Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_zero()`,
- * `Bjorhus::constraint_preserving_bjorhus_corrections_dt_v_minus()`, and
- * `Bjorhus::constraint_preserving_physical_bjorhus_corrections_dt_v_minus()`
+ * `Bjorhus::constraint_preserving_gauge_bjorhus_corrections_dt_v_minus()`, and
+ * `Bjorhus::constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus()`
  * for the further details on implementation.
  *
  * \note These boundary conditions assume a spherical outer boundary. Also, we

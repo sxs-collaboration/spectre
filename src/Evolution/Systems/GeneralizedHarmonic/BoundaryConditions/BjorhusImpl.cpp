@@ -494,7 +494,7 @@ void add_physical_terms_to_dt_v_minus(
 }  // namespace detail
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
@@ -532,7 +532,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_minus(
 }
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
@@ -693,7 +693,7 @@ void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
       const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,         \
       const std::array<DTYPE(data), 4>& char_speeds);                         \
   template void gh::BoundaryConditions::Bjorhus::                             \
-      constraint_preserving_bjorhus_corrections_dt_v_minus(                   \
+      constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(             \
           const gsl::not_null<                                                \
               tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
               bc_dt_v_minus,                                                  \
@@ -724,7 +724,7 @@ void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
               constraint_char_zero_minus,                                     \
           const std::array<DTYPE(data), 4>& char_speeds);                     \
   template void gh::BoundaryConditions::Bjorhus::                             \
-      constraint_preserving_physical_bjorhus_corrections_dt_v_minus(          \
+      constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(    \
           const gsl::not_null<                                                \
               tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
               bc_dt_v_minus,                                                  \

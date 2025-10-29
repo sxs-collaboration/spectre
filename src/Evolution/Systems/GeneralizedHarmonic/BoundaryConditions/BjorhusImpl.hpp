@@ -169,7 +169,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
  * where \f$q^a\f$ is the future-directed spacetime normal vector.
  */
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,
@@ -192,7 +192,7 @@ void constraint_preserving_bjorhus_corrections_dt_v_minus(
     const std::array<DataType, 4>& char_speeds);
 
 template <size_t VolumeDim, typename DataType>
-void constraint_preserving_physical_bjorhus_corrections_dt_v_minus(
+void constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
     const Scalar<DataType>& gamma2,

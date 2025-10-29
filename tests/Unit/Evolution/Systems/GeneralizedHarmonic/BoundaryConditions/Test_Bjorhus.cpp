@@ -31,8 +31,10 @@ template <size_t Dim>
 void test() {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
-  for (const std::string& bc_string :
-       {"ConstraintPreserving"s, "ConstraintPreservingPhysical"s}) {
+  for (const auto& [bc_string, bc_type] :
+       {std::pair{"ConstraintPreserving"s, "ConstraintPreservingGauge"s},
+        std::pair{"ConstraintPreservingPhysical"s,
+                  "ConstraintPreservingGaugePhysical"s}}) {
     CAPTURE(bc_string);
 
     helpers::test_boundary_condition_with_python<
@@ -49,8 +51,8 @@ void test() {
                 ::Tags::dt<gh::Tags::Pi<DataVector, Dim, frame>>>,
             helpers::Tags::PythonFunctionName<
                 ::Tags::dt<gh::Tags::Phi<DataVector, Dim, frame>>>>{
-            "error", "dt_spacetime_metric", "dt_pi_" + bc_string,
-            "dt_phi_" + bc_string},
+            "error", "dt_spacetime_metric", "dt_pi_" + bc_type,
+            "dt_phi_" + bc_type},
         "ConstraintPreservingBjorhus:\n"
         "  Type: " +
             bc_string,
@@ -70,7 +72,7 @@ void test() {
 }
 
 template <size_t Dim>
-void wrap_dt_vars_corrections_ConstraintPreserving(
+void wrap_dt_vars_corrections_ConstraintPreservingGauge(
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
         dt_spacetime_metric_correction,
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*> dt_pi_correction,
@@ -114,7 +116,7 @@ void wrap_dt_vars_corrections_ConstraintPreserving(
 }
 
 template <size_t Dim>
-void wrap_dt_vars_corrections_ConstraintPreserving_static_mesh(
+void wrap_dt_vars_corrections_ConstraintPreservingGauge_static_mesh(
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
         dt_spacetime_metric_correction,
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*> dt_pi_correction,
@@ -157,7 +159,7 @@ void wrap_dt_vars_corrections_ConstraintPreserving_static_mesh(
 }
 
 template <size_t Dim>
-void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
+void wrap_dt_vars_corrections_ConstraintPreservingGaugePhysical(
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
         dt_spacetime_metric_correction,
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*> dt_pi_correction,
@@ -201,7 +203,7 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
 }
 
 template <size_t Dim>
-void wrap_dt_vars_corrections_ConstraintPreservingPhysical_static_mesh(
+void wrap_dt_vars_corrections_ConstraintPreservingGaugePhysical_static_mesh(
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
         dt_spacetime_metric_correction,
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*> dt_pi_correction,
@@ -247,32 +249,33 @@ template <size_t Dim>
 void test_with_random_values(const DataVector& used_for_size) {
   // Static mesh
   pypp::check_with_random_values<1>(
-      wrap_dt_vars_corrections_ConstraintPreserving_static_mesh<Dim>,
+      wrap_dt_vars_corrections_ConstraintPreservingGauge_static_mesh<Dim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
       {"dt_spacetime_metric_static_mesh",
-       "dt_pi_ConstraintPreserving_static_mesh",
-       "dt_phi_ConstraintPreserving_static_mesh"},
+       "dt_pi_ConstraintPreservingGauge_static_mesh",
+       "dt_phi_ConstraintPreservingGauge_static_mesh"},
       {{{0.1, 1.}}}, used_for_size, 1.e-6);
   pypp::check_with_random_values<1>(
-      wrap_dt_vars_corrections_ConstraintPreservingPhysical_static_mesh<Dim>,
+      wrap_dt_vars_corrections_ConstraintPreservingGaugePhysical_static_mesh<
+          Dim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
       {"dt_spacetime_metric_static_mesh",
-       "dt_pi_ConstraintPreservingPhysical_static_mesh",
-       "dt_phi_ConstraintPreservingPhysical_static_mesh"},
+       "dt_pi_ConstraintPreservingGaugePhysical_static_mesh",
+       "dt_phi_ConstraintPreservingGaugePhysical_static_mesh"},
       {{{0.1, 1.}}}, used_for_size, 1.e-6);
 
   // Moving mesh
   pypp::check_with_random_values<1>(
-      wrap_dt_vars_corrections_ConstraintPreserving<Dim>,
+      wrap_dt_vars_corrections_ConstraintPreservingGauge<Dim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      {"dt_spacetime_metric", "dt_pi_ConstraintPreserving",
-       "dt_phi_ConstraintPreserving"},
+      {"dt_spacetime_metric", "dt_pi_ConstraintPreservingGauge",
+       "dt_phi_ConstraintPreservingGauge"},
       {{{0.1, 1.}}}, used_for_size, 1.e-6);
   pypp::check_with_random_values<1>(
-      wrap_dt_vars_corrections_ConstraintPreservingPhysical<Dim>,
+      wrap_dt_vars_corrections_ConstraintPreservingGaugePhysical<Dim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
-      {"dt_spacetime_metric", "dt_pi_ConstraintPreservingPhysical",
-       "dt_phi_ConstraintPreservingPhysical"},
+      {"dt_spacetime_metric", "dt_pi_ConstraintPreservingGaugePhysical",
+       "dt_phi_ConstraintPreservingGaugePhysical"},
       {{{0.1, 1.}}}, used_for_size, 1.e-6);
 }
 }  // namespace
