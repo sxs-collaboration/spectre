@@ -688,7 +688,7 @@ struct EvolutionMetavars {
       const std::vector<std::string>& deadlocked_components) {
     gh::deadlock::run_deadlock_analysis_simple_actions<
         gh_dg_element_array, control_components, interpolation_target_tags,
-        false>(cache, deadlocked_components);
+        tmpl::list<AhA, AhB>, false>(cache, deadlocked_components);
   }
 
   struct amr : tt::ConformsTo<::amr::protocols::AmrMetavariables> {
