@@ -18,8 +18,7 @@ Here we summarize what we view as the more important portions of the guides.
 Stylistic Items:
 
 * Adhere to [Google style](https://google.github.io/styleguide/cppguide.html).
-  [Can use `clang-format -style=google`]
-  (http://clang.llvm.org/docs/ClangFormat.html).
+  [Can use `clang-format -style=google`][clang_format].
 * CamelCase: class names template parameters, file names, and directory names.
 * snake_case: function, variable, metafunction and metavariable names.
 * SCREAMING_SNAKE_CASE: macros.
@@ -29,8 +28,7 @@ Stylistic Items:
 * Name unused function parameters `/*parameter_name*/` or `/*meta*/` for TMP
   cases
 * Type aliases that wrap type traits have a trailing `_t` following the STL
-* Private member variables have a [trailing underscore]
-  (https://google.github.io/styleguide/cppguide.html#Variable_Names).
+* Private member variables have a [trailing underscore][variable_names].
 * Do not use
   [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation),
   e.g. `double* pd_blah` is bad
@@ -50,9 +48,8 @@ Stylistic Items:
 * File lists in CMake are alphabetical.
 * No blank lines surrounding Doxygen group comments
   (<code>// \@{</code> and <code>// \@}</code>).
-* Use the [alternative tokens]
-  (http://en.cppreference.com/w/cpp/language/operator_alternative)
-  `or`, `and`, and `not` instead of `||`, `&&`, and `!`.
+* Use the [alternative tokens][alternative_tokens] `or`, `and`, and `not`
+  instead of `||`, `&&`, and `!`.
 * Use C-style Doxygen comments (`/*! ... */`) when using multi-line math,
   otherwise C-style and C++ style comments are accepted.
 * Use the `align` environment instead of `eqnarray`. See the
@@ -85,8 +82,7 @@ Code Quality Items:
 * Never include `<iostream>`, use `Parallel::printf` inside
   `Parallel/Printf/Printf.hpp` instead, which is safe to use in parallel.
 * When using charm++ nodelocks include `<converse.h>` instead of `<lrtslock.h>`.
-* Do not add anything to [the `std` namespace]
-  (http://en.cppreference.com/w/cpp/language/extending_std).
+* Do not add anything to [the `std` namespace][extending_std].
 * Virtual functions are explicitly overridden using the `override` keyword.
 * `#%pragma once` is to be used for header guards
 * Prefer range-based for loops
@@ -123,3 +119,10 @@ Code Quality Items:
   with at least 2 core developers. In a parallel environment `mutable` variables
   lead to race conditions since multiple threads can mutate a single object by
   calling a `const` member function.
+
+[alternative_tokens]:
+  http://en.cppreference.com/w/cpp/language/operator_alternative
+[clang_format]: http://clang.llvm.org/docs/ClangFormat.html
+[extending_std]: http://en.cppreference.com/w/cpp/language/extending_std
+[variable_names]:
+  https://google.github.io/styleguide/cppguide.html#Variable_Names
