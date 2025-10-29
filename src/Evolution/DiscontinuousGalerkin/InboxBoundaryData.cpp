@@ -16,11 +16,22 @@ bool InboxBoundaryData<Dim>::empty() const {
 }
 
 template <size_t Dim>
-void InboxBoundaryData<Dim>::collect_messages() {}
+void InboxBoundaryData<Dim>::collect_messages() {
+  missing_messages = 0;
+}
+
+template <size_t Dim>
+bool InboxBoundaryData<Dim>::set_missing_messages(const size_t count) {
+  // In normal use, missing_messages should be zero when this is
+  // called, but it is convenient to allow nonzero values in the test.
+  missing_messages += static_cast<int>(count);
+  return missing_messages <= 0;
+}
 
 template <size_t Dim>
 void InboxBoundaryData<Dim>::pup(PUP::er& p) {
   p | messages;
+  p | missing_messages;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

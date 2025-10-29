@@ -22,7 +22,9 @@ namespace evolution::dg {
 template <size_t Dim>
 AtomicInboxBoundaryData<Dim>::AtomicInboxBoundaryData(
     AtomicInboxBoundaryData<Dim>&& rhs) noexcept {
-  if (rhs.message_count.load(std::memory_order_acquire) != 0) {
+  if (rhs.missing_messages.load(std::memory_order_acquire) !=
+          rhs.passed_missing_messages - rhs.processed_messages or
+      not messages.empty()) {
     sys::abort(
         "You cannot move an AtomicInboxBoundaryData with non-zero message "
         "count.");
@@ -35,10 +37,9 @@ AtomicInboxBoundaryData<Dim>::AtomicInboxBoundaryData(
           "boundary_data_in_directions.");
     }
   }
-  message_count.store(0, std::memory_order_release);
-  number_of_neighbors.store(
-      rhs.number_of_neighbors.load(std::memory_order_acquire),
-      std::memory_order_release);
+  missing_messages.store(0, std::memory_order_release);
+  processed_messages = 0;
+  passed_missing_messages = 0;
 }
 
 template <size_t Dim>
@@ -101,13 +102,29 @@ void AtomicInboxBoundaryData<Dim>::collect_messages() {
 
       spsc_in_direction.pop();
       data_in_direction = spsc_in_direction.front();
+      ++processed_messages;
     }  // while data_in_direction != nullptr
   }  //   for spsc_in_direction : boundary_data_in_directions
 }
 
 template <size_t Dim>
+bool AtomicInboxBoundaryData<Dim>::set_missing_messages(const size_t count) {
+  const int old_missing_messages = missing_messages.fetch_add(
+      static_cast<int>(count) + processed_messages - passed_missing_messages,
+      std::memory_order_acq_rel);
+  const int queued_messages =
+      passed_missing_messages - old_missing_messages - processed_messages;
+  processed_messages = 0;
+  passed_missing_messages = static_cast<int>(count);
+  return queued_messages >= static_cast<int>(count);
+}
+
+template <size_t Dim>
 void AtomicInboxBoundaryData<Dim>::pup(PUP::er& p) {
-  if (UNLIKELY(number_of_neighbors.load(std::memory_order_acquire) != 0)) {
+  const auto missing = missing_messages.load(std::memory_order_acquire);
+  if (UNLIKELY(missing > 0 or
+               missing != passed_missing_messages - processed_messages or
+               not messages.empty())) {
     ERROR(
         "Can only serialize AtomicInboxBoundaryData if there are no messages. "
         "We need to be very careful about serializing atomics since "
@@ -122,17 +139,15 @@ void AtomicInboxBoundaryData<Dim>::pup(PUP::er& p) {
     }
   }
   if (p.isUnpacking()) {
-    std::atomic_uint::value_type number_of_neighbors_to_serialize = 0;
-    p | number_of_neighbors_to_serialize;
-    number_of_neighbors.store(number_of_neighbors_to_serialize,
-                              std::memory_order_release);
-    message_count.store(0, std::memory_order_release);
-  } else {
-    std::atomic_uint::value_type number_of_neighbors_to_serialize =
-        number_of_neighbors.load(std::memory_order_acquire);
-    p | number_of_neighbors_to_serialize;
+    // We only need to preserve the combination of these quantities
+    // representing the number of queued messages, which we checked
+    // during serialization was zero, and the fact that we are not
+    // waiting on messages.  Exactly how it was split between the
+    // fields is unimportant.
+    missing_messages.store(0, std::memory_order_release);
+    processed_messages = 0;
+    passed_missing_messages = 0;
   }
-  p | messages;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

@@ -356,7 +356,7 @@ void test() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.InboxTags", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Messages.InboxTags", "[Unit][Evolution]") {
   test<1>();
   test<2>();
   test<3>();

@@ -28,20 +28,17 @@ bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
   if (UNLIKELY(not gsl::at(inbox->boundary_data_in_directions, neighbor_index)
                        .try_emplace(time_step_id, std::move(data.second),
                                     std::move(data.first)))) {
-    ERROR("Failed to emplace data into inbox. neighbor_id: ("
-          << neighbor_id.direction() << ',' << neighbor_id.id()
-          << ") at TimeStepID: " << time_step_id << " the size of the inbox is "
-          << gsl::at(inbox->boundary_data_in_directions, neighbor_index).size()
-          << " the message count is " << inbox->message_count.load()
-          << " and the number of neighbors is "
-          << inbox->number_of_neighbors.load());
+    ERROR(
+        "Failed to emplace data into inbox. neighbor_id: ("
+        << neighbor_id.direction() << ',' << neighbor_id.id()
+        << ") at TimeStepID: " << time_step_id << " the size of the inbox is "
+        << gsl::at(inbox->boundary_data_in_directions, neighbor_index).size());
   }
   // Notes:
-  // 1. fetch_add does a post-increment.
+  // 1. fetch_sub does a post-decrement.
   // 2. We need thread synchronization here, so doing relaxed_order would be a
   //    bug.
-  // inbox->message_count.fetch_add(1, std::memory_order_acq_rel) + 1;
-  return true;
+  return inbox->missing_messages.fetch_sub(1, std::memory_order_acq_rel) == 1;
 }
 
 template <size_t Dim, bool UseNodegroupDgElements>
@@ -60,7 +57,8 @@ bool BoundaryCorrectionAndGhostCellsInbox<Dim, UseNodegroupDgElements>::
             << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
     }
   }
-  return true;
+  --inbox->missing_messages;
+  return inbox->missing_messages == 0;
 }
 
 template <size_t Dim, bool UseNodegroupDgElements>

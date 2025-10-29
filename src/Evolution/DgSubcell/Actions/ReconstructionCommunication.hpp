@@ -430,12 +430,17 @@ struct ReceiveAndSendDataForReconstruction {
     const auto received = inbox.messages.find(current_time_step_id);
     // Check we have at least some data from correct time, and then check
     // we have received all data
-    if (received == inbox.messages.end() or
-        not std::all_of(expected_keys.begin(), expected_keys.end(),
-                        [&received](const auto& key) {
-                          return received->second.find(key) !=
-                                 received->second.end();
-                        })) {
+    if (received == inbox.messages.end()) {
+      inbox.set_missing_messages(expected_keys.size());
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    }
+    if (const auto missing = std::count_if(
+            expected_keys.begin(), expected_keys.end(),
+            [&received](const auto& key) {
+              return received->second.find(key) == received->second.end();
+            });
+        missing != 0) {
+      inbox.set_missing_messages(static_cast<size_t>(missing));
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
@@ -681,8 +686,13 @@ struct ReceiveDataForReconstruction {
     const auto received = inbox.messages.find(current_time_step_id);
     // Check we have at least some data from correct time, and then check that
     // we have received all data
-    if (received == inbox.messages.end() or
-        received->second.size() != number_of_expected_messages) {
+    if (received == inbox.messages.end()) {
+      inbox.set_missing_messages(number_of_expected_messages);
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    }
+    if (received->second.size() != number_of_expected_messages) {
+      inbox.set_missing_messages(number_of_expected_messages -
+                                 received->second.size());
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
