@@ -113,7 +113,6 @@ def add_gauge_sommerfeld_terms_to_dt_v_minus(
 
 
 def add_constraint_dependent_terms_to_dt_v_minus(
-    incoming_null_one_form,
     outgoing_null_one_form,
     incoming_null_vector,
     outgoing_null_vector,
@@ -344,6 +343,35 @@ def add_physical_dof_terms_to_dt_v_minus(
     return t1_ + t2_
 
 
+def constraint_preserving_bjorhus_corrections_dt_v_minus(
+    outgoing_null_one_form,
+    incoming_null_vector,
+    outgoing_null_vector,
+    projection_ab,
+    projection_Ab,
+    projection_AB,
+    char_projected_rhs_dt_v_minus,
+    constraint_char_zero_plus,
+    constraint_char_zero_minus,
+    char_speeds,
+):
+    return (
+        add_constraint_dependent_terms_to_dt_v_minus(
+            outgoing_null_one_form,
+            incoming_null_vector,
+            outgoing_null_vector,
+            projection_ab,
+            projection_Ab,
+            projection_AB,
+            constraint_char_zero_plus,
+            constraint_char_zero_minus,
+            char_projected_rhs_dt_v_minus,
+            char_speeds,
+        )
+        - char_projected_rhs_dt_v_minus
+    )
+
+
 def constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     gamma2,
     inertial_coords,
@@ -362,7 +390,6 @@ def constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
 ):
     return (
         add_constraint_dependent_terms_to_dt_v_minus(
-            incoming_null_one_form,
             outgoing_null_one_form,
             incoming_null_vector,
             outgoing_null_vector,
@@ -417,7 +444,6 @@ def constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
 ):
     return (
         add_constraint_dependent_terms_to_dt_v_minus(
-            incoming_null_one_form,
             outgoing_null_one_form,
             incoming_null_vector,
             outgoing_null_vector,

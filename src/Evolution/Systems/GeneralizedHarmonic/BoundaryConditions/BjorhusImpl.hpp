@@ -169,6 +169,24 @@ void constraint_preserving_bjorhus_corrections_dt_v_zero(
  * where \f$q^a\f$ is the future-directed spacetime normal vector.
  */
 template <size_t VolumeDim, typename DataType>
+void constraint_preserving_bjorhus_corrections_dt_v_minus(
+    gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
+        bc_dt_v_minus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>& outgoing_null_one_form,
+    const tnsr::A<DataType, VolumeDim, Frame::Inertial>& incoming_null_vector,
+    const tnsr::A<DataType, VolumeDim, Frame::Inertial>& outgoing_null_vector,
+    const tnsr::aa<DataType, VolumeDim, Frame::Inertial>& projection_ab,
+    const tnsr::Ab<DataType, VolumeDim, Frame::Inertial>& projection_Ab,
+    const tnsr::AA<DataType, VolumeDim, Frame::Inertial>& projection_AB,
+    const tnsr::aa<DataType, VolumeDim, Frame::Inertial>&
+        char_projected_rhs_dt_v_minus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
+        constraint_char_zero_plus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
+        constraint_char_zero_minus,
+    const std::array<DataType, 4>& char_speeds);
+
+template <size_t VolumeDim, typename DataType>
 void constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,

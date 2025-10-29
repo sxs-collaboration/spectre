@@ -494,6 +494,35 @@ void add_physical_terms_to_dt_v_minus(
 }  // namespace detail
 
 template <size_t VolumeDim, typename DataType>
+void constraint_preserving_bjorhus_corrections_dt_v_minus(
+    const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
+        bc_dt_v_minus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>& outgoing_null_one_form,
+    const tnsr::A<DataType, VolumeDim, Frame::Inertial>& incoming_null_vector,
+    const tnsr::A<DataType, VolumeDim, Frame::Inertial>& outgoing_null_vector,
+    const tnsr::aa<DataType, VolumeDim, Frame::Inertial>& projection_ab,
+    const tnsr::Ab<DataType, VolumeDim, Frame::Inertial>& projection_Ab,
+    const tnsr::AA<DataType, VolumeDim, Frame::Inertial>& projection_AB,
+    const tnsr::aa<DataType, VolumeDim, Frame::Inertial>&
+        char_projected_rhs_dt_v_minus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
+        constraint_char_zero_plus,
+    const tnsr::a<DataType, VolumeDim, Frame::Inertial>&
+        constraint_char_zero_minus,
+    const std::array<DataType, 4>& char_speeds) {
+  for (size_t a = 0; a <= VolumeDim; ++a) {
+    for (size_t b = a; b <= VolumeDim; ++b) {
+      bc_dt_v_minus->get(a, b) = -char_projected_rhs_dt_v_minus.get(a, b);
+    }
+  }
+  detail::add_constraint_dependent_terms_to_dt_v_minus(
+      bc_dt_v_minus, outgoing_null_one_form, incoming_null_vector,
+      outgoing_null_vector, projection_ab, projection_Ab, projection_AB,
+      constraint_char_zero_plus, constraint_char_zero_minus,
+      char_projected_rhs_dt_v_minus, char_speeds);
+}
+
+template <size_t VolumeDim, typename DataType>
 void constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(
     const gsl::not_null<tnsr::aa<DataType, VolumeDim, Frame::Inertial>*>
         bc_dt_v_minus,
@@ -692,6 +721,30 @@ void constraint_preserving_gauge_physical_bjorhus_corrections_dt_v_minus(
       const tnsr::ijaa<DTYPE(data), DIM(data), Frame::Inertial>& d_phi,       \
       const tnsr::iaa<DTYPE(data), DIM(data), Frame::Inertial>& d_pi,         \
       const std::array<DTYPE(data), 4>& char_speeds);                         \
+  template void gh::BoundaryConditions::Bjorhus::                             \
+      constraint_preserving_bjorhus_corrections_dt_v_minus(                   \
+          const gsl::not_null<                                                \
+              tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>*>             \
+              bc_dt_v_minus,                                                  \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              outgoing_null_one_form,                                         \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              incoming_null_vector,                                           \
+          const tnsr::A<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              outgoing_null_vector,                                           \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
+              projection_ab,                                                  \
+          const tnsr::Ab<DTYPE(data), DIM(data), Frame::Inertial>&            \
+              projection_Ab,                                                  \
+          const tnsr::AA<DTYPE(data), DIM(data), Frame::Inertial>&            \
+              projection_AB,                                                  \
+          const tnsr::aa<DTYPE(data), DIM(data), Frame::Inertial>&            \
+              char_projected_rhs_dt_v_minus,                                  \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              constraint_char_zero_plus,                                      \
+          const tnsr::a<DTYPE(data), DIM(data), Frame::Inertial>&             \
+              constraint_char_zero_minus,                                     \
+          const std::array<DTYPE(data), 4>& char_speeds);                     \
   template void gh::BoundaryConditions::Bjorhus::                             \
       constraint_preserving_gauge_bjorhus_corrections_dt_v_minus(             \
           const gsl::not_null<                                                \
