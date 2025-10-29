@@ -361,8 +361,7 @@ bool receive_boundary_data_global_time_stepping(
           if (received_mortar_data.second.boundary_correction_data
                   .has_value()) {
             mortar_data->at(mortar_id).neighbor().face_mesh =
-                received_mortar_data.second.volume_mesh.slice_away(
-                    mortar_id.direction().dimension());
+                neighbor_face_mesh;
             mortar_data->at(mortar_id).neighbor().mortar_mesh =
                 received_mortar_data.second.boundary_correction_mesh.value();
             mortar_data->at(mortar_id).neighbor().mortar_data = std::move(
@@ -499,8 +498,6 @@ bool receive_boundary_data_local_time_stepping(
 
             mortar_meshes->at(mortar_id) = mortar_mesh;
             boundary_data_history->at(mortar_id).local().for_each(
-                project_boundary_mortar_data);
-            boundary_data_history->at(mortar_id).remote().for_each(
                 project_boundary_mortar_data);
 
             MortarData<Dim> neighbor_mortar_data{};
