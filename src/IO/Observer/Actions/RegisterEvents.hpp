@@ -163,6 +163,15 @@ struct RegisterEventsWithObservers
       triggers_and_events.for_each_event(collect_observations);
     }
 
+    if constexpr (db::tag_is_retrievable_v<
+                      ::Tags::EventsAndTriggers<
+                          Triggers::WhenToCheck::AtCheckpoints>,
+                      db::DataBox<DbTagList>>) {
+      const auto& triggers_and_events = db::get<
+          ::Tags::EventsAndTriggers<Triggers::WhenToCheck::AtCheckpoints>>(box);
+      triggers_and_events.for_each_event(collect_observations);
+    }
+
     if constexpr (db::tag_is_retrievable_v<::Tags::EventsAndDenseTriggers,
                                            db::DataBox<DbTagList>>) {
       const auto& triggers_and_events =

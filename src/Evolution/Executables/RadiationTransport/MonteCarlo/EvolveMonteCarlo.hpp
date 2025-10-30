@@ -231,10 +231,16 @@ struct EvolutionMetavars {
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
+              Parallel::Phase::WriteCheckpoint,
+              tmpl::list<evolution::Actions::RunEventsAndTriggers<
+                             Triggers::WhenToCheck::AtCheckpoints>,
+                         Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<
                   Actions::AdvanceTime,
-                  evolution::Actions::RunEventsAndTriggers<false>,
+                  evolution::Actions::RunEventsAndTriggers<
+                      Triggers::WhenToCheck::AtSlabs>,
                   // Monte-Carlo is only triggered at the end of a full time
                   // step
                   Particles::MonteCarlo::Actions::TriggerMonteCarloEvolution,

@@ -138,6 +138,8 @@ Observers:
   VolumeFileName: "ValenciaDivCleanBlastWaveVolume"
   ReductionFileName: "ValenciaDivCleanBlastWaveReductions"
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

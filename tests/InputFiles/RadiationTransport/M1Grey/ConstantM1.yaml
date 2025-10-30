@@ -65,6 +65,8 @@ Limiter:
     TvbConstant: 0.0
     DisableForDebugging: false
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

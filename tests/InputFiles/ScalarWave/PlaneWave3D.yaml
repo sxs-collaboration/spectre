@@ -71,6 +71,8 @@ SpatialDiscretization:
 #     Enable: false
 #     BlocksToFilter: All
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Times:

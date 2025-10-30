@@ -86,6 +86,8 @@ Filtering:
     Enable: true
     BlocksToFilter: All
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   # Added on restart by option overlay
   # - Trigger:

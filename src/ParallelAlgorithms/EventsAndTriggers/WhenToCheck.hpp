@@ -14,9 +14,10 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \brief Frequency at which Events and Triggers are checked
 enum class WhenToCheck : uint8_t {
-  AtIterations, /**< checked at iterations e.g. of an elliptic solve */
-  AtSlabs,      /**< checked at time Slab boundaries */
-  AtSteps,      /**< checked at time step boundaries */
+  AtIterations,  /**< checked at iterations e.g. of an elliptic solve */
+  AtSlabs,       /**< checked at time Slab boundaries */
+  AtSteps,       /**< checked at time step boundaries */
+  AtCheckpoints, /**< checked at checkpoints */
 };
 
 /// Output operator for a WhenToCheck.

@@ -72,6 +72,8 @@ Observers:
   VolumeFileName: "ForceFreeFastWaveVolume"
   ReductionFileName: "ForceFreeFastWaveReductions"
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

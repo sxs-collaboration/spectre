@@ -146,6 +146,8 @@ SpatialDiscretization:
       UpwindPenalty:
       Rusanov:
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

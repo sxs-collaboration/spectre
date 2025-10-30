@@ -67,6 +67,8 @@ SpatialDiscretization:
 InitialData:
   Kuzmin:
 
+EventsAndTriggersAtCheckpoints:
+
 EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:

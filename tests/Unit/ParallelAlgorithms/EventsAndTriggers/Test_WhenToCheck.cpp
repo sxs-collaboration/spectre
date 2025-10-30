@@ -11,4 +11,5 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers.WhenToCheck",
   CHECK(get_output(Triggers::WhenToCheck::AtIterations) == "AtIterations");
   CHECK(get_output(Triggers::WhenToCheck::AtSlabs) == "AtSlabs");
   CHECK(get_output(Triggers::WhenToCheck::AtSteps) == "AtSteps");
+  CHECK(get_output(Triggers::WhenToCheck::AtCheckpoints) == "AtCheckpoints");
 }
