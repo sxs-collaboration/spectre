@@ -225,9 +225,10 @@ void append_to_reduction_data(
     const gsl::not_null<std::vector<double>*> all_reduction_data,
     const double t);
 
+template <typename T>
 void append_to_reduction_data(
     const gsl::not_null<std::vector<double>*> all_reduction_data,
-    const std::vector<double>& t);
+    const std::vector<T>& t);
 
 void append_to_reduction_data(
     gsl::not_null<std::vector<double>*> all_reduction_data,

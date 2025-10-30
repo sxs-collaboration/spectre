@@ -105,6 +105,8 @@
 #include "ParallelAlgorithms/Amr/Criteria/Constraints.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Criterion.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Factory.hpp"
+#include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
+#include "ParallelAlgorithms/Amr/Events/ObserveAmrStats.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/DefaultInitialize.hpp"
@@ -502,7 +504,9 @@ struct EvolutionMetavars {
                            control_systems>,
                        Events::time_events<system>,
                        dg::Events::ObserveTimeStepVolume<system>,
-                       amr::Events::RefineMesh>>>,
+                       amr::Events::RefineMesh,
+                       amr::Events::ObserveAmrStats<volume_dim>,
+                       amr::Events::ObserveAmrCriteria<EvolutionMetavars>>>>,
         tmpl::pair<
             evolution::BoundaryCorrection,
             gh::BoundaryCorrections::standard_boundary_corrections<volume_dim>>,
