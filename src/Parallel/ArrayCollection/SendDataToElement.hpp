@@ -65,7 +65,7 @@ struct SendDataToElement {
     auto& my_proxy =
         Parallel::get_parallel_component<ParallelComponent>(*cache);
     if (node_of_element == my_node) {
-      [[maybe_unused]] size_t count = 0;
+      bool run_algorithm = false;
       ASSERT(db::get_mutable_reference<
                  typename ParallelComponent::element_collection_tag>(
                  make_not_null(&box))
@@ -79,26 +79,20 @@ struct SendDataToElement {
                           .at(element_to_execute_on);
       if constexpr (std::is_same_v<evolution::dg::AtomicInboxBoundaryData<Dim>,
                                    typename ReceiveTag::type>) {
-        count = ReceiveTag::insert_into_inbox(
+        run_algorithm = ReceiveTag::insert_into_inbox(
             make_not_null(&tuples::get<ReceiveTag>(element.inboxes())),
             instance, std::forward<ReceiveData>(receive_data));
       } else {
         // Scope so that we minimize how long we lock the inbox.
         std::lock_guard inbox_lock(element.inbox_lock());
-        count = ReceiveTag::insert_into_inbox(
+        run_algorithm = ReceiveTag::insert_into_inbox(
             make_not_null(&tuples::get<ReceiveTag>(element.inboxes())),
             instance, std::forward<ReceiveData>(receive_data));
       }
-      // A lower bound for the number of neighbors is
-      // `2 * Dim - number_of_block_boundaries`, which doesn't give us the
-      // exact minimum number of sends we need to do, but gets us close in most
-      // cases. If we really wanted to we could also add the number of
-      // directions that don't have external boundaries in our neighbors block.
-      // if (count >=
-      //     (2 * Dim - element_to_execute_on.number_of_block_boundaries())) {
-      Parallel::threaded_action<Parallel::Actions::ReceiveDataForElement<>>(
-          my_proxy[node_of_element], element_to_execute_on);
-      // }
+      if (run_algorithm) {
+        Parallel::threaded_action<Parallel::Actions::ReceiveDataForElement<>>(
+            my_proxy[node_of_element], element_to_execute_on);
+      }
     } else {
       Parallel::threaded_action<Parallel::Actions::ReceiveDataForElement<>>(
           my_proxy[node_of_element], ReceiveTag{}, element_to_execute_on,

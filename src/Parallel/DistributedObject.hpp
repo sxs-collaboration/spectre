@@ -877,6 +877,7 @@ void DistributedObject<ParallelComponent,
   try {
     (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
                                                  false>::registrar;
+    bool do_perform_algorithm = false;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -885,11 +886,13 @@ void DistributedObject<ParallelComponent,
       if (enable_if_disabled) {
         set_terminate(false);
       }
-      ReceiveTag::insert_into_inbox(
+      do_perform_algorithm = ReceiveTag::insert_into_inbox(
           make_not_null(&tuples::get<ReceiveTag>(inboxes_)), instance,
           std::forward<ReceiveDataType>(t));
     }
-    perform_algorithm();
+    if (do_perform_algorithm) {
+      perform_algorithm();
+    }
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }
@@ -903,6 +906,7 @@ void DistributedObject<ParallelComponent,
   try {
     (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent, ReceiveTag,
                                                  true>::registrar;
+    bool do_perform_algorithm = false;
     {
       std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
       if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
@@ -911,12 +915,14 @@ void DistributedObject<ParallelComponent,
       if (message->enable_if_disabled) {
         set_terminate(false);
       }
-      ReceiveTag::insert_into_inbox(
+      do_perform_algorithm = ReceiveTag::insert_into_inbox(
           make_not_null(&tuples::get<ReceiveTag>(inboxes_)), message);
       // Cannot use message after this call because a std::unique_ptr now owns
       // it. Doing so would result in undefined behavior
     }
-    perform_algorithm();
+    if (do_perform_algorithm) {
+      perform_algorithm();
+    }
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }

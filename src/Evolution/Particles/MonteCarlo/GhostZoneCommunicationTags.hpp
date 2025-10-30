@@ -65,9 +65,9 @@ struct McGhostZoneDataInboxTag {
   CommunicationStep comm_step = CommStep;
 
   template <typename ReceiveDataType>
-  static size_t insert_into_inbox(const gsl::not_null<type*> inbox,
-                                  const temporal_id& time_step_id,
-                                  ReceiveDataType&& data) {
+  static bool insert_into_inbox(const gsl::not_null<type*> inbox,
+                                const temporal_id& time_step_id,
+                                ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     if (not current_inbox.insert(std::forward<ReceiveDataType>(data))
                   .second) {
@@ -75,7 +75,7 @@ struct McGhostZoneDataInboxTag {
            << time_step_id
            << " in McGhostZonePreStepDataInboxTag.\n");
     }
-    return current_inbox.size();
+    return true;
   }
 
   void pup(PUP::er& /*p*/) {}

@@ -113,17 +113,6 @@ namespace evolution::dg::Tags {
  *   communication. Thus, one large communication is cheaper than several small
  *   communications.
  *
- * #### Return Values:
- * - In the case that the type is `type_map` the `insert_into_inbox` function
- *   returns the size of the inbox.
- * - In the case that the type is `type_spsc` the `insert_into_inbox` function
- *   returns the number of neighbor data contributions made that allow the
- *   element to take its next time step/needs a message called on it. When
- *   this number is equal to the number of neighbors, a Charm++ message must
- *   be sent to the element to have it continue the algorithm. This is so as
- *   to minimize the number of communications made through Charm++ and instead
- *   to move data atomically between neighbors whenever possible.
- *
  * #### DG Element Nodegroup Support
  * If you are using the `DgElementCollection` then you must set
  * `UseNodegroupDgElements` to `true`. The actions that use this tag check
@@ -146,9 +135,9 @@ struct BoundaryCorrectionAndGhostCellsInbox {
   using value_type = type;
 
   template <typename ReceiveDataType>
-  static size_t insert_into_inbox(const gsl::not_null<type_spsc*> inbox,
-                                  const temporal_id& time_step_id,
-                                  ReceiveDataType&& data) {
+  static bool insert_into_inbox(const gsl::not_null<type_spsc*> inbox,
+                                const temporal_id& time_step_id,
+                                ReceiveDataType&& data) {
     const DirectionalId<Dim>& neighbor_id = data.first;
     // Note: This assumes the neighbor_id is oriented into our (the element
     // whose inbox this is) frame.
@@ -169,13 +158,14 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     // 1. fetch_add does a post-increment.
     // 2. We need thread synchronization here, so doing relaxed_order would be a
     //    bug.
-    return inbox->message_count.fetch_add(1, std::memory_order_acq_rel) + 1;
+    // inbox->message_count.fetch_add(1, std::memory_order_acq_rel) + 1;
+    return true;
   }
 
   template <typename ReceiveDataType>
-  static size_t insert_into_inbox(const gsl::not_null<type_map*> inbox,
-                                  const temporal_id& time_step_id,
-                                  ReceiveDataType&& data) {
+  static bool insert_into_inbox(const gsl::not_null<type_map*> inbox,
+                                const temporal_id& time_step_id,
+                                ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
@@ -243,7 +233,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
               << "' with tag 'BoundaryCorrectionAndGhostCellsInbox'.\n");
       }
     }
-    return current_inbox.size();
+    return true;
   }
 
   static std::string output_inbox(const type_spsc& inbox,
@@ -335,7 +325,7 @@ struct BoundaryMessageInbox {
   using message_type = BoundaryMessage<Dim>;
 
   template <typename Inbox>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 BoundaryMessage<Dim>* boundary_message) {
     const auto& time_step_id = boundary_message->current_time_step_id;
     auto& current_inbox = (*inbox)[time_step_id];
@@ -416,6 +406,7 @@ struct BoundaryMessageInbox {
               << time_step_id << "' with tag 'BoundaryMessageInbox'.\n");
       }
     }
+    return true;
   }
 };
 }  // namespace evolution::dg::Tags

@@ -429,7 +429,7 @@ struct BoundaryMessageReceiveTag {
   using message_type = BoundaryMessage<3>;
 
   template <typename Inbox>
-  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<Inbox*> inbox,
                                 BoundaryMessage<3>* boundary_message) {
     auto& time_step_id = boundary_message->current_time_step_id;
     auto& current_inbox = (*inbox)[time_step_id];
@@ -439,6 +439,7 @@ struct BoundaryMessageReceiveTag {
 
     current_inbox.insert_or_assign(
         key, std::unique_ptr<BoundaryMessage<3>>(boundary_message));
+    return true;
   }
 };
 

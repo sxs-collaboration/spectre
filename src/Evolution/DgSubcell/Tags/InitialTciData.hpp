@@ -30,7 +30,7 @@ struct InitialTciData {
                DirectionalIdMap<Dim, evolution::dg::subcell::InitialTciData>>;
 
   template <typename ReceiveDataType>
-  static void insert_into_inbox(const gsl::not_null<type*> inbox,
+  static bool insert_into_inbox(const gsl::not_null<type*> inbox,
                                 const temporal_id& time_step_id,
                                 ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
@@ -42,6 +42,7 @@ struct InitialTciData {
                << direction_and_element_id.direction() << " and element ID "
                << direction_and_element_id.id() << " more than once");
     current_inbox.emplace(std::forward<ReceiveDataType>(data));
+    return true;
   }
 
   static std::string output_inbox(const type& inbox,
