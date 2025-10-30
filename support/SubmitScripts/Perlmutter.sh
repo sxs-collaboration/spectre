@@ -19,6 +19,7 @@
 
 {% block run_command %}
 srun -n ${SLURM_NTASKS} \
+  ${SPECTRE_PROFILING_PREFIX} \
   ${SPECTRE_EXECUTABLE} --input-file ${SPECTRE_INPUT_FILE} \
   ++ppn ${CHARM_PPN} +setcpuaffinity \
   ${SPECTRE_CHECKPOINT:+ +restart "${SPECTRE_CHECKPOINT}"}
