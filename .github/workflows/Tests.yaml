@@ -267,6 +267,8 @@ jobs:
           -D USE_PCH=OFF
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
+          -D SPECTRE_AUTODIFF=ON
+          -D SPECTRE_FETCH_MISSING_DEPS=ON
           $GITHUB_WORKSPACE
 
           make -j4 module_All Libsharp-external
@@ -278,7 +280,8 @@ jobs:
 
           git diff -U0 $UPSTREAM_HASH |
             clang-tidy-diff -path build -p1 -use-color -j4 \
-            -extra-arg=-I/usr/include/hdf5/serial
+            -extra-arg=-I/usr/include/hdf5/serial \
+            -extra-arg=-I$GITHUB_WORKSPACE/build/_deps/autodiff-src
 
 
   # Build the documentation and check for problems, then upload as a workflow
@@ -354,6 +357,8 @@ jobs:
           -D MEMORY_ALLOCATOR=SYSTEM
           -D BUILD_DOCS=ON
           -D BUILD_TESTING=OFF
+          -D SPECTRE_AUTODIFF=ON
+          -D SPECTRE_FETCH_MISSING_DEPS=ON
           $GITHUB_WORKSPACE
       - name: Check documentation
         working-directory: build
@@ -758,6 +763,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           -D CMAKE_INSTALL_PREFIX=/work/spectre_install
           -D BUILD_DOCS=OFF
+          -D SPECTRE_AUTODIFF=ON
+          -D SPECTRE_FETCH_MISSING_DEPS=ON
           --warn-uninitialized
           $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
       - name: Check for CMake warnings
@@ -959,6 +966,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           -D BUILD_DOCS=OFF
+          -D SPECTRE_AUTODIFF=ON
+          -D SPECTRE_FETCH_MISSING_DEPS=ON
           ..
 
           make EvolveBurgers -j${NUMBER_OF_CORES}
@@ -1422,6 +1431,8 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
             -D USE_PCH=ON\
             -D USE_CCACHE=ON\
             -D BUILD_DOCS=OFF\
+            -D SPECTRE_AUTODIFF=ON\
+            -D SPECTRE_FETCH_MISSING_DEPS=ON\
             $GITHUB_WORKSPACE
 
             make -j4 TestArchitectureVectorization

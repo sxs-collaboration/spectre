@@ -159,6 +159,7 @@ include(SetupLapack)
 include(SetupLIBXSMM)
 include(SetupGsl)
 
+include(SetupAutodiff)
 include(SetupBlaze)
 include(SetupFuka)
 include(SetupGoogleBenchmark)
