@@ -36,11 +36,11 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/TakeLtsStep.hpp"
-#include "Time/Actions/UpdateU.hpp"
+#include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -196,8 +196,9 @@ struct CharacteristicEvolution {
       tmpl::transform<typename metavariables::cce_scri_tags,
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
-      ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>,
+      ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
+      ::Actions::MutateApply<
+          UpdateU<cce_system, Metavariables::local_time_stepping>>,
       ::Actions::CleanHistory<cce_system, false>>;
 
   using extract_action_list = tmpl::list<
@@ -231,8 +232,11 @@ struct CharacteristicEvolution {
               evolution::Actions::RunEventsAndTriggers<
                   Triggers::WhenToCheck::AtSlabs>>>>,
       compute_scri_quantities_and_observe,
-      ::Actions::TakeLtsStep<cce_system,
-                             typename Metavariables::cce_step_choosers>,
+      ::Actions::MutateApply<
+          ChangeStepSize<typename Metavariables::cce_step_choosers>>,
+      ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
+      ::Actions::MutateApply<
+          UpdateU<cce_system, Metavariables::local_time_stepping>>,
       ::Actions::MutateApply<ChangeTimeStepperOrder<cce_system>>,
       ::Actions::CleanHistory<cce_system, false>,
       // We cannot know our next step for certain until after we've performed

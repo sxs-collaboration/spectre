@@ -28,9 +28,12 @@
 #include "Parallel/Printf/Printf.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/AdaptiveSteppingDiagnostics.hpp"
+#include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
 #include "Time/ChooseLtsStepSize.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -46,13 +49,13 @@
 #include "Time/Tags/TimeStepId.hpp"
 #include "Time/Tags/TimeStepper.hpp"
 #include "Time/Tags/VariableOrderAlgorithm.hpp"
-#include "Time/TakeStep.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/AdamsMoultonPc.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/UpdateU.hpp"
 #include "Time/VariableOrderAlgorithm.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -401,7 +404,9 @@ double run(std::unique_ptr<LtsTimeStepper> time_stepper, const double tolerance,
     ++num_steps;
 
     db::mutate_apply<System::compute_time_derivative>(make_not_null(&box));
-    take_step<System, true>(make_not_null(&box));
+    db::mutate_apply<ChangeStepSize<AllStepChoosers>>(make_not_null(&box));
+    db::mutate_apply<RecordTimeStepperData<System>>(make_not_null(&box));
+    db::mutate_apply<UpdateU<System, true>>(make_not_null(&box));
     db::mutate_apply<ChangeTimeStepperOrder<System>>(make_not_null(&box));
 
     db::mutate<::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,

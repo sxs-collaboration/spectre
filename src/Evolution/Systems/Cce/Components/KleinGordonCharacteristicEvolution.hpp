@@ -14,10 +14,13 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/Actions/CleanHistory.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/TakeLtsStep.hpp"
+#include "Time/ChangeStepSize.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -116,8 +119,9 @@ struct KleinGordonCharacteristicEvolution
       tmpl::transform<typename metavariables::cce_scri_tags,
                       tmpl::bind<::Actions::MutateApply,
                                  tmpl::bind<CalculateScriPlusValue, tmpl::_1>>>,
-      ::Actions::RecordTimeStepperData<cce_system>,
-      ::Actions::UpdateU<cce_system>>;
+      ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
+      ::Actions::MutateApply<
+          UpdateU<cce_system, Metavariables::local_time_stepping>>>;
 
   using extract_action_list = tmpl::list<
       Actions::RequestBoundaryData<
@@ -161,8 +165,11 @@ struct KleinGordonCharacteristicEvolution
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       Actions::FilterSwshVolumeQuantity<Tags::KleinGordonPi>,
       compute_scri_quantities_and_observe,
-      ::Actions::TakeLtsStep<cce_system,
-                             typename Metavariables::cce_step_choosers>,
+      ::Actions::MutateApply<
+          ChangeStepSize<typename Metavariables::cce_step_choosers>>,
+      ::Actions::MutateApply<RecordTimeStepperData<cce_system>>,
+      ::Actions::MutateApply<
+          UpdateU<cce_system, Metavariables::local_time_stepping>>,
       ::Actions::MutateApply<ChangeTimeStepperOrder<cce_system>>,
       ::Actions::CleanHistory<cce_system, false>,
       // We cannot know our next step for certain until after we've performed

@@ -33,10 +33,10 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/SelfStart.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace CurvedScalarWave::Worldtube {
@@ -90,17 +90,17 @@ struct WorldtubeSingleton {
     using variables_tag = ::Tags::Variables<
         tmpl::list<Tags::EvolvedPosition<Dim>, Tags::EvolvedVelocity<Dim>>>;
   };
-  using step_actions =
-      tmpl::list<Actions::UpdateFunctionsOfTime, Actions::ChangeSlabSize,
-                 Actions::ReceiveElementData,
-                 ::Actions::MutateApply<IterateAccelerationTerms>,
-                 Actions::SendAccelerationTerms<Metavariables>,
-                 ::Actions::MutateApply<UpdateAcceleration>,
-                 ::Actions::RecordTimeStepperData<worldtube_system>,
-                 ::Actions::UpdateU<worldtube_system>,
-                 ::Actions::CleanHistory<worldtube_system, false>,
-                 Actions::SendToElements<Metavariables>,
-                 domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;
+  using step_actions = tmpl::list<
+      Actions::UpdateFunctionsOfTime, Actions::ChangeSlabSize,
+      Actions::ReceiveElementData,
+      ::Actions::MutateApply<IterateAccelerationTerms>,
+      Actions::SendAccelerationTerms<Metavariables>,
+      ::Actions::MutateApply<UpdateAcceleration>,
+      ::Actions::MutateApply<RecordTimeStepperData<worldtube_system>>,
+      ::Actions::MutateApply<UpdateU<worldtube_system, local_time_stepping>>,
+      ::Actions::CleanHistory<worldtube_system, false>,
+      Actions::SendToElements<Metavariables>,
+      domain::Actions::CheckFunctionsOfTimeAreReady<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialization_actions>,

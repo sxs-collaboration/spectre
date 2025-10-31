@@ -225,11 +225,10 @@
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeSlabSize/Action.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -239,6 +238,7 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -757,14 +757,16 @@ struct GhValenciaDivCleanTemplateBase<
           use_dg_element_collection>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+          tmpl::list<Actions::MutateApply<RecordTimeStepperData<system>>,
+                     Actions::MutateApply<UpdateU<system, local_time_stepping>>,
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          volume_dim, false, use_dg_element_collection>,
                      Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   volume_dim, false, use_dg_element_collection>,
-              Actions::RecordTimeStepperData<system>,
-              Actions::UpdateU<system>>>,
+              Actions::MutateApply<RecordTimeStepperData<system>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Limiters::Actions::SendData<derived_metavars>,
       Limiters::Actions::Limit<derived_metavars>,
@@ -790,13 +792,11 @@ struct GhValenciaDivCleanTemplateBase<
           Actions::MutateApply<grmhd::GhValenciaDivClean::subcell::
                                    ZeroMhdTimeDerivatives<system>>,
           tmpl::list<>>,
-      tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<system>,
-                     evolution::Actions::RunEventsAndDenseTriggers<
-                         events_and_dense_triggers_subcell_postprocessors>,
-                     control_system::Actions::LimitTimeStep<control_systems>,
-                     Actions::UpdateU<system>>>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          events_and_dense_triggers_subcell_postprocessors>,
+      control_system::Actions::LimitTimeStep<control_systems>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
           grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<
@@ -826,11 +826,11 @@ struct GhValenciaDivCleanTemplateBase<
           system, grmhd::ValenciaDivClean::ComputeFluxes, volume_dim, true>>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           grmhd::GhValenciaDivClean::subcell::TimeDerivative<system>>,
-      Actions::RecordTimeStepperData<system>,
+      Actions::MutateApply<RecordTimeStepperData<system>>,
       evolution::Actions::RunEventsAndDenseTriggers<
           events_and_dense_triggers_subcell_postprocessors>,
       control_system::Actions::LimitTimeStep<control_systems>,
-      Actions::UpdateU<system>,
+      Actions::MutateApply<UpdateU<system, local_time_stepping>>,
       Actions::CleanHistory<system, local_time_stepping>,
       Actions::MutateApply<
           grmhd::GhValenciaDivClean::subcell::FixConservativesAndComputePrims<

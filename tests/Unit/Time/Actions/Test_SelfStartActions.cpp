@@ -25,15 +25,17 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/WhenToCheck.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
-#include "Time/Actions/UpdateU.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepNumberWithinSlab.hpp"
-#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -41,6 +43,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Serialization/RegisterDerivedClassesWithCharm.hpp"
@@ -138,7 +141,8 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tags =
-      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>>;
+      tmpl::list<Tags::ConcreteTimeStepper<TimeStepper>,
+                 Tags::EventsAndTriggers<Triggers::WhenToCheck::AtSlabs>>;
   using simple_tags = tmpl::flatten<db::AddSimpleTags<
       typename metavariables::system::variables_tag,
       typename metavariables::system::test_primitive_variables_tags,
@@ -149,18 +153,19 @@ struct Component {
                           additional_history_tag, tmpl::list<>>,
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
       Tags::Time, Tags::StepNumberWithinSlab,
-      Tags::StepperErrorEstimatesEnabled, Tags::AdaptiveSteppingDiagnostics>>;
+      Tags::AdaptiveSteppingDiagnostics>>;
   using compute_tags = time_stepper_ref_tags<TimeStepper>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
-  using step_actions =
-      tmpl::list<ComputeTimeDerivative,
-                 Actions::RecordTimeStepperData<typename metavariables::system>,
-                 Actions::UpdateU<typename metavariables::system>,
-                 Actions::CleanHistory<typename metavariables::system, false>,
-                 tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
-                                     tmpl::list<>>>;
+  using step_actions = tmpl::list<
+      ComputeTimeDerivative,
+      Actions::MutateApply<
+          RecordTimeStepperData<typename metavariables::system>>,
+      Actions::MutateApply<UpdateU<typename metavariables::system, false>>,
+      Actions::CleanHistory<typename metavariables::system, false>,
+      tmpl::conditional_t<has_primitives, Actions::UpdatePrimitives,
+                          tmpl::list<>>>;
   using action_list = tmpl::flatten<
       tmpl::list<SelfStart::self_start_procedure<
                      step_actions, typename metavariables::system>,
@@ -190,7 +195,7 @@ void emplace_component_and_initialize(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN(),
-       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
+       uint64_t{0}, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -207,7 +212,7 @@ void emplace_component_and_initialize<true, false>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN(),
-       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
+       uint64_t{0}, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -224,7 +229,7 @@ void emplace_component_and_initialize<false, true>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN(),
-       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
+       uint64_t{0}, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 template <>
@@ -241,7 +246,7 @@ void emplace_component_and_initialize<true, true>(
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN(),
-       uint64_t{0}, false, Tags::AdaptiveSteppingDiagnostics::type{}});
+       uint64_t{0}, Tags::AdaptiveSteppingDiagnostics::type{}});
 }
 
 using not_self_start_action = std::negation<std::disjunction<
@@ -296,7 +301,8 @@ void test_actions(const size_t order, const int step_denominator) {
   const double initial_value = -1.;
 
   MockRuntimeSystem<> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforth>(order)}};
+      {std::make_unique<TimeSteppers::AdamsBashforth>(order),
+       EventsAndTriggers{}}};
   emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
                                    initial_time, initial_time_step, order,
                                    initial_value);
@@ -412,7 +418,8 @@ double error_in_step(const size_t order, const double step) {
 
   using component = Component<Metavariables<TestPrimitives, MultipleHistories>>;
   MockRuntimeSystem<TestPrimitives, MultipleHistories> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforth>(order)}};
+      {std::make_unique<TimeSteppers::AdamsBashforth>(order),
+       EventsAndTriggers{}}};
   emplace_component_and_initialize<TestPrimitives, MultipleHistories>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
@@ -421,7 +428,8 @@ double error_in_step(const size_t order, const double step) {
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
-  run_past<std::is_same<tmpl::pin<Actions::UpdateU<System<TestPrimitives>>>,
+  run_past<std::is_same<tmpl::pin<Actions::MutateApply<
+                            UpdateU<System<TestPrimitives>, false>>>,
                         tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));
 

@@ -132,9 +132,8 @@
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/CleanHistory.hpp"
-#include "Time/Actions/RecordTimeStepperData.hpp"
-#include "Time/Actions/UpdateU.hpp"
 #include "Time/ChangeTimeStepperOrder.hpp"
+#include "Time/RecordTimeStepperData.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags/Time.hpp"
@@ -143,6 +142,7 @@
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
+#include "Time/UpdateU.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -388,21 +388,23 @@ struct GeneralizedHarmonicTemplateBase {
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<
+              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                   ::domain::CheckFunctionsOfTimeAreReadyPostprocessor<
                       volume_dim>,
                   evolution::dg::ApplyBoundaryCorrections<
                       local_time_stepping, DerivedMetavars, volume_dim, true>>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>,
               evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                   volume_dim, false, use_dg_element_collection>,
               Actions::MutateApply<ChangeTimeStepperOrder<system>>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   volume_dim, false, use_dg_element_collection>,
-              Actions::RecordTimeStepperData<system>,
+              Actions::MutateApply<RecordTimeStepperData<system>>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               control_system::Actions::LimitTimeStep<ControlSystems>,
-              Actions::UpdateU<system>>>,
+              Actions::MutateApply<UpdateU<system, local_time_stepping>>>>,
       Actions::CleanHistory<system, local_time_stepping>,
       dg::Actions::Filter<
           Filters::Exponential<0>,

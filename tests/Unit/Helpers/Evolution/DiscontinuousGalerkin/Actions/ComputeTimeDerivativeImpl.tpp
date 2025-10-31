@@ -77,7 +77,6 @@
 #include "Time/Tags/AdaptiveSteppingDiagnostics.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/StepChoosers.hpp"
-#include "Time/Tags/StepperErrorEstimatesEnabled.hpp"
 #include "Time/Tags/Time.hpp"
 #include "Time/Tags/TimeStep.hpp"
 #include "Time/Tags/TimeStepId.hpp"
@@ -913,7 +912,6 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
-      ::Tags::StepperErrorEstimatesEnabled,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
           tmpl::list<::Tags::StepChoosers,
@@ -1352,7 +1350,6 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
-         false,
          std::move(step_choosers),
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforth>(5))});
@@ -1385,7 +1382,6 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::make_coordinate_map_base<Frame::BlockLogical,
                                                   Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
-             false,
              std::move(step_choosers),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforth>(5))});
@@ -1417,7 +1413,6 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
-         false,
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforth>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -1449,7 +1444,6 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::make_coordinate_map_base<Frame::BlockLogical,
                                                   Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
-             false,
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforth>(5))});
       }

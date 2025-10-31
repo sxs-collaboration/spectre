@@ -39,18 +39,19 @@ spectre_target_headers(
   EvolutionOrdering.hpp
   History.hpp
   LargestStepperError.hpp
+  RecordTimeStepperData.hpp
   RequestsStepperErrorTolerances.hpp
   SelfStart.hpp
   Slab.hpp
   SlabRoundingError.hpp
   StepperErrorEstimate.hpp
   StepperErrorTolerances.hpp
-  TakeStep.hpp
   Time.hpp
   TimeSequence.hpp
   TimeStepId.hpp
   TimeStepRequest.hpp
   TimeStepRequestProcessor.hpp
+  UpdateU.hpp
   VariableOrderAlgorithm.hpp
   )
 

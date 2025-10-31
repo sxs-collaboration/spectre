@@ -17,7 +17,6 @@
 #include "Time/RequestsStepperErrorTolerances.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepperErrorTolerances.hpp"
-#include "Time/Tags/StepperErrorTolerancesCompute.hpp"
 #include "Time/Tags/StepperErrors.hpp"
 #include "Time/TimeStepRequest.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
@@ -164,15 +163,6 @@ class ErrorControl : public StepChooser<StepChooserUse>,
         max_factor_{max_factor},
         min_factor_{min_factor},
         safety_factor_{safety_factor} {}
-
-  using simple_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
-
-  using compute_tags = tmpl::list<
-      Tags::StepperErrorEstimatesEnabledCompute<
-          std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>,
-      Tags::StepperErrorTolerancesCompute<
-          EvolvedVariableTag,
-          std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>>;
 
   using argument_tags = tmpl::list<::Tags::StepperErrors<EvolvedVariableTag>>;
 
