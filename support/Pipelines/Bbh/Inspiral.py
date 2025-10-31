@@ -132,7 +132,25 @@ def inspiral_parameters(
     # and spins, not the values measured on the horizons, because these numbers
     # don't have to be exact and the horizon quantities will change a bit during
     # the evolution anyway.
-    target_params = id_metadata["TargetParams"]
+    if "TargetParams" in id_metadata:
+        target_params = id_metadata["TargetParams"]
+    else:
+        # Fall back to retrieving the target parameters from the input file
+        # for older initial data that didn't store them in the metadata.
+        # These are the conformal (background) Kerr-Schild parameters, but they
+        # are close enough to the target parameters for our purposes here.
+        id_binary = id_input_file["Background"]["Binary"]
+        object_left = id_binary["ObjectLeft"]["KerrSchild"]
+        object_right = id_binary["ObjectRight"]["KerrSchild"]
+        mass_ratio = object_right["Mass"] / object_left["Mass"]
+        target_params = {
+            "MassRatio": mass_ratio,
+            "MassA": object_right["Mass"],
+            "MassB": object_left["Mass"],
+            "DimensionlessSpinA": object_right["Spin"],
+            "DimensionlessSpinB": object_left["Spin"],
+        }
+
     mass_ratio = target_params["MassRatio"]
     mass_a = mass_ratio / (1.0 + mass_ratio)
     mass_b = 1.0 / (1.0 + mass_ratio)
