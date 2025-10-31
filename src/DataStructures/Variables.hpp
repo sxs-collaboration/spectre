@@ -723,14 +723,7 @@ Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
       number_of_grid_points_(rhs.number_of_grid_points()),
       variable_data_(std::move(rhs.variable_data_)) {
   if (number_of_grid_points_ == 1) {
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) and not defined(__clang__)
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) and not defined(__clang__)
   }
   rhs.variable_data_impl_dynamic_.reset();
   rhs.owning_ = true;
@@ -751,14 +744,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_ = std::move(rhs.variable_data_);
   variable_data_impl_dynamic_ = std::move(rhs.variable_data_impl_dynamic_);
   if (number_of_grid_points_ == 1) {
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) and not defined(__clang__)
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) and not defined(__clang__)
   }
 
   rhs.variable_data_impl_dynamic_.reset();
@@ -818,14 +804,7 @@ Variables<tmpl::list<Tags...>>::Variables(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
   if (number_of_grid_points_ == 1) {
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) and not defined(__clang__)
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) and not defined(__clang__)
   }
   rhs.variable_data_impl_dynamic_.reset();
   rhs.size_ = 0;
@@ -850,14 +829,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
   variable_data_impl_dynamic_ = std::move(rhs.variable_data_impl_dynamic_);
   if (number_of_grid_points_ == 1) {
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) and not defined(__clang__)
     variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
-#if defined(__GNUC__) and not defined(__clang__)
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) and not defined(__clang__)
   }
 
   rhs.variable_data_impl_dynamic_.reset();

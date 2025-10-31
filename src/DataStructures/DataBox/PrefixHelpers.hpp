@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -76,14 +75,14 @@ using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
 
 namespace detail {
 
-template <typename Tag, typename = std::nullptr_t>
+template <typename Tag>
 struct remove_all_prefixes_impl {
   using type = Tag;
 };
 
 template <typename Tag>
-struct remove_all_prefixes_impl<
-    Tag, Requires<std::is_base_of_v<db::PrefixTag, Tag>>> {
+  requires(std::is_base_of_v<db::PrefixTag, Tag>)
+struct remove_all_prefixes_impl<Tag> {
   using type = typename remove_all_prefixes_impl<typename Tag::tag>::type;
 };
 

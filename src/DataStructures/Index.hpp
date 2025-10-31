@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <concepts>
 #include <cstddef>
 #include <limits>
 #include <ostream>
@@ -15,9 +16,6 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
-#include "Utilities/TypeTraits/IsInteger.hpp"
 
 namespace PUP {
 class er;
@@ -35,14 +33,9 @@ class Index {
       : indices_(make_array<Dim>(i0)) {}
 
   /// Construct specifying value in each dimension
-  template <typename... I, Requires<(sizeof...(I) > 1)> = nullptr>
-  explicit Index(I... i) : indices_(make_array(static_cast<size_t>(i)...)) {
-    static_assert(std::conjunction_v<tt::is_integer<I>...>,
-                  "You must pass in a set of size_t's to Index.");
-    static_assert(Dim == sizeof...(I),
-                  "The number of indices given to Index must be the same as "
-                  "the dimensionality of the Index.");
-  }
+  template <std::integral... I>
+    requires(sizeof...(I) == Dim and sizeof...(I) > 1)
+  explicit Index(I... i) : indices_(make_array(static_cast<size_t>(i)...)) {}
 
   explicit Index(std::array<size_t, Dim> i) : indices_(std::move(i)) {}
 
@@ -65,13 +58,15 @@ class Index {
 
   /// The product of the indices.
   /// If Dim = 0, the product is defined as 1.
-  template <int N = Dim, Requires<(N > 0)> = nullptr>
+  template <size_t N = Dim>
+    requires(N > 0)
   constexpr size_t product() const {
     return indices_[N - 1] * product<N - 1>();
   }
   /// \cond
   // Specialization for N = 0 to stop recursion
-  template <int N = Dim, Requires<(N == 0)> = nullptr>
+  template <size_t N = Dim>
+    requires(N == 0)
   constexpr size_t product() const {
     return 1;
   }
@@ -80,24 +75,18 @@ class Index {
   /// Return a smaller Index with the d-th element removed.
   ///
   /// \param d the element to remove.
-  template <size_t N = Dim, Requires<(N > 0)> = nullptr>
+  template <size_t N = Dim>
+    requires(N > 0)
   Index<Dim - 1> slice_away(const size_t d) const {
     ASSERT(d < Dim,
            "Can't slice dimension " << d << " from an Index<" << Dim << ">");
     std::array<size_t, Dim - 1> t{};
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds="
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
     for (size_t i = 0; i < d; ++i) {
       gsl::at(t, i) = gsl::at(indices_, i);
     }
     for (size_t i = d + 1; i < Dim; ++i) {
       gsl::at(t, i - 1) = gsl::at(indices_, i);
     }
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 13
     return Index<Dim - 1>(t);
   }
 

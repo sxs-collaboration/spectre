@@ -168,20 +168,9 @@ class StaticCache {
             IntegralConstantValues..., IntegralConstants>...}};
     // The array `cache` holds pointers to member functions, so we dereference
     // the pointer and invoke it on `this`.
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#endif
     return (this->*gsl::at(cache, std::get<0>(parameter0)))(parameters...);
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
-#pragma GCC diagnostic pop
-#endif
   }
 #else  // defined(__NVCC__) && defined(__CUDA_ARCH__)
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#endif
   template <typename... IntegralConstantValues, typename... IntegralConstants>
   const T& unwrap_cache_combined(
       std::tuple<size_t, tmpl::list<IntegralConstants...>> parameter0) const {
@@ -440,9 +429,6 @@ class StaticCache {
                                             num3 * std::get<0>(parameter4))))))(
         parameters...);
   }
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 14
-#pragma GCC diagnostic pop
-#endif
 #endif  // defined(__NVCC__) && defined(__CUDA_ARCH__)
 
   const Generator generator_;

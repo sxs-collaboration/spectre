@@ -13,7 +13,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -40,17 +39,12 @@ namespace Tags {
 /// Prefix indicating the divergence of a Tensor.
 ///
 /// \see Tags::DivVectorCompute Tags::DivVariablesCompute
-template <typename Tag, typename = std::nullptr_t>
-struct div;
-
-/// \cond
 template <typename Tag>
-struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
+  requires(tt::is_a_v<Tensor, typename Tag::type>)
+struct div : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   using type = TensorMetafunctions::remove_first_index<typename Tag::type>;
 };
-/// \endcond
 }  // namespace Tags
 
 /// @{

@@ -417,9 +417,9 @@ jobs:
         # GitHub cache space we use. GCC being the production compiler on
         # supercomputers means we need to thoroughly test it.
         compiler:
-          - gcc-9
           - gcc-10
           - gcc-11
+          - gcc-13
         build_type: [Debug, Release]
         include:
           # Generate code coverage report for a single build
@@ -579,6 +579,7 @@ jobs:
       # container because they take up a lot of space.
       - name: Install compiler
         run: |
+          add-apt-repository ppa:ubuntu-toolchain-r/test
           apt-get update -y
           if [[ $COMPILER_ID = gcc ]]; then
             apt-get install -y $CC $CXX $FC
@@ -1352,17 +1353,17 @@ ${{ matrix.build_type }}-pch-${{ matrix.use_pch || 'ON' }}"
       fail-fast: false
       matrix:
         compiler:
-          - gcc-9
           - gcc-10
+          - gcc-11
           - clang-13
           - clang-14
         include:
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
-              "-skl;skylake")
-            compiler: gcc-9
-          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
             compiler: gcc-10
+          - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
+              "-skl;skylake" "-icx;icelake-server")
+            compiler: gcc-11
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
             compiler: clang-13

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <pup.h>
 #include <pup_stl.h>
@@ -41,7 +42,6 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PrettyType.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
 #include "Utilities/Simd/Simd.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -158,19 +158,17 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \example
   /// \snippet Test_Tensor.cpp init_vector
   /// \param data the values of the individual components of the Vector
-  template <size_t NumberOfIndices = sizeof...(Indices),
-            Requires<(NumberOfIndices <= 1)> = nullptr>
-  explicit Tensor(storage_type data);
+  explicit Tensor(storage_type data)
+    requires(sizeof...(Indices) <= 1);
 
   /// Constructor that passes "args" to constructor of X and initializes each
   /// component to be the same
-  template <typename... Args,
-            Requires<not(std::disjunction_v<std::is_same<
-                             Tensor<X, Symm, IndexList<Indices...>>,
-                             std::decay_t<Args>>...> and
-                         sizeof...(Args) == 1) and
-                     std::is_constructible_v<X, Args...>> = nullptr>
-  explicit Tensor(Args&&... args);
+  template <typename Arg0, typename... Args>
+  explicit Tensor(Arg0&& arg0, Args&&... args)
+      // NOLINTNEXTLINE(readability-simplify-boolean-expr)
+    requires(not(sizeof...(Args) == 0 and
+                 std::same_as<std::decay_t<Arg0>, Tensor>) and
+             std::constructible_from<X, Arg0, Args...>);
 
   using value_type = typename storage_type::value_type;
   using reference = typename storage_type::reference;
@@ -503,22 +501,20 @@ Tensor<X, Symm, IndexList<Indices...>>::component_suffix(
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-template <size_t NumberOfIndices, Requires<(NumberOfIndices <= 1)>>
 Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data)
+  requires(sizeof...(Indices) <= 1)
     : data_(std::move(data)) {}
 
-// The std::disjunction is used to prevent the compiler from matching this
-// function when it should select the move constructor.
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
-template <typename... Args,
-          Requires<not(std::disjunction_v<
-                           std::is_same<Tensor<X, Symm, IndexList<Indices...>>,
-                                        std::decay_t<Args>>...> and
-                       sizeof...(Args) == 1) and
-                   std::is_constructible_v<X, Args...>>>
-Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args)
-    : data_(make_array<size(), X>(std::forward<Args>(args)...)) {}
+template <typename Arg0, typename... Args>
+Tensor<X, Symm, IndexList<Indices...>>::Tensor(Arg0&& arg0, Args&&... args)
+    // NOLINTNEXTLINE(readability-simplify-boolean-expr)
+  requires(not(sizeof...(Args) == 0 and
+               std::same_as<std::decay_t<Arg0>, Tensor>) and
+           std::constructible_from<X, Arg0, Args...>)
+    : data_(make_array<size(), X>(std::forward<Arg0>(arg0),
+                                  std::forward<Args>(args)...)) {}
 
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>

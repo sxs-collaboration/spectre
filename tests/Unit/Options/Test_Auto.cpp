@@ -112,10 +112,6 @@ void test_parsing() {
   check_create<std::vector<int>>("[1, 2, 3]", std::vector<int>{1, 2, 3});
 }
 
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 11
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__ < 11
 // [example_class]
 class ExampleClass {
  public:
@@ -152,9 +148,6 @@ class ExampleClass {
   std::optional<std::vector<int>> all_value{};
 };
 // [example_class]
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 11
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ => 8 && __GNUC__ < 11
 
 class NonCopyableArgument {
  public:

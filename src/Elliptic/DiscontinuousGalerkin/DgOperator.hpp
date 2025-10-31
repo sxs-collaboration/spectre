@@ -987,11 +987,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
 
   template <typename... FixedSourcesTags, typename ApplyBoundaryCondition,
             typename... FluxesArgs, typename... SourcesArgs,
-            typename... ModifyBoundaryDataArgs,
-            bool LocalLinearized = Linearized,
-            // This function adds nothing to the fixed sources if the operator
-            // is linearized, so it shouldn't be used in that case
-            Requires<not LocalLinearized> = nullptr>
+            typename... ModifyBoundaryDataArgs>
   static void impose_inhomogeneous_boundary_conditions_on_source(
       const gsl::not_null<Variables<tmpl::list<FixedSourcesTags...>>*>
           fixed_sources,
@@ -1019,7 +1015,11 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
       const std::tuple<FluxesArgs...>& fluxes_args,
       const std::tuple<SourcesArgs...>& sources_args,
       const DirectionMap<Dim, std::tuple<FluxesArgs...>>& fluxes_args_on_faces,
-      const std::tuple<ModifyBoundaryDataArgs...>& modify_boundary_data_args) {
+      const std::tuple<ModifyBoundaryDataArgs...>& modify_boundary_data_args)
+      // This function adds nothing to the fixed sources if the operator is
+      // linearized, so it shouldn't be used in that case
+    requires(not Linearized)
+  {
     // We just feed zero variables through the nonlinear operator to extract the
     // constant contribution at external boundaries. Since the variables are
     // zero the operator simplifies quite a lot. The simplification is probably
