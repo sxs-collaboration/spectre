@@ -283,7 +283,7 @@ Filtering:
 
 SpatialDiscretization:
   BoundaryCorrection:
-    UpwindPenalty:
+    AveragedUpwindPenalty:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
     Quadrature: GaussLobatto

@@ -142,8 +142,8 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
   BoundaryCorrection:
-    ProductUpwindPenaltyAndRusanov:
-      UpwindPenalty:
+    ProductAveragedUpwindPenaltyAndRusanov:
+      AveragedUpwindPenalty:
       Rusanov:
 
 EventsAndTriggersAtCheckpoints:

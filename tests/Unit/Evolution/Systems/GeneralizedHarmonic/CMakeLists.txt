@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryConditions/Test_DirichletMinkowski.cpp
   BoundaryConditions/Test_Periodic.cpp
+  BoundaryCorrections/Test_AveragedUpwindPenalty.cpp
   BoundaryCorrections/Test_UpwindPenalty.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp

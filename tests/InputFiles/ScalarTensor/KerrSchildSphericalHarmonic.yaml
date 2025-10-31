@@ -132,8 +132,8 @@ Filtering:
 
 SpatialDiscretization:
   BoundaryCorrection:
-    ProductUpwindPenaltyGHAndUpwindPenaltyScalar:
-      UpwindPenaltyGH:
+    ProductAveragedUpwindPenaltyGHAndUpwindPenaltyScalar:
+      AveragedUpwindPenaltyGH:
       UpwindPenaltyScalar:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
