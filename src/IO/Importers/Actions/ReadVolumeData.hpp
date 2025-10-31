@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Domain.hpp"
@@ -37,6 +38,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/CaptureForError.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -172,11 +174,23 @@ void verify_inertial_coordinates(
       element_id, domain.blocks()[element_id.block_id()]};
   const auto mapped_inertial_coords =
       element_map(logical_coords, time, functions_of_time);
-  if (not equal_within_roundoff(mapped_inertial_coords, inertial_coords)) {
-    ERROR_NO_TRACE("The source and target domain don't match on grid "
-                   << element_id
-                   << ". Set 'ElementsAreIdentical: False' to enable "
-                      "interpolation between the grids.");
+  const double scale = blaze::max(get(magnitude(mapped_inertial_coords)));
+  if (not equal_within_roundoff(mapped_inertial_coords, inertial_coords,
+                                std::numeric_limits<double>::epsilon() * 100.0,
+                                scale)) {
+    DataVector diff =
+        square(get<0>(inertial_coords) - get<0>(mapped_inertial_coords));
+    for (size_t d = 1; d < Dim; ++d) {
+      diff += square(inertial_coords.get(d) - mapped_inertial_coords.get(d));
+    }
+    diff = sqrt(diff);
+    const double max_coord_distance = blaze::max(diff);
+    CAPTURE_FOR_ERROR(element_id);
+    CAPTURE_FOR_ERROR(max_coord_distance);
+    CAPTURE_FOR_ERROR(scale);
+    ERROR_NO_TRACE(
+        "The source and target domain don't match. Set 'ElementsAreIdentical: "
+        "False' to enable interpolation between the grids.");
   }
 }
 
