@@ -99,6 +99,99 @@ void test() {
             "\nValidy range: " + get_output(TimeStepId{true, 1, time}) +
             "\nTCI status: 7\nIntegration order: 3\nInterpolated boundary "
             "data: --"));
+
+  // Test merge_boundary_data
+  const BoundaryData<Dim> dg_data{
+      volume_mesh,        ghost_data_mesh,           mortar_mesh, std::nullopt,
+      DataVector{1, 4.4}, TimeStepId{true, 1, time}, 7,           3,
+      std::nullopt};
+  {
+    BoundaryData<Dim> ghost_data{volume_mesh,
+                                 ghost_data_mesh,
+                                 std::nullopt,
+                                 DataVector{2, 2.3},
+                                 std::nullopt,
+                                 TimeStepId{true, 1, time},
+                                 0,
+                                 0,
+                                 std::nullopt};
+    merge_boundary_data(make_not_null(&ghost_data), dg_data);
+    CHECK(ghost_data == data0);
+  }
+#ifdef SPECTRE_DEBUG
+  {
+    BoundaryData<Dim> ghost_data{ghost_data_mesh,
+                                 ghost_data_mesh,
+                                 std::nullopt,
+                                 DataVector{2, 2.3},
+                                 std::nullopt,
+                                 TimeStepId{true, 1, time},
+                                 0,
+                                 0,
+                                 std::nullopt};
+    CHECK_THROWS_WITH(
+        merge_boundary_data(make_not_null(&ghost_data), dg_data),
+        Catch::Matchers::ContainsSubstring(
+            "The mesh being received for the fluxes is different"));
+  }
+  {
+    BoundaryData<Dim> ghost_data{volume_mesh,
+                                 volume_mesh,
+                                 std::nullopt,
+                                 DataVector{2, 2.3},
+                                 std::nullopt,
+                                 TimeStepId{true, 1, time},
+                                 0,
+                                 0,
+                                 std::nullopt};
+    CHECK_THROWS_WITH(
+        merge_boundary_data(make_not_null(&ghost_data), dg_data),
+        Catch::Matchers::ContainsSubstring(
+            "The mesh being received for the ghost cell data is different"));
+  }
+  {
+    BoundaryData<Dim> ghost_data{volume_mesh,
+                                 ghost_data_mesh,
+                                 mortar_mesh,
+                                 DataVector{2, 2.3},
+                                 std::nullopt,
+                                 TimeStepId{true, 1, time},
+                                 0,
+                                 0,
+                                 std::nullopt};
+    CHECK_THROWS_WITH(merge_boundary_data(make_not_null(&ghost_data), dg_data),
+                      Catch::Matchers::ContainsSubstring(
+                          "The fluxes have already been received"));
+  }
+  {
+    BoundaryData<Dim> ghost_data{volume_mesh,
+                                 ghost_data_mesh,
+                                 std::nullopt,
+                                 std::nullopt,
+                                 std::nullopt,
+                                 TimeStepId{true, 1, time},
+                                 0,
+                                 0,
+                                 std::nullopt};
+    CHECK_THROWS_WITH(merge_boundary_data(make_not_null(&ghost_data), dg_data),
+                      Catch::Matchers::ContainsSubstring(
+                          "Have not yet received ghost cells"));
+  }
+  {
+    BoundaryData<Dim> ghost_data{volume_mesh,
+                                 ghost_data_mesh,
+                                 std::nullopt,
+                                 DataVector{2, 2.3},
+                                 DataVector{1, 4.4},
+                                 TimeStepId{true, 1, time},
+                                 0,
+                                 0,
+                                 std::nullopt};
+    CHECK_THROWS_WITH(merge_boundary_data(make_not_null(&ghost_data), dg_data),
+                      Catch::Matchers::ContainsSubstring(
+                          "The fluxes have already been received"));
+  }
+#endif  // SPECTRE_DEBUG
 }
 }  // namespace
 

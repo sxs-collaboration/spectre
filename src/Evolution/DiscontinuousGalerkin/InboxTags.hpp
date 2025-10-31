@@ -168,62 +168,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                                 ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
-      auto& [volume_mesh, volume_mesh_ghost_cell_data, boundary_correction_mesh,
-             ghost_cell_data, boundary_correction_data, validity_range,
-             tci_status, integration_order, interpolated_boundary_data] =
-          data.second;
-      (void)ghost_cell_data;
-      auto& [current_volume_mesh, current_volume_mesh_ghost_cell_data,
-             current_boundary_correction_mesh, current_ghost_cell_data,
-             current_boundary_correction_data, current_validity_range,
-             current_tci_status, current_integration_order,
-             current_interpolated_boundary_data] = it->second;
-      (void)current_volume_mesh_ghost_cell_data;  // Need to use when
-                                                  // optimizing subcell
-      // We have already received some data at this time. Receiving data twice
-      // at the same time should only occur when receiving fluxes after having
-      // previously received ghost cells. We sanity check that the data we
-      // already have is the ghost cells and that we have not yet received flux
-      // data.
-      //
-      // This is used if a 2-send implementation is used (which we don't right
-      // now!). We generally find that the number of communications is more
-      // important than the size of each communication, and so a single
-      // communication per time/sub step is preferred.
-      ASSERT(current_ghost_cell_data.has_value(),
-             "Have not yet received ghost cells at time step "
-                 << time_step_id
-                 << " but the inbox entry already exists. This is a bug in the "
-                    "ordering of the actions.");
-      ASSERT(not current_boundary_correction_data.has_value() and
-                 not current_boundary_correction_mesh.has_value(),
-             "The fluxes have already been received at time step "
-                 << time_step_id
-                 << ". They are either being received for a second time, there "
-                    "is a bug in the ordering of the actions (though a "
-                    "different ASSERT should've caught that), or the incorrect "
-                    "temporal ID is being sent.");
-
-      ASSERT(current_volume_mesh == volume_mesh,
-             "The mesh being received for the fluxes is different than the "
-             "mesh received for the ghost cells. Mesh for fluxes: "
-                 << volume_mesh << " mesh for ghost cells "
-                 << current_volume_mesh);
-      ASSERT(current_volume_mesh_ghost_cell_data == volume_mesh_ghost_cell_data,
-             "The mesh being received for the ghost cell data is different "
-             "than the mesh received previously. Mesh for received when we got "
-             "fluxes: "
-                 << volume_mesh_ghost_cell_data
-                 << " mesh received when we got ghost cells "
-                 << current_volume_mesh_ghost_cell_data);
-
-      // We always move here since we take ownership of the data and moves
-      // implicitly decay to copies
-      current_boundary_correction_data = std::move(boundary_correction_data);
-      current_validity_range = validity_range;
-      current_tci_status = tci_status;
-      current_integration_order = integration_order;
-      current_interpolated_boundary_data = interpolated_boundary_data;
+      merge_boundary_data(make_not_null(&it->second), std::move(data.second));
     } else {
       // We have not received ghost cells or fluxes at this time.
       if (not current_inbox.insert(std::forward<ReceiveDataType>(data))
