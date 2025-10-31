@@ -131,6 +131,7 @@ def eccentricity_control(
                     # Start from inspiral data
                     id_input_file_path=inspiral_input_file_path,
                     id_run_dir=inspiral_run_dir,
+                    id_subfile_name="PostJunkVolumeData",
                     lev=lev,
                     inspiral_input_file_template=inspiral_input_file_template,
                     continue_with_ringdown=True,
@@ -146,6 +147,7 @@ def eccentricity_control(
     separation = x_A - x_B
     x_offset = x_A - target_params["MassB"] * separation
     y_offset, z_offset = binary_data["CenterOfMassOffset"]
+    binary_domain = id_input_file["DomainCreator"]["BinaryCompactObject"]
     generate_id(
         target_params,
         # New orbital parameters
@@ -155,8 +157,12 @@ def eccentricity_control(
         # Initial guesses for ID control
         conformal_mass_a=binary_data["ObjectRight"]["KerrSchild"]["Mass"],
         conformal_mass_b=binary_data["ObjectLeft"]["KerrSchild"]["Mass"],
-        conformal_spin_a=binary_data["ObjectRight"]["KerrSchild"]["Spin"],
-        conformal_spin_b=binary_data["ObjectLeft"]["KerrSchild"]["Spin"],
+        horizon_rotation_a=binary_domain["ObjectA"]["Interior"][
+            "ExciseWithBoundaryCondition"
+        ]["ApparentHorizon"]["Rotation"],
+        horizon_rotation_b=binary_domain["ObjectB"]["Interior"][
+            "ExciseWithBoundaryCondition"
+        ]["ApparentHorizon"]["Rotation"],
         center_of_mass_offset=[x_offset, y_offset, z_offset],
         linear_velocity=binary_data["LinearVelocity"],
         # Scheduling options

@@ -68,6 +68,7 @@ class TestInitialData(unittest.TestCase):
                 dat_file.append([[0.0, 1.0, 0.3]])
         start_inspiral(
             id_input_file_path=self.test_dir / "ID" / "InitialData.yaml",
+            id_subfile_name="VolumeData",
             refinement_level=1,
             polynomial_order=5,
             segments_dir=self.test_dir / "Inspiral",

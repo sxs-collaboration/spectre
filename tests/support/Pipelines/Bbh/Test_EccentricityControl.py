@@ -106,7 +106,25 @@ class TestEccentricityControl(unittest.TestCase):
                     },
                     "CenterOfMassOffset": [0.0, 0.0],
                 },
-            }
+            },
+            "DomainCreator": {
+                "BinaryCompactObject": {
+                    "ObjectA": {
+                        "Interior": {
+                            "ExciseWithBoundaryCondition": {
+                                "ApparentHorizon": {"Rotation": [0.0, 0.0, 0.0]}
+                            }
+                        },
+                    },
+                    "ObjectB": {
+                        "Interior": {
+                            "ExciseWithBoundaryCondition": {
+                                "ApparentHorizon": {"Rotation": [0.0, 0.0, 0.0]}
+                            }
+                        },
+                    },
+                }
+            },
         }
 
         # Pass both metadata and data1 to the YAML file
