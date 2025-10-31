@@ -106,7 +106,7 @@ struct MockContributeReductionData {
           (*formatter)(0.123, 3, 1.560, 3.141, 2.7818, 1023.3, 9.32, 4.148);
       CHECK(formatted_msg ==
             "Simulation time: 0.123000\n"
-            "  Wall time: 00:00:09 (min) - 00:00:04 (max)");
+            "  Wall time: 00:00:09 (min) - 00:00:04 (max)\n");
     }
   }
 };

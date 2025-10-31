@@ -82,12 +82,12 @@ struct ResidualReductionFormatter
                          const double residual) const {
     if (iteration_id == 0) {
       return pretty_type::name<OptionsGroup>() + section_observation_key +
-             " initialized with residual: " + get_output(residual);
+             " initialized with residual: " + get_output(residual) + "\n";
     } else {
       return pretty_type::name<OptionsGroup>() + section_observation_key + "(" +
              get_output(iteration_id) +
              ") iteration complete. Remaining residual: " +
-             get_output(residual);
+             get_output(residual) + "\n";
     }
   }
   // NOLINTNEXTLINE(google-runtime-references)

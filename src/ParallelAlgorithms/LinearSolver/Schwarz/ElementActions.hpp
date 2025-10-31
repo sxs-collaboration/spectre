@@ -100,7 +100,7 @@ struct SubdomainStatsFormatter
            get_output(avg_subdomain_its) + " (min " +
            get_output(min_subdomain_its) + ", max " +
            get_output(max_subdomain_its) + ", total " +
-           get_output(total_subdomain_its) + ").";
+           get_output(total_subdomain_its) + ").\n";
   }
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) { p | section_observation_key; }

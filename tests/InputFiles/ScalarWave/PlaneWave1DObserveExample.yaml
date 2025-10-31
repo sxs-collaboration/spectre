@@ -8,6 +8,7 @@ Testing:
 ExpectedOutput:
   - ScalarWavePlaneWave1DObserveExampleVolume.h5
   - ScalarWavePlaneWave1DObserveExampleReductions.h5
+  - ScalarWavePlaneWave1DObserveExampleReductions0.h5
 
 ---
 
@@ -125,6 +126,9 @@ EventsAndTriggersAtSlabs:
           Offset: 0
     Events:
       - RefineMesh
+      - ObserveAmrStats:
+          PrintToTerminal: True
+          ObservePerCore: True
   - Trigger:
       Slabs:
         Specified:

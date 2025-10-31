@@ -13,6 +13,7 @@
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
+#include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
@@ -21,6 +22,7 @@
 #include "ParallelAlgorithms/Amr/Criteria/IncreaseResolution.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Tags/Criteria.hpp"
 #include "ParallelAlgorithms/Amr/Criteria/Type.hpp"
+#include "ParallelAlgorithms/Amr/Events/ObserveAmrStats.hpp"
 #include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Isotropy.hpp"
 #include "ParallelAlgorithms/Amr/Policies/Limits.hpp"
@@ -37,6 +39,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+static_assert(
+    tt::assert_conforms_to_v<amr::Events::detail::FormatAmrStatsOutput,
+                             observers::protocols::ReductionDataFormatter>);
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 class BadCriterion : public amr::Criterion {
@@ -83,13 +89,62 @@ struct ElementComponent {
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
+template <typename Metavariables>
+struct MockContributeReductionData {
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
+            typename ReductionData, typename Formatter>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const observers::ObservationId& /*observation_id*/,
+                    Parallel::ArrayComponentId /*sender_array_id*/,
+                    const std::string& /*subfile_name*/,
+                    const std::vector<std::string>& legend,
+                    ReductionData&& reduction_data,
+                    std::optional<Formatter>&& /*formatter*/,
+                    const bool /*observe_per_core*/) {
+    CHECK(legend ==
+          std::vector<std::string>{"Time", "NumElements", "TotalNumPoints",
+                                   "NumPointsPerDim_0", "MinPointsPerDim_0",
+                                   "MaxPointsPerDim_0"});
+    // Time
+    CHECK(get<0>(reduction_data.data()) == -1.0);
+    // Total num elements
+    CHECK(get<1>(reduction_data.data()) == 1_st);
+    // Total num points
+    CHECK(get<2>(reduction_data.data()) == 4_st);
+    // Points per dim
+    CHECK(get<3>(reduction_data.data()) == std::vector<size_t>{4});
+    // Min/max points
+    CHECK(get<4>(reduction_data.data()) == std::vector<size_t>{4});
+    CHECK(get<5>(reduction_data.data()) == std::vector<size_t>{4});
+  }
+};
+
+template <typename Metavariables>
+struct MockObserverComponent {
+  using component_being_mocked = observers::Observer<Metavariables>;
+  using replace_these_simple_actions =
+      tmpl::list<observers::Actions::ContributeReductionData>;
+  using with_these_simple_actions =
+      tmpl::list<MockContributeReductionData<Metavariables>>;
+
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockGroupChare;
+  using array_index = int;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+};
+
 struct Metavariables {
   static constexpr size_t volume_dim = 1;
-  using component_list = tmpl::list<ElementComponent<Metavariables>>;
+  using component_list = tmpl::list<ElementComponent<Metavariables>,
+                                    MockObserverComponent<Metavariables>>;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh>>,
+        tmpl::pair<Event, tmpl::list<amr::Events::RefineMesh,
+                                     amr::Events::ObserveAmrStats<volume_dim>>>,
         tmpl::pair<
             amr::Criterion,
             tmpl::list<
@@ -107,8 +162,9 @@ struct Metavariables {
   };
 };
 
-void test(const Event& event) {
+void test(const Event& event, const Event& observe_event) {
   using element_component = ElementComponent<Metavariables>;
+  using observer_component = MockObserverComponent<Metavariables>;
 
   CHECK(event.needs_evolved_variables());
 
@@ -131,6 +187,7 @@ void test(const Event& event) {
             std::array{1_st}, std::array{amr::Flag::DoNothing}));
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
+    ActionTesting::emplace_group_component<observer_component>(&runner);
 
     ActionTesting::emplace_component_and_initialize<element_component>(
         &runner, element_id, {element, mesh, policies});
@@ -141,7 +198,12 @@ void test(const Event& event) {
     event.run(make_not_null(&obs_box),
               ActionTesting::cache<element_component>(runner, element_id),
               element_id, std::add_pointer_t<element_component>{},
-              {"Unused", -1.0});
+              {"Time", -1.0});
+    observe_event.run(
+        make_not_null(&obs_box),
+        ActionTesting::cache<element_component>(runner, element_id), element_id,
+        std::add_pointer_t<element_component>{}, {"Time", -1.0});
+    runner.template invoke_queued_simple_action<observer_component>(0);
 
     const Mesh<1> expected_mesh{std::array{4_st}, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::GaussLobatto};
@@ -163,6 +225,7 @@ void test(const Event& event) {
             std::array{1_st}, std::array{amr::Flag::DoNothing}));
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
+    ActionTesting::emplace_group_component<observer_component>(&runner);
 
     ActionTesting::emplace_component_and_initialize<element_component>(
         &runner, element_id, {element, mesh, policies});
@@ -209,6 +272,7 @@ void test(const Event& event) {
     criteria.emplace_back(std::make_unique<BadCriterion>());
     ActionTesting::MockRuntimeSystem<Metavariables> runner{
         {std::move(criteria), ::Verbosity::Debug}};
+    ActionTesting::emplace_group_component<observer_component>(&runner);
 
     ActionTesting::emplace_component_and_initialize<element_component>(
         &runner, element_id, {element, mesh, policies});
@@ -231,11 +295,19 @@ void test(const Event& event) {
 SPECTRE_TEST_CASE("Unit.Amr.Events.RefineMesh", "[Unit][ParallelAlgorithms]") {
   register_factory_classes_with_charm<Metavariables>();
   const amr::Events::RefineMesh event{};
-  test(event);
-  test(serialize_and_deserialize(event));
+  const amr::Events::ObserveAmrStats<1> observe_event{true, false};
+  test(event, observe_event);
+  test(serialize_and_deserialize(event),
+       serialize_and_deserialize(observe_event));
   const auto option_event =
       TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables>(
           "RefineMesh\n");
-  test(*option_event);
-  test(*serialize_and_deserialize(option_event));
+  const auto option_observe_event =
+      TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables>(
+          "ObserveAmrStats:\n"
+          "  PrintToTerminal: True\n"
+          "  ObservePerCore: False");
+  test(*option_event, *option_observe_event);
+  test(*serialize_and_deserialize(option_event),
+       *serialize_and_deserialize(option_observe_event));
 }

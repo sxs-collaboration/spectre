@@ -35,6 +35,9 @@
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/Protocols/RegistrationMetavariables.hpp"
 #include "ParallelAlgorithms/Actions/FunctionsOfTimeAreReady.hpp"
+#include "ParallelAlgorithms/Amr/Events/ObserveAmrCriteria.hpp"
+#include "ParallelAlgorithms/Amr/Events/ObserveAmrStats.hpp"
+#include "ParallelAlgorithms/Amr/Events/RefineMesh.hpp"
 #include "ParallelAlgorithms/Amr/Projectors/CopyFromCreatorOrLeaveAsIs.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Callbacks/FailedHorizonFind.hpp"
@@ -195,16 +198,17 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
             tmpl::pair<LtsTimeStepper,
                        TimeSteppers::monotonic_lts_time_steppers>>,
         tmpl::pair<ah::Criterion, ah::Criteria::standard_criteria>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                ah::Events::FindApparentHorizon<ApparentHorizon>,
-                control_system::metafunctions::control_system_events<
-                    control_systems>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    3, BondiSachs, source_vars_no_deriv>,
-                intrp::Events::InterpolateWithoutInterpComponent<
-                    3, ExcisionBoundary, ::ah::source_vars<volume_dim>>>>>,
+        tmpl::pair<Event,
+                   tmpl::flatten<tmpl::list<
+                       ah::Events::FindApparentHorizon<ApparentHorizon>,
+                       control_system::metafunctions::control_system_events<
+                           control_systems>,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           3, BondiSachs, source_vars_no_deriv>,
+                       intrp::Events::InterpolateWithoutInterpComponent<
+                           3, ExcisionBoundary, ::ah::source_vars<volume_dim>>,
+                       amr::Events::RefineMesh,
+                       amr::Events::ObserveAmrStats<volume_dim>>>>,
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>,
         tmpl::pair<control_system::size::State,

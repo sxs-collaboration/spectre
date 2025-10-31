@@ -17,7 +17,8 @@ namespace observers::protocols {
  * Conforming classes must implement the following member functions:
  * - `operator()`: A call operator that takes the values of the reduction data
  *   and returns a `std::string`. The string should be an informative message
- *   such as "Global minimum grid spacing at time 5.4 is: 0.1".
+ *   such as "Global minimum grid spacing at time 5.4 is: 0.1". It should end
+ *   with a newline character.
  * - `pup`: A PUP function for serialization.
  *
  * Here's an example for a formatter:

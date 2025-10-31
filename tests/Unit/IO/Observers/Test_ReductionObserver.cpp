@@ -52,7 +52,7 @@ struct FormatErrors
     return "Errors at time " + std::to_string(time) + " over " +
            std::to_string(num_points) +
            " grid points:\n  Field1: " + std::to_string(error1) +
-           "\n  Field2: " + std::to_string(error2);
+           "\n  Field2: " + std::to_string(error2) + "\n";
   }
   // NOLINTNEXTLINE
   void pup(PUP::er& /*p*/) {}

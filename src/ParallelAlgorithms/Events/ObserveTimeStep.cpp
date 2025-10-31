@@ -22,7 +22,7 @@ std::string FormatTimeOutput::operator()(
   std::stringstream ss;
   ss << "Simulation time: " << std::to_string(time)
      << "\n  Wall time: " << sys::pretty_wall_time(min_wall_time) << " (min) - "
-     << sys::pretty_wall_time(max_wall_time) << " (max)";
+     << sys::pretty_wall_time(max_wall_time) << " (max)\n";
   return ss.str();
 }
 
