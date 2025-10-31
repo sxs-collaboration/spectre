@@ -192,7 +192,7 @@ def inspiral_parameters(
             extension=".vol",
         )
         if len(id_subfiles) == 1:
-            id_subfile_name = subfiles[0]
+            id_subfile_name = id_subfiles[0]
             logger.info(
                 f"Selected subfile {id_subfile_name} (the only available one)."
             )
