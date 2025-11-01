@@ -34,9 +34,18 @@
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+namespace evolution::dg::Tags {
+template <size_t Dim>
+struct MortarNextTemporalId;
+}  // namespace evolution::dg::Tags
+/// \endcond
 
 namespace amr::Events {
 namespace detail {
@@ -81,8 +90,18 @@ class RefineMesh : public Event {
                   const ElementId<Metavariables::volume_dim>& element_id,
                   const Component* const /*meta*/,
                   const ObservationValue& /*observation_value*/) const {
-    // Evaluate AMR p-refinement criteria
     constexpr size_t volume_dim = Metavariables::volume_dim;
+    if (alg::any_of(
+            db::get<evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
+                *box),
+            [&](const auto& mortar) {
+              return mortar.second != db::get<::Tags::TimeStepId>(*box);
+            })) {
+      ERROR_NO_TRACE(
+          "Cannot refine mesh when not temporally aligned with neighbors.");
+    }
+
+    // Evaluate AMR p-refinement criteria
     auto overall_decision = make_array<volume_dim>(amr::Flag::Undefined);
 
     using compute_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
