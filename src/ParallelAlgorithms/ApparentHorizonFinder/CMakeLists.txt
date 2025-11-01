@@ -42,6 +42,7 @@ spectre_target_headers(
   InterpolateVolumeVars.hpp
   InterpolationTarget.hpp
   OptionTags.hpp
+  PrintDeadlockAnalysis.hpp
   Storage.hpp
   Tags.hpp
   )

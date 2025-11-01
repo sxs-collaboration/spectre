@@ -265,7 +265,8 @@ void test_apparent_horizon(
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator->create_domain(), std::move(apparent_horizon_opts),
        blocks_for_interpolation},
-      {domain_creator->functions_of_time()}};
+      {domain_creator->functions_of_time(),
+       ah::Storage::LockedPreviousSurface<Fr>{}}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);

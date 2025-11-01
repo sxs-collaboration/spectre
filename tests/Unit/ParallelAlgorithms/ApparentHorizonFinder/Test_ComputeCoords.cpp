@@ -146,10 +146,12 @@ void test_compute_points() {
     const LinkedMessageId<double> prev_time_2{.id = 2.0, .previous = {1.0}};
     previous_surfaces.emplace_front(
         prev_time_2,
-        ylm::Strahlkorper<Fr>{l_max, 1.1, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{l_max, 1.1, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
     previous_surfaces.emplace_front(
         prev_time_1,
-        ylm::Strahlkorper<Fr>{l_max, 1.3, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{l_max, 1.3, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
 
     const bool coords_set_successfully = set_current_iteration_coords(
         make_not_null(&current_iteration), make_not_null(&block_order), time,
@@ -176,8 +178,8 @@ void test_compute_points() {
     const LinkedMessageId<double> prev_time{.id = 1.0,
                                             .previous = std::nullopt};
     previous_surfaces.emplace_back(
-        prev_time,
-        ylm::Strahlkorper<Fr>{l_max, 1.0, std::array{0.0, 0.0, 0.0}});
+        prev_time, ylm::Strahlkorper<Fr>{l_max, 1.0, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
 
     const bool coords_set_successfully = set_current_iteration_coords(
         make_not_null(&current_iteration), make_not_null(&block_order), time,
@@ -358,10 +360,12 @@ void test_compute_points_different_resolutions() {
     const LinkedMessageId<double> prev_time_2{.id = 2.0, .previous = {1.0}};
     previous_surfaces.emplace_front(
         prev_time_2,
-        ylm::Strahlkorper<Fr>{l_max, 1.1, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{l_max, 1.1, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
     previous_surfaces.emplace_front(
         prev_time_1,
-        ylm::Strahlkorper<Fr>{higher_l_max, 1.3, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{higher_l_max, 1.3, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
 
     const bool coords_set_successfully = set_current_iteration_coords(
         make_not_null(&current_iteration), make_not_null(&block_order), time,
@@ -397,13 +401,16 @@ void test_compute_points_different_resolutions() {
                                               .previous = std::nullopt};
     previous_surfaces.emplace_front(
         prev_time_3,
-        ylm::Strahlkorper<Fr>{l_max, 1.0, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{l_max, 1.0, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
     previous_surfaces.emplace_front(
         prev_time_2,
-        ylm::Strahlkorper<Fr>{higher_l_max, 1.1, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{higher_l_max, 1.1, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
     previous_surfaces.emplace_front(
         prev_time_1,
-        ylm::Strahlkorper<Fr>{l_max, 1.3, std::array{0.0, 0.0, 0.0}});
+        ylm::Strahlkorper<Fr>{l_max, 1.3, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
 
     const bool coords_set_successfully = set_current_iteration_coords(
         make_not_null(&current_iteration), make_not_null(&block_order), time,
@@ -436,8 +443,8 @@ void test_compute_points_different_resolutions() {
     const LinkedMessageId<double> prev_time{.id = 1.0,
                                             .previous = std::nullopt};
     previous_surfaces.emplace_back(
-        prev_time,
-        ylm::Strahlkorper<Fr>{l_max, 1.0, std::array{0.0, 0.0, 0.0}});
+        prev_time, ylm::Strahlkorper<Fr>{l_max, 1.0, std::array{0.0, 0.0, 0.0}},
+        std::unordered_set<ElementId<3>>{});
 
     const bool coords_set_successfully = set_current_iteration_coords(
         make_not_null(&current_iteration), make_not_null(&block_order), time,

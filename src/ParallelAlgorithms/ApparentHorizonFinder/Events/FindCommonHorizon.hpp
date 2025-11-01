@@ -117,15 +117,15 @@ class FindCommonHorizon<
   void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
                   const Mesh<VolumeDim>& mesh,
                   Parallel::GlobalCache<Metavariables>& cache,
-                  const ElementId<VolumeDim>& array_index,
+                  const ElementId<VolumeDim>& element_id,
                   const ParallelComponent* const component,
                   const ObservationValue& observation_value) const {
-    observe_fields_event_(box, mesh, cache, array_index, component,
+    observe_fields_event_(box, mesh, cache, element_id, component,
                           observation_value);
 
     interpolate_event_(get<typename InterpolationTargetTag::temporal_id>(box),
                        mesh, get<InterpolatorSourceVarTags>(box)..., cache,
-                       array_index, component, observation_value);
+                       element_id, component, observation_value);
   }
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
@@ -141,9 +141,9 @@ class FindCommonHorizon<
 
   using is_ready_argument_tags = tmpl::list<>;
 
-  template <typename Metavariables, typename ArrayIndex, typename Component>
+  template <typename Metavariables, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                const ArrayIndex& /*array_index*/,
+                const ElementId<3>& /*element_id*/,
                 const Component* const /*meta*/) const {
     return true;
   }
@@ -232,27 +232,28 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
 
   using return_tags = tmpl::list<>;
   using argument_tags =
-      tmpl::list<::Tags::ObservationBox, ::Events::Tags::ObserverMesh<3>>;
+      tmpl::list<::Tags::ObservationBox, ::Events::Tags::ObserverMesh<3>,
+                 domain::Tags::Element<3>>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ParallelComponent>
   void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
-                  const Mesh<3>& mesh,
+                  const Mesh<3>& mesh, const Element<3>& element,
                   Parallel::GlobalCache<Metavariables>& cache,
-                  const ElementId<3>& array_index,
+                  const ElementId<3>& element_id,
                   const ParallelComponent* const component,
                   const ObservationValue& observation_value) const {
-    observe_fields_event_(box, mesh, cache, array_index, component,
+    observe_fields_event_(box, mesh, cache, element_id, component,
                           observation_value);
 
     horizon_find_event_(
-        get<typename HorizonMetavars::time_tag>(box), mesh,
+        get<typename HorizonMetavars::time_tag>(box), mesh, element,
         get<gr::Tags::SpacetimeMetric<DataVector, 3>>(box),
         get<gh::Tags::Pi<DataVector, 3>>(box),
         get<gh::Tags::Phi<DataVector, 3>>(box),
         get<::Tags::deriv<gh::Tags::Phi<DataVector, 3>, tmpl::size_t<3>,
                           Frame::Inertial>>(box),
-        cache, array_index, component, observation_value);
+        cache, element_id, component, observation_value);
   }
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
@@ -268,9 +269,9 @@ class FindCommonHorizon<HorizonMetavars, tmpl::list<Tensors...>,
 
   using is_ready_argument_tags = tmpl::list<>;
 
-  template <typename Metavariables, typename ArrayIndex, typename Component>
+  template <typename Metavariables, typename Component>
   bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                const ArrayIndex& /*array_index*/,
+                const ElementId<3>& /*element_id*/,
                 const Component* const /*meta*/) const {
     return true;
   }

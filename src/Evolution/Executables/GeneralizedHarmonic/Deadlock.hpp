@@ -14,6 +14,7 @@
 #include "Parallel/ArrayCollection/SimpleActionOnElement.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/PrintDeadlockAnalysis.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/PrintInterpolationTargetForDeadlock.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/PrintInterpolatorForDeadlock.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -35,8 +36,8 @@ struct ObserverWriter;
 
 namespace gh::deadlock {
 template <typename DgElementArray, typename ControlComponents,
-          typename InterpolationTargetTags, bool HasInterpolator = true,
-          typename Metavariables>
+          typename InterpolationTargetTags, typename AhFinders,
+          bool HasInterpolator = true, typename Metavariables>
 void run_deadlock_analysis_simple_actions(
     Parallel::GlobalCache<Metavariables>& cache,
     const std::vector<std::string>& deadlocked_components) {
@@ -78,6 +79,19 @@ void run_deadlock_analysis_simple_actions(
                   intrp::InterpolationTarget<Metavariables, TargetTag>>(cache),
               intrp_target_file);
         });
+  }
+
+  if constexpr (tmpl::size<AhFinders>::value > 0) {
+    tmpl::for_each<AhFinders>([&cache,
+                               &deadlock_dir](const auto horizon_metavars_v) {
+      using HorizonMetavars = tmpl::type_from<decltype(horizon_metavars_v)>;
+      const std::string ah_finder_file =
+          deadlock_dir + "/" + pretty_type::name<HorizonMetavars>() + ".out";
+      Parallel::simple_action<ah::Actions::PrintDeadlockAnalysis>(
+          Parallel::get_parallel_component<
+              ah::Component<Metavariables, HorizonMetavars>>(cache),
+          ah_finder_file);
+    });
   }
 
   if (alg::count(deadlocked_components, pretty_type::name<DgElementArray>()) ==

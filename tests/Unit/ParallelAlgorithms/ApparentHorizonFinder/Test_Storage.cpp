@@ -64,16 +64,25 @@ void test_storage() {
   test_serialization(single_time_storage);
 
   const ah::Storage::PreviousSurface<Fr> previous_surface{
-      LinkedMessageId<double>{3.0, {2.0}}, iteration.strahlkorper};
+      LinkedMessageId<double>{3.0, {2.0}},
+      iteration.strahlkorper,
+      {ElementId<3>{1}, ElementId<3>{3}}};
   test_serialization(previous_surface);
 
   // Check we can use PreviousSurface with `emplace`
   std::deque<ah::Storage::PreviousSurface<Fr>> previous_surfaces{};
-  previous_surfaces.emplace_front(LinkedMessageId<double>{1.0, std::nullopt},
-                                  iteration.strahlkorper);
+  previous_surfaces.emplace_front(
+      LinkedMessageId<double>{1.0, std::nullopt}, iteration.strahlkorper,
+      std::unordered_set<ElementId<3>>{ElementId<3>{4}, ElementId<3>{5}});
   CHECK(previous_surfaces.front().time ==
         LinkedMessageId<double>{1.0, std::nullopt});
   CHECK(previous_surfaces.front().surface == iteration.strahlkorper);
+  CHECK(previous_surfaces.front().intersecting_element_ids ==
+        std::unordered_set<ElementId<3>>{ElementId<3>{4}, ElementId<3>{5}});
+
+  ah::Storage::LockedPreviousSurface<Fr> locked_previous_surface{};
+  locked_previous_surface.surface = previous_surface;
+  test_serialization(locked_previous_surface);
 }
 }  // namespace
 

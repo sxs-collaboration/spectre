@@ -32,6 +32,22 @@
 #include "Utilities/TMPL.hpp"
 
 namespace ah {
+
+namespace detail {
+// Update the previous surface in the mutable global cache
+template <typename Fr>
+struct UpdatePreviousSurface {
+  static void apply(const gsl::not_null<Storage::LockedPreviousSurface<Fr>*>
+                        locked_previous_surface,
+                    Storage::PreviousSurface<Fr> previous_surface) {
+    auto& lock = locked_previous_surface->lock;
+    lock.write_lock();
+    locked_previous_surface->surface = std::move(previous_surface);
+    lock.write_unlock();
+  }
+};
+}  // namespace detail
+
 /*!
  * \brief Invoke the callbacks specified in the `horizon_find_callbacks` alias
  * of the \p HorizonMetavars.
@@ -57,15 +73,34 @@ void invoke_callbacks(const gsl::not_null<db::DataBox<DbTags>*> box,
   const auto& all_storage = db::get<ah::Tags::Storage<Fr>>(*box);
   const auto& current_time_storage = all_storage.at(current_time);
   const auto& current_iteration = current_time_storage.current_iteration;
+  const auto& current_strahlkorper = current_iteration.strahlkorper;
   auto& previous_surfaces =
       db::get_mutable_reference<ah::Tags::PreviousSurfaces<Fr>>(box);
   const auto& fast_flow = db::get<ah::Tags::FastFlow>(*box);
+
+  // Update the previous surfaces. We do this before the callbacks in case any
+  // of the callbacks need the previous strahlkorpers with the current
+  // strahlkorper already in it.
+  previous_surfaces.emplace_front(current_time, current_strahlkorper,
+                                  current_iteration.intersecting_element_ids);
+
+  // Broadcast the previous surface to the mutable global cache so that elements
+  // know whether they need to send data for the next horizon find. We do this
+  // early so that elements get this information as soon as possible.
+  Parallel::mutate<Tags::PreviousSurface<HorizonMetavars>,
+                   detail::UpdatePreviousSurface<Fr>>(
+      cache, previous_surfaces.front());
+
+  // Remove old previous_strahlkorpers that are no longer relevant.
+  const size_t num_previous_strahlkorpers = 3;
+  while (previous_surfaces.size() > num_previous_strahlkorpers) {
+    previous_surfaces.pop_back();
+  }
 
   // The interpolated variables have been interpolated from the volume to
   // the points on the prolonged_strahlkorper, not to the points on the
   // actual strahlkorper. So here we do a restriction of these quantities
   // onto the actual strahlkorper.
-  const auto& current_strahlkorper = current_iteration.strahlkorper;
   const auto& current_ylm = current_strahlkorper.ylm_spherepack();
   const size_t L_mesh = fast_flow.current_l_mesh(current_strahlkorper);
   const auto prolonged_strahlkorper =
@@ -90,20 +125,6 @@ void invoke_callbacks(const gsl::not_null<db::DataBox<DbTags>*> box,
             });
       },
       box);
-
-  // This is the number of previous strahlkorpers that we
-  // keep around.
-  const size_t num_previous_strahlkorpers = 3;
-
-  // Update the previous strahlkorpers. We do this before the callbacks
-  // in case any of the callbacks need the previous strahlkorpers with the
-  // current strahlkorper already in it.
-  previous_surfaces.emplace_front(current_time, current_strahlkorper);
-
-  // Remove old previous_strahlkorpers that are no longer relevant.
-  while (previous_surfaces.size() > num_previous_strahlkorpers) {
-    previous_surfaces.pop_back();
-  }
 
   db::mutate<ylm::Tags::Strahlkorper<Fr>, ylm::Tags::TimeDerivStrahlkorper<Fr>,
              ah::Tags::Dependency>(

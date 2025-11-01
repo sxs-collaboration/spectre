@@ -340,7 +340,7 @@ struct EvolutionMetavars : public GeneralizedHarmonicTemplateBase<3, UseLts> {
       const std::vector<std::string>& deadlocked_components) {
     gh::deadlock::run_deadlock_analysis_simple_actions<
         gh_dg_element_array, control_components, interpolation_target_tags,
-        false>(cache, deadlocked_components);
+        tmpl::list<ApparentHorizon>, false>(cache, deadlocked_components);
   }
 
   using component_list = tmpl::flatten<tmpl::list<

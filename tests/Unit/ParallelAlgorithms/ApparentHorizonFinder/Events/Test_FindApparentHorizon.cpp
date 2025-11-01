@@ -113,7 +113,8 @@ struct MockComponent {
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<3>, ah::Tags::BlocksForHorizonFind>;
   using mutable_global_cache_tags =
-      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
+                 ah::Tags::PreviousSurface<MockHorizonMetavars>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
@@ -155,7 +156,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
   ::domain::creators::time_dependence::register_derived_with_charm();
   using metavars = MockMetavariables;
   const ElementId<3> element_id(2);
-  const ElementId<3> array_index(element_id);
 
   using component = MockComponent<metavars>;
   using elem_component = MockElement<metavars>;
@@ -176,20 +176,21 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
       {domain_creator.create_domain(),
        std::unordered_map<std::string, std::unordered_set<std::string>>{
            {"MockHorizonMetavars", {block_names.begin(), block_names.end()}}}},
-      {domain_creator.functions_of_time()}};
+      {domain_creator.functions_of_time(),
+       ah::Storage::LockedPreviousSurface<Frame::Grid>{}}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_array_component<component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0);
   ActionTesting::emplace_array_component<elem_component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0},
-      array_index);
+      element_id);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const Mesh<3> mesh(5, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const LinkedMessageId<double> observation_time{2.0, {1.0}};
-  auto& cache = ActionTesting::cache<elem_component>(runner, array_index);
+  auto& cache = ActionTesting::cache<elem_component>(runner, element_id);
 
   // Fill source vars with an analytic solution so that
   // ah::vars_to_interpolate_to_target can be computed from
@@ -274,12 +275,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
   std::optional<std::string> dependency{"FakeDependency"};
 
   // Test the event version
-  auto box =
-      db::create<db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
-                                   typename MockHorizonMetavars::time_tag,
-                                   ::Events::Tags::ObserverMesh<3>,
-                                   ::Tags::Variables<ah::source_vars<3>>>>(
-          metavars{}, observation_time, mesh, vars);
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<metavars>,
+      typename MockHorizonMetavars::time_tag, ::Events::Tags::ObserverMesh<3>,
+      domain::Tags::Element<3>, ::Tags::Variables<ah::source_vars<3>>>>(
+      metavars{}, observation_time, mesh, Element<3>{element_id, {}}, vars);
 
   const metavars::event event{dependency};
   const metavars::event serialized_event = serialize_and_deserialize(event);
@@ -289,7 +289,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
   auto obs_box = make_observation_box<
       typename metavars::event::compute_tags_for_observation_box>(
       make_not_null(&box));
-  serialized_event.run(make_not_null(&obs_box), cache, array_index,
+  serialized_event.run(make_not_null(&obs_box), cache, element_id,
                        std::add_pointer_t<elem_component>{}, {});
 
   const auto check_results = [&]() {
@@ -298,7 +298,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
 
     // No more queued simple actions.
     CHECK(runner.is_simple_action_queue_empty<component>(0));
-    CHECK(runner.is_simple_action_queue_empty<elem_component>(array_index));
+    CHECK(runner.is_simple_action_queue_empty<elem_component>(element_id));
 
     const auto& results = MockFindApparentHorizon::results;
     CHECK(results.time == observation_time);
@@ -332,7 +332,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.FindApparentHorizonEvent",
   const metavars::event serialized_option_event =
       serialize_and_deserialize(option_event);
 
-  serialized_option_event.run(make_not_null(&obs_box), cache, array_index,
+  serialized_option_event.run(make_not_null(&obs_box), cache, element_id,
                               std::add_pointer_t<elem_component>{}, {});
 
   check_results();
