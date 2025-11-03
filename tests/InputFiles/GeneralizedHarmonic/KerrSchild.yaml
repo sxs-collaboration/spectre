@@ -205,15 +205,15 @@ EventsAndTriggersAtSlabs:
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 5
-          Offset: 2
+          Interval: 2
+          Offset: 0
     Events:
       - ApparentHorizon
       - ExcisionBoundary
   - Trigger:
       Slabs:
         Specified:
-          Values: [3]
+          Values: [5]
     Events:
       - Completion
 
@@ -238,10 +238,15 @@ Interpolator:
   Verbosity: Silent
 
 ApparentHorizons:
+  LMax: 10
   ApparentHorizon: &Ah
     Criteria:
+      - Residual:
+          MinResidual: 1.e-2
+          MaxResidual: 1.e-1
+          MinResolutionL: 4
     InitialGuess:
-      LMax: &LMax 4
+      LMax: &LMax 8
       Radius: 2.2
       Center: *Center
     FastFlow:
@@ -276,7 +281,7 @@ Cce:
   BondiSachsOutputFilePrefix: "BondiSachs"
 
 ControlSystems:
-  WriteDataToDisk: false
+  WriteDataToDisk: true
   MeasurementsPerUpdate: 4
   Verbosity: Silent
   Translation: None

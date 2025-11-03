@@ -299,6 +299,7 @@ Interpolator:
   Verbosity: Silent
 
 ApparentHorizons:
+  LMax: 20
   ObservationAhA: &AhA
     Criteria:
     InitialGuess:

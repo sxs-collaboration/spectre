@@ -25,8 +25,10 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/ApparentHorizonFinder/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -149,18 +151,34 @@ struct ObserveSurfaceData
 
     std::vector<std::string> ylm_legend{};
     std::vector<double> ylm_data{};
-    // The number of coefficients written will be (l_max + 1)^2 where l_max is
-    // the current value of l_max for this surface's strahlkorper. Because l_max
-    // remains constant, the number of coefficient columns written does, too. In
-    // the future when l_max is adaptive, instead of passing in the current
-    // l_max of the strahlkorper, we could pass in the maximum value that l_max
-    // could be to ensure that we (a) have enough columns to write all the
-    // coefficients regardless of the current value of l_max and (b) write a
-    // constant number of columns for each row of data regardless of the current
-    // l_max.
+
+    // When option LMax is present in the global cache,
+    // check that the Strahlkorper resolution does not exceed it.
+    // LMax sets a maximum resolution for
+    // the Strahlkorper resolution (when adjusted using adaptive
+    // horizon finding) and the number of (zero padded) columns to output,
+    // to avoid H5 errors caused by different rows (corresponding to
+    // different times) having different numbers of columns.
+    // If this option is not present in the cache, skip the check and just write
+    // the modes of the Strahlkorper, assuming that the Strahlkorper
+    // resolution never changes.
+    size_t max_l_to_write = strahlkorper.l_max();
+    if constexpr (Parallel::is_in_global_cache<Metavariables, ah::Tags::LMax>) {
+      const auto& max_resolution_and_output_l =
+          Parallel::get<ah::Tags::LMax>(cache);
+      if (UNLIKELY(max_resolution_and_output_l < strahlkorper.l_max())) {
+        ERROR("The option LMax ("
+              << max_resolution_and_output_l << ") is smaller than the current "
+              << "Strahlkorper resolution L=" << strahlkorper.l_max()
+              << ". Increase LMax or decrease "
+              << "Strahlkorper resolution L to avoid truncating data.");
+      }
+      max_l_to_write = max_resolution_and_output_l;
+    }
+
     ylm::fill_ylm_legend_and_data(make_not_null(&ylm_legend),
                                   make_not_null(&ylm_data), strahlkorper, time,
-                                  strahlkorper.l_max());
+                                  max_l_to_write);
 
     const std::string ylm_subfile_name{std::string{"/"} + surface_name +
                                        "_Ylm"};

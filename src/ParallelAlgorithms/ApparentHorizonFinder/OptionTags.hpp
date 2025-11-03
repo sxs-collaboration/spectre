@@ -109,5 +109,16 @@ struct ApparentHorizonOptions {
   static std::string name() { return pretty_type::name<HorizonMetavars>(); }
   using group = ApparentHorizonGroup;
 };
+
+/// \ingroup OptionTagsGroup
+/// Maximum L used both for adaptive horizon resolution and output padding.
+struct LMax {
+  using type = size_t;
+  static constexpr Options::String help = {
+      "Maximum L for horizon resolution and output. Adaptive criteria clamp "
+      "the surface to this L, and output at smaller L is zero padded to "
+      "match this maximum L."};
+  using group = ApparentHorizonGroup;
+};
 }  // namespace OptionTags
 }  // namespace ah

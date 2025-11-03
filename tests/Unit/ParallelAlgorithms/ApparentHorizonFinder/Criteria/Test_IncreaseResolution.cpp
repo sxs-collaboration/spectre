@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.Criteria.IncreaseResolution",
   const std::unique_ptr<ah::Criterion> criterion_five =
       std::make_unique<ah::Criteria::IncreaseResolution>();
   const std::unique_ptr<ah::Criterion> criterion_six =
-      std::make_unique<ah::Criteria::Residual>(1.0e-6, 1.0e-4, 4, 12);
+      std::make_unique<ah::Criteria::Residual>(1.0e-6, 1.0e-4, 4);
   CHECK(criterion_four->is_equal(*criterion_five));
   CHECK(not(criterion_four->is_equal(*criterion_six)));
 }

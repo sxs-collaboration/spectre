@@ -232,10 +232,11 @@ Interpolator:
   Verbosity: Silent
 
 ApparentHorizons:
+  LMax: &LMax 4
   ApparentHorizon: &Ah
     Criteria:
     InitialGuess:
-      LMax: &LMax 4
+      LMax: *LMax
       Radius: 2.2
       Center: [0., 0., 0.]
     FastFlow:

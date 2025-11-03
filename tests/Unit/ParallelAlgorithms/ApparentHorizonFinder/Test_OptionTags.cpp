@@ -19,6 +19,7 @@
 #include "Framework/TestCreation.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Component.hpp"
 #include "ParallelAlgorithms/ApparentHorizonFinder/Criteria/Factory.hpp"
@@ -79,7 +80,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
   // Options for ApparentHorizon
   std::vector<std::unique_ptr<ah::Criterion>> criteria;
   criteria.emplace_back(
-      std::make_unique<ah::Criteria::Residual>(1.e-12, 1.e-2, 2, 12));
+      std::make_unique<ah::Criteria::Residual>(1.e-12, 1.e-2, 2));
   ah::HorizonOptions<::Frame::Grid> apparent_horizon_opts(
       std::move(criteria),
       ylm::Strahlkorper<Frame::Grid>{l_max, radius, center}, FastFlow{},
@@ -94,7 +95,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
           "      MinResidual: 1.e-12\n"
           "      MaxResidual: 1.e-2\n"
           "      MinResolutionL: 2\n"
-          "      MaxResolutionL: 12\n"
           "FastFlow:\n"
           "  Flow: Fast\n"
           "  Alpha: 1.0\n"
@@ -162,5 +162,12 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizonFinder.OptionTags",
           std::unordered_set<std::string>{"Shell0UpperZ", "Shell0LowerZ",
                                           "Shell0UpperY", "Shell0LowerY",
                                           "Shell0UpperX", "Shell0LowerX"});
+  }
+
+  // Test LMax option tag
+  {
+    constexpr size_t max_l_20 = 20_st;
+    const auto tag_from_20 = ah::Tags::LMax::create_from_options(max_l_20);
+    CHECK(tag_from_20 == max_l_20);
   }
 }

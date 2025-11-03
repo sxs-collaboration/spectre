@@ -22,6 +22,8 @@ namespace ah {
  * GlobalCache:
  * - Uses:
  *   - `ah::Tags::ApparentHorizonOptions`
+ *   - `ah::Tags::BlocksForHorizonFind`
+ *   - `ah::Tags::LMax`
  *
  * DataBox:
  * - Uses: Nothing
@@ -63,7 +65,7 @@ struct Initialize {
   using const_global_cache_tags =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::append<
           tmpl::list<Tags::ApparentHorizonOptions<HorizonMetavars>,
-                     Tags::BlocksForHorizonFind>,
+                     Tags::BlocksForHorizonFind, Tags::LMax>,
           Parallel::get_const_global_cache_tags_from_actions<tmpl::flatten<
               tmpl::list<typename HorizonMetavars::horizon_find_callbacks,
                          typename HorizonMetavars::
