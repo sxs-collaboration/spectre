@@ -207,13 +207,9 @@ class EvolveGhBinaryBlackHole(EvolutionStatus):
         traj_A, traj_B = import_A_and_B(reduction_files)
         st.pyplot(plot_trajectory(traj_A, traj_B))
         coord_separation = np.linalg.norm(traj_A[:, 1:] - traj_B[:, 1:], axis=1)
-        fig = px.line(
-            x=traj_A[:, 0],
-            y=coord_separation,
-            labels={"y": "Coordinate separation [M]"},
-        )
+        fig = px.line(x=traj_A[:, 0], y=coord_separation)
         fig.update_layout(xaxis_title="Time [M]", legend=legend_layout)
-        fig.update_yaxes(title=None)
+        fig.update_yaxes(title="Coordinate separation [M]")
         st.plotly_chart(fig)
 
         # Grid
