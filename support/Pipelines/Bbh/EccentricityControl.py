@@ -135,7 +135,7 @@ def eccentricity_control(
                     lev=lev,
                     inspiral_input_file_template=inspiral_input_file_template,
                     continue_with_ringdown=True,
-                    pipeline_dir=lev_dir,
+                    pipeline_dir=lev_dir.path,
                     **scheduler_kwargs,
                 )
         return
