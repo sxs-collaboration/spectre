@@ -310,18 +310,20 @@ class EvolutionStatus(ExecutableStatus):
         import plotly.graph_objects as go
 
         fig = go.Figure()
-        for reduction_file, time_steps in zip(reduction_files, all_time_steps):
+        for reduction_file, segment_time_steps in zip(
+            reduction_files, all_time_steps
+        ):
             spectre_out = reduction_file.parent / "spectre.out"
             start_time = get_start_time(spectre_out)
             if not start_time:
                 continue
             calendar_time = start_time + pd.to_timedelta(
-                time_steps["Maximum Walltime"], unit="s"
+                segment_time_steps["Maximum Walltime"], unit="s"
             )
             fig.add_trace(
                 go.Scatter(
                     x=calendar_time,
-                    y=time_steps.index,
+                    y=segment_time_steps.index,
                     mode="lines",
                     name=reduction_file.parent.name,
                 )
