@@ -323,6 +323,16 @@ def start_ringdown(
     )
     logger.debug(f"Ringdown parameters: {pretty_repr(ringdown_params)}")
 
+    # Determine resource allocation
+    if (
+        scheduler_kwargs.get("scheduler") is not None
+        and scheduler_kwargs.get("num_procs") is None
+        and scheduler_kwargs.get("num_nodes") is None
+    ):
+        # By default just run on a fixed number of cores for now. We can
+        # make this smarter later (e.g. scale with the number of elements).
+        scheduler_kwargs["num_procs"] = 180
+
     # Schedule!
     return schedule(
         ringdown_input_file_template,
