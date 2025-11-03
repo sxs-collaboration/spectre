@@ -306,7 +306,7 @@ void test() {
   delete_files(filename_prefix, radii);
 }
 
-// [Timeout, 10]
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.DumpBondiSachsOnWorldtube",
                   "[Unit][Cce]") {
   test<false>();

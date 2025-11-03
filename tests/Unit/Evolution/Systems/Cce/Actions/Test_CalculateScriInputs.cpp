@@ -108,6 +108,7 @@ struct metavariables {
 };
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
                   "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
