@@ -464,7 +464,7 @@ def start_inspiral(
     # Determine resolution
     if lev is not None:
         assert (refinement_level is None) and (polynomial_order is None), (
-            "The option 'lev' is mutaully exclusive with 'refinement_level' and"
+            "The option 'lev' is mutually exclusive with 'refinement_level' and"
             " 'polynomial_order'."
         )
         selected_lev = INSPIRAL_LEVS[lev]
@@ -613,10 +613,9 @@ def start_inspiral(
     "--lev",
     type=int,
     help=(
-        "Resolution levels defined in terms of h and p refinement. Can be"
-        " specified multiple times. For integer N, LevN corresponds to"
-        " refinement level L = 1 and polynomial order P = 7 + N. Mutually"
-        " exclusive with options '-L' and '-P'"
+        "Resolution levels defined in terms of h and p refinement. For integer"
+        " N, LevN corresponds to refinement level L = 1 and polynomial order P"
+        " = 7 + N. Mutually exclusive with options '-L' and '-P'"
     ),
 )
 @click.option(
