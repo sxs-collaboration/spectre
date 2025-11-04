@@ -32,7 +32,7 @@ set(INTERPOLATION_LIBS_TO_LINK
   ParallelInterpolation
 )
 
-function(add_curved_scalar_wave_executable EXECUTABLE_SUFFIX DIM BACKGROUND INITIAL_DATA)
+function(add_curved_scalar_wave_executable EXECUTABLE_SUFFIX DIM BACKGROUND)
   set(EXECUTABLE "EvolveCurvedScalarWave${EXECUTABLE_SUFFIX}${DIM}D")
   add_spectre_executable(
     ${EXECUTABLE}
@@ -44,7 +44,6 @@ function(add_curved_scalar_wave_executable EXECUTABLE_SUFFIX DIM BACKGROUND INIT
     PRIVATE
     DIM=${DIM}
     BACKGROUND=${BACKGROUND}
-    INITIAL_DATA=${INITIAL_DATA}
     )
   target_link_libraries(${EXECUTABLE} PRIVATE ${LIBS_TO_LINK})
   if (DIM EQUAL 3)
@@ -54,10 +53,9 @@ endfunction(add_curved_scalar_wave_executable)
 
 function(add_flat_plane_wave_executable DIM)
   add_curved_scalar_wave_executable(
-    PlaneWaveMinkowski
+    Minkowski
     ${DIM}
     gr::Solutions::Minkowski<${DIM}>
-    ScalarWave::Solutions::PlaneWave<${DIM}>
   )
 endfunction(add_flat_plane_wave_executable)
 
@@ -68,9 +66,7 @@ add_flat_plane_wave_executable(3)
 add_curved_scalar_wave_executable(
   KerrSchild
   3
-  gr::Solutions::KerrSchild
-  CurvedScalarWave::AnalyticData::PureSphericalHarmonic
-)
+  gr::Solutions::KerrSchild)
 
 set(WORLDTUBE_EXECUTABLE EvolveWorldtubeCurvedScalarWaveKerrSchild3D)
 add_spectre_executable(

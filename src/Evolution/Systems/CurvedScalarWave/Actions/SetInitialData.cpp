@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/CurvedScalarWave/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Actions/SetInitialData.hpp"
 
 #include <boost/functional/hash.hpp>
 #include <optional>

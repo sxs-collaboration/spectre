@@ -18,7 +18,7 @@
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Actions/NumericInitialData.hpp"
+#include "Evolution/Systems/CurvedScalarWave/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/SetInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiAndPhiFromConstraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
