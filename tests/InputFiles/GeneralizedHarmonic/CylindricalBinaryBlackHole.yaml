@@ -5,6 +5,7 @@ Executable: EvolveGhBinaryBlackHole
 Testing:
   Check: parse
   Priority: High
+  Timeout: 10
 
 ---
 

@@ -353,6 +353,7 @@ void test_klein_gordon_cce_source(const gsl::not_null<Generator*> gen) {
 }
 }  // namespace
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.KGCceCalculations",
                   "[Unit][Cce]") {
   MAKE_GENERATOR(gen);

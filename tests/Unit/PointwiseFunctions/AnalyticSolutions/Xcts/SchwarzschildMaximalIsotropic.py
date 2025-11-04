@@ -45,7 +45,14 @@ def areal_radius_from_isotropic(r_isotropic, mass):
     def fprime(r_areal):
         return isotropic_radius_from_areal_deriv(r_areal, mass)
 
-    return newton(func=f, fprime=fprime, x0=r_isotropic, tol=1.0e-12)
+    return newton(
+        func=f,
+        fprime=fprime,
+        # Initial guess for r_areal can't be smaller than 1.5 * mass because
+        # isotropic radius is not defined for smaller values.
+        x0=max(r_isotropic, 2 * mass),
+        tol=1.0e-12,
+    )
 
 
 def conformal_metric(x, mass):

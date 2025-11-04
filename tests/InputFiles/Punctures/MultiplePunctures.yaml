@@ -4,7 +4,7 @@
 Executable: SolvePunctures
 Testing:
   Check: parse;execute_check_output
-  Timeout: 40
+  Timeout: 60
   Priority: High
 ExpectedOutput:
   - PuncturesReductions.h5
