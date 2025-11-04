@@ -15,10 +15,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from spectre.IO.H5 import to_dataframe
 from spectre.support.CheckSpecImport import check_spec_import
 from spectre.support.Yaml import SafeDumper
 from spectre.Visualization.PlotTrajectories import import_A_and_B
-from spectre.Visualization.ReadH5 import to_dataframe
 
 logger = logging.getLogger(__name__)
 

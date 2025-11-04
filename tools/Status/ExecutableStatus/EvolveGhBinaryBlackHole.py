@@ -10,7 +10,7 @@ import h5py
 import numpy as np
 import pandas as pd
 
-from spectre.Visualization.ReadH5 import to_dataframe
+from spectre.IO.H5 import to_dataframe
 
 from .ExecutableStatus import EvolutionStatus, list_reduction_files
 

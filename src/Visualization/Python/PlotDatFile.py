@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import rich
 
+from spectre.IO.H5 import available_subfiles
 from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
 )
-from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)
 

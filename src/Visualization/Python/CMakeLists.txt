@@ -9,8 +9,6 @@ spectre_python_add_module(
   __init__.py
   GenerateTetrahedralConnectivity.py
   GenerateXdmf.py
-  InterpolateToMesh.py
-  OpenVolfiles.py
   Plot.py
   PlotAlongLine.py
   PlotCce.py
@@ -24,10 +22,8 @@ spectre_python_add_module(
   PlotSlice.py
   PlotTrajectories.py
   plots.mplstyle
-  ReadH5.py
   ReadInputFile.py
   Render1D.py
-  TransformVolumeData.py
 )
 
 add_subdirectory(Render3D)

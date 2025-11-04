@@ -15,7 +15,8 @@ import rich
 
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.Exporter import ObservationId, interpolate_to_points
-from spectre.Visualization.OpenVolfiles import (
+from spectre.IO.H5 import (
+    list_observations,
     open_volfiles,
     open_volfiles_command,
     parse_point,
@@ -24,7 +25,6 @@ from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
 )
-from spectre.Visualization.ReadH5 import list_observations
 
 logger = logging.getLogger(__name__)
 

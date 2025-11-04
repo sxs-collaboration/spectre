@@ -7,7 +7,7 @@ import os
 import h5py
 import numpy as np
 
-from spectre.Visualization.ReadH5 import to_dataframe
+from spectre.IO.H5 import to_dataframe
 
 from .ExecutableStatus import EvolutionStatus
 

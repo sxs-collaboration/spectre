@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spectre.IO.H5 import to_dataframe
 from spectre.support.DirectoryStructure import list_segments
-from spectre.Visualization.ReadH5 import to_dataframe
 from spectre.Visualization.ReadInputFile import find_event
 
 logger = logging.getLogger(__name__)

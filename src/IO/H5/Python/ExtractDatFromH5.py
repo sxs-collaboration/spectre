@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import rich
 
-from spectre.Visualization.ReadH5 import available_subfiles
+from spectre.IO.H5 import available_subfiles
 
 
 def write_dat_data(dat_path, h5_filename, out_dir, precision):

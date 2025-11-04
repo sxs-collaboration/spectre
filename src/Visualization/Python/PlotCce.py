@@ -11,12 +11,12 @@ import h5py
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from spectre.IO.H5 import available_subfiles, to_dataframe
 from spectre.support.CliExceptions import RequiredChoiceError
 from spectre.Visualization.Plot import (
     apply_stylesheet_command,
     show_or_save_plot_command,
 )
-from spectre.Visualization.ReadH5 import available_subfiles, to_dataframe
 
 logger = logging.getLogger(__name__)
 

@@ -20,8 +20,7 @@ from spectre.IO.Exporter import (
 from spectre.IO.Exporter.InterpolateToPoints import (
     interpolate_to_points_command,
 )
-from spectre.Visualization.OpenVolfiles import open_volfiles
-from spectre.Visualization.ReadH5 import list_observations
+from spectre.IO.H5 import list_observations, open_volfiles
 
 
 class TestInterpolateToPoints(unittest.TestCase):
@@ -39,7 +38,7 @@ class TestInterpolateToPoints(unittest.TestCase):
 
     def test_interpolate_tensors_to_points(self):
         obs_id = list_observations(
-            open_volfiles([self.h5_filename], "/element_data")
+            open_volfiles(self.h5_filename, "/element_data")
         )[0][0]
         for frame in [Frame.Grid, Frame.Inertial]:
             coords = tnsr.I[DataVector, 3, frame](

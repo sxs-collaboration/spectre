@@ -10,8 +10,8 @@ import numpy as np
 import yaml
 
 import spectre.IO.H5 as spectre_h5
+from spectre.IO.H5 import to_dataframe
 from spectre.Pipelines.Bbh.InitialData import TargetParams, generate_id
-from spectre.Visualization.ReadH5 import to_dataframe
 
 logger = logging.getLogger(__name__)
 

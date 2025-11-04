@@ -9,6 +9,7 @@ from typing import List, Optional, Union
 import click
 import yaml
 
+from spectre.IO.H5 import open_volfiles, select_observation
 from spectre.Pipelines.Bbh.ControlId import (
     DEFAULT_CONTROL_DELAY,
     DEFAULT_MAX_ITERATIONS,
@@ -23,8 +24,6 @@ from spectre.Pipelines.Bbh.FindHorizon import (
 )
 from spectre.SphericalHarmonics import Frame, Strahlkorper
 from spectre.support.Schedule import schedule, scheduler_options
-from spectre.Visualization.OpenVolfiles import open_volfiles
-from spectre.Visualization.ReadH5 import select_observation
 from spectre.Visualization.ReadInputFile import find_event
 
 logger = logging.getLogger(__name__)
