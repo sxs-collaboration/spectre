@@ -3,6 +3,7 @@
 
 Executable: EvolveGhSingleBlackHole
 {{ TargetParams }}
+Lev: {{ Lev | default("None") }}
 
 ---
 
@@ -95,8 +96,8 @@ Evolution:
     - LimitIncrease:
         Factor: 2
     - ErrorControl:
-        AbsoluteTolerance: 1e-8
-        RelativeTolerance: 1e-6
+        AbsoluteTolerance: 1e-10
+        RelativeTolerance: 1e-8
         MaxFactor: 2
         MinFactor: 0.25
         SafetyFactor: 0.95
@@ -191,7 +192,7 @@ PhaseChangeAndTriggers:
       Slabs:
        EvenlySpaced:
          # Current implementation checks wallclock at these global syncs
-         Interval: 100
+         Interval: 10
          Offset: 0
     PhaseChanges:
       - CheckpointAndExitAfterWallclock:
@@ -234,12 +235,23 @@ EventsAndTriggersAtSlabs:
           - Name: PointwiseL2Norm(ThreeIndexConstraint)
             NormType: L2Norm
             Components: Sum
+  # Observe constraint energy more sparsely because it is expensive to compute.
+  # Also use it for ErrorIfDataTooBig so we only compute it once.
   - Trigger:
       Slabs:
         EvenlySpaced:
-          Interval: 10
+          Interval: 100
           Offset: 0
     Events:
+      - ObserveNorms:
+          SubfileName: ConstraintEnergy
+          TensorsToObserve:
+          - Name: ConstraintEnergy
+            NormType: L2Norm
+            Components: Sum
+      - ErrorIfDataTooBig:
+          Threshold: 10
+          VariablesToCheck: [ConstraintEnergy]
       - ErrorIfDataTooBig:
           Threshold: 100
           VariablesToCheck: [SpacetimeMetric]
@@ -251,11 +263,12 @@ EventsAndTriggersAtSlabs:
     Events:
       - ApparentHorizon
       - ExcisionBoundary
+  # Observe volume data for visualization and debugging
   - Trigger:
-      Times:
+      Slabs:
         EvenlySpaced:
-          Interval: 10.0
-          Offset: 0.0
+          Interval: 1000
+          Offset: 0
     Events:
       # SpatialRicciScalar and Psi4Real output for visualizations scripts.
       - ObserveFields:
@@ -271,8 +284,8 @@ EventsAndTriggersAtSlabs:
             - SpatialRicciScalar
             - Psi4Real
           InterpolateToMesh: None
-          CoordinatesFloatingPointType: Double
-          FloatingPointTypes: [Double]
+          CoordinatesFloatingPointType: Float
+          FloatingPointTypes: [Float]
           BlocksToObserve: All
   - Trigger:
       TimeCompares:

@@ -10,8 +10,7 @@ Next:
   With:
     inspiral_input_file_path: __file__
     inspiral_run_dir: ./
-    refinement_level: {{ L }}
-    polynomial_order: {{ P }}
+    lev: {{ Lev }}
     pipeline_dir: {{ pipeline_dir }}
     scheduler: {{ scheduler | default("None") }}
     copy_executable: {{ copy_executable | default("None") }}
