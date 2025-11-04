@@ -4,8 +4,5 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Divergence.cpp
-  Events.cpp
   TimeStepping.cpp
-  VolumeTerms.cpp
   )

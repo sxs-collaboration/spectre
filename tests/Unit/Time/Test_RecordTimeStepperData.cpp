@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Time/RecordTimeStepperData.hpp"
+#include "Time/RecordTimeStepperData.tpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags/HistoryEvolvedVariables.hpp"
 #include "Time/Tags/TimeStepId.hpp"

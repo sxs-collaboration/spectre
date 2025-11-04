@@ -27,6 +27,7 @@
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/UpdateU.hpp"
+#include "Time/UpdateU.tpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/TMPL.hpp"

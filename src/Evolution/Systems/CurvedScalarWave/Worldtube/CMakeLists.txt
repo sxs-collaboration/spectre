@@ -30,6 +30,7 @@ spectre_target_headers(
   PunctureField.hpp
   RadiusFunctions.hpp
   SelfForce.hpp
+  System.hpp
   Worldtube.hpp
   )
 
@@ -49,5 +50,6 @@ target_link_libraries(
 
 add_subdirectory(SingletonActions)
 add_subdirectory(ElementActions)
+add_subdirectory(Instantiations)
 add_subdirectory(Triggers)
 add_subdirectory(InitialData)
