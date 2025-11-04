@@ -439,15 +439,13 @@ void inner_loops_three(
 
 template <typename TensorStructure, typename SparseMatrixType>
 void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
-                const size_t ell_max, const size_t number_of_ell_modes_to_kill,
-                const std::optional<size_t> half_power) {
+                 const size_t ell_max, const size_t number_of_ell_modes_to_kill,
+                 const std::optional<size_t> half_power) {
   static constexpr size_t num_independent_components = TensorStructure::size();
   static constexpr size_t rank = TensorStructure::rank();
-  static constexpr auto tensor_index_list =
-      TensorStructure::storage_to_tensor_index();
   static constexpr double alpha = 36.0;
 
-  static_assert(rank > 0 and rank < 4, "Implemented only for ranks 1,2,3");
+  static_assert(rank >= 0 and rank < 4, "Implemented only for ranks 0,1,2,3");
 
   const auto lcutplus =
       static_cast<size_t>(ell_max - number_of_ell_modes_to_kill);
@@ -464,6 +462,28 @@ void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
                                 iter_src.spherepack_array_size() *
                                 iter_dest.spherepack_array_size(),
                             true, 1.0);
+
+  // Special case for rank 0, which is so much simpler than all the
+  // other ranks because there is actually no tensorylm
+  // transformation, no symmetry considerations, and no mixing of
+  // real/imaginary parts, just a filter based on ell.
+  if constexpr (rank == 0) {
+    for (iter_src.reset(); iter_src; ++iter_src) {
+      const size_t ell = iter_src.l();
+      if (ell >= lcutminus) {
+        const double coefl =
+            half_power.has_value() and ell <= lcutplus
+                ? (1.0 -
+                   exp(-alpha *
+                       integer_pow(double(ell) / double(lcutplus + 1),
+                                   2 * static_cast<int>(half_power.value()))))
+                : 1.0;
+        filler.add(-coefl, iter_src(), iter_src());
+      }
+    }
+    filler.fill(matrix);
+    return;
+  }
 
   // We allocate space for some (not all) of the 3J symbols here, so
   // that they can be used and re-used later inside the inner loops.
@@ -511,6 +531,9 @@ void fill_filter(const gsl::not_null<SparseMatrixType*> matrix,
 
   for (size_t dest_comp_index = 0; dest_comp_index < num_independent_components;
        dest_comp_index++) {
+    static constexpr auto tensor_index_list =
+        TensorStructure::storage_to_tensor_index();
+
     const auto dest_indices = tensor_index_list[dest_comp_index];
     const auto dest_bvs = helpers::to_cart_basis_vector(dest_indices);
 
@@ -724,5 +747,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 
 #undef INSTANTIATE
 #undef TSTRUCT
+
+// Instantiation for scalars.
+template void fill_filter<typename Scalar<DataVector>::structure>(
+    gsl::not_null<SimpleSparseMatrix*> matrix, size_t ell_max,
+    size_t number_of_ell_modes_to_kill, std::optional<size_t> half_power);
 
 }  // namespace ylm::TensorYlm
