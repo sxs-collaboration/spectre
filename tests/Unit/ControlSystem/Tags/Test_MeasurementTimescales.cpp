@@ -96,7 +96,7 @@ void test_measurement_tag() {
   INFO("Test measurement tag");
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   static_assert(
-      tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 9);
+      tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 10);
 
   using FakeCreator = TestHelpers::control_system::FakeCreator;
 
@@ -142,6 +142,7 @@ void test_measurement_tag() {
         std::is_same_v<
             measurement_tag::option_tags<Metavariables>,
             tmpl::list<control_system::OptionTags::MeasurementsPerUpdate,
+                       control_system::OptionTags::DelayUpdate,
                        domain::OptionTags::DomainCreator<3>,
                        ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
                        control_system::OptionTags::ControlSystemInputs<
@@ -155,11 +156,12 @@ void test_measurement_tag() {
                        control_system::OptionTags::ControlSystemInputs<
                            FakeControlSystem<6>>>>);
     const int measurements_per_update = 4;
+    const bool delay_update = true;
     const measurement_tag::type timescales =
         measurement_tag::create_from_options<Metavariables>(
-            measurements_per_update, creator, initial_time, time_step,
-            option_holder1, option_holder2, option_holder4, option_holder5,
-            option_holder6);
+            measurements_per_update, delay_update, creator, initial_time,
+            time_step, option_holder1, option_holder2, option_holder4,
+            option_holder5, option_holder6);
     CHECK(timescales.size() == 3);
     CHECK(timescales.count("Controlled1Controlled4") == 1);
     CHECK(timescales.count("Controlled2Controlled5") == 1);
@@ -222,9 +224,8 @@ void test_measurement_tag() {
                     {FakeControlSystem<3>::name(), 1}});
 
         measurement_tag::create_from_options<Metavariables>(
-            4, creator, initial_time, -1.0, option_holder1, option_holder2,
-
-            option_holder3);
+            4, true, creator, initial_time, -1.0, option_holder1,
+            option_holder2, option_holder3);
       })(),
       Catch::Matchers::ContainsSubstring(
           "Control systems can only be used in forward-in-time evolutions."));

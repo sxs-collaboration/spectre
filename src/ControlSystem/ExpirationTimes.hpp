@@ -23,16 +23,23 @@ namespace control_system {
  * \ingroup ControlSystemGroup
  * \brief Calculate the next expiration time for the FunctionsOfTime.
  *
- * \f{align}
- * T_\mathrm{expr}^\mathrm{FoT} &= t + \tau_\mathrm{m}^\mathrm{old}
- *      + N * \tau_\mathrm{m}^\mathrm{new} \\
+ * If \p delay_update is false, this returns
+ *
+ * \f{equation}
+ * T_\mathrm{expr}^\mathrm{FoT} = t + N * \tau_\mathrm{m}^\mathrm{new},
+ * \f}
+ *
+ * and if it is true,
+ *
+ * \f{equation}
+ * T_\mathrm{expr}^\mathrm{FoT} = t + \tau_\mathrm{m}^\mathrm{old}
+ *      + N * \tau_\mathrm{m}^\mathrm{new},
  * \f}
  *
  * where \f$T_\mathrm{expr}^\mathrm{FoT}\f$ is the expiration time for the
  * FunctionsOfTime, \f$t\f$ is the update time,
  * \f$\tau_\mathrm{m}^\mathrm{old/new}\f$ is the measurement timescale, and
- * \f$N\f$ is the number of measurements per update if \p delay_update is true,
- * or one less if it is false.
+ * \f$N\f$ is the number of measurements per update.
  *
  * If \p delay_update is true, we update the functions of time
  * one (old) measurement before they actually expire.
@@ -53,13 +60,30 @@ namespace control_system {
  *
  * If \p delay_update is false, we update the functions of time
  * immediately, which allows for less parallelization but potentially
- * makes the control system more responsive.  For simplicity, we still
- * delay the change in the measurement interval by one measurement.
+ * makes the control system more responsive.
  */
 double function_of_time_expiration_time(
     double time, const DataVector& old_measurement_timescales,
     const DataVector& new_measurement_timescales, int measurements_per_update,
     bool delay_update);
+
+/*!
+ * \ingroup ControlSystemGroup
+ * \brief Calculate the first expiration time for the FunctionsOfTime.
+ *
+ * The first expiration time is
+ *
+ * \f{equation}
+ * T_\mathrm{expr}^\mathrm{FoT} = t + N * \tau_\mathrm{m},
+ * \f}
+ *
+ * where $t$ is the initial time, $\tau_\mathrm{m}$ is the measurement
+ * timescale, and \f$N\f$ is the number of measurements per update if
+ * \p delay_update is true, and one less if it is false.
+ */
+double function_of_time_initial_expiration_time(
+    double time, const DataVector& measurement_timescales,
+    int measurements_per_update, bool delay_update);
 
 /*!
  * \ingroup ControlSystemGroup
@@ -90,10 +114,23 @@ double function_of_time_expiration_time(
  * just to guarantee we are more than epsilon before the function of time
  * expiration time and more than epsilon after the update measurement.
  */
-double measurement_expiration_time(const double time,
+double measurement_expiration_time(double time,
                                    const DataVector& old_measurement_timescales,
                                    const DataVector& new_measurement_timescales,
-                                   const int measurements_per_update);
+                                   int measurements_per_update,
+                                   bool delay_update);
+
+/*!
+ * \ingroup ControlSystemGroup
+ * \brief Calculate the first expiration time for the MeasurementTimescales.
+ *
+ * This is related to `function_of_time_initial_expiration_time()` in
+ * the same way that `measurement_expiration_time()` is related to
+ * `function_of_time_expiration_time()`.
+ */
+double measurement_initial_expiration_time(
+    double time, const DataVector& measurement_timescales,
+    int measurements_per_update, bool delay_update);
 
 /*!
  * \ingroup ControlSystemGroup
@@ -176,10 +213,10 @@ std::unordered_map<std::string, double> initial_expiration_times(
                                              measurements_per_update);
         const double min_measurement_timescale = min(measurement_timescales);
 
-        const double initial_expiration_time = function_of_time_expiration_time(
-            initial_time, DataVector{1, 0.0},
-            DataVector{1, min_measurement_timescale}, measurements_per_update,
-            delay_update);
+        const double initial_expiration_time =
+            function_of_time_initial_expiration_time(
+                initial_time, DataVector{1, min_measurement_timescale},
+                measurements_per_update, delay_update);
 
         combined_expiration_times[combined_name] = std::min(
             combined_expiration_times[combined_name], initial_expiration_time);

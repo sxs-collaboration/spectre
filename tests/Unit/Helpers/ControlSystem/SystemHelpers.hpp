@@ -572,9 +572,9 @@ struct SystemHelper {
       averager.assign_time_between_measurements(min_measurement_timescale);
 
       const double measurement_expr_time =
-          ::control_system::measurement_expiration_time(
-              initial_time_, DataVector{0.0},
-              DataVector{min_measurement_timescale}, measurements_per_update_);
+          ::control_system::measurement_initial_expiration_time(
+              initial_time_, DataVector{min_measurement_timescale},
+              measurements_per_update_, delay_update_);
 
       individual_minimums[name<system>()] =
           std::make_pair(min_measurement_timescale, measurement_expr_time);
@@ -603,9 +603,8 @@ struct SystemHelper {
          individual_minimums) {
       (void)min_measure_expr_time;
       initial_expiration_times[system_name] =
-          ::control_system::function_of_time_expiration_time(
-              initial_time_, DataVector{0.0},
-              DataVector{overall_min_measurement_timescale},
+          ::control_system::function_of_time_initial_expiration_time(
+              initial_time_, DataVector{overall_min_measurement_timescale},
               measurements_per_update_, delay_update_);
     }
 

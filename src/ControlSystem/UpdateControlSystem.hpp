@@ -246,11 +246,8 @@ struct UpdateControlSystem {
         function_of_time->time_bounds()[1];
     const double current_measurement_expiration_time =
         measurement_timescale->time_bounds()[1];
-    // This call is ok because the measurement timescales are still valid
-    // because the measurement timescales expire half a measurement after this
-    // time.
     const DataVector old_measurement_timescale =
-        measurement_timescale->func(time)[0];
+        measurement_timescale->func(current_measurement_expiration_time)[0];
 
     // Begin step 8
     // Calculate the next expiration times for both the functions of time and
@@ -262,7 +259,7 @@ struct UpdateControlSystem {
 
     const double new_measurement_expiration_time = measurement_expiration_time(
         time, old_measurement_timescale, new_measurement_timescale,
-        measurements_per_update);
+        measurements_per_update, delay_update);
 
     if (Parallel::get<Tags::Verbosity>(cache) >= ::Verbosity::Verbose) {
       Parallel::printf("%s, time = %.16f: Control signal = %s\n",

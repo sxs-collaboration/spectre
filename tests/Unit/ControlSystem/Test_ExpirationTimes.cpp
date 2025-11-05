@@ -119,8 +119,8 @@ void test_expiration_time_construction() {
           expected_initial_expiration_times{
               {FakeControlSystem<1>::name(),
                // This is ok to use here because we test it below
-               control_system::function_of_time_expiration_time(
-                   initial_time, DataVector{0.0},
+               control_system::function_of_time_initial_expiration_time(
+                   initial_time,
                    control_system::calculate_measurement_timescales(
                        controller, tuner1, measurements_per_update),
                    measurements_per_update, delay_update)}};
@@ -141,10 +141,9 @@ void test_expiration_time_construction() {
                    min(control_system::calculate_measurement_timescales(
                        controller, tuner2, measurements_per_update)));
       const double min_expiration_time =
-          control_system::function_of_time_expiration_time(
-              initial_time, DataVector{0.0},
-              DataVector{min_measurement_timescale}, measurements_per_update,
-              delay_update);
+          control_system::function_of_time_initial_expiration_time(
+              initial_time, DataVector{min_measurement_timescale},
+              measurements_per_update, delay_update);
 
       const std::unordered_map<std::string, double>
           expected_initial_expiration_times{
@@ -175,22 +174,49 @@ void test_fot_measurement_expr_time() {
           time, old_measurement_timescales, new_measurement_timescales,
           measurements_per_update, true);
   CHECK(fot_expr_time_delayed ==
-        fot_expr_time_nondelayed + min(new_measurement_timescales));
-  const double expected_fot_expr_time = time + min(old_measurement_timescales) +
+        fot_expr_time_nondelayed + min(old_measurement_timescales));
+  const double expected_fot_expr_time = time + min(new_measurement_timescales) +
                                         min(new_measurement_timescales) +
                                         min(new_measurement_timescales);
 
   CHECK(fot_expr_time_nondelayed == expected_fot_expr_time);
 
-  const double measurement_expr_time =
+  const double fot_initial_expr_time_nondelayed =
+      control_system::function_of_time_initial_expiration_time(
+          time, new_measurement_timescales, measurements_per_update, false);
+  const double fot_initial_expr_time_delayed =
+      control_system::function_of_time_initial_expiration_time(
+          time, new_measurement_timescales, measurements_per_update, true);
+  CHECK(fot_initial_expr_time_delayed ==
+        fot_initial_expr_time_nondelayed + min(new_measurement_timescales));
+  CHECK(fot_initial_expr_time_delayed == expected_fot_expr_time);
+
+  const double measurement_expr_time_delayed =
       control_system::measurement_expiration_time(
           time, old_measurement_timescales, new_measurement_timescales,
-          measurements_per_update);
-  const double expected_measurement_expr_time =
-      time + min(old_measurement_timescales) +
-      (double(measurements_per_update) - 0.5) * min(new_measurement_timescales);
+          measurements_per_update, true);
+  const double measurement_expr_time_nondelayed =
+      control_system::measurement_expiration_time(
+          time, old_measurement_timescales, new_measurement_timescales,
+          measurements_per_update, false);
+  CHECK(measurement_expr_time_delayed ==
+        approx(fot_expr_time_delayed - 0.5 * min(new_measurement_timescales)));
+  CHECK(
+      measurement_expr_time_nondelayed ==
+      approx(fot_expr_time_nondelayed - 0.5 * min(new_measurement_timescales)));
 
-  CHECK(measurement_expr_time == expected_measurement_expr_time);
+  const double measurement_initial_expr_time_delayed =
+      control_system::measurement_initial_expiration_time(
+          time, new_measurement_timescales, measurements_per_update, true);
+  const double measurement_initial_expr_time_nondelayed =
+      control_system::measurement_initial_expiration_time(
+          time, new_measurement_timescales, measurements_per_update, false);
+  CHECK(measurement_initial_expr_time_delayed ==
+        approx(fot_initial_expr_time_delayed -
+               0.5 * min(new_measurement_timescales)));
+  CHECK(measurement_initial_expr_time_nondelayed ==
+        approx(fot_initial_expr_time_nondelayed -
+               0.5 * min(new_measurement_timescales)));
 }
 }  // namespace
 
